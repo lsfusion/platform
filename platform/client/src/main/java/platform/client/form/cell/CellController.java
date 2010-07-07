@@ -40,7 +40,7 @@ public class CellController implements CellViewListener {
         view.addListener(this);
 
         if (key.editKey != null)
-            form.addKeyBinding(key.editKey, key.getGroupObject(), new Runnable() {
+            form.getComponent().addKeyBinding(key.editKey, key.getGroupObject(), new Runnable() {
                 public void run() {
                     startEditing();
                 }

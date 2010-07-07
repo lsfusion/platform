@@ -91,7 +91,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         if (showType != null)
             showType.hideViews();
 
-        form.validate();
+        form.getComponent().validate();
     }
 
     private void showViews() {
@@ -108,7 +108,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         if (showType != null)
             showType.showViews();
 
-        form.validate();
+        form.getComponent().validate();
     }
 
     public void setClassView(Byte setClassView) {

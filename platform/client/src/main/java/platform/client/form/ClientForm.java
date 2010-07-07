@@ -36,7 +36,7 @@ import java.rmi.RemoteException;
 import java.util.*;
 import java.util.List;
 
-public class ClientForm extends JPanel {
+public class ClientForm {
 
     private final ClientFormView formView;
 
@@ -101,8 +101,6 @@ public class ClientForm extends JPanel {
     // ----------------------------------- Инициализация ---------------------------------- //
     // ------------------------------------------------------------------------------------ //
 
-    private boolean hasFocus = false;
-
     private ClientFormLayout formLayout;
 
     private Map<ClientGroupObjectImplementView, GroupObjectController> controllers;
@@ -110,12 +108,30 @@ public class ClientForm extends JPanel {
     private JButton buttonApply;
     private JButton buttonCancel;
 
+    public ClientFormLayout getComponent() {
+        return formLayout;
+    }
+
     void initializeForm() throws IOException {
 
-        formLayout = new ClientFormLayout(formView.containers);
+        formLayout = new ClientFormLayout(formView.containers) {
 
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        add(formLayout.getComponent());
+            @Override
+            protected void gainedFocus() {
+
+                try {
+                    remoteForm.gainedFocus();
+                    clientNavigator.currentFormChanged();
+
+                    // если вдруг изменились данные в сессии
+                    applyFormChanges();
+                    dataChanged();
+                } catch (IOException e) {
+                    throw new RuntimeException("Ошибка при активации формы", e);
+                }
+            }
+        };
+
 //        setContentPane(formLayout.getComponent());
 //        setComponent(formLayout.getComponent());
 
@@ -129,45 +145,6 @@ public class ClientForm extends JPanel {
 
         dataChanged();
 
-        // следим за тем, когда форма становится активной
-        final String FOCUS_OWNER_PROPERTY = "focusOwner";
-
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener(FOCUS_OWNER_PROPERTY, new PropertyChangeListener() {
-
-            public void propertyChange(PropertyChangeEvent evt) {
-                Component focusComponent = (Component)evt.getNewValue();
-                if (focusComponent != null) {
-                    boolean newHasFocus = ClientForm.this.isAncestorOf(focusComponent);
-                    if (hasFocus != newHasFocus) {
-                        hasFocus = newHasFocus;
-                        if (hasFocus) {
-
-                            try {
-                                remoteForm.gainedFocus();
-                                clientNavigator.currentFormChanged();
-
-                                // если вдруг изменились данные в сессии
-                                applyFormChanges();
-                                dataChanged();
-                            } catch (IOException e) {
-                                throw new RuntimeException("Ошибка при активации формы", e);
-                            }
-                        }
-                    }
-                }
-
-            }
-        });
-
-        setFocusCycleRoot(true);
-
-        // вот таким вот маразматичным способом делается, чтобы при нажатии мышкой в ClientForm фокус оставался на ней, а не уходил куда-то еще
-        // теоретически можно найти способ как это сделать не так извращенно, но копаться в исходниках Swing'а очень долго
-        addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                requestFocusInWindow();
-            }
-        });
     }
 
     // здесь хранится список всех GroupObjects плюс при необходимости null
@@ -198,49 +175,7 @@ public class ClientForm extends JPanel {
         }
     }
 
-    // реализуем "обратную" обработку нажатий кнопок
-    @Override
-    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-
-        // делаем так, чтобы первым нажатия клавиш обрабатывал GroupObject, у которого стоит фокус
-        // хотя конечно идиотизм это делать таким образом
-        Component comp = e.getComponent(); //KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-        while (comp != null && !(comp instanceof Window) && comp != this) {
-            if (comp instanceof JComponent) {
-                ClientGroupObjectImplementView groupObject = (ClientGroupObjectImplementView)((JComponent)comp).getClientProperty("groupObject");
-                if (groupObject != null) {
-                    Map<ClientGroupObjectImplementView, Runnable> keyBinding = bindings.get(ks);
-                    if (keyBinding != null && keyBinding.containsKey(groupObject)) {
-                        keyBinding.get(groupObject).run();
-                        return true;
-                    }
-                    break;
-                }
-            }
-            comp = comp.getParent();
-        }
-
-        Map<ClientGroupObjectImplementView, Runnable> keyBinding = bindings.get(ks);
-        if (keyBinding != null && !keyBinding.isEmpty())
-            keyBinding.values().iterator().next().run();
-
-        if (super.processKeyBinding(ks, e, condition, pressed)) return true;
-
-        return true;
-    }
-
-    private Map<KeyStroke, Map<ClientGroupObjectImplementView, Runnable>> bindings = new HashMap<KeyStroke, Map<ClientGroupObjectImplementView, Runnable>>();
-
-    public void addKeyBinding(KeyStroke ks, ClientGroupObjectImplementView groupObject, Runnable run) {
-        if (!bindings.containsKey(ks))
-            bindings.put(ks, new HashMap<ClientGroupObjectImplementView, Runnable>());
-        bindings.get(ks).put(groupObject, run);
-    }
-
     private void initializeRegularFilters() {
-
-        InputMap im = getInputMap(JPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        ActionMap am = getActionMap();
 
         // Проинициализируем регулярные фильтры
 
@@ -265,11 +200,7 @@ public class ClientForm extends JPanel {
                     }
                 });
                 formLayout.add(filterGroup, checkBox);
-
-                String filterID = "regularFilter" + filterGroup.ID + singleFilter.ID;
-                im.put(singleFilter.key, filterID);
-                am.put(filterID, new AbstractAction() {
-
+                formLayout.addBinding(singleFilter.key, "regularFilter" + filterGroup.ID + singleFilter.ID, new AbstractAction() {
                     public void actionPerformed(ActionEvent e) {
                         checkBox.setSelected(!checkBox.isSelected());
                     }
@@ -301,10 +232,7 @@ public class ClientForm extends JPanel {
                 formLayout.add(filterGroup, comboBox);
 
                 for (final ClientRegularFilterView singleFilter : filterGroup.filters) {
-                    String filterID = "regularFilter" + filterGroup.ID + singleFilter.ID;
-                    im.put(singleFilter.key, filterID);
-                    am.put(filterID, new AbstractAction() {
-
+                    formLayout.addBinding(singleFilter.key, "regularFilter" + filterGroup.ID + singleFilter.ID, new AbstractAction() {
                         public void actionPerformed(ActionEvent e) {
                             comboBox.setSelectedItem(singleFilter);
                         }
@@ -327,26 +255,12 @@ public class ClientForm extends JPanel {
 
     private void initializeButtons() {
 
-        InputMap im = getInputMap(JPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        ActionMap am = getActionMap();
-
         KeyStroke altP = KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.ALT_DOWN_MASK);
-        im.put(altP, "altPPressed");
-
         KeyStroke altX = KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.ALT_DOWN_MASK);
-        im.put(altX, "altXPressed");
-
         KeyStroke altDel = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.ALT_DOWN_MASK);
-        im.put(altDel, "altDelPressed");
-
         KeyStroke altR = KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.ALT_DOWN_MASK);
-        im.put(altR, "altRPressed");
-
         KeyStroke altEnter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, (isDialogMode() && isReadOnlyMode()) ? 0 : InputEvent.ALT_DOWN_MASK);
-        im.put(altEnter, "enterPressed");
-
         KeyStroke escape = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
-        im.put(escape, "escPressed");
 
         // Добавляем стандартные кнопки
 
@@ -357,7 +271,7 @@ public class ClientForm extends JPanel {
                     print();
                 }
             };
-            am.put("altPPressed", printAction);
+            formLayout.addBinding(altP, "altPPressed", printAction);
 
             JButton buttonPrint = new JButton(printAction);
             buttonPrint.setFocusable(false);
@@ -368,7 +282,7 @@ public class ClientForm extends JPanel {
                     Main.module.runExcel(remoteForm);
                 }
             };
-            am.put("altXPressed", xlsAction);
+            formLayout.addBinding(altX, "altXPressed", xlsAction);
 
             JButton buttonXls = new JButton(xlsAction);
             buttonXls.setFocusable(false);
@@ -433,29 +347,27 @@ public class ClientForm extends JPanel {
         JButton buttonClose = new JButton(closeAction);
         buttonClose.setFocusable(false);
 
-        am.put("altRPressed", refreshAction);
-
+        formLayout.addBinding(altR, "altRPressed", refreshAction);
         formLayout.add(formView.refreshView, buttonRefresh);
         
         if (!isDialogMode()) {
 
-            am.put("enterPressed", applyAction);
-            am.put("escPressed", cancelAction);
-
+            formLayout.addBinding(altEnter, "enterPressed", applyAction);
             formLayout.add(formView.applyView, buttonApply);
+
+            formLayout.addBinding(escape, "escapePressed", cancelAction);
             formLayout.add(formView.cancelView, buttonCancel);
 
         } else {
 
-            am.put("altDelPressed", nullAction);
-
-            am.put("enterPressed", okAction);
-            am.put("escPressed", closeAction);
-
+            formLayout.addBinding(altDel, "altDelPressed", nullAction);
             formLayout.add(formView.nullView, buttonNull);
-            formLayout.add(formView.okView, buttonOK);
-            formLayout.add(formView.closeView, buttonClose);
 
+            formLayout.addBinding(altEnter, "enterPressed", okAction);
+            formLayout.add(formView.okView, buttonOK);
+
+            formLayout.addBinding(escape, "escapePressed", closeAction);
+            formLayout.add(formView.closeView, buttonClose);
         }
     }
 
@@ -611,14 +523,6 @@ public class ClientForm extends JPanel {
         applyFormChanges();
     }
 
-    public ClientClass getBaseClass(ClientObjectImplementView object) throws IOException {
-        return ClientClass.deserialize(new DataInputStream(new ByteArrayInputStream(remoteForm.getBaseClassByteArray(object.getID()))));
-    }
-
-    public List<ClientClass> getChildClasses(ClientObjectImplementView object, ClientObjectClass parentClass) throws IOException {
-        return DeSerializer.deserializeListClientClass(remoteForm.getChildClassesByteArray(object.getID(),parentClass.ID));
-    }
-
     public void changeClass(ClientObjectImplementView object, ClientConcreteClass cls) throws IOException {
 
         SwingUtils.stopSingleAction(object.groupObject.getActionID(), true);
@@ -737,7 +641,7 @@ public class ClientForm extends JPanel {
                 }
 
                 if (!okMessage.isEmpty()) {
-                    if (!(SwingUtils.showConfirmDialog(this, okMessage, null, JOptionPane.QUESTION_MESSAGE, SwingUtils.YES_BUTTON) == JOptionPane.YES_OPTION)) {
+                    if (!(SwingUtils.showConfirmDialog(getComponent(), okMessage, null, JOptionPane.QUESTION_MESSAGE, SwingUtils.YES_BUTTON) == JOptionPane.YES_OPTION)) {
                         return false;
                     }
                 }
@@ -787,7 +691,7 @@ public class ClientForm extends JPanel {
 
             if (remoteForm.hasSessionChanges()) {
 
-                if (SwingUtils.showConfirmDialog(this, "Вы действительно хотите отменить сделанные изменения ?", null, JOptionPane.WARNING_MESSAGE, SwingUtils.NO_BUTTON) == JOptionPane.YES_OPTION) {
+                if (SwingUtils.showConfirmDialog(getComponent(), "Вы действительно хотите отменить сделанные изменения ?", null, JOptionPane.WARNING_MESSAGE, SwingUtils.NO_BUTTON) == JOptionPane.YES_OPTION) {
                     remoteForm.cancelChanges();
                     dataChanged();
                     applyFormChanges();

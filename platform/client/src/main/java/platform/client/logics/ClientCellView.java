@@ -115,6 +115,7 @@ abstract public class ClientCellView extends ClientComponentView {
     public abstract RemoteDialogInterface createEditorForm(RemoteFormInterface form) throws RemoteException;
     public abstract RemoteDialogInterface createClassForm(RemoteFormInterface form, Integer value) throws RemoteException;
 
+    // на данный момент ClientForm нужна для 2-х целей : как owner, создаваемых диалогов и как провайдер RemoteFormInterface, для получения того, что мы вообще редактируем
     public abstract PropertyEditorComponent getEditorComponent(ClientForm form, Object value) throws IOException, ClassNotFoundException;
     public abstract PropertyEditorComponent getClassComponent(ClientForm form, Object value) throws IOException, ClassNotFoundException;
 

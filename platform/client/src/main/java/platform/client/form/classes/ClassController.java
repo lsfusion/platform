@@ -46,7 +46,7 @@ public class ClassController {
 
             protected void needToBeRevalidated() {
                 form.dropLayoutCaches();
-                form.validate();
+                form.getComponent().validate();
             }
 
             protected void widthDecreased() {
@@ -109,7 +109,7 @@ public class ClassController {
         ClientObjectClass selectedClass = getSelectedClass();
 
         if (!(selectedClass instanceof ClientConcreteClass)) {
-            selectedClass = ClassDialog.dialogConcreteClass(form, object, selectedClass);
+            selectedClass = ClassDialog.dialogConcreteClass(form.getComponent(), object, selectedClass);
             if (selectedClass == null) return;
         }
 

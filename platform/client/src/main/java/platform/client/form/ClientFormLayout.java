@@ -2,14 +2,21 @@ package platform.client.form;
 
 import platform.client.logics.ClientComponentView;
 import platform.client.logics.ClientContainerView;
+import platform.client.logics.ClientGroupObjectImplementView;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ClientFormLayout {
+public abstract class ClientFormLayout extends JPanel {
 
     // главный контейнер, который будет использоваться при отрисовке формы
     private ClientFormContainer mainContainer;
@@ -24,9 +31,46 @@ public class ClientFormLayout {
     // отображение объектов от сервера на контейнеры для рисования
     private Map<ClientContainerView, ClientFormContainer> contviews;
 
+    private boolean hasFocus = false;
+
+    protected abstract void gainedFocus();
+
     public ClientFormLayout(List<ClientContainerView> containers) {
 
         createContainerViews(containers);
+
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        add(mainContainer);
+
+        // следим за тем, когда форма становится активной
+        final String FOCUS_OWNER_PROPERTY = "focusOwner";
+
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener(FOCUS_OWNER_PROPERTY, new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                Component focusComponent = (Component)evt.getNewValue();
+                if (focusComponent != null) {
+                    boolean newHasFocus = ClientFormLayout.this.isAncestorOf(focusComponent);
+                    if (hasFocus != newHasFocus) {
+                        hasFocus = newHasFocus;
+                        if (hasFocus) {
+                            gainedFocus();
+                        }
+                    }
+                }
+
+            }
+        });
+
+        setFocusCycleRoot(true);
+
+        // вот таким вот маразматичным способом делается, чтобы при нажатии мышкой в ClientForm фокус оставался на ней, а не уходил куда-то еще
+        // теоретически можно найти способ как это сделать не так извращенно, но копаться в исходниках Swing'а очень долго
+        addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                requestFocusInWindow();
+            }
+        });
     }
 
     private void createContainerViews(List<ClientContainerView> containers) {
@@ -63,6 +107,45 @@ public class ClientFormLayout {
 
     }
 
+    private Map<KeyStroke, Map<ClientGroupObjectImplementView, Runnable>> bindings = new HashMap<KeyStroke, Map<ClientGroupObjectImplementView, Runnable>>();
+
+    public void addKeyBinding(KeyStroke ks, ClientGroupObjectImplementView groupObject, Runnable run) {
+        if (!bindings.containsKey(ks))
+            bindings.put(ks, new HashMap<ClientGroupObjectImplementView, Runnable>());
+        bindings.get(ks).put(groupObject, run);
+    }
+
+    // реализуем "обратную" обработку нажатий кнопок
+    @Override
+    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+
+        // делаем так, чтобы первым нажатия клавиш обрабатывал GroupObject, у которого стоит фокус
+        // хотя конечно идиотизм это делать таким образом
+        Component comp = e.getComponent(); //KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        while (comp != null && !(comp instanceof Window) && comp != this) {
+            if (comp instanceof JComponent) {
+                ClientGroupObjectImplementView groupObject = (ClientGroupObjectImplementView)((JComponent)comp).getClientProperty("groupObject");
+                if (groupObject != null) {
+                    Map<ClientGroupObjectImplementView, Runnable> keyBinding = bindings.get(ks);
+                    if (keyBinding != null && keyBinding.containsKey(groupObject)) {
+                        keyBinding.get(groupObject).run();
+                        return true;
+                    }
+                    break;
+                }
+            }
+            comp = comp.getParent();
+        }
+
+        Map<ClientGroupObjectImplementView, Runnable> keyBinding = bindings.get(ks);
+        if (keyBinding != null && !keyBinding.isEmpty())
+            keyBinding.values().iterator().next().run();
+
+        if (super.processKeyBinding(ks, e, condition, pressed)) return true;
+
+        return true;
+    }
+
     // добавляем визуальный компонент
     public boolean add(ClientComponentView component, Component view) {
         if (!contviews.get(component.container).isAncestorOf(view)) {
@@ -85,5 +168,10 @@ public class ClientFormLayout {
 
     public void dropCaches() {
         layoutManager.dropCaches();
+    }
+
+    public void addBinding(KeyStroke key, String id, AbstractAction action) {
+        getInputMap(JPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(key, id);
+        getActionMap().put(id, action);
     }
 }

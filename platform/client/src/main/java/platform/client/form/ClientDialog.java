@@ -4,6 +4,7 @@ import platform.client.SwingUtils;
 import platform.client.navigator.ClientNavigator;
 import platform.client.navigator.ClientNavigatorForm;
 import platform.interop.form.RemoteDialogInterface;
+import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,7 +19,7 @@ public class ClientDialog extends JDialog {
     final ClientNavigator navigator;
     private ClientForm currentForm;
 
-    public ClientDialog(ClientForm owner, RemoteDialogInterface dialog) throws IOException, ClassNotFoundException {
+    public ClientDialog(Component owner, RemoteNavigatorInterface remoteNavigator, RemoteDialogInterface dialog) throws IOException, ClassNotFoundException {
         super(SwingUtils.getWindow(owner), Dialog.ModalityType.DOCUMENT_MODAL); // обозначаем parent'а и модальность
 
         setLayout(new BorderLayout());
@@ -28,7 +29,7 @@ public class ClientDialog extends JDialog {
         getRootPane().setBorder(BorderFactory.createLineBorder(Color.gray, 1));
 
         //        RemoteNavigator remoteNavigator = owner.remoteForm.getNavigator(((ClientPropertyView)owner.editingCell).sID);
-        navigator = new ClientNavigator(owner.clientNavigator.remoteNavigator) {
+        navigator = new ClientNavigator(remoteNavigator) {
 
            public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
 //               setCurrentForm(((RemoteDialogInterface)currentForm.remoteForm).createFormDialog(remoteNavigator));
@@ -38,7 +39,7 @@ public class ClientDialog extends JDialog {
         addWindowListener(new WindowAdapter() {
 
            public void windowActivated(WindowEvent e) {
-               KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(currentForm);
+               KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(currentForm.getComponent());
            }
 
         });
@@ -65,7 +66,7 @@ public class ClientDialog extends JDialog {
     // необходим чтобы в диалоге менять формы (панели)
     void setCurrentForm(RemoteDialogInterface remoteForm) throws IOException, ClassNotFoundException {
 
-       if (currentForm != null) remove(currentForm);
+       if (currentForm != null) remove(currentForm.getComponent());
        currentForm = new ClientForm(remoteForm, navigator) {
 
            @Override
@@ -101,7 +102,7 @@ public class ClientDialog extends JDialog {
                return true;
            }
        };
-       add(currentForm, BorderLayout.CENTER);
+       add(currentForm.getComponent(), BorderLayout.CENTER);
 
        validate();
     }

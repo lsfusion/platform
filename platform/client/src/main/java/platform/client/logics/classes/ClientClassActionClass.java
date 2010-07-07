@@ -24,6 +24,6 @@ public class ClientClassActionClass extends ClientActionClass {
 
     @Override
     public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
-        return new ClassActionPropertyEditor(form, baseClass, baseClass);
+        return new ClassActionPropertyEditor(form.getComponent(), baseClass, baseClass);
     }
 }

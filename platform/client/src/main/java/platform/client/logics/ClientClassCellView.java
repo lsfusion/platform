@@ -27,7 +27,7 @@ public class ClientClassCellView extends ClientObjectView {
     }
 
     public PropertyEditorComponent getEditorComponent(ClientForm form, Object value) throws IOException, ClassNotFoundException {
-        return new ClassPropertyEditor(form, (ClientObjectClass)object.baseClass, (ClientObjectClass)value);
+        return new ClassPropertyEditor(form.getComponent(), (ClientObjectClass)object.baseClass, (ClientObjectClass)value);
     }
 
     public PropertyEditorComponent getClassComponent(ClientForm form, Object value) throws IOException, ClassNotFoundException {

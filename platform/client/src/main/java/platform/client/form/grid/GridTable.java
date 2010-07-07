@@ -273,7 +273,7 @@ public abstract class GridTable extends ClientFormTable
             gridColumns.add(ins, property);
 
             if (property.editKey != null) {
-                form.addKeyBinding(property.editKey, property.getGroupObject(), new Runnable() {
+                form.getComponent().addKeyBinding(property.editKey, property.getGroupObject(), new Runnable() {
                     public void run() {
                         int leadRow = getSelectionModel().getLeadSelectionIndex();
                         if (leadRow != -1 && !isEditing()) {

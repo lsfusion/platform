@@ -66,7 +66,7 @@ class ObjectController {
         ClientObjectClass derivedClass = classController.getDerivedClass();
 
         if (!(derivedClass instanceof ClientConcreteClass)) {
-            derivedClass = ClassDialog.dialogConcreteClass(form, object, derivedClass);
+            derivedClass = ClassDialog.dialogConcreteClass(form.getComponent(), object, derivedClass);
             if (derivedClass == null) return;
         }
 

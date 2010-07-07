@@ -38,10 +38,10 @@ public class ClientObjectType implements ClientType {
     public CellView getPanelComponent(ClientCellView key, ClientForm form) { return new TableCellView(key, form); }
 
     public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
-        return new ObjectPropertyEditor(form, property.createEditorForm(form.remoteForm));
+        return new ObjectPropertyEditor(form.getComponent(), form.clientNavigator.remoteNavigator, property.createEditorForm(form.remoteForm));
     }
 
     public PropertyEditorComponent getClassComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException {
-        return new ObjectPropertyEditor(form, property.createClassForm(form.remoteForm, (Integer) value));
+        return new ObjectPropertyEditor(form.getComponent(), form.clientNavigator.remoteNavigator, property.createClassForm(form.remoteForm, (Integer) value));
     }
 }
