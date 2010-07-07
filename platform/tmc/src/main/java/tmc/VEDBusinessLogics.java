@@ -2,6 +2,7 @@ package tmc;
 
 import net.sf.jasperreports.engine.JRException;
 
+import java.awt.event.InputEvent;
 import java.sql.SQLException;
 import java.io.*;
 import java.awt.event.KeyEvent;
@@ -1546,12 +1547,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
                                   documentFilter,
                                   "Документ",
-                                  KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)), !toAdd);
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F10, InputEvent.SHIFT_DOWN_MASK)), !toAdd);
             if(!fixFilters)
                 filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
                                   documentFreeFilter,
                                   "Дост. кол-во",
-                                  KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)), toAdd);
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F9, InputEvent.SHIFT_DOWN_MASK)), toAdd);
             addRegularFilterGroup(filterGroup);
 
             objArt = addSingleGroupObjectImplement(article, "Товар", properties);
@@ -1579,7 +1580,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 articleFilterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
                                   articleFreeFilter,
                                   "Дост. кол-во",
-                                  KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)), toAdd);
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)), toAdd);
             addRegularFilterGroup(articleFilterGroup);
 
 //            addHintsNoUpdate(properties, moveGroup);
