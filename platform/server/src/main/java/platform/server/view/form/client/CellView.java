@@ -30,8 +30,6 @@ abstract public class CellView extends ComponentView {
 
     public boolean panelLabelAbove = false;
 
-    public ExternalScreen externalScreen;
-
     public CellView(int ID) {
         super(ID);
     }
@@ -55,8 +53,6 @@ abstract public class CellView extends ComponentView {
         new ObjectOutputStream(outStream).writeObject(focusable);
 
         outStream.writeBoolean(panelLabelAbove);
-
-        outStream.writeInt(externalScreen.getID());
     }
 
     abstract Type getType();
