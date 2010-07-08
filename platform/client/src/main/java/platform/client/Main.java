@@ -11,7 +11,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.rmi.Naming;
 import java.io.IOException;
-import java.rmi.Naming;
 
 public class Main {
 
@@ -25,6 +24,8 @@ public class Main {
         boolean isFull();
     }
 
+    public static RemoteLogicsInterface remoteLogics;
+
     public static ModuleFactory module;
     public static void start(final String[] args, ModuleFactory startModule) {
         module = startModule;
@@ -35,6 +36,8 @@ public class Main {
             ClientExceptionManager.handleException(e);
             throw new RuntimeException(e);
         }
+
+        System.setProperty("java.rmi.server.RMIClassLoaderSpi", "platform.client.ClientRMIClassLoaderSpi");
 
         new Thread(new ExceptionThreadGroup(), "Init thread") {
 
@@ -50,7 +53,7 @@ public class Main {
                     String user = System.getProperty("platform.client.user");
                     String password = System.getProperty("platform.client.password");
 
-                    RemoteLogicsInterface remoteLogics = (RemoteLogicsInterface) Naming.lookup("rmi://" + serverName + ":" + exportPort + "/BusinessLogics");
+                    remoteLogics = (RemoteLogicsInterface) Naming.lookup("rmi://" + serverName + ":" + exportPort + "/BusinessLogics");
                     int computer = remoteLogics.getComputers().iterator().next();
 
                     RemoteNavigatorInterface remoteNavigator;

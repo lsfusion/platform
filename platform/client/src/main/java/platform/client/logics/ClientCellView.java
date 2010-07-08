@@ -10,6 +10,7 @@ import platform.client.logics.classes.ClientTypeSerializer;
 import platform.interop.ComponentDesign;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.screen.ExternalScreen;
 
 import javax.swing.*;
 import java.awt.*;

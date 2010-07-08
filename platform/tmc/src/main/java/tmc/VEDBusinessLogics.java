@@ -31,6 +31,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
+import tmc.integration.PanelExternalScreen;
 import tmc.integration.imp.CustomerCheckRetailImportActionProperty;
 import tmc.integration.exp.CashRegController;
 
@@ -2045,6 +2046,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0)));
             addRegularFilterGroup(inCouponGroup);
         }
+    }
+
+    @Override
+    protected void initExternalScreens() {
+        addExternalScreen(new PanelExternalScreen());
     }
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {

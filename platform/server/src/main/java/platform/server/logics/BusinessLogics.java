@@ -10,6 +10,7 @@ import platform.interop.RemoteObject;
 import platform.interop.action.ClientAction;
 import platform.interop.action.UserChangedClientAction;
 import platform.interop.exceptions.LoginException;
+import platform.interop.form.screen.ExternalScreen;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.server.auth.AuthPolicy;
 import platform.server.auth.User;
@@ -43,6 +44,25 @@ import java.util.*;
 
 // @GenericImmutable нельзя так как Spring валится
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends RemoteObject implements RemoteLogicsInterface {
+
+    public byte[] findClass(String name) {
+
+        InputStream inStream = getClass().getClassLoader().getResourceAsStream(name.replace('.', '/') + ".class");
+
+        try {
+            byte[] b = new byte[inStream.available()];
+            inStream.read(b);
+            return b;
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка при считывании класса на сервере", e);
+        } finally {
+            try {
+                inStream.close();
+            } catch (IOException e) {
+                throw new RuntimeException("Ошибка при считывании класса на сервере", e);
+            }
+        }
+    }
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, FileNotFoundException, JRException, MalformedURLException {
 
@@ -131,6 +151,22 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    protected void initExternalScreens() {
+    };
+
+    private List<ExternalScreen> externalScreens = new ArrayList<ExternalScreen>();
+    protected void addExternalScreen(ExternalScreen screen) {
+        externalScreens.add(screen);
+    }
+    
+    public ExternalScreen getExternalScreen(int screenID) {
+        for (ExternalScreen screen : externalScreens) {
+            if (screen.getID() == screenID)
+                return screen;
+        }
+        return null;
     }
 
     protected User addUser(String login, String defaultPassword) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
@@ -390,6 +426,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         baseElement.add(baseClass.getBaseClassForm(this));
         initNavigators();
+
+        initExternalScreens();
 
         synchronizeDB();
 
