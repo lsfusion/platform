@@ -11,6 +11,7 @@ import platform.server.auth.User;
 import platform.server.classes.AbstractCustomClass;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.DoubleClass;
+import platform.server.classes.IntegerClass;
 import platform.interop.Compare;
 import platform.interop.UserInfo;
 
@@ -69,6 +70,10 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         addConstraint(addJProp("Остаток должен быть положительным", greater2, vzero, balanceQuantity, 1, 2), false);
 
         addJProp(baseGroup, "Ост. по скл. (док.)", balanceQuantity, documentStore, 1, 2);
+        LP vone = addCProp("1", IntegerClass.instance, 1);
+        LP oneProp = addJProp(baseGroup, "Единица", and1, vone, is(document), 1);
+        LP documentsCount = addSGProp(baseGroup, "Количество документов по складу", addCProp("1", IntegerClass.instance, 1, document), documentStore, 1);
+        LP itemsCount = addSGProp(baseGroup, "Количество единиц товара в документах", quantity, documentStore, 1, 2);
     }
 
     protected void initConstraints() {
