@@ -842,6 +842,14 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     protected void initIndexes() {
     }
 
+    PanelExternalScreen panelScreen;
+
+    @Override
+    protected void initExternalScreens() {
+        panelScreen = new PanelExternalScreen();
+        addExternalScreen(panelScreen);
+    }
+
     public CommitSaleCheckRetailNavigatorForm commitSaleBrowse;
     public SaleCheckCertNavigatorForm saleCheckCertBrowse;
     public ReturnSaleCheckRetailNavigatorForm returnSaleCheckRetailBrowse;
@@ -1422,6 +1430,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.get(objCoupon.groupTo).gridView.showFilter = false;
             design.get(objObligation.groupTo).gridView.showFilter = false;
             design.addIntersection(design.getGroupObjectContainer(objCoupon.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            design.get(getPropertyView(barcodeObjectName)).externalScreen = panelScreen;
+            design.get(getPropertyView(orderSalePayNoObligation)).externalScreen = panelScreen;
 
             return design;
         }
@@ -2046,11 +2057,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0)));
             addRegularFilterGroup(inCouponGroup);
         }
-    }
-
-    @Override
-    protected void initExternalScreens() {
-        addExternalScreen(new PanelExternalScreen());
     }
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {

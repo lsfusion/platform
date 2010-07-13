@@ -113,5 +113,6 @@ public class Main {
     // будет загружать все не кросс-платформенные библиотеки
     private static void loadLibraries() throws IOException {
         SimplexLayout.loadLibraries();
+        ComBridge.loadLibraries();
     }
 }

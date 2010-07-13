@@ -49,5 +49,10 @@
           <artifactId>xbasej</artifactId>
           <version>1.0.0</version>
       </dependency>
+      <dependency>
+          <groupId>net.sf.jacob-project</groupId>
+          <artifactId>jacob</artifactId>
+          <version>1.15-M3</version>
+      </dependency>
     </dependencies>
 </project>

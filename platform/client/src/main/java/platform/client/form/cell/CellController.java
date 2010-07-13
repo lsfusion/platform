@@ -3,6 +3,7 @@ package platform.client.form.cell;
 import platform.client.form.ClientForm;
 import platform.client.form.ClientFormLayout;
 import platform.client.logics.ClientCellView;
+import platform.interop.form.screen.ExternalScreenComponent;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -16,6 +17,7 @@ public class CellController implements CellViewListener {
     }
 
     protected final CellView view;
+    private ExternalScreenComponent extView;
 
     // возвращаем только как компоненту, большего пока не надо
     public JComponent getView() {
@@ -45,6 +47,11 @@ public class CellController implements CellViewListener {
                     startEditing();
                 }
             });
+
+        if (key.externalScreen != null) {
+            extView = new ExternalScreenComponent();
+            key.externalScreen.add(form.getID(), extView, key.constraints);
+        }
     }
 
     public void addView(ClientFormLayout formLayout) {
@@ -57,10 +64,10 @@ public class CellController implements CellViewListener {
 
     public void setValue(Object ivalue) {
         view.setValue(ivalue);
-    }
-
-    boolean isDataChanging() {
-        return true;
+        if (extView != null) {
+            extView.setValue((ivalue == null) ? "" : ivalue.toString());
+            key.externalScreen.repaint(form.getID());
+        }
     }
 
     public void startEditing() {

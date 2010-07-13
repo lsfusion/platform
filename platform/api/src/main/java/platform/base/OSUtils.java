@@ -4,7 +4,7 @@ import java.io.*;
 
 public class OSUtils {
 
-    public static void loadLibrary(String libName, String path, Class<?> cls) throws IOException {
+    public static String getLibraryPath(String libName, String path, Class<?> cls) throws IOException {
 
         String system = System.getProperty("os.name");
         String libExtension =
@@ -28,7 +28,12 @@ public class OSUtils {
             out.close();
         }
 
-        System.load(file.getAbsolutePath());
+        return file.getAbsolutePath();
+    }
+
+    public static void loadLibrary(String libName, String path, Class<?> cls) throws IOException {
+
+        System.load(getLibraryPath(libName, path, cls));
     }
 
     public static File createUserFile(String fileName) {

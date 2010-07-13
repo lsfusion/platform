@@ -1,6 +1,7 @@
 package platform.client.logics;
 
 import platform.client.SwingUtils;
+import platform.client.form.ClientExternalScreen;
 import platform.client.form.ClientForm;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
@@ -39,6 +40,8 @@ abstract public class ClientCellView extends ClientComponentView {
 
     public boolean panelLabelAbove;
 
+    public ClientExternalScreen externalScreen;
+
     ClientCellView(DataInputStream inStream, Collection<ClientContainerView> containers) throws IOException, ClassNotFoundException {
         super(inStream, containers);
 
@@ -58,6 +61,9 @@ abstract public class ClientCellView extends ClientComponentView {
         focusable = (Boolean) new ObjectInputStream(inStream).readObject();
 
         panelLabelAbove = inStream.readBoolean();
+
+        if (inStream.readBoolean())
+            externalScreen = ClientExternalScreen.getScreen(inStream.readInt());
     }
 
     public int getMinimumWidth(JComponent comp) {

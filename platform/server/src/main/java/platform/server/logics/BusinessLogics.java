@@ -154,7 +154,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected void initExternalScreens() {
-    };
+    }
 
     private List<ExternalScreen> externalScreens = new ArrayList<ExternalScreen>();
     protected void addExternalScreen(ExternalScreen screen) {
@@ -422,12 +422,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         assert checkProps();
 
+        initExternalScreens();
+        
         System.out.println("Initializing navigators...");
 
         baseElement.add(baseClass.getBaseClassForm(this));
         initNavigators();
-
-        initExternalScreens();
 
         synchronizeDB();
 

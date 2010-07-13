@@ -1,6 +1,5 @@
 package platform.server.view.form.client;
 
-import platform.interop.ComponentDesign;
 import platform.interop.form.screen.ExternalScreen;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
@@ -30,6 +29,8 @@ abstract public class CellView extends ComponentView {
 
     public boolean panelLabelAbove = false;
 
+    public ExternalScreen externalScreen;
+
     public CellView(int ID) {
         super(ID);
     }
@@ -53,6 +54,10 @@ abstract public class CellView extends ComponentView {
         new ObjectOutputStream(outStream).writeObject(focusable);
 
         outStream.writeBoolean(panelLabelAbove);
+
+        outStream.writeBoolean(externalScreen != null);
+        if (externalScreen != null)
+            outStream.writeInt(externalScreen.getID());
     }
 
     abstract Type getType();
@@ -67,7 +72,7 @@ abstract public class CellView extends ComponentView {
             return caption;
         else
             return getDefaultCaption();
-    };
+    }
 
     public void fillReportDrawField(ReportDrawField reportField) {
 

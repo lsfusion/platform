@@ -108,7 +108,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
         reimbursementPayer = addDProp("reimbPayer", "Плательщик", payer, reimbursement);
         LP reimbursementSum = addDProp(baseGroup, "reimbSum", "Сумма", IntegerClass.instance, reimbursement);
-        LP reimbursementRate = addDProp(baseGroup, "reimbRate", "Курс", IntegerClass.instance, reimbursement);
+        LP reimbursementRate = addDProp(baseGroup, "reimbRate", "Курс", DoubleClass.instance, reimbursement);
         reimbursementCurrencyIn = addDProp("reimbCurIn", "Валюта расх.", currency, reimbursement);
         LP reimbursementCurrencyOut = addDProp("reimbCurOut", "Валюта выплаты", currency, reimbursement);
         reimbursementDepartment = addDProp("reimbDep", "Отдел", department, reimbursement);
