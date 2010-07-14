@@ -90,6 +90,14 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         operationDepartment = addDProp("operDepartment", "Отдел", department, departmentAbs);
         operationPayer = addDProp("operPayer", "Плательщик", payer, payerAbs);
         personDepartment = addDProp("personDepartment", "Отдел", department, person);
+
+        LP personStartWorkYear = addDProp(baseGroup, "personStartWorkYear", "Год начала раб.", IntegerClass.instance, person);
+        LP personStartWorkMonth = addDProp("personStartWorkMonth", "Месяц начала раб.", absMonth, person);
+        addJProp(baseGroup, "Месяц начала раб.", name, personStartWorkMonth, 1);
+        LP personEndWorkYear = addDProp(baseGroup, "personEndWorkYear", "Год окончания раб.", IntegerClass.instance, person);
+        LP personEndWorkMonth = addDProp("personEndWorkMonth", "Месяц окончания раб.", absMonth, person);
+        addJProp(baseGroup, "Месяц окончания раб.", name, personEndWorkMonth, 1);
+
         addJProp(payerGroup, "Плательщик", name, operationPayer, 1);
         LP multiplyDouble2 = addMFProp(DoubleClass.instance, 2);
         LP divDouble = addSFProp("((prm1+0.0)/(prm2))", DoubleClass.instance, 2);
@@ -157,6 +165,26 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
         balanceQuantity = addDUProp("Ост. по валюте", incSum, decSum);
 
+        LP yearGr = addJProp(and(false, false, false, false), greater2, 2, 4, is(absMonth), 1, is(IntegerClass.instance), 2, is(absMonth), 3, is(IntegerClass.instance), 4);
+        LP dateCmp = addJProp(and(false, false, false, false, false), equals2, 2, 4, groeq2,  1, 3, is(absMonth), 1, is(IntegerClass.instance), 2, is(absMonth), 3, is(IntegerClass.instance), 4);
+        //m1,y2 >= m3,y4
+        LP dateCompare = addSUProp(Union.OVERRIDE, yearGr, dateCmp);
+
+        //args: person, month, year
+        LP isWorkingMonthForPerson = addJProp("isWorkingMonthForPerson", "Рабочий месяц", andNot1,
+                addJProp(dateCompare, 2, 3, personStartWorkMonth, 1, personStartWorkYear, 1), 1, 2, 3,
+                addJProp(
+                        addJProp(andNot1,
+                                dateCompare, 1, 2, 3, 4,
+                                addJProp(and1, equals2, 1, 3, equals2, 2, 4), 1, 2, 3, 4
+                        ), 2, 3, personEndWorkMonth, 1, personEndWorkYear, 1
+                ), 1, 2, 3
+        );
+
+        addConstraint(addJProp("Время окончания меньше работы, чем время начала", dateCompare,
+                personStartWorkMonth, 1, personStartWorkYear, 1,
+                personEndWorkMonth, 1, personEndWorkYear, 1), true);
+
         LP extraSum =  addJProp(and1, addJProp(multiplyDouble2, outSum, 1, extraRate, 1), 1, is(extraCost), 1);
         LP extraMonthTotal = addSGProp(extraGroup, "Затрачено", extraSum, outMonth, 1, outYear, 1, operationDepartment, 1);
 
@@ -164,9 +192,10 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP currencyInMonth = addDProp("currencyInM", currency, person, absMonth, IntegerClass.instance);
         LP workDays = addDProp(dateTimeGroup, "workD", "Раб. дни", IntegerClass.instance, absMonth, IntegerClass.instance);
         LP dayInMonth = addDProp("dayWorkInM", "Дней отраб.", IntegerClass.instance, person, absMonth, IntegerClass.instance);
-        dayInMonthOv = addSUProp(dateTimeGroup, "dayWorkInMOv", "Дней отраб.", Union.OVERRIDE, addJProp(and1, workDays, 2, 3, is(person), 1), dayInMonth);
+        dayInMonthOv = addSUProp(dateTimeGroup, "dayWorkInMOv", "Дней отраб.", Union.OVERRIDE, addJProp(and1, workDays, 2, 3, isWorkingMonthForPerson, 1, 2, 3), dayInMonth);
         LP hourInMonth = addDProp("hourInM", "Часов отраб.", DoubleClass.instance, person, absMonth, IntegerClass.instance);
-        LP hourInMonthOv = addSUProp(dateTimeGroup, "dayWorkInMOv", "Часов отраб.", Union.OVERRIDE, addJProp(hourInDay, dayInMonthOv, 1, 2, 3), hourInMonth);
+        LP hourInMonthOv = addSUProp(dateTimeGroup, "dayWorkInMOv", "Часов отраб.",
+                Union.OVERRIDE, addJProp(and1, addJProp(hourInDay, dayInMonthOv, 1, 2, 3), 1, 2, 3, isWorkingMonthForPerson, 1, 2, 3), hourInMonth);
         LP extraInMonth = addDProp(baseGroup, "extraInM", "Затраты",DoubleClass.instance, extraSection, absMonth, IntegerClass.instance, department);
        // LP extraAdminInMonth = addDProp(baseGroup, "extraAdminInM", "Админ. затраты",DoubleClass.instance, department, absMonth, IntegerClass.instance);
         LP currencyExtraInMonth = addDProp("currencyExtraInM", currency, extraSection, absMonth, IntegerClass.instance, department);
@@ -176,10 +205,6 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
         LP extraAdd = addDProp(baseGroup, "isAdd", "Не учитывать", LogicalClass.instance, person, extraPersonSection, absMonth, IntegerClass.instance);
         //LP isReimbursed = addDProp(payerGroup, "isReimbersed", "Возмещено", LogicalClass.instance, payerAbs);
-
-        LP yearGr = addJProp(and(false, false, false, false), greater2, 2, 4, is(absMonth), 1, is(IntegerClass.instance), 2, is(absMonth), 3, is(IntegerClass.instance), 4);
-        LP dateCmp = addJProp(and(false, false, false, false, false), equals2, 2, 4, groeq2,  1, 3, is(absMonth), 1, is(IntegerClass.instance), 2, is(absMonth), 3, is(IntegerClass.instance), 4);
-        LP dateCompare = addSUProp(Union.OVERRIDE, yearGr, dateCmp);
 
         LP[] maxDateSal = addMGProp((AbstractGroup)null, false, new String[]{"maxYear", "maxMonth"}, new String[]{"год", "месяц"}, 1,
                 addJProp(and(false, false), 4, dateCompare, 1, 2, 3, 4, salaryInMonth,  5, 3, 4), 3, 1, 2, 5);
