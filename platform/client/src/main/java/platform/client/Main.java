@@ -1,5 +1,7 @@
 package platform.client;
 
+import platform.base.ClassPathHacker;
+import platform.base.OSUtils;
 import platform.client.exceptions.ClientExceptionManager;
 import platform.client.exceptions.ExceptionThreadGroup;
 import platform.client.form.SimplexLayout;
@@ -37,13 +39,23 @@ public class Main {
             throw new RuntimeException(e);
         }
 
-        System.setProperty("java.rmi.server.RMIClassLoaderSpi", "platform.client.ClientRMIClassLoaderSpi");
-
         new Thread(new ExceptionThreadGroup(), "Init thread") {
 
             public void run() {
 
                 try {
+
+                    // сбрасываем SecurityManager, который устанавливает JavaWS,
+                    // поскольку он не дает ничего делать классу ClientRMIClassLoaderSpi,
+                    // так как он load'ится из временного директория
+                    System.setSecurityManager(null);
+
+                    // приходится извращаться, так как RMIClassLoader использует для загрузки Spi Class.forname,
+                    // а это работает некорректно, поскольку JWS использует свой user-class loader,
+                    // а сами jar-файлы не добавляются в java.class.path
+                    System.setProperty("java.rmi.server.RMIClassLoaderSpi", "platform.client.ClientRMIClassLoaderSpi");
+                    OSUtils.loadClass("ClientRMIClassLoaderSpi", "", ClientRMIClassLoaderSpi.class);
+                    ClassPathHacker.addFile(OSUtils.getUserDir());
 
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
@@ -75,7 +87,7 @@ public class Main {
                     frame.setExtendedState(Frame.MAXIMIZED_BOTH);
 
                 } catch (Exception e) {
-                    ClientExceptionManager.handleException(e);
+//                    ClientExceptionManager.handleException(e);
                     throw new RuntimeException("Ошибка при инициализации приложения", e);
                 }
 
