@@ -1,20 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jnlp spec="1.0+" codebase="http://localhost/fusion/">
-<information>
-  <title>Fusion - Full Client</title>
-  <vendor>Fusioners Ltd.</vendor>
-  <homepage href="/site" />
-  <description>Fusion</description>
-</information>
-<security>
-  <all-permissions/>
-</security>
-<resources>
-  <j2se version="1.6+" />
-  <property name="platform.client.hostname" value="localhost"/>
-  <property name="platform.client.hostport" value="7652"/>
-  <jar href="fullclient-full.jar"/>
-</resources>
-<application-desc>
-</application-desc>
+<jnlp spec="1.5+" codebase="http://localhost/fusion/" href="fullclient.jnlp">
+    <information>
+        <title>Fusion - Full Client</title>
+        <vendor>Fusioners Ltd.</vendor>
+        <description>Fusion</description>
+        <shortcut online="true">
+            <desktop/>
+        </shortcut>
+    </information>
+    <security>
+        <all-permissions/>
+    </security>
+    <resources>
+        <j2se version="1.6+" />
+        <property name="platform.client.hostname" value="localhost"/>
+        <property name="platform.client.hostport" value="7652"/>
+        <jar href="fullclient-full.jar"/>
+    </resources>
+    <application-desc>
+    </application-desc>
 </jnlp>
