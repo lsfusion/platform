@@ -86,6 +86,8 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
     LP inSum, outSum, inCur, outCur, outPerson, outYear, outMonth, operationDepartment, personDepartment, reimbursementCurrencyIn, reimbursementPayer;
     LP balanceQuantity, salaryInMonth, missionOperation, roundSalary, dayInMonthOv, opDep, operationPayer, reimbursementDepartment, depBalanceQuantity;
 
+    LP isWorkingMonthForPerson;
+
     protected void initProperties() {
         operationDepartment = addDProp("operDepartment", "Отдел", department, departmentAbs);
         operationPayer = addDProp("operPayer", "Плательщик", payer, payerAbs);
@@ -168,22 +170,21 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP yearGr = addJProp(and(false, false, false, false), greater2, 2, 4, is(absMonth), 1, is(IntegerClass.instance), 2, is(absMonth), 3, is(IntegerClass.instance), 4);
         LP dateCmp = addJProp(and(false, false, false, false, false), equals2, 2, 4, groeq2,  1, 3, is(absMonth), 1, is(IntegerClass.instance), 2, is(absMonth), 3, is(IntegerClass.instance), 4);
         //m1,y2 >= m3,y4
-        LP dateCompare = addSUProp(Union.OVERRIDE, yearGr, dateCmp);
+        LP dateMoreEquals = addSUProp(Union.OVERRIDE, yearGr, dateCmp);
+        LP dateMore = addJProp(andNot1,
+                               dateMoreEquals, 1, 2, 3, 4,
+                               addJProp(and1, equals2, 1, 3, equals2, 2, 4), 1, 2, 3, 4
+                            );
 
         //args: person, month, year
-        LP isWorkingMonthForPerson = addJProp("isWorkingMonthForPerson", "Рабочий месяц", andNot1,
-                addJProp(dateCompare, 2, 3, personStartWorkMonth, 1, personStartWorkYear, 1), 1, 2, 3,
-                addJProp(
-                        addJProp(andNot1,
-                                dateCompare, 1, 2, 3, 4,
-                                addJProp(and1, equals2, 1, 3, equals2, 2, 4), 1, 2, 3, 4
-                        ), 2, 3, personEndWorkMonth, 1, personEndWorkYear, 1
-                ), 1, 2, 3
+        isWorkingMonthForPerson = addJProp("isWorkingMonthForPerson", "Рабочий месяц", andNot1,
+                addJProp(dateMoreEquals, 2, 3, personStartWorkMonth, 1, personStartWorkYear, 1), 1, 2, 3,
+                addJProp(dateMore, 2, 3, personEndWorkMonth, 1, personEndWorkYear, 1), 1, 2, 3
         );
 
-        addConstraint(addJProp("Время окончания меньше работы, чем время начала", dateCompare,
+        addConstraint(addJProp("Время окончания работы меньше, чем время начала", dateMore,
                 personStartWorkMonth, 1, personStartWorkYear, 1,
-                personEndWorkMonth, 1, personEndWorkYear, 1), true);
+                personEndWorkMonth, 1, personEndWorkYear, 1), false);
 
         LP extraSum =  addJProp(and1, addJProp(multiplyDouble2, outSum, 1, extraRate, 1), 1, is(extraCost), 1);
         LP extraMonthTotal = addSGProp(extraGroup, "Затрачено", extraSum, outMonth, 1, outYear, 1, operationDepartment, 1);
@@ -207,13 +208,13 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         //LP isReimbursed = addDProp(payerGroup, "isReimbersed", "Возмещено", LogicalClass.instance, payerAbs);
 
         LP[] maxDateSal = addMGProp((AbstractGroup)null, false, new String[]{"maxYear", "maxMonth"}, new String[]{"год", "месяц"}, 1,
-                addJProp(and(false, false), 4, dateCompare, 1, 2, 3, 4, salaryInMonth,  5, 3, 4), 3, 1, 2, 5);
+                addJProp(and(false, false), 4, dateMoreEquals, 1, 2, 3, 4, salaryInMonth,  5, 3, 4), 3, 1, 2, 5);
         LP curSalary = addJProp(salaryGroup, "Тек. зарплата", salaryInMonth, 3, maxDateSal[1], 1, 2, 3, maxDateSal[0], 1, 2, 3);
         LP curCurrency = addJProp(currencyInMonth, 3, maxDateSal[1], 1, 2, 3, maxDateSal[0], 1, 2, 3);
         addJProp(salaryGroup, "Тек. валюта", name, curCurrency, 1, 2, 3);
 
         LP[] maxDateExtra = addMGProp((AbstractGroup)null, false, new String[]{"maxExtraYear", "maxExtraMonth"}, new String[]{"год", "месяц1"}, 1,
-                addJProp(and(false, false), 4, dateCompare, 1, 2, 3, 4, extraInMonth,  5, 3, 4, 6), 3, 1, 2, 5, 6);
+                addJProp(and(false, false), 4, dateMoreEquals, 1, 2, 3, 4, extraInMonth,  5, 3, 4, 6), 3, 1, 2, 5, 6);
         LP curExtra = addJProp(baseGroup, "Тек. затраты", extraInMonth, 3, maxDateExtra[1], 1, 2, 3, 4, maxDateExtra[0], 1, 2, 3, 4, 4);
         LP curExtraCurrency = addJProp(currencyExtraInMonth, 3, maxDateExtra[1], 1, 2, 3, 4, maxDateExtra[0], 1, 2, 3, 4, 4);
         addJProp(baseGroup, "Тек. валюта", name, curExtraCurrency, 1, 2, 3, 4);
@@ -230,7 +231,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
         LP extraComPerson = addSGProp(roundExtraPerson, personDepartment, 1, 2, 3);
         LP extraComAdm = addSGProp(addJProp(and1, curExtra, 1, 2, 3, 4, is(extraAdmSection), 3), 4, 1, 2);
-        
+
         LP extraDepartmentTotal = addSUProp(baseGroup, "Всего затрат", Union.SUM, extraComPerson, extraComAdm);
 
         LP totalDebt = addSGProp(baseGroup, "Затрачено", outSum, operationPayer, 1, outCur, 1);
@@ -402,6 +403,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             addObjectActions(this, objPersonOp);
             addObjectActions(this, objPayOp);
 
+            addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(isWorkingMonthForPerson, objPersonOp, objMonthOp, objYearOp)));
             addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(outPerson, objPayOp), Compare.EQUALS, objPersonOp));
             addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(outYear, objPayOp), Compare.EQUALS, objYearOp));
             addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(outMonth, objPayOp), Compare.EQUALS, objMonthOp));
