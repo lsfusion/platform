@@ -15,7 +15,7 @@
         <j2se version="1.6+" />
         <property name="platform.client.hostname" value="localhost"/>
         <property name="platform.client.hostport" value="7652"/>
-        <jar href="fullclient-full.jar"/>
+        <jar href="fullclient-prod.jar"/>
     </resources>
     <application-desc>
     </application-desc>
