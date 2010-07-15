@@ -60,11 +60,17 @@ public abstract class GridTable extends ClientFormTable
         return o instanceof GridTable && ((GridTable) o).getID() == this.getID();
     }
 
+    //нужно для отключения поиска свободных мест при навигации по таблице
+    private boolean hasFocusableCells;
+
+    private boolean isNavigatingFromAction = false;
+
     public void updateTable() {
 
         int rowHeight = 0;
 
         createDefaultColumnsFromModel();
+        hasFocusableCells = false;
         for (ClientCellView property : gridColumns) {
 
             TableColumn column = getColumnModel().getColumn(gridColumns.indexOf(property));
@@ -73,6 +79,8 @@ public abstract class GridTable extends ClientFormTable
             column.setMaxWidth(property.getMaximumWidth(this));
 
             rowHeight = Math.max(rowHeight, property.getPreferredHeight(this));
+
+            hasFocusableCells |= property.focusable == null || property.focusable;
         }
 
         if (gridColumns.size() != 0) {
@@ -255,6 +263,59 @@ public abstract class GridTable extends ClientFormTable
             }
         });
 
+        initializeActionMap();
+    }
+
+    private boolean isCellFocusable(int rowIndex, int columnIndex) {
+        if (rowIndex < 0 || rowIndex >= getRowCount() || columnIndex < 0 || columnIndex >= getColumnCount()) return true;
+        
+        Boolean focusable = gridColumns.get(columnIndex).focusable;
+        return focusable == null || focusable;
+    }
+    
+    @Override
+    public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
+        if (isNavigatingFromAction || isCellFocusable(rowIndex, columnIndex)) {
+            super.changeSelection(rowIndex, columnIndex, toggle, extend);
+        }
+    }
+
+    private void initializeActionMap() {
+        final Action oldNextAction = getActionMap().get("selectNextColumnCell");
+        final Action oldPrevAction = getActionMap().get("selectPreviousColumnCell");
+        final Action oldFirstAction = getActionMap().get("selectFirstColumn");
+        final Action oldLastAction = getActionMap().get("selectLastColumn");
+
+        final Action nextAction = new GoToCellAction(oldNextAction);
+        final Action prevAction = new GoToCellAction(oldPrevAction);
+        final Action firstAction = new GoToLastCellAction(oldFirstAction, oldNextAction);
+        final Action lastAction = new GoToLastCellAction(oldLastAction, oldPrevAction);
+
+        ActionMap actionMap = getActionMap();
+
+        actionMap.put("selectNextColumnCell", nextAction);
+        actionMap.put("selectPreviousColumnCell", prevAction);
+
+        // set left and right actions
+        actionMap.put("selectNextColumn", nextAction);
+        actionMap.put("selectPreviousColumn", prevAction);
+        // set tab and shift-tab actions
+        actionMap.put("selectNextColumnCell", nextAction);
+        actionMap.put("selectPreviousColumnCell", prevAction);
+        // set top and end actions
+        actionMap.put("selectFirstColumn", firstAction);
+        actionMap.put("selectLastColumn", lastAction);
+
+        //имитируем продвижение фокуса вперёд, если изначально попадаем на нефокусную ячейку
+        addFocusListener(new FocusAdapter() {
+            public void focusGained(FocusEvent e) {
+                int row = getSelectionModel().getLeadSelectionIndex();
+                int column = getColumnModel().getSelectionModel().getLeadSelectionIndex();
+                if (!isCellFocusable(row, column)) {
+                    nextAction.actionPerformed(new ActionEvent(e.getSource(), ActionEvent.ACTION_PERFORMED, "" ));
+                }
+            }
+        });
     }
 
     public boolean addColumn(final ClientCellView property) {
@@ -469,5 +530,54 @@ public abstract class GridTable extends ClientFormTable
     EventObject editEvent;
     public void setEditEvent(EventObject editEvent) {
         this.editEvent = editEvent;
+    }
+
+    private class GoToCellAction extends AbstractAction {
+        private Action oldMoveAction;
+
+        public GoToCellAction(Action oldMoveAction) {
+            this.oldMoveAction = oldMoveAction;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (!hasFocusableCells) return;
+            isNavigatingFromAction = true;
+
+            int row, column;
+            do {
+                oldMoveAction.actionPerformed(e);
+                row = getSelectionModel().getLeadSelectionIndex();
+                column = getColumnModel().getSelectionModel().getLeadSelectionIndex();
+            } while (!isCellFocusable(row, column));
+
+            isNavigatingFromAction = false;
+        }
+    }
+
+    private class GoToLastCellAction extends AbstractAction {
+        private Action oldMoveLastAction;
+        private Action oldMoveAction;
+
+        public GoToLastCellAction(Action oldMoveLastAction, Action oldMoveAction) {
+            this.oldMoveLastAction = oldMoveLastAction;
+            this.oldMoveAction = oldMoveAction;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (!hasFocusableCells) return;
+            isNavigatingFromAction = true;
+
+            oldMoveLastAction.actionPerformed(e);
+
+            int row = getSelectedRow();
+            int column = getSelectedColumn();
+            while (!isCellFocusable(row, column)) {
+                oldMoveAction.actionPerformed(e);
+                row = getSelectionModel().getLeadSelectionIndex();
+                column = getColumnModel().getSelectionModel().getLeadSelectionIndex();
+            }
+
+            isNavigatingFromAction = false;
+        }
     }
 }
