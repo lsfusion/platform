@@ -4,7 +4,8 @@
         <title>Fusion - Simple Client</title>
         <vendor>Fusioners Ltd.</vendor>
         <description>Fusion</description>
-        <icon href="lsfusion.jpg" kind="default"/>
+        <icon href="default.png" kind="default"/>
+        <icon href="splash.jpg" kind="splash"/>
         <shortcut online="true">
             <desktop/>
         </shortcut>
