@@ -1,5 +1,6 @@
 package platform.fullclient.layout;
 
+import bibliothek.gui.dock.common.MultipleCDockableFactory;
 import net.sf.jasperreports.engine.JRException;
 import platform.client.form.ClientForm;
 import platform.client.navigator.ClientNavigator;
@@ -10,12 +11,12 @@ import java.io.IOException;
 
 public class ClientFormDockable extends FormDockable {
 
-    public ClientFormDockable(int iformID, ClientNavigator inavigator, boolean currentSession) throws IOException, ClassNotFoundException {
-        super(iformID, inavigator, currentSession);
+    public ClientFormDockable(int iformID, ClientNavigator inavigator, boolean currentSession, MultipleCDockableFactory<FormDockable,?> factory) throws IOException, ClassNotFoundException {
+        super(iformID, inavigator, currentSession, factory);
     }
 
-    public ClientFormDockable(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException, JRException {
-        super(navigator, remoteForm);
+    public ClientFormDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, MultipleCDockableFactory<FormDockable,?> factory) throws IOException, ClassNotFoundException, JRException {
+        super(navigator, remoteForm, factory);
     }
 
     @Override
@@ -23,8 +24,8 @@ public class ClientFormDockable extends FormDockable {
         return new ClientForm(remoteForm, navigator).getComponent();
     }
 
-    // закрываются пользователем
+    // Р·Р°РєСЂС‹РІР°СЋС‚СЃСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»РµРј
     void closed() {
-        // надо удалить RemoteForm
+        // РЅР°РґРѕ СѓРґР°Р»РёС‚СЊ RemoteForm
     }
 }

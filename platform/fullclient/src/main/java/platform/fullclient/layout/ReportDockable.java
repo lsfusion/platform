@@ -1,5 +1,6 @@
 package platform.fullclient.layout;
 
+import bibliothek.gui.dock.common.MultipleCDockableFactory;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.export.JExcelApiExporter;
@@ -19,19 +20,19 @@ import java.util.Map;
 
 public class ReportDockable extends FormDockable {
 
-    public ReportDockable(int iformID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException {
-        super(iformID, navigator, currentSession);
+    public ReportDockable(int iformID, ClientNavigator navigator, boolean currentSession, MultipleCDockableFactory<FormDockable,?> factory) throws IOException, ClassNotFoundException {
+        super(iformID, navigator, currentSession, factory);
     }
 
-    public ReportDockable(ClientNavigator navigator, RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException {
-        super(navigator, remoteForm);
+    public ReportDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, MultipleCDockableFactory<FormDockable,?> factory) throws ClassNotFoundException, IOException {
+        super(navigator, remoteForm, factory);
     }
 
     // из файла
-    ReportDockable(String FileName,String Directory) throws JRException {
-        super(0);
+    ReportDockable(String fileName,String directory, MultipleCDockableFactory<FormDockable,?> factory) throws JRException {
+        super(0, factory, "Caption");
 
-        setActiveComponent(prepareViewer(new JRViewer((JasperPrint) JRLoader.loadObject(Directory+FileName))),FileName);
+        setActiveComponent(prepareViewer(new JRViewer((JasperPrint) JRLoader.loadObject(directory+fileName))),fileName);
     }
 
     @Override
