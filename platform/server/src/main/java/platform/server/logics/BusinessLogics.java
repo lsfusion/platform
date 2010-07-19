@@ -38,7 +38,11 @@ import platform.server.view.navigator.*;
 
 import java.io.*;
 import java.net.MalformedURLException;
+import java.rmi.AccessException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -64,17 +68,57 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, FileNotFoundException, JRException, MalformedURLException {
+    private static BusinessLogics BL;
+    private static Registry registry;
+
+    private static Boolean stopped = false;
+    private static final Object serviceMonitor = new Object();
+
+    public static void start(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, JRException {
+
+        stopped = false;
 
         System.out.println("Server is starting...");
 
         XmlBeanFactory factory = new XmlBeanFactory(new FileSystemResource("conf/settings.xml"));
 
-        BusinessLogics bl = (BusinessLogics)factory.getBean("businessLogics");
+        BL = (BusinessLogics)factory.getBean("businessLogics");
+        registry = LocateRegistry.createRegistry(BL.getExportPort());
 
-        LocateRegistry.createRegistry(bl.getExportPort()).rebind("BusinessLogics", bl);
+        registry.rebind("BusinessLogics", BL);
 
         System.out.println("Server has successfully started");
+
+        synchronized (serviceMonitor) {
+            while (!stopped) {
+                try {
+                    serviceMonitor.wait();
+                } catch (InterruptedException e) {
+                }
+            }
+        }
+
+        System.out.println("Server has successfully stopped");
+    }
+
+    public static void stop(String[] args) throws RemoteException, NotBoundException {
+
+        stopped = true;
+
+        System.out.println("Server is stopping...");
+
+        registry.unbind("BusinessLogics");
+
+        registry = null;
+        BL = null;
+
+        synchronized (serviceMonitor) {
+            serviceMonitor.notify();
+        }
+    }
+
+    public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, JRException {
+        start(args);
     }
 
     public final static SQLSyntax debugSyntax = new PostgreDataAdapter();
