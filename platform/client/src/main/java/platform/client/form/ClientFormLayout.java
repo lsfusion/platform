@@ -63,6 +63,7 @@ public abstract class ClientFormLayout extends JPanel {
         });
 
         setFocusCycleRoot(true);
+        setFocusTraversalPolicy(new LayoutFocusTraversalPolicy());
 
         // вот таким вот маразматичным способом делается, чтобы при нажатии мышкой в ClientForm фокус оставался на ней, а не уходил куда-то еще
         // теоретически можно найти способ как это сделать не так извращенно, но копаться в исходниках Swing'а очень долго

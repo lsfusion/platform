@@ -31,7 +31,7 @@ public class SimpleMainFrame extends MainFrame {
             Integer formID = Integer.parseInt(st.nextToken());
             ClientForm form = new ClientForm(navigator.remoteNavigator.createForm(formID, false), navigator);
             form.getComponent().setFocusTraversalPolicyProvider(true);
-            form.getComponent().setFocusTraversalPolicy(new DefaultFocusTraversalPolicy()); // ставим другую TraversalPolicy, чтобы работало быстрее на слабых компьютерах
+//            form.getComponent().setFocusTraversalPolicy(new DefaultFocusTraversalPolicy()); // ставим другую TraversalPolicy, чтобы работало быстрее на слабых компьютерах
             String caption = navigator.remoteNavigator.getCaption(formID); // надо будет переделать, чтобы не было лишнего вызова
             mainPane.addTab(caption, form.getComponent());
         }
