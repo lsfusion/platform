@@ -1363,6 +1363,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.getGroupObjectContainer(objDoc.groupTo).title = "Клиент";
             design.getGroupObjectContainer(objDoc.groupTo).design.background = new Color(192,192,192);
 
+            design.setFocusable(allGroup, false, objArt.groupTo);
+            design.setFocusable(articleQuantity, true, objArt.groupTo);
+
             return design;
         }
     }

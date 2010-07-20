@@ -11,8 +11,11 @@ import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
 import java.awt.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.rmi.Naming;
 import java.io.IOException;
+import java.rmi.server.RMIClassLoader;
 
 public class Main {
 
@@ -45,17 +48,24 @@ public class Main {
 
                 try {
 
+                    // приходится извращаться, так как RMIClassLoader использует для загрузки Spi Class.forname,
+                    // а это работает некорректно, поскольку JWS использует свой user-class loader,
+                    // а сами jar-файлы не добавляются в java.class.path
+                    // необходимо, чтобы ClientRMIClassLoaderSpi запускался с родным ClassLoader JWS
+
+                    Field field = RMIClassLoader.class.getDeclaredField("provider");
+                    field.setAccessible(true);
+
+                    Field modifiersField = Field.class.getDeclaredField("modifiers");
+                    modifiersField.setAccessible(true);
+                    modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+
+                    field.set(null, new ClientRMIClassLoaderSpi());
+
                     // сбрасываем SecurityManager, который устанавливает JavaWS,
                     // поскольку он не дает ничего делать классу ClientRMIClassLoaderSpi,
                     // так как он load'ится из временного директория
                     System.setSecurityManager(null);
-
-                    // приходится извращаться, так как RMIClassLoader использует для загрузки Spi Class.forname,
-                    // а это работает некорректно, поскольку JWS использует свой user-class loader,
-                    // а сами jar-файлы не добавляются в java.class.path
-                    System.setProperty("java.rmi.server.RMIClassLoaderSpi", "platform.client.ClientRMIClassLoaderSpi");
-                    OSUtils.loadClass("ClientRMIClassLoaderSpi", "", ClientRMIClassLoaderSpi.class);
-                    ClassPathHacker.addFile(OSUtils.getUserDir());
 
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
