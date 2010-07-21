@@ -1,12 +1,15 @@
 package platform.client.form.editor;
 
+import platform.client.form.PropertyEditorComponent;
 import platform.interop.ComponentDesign;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.util.EventObject;
 
-class TextFieldPropertyEditor extends JFormattedTextField {
+abstract class TextFieldPropertyEditor extends JFormattedTextField implements PropertyEditorComponent {
 
     TextFieldPropertyEditor(ComponentDesign design) {
         super();
@@ -16,6 +19,21 @@ class TextFieldPropertyEditor extends JFormattedTextField {
 
         if (design != null)
             design.designCell(this);
+    }
+
+    public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) {
+        //для очистки поля ввода перед записью новых данных
+        if (editEvent instanceof KeyEvent) {
+            KeyEvent event = (KeyEvent) editEvent;
+            if (event.getKeyChar() != KeyEvent.CHAR_UNDEFINED){
+                setValue(null);
+            }
+        }
+        return this;
+    }
+
+    public boolean valueChanged() {
+        return true;
     }
 
     @Override

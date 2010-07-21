@@ -12,8 +12,7 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.EventObject;
 
-public class IntegerPropertyEditor extends TextFieldPropertyEditor
-                            implements PropertyEditorComponent {
+public class IntegerPropertyEditor extends TextFieldPropertyEditor {
 
     public IntegerPropertyEditor(Object value, NumberFormat format, ComponentDesign design, Class<?> valueClass) {
         super(design);
@@ -47,10 +46,6 @@ public class IntegerPropertyEditor extends TextFieldPropertyEditor
 
     }
 
-    public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) {
-        return this;
-    }
-
     public Object getCellEditorValue() {
 
         try {
@@ -60,10 +55,6 @@ public class IntegerPropertyEditor extends TextFieldPropertyEditor
         }
 
         return this.getValue();
-    }
-
-    public boolean valueChanged() {
-        return true;
     }
 
 }

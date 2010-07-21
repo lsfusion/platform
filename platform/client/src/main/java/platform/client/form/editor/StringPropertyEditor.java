@@ -9,8 +9,7 @@ import javax.swing.text.PlainDocument;
 import java.awt.*;
 import java.util.EventObject;
 
-public class StringPropertyEditor extends TextFieldPropertyEditor
-                           implements PropertyEditorComponent {
+public class StringPropertyEditor extends TextFieldPropertyEditor {
 
     public StringPropertyEditor(final int length, Object value, ComponentDesign design) {
         super(design);
@@ -31,17 +30,10 @@ public class StringPropertyEditor extends TextFieldPropertyEditor
         selectAll();
     }
 
-    public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) {
-        return this;
-    }
-
     public Object getCellEditorValue() {
         if (getText().isEmpty()) return null;
         return getText();
     }
 
-    public boolean valueChanged() {
-        return true;
-    }
 
 }
