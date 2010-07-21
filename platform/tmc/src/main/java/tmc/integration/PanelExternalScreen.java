@@ -47,11 +47,13 @@ public class PanelExternalScreen implements ExternalScreen {
         try {
 
             if (components.keySet().iterator().next().getValue() != null) {
+                System.out.println("Before creating ActiveX");
                 commActive = new ActiveXComponent("MSCommLib.MSComm");
                 commActive.setProperty("CommPort", Integer.parseInt(commPort));
                 commActive.setProperty("PortOpen", true);
                 commActive.setProperty("Output", new String(output.getBytes("Cp866"), "Cp1251"));
                 commActive.setProperty("PortOpen", false);
+                System.out.println("After ActiveX work");
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -85,8 +85,9 @@ public class Main {
                         remoteNavigator = remoteLogics.createNavigator(user, password, computer);
 
                     if (remoteNavigator == null) return;
-
+                    System.out.println("Before init frame");
                     frame = module.initFrame(remoteNavigator);
+                    System.out.println("After init frame");
 
                     // вот таким вот извращенным методом приходится отключать SimplexLayout, чтобы он не вызывался по два раза
                     // проблема в том, что setVisible сразу вызывает отрисовку, а setExtendedState "моделирует" нажатии кнопки ОС и все идет просто в EventDispatchThread
@@ -95,6 +96,7 @@ public class Main {
                     SimplexLayout.ignoreLayout = false;
 
                     frame.setExtendedState(Frame.MAXIMIZED_BOTH);
+                    System.out.println("After setExtendedState");
 
                 } catch (Exception e) {
 //                    ClientExceptionManager.handleException(e);

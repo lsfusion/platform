@@ -143,7 +143,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
     }
 
     public void layoutContainer(final Container parent) {
-
+        System.out.println("Begin layoutContainer");
         if (disableLayout || ignoreLayout) return;
 
         if (parent != mainContainer) return;
@@ -204,7 +204,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
             if (solver != null)
                 solver.deleteLp();
         }
-
+        System.out.println("End layoutContainer");
 //        System.out.println("Layout complete : " + (System.currentTimeMillis()-stl));
     }
 
