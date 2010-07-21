@@ -74,6 +74,10 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
                                                  int row,
                                                  int column) {
 
+        // лучше сбросить editEvent, иначе может происходить "залипание", если по какой-то причине не будет вызван isCellEditable
+        EventObject editEvent = this.editEvent;
+        this.editEvent = null;
+
         ClientCellViewTable cellTable = (ClientCellViewTable)table;
 
         if (cellTable.getForm().isReadOnlyMode() && cellTable.isDataChanging()) return null;
