@@ -20,8 +20,15 @@ import java.util.Map;
 
 public abstract class ActionProperty extends UserProperty {
 
+    private String name;
+
     public ActionProperty(String sID, String caption, ValueClass[] classes) {
+        this("", sID, caption, classes);
+    }
+
+    public ActionProperty(String name, String sID, String caption, ValueClass[] classes) {
         super(sID, caption, classes);
+        this.name = name;
     }
 
     // RemoteForm в качестве параметра нужен поскольку действие, как правило, приводит к какой-то реакции со стороны формы
@@ -42,5 +49,13 @@ public abstract class ActionProperty extends UserProperty {
 
     protected DataClass getValueClass() {
         return ActionClass.instance;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

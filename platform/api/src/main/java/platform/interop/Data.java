@@ -14,4 +14,5 @@ public class Data {
     public final static byte BYTEARRAY = 9;
     public final static byte BIT = 10;
     public final static byte CLASSACTION = 11;
+    public final static byte FILEACTION = 12;
 }

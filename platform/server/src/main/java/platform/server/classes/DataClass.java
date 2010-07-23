@@ -10,6 +10,7 @@ import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.KeyType;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.query.Query;
+import platform.server.data.type.ParseException;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.group.AbstractGroup;
@@ -183,5 +184,9 @@ public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, AndCl
 
     public boolean isSafeType(Object value) {
         return true;
+    }
+
+    public Object parseString(String s) throws ParseException {
+        throw new RuntimeException("Parsing values from string is not supported");
     }
 }

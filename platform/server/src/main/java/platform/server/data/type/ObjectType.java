@@ -117,4 +117,12 @@ public class ObjectType implements Type<Integer> {
     public boolean isSafeType(Object value) {
         return true;
     }
+
+    public Object parseString(String s) throws ParseException {
+        try {
+            return Integer.parseInt(s);
+        } catch (Exception e) {
+            throw new ParseException("error parsing object", e);
+        }
+    }
 }

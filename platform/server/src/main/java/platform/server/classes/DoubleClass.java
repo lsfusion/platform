@@ -2,6 +2,7 @@ package platform.server.classes;
 
 import platform.interop.Data;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.type.ParseException;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -45,5 +46,13 @@ public class DoubleClass extends IntegralClass<Double> {
 
     public Object getDefaultValue() {
         return 0.0;
+    }
+
+    public Object parseString(String s) throws ParseException {
+        try {
+            return Double.parseDouble(s);
+        } catch (Exception e) {
+            throw new ParseException("error parsing double", e);
+        }
     }
 }

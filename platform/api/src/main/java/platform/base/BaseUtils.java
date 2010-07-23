@@ -220,6 +220,11 @@ public class BaseUtils {
             return new java.sql.Date(inStream.readLong());
         }
 
+        if (objectType == 7) {
+            int len = inStream.readInt();
+            return IOUtils.readBytesFromStream(inStream, len);
+        }
+
         throw new IOException();
     }
 
@@ -270,6 +275,14 @@ public class BaseUtils {
         if (object instanceof java.sql.Date) {
             outStream.writeByte(6);
             outStream.writeLong(((java.sql.Date)object).getTime());
+            return;
+        }
+
+        if (object instanceof byte[]) {
+            byte[] obj = (byte[]) object;
+            outStream.writeByte(7);
+            outStream.writeInt(obj.length);
+            outStream.write(obj);
             return;
         }
 

@@ -351,20 +351,14 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
         return null;
     }
 
-    public Map<ObjectNavigator, PropertyViewNavigator> addObjectViews = new HashMap<ObjectNavigator, PropertyViewNavigator>();
-    public PropertyViewNavigator addAddObjectView(ObjectNavigator object, ActionProperty property) {
-        PropertyViewNavigator propertyView = addPropertyView(new LP<ClassPropertyInterface>(property));
-        addObjectViews.put(object, propertyView);
+    public List<PropertyViewNavigator> actionObjectViews = new ArrayList<PropertyViewNavigator>();
+    public PropertyViewNavigator addActionObjectView(ActionProperty property, ObjectNavigator... objects) {
+        PropertyViewNavigator propertyView = addPropertyView(new LP<ClassPropertyInterface>(property), objects);
+        actionObjectViews.add(propertyView);
+
         return propertyView;
     }
 
-    public Map<ObjectNavigator, PropertyViewNavigator> deleteObjectViews = new HashMap<ObjectNavigator, PropertyViewNavigator>();
-    public PropertyViewNavigator addDeleteObjectView(ObjectNavigator object, ActionProperty property) {
-        PropertyViewNavigator propertyView = addPropertyView(new LP<ClassPropertyInterface>(property), object);
-        deleteObjectViews.put(object, propertyView);
-        return propertyView;
-    }
-
-    public void onCreateForm(RemoteForm<T> form) throws SQLException {        
+    public void onCreateForm(RemoteForm<T> form) throws SQLException {
     }
 }

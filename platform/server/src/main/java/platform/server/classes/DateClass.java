@@ -3,12 +3,14 @@ package platform.server.classes;
 import net.sf.jasperreports.engine.JRAlignment;
 import platform.interop.Data;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.type.ParseException;
 import platform.server.view.form.client.report.ReportDrawField;
 
 import java.sql.*;
 import java.sql.Date;
 import java.text.DateFormat;
 import java.text.Format;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class DateClass extends DataClass<Date> {
@@ -76,5 +78,13 @@ public class DateClass extends DataClass<Date> {
     
     public String getString(Object value, SQLSyntax syntax) {
         throw new RuntimeException("not supported");
+    }
+
+    public Object parseString(String s) throws ParseException {
+        try {
+            return new SimpleDateFormat().parse(s);
+        } catch (Exception e) {
+            throw new ParseException("error parsing date", e);
+        }
     }
 }

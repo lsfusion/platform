@@ -39,4 +39,6 @@ public interface Type<T> extends Reader<T> {
 
     int getBinaryLength(boolean charBinary);
     ConcreteClass getBinaryClass(byte[] value, SQLSession session, BaseClass baseClass) throws SQLException;
+
+    Object parseString(String s) throws ParseException;
 }

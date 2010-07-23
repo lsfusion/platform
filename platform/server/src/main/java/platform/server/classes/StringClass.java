@@ -2,6 +2,7 @@ package platform.server.classes;
 
 import platform.interop.Data;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.type.ParseException;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -85,5 +86,9 @@ public class StringClass extends DataClass<String> {
     @Override
     public int getBinaryLength(boolean charBinary) {
         return length * (charBinary?1:2);
+    }
+
+    public Object parseString(String s) throws ParseException {
+        return s;
     }
 }

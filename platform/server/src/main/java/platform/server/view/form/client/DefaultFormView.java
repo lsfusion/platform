@@ -2,6 +2,7 @@ package platform.server.view.form.client;
 
 import platform.interop.form.layout.SimplexComponentDirections;
 import platform.interop.form.layout.SingleSimplexConstraint;
+import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.view.navigator.*;
 
@@ -127,13 +128,17 @@ public class DefaultFormView extends FormView {
 
             addComponent(groupObject, clientProperty, control.view.property.getParent());
             order.add(clientProperty);
+        }
 
-            // кнопки Добавить/Удалить
-            if (navigatorForm.addObjectViews.containsValue(control)) {
-                clientProperty.editKey = KeyStroke.getKeyStroke(KeyEvent.VK_L, InputEvent.ALT_DOWN_MASK);
-            }
-            if (navigatorForm.deleteObjectViews.containsValue(control)) {
-                clientProperty.editKey = KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.ALT_DOWN_MASK);
+        // обработка хоткеев для экшенов
+        for (PropertyViewNavigator actionControl : navigatorForm.actionObjectViews) {
+            ActionProperty prop = (ActionProperty) actionControl.view.property;
+            if (prop.getName().equals("addAction")) {
+                get(actionControl).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_L, InputEvent.ALT_DOWN_MASK);
+            } else if (prop.getName().equals("deleteAction")) {
+                get(actionControl).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.ALT_DOWN_MASK);
+            } else if (prop.getName().equals("importFromExcel")) {
+                get(actionControl).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.ALT_DOWN_MASK);
             }
         }
 

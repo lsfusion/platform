@@ -23,6 +23,9 @@ import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
+import platform.server.logics.property.actions.AddObjectActionProperty;
+import platform.server.logics.property.actions.DeleteObjectActionProperty;
+import platform.server.logics.property.actions.ImportFromExcelActionProperty;
 import platform.server.logics.property.derived.CycleGroupProperty;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.derived.DistrGroupProperty;
@@ -350,33 +353,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addObjectActions.get(cls);
     }
 
-    protected static class AddObjectActionProperty extends ActionProperty {
-
-        private CustomClass valueClass;
-
-        public AddObjectActionProperty(String sID, CustomClass valueClass) {
-            super(sID, "Добавить (" + valueClass + ")", new ValueClass[] {}); // сам класс не передаем, поскольку это свойство "глобальное"
-
-            this.valueClass = valueClass;
-        }
-
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
-            RemoteForm<?> form = (RemoteForm<?>)executeForm.form;
-            if (valueClass.hasChildren())
-                form.addObject((ConcreteCustomClass)form.getCustomClass((Integer)value.getValue()));
-            else
-                form.addObject((ConcreteCustomClass)valueClass);
-        }
-
-        @Override
-        protected DataClass getValueClass() {
-            if (valueClass.hasChildren())
-                return ClassActionClass.getInstance(valueClass);
-            else
-                return super.getValueClass();
-        }
-    }
-
     public Map<ValueClass, ActionProperty> deleteObjectActions = new HashMap<ValueClass, ActionProperty>();
     private ActionProperty getDeleteObjectAction(ValueClass cls) {
         if (!deleteObjectActions.containsKey(cls))
@@ -384,15 +360,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return deleteObjectActions.get(cls);
     }
 
-    protected static class DeleteObjectActionProperty extends ActionProperty {
-
-        public DeleteObjectActionProperty(String sID, CustomClass valueClass) {
-            super(sID, "Удалить (" + valueClass + ")", new ValueClass[]{valueClass});
-        }
-
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
-            ((RemoteForm<?>)executeForm.form).changeClass((CustomObjectImplement)BaseUtils.singleValue(mapObjects), BaseUtils.singleValue(keys), -1);
-        }
+    public Map<ValueClass, ActionProperty> importObjectActions = new HashMap<ValueClass, ActionProperty>();
+    private ActionProperty getImportObjectAction(ValueClass cls) {
+        assert cls instanceof CustomClass;
+        if (!importObjectActions.containsKey(cls))
+            importObjectActions.put(cls, new ImportFromExcelActionProperty(genSID(), (CustomClass)cls));
+        return importObjectActions.get(cls);
     }
 
     private static class ChangeUserActionProperty extends ActionProperty {
@@ -2171,8 +2144,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public void addObjectActions(NavigatorForm form, ObjectNavigator object) {
-        form.addAddObjectView(object, getAddObjectAction(object.baseClass)).setToDraw(object.groupTo).setForcePanel(true);
-        form.addDeleteObjectView(object, getDeleteObjectAction(object.baseClass));
+        form.addActionObjectView(getAddObjectAction(object.baseClass)).setToDraw(object.groupTo).setForcePanel(true);
+        form.addActionObjectView(getDeleteObjectAction(object.baseClass), object);
+        form.addActionObjectView(getImportObjectAction(object.baseClass), object).setToDraw(object.groupTo).setForcePanel(true);
     }
 
     private Scheduler scheduler;

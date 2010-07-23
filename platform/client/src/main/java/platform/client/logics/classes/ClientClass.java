@@ -33,6 +33,7 @@ abstract public class ClientClass implements Serializable {
         if(type==Data.DATE) return new ClientDateClass(inStream);
         if(type==Data.STRING) return new ClientStringClass(inStream);
         if(type==Data.CLASSACTION) return new ClientClassActionClass(inStream);
+        if(type==Data.FILEACTION) return new ClientFileActionClass(inStream);
 
         throw new IOException();
     }

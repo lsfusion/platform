@@ -178,4 +178,8 @@ public class ConcatenateType implements Type<byte[]> {
     public ConcreteClass getBinaryClass(byte[] value, SQLSession session, BaseClass baseClass) throws SQLException {
         return getDataClass(value, session, baseClass);
     }
+
+    public Object parseString(String s) throws ParseException {
+        throw new RuntimeException("Parsing values from string is not supported");
+    }
 }

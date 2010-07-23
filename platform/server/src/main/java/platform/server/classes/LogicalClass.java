@@ -3,6 +3,7 @@ package platform.server.classes;
 import net.sf.jasperreports.engine.JRAlignment;
 import platform.interop.Data;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.type.ParseException;
 import platform.server.view.form.client.report.ReportDrawField;
 
 import java.sql.PreparedStatement;
@@ -86,5 +87,13 @@ public class LogicalClass extends DataClass<Boolean> {
 
     public Boolean shiftValue(Boolean object, boolean back) {
         return object==null?true:null;
+    }
+
+    public Object parseString(String s) throws ParseException {
+        try {
+            return Boolean.parseBoolean(s);
+        } catch (Exception e) {
+            throw new ParseException("error parsing boolean", e);
+        }
     }
 }
