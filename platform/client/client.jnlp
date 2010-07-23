@@ -14,7 +14,7 @@
         <all-permissions/>
     </security>
     <resources>
-    <j2se version="1.6+"/>
+    <j2se version="1.6+" initial-heap-size="32m" max-heap-size="128m"/>
         <property name="platform.client.formset" value="cashregister"/>
         <property name="platform.client.hostname" value="localhost"/>
         <property name="platform.client.hostport" value="7652"/>
