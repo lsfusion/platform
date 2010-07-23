@@ -18,6 +18,7 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
+import platform.base.BaseUtils;
 
 import java.util.*;
 
@@ -105,6 +106,14 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
         return compile.getSource(this);
     }
 
+    @ParamLazy
+    public Expr translateQuery(QueryTranslator translator) {
+        ExprCaseList result = new ExprCaseList();
+        for(MapCase<KeyExpr> mapCase : CaseExpr.pullCases(translator.translate(group)))
+            result.add(mapCase.where, createBase(mapCase.data, query.expr, query.orders, query.partitions));
+        return result.getExpr();
+    }
+
     @Override
     public String toString() {
         return "ORDER(" + query + "," + group + ")";
@@ -117,15 +126,21 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
         return new OrderJoin(getKeys(),getValues(),query.getWhere(),pushWhere?query.partitions:new HashSet<Expr>(),group);
     }
 
-    protected Expr create(Map<KeyExpr, BaseExpr> group, Query query) {
-        return createBase(group, query.expr, query.orders, query.partitions);
+    private Map<KeyExpr, BaseExpr> pushValues(Where falseWhere) {
+        Map<BaseExpr, BaseExpr> exprValues = falseWhere.not().getExprValues();
+        Map<KeyExpr, BaseExpr> pushedGroup = new HashMap<KeyExpr, BaseExpr>();
+        for(Map.Entry<KeyExpr, BaseExpr> groupExpr : group.entrySet()) { // проталкиваем values внутрь
+            BaseExpr pushValue = exprValues.get(groupExpr.getValue());
+            pushedGroup.put(groupExpr.getKey(), pushValue!=null?pushValue: groupExpr.getValue());
+        }
+        return pushedGroup;
     }
 
     @Override
-    public BaseExpr packFollowFalse(Where where) {
-        Map<KeyExpr,BaseExpr> pushedGroup = pushValues(group, where);
-        if(pushedGroup!=group) // немного извращенно но пока так
-            return (BaseExpr) createBase(pushedGroup, query.expr, query.orders, query.partitions);
+    public Expr packFollowFalse(Where falseWhere) {
+        Map<KeyExpr, Expr> packedGroup = packFollowFalse(pushValues(falseWhere), falseWhere);
+        if(!BaseUtils.hashEquals(packedGroup,group))
+            return create(query.expr, query.orders, query.partitions, packedGroup);
         else
             return this;
     }

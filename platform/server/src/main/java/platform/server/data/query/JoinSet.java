@@ -16,14 +16,14 @@ import java.util.Collection;
 @Immutable
 public class JoinSet extends AddSet<InnerJoin, JoinSet> implements DNFWheres.Interface<JoinSet> {
 
-    JoinSet() {
+    public JoinSet() {
     }
 
-    JoinSet(InnerJoin[] iWheres) {
+    public JoinSet(InnerJoin[] iWheres) {
         super(iWheres);
     }
 
-    JoinSet(InnerJoin where) {
+    public JoinSet(InnerJoin where) {
         super(where);
     }
 

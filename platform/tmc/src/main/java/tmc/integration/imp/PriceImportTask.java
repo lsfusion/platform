@@ -13,13 +13,15 @@ public class PriceImportTask implements SchedulerTask {
     List<String> path;
     List<Integer> docID;
     List<Integer> actionID;
+    List<Integer> returnDocID;
 
-    public PriceImportTask(VEDBusinessLogics BL, List<String> path, List<Integer> docID, List<Integer> actionID) {
+    public PriceImportTask(VEDBusinessLogics BL, List<String> path, List<Integer> docID, List<Integer> actionID, List<Integer> returnDocID) {
 
         this.BL = BL;
         this.path = path;
         this.docID = docID;
         this.actionID = actionID;
+        this.returnDocID = returnDocID;
     }
 
     public String getID() {
@@ -33,9 +35,10 @@ public class PriceImportTask implements SchedulerTask {
             String impPath = path.get(impNum);
             Integer impDocID = docID.get(impNum);
             Integer impActionID = actionID.get(impNum);
+            Integer impReturnDocID = returnDocID.get(impNum);
 
-            FlagSemaphoreTask.run(impPath + "\\tmc.new", new SinglePriceImportTask(BL, impPath + "\\datanew.dbf", impDocID, impActionID));
-            FlagSemaphoreTask.run(impPath + "\\tmc.upd", new SinglePriceImportTask(BL, impPath + "\\dataupd.dbf", impDocID, impActionID));
+            FlagSemaphoreTask.run(impPath + "\\tmc.new", new SinglePriceImportTask(BL, impPath + "\\datanew.dbf", impDocID, impActionID, impReturnDocID));
+            FlagSemaphoreTask.run(impPath + "\\tmc.upd", new SinglePriceImportTask(BL, impPath + "\\dataupd.dbf", impDocID, impActionID, impReturnDocID));
         }
     }
 }

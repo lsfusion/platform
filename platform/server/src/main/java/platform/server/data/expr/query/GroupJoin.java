@@ -6,8 +6,9 @@ import platform.server.caches.Lazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.*;
 import platform.server.data.query.InnerJoin;
-import platform.server.data.query.InnerWhere;
+import platform.server.data.query.innerjoins.ObjectJoinSet;
 import platform.server.data.query.SourceJoin;
+import platform.server.data.query.JoinSet;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.Where;
 
@@ -19,20 +20,20 @@ public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> implements I
     @Immutable
     public static class Query extends AbstractTranslateContext<Query> {
         private final Where where;
-        private final InnerWhere innerWhere;
+        private final JoinSet joins;
 
-        public Query(Where where, InnerWhere innerWhere) {
+        public Query(Where where, JoinSet joins) {
             this.where = where;
-            this.innerWhere = innerWhere;
+            this.joins = joins;
         }
 
         @Lazy
         public int hashContext(HashContext hashContext) {
-            return where.hashContext(hashContext) * 31 + innerWhere.hashContext(hashContext);
+            return where.hashContext(hashContext) * 31 + joins.hashContext(hashContext);
         }
 
         public Query translate(MapTranslate translator) {
-            return new Query(where.translate(translator),innerWhere.translate(translator));
+            return new Query(where.translate(translator), joins.translate(translator));
         }
 
         public SourceJoin[] getEnum() {
@@ -41,7 +42,7 @@ public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> implements I
 
         @Override
         public boolean equals(Object o) {
-            return this == o || o instanceof Query && innerWhere.equals(((Query) o).innerWhere) && where.equals(((Query) o).where);
+            return this == o || o instanceof Query && joins.equals(((Query) o).joins) && where.equals(((Query) o).where);
         }
     }
 
@@ -58,8 +59,8 @@ public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> implements I
         return new GroupJoin(this, translator);
     }
 
-    public GroupJoin(Set<KeyExpr> keys, Set<ValueExpr> values, Where where, InnerWhere innerWhere, Map<BaseExpr, BaseExpr> group) {
-        super(keys,values,new Query(where,innerWhere),group);
+    public GroupJoin(Set<KeyExpr> keys, Set<ValueExpr> values, Where where, JoinSet joins, Map<BaseExpr, BaseExpr> group) {
+        super(keys,values,new Query(where,joins),group);
     }
 
     public int hashContext(HashContext hashContext) {

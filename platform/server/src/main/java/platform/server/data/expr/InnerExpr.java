@@ -14,6 +14,7 @@ import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 
 import java.util.Map;
+import java.util.HashMap;
 
 @TranslateExprLazy
 public abstract class InnerExpr extends VariableClassExpr implements JoinData {
@@ -89,4 +90,5 @@ public abstract class InnerExpr extends VariableClassExpr implements JoinData {
     public void fillFollowSet(DataWhereSet fillSet) {
         fillSet.add((DataWhere) getWhere());
     }
+
 }

@@ -52,17 +52,6 @@ public abstract class QueryExpr<K extends BaseExpr,I extends TranslateContext<I>
         assert checkExpr();        
     }
 
-    protected abstract Expr create(Map<K,BaseExpr> group, I expr);
-
-    // трансляция не прямая
-    @ParamLazy
-    public Expr translateQuery(QueryTranslator translator) {
-        ExprCaseList result = new ExprCaseList();
-        for(MapCase<K> mapCase : CaseExpr.pullCases(translator.translate(group)))
-            result.add(mapCase.where, create(mapCase.data, query));
-        return result.getExpr();
-    }
-
     // извращенное множественное наследование
     private QueryHashes<K> hashes = new QueryHashes<K>() {
         protected int hashValue(HashContext hashContext) {
@@ -121,21 +110,4 @@ public abstract class QueryExpr<K extends BaseExpr,I extends TranslateContext<I>
         return enumValues(group.keySet(), query.getEnum());
     }
 
-    protected static <E extends BaseExpr> Map<E, BaseExpr> pushValues(Map<E, BaseExpr> group, Where falseWhere) {
-        Map<BaseExpr, BaseExpr> exprValues = falseWhere.not().getExprValues();
-        Map<E, BaseExpr> result = new HashMap<E, BaseExpr>(); // проталкиваем values внутрь
-        boolean pushed = false;
-        for(Map.Entry<E, BaseExpr> groupExpr : group.entrySet()) {
-            BaseExpr pushValue = exprValues.get(groupExpr.getValue());
-            if(pushValue!=null) {
-                pushed = true;
-                result.put(groupExpr.getKey(), pushValue);
-            } else
-                result.put(groupExpr.getKey(),groupExpr.getValue());
-        }
-        if(pushed)
-            return result;
-        else
-            return group;
-    }
 }

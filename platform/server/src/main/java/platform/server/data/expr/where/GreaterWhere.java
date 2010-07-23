@@ -1,6 +1,5 @@
 package platform.server.data.expr.where;
 
-import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
 import platform.interop.Compare;
 import platform.server.caches.Lazy;
@@ -8,7 +7,7 @@ import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.InnerJoins;
+import platform.server.data.query.innerjoins.ObjectJoinSets;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
 
@@ -99,9 +98,6 @@ public class GreaterWhere extends CompareWhere {
             return "(" + result + " OR " + compare + ")";
     }
 
-    public InnerJoins groupInnerJoins() {
-        return operator1.getWhere().and(operator2.getWhere()).groupInnerJoins().and(new InnerJoins(this));
-    }
     public ClassExprWhere calculateClassWhere() {
         return operator1.getWhere().getClassWhere().and(operator2.getWhere().getClassWhere());
     }

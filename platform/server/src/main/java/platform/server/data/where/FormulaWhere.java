@@ -3,6 +3,7 @@ package platform.server.data.where;
 import platform.base.BaseUtils;
 import platform.server.caches.GenericImmutable;
 import platform.server.caches.GenericLazy;
+import platform.server.caches.ManualLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ContextEnumerator;
@@ -11,9 +12,14 @@ import platform.server.data.where.classes.ClassExprWhere;
 @GenericImmutable
 public abstract class FormulaWhere<WhereType extends Where> extends AbstractWhere {
 
+    public FollowDeep followDeep;
+
     protected final WhereType[] wheres;
-    protected FormulaWhere(WhereType[] iWheres) {
-        wheres = iWheres;
+
+    protected FormulaWhere(WhereType[] wheres, FollowDeep followDeep) {
+        this.wheres = wheres;
+
+        this.followDeep = followDeep;
     }
 
     abstract String getOp();
@@ -56,21 +62,6 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
         return result;
     }
 
-    // из массива or'ов определяет массив and'ов
-    static AndObjectWhere[] reverse(OrObjectWhere[] wheres) {
-        if(wheres.length==1) {
-            if(wheres[0] instanceof ObjectWhere)
-                return new AndObjectWhere[]{(ObjectWhere)wheres[0]};
-            else // значит OrWhere
-                return ((OrWhere)wheres[0]).wheres;
-        } else
-            return new AndObjectWhere[]{new AndWhere(wheres)};
-    }
-
-    static AndObjectWhere[] reverseNot(AndObjectWhere[] wheres) {
-        return reverse(not(wheres));
-    }
-
     int height;
     public int getHeight() {
         if(wheres.length==0) return 0;
@@ -108,6 +99,21 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
     public abstract WhereType[] newArray(int length);
 
     public ClassExprWhere calculateClassWhere() {
-        return getMeanClassWheres().getClassWhere();
+        return groupMeanClassWheres().getClassWhere();
+    }
+
+    protected abstract boolean checkFormulaTrue();
+
+    private Boolean checkTrue = null;
+    @ManualLazy
+    public boolean checkTrue() {
+        if(followDeep!=FollowDeep.PLAIN) {
+            assert isTrue() == checkFormulaTrue();
+            return isTrue();
+        }
+
+        if(checkTrue==null)
+            checkTrue = checkFormulaTrue();
+        return checkTrue;
     }
 }

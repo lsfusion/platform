@@ -531,7 +531,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         changeQuantityTime = addTCProp(Time.EPOCH, "changeQuantityTime", "Время выбора", articleInnerQuantity, orderSaleArticleRetail, article);
         changeQuantityOrder = addOProp(documentGroup, "Номер", addJProp(and1, addCProp(IntegerClass.instance, 1), articleInnerQuantity, 1, 2), false, true, true, 1, 1, changeQuantityTime, 1, 2);
 
-        LP orderSaleDocPrice = addDProp("orderSalePrice", "Цена прод.", DoubleClass.instance, orderSale, article);
+        orderSaleDocPrice = addDProp("orderSalePrice", "Цена прод.", DoubleClass.instance, orderSale, article);
         orderSaleDocPrice.setDerivedChange(saleStorePrice, outStore, 1, 2, articleQuantity, 1, 2);
         orderSalePrice = addSUProp(documentPriceGroup, "Цена прод.", Union.OVERRIDE, addJProp(and1, addJProp(saleStorePrice, outStore, 1, 2), 1, 2, is(orderSale), 1), orderSaleDocPrice);
 
@@ -626,7 +626,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         couponIssueSum = addDProp(couponGroup, "couponIssueSum", "Сумма купона", DoubleClass.instance, DoubleClass.instance);
 
         LP couponDocToIssueSum = addDProp("couponDocToIssueSum", "Сумма купона к выд.", DoubleClass.instance, commitSaleCheckArticleRetail, article); // здесь конечно хорошо было бы orderSaleDocPrice вытащить за скобки, но будет висячий ключ поэтому приходится пока немого извращаться
-        couponDocToIssueSum.setDerivedChange(addIfProp(addMGProp(addJProp(and1, couponIssueSum, 3, addJProp(greater2, orderSaleDocPrice, 1, 2, 3), 1, 2, 3), 1, 2), false, inCoupon, 2), true, 1, 2, orderSaleDocPrice, 1, 2);
+        couponDocToIssueSum.setDerivedChange(addIfProp(addMGProp(addJProp(and1, couponIssueSum, 3, addJProp(greater2, orderSaleDocPrice, 1, 2, 3), 1, 2, 3), 1, 2), false, inCoupon, 2), true, 1, 2, articleQuantity, 1, 2);
 
         couponToIssueQuantity = addDUProp("К выдаче", addSGProp(articleQuantity, 1, couponDocToIssueSum, 1, 2),
                                           addSGProp(addJProp(and1, addCProp(DoubleClass.instance, 1), addIfProp(issueObligation, false, is(coupon), 2), 1, 2), 1, obligationSum, 2));
@@ -665,6 +665,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP seekAction;
     LP orderClientSum;
     public LP orderArticleSaleSumWithDiscount;
+    public LP orderSaleDocPrice;
     public LP orderSalePrice;
     LP changeQuantityOrder;
     LP computerShop;

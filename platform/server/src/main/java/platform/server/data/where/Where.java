@@ -6,12 +6,13 @@ import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.KeyType;
-import platform.server.data.query.InnerJoins;
+import platform.server.data.query.innerjoins.ObjectJoinSets;
 import platform.server.data.query.SourceJoin;
+import platform.server.data.query.innerjoins.InnerSelectJoin;
+import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
-import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 
 import java.util.Collection;
@@ -21,6 +22,7 @@ public interface Where extends SourceJoin, TranslateContext<Where>, KeyType {
 
     Where followFalse(Where falseWhere);
     Where followFalse(Where falseWhere, boolean packExprs);
+
     Where pack();
 
     <K> Map<K, Expr> followTrue(Map<K,? extends Expr> map);
@@ -36,6 +38,7 @@ public interface Where extends SourceJoin, TranslateContext<Where>, KeyType {
     boolean isFalse();
 
     Where and(Where where);
+    Where and(Where where, boolean packExprs);
     Where or(Where where);
     Where or(Where where, boolean packExprs);
     Where andMeans(Where where); // чисто для means
@@ -54,10 +57,11 @@ public interface Where extends SourceJoin, TranslateContext<Where>, KeyType {
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    public Collection<InnerJoins.Entry> getInnerJoins();
-    public InnerJoins groupInnerJoins(); // на самом деле protected
-
-    public MeanClassWheres getMeanClassWheres();
+    public Collection<InnerSelectJoin> getInnerJoins(); // this должен быть пакнут - выполнен pack()
+    public ObjectJoinSets groupObjectJoinSets(); // на самом деле protected
+    public KeyEquals groupKeyEquals();  // на самом деле protected
+    public KeyEquals getKeyEquals(); // для ускорения в GroupExpr.getInnerJoins
+    public MeanClassWheres groupMeanClassWheres();
 
     abstract public ClassExprWhere getClassWhere();
 

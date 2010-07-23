@@ -1,6 +1,5 @@
 package platform.server.data.expr.where;
 
-import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
 import platform.interop.Compare;
 import platform.server.caches.Lazy;
@@ -9,7 +8,9 @@ import platform.server.classes.StringClass;
 import platform.server.data.expr.*;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.InnerJoins;
+import platform.server.data.query.innerjoins.ObjectJoinSets;
+import platform.server.data.query.innerjoins.KeyEquals;
+import platform.server.data.query.innerjoins.KeyEqual;
 import platform.server.data.where.EqualMap;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
@@ -84,12 +85,20 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
         return Compare.EQUALS;
     }
 
-    public InnerJoins groupInnerJoins() {
+    @Override
+    public ObjectJoinSets groupObjectJoinSets() {
+        assert !(operator1 instanceof KeyExpr && !operator2.hasKey((KeyExpr) operator1));
+        assert !(operator2 instanceof KeyExpr && !operator1.hasKey((KeyExpr) operator2));
+        return super.groupObjectJoinSets();
+    }
+
+    @Override
+    public KeyEquals groupKeyEquals() {
         if(operator1 instanceof KeyExpr && !operator2.hasKey((KeyExpr) operator1))
-            return operator2.getWhere().groupInnerJoins().and(new InnerJoins((KeyExpr)operator1,operator2));
+            return new KeyEquals((KeyExpr) operator1, operator2);
         if(operator2 instanceof KeyExpr && !operator1.hasKey((KeyExpr) operator2))
-            return operator1.getWhere().groupInnerJoins().and(new InnerJoins((KeyExpr)operator2,operator1));
-        return operator1.getWhere().and(operator2.getWhere()).groupInnerJoins().and(new InnerJoins(this));
+            return new KeyEquals((KeyExpr) operator2, operator1);
+        return super.groupKeyEquals();
     }
 
     @Override

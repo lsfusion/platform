@@ -194,4 +194,9 @@ public abstract class QuickMap<K,V> {
             keys.add(getKey(i));
         return keys;
     }
+
+    public K getSingleKey() {
+        assert size==1;
+        return getKey(0);
+    }
 }

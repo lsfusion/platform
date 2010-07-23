@@ -17,8 +17,8 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.translator.TranslateExprLazy;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
+import platform.base.BaseUtils;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @TranslateExprLazy
@@ -73,12 +73,12 @@ public class FormulaExpr extends StaticClassExpr {
     }
 
     @Override
-    public BaseExpr packFollowFalse(Where where) {
-        Map<String, BaseExpr> transParams = new HashMap<String, BaseExpr>();
-        for(Map.Entry<String, BaseExpr> param : params.entrySet())
-            transParams.put(param.getKey(), param.getValue().packFollowFalse(where));
-        assert !transParams.containsValue(null); // предпологается что сверху был andFollowFalse
-        return new FormulaExpr(formula,transParams,valueClass);
+    public Expr packFollowFalse(Where where) {
+        Map<String, Expr> packParams = packFollowFalse(params, where);
+        if(!BaseUtils.hashEquals(packParams, params)) 
+            return create(formula, valueClass, packParams);
+        else
+            return this;
     }
 
     // возвращает Where без следствий

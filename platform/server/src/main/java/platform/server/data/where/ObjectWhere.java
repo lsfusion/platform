@@ -3,6 +3,7 @@ package platform.server.data.where;
 import platform.base.BaseUtils;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.JoinData;
+import platform.server.data.query.innerjoins.KeyEquals;
 
 
 abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere<ObjectWhere>,AndObjectWhere<ObjectWhere> {
@@ -37,9 +38,13 @@ abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere<Object
             return FALSE;
         if(packExprs) {
             Where result = packFollowFalse(falseWhere);
-            if(!BaseUtils.hashEquals(this,result) && OrWhere.orTrue(result,falseWhere)) // если упаковался еще раз на orTrue проверим
-                return TRUE;
-            return result;
+            if(BaseUtils.hashEquals(this,result))
+                return this;
+            else
+                if(OrWhere.orTrue(result,falseWhere)) // если упаковался еще раз на orTrue проверим
+                    return TRUE;
+                else
+                    return result;
         }
         return this;
     }
@@ -56,12 +61,6 @@ abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere<Object
         return 1;
     }
 
-    boolean depends(ObjectWhere where) {
-        // собсно логика простая из элемента или его not'а должен следовать where элемент
-        // потому как иначе положив все where = FALSE мы не изменим формулу никак
-        return where.directMeansFrom(this) || where.directMeansFrom(not());
-    }
-
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
     public void fillJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
@@ -69,4 +68,8 @@ abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere<Object
     }
 
     abstract protected void fillDataJoinWheres(MapWhere<JoinData> joins, Where andWhere);
+
+    public KeyEquals groupKeyEquals() {
+        return new KeyEquals(this);  // в operator'ах никаких equals быть не может
+    }
 }

@@ -12,8 +12,8 @@ public class PostgreDataAdapter extends DataAdapter {
     public PostgreDataAdapter() {
     }
 
-    public PostgreDataAdapter(String iDataBase, String iServer, String iUserID, String iPassword) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        super(iDataBase, iServer, iUserID, iPassword);
+    public PostgreDataAdapter(String dataBase, String server, String userID, String password) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+        super(dataBase, server, userID, password);
     }
 
     public String getLongType() {

@@ -14,6 +14,7 @@ import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.MapCase;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.*;
+import platform.server.data.query.innerjoins.ObjectJoinSets;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
@@ -213,6 +214,14 @@ public class Table implements MapKeysInterface<KeyField> {
             return join(translator.translate(joins));
         }
 
+        public platform.server.data.query.Join<PropertyField> packFollowFalse(Where falseWhere) {
+            Map<KeyField, platform.server.data.expr.Expr> packJoins = BaseExpr.packFollowFalse(joins, falseWhere);
+            if(!BaseUtils.hashEquals(packJoins, joins))
+                return join(packJoins);
+            else
+                return this;
+        }
+
         public String getName(SQLSyntax syntax) {
             return Table.this.getName(syntax);
         }
@@ -278,6 +287,10 @@ public class Table implements MapKeysInterface<KeyField> {
             public Where translateQuery(QueryTranslator translator) {
                 return Join.this.translateQuery(translator).getWhere();
             }
+            @Override
+            public Where packFollowFalse(Where falseWhere) {
+                return Join.this.packFollowFalse(falseWhere).getWhere();
+            }
 
             protected DataWhereSet calculateFollows() {
                 return new DataWhereSet(getJoinFollows());
@@ -291,8 +304,8 @@ public class Table implements MapKeysInterface<KeyField> {
                 return exprFJ + " IS NOT NULL";
             }
 
-            public InnerJoins groupInnerJoins() {
-                return new InnerJoins(Join.this,this);
+            public ObjectJoinSets groupObjectJoinSets() {
+                return new ObjectJoinSets(Join.this,this);
             }
             public ClassExprWhere calculateClassWhere() {
                 return classes.map(joins).and(getJoinsWhere().getClassWhere());
@@ -318,6 +331,11 @@ public class Table implements MapKeysInterface<KeyField> {
 
             public platform.server.data.expr.Expr translateQuery(QueryTranslator translator) {
                 return Join.this.translateQuery(translator).getExpr(property);
+            }
+
+            @Override
+            public platform.server.data.expr.Expr packFollowFalse(Where where) {
+                return Join.this.packFollowFalse(where).getExpr(property);
             }
 
             public Expr translate(MapTranslate translator) {
@@ -369,8 +387,8 @@ public class Table implements MapKeysInterface<KeyField> {
 
             public class NotNull extends InnerExpr.NotNull {
 
-                public InnerJoins groupInnerJoins() {
-                    return new InnerJoins(Join.this,this);
+                public ObjectJoinSets groupObjectJoinSets() {
+                    return new ObjectJoinSets(Join.this,this);
                 }
 
                 @Override

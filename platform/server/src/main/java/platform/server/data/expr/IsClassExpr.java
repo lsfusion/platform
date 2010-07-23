@@ -56,6 +56,10 @@ public class IsClassExpr extends StaticClassExpr {
     public Expr translateQuery(QueryTranslator translator) {
         return expr.translateQuery(translator).classExpr(baseClass);
     }
+    @Override
+    public Expr packFollowFalse(Where where) {
+        return expr.packFollowFalse(where).classExpr(baseClass);
+    }
     @ParamLazy
     public StaticClassExpr translate(MapTranslate translator) {
         return new IsClassExpr(expr.translate(translator),baseClass);

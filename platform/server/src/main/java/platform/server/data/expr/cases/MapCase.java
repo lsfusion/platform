@@ -8,11 +8,11 @@ import java.util.Map;
 
 public class MapCase<K> extends Case<Map<K, BaseExpr>> {
 
-    MapCase() {
+    public MapCase() {
         super(Where.TRUE,new HashMap<K, BaseExpr>());
     }
 
-    MapCase(Where iWhere, Map<K, BaseExpr> iData) {
-        super(iWhere, iData);
+    public MapCase(Where where, Map<K, BaseExpr> data) {
+        super(where, data);
     }
 }

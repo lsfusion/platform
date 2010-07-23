@@ -96,13 +96,10 @@ public class CaseExpr extends Expr {
         return translatedCases.getExpr();
     }
 
-    public Expr followFalse(Where where) {
-        if(where.isFalse()) return this;
+    public Expr followFalse(Where where, boolean pack) {
+        if(where.isFalse() && !pack) return this;
 
-        ExprCaseList followedCases = new ExprCaseList(where); // where идет в up
-        for(ExprCase exprCase : cases)
-            followedCases.add(exprCase.where,exprCase.data);
-        return followedCases.getExpr();
+        return new ExprCaseList(where, cases, pack).getExpr();
     }
 
     static private <K> void recPullCases(ListIterator<Map.Entry<K, ? extends Expr>> ic, MapCase<K> current, Where currentWhere, MapCaseList<K> result) {

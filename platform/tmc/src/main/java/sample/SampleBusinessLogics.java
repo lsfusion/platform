@@ -72,7 +72,7 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         addJProp(baseGroup, "Ост. по скл. (док.)", balanceQuantity, documentStore, 1, 2);
         LP vone = addCProp("1", IntegerClass.instance, 1);
         LP oneProp = addJProp(baseGroup, "Единица", and1, vone, is(document), 1);
-        LP documentsCount = addSGProp(baseGroup, "Количество документов по складу", addCProp("1", IntegerClass.instance, 1, document), documentStore, 1);
+        LP documentsCount = addSGProp(baseGroup, "Количество документов по складу", oneProp, documentStore, 1);
         LP itemsCount = addSGProp(baseGroup, "Количество единиц товара в документах", quantity, documentStore, 1, 2);
     }
 

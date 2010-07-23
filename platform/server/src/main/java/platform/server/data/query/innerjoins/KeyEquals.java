@@ -1,0 +1,48 @@
+package platform.server.data.query.innerjoins;
+
+import platform.server.data.where.DNFWheres;
+import platform.server.data.where.Where;
+import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.where.EqualsWhere;
+import platform.server.data.query.JoinSet;
+
+import java.util.Collection;
+import java.util.ArrayList;
+import java.util.Map;
+
+public class KeyEquals extends DNFWheres<KeyEqual, KeyEquals> {
+
+    public KeyEquals() {
+    }
+
+    public KeyEquals(Where where) {
+        super(new KeyEqual(), where);
+    }
+
+    public KeyEquals(KeyExpr key, BaseExpr expr) {
+        super(new KeyEqual(key, expr), new EqualsWhere(key, expr));
+    }
+
+    protected boolean privateWhere() {
+        return false;
+    }
+    protected KeyEquals createThis() {
+        return new KeyEquals();
+    }
+
+    public Collection<InnerSelectJoin> getInnerJoins(boolean joins) {
+        Collection<InnerSelectJoin> result = new ArrayList<InnerSelectJoin>();
+        for(int i=0;i<size;i++) {
+            KeyEqual keyEqual = getKey(i);
+            Where where = getValue(i);
+
+            if(joins)
+                for(Map.Entry<ObjectJoinSet,Where> objectJoin : where.groupObjectJoinSets().compileMeans().entrySet())
+                    result.add(new InnerSelectJoin(keyEqual, objectJoin.getKey().getJoins(), objectJoin.getValue()));
+            else
+                result.add(new InnerSelectJoin(keyEqual, new JoinSet(), where));
+        }
+        return result;
+    }
+}

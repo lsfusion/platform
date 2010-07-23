@@ -104,12 +104,21 @@ public class BaseUtils {
 
     public static <BK,K extends BK,V> Map<K,V> splitKeys(Map<BK,V> map, Collection<K> keys, Map<BK,V> rest) {
         Map<K,V> result = new HashMap<K, V>();
-        for(Map.Entry<BK,V> entry : map.entrySet()) {
+        for(Map.Entry<BK,V> entry : map.entrySet())
             if(keys.contains(entry.getKey()))
                 result.put((K) entry.getKey(),entry.getValue());
             else
                 rest.put(entry.getKey(),entry.getValue());
-        }
+        return result;
+    }
+
+    public static <BV,V extends BV,K> Map<K,V> splitValues(Map<K,BV> map, Collection<V> keys, Map<K,BV> rest) {
+        Map<K,V> result = new HashMap<K, V>();
+        for(Map.Entry<K,BV> entry : map.entrySet())
+            if(keys.contains(entry.getValue()))
+                result.put(entry.getKey(), (V) entry.getValue());
+            else
+                rest.put(entry.getKey(),entry.getValue());
         return result;
     }
 
@@ -458,7 +467,7 @@ public class BaseUtils {
     }
 
     public static boolean hashEquals(Object obj1,Object obj2) {
-        return obj1.hashCode()==obj2.hashCode() && obj1.equals(obj2);
+        return obj1==obj2 || (obj1.hashCode()==obj2.hashCode() && obj1.equals(obj2));
     }
 
     public static <T> boolean contains(T[] array,T element) {

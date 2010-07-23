@@ -9,8 +9,10 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.CompareWhere;
 import platform.server.data.expr.where.EqualsWhere;
 import platform.server.data.query.AbstractSourceJoin;
-import platform.server.data.query.InnerJoins;
 import platform.server.data.query.Query;
+import platform.server.data.query.innerjoins.InnerSelectJoin;
+import platform.server.data.query.innerjoins.KeyEquals;
+import platform.server.data.query.innerjoins.KeyEqual;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
 import platform.server.data.type.Type;
@@ -25,7 +27,10 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     public abstract AbstractWhere not();
 
     public Where and(Where where) {
-        return not().or(where.not()).not(); // A AND B = not(notA OR notB)
+        return and(where, false); // A AND B = not(notA OR notB)
+    }
+    public Where and(Where where, boolean packExprs) {
+        return not().or(where.not(), packExprs).not(); // A AND B = not(notA OR notB)
     }
     public Where andMeans(Where where) {
         return not().orMeans(where.not()).not(); // A AND B = not(notA OR notB)
@@ -34,12 +39,10 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         return or(where, false);
     }
     public Where or(Where where, boolean packExprs) {
-        Where or = OrWhere.op(this,where, FollowDeep.inner(packExprs));
-        assert !(!or.isTrue() && or.checkTrue());
-        return or;
+        return OrWhere.op(this,where, FollowDeep.inner(packExprs));
     }
     public Where orMeans(Where where) {
-        return OrWhere.op(this,where, FollowDeep.PLAIN);
+        return OrWhere.opPlain(this,where);
     }
 
     public Where followFalse(Where falseWhere) {
@@ -48,47 +51,76 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     public Where followFalse(Where falseWhere, boolean packExprs) {
         return OrWhere.followFalse(this,falseWhere, FollowDeep.inner(packExprs),false);
     }
-    public Where pack() {
+    public Where pack() { // собсно все packExprs нужен только для этого метода, он в свою очередь нужен чтобы в LinearExpr убрать лишние и в GroupExpr протолкнуть классы \ exprValues
         return followFalse(Where.FALSE, true);
     }
 
     public <K> Map<K, Expr> followTrue(Map<K, ? extends Expr> map) {
         Map<K, Expr> result = new HashMap<K, Expr>();
         for(Map.Entry<K,? extends Expr> entry : map.entrySet())
-            result.put(entry.getKey(),entry.getValue().followFalse(not()));
+            result.put(entry.getKey(),entry.getValue().followFalse(not(), true));
         return result;
     }
 
     public boolean means(Where where) {
-        return OrWhere.op(not(),where, FollowDeep.PLAIN).checkTrue();
+        return OrWhere.orTrue(not(),where);
     }
 
-    static Where toWhere(AndObjectWhere[] wheres) {
+    static Where toWhere(AndObjectWhere[] wheres, FollowDeep followDeep) {
         if(wheres.length==1)
             return wheres[0];
         else
-            return new OrWhere(wheres);
+            return new OrWhere(wheres, followDeep);
     }
-    static Where toWhere(AndObjectWhere[] wheres,int numWheres) {
+    public static Where toWhere(AndObjectWhere[] wheres, Where siblingsWhere) {
+        if(wheres.length==1)
+            return wheres[0];
+        else
+        if(wheres.length==0)
+            return Where.FALSE;
+        else // очевидно что сиблинги > 1 могут быть только не FormulaWhere
+            return new OrWhere(wheres, ((FormulaWhere)siblingsWhere).followDeep);
+    }
+    static Where toWhere(AndObjectWhere[] wheres,int numWheres, FollowDeep followDeep) {
         if(numWheres==1)
             return wheres[0];
         else {
             AndObjectWhere[] compiledWheres = new AndObjectWhere[numWheres]; System.arraycopy(wheres,0,compiledWheres,0,numWheres);
-            return new OrWhere(compiledWheres);
+            return new OrWhere(compiledWheres, followDeep);
         }
     }
-    public static Where toWhere(OrObjectWhere[] wheres) {
+    static Where toWhere(AndObjectWhere[] wheres,int numWheres, Where siblingsWhere) {
+        if(numWheres==1)
+            return wheres[0];
+        else
+        if(numWheres==0)
+            return Where.FALSE;
+        else { // очевидно что сиблинги > 1 могут быть только не FormulaWhere
+            AndObjectWhere[] compiledWheres = new AndObjectWhere[numWheres]; System.arraycopy(wheres,0,compiledWheres,0,numWheres);
+            return new OrWhere(compiledWheres, ((FormulaWhere)siblingsWhere).followDeep);
+        }
+    }
+    public static Where toWhere(OrObjectWhere[] wheres, FollowDeep followDeep) {
         if(wheres.length==1)
             return wheres[0];
         else
-            return new AndWhere(wheres);
+            return new AndWhere(wheres, followDeep);
     }
-    static Where toWhere(OrObjectWhere[] wheres,int numWheres) {
+    public static Where toWhere(OrObjectWhere[] wheres, Where siblingsWhere) {
+        if(wheres.length==1)
+            return wheres[0];
+        else
+        if(wheres.length==0)
+            return Where.TRUE;
+        else  // очевидно что сиблинги > 1 могут быть только не FormulaWhere
+            return new AndWhere(wheres, ((FormulaWhere)siblingsWhere).followDeep);
+    }
+    static Where toWhere(OrObjectWhere[] wheres,int numWheres, FollowDeep followDeep) {
         if(numWheres==1)
             return wheres[0];
         else {
             OrObjectWhere[] compiledWheres = new OrObjectWhere[numWheres]; System.arraycopy(wheres,0,compiledWheres,0,numWheres);
-            return new AndWhere(compiledWheres);
+            return new AndWhere(compiledWheres, followDeep);
         }
     }
 
@@ -99,8 +131,8 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         System.arraycopy(wheres,i+1,siblings,i,wheres.length-i-1);
         return siblings;
     }
-    static Where siblingsWhere(AndObjectWhere[] wheres,int i) {
-        return toWhere(siblings(wheres,i));
+    static Where siblingsWhere(AndObjectWhere[] wheres,int i,FollowDeep followDeep) {
+        return toWhere(siblings(wheres,i), followDeep);
     }
     static AndObjectWhere[] siblings(AndObjectWhere[] wheres,int i,int numWheres) {
         AndObjectWhere[] siblings = new AndObjectWhere[numWheres-1];
@@ -108,17 +140,14 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         System.arraycopy(wheres,i+1,siblings,i,numWheres-i-1);
         return siblings;
     }
-    static Where siblingsWhere(AndObjectWhere[] wheres,int i,int numWheres) {
-        return toWhere(siblings(wheres,i,numWheres));
+    static Where siblingsWhere(AndObjectWhere[] wheres,int i,int numWheres, FollowDeep followDeep) {
+        return toWhere(siblings(wheres,i,numWheres), followDeep);
     }
     static OrObjectWhere[] siblings(OrObjectWhere[] wheres,int i) {
         OrObjectWhere[] siblings = new OrObjectWhere[wheres.length-1];
         System.arraycopy(wheres,0,siblings,0,i);
         System.arraycopy(wheres,i+1,siblings,i,wheres.length-i-1);
         return siblings;
-    }
-    static Where siblingsWhere(OrObjectWhere[] wheres,int i) {
-        return toWhere(siblings(wheres,i));
     }
 
     public ClassExprWhere classWhere = null;
@@ -133,7 +162,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
 
     public MeanClassWheres meanClassWheres = null;
     @ManualLazy
-    public MeanClassWheres getMeanClassWheres() {
+    public MeanClassWheres groupMeanClassWheres() {
         if(meanClassWheres==null)
             meanClassWheres = calculateMeanClassWheres();
         return meanClassWheres;
@@ -145,10 +174,10 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         for(Where opWhere : and?getOr():getAnd())
             if(opWhere instanceof EqualsWhere) {
                 CompareWhere where = (CompareWhere)opWhere;
-                if(where.operator1.isValue())
+                if(where.operator1.isValue() && !(where.operator2 instanceof KeyExpr && and))
                     result.put(where.operator2, where.operator1);
                 else
-                if(where.operator2.isValue())
+                if(where.operator2.isValue() && !(where.operator1 instanceof KeyExpr && and))
                     result.put(where.operator1, where.operator2);
             }
         return result;
@@ -183,8 +212,29 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         return new Query<KeyExpr,Object>(BaseUtils.toMap(map.keySet()),this).join(map).getWhere();
     }
 
-    public Collection<InnerJoins.Entry> getInnerJoins() {
-        return groupInnerJoins().compileMeans();
+    public KeyEquals getKeyEquals() { // для того чтобы устранить рекурсивные keyEquals
+        KeyEquals result = new KeyEquals();
+
+        KeyEquals keyEquals = groupKeyEquals();
+        for(int i=0;i<keyEquals.size;i++) {
+            KeyEqual keyEqual = keyEquals.getKey(i);
+            Where where = keyEquals.getValue(i);
+
+            if(keyEqual.isEmpty())
+                result.add(keyEqual, where);
+            else {
+                Where transWhere = where.translateQuery(keyEqual.getTranslator()); // может еще создать keyEquals
+                KeyEquals transKeyEquals = transWhere.getKeyEquals();
+                for(int j=0;j<transKeyEquals.size;j++)
+                    result.add(keyEqual.and(transKeyEquals.getKey(j)), transKeyEquals.getValue(j)); // assert keyEqual не пересекается с transKeyEqual
+            }
+        }
+        
+        return result;
+    }
+
+    public Collection<InnerSelectJoin> getInnerJoins() {
+        return getKeyEquals().getInnerJoins(true);
     }
 
     public Type getKeyType(KeyExpr expr) {

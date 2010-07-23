@@ -103,8 +103,9 @@ public class LinearExpr extends StaticClassExpr {
         return new LinearExpr(transMap);
     }
 
-    public BaseExpr packFollowFalse(Where where) {
-        return map.packFollowFalse(where).getExpr();
+    @Override
+    public Expr packFollowFalse(Where where) {
+        return map.packFollowFalse(where);
     }
 
     public VariableExprSet calculateExprFollows() {

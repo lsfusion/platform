@@ -15,14 +15,14 @@ public abstract class DataAdapter implements SQLSyntax {
 
     abstract void ensureDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException;
 
-    protected DataAdapter(String iDataBase, String iServer, String iUserID, String iPassword) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
+    protected DataAdapter(String dataBase, String server, String userID, String password) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
 
         Class.forName(getClassName());
 
-        dataBase = iDataBase;
-        server = iServer;
-        userID = iUserID;
-        password = iPassword;
+        this.dataBase = dataBase;
+        this.server = server;
+        this.userID = userID;
+        this.password = password;
 
         ensureDB();
     }

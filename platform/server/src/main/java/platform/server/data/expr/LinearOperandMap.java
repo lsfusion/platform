@@ -5,6 +5,7 @@ import platform.server.caches.hash.HashContext;
 import platform.server.classes.IntegralClass;
 import platform.server.data.expr.query.OrderExpr;
 import platform.server.data.expr.where.MapWhere;
+import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.ContextEnumerator;
@@ -69,7 +70,7 @@ public class LinearOperandMap extends HashMap<BaseExpr,Integer> {
 
         if(size()==1) {
             Map.Entry<BaseExpr,Integer> operand = BaseUtils.singleEntry(this);
-            return addToString(true, operand.getKey().getSource(compile), operand.getValue());
+            return "(" + addToString(true, operand.getKey().getSource(compile), operand.getValue()) + ")"; 
         }
 
         String source = "";
@@ -117,16 +118,21 @@ public class LinearOperandMap extends HashMap<BaseExpr,Integer> {
         return result;
     }
 
-    public LinearOperandMap packFollowFalse(Where where) {
+    public Expr packFollowFalse(Where where) {
         LinearOperandMap followedMap = new LinearOperandMap();
+        Expr linearCases = CaseExpr.NULL;
         for(Map.Entry<BaseExpr,Integer> operand : entrySet()) {
             Where operandWhere = where;
             if(operand.getValue().equals(0)) // если коэффициент 0 то когда остальные не null нас тоже не интересует
                 operandWhere = operandWhere.or(getSiblingsWhere(operand.getKey()));
-            BaseExpr operandFollow = operand.getKey().andFollowFalse(operandWhere);
-            if(operandFollow!=null) followedMap.add(operandFollow,operand.getValue());
+
+            Expr operandFollow = operand.getKey().followFalse(operandWhere, true);
+            if(operandFollow instanceof BaseExpr)
+                followedMap.add((BaseExpr) operandFollow,operand.getValue());
+            else
+                linearCases.sum(operandFollow.scale(operand.getValue()));
         }
-        return followedMap;
+        return linearCases.sum(followedMap.getExpr());
     }
 
     public BaseExpr getExpr() {

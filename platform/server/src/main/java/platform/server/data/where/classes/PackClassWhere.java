@@ -3,6 +3,7 @@ package platform.server.data.where.classes;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.*;
+import platform.server.data.query.innerjoins.ObjectJoinSets;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DataWhere;
@@ -60,7 +61,7 @@ public class PackClassWhere extends DataWhere {
         throw new RuntimeException("Not supported");
     }
 
-    public InnerJoins groupInnerJoins() {
+    public ObjectJoinSets groupObjectJoinSets() {
         throw new RuntimeException("Not supported");
     }
     public ClassExprWhere calculateClassWhere() {

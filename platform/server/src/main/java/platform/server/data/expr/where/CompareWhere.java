@@ -12,6 +12,8 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.VariableExprSet;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.ContextEnumerator;
+import platform.server.data.query.innerjoins.ObjectJoinSets;
+import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.translator.PartialQueryTranslator;
@@ -62,16 +64,13 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Data
             symmetricOrs[operators.length] = backCompare.not();
             symmetricOrs[operators.length+1] = signCompare.not(); 
 
-            symmetricWhere = toWhere(symmetricOrs);
+            symmetricWhere = toWhere(symmetricOrs, FollowDeep.PACK);
         }
         return symmetricWhere;
     }
 
     public boolean checkTrue(Where where) {
         return OrWhere.orTrue(getSymmetricWhere(),where);
-//        return OrWhere.orTrue(operator2.getWhere(), where) &&
-//                GreaterWhere.create(operator2, operator1).means(where) &&
-//                (this instanceof GreaterWhere ? EqualsWhere.create(operator1, operator2) : GreaterWhere.create(operator1, operator2)).means(where);
     }
 
     public static <K> Where compare(Map<K,? extends Expr> map1,Map<K,? extends Expr> map2) {
@@ -103,23 +102,11 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Data
     @Override
     public Where packFollowFalse(Where falseWhere) {
         // нет гарантии как в случае 0>L(A+B) OR !(A OR B) что не упакуется до пустого
-        BaseExpr packedOperator1 = operator1.andFollowFalse(falseWhere);
-        if(packedOperator1==null) return FALSE;
-        BaseExpr packedOperator2 = operator2.andFollowFalse(falseWhere);
-        if(packedOperator2==null) return FALSE;
-
-        Map<KeyExpr, BaseExpr> keyExprs = falseWhere.not().getKeyExprs();
-        if(keyExprs.size()>0) {
-            HashContext hashKeyExprs = new HashKeyExprsContext(keyExprs);
-            if(operator1.hashContext(hashKeyExprs)==operator2.hashContext(hashKeyExprs)) {
-                QueryTranslator translator = new PartialQueryTranslator(keyExprs);
-                if(operator1.translateQuery(translator).equals(operator2.translateQuery(translator)))
-                    return ((CompareWhere)this) instanceof EqualsWhere?Where.TRUE:Where.FALSE;
-            }
-        }
-  
-        return createThis(packedOperator1,packedOperator2);
+        return operator1.followFalse(falseWhere,true).compare(operator2.followFalse(falseWhere,true),getCompare());
+//        return operator1.packFollowFalse(falseWhere).compare(operator2.packFollowFalse(falseWhere),getCompare());
     }
 
-
+    public ObjectJoinSets groupObjectJoinSets() {
+        return operator1.getWhere().and(operator2.getWhere()).groupObjectJoinSets().and(new ObjectJoinSets(this));
+    }
 }

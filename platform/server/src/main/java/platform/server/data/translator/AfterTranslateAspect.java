@@ -14,8 +14,6 @@ import platform.server.data.where.NotWhere;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
-import platform.server.caches.MapContext;
-import platform.server.caches.MapValues;
 
 // аспект который заодно транслирует ManualLazy операции
 @Aspect
@@ -100,7 +98,7 @@ public class AfterTranslateAspect {
     public static interface TranslateMeanWhereLazyInterface extends TranslateLazyInterface {}
     public static class TranslateMeanWhereLazyImplement extends TranslateLazyImplement implements TranslateMeanWhereLazyInterface {
         protected MeanClassWheres lazyTranslate(ProceedingJoinPoint thisJoinPoint) {
-            return ((Where)object).getMeanClassWheres().translate(translator);
+            return ((Where)object).groupMeanClassWheres().translate(translator);
         }
     }
     @DeclareParents(value="platform.server.data.where.FormulaWhere+",defaultImpl=TranslateMeanWhereLazyImplement.class)

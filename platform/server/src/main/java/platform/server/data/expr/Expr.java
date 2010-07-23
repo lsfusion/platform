@@ -46,7 +46,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     // получает список ExprCase'ов
     public abstract ExprCaseList getCases();
 
-    public abstract Expr followFalse(Where where);
+    public abstract Expr followFalse(Where where, boolean pack);
 
     public abstract Expr classExpr(BaseClass baseClass);
 
@@ -63,6 +63,8 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     public abstract Expr sum(Expr expr);
 
     public Expr and(Where where) {
+        if(getWhere().means(where))
+            return this;
         return new ExprCaseList(where,this).getExpr();
     }
     public Expr ifElse(Where where, Expr elseExpr) {

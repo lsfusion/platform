@@ -36,6 +36,8 @@ public class KeyExpr extends VariableClassExpr {
     }
 
     public String getSource(CompileSource compile) {
+        if(!compile.keySelect.containsKey(this))
+            compile = compile;
         assert compile.keySelect.containsKey(this);
         return compile.keySelect.get(this);
     }

@@ -15,6 +15,9 @@ import platform.server.data.type.Reader;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
 
+import java.util.Map;
+import java.util.HashMap;
+
 
 public abstract class BaseExpr extends Expr {
 
@@ -52,24 +55,18 @@ public abstract class BaseExpr extends Expr {
 
     public abstract void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere);
 
-    public Expr followFalse(Where where) {
-        BaseExpr andFollow = andFollowFalse(where);
-        if(andFollow==null)
+    public Expr followFalse(Where where, boolean pack) {
+        if(getWhere().means(where))
             return NULL;
         else
-            return andFollow;
-    }
-
-    // возвращает null если по определению не верно
-    public BaseExpr andFollowFalse(Where where) {
-        if(getWhere().means(where))
-            return null;
-        else
-            return packFollowFalse(where);
+            if(pack)
+                return packFollowFalse(where);
+            else
+                return this;
     }
 
     // для linear'ов делает followFalse, известно что не means(where)
-    public BaseExpr packFollowFalse(Where where) {
+    public Expr packFollowFalse(Where where) {
         return this;
     }
 
@@ -145,4 +142,11 @@ public abstract class BaseExpr extends Expr {
     // может возвращать null, оба метода для ClassExprWhere
     public abstract AndClassSet getAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and);
     public abstract boolean addAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and, AndClassSet add);
+
+    public static <K> Map<K, Expr> packFollowFalse(Map<K, BaseExpr> mapExprs, Where falseWhere) {
+        Map<K, Expr> result = new HashMap<K, Expr>();
+        for(Map.Entry<K,BaseExpr> groupExpr : mapExprs.entrySet())
+            result.put(groupExpr.getKey(), groupExpr.getValue().packFollowFalse(falseWhere));
+        return result;
+    }
 }

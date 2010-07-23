@@ -8,7 +8,8 @@ import platform.server.caches.ManualLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.data.expr.where.*;
 import platform.server.data.query.AbstractSourceJoin;
-import platform.server.data.query.InnerJoins;
+import platform.server.data.query.innerjoins.ObjectJoinSets;
+import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
@@ -20,11 +21,11 @@ import platform.server.data.where.classes.PackClassWhere;
 public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhere<AndWhere> {
 
     // вообще надо противоположные + Object, но это наследованием не сделаешь
-    OrWhere(AndObjectWhere[] iWheres) {
-        super(iWheres);
+    OrWhere(AndObjectWhere[] wheres, FollowDeep followDeep) {
+        super(wheres, followDeep);
     }
     OrWhere() {
-        super(new AndObjectWhere[0]);
+        super(new AndObjectWhere[0], FollowDeep.PACK);
     }
 
     public final static ArrayInstancer<AndObjectWhere> instancer = new ArrayInstancer<AndObjectWhere>() {
@@ -32,6 +33,10 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
             return new AndObjectWhere[size];
         }
     };
+
+    public static Where opPlain(Where where1,Where where2) {
+        return op(where1, where2, FollowDeep.PLAIN);
+    }
 
     public static Where op(Where where1,Where where2,FollowDeep followDeep) {
 
@@ -65,8 +70,8 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
             AndObjectWhere[] unpairedWheres2 = new AndObjectWhere[wheres2.length-pairs]; int num2 = 0;
             for(AndObjectWhere andWhere2 : rawWheres2)
                 if(andWhere2!=null) unpairedWheres2[num2++] = andWhere2;
-            unpairedWhere2 = toWhere(unpairedWheres2);
-            unpairedWhere1 = toWhere(rawWheres1,num1);
+            unpairedWhere2 = toWhere(unpairedWheres2, where2);
+            unpairedWhere1 = toWhere(rawWheres1,num1, where1);
         } else {
             unpairedWhere1 = where1;
             unpairedWhere2 = where2;
@@ -94,7 +99,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
                         resultWhere = changeMeans(followWhere2,followWhere1,followDeep==FollowDeep.PACK);
                 }
                 if(resultWhere==null)
-                    resultWhere = toWhere(BaseUtils.add(followWhere1.getAnd(),followWhere2.getAnd(),instancer));
+                    resultWhere = toWhere(BaseUtils.add(followWhere1.getAnd(),followWhere2.getAnd(),instancer), followDeep);
             } else // иначе погнали еще раз or может новые скобки появились
                 resultWhere = op(followWhere1,followWhere2,followDeep);
         }
@@ -116,11 +121,11 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
                 OrObjectWhere[] orWheres = wheres2[j].getOr();
                 for(int k=0;k<orWheres.length;k++) {
                     if(wheres1[i].means(orWheres[k])) { // значит можно поменять местами
-                        Where andSiblings = siblingsWhere(orWheres,k);
-                        Where orSiblings = toWhere(BaseUtils.add(siblings(wheres1,i),siblings(wheres2,j),instancer));
+                        Where andSiblings = toWhere(siblings(orWheres, k), wheres2[j]);
+                        Where orSiblings = toWhere(BaseUtils.add(siblings(wheres1,i),siblings(wheres2,j),instancer), FollowDeep.inner(packExprs));
                         if(!BaseUtils.hashEquals(wheres1[i], // если сокращается хоть что-то, меняем местами
-                                followFalse(wheres1[i],op(op(andSiblings,orWheres[k].not(),FollowDeep.PLAIN),orSiblings,FollowDeep.PLAIN),FollowDeep.inner(packExprs),false)))
-                            return orSiblings.or(orWheres[k].and(wheres1[i].or(andSiblings)));
+                                followFalse(wheres1[i],opPlain(opPlain(andSiblings,orWheres[k].not()),orSiblings), FollowDeep.inner(packExprs), false)))
+                            return orSiblings.or(orWheres[k].and(wheres1[i].or(andSiblings, packExprs), packExprs), packExprs);
                     }
                 }
             }
@@ -142,13 +147,13 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         return new OrObjectWhere[]{this};
     }
 
-    // plainFollow: 0 - не идти внутрь, 1 - идти внутрь 
+    // plainFollow: 0 - не идти внутрь, 1 - идти внутрь
     static Where followFalse(Where followWhere, Where falseWhere, FollowDeep followDeep, boolean sureNotTrue) {
 
         assert !(followDeep==FollowDeep.INNER && sureNotTrue && orTrue(followWhere,falseWhere)); // проверим sureNotTrue, из-за packFollowFalse Linear, GroupExpr пока иногда нарушается 
 
         if(falseWhere.isTrue()) return FALSE;
-        if(falseWhere.isFalse()) return followWhere;
+        if(falseWhere.isFalse() && !followDeep.equals(FollowDeep.PACK)) return followWhere;
 //        if(!decomposed(followWhere,falseWhere)) return followWhere;
 
         AndObjectWhere[] wheres = followWhere.getAnd();
@@ -184,13 +189,13 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
                     if(follows==((AndWhere)where).wheres.length)
                         staticWheres[statics++] = where;
                     else
-                        changedWheres[changed++] = toWhere(followWheres,follows);
+                        changedWheres[changed++] = toWhere(followWheres,follows,((AndWhere)where).followDeep);
                 }
             }
         }
 
         if(changed>0) { // по кругу погнали result
-            Where result = toWhere(staticWheres,statics);
+            Where result = toWhere(staticWheres,statics,followWhere);
             for(int i=0;i<changed;i++)
                 result = op(result,changedWheres[i], followDeep);
             return followFalse(result,falseWhere, followDeep,sureNotTrue);
@@ -199,7 +204,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
             for(int i=0;i<statics;i++)
                 if(!falseWhere.directMeansFrom(staticWheres[i])) // вычистим из where элементы которые заведомо false
                     resultWheres[results++] = staticWheres[i];
-            Where result = toWhere(resultWheres,results);
+            Where result = toWhere(resultWheres,results,followWhere);
             if(followDeep==FollowDeep.PLAIN || result.isFalse()) // если глубже не надо выходим
                 return result;
             else // иначе погнали основной цикл + по sibling'ам
@@ -220,7 +225,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         int current = 0;
         for(AndObjectWhere where : wheres) { // после упрощения важно использовать именно этот элемент, иначе неправильно работать будет
             AndObjectWhere[] siblingWheres = siblings(staticWheres, current);
-            Where followAndWhere = followFalse(where,op(op(toWhere(siblingWheres),followWhere,FollowDeep.PLAIN),falseWhere,FollowDeep.PLAIN),FollowDeep.inner(packExprs),sureNotTrue);
+            Where followAndWhere = followFalse(where,opPlain(opPlain(toWhere(siblingWheres,followDeep),followWhere),falseWhere),FollowDeep.inner(packExprs),sureNotTrue);
             if(!BaseUtils.hashEquals(followAndWhere,where)) { // если изменился static "перекидываем" в result
                 followWhere = op(followWhere,followAndWhere,FollowDeep.inner(packExprs));
                 staticWheres = siblingWheres;
@@ -228,7 +233,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
             } else
                 current++;
         }
-        return op(toWhere(staticWheres),followWhere,FollowDeep.inner(packExprs));
+        return op(toWhere(staticWheres,followDeep),followWhere,FollowDeep.inner(packExprs));
     }
 
     static class Compare {
@@ -270,7 +275,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         }
     }
 
-    static boolean checkTrue(AndObjectWhere[] wheres, int numWheres) {
+    static boolean checkTrue(AndObjectWhere[] wheres, int numWheres, FollowDeep followDeep) {
         // ищем максимальную по высоте вершину and
         int maxWhere = -1;
         for(int i=0;i<numWheres;i++)
@@ -332,7 +337,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
             return false;
         }
 
-        Where siblingWhere = siblingsWhere(wheres, maxWhere, numWheres);
+        Where siblingWhere = siblingsWhere(wheres, maxWhere, numWheres, followDeep);
         OrObjectWhere[] maxWheres = ((AndWhere)wheres[maxWhere]).wheres.clone();
         for(int i=0;i<maxWheres.length;i++) { // будем бежать с высот поменьше - своего рода пузырьком
             for(int j=maxWheres.length-1;j>i;j--)
@@ -348,61 +353,14 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
     }
 
     public static boolean orTrue(Where where1,Where where2) {
-        return op(where1,where2,FollowDeep.PLAIN).checkTrue();
-    }
-
-    public boolean checkTrue() {
-        if(wheres.length==0) return false;
-
-/*        // разбиваем на компоненты
-        // компонента определяется просто (OrObjectWhere) A связан с B если есть oA V oB = TRUE - table intersect followNot или followData intersect not
-        // будем вытаскивать компоненты по очереди, пока не закончатся все элементы
-        AndObjectWhere[][] components = new AndObjectWhere[where.length][]; int numComp = 0;
-        int queue = 0;
-        int[] nums = new int[where.length]; int[] heights = new int[where.length];
-        AndObjectWhere[] wherePool = where.clone();
-        int first = 0;
-        AndObjectWhere[] component = new AndObjectWhere[where.length]; int numWheres = 1;
-        component[0] = where[0]; int heightComponent = where[0].getHeight();
-        while(true) {
-            for(int i=first+1;i<wherePool.length;i++)
-                if(wherePool[i]!=null && component[queue].getObjects().linked(wherePool[i].getObjects())) {
-                    component[numWheres++] = wherePool[i];
-                    int heightWhere = wherePool[i].getHeight();
-                    if(heightWhere > heightComponent) heightComponent = heightWhere;
-                    wherePool[i] = null;
-                }
-            queue++;
-            if(queue >= numWheres) { // в очереди никого нету
-                components[numComp] = component; nums[numComp] = numWheres; heights[numComp] = heightComponent; numComp++; // сохраняем
-                first++; while(first<wherePool.length && wherePool[first]==null) first++; // ищем первый необработанный элемент
-                if(first>=wherePool.length) break; // больше нету
-                component = new AndObjectWhere[where.length]; numWheres = 1;
-                component[0] = wherePool[first]; heightComponent = wherePool[first].getHeight();
-                queue = 0;
-            }
-        }
-
-        for(int i=0;i<numComp;i++) { // бежим по высотам поменьше
-            for(int j=numComp-1;j>i;j--)
-                if(heights[j]<heights[j-1]) {
-                    AndObjectWhere[] tc = components[j]; components[j] = components[j-1]; components[j-1] = tc;
-                    int th = heights[j]; heights[j] = heights[j-1]; heights[j-1] = th;
-                    int tn = nums[j]; nums[j] = nums[j-1]; nums[j-1] = tn;
-                }
-            if(checkTrue(components[i],nums[i]))
-                return true;
-        }
-        return false; */
-
-        return checkTrue(wheres, wheres.length);
+        return opPlain(where1,where2).checkTrue();
     }
 
     public AndWhere not = null;
     @ManualLazy
     public AndWhere not() { // именно здесь из-за того что типы надо перегружать без generics
         if(not==null)
-            not = new AndWhere(not(wheres));
+            not = new AndWhere(not(wheres), followDeep);
         return not;
     }
 
@@ -417,7 +375,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         AndObjectWhere[] resultWheres = new AndObjectWhere[wheres.length];
         for(int i=0;i<wheres.length;i++)
             resultWheres[i] = (AndObjectWhere) wheres[i].translate(translator);
-        return toWhere(resultWheres);
+        return toWhere(resultWheres, followDeep);
     }
     @ParamLazy
     public Where translateQuery(QueryTranslator translator) {
@@ -430,7 +388,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
     // разобъем чисто для оптимизации
     public void fillJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
         for(int i=0;i<wheres.length;i++)
-            wheres[i].fillJoinWheres(joins,andWhere.and(siblingsWhere(wheres,i).not()));
+            wheres[i].fillJoinWheres(joins,andWhere.and(siblingsWhere(wheres,i,followDeep).not()));
     }
 
     String getOp() {
@@ -442,7 +400,11 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
     }
 
     public boolean isFalse() {
-        return wheres.length==0;
+        return wheres.length == 0;
+    }
+
+    public boolean checkFormulaTrue() {
+        return wheres.length != 0 && checkTrue(wheres, wheres.length, followDeep);
     }
 
     public boolean twins(AbstractSourceJoin o) {
@@ -451,16 +413,22 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    public InnerJoins groupInnerJoins() {
-        InnerJoins result = new InnerJoins();
+    public ObjectJoinSets groupObjectJoinSets() {
+        ObjectJoinSets result = new ObjectJoinSets();
         for(Where where : wheres)
-            result.or(where.groupInnerJoins());
+            result.or(where.groupObjectJoinSets());
+        return result;
+    }
+    public KeyEquals groupKeyEquals() {
+        KeyEquals result = new KeyEquals();
+        for(Where where : wheres)
+            result.or(where.groupKeyEquals());
         return result;
     }
     public MeanClassWheres calculateMeanClassWheres() {
         MeanClassWheres result = new MeanClassWheres();
         for(Where where : wheres)
-            result.or(where.getMeanClassWheres());
+            result.or(where.groupMeanClassWheres());
         return result;
     }
 
