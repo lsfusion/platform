@@ -40,8 +40,11 @@ public class PanelExternalScreen implements ExternalScreen {
 
         String output1 = comps.get(0).getValue();
         String output2 = comps.size() > 1 ? comps.get(1).getValue() : null;
-        String output = BaseUtils.padLeft(output1 , 20) + BaseUtils.padLeft(output2 != null ? output2 : "", 20);
+        String output = BaseUtils.padLeft(output1 != null ? output1 : "", 20) + BaseUtils.padLeft(output2 != null ? output2 : "", 20);
 
+        if (output.trim().equals("")){
+            return;
+        }
         ActiveXComponent commActive = null;
 
         try {
