@@ -28,6 +28,8 @@ public class ComponentView implements ClientSerialize {
     
     public SimplexConstraints<ComponentView> constraints = new SimplexConstraints<ComponentView>();
 
+    public boolean defaultComponent = false;
+
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeInt(ID);
 
@@ -44,5 +46,7 @@ public class ComponentView implements ClientSerialize {
             outStream.writeInt(intersect.getKey().ID);
             new ObjectOutputStream(outStream).writeObject(intersect.getValue());
         }
+
+        outStream.writeBoolean(defaultComponent);
     }
 }

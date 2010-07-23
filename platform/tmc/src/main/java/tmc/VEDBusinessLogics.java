@@ -246,6 +246,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     LP balanceSklFreeQuantity;
     LP articleFreeQuantity;
+    LP certToIssued, obligationSumFrom;
 
     protected void initProperties() {
 
@@ -437,7 +438,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         obligationIssued = addCGProp(null, "obligationIssued", "Выд. документ", addJProp(and1, 1, issueObligation, 1, 2), issueObligation, 2);
 
         obligationSum = addDProp(baseGroup, "obligationSum", "Сумма", DoubleClass.instance, obligation);
-        LP obligationSumFrom = addDProp(baseGroup, "obligationSumFrom", "Сумма покупки", DoubleClass.instance, obligation);
+        obligationSumFrom = addDProp(baseGroup, "obligationSumFrom", "Сумма покупки", DoubleClass.instance, obligation);
 
         LP couponMaxPercent = addDProp(baseGroup, "couponMaxPercent", "Макс. процент по купонам", DoubleClass.instance);
 
@@ -580,7 +581,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         couponFromIssued.setDerivedChange(couponStart, dateIssued, 1);
         LP couponToIssued = addDProp("couponToIssued", "Дата окончания", DateClass.instance, coupon);
         couponToIssued.setDerivedChange(couponExpiry, obligationIssued, 1);
-        LP certToIssued = addDProp("certToIssued", "Дата окончания", DateClass.instance, giftObligation);
+        certToIssued = addDProp("certToIssued", "Дата окончания", DateClass.instance, giftObligation);
         certToIssued.setDerivedChange(addJProp(addDays, 1, certExpiry), dateIssued, 1);
         LP obligationToIssued = addCUProp(baseGroup, "obligationToIssued", "Дата окончания", couponToIssued, certToIssued);
         orderSaleObligationCanBeUsed = addJProp(and(false, true, true, true), is(commitSaleCheckArticleRetail), 1, obligationIssued, 2,
@@ -1367,6 +1368,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.setFocusable(allGroup, false, objArt.groupTo);
             design.setFocusable(articleQuantity, true, objArt.groupTo);
 
+            design.get(objArt.groupTo).gridView.defaultComponent = true;
+
             return design;
         }
     }
@@ -1930,10 +1933,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             if (!toAdd)
                 addPropertyView(date, objDoc);
-
             objObligation = addSingleGroupObjectImplement(giftObligation, "Подарочный сертификат", properties, allGroup, true);
-
-            addPropertyView(objDoc, objObligation, properties, allGroup, true);
+            objObligation.show = false; objObligation.showClass = false;
+            //addPropertyView(objDoc, objObligation, properties, allGroup, true);
 
             RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));
             filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
@@ -1945,6 +1947,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             if (!toAdd) {
                 addPropertyView(checkRetailExported, objDoc);
             }
+
+
         }
 
         @Override
@@ -1954,7 +1958,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             design.getGroupObjectContainer(objDoc.groupTo).title = "Клиент";
             design.getGroupObjectContainer(objDoc.groupTo).design.background = new Color(192,192,192);
+            design.setFocusable(allGroup, false, objObligation.groupTo);
 
+            design.get(objObligation.groupTo).gridView.defaultComponent = true;
             return design;
         }
     }

@@ -20,6 +20,8 @@ public class ClientComponentView implements Serializable {
     public ClientContainerView container;
     public SimplexConstraints<Integer> constraints;
 
+    public boolean defaultComponent = false;
+
     ClientComponentView(DataInputStream inStream, Collection<ClientContainerView> containers) throws IOException, ClassNotFoundException {
 
         compID = inStream.readInt();
@@ -43,5 +45,7 @@ public class ClientComponentView implements Serializable {
             constraints.intersects.put(inStream.readInt(), (DoNotIntersectSimplexConstraint) new ObjectInputStream(inStream).readObject());
         }
         constraints.ID = compID;
+
+        defaultComponent = inStream.readBoolean();
     }
 }

@@ -7,12 +7,10 @@ import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
 public class SimpleMainFrame extends MainFrame {
-    
     public SimpleMainFrame(RemoteNavigatorInterface remoteNavigator, String forms) throws ClassNotFoundException, IOException {
         super(remoteNavigator);
 
@@ -31,12 +29,12 @@ public class SimpleMainFrame extends MainFrame {
             Integer formID = Integer.parseInt(st.nextToken());
             ClientForm form = new ClientForm(navigator.remoteNavigator.createForm(formID, false), navigator);
             form.getComponent().setFocusTraversalPolicyProvider(true);
-//            form.getComponent().setFocusTraversalPolicy(new DefaultFocusTraversalPolicy()); // ставим другую TraversalPolicy, чтобы работало быстрее на слабых компьютерах
+            //form.getComponent().setFocusTraversalPolicy(new FormFocusTraversalPolicy()); // ставим другую TraversalPolicy, чтобы работало быстрее на слабых компьютерах
             String caption = navigator.remoteNavigator.getCaption(formID); // надо будет переделать, чтобы не было лишнего вызова
             mainPane.addTab(caption, form.getComponent());
         }
-
         setContentPane(mainPane);
+        mainPane.setFocusable(false);
     }
 
     @Override

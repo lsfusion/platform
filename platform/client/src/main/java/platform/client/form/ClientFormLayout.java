@@ -1,5 +1,6 @@
 package platform.client.form;
 
+import platform.client.FormFocusTraversalPolicy;
 import platform.client.logics.ClientComponentView;
 import platform.client.logics.ClientContainerView;
 import platform.client.logics.ClientGroupObjectImplementView;
@@ -11,7 +12,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +20,8 @@ public abstract class ClientFormLayout extends JPanel {
 
     // главный контейнер, который будет использоваться при отрисовке формы
     private ClientFormContainer mainContainer;
+
+    private FormFocusTraversalPolicy policy;
 
     public JComponent getComponent() {
         return mainContainer;
@@ -63,7 +65,8 @@ public abstract class ClientFormLayout extends JPanel {
         });
 
         setFocusCycleRoot(true);
-        setFocusTraversalPolicy(new LayoutFocusTraversalPolicy());
+        policy = new FormFocusTraversalPolicy();
+        setFocusTraversalPolicy(policy);
 
         // вот таким вот маразматичным способом делается, чтобы при нажатии мышкой в ClientForm фокус оставался на ней, а не уходил куда-то еще
         // теоретически можно найти способ как это сделать не так извращенно, но копаться в исходниках Swing'а очень долго
@@ -152,6 +155,9 @@ public abstract class ClientFormLayout extends JPanel {
         if (!contviews.get(component.container).isAncestorOf(view)) {
             contviews.get(component.container).addComponent(view, component.constraints);
             contviews.get(component.container).repaint();
+            if (component.defaultComponent){
+                policy.addDefault(view);
+            }
             return true;
         } else
             return false;
@@ -162,6 +168,9 @@ public abstract class ClientFormLayout extends JPanel {
        if (contviews.get(component.container).isAncestorOf(view)) {
             contviews.get(component.container).removeComponent(view);
             contviews.get(component.container).repaint();
+            if (component.defaultComponent){
+                policy.removeDefault(view);
+            }
             return true;
        } else
             return false;
