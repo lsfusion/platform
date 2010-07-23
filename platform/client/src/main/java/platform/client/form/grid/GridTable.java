@@ -29,11 +29,12 @@ import java.util.*;
 import java.util.List;
 
 public abstract class GridTable extends ClientFormTable
-                               implements ClientCellViewTable {
+        implements ClientCellViewTable {
 
     private final List<ClientCellView> gridColumns = new ArrayList<ClientCellView>();
 
     private List<ClientGroupObjectValue> gridRows = new ArrayList<ClientGroupObjectValue>();
+
     // приходится давать доступ к gridRows, так как контроллеру нужно заполнять значения колонок на основе ключей рядов
     public List<ClientGroupObjectValue> getGridRows() {
         return gridRows;
@@ -41,7 +42,7 @@ public abstract class GridTable extends ClientFormTable
 
     private ClientGroupObjectValue currentObject;
 
-    private final Map<ClientCellView, Map<ClientGroupObjectValue,Object>> gridValues = new HashMap<ClientCellView, Map<ClientGroupObjectValue,Object>>();
+    private final Map<ClientCellView, Map<ClientGroupObjectValue, Object>> gridValues = new HashMap<ClientCellView, Map<ClientGroupObjectValue, Object>>();
 
     private final Model model;
     private final JTableHeader header;
@@ -90,8 +91,9 @@ public abstract class GridTable extends ClientFormTable
             needToBeHidden();
         }
     }
-    
+
     protected abstract void needToBeShown();
+
     protected abstract void needToBeHidden();
 
     private boolean fitWidth() {
@@ -147,7 +149,8 @@ public abstract class GridTable extends ClientFormTable
         }
 
         //noinspection SimplifiableIfStatement
-        if (form.isDialogMode() && form.isReadOnlyMode() && ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0))) return false;
+        if (form.isDialogMode() && form.isReadOnlyMode() && ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0)))
+            return false;
 
         return super.processKeyBinding(ks, ae, condition, pressed);    //To change body of overridden methods use File | Settings | File Templates.
     }
@@ -156,12 +159,16 @@ public abstract class GridTable extends ClientFormTable
 
     // пока пусть GridTable напрямую общается с формой, а не через Controller, так как ей много о чем надо с ней говорить, а Controller будет просто бюрократию создавать
     private final ClientForm form;
+
     public ClientForm getForm() {
         return form;
     }
 
     private ClientCellView currentCell;
-    public ClientCellView getCurrentCell() { return currentCell; }
+
+    public ClientCellView getCurrentCell() {
+        return currentCell;
+    }
 
     public GridTable(GroupObjectLogicsSupplier ilogicsSupplier, ClientForm iform) {
 
@@ -180,17 +187,17 @@ public abstract class GridTable extends ClientFormTable
                 if (changeObject != null) {
                     SwingUtils.invokeLaterSingleAction(logicsSupplier.getGroupObject().getActionID()
                             , new ActionListener() {
-                        public void actionPerformed(ActionEvent ae) {
-                            try {
-                                if(changeObject.equals(model.getSelectedObject())) {
-                                    currentObject = model.getSelectedObject(); // нужно менять текущий выбранный объект для правильного скроллирования
-                                    form.changeGroupObject(logicsSupplier.getGroupObject(), model.getSelectedObject());
+                                public void actionPerformed(ActionEvent ae) {
+                                    try {
+                                        if (changeObject.equals(model.getSelectedObject())) {
+                                            currentObject = model.getSelectedObject(); // нужно менять текущий выбранный объект для правильного скроллирования
+                                            form.changeGroupObject(logicsSupplier.getGroupObject(), model.getSelectedObject());
+                                        }
+                                    } catch (IOException e) {
+                                        throw new RuntimeException("Ошибка при изменении текущего объекта", e);
+                                    }
                                 }
-                            } catch (IOException e) {
-                                throw new RuntimeException("Ошибка при изменении текущего объекта", e);
-                            }
-                        }
-                    }, 50);
+                            }, 50);
                 }
             }
         });
@@ -266,12 +273,13 @@ public abstract class GridTable extends ClientFormTable
     }
 
     private boolean isCellFocusable(int rowIndex, int columnIndex) {
-        if (rowIndex < 0 || rowIndex >= getRowCount() || columnIndex < 0 || columnIndex >= getColumnCount()) return false;
-        
+        if (rowIndex < 0 || rowIndex >= getRowCount() || columnIndex < 0 || columnIndex >= getColumnCount())
+            return false;
+
         Boolean focusable = gridColumns.get(columnIndex).focusable;
         return focusable == null || focusable;
     }
-    
+
     @Override
     public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
         if (isNavigatingFromAction || isCellFocusable(rowIndex, columnIndex)) {
@@ -311,7 +319,7 @@ public abstract class GridTable extends ClientFormTable
                 int row = getSelectionModel().getLeadSelectionIndex();
                 int column = getColumnModel().getSelectionModel().getLeadSelectionIndex();
                 if (!isCellFocusable(row, column)) {
-                    nextAction.actionPerformed(new ActionEvent(e.getSource(), ActionEvent.ACTION_PERFORMED, "" ));
+                    nextAction.actionPerformed(new ActionEvent(e.getSource(), ActionEvent.ACTION_PERFORMED, ""));
                 }
             }
         });
@@ -328,7 +336,9 @@ public abstract class GridTable extends ClientFormTable
             // конечно кривова-то определять порядок по номеру в листе, но потом надо будет сделать по другому
             int ind = cells.indexOf(property), ins = 0;
 
-            while (icp.hasNext() && cells.indexOf(icp.next()) < ind) { ins++; }
+            while (icp.hasNext() && cells.indexOf(icp.next()) < ind) {
+                ins++;
+            }
 
             gridColumns.add(ins, property);
 
@@ -378,11 +388,11 @@ public abstract class GridTable extends ClientFormTable
 
             if (oldindex != -1 && newindex != oldindex) {
 
-                final Point ViewPos = ((JViewport)getParent()).getViewPosition();
-                final int dltpos = (newindex-oldindex) * getRowHeight();
+                final Point ViewPos = ((JViewport) getParent()).getViewPosition();
+                final int dltpos = (newindex - oldindex) * getRowHeight();
                 ViewPos.y += dltpos;
                 if (ViewPos.y < 0) ViewPos.y = 0;
-                ((JViewport)getParent()).setViewPosition(ViewPos);
+                ((JViewport) getParent()).setViewPosition(ViewPos);
             }
 
             selectRow(newindex);
@@ -400,7 +410,7 @@ public abstract class GridTable extends ClientFormTable
         }
     }
 
-    public void setColumnValues(ClientCellView property, Map<ClientGroupObjectValue,Object> values) {
+    public void setColumnValues(ClientCellView property, Map<ClientGroupObjectValue, Object> values) {
 
         gridValues.put(property, values);
         repaint();
@@ -427,7 +437,7 @@ public abstract class GridTable extends ClientFormTable
     class Model extends AbstractTableModel {
 
         public String getColumnName(int col) {
-              return gridColumns.get(col).getFullCaption();
+            return gridColumns.get(col).getFullCaption();
         }
 
         public int getRowCount() {
@@ -453,7 +463,7 @@ public abstract class GridTable extends ClientFormTable
             if (BaseUtils.nullEquals(value, getValueAt(row, col))) return;
 
             try {
-                form.changeProperty(gridColumns.get(col), value, editEvent instanceof KeyEvent && ((KeyEvent)editEvent).getKeyCode() == KeyEvent.VK_F12);
+                form.changeProperty(gridColumns.get(col), value, editEvent instanceof KeyEvent && ((KeyEvent) editEvent).getKeyCode() == KeyEvent.VK_F12);
             } catch (IOException e) {
                 throw new RuntimeException("Ошибка при изменении значения свойства", e);
             }
@@ -495,9 +505,9 @@ public abstract class GridTable extends ClientFormTable
     public void changeGridOrder(ClientCellView property, Order modiType) throws IOException {
 
         form.changeOrder(property, modiType);
-        
+
         int ordNum;
-        switch(modiType) {
+        switch (modiType) {
             case REPLACE:
                 orders.clear();
                 orderDirections.clear();
@@ -527,6 +537,7 @@ public abstract class GridTable extends ClientFormTable
     }
 
     EventObject editEvent;
+
     public void setEditEvent(EventObject editEvent) {
         this.editEvent = editEvent;
     }
@@ -542,9 +553,18 @@ public abstract class GridTable extends ClientFormTable
             if (!hasFocusableCells || gridRows.size() == 0) return;
             isNavigatingFromAction = true;
 
+            int initRow = getSelectionModel().getLeadSelectionIndex();
+            int initColumn = getColumnModel().getSelectionModel().getLeadSelectionIndex();
             int row, column;
             do {
                 oldMoveAction.actionPerformed(e);
+                if (((getSelectionModel().getLeadSelectionIndex() == 0 && getColumnModel().getSelectionModel().getLeadSelectionIndex() == 0)
+                        || (getSelectionModel().getLeadSelectionIndex() == getRowCount() - 1 && getColumnModel().getSelectionModel().getLeadSelectionIndex() == getColumnCount() - 1))
+                        && isCellFocusable(initRow, initColumn)) {
+                    getSelectionModel().setLeadSelectionIndex(initRow);
+                    getColumnModel().getSelectionModel().setLeadSelectionIndex(initColumn);
+                    break;
+                }
                 row = getSelectionModel().getLeadSelectionIndex();
                 column = getColumnModel().getSelectionModel().getLeadSelectionIndex();
             } while (!isCellFocusable(row, column));
