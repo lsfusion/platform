@@ -89,7 +89,6 @@ public abstract class GridTable extends ClientFormTable
         } else {
             needToBeHidden();
         }
-
     }
     
     protected abstract void needToBeShown();
@@ -267,7 +266,7 @@ public abstract class GridTable extends ClientFormTable
     }
 
     private boolean isCellFocusable(int rowIndex, int columnIndex) {
-        if (rowIndex < 0 || rowIndex >= getRowCount() || columnIndex < 0 || columnIndex >= getColumnCount()) return true;
+        if (rowIndex < 0 || rowIndex >= getRowCount() || columnIndex < 0 || columnIndex >= getColumnCount()) return false;
         
         Boolean focusable = gridColumns.get(columnIndex).focusable;
         return focusable == null || focusable;
@@ -540,7 +539,7 @@ public abstract class GridTable extends ClientFormTable
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (!hasFocusableCells) return;
+            if (!hasFocusableCells || gridRows.size() == 0) return;
             isNavigatingFromAction = true;
 
             int row, column;
@@ -564,7 +563,7 @@ public abstract class GridTable extends ClientFormTable
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (!hasFocusableCells) return;
+            if (!hasFocusableCells || gridRows.size() == 0) return;
             isNavigatingFromAction = true;
 
             oldMoveLastAction.actionPerformed(e);
