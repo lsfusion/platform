@@ -50,23 +50,26 @@ public class CellController implements CellViewListener {
 
         if (key.externalScreen != null) {
             extView = new ExternalScreenComponent();
-            key.externalScreen.add(form.getID(), extView, key.constraints);
         }
     }
 
     public void addView(ClientFormLayout formLayout) {
         formLayout.add(key, getView());
+        if (key.externalScreen != null)
+            key.externalScreen.add(form.getID(), extView, key.externalScreenConstraints);
     }
 
     public void removeView(ClientFormLayout formLayout) {
         formLayout.remove(key, getView());
+        if (key.externalScreen != null)
+            key.externalScreen.remove(form.getID(), extView);
     }
 
     public void setValue(Object ivalue) {
         view.setValue(ivalue);
         if (extView != null) {
             extView.setValue((ivalue == null) ? "" : ivalue.toString());
-            key.externalScreen.repaint(form.getID());
+            key.externalScreen.invalidate();
         }
     }
 

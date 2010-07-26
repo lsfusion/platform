@@ -11,5 +11,5 @@ public abstract interface ExternalScreen extends Serializable {
 
     public int getID();
     public abstract void initialize();
-    public abstract void repaint(Map<ExternalScreenComponent, SimplexConstraints> components);
+    public abstract void repaint(Map<ExternalScreenComponent, ExternalScreenConstraints> components);
 }

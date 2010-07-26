@@ -439,6 +439,7 @@ public class ClientForm {
         }
 
         formLayout.getComponent().validate();
+        ClientExternalScreen.repaintAll(getID());
 
         // выдадим сообщение если было от сервера
         if(formChanges.message.length()>0)

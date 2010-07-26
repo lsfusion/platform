@@ -12,6 +12,7 @@ import platform.interop.ComponentDesign;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.screen.ExternalScreen;
+import platform.interop.form.screen.ExternalScreenConstraints;
 
 import javax.swing.*;
 import java.awt.*;
@@ -41,6 +42,7 @@ abstract public class ClientCellView extends ClientComponentView {
     public boolean panelLabelAbove;
 
     public ClientExternalScreen externalScreen;
+    public ExternalScreenConstraints externalScreenConstraints;
 
     ClientCellView(DataInputStream inStream, Collection<ClientContainerView> containers) throws IOException, ClassNotFoundException {
         super(inStream, containers);
@@ -64,6 +66,9 @@ abstract public class ClientCellView extends ClientComponentView {
 
         if (inStream.readBoolean())
             externalScreen = ClientExternalScreen.getScreen(inStream.readInt());
+
+        if (inStream.readBoolean())
+            externalScreenConstraints = (ExternalScreenConstraints) new ObjectInputStream(inStream).readObject();
     }
 
     public int getMinimumWidth(JComponent comp) {

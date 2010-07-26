@@ -1439,7 +1439,16 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.addIntersection(design.getGroupObjectContainer(objCoupon.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             design.get(getPropertyView(barcodeObjectName)).externalScreen = panelScreen;
-            design.get(getPropertyView(orderSalePayNoObligation)).externalScreen = panelScreen;
+            design.get(getPropertyView(barcodeObjectName)).externalScreenConstraints.order = 1;
+
+            design.get(getPropertyView(orderSaleToDo)).externalScreen = panelScreen;
+            design.get(getPropertyView(orderSaleToDo)).externalScreenConstraints.order = 3;
+
+            design.get(getPropertyView(orderSaleToDoSum)).externalScreen = panelScreen;
+            design.get(getPropertyView(orderSaleToDoSum)).externalScreenConstraints.order = 2;
+
+            design.get(getPropertyView(orderSalePrice)).externalScreen = panelScreen;
+            design.get(getPropertyView(orderSalePayNoObligation)).externalScreenConstraints.order = 4;
 
             return design;
         }

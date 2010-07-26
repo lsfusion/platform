@@ -1,9 +1,9 @@
 package platform.client.form;
 
 import platform.client.Main;
-import platform.interop.form.layout.SimplexConstraints;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenComponent;
+import platform.interop.form.screen.ExternalScreenConstraints;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -14,6 +14,8 @@ import java.util.Map;
 public class ClientExternalScreen {
 
     private static List<ClientExternalScreen> screens = new ArrayList<ClientExternalScreen>();
+    private boolean valid = true;
+
     public static ClientExternalScreen getScreen(int screenID) {
 
         for (ClientExternalScreen screen : screens)
@@ -45,15 +47,30 @@ public class ClientExternalScreen {
         this.screen = screen;
     }
 
-    private transient Map<Integer, Map<ExternalScreenComponent, SimplexConstraints>> components = new HashMap<Integer, Map<ExternalScreenComponent, SimplexConstraints>>();
-    public void add(int formID, ExternalScreenComponent comp, SimplexConstraints cons) {
+    private transient Map<Integer, Map<ExternalScreenComponent, ExternalScreenConstraints>> components = new HashMap<Integer, Map<ExternalScreenComponent, ExternalScreenConstraints>>();
+    public void add(int formID, ExternalScreenComponent comp, ExternalScreenConstraints cons) {
         if (!components.containsKey(formID)) {
-            components.put(formID, new HashMap<ExternalScreenComponent, SimplexConstraints>());
+            components.put(formID, new HashMap<ExternalScreenComponent, ExternalScreenConstraints>());
         }
         components.get(formID).put(comp, cons);
     }
 
-    public void repaint(int formID) {
-        screen.repaint(components.get(formID));
+    public void remove(int formID, ExternalScreenComponent comp) {
+        components.get(formID).remove(comp); 
     }
+
+    public void invalidate() {
+        valid = false;
+    }
+
+    public static void repaintAll(int formID){
+        for (ClientExternalScreen curScreen : screens){
+            if (!curScreen.valid) {
+                curScreen.screen.repaint(curScreen.components.get(formID));
+                curScreen.valid = true;
+            }
+        }
+
+    }
+
 }

@@ -7,6 +7,7 @@ import platform.client.form.queries.FilterController;
 import platform.client.form.queries.FindController;
 import platform.client.logics.*;
 import platform.interop.Order;
+import platform.interop.form.screen.ExternalScreenComponent;
 
 import javax.swing.*;
 import java.awt.*;
@@ -112,10 +113,24 @@ public class GridController {
         gridTable.updateTable();
     }
 
+    Map<ClientCellView, ExternalScreenComponent> extViews = new HashMap<ClientCellView, ExternalScreenComponent>();
+
+    private void addExternalScreenComponent(ClientCellView key) {
+        if (!extViews.containsKey(key)) {
+/*            ExternalScreenComponent extView = new ExternalScreenComponent();
+            extViews.put(key, extView);
+            key.externalScreen.add(form.getID(), extView, key.externalScreenConstraints); */
+        }
+    }
+
     public void addProperty(ClientPropertyView property) {
 //                System.out.println("addProperty " + property.toString());
         if (gridTable.addColumn(property))
             gridTable.updateTable();
+
+        if (property.externalScreen != null) {
+            addExternalScreenComponent(property);
+        }
     }
 
     public void removeProperty(ClientPropertyView property) {
@@ -141,6 +156,11 @@ public class GridController {
 
     public void setPropertyValues(ClientPropertyView property, Map<ClientGroupObjectValue, Object> values) {
         gridTable.setColumnValues(property, values);
+        if (extViews.containsKey(property)) {
+            Object value = getSelectedValue(property);
+            extViews.get(property).setValue((value == null) ? "" : value.toString());
+            property.externalScreen.invalidate();
+        }
     }
 
     public void changeGridOrder(ClientCellView property, Order modiType) throws IOException {
