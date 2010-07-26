@@ -56,6 +56,7 @@ public class ViewManager {
                         pages.add(page);
                     } else {
                         pages.remove(page);
+                        forms.remove(page.formID);
                     }
                 }
             });
@@ -78,6 +79,7 @@ public class ViewManager {
                     pages.add(page);
                 } else {
                     pages.remove(page);
+                    forms.remove(page.formID);
                 }
             }
         });
@@ -96,6 +98,7 @@ public class ViewManager {
                     pages.add(page);
                 } else {
                     pages.remove(page);
+                    forms.remove(page.formID);
                 }
             }
         });
@@ -116,6 +119,7 @@ public class ViewManager {
                     pages.add(page);
                 } else {
                     pages.remove(page);
+                    forms.remove(page.formID);
                 }
             }
         });
@@ -135,6 +139,7 @@ public class ViewManager {
                     pages.add(page);
                 } else {
                     pages.remove(page);
+                    forms.remove(page.formID);
                 }
             }
         });
@@ -171,6 +176,7 @@ public class ViewManager {
                             pages.add(page);
                         } else {
                             pages.remove(page);
+                            forms.remove(page.formID);
                         }
                     }
                 });
