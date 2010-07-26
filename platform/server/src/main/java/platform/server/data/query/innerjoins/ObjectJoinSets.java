@@ -1,22 +1,23 @@
 package platform.server.data.query.innerjoins;
 
 import platform.server.classes.BaseClass;
-import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.where.EqualsWhere;
 import platform.server.data.where.DNFWheres;
 import platform.server.data.where.Where;
-import platform.server.data.query.innerjoins.InnerSelectJoin;
 import platform.server.data.query.InnerJoin;
 
 import java.util.*;
 
 // используется только в groupObjectJoinSets, по сути protected класс
-public class ObjectJoinSets extends DNFWheres<ObjectJoinSet, ObjectJoinSets> {
+public class ObjectJoinSets extends DNFWheres<ObjectJoinSet, Where, ObjectJoinSets> {
 
-    protected boolean privateWhere() {
-        return false;
+    protected Where andValue(Where prevValue, Where newValue) {
+        return prevValue.and(newValue);
     }
+    protected Where addValue(Where prevValue, Where newValue) {
+        return prevValue.or(newValue);
+    }
+
     protected ObjectJoinSets createThis() {
         return new ObjectJoinSets();
     }

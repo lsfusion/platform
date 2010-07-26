@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.ArrayList;
 import java.util.Map;
 
-public class KeyEquals extends DNFWheres<KeyEqual, KeyEquals> {
+public class KeyEquals extends DNFWheres<KeyEqual, Where, KeyEquals> {
 
     public KeyEquals() {
     }
@@ -24,9 +24,13 @@ public class KeyEquals extends DNFWheres<KeyEqual, KeyEquals> {
         super(new KeyEqual(key, expr), new EqualsWhere(key, expr));
     }
 
-    protected boolean privateWhere() {
-        return false;
+    protected Where andValue(Where prevValue, Where newValue) {
+        return prevValue.and(newValue);
     }
+    protected Where addValue(Where prevValue, Where newValue) {
+        return prevValue.or(newValue);
+    }
+
     protected KeyEquals createThis() {
         return new KeyEquals();
     }

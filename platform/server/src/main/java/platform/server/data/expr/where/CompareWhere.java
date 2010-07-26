@@ -4,19 +4,14 @@ import net.jcip.annotations.Immutable;
 import platform.interop.Compare;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.ParamLazy;
-import platform.server.caches.hash.HashContext;
-import platform.server.caches.hash.HashKeyExprsContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.VariableExprSet;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.ContextEnumerator;
 import platform.server.data.query.innerjoins.ObjectJoinSets;
-import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
-import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.where.*;
 import platform.server.logics.DataObject;
 
@@ -64,13 +59,13 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Data
             symmetricOrs[operators.length] = backCompare.not();
             symmetricOrs[operators.length+1] = signCompare.not(); 
 
-            symmetricWhere = toWhere(symmetricOrs, FollowDeep.PACK);
+            symmetricWhere = toWhere(symmetricOrs);
         }
         return symmetricWhere;
     }
 
     public boolean checkTrue(Where where) {
-        return OrWhere.orTrue(getSymmetricWhere(),where);
+        return OrWhere.checkTrue(getSymmetricWhere(),where);
     }
 
     public static <K> Where compare(Map<K,? extends Expr> map1,Map<K,? extends Expr> map2) {

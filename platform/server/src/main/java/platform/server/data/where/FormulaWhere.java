@@ -1,6 +1,7 @@
 package platform.server.data.where;
 
 import platform.base.BaseUtils;
+import platform.base.ArrayInstancer;
 import platform.server.caches.GenericImmutable;
 import platform.server.caches.GenericLazy;
 import platform.server.caches.ManualLazy;
@@ -12,17 +13,17 @@ import platform.server.data.where.classes.ClassExprWhere;
 @GenericImmutable
 public abstract class FormulaWhere<WhereType extends Where> extends AbstractWhere {
 
-    public FollowDeep followDeep;
+    public final boolean check; // если true в неправильном состоянии
 
     protected final WhereType[] wheres;
 
-    protected FormulaWhere(WhereType[] wheres, FollowDeep followDeep) {
+    protected FormulaWhere(WhereType[] wheres, boolean check) {
         this.wheres = wheres;
 
-        this.followDeep = followDeep;
+        this.check = check;
     }
 
-    abstract String getOp();
+    protected abstract String getOp();
 
     public String getSource(CompileSource compile) {
         if(wheres.length==0) return getOp().equals("AND")? TRUE_STRING : FALSE_STRING;
@@ -46,16 +47,16 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
         return result;
     }
 
-    abstract int hashCoeff();
+    protected abstract int hashCoeff();
 
-    static OrObjectWhere[] not(AndObjectWhere[] wheres) {
+    protected static OrObjectWhere[] not(AndObjectWhere[] wheres) {
         OrObjectWhere[] result = new OrObjectWhere[wheres.length];
         for(int i=0;i<wheres.length;i++)
             result[i] = wheres[i].not();
         return result;
     }
 
-    static AndObjectWhere[] not(OrObjectWhere[] wheres) {
+    protected static AndObjectWhere[] not(OrObjectWhere[] wheres) {
         AndObjectWhere[] result = new AndObjectWhere[wheres.length];
         for(int i=0;i<wheres.length;i++)
             result[i] = wheres[i].not();
@@ -75,8 +76,7 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
         return height;
     }
 
-    // отнимает одно мн-во от второго
-    WhereType[] substractWheres(WhereType[] substract) {
+    protected static <WhereType> WhereType[] substractWheres(WhereType[] wheres, WhereType[] substract, ArrayInstancer<WhereType> instancer) {
         if(substract.length>wheres.length) return null;
 
         WhereType[] rawRestWheres = wheres.clone();
@@ -91,12 +91,11 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
             if(!found) return null;
         }
 
-        WhereType[] restWheres = newArray(wheres.length-substract.length); int rest=0;
+        WhereType[] restWheres = instancer.newArray(wheres.length-substract.length); int rest=0;
         for(WhereType where : rawRestWheres)
             if(where!=null) restWheres[rest++] = where;
         return restWheres;
     }
-    public abstract WhereType[] newArray(int length);
 
     public ClassExprWhere calculateClassWhere() {
         return groupMeanClassWheres().getClassWhere();
@@ -107,7 +106,7 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
     private Boolean checkTrue = null;
     @ManualLazy
     public boolean checkTrue() {
-        if(followDeep!=FollowDeep.PLAIN) {
+        if(!check) {
             assert isTrue() == checkFormulaTrue();
             return isTrue();
         }

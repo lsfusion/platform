@@ -16,18 +16,18 @@ import platform.server.data.where.classes.MeanClassWheres;
 
 public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWhere<OrWhere>, ArrayInstancer<OrObjectWhere> {
 
-    AndWhere(OrObjectWhere[] wheres, FollowDeep followDeep) {
-        super(wheres, followDeep);
+    AndWhere(OrObjectWhere[] wheres, boolean check) {
+        super(wheres, check);
     }
     AndWhere() {
-        super(new OrObjectWhere[0], FollowDeep.PACK);
+        super(new OrObjectWhere[0], false);
     }
 
     public OrObjectWhere[] newArray(int length) {
         return new OrObjectWhere[length];
     }
 
-    String getOp() {
+    protected String getOp() {
         return "AND";
     }
 
@@ -39,9 +39,17 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
         return wheres;
     }
 
-    public Where innerFollowFalse(Where falseWhere, boolean sureNotTrue, boolean packExprs) {
-        return OrWhere.followFalse(not(),falseWhere, FollowDeep.inner(packExprs),false).not();
+    public Where followFalse(CheckWhere falseWhere, boolean sureNotTrue, boolean pack, FollowChange change) {
+        Where result = not().followFalse(falseWhere, false, pack, change).not();
+        change.not();
+        return result;
     }
+
+    public final static ArrayInstancer<OrObjectWhere> instancer = new ArrayInstancer<OrObjectWhere>() {
+        public OrObjectWhere[] newArray(int size) {
+            return new OrObjectWhere[size];
+        }
+    };
 
     public boolean isTrue() {
         return wheres.length==0;
@@ -69,11 +77,11 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
     // разобъем чисто для оптимизации
     public void fillJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
         for(int i=0;i<wheres.length;i++)
-            wheres[i].fillJoinWheres(joins,andWhere.and(toWhere(siblings(wheres, i), followDeep)));
+            wheres[i].fillJoinWheres(joins,andWhere.and(toWhere(siblings(wheres, i))));
     }
 
     public boolean directMeansFrom(AndObjectWhere where) {
-        return where instanceof AndWhere && ((AndWhere)where).substractWheres(wheres)!=null;
+        return wheres.length==0 || (where instanceof AndWhere && (BaseUtils.hashEquals(this, where) || (substractWheres(((AndWhere)where).wheres,wheres,instancer)!=null)));
     }
 
     public ObjectJoinSets groupObjectJoinSets() {
@@ -99,7 +107,7 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
     @ManualLazy
     public OrWhere not() { // именно здесь из-за того что типы надо перегружать без generics
         if(not==null)
-            not = new OrWhere(not(wheres), followDeep);
+            not = new OrWhere(not(wheres), check);
         return not;
     }
 
@@ -110,13 +118,13 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
         return not().translateQuery(translator).not();
     }
 
-    int hashCoeff() {
+    protected int hashCoeff() {
         return 7;
     }
 
     private Decision[] decisions = null;
     @ManualLazy
-    Decision[] getDecisions() {
+    private Decision[] getDecisions() {
         if(decisions!=null) return decisions;
 
         // одно условие может состоять из нескольких decision'ов
@@ -132,23 +140,23 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
         // слева not'им все и ищем справа
         for(int i=0;i<leftWhere.wheres.length;i++) {
             OrObjectWhere notLeftInWhere = leftWhere.wheres[i].not(); // или Object или That
-            AndObjectWhere[] rightNotWheres = rightWhere.substractWheres(notLeftInWhere.getAnd());
+            AndObjectWhere[] rightNotWheres = substractWheres(rightWhere.wheres, notLeftInWhere.getAnd(), OrWhere.instancer);
             if(rightNotWheres!=null) // нашли decision, sibling'и left + оставшиеся right из правого
-                rawDecisions[decnum++] = new Decision(leftWhere.wheres[i],siblingsWhere(leftWhere.wheres,i,leftWhere.followDeep),toWhere(rightNotWheres,rightWhere.followDeep),leftWhere,rightWhere);
+                rawDecisions[decnum++] = new Decision(leftWhere.wheres[i],siblingsWhere(leftWhere.wheres,i),toWhere(rightNotWheres),leftWhere,rightWhere);
         }
         // справа not'им только не object'ы (чтобы 2 раза не давать одно и тоже)
         for(int i=0;i<rightWhere.wheres.length;i++)
             if(!(rightWhere.wheres[i] instanceof ObjectWhere)) {
                 OrWhere notRightInWhere = ((AndWhere)rightWhere.wheres[i]).not();
-                AndObjectWhere[] leftNotWheres = rightWhere.substractWheres(notRightInWhere.wheres);
+                AndObjectWhere[] leftNotWheres = substractWheres(rightWhere.wheres, notRightInWhere.wheres, OrWhere.instancer);
                 if(leftNotWheres!=null) // нашли decision, sibling'и right + оставшиеся left из правого
-                    rawDecisions[decnum++] = new Decision(rightWhere.wheres[i],siblingsWhere(rightWhere.wheres,i,rightWhere.followDeep),toWhere(leftNotWheres, leftWhere.followDeep),rightWhere,leftWhere);
+                    rawDecisions[decnum++] = new Decision(rightWhere.wheres[i],siblingsWhere(rightWhere.wheres,i),toWhere(leftNotWheres),rightWhere,leftWhere);
             }
         decisions = new Decision[decnum]; System.arraycopy(rawDecisions,0,decisions,0,decnum);
         return decisions;
     }
 
-    public Where pairs(AndObjectWhere pair, FollowDeep followDeep) {
+    public Where pairs(AndObjectWhere pair) {
 
         if(pair instanceof ObjectWhere) return null;
         AndWhere pairAnd = (AndWhere)pair;
@@ -158,13 +166,13 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
             if(paired.common.length==pairAnd.wheres.length || paired.getDiff1().length==0) // тогда не скобки а следствия пусть followFalse - directMeans устраняют
                 return null;
 
-            return OrWhere.op(OrWhere.op(toWhere(paired.getDiff1(), this.followDeep),toWhere(paired.getDiff2(), pairAnd.followDeep), followDeep).not(),toWhere(paired.common, this.followDeep.max(pairAnd.followDeep)).not(), followDeep).not(); // (W1 OR W2) AND P
+            return OrWhere.orPairs(OrWhere.orPairs(toWhere(paired.getDiff1()),toWhere(paired.getDiff2())).not(),toWhere(paired.common).not()).not(); // (W1 OR W2) AND P
         }
 
         // поищем decision'ы
         for(Decision decision : getDecisions())
             for(Decision thatDecision : pairAnd.getDecisions()) {
-                Where pairedDecision = decision.pairs(thatDecision, followDeep);
+                Where pairedDecision = decision.pairs(thatDecision);
                 if(pairedDecision!=null) return pairedDecision;
             }
 

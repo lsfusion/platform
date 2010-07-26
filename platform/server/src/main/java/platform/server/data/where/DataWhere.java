@@ -10,7 +10,10 @@ import platform.server.data.where.classes.MeanClassWheres;
 abstract public class DataWhere extends ObjectWhere {
 
     public boolean directMeansFrom(AndObjectWhere where) {
-        return where instanceof DataWhere && ((DataWhere)where).follow(this);
+        for(OrObjectWhere orWhere : where.getOr())
+            if(orWhere instanceof DataWhere && ((DataWhere)orWhere).follow(this))
+                return true;
+        return false;
     }
 
     public NotWhere not = null;

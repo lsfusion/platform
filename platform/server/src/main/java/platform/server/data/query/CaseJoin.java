@@ -14,9 +14,9 @@ public class CaseJoin<U> extends Join<U> {
 
     private final Collection<U> properties;
 
-    public CaseJoin(JoinCaseList<U> iCases, Collection<U> iProperties) {
-        properties = iProperties;
-        cases = iCases;
+    public CaseJoin(JoinCaseList<U> cases, Collection<U> properties) {
+        this.properties = properties;
+        this.cases = cases;
     }
 
     public CaseJoin(Where where,Join<U> join) {

@@ -47,8 +47,10 @@ public class ExprCaseList extends AddCaseList<BaseExpr,ExprCase> {
 
     private void add(Where where, BaseExpr expr) {
         Expr followExpr = expr.followFalse(getUpWhere().or(where.not()), packExprs);
-        if(!(followExpr instanceof BaseExpr)) // на самом деле если не packExprs либо BaseExpr либо NULL
+        if(!(followExpr instanceof BaseExpr)) {// на самом деле если не packExprs либо BaseExpr либо NULL
             add(where, followExpr);
+            return;
+        }
 
         where = where.and(nullWhere.not()).followFalse(upWhere, packExprs);
         if(where.isFalse()) return;

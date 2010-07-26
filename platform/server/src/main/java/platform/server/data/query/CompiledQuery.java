@@ -19,6 +19,7 @@ import platform.server.data.type.Reader;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeObject;
 import platform.server.data.where.Where;
+import platform.server.data.where.CheckWhere;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -299,15 +300,15 @@ public class CompiledQuery<K,V> {
     static Collection<AndJoinQuery> getWhereSubSet(Collection<AndJoinQuery> andWheres, Where where) {
 
         Collection<AndJoinQuery> result = new ArrayList<AndJoinQuery>();
-        Where resultWhere = Where.FALSE;
+        CheckWhere resultWhere = Where.FALSE;
         while(result.size()< andWheres.size()) {
             // ищем куда закинуть заодно считаем
             AndJoinQuery lastQuery = null;
-            Where lastWhere = null;
+            CheckWhere lastWhere = null;
             for(AndJoinQuery and : andWheres)
                 if(!result.contains(and)) {
                     lastQuery = and;
-                    lastWhere = resultWhere.orMeans(lastQuery.innerSelect.fullWhere);
+                    lastWhere = resultWhere.orCheck(lastQuery.innerSelect.fullWhere);
                     if(where.means(lastWhere)) {
                         result.add(lastQuery);
 

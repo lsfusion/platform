@@ -11,6 +11,7 @@ import platform.server.data.query.SourceJoin;
 import platform.server.data.query.innerjoins.InnerSelectJoin;
 import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.translator.QueryTranslator;
+import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
 import platform.server.classes.sets.AndClassSet;
@@ -18,50 +19,68 @@ import platform.server.classes.sets.AndClassSet;
 import java.util.Collection;
 import java.util.Map;
 
-public interface Where extends SourceJoin, TranslateContext<Where>, KeyType {
+public interface Where extends SourceJoin, TranslateContext<Where>, KeyType, CheckWhere {
 
     Where followFalse(Where falseWhere);
     Where followFalse(Where falseWhere, boolean packExprs);
+    // sureNotTrue только для того чтобы в or не делать несколько раз проверку на checkTrue
+    Where followFalse(CheckWhere falseWhere, boolean sureNotTrue, boolean pack, FollowChange change); // protected
 
+
+    static enum FollowType { // protected
+        WIDE,NARROW,DIFF,EQUALS;
+
+        public FollowType or(FollowType or) {
+            if(this==FollowType.DIFF || this==or || or==FollowType.EQUALS)
+                return this;
+            if(or==FollowType.DIFF || this==FollowType.EQUALS)
+                return or;
+            return FollowType.DIFF;
+        }
+    }
+
+    static class FollowChange { // protected
+
+        public FollowType type = FollowType.EQUALS;
+        void not() {
+            switch(type) {
+                case WIDE:
+                    type=FollowType.NARROW;
+                    break;
+                case NARROW:
+                    type=FollowType.WIDE;
+                    break;
+            }
+        }
+    }
+
+    
     Where pack();
 
     <K> Map<K, Expr> followTrue(Map<K,? extends Expr> map);
 
-    // внутренние
-    Where innerFollowFalse(Where falseWhere, boolean sureNotTrue, boolean packExprs);
-    boolean checkTrue();
-    boolean directMeansFrom(AndObjectWhere where);
-
     Where not();
-
-    boolean isTrue();
-    boolean isFalse();
 
     Where and(Where where);
     Where and(Where where, boolean packExprs);
     Where or(Where where);
     Where or(Where where, boolean packExprs);
-    Where andMeans(Where where); // чисто для means
-    Where orMeans(Where where); // чисто для means
-    boolean means(Where where);
 
-    AndObjectWhere[] getAnd();
-    OrObjectWhere[] getOr();
+    OrObjectWhere[] getOr(); // protected
 
     Map<BaseExpr,BaseExpr> getExprValues();
     Map<BaseExpr,BaseExpr> getNotExprValues();
-    Map<KeyExpr, BaseExpr> getKeyExprs();
 
     static String TRUE_STRING = "1=1";
     static String FALSE_STRING = "1<>1";
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    public Collection<InnerSelectJoin> getInnerJoins(); // this должен быть пакнут - выполнен pack()
-    public ObjectJoinSets groupObjectJoinSets(); // на самом деле protected
-    public KeyEquals groupKeyEquals();  // на самом деле protected
-    public KeyEquals getKeyEquals(); // для ускорения в GroupExpr.getInnerJoins
-    public MeanClassWheres groupMeanClassWheres();
+    Collection<InnerSelectJoin> getInnerJoins(); // должен быть выполнен pack()
+    ObjectJoinSets groupObjectJoinSets(); // protected
+    KeyEquals groupKeyEquals();  // protected
+    KeyEquals getKeyEquals(); // для ускорения в GroupExpr.getInnerJoins
+    MeanClassWheres groupMeanClassWheres();
 
     abstract public ClassExprWhere getClassWhere();
 
@@ -74,7 +93,9 @@ public interface Where extends SourceJoin, TranslateContext<Where>, KeyType {
 
     Where translateQuery(QueryTranslator translator);
 
-    public Where map(Map<KeyExpr,? extends Expr> map);
+    Where translate(MapTranslate translator);    
+
+    Where map(Map<KeyExpr,? extends Expr> map);
 
     AndClassSet getKeepClass(KeyExpr expr);
 }

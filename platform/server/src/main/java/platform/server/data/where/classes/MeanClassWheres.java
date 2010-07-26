@@ -6,15 +6,20 @@ import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.DNFWheres;
 import platform.server.data.where.EqualMap;
 import platform.server.data.where.Where;
+import platform.server.data.where.CheckWhere;
 
 import java.util.Map;
 
 
-public class MeanClassWheres extends DNFWheres<MeanClassWhere,MeanClassWheres> {
+public class MeanClassWheres extends DNFWheres<MeanClassWhere, CheckWhere, MeanClassWheres> {
 
-    protected boolean privateWhere() {
-        return true;
+    protected CheckWhere andValue(CheckWhere prevValue, CheckWhere newValue) {
+        return prevValue.andCheck(newValue);
     }
+    protected CheckWhere addValue(CheckWhere prevValue, CheckWhere newValue) {
+        return prevValue.orCheck(newValue);
+    }
+
     protected MeanClassWheres createThis() {
         return new MeanClassWheres();
     }

@@ -30,16 +30,25 @@ public class DeconcatenateExpr extends SingleClassExpr {
     BaseClass baseClass;
 
     public DeconcatenateExpr(BaseExpr expr, int part, BaseClass baseClass) {
+        assert !(expr instanceof ConcatenateExpr);
+
         this.expr = expr;
         this.part = part;
 
         this.baseClass = baseClass;
     }
 
+    private static Expr createBase(BaseExpr expr, int part, BaseClass baseClass) {
+        if(expr instanceof ConcatenateExpr)
+            return ((ConcatenateExpr)expr).deconcatenate(part);
+        else
+            return BaseExpr.create(new DeconcatenateExpr(expr, part, baseClass));
+    }
+
     public static Expr create(Expr expr, int part, BaseClass baseClass) {
         ExprCaseList result = new ExprCaseList();
         for(ExprCase exprCase : expr.getCases())
-            result.add(exprCase.where, BaseExpr.create(new DeconcatenateExpr(exprCase.data, part, baseClass)));
+            result.add(exprCase.where, createBase(exprCase.data, part, baseClass));
         return result.getExpr();
     }
 

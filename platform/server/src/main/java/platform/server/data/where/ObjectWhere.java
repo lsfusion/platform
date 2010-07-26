@@ -1,16 +1,16 @@
 package platform.server.data.where;
 
-import platform.base.BaseUtils;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.innerjoins.KeyEquals;
+import platform.base.BaseUtils;
 
 
 abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere<ObjectWhere>,AndObjectWhere<ObjectWhere> {
 
     public abstract ObjectWhere not();
 
-    public Where pairs(AndObjectWhere pair, FollowDeep followDeep) {
+    public Where pairs(AndObjectWhere pair) {
         return null;
     }
 
@@ -30,21 +30,32 @@ abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere<Object
         return new OrObjectWhere[]{this};
     }
 
-    public Where innerFollowFalse(Where falseWhere, boolean sureNotTrue, boolean packExprs) {
+    public Where followFalse(CheckWhere falseWhere, boolean sureNotTrue, boolean pack, FollowChange change) {
         // исходим из предположения что что !(not()=>falseWhere) то есть !(op,this,true).checkTrue
-        if(!sureNotTrue && OrWhere.orTrue(this,falseWhere))
+        if(!sureNotTrue && OrWhere.checkTrue(this,falseWhere)) {
+            change.type = FollowType.WIDE;
             return TRUE;
-        if(means(falseWhere))
+        }
+        if(OrWhere.checkTrue(not(),falseWhere)) {
+            change.type = FollowType.NARROW;
             return FALSE;
-        if(packExprs) {
-            Where result = packFollowFalse(falseWhere);
+        }
+        if(pack) {
+            Where result = packFollowFalse((Where)falseWhere);
             if(BaseUtils.hashEquals(this,result))
                 return this;
-            else
-                if(OrWhere.orTrue(result,falseWhere)) // если упаковался еще раз на orTrue проверим
-                    return TRUE;
-                else
-                    return result;
+            // если упаковался еще раз на orTrue проверим
+            if(!sureNotTrue && OrWhere.checkTrue(this,falseWhere)) {
+                change.type = FollowType.WIDE;
+                return TRUE;
+            }
+            if(OrWhere.checkTrue(not(),falseWhere)) {
+                change.type = FollowType.NARROW;
+                return FALSE;
+            }
+
+            change.type = FollowType.DIFF;
+            return result;
         }
         return this;
     }

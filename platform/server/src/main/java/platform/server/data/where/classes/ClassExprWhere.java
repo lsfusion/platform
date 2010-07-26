@@ -10,10 +10,7 @@ import platform.server.data.expr.VariableClassExpr;
 import platform.server.data.expr.VariableExprSet;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.type.Type;
-import platform.server.data.where.DNFWheres;
-import platform.server.data.where.Equal;
-import platform.server.data.where.EqualMap;
-import platform.server.data.where.Where;
+import platform.server.data.where.*;
 
 import java.util.Map;
 
@@ -41,7 +38,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
         return new PackClassWhere(this);
     }
 
-    public boolean means(Where where) {
+    public boolean means(CheckWhere where) {
         return getPackWhere().means(where);
     }
 

@@ -19,14 +19,14 @@ class Decision {
         whereFalse = iWhereFalse;
     }
 
-    Where pairs(Decision decision2, FollowDeep followDeep) {
+    Where pairs(Decision decision2) {
         if(BaseUtils.hashEquals(condition,decision2.condition))
-            return OrWhere.op(OrWhere.op(whereTrue,decision2.addTrue, followDeep).not(),
-                OrWhere.op(whereFalse,decision2.addFalse, followDeep).not(), followDeep).not();
+            return OrWhere.orPairs(OrWhere.orPairs(whereTrue,decision2.addTrue).not(),
+                OrWhere.orPairs(whereFalse,decision2.addFalse).not()).not();
 
         if(BaseUtils.hashEquals(condition,decision2.condition.not()))
-            return OrWhere.op(OrWhere.op(whereTrue,decision2.addFalse, followDeep).not(),
-                OrWhere.op(whereFalse,decision2.addTrue, followDeep).not(), followDeep).not();
+            return OrWhere.orPairs(OrWhere.orPairs(whereTrue,decision2.addFalse).not(),
+                OrWhere.orPairs(whereFalse,decision2.addTrue).not()).not();
 
         return null;
     }

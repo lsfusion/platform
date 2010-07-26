@@ -29,6 +29,10 @@ public class ConcatenateExpr extends BaseExpr {
 
     private final List<BaseExpr> exprs;
 
+    public BaseExpr deconcatenate(int part) {
+        return exprs.get(part);
+    }
+
     public ConcatenateExpr(List<BaseExpr> exprs) {
         this.exprs = exprs;
     }

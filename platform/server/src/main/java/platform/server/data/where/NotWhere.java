@@ -18,7 +18,10 @@ public class NotWhere extends ObjectWhere {
     }
 
     public boolean directMeansFrom(AndObjectWhere meanWhere) {
-        return meanWhere instanceof NotWhere && where.follow(((NotWhere)meanWhere).where);
+        for(OrObjectWhere orWhere : meanWhere.getOr())
+            if(orWhere instanceof NotWhere && where.follow(((NotWhere)orWhere).where))
+                return true;
+        return false;
     }
 
     public DataWhere not() {
