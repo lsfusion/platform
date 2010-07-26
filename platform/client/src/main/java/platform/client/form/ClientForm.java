@@ -6,11 +6,12 @@
 package platform.client.form;
 
 import platform.base.BaseUtils;
+import platform.base.DefaultIDGenerator;
+import platform.base.IDGenerator;
 import platform.client.Log;
 import platform.client.Main;
 import platform.client.SwingUtils;
 import platform.client.logics.*;
-import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientConcreteClass;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.filter.ClientPropertyFilter;
@@ -27,8 +28,6 @@ import platform.interop.form.response.ChangePropertyViewResponse;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -52,9 +51,15 @@ public class ClientForm {
         return formView.readOnly;
     }
 
+    private static IDGenerator idGenerator = new DefaultIDGenerator();
     private int ID;
     public int getID() {
         return ID;
+    }
+
+    private int formID;
+    public int getFormID() {
+        return formID;
     }
 
     private static final Map<Integer, ClientFormView> cacheClientFormView = new HashMap<Integer, ClientFormView>();
@@ -76,6 +81,8 @@ public class ClientForm {
 
     public ClientForm(RemoteFormInterface iremoteForm, ClientNavigator iclientNavigator) throws IOException, ClassNotFoundException {
 
+        ID = idGenerator.idShift();
+
         // Форма нужна, чтобы с ней общаться по поводу данных и прочих
         remoteForm = iremoteForm;
 
@@ -89,7 +96,7 @@ public class ClientForm {
         // так неправильно делать по двум причинам :
         // 1. лишний ping
         // 2. compID могут совпадать. Пока это используется только в диалогах, поэтому не столь критично
-        ID = remoteForm.getID();
+        formID = remoteForm.getID();
 
         initializeForm();
 

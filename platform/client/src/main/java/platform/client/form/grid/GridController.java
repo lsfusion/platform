@@ -86,6 +86,9 @@ public class GridController {
 
     public void addView(ClientFormLayout formLayout) {
         formLayout.add(view, gridView);
+        for (Map.Entry<ClientCellView, ExternalScreenComponent> entry : extViews.entrySet()) {
+            entry.getKey().externalScreen.add(form.getID(), entry.getValue(), entry.getKey().externalScreenConstraints);
+        }
     }
 
     public void addGroupObjectCells() {
@@ -113,13 +116,12 @@ public class GridController {
         gridTable.updateTable();
     }
 
-    Map<ClientCellView, ExternalScreenComponent> extViews = new HashMap<ClientCellView, ExternalScreenComponent>();
+    private Map<ClientCellView, ExternalScreenComponent> extViews = new HashMap<ClientCellView, ExternalScreenComponent>();
 
     private void addExternalScreenComponent(ClientCellView key) {
         if (!extViews.containsKey(key)) {
-/*            ExternalScreenComponent extView = new ExternalScreenComponent();
+            ExternalScreenComponent extView = new ExternalScreenComponent();
             extViews.put(key, extView);
-            key.externalScreen.add(form.getID(), extView, key.externalScreenConstraints); */
         }
     }
 
