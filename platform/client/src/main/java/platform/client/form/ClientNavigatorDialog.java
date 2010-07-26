@@ -13,16 +13,6 @@ public class ClientNavigatorDialog extends ClientDialog {
         super(owner, remoteNavigator, dialog);
 
         setUndecorated(false);
-
-        // создаем слева навигаторы
-        JPanel navigatorPanel = new JPanel();
-        navigatorPanel.setLayout(new BoxLayout(navigatorPanel, BoxLayout.Y_AXIS));
-
-        navigatorPanel.add(navigator);
-        navigatorPanel.add(navigator.relevantFormNavigator);
-        navigatorPanel.add(navigator.relevantClassNavigator);
-
-        add(navigatorPanel, BorderLayout.LINE_START);        
     }
 
     @Override

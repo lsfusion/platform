@@ -28,7 +28,6 @@ public class ClientDialog extends JDialog {
         setUndecorated(true);
         getRootPane().setBorder(BorderFactory.createLineBorder(Color.gray, 1));
 
-        //        RemoteNavigator remoteNavigator = owner.remoteForm.getNavigator(((ClientPropertyView)owner.editingCell).sID);
         navigator = new ClientNavigator(remoteNavigator) {
 
            public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
@@ -66,45 +65,45 @@ public class ClientDialog extends JDialog {
     // необходим чтобы в диалоге менять формы (панели)
     void setCurrentForm(RemoteDialogInterface remoteForm) throws IOException, ClassNotFoundException {
 
-       if (currentForm != null) remove(currentForm.getComponent());
-       currentForm = new ClientForm(remoteForm, navigator) {
+        if (currentForm != null) remove(currentForm.getComponent());
+        currentForm = new ClientForm(remoteForm, navigator) {
 
-           @Override
-           public boolean isDialogMode() {
+            @Override
+            public boolean isDialogMode() {
                return true;
-           }
+            }
 
-           @Override
-           public boolean isReadOnlyMode() {
+            @Override
+            public boolean isReadOnlyMode() {
                return super.isReadOnlyMode() || ClientDialog.this.isReadOnlyMode();
-           }
+            }
 
-           @Override
-           boolean nullPressed() {
+            @Override
+            boolean nullPressed() {
 
                objectChosen = CHOSEN_NULL;
                ClientDialog.this.setVisible(false);
                return true;
-           }
+            }
 
-           @Override
-           public boolean okPressed() {
+            @Override
+            public boolean okPressed() {
 
                objectChosen = CHOSEN_VALUE;
                ClientDialog.this.setVisible(false);
                return true;
-           }
-
-           @Override
-           boolean closePressed() {
+            }
+            
+            @Override
+            boolean closePressed() {
 
                ClientDialog.this.setVisible(false);
                return true;
-           }
-       };
-       add(currentForm.getComponent(), BorderLayout.CENTER);
+            }
+        };
+        add(currentForm.getComponent(), BorderLayout.CENTER);
 
-       validate();
+        validate();
     }
 
 }
