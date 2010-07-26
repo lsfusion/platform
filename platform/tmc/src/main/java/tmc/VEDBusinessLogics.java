@@ -1944,7 +1944,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addPropertyView(date, objDoc);
             objObligation = addSingleGroupObjectImplement(giftObligation, "Подарочный сертификат", properties, allGroup, true);
             objObligation.show = false; objObligation.showClass = false;
-            //addPropertyView(objDoc, objObligation, properties, allGroup, true);
+            addPropertyView(objDoc, objObligation, properties, allGroup, true);
 
             RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));
             filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
