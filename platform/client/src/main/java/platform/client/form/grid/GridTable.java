@@ -313,8 +313,8 @@ public abstract class GridTable extends ClientFormTable
         final Action oldFirstAction = getActionMap().get("selectFirstColumn");
         final Action oldLastAction = getActionMap().get("selectLastColumn");
 
-        final Action nextAction = new GoToCellAction(oldNextAction);
-        final Action prevAction = new GoToCellAction(oldPrevAction);
+        final Action nextAction = new GoToCellAction(oldNextAction, true);
+        final Action prevAction = new GoToCellAction(oldPrevAction, false);
         final Action firstAction = new GoToLastCellAction(oldFirstAction, oldNextAction);
         final Action lastAction = new GoToLastCellAction(oldLastAction, oldPrevAction);
 
@@ -564,9 +564,11 @@ public abstract class GridTable extends ClientFormTable
 
     private class GoToCellAction extends AbstractAction {
         private Action oldMoveAction;
+        private boolean isNext;
 
-        public GoToCellAction(Action oldMoveAction) {
+        public GoToCellAction(Action oldMoveAction, boolean isNext) {
             this.oldMoveAction = oldMoveAction;
+            this.isNext = isNext;
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -578,15 +580,14 @@ public abstract class GridTable extends ClientFormTable
             int row, column;
             do {
                 oldMoveAction.actionPerformed(e);
-                if (((getSelectionModel().getLeadSelectionIndex() == 0 && getColumnModel().getSelectionModel().getLeadSelectionIndex() == 0)
-                        || (getSelectionModel().getLeadSelectionIndex() == getRowCount() - 1 && getColumnModel().getSelectionModel().getLeadSelectionIndex() == getColumnCount() - 1))
+                row = getSelectionModel().getLeadSelectionIndex();
+                column = getColumnModel().getSelectionModel().getLeadSelectionIndex();
+                if (((row == 0 && column == 0 && isNext) || (row == getRowCount() - 1 && column == getColumnCount() - 1) && (!isNext))
                         && isCellFocusable(initRow, initColumn)) {
                     getSelectionModel().setLeadSelectionIndex(initRow);
                     getColumnModel().getSelectionModel().setLeadSelectionIndex(initColumn);
                     break;
                 }
-                row = getSelectionModel().getLeadSelectionIndex();
-                column = getColumnModel().getSelectionModel().getLeadSelectionIndex();
             } while (!isCellFocusable(row, column));
 
             isNavigatingFromAction = false;
