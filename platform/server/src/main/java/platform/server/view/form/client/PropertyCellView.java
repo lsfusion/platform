@@ -35,6 +35,7 @@ public class PropertyCellView extends CellView implements ClientSerialize {
         super.serialize(outStream);
 
         outStream.writeInt(view.ID);
+        outStream.writeUTF(view.view.property.sID);
         outStream.writeBoolean(view.toDraw==null);
         if(view.toDraw!=null)
             outStream.writeInt(view.toDraw.ID);

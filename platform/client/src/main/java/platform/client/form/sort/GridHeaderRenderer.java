@@ -30,7 +30,6 @@ public abstract class GridHeaderRenderer implements TableCellRenderer {
         Component comp = tableCellRenderer.getTableCellRendererComponent(itable,
                 value, isSelected, hasFocus, row, column);
         if (comp instanceof JLabel) {
-
             JLabel label = (JLabel) comp;
             label.setHorizontalAlignment(JLabel.CENTER);
             label.setVerticalAlignment(JLabel.TOP);
@@ -38,9 +37,6 @@ public abstract class GridHeaderRenderer implements TableCellRenderer {
             Boolean sortDir = getSortDirection(column);
             if (sortDir != null)
                 label.setIcon(sortDir ? arrowUpIcon : arrowDownIcon);
-
-            if (value instanceof String)
-                label.setToolTipText((String)value);
 
             label.setFont(label.getFont().deriveFont(Font.PLAIN, 10));
         }

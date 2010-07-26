@@ -12,16 +12,14 @@ import platform.client.form.sort.GridHeaderMouseListener;
 import platform.client.form.sort.GridHeaderRenderer;
 import platform.client.logics.ClientCellView;
 import platform.client.logics.ClientGroupObjectValue;
+import platform.client.logics.ClientPropertyView;
 import platform.interop.Order;
 import platform.interop.Scroll;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
+import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
@@ -285,6 +283,28 @@ public abstract class GridTable extends ClientFormTable
         if (isNavigatingFromAction || isCellFocusable(rowIndex, columnIndex)) {
             super.changeSelection(rowIndex, columnIndex, toggle, extend);
         }
+    }
+
+    @Override
+    protected JTableHeader createDefaultTableHeader() {
+        return new JTableHeader(columnModel) {
+            @Override
+            public String getToolTipText(MouseEvent e) {
+                Point p = e.getPoint();
+                int index = columnModel.getColumnIndexAtX(p.x);
+                int modelIndex = columnModel.getColumn(index).getModelIndex();
+
+                String toolTip = (String) columnModel.getColumn(index).getHeaderValue();
+
+                ClientCellView cellView = gridColumns.get(modelIndex);
+                if (cellView instanceof ClientPropertyView) {
+                    ClientPropertyView propertyView = (ClientPropertyView) cellView;
+                    toolTip += " (sID: " + propertyView.getSID() + ")";
+                }
+
+                return toolTip;
+            }
+        };
     }
 
     private void initializeActionMap() {

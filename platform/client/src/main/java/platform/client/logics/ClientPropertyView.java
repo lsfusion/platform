@@ -20,6 +20,12 @@ public class ClientPropertyView extends ClientCellView {
         return ID;
     }
 
+    private String sID;
+
+    public String getSID() {
+        return sID;
+    }
+
     public int getShiftID() {
         return 0;
     }
@@ -30,6 +36,7 @@ public class ClientPropertyView extends ClientCellView {
         super(inStream, containers);
 
         ID = inStream.readInt();
+        sID = inStream.readUTF();
         if(!inStream.readBoolean()) {
             int groupID = inStream.readInt();
             for(ClientGroupObjectImplementView group : groups)
