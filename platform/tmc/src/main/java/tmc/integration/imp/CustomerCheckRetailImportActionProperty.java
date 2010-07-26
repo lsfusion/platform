@@ -43,7 +43,10 @@ public class CustomerCheckRetailImportActionProperty extends ActionProperty {
             impFile = new DBF("impcustomer.dbf");
             int recordCount = impFile.getRecordCount();
 
-            RemoteForm remoteForm = new RemoteForm(new ClassNavigatorForm(BL, BL.customerCheckRetail), BL, BL.createSession(), AuthPolicy.defaultSecurityPolicy, null, null, new DataObject(BL.getComputers().iterator().next(), BL.computer)); // здесь надо переделать на нормальный компьютер
+            RemoteForm remoteForm = new RemoteForm(
+                    new ClassNavigatorForm(BL, BL.customerCheckRetail),
+                    BL, BL.createSession(), AuthPolicy.defaultSecurityPolicy, null, null,
+                    new DataObject(executeForm.form.mapper.computer, BL.computer));
 
             for (int i = 0; i < recordCount; i++) {
 

@@ -105,7 +105,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
     private FormData getDataSale(DataSession session, Map<Field, PropertyView> map) throws Exception {
 
         // Выгружаем продажи по кассе
-        RemoteForm remoteForm = new RemoteForm(BL.commitSaleBrowse, BL, session, AuthPolicy.defaultSecurityPolicy, null, null, new DataObject(BL.getComputers().iterator().next(), BL.computer)); // здесь надо переделать на нормальный компьютер
+        RemoteForm remoteForm = new RemoteForm(BL.commitSaleBrowse, BL, session, AuthPolicy.defaultSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.computer)); // здесь надо переделать на нормальный компьютер
 
         setRemoteFormFilter(remoteForm);
 
@@ -133,7 +133,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
     private FormData getDataCert(DataSession session, Map<Field, PropertyView> map) throws Exception {
 
         // Выгружаем продажи по кассе
-        RemoteForm remoteForm = new RemoteForm(BL.saleCheckCertBrowse, BL, session, AuthPolicy.defaultSecurityPolicy, null, null, new DataObject(BL.getComputers().iterator().next(), BL.computer)); // здесь надо переделать на нормальный компьютер
+        RemoteForm remoteForm = new RemoteForm(BL.saleCheckCertBrowse, BL, session, AuthPolicy.defaultSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.computer)); // здесь надо переделать на нормальный компьютер
 
         setRemoteFormFilter(remoteForm);
 
@@ -159,7 +159,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
     private FormData getDataReturn(DataSession session, Map<Field, PropertyView> map) throws Exception {
 
         // Выгружаем продажи по кассе
-        RemoteForm remoteForm = new RemoteForm(BL.returnSaleCheckRetailBrowse, BL, session, AuthPolicy.defaultSecurityPolicy, null, null, new DataObject(BL.getComputers().iterator().next(), BL.computer)); // здесь надо переделать на нормальный компьютер
+        RemoteForm remoteForm = new RemoteForm(BL.returnSaleCheckRetailBrowse, BL, session, AuthPolicy.defaultSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.computer)); // здесь надо переделать на нормальный компьютер
 
         setRemoteFormFilter(remoteForm);
 

@@ -5,17 +5,16 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 import platform.client.exceptions.ClientExceptionManager;
 import platform.interop.RemoteLogicsInterface;
-import platform.interop.exceptions.LoginException;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.rmi.RemoteException;
 
 public class LoginDialog extends JDialog {
 
     private final RemoteLogicsInterface BL;
+    private int computer;
 
     private JPanel contentPane;
     private JButton buttonOK;
@@ -23,8 +22,9 @@ public class LoginDialog extends JDialog {
     private JTextField loginField;
     private JPasswordField passwordField;
 
-    public LoginDialog(RemoteLogicsInterface iBL) {
+    public LoginDialog(int icomputer, RemoteLogicsInterface iBL) {
 
+        computer = icomputer;
         BL = iBL;
 
         setContentPane(contentPane);
@@ -66,7 +66,7 @@ public class LoginDialog extends JDialog {
     private void onOK() {
 
         try {
-            result = BL.createNavigator(loginField.getText(), new String(passwordField.getPassword()), BL.getComputers().iterator().next());
+            result = BL.createNavigator(loginField.getText(), new String(passwordField.getPassword()), computer);
             dispose();
         } catch (Exception e) {
             ClientExceptionManager.handleException(e, this);

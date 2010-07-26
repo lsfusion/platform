@@ -69,18 +69,18 @@ public class Main {
 
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
-                    String serverName = System.getProperty("platform.client.hostname", "localhost");
-                    String exportPort = System.getProperty("platform.client.hostport", "7652");
+                    String serverHost = System.getProperty("platform.client.hostname", "localhost");
+                    String serverPort = System.getProperty("platform.client.hostport", "7652");
 
                     String user = System.getProperty("platform.client.user");
                     String password = System.getProperty("platform.client.password");
 
-                    remoteLogics = (RemoteLogicsInterface) Naming.lookup("rmi://" + serverName + ":" + exportPort + "/BusinessLogics");
-                    int computer = remoteLogics.getComputers().iterator().next();
+                    remoteLogics = (RemoteLogicsInterface) Naming.lookup("rmi://" + serverHost + ":" + serverPort + "/BusinessLogics");
+                    int computer = remoteLogics.getComputer(OSUtils.getLocalHostName());
 
                     RemoteNavigatorInterface remoteNavigator;
                     if (user == null) {
-                        remoteNavigator = new LoginDialog(remoteLogics).login();
+                        remoteNavigator = new LoginDialog(computer, remoteLogics).login();
                     } else
                         remoteNavigator = remoteLogics.createNavigator(user, password, computer);
 

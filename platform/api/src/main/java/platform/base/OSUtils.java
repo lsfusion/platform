@@ -1,6 +1,8 @@
 package platform.base;
 
 import java.io.*;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 public class OSUtils {
 
@@ -64,5 +66,20 @@ public class OSUtils {
         if (!userDir.exists())
             userDir.mkdirs();
         return userFile;
+    }
+
+    public static String getLocalHostName() {
+        String name = null;
+        try {
+            InetAddress address = InetAddress.getLocalHost();
+            name = address.getCanonicalHostName();
+        } catch (UnknownHostException uhe) {
+        }
+
+        if (name == null || name.trim().isEmpty()) {
+            name = "localhost";
+        }
+
+        return name;
     }
 }

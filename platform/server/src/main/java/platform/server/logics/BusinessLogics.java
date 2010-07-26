@@ -176,20 +176,28 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public ConcreteCustomClass customUser;
     public ConcreteCustomClass computer;
 
-    public Collection<Integer> getComputers() {
-        Collection<Integer> result = new ArrayList<Integer>();
-
+    public Integer getComputer(String strHostName) {
         try {
+
+            Integer result;
             DataSession session = createSession();
 
-            Query<String, Object> query = new Query<String, Object>(Collections.singleton("key"));
-            query.and(BaseUtils.singleValue(query.mapKeys).isClass(computer));
-            for(Map<String, Object> row : query.execute(session).keySet())
-                result.add((Integer) row.get("key"));
+            Query<String, Object> q = new Query<String, Object>(Collections.singleton("key"));
+            q.and(
+                hostname.getExpr(
+                    session.modifier, q.mapKeys.get("key")
+                ).compare(new DataObject(strHostName), Compare.EQUALS)
+            );
 
-            if(result.size()==0) {
-                result.add((Integer) session.addObject(computer, session.modifier).object);
+            Set<Map<String, Object>> keys = q.execute(session).keySet();
+            if (keys.size() == 0) {
+                DataObject addObject = session.addObject(computer, session.modifier);
+                hostname.execute(strHostName, session, session.modifier, addObject);
+
+                result = (Integer) addObject.object;
                 session.apply(this);
+            } else {
+                result = (Integer) keys.iterator().next().get("key");
             }
 
             session.close();
@@ -198,6 +206,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public Integer getServerComputer() {
+        return getComputer(OSUtils.getLocalHostName());
     }
 
     protected void initExternalScreens() {
@@ -272,6 +284,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP currentUserName;
     protected LP<?> loginToUser;
 
+    public LP hostname;
+    
     void initBase() {
 
         baseGroup = new AbstractGroup("Атрибуты");
@@ -290,6 +304,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         customUser = addConcreteClass(9999976, "Обычный пользователь", user, barcodeObject);
         systemUser = addConcreteClass(9999974, "Системный пользователь", user);
         computer = addConcreteClass(9999975, "Рабочее место", baseClass);
+
+        hostname = addDProp(baseGroup, "hostname", "Имя хоста", StringClass.get(100), computer);
 
         tableFactory = new TableFactory();
         for(int i=0;i<TableFactory.MAX_INTERFACE;i++) { // заполним базовые таблицы
