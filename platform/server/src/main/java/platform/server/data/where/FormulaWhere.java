@@ -13,7 +13,7 @@ import platform.server.data.where.classes.ClassExprWhere;
 @GenericImmutable
 public abstract class FormulaWhere<WhereType extends Where> extends AbstractWhere {
 
-    public final boolean check; // если true в неправильном состоянии
+    public boolean check; // если true в неправильном состоянии
 
     protected final WhereType[] wheres;
 

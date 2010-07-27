@@ -23,9 +23,8 @@ public interface Where extends SourceJoin, TranslateContext<Where>, KeyType, Che
 
     Where followFalse(Where falseWhere);
     Where followFalse(Where falseWhere, boolean packExprs);
-    // sureNotTrue только для того чтобы в or не делать несколько раз проверку на checkTrue
-    Where followFalse(CheckWhere falseWhere, boolean sureNotTrue, boolean pack, FollowChange change); // protected
-
+    Where followFalse(CheckWhere falseWhere, boolean pack, FollowChange change); // protected
+    Where oldff(CheckWhere falseWhere, boolean sureNotTrue, boolean pack, FollowChange change); // protected
 
     static enum FollowType { // protected
         WIDE,NARROW,DIFF,EQUALS;

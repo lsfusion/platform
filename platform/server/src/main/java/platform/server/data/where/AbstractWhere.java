@@ -16,6 +16,7 @@ import platform.server.data.query.innerjoins.KeyEqual;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
 import platform.server.data.type.Type;
+import platform.server.data.translator.MapTranslate;
 import platform.server.classes.sets.AndClassSet;
 
 import java.util.Collection;
@@ -39,7 +40,8 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         return or(where, false);
     }
     public Where or(Where where, boolean packExprs) {
-        return OrWhere.or(this,where,packExprs);
+//        assert BaseUtils.hashEquals(OrWhere.oldor(this, where, packExprs),OrWhere.newor(this, where, packExprs));
+        return OrWhere.or(this, where, packExprs);
     }
     public CheckWhere orCheck(CheckWhere where) {
         return OrWhere.orCheck(this,where);
@@ -49,7 +51,11 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         return followFalse(falseWhere, false);
     }
     public Where followFalse(Where falseWhere, boolean packExprs) {
-        return followFalse(falseWhere, false, packExprs, new FollowChange());
+        Where result = followFalse(falseWhere, packExprs, new FollowChange());
+        if(result instanceof ObjectWhere && OrWhere.checkTrue(this,falseWhere))
+            result = TRUE;
+        assert BaseUtils.hashEquals(oldff(falseWhere, false, packExprs, new FollowChange()),result);
+        return result;
     }
     public Where pack() { // собсно все packExprs нужен только для этого метода, он в свою очередь нужен чтобы в LinearExpr убрать лишние и в GroupExpr протолкнуть классы \ exprValues
         return followFalse(Where.FALSE, true);
@@ -193,4 +199,6 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     public AndClassSet getKeepClass(KeyExpr expr) {
         return getClassWhere().getKeepClass(expr);
     }
+
+    public abstract Where translate(MapTranslate translator);    
 }

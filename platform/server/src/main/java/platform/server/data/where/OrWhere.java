@@ -35,17 +35,17 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
     };
 
     // выполняет or двух where в правильной форме получая where в правильной форме 
-    public static Where or(Where where1,Where where2,boolean pack) {
+    public static Where oldor(Where where1,Where where2,boolean pack) {
 
         if(where1.isFalse() || where2.isTrue()) return where2;
         if(where2.isFalse() || where1.isTrue()) return where1;
         
-        Where followWhere1 = where1.followFalse(where2, false, pack, new FollowChange());
+        Where followWhere1 = where1.oldff(where2, false, pack, new FollowChange());
         while(true) {
             FollowChange change = new FollowChange();
-            Where followWhere2 = where2.followFalse(followWhere1, true, pack, change);
+            Where followWhere2 = where2.oldff(followWhere1, true, pack, change);
             if(change.type != FollowType.WIDE && change.type != FollowType.DIFF) {
-                assert BaseUtils.hashEquals(followWhere1.followFalse(followWhere2, true, pack, new FollowChange()),followWhere1);
+                assert BaseUtils.hashEquals(followWhere1.oldff(followWhere2, true, pack, new FollowChange()),followWhere1);
                 return orPairs(followWhere2, followWhere1);
             } else { // поменяем followWhere1 и followWhere2 местами
                 where2 = followWhere1; followWhere1 = followWhere2;
@@ -53,8 +53,31 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         }
     }
 
+    public static Where or(Where where1,Where where2,boolean pack) {
+
+        if(where1.isFalse() || where2.isTrue()) return where2;
+        if(where2.isFalse() || where1.isTrue()) return where1;
+
+        Where followWhere1 = where1.followFalse(where2, pack, new FollowChange());
+        while(true) {
+            FollowChange change = new FollowChange();
+            Where followWhere2 = where2.followFalse(followWhere1, pack, change);
+            if(change.type != FollowType.WIDE && change.type != FollowType.DIFF) {
+                // если And'ы или Or'ы то они бы при упаковке внутри ушли бы
+                if(followWhere1 instanceof ObjectWhere && followWhere2 instanceof ObjectWhere && checkTrue(where1,where2))
+                    return TRUE;
+
+                assert BaseUtils.hashEquals(followWhere1.followFalse(followWhere2, pack, new FollowChange()),followWhere1);
+                
+                return orPairs(followWhere2, followWhere1);
+            } else { // поменяем followWhere1 и followWhere2 местами
+                where2 = followWhere1; followWhere1 = followWhere2;
+            }
+        }
+    }
+    
     // выполняет or двух where в правильной форме assert'утых что where1.ff(where2)==where1, и where2.ff(where1)==where2
-    // перестраивает дерево - выделяя скобки, decision'ы,  
+    // перестраивает дерево - выделяя скобки, decision'ы,
     public static Where orPairs(Where where1,Where where2) {
 
         if(where1.isFalse() || where2.isTrue()) return where2;
@@ -100,11 +123,14 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
             return orCheck(where1,where2);        
     }
 
-    public Where followFalse(CheckWhere falseWhere, boolean sureNotTrue, boolean pack, FollowChange change) {
+    public Where oldff(CheckWhere falseWhere, boolean sureNotTrue, boolean pack, FollowChange change) {
 
-        if(falseWhere.isTrue()) return FALSE;
         if(isFalse()) return this;
         if(falseWhere.isFalse() && !pack) return this;
+        if(falseWhere.isTrue()) {
+            change.type = FollowType.NARROW;
+            return FALSE;
+        }
 
         if(!sureNotTrue) {
             if(checkTrue(this,falseWhere)) {
@@ -138,10 +164,13 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
                 siblingWhere = orCheck(siblingWhere,toWhere(siblingStatics));
 
                 FollowChange followChange = new FollowChange();
-                Where followWhere = (siblingNewWheres[Ni]==null?wheres[i]:(Where)siblingNewWheres[Ni]).followFalse(orCheck(siblingWhere, falseWhere), sureNotTrue, pack, followChange);
+                Where followWhere = (siblingNewWheres[Ni]==null?wheres[i]:(Where)siblingNewWheres[Ni]).oldff(orCheck(siblingWhere, falseWhere), sureNotTrue, pack, followChange);
                 changeType = changeType.or(followChange.type);
                 if(followChange.type!=FollowType.EQUALS) { // если шире стал, изменился, и даже если narrow'е стал (потому как может каскад вызвать)
-                    if(followWhere.isTrue()) return TRUE; // простое ускорение
+                    if(followWhere.isTrue()) {
+                        change.type = FollowType.WIDE;
+                        return TRUE; // простое ускорение
+                    }
                     if(siblingNewWheres[Ni]==null) in++;
                     siblingNewWheres[Ni] = followWhere;
                     while(Ni/2>1) { // пересчитываем sibling'и new
@@ -175,6 +204,81 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         }
 
         change.type = changeType;       
+        return result;
+    }
+
+    public Where followFalse(CheckWhere falseWhere, boolean pack, FollowChange change) {
+        if(isFalse()) return this;
+        if(falseWhere.isFalse() && !pack) return this;
+        if(falseWhere.isTrue()) {
+            change.type = FollowType.NARROW;
+            return FALSE;
+        }
+
+        // нужно минимизировать orCheck'и
+        int N = 2; while(N<wheres.length) N = N*2;
+        CheckWhere[] siblingNewWheres = new CheckWhere[N * 2]; // хранит матрицы по компонентам
+
+        FollowType changeType = FollowType.EQUALS;
+
+        int in=0; // количество сколько изменилось
+        int ilast = -1; // какой элемент пропускfnm
+        for(int i=0;i<wheres.length;i++) {
+            if(i!=ilast) {
+                int Ni=N+i;
+
+                CheckWhere siblingWhere = Where.FALSE;
+                for(int j=Ni;j>1;j=j/2) // расчитываем siblings для изменившихся условий
+                    siblingWhere = orCheckNull(siblingWhere,siblingNewWheres[(j%2==0?j+1:j-1)]); // берем siblings
+
+                AndObjectWhere[] siblingStatics = new AndObjectWhere[wheres.length-in-(siblingNewWheres[Ni]!=null?0:1)]; int sw = 0;
+                for(int j=0;j<wheres.length;j++) // расчитываем siblings для неизменившихся условий
+                    if(j!=i && siblingNewWheres[N+j]==null)
+                        siblingStatics[sw++] = wheres[j];
+                siblingWhere = orCheck(siblingWhere,toWhere(siblingStatics));
+
+                FollowChange followChange = new FollowChange();
+                Where followWhere = (siblingNewWheres[Ni]==null?wheres[i]:(Where)siblingNewWheres[Ni]).followFalse(orCheck(siblingWhere, falseWhere), pack, followChange);
+                changeType = changeType.or(followChange.type);
+                if(followChange.type!=FollowType.EQUALS) { // если шире стал, изменился, и даже если narrow'е стал (потому как может каскад вызвать)
+                    if(followWhere.isTrue()) {
+                        change.type = FollowType.WIDE;
+                        return TRUE; // простое ускорение
+                    }
+
+                    if(siblingNewWheres[Ni]==null) in++;
+                    siblingNewWheres[Ni] = followWhere;
+                    while(Ni/2>1) { // пересчитываем sibling'и new
+                        siblingNewWheres[Ni/2] = orCheckNull(siblingNewWheres[Ni], siblingNewWheres[(Ni%2==0?Ni+1:Ni-1)]);
+                        Ni=Ni/2;
+                    }
+
+                    if(followChange.type!=FollowType.NARROW) { // начинаем заново, потому как могло повлиять на уже обработанные условия
+                        ilast=i; i=-1; }
+                }
+            }
+        }
+
+        // если остались одни Object'ы то проверить на checkTrue
+        boolean onlyObjects = true;
+        AndObjectWhere[] staticWheres = new AndObjectWhere[wheres.length-in]; int sn = 0;
+        for(int j=0;j<wheres.length;j++)
+            if(siblingNewWheres[N+j]!=null)
+                onlyObjects = onlyObjects && (siblingNewWheres[N+j].isFalse() || siblingNewWheres[N+j] instanceof ObjectWhere);
+            else {
+                staticWheres[sn++] = wheres[j];
+                onlyObjects = onlyObjects && wheres[j] instanceof ObjectWhere;
+            }
+        Where result = toWhere(staticWheres);
+        if(onlyObjects && checkTrue(orCheckNull(orCheckNull(result,siblingNewWheres[2]),siblingNewWheres[3]),falseWhere)) {
+            change.type = FollowType.WIDE;
+            return TRUE;
+        }
+        for(int j=0;j<wheres.length;j++)
+            if(siblingNewWheres[N+j]!=null)
+                result = orPairs(result, (Where) siblingNewWheres[N+j]);
+
+        change.type = changeType;
         return result;
     }
 

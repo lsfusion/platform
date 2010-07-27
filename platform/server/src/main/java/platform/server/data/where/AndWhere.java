@@ -39,12 +39,19 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
         return wheres;
     }
 
-    public Where followFalse(CheckWhere falseWhere, boolean sureNotTrue, boolean pack, FollowChange change) {
-        Where result = not().followFalse(falseWhere, false, pack, change).not();
+    public Where oldff(CheckWhere falseWhere, boolean sureNotTrue, boolean pack, FollowChange change) {
+        // на checkTrue нет смысла проверять, потому как or равенства true эквивалентно or true каждого, а значит внутренний ff их сам уберет 
+        Where result = not().oldff(falseWhere, false, pack, change).not();
         change.not();
         return result;
     }
 
+    public Where followFalse(CheckWhere falseWhere, boolean pack, FollowChange change) {
+        Where result = not().followFalse(falseWhere, pack, change).not();
+        change.not();
+        return result;
+    }
+    
     public final static ArrayInstancer<OrObjectWhere> instancer = new ArrayInstancer<OrObjectWhere>() {
         public OrObjectWhere[] newArray(int size) {
             return new OrObjectWhere[size];
