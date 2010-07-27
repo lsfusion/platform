@@ -879,7 +879,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             session.close();
 
-            return result.trim();
+            return result != null ? result.trim() : null;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
