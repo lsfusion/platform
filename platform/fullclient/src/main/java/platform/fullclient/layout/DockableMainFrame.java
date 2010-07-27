@@ -9,6 +9,7 @@ import bibliothek.gui.dock.facile.menu.SubmenuPiece;
 import bibliothek.gui.dock.support.menu.SeparatingMenuPiece;
 import net.sf.jasperreports.engine.JRException;
 import platform.client.Log;
+import platform.client.Main;
 import platform.client.MainFrame;
 import platform.client.navigator.ClientNavigator;
 import platform.client.navigator.ClientNavigatorForm;
@@ -22,6 +23,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
+import java.rmi.RemoteException;
 import java.util.*;
 
 public class DockableMainFrame extends MainFrame {
@@ -59,24 +61,30 @@ public class DockableMainFrame extends MainFrame {
 
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent event) {
-                new File((System.getProperty("user.home") + "\\.fusion")).mkdir();
+                File baseDir = null;
+                try {
+                    baseDir = new File(System.getProperty("user.home"), ".fusion\\" + Main.remoteLogics.getName());
+                } catch (RemoteException e) {
+                    //по умолчанию
+                    baseDir = new File(System.getProperty("user.home"), ".fusion");
+                }
+
+                baseDir.mkdirs();
 
                 try {
                     control.save("default");
-                    DataOutputStream out = new DataOutputStream(new FileOutputStream(new File(System.getProperty("user.home") + "\\.fusion\\binary.data")));
+                    DataOutputStream out = new DataOutputStream(new FileOutputStream(new File(baseDir, "binary.data")));
                     view.getForms().write(out);
                     control.getResources().writeStream(out);
-                    FileWriter fileWr = new FileWriter((System.getProperty("user.home") + "\\.fusion\\info.txt"));
+                    FileWriter fileWr = new FileWriter(new File(baseDir, "info.txt"));
                     fileWr.write(getWidth() + " " + getHeight() + '\n');
 
                     fileWr.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
             }
         });
-
     }
 
     @Override
@@ -98,18 +106,25 @@ public class DockableMainFrame extends MainFrame {
         view = new ViewManager(control, mainNavigator);
         control.setTheme(ThemeMap.KEY_ECLIPSE_THEME);
 
+        File baseDir = null;
         try {
-            DataInputStream in = new DataInputStream(new FileInputStream(new File(System.getProperty("user.home") + "\\.fusion\\binary.data")));
+            baseDir = new File(System.getProperty("user.home"), ".fusion\\" + Main.remoteLogics.getName());
+        } catch (RemoteException e) {
+            //по умолчанию
+            baseDir = new File(System.getProperty("user.home"), ".fusion");
+        }
+
+        try {
+            DataInputStream in = new DataInputStream(new FileInputStream(new File(baseDir, "binary.data")));
             view.getForms().read(in);
             control.getResources().readStream(in);
             in.close();
         } catch (IOException e) {
             e.printStackTrace();
-
         }
 
         try {
-            Scanner in = new Scanner(new FileReader((System.getProperty("user.home") + "\\.fusion\\info.txt")));
+            Scanner in = new Scanner(new FileReader(new File(baseDir, "info.txt")));
             int wWidth = in.nextInt();
             int wHeight = in.nextInt();
             setSize(wWidth, wHeight);

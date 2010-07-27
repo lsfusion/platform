@@ -2228,4 +2228,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         else
             return null;
     }
+
+    public String getName() throws RemoteException {
+        return getClass().getSimpleName();
+    }
 }
