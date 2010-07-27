@@ -402,11 +402,13 @@ public class ClientForm {
         // Сначала меняем виды объектов
 
         for (ClientPropertyView property : formChanges.panelProperties.keySet()) {
-            controllers.get(property.groupObject).addPanelProperty(property);
+            if (property.shouldBeDrawn(this))
+                controllers.get(property.groupObject).addPanelProperty(property);
         }
 
         for (ClientPropertyView property : formChanges.gridProperties.keySet()) {
-            controllers.get(property.groupObject).addGridProperty(property);
+            if (property.shouldBeDrawn(this))
+                controllers.get(property.groupObject).addGridProperty(property);
         }
 
         for (ClientPropertyView property : formChanges.dropProperties) {
@@ -438,11 +440,13 @@ public class ClientForm {
         // Затем их свойства
 
         for (ClientPropertyView property : formChanges.panelProperties.keySet()) {
-            controllers.get(property.groupObject).setPanelPropertyValue(property, formChanges.panelProperties.get(property));
+            if (property.shouldBeDrawn(this))
+                controllers.get(property.groupObject).setPanelPropertyValue(property, formChanges.panelProperties.get(property));
         }
 
         for (ClientPropertyView property : formChanges.gridProperties.keySet()) {
-            controllers.get(property.groupObject).setGridPropertyValues(property, formChanges.gridProperties.get(property));
+            if (property.shouldBeDrawn(this))
+                controllers.get(property.groupObject).setGridPropertyValues(property, formChanges.gridProperties.get(property));
         }
 
         formLayout.getComponent().validate();

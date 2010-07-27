@@ -25,4 +25,5 @@ public interface ClientType {
     PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException;
     PropertyEditorComponent getClassComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException;
 
+    boolean shouldBeDrawn(ClientForm form);
 }

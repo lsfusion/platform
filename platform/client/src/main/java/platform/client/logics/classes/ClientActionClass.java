@@ -41,4 +41,9 @@ public class ClientActionClass extends ClientDataClass implements ClientType {
     public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException { return new ActionPropertyEditor(); }
     public PropertyEditorComponent getClassComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException { return null; }
     protected PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) { return null; }
+
+    @Override
+    public boolean shouldBeDrawn(ClientForm form) {
+        return !form.isReadOnlyMode(); // не рисуем кнопки на диалогах
+    }
 }

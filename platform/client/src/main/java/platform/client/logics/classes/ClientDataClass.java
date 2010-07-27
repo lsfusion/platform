@@ -49,4 +49,8 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
     public PropertyEditorComponent getClassComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException {
         return getComponent(value, format, null);
     }
+
+    public boolean shouldBeDrawn(ClientForm form) {
+        return true;
+    }
 }

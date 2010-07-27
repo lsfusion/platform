@@ -70,4 +70,8 @@ public class ClientPropertyView extends ClientCellView {
     public RemoteDialogInterface createClassForm(RemoteFormInterface form, Integer value) throws RemoteException {
         return form.createClassPropertyDialog(ID, BaseUtils.objectToInt(value));
     }
+
+    public boolean shouldBeDrawn(ClientForm form) {
+        return baseType.shouldBeDrawn(form);
+    }
 }
