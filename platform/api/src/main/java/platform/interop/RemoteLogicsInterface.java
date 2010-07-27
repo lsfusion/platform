@@ -1,6 +1,7 @@
 package platform.interop;
 
 import platform.interop.form.screen.ExternalScreen;
+import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import java.rmi.Remote;
@@ -15,4 +16,6 @@ public interface RemoteLogicsInterface extends Remote {
     Integer getComputer(String hostname) throws RemoteException;
 
     ExternalScreen getExternalScreen(int screenID) throws RemoteException;
+
+    ExternalScreenParameters getExternalScreenParameters(int screenID, int computerId) throws RemoteException;
 }

@@ -4,6 +4,7 @@ import platform.client.Main;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenComponent;
 import platform.interop.form.screen.ExternalScreenConstraints;
+import platform.interop.form.screen.ExternalScreenParameters;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -13,23 +14,24 @@ import java.util.Map;
 
 public class ClientExternalScreen {
 
-    private static List<ClientExternalScreen> screens = new ArrayList<ClientExternalScreen>();
+    private static Map<Integer, ClientExternalScreen> screens = new HashMap<Integer, ClientExternalScreen>();
     private boolean valid = true;
 
     public static ClientExternalScreen getScreen(int screenID) {
-
-        for (ClientExternalScreen screen : screens)
-            if (screen.getID() == screenID)
-                return screen;
-
-        ClientExternalScreen screen = null;
-        try {
-            screen = new ClientExternalScreen(Main.remoteLogics.getExternalScreen(screenID));
-        } catch (RemoteException e) {
-            throw new RuntimeException("Ошибка при считывании параметров внешнего экрана", e);
+        ClientExternalScreen screen = screens.get(screenID);
+        if (screen == null) {
+            try {
+                // нужно оставить этот вызов здесь, чтобы класс параметров экрана подгрузился до создания самого объекта экрана
+                ExternalScreenParameters params = Main.remoteLogics.getExternalScreenParameters(screenID, Main.computerId);
+                
+                screen = new ClientExternalScreen(Main.remoteLogics.getExternalScreen(screenID));
+                screen.initialize();
+                screens.put(screenID, screen);
+            } catch (RemoteException e) {
+                throw new RuntimeException("Ошибка при считывании параметров внешнего экрана", e);
+            }
         }
-        screen.initialize();
-        screens.add(screen);
+
         return screen;
     }
 
@@ -38,7 +40,12 @@ public class ClientExternalScreen {
     }
 
     public void initialize() {
-        screen.initialize();
+        try {
+            ExternalScreenParameters params = Main.remoteLogics.getExternalScreenParameters(getID(), Main.computerId);
+            screen.initialize(params);
+        } catch (RemoteException e) {
+            throw new RuntimeException("Ошибка при считывании параметров внешнего экрана", e);
+        }
     }
 
     ExternalScreen screen;
@@ -64,13 +71,11 @@ public class ClientExternalScreen {
     }
 
     public static void repaintAll(int formID){
-        for (ClientExternalScreen curScreen : screens){
+        for (ClientExternalScreen curScreen : screens.values()){
             if (!curScreen.valid) {
                 curScreen.screen.repaint(curScreen.components.get(formID));
                 curScreen.valid = true;
             }
         }
-
     }
-
 }

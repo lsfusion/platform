@@ -11,6 +11,7 @@ import platform.interop.action.ClientAction;
 import platform.interop.action.UserChangedClientAction;
 import platform.interop.exceptions.LoginException;
 import platform.interop.form.screen.ExternalScreen;
+import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.server.auth.AuthPolicy;
 import platform.server.auth.User;
@@ -40,8 +41,6 @@ import platform.server.view.form.client.RemoteFormView;
 import platform.server.view.navigator.*;
 
 import java.io.*;
-import java.net.MalformedURLException;
-import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -219,14 +218,21 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected void addExternalScreen(ExternalScreen screen) {
         externalScreens.add(screen);
     }
-    
+
     public ExternalScreen getExternalScreen(int screenID) {
         for (ExternalScreen screen : externalScreens) {
-            if (screen.getID() == screenID)
+            if (screen.getID() == screenID) {
                 return screen;
+            }
         }
         return null;
     }
+
+    public ExternalScreenParameters getExternalScreenParameters(int screenID, int computerId) throws RemoteException {
+        //NP
+        return null;
+    }
+
 
     protected User addUser(String login, String defaultPassword) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
 

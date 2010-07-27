@@ -6,16 +6,21 @@ import platform.interop.form.layout.SimplexConstraints;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenComponent;
 import platform.interop.form.screen.ExternalScreenConstraints;
+import platform.interop.form.screen.ExternalScreenParameters;
 
 import java.util.*;
 
 public class PanelExternalScreen implements ExternalScreen {
+    private PanelExternalScreenParameters parameters = new PanelExternalScreenParameters(null);
 
     public int getID() {
         return 0;
     }
 
-    public void initialize() {
+    public void initialize(ExternalScreenParameters parameters) {
+        if (parameters instanceof PanelExternalScreenParameters) {
+            this.parameters = (PanelExternalScreenParameters) parameters;
+        }
     }
 
     private String format(String a, String b){
@@ -29,14 +34,15 @@ public class PanelExternalScreen implements ExternalScreen {
     }
 
     private String check(String a){
-        return a!=null ? a:"";
+        return a!=null ? a : "";
     }
 
     // пока игнорируем все Exception'ы, чтобы лишний раз не травмировать пользователя
     public void repaint(Map<ExternalScreenComponent, ExternalScreenConstraints> components) {
-
-        String commPort = System.getProperty("tmc.integration.panelexternalscreen.commport");
-        //if (commPort == null) return;
+        String commPort = parameters.getComPort();
+        if (commPort == null) {
+            return;
+        }
 
         Map<Integer, ExternalScreenComponent> sortComps = new HashMap<Integer, ExternalScreenComponent>();
         List<Integer> sortKeys = new ArrayList<Integer>();

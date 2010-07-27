@@ -30,6 +30,7 @@ public class Main {
     }
 
     public static RemoteLogicsInterface remoteLogics;
+    public static int computerId;
 
     public static ModuleFactory module;
     public static void start(final String[] args, ModuleFactory startModule) {
@@ -76,13 +77,13 @@ public class Main {
                     String password = System.getProperty("platform.client.password");
 
                     remoteLogics = (RemoteLogicsInterface) Naming.lookup("rmi://" + serverHost + ":" + serverPort + "/BusinessLogics");
-                    int computer = remoteLogics.getComputer(OSUtils.getLocalHostName());
+                    computerId = remoteLogics.getComputer(OSUtils.getLocalHostName());
 
                     RemoteNavigatorInterface remoteNavigator;
                     if (user == null) {
-                        remoteNavigator = new LoginDialog(computer, remoteLogics).login();
+                        remoteNavigator = new LoginDialog(computerId, remoteLogics).login();
                     } else
-                        remoteNavigator = remoteLogics.createNavigator(user, password, computer);
+                        remoteNavigator = remoteLogics.createNavigator(user, password, computerId);
 
                     if (remoteNavigator == null) return;
                     System.out.println("Before init frame");

@@ -3,17 +3,22 @@ package tmc;
 import net.sf.jasperreports.engine.JRException;
 
 import java.awt.event.InputEvent;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.io.*;
 import java.awt.event.KeyEvent;
 
+import platform.interop.form.screen.ExternalScreenParameters;
+import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.*;
 import platform.server.logics.BusinessLogics;
+import platform.server.logics.DataObject;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.AggregateProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.classes.*;
+import platform.server.session.DataSession;
 import platform.server.view.form.client.ContainerView;
 import platform.server.view.navigator.*;
 import platform.server.view.navigator.filter.*;
@@ -29,9 +34,11 @@ import platform.base.BaseUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.*;
 import java.util.List;
 
 import tmc.integration.PanelExternalScreen;
+import tmc.integration.PanelExternalScreenParameters;
 import tmc.integration.imp.CustomerCheckRetailImportActionProperty;
 import tmc.integration.exp.CashRegController;
 
@@ -274,6 +281,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addJProp(baseGroup, "Склад (расх.)", name, outStore, 1);
 
         computerShop = addDProp("computerShop", "Магазин рабочего места", shop, computer);
+        panelScreenComPort = addDProp(baseGroup, "panelComPort", "COM-порт табло", StringClass.get(10), computer);
         addJProp(baseGroup, "Магазин рабочего места", name, computerShop, 1);
 
         orderSupplier = addCUProp("orderSupplier", "Поставщик", addDProp("localSupplier", "Местный поставщик", localSupplier, orderLocal),
@@ -670,6 +678,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     public LP orderSalePrice;
     LP changeQuantityOrder;
     LP computerShop;
+    LP panelScreenComPort;
     LP orderSalePayCash;
     LP orderSalePayCard;
     LP changeQuantityTime;
@@ -850,6 +859,37 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     protected void initExternalScreens() {
         panelScreen = new PanelExternalScreen();
         addExternalScreen(panelScreen);
+    }
+
+    private String getPanelComPort(int compId) {
+        try {
+            String result;
+            DataSession session = createSession();
+
+            Query<String, Object> q = new Query<String, Object>(Collections.singleton("key"));
+            q.properties.put("comport", panelScreenComPort.getExpr(session.modifier, q.mapKeys.get("key")));
+            q.and( q.mapKeys.get("key").compare(new DataObject(compId, computer), Compare.EQUALS) );
+
+            Collection<Map<Object, Object>> values = q.execute(session).values();
+            if (values.size() == 0) {
+                result = "";
+            } else {
+                result = (String) values.iterator().next().get("comport");
+            }
+
+            session.close();
+
+            return result.trim();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public ExternalScreenParameters getExternalScreenParameters(int screenID, int computerId) throws RemoteException {
+        if (panelScreen.getID() == screenID) {
+            return new PanelExternalScreenParameters( getPanelComPort(computerId) );
+        }
+        return null;
     }
 
     public CommitSaleCheckRetailNavigatorForm commitSaleBrowse;
