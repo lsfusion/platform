@@ -586,20 +586,27 @@ public abstract class GridTable extends ClientFormTable
             if (!hasFocusableCells || gridRows.size() == 0) return;
             isNavigatingFromAction = true;
 
-            int initRow = getSelectionModel().getLeadSelectionIndex();
-            int initColumn = getColumnModel().getSelectionModel().getLeadSelectionIndex();
-            int row, column;
+            int initRow = getSelectedRow();
+            int initColumn = getSelectedColumn();
+            
+            int row = initRow + 1; //просто, чтоб отличались от начальных значений
+            int column = initColumn + 1;
+            int oRow;
+            int oColumn;
             do {
                 oldMoveAction.actionPerformed(e);
-                row = getSelectionModel().getLeadSelectionIndex();
-                column = getColumnModel().getSelectionModel().getLeadSelectionIndex();
+
+                oRow = row;
+                oColumn = column;
+                
+                row = getSelectedRow();
+                column = getSelectedColumn();
                 if (((row == 0 && column == 0 && isNext) || (row == getRowCount() - 1 && column == getColumnCount() - 1) && (!isNext))
                         && isCellFocusable(initRow, initColumn)) {
-                    getSelectionModel().setLeadSelectionIndex(initRow);
-                    getColumnModel().getSelectionModel().setLeadSelectionIndex(initColumn);
+                    changeSelection(initRow, initColumn, false, false);
                     break;
                 }
-            } while (!isCellFocusable(row, column));
+            } while ((oRow!=row || oColumn!=column) && !isCellFocusable(row, column));
 
             isNavigatingFromAction = false;
         }
@@ -622,10 +629,15 @@ public abstract class GridTable extends ClientFormTable
 
             int row = getSelectedRow();
             int column = getSelectedColumn();
-            while (!isCellFocusable(row, column)) {
+            int oRow = row + 1;
+            int oColumn = column + 1;
+            while ((oRow!=row || oColumn!=column) && !isCellFocusable(row, column)) {
                 oldMoveAction.actionPerformed(e);
-                row = getSelectionModel().getLeadSelectionIndex();
-                column = getColumnModel().getSelectionModel().getLeadSelectionIndex();
+                oRow = row;
+                oColumn = column;
+
+                row = getSelectedRow();
+                column = getSelectedColumn();
             }
 
             isNavigatingFromAction = false;
