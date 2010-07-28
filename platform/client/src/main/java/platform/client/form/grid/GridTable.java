@@ -218,6 +218,7 @@ public abstract class GridTable extends ClientFormTable
         });
 
         header.setDefaultRenderer(new GridHeaderRenderer(header.getDefaultRenderer()) {
+//        header.setDefaultRenderer(new GridHeaderRenderer.MultiLineHeaderRenderer(header.getDefaultRenderer()) {
 
             protected Boolean getSortDirection(int column) {
                 return GridTable.this.getSortDirection(getCellView(column));
