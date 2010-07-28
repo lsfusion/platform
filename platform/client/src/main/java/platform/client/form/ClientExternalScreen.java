@@ -70,6 +70,14 @@ public class ClientExternalScreen {
         valid = false;
     }
 
+    public static void invalidate(int formID){
+        for (ClientExternalScreen curScreen : screens.values()){
+            if (curScreen.components.containsKey(formID) && !curScreen.components.get(formID).isEmpty()){
+                curScreen.invalidate();
+            }
+        }
+    }
+
     public static void repaintAll(int formID){
         for (ClientExternalScreen curScreen : screens.values()){
             if (!curScreen.valid) {

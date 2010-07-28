@@ -131,6 +131,7 @@ public class ClientForm {
                     clientNavigator.currentFormChanged();
 
                     // если вдруг изменились данные в сессии
+                    ClientExternalScreen.invalidate(getID());
                     applyFormChanges();
                     dataChanged();
                 } catch (IOException e) {
