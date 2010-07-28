@@ -475,7 +475,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
                             return true;
                     }
                     else
-                        if((equal2 = equals.get(compareWhere.operator2))!=null && (compare1 = compare.get(equal1))!=null &&
+                        if((equal2 = equals.get(compareWhere.operator2))!=null && !equal1.equals(equal2) && (compare1 = compare.get(equal1))!=null &&
                                 (compare2 = compare.get(equal2))!=null && compare1.greater.contains(compare2))
                             return true;
                 }

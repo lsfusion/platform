@@ -54,7 +54,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         Where result = followFalse(falseWhere, packExprs, new FollowChange());
         if(result instanceof ObjectWhere && OrWhere.checkTrue(this,falseWhere))
             result = TRUE;
-        assert BaseUtils.hashEquals(oldff(falseWhere, false, packExprs, new FollowChange()),result);
+//        assert BaseUtils.hashEquals(oldff(falseWhere, false, packExprs, new FollowChange()),result);
         return result;
     }
     public Where pack() { // собсно все packExprs нужен только для этого метода, он в свою очередь нужен чтобы в LinearExpr убрать лишние и в GroupExpr протолкнуть классы \ exprValues
