@@ -16,6 +16,7 @@ import platform.server.data.query.CompileSource;
 import platform.server.data.query.innerjoins.ObjectJoinSets;
 import platform.server.data.query.innerjoins.InnerSelectJoin;
 import platform.server.data.query.innerjoins.KeyEqual;
+import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
@@ -306,8 +307,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
     
     // "определяет" разбивать на innerJoins или нет
     private static Collection<InnerSelectJoin> getInnerJoins(Expr expr, Map<BaseExpr, BaseExpr> outerInner, boolean max) {
-        Where fullWhere = getFullWhere(expr, outerInner);
-        return max?fullWhere.getInnerJoins():fullWhere.getKeyEquals().getInnerJoins(false);
+        return getFullWhere(expr, outerInner).getKeyEquals().getInnerJoins(max);
     }
     
     private static Expr createInnerSplit(Map<BaseExpr, BaseExpr> outerInner, Expr expr,boolean max,Where outerWhere) {

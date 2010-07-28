@@ -159,6 +159,9 @@ public class CompiledQuery<K,V> {
                 InnerSelectJoin queryJoin = queryJoins.iterator().next();
                 fromString = (fromString.length()==0?"":fromString+" UNION ALL ") + getInnerSelect(query.mapKeys, queryJoin, queryJoin.fullWhere.followTrue(query.properties), params, new OrderedMap<V, Boolean>(), 0, syntax, keyNames, propertyNames, keyOrder, propertyOrder, castTypes);
 
+                if(queryJoins.size()==1) // временная проверка, потому как из-за keyEquals where.and(!fullWhere) вообще может зациклиться 
+                    break;
+
                 restWhere = restWhere.and(queryJoin.fullWhere.not()).pack();
                 queryJoins = restWhere.getInnerJoins();
 
