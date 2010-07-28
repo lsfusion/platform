@@ -12,8 +12,8 @@ import java.util.Map;
 
 public class SumGroupExpr extends GroupExpr {
 
-    protected SumGroupExpr(Map<BaseExpr, BaseExpr> group, Expr expr) {
-        super(group, expr);
+    protected SumGroupExpr(Map<BaseExpr, BaseExpr> group, Expr expr, ClassExprWhere packClassWhere) {
+        super(group, expr, packClassWhere);
     }
 
     private SumGroupExpr(SumGroupExpr sumExpr, MapTranslate translator) {
