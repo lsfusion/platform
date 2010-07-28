@@ -1,11 +1,12 @@
 package platform.client.form;
 
 import javax.swing.*;
-import javax.swing.table.TableCellEditor;
-import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.KeyEvent;
 
-public class ClientFormTable extends JTable {
+public abstract class ClientFormTable extends JTable {
 
     protected ClientFormTable() {
         super();
@@ -19,15 +20,67 @@ public class ClientFormTable extends JTable {
         getTableHeader().setFocusable(false);
         getTableHeader().setReorderingAllowed(false);
 
-
         //  Have the enter key work the same as the tab key
-		InputMap im = getInputMap(JTable.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        InputMap im = getInputMap(JTable.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
-		KeyStroke tab = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
-		KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
-		im.put(enter, im.get(tab));
+        KeyStroke tab = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
+        KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+        im.put(enter, im.get(tab));
 
+        setTransferHandler(new TransferHandler() {
+            protected Transferable createTransferable(JComponent c) {
+                if (c instanceof JTable) {
+                    JTable table = (JTable) c;
+                    int row = table.getSelectionModel().getLeadSelectionIndex();
+                    int column = table.getColumnModel().getSelectionModel().getLeadSelectionIndex();
+
+                    if (row < 0 || row >= getRowCount() || column < 0 || column >= getColumnCount()) return null;
+
+                    Object value = table.getValueAt(row, column);
+                    if (value == null) {
+                        return null;
+                    }
+                    return new StringSelection(value.toString());
+                }
+
+                return null;
+            }
+
+            @Override
+            public boolean importData(JComponent c, Transferable t) {
+                if (c == ClientFormTable.this) {
+                    for (DataFlavor flavor : t.getTransferDataFlavors()) {
+                        if (String.class.isAssignableFrom(flavor.getRepresentationClass())) {
+                            String value = null;
+                            try {
+                                value = (String) t.getTransferData(flavor);
+                            } catch (Exception ignored) {
+                            }
+                            if (value != null) {
+                                JTable table = (JTable) c;
+                                int row = table.getSelectionModel().getLeadSelectionIndex();
+                                int column = table.getColumnModel().getSelectionModel().getLeadSelectionIndex();
+
+                                Object oValue = convertValueFromString(value, row, column);
+                                if (oValue != null) {
+                                    table.setValueAt(oValue, row, column);
+                                }
+
+                                return true;
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+
+            public int getSourceActions(JComponent c) {
+                return COPY;
+            }
+        });
     }
+
+    public abstract Object convertValueFromString(String value, int row, int column);
 
     /* Скорее всего, уже не актуально после того, как ClientForm стал focusCycleRoot
     // Решение проблемы конфликта JTable и DockingFrames

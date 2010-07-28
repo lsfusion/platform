@@ -8,6 +8,7 @@ import platform.client.logics.ClientCellView;
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.awt.event.KeyEvent;
+import java.text.ParseException;
 import java.util.EventObject;
 
 public abstract class CellTable extends SingleCellTable
@@ -38,6 +39,18 @@ public abstract class CellTable extends SingleCellTable
     public void setValue(Object value) {
         this.value = value;
         repaint();
+    }
+
+    @Override
+    public Object convertValueFromString(String value, int row, int column) {
+        Object parsedValue = null;
+        try {
+            parsedValue = getCellView(column).parseString(getForm(), value);
+        } catch (ParseException pe) {
+            return null;
+        }
+        
+        return parsedValue;
     }
 
     public void stopEditing() {

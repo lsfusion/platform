@@ -9,7 +9,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
-public class SingleCellTable extends ClientFormTable {
+public abstract class SingleCellTable extends ClientFormTable {
 
     protected SingleCellTable() {
         super();

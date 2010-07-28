@@ -14,6 +14,8 @@ import java.awt.*;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.text.Format;
+import java.text.ParseException;
+import java.text.ParseException;
 
 public class ClientActionClass extends ClientDataClass implements ClientType {
 
@@ -45,5 +47,9 @@ public class ClientActionClass extends ClientDataClass implements ClientType {
     @Override
     public boolean shouldBeDrawn(ClientForm form) {
         return !form.isReadOnlyMode(); // не рисуем кнопки на диалогах
+    }
+
+    public Object parseString(String s) throws ParseException {
+        throw new ParseException("ActionClass не поддерживает конвертацию из строки.", 0);
     }
 }

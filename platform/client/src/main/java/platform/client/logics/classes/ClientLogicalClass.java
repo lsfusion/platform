@@ -10,6 +10,7 @@ import java.awt.*;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.text.Format;
+import java.text.ParseException;
 
 public class ClientLogicalClass extends ClientDataClass {
 
@@ -37,4 +38,12 @@ public class ClientLogicalClass extends ClientDataClass {
 
     public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) { return new LogicalPropertyRenderer(); }
     public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) { return new LogicalPropertyEditor(value); }
+
+    public Object parseString(String s) throws ParseException {
+        try {
+            return Boolean.parseBoolean(s);
+        } catch (NumberFormatException nfe) {
+            throw new ParseException(s + "не может быть конвертированно в Boolean.", 0);
+        }
+    }
 }

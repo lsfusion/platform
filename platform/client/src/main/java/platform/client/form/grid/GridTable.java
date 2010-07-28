@@ -23,6 +23,7 @@ import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.*;
 import java.util.List;
 
@@ -93,6 +94,16 @@ public abstract class GridTable extends ClientFormTable
     protected abstract void needToBeShown();
 
     protected abstract void needToBeHidden();
+
+    public Object convertValueFromString(String value, int row, int column) {
+        Object parsedValue = null;
+        try {
+            parsedValue = gridColumns.get(column).parseString(getForm(), value);
+        } catch (ParseException pe) {
+            return null;
+        }
+        return parsedValue;
+    }
 
     private boolean fitWidth() {
 

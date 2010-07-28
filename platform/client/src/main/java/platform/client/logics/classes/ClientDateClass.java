@@ -10,6 +10,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.Format;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 public class ClientDateClass extends ClientDataClass {
@@ -30,4 +31,12 @@ public class ClientDateClass extends ClientDataClass {
     public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) { return new DatePropertyRenderer(format, design); }
     public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) { return new DatePropertyEditor(value, (SimpleDateFormat) format, design); }
 
+
+    public Object parseString(String s) throws ParseException {
+        try {
+            return new SimpleDateFormat().parse(s);
+        } catch (Exception e) {
+            throw new ParseException(s + "не может быть конвертированно в Date.", 0);
+        }
+    }
 }

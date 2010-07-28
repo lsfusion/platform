@@ -14,6 +14,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.text.Format;
 import java.text.NumberFormat;
+import java.text.ParseException;
 
 public class ClientObjectType implements ClientType {
 
@@ -47,5 +48,9 @@ public class ClientObjectType implements ClientType {
 
     public boolean shouldBeDrawn(ClientForm form) {
         return true;
+    }
+
+    public Object parseString(String s) throws ParseException {
+        throw new ParseException("ObjectClass не поддерживает конвертацию из строки.", 0);
     }
 }

@@ -8,10 +8,8 @@ import platform.client.form.PropertyRendererComponent;
 import platform.client.form.cell.CellView;
 import platform.client.logics.classes.ClientType;
 import platform.client.logics.classes.ClientTypeSerializer;
-import platform.interop.ComponentDesign;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
-import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenConstraints;
 
 import javax.swing.*;
@@ -21,6 +19,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.rmi.RemoteException;
 import java.text.Format;
+import java.text.ParseException;
 import java.util.Collection;
 
 abstract public class ClientCellView extends ClientComponentView {
@@ -149,5 +148,9 @@ abstract public class ClientCellView extends ClientComponentView {
 
     public boolean checkEquals() {
         return true;
+    }
+
+    public Object parseString(ClientForm form, String s) throws ParseException {
+        return baseType.parseString(s);
     }
 }

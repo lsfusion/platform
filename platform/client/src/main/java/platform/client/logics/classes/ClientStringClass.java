@@ -10,6 +10,7 @@ import platform.interop.ComponentDesign;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.text.Format;
+import java.text.ParseException;
 
 public class ClientStringClass extends ClientDataClass {
 
@@ -36,4 +37,8 @@ public class ClientStringClass extends ClientDataClass {
 
     public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) { return new StringPropertyRenderer(format, design); }
     public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) { return new StringPropertyEditor(length, value, design); }
+
+    public Object parseString(String s) throws ParseException {
+        return s;
+    }
 }
