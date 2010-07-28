@@ -17,7 +17,8 @@ public abstract class DNFWheres<M extends DNFWheres.Interface<M>,C extends Check
     protected abstract C andValue(C prevValue, C newValue);
 
     protected boolean containsAll(C who, C what) {
-        return who.means(what);
+        throw new RuntimeException("not supported yet");
+        /// return what.means(who); по идее так
     }
 
     protected abstract This createThis();
@@ -29,7 +30,7 @@ public abstract class DNFWheres<M extends DNFWheres.Interface<M>,C extends Check
             for(int i2=0;i2<joins.size;i2++) {
                 M andJoin = getKey(i1).and(joins.getKey(i2));
                 C andWhere = andValue(getValue(i1), joins.getValue(i2));
-                if(!andJoin.isFalse() && !andWhere.not().checkTrue()) // тут isFalse'а достаточно так как AB=>!(IaIb) <=> ABIaIb==FALSE, A=>Ia,B=>Ib <=> AB==FALSE ???
+                if(!andJoin.isFalse() && !andWhere.isFalse()) // тут isFalse'а достаточно так как AB=>!(IaIb) <=> ABIaIb==FALSE, A=>Ia,B=>Ib <=> AB==FALSE ???
                     result.add(andJoin, andWhere);
             }
         return result;
