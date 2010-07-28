@@ -44,38 +44,20 @@ public class PanelExternalScreen implements ExternalScreen {
             return;
         }
 
-        Map<Integer, ExternalScreenComponent> sortComps = new HashMap<Integer, ExternalScreenComponent>();
-        List<Integer> sortKeys = new ArrayList<Integer>();
+        String out[] = new String[5];
         for (Map.Entry<ExternalScreenComponent, ExternalScreenConstraints> entry : components.entrySet()) {
-            sortComps.put(entry.getValue().order, entry.getKey());
-            sortKeys.add(entry.getValue().order);
+            out[entry.getValue().order] = entry.getKey().getValue();
         }
 
-        Collections.sort(sortKeys);
-
-        List<ExternalScreenComponent> comps = new ArrayList<ExternalScreenComponent>();
-        for (Integer order : sortKeys)
-            comps.add(sortComps.get(order));
-
-        if (comps.isEmpty()) return;
-
-        String output1 = comps.size() > 0 ? comps.get(0).getValue() : "";
-        String output2 = comps.size() > 1 ? comps.get(1).getValue() : "";
-        String output3 = comps.size() > 2 ? comps.get(2).getValue() : "";
-        String output4 = comps.size() > 3 ? comps.get(3).getValue() : "";
-        //String output = BaseUtils.padLeft(output1 != null ? output1 : "", 20) + BaseUtils.padLeft(output2 != null ? output2 : "", 20);
-        String output = format(check(output1), check(output2)) + format(check(output3), check(output4));
-        System.out.println(output);
-
+        String output = format(check(out[1]), check(out[2])) + format(check(out[3]), check(out[4]));
+//        System.out.println(output);
 
         if (output.trim().equals("")){
             return;
         }
-        if (true) return;
         ActiveXComponent commActive = null;
 
         try {
-
             if (components.keySet().iterator().next().getValue() != null) {
                 System.out.println("Before creating ActiveX");
                 commActive = new ActiveXComponent("MSCommLib.MSComm");

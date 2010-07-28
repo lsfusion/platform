@@ -254,6 +254,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP balanceSklFreeQuantity;
     LP articleFreeQuantity;
     LP certToIssued, obligationSumFrom;
+    LP documentBarcodePrice, documentBarcodePriceOv;
 
     protected void initProperties() {
 
@@ -543,6 +544,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         orderSaleDocPrice = addDProp("orderSalePrice", "Цена прод.", DoubleClass.instance, orderSale, article);
         orderSaleDocPrice.setDerivedChange(saleStorePrice, outStore, 1, 2, articleQuantity, 1, 2);
         orderSalePrice = addSUProp(documentPriceGroup, "Цена прод.", Union.OVERRIDE, addJProp(and1, addJProp(saleStorePrice, outStore, 1, 2), 1, 2, is(orderSale), 1), orderSaleDocPrice);
+        documentBarcodePrice = addJProp("Цена", orderSalePrice, 1, barcodeToObject, 2);
+        documentBarcodePriceOv = addSUProp("Цена", Union.OVERRIDE, documentBarcodePrice, addJProp(and1, addJProp(obligationSum, barcodeToObject, 1), 2, is(order), 1));
 
         LP monthDay = addSFProp("EXTRACT(DOY FROM prm1)",IntegerClass.instance,1);
         LP isOrderContragentBirthDay = addJProp(equals2, addJProp(monthDay, date, 1), 1, addJProp(monthDay, addJProp(customerCheckRetailBorn, orderContragent, 1), 1), 1);
@@ -616,7 +619,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP orderSaleDiffSum = addDUProp(orderSalePayNoObligation, addSUProp(Union.SUM, orderSalePayCard, orderSalePayCash));
 //        orderSaleDiff = addIfElseUProp(documentAggrPriceGroup, "Необходимо", addJProp(string2, addCProp(StringClass.get(6), "Допл:"), orderSaleDiffSum, 1),
 //                addJProp(string2, addCProp(StringClass.get(6), "Сдача:"), addNUProp(orderSaleDiffSum), 1), addJProp(positive, orderSaleDiffSum, 1), 1);
-        orderSaleToDo = addJProp(documentAggrPriceGroup, "Необходимо", and1, addIfElseUProp(addCProp(StringClass.get(5), "Допл.", orderSaleCheckRetail),
+        orderSaleToDo = addJProp(documentAggrPriceGroup, "Необходимо", and1, addIfElseUProp(addCProp(StringClass.get(5), "Итого", orderSaleCheckRetail),
                 addCProp(StringClass.get(5), "Сдача", orderSaleCheckRetail), addJProp(positive, orderSaleDiffSum, 1), 1), 1, orderSaleDiffSum, 1);
         orderSaleToDoSum = addJProp(documentAggrPriceGroup, "Сумма необх.", abs, orderSaleDiffSum, 1);
 
@@ -1013,10 +1016,14 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.get(getPropertyView(reverseBarcode)).setContainer(design.getPanelContainer(design.get(objBarcode.groupTo)));
             design.addIntersection(design.get(objBarcode).objectCellView, design.get(getPropertyView(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             design.addIntersection(design.get(getPropertyView(reverseBarcode)), design.get(getPropertyView(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            if (getPropertyView(documentBarcodePriceOv) != null) {
+                design.addIntersection(design.get(getPropertyView(barcodeObjectName)), design.get(getPropertyView(documentBarcodePriceOv)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            }
 
             design.setFont(design.get(objBarcode).objectCellView, FONT_SMALL_BOLD);
             design.setFont(reverseBarcode, FONT_SMALL_BOLD);
             design.setFont(barcodeObjectName, FONT_LARGE_BOLD);
+            design.setFont(documentBarcodePriceOv, FONT_LARGE_BOLD);
             design.setBackground(barcodeObjectName, new Color(240,240,240));
 
             design.setEditKey(design.get(objBarcode).objectCellView, KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0));
@@ -1066,6 +1073,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             if(!toAdd)
                 addPropertyView(orderUserName, objDoc);
+
+            if (hasExternalScreen()){
+                addPropertyView(documentBarcodePriceOv, objDoc, objBarcode).setToDraw(objBarcode.groupTo);
+                //getPropertyView(documentBarcodePriceOv).setToDraw(objBarcode.groupTo);                               
+            }
         }
 
         @Override
@@ -1130,9 +1142,39 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         design.addIntersection(docSumsContainer, payContainer, DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
                     }
                 }
+
+                    if (hasExternalScreen()){
+                            PropertyViewNavigator barcodeNavigator = getPropertyView(barcodeObjectName);
+                            if (barcodeNavigator != null ) {
+                                design.get(barcodeNavigator).externalScreen = panelScreen;
+                                design.get(barcodeNavigator).externalScreenConstraints.order = 1;
+                            }
+
+                            PropertyViewNavigator orderSaleNavigator = getPropertyView(orderSaleToDo);
+                            if (orderSaleNavigator != null ) {
+                                design.get(orderSaleNavigator).externalScreen = panelScreen;
+                                design.get(orderSaleNavigator).externalScreenConstraints.order = 3;
+                            }
+
+                            PropertyViewNavigator orderSaleSumNavigator = getPropertyView(orderSaleToDoSum);
+                            if (orderSaleSumNavigator != null ) {
+                                design.get(orderSaleSumNavigator).externalScreen = panelScreen;
+                                design.get(orderSaleSumNavigator).externalScreenConstraints.order = 4;
+                            }
+
+                            PropertyViewNavigator priceNavigator = getPropertyView(documentBarcodePriceOv);
+                            if (priceNavigator != null ) {
+                                design.get(priceNavigator).externalScreen = panelScreen;
+                                design.get(priceNavigator).externalScreenConstraints.order = 2;
+                            }
+                    }
             }
 
             return design;
+        }
+
+        protected boolean hasExternalScreen(){
+            return false;
         }
     }
 
@@ -1381,9 +1423,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addPropertyView(orderSalePrice, objDoc, objArt);
             addPropertyView(orderArticleSaleDiscount, objDoc, objArt);
             addPropertyView(orderArticleSaleSumWithDiscount, objDoc, objArt);
+            //addPropertyView(documentBarcodePriceOv, objDoc, objBarcode);
             if (!toAdd) {
                 addPropertyView(orderArticleSaleSumCoeff, objDoc, objArt);
             }
+            //getPropertyView(documentBarcodePriceOv).setToDraw(objBarcode.groupTo);
 
             objArt.show = false; objArt.showClass = false; objArt.showTree = false; objArt.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
 
@@ -1477,7 +1521,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.get(objCoupon.groupTo).gridView.showFilter = false;
             design.get(objObligation.groupTo).gridView.showFilter = false;
             design.addIntersection(design.getGroupObjectContainer(objCoupon.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-
+            /*
             design.get(getPropertyView(barcodeObjectName)).externalScreen = panelScreen;
             design.get(getPropertyView(barcodeObjectName)).externalScreenConstraints.order = 1;
 
@@ -1485,11 +1529,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.get(getPropertyView(orderSaleToDo)).externalScreenConstraints.order = 3;
 
             design.get(getPropertyView(orderSaleToDoSum)).externalScreen = panelScreen;
-            design.get(getPropertyView(orderSaleToDoSum)).externalScreenConstraints.order = 2;
+            design.get(getPropertyView(orderSaleToDoSum)).externalScreenConstraints.order = 4;
 
-            design.get(getPropertyView(orderSalePrice)).externalScreen = panelScreen;
-            design.get(getPropertyView(orderSalePayNoObligation)).externalScreenConstraints.order = 4;
-
+            design.get(getPropertyView(documentBarcodePriceOv)).externalScreen = panelScreen;
+            design.get(getPropertyView(documentBarcodePriceOv)).externalScreenConstraints.order = 2;
+            */
             return design;
         }
 
@@ -1531,6 +1575,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 group.curClassView = ClassViewType.HIDE;
                 group.banClassView = ClassViewType.GRID | ClassViewType.PANEL;
             }
+        }
+
+        @Override
+        protected boolean hasExternalScreen(){
+           return true;
         }
     }
 
@@ -1740,6 +1789,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             } else {
                 addPropertyView(checkRetailExported, objDoc);
             }
+
+            addPropertyView(documentBarcodePriceOv, objInner, objBarcode).setToDraw(objBarcode.groupTo);
+            //addPropertyView(returnArticleSalePay, objArt);
         }
 
         @Override
@@ -1750,6 +1802,24 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.getGroupObjectContainer(objInner.groupTo).title = "Список чеков";
             design.get(objInner).objectCellView.caption = "Номер чека";
             design.getGroupObjectContainer(objArt.groupTo).title = "Товарные позиции";
+
+            PropertyViewNavigator barcodeNavigator = getPropertyView(barcodeObjectName);
+            if (barcodeNavigator != null ) {
+                design.get(barcodeNavigator).externalScreen = panelScreen;
+                design.get(barcodeNavigator).externalScreenConstraints.order = 1;
+            }
+
+            PropertyViewNavigator priceNavigator = getPropertyView(documentBarcodePriceOv);
+            if (priceNavigator != null ) {
+                design.get(priceNavigator).externalScreen = panelScreen;
+                design.get(priceNavigator).externalScreenConstraints.order = 2;
+            }
+
+            PropertyViewNavigator returnSaleSumNavigator = getPropertyView(returnSalePay);
+            if (returnSaleSumNavigator != null ) {
+                design.get(returnSaleSumNavigator).externalScreen = panelScreen;
+                design.get(returnSaleSumNavigator).externalScreenConstraints.order = 4;
+            }
 
             return design;
         }
@@ -1779,7 +1849,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             if (check != null) return check;
 
             return super.checkApplyActions(actionID, result);
-        }
+        }        
     }
 
     private class SupplierArticleNavigatorForm extends NavigatorForm {
@@ -2012,6 +2082,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.get(objObligation.groupTo).gridView.defaultComponent = true;
             return design;
         }
+
+
     }
 
     public class SaleCheckCertNavigatorForm extends SaleCertNavigatorForm {
@@ -2064,6 +2136,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             if (check != null) return check;
 
             return super.checkApplyActions(actionID, result);
+        }
+
+        @Override
+        protected boolean hasExternalScreen(){
+            return true;
         }
     }
 
@@ -2121,4 +2198,5 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         User admin = addUser("admin", "fusion");
     }
+
 }
