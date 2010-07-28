@@ -1571,9 +1571,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 group = form.mapper.groupMapper.get(objCoupon.groupTo);
                 group.curClassView = ClassViewType.HIDE;
                 group.banClassView = ClassViewType.GRID | ClassViewType.PANEL;
-                group = form.mapper.groupMapper.get(objIssue.groupTo);
-                group.curClassView = ClassViewType.HIDE;
-                group.banClassView = ClassViewType.GRID | ClassViewType.PANEL;
+                if (toAdd) {
+                    group = form.mapper.groupMapper.get(objIssue.groupTo);
+                    group.curClassView = ClassViewType.HIDE;
+                    group.banClassView = ClassViewType.GRID | ClassViewType.PANEL;
+                }
             }
         }
 
