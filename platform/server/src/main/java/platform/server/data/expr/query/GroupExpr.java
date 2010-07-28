@@ -161,7 +161,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
                 pullOuter.put(pullObject,key);
             }
 
-        return create(inner, expr, max, outer);
+        return create(pullInner, expr, max, pullOuter);
     }
     
     // вытаскивает из outer Case'ы

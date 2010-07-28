@@ -4,6 +4,8 @@ import platform.base.BaseUtils;
 import platform.base.QuickMap;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.ValueClass;
+import platform.server.classes.DataClass;
+import platform.server.classes.IntegerClass;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.VariableClassExpr;
@@ -23,7 +25,11 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
     }
 
     public AndClassSet getKeepClass(KeyExpr keyExpr) {
-        return wheres[0].get(keyExpr).getKeepClass();
+        AndClassSet keyClass = wheres[0].getPartial(keyExpr);
+        if(keyClass==null) // потому как в canbechanged например могут появляться pullExpr'ы без классов
+            return IntegerClass.instance;
+        else
+            return keyClass.getKeepClass();
     }
     
     public boolean checkType(KeyExpr keyExpr,Type type) {

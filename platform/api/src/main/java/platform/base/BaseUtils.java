@@ -603,6 +603,13 @@ public class BaseUtils {
         }
     }
 
+    public static <K,V> boolean hashContainsValue(Map<K,V> map, V value) {
+        for(Map.Entry<K,V> entry : map.entrySet())
+            if(hashEquals(entry.getValue(),value))
+                return true;
+        return false;
+    }
+
     public static <K,EK,T> Map<K, EK> mapEquals(Map<K,T> map, Map<EK,T> equals) {
         if(map.size()!=equals.size()) return null;
 
@@ -610,8 +617,8 @@ public class BaseUtils {
         for(Map.Entry<K,T> key : map.entrySet()) {
             EK mapKey = null;
             for(Map.Entry<EK,T> equalKey : equals.entrySet())
-                if(!mapKeys.containsValue(equalKey.getKey()) &&
-                    BaseUtils.hashEquals(key.getValue(),equalKey.getValue())) {
+                if(!hashContainsValue(mapKeys,equalKey.getKey()) &&
+                    hashEquals(key.getValue(),equalKey.getValue())) {
                     mapKey = equalKey.getKey();
                     break;
                 }
