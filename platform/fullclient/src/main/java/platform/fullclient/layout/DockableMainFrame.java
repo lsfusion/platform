@@ -137,11 +137,11 @@ public class DockableMainFrame extends MainFrame {
 
         add(control.getContentArea(), BorderLayout.CENTER);
         CGrid grid = new CGrid(control);
-        grid.add(0, 0, 1, 1, createDockable("Навигатор", mainNavigator));
-        grid.add(0, 1, 1, 1, createDockable("Связанные формы", mainNavigator.relevantFormNavigator));
-        grid.add(0, 2, 1, 1, createDockable("Классовые формы", mainNavigator.relevantClassNavigator));
-        grid.add(0, 3, 1, 1, createDockable("Лог", Log.getPanel()));
-        grid.add(1, 0, 3, 4, view.getGridArea());
+        grid.add(0, 0, 1, 2, createDockable("Навигатор", mainNavigator));
+        grid.add(0, 2, 1, 1, createDockable("Связанные формы", mainNavigator.relevantFormNavigator));
+        grid.add(0, 3, 1, 1, createDockable("Классовые формы", mainNavigator.relevantClassNavigator));
+        grid.add(0, 4, 1, 1, createDockable("Лог", Log.getPanel()));
+        grid.add(1, 0, 5, 5, view.getGridArea());
         control.getContentArea().deploy(grid);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
