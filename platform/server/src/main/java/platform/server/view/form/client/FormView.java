@@ -9,6 +9,7 @@ import platform.server.logics.property.Property;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.view.navigator.CellViewNavigator;
 import platform.server.view.navigator.GroupObjectNavigator;
+import platform.server.view.navigator.ObjectNavigator;
 import platform.server.view.navigator.PropertyViewNavigator;
 
 import javax.swing.*;
@@ -163,6 +164,17 @@ public class FormView implements ClientSerialize {
                     result.add(object.classCellView);
                 }
 
+        return result;
+    }
+
+     public List<CellView> getCells(ObjectNavigator objectNavigator) {
+        List<CellView> result = new ArrayList<CellView>(getProperties(objectNavigator.groupTo));
+        for (GroupObjectImplementView groupObject : groupObjects)
+            for (ObjectImplementView object : groupObject)
+                if (object.view.equals(objectNavigator)) {
+                    result.add(object.objectCellView);
+                    result.add(object.classCellView);
+                }
         return result;
     }
 
@@ -331,6 +343,12 @@ public class FormView implements ClientSerialize {
 
         for (PropertyCellView propertyView : getProperties(groupObject)) {
             setFocusable(propertyView, focusable);
+        }
+    }
+
+    public void setFocusable(ObjectNavigator objectNavigator, boolean focusable, boolean cells) {
+        for (CellView property : cells ? getCells(objectNavigator) : getProperties(objectNavigator.groupTo)) {
+            setFocusable(property, focusable);
         }
     }
 

@@ -37,6 +37,7 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
 
     public Set<FilterNavigator> fixedFilters = new HashSet<FilterNavigator>();
 
+
     public void addFixedFilter(FilterNavigator filter) {
         fixedFilters.add(filter);
     }
@@ -197,7 +198,20 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
             propertyView.sID = propertyImplement.property.sID + ((foundSID) ? propertyView.ID : "");
         }
 
-        propertyViews.add(propertyView);
+
+        int count = 0;
+        for (PropertyViewNavigator property : propertyViews){
+          if (property.shouldBeLast){
+                propertyViews.add(count, propertyView);
+                count = -1;
+                break;
+          }
+          count++;
+        }
+
+        if (count >= 0)
+            propertyViews.add(propertyView);
+        
 
         assert richDesign == null && reportDesign == null;
 
@@ -354,6 +368,7 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
     public List<PropertyViewNavigator> actionObjectViews = new ArrayList<PropertyViewNavigator>();
     public PropertyViewNavigator addActionObjectView(ActionProperty property, ObjectNavigator... objects) {
         PropertyViewNavigator propertyView = addPropertyView(new LP<ClassPropertyInterface>(property), objects);
+        propertyView.shouldBeLast = true;
         actionObjectViews.add(propertyView);
 
         return propertyView;

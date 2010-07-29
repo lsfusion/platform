@@ -13,6 +13,7 @@ public class PropertyViewNavigator<P extends PropertyInterface> extends CellView
         return this;
     }
 
+    public boolean shouldBeLast = false;
     public boolean forcePanel = false;
     public void setForcePanel(boolean forcePanel) {
         this.forcePanel = forcePanel;
