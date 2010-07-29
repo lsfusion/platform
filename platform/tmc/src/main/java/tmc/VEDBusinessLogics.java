@@ -564,7 +564,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         orderArticleSaleDiscount.setDerivedChange(addSUProp(Union.MAX, addSGProp(addMGProp(addJProp(and1, actionDiscount, 3, articleActionActive, 1, 2, 3), 1, 2, articleActionToGroup, 3), 1, 2), addJProp(and1, addJProp(customerCheckRetailDiscount, orderContragent, 1), 1, is(article), 2)), true, 1, 2, is(orderSaleArticleRetail), 1);
 
         LP orderArticleSaleSum = addJProp(documentPriceGroup, "Сумма прод.", multiplyDouble2, articleQuantity, 1, 2, orderSaleDocPrice, 1, 2);
-        LP orderArticleSaleDiscountSum = addJProp(documentPriceGroup, "Сумма скидки", percent, orderArticleSaleSum, 1, 2, orderArticleSaleDiscount, 1, 2);
+        LP round1 = addSFProp("(ROUND(CAST((prm1) as NUMERIC(15,3)),-1))", IntegerClass.instance, 1);
+        LP orderArticleSaleDiscountSum = addJProp(documentPriceGroup, "Сумма скидки", round1, addJProp(percent, orderArticleSaleSum, 1, 2, orderArticleSaleDiscount, 1, 2), 1, 2);
         orderArticleSaleSumWithDiscount = addDUProp(documentPriceGroup, "Сумма к оплате", orderArticleSaleSum, orderArticleSaleDiscountSum);
         orderSaleDiscountSum = addSGProp(documentAggrPriceGroup, "Сумма скидки", orderArticleSaleDiscountSum, 1);
         orderSalePay = addCUProp(documentAggrPriceGroup, "Сумма чека",
@@ -572,7 +573,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addSGProp(orderArticleSaleSumWithDiscount, 1));
 
         LP returnArticleSaleSum = addJProp(documentPriceGroup, "Сумма возвр.", multiplyDouble2, returnInnerQuantity, 1, 2, 3, orderSaleDocPrice, 3, 2);
-        LP returnArticleSaleDiscount = addJProp(documentPriceGroup, "Сумма скидки возвр.", percent, returnArticleSaleSum, 1, 2, 3, orderArticleSaleDiscount, 3, 2);
+        LP returnArticleSaleDiscount = addJProp(documentPriceGroup, "Сумма скидки возвр.",round1, addJProp(percent, returnArticleSaleSum, 1, 2, 3, orderArticleSaleDiscount, 3, 2), 1, 2, 3);
         returnArticleSalePay = addDUProp(documentPriceGroup, "Сумма к возвр.", returnArticleSaleSum, returnArticleSaleDiscount);
         returnSaleDiscount = addSGProp(documentAggrPriceGroup, "Сумма скидки возвр.", returnArticleSaleDiscount, 1);
         returnSalePay = addDUProp(documentAggrPriceGroup, "Сумма к возвр.", addSGProp("Сумма возвр.", returnArticleSaleSum, 1), returnSaleDiscount);
