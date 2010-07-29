@@ -297,6 +297,17 @@ public abstract class GridTable extends ClientFormTable
         }
     }
 
+    public boolean editCellAt(int row, int column, EventObject e){
+        if (super.editCellAt(row, column, e)) {
+            //нужно для редактирования нефокусных ячеек
+            isNavigatingFromAction = true;
+            changeSelection(row, column, false, false);
+            isNavigatingFromAction = false;
+            return true;
+        }
+        return false;
+    }
+
     @Override
     protected JTableHeader createDefaultTableHeader() {
         return new JTableHeader(columnModel) {
@@ -502,11 +513,11 @@ public abstract class GridTable extends ClientFormTable
         }
 
         public ClientGroupObjectValue getSelectedObject() {
-            int rowModel = convertRowIndexToModel(getSelectedRow());
-            if (rowModel < 0 || rowModel >= getRowCount())
+            int rowIndex = convertRowIndexToModel(getSelectedRow());
+            if (rowIndex < 0 || rowIndex >= getRowCount())
                 return null;
 
-            return gridRows.get(rowModel);
+            return gridRows.get(rowIndex);
         }
 
         public ClientCellView getSelectedCell() {
