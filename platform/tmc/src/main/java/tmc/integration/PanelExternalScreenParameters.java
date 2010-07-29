@@ -3,13 +3,13 @@ package tmc.integration;
 import platform.interop.form.screen.ExternalScreenParameters;
 
 public class PanelExternalScreenParameters implements ExternalScreenParameters {
-    private final String comPort;
+    private final int comPort;
 
-    public PanelExternalScreenParameters(String comPort) {
+    public PanelExternalScreenParameters(int comPort) {
         this.comPort = comPort;
     }
 
-    public String getComPort() {
+    public int getComPort() {
         return comPort;
     }
 }

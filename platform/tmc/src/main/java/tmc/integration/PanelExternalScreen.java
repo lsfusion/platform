@@ -11,7 +11,7 @@ import platform.interop.form.screen.ExternalScreenParameters;
 import java.util.*;
 
 public class PanelExternalScreen implements ExternalScreen {
-    private PanelExternalScreenParameters parameters = new PanelExternalScreenParameters(null);
+    private PanelExternalScreenParameters parameters = new PanelExternalScreenParameters(-1);
 
     public int getID() {
         return 0;
@@ -39,8 +39,8 @@ public class PanelExternalScreen implements ExternalScreen {
 
     // пока игнорируем все Exception'ы, чтобы лишний раз не травмировать пользователя
     public void repaint(Map<ExternalScreenComponent, ExternalScreenConstraints> components) {
-        String commPort = parameters.getComPort();
-        if (commPort == null) {
+        int commPort = parameters.getComPort();
+        if (commPort < 0) {
             return;
         }
 
@@ -61,7 +61,7 @@ public class PanelExternalScreen implements ExternalScreen {
             if (components.keySet().iterator().next().getValue() != null) {
                 System.out.println("Before creating ActiveX");
                 commActive = new ActiveXComponent("MSCommLib.MSComm");
-                commActive.setProperty("CommPort", Integer.parseInt(commPort));
+                commActive.setProperty("CommPort", commPort);
                 commActive.setProperty("PortOpen", true);
                 commActive.setProperty("Output", new String(output.getBytes("Cp866"), "Cp1251"));
                 commActive.setProperty("PortOpen", false);

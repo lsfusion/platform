@@ -283,7 +283,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addJProp(baseGroup, "Склад (расх.)", name, outStore, 1);
 
         computerShop = addDProp("computerShop", "Магазин рабочего места", shop, computer);
-        panelScreenComPort = addDProp(baseGroup, "panelComPort", "COM-порт табло", StringClass.get(10), computer);
+        panelScreenComPort = addDProp(baseGroup, "panelComPort", "COM-порт табло", IntegerClass.instance, computer);
         addJProp(baseGroup, "Магазин рабочего места", name, computerShop, 1);
 
         orderSupplier = addCUProp("orderSupplier", "Поставщик", addDProp("localSupplier", "Местный поставщик", localSupplier, orderLocal),
@@ -869,9 +869,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addExternalScreen(panelScreen);
     }
 
-    private String getPanelComPort(int compId) {
+    private Integer getPanelComPort(int compId) {
         try {
-            String result;
+            Integer result = null;
             DataSession session = createSession();
 
             Query<String, Object> q = new Query<String, Object>(Collections.singleton("key"));
@@ -879,15 +879,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             q.and(q.mapKeys.get("key").compare(new DataObject(compId, computer), Compare.EQUALS));
 
             Collection<Map<Object, Object>> values = q.execute(session).values();
-            if (values.size() == 0) {
-                result = "";
-            } else {
-                result = (String) values.iterator().next().get("comport");
+            if (values.size() != 0) {
+                result = (Integer) values.iterator().next().get("comport");
             }
 
             session.close();
 
-            return result != null ? result.trim() : null;
+            return result == null ? -1 : result;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
