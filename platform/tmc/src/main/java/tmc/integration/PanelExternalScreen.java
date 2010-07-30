@@ -25,6 +25,9 @@ public class PanelExternalScreen implements ExternalScreen {
 
     private String format(String a, String b){
         String result;
+        if (b.contains(".")){
+            b = b.substring(0, b.indexOf('.'));
+        }
         if (a.length()+b.length()>19) {
             result = a.substring(0, 19-b.length())+"."+b;
         } else {
