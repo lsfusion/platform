@@ -356,6 +356,52 @@ public class FormView implements ClientSerialize {
         property.focusable = focusable;
     }
 
+    public void setReadOnly(AbstractGroup group, boolean readOnly, GroupObjectNavigator groupObject) {
+
+        for (PropertyCellView property : getProperties(group, groupObject)) {
+            setReadOnly(property, readOnly);
+        }
+    }
+
+    public void setReadOnly(LP property, boolean readOnly) {
+        setReadOnly(property.property, readOnly);
+    }
+
+    public void setReadOnly(LP property, boolean readOnly, GroupObjectNavigator groupObject) {
+        setReadOnly(property.property, readOnly, groupObject);
+    }
+
+    public void setReadOnly(Property property, boolean readOnly) {
+
+        for (PropertyCellView propertyView : getProperties(property)) {
+            setReadOnly(propertyView, readOnly);
+        }
+    }
+
+    public void setReadOnly(Property property, boolean readOnly, GroupObjectNavigator groupObject) {
+
+        for (PropertyCellView propertyView : getProperties(property, groupObject)) {
+            setReadOnly(propertyView, readOnly);
+        }
+    }
+
+    public void setReadOnly(boolean readOnly, GroupObjectNavigator groupObject) {
+
+        for (PropertyCellView propertyView : getProperties(groupObject)) {
+            setReadOnly(propertyView, readOnly);
+        }
+    }
+
+    public void setReadOnly(ObjectNavigator objectNavigator, boolean readOnly, boolean cells) {
+        for (CellView property : cells ? getCells(objectNavigator) : getProperties(objectNavigator.groupTo)) {
+            setReadOnly(property, readOnly);
+        }
+    }
+
+    public void setReadOnly(CellView property, boolean readOnly) {
+        property.readOnly = readOnly;
+    }
+
     public void setEditKey(LP property, KeyStroke keyStroke, GroupObjectNavigator groupObject) {
         setEditKey(property.property, keyStroke, groupObject);
     }

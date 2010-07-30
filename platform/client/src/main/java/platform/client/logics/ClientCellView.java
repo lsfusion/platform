@@ -37,6 +37,7 @@ abstract public class ClientCellView extends ClientComponentView {
     public boolean showEditKey;
 
     public Boolean focusable;
+    public Boolean readOnly;
 
     public boolean panelLabelAbove;
 
@@ -60,6 +61,10 @@ abstract public class ClientCellView extends ClientComponentView {
         format = (Format) new ObjectInputStream(inStream).readObject(); 
 
         focusable = (Boolean) new ObjectInputStream(inStream).readObject();
+        readOnly = (Boolean) new ObjectInputStream(inStream).readObject();
+        if (readOnly == null) {
+            readOnly = true;
+        }
 
         panelLabelAbove = inStream.readBoolean();
 

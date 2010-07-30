@@ -28,6 +28,8 @@ abstract public class CellView extends ComponentView {
 
     public Boolean focusable;
 
+    public Boolean readOnly = Boolean.FALSE;
+
     public boolean panelLabelAbove = false;
 
     public ExternalScreen externalScreen;
@@ -54,6 +56,8 @@ abstract public class CellView extends ComponentView {
         new ObjectOutputStream(outStream).writeObject(format);
 
         new ObjectOutputStream(outStream).writeObject(focusable);
+
+        new ObjectOutputStream(outStream).writeObject(readOnly);
 
         outStream.writeBoolean(panelLabelAbove);
 

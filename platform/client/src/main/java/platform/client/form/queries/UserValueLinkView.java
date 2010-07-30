@@ -31,7 +31,7 @@ class UserValueLinkView extends ValueLinkView {
         setBorder(compBorder.getBorder());
 
         // непосредственно объект для изменения значения свойств
-        valueView = new CellTable() {
+        valueView = new CellTable(false) {
 
             protected boolean cellValueChanged(Object value) {
 

@@ -283,11 +283,21 @@ public abstract class GridTable extends ClientFormTable
     }
 
     private boolean isCellFocusable(int rowIndex, int columnIndex) {
-        if (rowIndex < 0 || rowIndex >= getRowCount() || columnIndex < 0 || columnIndex >= getColumnCount())
+        if (rowIndex < 0 || rowIndex >= getRowCount() || columnIndex < 0 || columnIndex >= getColumnCount()) {
             return false;
+        }
 
         Boolean focusable = gridColumns.get(columnIndex).focusable;
         return focusable == null || focusable;
+    }
+
+    private boolean isCellReadOnly(int rowIndex, int columnIndex) {
+        if (rowIndex < 0 || rowIndex >= getRowCount() || columnIndex < 0 || columnIndex >= getColumnCount()) {
+            return false;
+        }
+
+        Boolean readOnly = gridColumns.get(columnIndex).readOnly;
+        return readOnly == null || readOnly;
     }
 
     @Override
@@ -491,8 +501,8 @@ public abstract class GridTable extends ClientFormTable
             return gridColumns.size();
         }
 
-        public boolean isCellEditable(int row, int col) {
-            return true;
+        public boolean isCellEditable(int row, int column) {
+            return !isCellReadOnly(row, column);
         }
 
         public Object getValueAt(int row, int col) {

@@ -42,7 +42,7 @@ public class TableCellView extends JPanel implements CellView {
         label.setAlignmentX(Component.CENTER_ALIGNMENT);
         add(label);
 
-        table = new CellTable() {
+        table = new CellTable(key.readOnly) {
 
             protected boolean cellValueChanged(Object value) {
                 return listener.cellValueChanged(value);

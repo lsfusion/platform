@@ -16,9 +16,12 @@ public abstract class CellTable extends SingleCellTable
 
     boolean checkEquals = true;
     private Object value;
+    private boolean readOnly;
 
-    public CellTable() {
+    public CellTable(boolean readOnly) {
         super();
+
+        this.readOnly = readOnly;
 
         setModel(new PropertyModel());
 
@@ -71,7 +74,7 @@ public abstract class CellTable extends SingleCellTable
         }
 
         public boolean isCellEditable(int row, int col) {
-            return true;
+            return !readOnly;
         }
 
         public Object getValueAt(int row, int col) {

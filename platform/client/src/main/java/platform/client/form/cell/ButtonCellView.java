@@ -10,9 +10,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class ButtonCellView extends JButton implements CellView {
-
     public ButtonCellView(final ClientCellView key, final ClientForm form) {
         super(key.getFullCaption());
+
+        if (key.readOnly) {
+            setEnabled(false);
+        }
 
         key.design.designComponent(this);
 
