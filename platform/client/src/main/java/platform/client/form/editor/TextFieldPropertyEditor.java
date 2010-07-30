@@ -25,7 +25,9 @@ abstract class TextFieldPropertyEditor extends JFormattedTextField implements Pr
         //для очистки поля ввода перед записью новых данных
         if (editEvent instanceof KeyEvent) {
             KeyEvent event = (KeyEvent) editEvent;
-            if (event.getKeyChar() != KeyEvent.CHAR_UNDEFINED){
+            if (event.getKeyChar() != KeyEvent.CHAR_UNDEFINED &&
+                event.getKeyChar() != KeyEvent.VK_DELETE &&
+                event.getKeyChar() != KeyEvent.VK_BACK_SPACE){
                 setValue(null);
             }
         }
