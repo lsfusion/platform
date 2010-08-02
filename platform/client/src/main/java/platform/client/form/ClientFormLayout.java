@@ -52,7 +52,7 @@ public abstract class ClientFormLayout extends JPanel {
             public void propertyChange(PropertyChangeEvent evt) {
                 Component focusComponent = (Component)evt.getNewValue();
                 if (focusComponent != null) {
-                    boolean newHasFocus = ClientFormLayout.this.isAncestorOf(focusComponent);
+                    boolean newHasFocus = (ClientFormLayout.this.isAncestorOf(focusComponent)) | (focusComponent.equals(ClientFormLayout.this));
                     if (hasFocus != newHasFocus) {
                         hasFocus = newHasFocus;
                         if (hasFocus) {
