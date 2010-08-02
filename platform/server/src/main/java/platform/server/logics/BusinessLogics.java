@@ -2166,9 +2166,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public void addObjectActions(NavigatorForm form, ObjectNavigator object) {
+        form.addActionObjectView(getImportObjectAction(object.baseClass), object).setToDraw(object.groupTo).setForcePanel(true);
         form.addActionObjectView(getAddObjectAction(object.baseClass)).setToDraw(object.groupTo).setForcePanel(true);
         form.addActionObjectView(getDeleteObjectAction(object.baseClass), object);
-        form.addActionObjectView(getImportObjectAction(object.baseClass), object).setToDraw(object.groupTo).setForcePanel(true);
     }
 
     private Scheduler scheduler;
