@@ -46,6 +46,8 @@ public abstract class GridTable extends ClientFormTable
     private final Model model;
     private final JTableHeader header;
 
+    private Action moveToNextCellAction = null;
+
     int getID() {
         return logicsSupplier.getGroupObject().getID();
     }
@@ -369,13 +371,17 @@ public abstract class GridTable extends ClientFormTable
         //имитируем продвижение фокуса вперёд, если изначально попадаем на нефокусную ячейку
         addFocusListener(new FocusAdapter() {
             public void focusGained(FocusEvent e) {
-                int row = getSelectionModel().getLeadSelectionIndex();
-                int column = getColumnModel().getSelectionModel().getLeadSelectionIndex();
-                if (!isCellFocusable(row, column)) {
-                    nextAction.actionPerformed(new ActionEvent(e.getSource(), ActionEvent.ACTION_PERFORMED, ""));
-                }
+                moveToFocusableCellIfNeeded();
             }
         });
+
+        this.moveToNextCellAction = nextAction;
+    }
+
+    private void moveToFocusableCellIfNeeded() {
+        if (!isCellFocusable(getSelectedRow(), getSelectedColumn())) {
+            moveToNextCellAction.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, ""));
+        }
     }
 
     public boolean addColumn(final ClientCellView property) {
@@ -451,6 +457,7 @@ public abstract class GridTable extends ClientFormTable
             selectRow(newindex);
         }
 
+        moveToFocusableCellIfNeeded();
     }
 
     public void selectObject(ClientGroupObjectValue value) {
