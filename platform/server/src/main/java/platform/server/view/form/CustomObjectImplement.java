@@ -41,6 +41,11 @@ public class CustomObjectImplement extends ObjectImplement {
         return baseClass;
     }
 
+    public void setDefaultValue(ChangesSession session) throws SQLException {
+        changeValue(session, NullValue.instance);
+        groupTo.updated = groupTo.updated | GroupObjectImplement.UPDATED_GRIDCLASS;
+    }
+
     public AndClassSet getClassSet(GroupObjectImplement classGroup) {
         if(groupTo==classGroup)
             return getGridClass().getUpSet();
@@ -74,7 +79,6 @@ public class CustomObjectImplement extends ObjectImplement {
 
     public void refreshValueClass(ChangesSession session) throws SQLException {
         value = value.refresh(session);
-
         updateValueClass(session);
     }
 

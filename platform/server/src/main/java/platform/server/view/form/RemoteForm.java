@@ -383,12 +383,17 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
     }
 
     void addObjectOnTransaction() throws SQLException {
-        for(ObjectImplement object : getObjects())
-            if(object instanceof CustomObjectImplement) {
-                CustomObjectImplement customObject = (CustomObjectImplement)object;
-                if(customObject.addOnTransaction)
+        for (ObjectImplement object : getObjects()) {
+            if (object instanceof CustomObjectImplement) {
+                CustomObjectImplement customObject = (CustomObjectImplement) object;
+                if (customObject.addOnTransaction) {
                     addObject(customObject, (ConcreteCustomClass) customObject.gridClass);
+                }
             }
+            if (object.resetOnApply) {
+                object.setDefaultValue(session);
+            }
+        }
     }
 
     public String checkChanges() throws SQLException {

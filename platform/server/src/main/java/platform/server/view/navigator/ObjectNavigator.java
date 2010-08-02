@@ -8,6 +8,18 @@ import java.util.Set;
 
 public class ObjectNavigator extends CellViewNavigator implements PropertyInterfaceNavigator {
 
+    public GroupObjectNavigator groupTo;
+
+    public String caption;
+    public boolean show = true;
+    public boolean showTree = false;
+    public boolean showClass = false;
+
+    public boolean addOnTransaction = false;
+    public boolean resetOnApply = false;
+
+    public final ValueClass baseClass;
+
     public ObjectNavigator(int ID, ValueClass baseClass, String caption) {
         super(ID);
         this.caption = caption;
@@ -18,17 +30,6 @@ public class ObjectNavigator extends CellViewNavigator implements PropertyInterf
             showClass = true;
         }
     }
-
-    public GroupObjectNavigator groupTo;
-
-    public String caption;
-    public boolean show = true;
-    public boolean showTree = false;
-    public boolean showClass = false;
-
-    public boolean addOnTransaction = false;
-
-    public final ValueClass baseClass;
 
     public PropertyObjectInterface doMapping(Mapper mapper) {
         return mapper.mapObject(this);

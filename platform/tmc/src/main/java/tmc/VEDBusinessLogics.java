@@ -1010,6 +1010,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             objBarcode.groupTo.initClassView = ClassViewType.PANEL;
             objBarcode.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
 
+            objBarcode.resetOnApply = true;
+
 //            addAutoAction(objBarcode, addPropertyObjectImplement(barcodeAction, objBarcode));
         }
 

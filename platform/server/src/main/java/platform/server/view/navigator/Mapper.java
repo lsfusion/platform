@@ -21,6 +21,9 @@ public class Mapper {
     private ObjectImplement mapObject(ObjectNavigator objKey, CustomClassView classView) {
 
         ObjectImplement objValue = objKey.baseClass.newObject(objKey.ID,objKey.getSID(),objKey.caption,classView,objKey.addOnTransaction);
+
+        objValue.resetOnApply = objKey.resetOnApply;
+
         objectMapper.put(objKey, objValue);
         return objValue;
     }

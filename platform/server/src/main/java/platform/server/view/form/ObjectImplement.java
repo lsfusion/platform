@@ -20,13 +20,7 @@ import java.util.Set;
 // на самом деле нужен collection но при extend'е нужна конкретная реализация
 public abstract class ObjectImplement extends CellView implements PropertyObjectInterface {
 
-    public ObjectImplement(int ID, String sID, String caption) {
-        super(ID,sID);
-        this.caption = caption;
-    }
-
     // 0 !!! - изменился объект, 1 !!! - класс объекта, 3 !!! - класса, 4 - классовый вид
-
     public final static int UPDATED_OBJECT = (1);
     public final static int UPDATED_CLASS = (1 << 1);
     public final static int UPDATED_GRIDCLASS = (1 << 3);
@@ -36,6 +30,13 @@ public abstract class ObjectImplement extends CellView implements PropertyObject
     public GroupObjectImplement groupTo;
 
     public String caption = "";
+
+    public boolean resetOnApply = false;
+
+    public ObjectImplement(int ID, String sID, String caption) {
+        super(ID,sID);
+        this.caption = caption;
+    }
 
     public String toString() {
         return caption;
@@ -47,6 +48,7 @@ public abstract class ObjectImplement extends CellView implements PropertyObject
     }
 
     public abstract ValueClass getBaseClass();
+    public abstract void setDefaultValue(ChangesSession session) throws SQLException;
 
     public abstract ObjectValue getObjectValue();
     public DataObject getDataObject() {

@@ -73,6 +73,11 @@ public class DataObjectImplement extends ObjectImplement {
         return DataObject.getValue(value,dataClass);
     }
 
+    public void setDefaultValue(ChangesSession session) throws SQLException {
+        changeValue(session, dataClass.getDefaultValue());
+        groupTo.updated = groupTo.updated | GroupObjectImplement.UPDATED_GRIDCLASS;
+    }
+
     public ConcreteClass getCurrentClass() {
         return dataClass;
     }
