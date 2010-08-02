@@ -379,7 +379,9 @@ public abstract class GridTable extends ClientFormTable
     }
 
     private void moveToFocusableCellIfNeeded() {
-        if (!isCellFocusable(getSelectedRow(), getSelectedColumn())) {
+        int row = getSelectionModel().getLeadSelectionIndex();
+        int col = getColumnModel().getSelectionModel().getLeadSelectionIndex();
+        if (!isCellFocusable(row, col)) {
             moveToNextCellAction.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, ""));
         }
     }
