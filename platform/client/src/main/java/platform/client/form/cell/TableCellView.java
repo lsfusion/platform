@@ -4,7 +4,6 @@ import platform.client.form.ClientForm;
 import platform.client.logics.ClientCellView;
 
 import javax.swing.*;
-import javax.swing.text.JTextComponent;
 import java.awt.*;
 
 public class TableCellView extends JPanel implements CellView {
@@ -108,16 +107,6 @@ public class TableCellView extends JPanel implements CellView {
             }
 
             tableEditor.requestFocusInWindow();
-
-            if (tableEditor instanceof JTextComponent) {
-
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        ((JTextComponent)tableEditor).selectAll();
-                    }
-                });
-            }
         }
     }
-
 }

@@ -25,9 +25,9 @@ public class StringPropertyEditor extends TextFieldPropertyEditor {
             }
         });
 
-        if (value != null)
+        if (value != null) {
             setText(value.toString());
-        selectAll();
+        }
     }
 
     public Object getCellEditorValue() {

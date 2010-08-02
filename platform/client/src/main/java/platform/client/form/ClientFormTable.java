@@ -1,10 +1,13 @@
 package platform.client.form;
 
 import javax.swing.*;
+import javax.swing.text.JTextComponent;
+import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.KeyEvent;
+import java.util.EventObject;
 
 public abstract class ClientFormTable extends JTable {
 
@@ -80,25 +83,19 @@ public abstract class ClientFormTable extends JTable {
         });
     }
 
-    public abstract Object convertValueFromString(String value, int row, int column);
+    public boolean editCellAt(int row, int column, EventObject e){
+        boolean result = super.editCellAt(row, column, e);
+        if (result) {
+            final Component editor = getEditorComponent();
+            if (editor instanceof JTextComponent) {
+                ((JTextComponent) editor).selectAll();
+            }
+        }
 
-    /* Скорее всего, уже не актуально после того, как ClientForm стал focusCycleRoot
-    // Решение проблемы конфликта JTable и DockingFrames
-    // Так сделано, чтобы setNextFocusableComponent в super.prepareEditor "словил" не DockFocusTraversalPolicy
-    // у BasicDockableDisplayer (так как он при этом зацикливается), а DefaultFocusTraversalPolicy у JTable.
-
-    @Override
-    public Component prepareEditor(TableCellEditor editor, int row, int column) {
-        setFocusCycleRoot(true);
-        return super.prepareEditor(editor, row, column);
+        return result;
     }
 
-    @Override
-    public void removeEditor() {
-        super.removeEditor();
-        setFocusCycleRoot(false);
-        setFocusTraversalPolicy(new DefaultFocusTraversalPolicy());
-    } */
+    public abstract Object convertValueFromString(String value, int row, int column);
 
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
 

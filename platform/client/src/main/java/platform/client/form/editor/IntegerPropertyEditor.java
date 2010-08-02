@@ -17,10 +17,6 @@ public class IntegerPropertyEditor extends TextFieldPropertyEditor {
     public IntegerPropertyEditor(Object value, NumberFormat format, ComponentDesign design, Class<?> valueClass) {
         super(design);
 
-//        NumberFormat format = iformat;
-//        if (format == null)
-//            format = NumberFormat.getInstance();
-
         if (Double.class.equals(valueClass) && format instanceof DecimalFormat && format.getMaximumFractionDigits() > 0) {
             ((DecimalFormat) format).setDecimalSeparatorAlwaysShown(true);
         }
@@ -40,10 +36,13 @@ public class IntegerPropertyEditor extends TextFieldPropertyEditor {
 
         setFormatterFactory(new DefaultFormatterFactory(formatter));
 
-        if (value != null)
+        if (value != null) {
             setValue(value);
-        selectAll();
+        }
 
+        // выглядит странно, но где-то внутри это позволяет
+        // обойти баг со сбрасыванием выделения из-за форматтера 
+        setText( getText() );
     }
 
     public Object getCellEditorValue() {
