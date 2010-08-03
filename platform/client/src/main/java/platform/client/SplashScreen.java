@@ -17,7 +17,6 @@ public class SplashScreen {
 
         JProgressBar progressBar = new JProgressBar();
         progressBar.setIndeterminate(true);
-        //progressBar.setMaximumSize(new Dimension(250, 20));
         
         content.add(progressBar);
         instance.setLocationRelativeTo(null);

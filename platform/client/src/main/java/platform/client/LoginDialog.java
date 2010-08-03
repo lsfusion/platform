@@ -68,7 +68,12 @@ public class LoginDialog extends JDialog {
         try {
             result = BL.createNavigator(loginField.getText(), new String(passwordField.getPassword()), computer);
             dispose();
-            SplashScreen.start();
+            SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            SplashScreen.start();
+                        }
+            });
+
         } catch (Exception e) {
             ClientExceptionManager.handleException(e, this);
             throw new RuntimeException("Ошибка при подключении к серверу", e);

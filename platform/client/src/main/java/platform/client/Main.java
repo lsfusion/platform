@@ -76,8 +76,8 @@ public class Main {
                     String serverHost = System.getProperty("platform.client.hostname", "localhost");
                     String serverPort = System.getProperty("platform.client.hostport", "7652");
 
-                    String user = null;//= System.getProperty("platform.client.user");
-                    String password = null;// = System.getProperty("platform.client.password");
+                    String user = System.getProperty("platform.client.user");
+                    String password = System.getProperty("platform.client.password");
 
                     remoteLogics = (RemoteLogicsInterface) Naming.lookup("rmi://" + serverHost + ":" + serverPort + "/BusinessLogics");
                     computerId = remoteLogics.getComputer(OSUtils.getLocalHostName());
@@ -96,7 +96,11 @@ public class Main {
                     frame.addWindowListener(
                             new WindowAdapter() {
                                 public void windowOpened(WindowEvent e) {
-                                    SplashScreen.close();
+                                    SwingUtilities.invokeLater(new Runnable() {
+                                        public void run() {
+                                            SplashScreen.close();
+                                        }
+                                    });
                                 }
                             }
                     );
