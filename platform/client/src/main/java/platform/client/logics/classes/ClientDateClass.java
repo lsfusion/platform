@@ -28,9 +28,13 @@ public class ClientDateClass extends ClientDataClass {
         return DateFormat.getDateInstance(DateFormat.SHORT);
     }
 
-    public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) { return new DatePropertyRenderer(format, design); }
-    public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) { return new DatePropertyEditor(value, (SimpleDateFormat) format, design); }
+    public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) {
+        return new DatePropertyRenderer(format, design);
+    }
 
+    public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) {
+        return new DatePropertyEditor(value, (SimpleDateFormat) format, design); 
+    }
 
     public Object parseString(String s) throws ParseException {
         try {

@@ -11,6 +11,8 @@ import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.rmi.Naming;
@@ -33,6 +35,7 @@ public class Main {
     public static int computerId;
 
     public static ModuleFactory module;
+
     public static void start(final String[] args, ModuleFactory startModule) {
         module = startModule;
 
@@ -73,8 +76,8 @@ public class Main {
                     String serverHost = System.getProperty("platform.client.hostname", "localhost");
                     String serverPort = System.getProperty("platform.client.hostport", "7652");
 
-                    String user = System.getProperty("platform.client.user");
-                    String password = System.getProperty("platform.client.password");
+                    String user = null;//= System.getProperty("platform.client.user");
+                    String password = null;// = System.getProperty("platform.client.password");
 
                     remoteLogics = (RemoteLogicsInterface) Naming.lookup("rmi://" + serverHost + ":" + serverPort + "/BusinessLogics");
                     computerId = remoteLogics.getComputer(OSUtils.getLocalHostName());
@@ -89,6 +92,14 @@ public class Main {
                     System.out.println("Before init frame");
                     frame = module.initFrame(remoteNavigator);
                     System.out.println("After init frame");
+
+                    frame.addWindowListener(
+                            new WindowAdapter() {
+                                public void windowOpened(WindowEvent e) {
+                                    SplashScreen.close();
+                                }
+                            }
+                    );
 
                     // вот таким вот извращенным методом приходится отключать SimplexLayout, чтобы он не вызывался по два раза
                     // проблема в том, что setVisible сразу вызывает отрисовку, а setExtendedState "моделирует" нажатии кнопки ОС и все идет просто в EventDispatchThread
@@ -105,7 +116,7 @@ public class Main {
                 }
 
             }
-       }.start();
+        }.start();
     }
 
     public static void main(final String[] args) {
