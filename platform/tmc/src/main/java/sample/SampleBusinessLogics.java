@@ -113,6 +113,8 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             super(parent, ID, caption);
 
             ObjectNavigator objDoc = addSingleGroupObjectImplement(document, "Документ", properties, baseGroup);
+            addObjectActions(this, objDoc);
+
             ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup);
 
             addPropertyView(objDoc, objArt, properties, baseGroup);

@@ -6,6 +6,7 @@ import platform.interop.action.ClientAction;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
@@ -71,6 +72,14 @@ public class LP<T extends PropertyInterface> {
 
     public OrderedMap<T, KeyExpr> getMapKeys() {
         return BaseUtils.listMap(listInterfaces, property.getMapKeys());
+    }
+
+    public ClassWhere<Integer> getClassWhere() {
+        ClassWhere<T> classWhere = property.getClassWhere();
+        Map<T, Integer> mapping = new HashMap<T, Integer>();
+        for (int i = 0; i < listInterfaces.size(); i++)
+            mapping.put(listInterfaces.get(i), i+1);
+        return new ClassWhere<Integer>(classWhere, mapping);
     }
 
     public Expr getExpr(Modifier<? extends Changes> modifier, Expr... exprs) {

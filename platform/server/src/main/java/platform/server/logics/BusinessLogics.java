@@ -639,6 +639,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public BaseClass baseClass;
 
     public TableFactory tableFactory;
+    public List<LP> lproperties = new ArrayList<LP>();
     public List<Property> properties = new ArrayList<Property>();
     protected Set<AggregateProperty> persistents = new HashSet<AggregateProperty>();
     protected Set<List<? extends Property>> indexes = new HashSet<List<? extends Property>>();
@@ -1175,6 +1176,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     private <T extends LP<?>> T addProperty(AbstractGroup group, T lp) {
+        lproperties.add(lp);
         properties.add(lp.property);
         if(group!=null) group.add(lp.property);
         return lp;
@@ -2231,5 +2233,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public String getName() throws RemoteException {
         return getClass().getSimpleName();
+    }
+
+    public void outputPropertyClasses() {
+        for (LP lp : lproperties) {
+            System.out.println(lp.property.sID + " : " + lp.property.caption + " - " + lp.getClassWhere());
+        }
     }
 }
