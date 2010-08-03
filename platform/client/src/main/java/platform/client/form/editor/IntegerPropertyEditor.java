@@ -1,16 +1,14 @@
 package platform.client.form.editor;
 
-import platform.client.form.PropertyEditorComponent;
 import platform.interop.ComponentDesign;
 
 import javax.swing.*;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.NumberFormatter;
-import java.awt.*;
 import java.text.DecimalFormat;
+import java.text.Format;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.util.EventObject;
 
 public class IntegerPropertyEditor extends TextFieldPropertyEditor {
 
@@ -18,13 +16,16 @@ public class IntegerPropertyEditor extends TextFieldPropertyEditor {
         super(design);
 
         if (Double.class.equals(valueClass) && format instanceof DecimalFormat && format.getMaximumFractionDigits() > 0) {
-            ((DecimalFormat) format).setDecimalSeparatorAlwaysShown(true);
+            DecimalFormat df = (DecimalFormat) format;
+            df.setDecimalSeparatorAlwaysShown(true);
+            df.setMaximumFractionDigits(8);
         }
 
         NumberFormatter formatter = new NumberFormatter(format) {
 
             public Object stringToValue(String text) throws ParseException {
-                if (text.isEmpty() || text.equals("-") || text.equals(",") || text.equals(".") || text.equals("-,") || text.equals("-.")) return null;
+                if (text.isEmpty() || text.equals("-") || text.equals(",") || text.equals(".") || text.equals("-,") || text.equals("-."))
+                    return null;
                 return super.stringToValue(text);
             }
         };
@@ -42,7 +43,7 @@ public class IntegerPropertyEditor extends TextFieldPropertyEditor {
 
         // выглядит странно, но где-то внутри это позволяет
         // обойти баг со сбрасыванием выделения из-за форматтера 
-        setText( getText() );
+        setText(getText());
     }
 
     public Object getCellEditorValue() {
