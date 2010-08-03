@@ -18,7 +18,6 @@ public class IntegerPropertyEditor extends TextFieldPropertyEditor {
         if (Double.class.equals(valueClass) && format instanceof DecimalFormat && format.getMaximumFractionDigits() > 0) {
             DecimalFormat df = (DecimalFormat) format;
             df.setDecimalSeparatorAlwaysShown(true);
-            df.setMaximumFractionDigits(8);
         }
 
         NumberFormatter formatter = new NumberFormatter(format) {
