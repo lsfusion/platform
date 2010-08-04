@@ -402,6 +402,46 @@ public class FormView implements ClientSerialize {
         property.readOnly = readOnly;
     }
 
+    public void setEnabled(AbstractGroup group, boolean readOnly, GroupObjectNavigator groupObject) {
+        setFocusable(group, readOnly, groupObject);
+        setReadOnly(group, !readOnly, groupObject);
+    }
+
+    public void setEnabled(LP property, boolean readOnly) {
+        setFocusable(property, readOnly);
+        setReadOnly(property, !readOnly);
+    }
+
+    public void setEnabled(LP property, boolean readOnly, GroupObjectNavigator groupObject) {
+        setFocusable(property, readOnly, groupObject);
+        setReadOnly(property, !readOnly, groupObject);
+    }
+
+    public void setEnabled(Property property, boolean readOnly) {
+        setFocusable(property, readOnly);
+        setReadOnly(property, !readOnly);
+    }
+
+    public void setEnabled(Property property, boolean readOnly, GroupObjectNavigator groupObject) {
+        setFocusable(property, readOnly, groupObject);
+        setReadOnly(property, !readOnly, groupObject);
+    }
+
+    public void setEnabled(boolean readOnly, GroupObjectNavigator groupObject) {
+        setFocusable(readOnly, groupObject);
+        setReadOnly(!readOnly, groupObject);
+    }
+
+    public void setEnabled(ObjectNavigator objectNavigator, boolean readOnly, boolean cells) {
+        setFocusable(objectNavigator, readOnly, cells);
+        setReadOnly(objectNavigator, !readOnly, cells);
+    }
+
+    public void setEnabled(CellView property, boolean readOnly) {
+        setFocusable(property, readOnly);
+        setReadOnly(property, !readOnly);
+    }
+
     public void setEditKey(LP property, KeyStroke keyStroke, GroupObjectNavigator groupObject) {
         setEditKey(property.property, keyStroke, groupObject);
     }

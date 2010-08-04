@@ -1118,10 +1118,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 design.setEditKey(orderSalePayCard, KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0));
                 design.setEditKey(orderSalePayCash, KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0));
 
-                if (!isDocumentFocusable())
-                    design.setFocusable(false, objDoc.groupTo);
-                else
-                    design.setFocusable(documentAggrPriceGroup, false, objDoc.groupTo);
+
+                if (!isDocumentFocusable()) {
+                    design.setEnabled(false, objDoc.groupTo);
+                } else {
+                    design.setEnabled(documentAggrPriceGroup, false, objDoc.groupTo);
+                }
 
                 // так конечно делать неправильно, но DocumentNavigatorForm - это первый общий класс у продажи сертификатов и кассы
                 PropertyViewNavigator payView = getPropertyView(orderSalePay);
@@ -1464,13 +1466,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         public DefaultFormView createDefaultRichDesign() {
 
             DefaultFormView design = super.createDefaultRichDesign();
-            design.setFocusable(orderClientSum, false);
+            design.setEnabled(orderClientSum, false);
 
             design.getGroupObjectContainer(objDoc.groupTo).title = "Клиент";
             design.getGroupObjectContainer(objDoc.groupTo).design.background = new Color(192, 192, 192);
 
-            design.setFocusable(allGroup, false, objArt.groupTo);
-            design.setFocusable(articleQuantity, true, objArt.groupTo);
+            design.setEnabled(allGroup, false, objArt.groupTo);
+            design.setEnabled(articleQuantity, true, objArt.groupTo);
 
             design.get(objArt.groupTo).gridView.defaultComponent = true;
 
@@ -1649,11 +1651,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
 
         @Override
-        protected boolean isDocumentFocusable() {
-            return false;
-        }
-
-        @Override
         protected boolean isBarcodeFocusable() {
             return false;
         }
@@ -1772,8 +1769,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             if (!noOuters)
                 design.addIntersection(design.getGroupObjectContainer(objInner.groupTo), design.getGroupObjectContainer(objOuter.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
-            design.setFocusable(objArt, false, true);
-            design.setFocusable(returnInnerQuantity, true, objArt.groupTo);
+            design.setEnabled(objArt, false, true);
+            design.setEnabled(returnInnerQuantity, true, objArt.groupTo);
             design.get(objArt.groupTo).gridView.defaultComponent = true;
 
 
@@ -1798,7 +1795,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     
             design.getGroupObjectContainer(objDoc.groupTo).title = "Клиент";
             design.getGroupObjectContainer(objDoc.groupTo).design.background = new Color(192, 192, 192);
-            
+
+            design.setReadOnly(true, objInner.groupTo);
             return design;
         }
 
@@ -1864,6 +1862,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 design.get(returnSaleSumNavigator).externalScreen = panelScreen;
                 design.get(returnSaleSumNavigator).externalScreenConstraints.order = 4;
             }
+
+            design.setReadOnly(true, objInner.groupTo);
 
             return design;
         }
@@ -2122,7 +2122,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             design.getGroupObjectContainer(objDoc.groupTo).title = "Клиент";
             design.getGroupObjectContainer(objDoc.groupTo).design.background = new Color(192, 192, 192);
-            design.setFocusable(allGroup, false, objObligation.groupTo);
+            design.setEnabled(allGroup, false, objObligation.groupTo);
 
             design.get(objObligation.groupTo).gridView.defaultComponent = true;
             return design;
