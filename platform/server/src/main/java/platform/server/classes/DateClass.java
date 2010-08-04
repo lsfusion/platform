@@ -46,7 +46,7 @@ public class DateClass extends DataClass<Date> {
     }
 
     public Object getDefaultValue() {
-        return 0;
+        return new Date(System.currentTimeMillis());
     }
 
     public String getDB(SQLSyntax syntax) {

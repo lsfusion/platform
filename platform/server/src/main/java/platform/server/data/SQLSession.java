@@ -205,14 +205,22 @@ public class SQLSession {
         String insertString = "";
         String valueString = "";
 
+        int paramNum = 0;
+        Map<String,TypeObject> params = new HashMap<String, TypeObject>();
+
         // пробежим по KeyFields'ам
         for(KeyField key : table.keys) {
             insertString = (insertString.length()==0?"":insertString+',') + key.name;
-            valueString = (valueString.length()==0?"":valueString+',') + keyFields.get(key).object;
+            DataObject keyValue = keyFields.get(key);
+            if (keyValue.isString(syntax))
+                valueString = (valueString.length()==0?"":valueString+',') + keyValue.object;
+            else {
+                String prm = "qxprm" + (paramNum++) + "nx";
+                valueString = (valueString.length()==0?"":valueString+',') + prm;
+                params.put(prm, new TypeObject(keyValue));
+            }
         }
 
-        int paramNum = 0;
-        Map<String,TypeObject> params = new HashMap<String, TypeObject>();
         for(Map.Entry<PropertyField,ObjectValue> fieldValue : propFields.entrySet()) {
             insertString = (insertString.length()==0?"":insertString+',') + fieldValue.getKey().name;
             if(fieldValue.getValue().isString(syntax))
@@ -229,11 +237,22 @@ public class SQLSession {
 
     public void insertRecord(Table table,Map<KeyField,DataObject> keyFields,Map<PropertyField,ObjectValue> propFields) throws SQLException {
 
-        for(Map.Entry<PropertyField,ObjectValue> fieldValue : propFields.entrySet())
-            if(!fieldValue.getKey().type.isSafeString(fieldValue.getValue())) {
-                insertParamRecord(table, keyFields, propFields);
-                return;
+        boolean needParam = false;
+
+        for (Map.Entry<KeyField,DataObject> keyField : keyFields.entrySet())
+            if(!keyField.getKey().type.isSafeString(keyField.getValue())) {
+                needParam = true;
             }
+
+        for (Map.Entry<PropertyField,ObjectValue> fieldValue : propFields.entrySet())
+            if(!fieldValue.getKey().type.isSafeString(fieldValue.getValue())) {
+                needParam = true;
+            }
+
+        if (needParam) {
+            insertParamRecord(table, keyFields, propFields);
+            return;
+        }
 
         String insertString = "";
         String valueString = "";
