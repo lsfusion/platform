@@ -1,7 +1,7 @@
 package platform.server.data.expr.cases;
 
 import platform.interop.Compare;
-import platform.server.caches.Lazy;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
@@ -151,7 +151,7 @@ public class CaseExpr extends Expr {
         return cases.equals(((CaseExpr)obj).cases);
     }
 
-    @Lazy
+    @IdentityLazy
     public int hashContext(HashContext hashContext) {
         return cases.hashContext(hashContext);
     }

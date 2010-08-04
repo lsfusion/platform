@@ -1,5 +1,6 @@
 package platform.server.data.expr;
 
+import platform.server.caches.IdentityLazy;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.StringClass;
 import platform.server.data.translator.MapTranslate;
@@ -15,11 +16,9 @@ import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.where.Where;
 import platform.server.data.type.Type;
 import platform.server.caches.hash.HashContext;
-import platform.server.caches.Lazy;
 import platform.base.BaseUtils;
 
 import java.util.List;
-import java.util.ArrayList;
 
 // объединяет
 public class StringConcatenateExpr extends StaticClassExpr {
@@ -37,7 +36,7 @@ public class StringConcatenateExpr extends StaticClassExpr {
         return result.getExpr();
     }
 
-    @Lazy
+    @IdentityLazy
     public ConcreteClass getStaticClass() {
         return getType(getWhere());
     }

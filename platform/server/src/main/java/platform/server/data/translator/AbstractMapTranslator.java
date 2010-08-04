@@ -1,15 +1,12 @@
 package platform.server.data.translator;
 
 import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.VariableClassExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.VariableClassExpr;
 
 import java.util.*;
 
-import net.jcip.annotations.Immutable;
-
-@Immutable
 public abstract class AbstractMapTranslator implements MapTranslate  {
 
     public <K> Map<K, BaseExpr> translateDirect(Map<K, ? extends BaseExpr> map) {

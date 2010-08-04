@@ -1,14 +1,12 @@
 package platform.server.data.expr.query;
 
-import net.jcip.annotations.Immutable;
 import platform.server.caches.AbstractTranslateContext;
-import platform.server.caches.Lazy;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.*;
 import platform.server.data.query.InnerJoin;
-import platform.server.data.query.innerjoins.ObjectJoinSet;
-import platform.server.data.query.SourceJoin;
 import platform.server.data.query.JoinSet;
+import platform.server.data.query.SourceJoin;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.Where;
 
@@ -17,7 +15,6 @@ import java.util.Set;
 
 public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> implements InnerJoin {
 
-    @Immutable
     public static class Query extends AbstractTranslateContext<Query> {
         private final Where where;
         private final JoinSet joins;
@@ -27,7 +24,7 @@ public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> implements I
             this.joins = joins;
         }
 
-        @Lazy
+        @IdentityLazy
         public int hashContext(HashContext hashContext) {
             return where.hashContext(hashContext) * 31 + joins.hashContext(hashContext);
         }

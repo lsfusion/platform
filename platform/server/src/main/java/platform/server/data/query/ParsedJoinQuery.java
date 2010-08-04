@@ -1,9 +1,8 @@
 package platform.server.data.query;
 
-import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.server.caches.Lazy;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.SynchronizedLazy;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
@@ -12,7 +11,10 @@ import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.MapCase;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.data.translator.*;
+import platform.server.data.translator.MapTranslator;
+import platform.server.data.translator.MapValuesTranslate;
+import platform.server.data.translator.MapValuesTranslator;
+import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
 
@@ -21,7 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-@Immutable
 class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
 
     public final Map<K,KeyExpr> mapKeys;
@@ -102,7 +103,7 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
         return result;
     }
 
-    @Lazy
+    @IdentityLazy
     public Expr getExpr(V property) {
         return properties.get(property).and(where);
     }

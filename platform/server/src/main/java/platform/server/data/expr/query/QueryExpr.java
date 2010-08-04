@@ -3,15 +3,10 @@ package platform.server.data.expr.query;
 import platform.server.caches.*;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.*;
-import platform.server.data.expr.cases.CaseExpr;
-import platform.server.data.expr.cases.ExprCaseList;
-import platform.server.data.expr.cases.MapCase;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.ContextEnumerator;
 import platform.server.data.translator.MapTranslate;
-import platform.server.data.translator.QueryTranslator;
 import platform.server.data.translator.MapValuesTranslate;
-import platform.server.data.where.Where;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -100,12 +95,12 @@ public abstract class QueryExpr<K extends BaseExpr,I extends TranslateContext<I>
         return enumKeys(group.keySet(),expr.getEnum());
     }
 
-    @Lazy
+    @IdentityLazy
     public Set<KeyExpr> getKeys() {
         return getKeys(query, group);
     }
 
-    @Lazy
+    @IdentityLazy
     public Set<ValueExpr> getValues() {
         return enumValues(group.keySet(), query.getEnum());
     }

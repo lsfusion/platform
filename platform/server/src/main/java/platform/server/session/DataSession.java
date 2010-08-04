@@ -1,15 +1,17 @@
 package platform.server.session;
 
-import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
 import platform.base.DateConverter;
 import platform.base.OrderedMap;
 import platform.interop.action.ClientAction;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.MapValuesIterable;
-import platform.server.caches.GenericLazy;
 import platform.server.caches.hash.HashValues;
 import platform.server.classes.*;
-import platform.server.data.*;
+import platform.server.data.KeyField;
+import platform.server.data.ModifyQuery;
+import platform.server.data.PropertyField;
+import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.cases.CaseExpr;
@@ -323,7 +325,6 @@ public class DataSession extends SQLSession implements ChangesSession {
         return incrementChange.properties;
     }
 
-    @Immutable
     private static class Increment extends Modifier<Increment.UsedChanges> {
 
         Map<Property, IncrementChangeTable> tables = new HashMap<Property, IncrementChangeTable>(); 
@@ -383,13 +384,13 @@ public class DataSession extends SQLSession implements ChangesSession {
             }
 
             @Override
-            @GenericLazy
+            @IdentityLazy
             public int hashValues(HashValues hashValues) {
                 return super.hashValues(hashValues) * 31 + MapValuesIterable.hash(increment,hashValues);
             }
 
             @Override
-            @GenericLazy
+            @IdentityLazy
             public Set<ValueExpr> getValues() {
                 Set<ValueExpr> result = new HashSet<ValueExpr>();
                 result.addAll(super.getValues());

@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-@GenericImmutable
 public abstract class QueryJoin<K extends BaseExpr,I extends TranslateContext<I>> implements MapContext {
 
     private final I query;
@@ -73,7 +72,7 @@ public abstract class QueryJoin<K extends BaseExpr,I extends TranslateContext<I>
             return group;
         }
     };
-    @GenericLazy
+    @IdentityLazy
     public int hash(HashContext hashContext) {
         return hashes.hash(hashContext);
     }

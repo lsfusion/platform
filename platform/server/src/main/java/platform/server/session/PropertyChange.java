@@ -1,26 +1,26 @@
 package platform.server.session;
 
 import platform.base.BaseUtils;
-import platform.server.caches.*;
+import platform.server.caches.AbstractMapValues;
+import platform.server.caches.IdentityLazy;
+import platform.server.caches.MapContext;
+import platform.server.caches.MapHashIterable;
 import platform.server.caches.hash.HashContext;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
-import platform.server.data.expr.where.CompareWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.Query;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.DataObject;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-@GenericImmutable
 public class PropertyChange<T extends PropertyInterface> extends AbstractMapValues<PropertyChange<T>> implements MapContext {
     public final Map<T,KeyExpr> mapKeys;
     public final Expr expr;
@@ -37,7 +37,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractMapValu
         return new HashSet<KeyExpr>(mapKeys.values());
     }
 
-    @GenericLazy
+    @IdentityLazy
     public Set<ValueExpr> getValues() {
         return AbstractSourceJoin.enumValues(expr,where);
     }
@@ -63,7 +63,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractMapValu
         return query;
    }
 
-    @GenericLazy
+    @IdentityLazy
     public int hash(HashContext hashContext) {
         int hash = 0;
         for(Map.Entry<T,KeyExpr> mapKey : mapKeys.entrySet())
@@ -84,7 +84,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractMapValu
         return false;
     }
 
-    @GenericLazy
+    @IdentityLazy
     public int hashValues(final HashValues hashValues) {
         return hash(hashValues.mapKeys());
     }

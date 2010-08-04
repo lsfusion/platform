@@ -1,8 +1,7 @@
 package platform.server.data.expr.query;
 
-import net.jcip.annotations.Immutable;
 import platform.server.caches.AbstractTranslateContext;
-import platform.server.caches.Lazy;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
@@ -17,7 +16,6 @@ import java.util.Set;
 
 public class OrderJoin extends QueryJoin<KeyExpr, OrderJoin.Query> {
 
-    @Immutable
     public static class Query extends AbstractTranslateContext<Query> {
         private final Where where;
         private final Set<Expr> partitions;
@@ -27,7 +25,7 @@ public class OrderJoin extends QueryJoin<KeyExpr, OrderJoin.Query> {
             this.partitions = partitions;
         }
 
-        @Lazy
+        @IdentityLazy
         public int hashContext(HashContext hashContext) {
             int hash = 0;
             for(Expr partition : partitions)

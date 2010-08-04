@@ -2,7 +2,9 @@ package platform.server.data;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.server.caches.*;
+import platform.server.caches.IdentityLazy;
+import platform.server.caches.MapValues;
+import platform.server.caches.MapValuesIterable;
 import platform.server.caches.hash.HashCodeValues;
 import platform.server.caches.hash.HashValues;
 import platform.server.classes.BaseClass;
@@ -73,7 +75,7 @@ public abstract class SessionTable<This extends SessionTable<This>> extends Tabl
         };
     }
 
-    @Lazy
+    @IdentityLazy
     public int hashValues(HashValues hashValues) {
         int hash = 0;
         if(rows!=null)

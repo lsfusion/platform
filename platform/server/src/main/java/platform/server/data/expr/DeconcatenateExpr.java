@@ -1,7 +1,7 @@
 package platform.server.data.expr;
 
 import platform.base.QuickMap;
-import platform.server.caches.Lazy;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcatenateClassSet;
@@ -85,7 +85,7 @@ public class DeconcatenateExpr extends SingleClassExpr {
         return expr.equals(((DeconcatenateExpr)obj).expr) && part == ((DeconcatenateExpr)obj).part && baseClass.equals(((DeconcatenateExpr)obj).baseClass);  
     }
 
-    @Lazy
+    @IdentityLazy
     public int hashContext(HashContext hashContext) {
         return expr.hashContext(hashContext) * 31 + part;
     }

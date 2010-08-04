@@ -1,9 +1,8 @@
 package platform.server.session;
 
-import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
 import platform.server.caches.AbstractMapValues;
-import platform.server.caches.Lazy;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.MapValuesIterable;
 import platform.server.caches.hash.HashValues;
 import platform.server.classes.CustomClass;
@@ -23,7 +22,6 @@ import platform.server.logics.property.DataProperty;
 import java.sql.SQLException;
 import java.util.*;
 
-@Immutable
 public class SessionChanges extends AbstractMapValues<SessionChanges> {
 
     public final Map<CustomClass, AddClassTable> add;
@@ -39,12 +37,12 @@ public class SessionChanges extends AbstractMapValues<SessionChanges> {
         return this == o || o instanceof SessionChanges && add.equals(((SessionChanges) o).add) && data.equals(((SessionChanges) o).data) && remove.equals(((SessionChanges) o).remove);
     }
 
-    @Lazy
+    @IdentityLazy
     public int hashValues(HashValues hashValues) {
         return (MapValuesIterable.hash(add,hashValues) * 31 + MapValuesIterable.hash(remove,hashValues)) * 31 + MapValuesIterable.hash(data,hashValues);
     }
 
-    @Lazy
+    @IdentityLazy
     public Set<ValueExpr> getValues() {
         Set<ValueExpr> result = new HashSet<ValueExpr>();
         MapValuesIterable.enumValues(result,add);

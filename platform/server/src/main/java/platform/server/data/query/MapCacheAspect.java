@@ -5,19 +5,13 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.DeclareParents;
 import platform.base.BaseUtils;
+import platform.server.caches.*;
 import platform.server.caches.hash.HashContext;
-import platform.server.caches.hash.HashValues;
 import platform.server.caches.hash.HashMapValues;
-import platform.server.caches.AbstractMapValues;
-import platform.server.caches.GenericImmutable;
-import platform.server.caches.GenericLazy;
-import platform.server.caches.MapContext;
-import platform.server.caches.MapHashIterable;
-import platform.server.caches.MapParamsIterable;
-import platform.server.caches.MapValuesIterable;
+import platform.server.caches.hash.HashValues;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
@@ -102,7 +96,6 @@ public class MapCacheAspect {
     @DeclareParents(value="platform.server.data.query.ParsedJoinQuery",defaultImpl=JoinInterfaceImplement.class)
     private JoinInterface joinInterface;
 
-    @GenericImmutable
     class JoinImplement<K> implements MapContext {
         final Map<K,? extends Expr> exprs;
         final MapValuesTranslate mapValues; // map context'а values на те которые нужны
@@ -112,18 +105,18 @@ public class MapCacheAspect {
             this.mapValues = mapValues;
         }
 
-        @GenericLazy
+        @IdentityLazy
         public Set<KeyExpr> getKeys() {
             return AbstractSourceJoin.enumKeys(exprs.values());
         }
 
-        @GenericLazy
+        @IdentityLazy
         public Set<ValueExpr> getValues() {
             // нельзя из values так как вообще не его контекст
             return AbstractSourceJoin.enumValues(exprs.values());
         }
 
-        @GenericLazy
+        @IdentityLazy
         public int hash(HashContext hashContext) {
             int hash=0;
             for(Map.Entry<K,? extends Expr> expr : exprs.entrySet())
@@ -239,7 +232,6 @@ public class MapCacheAspect {
     final String PROPERTY_STRING = "expr";
     final String CHANGED_STRING = "where";
 
-    @GenericImmutable
     static class JoinExprInterfaceImplement<U extends Changes<U>> extends AbstractMapValues<JoinExprInterfaceImplement<U>> {
         final U usedChanges;
         final boolean changed; // нужно ли условие на изменение, по сути для этого св-ва и делается класс
@@ -253,7 +245,7 @@ public class MapCacheAspect {
             return this == o || o instanceof JoinExprInterfaceImplement && changed == ((JoinExprInterfaceImplement) o).changed && usedChanges.equals(((JoinExprInterfaceImplement) o).usedChanges);
         }
 
-        @GenericLazy
+        @IdentityLazy
         public int hashValues(HashValues hashValues) {
             return 31 * usedChanges.hashValues(hashValues) + (changed ? 1 : 0);
         }
@@ -337,7 +329,6 @@ public class MapCacheAspect {
     // все равно надо делать класс в котором будет :
     // propertyChange и getUsedDataChanges
 
-    @GenericImmutable
     static class DataChangesInterfaceImplement<P extends PropertyInterface, U extends Changes<U>> implements MapContext {
         final U usedChanges;
         final PropertyChange<P> change;
@@ -354,7 +345,7 @@ public class MapCacheAspect {
                     usedChanges.equals(((DataChangesInterfaceImplement) o).usedChanges) && where == ((DataChangesInterfaceImplement) o).where;
         }
 
-        @GenericLazy
+        @IdentityLazy
         public int hash(HashContext hashContext) {
             return 31 * usedChanges.hashValues(hashContext) + change.hash(hashContext) + (where?1:0);
         }
@@ -434,8 +425,6 @@ public class MapCacheAspect {
         return getDataChanges(property, change, changedWhere, modifier, ((MapPropertyInterface)property).getDataChangesCache(), thisJoinPoint);
     }
 
-
-    @GenericImmutable
     static class ExprInterfaceImplement<P extends PropertyInterface, U extends Changes<U>> implements MapContext {
         final U usedChanges;
         final Map<P, Expr> joinImplement;
@@ -452,7 +441,7 @@ public class MapCacheAspect {
                     usedChanges.equals(((ExprInterfaceImplement) o).usedChanges) && where == ((ExprInterfaceImplement) o).where;
         }
 
-        @GenericLazy
+        @IdentityLazy
         public int hash(HashContext hashContext) {
             int hash = 0;
             for(Map.Entry<P,Expr> joinExpr : joinImplement.entrySet())

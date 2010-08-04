@@ -1,7 +1,6 @@
 package platform.server.session;
 
-import platform.server.caches.GenericImmutable;
-import platform.server.caches.GenericLazy;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
@@ -30,7 +29,6 @@ public abstract class AbstractPropertyChangesModifier<P extends PropertyInterfac
         return session;
     }
 
-    @GenericImmutable
     protected abstract static class UsedChanges<P extends PropertyInterface, T extends Property<P>, AC extends AbstractPropertyChanges<P,T,AC>,
                                     UC extends UsedChanges<P,T,AC,UC>> extends Changes<UC> {
         AC changes;
@@ -70,13 +68,13 @@ public abstract class AbstractPropertyChangesModifier<P extends PropertyInterfac
         }
 
         @Override
-        @GenericLazy
+        @IdentityLazy
         public int hashValues(HashValues hashValues) {
             return super.hashValues(hashValues) * 31 + changes.hashValues(hashValues);
         }
 
         @Override
-        @GenericLazy
+        @IdentityLazy
         public Set<ValueExpr> getValues() {
             Set<ValueExpr> result = new HashSet<ValueExpr>();
             result.addAll(super.getValues());

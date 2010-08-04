@@ -1,22 +1,21 @@
 package platform.server.data.query.innerjoins;
 
-import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
-import platform.server.caches.hash.HashCodeContext;
 import platform.server.classes.BaseClass;
 import platform.server.data.Table;
-import platform.server.data.query.JoinSet;
-import platform.server.data.query.InnerJoin;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.VariableExprSet;
+import platform.server.data.query.InnerJoin;
+import platform.server.data.query.JoinSet;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.DNFWheres;
 import platform.server.data.where.classes.ClassExprWhere;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
-@Immutable
 public class ObjectJoinSet implements DNFWheres.Interface<ObjectJoinSet> {
 
     private final JoinSet joins;

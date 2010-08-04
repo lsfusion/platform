@@ -1,9 +1,7 @@
 package platform.server.view.form;
 
-import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
-import platform.server.caches.Lazy;
-import platform.server.caches.GenericLazy;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.expr.Expr;
 import platform.server.data.translator.MapValuesTranslate;
@@ -71,7 +69,7 @@ public abstract class NoUpdateModifier extends Modifier<NoUpdateModifier.UsedCha
         }
 
         @Override
-        @GenericLazy
+        @IdentityLazy
         public int hashValues(HashValues hashValues) {
             return super.hashValues(hashValues) * 31 + noUpdateProps.hashCode();
         }

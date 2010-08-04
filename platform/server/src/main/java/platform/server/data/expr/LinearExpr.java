@@ -1,7 +1,7 @@
 package platform.server.data.expr;
 
 import platform.base.BaseUtils;
-import platform.server.caches.Lazy;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.IntegralClass;
@@ -76,7 +76,7 @@ public class LinearExpr extends StaticClassExpr {
         return map.equals(((LinearExpr)obj).map);
     }
 
-    @Lazy
+    @IdentityLazy
     public int hashContext(HashContext hashContext) {
         return map.hashContext(hashContext);
     }
@@ -115,7 +115,7 @@ public class LinearExpr extends StaticClassExpr {
         return new VariableExprSet(follows);
     }
 
-    @Lazy
+    @IdentityLazy
     public IntegralClass getStaticClass() {
         return map.getType();
     }

@@ -1,8 +1,8 @@
 package platform.server.data.expr.query;
 
-import net.jcip.annotations.Immutable;
+import platform.base.BaseUtils;
 import platform.server.caches.AbstractTranslateContext;
-import platform.server.caches.Lazy;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.*;
@@ -14,17 +14,15 @@ import platform.server.data.query.CompileSource;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.SourceJoin;
 import platform.server.data.translator.MapTranslate;
-import platform.server.data.translator.QueryTranslator;
 import platform.server.data.translator.PartialQueryTranslator;
+import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
-import platform.base.BaseUtils;
 
 import java.util.*;
 
 public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> implements JoinData {
 
-    @Immutable
     public static class Query extends AbstractTranslateContext<Query> {
         public Expr expr;
         public List<Expr> orders;
@@ -41,7 +39,7 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
             return new Query(expr.translate(translator),translator.translate(orders),translator.translate(partitions));
         }
 
-        @Lazy
+        @IdentityLazy
         public int hashContext(HashContext hashContext) {
             int hash = 0;
             for(Expr order : orders)
@@ -52,12 +50,12 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
             return hash * 31 + expr.hashContext(hashContext);
         }
 
-        @Lazy
+        @IdentityLazy
         public Where getWhere() {
             return expr.getWhere().and(Expr.getWhere(orders)).and(Expr.getWhere(partitions));
         }
 
-        @Lazy
+        @IdentityLazy
         public Type getType() {
             return expr.getType(getWhere());
         }

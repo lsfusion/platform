@@ -1,13 +1,11 @@
 package platform.server.data.query;
 
-import net.jcip.annotations.Immutable;
-import platform.server.caches.Lazy;
+import platform.server.caches.IdentityLazy;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
 
 import java.util.Collection;
 
-@Immutable
 public class CaseJoin<U> extends Join<U> {
 
     private final JoinCaseList<U> cases;
@@ -23,12 +21,12 @@ public class CaseJoin<U> extends Join<U> {
         this(new JoinCaseList<U>(where,join), join.getExprs().keySet());
     }
 
-    @Lazy
+    @IdentityLazy
     public Where getWhere() {
         return cases.getWhere();
     }
 
-    @Lazy
+    @IdentityLazy
     public Expr getExpr(U property) {
         return cases.getExpr(property);
     }

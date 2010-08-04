@@ -1,14 +1,12 @@
 package platform.server.data.query;
 
-import net.jcip.annotations.Immutable;
-import platform.server.caches.Lazy;
+import platform.server.caches.IdentityLazy;
 import platform.server.data.expr.Expr;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.Where;
 
 import java.util.Collection;
 
-@Immutable
 public class QueryTranslateJoin<U> extends Join<U> {
 
     QueryTranslator translator;
@@ -19,12 +17,12 @@ public class QueryTranslateJoin<U> extends Join<U> {
         this.join = join;
     }
 
-    @Lazy
+    @IdentityLazy
     public Where getWhere() {
         return join.getWhere().translateQuery(translator);
     }
 
-    @Lazy
+    @IdentityLazy
     public Expr getExpr(U property) {
         return join.getExpr(property).translateQuery(translator);
     }

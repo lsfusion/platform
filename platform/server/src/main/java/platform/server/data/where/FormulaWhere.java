@@ -1,16 +1,14 @@
 package platform.server.data.where;
 
-import platform.base.BaseUtils;
 import platform.base.ArrayInstancer;
-import platform.server.caches.GenericImmutable;
-import platform.server.caches.GenericLazy;
+import platform.base.BaseUtils;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ContextEnumerator;
 import platform.server.data.where.classes.ClassExprWhere;
 
-@GenericImmutable
 public abstract class FormulaWhere<WhereType extends Where> extends AbstractWhere {
 
     public final boolean check; // если true в неправильном состоянии
@@ -39,7 +37,7 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
             where.enumerate(enumerator);
     }
 
-    @GenericLazy
+    @IdentityLazy
     public int hashContext(HashContext hashContext) {
         int result = hashCoeff();
         for(Where where : wheres)

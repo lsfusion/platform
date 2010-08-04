@@ -1,15 +1,13 @@
 package platform.server.session;
 
 import platform.server.caches.AbstractMapValues;
-import platform.server.caches.GenericImmutable;
-import platform.server.caches.GenericLazy;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.translator.MapValuesTranslate;
 
 import java.util.Set;
 
-@GenericImmutable
 public abstract class Changes<U extends Changes<U>> extends AbstractMapValues<U> {
 
     public SessionChanges session;
@@ -60,12 +58,12 @@ public abstract class Changes<U extends Changes<U>> extends AbstractMapValues<U>
     }
     public abstract U add(U changes);
 
-    @GenericLazy
+    @IdentityLazy
     public int hashValues(HashValues hashValues) {
         return session.hashValues(hashValues);
     }
 
-    @GenericLazy
+    @IdentityLazy
     public Set<ValueExpr> getValues() {
         return session.getValues();
     }

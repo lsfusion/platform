@@ -1,9 +1,8 @@
 package platform.server.data;
 
-import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.server.caches.Lazy;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.TwinLazy;
 import platform.server.caches.hash.HashCodeContext;
@@ -33,7 +32,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
-@Immutable
 public class Table implements MapKeysInterface<KeyField> {
     public final String name;
     public final Collection<KeyField> keys = new ArrayList<KeyField>();
@@ -155,7 +153,6 @@ public class Table implements MapKeysInterface<KeyField> {
         return new Join(joinImplement);
     }
 
-    @Immutable
     public class Join extends platform.server.data.query.Join<PropertyField> implements InnerJoin {
 
         public final Map<KeyField, BaseExpr> joins;
@@ -195,7 +192,7 @@ public class Table implements MapKeysInterface<KeyField> {
             return Table.this.properties;
         }
 
-        @Lazy
+        @IdentityLazy
         public int hashContext(HashContext hashContext) {
             int hash = Table.this.hashCode()*31;
                 // нужен симметричный хэш относительно выражений
@@ -372,7 +369,7 @@ public class Table implements MapKeysInterface<KeyField> {
                 return Join.this.equals(((Expr) o).getJoin()) && property.equals(((Expr) o).property);
             }
 
-            @Lazy
+            @IdentityLazy
             public int hashContext(HashContext hashContext) {
                 return Join.this.hashContext(hashContext)*31+property.hashCode();
             }

@@ -2,8 +2,7 @@ package platform.server.logics.property;
 
 import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
-import platform.server.caches.GenericImmutable;
-import platform.server.caches.GenericLazy;
+import platform.server.caches.IdentityLazy;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
@@ -28,14 +27,13 @@ import platform.server.logics.property.group.AbstractNode;
 import platform.server.logics.table.MapKeysTable;
 import platform.server.logics.table.TableFactory;
 import platform.server.session.*;
-import platform.server.view.form.PropertyObjectInterface;
 import platform.server.view.form.GroupObjectImplement;
+import platform.server.view.form.PropertyObjectInterface;
 import platform.server.view.form.client.RemoteFormView;
 
 import java.sql.SQLException;
 import java.util.*;
 
-@GenericImmutable
 public abstract class Property<T extends PropertyInterface> extends AbstractNode implements MapKeysInterface<T> {
 
     public final String sID;
@@ -58,12 +56,12 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return !getClassWhere().and(new ClassWhere<T>(property.getClassWhere(),map)).isFalse();
     }
 
-    @GenericLazy
+    @IdentityLazy
     public boolean allInInterface(Map<T,? extends AndClassSet> interfaceClasses) {
         return new ClassWhere<T>(interfaceClasses).meansCompatible(getClassWhere());
     }
 
-    @GenericLazy
+    @IdentityLazy
     public boolean anyInInterface(Map<T, ? extends AndClassSet> interfaceClasses) {
         return !getClassWhere().andCompatible(new ClassWhere<T>(interfaceClasses)).isFalse();
     }
@@ -96,7 +94,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return depends;
     }
 
-    @GenericLazy
+    @IdentityLazy
     public Map<T, KeyExpr> getMapKeys() {
         Map<T, KeyExpr> result = new HashMap<T, KeyExpr>();
         for(T propertyInterface : interfaces)
@@ -194,7 +192,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     protected abstract Expr calculateExpr(Map<T, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere);
 
-    @GenericLazy
+    @IdentityLazy
     public ClassWhere<T> getClassWhere() {
         Map<T, KeyExpr> mapKeys = getMapKeys();
         return new Query<T, String>(mapKeys, getClassExpr(mapKeys), "value").getClassWhere(new ArrayList<String>());
@@ -211,7 +209,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public abstract Type getType();
 
-    @GenericLazy
+    @IdentityLazy
     public Type getInterfaceType(T propertyInterface) {
         Map<T, KeyExpr> mapKeys = getMapKeys();
         return mapKeys.get(propertyInterface).getType(getClassExpr(mapKeys).getWhere());
@@ -291,7 +289,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     // используется для оптимизации - если Stored то попытать использовать это значение
     protected abstract boolean usePreviousStored();
 
-    @GenericLazy
+    @IdentityLazy
     public <P extends PropertyInterface> MaxChangeProperty<T,P> getMaxChangeProperty(Property<P> change) {
         return new MaxChangeProperty<T,P>(this,change);
     }

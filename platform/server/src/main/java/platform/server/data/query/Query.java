@@ -2,9 +2,7 @@ package platform.server.data.query;
 
 import platform.base.OrderedMap;
 import platform.interop.Compare;
-import platform.server.caches.GenericImmutable;
-import platform.server.caches.GenericLazy;
-import platform.server.caches.Lazy;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.MapContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
@@ -25,7 +23,6 @@ import java.sql.SQLException;
 import java.util.*;
 
 // запрос JoinSelect
-@GenericImmutable
 public class Query<K,V> implements MapKeysInterface<K>, MapContext {
 
     public final Map<K,KeyExpr> mapKeys;
@@ -87,7 +84,7 @@ public class Query<K,V> implements MapKeysInterface<K>, MapContext {
         return new HashSet<KeyExpr>(mapKeys.values());
     }
 
-    @GenericLazy
+    @IdentityLazy
     public Set<ValueExpr> getValues() {
         return AbstractSourceJoin.enumValues(properties.values(),where);
     }
@@ -121,7 +118,7 @@ public class Query<K,V> implements MapKeysInterface<K>, MapContext {
         return new ParsedJoinQuery<K,V>(this);
     }
 
-    @GenericLazy
+    @IdentityLazy
     public <B> ClassWhere<B> getClassWhere(Collection<? extends V> properties) {
         return parse().getClassWhere(properties);
     }
@@ -198,7 +195,7 @@ public class Query<K,V> implements MapKeysInterface<K>, MapContext {
         where = query.where;
     }
 
-    @GenericLazy
+    @IdentityLazy
     public int hash(HashContext hashContext) {
         int hash = 0;
         for(Expr property : properties.values())

@@ -1,14 +1,12 @@
 package platform.server.session;
 
-import net.jcip.annotations.Immutable;
-import platform.server.caches.Lazy;
+import platform.server.caches.IdentityLazy;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.DataProperty;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.UserProperty;
 
-@Immutable
 public class DataChangesModifier extends AbstractPropertyChangesModifier<ClassPropertyInterface,UserProperty,DataChanges,DataChangesModifier.UsedChanges> {
 
     public DataChangesModifier(Modifier modifier, DataChanges changes) {
@@ -57,7 +55,7 @@ public class DataChangesModifier extends AbstractPropertyChangesModifier<ClassPr
         return UsedChanges.EMPTY;
     }
 
-    @Lazy
+    @IdentityLazy
     public UsedChanges fullChanges() {
         return new UsedChanges(this);
     }

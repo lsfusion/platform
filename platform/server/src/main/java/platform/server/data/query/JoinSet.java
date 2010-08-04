@@ -1,9 +1,8 @@
 package platform.server.data.query;
 
-import net.jcip.annotations.Immutable;
 import platform.base.AddSet;
 import platform.base.BaseUtils;
-import platform.server.caches.Lazy;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.Table;
 import platform.server.data.expr.VariableExprSet;
@@ -13,7 +12,6 @@ import platform.server.data.where.DNFWheres;
 
 import java.util.Collection;
 
-@Immutable
 public class JoinSet extends AddSet<InnerJoin, JoinSet> implements DNFWheres.Interface<JoinSet> {
 
     public JoinSet() {
@@ -59,7 +57,7 @@ public class JoinSet extends AddSet<InnerJoin, JoinSet> implements DNFWheres.Int
                 groups.add((GroupJoin) where);
     }
 
-    @Lazy
+    @IdentityLazy
     public int hashContext(HashContext hashContext) {
         int hash = 0;
         for(InnerJoin where : wheres)

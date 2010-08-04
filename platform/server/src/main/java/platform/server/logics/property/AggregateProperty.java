@@ -2,6 +2,7 @@ package platform.server.logics.property;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.server.caches.IdentityLazy;
 import platform.server.classes.ValueClass;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
@@ -10,7 +11,6 @@ import platform.server.data.query.Query;
 import platform.server.data.type.Type;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.session.DataSession;
-import platform.server.caches.GenericLazy;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -92,12 +92,12 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
 
     int getCoeff(PropertyMapImplement<?, T> implement) { return 0; }
 
-    @GenericLazy
+    @IdentityLazy
     public Type getType() {
         return calculateClassExpr(getMapKeys()).getSelfType();
     }
 
-    @GenericLazy
+    @IdentityLazy
     public Map<T, ValueClass> getMapClasses() {
         Query<T, String> query = new Query<T, String>(this);
         query.and(calculateClassExpr(query.mapKeys).getWhere());

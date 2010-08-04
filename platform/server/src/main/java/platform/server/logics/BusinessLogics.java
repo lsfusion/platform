@@ -32,11 +32,14 @@ import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.derived.DistrGroupProperty;
 import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.property.group.AbstractGroup;
+import platform.server.logics.scheduler.Scheduler;
 import platform.server.logics.table.ImplementTable;
 import platform.server.logics.table.TableFactory;
-import platform.server.logics.scheduler.Scheduler;
-import platform.server.session.*;
-import platform.server.view.form.*;
+import platform.server.session.DataSession;
+import platform.server.view.form.ObjectImplement;
+import platform.server.view.form.OrderView;
+import platform.server.view.form.PropertyObjectInterface;
+import platform.server.view.form.RemoteForm;
 import platform.server.view.form.client.RemoteFormView;
 import platform.server.view.navigator.*;
 
@@ -650,7 +653,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             fillPropertyList(depend,set);
         set.add(property);
     }
-//    @GenericLazy
+//    @IdentityLazy
     Iterable<Property> getPropertyList() {
         LinkedHashSet<Property> linkedSet = new LinkedHashSet<Property>();
         for(Property property : properties)

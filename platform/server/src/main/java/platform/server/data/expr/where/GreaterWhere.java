@@ -2,12 +2,11 @@ package platform.server.data.expr.where;
 
 import platform.base.BaseUtils;
 import platform.interop.Compare;
-import platform.server.caches.Lazy;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.innerjoins.ObjectJoinSets;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
 
@@ -29,7 +28,7 @@ public class GreaterWhere extends CompareWhere {
         return operator1.equals(((GreaterWhere)o).operator1) && operator2.equals(((GreaterWhere)o).operator2);
     }
 
-    @Lazy
+    @IdentityLazy
     public int hashContext(HashContext hashContext) {
         return 1 + operator1.hashContext(hashContext)*31 + operator2.hashContext(hashContext)*31*31;
     }

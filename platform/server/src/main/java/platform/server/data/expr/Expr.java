@@ -1,8 +1,7 @@
 package platform.server.data.expr;
 
-import net.jcip.annotations.Immutable;
 import platform.interop.Compare;
-import platform.server.caches.Lazy;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.BaseClass;
 import platform.server.classes.sets.AndClassSet;
@@ -20,13 +19,12 @@ import java.util.Map;
 
 // абстрактный класс выражений
 
-@Immutable
 abstract public class Expr extends AbstractSourceJoin<Expr> {
 
     public static final CaseExpr NULL = new CaseExpr(new ExprCaseList());
 
     public abstract Type getType(KeyType keyType);
-    @Lazy
+    @IdentityLazy
     public Type getSelfType() {
         return getType(getWhere());
     }   

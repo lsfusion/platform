@@ -4,7 +4,7 @@ import platform.base.BaseUtils;
 import platform.base.Pair;
 import platform.base.ReversedHashMap;
 import platform.base.ReversedMap;
-import platform.server.caches.Lazy;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.TwinLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
@@ -31,7 +31,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
         return getWhere(group);
     }
 
-    @Lazy
+    @IdentityLazy
     public Where getKeysWhere() {
         return getWhere(group.keySet());
     }
@@ -63,7 +63,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
         return true;
     }
 
-    @Lazy
+    @IdentityLazy
     public Where getFullWhere() {
         return getFullWhere(group, query);
     }
@@ -95,7 +95,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
         protected abstract ClassExprWhere getClassWhere(Where fullWhere);
     }
 
-    @Lazy
+    @IdentityLazy
     public GroupJoin getGroupJoin() {
         InnerSelectJoin innerJoin = BaseUtils.single(getInnerJoins(query, BaseUtils.reverse(group), isMax()));
         assert innerJoin.keyEqual.isEmpty();

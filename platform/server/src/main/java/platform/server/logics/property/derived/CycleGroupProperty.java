@@ -1,9 +1,8 @@
 package platform.server.logics.property.derived;
 
-import net.jcip.annotations.Immutable;
 import platform.interop.Compare;
-import platform.server.caches.Lazy;
 import platform.server.caches.GenericLazy;
+import platform.server.caches.IdentityLazy;
 import platform.server.classes.LogicalClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
@@ -30,7 +29,7 @@ public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyIn
         this.toChange = toChange;
     }
 
-    @GenericLazy
+    @IdentityLazy
     public Property getConstrainedProperty(boolean checkChange) {
         // создает ограничение на "одинаковость" всех группировочных св-в
         // I1=I1' AND … In = In' AND G!=G' == false

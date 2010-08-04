@@ -2,7 +2,7 @@ package platform.server.data.expr;
 
 import platform.base.BaseUtils;
 import platform.base.QuickMap;
-import platform.server.caches.Lazy;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcatenateClassSet;
@@ -101,7 +101,7 @@ public class ConcatenateExpr extends BaseExpr {
         return exprs.equals(((ConcatenateExpr)obj).exprs);
     }
 
-    @Lazy
+    @IdentityLazy
     public int hashContext(HashContext hashContext) {
         int hash = 0;
         for(BaseExpr expr : exprs)

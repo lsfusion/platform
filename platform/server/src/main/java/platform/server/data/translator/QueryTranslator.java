@@ -1,6 +1,5 @@
 package platform.server.data.translator;
 
-import net.jcip.annotations.Immutable;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.PullExpr;
@@ -8,7 +7,6 @@ import platform.server.data.expr.PullExpr;
 import java.util.*;
 
 // в отдельный класс для allKeys и для аспектов
-@Immutable
 public class QueryTranslator {
 
     public final Map<KeyExpr,? extends Expr> keys;
