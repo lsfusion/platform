@@ -128,7 +128,7 @@ public class ViewManager {
         page.setVisible(true);
     }
 
-    public void openReport(String fileName,String directory) throws JRException {
+    public void openReport(String fileName, String directory) throws JRException {
 
         final ReportDockable page = new ReportDockable(fileName, directory, pageFactory);
         forms.add(page.getForm());
@@ -183,15 +183,15 @@ public class ViewManager {
                 return page;
             }
             catch (Exception e) {
-                throw new RuntimeException("Ошибка при чтении схемы", e);
+                return null;
             }
-        }         
+        }
 
         public FormLayout write(FormDockable dockable) {
             FormLayout layout = new FormLayout();
             layout.setName(dockable.getForm().getName());
             return layout;
-        }       
+        }
     }
 
 
