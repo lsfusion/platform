@@ -14,8 +14,10 @@ import platform.server.logics.ObjectValue;
 
 import java.sql.*;
 import java.util.*;
+import java.util.logging.Logger;
 
 public class SQLSession {
+    private final static Logger logger = Logger.getLogger(SQLSession.class.getName());
 
     public SQLSyntax syntax;
     
@@ -64,7 +66,7 @@ public class SQLSession {
     }
 
     public void createTable(String table,Collection<KeyField> keys) throws SQLException {
-        System.out.print("Идет создание таблицы "+table+"... ");
+        logger.info("Идет создание таблицы "+table+"... ");
         String createString = "";
         String keyString = "";
         for(KeyField key : keys) {
@@ -78,12 +80,12 @@ public class SQLSession {
 
 //        System.out.println("CREATE TABLE "+Table.Name+" ("+CreateString+")");
         execute("CREATE TABLE "+ table +" ("+ createString +")");
-        System.out.println(" Done");
+        logger.info(" Done");
     }
     public void dropTable(String table) throws SQLException {
-        System.out.print("Идет удаление таблицы "+table+"... ");
+        logger.info("Идет удаление таблицы "+table+"... ");
         execute("DROP TABLE "+ table);
-        System.out.println(" Done");
+        logger.info(" Done");
     }
     static String getIndexName(String table,Collection<String> fields) {
         String name = table + "_idx";
@@ -92,42 +94,42 @@ public class SQLSession {
         return name;
     }
     public void addIndex(String table,Collection<String> fields) throws SQLException {
-        System.out.print("Идет создание индекса "+getIndexName(table, fields)+"... ");
+        logger.info("Идет создание индекса "+getIndexName(table, fields)+"... ");
         String columns = "";
         for(String indexField : fields)
             columns = (columns.length()==0?"":columns+",") + indexField;
 
         execute("CREATE INDEX " + getIndexName(table, fields) + " ON " + table + " (" + columns + ")");
-        System.out.println(" Done");
+        logger.info(" Done");
     }
     public void dropIndex(String table,Collection<String> fields) throws SQLException {
-        System.out.print("Идет удаление индекса "+getIndexName(table, fields)+"... ");
+        logger.info("Идет удаление индекса "+getIndexName(table, fields)+"... ");
         execute("DROP INDEX " + getIndexName(table, fields));
-        System.out.println(" Done");
+        logger.info(" Done");
     }
     public void addColumn(String table,PropertyField field) throws SQLException {
-        System.out.print("Идет добавление колонки "+table+"."+field.name+"... ");
+        logger.info("Идет добавление колонки "+table+"."+field.name+"... ");
         execute("ALTER TABLE " + table + " ADD " + field.getDeclare(syntax)); //COLUMN 
-        System.out.println(" Done");
+        logger.info(" Done");
     }
     public void dropColumn(String table,String field) throws SQLException {
-        System.out.print("Идет удаление колонки "+table+"."+field+"... ");
+        logger.info("Идет удаление колонки "+table+"."+field+"... ");
         execute("ALTER TABLE " + table + " DROP COLUMN " + field);
-        System.out.println(" Done");
+        logger.info(" Done");
     }
     public void modifyColumn(String table,PropertyField field) throws SQLException {
-        System.out.print("Идет изменение типа колонки "+table+"."+field.name+"... ");
+        logger.info("Идет изменение типа колонки "+table+"."+field.name+"... ");
         execute("ALTER TABLE " + table + " ALTER COLUMN " + field.name + " TYPE " + field.type.getDB(syntax));
-        System.out.println(" Done");
+        logger.info(" Done");
     }
 
     public void packTable(Table table) throws SQLException {
-        System.out.print("Идет упаковка таблицы "+table+"... ");
+        logger.info("Идет упаковка таблицы "+table+"... ");
         String dropWhere = "";
         for(PropertyField property : table.properties)
             dropWhere = (dropWhere.length()==0?"":dropWhere+" AND ") + property.name + " IS NULL";
         execute("DELETE FROM "+ table.getName(syntax) + (dropWhere.length()==0?"":" WHERE "+dropWhere));
-        System.out.println(" Done");
+        logger.info(" Done");
     }
 
     public void createTable(Table table) throws SQLException {
@@ -167,13 +169,13 @@ public class SQLSession {
     }
 
     private void execute(String executeString) throws SQLException {
-        System.out.println(executeString);
+        logger.info(executeString);
 
         Statement statement = connection.createStatement();
         try {
             statement.execute(executeString);
         } catch(SQLException e) {
-            System.out.println(statement.toString());
+            logger.info(statement.toString());
             throw e;
         } finally {
             statement.close();
@@ -192,7 +194,7 @@ public class SQLSession {
         try {
             result = statement.executeUpdate();
         } catch(SQLException e) {
-            System.out.println(statement.toString());
+            logger.info(statement.toString());
             throw e;
         } finally {
             statement.close();
@@ -392,7 +394,7 @@ public class SQLSession {
         }
         parsedString = parsedString + new String(parsed,0,num);
 
-        System.out.println(parsedString);
+        logger.info(parsedString);
 
         PreparedStatement statement = connection.prepareStatement(parsedString);
         paramNum = 1;

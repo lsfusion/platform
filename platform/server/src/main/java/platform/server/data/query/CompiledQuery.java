@@ -25,10 +25,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.logging.Logger;
 
 // нужен для Map'а ключей / значений
 // Immutable/Thread Safe
 public class CompiledQuery<K,V> {
+    private final static Logger logger = Logger.getLogger(CompiledQuery.class.getName());
 
     final public String from;
     final public Map<K,String> keySelect;
@@ -705,7 +707,7 @@ public class CompiledQuery<K,V> {
         OrderedMap<Map<K,Object>,Map<V,Object>> execResult = new OrderedMap<Map<K, Object>, Map<V, Object>>();
 
 //        if(outSelect)
-            System.out.println(select);
+            logger.info(select);
 
         PreparedStatement statement = session.getStatement(select,getQueryParams());
         try {
@@ -737,16 +739,12 @@ public class CompiledQuery<K,V> {
 
         for(Map.Entry<Map<K,Object>,Map<V,Object>> rowMap : result.entrySet()) {
             for(Map.Entry<K,Object> key : rowMap.getKey().entrySet()) {
-                System.out.print(key.getKey()+"-"+key.getValue());
-                System.out.print(" ");
+                logger.info(key.getKey()+"-"+key.getValue());
             }
-            System.out.print("---- ");
+            logger.info("---- ");
             for(Map.Entry<V,Object> property : rowMap.getValue().entrySet()) {
-                System.out.print(property.getKey()+"-"+property.getValue());
-                System.out.print(" ");
+                logger.info(property.getKey()+"-"+property.getValue());
             }
-
-            System.out.println("");
         }
     }
 }

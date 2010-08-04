@@ -9,8 +9,10 @@ import platform.interop.form.screen.ExternalScreenConstraints;
 import platform.interop.form.screen.ExternalScreenParameters;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 public class PanelExternalScreen implements ExternalScreen {
+    private final static Logger logger = Logger.getLogger(PanelExternalScreen.class.getName());
     private PanelExternalScreenParameters parameters = new PanelExternalScreenParameters(-1);
 
     public int getID() {
@@ -62,13 +64,13 @@ public class PanelExternalScreen implements ExternalScreen {
 
         try {
             if (components.keySet().iterator().next().getValue() != null) {
-                System.out.println("Before creating ActiveX");
+                logger.info("Before creating ActiveX");
                 commActive = new ActiveXComponent("MSCommLib.MSComm");
                 commActive.setProperty("CommPort", commPort);
                 commActive.setProperty("PortOpen", true);
                 commActive.setProperty("Output", new String(output.getBytes("Cp866"), "Cp1251"));
                 commActive.setProperty("PortOpen", false);
-                System.out.println("After ActiveX work");
+                logger.info("After ActiveX work");
             }
         } catch (Exception e) {
             e.printStackTrace();

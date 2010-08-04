@@ -25,8 +25,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.sql.SQLException;
+import java.util.logging.Logger;
 
 public abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorElement<T> {
+    private final static Logger logger = Logger.getLogger(NavigatorForm.class.getName());
 
     public boolean isReadOnly() {
         return false;
@@ -318,7 +320,7 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
     protected NavigatorForm(NavigatorElement parent, int iID, String caption, boolean iisPrintForm) { this(parent, iID, caption, genSID(iID), iisPrintForm); }
     protected NavigatorForm(NavigatorElement parent, int iID, String caption, String isID, boolean iisPrintForm) {
         super(parent, iID, caption);
-        System.out.println("Initializing form "+caption+"...");
+        logger.info("Initializing form "+caption+"...");
 
         sID = isID;
         isPrintForm = iisPrintForm;

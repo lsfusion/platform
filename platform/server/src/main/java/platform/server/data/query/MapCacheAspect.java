@@ -26,10 +26,11 @@ import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 @Aspect
 public class MapCacheAspect {
-
+    private final static Logger logger = Logger.getLogger(MapCacheAspect.class.getName());
     // добавление кэшированного св-ва
     public interface ParseInterface {
         ParsedQuery getParse(); void setParse(ParsedQuery query);
@@ -69,11 +70,11 @@ public class MapCacheAspect {
             for(Query<?,?> cache : hashCaches) {
                 parsed = cacheQuery(cache, query);
                 if(parsed !=null) {
-                    System.out.println("cached");
+                    logger.info("cached");
                     return parsed;
                 }
             }
-            System.out.println("not cached");
+            logger.info("not cached");
             parsed = (ParsedQuery<K, V>) thisJoinPoint.proceed();
             ((ParseInterface) query).setParse(parsed);
             hashCaches.add(query);
@@ -144,11 +145,11 @@ public class MapCacheAspect {
                         // здесь не все values нужно докинуть их из контекста (ключи по идее все)
                         MapTranslate transValues;
                         if((transValues=translator.mergeEqual(cache.getKey().mapValues.crossMap(joinImplement.mapValues)))!=null) {
-                            System.out.println("join cached");
+                            logger.info("join cached");
                             return new DirectTranslateJoin<V>(transValues,cache.getValue());
                         }
                     }
-            System.out.println("join not cached");
+            logger.info("join not cached");
             Join<V> join = (Join<V>) thisJoinPoint.proceed();
             hashCaches.put(joinImplement,join);
             return join;
@@ -202,7 +203,7 @@ public class MapCacheAspect {
             for(Map.Entry<U,U> cache : hashCaches.entrySet()) {
                 for(MapValuesTranslate mapValues : new MapValuesIterable(cache.getKey(), implement)) {
                     if(cache.getKey().translate(mapValues).equals(implement)) {
-                        System.out.println("getUsedChanges - cached "+property);
+                        logger.info("getUsedChanges - cached "+property);
                         U cacheResult = cache.getValue().translate(mapValues);
                         if(!modifier.neededClass(cacheResult)) {
                             assert !cacheResult.modifyUsed();
@@ -215,7 +216,7 @@ public class MapCacheAspect {
 
             U usedChanges = (U) thisJoinPoint.proceed();
             hashCaches.put(implement, usedChanges);
-            System.out.println("getUsedChanges - not cached "+property);
+            logger.info("getUsedChanges - not cached "+property);
 
             return usedChanges;
         }
@@ -306,7 +307,7 @@ public class MapCacheAspect {
                 hashCaches.put(implement, query);
                 assert implement.getValues().containsAll(ValueExpr.removeStatic(query.getValues())); // в query не должно быть элементов не из implement.getValues
 
-                System.out.println("getExpr - not cached "+property);
+                logger.info("getExpr - not cached "+property);
                 queryJoin = query.join(joinExprs);
             }
         }
@@ -315,7 +316,7 @@ public class MapCacheAspect {
 
         Expr result = queryJoin.getExpr(PROPERTY_STRING);
         if(cached) {
-            System.out.println("getExpr - cached "+property);
+            logger.info("getExpr - cached "+property);
             if(checkCaches) {
                 WhereBuilder queryWheres = Property.cascadeWhere(changedWheres);
                 Expr notCachedResult = (Expr) thisJoinPoint.proceed(new Object[]{property,property,joinExprs,modifier,queryWheres});
@@ -400,7 +401,7 @@ public class MapCacheAspect {
             for(Map.Entry<DataChangesInterfaceImplement,DataChangesResult> cache : hashCaches.entrySet()) {
                 for(MapTranslate translator : new MapHashIterable(cache.getKey(), implement, true)) {
                     if(cache.getKey().translate(translator).equals(implement)) {
-                        System.out.println("getDataChanges - cached "+property);
+                        logger.info("getDataChanges - cached "+property);
                         if(changedWheres!=null) changedWheres.add(cache.getValue().where.translate(translator));
                         return ((DataChangesResult<K>)cache.getValue()).changes.translate(translator.mapValues());
                     }
@@ -410,7 +411,7 @@ public class MapCacheAspect {
             WhereBuilder cacheWheres = Property.cascadeWhere(changedWheres);
             MapDataChanges<K> changes = (MapDataChanges<K>) thisJoinPoint.proceed(new Object[]{property,property,change,cacheWheres,modifier});
             hashCaches.put(implement, new DataChangesResult<K>(changes, changedWheres!=null?cacheWheres.toWhere():null));
-            System.out.println("getDataChanges - not cached "+property);
+            logger.info("getDataChanges - not cached "+property);
 
             if(changedWheres!=null) changedWheres.add(cacheWheres.toWhere());
             return changes;
@@ -502,7 +503,7 @@ public class MapCacheAspect {
             for(Map.Entry<ExprInterfaceImplement,ExprResult> cache : hashCaches.entrySet()) {
                 for(MapTranslate translator : new MapHashIterable(cache.getKey(), implement, true)) {
                     if(cache.getKey().translate(translator).equals(implement)) {
-                        System.out.println("getExpr - cached "+property);
+                        logger.info("getExpr - cached "+property);
                         if(changedWheres!=null) changedWheres.add(cache.getValue().where.translate(translator));
                         return cache.getValue().expr.translate(translator);
                     }
@@ -512,7 +513,7 @@ public class MapCacheAspect {
             WhereBuilder cacheWheres = Property.cascadeWhere(changedWheres);
             Expr expr = (Expr) thisJoinPoint.proceed(new Object[]{property,property,joinExprs,modifier,cacheWheres});
             hashCaches.put(implement, new ExprResult(expr, changedWheres!=null?cacheWheres.toWhere():null));
-            System.out.println("getExpr - not cached "+property);
+            logger.info("getExpr - not cached "+property);
 
             if(changedWheres!=null) changedWheres.add(cacheWheres.toWhere());
             return expr;

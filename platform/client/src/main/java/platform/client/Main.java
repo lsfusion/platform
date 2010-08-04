@@ -1,6 +1,5 @@
 package platform.client;
 
-import platform.base.ClassPathHacker;
 import platform.base.OSUtils;
 import platform.client.exceptions.ClientExceptionManager;
 import platform.client.exceptions.ExceptionThreadGroup;
@@ -18,9 +17,12 @@ import java.lang.reflect.Modifier;
 import java.rmi.Naming;
 import java.io.IOException;
 import java.rmi.server.RMIClassLoader;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 public class Main {
-
+    private final static Logger logger = Logger.getLogger(SimplexLayout.class.getName());
     public static MainFrame frame;
 
     public interface ModuleFactory {
@@ -78,7 +80,8 @@ public class Main {
 
                     String user = System.getProperty("platform.client.user");
                     String password = System.getProperty("platform.client.password");
-
+                    String logLevel = System.getProperty("platform.client.logLevel");
+                    
                     remoteLogics = (RemoteLogicsInterface) Naming.lookup("rmi://" + serverHost + ":" + serverPort + "/BusinessLogics");
                     computerId = remoteLogics.getComputer(OSUtils.getLocalHostName());
 
@@ -88,10 +91,14 @@ public class Main {
                     } else
                         remoteNavigator = remoteLogics.createNavigator(user, password, computerId);
 
+                    if (logLevel != null) {
+                        LogManager.getLogManager().getLogger("").setLevel(Level.parse(logLevel));
+                    }
+
                     if (remoteNavigator == null) return;
-                    System.out.println("Before init frame");
+                    logger.info("Before init frame");
                     frame = module.initFrame(remoteNavigator);
-                    System.out.println("After init frame");
+                    logger.info("After init frame");
 
                     frame.addWindowListener(
                             new WindowAdapter() {
@@ -112,7 +119,7 @@ public class Main {
                     SimplexLayout.ignoreLayout = false;
 
                     frame.setExtendedState(Frame.MAXIMIZED_BOTH);
-                    System.out.println("After setExtendedState");
+                    logger.info("After setExtendedState");
 
                 } catch (Exception e) {
 //                    ClientExceptionManager.handleException(e);
