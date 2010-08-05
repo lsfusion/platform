@@ -1,33 +1,28 @@
 package budget;
 
 
-import platform.server.data.sql.DataAdapter;
-import platform.server.data.Union;
-import platform.server.logics.property.group.AbstractGroup;
-import platform.server.logics.property.AggregateProperty;
-import platform.server.logics.linear.LP;
-import platform.server.logics.BusinessLogics;
-import platform.server.view.navigator.*;
-import platform.server.view.navigator.filter.NotNullFilterNavigator;
-import platform.server.view.navigator.filter.CompareFilterNavigator;
-import platform.server.view.form.client.DefaultFormView;
+import net.sf.jasperreports.engine.JRException;
+import platform.interop.ClassViewType;
+import platform.interop.Compare;
+import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.auth.User;
 import platform.server.classes.*;
-import platform.interop.Compare;
-import platform.interop.ClassViewType;
-import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
-
-import java.io.IOException;
-import java.io.FileNotFoundException;
-import java.sql.SQLException;
-import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
-
-import net.sf.jasperreports.engine.JRException;
-
-import javax.swing.*;
-
+import platform.server.data.Union;
+import platform.server.data.sql.DataAdapter;
+import platform.server.logics.BusinessLogics;
+import platform.server.logics.linear.LP;
+import platform.server.logics.property.group.AbstractGroup;
+import platform.server.view.form.client.DefaultFormView;
+import platform.server.view.navigator.NavigatorElement;
+import platform.server.view.navigator.NavigatorForm;
+import platform.server.view.navigator.ObjectNavigator;
+import platform.server.view.navigator.filter.CompareFilterNavigator;
+import platform.server.view.navigator.filter.NotNullFilterNavigator;
 import sample.SampleBusinessLogics;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.sql.SQLException;
 
 public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
@@ -88,10 +83,18 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
     LP isWorkingMonthForPerson;
 
+    LP personDepartSum, personDepartSumInBC, payMonthTotal, extraMonthTotal, totalOutOper, totalOutOperInBC, totalMisOper, totalMisOperInBC, monthNum, exchangeRate, nearestPredDate, nearestExchangeRate;
+    LP baseCurrency, rateDate, rateDay, dateByMY, overrideRateDay;
+
     protected void initProperties() {
         operationDepartment = addDProp("operDepartment", "Отдел", department, departmentAbs);
         operationPayer = addDProp("operPayer", "Плательщик", payer, payerAbs);
         personDepartment = addDProp("personDepartment", "Отдел", department, person);
+        baseCurrency = addDProp("baseCurrency", "Базовая валюта", currency);
+        rateDate = addDProp("rateDate", "Дата курса", DoubleClass.instance);
+        rateDay = addDProp("rateDay", "День месяца для курса", IntegerClass.instance, absMonth, IntegerClass.instance);
+        overrideRateDay = addSUProp(Union.OVERRIDE, addCProp(IntegerClass.instance, 1, absMonth, IntegerClass.instance), rateDay); 
+        monthNum = addOProp(baseGroup, "Номер месяца", addJProp(and1, addCProp(IntegerClass.instance, 1), is(absMonth), 1), false, true, true, 0, 1);
 
         LP personStartWorkYear = addDProp(baseGroup, "personStartWorkYear", "Год начала раб.", IntegerClass.instance, person);
         LP personStartWorkMonth = addDProp("personStartWorkMonth", "Месяц начала раб.", absMonth, person);
@@ -108,9 +111,19 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP roundMult = addSFProp("(round((prm1)*(prm2)))", IntegerClass.instance, 2);
         LP hourInDay = addSFProp("((prm1)*8)", IntegerClass.instance, 1);
         LP dayCount = addDProp("dayCount", IntegerClass.instance, absMonth);
+        LP yearInDate = addSFProp("(extract(year from prm1))", IntegerClass.instance, 1);
+        LP monthInDate = addSFProp("(extract(month from prm1))", IntegerClass.instance, 1);
+        LP dateBy = addSFProp("(to_date(cast(prm1 as varchar) || ' ' || cast(prm2 as varchar) || ' ' || cast(prm3 as varchar) || ' ', 'DD MM YYYY'))", DateClass.instance, 3);
+        dateByMY = addJProp(dateBy, overrideRateDay, 1, 2, monthNum, 1, 2);
 
         LP payRate = addDProp(baseGroup, "rateP", "Курс", DoubleClass.instance, pay);
         LP extraRate = addDProp(baseGroup, "rateExtra", "Курс", DoubleClass.instance, extraCost);
+
+        exchangeRate = addDProp("exchangeRate", "Курс обмена", DoubleClass.instance, currency, currency, DateClass.instance);
+
+        LP lessCmpDate = addJProp(and(false, true, false), object(DateClass.instance), 3, exchangeRate, 1, 2, 3, greater2, 3, 4, is(DateClass.instance), 4);
+        nearestPredDate = addMGProp((AbstractGroup)null, "nearestPredDate", "Ближайшая меньшая дата", lessCmpDate, 1, 2, 4);
+        nearestExchangeRate = addJProp("Ближайший курс обмена", exchangeRate, 1, 2, nearestPredDate, 1, 2, 3);
 
         outPerson = addDProp("personP", "Сотрудник", person, absOutPerson);
         outMonth = addDProp("outM", "Месяц", absMonth, absOutTime);
@@ -235,7 +248,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP extraComPerson = addSGProp(roundExtraPerson, personDepartment, 1, 2, 3);
         LP extraComAdm = addSGProp(addJProp(and1, curExtra, 1, 2, 3, 4, is(extraAdmSection), 3), 4, 1, 2);
 
-        LP extraDepartmentTotal = addSUProp(baseGroup, "Всего затрат", Union.SUM, extraComPerson, extraComAdm);
+        //LP extraDepartmentTotal = addSUProp(baseGroup, "Всего затрат", Union.SUM, extraComPerson, extraComAdm);
 
         LP totalDebt = addSGProp(baseGroup, "Затрачено", outSum, operationPayer, 1, outCur, 1);
         LP totalReimbursement = addSGProp(baseGroup, "Возмещено", addJProp(multiplyDouble2, reimbursementSum, 1, reimbursementRate, 1), reimbursementPayer, 1, reimbursementCurrencyIn, 1);
@@ -271,7 +284,32 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP salaryMonthName = addJProp(baseGroup, "Месяц", name, addJProp( mYear, salaryMonth, 1), 1);
         LP salaryYearName = addJProp(baseGroup, "Год", yearNumber, addJProp( monthYear, salaryMonth, 1), 1);
         */
-      }
+
+        //personDepartSum = addSGProp(baseGroup, "Всего к выплате", roundSalary, personDepartment, 3, 1, 2, curCurrency, 1, 2, 3);
+
+        //LP rateBC = addJProp(nearestExchangeRate, curCurrency, 1, 2, 3, baseCurrency, addJProp(dateByMY, 1, 2), 1, 2);
+        //LP salaryInBC = addJProp("К выплате в БВ", multiplyDouble2, roundSalary, 1, 2, 3, rateBC, 1, 2, 3);
+        //personDepartSumInBC = addSGProp("Всего к выплате в БВ", salaryInBC, personDepartment, 3, 1, 2);
+
+        //payMonthTotal = addSGProp(baseGroup, "Всего выплачено", payTotal, personDepartment, 1, 2, 3, curCurrency, 2, 3, 1);
+        //extraMonthTotal = addSGProp(baseGroup, "Всего выплачено доп. затрат", roundExtraPerson, personDepartment, 1, 2, 3, curCurrency, 2, 3, 1);
+
+        LP internalNum = addCGProp(null, "extNumToIntNum", "Внутренний номер", object(absMonth), monthNum, monthNum, 1);
+
+        LP rMonth = addJProp("Реальный месяц", internalNum, monthInDate, 1);
+        LP realMonth = addJProp("Месяц", rMonth, date, 1);
+        LP realYear = addJProp("Год", yearInDate, date, 1);
+
+        LP outOperVal =  addJProp("Опер. расход", and1, outSum, 1, is(outOperation), 1);
+        totalOutOper = addSGProp("Всего по опер. расходу", outOperVal, opDep, 1, realMonth, 1, realYear, 1, outCur, 1);
+
+//        LP outRateBC = addJProp(nearestExchangeRate, outCur, 1, baseCurrency, addJProp(dateByMY, realMonth, 1, realYear, 1), 1);
+//        LP outOperValInBC = addJProp("Опер. расход в БВ", multiplyDouble2, outOperVal, 1, outRateBC, 1);
+//        totalOutOperInBC = addSGProp("Всего по опер. расходу в БВ", outOperValInBC, opDep, 1, realMonth, 1, realYear, 1);
+
+        LP misOperVal =  addJProp("Опер. расход ком.", and1, outSum, 1, is(misOperation), 1);
+        totalMisOper = addSGProp("Всего по опер. расходу ком.", misOperVal, opDep, 1, realMonth, 1, realYear, 1, outCur, 1);
+    }
 
 
     protected void initConstraints() {
@@ -292,6 +330,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         tableFactory.include("isAddToSum", person, extraPersonSection, absMonth, IntegerClass.instance);
         tableFactory.include("workDays", absMonth, IntegerClass.instance);
         tableFactory.include("adminExtra", department, absMonth, IntegerClass.instance);
+        tableFactory.include("exchangeRate", currency, currency, DateClass.instance);
     }
 
     protected void initIndexes() {
@@ -310,10 +349,12 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
            NavigatorForm recordForm = new RecordNavigatorForm(primaryData, 114, "Прочие операции");
            NavigatorForm salaryForm = new ExtraNavigatorForm(primaryData, 115, "Дополнительные затраты");
            NavigatorForm missionForm = new MissionNavigatorForm(primaryData, 116, "Командировка");
+           NavigatorForm exchangeRatesForm = new ExchangeRatesForm(primaryData, 117, "Курсы валют");
 
         NavigatorElement aggregateData = new NavigatorElement(baseElement, 200, "Сводная информация");
            NavigatorForm departmentBalance = new DepartmentBalanceForm(aggregateData, 214, "Баланс по отделам");
            NavigatorForm reimbursement = addNavigatorForm(new ReimbursementForm(aggregateData, 215, "Компенсация"));
+           NavigatorForm employeeExtraSum = addNavigatorForm(new EmployeeExtraSumForm(aggregateData, 218, "Дополнительные затраты по сотрудникам"));
     }
 
 
@@ -516,4 +557,64 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
     }
 
+    private class EmployeeExtraSumForm extends NavigatorForm {
+
+        public EmployeeExtraSumForm(NavigatorElement parent, int ID, String caption) {
+            super(parent, ID, caption);
+            ObjectNavigator objDepartment = addSingleGroupObjectImplement(department, "Отдел", properties, baseGroup);
+                    objDepartment.groupTo.initClassView = ClassViewType.PANEL;
+                    objDepartment.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
+            //ObjectNavigator objBaseCurrency = addSingleGroupObjectImplement(currency, "Базовая валюта", properties, baseGroup);
+            //        objBaseCurrency.groupTo.initClassView = ClassViewType.PANEL;
+            //        objBaseCurrency.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
+            addPropertyView(baseCurrency);
+
+            ObjectNavigator objYearOp = addSingleGroupObjectImplement(IntegerClass.instance, "Год", properties, baseGroup);
+                    objYearOp.groupTo.initClassView = ClassViewType.PANEL;
+                    objYearOp.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
+            ObjectNavigator objMonthOp = addSingleGroupObjectImplement(absMonth, "Месяц", properties, baseGroup);
+            //addPropertyView(totalOutOperInBC, objDepartment, objMonthOp, objYearOp);
+            //addPropertyView(personDepartSumInBC, objDepartment, objMonthOp, objYearOp);
+
+            ObjectNavigator objCurrency = addSingleGroupObjectImplement(currency, "Валюта", properties, baseGroup);
+
+            //addPropertyView(personDepartSum, objDepartment, objMonthOp, objYearOp, objCurrency);
+            //addPropertyView(payMonthTotal, objDepartment, objMonthOp, objYearOp, objCurrency);
+            //addPropertyView(extraMonthTotal, objDepartment, objMonthOp, objYearOp, objCurrency);
+            addPropertyView(totalOutOper, objDepartment, objMonthOp, objYearOp, objCurrency);
+            addPropertyView(totalMisOper, objDepartment, objMonthOp, objYearOp, objCurrency);
+        }
+    }
+
+    private class ExchangeRatesForm extends NavigatorForm {
+
+        public ExchangeRatesForm(NavigatorElement parent, int ID, String caption) {
+            super(parent, ID, caption);
+
+//            ObjectNavigator objYearOp = addSingleGroupObjectImplement(IntegerClass.instance, "Год", properties, baseGroup);
+//                        objYearOp.groupTo.initClassView = ClassViewType.PANEL;
+//                        objYearOp.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
+//            ObjectNavigator objMonthOp = addSingleGroupObjectImplement(absMonth, "Месяц", properties, baseGroup);
+//
+//            addPropertyView(overrideRateDay, objMonthOp, objYearOp);
+//            addPropertyView(rateDay, objMonthOp, objYearOp);
+//            addPropertyView(dateByMY, objMonthOp, objYearOp);
+            
+            ObjectNavigator objSrcCurrency = addSingleGroupObjectImplement(currency, "Исходная валюта", properties, baseGroup);
+            ObjectNavigator objDstCurrency = addSingleGroupObjectImplement(currency, "Целевая валюта", properties, baseGroup);
+
+            ObjectNavigator objDate = addSingleGroupObjectImplement(DateClass.instance, "Дата", properties, baseGroup);
+            objDate.groupTo.initClassView = ClassViewType.PANEL;
+            objDate.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
+
+            addPropertyView(exchangeRate, objSrcCurrency, objDstCurrency, objDate);
+            addPropertyView(nearestPredDate, objSrcCurrency, objDstCurrency, objDate);
+            addPropertyView(nearestExchangeRate, objSrcCurrency, objDstCurrency, objDate);
+
+            ObjectNavigator objDateRate = addSingleGroupObjectImplement(DateClass.instance, "Дата", properties, baseGroup);
+            addPropertyView(exchangeRate, objSrcCurrency, objDstCurrency, objDateRate);
+
+            addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(exchangeRate, objSrcCurrency, objDstCurrency, objDateRate)));
+        }
+    }
 }
