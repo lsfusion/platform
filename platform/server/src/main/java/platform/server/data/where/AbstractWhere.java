@@ -11,13 +11,12 @@ import platform.server.data.expr.where.EqualsWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.Query;
 import platform.server.data.query.innerjoins.InnerSelectJoin;
-import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.query.innerjoins.KeyEqual;
+import platform.server.data.query.innerjoins.KeyEquals;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.type.Type;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
-import platform.server.data.type.Type;
-import platform.server.data.translator.MapTranslate;
-import platform.server.classes.sets.AndClassSet;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -96,6 +95,15 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
             return wheres[0];
         else
             return new AndWhere(wheres, false);
+    }
+    protected static Where toWhere(OrObjectWhere[] wheres, CheckWhere siblingsWhere) {
+        if(wheres.length==1)
+            return wheres[0];
+        else
+        if(wheres.length==0)
+            return Where.TRUE;
+        else
+            return new AndWhere(wheres, ((AndWhere)siblingsWhere).check);
     }
 
     protected static AndObjectWhere[] siblings(AndObjectWhere[] wheres,int i) {
@@ -196,9 +204,9 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         return getClassWhere().getType(expr);
     }
 
-    public AndClassSet getKeepClass(KeyExpr expr) {
-        return getClassWhere().getKeepClass(expr);
+    public Where getKeepWhere(KeyExpr expr) {
+        return getClassWhere().getKeepWhere(expr);
     }
 
-    public abstract Where translate(MapTranslate translator);    
+    public abstract Where translateOuter(MapTranslate translator);
 }

@@ -1,9 +1,8 @@
 package platform.server.logics.scheduler;
 
 import java.io.File;
-import java.io.RandomAccessFile;
 import java.io.IOException;
-import java.io.FileInputStream;
+import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 

@@ -1,25 +1,28 @@
 package platform.server.logics.property;
 
+import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
 import platform.server.classes.CustomClass;
 import platform.server.data.SQLSession;
-import platform.server.data.where.Where;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.CompareWhere;
+import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
 import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
-import platform.server.view.form.PropertyObjectInterface;
 import platform.server.view.form.GroupObjectImplement;
 import platform.server.view.form.ObjectImplement;
+import platform.server.view.form.PropertyObjectInterface;
 import platform.server.view.form.client.RemoteFormView;
-import platform.base.BaseUtils;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class PropertyValueImplement<P extends PropertyInterface> extends PropertyImplement<DataObject,P> {
 

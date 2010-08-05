@@ -12,7 +12,4 @@ public class HashCodeValues implements HashValues {
         return expr.hashCode();
     }
 
-    public HashContext mapKeys() {
-        return HashMapKeysContext.instance;
-    }
 }

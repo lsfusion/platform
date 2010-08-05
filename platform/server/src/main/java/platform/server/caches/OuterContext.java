@@ -4,11 +4,11 @@ import platform.server.caches.hash.HashContext;
 import platform.server.data.query.SourceJoin;
 import platform.server.data.translator.MapTranslate;
 
-public interface TranslateContext<This extends TranslateContext> {
+public interface OuterContext<This extends OuterContext> {
 
-    int hashContext(HashContext hashContext);
+    int hashOuter(HashContext hashContext);
 
-    This translate(MapTranslate translator);
+    This translateOuter(MapTranslate translator);
 
     SourceJoin[] getEnum();
 }

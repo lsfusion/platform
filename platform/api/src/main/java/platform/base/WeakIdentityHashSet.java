@@ -11,6 +11,13 @@ public class WeakIdentityHashSet<E> implements Iterable<E> {
         map.put(element,inSet);
     }
 
+    public WeakIdentityHashSet() {
+    }
+
+    public void add(E element) {
+        map.put(element, inSet);        
+    }
+
     public Iterator<E> iterator() {
         return map.keysIterator();
     }

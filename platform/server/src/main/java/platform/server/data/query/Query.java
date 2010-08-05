@@ -1,9 +1,10 @@
 package platform.server.data.query;
 
+import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.interop.Compare;
 import platform.server.caches.IdentityLazy;
-import platform.server.caches.MapContext;
+import platform.server.caches.InnerContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.data.SQLSession;
@@ -11,6 +12,7 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.translator.MapValuesTranslator;
 import platform.server.data.type.Type;
@@ -23,7 +25,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 // запрос JoinSelect
-public class Query<K,V> implements MapKeysInterface<K>, MapContext {
+public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInterface<K> {
 
     public final Map<K,KeyExpr> mapKeys;
     public Map<V, Expr> properties;
@@ -195,12 +197,21 @@ public class Query<K,V> implements MapKeysInterface<K>, MapContext {
         where = query.where;
     }
 
+    public Query<K, V> translateInner(MapTranslate translate) {
+        return new Query<K,V>(translate.translateKey(mapKeys), translate.translate(properties), where.translateOuter(translate));
+    }
+
     @IdentityLazy
-    public int hash(HashContext hashContext) {
+    public int hashInner(HashContext hashContext) {
         int hash = 0;
         for(Expr property : properties.values())
-            hash += property.hashContext(hashContext);
-        return where.hashContext(hashContext) * 31 + hash;
+            hash += property.hashOuter(hashContext);
+        return where.hashOuter(hashContext) * 31 + hash;
+    }
+
+    public boolean equalsInner(Query<?,?> object) {
+        // нужно проверить что совпадут
+        return where.equals(object.where) && BaseUtils.multiSet(properties.values()).equals(BaseUtils.multiSet(object.properties.values()));
     }
 }
 

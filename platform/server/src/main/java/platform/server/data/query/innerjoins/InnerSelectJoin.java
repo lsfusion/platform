@@ -1,8 +1,7 @@
 package platform.server.data.query.innerjoins;
 
-import platform.server.data.where.Where;
-import platform.server.data.where.AbstractWhere;
 import platform.server.data.query.JoinSet;
+import platform.server.data.where.Where;
 
 public class InnerSelectJoin {
     public final KeyEqual keyEqual;

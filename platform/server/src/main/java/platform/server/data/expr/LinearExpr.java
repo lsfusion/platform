@@ -8,8 +8,8 @@ import platform.server.classes.IntegralClass;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.JoinData;
 import platform.server.data.query.ContextEnumerator;
+import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.translator.TranslateExprLazy;
@@ -77,7 +77,7 @@ public class LinearExpr extends StaticClassExpr {
     }
 
     @IdentityLazy
-    public int hashContext(HashContext hashContext) {
+    public int hashOuter(HashContext hashContext) {
         return map.hashContext(hashContext);
     }
 
@@ -96,10 +96,10 @@ public class LinearExpr extends StaticClassExpr {
 
     // транслирует выражение/ также дополнительно вытаскивает ExprCase'ы
     @ParamLazy
-    public BaseExpr translate(MapTranslate translator) {
+    public BaseExpr translateOuter(MapTranslate translator) {
         LinearOperandMap transMap = new LinearOperandMap();
         for(Map.Entry<BaseExpr,Integer> operand : map.entrySet())
-            transMap.put(operand.getKey().translate(translator),operand.getValue());
+            transMap.put(operand.getKey().translateOuter(translator),operand.getValue());
         return new LinearExpr(transMap);
     }
 

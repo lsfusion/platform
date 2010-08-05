@@ -7,7 +7,6 @@ import platform.base.ListPermutations;
 import platform.base.OrderedMap;
 import platform.interop.action.ClientAction;
 import platform.interop.action.ClientActionResult;
-import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.logics.BusinessLogics;
@@ -23,8 +22,8 @@ import platform.server.view.navigator.filter.OrderViewNavigator;
 import javax.swing.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.*;
 import java.sql.SQLException;
+import java.util.*;
 import java.util.logging.Logger;
 
 public abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorElement<T> {

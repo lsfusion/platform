@@ -2,7 +2,6 @@ package platform.server.logics.property;
 
 import platform.interop.Compare;
 import platform.server.data.expr.Expr;
-import platform.server.data.where.WhereBuilder;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
 

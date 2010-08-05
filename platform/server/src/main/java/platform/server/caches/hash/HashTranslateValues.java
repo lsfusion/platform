@@ -16,7 +16,13 @@ public class HashTranslateValues implements HashValues, NoCacheInterface {
         return map.translate(expr).hashCode();
     }
 
-    public HashContext mapKeys() {
-        return new HashTranslateValuesContext(map);
+    @Override
+    public boolean equals(Object o) {
+        return this == o || o instanceof HashTranslateValues && map.equals(((HashTranslateValues) o).map);
+    }
+
+    @Override
+    public int hashCode() {
+        return map.hashCode();
     }
 }

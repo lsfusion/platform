@@ -4,8 +4,8 @@ import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 
-import java.util.Map;
 import java.util.Collection;
+import java.util.Map;
 
 public class CustomSessionTable extends SessionTable<CustomSessionTable> {
 

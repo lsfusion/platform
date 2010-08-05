@@ -12,7 +12,7 @@ public abstract class VariableClassExpr extends SingleClassExpr {
         return new ClassExprWhere(this,classes);
     }
 
-    public abstract VariableClassExpr translate(MapTranslate translator);
+    public abstract VariableClassExpr translateOuter(MapTranslate translator);
 
     public AndClassSet getAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and) {
         return and.getPartial(this);

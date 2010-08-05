@@ -7,15 +7,18 @@ import platform.server.caches.hash.HashContext;
 import platform.server.classes.sets.ConcreteCustomClassSet;
 import platform.server.classes.sets.CustomClassSet;
 import platform.server.classes.sets.UpClassSet;
-import platform.server.data.where.DataWhereSet;
-import platform.server.data.where.Where;
-import platform.server.data.translator.MapTranslate;
-import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.*;
 import platform.server.data.expr.where.MapWhere;
-import platform.server.data.query.*;
+import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.CompileSource;
+import platform.server.data.query.ContextEnumerator;
+import platform.server.data.query.JoinData;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
+import platform.server.data.where.DataWhereSet;
+import platform.server.data.where.Where;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.view.form.CustomClassView;
@@ -306,7 +309,7 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
             this.valueClass = valueClass;
         }
 
-        public VariableClassExpr translate(MapTranslate translator) {
+        public VariableClassExpr translateOuter(MapTranslate translator) {
             return this;
         }
 
@@ -337,7 +340,7 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
             return valueClass.equals((ActionExpr)obj);
         }
 
-        public int hashContext(HashContext hashContext) {
+        public int hashOuter(HashContext hashContext) {
             return 1562;
         }
 

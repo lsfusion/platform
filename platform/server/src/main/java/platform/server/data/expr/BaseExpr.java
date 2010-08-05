@@ -1,5 +1,6 @@
 package platform.server.data.expr;
 
+import platform.base.BaseUtils;
 import platform.base.QuickMap;
 import platform.interop.Compare;
 import platform.server.caches.ManualLazy;
@@ -12,11 +13,12 @@ import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.type.Reader;
+import platform.server.data.where.CheckWhere;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 
 public abstract class BaseExpr extends Expr {
@@ -51,7 +53,7 @@ public abstract class BaseExpr extends Expr {
         return getType(keyType); // assert'ится что не null
     }
 
-    public abstract BaseExpr translate(MapTranslate translator);
+    public abstract BaseExpr translateOuter(MapTranslate translator);
 
     public abstract void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere);
 
@@ -145,8 +147,16 @@ public abstract class BaseExpr extends Expr {
 
     public static <K> Map<K, Expr> packFollowFalse(Map<K, BaseExpr> mapExprs, Where falseWhere) {
         Map<K, Expr> result = new HashMap<K, Expr>();
-        for(Map.Entry<K,BaseExpr> groupExpr : mapExprs.entrySet())
-            result.put(groupExpr.getKey(), groupExpr.getValue().packFollowFalse(falseWhere));
+        for(Map.Entry<K,BaseExpr> groupExpr : mapExprs.entrySet()) {
+            CheckWhere siblingWhere = Where.TRUE;
+            for(Map.Entry<K,BaseExpr> sibling : mapExprs.entrySet())
+                if(!BaseUtils.hashEquals(sibling.getKey(), groupExpr.getKey())) {
+                    Expr siblingExpr = result.get(sibling.getKey());
+                    if(siblingExpr==null) siblingExpr = sibling.getValue();
+                    siblingWhere = siblingWhere.andCheck(siblingExpr.getWhere());
+                }
+            result.put(groupExpr.getKey(), groupExpr.getValue().packFollowFalse((Where) falseWhere.andCheck(siblingWhere)));
+        }
         return result;
     }
 }

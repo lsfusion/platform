@@ -1,17 +1,16 @@
 package platform.server.data.query.innerjoins;
 
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.EqualsWhere;
+import platform.server.data.translator.PartialQueryTranslator;
+import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DNFWheres;
 import platform.server.data.where.Where;
-import platform.server.data.translator.QueryTranslator;
-import platform.server.data.translator.PartialQueryTranslator;
-import platform.base.BaseUtils;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Collections;
 
 public class KeyEqual implements DNFWheres.Interface<KeyEqual> {
 
@@ -30,7 +29,13 @@ public class KeyEqual implements DNFWheres.Interface<KeyEqual> {
     }
 
     public KeyEqual and(KeyEqual and) {
-        return new KeyEqual(BaseUtils.merge(keyExprs, and.keyExprs));
+        Map<KeyExpr,BaseExpr> result = new HashMap<KeyExpr,BaseExpr>(keyExprs);
+        for(Map.Entry<KeyExpr,BaseExpr> andKeyExpr : and.keyExprs.entrySet()) {
+            BaseExpr expr = result.get(andKeyExpr.getKey());
+            if(expr==null || !expr.isValue())
+                result.put(andKeyExpr.getKey(),andKeyExpr.getValue());
+        }
+        return new KeyEqual(result);
     }
 
     public boolean isFalse() {

@@ -1,7 +1,6 @@
 package platform.server.logics.property.derived;
 
 import platform.interop.Compare;
-import platform.server.caches.GenericLazy;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.LogicalClass;
 import platform.server.data.expr.Expr;

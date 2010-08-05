@@ -1,5 +1,6 @@
 package platform.server.data.expr;
 
+import platform.base.BaseUtils;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
@@ -10,14 +11,13 @@ import platform.server.data.expr.cases.MapCase;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.JoinData;
 import platform.server.data.query.ContextEnumerator;
+import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.translator.TranslateExprLazy;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
-import platform.base.BaseUtils;
 
 import java.util.Map;
 
@@ -68,7 +68,7 @@ public class FormulaExpr extends StaticClassExpr {
     }
 
     @ParamLazy
-    public BaseExpr translate(MapTranslate translator) {
+    public BaseExpr translateOuter(MapTranslate translator) {
         return new FormulaExpr(formula,translator.translateDirect(params),valueClass);
     }
 
@@ -95,10 +95,10 @@ public class FormulaExpr extends StaticClassExpr {
     }
 
     @IdentityLazy
-    public int hashContext(HashContext hashContext) {
+    public int hashOuter(HashContext hashContext) {
         int hash = 0;
         for(Map.Entry<String, BaseExpr> param : params.entrySet())
-            hash += param.getKey().hashCode() ^ param.getValue().hashContext(hashContext);
+            hash += param.getKey().hashCode() ^ param.getValue().hashOuter(hashContext);
         return valueClass.hashCode()*31*31 + hash*31 + formula.hashCode();
     }
 

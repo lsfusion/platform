@@ -8,8 +8,8 @@ import platform.server.classes.StringClass;
 import platform.server.data.expr.*;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.innerjoins.ObjectJoinSets;
 import platform.server.data.query.innerjoins.KeyEquals;
+import platform.server.data.query.innerjoins.ObjectJoinSets;
 import platform.server.data.where.EqualMap;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
@@ -72,8 +72,8 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
     }
 
     @IdentityLazy
-    public int hashContext(HashContext hashContext) {
-        return operator1.hashContext(hashContext)*31 + operator2.hashContext(hashContext)*31;
+    public int hashOuter(HashContext hashContext) {
+        return operator1.hashOuter(hashContext)*31 + operator2.hashOuter(hashContext)*31;
     }
 
     protected EqualsWhere createThis(BaseExpr operator1, BaseExpr operator2) {

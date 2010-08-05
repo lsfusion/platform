@@ -5,7 +5,7 @@ import platform.base.OrderedMap;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.TwinLazy;
-import platform.server.caches.hash.HashCodeContext;
+import platform.base.ImmutableObject;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.data.expr.*;
@@ -32,7 +32,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
-public class Table implements MapKeysInterface<KeyField> {
+public class Table extends ImmutableObject implements MapKeysInterface<KeyField> {
     public final String name;
     public final Collection<KeyField> keys = new ArrayList<KeyField>();
     public final Collection<PropertyField> properties = new ArrayList<PropertyField>();
@@ -193,16 +193,16 @@ public class Table implements MapKeysInterface<KeyField> {
         }
 
         @IdentityLazy
-        public int hashContext(HashContext hashContext) {
+        public int hashOuter(HashContext hashContext) {
             int hash = Table.this.hashCode()*31;
                 // нужен симметричный хэш относительно выражений
             for(Map.Entry<KeyField, BaseExpr> join : joins.entrySet())
-                hash += join.getKey().hashCode() ^ join.getValue().hashContext(hashContext);
+                hash += join.getKey().hashCode() * join.getValue().hashOuter(hashContext);
             return hash;
         }
 
         @ParamLazy
-        public Join translate(MapTranslate translator) {
+        public Join translateOuter(MapTranslate translator) {
             return new Join(translator.translateDirect(joins));
         }
 
@@ -243,7 +243,7 @@ public class Table implements MapKeysInterface<KeyField> {
 
         @Override
         public int hashCode() {
-            return hashContext(HashCodeContext.instance);
+            return hashOuter(HashContext.hashCode);
         }
 
         public class IsIn extends DataWhere implements JoinData {
@@ -278,8 +278,8 @@ public class Table implements MapKeysInterface<KeyField> {
                 return "IN JOIN " + Join.this.toString();
             }
 
-            public Where translate(MapTranslate translator) {
-                return Join.this.translate(translator).getDirectWhere();
+            public Where translateOuter(MapTranslate translator) {
+                return Join.this.translateOuter(translator).getDirectWhere();
             }
             public Where translateQuery(QueryTranslator translator) {
                 return Join.this.translateQuery(translator).getWhere();
@@ -312,8 +312,8 @@ public class Table implements MapKeysInterface<KeyField> {
                 return Join.this.equals(((IsIn) o).getJoin());
             }
 
-            public int hashContext(HashContext hashContext) {
-                return Join.this.hashContext(hashContext);
+            public int hashOuter(HashContext hashContext) {
+                return Join.this.hashOuter(hashContext);
             }
         }
 
@@ -335,8 +335,8 @@ public class Table implements MapKeysInterface<KeyField> {
                 return Join.this.packFollowFalse(where).getExpr(property);
             }
 
-            public Expr translate(MapTranslate translator) {
-                return Join.this.translate(translator).getDirectExpr(property);
+            public Expr translateOuter(MapTranslate translator) {
+                return Join.this.translateOuter(translator).getDirectExpr(property);
             }
 
             public void enumerate(ContextEnumerator enumerator) {
@@ -370,8 +370,8 @@ public class Table implements MapKeysInterface<KeyField> {
             }
 
             @IdentityLazy
-            public int hashContext(HashContext hashContext) {
-                return Join.this.hashContext(hashContext)*31+property.hashCode();
+            public int hashOuter(HashContext hashContext) {
+                return Join.this.hashOuter(hashContext)*31+property.hashCode();
             }
 
             public String getSource(CompileSource compile) {

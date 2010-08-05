@@ -9,7 +9,8 @@ import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.Format;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class StringClass extends DataClass<String> {
 

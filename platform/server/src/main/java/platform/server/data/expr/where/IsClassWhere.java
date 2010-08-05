@@ -55,8 +55,8 @@ public class IsClassWhere extends DataWhere {
     }
 
     @ParamLazy
-    public Where translate(MapTranslate translator) {
-        return new IsClassWhere(expr.translate(translator),classes);
+    public Where translateOuter(MapTranslate translator) {
+        return new IsClassWhere(expr.translateOuter(translator),classes);
     }
     @ParamLazy
     public Where translateQuery(QueryTranslator translator) {
@@ -92,8 +92,8 @@ public class IsClassWhere extends DataWhere {
     }
 
     @IdentityLazy
-    public int hashContext(HashContext hashContext) {
-        return expr.hashContext(hashContext) + classes.hashCode()*31;
+    public int hashOuter(HashContext hashContext) {
+        return expr.hashOuter(hashContext) ^ classes.hashCode()*31;
     }
 
     public boolean twins(AbstractSourceJoin obj) {

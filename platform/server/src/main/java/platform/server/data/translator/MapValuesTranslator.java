@@ -2,20 +2,30 @@ package platform.server.data.translator;
 
 import platform.base.BaseUtils;
 import platform.server.caches.MapValues;
-import platform.server.data.expr.ValueExpr;
+import platform.server.caches.hash.HashValues;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.ValueExpr;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
-
-import net.jcip.annotations.Immutable;
 
 // отличается тем что не только маппит ValueExpr к ValueExpr, а с assertion'ом, что только одинаковых классов
 public class MapValuesTranslator extends AbstractMapTranslator implements MapValuesTranslate {
 
     private final Map<ValueExpr, ValueExpr> mapValues;
+
+    public int hash(HashValues hashValues) {
+        int hash = 0;
+        for(Map.Entry<ValueExpr,ValueExpr> entry : mapValues.entrySet())
+            hash += entry.getKey().hashCode() ^ hashValues.hash(entry.getValue());
+        return hash;
+    }
+
+    public Set<ValueExpr> getValues() {
+        return new HashSet<ValueExpr>(mapValues.values());
+    }
 
     private MapValuesTranslator() {
         this.mapValues = new HashMap<ValueExpr, ValueExpr>();
@@ -28,22 +38,12 @@ public class MapValuesTranslator extends AbstractMapTranslator implements MapVal
         assert !ValueExpr.removeStatic(mapValues).containsValue(null);
     }
 
-    private static Map<ValueExpr,ValueExpr> merge(Map<ValueExpr,ValueExpr>[] maps) {
-        Map<ValueExpr, ValueExpr> result = new HashMap<ValueExpr, ValueExpr>();
-        for (Map<ValueExpr, ValueExpr> map : maps)
-            result.putAll(map);
-        return result;
-    }
-    public MapValuesTranslator(Map<ValueExpr,ValueExpr>[] maps) {
-        this(merge(maps));
-    }
-
     public ValueExpr translate(ValueExpr expr) {
         return BaseUtils.nvl(mapValues.get(expr),expr);
     }
 
     public boolean identity() {
-        return BaseUtils.identity(mapValues); 
+        return BaseUtils.identity(mapValues);
     }
     public boolean identityValues(Set<ValueExpr> values) {
         return BaseUtils.identity(BaseUtils.filterKeys(mapValues, values));
@@ -56,27 +56,8 @@ public class MapValuesTranslator extends AbstractMapTranslator implements MapVal
         return new MapValuesTranslator(mapResult);
     }
 
-    public MapValuesTranslate crossMap(MapValuesTranslate map) {
-        Map<ValueExpr, ValueExpr> mapResult = new HashMap<ValueExpr, ValueExpr>();
-        for(Map.Entry<ValueExpr,ValueExpr> mapValue : mapValues.entrySet())
-            mapResult.put(mapValue.getValue(), map.translate(mapValue.getKey()));
-        return new MapValuesTranslator(mapResult);
-    }
-
     public MapValuesTranslate filter(Set<ValueExpr> values) {
         return new MapValuesTranslator(BaseUtils.filterKeys(mapValues,values));
-    }
-
-    public MapValuesTranslate mergeEqualValues(MapValuesTranslate map) {
-        return map.mergeEqualValuesTranslator(this);
-    }
-
-    public MapValuesTranslator mergeEqualValuesTranslator(MapValuesTranslator map) {
-        Map<ValueExpr, ValueExpr> mergeValues = BaseUtils.mergeEqual(mapValues, map.mapValues);
-        if(mergeValues==null)
-            return null;
-        else
-            return new MapValuesTranslator(mergeValues);
     }
 
     public <K,U extends MapValues<U>> Map<K,U> translateValues(Map<K,U> map) {
@@ -119,11 +100,15 @@ public class MapValuesTranslator extends AbstractMapTranslator implements MapVal
         return map;
     }
 
-    public MapTranslate mergeEqual(MapValuesTranslate map) {
-        return mergeEqualValues(map).mapKeys();
-    }
-
     public MapTranslate mapKeys() {
         return this;
+    }
+
+    public MapValuesTranslate reverse() {
+        return new MapValuesTranslator(BaseUtils.reverse(mapValues));
+    }
+
+    public MapTranslate reverseMap() {
+        return new MapValuesTranslator(BaseUtils.reverse(mapValues));
     }
 }

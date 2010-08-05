@@ -7,9 +7,9 @@ import platform.server.data.translator.MapTranslate;
 public interface InnerJoin {
     VariableExprSet getJoinFollows();
 
-    int hashContext(HashContext hashContext);
+    int hashOuter(HashContext hashContext);
 
-    InnerJoin translate(MapTranslate translator);
+    InnerJoin translateOuter(MapTranslate translator);
 
     boolean isIn(VariableExprSet set);
 }

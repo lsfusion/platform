@@ -13,16 +13,20 @@ import java.util.Map;
 
 public class MaxGroupExpr extends GroupExpr {
 
-    protected MaxGroupExpr(Map<BaseExpr, BaseExpr> group, Expr expr, ClassExprWhere packClassWhere) {
-        super(group, expr, packClassWhere);
+    protected MaxGroupExpr(Map<BaseExpr, BaseExpr> group, Expr expr) {
+        super(group, expr);
     }
 
     public MaxGroupExpr(MaxGroupExpr maxExpr, MapTranslate translator) {
         super(maxExpr, translator);
     }
 
+    protected MaxGroupExpr createThis(Expr query, Map<BaseExpr, BaseExpr> group) {
+        return new MaxGroupExpr(group, query);
+    }
+
     @ParamLazy
-    public MaxGroupExpr translate(MapTranslate translator) {
+    public MaxGroupExpr translateOuter(MapTranslate translator) {
         return new MaxGroupExpr(this,translator);
     }
 

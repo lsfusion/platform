@@ -4,8 +4,8 @@ import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.JoinData;
 import platform.server.data.query.ContextEnumerator;
+import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.translator.TranslateExprLazy;
@@ -14,7 +14,6 @@ import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 
 import java.util.Map;
-import java.util.HashMap;
 
 @TranslateExprLazy
 public abstract class InnerExpr extends VariableClassExpr implements JoinData {
@@ -58,8 +57,8 @@ public abstract class InnerExpr extends VariableClassExpr implements JoinData {
             return InnerExpr.this.getSource(compile) + " IS NULL";
         }
 
-        public Where translate(MapTranslate translator) {
-            return InnerExpr.this.translate(translator).getWhere();
+        public Where translateOuter(MapTranslate translator) {
+            return InnerExpr.this.translateOuter(translator).getWhere();
         }
         public Where translateQuery(QueryTranslator translator) {
             return InnerExpr.this.translateQuery(translator).getWhere();
@@ -73,8 +72,8 @@ public abstract class InnerExpr extends VariableClassExpr implements JoinData {
             InnerExpr.this.fillAndJoinWheres(joins,andWhere);
         }
 
-        public int hashContext(HashContext hashContext) {
-            return InnerExpr.this.hashContext(hashContext);
+        public int hashOuter(HashContext hashContext) {
+            return InnerExpr.this.hashOuter(hashContext);
         }
 
         @Override

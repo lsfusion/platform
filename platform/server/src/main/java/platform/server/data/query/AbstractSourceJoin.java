@@ -2,23 +2,23 @@ package platform.server.data.query;
 
 import platform.base.ArrayInstancer;
 import platform.base.BaseUtils;
-import platform.server.caches.AbstractTranslateContext;
-import platform.server.caches.TranslateContext;
+import platform.server.caches.AbstractOuterContext;
+import platform.server.caches.OuterContext;
 import platform.server.data.Table;
-import platform.server.data.type.Type;
-import platform.server.data.type.ObjectType;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.KeyType;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.OrderExpr;
+import platform.server.data.type.ObjectType;
+import platform.server.data.type.Type;
 import platform.server.logics.BusinessLogics;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-abstract public class AbstractSourceJoin<T extends TranslateContext<T>> extends AbstractTranslateContext<T> implements SourceJoin {
+abstract public class AbstractSourceJoin<T extends OuterContext<T>> extends AbstractOuterContext<T> implements SourceJoin {
 
     public SourceJoin[] getEnum() {
         return new SourceJoin[]{this};

@@ -38,10 +38,10 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
     }
 
     @IdentityLazy
-    public int hashContext(HashContext hashContext) {
+    public int hashOuter(HashContext hashContext) {
         int result = hashCoeff();
         for(Where where : wheres)
-            result += where.hashContext(hashContext);
+            result += where.hashOuter(hashContext);
         return result;
     }
 

@@ -1,7 +1,7 @@
 package platform.server.data.expr.query;
 
 import platform.base.BaseUtils;
-import platform.server.caches.AbstractTranslateContext;
+import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
@@ -23,7 +23,7 @@ import java.util.*;
 
 public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> implements JoinData {
 
-    public static class Query extends AbstractTranslateContext<Query> {
+    public static class Query extends AbstractOuterContext<Query> {
         public Expr expr;
         public List<Expr> orders;
         public Set<Expr> partitions;
@@ -35,19 +35,19 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
         }
 
         @ParamLazy
-        public Query translate(MapTranslate translator) {
-            return new Query(expr.translate(translator),translator.translate(orders),translator.translate(partitions));
+        public Query translateOuter(MapTranslate translator) {
+            return new Query(expr.translateOuter(translator),translator.translate(orders),translator.translate(partitions));
         }
 
         @IdentityLazy
-        public int hashContext(HashContext hashContext) {
+        public int hashOuter(HashContext hashContext) {
             int hash = 0;
             for(Expr order : orders)
-                hash = hash * 31 + order.hashContext(hashContext);
+                hash = hash * 31 + order.hashOuter(hashContext);
             hash = hash * 31;
             for(Expr partition : partitions)
-                hash += partition.hashContext(hashContext);
-            return hash * 31 + expr.hashContext(hashContext);
+                hash += partition.hashOuter(hashContext);
+            return hash * 31 + expr.hashOuter(hashContext);
         }
 
         @IdentityLazy
@@ -84,8 +84,16 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
         super(orderExpr, translator);
     }
 
-    public OrderExpr translate(MapTranslate translator) {
+    public OrderExpr translateOuter(MapTranslate translator) {
         return new OrderExpr(this,translator);
+    }
+
+    private OrderExpr(Query query, Map<KeyExpr, BaseExpr> group) {
+        super(query, group);
+    }
+
+    protected OrderExpr createThis(Query query, Map<KeyExpr, BaseExpr> group) {
+        return new OrderExpr(query, group);
     }
 
     public Type getType(KeyType keyType) {
@@ -121,7 +129,7 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
 
     @Override
     public OrderJoin getGroupJoin() {
-        return new OrderJoin(getKeys(),getValues(),query.getWhere(),pushWhere?query.partitions:new HashSet<Expr>(),group);
+        return new OrderJoin(innerContext.getKeys(), innerContext.getValues(),query.getWhere(),pushWhere?query.partitions:new HashSet<Expr>(),group);
     }
 
     private Map<KeyExpr, BaseExpr> pushValues(Where falseWhere) {

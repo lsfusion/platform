@@ -1,11 +1,11 @@
 package platform.server.logics.property;
 
-import platform.server.session.MapDataChanges;
-import platform.server.session.PropertyChange;
-import platform.server.session.Changes;
-import platform.server.session.Modifier;
-import platform.server.data.where.WhereBuilder;
 import platform.base.BaseUtils;
+import platform.server.data.where.WhereBuilder;
+import platform.server.session.Changes;
+import platform.server.session.MapDataChanges;
+import platform.server.session.Modifier;
+import platform.server.session.PropertyChange;
 
 // чисто для оптимизации
 public class ExclusiveUnionProperty extends OverrideUnionProperty {

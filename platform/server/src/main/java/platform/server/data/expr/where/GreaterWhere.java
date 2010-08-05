@@ -29,8 +29,8 @@ public class GreaterWhere extends CompareWhere {
     }
 
     @IdentityLazy
-    public int hashContext(HashContext hashContext) {
-        return 1 + operator1.hashContext(hashContext)*31 + operator2.hashContext(hashContext)*31*31;
+    public int hashOuter(HashContext hashContext) {
+        return 1 + operator1.hashOuter(hashContext)*31 + operator2.hashOuter(hashContext)*31*31;
     }
 
     protected CompareWhere createThis(BaseExpr operator1, BaseExpr operator2) {

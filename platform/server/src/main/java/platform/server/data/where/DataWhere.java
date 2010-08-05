@@ -1,6 +1,5 @@
 package platform.server.data.where;
 
-import platform.base.BaseUtils;
 import platform.server.caches.ManualLazy;
 import platform.server.data.query.CompileSource;
 import platform.server.data.where.classes.MeanClassWhere;
@@ -25,16 +24,18 @@ abstract public class DataWhere extends ObjectWhere {
     }
 
     public boolean follow(DataWhere dataWhere) {
-        return BaseUtils.hashEquals(this, dataWhere) || getFollows().contains(dataWhere);
+        return getEqualFollows().contains(dataWhere);
     }
 
     // возвращает себя и все зависимости
-    private DataWhereSet follows = null;
+    private DataWhereSet equalFollows = null;
     @ManualLazy
-    public DataWhereSet getFollows() {
-        if(follows==null)
-            follows = calculateFollows();
-        return follows;
+    public DataWhereSet getEqualFollows() {
+        if(equalFollows ==null) {
+            equalFollows = new DataWhereSet(calculateFollows());
+            equalFollows.add(this);
+        }
+        return equalFollows;
     }
 
     // определяет все

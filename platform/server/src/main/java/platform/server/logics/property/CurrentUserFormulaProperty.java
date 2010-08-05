@@ -1,16 +1,14 @@
 package platform.server.logics.property;
 
-import platform.server.data.expr.Expr;
+import platform.server.classes.ValueClass;
 import platform.server.data.expr.CurrentUserExpr;
+import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
-import platform.server.classes.ConcreteValueClass;
-import platform.server.classes.ValueClass;
 
-import java.util.Map;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 
 public class CurrentUserFormulaProperty extends FormulaProperty<PropertyInterface> {
 

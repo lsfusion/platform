@@ -2,14 +2,14 @@ package platform.server.data.query;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.server.caches.TranslateContext;
+import platform.server.caches.OuterContext;
 import platform.server.data.KeyField;
 import platform.server.data.SQLSession;
 import platform.server.data.Table;
-import platform.server.data.query.innerjoins.InnerSelectJoin;
 import platform.server.data.expr.*;
 import platform.server.data.expr.query.*;
 import platform.server.data.expr.where.MapWhere;
+import platform.server.data.query.innerjoins.InnerSelectJoin;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
@@ -18,8 +18,8 @@ import platform.server.data.type.NullReader;
 import platform.server.data.type.Reader;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeObject;
-import platform.server.data.where.Where;
 import platform.server.data.where.CheckWhere;
+import platform.server.data.where.Where;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -471,7 +471,7 @@ public class CompiledQuery<K,V> {
             return getAlias(where.getJoin()) + "." + where.getFirstKey() + " IS NOT NULL";
         }
 
-        private abstract class QuerySelect<K extends BaseExpr,I extends TranslateContext<I>,J extends QueryJoin<K,?>,E extends QueryExpr<K,I,J>> extends JoinSelect<J> {
+        private abstract class QuerySelect<K extends BaseExpr,I extends OuterContext<I>,J extends QueryJoin<K,?>,E extends QueryExpr<K,I,J>> extends JoinSelect<J> {
             Map<String, K> group;
 
             protected Map<String, BaseExpr> initJoins(J groupJoin) {
@@ -595,14 +595,14 @@ public class CompiledQuery<K,V> {
             }
         }
 
-        private <K extends BaseExpr,I extends TranslateContext<I>,IJ extends TranslateContext<IJ>,J extends QueryJoin<K,IJ>,E extends QueryExpr<K,I,J>,Q extends QuerySelect<K,I,J,E>>
+        private <K extends BaseExpr,I extends OuterContext<I>,IJ extends OuterContext<IJ>,J extends QueryJoin<K,IJ>,E extends QueryExpr<K,I,J>,Q extends QuerySelect<K,I,J,E>>
                     String getSource(Map<J,Q> selects, E expr) {
             J exprJoin = expr.getGroupJoin();
 
             MapTranslate translator;
             for(Map.Entry<J,Q> group : selects.entrySet())
-                if((translator=exprJoin.merge(group.getKey()))!=null)
-                    return group.getValue().add(expr.query.translate(translator),expr);
+                if((translator= exprJoin.mapInner(group.getKey(), false))!=null)
+                    return group.getValue().add(expr.query.translateOuter(translator),expr);
 
             Q select;
             if(((Object)exprJoin) instanceof GroupJoin) // нету группы - создаем, чтобы не нарушать модульность сделаем без наследования

@@ -1,5 +1,8 @@
 package platform.server.logics.property.actions;
 
+import jxl.Cell;
+import jxl.Sheet;
+import jxl.Workbook;
 import platform.interop.action.ClientAction;
 import platform.server.classes.*;
 import platform.server.data.type.ParseException;
@@ -8,21 +11,16 @@ import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.view.form.*;
+import platform.server.view.form.PropertyObjectInterface;
+import platform.server.view.form.PropertyView;
+import platform.server.view.form.RemoteForm;
 import platform.server.view.form.client.RemoteFormView;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import jxl.Cell;
-import jxl.Sheet;
-import jxl.Workbook;
-import jxl.read.biff.BiffException;
 
 public class ImportFromExcelActionProperty extends ActionProperty {
     private static Logger LOGGER = Logger.getLogger(ImportFromExcelActionProperty.class.getName());

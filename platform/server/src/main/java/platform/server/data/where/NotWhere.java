@@ -2,7 +2,10 @@ package platform.server.data.where;
 
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.where.MapWhere;
-import platform.server.data.query.*;
+import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.CompileSource;
+import platform.server.data.query.ContextEnumerator;
+import platform.server.data.query.JoinData;
 import platform.server.data.query.innerjoins.ObjectJoinSets;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
@@ -34,14 +37,14 @@ public class NotWhere extends ObjectWhere {
         return where.equals(((NotWhere)o).where);
     }
 
-    public int hashContext(HashContext hashContext) {
-        return where.hashContext(hashContext)*31;
+    public int hashOuter(HashContext hashContext) {
+        return where.hashOuter(hashContext)*31;
     }
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    public Where translate(MapTranslate translator) {
-        return where.translate(translator).not();
+    public Where translateOuter(MapTranslate translator) {
+        return where.translateOuter(translator).not();
     }
     public Where translateQuery(QueryTranslator translator) {
         return where.translateQuery(translator).not();

@@ -1,11 +1,24 @@
 package platform.server.caches.hash;
 
-import platform.server.data.expr.KeyExpr;
+public class HashContext {
 
-public interface HashContext extends HashValues {
+    public final HashKeys keys;
+    public final HashValues values;
 
-    public final static int hashMapKey = 153;
+    public HashContext(HashKeys keys, HashValues values) {
+        this.keys = keys;
+        this.values = values;
+    }
 
-    int hash(KeyExpr expr);
+    public final static HashContext hashCode = new HashContext(HashCodeKeys.instance,HashCodeValues.instance);
 
+    @Override
+    public boolean equals(Object o) {
+        return this == o || o instanceof HashContext && keys.equals(((HashContext) o).keys) && values.equals(((HashContext) o).values);
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * keys.hashCode() + values.hashCode();
+    }
 }

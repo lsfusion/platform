@@ -7,6 +7,7 @@ package platform.server.view.navigator;
 
 // навигатор работает с абстрактной BL
 
+import platform.base.BaseUtils;
 import platform.interop.RemoteObject;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
@@ -14,9 +15,8 @@ import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
-import platform.server.data.sql.DataAdapter;
-import platform.server.data.query.Query;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.query.Query;
 import platform.server.data.where.Where;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
@@ -25,7 +25,6 @@ import platform.server.logics.property.PropertyInterface;
 import platform.server.session.*;
 import platform.server.view.form.*;
 import platform.server.view.form.client.RemoteFormView;
-import platform.base.BaseUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;

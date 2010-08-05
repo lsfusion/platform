@@ -13,8 +13,8 @@ import platform.server.data.expr.cases.MapCase;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.JoinData;
 import platform.server.data.query.ContextEnumerator;
+import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.ConcatenateType;
@@ -48,7 +48,7 @@ public class ConcatenateExpr extends BaseExpr {
         return new VariableExprSet(exprs);
     }
 
-    public ConcatenateExpr translate(MapTranslate translator) {
+    public ConcatenateExpr translateOuter(MapTranslate translator) {
         return new ConcatenateExpr(translator.translateDirect(exprs));
     }
 
@@ -102,10 +102,10 @@ public class ConcatenateExpr extends BaseExpr {
     }
 
     @IdentityLazy
-    public int hashContext(HashContext hashContext) {
+    public int hashOuter(HashContext hashContext) {
         int hash = 0;
         for(BaseExpr expr : exprs)
-            hash = hash * 31 + expr.hashContext(hashContext);
+            hash = hash * 31 + expr.hashOuter(hashContext);
         return hash;
     }
 

@@ -3,11 +3,12 @@ package platform.server.data.translator;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.PullExpr;
+import platform.base.ImmutableObject;
 
 import java.util.*;
 
 // в отдельный класс для allKeys и для аспектов
-public class QueryTranslator {
+public class QueryTranslator extends ImmutableObject {
 
     public final Map<KeyExpr,? extends Expr> keys;
 

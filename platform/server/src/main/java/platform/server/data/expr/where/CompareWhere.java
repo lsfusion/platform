@@ -83,8 +83,8 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Data
     protected abstract Compare getCompare();
 
     @ParamLazy
-    public Where translate(MapTranslate translator) {
-        return createThis(operator1.translate(translator),operator2.translate(translator));
+    public Where translateOuter(MapTranslate translator) {
+        return createThis(operator1.translateOuter(translator),operator2.translateOuter(translator));
     }
     @ParamLazy
     public Where translateQuery(QueryTranslator translator) {

@@ -1,12 +1,14 @@
 package platform.server.data.translator;
 
-import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
-import platform.server.data.expr.*;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.PullExpr;
+import platform.server.data.expr.ValueExpr;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
 
-public class MapTranslator extends AbstractMapTranslator implements MapTranslate {
+public class MapTranslator extends AbstractMapTranslator {
 
     // какой есть - какой нужен
     private final Map<KeyExpr,KeyExpr> keys;
@@ -44,15 +46,15 @@ public class MapTranslator extends AbstractMapTranslator implements MapTranslate
         return BaseUtils.join(map, keys);
     }
 
-    public MapTranslate mergeEqual(MapValuesTranslate map) {
-        MapValuesTranslate mergeValues = values.mergeEqualValues(map);
-        if(mergeValues==null)
-            return null;
-        else
-            return new MapTranslator(keys, mergeValues);
-    }
-
     public MapValuesTranslate mapValues() {
         return values;
+    }
+
+    public MapTranslate reverseMap() {
+        return new MapTranslator(BaseUtils.reverse(keys), values.reverse());
+    }
+
+    public boolean identityValues(Set<ValueExpr> values) {
+        return BaseUtils.identity(keys) && this.values.identityValues(values);
     }
 }

@@ -3,7 +3,6 @@ package platform.server.data.expr.cases;
 import platform.server.data.where.Where;
 
 import java.util.ArrayList;
-import java.util.Collection;
 
 public abstract class CaseList<D,C extends Case<D>> extends ArrayList<C> {
 

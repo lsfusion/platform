@@ -1,6 +1,7 @@
 package platform.server.data.query;
 
 import platform.server.caches.TwinLazy;
+import platform.base.ImmutableObject;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
 
@@ -8,7 +9,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class Join<U> {
+public abstract class Join<U> extends ImmutableObject {
 
     public abstract Expr getExpr(U property);
     public abstract Where getWhere();

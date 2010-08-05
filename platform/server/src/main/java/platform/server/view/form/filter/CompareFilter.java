@@ -20,9 +20,9 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import java.util.Collections;
 
 public class CompareFilter<P extends PropertyInterface> extends PropertyFilter<P> {
 

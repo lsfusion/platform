@@ -61,14 +61,14 @@ public class JoinSet extends AddSet<InnerJoin, JoinSet> implements DNFWheres.Int
     public int hashContext(HashContext hashContext) {
         int hash = 0;
         for(InnerJoin where : wheres)
-            hash += where.hashContext(hashContext);
+            hash += where.hashOuter(hashContext);
         return hash;
     }
 
-    public JoinSet translate(MapTranslate translator) {
+    public JoinSet translateOuter(MapTranslate translator) {
         InnerJoin[] transJoins = new InnerJoin[wheres.length];
         for(int i=0;i<wheres.length;i++)
-            transJoins[i] = wheres[i].translate(translator);
+            transJoins[i] = wheres[i].translateOuter(translator);
         return new JoinSet(transJoins);
     }
 

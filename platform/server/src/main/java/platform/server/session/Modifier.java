@@ -4,11 +4,12 @@ import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
+import platform.base.ImmutableObject;
 
 import java.util.Collection;
 import java.util.Map;
 
-public abstract class Modifier<U extends Changes<U>> {
+public abstract class Modifier<U extends Changes<U>> extends ImmutableObject {
 
     public abstract U used(Property property,U usedChanges);
     public abstract U newChanges();

@@ -2,7 +2,10 @@ package platform.server.data.where.classes;
 
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.where.MapWhere;
-import platform.server.data.query.*;
+import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.CompileSource;
+import platform.server.data.query.ContextEnumerator;
+import platform.server.data.query.JoinData;
 import platform.server.data.query.innerjoins.ObjectJoinSets;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
@@ -34,7 +37,7 @@ public class PackClassWhere extends DataWhere {
         throw new RuntimeException("Not supported");
     }
 
-    public int hashContext(HashContext hashContext) {
+    public int hashOuter(HashContext hashContext) {
         return System.identityHashCode(this);
     }
 
@@ -54,7 +57,7 @@ public class PackClassWhere extends DataWhere {
         return packWhere.toString();
     }
 
-    public Where translate(MapTranslate translator) {
+    public Where translateOuter(MapTranslate translator) {
         throw new RuntimeException("Not supported");
     }
     public Where translateQuery(QueryTranslator translator) {

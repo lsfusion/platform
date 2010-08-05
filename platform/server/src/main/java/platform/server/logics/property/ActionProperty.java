@@ -2,8 +2,8 @@ package platform.server.logics.property;
 
 import platform.interop.action.ClientAction;
 import platform.server.classes.ActionClass;
-import platform.server.classes.ValueClass;
 import platform.server.classes.DataClass;
+import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.DataObject;

@@ -5,9 +5,9 @@ import platform.base.BaseUtils;
 import platform.server.caches.ManualLazy;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.AbstractSourceJoin;
-import platform.server.data.query.innerjoins.ObjectJoinSets;
-import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.query.JoinData;
+import platform.server.data.query.innerjoins.KeyEquals;
+import platform.server.data.query.innerjoins.ObjectJoinSets;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.classes.MeanClassWhere;
@@ -118,8 +118,8 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
         return not;
     }
 
-    public Where translate(MapTranslate translator) {
-        return not().translate(translator).not();
+    public Where translateOuter(MapTranslate translator) {
+        return not().translateOuter(translator).not();
     }
     public Where translateQuery(QueryTranslator translator) {
         return not().translateQuery(translator).not();

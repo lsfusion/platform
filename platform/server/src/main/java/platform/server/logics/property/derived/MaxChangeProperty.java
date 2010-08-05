@@ -1,6 +1,5 @@
 package platform.server.logics.property.derived;
 
-import net.jcip.annotations.Immutable;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.where.WhereBuilder;

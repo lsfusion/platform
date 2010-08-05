@@ -11,8 +11,8 @@ import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.JoinData;
 import platform.server.data.query.ContextEnumerator;
+import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.ConcatenateType;
@@ -53,8 +53,8 @@ public class DeconcatenateExpr extends SingleClassExpr {
     }
 
 
-    public DeconcatenateExpr translate(MapTranslate translator) {
-        return new DeconcatenateExpr(expr.translate(translator), part, baseClass);
+    public DeconcatenateExpr translateOuter(MapTranslate translator) {
+        return new DeconcatenateExpr(expr.translateOuter(translator), part, baseClass);
     }
 
     public VariableExprSet calculateExprFollows() {
@@ -86,8 +86,8 @@ public class DeconcatenateExpr extends SingleClassExpr {
     }
 
     @IdentityLazy
-    public int hashContext(HashContext hashContext) {
-        return expr.hashContext(hashContext) * 31 + part;
+    public int hashOuter(HashContext hashContext) {
+        return expr.hashOuter(hashContext) * 31 + part;
     }
 
     public void enumerate(ContextEnumerator enumerator) {

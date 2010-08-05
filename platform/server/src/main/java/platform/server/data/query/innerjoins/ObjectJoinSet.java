@@ -105,7 +105,7 @@ public class ObjectJoinSet implements DNFWheres.Interface<ObjectJoinSet> {
         return false;
     }
 
-    public ObjectJoinSet translate(MapTranslate translator) {
-        return new ObjectJoinSet(joins.translate(translator),translator.translateKeys(keyObjects),baseClass);
+    public ObjectJoinSet translateOuter(MapTranslate translator) {
+        return new ObjectJoinSet(joins.translateOuter(translator),translator.translateKeys(keyObjects),baseClass);
     }
 }

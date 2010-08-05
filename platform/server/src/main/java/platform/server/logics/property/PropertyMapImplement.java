@@ -9,8 +9,8 @@ import platform.server.data.where.WhereBuilder;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.session.*;
-import platform.server.view.form.PropertyObjectInterface;
 import platform.server.view.form.GroupObjectImplement;
+import platform.server.view.form.PropertyObjectInterface;
 import platform.server.view.form.client.RemoteFormView;
 
 import java.sql.SQLException;

@@ -1,6 +1,5 @@
 package platform.server.logics.table;
 
-import platform.server.classes.CustomClass;
 import platform.server.classes.SystemClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.GlobalTable;

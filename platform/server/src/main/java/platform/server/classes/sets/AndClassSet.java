@@ -1,7 +1,6 @@
 package platform.server.classes.sets;
 
 import platform.server.data.type.Type;
-import platform.server.classes.ValueClass;
 
 // по сути на Or
 public interface AndClassSet {

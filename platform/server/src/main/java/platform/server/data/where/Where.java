@@ -1,25 +1,24 @@
 package platform.server.data.where;
 
-import platform.server.caches.TranslateContext;
+import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.KeyType;
-import platform.server.data.query.innerjoins.ObjectJoinSets;
 import platform.server.data.query.SourceJoin;
 import platform.server.data.query.innerjoins.InnerSelectJoin;
 import platform.server.data.query.innerjoins.KeyEquals;
-import platform.server.data.translator.QueryTranslator;
+import platform.server.data.query.innerjoins.ObjectJoinSets;
 import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
-import platform.server.classes.sets.AndClassSet;
 
 import java.util.Collection;
 import java.util.Map;
 
-public interface Where extends SourceJoin, TranslateContext<Where>, KeyType, CheckWhere {
+public interface Where extends SourceJoin, OuterContext<Where>, KeyType, CheckWhere {
 
     Where followFalse(Where falseWhere);
     Where followFalse(Where falseWhere, boolean packExprs);
@@ -83,7 +82,7 @@ public interface Where extends SourceJoin, TranslateContext<Where>, KeyType, Che
 
     abstract public ClassExprWhere getClassWhere();
 
-    int hashContext(HashContext hashContext);
+    int hashOuter(HashContext hashContext);
 
     int getHeight();
 
@@ -92,9 +91,9 @@ public interface Where extends SourceJoin, TranslateContext<Where>, KeyType, Che
 
     Where translateQuery(QueryTranslator translator);
 
-    Where translate(MapTranslate translator);    
+    Where translateOuter(MapTranslate translator);
 
     Where map(Map<KeyExpr,? extends Expr> map);
 
-    AndClassSet getKeepClass(KeyExpr expr);
+    Where getKeepWhere(KeyExpr expr);
 }

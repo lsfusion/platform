@@ -7,8 +7,8 @@ import platform.server.data.Time;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.JoinData;
 import platform.server.data.query.ContextEnumerator;
+import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
@@ -30,7 +30,7 @@ public class TimeExpr extends StaticClassExpr {
         return new VariableExprSet();
     }
 
-    public BaseExpr translate(MapTranslate translator) {
+    public BaseExpr translateOuter(MapTranslate translator) {
         return this;
     }
 
@@ -53,7 +53,7 @@ public class TimeExpr extends StaticClassExpr {
         return time.equals(((TimeExpr)obj).time);
     }
 
-    public int hashContext(HashContext hashContext) {
+    public int hashOuter(HashContext hashContext) {
         return 6543;
     }
 

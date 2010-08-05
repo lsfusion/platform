@@ -3,9 +3,6 @@ package platform.server.data.where.classes;
 import platform.base.BaseUtils;
 import platform.base.QuickMap;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.classes.ValueClass;
-import platform.server.classes.DataClass;
-import platform.server.classes.IntegerClass;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.VariableClassExpr;
@@ -24,12 +21,20 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
         return type;
     }
 
-    public AndClassSet getKeepClass(KeyExpr keyExpr) {
-        AndClassSet keyClass = wheres[0].getPartial(keyExpr);
-        if(keyClass==null) // потому как в canbechanged например могут появляться pullExpr'ы без классов
-            return IntegerClass.instance;
-        else
-            return keyClass.getKeepClass();
+    public Where getKeepWhere(KeyExpr keyExpr) {
+        AndClassSet keepClass = null;
+        for(And<VariableClassExpr> where : wheres) {
+            AndClassSet keyClass = where.getPartial(keyExpr);
+            if (keyClass == null) // потому как в canbechanged например могут появляться pullExpr'ы без классов
+                return Where.TRUE;
+            AndClassSet keyKeepClass = keyClass.getKeepClass();
+            if (keepClass == null)
+                keepClass = keyKeepClass;
+            else
+                keepClass = keepClass.or(keyKeepClass);
+        }
+
+        return keyExpr.isClass(keepClass);
     }
     
     public boolean checkType(KeyExpr keyExpr,Type type) {

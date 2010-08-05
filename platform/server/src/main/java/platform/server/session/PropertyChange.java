@@ -1,10 +1,9 @@
 package platform.server.session;
 
 import platform.base.BaseUtils;
-import platform.server.caches.AbstractMapValues;
 import platform.server.caches.IdentityLazy;
-import platform.server.caches.MapContext;
-import platform.server.caches.MapHashIterable;
+import platform.server.caches.MapValues;
+import platform.server.caches.TwinsInnerContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.expr.Expr;
@@ -21,7 +20,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class PropertyChange<T extends PropertyInterface> extends AbstractMapValues<PropertyChange<T>> implements MapContext {
+public class PropertyChange<T extends PropertyInterface> extends TwinsInnerContext<PropertyChange<T>> implements MapValues<PropertyChange<T>> {
     public final Map<T,KeyExpr> mapKeys;
     public final Expr expr;
     public final Where where;
@@ -64,37 +63,29 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractMapValu
    }
 
     @IdentityLazy
-    public int hash(HashContext hashContext) {
+    public int hashInner(HashContext hashContext) {
         int hash = 0;
         for(Map.Entry<T,KeyExpr> mapKey : mapKeys.entrySet())
-            hash += mapKey.getKey().hashCode() ^ mapKey.getValue().hashContext(hashContext);
+            hash += mapKey.getKey().hashCode() ^ mapKey.getValue().hashOuter(hashContext);
 
-        return where.hashContext(hashContext)*31*31 + expr.hashContext(hashContext)*31 + hash;
+        return where.hashOuter(hashContext)*31*31 + expr.hashOuter(hashContext)*31 + hash;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof PropertyChange)) return false;
-
-        PropertyChange<?> change = (PropertyChange)o;
-        for(MapTranslate translator : new MapHashIterable(this, change, false))
-            if(where.translate(translator).equals(change.where) && expr.translate(translator).equals(change.expr))
-                return true;
-        return false;
+    public boolean equalsInner(PropertyChange<T> object) {
+        return where.equals(object.where) && expr.equals(object.expr);
     }
 
     @IdentityLazy
     public int hashValues(final HashValues hashValues) {
-        return hash(hashValues.mapKeys());
+        return hashInner(hashValues);
     }
 
-    public PropertyChange<T> translate(MapTranslate translator) {
-        return new PropertyChange<T>(translator.translateKey(mapKeys),expr.translate(translator),where.translate(translator));
+    public PropertyChange<T> translateInner(MapTranslate translator) {
+        return new PropertyChange<T>(translator.translateKey(mapKeys),expr.translateOuter(translator),where.translateOuter(translator));
     }
 
     public PropertyChange<T> translate(MapValuesTranslate mapValues) {
-        return translate(mapValues.mapKeys());
+        return translateInner(mapValues.mapKeys());
     }
 
 }

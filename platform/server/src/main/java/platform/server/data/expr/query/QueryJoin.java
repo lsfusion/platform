@@ -1,6 +1,9 @@
 package platform.server.data.expr.query;
 
-import platform.server.caches.*;
+import platform.server.caches.IdentityLazy;
+import platform.server.caches.InnerHashContext;
+import platform.server.caches.OuterContext;
+import platform.server.caches.TwinsInnerContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
@@ -12,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class QueryJoin<K extends BaseExpr,I extends TranslateContext<I>> implements MapContext {
+public abstract class QueryJoin<K extends BaseExpr,I extends OuterContext<I>> extends TwinsInnerContext<QueryJoin<K,I>> {
 
     private final I query;
     public final Map<K, BaseExpr> group; // вообще гря не reverseable
@@ -39,11 +42,11 @@ public abstract class QueryJoin<K extends BaseExpr,I extends TranslateContext<I>
             query = join.query;
             group = translator.translateDirect(join.group);
         } else { // еще values перетранслируем
-            MapTranslate valueTranslator = mapValues.mapKeys(); 
-            query = join.query.translate(valueTranslator);
+            MapTranslate valueTranslator = mapValues.mapKeys();
+            query = join.query.translateOuter(valueTranslator);
             group = new HashMap<K, BaseExpr>();
             for(Map.Entry<K, BaseExpr> groupJoin : join.group.entrySet())
-                group.put((K) groupJoin.getKey().translate(valueTranslator),groupJoin.getValue().translate(translator));
+                group.put((K) groupJoin.getKey().translateOuter(valueTranslator),groupJoin.getValue().translateOuter(translator));
         }
         keys = join.keys;
         values = mapValues.translateValues(queryValues);
@@ -57,49 +60,50 @@ public abstract class QueryJoin<K extends BaseExpr,I extends TranslateContext<I>
         this.group = group;
     }
 
-    // извращенное множественное наследование
-    protected QueryHashes<K> hashes = new QueryHashes<K>() {
-        protected int hashValue(HashContext hashContext) {
+    protected abstract class QueryInnerHashContext extends InnerHashContext {
+
+        protected abstract int hashOuterExpr(BaseExpr outerExpr);
+
+        public int hashInner(HashContext hashContext) {
             int hash = 0;
+            for(Map.Entry<K,BaseExpr> groupExpr : group.entrySet())
+                hash += groupExpr.getKey().hashOuter(hashContext) ^ hashOuterExpr(groupExpr.getValue());
+            hash = hash * 31;
             for(KeyExpr key : keys)
-                hash += key.hashContext(hashContext);
+                hash += key.hashOuter(hashContext);
             hash = hash * 31;
             for(ValueExpr key : values)
-                hash += key.hashContext(hashContext);
-            return hash * 31 + query.hashContext(hashContext);
+                hash += key.hashOuter(hashContext);
+            return hash * 31 + query.hashOuter(hashContext);
         }
-        protected Map<K, BaseExpr> getGroup() {
-            return group;
+
+        public Set<KeyExpr> getKeys() {
+            return keys;
+        }
+    }
+    // по сути тоже множественное наследование, правда нюанс что своего же Inner класса
+    private QueryInnerHashContext innerContext = new QueryInnerHashContext() {
+        protected int hashOuterExpr(BaseExpr outerExpr) {
+            return outerExpr.hashCode();
+        }
+
+        public Set<ValueExpr> getValues() {
+            return values;
         }
     };
+
     @IdentityLazy
-    public int hash(HashContext hashContext) {
-        return hashes.hash(hashContext);
+    public int hashInner(HashContext hashContext) {
+        return innerContext.hashInner(hashContext);
     }
 
-    public MapTranslate merge(QueryJoin<K,I> groupJoin) {
-        if(hashCode()!=groupJoin.hashCode())
-            return null;
+    protected abstract QueryJoin<K, I> createThis(Set<KeyExpr> keys, Set<ValueExpr> values, I query, Map<K,BaseExpr> group);
 
-        for(MapTranslate translator : new MapHashIterable(this,groupJoin,false))
-            if(query.translate(translator).equals(groupJoin.query) &&
-               translator.translateKeys(group).equals(groupJoin.group)) // нельзя reverse'ить
-                    return translator;
-        return null;
+    public QueryJoin<K, I> translateInner(MapTranslate translator) {
+        return createThis(translator.translateKeys(keys), translator.translateValues(values), query.translateOuter(translator), (Map<K,BaseExpr>) translator.translateKeys(group));
     }
 
-    @Override
-    public boolean equals(Object o) {
-        return this == o || getClass()==o.getClass() && merge((QueryJoin) o)!=null;
-    }
-
-    boolean hashCoded = false;
-    int hashCode;
-    public int hashCode() {
-        if(!hashCoded) {
-            hashCode = MapParamsIterable.hash(this,false);
-            hashCoded = true;
-        }
-        return hashCode;
+    public boolean equalsInner(QueryJoin<K, I> object) {
+        return getClass() == object.getClass() && query.equals(object.query) && group.equals(object.group);
     }
 }

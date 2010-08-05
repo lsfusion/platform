@@ -1,18 +1,18 @@
 package platform.server.data.expr;
 
+import platform.server.caches.hash.HashContext;
 import platform.server.classes.ValueClass;
-import platform.server.data.translator.MapTranslate;
-import platform.server.data.translator.QueryTranslator;
-import platform.server.data.query.JoinData;
+import platform.server.data.SQLSession;
+import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ContextEnumerator;
-import platform.server.data.expr.where.MapWhere;
-import platform.server.data.where.Where;
-import platform.server.data.where.DataWhereSet;
+import platform.server.data.query.JoinData;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
-import platform.server.data.SQLSession;
-import platform.server.caches.hash.HashContext;
+import platform.server.data.where.DataWhereSet;
+import platform.server.data.where.Where;
 
 public class CurrentUserExpr extends VariableClassExpr {
 
@@ -29,7 +29,7 @@ public class CurrentUserExpr extends VariableClassExpr {
     public void fillFollowSet(DataWhereSet fillSet) {
     }
 
-    public CurrentUserExpr translate(MapTranslate translator) {
+    public CurrentUserExpr translateOuter(MapTranslate translator) {
         return this;
     }
 
@@ -52,7 +52,7 @@ public class CurrentUserExpr extends VariableClassExpr {
         return true;
     }
 
-    public int hashContext(HashContext hashContext) {
+    public int hashOuter(HashContext hashContext) {
         return 7895;
     }
 

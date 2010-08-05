@@ -1,6 +1,7 @@
 package platform.server.data.expr.query;
 
-import platform.server.caches.AbstractTranslateContext;
+import net.jcip.annotations.Immutable;
+import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.*;
@@ -15,7 +16,7 @@ import java.util.Set;
 
 public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> implements InnerJoin {
 
-    public static class Query extends AbstractTranslateContext<Query> {
+    public static class Query extends AbstractOuterContext<Query> {
         private final Where where;
         private final JoinSet joins;
 
@@ -25,12 +26,12 @@ public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> implements I
         }
 
         @IdentityLazy
-        public int hashContext(HashContext hashContext) {
-            return where.hashContext(hashContext) * 31 + joins.hashContext(hashContext);
+        public int hashOuter(HashContext hashContext) {
+            return where.hashOuter(hashContext) * 31 + joins.hashContext(hashContext);
         }
 
-        public Query translate(MapTranslate translator) {
-            return new Query(where.translate(translator), joins.translate(translator));
+        public Query translateOuter(MapTranslate translator) {
+            return new Query(where.translateOuter(translator), joins.translateOuter(translator));
         }
 
         public SourceJoin[] getEnum() {
@@ -52,7 +53,7 @@ public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> implements I
         super(join, translator);
     }
 
-    public InnerJoin translate(MapTranslate translator) {
+    public InnerJoin translateOuter(MapTranslate translator) {
         return new GroupJoin(this, translator);
     }
 
@@ -60,8 +61,21 @@ public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> implements I
         super(keys,values,new Query(where,joins),group);
     }
 
-    public int hashContext(HashContext hashContext) {
-        return hashes.hashContext(hashContext);
+    public GroupJoin(Set<KeyExpr> keys, Set<ValueExpr> values, Query inner, Map<BaseExpr, BaseExpr> group) {
+        super(keys, values, inner, group);
+    }
+
+    protected QueryJoin<BaseExpr, Query> createThis(Set<KeyExpr> keys, Set<ValueExpr> values, Query query, Map<BaseExpr, BaseExpr> group) {
+        return new GroupJoin(keys, values, query, group);
+    }
+
+    @IdentityLazy
+    public int hashOuter(final HashContext hashContext) {
+        return new QueryInnerHashContext() {
+            protected int hashOuterExpr(BaseExpr outerExpr) {
+                return outerExpr.hashOuter(hashContext);
+            }
+        }.hashInner(hashContext.values);
     }
 
     public boolean isIn(VariableExprSet set) {

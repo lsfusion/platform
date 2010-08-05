@@ -1,26 +1,25 @@
 package platform.server.logics.property;
 
-import platform.server.logics.BusinessLogics;
-import platform.server.session.Changes;
-import platform.server.session.Modifier;
-import platform.server.session.MapDataChanges;
-import platform.server.session.PropertyChange;
+import platform.base.BaseUtils;
+import platform.interop.Compare;
+import platform.server.classes.IntegralClass;
+import platform.server.classes.LogicalClass;
+import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.cases.CaseExpr;
-import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.Where;
-import platform.server.classes.ValueClass;
-import platform.server.classes.IntegralClass;
-import platform.server.classes.LogicalClass;
-import platform.base.BaseUtils;
-import platform.interop.Compare;
+import platform.server.data.where.WhereBuilder;
+import platform.server.session.Changes;
+import platform.server.session.MapDataChanges;
+import platform.server.session.Modifier;
+import platform.server.session.PropertyChange;
 
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ShiftChangeProperty<P extends PropertyInterface, R extends PropertyInterface> extends AggregateProperty<ShiftChangeProperty.Interface<P>> {
 

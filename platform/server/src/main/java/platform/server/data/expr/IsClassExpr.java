@@ -9,8 +9,8 @@ import platform.server.data.Table;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.JoinData;
 import platform.server.data.query.ContextEnumerator;
+import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
@@ -61,16 +61,16 @@ public class IsClassExpr extends StaticClassExpr {
         return expr.packFollowFalse(where).classExpr(baseClass);
     }
     @ParamLazy
-    public StaticClassExpr translate(MapTranslate translator) {
-        return new IsClassExpr(expr.translate(translator),baseClass);
+    public StaticClassExpr translateOuter(MapTranslate translator) {
+        return new IsClassExpr(expr.translateOuter(translator),baseClass);
     }
 
     public Where calculateWhere() {
         return expr.isClass(baseClass.getUpSet());
     }
 
-    public int hashContext(HashContext hashContext) {
-        return expr.hashContext(hashContext)+1;
+    public int hashOuter(HashContext hashContext) {
+        return expr.hashOuter(hashContext)+1;
     }
 
     public String getSource(CompileSource compile) {

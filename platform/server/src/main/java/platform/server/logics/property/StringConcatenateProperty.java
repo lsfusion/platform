@@ -5,12 +5,11 @@ import platform.server.data.expr.StringConcatenateExpr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
-import platform.server.classes.ConcreteValueClass;
 
-import java.util.Map;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class StringConcatenateProperty extends FormulaProperty<StringConcatenateProperty.Interface> {
 

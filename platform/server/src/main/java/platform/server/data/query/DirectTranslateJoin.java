@@ -19,12 +19,12 @@ public class DirectTranslateJoin<U> extends Join<U>  {
 
     @IdentityLazy
     public Where getWhere() {
-        return join.getWhere().translate(translator);
+        return join.getWhere().translateOuter(translator);
     }
 
     @IdentityLazy
     public Expr getExpr(U property) {
-        return join.getExpr(property).translate(translator);
+        return join.getExpr(property).translateOuter(translator);
     }
 
     public Collection<U> getProperties() {

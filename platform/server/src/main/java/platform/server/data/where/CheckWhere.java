@@ -1,6 +1,5 @@
 package platform.server.data.where;
 
-import platform.server.data.translator.QueryTranslator;
 import platform.server.data.translator.MapTranslate;
 
 public interface CheckWhere {
@@ -18,7 +17,7 @@ public interface CheckWhere {
 
     AndObjectWhere[] getAnd(); // protected
 
-    CheckWhere translate(MapTranslate translator);
+    CheckWhere translateOuter(MapTranslate translator);
 
     CheckWhere not();
 }

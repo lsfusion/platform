@@ -11,7 +11,6 @@ import platform.server.view.form.RemoteForm;
 import platform.server.view.form.client.RemoteFormView;
 
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 

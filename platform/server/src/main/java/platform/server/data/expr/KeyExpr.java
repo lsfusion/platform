@@ -4,8 +4,8 @@ import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.JoinData;
 import platform.server.data.query.ContextEnumerator;
+import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
@@ -60,7 +60,7 @@ public class KeyExpr extends VariableClassExpr {
         return translator.translate(this);
     }
 
-    public KeyExpr translate(MapTranslate translator) {
+    public KeyExpr translateOuter(MapTranslate translator) {
         return translator.translate(this);
     }
 
@@ -73,8 +73,8 @@ public class KeyExpr extends VariableClassExpr {
         return System.identityHashCode(this);
     }
 
-    public int hashContext(HashContext hashContext) {
-        return hashContext.hash(this);
+    public int hashOuter(HashContext hashContext) {
+        return hashContext.keys.hash(this);
     }
 
     public boolean twins(AbstractSourceJoin obj) {

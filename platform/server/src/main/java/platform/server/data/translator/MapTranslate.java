@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.jcip.annotations.Immutable;
-
 public interface MapTranslate {
 
     KeyExpr translate(KeyExpr expr);
@@ -33,9 +31,13 @@ public interface MapTranslate {
 
     Set<KeyExpr> translateKeys(Set<KeyExpr> set);
 
+    Set<ValueExpr> translateValues(Set<ValueExpr> set);
+
     List<Expr> translate(List<Expr> list);
 
     Set<Expr> translate(Set<Expr> set);
 
-    MapTranslate mergeEqual(MapValuesTranslate map);
+    MapTranslate reverseMap();
+
+    boolean identityValues(Set<ValueExpr> values);
 }

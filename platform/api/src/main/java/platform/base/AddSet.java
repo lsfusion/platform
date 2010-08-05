@@ -1,6 +1,6 @@
 package platform.base;
 
-public abstract class AddSet<T,This extends AddSet<T,This>> {
+public abstract class AddSet<T,This extends AddSet<T,This>> extends ImmutableObject {
 
     public final T[] wheres;
 
@@ -75,7 +75,7 @@ public abstract class AddSet<T,This extends AddSet<T,This>> {
 
     @Override
     public int hashCode() {
-        return BaseUtils.hashArraySet(wheres) * 31;
+        return BaseUtils.hashSet(wheres) * 31;
     }
 
     @Override

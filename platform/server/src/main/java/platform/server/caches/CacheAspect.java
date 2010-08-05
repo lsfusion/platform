@@ -3,10 +3,12 @@ package platform.server.caches;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.DeclareParents;
 import org.aspectj.lang.reflect.MethodSignature;
 import platform.base.SoftHashMap;
 import platform.base.WeakIdentityHashMap;
 import platform.base.WeakIdentityHashSet;
+import platform.base.ImmutableObject;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.query.AbstractSourceJoin;
 
@@ -18,37 +20,69 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import net.jcip.annotations.Immutable;
+
 @Aspect
 public class CacheAspect {
 
-//    public static interface ImmutableInterface {
-//        Map getCaches();
-//    }
-//    public static class ImmutableInterfaceImplement implements ImmutableInterface {
-//        public ImmutableInterfaceImplement() {
-//        }
-//
-//        private Map caches = null;
-//        public Map getCaches() {
-//            if(caches==null) caches = new HashMap();
-//            return caches;
-//        }
-//    }
-//
-//    @DeclareParents(value="@net.jcip.annotations.Immutable *",defaultImpl=ImmutableInterfaceImplement.class)
-//    private ImmutableInterface immutable;
+/*    public static interface ImmutableInterface {
+        Map getCaches();
+    }
+    public static class ImmutableInterfaceImplement implements ImmutableInterface {
+        public ImmutableInterfaceImplement() {
+        }
 
-    /*    // отдельно для generics из-за бага
-       @DeclareParents(value="@platform.server.caches.GenericImmutable *",defaultImpl=ImmutableInterfaceImplement.class)
-       private ImmutableInterface genericImmutable;
+        private Map caches = null;
+        public Map getCaches() {
+            if(caches==null) caches = new HashMap();
+            return caches;
+        }
+    }
 
-       //@platform.server.caches.GenericImmutable
-       @Around("execution(@platform.server.caches.GenericLazy * *.*(..)) && target(object)") // с call'ом есть баги
-       public Object callGenericMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
-           return lazyExecute(object,thisJoinPoint,thisJoinPoint.getArgs());
-       }
-    */
+    @DeclareParents(value="@net.jcip.annotations.Immutable *",defaultImpl=ImmutableInterfaceImplement.class)
+    private ImmutableInterface immutable;
+  */
 
+    static class Invocation {
+        final Method method;
+        final Object[] args;
+
+        Invocation(ProceedingJoinPoint thisJoinPoint, Object[] args) {
+            this.method = ((MethodSignature) thisJoinPoint.getSignature()).getMethod();
+            this.args = args;
+        }
+
+        @Override
+        public String toString() {
+            return method +"(" + Arrays.asList(args) + ')';
+        }
+
+        @Override
+        public boolean equals(Object o) { // не проверяем на вхождение и класс потому как повторятся не могут
+            return method.equals(((Invocation)o).method) && Arrays.equals(args,((Invocation)o).args);
+        }
+
+        @Override
+        public int hashCode() {
+            return 31* method.hashCode() + Arrays.hashCode(args);
+        }
+    }
+
+    private Object lazyExecute(Object object,ProceedingJoinPoint thisJoinPoint,Object[] args) throws Throwable {
+        if(args.length>0 && args[0] instanceof NoCacheInterface)
+            return thisJoinPoint.proceed();
+
+        Invocation invoke = new Invocation(thisJoinPoint,args);
+        Map caches = ((ImmutableObject)object).getCaches();
+        Object result = caches.get(invoke);
+        if(result==null) {
+            result = thisJoinPoint.proceed();
+            caches.put(invoke,result);
+        }
+        return result;
+    }
+
+/*
     static class IdentityInvocation {
         final WeakReference<Object> targetRef;
 
@@ -131,18 +165,21 @@ public class CacheAspect {
             }
         }
     }
-
+  */
 //    public final static SoftHashMap<IdentityInvocation, Object> lazyIdentityExecute = new SoftHashMap<IdentityInvocation, Object>();
-    public final static IdentityInvocationWeakMap lazyIdentityExecute = new IdentityInvocationWeakMap();
+//    public final static IdentityInvocationWeakMap lazyIdentityExecute = new IdentityInvocationWeakMap();
+
     private Object lazyIdentityExecute(Object target, ProceedingJoinPoint thisJoinPoint, Object[] args) throws Throwable {
-        IdentityInvocation invocation = new IdentityInvocation(lazyIdentityExecute.getRefQueue(), target, thisJoinPoint, args);
+        return lazyExecute(target, thisJoinPoint, args);
+
+/*        IdentityInvocation invocation = new IdentityInvocation(lazyIdentityExecute.getRefQueue(), target, thisJoinPoint, args);
         Object result = lazyIdentityExecute.get(invocation);
         if (result == null) {
             result = thisJoinPoint.proceed();
             lazyIdentityExecute.put(invocation, result);
         }
 
-        return result;
+        return result;*/
     }
 
     //@net.jcip.annotations.Immutable
@@ -287,8 +324,8 @@ public class CacheAspect {
                 // "перекидываем" все компоненты в первую
                 for (Object object : twins2.objects)
                     put(object, twins1);
-                // сливаем компоненты
-                twins2.objects.addAll(twins1.objects);
+                // сливаем компоненты, сами objects и diff
+                twins1.objects.addAll(twins2.objects);
                 // сливаем diff'ы
                 twins1.diff.addAll(twins2.diff);
                 for (Twins eqd : twins2.diff) { // заменяем equal2 на equal1
@@ -297,6 +334,8 @@ public class CacheAspect {
                 }
                 return true;
             } else {
+                assert false;
+                
                 twins1.diff.add(twins2);
                 twins2.diff.add(twins1);
                 return false;

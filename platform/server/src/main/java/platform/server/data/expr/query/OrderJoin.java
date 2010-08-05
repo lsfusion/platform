@@ -1,6 +1,6 @@
 package platform.server.data.expr.query;
 
-import platform.server.caches.AbstractTranslateContext;
+import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
@@ -16,7 +16,7 @@ import java.util.Set;
 
 public class OrderJoin extends QueryJoin<KeyExpr, OrderJoin.Query> {
 
-    public static class Query extends AbstractTranslateContext<Query> {
+    public static class Query extends AbstractOuterContext<Query> {
         private final Where where;
         private final Set<Expr> partitions;
 
@@ -26,15 +26,15 @@ public class OrderJoin extends QueryJoin<KeyExpr, OrderJoin.Query> {
         }
 
         @IdentityLazy
-        public int hashContext(HashContext hashContext) {
+        public int hashOuter(HashContext hashContext) {
             int hash = 0;
             for(Expr partition : partitions)
-                hash += partition.hashContext(hashContext);
-            return hash * 31 + where.hashContext(hashContext);
+                hash += partition.hashOuter(hashContext);
+            return hash * 31 + where.hashOuter(hashContext);
         }
 
-        public Query translate(MapTranslate translator) {
-            return new Query(where.translate(translator),translator.translate(partitions));
+        public Query translateOuter(MapTranslate translator) {
+            return new Query(where.translateOuter(translator),translator.translate(partitions));
         }
 
         public SourceJoin[] getEnum() {
@@ -49,5 +49,13 @@ public class OrderJoin extends QueryJoin<KeyExpr, OrderJoin.Query> {
 
     public OrderJoin(Set<KeyExpr> keys, Set<ValueExpr> values, Where inner, Set<Expr> partitions, Map<KeyExpr, BaseExpr> group) {
         super(keys, values, new Query(inner, partitions), group);
+    }
+
+    private OrderJoin(Set<KeyExpr> keys, Set<ValueExpr> values, Query inner, Map<KeyExpr, BaseExpr> group) {
+        super(keys, values, inner, group);
+    }
+
+    protected QueryJoin<KeyExpr, Query> createThis(Set<KeyExpr> keys, Set<ValueExpr> values, Query query, Map<KeyExpr, BaseExpr> group) {
+        return new OrderJoin(keys, values, query, group);
     }
 }

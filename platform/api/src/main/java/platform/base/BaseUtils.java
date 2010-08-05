@@ -143,6 +143,24 @@ public class BaseUtils {
         return join(map,reverse(mapTo));
     }
 
+    public static <KA, KB, V> Map<KA, KB> mapValues(Map<KA, V> map, Map<KB, V> equals) {
+        if(map.size()!=equals.size()) return null;
+
+        Map<KA, KB> mapKeys = new HashMap<KA, KB>();
+        for(Map.Entry<KA, V> key : map.entrySet()) {
+            KB mapKey = null;
+            for(Map.Entry<KB, V> equalKey : equals.entrySet())
+                if(!hashContainsValue(mapKeys,equalKey.getKey()) &&
+                    hashEquals(key.getValue(),equalKey.getValue())) {
+                    mapKey = equalKey.getKey();
+                    break;
+                }
+            if(mapKey==null) return null;
+            mapKeys.put(key.getKey(),mapKey);
+        }
+        return mapKeys;
+    }
+
     public static <K> Collection<K> join(Collection<K> col1, Collection<K> col2) {
         Set<K> result = new HashSet<K>(col1);
         result.addAll(col2);
@@ -369,21 +387,6 @@ public class BaseUtils {
         return result;
     }
 
-    public static <B,K1 extends B,K2 extends B,V> Map<B,V> mergeEqual(Map<K1,? extends V> map1,Map<K2,? extends V> map2) {
-        Set<? extends V> values1 = BaseUtils.reverse(map1).keySet();
-        Map<B,V> result = new HashMap<B,V>(map1);
-        for(Map.Entry<K2,? extends V> entry2 : map2.entrySet()) {
-            V value1 = result.put(entry2.getKey(), entry2.getValue());
-            if(value1==null) {
-                if(values1.contains(entry2.getValue())) // повторяется значение - не reversed
-                    return null;
-            } else
-                if(!value1.equals(entry2.getValue())) // повторяется ключ
-                    return null;
-        }
-        return result;
-    }
-
     public static <K,V> boolean isSubMap(Map<? extends K,? extends V> map1,Map<K,? extends V> map2) {
         for(Map.Entry<? extends K,? extends V> entry : map1.entrySet()) {
             V value2 = map2.get(entry.getKey());
@@ -463,7 +466,7 @@ public class BaseUtils {
         return true;
     }
 
-    public static <T> int hashArraySet(T[] array) {
+    public static <T> int hashSet(T[] array) {
         int hash = 0;
         for(T element : array)
             hash += element.hashCode();
@@ -516,6 +519,13 @@ public class BaseUtils {
         return result;
     }
 
+    public static <V> Map<V,V> mergeMaps(Map<V,V>[] maps) {
+        Map<V, V> result = new HashMap<V, V>();
+        for (Map<V, V> map : maps)
+            result.putAll(map);
+        return result;
+    }
+
 
     public static abstract class Group<G,K> {
         public abstract G group(K key);
@@ -530,6 +540,37 @@ public class BaseUtils {
                 result.put(group,groupList);
             }
             groupList.add(key);
+        }
+        return result;
+    }
+
+    public static <G,K> Map<G,Set<K>> groupSet(Group<G, K> getter, Set<K> keys) {
+        Map<G,Set<K>> result = new HashMap<G, Set<K>>();        
+        for(K key : keys) {
+            G group = getter.group(key);
+            Set<K> groupSet = result.get(group);
+            if(groupSet==null) {
+                groupSet = new HashSet<K>();
+                result.put(group,groupSet);
+            }
+            groupSet.add(key);
+        }
+        return result;
+    }
+
+    public static <G,K> Map<G,Set<K>> groupSet(final Map<K, G> getter, Set<K> keys) {
+        return groupSet(new Group<G,K>() {
+            public G group(K key) {
+                return getter.get(key);
+            }
+        },keys);
+    }
+
+    public static <K> Map<K,Integer> multiSet(Collection<K> col) {
+        Map<K,Integer> result = new HashMap<K, Integer>();
+        for(K element : col) {
+            Integer quantity = result.get(element);
+            result.put(element,quantity==null?1:quantity+1);
         }
         return result;
     }
@@ -608,24 +649,6 @@ public class BaseUtils {
             if(hashEquals(entry.getValue(),value))
                 return true;
         return false;
-    }
-
-    public static <K,EK,T> Map<K, EK> mapEquals(Map<K,T> map, Map<EK,T> equals) {
-        if(map.size()!=equals.size()) return null;
-
-        Map<K, EK> mapKeys = new HashMap<K, EK>();
-        for(Map.Entry<K,T> key : map.entrySet()) {
-            EK mapKey = null;
-            for(Map.Entry<EK,T> equalKey : equals.entrySet())
-                if(!hashContainsValue(mapKeys,equalKey.getKey()) &&
-                    hashEquals(key.getValue(),equalKey.getValue())) {
-                    mapKey = equalKey.getKey();
-                    break;
-                }
-            if(mapKey==null) return null;
-            mapKeys.put(key.getKey(),mapKey);
-        }
-        return mapKeys;
     }
 
     public static <K> String toString(Collection<K> array, String separator) {

@@ -1,26 +1,23 @@
 package platform.server.caches;
 
 import platform.base.EmptyIterator;
-import platform.base.Pairs;
-import platform.server.caches.hash.HashMapContext;
-import platform.server.caches.hash.HashMapKeysContext;
+import platform.server.caches.hash.HashValues;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.translator.*;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.MapTranslator;
+import platform.server.data.translator.MapValuesTranslate;
+import platform.server.data.translator.MapValuesTranslator;
 
 import java.util.Iterator;
 import java.util.Map;
 
 public class MapParamsIterable implements Iterable<MapTranslate> {
 
-    public static int hash(MapContext map,final boolean values) {
-        return map.hash(values? HashMapContext.instance: HashMapKeysContext.instance);
-    }
-
-    private final MapContext from;
-    private final MapContext to;
+    private final InnerContext from;
+    private final InnerContext to;
     private final boolean values;
 
-    public MapParamsIterable(MapContext from, MapContext to, boolean values) {
+    public MapParamsIterable(InnerContext from, InnerContext to, boolean values) {
         this.from = from;
         this.to = to;
         this.values = values;
@@ -32,7 +29,7 @@ public class MapParamsIterable implements Iterable<MapTranslate> {
 
     // перебирает Map'ы KeyExpr -> KeyExpr и ValueExpr -> ValueExpr
     private class MapIterator implements Iterator<MapTranslate> {
-        private Pairs<KeyExpr,KeyExpr> keyPairs;
+        private KeyPairs keyPairs;
 
         private Iterator<MapValuesTranslate> valueIterator;
         private Iterator<Map<KeyExpr,KeyExpr>> keysIterator;
@@ -52,7 +49,9 @@ public class MapParamsIterable implements Iterable<MapTranslate> {
             if(mapValues==null)
                 keysIterator = new EmptyIterator<Map<KeyExpr, KeyExpr>>();
             else {
-                keyPairs = new Pairs<KeyExpr,KeyExpr>(from.getKeys(),to.getKeys());
+//                keyPairs = new Pairs<KeyExpr,KeyExpr>(from.getKeys(),to.getKeys());
+                HashValues hashValues = InnerHashContext.getHashValues(values); 
+                keyPairs = new KeyPairs(from.getComponents(hashValues).map,to.getComponents(hashValues).map);
                 keysIterator = keyPairs.iterator();
                 if(!keysIterator.hasNext())
                     valueIterator = new EmptyIterator<MapValuesTranslate>();    

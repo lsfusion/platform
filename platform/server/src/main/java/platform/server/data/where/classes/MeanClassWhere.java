@@ -47,7 +47,7 @@ public class MeanClassWhere implements DNFWheres.Interface<MeanClassWhere> {
     public MeanClassWhere translate(MapTranslate translator) {
         Map<VariableClassExpr,VariableClassExpr> transEquals = new HashMap<VariableClassExpr, VariableClassExpr>();
         for(Map.Entry<VariableClassExpr,VariableClassExpr> equal : equals.entrySet())
-            transEquals.put(equal.getKey().translate(translator),equal.getValue().translate(translator));
+            transEquals.put(equal.getKey().translateOuter(translator),equal.getValue().translateOuter(translator));
         return new MeanClassWhere(classWhere.translate(translator), transEquals);
     }
 

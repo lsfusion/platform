@@ -12,8 +12,8 @@ import platform.server.data.expr.KeyType;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.JoinData;
 import platform.server.data.query.ContextEnumerator;
+import platform.server.data.query.JoinData;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
@@ -81,10 +81,10 @@ public class CaseExpr extends Expr {
     }
 
     @ParamLazy
-    public CaseExpr translate(MapTranslate translator) {
+    public CaseExpr translateOuter(MapTranslate translator) {
         ExprCaseList translatedCases = new ExprCaseList();
         for(ExprCase exprCase : cases)
-            translatedCases.add(new ExprCase(exprCase.where.translate(translator),exprCase.data.translate(translator)));
+            translatedCases.add(new ExprCase(exprCase.where.translateOuter(translator),exprCase.data.translateOuter(translator)));
         return new CaseExpr(translatedCases);        
     }
 
@@ -152,8 +152,8 @@ public class CaseExpr extends Expr {
     }
 
     @IdentityLazy
-    public int hashContext(HashContext hashContext) {
-        return cases.hashContext(hashContext);
+    public int hashOuter(HashContext hashContext) {
+        return cases.hashContext(hashContext) + 5;
     }
 
     // получение Where'ов

@@ -1,14 +1,15 @@
 package platform.server.data.query.innerjoins;
 
-import platform.server.data.where.DNFWheres;
-import platform.server.data.where.Where;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.EqualsWhere;
 import platform.server.data.query.JoinSet;
+import platform.server.data.where.DNFWheres;
+import platform.server.data.where.Where;
 
-import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 public class KeyEquals extends DNFWheres<KeyEqual, Where, KeyEquals> {
@@ -36,6 +37,9 @@ public class KeyEquals extends DNFWheres<KeyEqual, Where, KeyEquals> {
     }
 
     public Collection<InnerSelectJoin> getInnerJoins(boolean joins) {
+        if(!joins && size==1)
+            return Collections.singleton(new InnerSelectJoin(getSingleKey(), new JoinSet(), Where.TRUE));           
+
         Collection<InnerSelectJoin> result = new ArrayList<InnerSelectJoin>();
         for(int i=0;i<size;i++) {
             KeyEqual keyEqual = getKey(i);

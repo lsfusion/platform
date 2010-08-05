@@ -12,16 +12,20 @@ import java.util.Map;
 
 public class SumGroupExpr extends GroupExpr {
 
-    protected SumGroupExpr(Map<BaseExpr, BaseExpr> group, Expr expr, ClassExprWhere packClassWhere) {
-        super(group, expr, packClassWhere);
+    protected SumGroupExpr(Map<BaseExpr, BaseExpr> group, Expr expr) {
+        super(group, expr);
     }
 
     private SumGroupExpr(SumGroupExpr sumExpr, MapTranslate translator) {
         super(sumExpr, translator);
     }    
     @ParamLazy
-    public SumGroupExpr translate(MapTranslate translator) {
+    public SumGroupExpr translateOuter(MapTranslate translator) {
         return new SumGroupExpr(this, translator); 
+    }
+
+    protected SumGroupExpr createThis(Expr query, Map<BaseExpr, BaseExpr> group) {
+        return new SumGroupExpr(group, query);
     }
 
     public Where calculateWhere() {

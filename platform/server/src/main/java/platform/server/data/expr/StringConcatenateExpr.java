@@ -1,22 +1,22 @@
 package platform.server.data.expr;
 
+import platform.base.BaseUtils;
 import platform.server.caches.IdentityLazy;
+import platform.server.caches.hash.HashContext;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.StringClass;
-import platform.server.data.translator.MapTranslate;
-import platform.server.data.translator.QueryTranslator;
-import platform.server.data.query.JoinData;
+import platform.server.data.expr.cases.CaseExpr;
+import platform.server.data.expr.cases.ExprCaseList;
+import platform.server.data.expr.cases.MapCase;
+import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ContextEnumerator;
-import platform.server.data.expr.where.MapWhere;
-import platform.server.data.expr.cases.ExprCaseList;
-import platform.server.data.expr.cases.MapCase;
-import platform.server.data.expr.cases.CaseExpr;
-import platform.server.data.where.Where;
+import platform.server.data.query.JoinData;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
-import platform.server.caches.hash.HashContext;
-import platform.base.BaseUtils;
+import platform.server.data.where.Where;
 
 import java.util.List;
 
@@ -45,7 +45,7 @@ public class StringConcatenateExpr extends StaticClassExpr {
         return new VariableExprSet(exprs);
     }
 
-    public BaseExpr translate(MapTranslate translator) {
+    public BaseExpr translateOuter(MapTranslate translator) {
         return new StringConcatenateExpr(translator.translateDirect(exprs));
     }
 
@@ -71,10 +71,10 @@ public class StringConcatenateExpr extends StaticClassExpr {
         return exprs.equals(((StringConcatenateExpr)obj).exprs);
     }
 
-    public int hashContext(HashContext hashContext) {
+    public int hashOuter(HashContext hashContext) {
         int hash = 5;
         for(BaseExpr expr : exprs)
-            hash = hash * 31 + expr.hashContext(hashContext); 
+            hash = hash * 31 + expr.hashOuter(hashContext);
         return hash;
     }
 

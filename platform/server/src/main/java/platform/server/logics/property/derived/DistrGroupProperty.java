@@ -1,6 +1,5 @@
 package platform.server.logics.property.derived;
 
-import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.server.data.expr.Expr;

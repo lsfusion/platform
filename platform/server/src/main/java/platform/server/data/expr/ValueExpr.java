@@ -8,8 +8,8 @@ import platform.server.classes.LogicalClass;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.JoinData;
 import platform.server.data.query.ContextEnumerator;
+import platform.server.data.query.JoinData;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
@@ -82,8 +82,8 @@ public class ValueExpr extends StaticClassExpr {
         return object.hashCode()*31+objectClass.hashCode();
     }
 
-    public int hashContext(HashContext hashContext) {
-        return hashContext.hash(this);
+    public int hashOuter(HashContext hashContext) {
+        return hashContext.values.hash(this);
     }
 
     // нельзя потому как при трансляции значения потеряются
@@ -96,7 +96,7 @@ public class ValueExpr extends StaticClassExpr {
         return this;
     }
 
-    public BaseExpr translate(MapTranslate translator) {
+    public ValueExpr translateOuter(MapTranslate translator) {
         return translator.translate(this);
     }
 

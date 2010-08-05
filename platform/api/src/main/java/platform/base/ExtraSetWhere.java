@@ -38,7 +38,7 @@ public abstract class ExtraSetWhere<T, This extends ExtraSetWhere<T,This>> {
 
     @Override
     public int hashCode() {
-        return BaseUtils.hashArraySet(wheres) * 31;
+        return BaseUtils.hashSet(wheres) * 31;
     }
 
     @Override

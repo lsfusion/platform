@@ -3,10 +3,10 @@ package platform.server.data.where.classes;
 import platform.server.caches.ManualLazy;
 import platform.server.data.expr.VariableClassExpr;
 import platform.server.data.translator.MapTranslate;
+import platform.server.data.where.CheckWhere;
 import platform.server.data.where.DNFWheres;
 import platform.server.data.where.EqualMap;
 import platform.server.data.where.Where;
-import platform.server.data.where.CheckWhere;
 
 import java.util.Map;
 
@@ -55,10 +55,10 @@ public class MeanClassWheres extends DNFWheres<MeanClassWhere, CheckWhere, MeanC
         add(join,where);
     }
 
-    public MeanClassWheres translate(MapTranslate translator) {
+    public MeanClassWheres translateOuter(MapTranslate translator) {
         MeanClassWheres result = new MeanClassWheres();
         for(int i=0;i<size;i++)
-            result.add(getKey(i).translate(translator),getValue(i).translate(translator));
+            result.add(getKey(i).translate(translator),getValue(i).translateOuter(translator));
         return result;
     }
 }

@@ -1,8 +1,8 @@
 package platform.server.classes;
 
 import platform.server.classes.sets.*;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.SQLSession;
+import platform.server.data.expr.ValueExpr;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.table.ObjectTable;

@@ -1,6 +1,9 @@
 package platform.server.data.expr.query;
 
-import platform.server.caches.*;
+import platform.server.caches.IdentityLazy;
+import platform.server.caches.InnerHashContext;
+import platform.server.caches.OuterContext;
+import platform.server.caches.TwinsInnerContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.*;
 import platform.server.data.query.AbstractSourceJoin;
@@ -12,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class QueryExpr<K extends BaseExpr,I extends TranslateContext<I>,J extends QueryJoin> extends InnerExpr implements MapContext {
+public abstract class QueryExpr<K extends BaseExpr,I extends OuterContext<I>,J extends QueryJoin> extends InnerExpr {
 
     public I query;
     Map<K, BaseExpr> group; // вообще гря не reverseable
@@ -31,41 +34,99 @@ public abstract class QueryExpr<K extends BaseExpr,I extends TranslateContext<I>
     // трансляция
     protected QueryExpr(QueryExpr<K,I,J> queryExpr, MapTranslate translator) {
         // надо еще транслировать "внутренние" values
-        MapValuesTranslate mapValues = translator.mapValues().filter(queryExpr.getValues());
+        MapValuesTranslate mapValues = translator.mapValues().filter(queryExpr.innerContext.getValues());
 
         if(mapValues.identity()) { // если все совпадает то и не перетранслируем внутри ничего
             query = queryExpr.query;
             group = translator.translateDirect(queryExpr.group);
         } else { // еще values перетранслируем
             MapTranslate valueTranslator = mapValues.mapKeys();
-            query = queryExpr.query.translate(valueTranslator);
+            query = queryExpr.query.translateOuter(valueTranslator);
             group = new HashMap<K, BaseExpr>();
             for(Map.Entry<K, BaseExpr> keyJoin : queryExpr.group.entrySet())
-                group.put((K)keyJoin.getKey().translate(valueTranslator),keyJoin.getValue().translate(translator));
+                group.put((K)keyJoin.getKey().translateOuter(valueTranslator),keyJoin.getValue().translateOuter(translator));
         }
 
-        assert checkExpr();        
+        assert checkExpr();
     }
 
-    // извращенное множественное наследование
-    private QueryHashes<K> hashes = new QueryHashes<K>() {
-        protected int hashValue(HashContext hashContext) {
-            return query.hashContext(hashContext);
+    protected abstract QueryExpr<K,I,J> createThis(I query, Map<K,BaseExpr> group);
+
+    protected abstract class QueryInnerHashContext extends InnerHashContext {
+
+        protected abstract int hashOuterExpr(BaseExpr outerExpr);
+
+        public int hashInner(HashContext hashContext) {
+            int hash = 0;
+            for(Map.Entry<K,BaseExpr> groupExpr : group.entrySet())
+                hash += groupExpr.getKey().hashOuter(hashContext) ^ hashOuterExpr(groupExpr.getValue());
+            return query.hashOuter(hashContext) * 31 + hash;
         }
-        protected Map<K, BaseExpr> getGroup() {
-            return group;
+
+        public Set<KeyExpr> getKeys() {
+            return QueryExpr.this.getKeys();
         }
-    };
-    public int hashContext(final HashContext hashContext) {
-        return hashes.hashContext(hashContext);
     }
-    public int hash(HashContext hashContext) {
-        return hashes.hash(hashContext);
+
+    // вообще должно быть множественное наследование самого QueryExpr от TwinsInnerContext
+    protected class QueryInnerContext extends TwinsInnerContext<QueryInnerContext> {
+
+        // вообще должно быть множественное наследование от QueryInnerHashContext, правда нюанс что вместе с верхним своего же Inner класса
+        private final QueryInnerHashContext inherit = new QueryInnerHashContext() {
+            protected int hashOuterExpr(BaseExpr outerExpr) {
+                return outerExpr.hashCode();
+            }
+        };
+
+        public int hashInner(HashContext hashContext) {
+            return inherit.hashInner(hashContext);
+        }
+
+        public Set<KeyExpr> getKeys() {
+            return inherit.getKeys();
+        }
+
+        public Set<ValueExpr> getValues() {
+            return QueryExpr.this.getValues();
+        }
+
+        public QueryInnerContext translateInner(MapTranslate translate) {
+            return createThis(query.translateOuter(translate), (Map<K,BaseExpr>) translate.translateKeys(group)).innerContext;
+        }
+
+        private QueryExpr<K,I,J> getThis() {
+            return QueryExpr.this;
+        }
+
+        public boolean equalsInner(QueryInnerContext object) {
+            return QueryExpr.this.getClass()==object.getThis().getClass() &&  query.equals(object.getThis().query) && group.equals(object.getThis().group);
+        }
+    }
+    protected final QueryInnerContext innerContext = new QueryInnerContext();
+
+    // чисто для Lazy
+    @IdentityLazy
+    private Set<KeyExpr> getKeys() {
+        return getKeys(query, group);
+    }
+
+    @IdentityLazy
+    private Set<ValueExpr> getValues() {
+        return enumValues(group.keySet(), query.getEnum());
+    }
+
+    @IdentityLazy
+    public int hashOuter(final HashContext hashContext) {
+        return new QueryInnerHashContext() {
+            protected int hashOuterExpr(BaseExpr outerExpr) {
+                return outerExpr.hashOuter(hashContext);
+            }
+        }.hashInner(hashContext.values);
     }
 
     public void enumerate(ContextEnumerator enumerator) {
         enumerator.fill(group);
-        for(ValueExpr value : getValues())
+        for(ValueExpr value : innerContext.getValues())
             enumerator.add(value);
     }
 
@@ -78,11 +139,7 @@ public abstract class QueryExpr<K extends BaseExpr,I extends TranslateContext<I>
 
         assert hashCode()==groupExpr.hashCode();
 
-        for(MapTranslate translator : new MapHashIterable(this, groupExpr, false))
-            if(query.translate(translator).equals(groupExpr.query) &&
-                    translator.translateKeys(group).equals(groupExpr.group)) // нельзя reverse'ить
-                return true;
-        return false;
+        return innerContext.equals(groupExpr.innerContext);
     }
 
     public abstract J getGroupJoin();
@@ -91,18 +148,7 @@ public abstract class QueryExpr<K extends BaseExpr,I extends TranslateContext<I>
         return getGroupJoin();
     }
 
-    protected static <I extends TranslateContext<I>,K extends BaseExpr> Set<KeyExpr> getKeys(I expr, Map<K, BaseExpr> group) {
+    protected static <I extends OuterContext<I>,K extends BaseExpr> Set<KeyExpr> getKeys(I expr, Map<K, BaseExpr> group) {
         return enumKeys(group.keySet(),expr.getEnum());
     }
-
-    @IdentityLazy
-    public Set<KeyExpr> getKeys() {
-        return getKeys(query, group);
-    }
-
-    @IdentityLazy
-    public Set<ValueExpr> getValues() {
-        return enumValues(group.keySet(), query.getEnum());
-    }
-
 }

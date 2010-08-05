@@ -8,9 +8,9 @@ import platform.server.caches.ManualLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.data.expr.where.*;
 import platform.server.data.query.AbstractSourceJoin;
-import platform.server.data.query.innerjoins.ObjectJoinSets;
-import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.query.JoinData;
+import platform.server.data.query.innerjoins.KeyEquals;
+import platform.server.data.query.innerjoins.ObjectJoinSets;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.classes.ClassExprWhere;
@@ -116,6 +116,28 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         return result;
     }
 
+/*    // Метод переворачивающий AND и OR очень хорошо со сравнениями помогает
+    // X OR (Y AND Z) если X=>Y равен Y AND (X OR Z), по сути это реверсивная перестановка то есть для and'а в обратную сторону, то есть если ее делать всегда, то будет бесконечный цикл
+    // смысл ее в том что для X.FF будет более общее условие ff и нужно проверить если оно уменьшает X то переставить (при этом без рекурсивных changeMeans)
+    static Where changeMeans(Where where1, Where where2, boolean packExprs) {
+      AndObjectWhere[] wheres1 = where1.getAnd();
+      AndObjectWhere[] wheres2 = where2.getAnd();
+      for(int i=0;i<wheres1.length;i++)
+          for(int j=0;j<wheres2.length;j++) {
+              OrObjectWhere[] orWheres = wheres2[j].getOr();
+              for(int k=0;k<orWheres.length;k++) {
+                  if(wheres1[i].means(orWheres[k])) { // значит можно поменять местами
+                      Where andSiblings = toWhere(siblings(orWheres, k), wheres2[j]);
+                      Where orSiblings = toWhere(BaseUtils.add(siblings(wheres1,i),siblings(wheres2,j),instancer));
+                      if(!BaseUtils.hashEquals(wheres1[i], // если сокращается хоть что-то, меняем местами
+                              wheres1[i].followFalse(orCheck(orCheck(andSiblings,orWheres[k].not()),orSiblings), packExprs, new FollowChange())))
+                          return orSiblings.or(orWheres[k].and(wheres1[i].or(andSiblings, packExprs), packExprs), packExprs);
+                  }
+              }
+          }
+      return null;
+    }
+  */
     private static CheckWhere orCheckNull(CheckWhere where1, CheckWhere where2) {
         if(where2==null)
             return where1;
@@ -324,28 +346,6 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         return orCheck(where1, where2).checkTrue();        
     }
 
-    /*    // Метод переворачивающий AND и OR очень хорошо со сравнениями помогает
-      // X OR (Y AND Z) если X=>Y равен Y AND (X OR Y), по сути это реверсивная перестановка то есть для and'а в обратную сторону, то есть если ее делать всегда
-      // то будет бесконечный цикл, поэтому важно проверить что
-      static Where changeMeans(Where where1, Where where2, boolean packExprs) {
-          AndObjectWhere[] wheres1 = where1.getAnd();
-          AndObjectWhere[] wheres2 = where2.getAnd();
-          for(int i=0;i<wheres1.length;i++)
-              for(int j=0;j<wheres2.length;j++) {
-                  OrObjectWhere[] orWheres = wheres2[j].getOr();
-                  for(int k=0;k<orWheres.length;k++) {
-                      if(wheres1[i].means(orWheres[k])) { // значит можно поменять местами
-                          Where andSiblings = toWhere(siblings(orWheres, k), wheres2[j]);
-                          Where orSiblings = toWhere(BaseUtils.add(siblings(wheres1,i),siblings(wheres2,j),instancer));
-                          if(!BaseUtils.hashEquals(wheres1[i], // если сокращается хоть что-то, меняем местами
-                                  followFalse(wheres1[i],opPlain(opPlain(andSiblings,orWheres[k].not()),orSiblings), FollowDeep.inner(packExprs), false)))
-                              return orSiblings.or(orWheres[k].and(wheres1[i].or(andSiblings, packExprs), packExprs), packExprs);
-                      }
-                  }
-              }
-          return null;
-      }
-    */
     public boolean directMeansFrom(AndObjectWhere where) {
         for(AndObjectWhere meanWhere : wheres)
             if(meanWhere.directMeansFrom(where))
@@ -430,9 +430,9 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         }
   */
 
-//            for(int i=0;i<numWheres;i++)
-//                if(wheres[i] instanceof CompareWhere) // если есть хоть один Compare, запускаем дальше чтобы избавится от них
-//                    return ((CompareWhere)wheres[i]).checkTrue(siblingsWhere(wheres,i,numWheres));
+/*        for(int i=0;i<numWheres;i++)
+            if(wheres[i] instanceof CompareWhere) // если есть хоть один Compare, запускаем дальше чтобы избавится от них
+                return ((CompareWhere)wheres[i]).checkTrue(toWhere(siblings(wheres,i,numWheres),true));*/
 
         // сначала объединим все EqualsWhere в группы - если найдем разные ValueExpr'ы в группе вывалимся, assert что нету CompareWhere
         EqualMap equals = new EqualMap(numWheres*2);
@@ -520,10 +520,10 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
     @ParamLazy
-    public Where translate(MapTranslate translator) {
+    public Where translateOuter(MapTranslate translator) {
         AndObjectWhere[] resultWheres = new AndObjectWhere[wheres.length];
         for(int i=0;i<wheres.length;i++)
-            resultWheres[i] = (AndObjectWhere) wheres[i].translate(translator);
+            resultWheres[i] = (AndObjectWhere) wheres[i].translateOuter(translator);
         return toWhere(resultWheres);
     }
     @ParamLazy

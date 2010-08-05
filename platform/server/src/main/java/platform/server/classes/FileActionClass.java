@@ -1,22 +1,14 @@
 package platform.server.classes;
 
-import net.sf.jasperreports.engine.JRAlignment;
 import platform.base.Pair;
 import platform.interop.Data;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.view.form.client.report.ReportDrawField;
 
-import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.sql.Array;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.Format;
 import java.util.HashMap;
-import java.util.List;
 
 public class FileActionClass extends ActionClass {
 

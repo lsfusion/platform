@@ -1,9 +1,9 @@
 package platform.server.data.where;
 
+import platform.base.BaseUtils;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.innerjoins.KeyEquals;
-import platform.base.BaseUtils;
 
 
 abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere<ObjectWhere>,AndObjectWhere<ObjectWhere> {
