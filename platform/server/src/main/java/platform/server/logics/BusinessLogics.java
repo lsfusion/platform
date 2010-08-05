@@ -27,10 +27,7 @@ import platform.server.logics.property.*;
 import platform.server.logics.property.actions.AddObjectActionProperty;
 import platform.server.logics.property.actions.DeleteObjectActionProperty;
 import platform.server.logics.property.actions.ImportFromExcelActionProperty;
-import platform.server.logics.property.derived.CycleGroupProperty;
-import platform.server.logics.property.derived.DerivedProperty;
-import platform.server.logics.property.derived.DistrGroupProperty;
-import platform.server.logics.property.derived.MaxChangeProperty;
+import platform.server.logics.property.derived.*;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.scheduler.Scheduler;
 import platform.server.logics.table.ImplementTable;
@@ -279,6 +276,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP equals2, diff2;
     protected LP divideDouble;
     protected LP string2;
+    protected LP concat2;
 
     protected LP vtrue, vzero;
 
@@ -342,6 +340,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         and1 = addAFProp(false);
         andNot1 = addAFProp(true);
         string2 = addSProp(2);
+        concat2 = addCCProp(2);
         groeq2 = addCFProp(Compare.GREATER_EQUALS);
         greater2 = addCFProp(Compare.GREATER);
         less2 = addCFProp(Compare.LESS);
@@ -1085,6 +1084,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected LP addAFProp(String sID, boolean... nots) {
         return addProperty(null, new LP<AndFormulaProperty.Interface>(new AndFormulaProperty(sID, nots)));
+    }
+
+    protected LP addCCProp(int paramCount) {
+        return addProperty(null, new LP<ConcatenateProperty.Interface>(new ConcatenateProperty(paramCount)));
     }
 
     protected LP addProp(Property<? extends PropertyInterface> prop) {

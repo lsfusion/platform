@@ -28,7 +28,7 @@ public class ConcatenateProperty extends FormulaProperty<ConcatenateProperty.Int
         return interfaces;
     }
 
-    protected ConcatenateProperty(int intNum) {
+    public ConcatenateProperty(int intNum) {
         super("CONCATENATE_"+intNum, "Concatenate " + intNum, getInterfaces(intNum));
     }
 

@@ -175,6 +175,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
                                dateMoreEquals, 1, 2, 3, 4,
                                addJProp(and1, equals2, 1, 3, equals2, 2, 4), 1, 2, 3, 4
                             );
+        LP greater22 = addJProp(greater2, concat2, 1, 2, concat2, 3, 4);
 
         //args: person, month, year
         isWorkingMonthForPerson = addJProp("isWorkingMonthForPerson", "Рабочий месяц", andNot1,
@@ -182,7 +183,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
                 addJProp(dateMore, 2, 3, personEndWorkMonth, 1, personEndWorkYear, 1), 1, 2, 3
         );
 
-        addConstraint(addJProp("Время окончания работы меньше, чем время начала", dateMore,
+        addConstraint(addJProp("Время окончания работы меньше, чем время начала", greater22,
                 personStartWorkMonth, 1, personStartWorkYear, 1,
                 personEndWorkMonth, 1, personEndWorkYear, 1), false);
 
