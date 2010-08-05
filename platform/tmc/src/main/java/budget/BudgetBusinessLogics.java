@@ -175,17 +175,19 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
                                dateMoreEquals, 1, 2, 3, 4,
                                addJProp(and1, equals2, 1, 3, equals2, 2, 4), 1, 2, 3, 4
                             );
+        LP less22 = addJProp(less2, concat2, 1, 2, concat2, 3, 4);
         LP greater22 = addJProp(greater2, concat2, 1, 2, concat2, 3, 4);
 
         //args: person, month, year
-        isWorkingMonthForPerson = addJProp("isWorkingMonthForPerson", "Рабочий месяц", andNot1,
-                addJProp(dateMoreEquals, 2, 3, personStartWorkMonth, 1, personStartWorkYear, 1), 1, 2, 3,
-                addJProp(dateMore, 2, 3, personEndWorkMonth, 1, personEndWorkYear, 1), 1, 2, 3
+        isWorkingMonthForPerson = addJProp("isWorkingMonthForPerson", "Рабочий месяц", and(false, true, true),
+                is(absMonth), 2, is(IntegerClass.instance), 3,
+                addJProp(less22, 3, 2, personStartWorkYear, 1, personStartWorkMonth, 1), 1, 2, 3,
+                addJProp(greater22, 3, 2, personEndWorkYear, 1, personEndWorkMonth, 1), 1, 2, 3
         );
 
         addConstraint(addJProp("Время окончания работы меньше, чем время начала", greater22,
-                personStartWorkMonth, 1, personStartWorkYear, 1,
-                personEndWorkMonth, 1, personEndWorkYear, 1), false);
+                personStartWorkYear, 1, personStartWorkMonth, 1,
+                personEndWorkYear, 1, personEndWorkMonth, 1), false);
 
         LP extraSum =  addJProp(and1, addJProp(multiplyDouble2, outSum, 1, extraRate, 1), 1, is(extraCost), 1);
         LP extraMonthTotal = addSGProp(extraGroup, "Затрачено", extraSum, outMonth, 1, outYear, 1, operationDepartment, 1);
