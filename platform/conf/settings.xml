@@ -14,9 +14,9 @@
 	<bean id="priceImport" class="tmc.integration.imp.PriceImportTask">
 		<constructor-arg><ref bean="businessLogics"/></constructor-arg>
 		<constructor-arg><list><value>imp</value></list></constructor-arg>
-		<constructor-arg><list><value type="int">4</value></list></constructor-arg>
-		<constructor-arg><list><value type="int">236</value></list></constructor-arg>
-        <constructor-arg><list><value type="int">1213</value></list></constructor-arg>
+		<constructor-arg><list><value type="int">9</value></list></constructor-arg>
+		<constructor-arg><list><value type="int">10</value></list></constructor-arg>
+        <constructor-arg><list><value type="int">12</value></list></constructor-arg>
 	</bean>
 
     <bean id="saleExport" class="tmc.integration.exp.SaleExportTask">
@@ -42,5 +42,17 @@
     	    <entry><key><value>cashregister</value></key><value>1310,1325,1345,1365</value></entry>
 		</map></property>
 	</bean>
+
+    <!--bean id="dataAdapter" class="platform.server.data.sql.PostgreDataAdapter">
+        <constructor-arg><value>bdg</value></constructor-arg>
+        <constructor-arg><value>localhost</value></constructor-arg>
+        <constructor-arg><value>postgres</value></constructor-arg>
+        <constructor-arg><value>11111</value></constructor-arg>
+    </bean>
+
+    <bean id="businessLogics" class="budget.BudgetBusinessLogics">
+        <constructor-arg><ref bean="dataAdapter"/></constructor-arg>
+        <constructor-arg type="int"><value>7652</value></constructor-arg>
+    </bean-->
 
 </beans>
