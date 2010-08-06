@@ -2260,12 +2260,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         permitCachRegister.navigator.permit(returnSaleCheckRetailArticleForm);
         permitCachRegister.navigator.permit(cachRegManagementForm);
 
-        SecurityPolicy docViewDeny = addPolicy("Запретить просмотр документов", "Запрещает просмотр свойств документов.");
-        docViewDeny.property.view.deny(documentGroup.getProperties());
-
-        SecurityPolicy docChangeDeny = addPolicy("Запретить редактирование документов", "Запрещает редактирование свойств документов.");
-        docChangeDeny.property.change.deny(documentGroup.getProperties());
-
         SecurityPolicy readOnlyPolicy = addPolicy("Запретить редактирование всех свойств", "Режим \"только чтение\". Запрещает редактирование всех свойств на формах.");
         readOnlyPolicy.property.change.defaultPermission = false;
         readOnlyPolicy.cls.edit.add.defaultPermission = false;
