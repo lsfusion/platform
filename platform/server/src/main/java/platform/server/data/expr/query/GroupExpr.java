@@ -154,12 +154,22 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
     @ManualLazy
     @Override
     public Expr packFollowFalse(Where falseWhere) {
+        // с рекурсией, помогает бывает, даже иногда в null
+        Expr packInner = packInnerFollowFalse(falseWhere);
+        if(packInner!=this) // если изменился
+            return packInner.followFalse(falseWhere, true);
+        else
+            return this;
+    }
+
+    // без рекурсии
+    public Expr packInnerFollowFalse(Where falseWhere) {
         Map<BaseExpr, Expr> packGroup = packFollowFalse(group, falseWhere);
 
         Where outerWhere = falseWhere.not();
         Map<BaseExpr, BaseExpr> outerExprValues = outerWhere.getExprValues();
         if(!(BaseUtils.hashEquals(packGroup,group) && Collections.disjoint(group.values(), outerExprValues.keySet()))) // если простой пак
-            return createOuterGroupCases(packGroup, query, isMax(), outerExprValues).followFalse(falseWhere, true);
+            return createOuterGroupCases(packGroup, query, isMax(), outerExprValues);
 
         ClassExprWhere packClasses = getJoinsWhere().and(outerWhere).getClassWhere().mapBack(group).
                     and(getWhere(group.keySet()).getClassWhere());
@@ -178,22 +188,22 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
         if(packResult!=null)
             return packResult;
 
-        for(GroupExpr groupTwin : groupTwins) {
-            MapTranslate mapTranslate = innerContext.mapInner(groupTwin.innerContext, false); // должны маппится
-            ClassExprWhere twinPackClasses = packClasses.translate(mapTranslate);
-            for(ClassExprWhere packed : groupTwin.packNoChange)
-                if(packed.means(twinPackClasses)) { // если более общим пакуем
-                    addNoChange(packClasses);
-                    return this;
-                }
+        for(GroupExpr groupTwin : groupTwins)
+            if(groupTwin!=this) {
+                MapTranslate mapTranslate = innerContext.mapInner(groupTwin.innerContext, false); // должны маппится
+                ClassExprWhere twinPackClasses = packClasses.translate(mapTranslate);
+                for(ClassExprWhere packed : groupTwin.packNoChange)
+                    if(packed.means(twinPackClasses)) { // если более общим пакуем
+                        addNoChange(packClasses);
+                        return this;
+                    }
 
-            packResult = groupTwin.packClassExprs.get(twinPackClasses);
-            if(packResult!=null) {
-                packResult = packResult.translateOuter(mapTranslate.reverseMap());
-                packClassExprs.put(packClasses, packResult);
-                return packResult;
+                packResult = groupTwin.packClassExprs.get(twinPackClasses);
+                if(packResult!=null) {
+                    packClassExprs.put(packClasses, packResult);
+                    return packResult;
+                }
             }
-        }
         groupTwins.add(this);
 
         Where packWhere = packClasses.getPackWhere();
@@ -206,7 +216,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
             addNoChange(packClasses);
             return this;
         } else {
-            Expr result = createInner(packInnerGroup, packExpr, isMax()).followFalse(falseWhere, true);
+            Expr result = createInner(packInnerGroup, packExpr, isMax());
             packClassExprs.put(packClasses, result);
             return result;
         }
