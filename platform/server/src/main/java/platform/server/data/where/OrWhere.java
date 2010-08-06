@@ -16,6 +16,7 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
 import platform.server.data.where.classes.PackClassWhere;
+import platform.server.Settings;
 
 
 public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhere<AndWhere> {
@@ -33,25 +34,6 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
             return new AndObjectWhere[size];
         }
     };
-
-    // выполняет or двух where в правильной форме получая where в правильной форме 
-    public static Where oldor(Where where1,Where where2,boolean pack) {
-
-        if(where1.isFalse() || where2.isTrue()) return where2;
-        if(where2.isFalse() || where1.isTrue()) return where1;
-        
-        Where followWhere1 = where1.oldff(where2, false, pack, new FollowChange());
-        while(true) {
-            FollowChange change = new FollowChange();
-            Where followWhere2 = where2.oldff(followWhere1, true, pack, change);
-            if(change.type != FollowType.WIDE && change.type != FollowType.DIFF) {
-                assert BaseUtils.hashEquals(followWhere1.oldff(followWhere2, true, pack, new FollowChange()),followWhere1);
-                return orPairs(followWhere2, followWhere1);
-            } else { // поменяем followWhere1 и followWhere2 местами
-                where2 = followWhere1; followWhere1 = followWhere2;
-            }
-        }
-    }
 
     public static Where or(Where where1,Where where2,boolean pack) {
 
@@ -75,7 +57,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
             }
         }
     }
-    
+
     // выполняет or двух where в правильной форме assert'утых что where1.ff(where2)==where1, и where2.ff(where1)==where2
     // перестраивает дерево - выделяя скобки, decision'ы,
     public static Where orPairs(Where where1,Where where2) {
@@ -87,146 +69,75 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         AndObjectWhere[] wheres2 = where2.getAnd();
 
         // пытаем вытащить скобки/decision'ы
-        Where[] pairedWheres = new Where[wheres1.length]; int pairs = 0;
-        AndObjectWhere[] rawWheres1 = new AndObjectWhere[wheres1.length]; int num1 = 0;
+        Where[] pairedWheres = new Where[wheres1.length]; int pairs = 0; CheckWhere checkPaired = Where.FALSE;
+        AndObjectWhere[] rawWheres1 = wheres1.clone();
         AndObjectWhere[] rawWheres2 = wheres2.clone();
-        for(AndObjectWhere andWhere1 : wheres1) {
-            boolean paired = false;
+        for(int j=0;j<rawWheres1.length;j++) {
             for(int i=0;i<rawWheres2.length;i++)
                 if(rawWheres2[i]!=null) {
-                    Where pairedWhere = rawWheres2[i].pairs(andWhere1);
+                    Where pairedWhere = rawWheres2[i].pairs(rawWheres1[j]);
+
+                    if(Settings.RESTRUCT_WHERE_ON_MEANS && pairedWhere==null) {
+                        // нужно считать sibling'и
+                        AndObjectWhere[] unpairedWheres = new AndObjectWhere[wheres2.length+wheres1.length-2*pairs-2]; int numu = 0;
+                        for(int k=0;k<rawWheres1.length;k++)
+                            if(k!=j && rawWheres1[k]!=null) unpairedWheres[numu++] = rawWheres1[k];
+                        for(int k=0;k<rawWheres2.length;k++)
+                            if(k!=i && rawWheres2[k]!=null) unpairedWheres[numu++] = rawWheres2[k];
+                        CheckWhere orSiblings = orCheck(checkPaired, toWhere(unpairedWheres));
+                        
+                        pairedWhere = AndWhere.changeMeans(rawWheres2[i], rawWheres1[j], orSiblings, false);
+                        if(pairedWhere==null)
+                            pairedWhere = AndWhere.changeMeans(rawWheres1[j], rawWheres2[i], orSiblings, false);
+                    }
+
                     if(pairedWhere!=null) {
-                        pairedWheres[pairs++] = pairedWhere;
+                        pairedWheres[pairs++] = pairedWhere; if(Settings.RESTRUCT_WHERE_ON_MEANS) checkPaired = checkPaired.orCheck(pairedWhere);
                         rawWheres2[i] = null;
-                        paired = true;
+                        rawWheres1[j] = null;
                         break;
                     }
                 }
-            if(!paired) rawWheres1[num1++] = andWhere1;
         }
 
-        AndObjectWhere[] unpairedWheres = new AndObjectWhere[wheres2.length-pairs+num1]; int num2 = 0;
-        for(AndObjectWhere andWhere2 : rawWheres2)
-            if(andWhere2!=null) unpairedWheres[num2++] = andWhere2;
-        System.arraycopy(rawWheres1, 0, unpairedWheres, num2, num1);
-
+        AndObjectWhere[] unpairedWheres = new AndObjectWhere[wheres2.length+wheres1.length-2*pairs]; int numu = 0;
+        for(AndObjectWhere andWhere : rawWheres1)
+            if(andWhere!=null) unpairedWheres[numu++] = andWhere;
+        for(AndObjectWhere andWhere : rawWheres2)
+            if(andWhere!=null) unpairedWheres[numu++] = andWhere;
         Where result = toWhere(unpairedWheres);
         for(int i=0;i<pairs;i++)
             result = orPairs(result, pairedWheres[i]);
         return result;
     }
 
-/*    // Метод переворачивающий AND и OR очень хорошо со сравнениями помогает
-    // X OR (Y AND Z) если X=>Y равен Y AND (X OR Z), по сути это реверсивная перестановка то есть для and'а в обратную сторону, то есть если ее делать всегда, то будет бесконечный цикл
-    // смысл ее в том что для X.FF будет более общее условие ff и нужно проверить если оно уменьшает X то переставить (при этом без рекурсивных changeMeans)
-    static Where changeMeans(Where where1, Where where2, boolean packExprs) {
-      AndObjectWhere[] wheres1 = where1.getAnd();
-      AndObjectWhere[] wheres2 = where2.getAnd();
-      for(int i=0;i<wheres1.length;i++)
-          for(int j=0;j<wheres2.length;j++) {
-              OrObjectWhere[] orWheres = wheres2[j].getOr();
-              for(int k=0;k<orWheres.length;k++) {
-                  if(wheres1[i].means(orWheres[k])) { // значит можно поменять местами
-                      Where andSiblings = toWhere(siblings(orWheres, k), wheres2[j]);
-                      Where orSiblings = toWhere(BaseUtils.add(siblings(wheres1,i),siblings(wheres2,j),instancer));
-                      if(!BaseUtils.hashEquals(wheres1[i], // если сокращается хоть что-то, меняем местами
-                              wheres1[i].followFalse(orCheck(orCheck(andSiblings,orWheres[k].not()),orSiblings), packExprs, new FollowChange())))
-                          return orSiblings.or(orWheres[k].and(wheres1[i].or(andSiblings, packExprs), packExprs), packExprs);
-                  }
-              }
-          }
-      return null;
-    }
-  */
+    /*    // Метод переворачивающий AND и OR очень хорошо со сравнениями помогает
+      // X OR (Y AND Z) если X=>Y равен Y AND (X OR Z), по сути это реверсивная перестановка то есть для and'а в обратную сторону, то есть если ее делать всегда, то будет бесконечный цикл
+      // смысл ее в том что для X.FF будет более общее условие ff и нужно проверить если оно уменьшает X то переставить (при этом без рекурсивных changeMeans)
+      static Where changeMeans(Where where1, Where where2, boolean packExprs) {
+        AndObjectWhere[] wheres1 = where1.getAnd();
+        AndObjectWhere[] wheres2 = where2.getAnd();
+        for(int i=0;i<wheres1.length;i++)
+            for(int j=0;j<wheres2.length;j++) {
+                OrObjectWhere[] orWheres = wheres2[j].getOr();
+                for(int k=0;k<orWheres.length;k++) {
+                    if(wheres1[i].means(orWheres[k])) { // значит можно поменять местами
+                        Where andSiblings = toWhere(siblings(orWheres, k), wheres2[j]);
+                        Where orSiblings = toWhere(BaseUtils.add(siblings(wheres1,i),siblings(wheres2,j),instancer));
+                        if(!BaseUtils.hashEquals(wheres1[i], // если сокращается хоть что-то, меняем местами
+                                wheres1[i].followFalse(orCheck(orCheck(andSiblings,orWheres[k].not()),orSiblings), packExprs, new FollowChange())))
+                            return orSiblings.or(orWheres[k].and(wheres1[i].or(andSiblings, packExprs), packExprs), packExprs);
+                    }
+                }
+            }
+        return null;
+      }
+    */
     private static CheckWhere orCheckNull(CheckWhere where1, CheckWhere where2) {
         if(where2==null)
             return where1;
         else
             return orCheck(where1,where2);        
-    }
-
-    public Where oldff(CheckWhere falseWhere, boolean sureNotTrue, boolean pack, FollowChange change) {
-
-        if(isFalse()) return this;
-        if(falseWhere.isFalse() && !pack) return this;
-        if(falseWhere.isTrue()) {
-            change.type = FollowType.NARROW;
-            return FALSE;
-        }
-
-        if(!sureNotTrue) {
-            if(checkTrue(this,falseWhere)) {
-                change.type = FollowType.WIDE;
-                return TRUE;
-            }
-            sureNotTrue = true;
-        }
-
-        // нужно минимизировать orCheck'и
-        int N = 2; while(N<wheres.length) N = N*2;
-        CheckWhere[] siblingNewWheres = new CheckWhere[N * 2]; // хранит матрицы по компонентам
-
-        FollowType changeType = FollowType.EQUALS;
-
-        int i=0;
-        int in=0; // количество сколько изменилось
-        int ilast = -1; // какой элемент пропускfnm
-        while(true) {
-            if(i!=ilast) {
-                int Ni=N+i;
-                
-                CheckWhere siblingWhere = Where.FALSE;
-                for(int j=Ni;j>1;j=j/2) // расчитываем siblings для изменившихся условий
-                    siblingWhere = orCheckNull(siblingWhere,siblingNewWheres[(j%2==0?j+1:j-1)]); // берем siblings
-
-                AndObjectWhere[] siblingStatics = new AndObjectWhere[wheres.length-in-(siblingNewWheres[Ni]!=null?0:1)]; int sw = 0;
-                for(int j=0;j<wheres.length;j++) // расчитываем siblings для неизменившихся условий
-                    if(j!=i && siblingNewWheres[N+j]==null)
-                        siblingStatics[sw++] = wheres[j];
-                siblingWhere = orCheck(siblingWhere,toWhere(siblingStatics));
-
-                FollowChange followChange = new FollowChange();
-                Where followWhere = (siblingNewWheres[Ni]==null?wheres[i]:(Where)siblingNewWheres[Ni]).oldff(orCheck(siblingWhere, falseWhere), sureNotTrue, pack, followChange);
-                changeType = changeType.or(followChange.type);
-                if(followChange.type!=FollowType.EQUALS) { // если шире стал, изменился, и даже если narrow'е стал (потому как может каскад вызвать)
-                    if(followWhere.isTrue()) {
-                        change.type = FollowType.WIDE;
-                        return TRUE; // простое ускорение
-                    }
-                    if(siblingNewWheres[Ni]==null) in++;
-                    siblingNewWheres[Ni] = followWhere;
-                    while(Ni/2>1) { // пересчитываем sibling'и new
-                        siblingNewWheres[Ni/2] = orCheckNull(siblingNewWheres[Ni], siblingNewWheres[(Ni%2==0?Ni+1:Ni-1)]);
-                        Ni=Ni/2;
-                    }
-
-                    if(followChange.type!=FollowType.NARROW) { // начинаем заново, потому как могло повлиять на уже обработанные условия
-                        ilast=i; i=0; }
-                    continue;
-                }
-            }
-            i++;
-            if(i>=wheres.length)
-                break;
-        }
-
-        Where result = Where.FALSE;
-        AndObjectWhere[] staticWheres = new AndObjectWhere[wheres.length-in];
-        int sn = 0;
-        for(int j=0;j<wheres.length;j++)
-            if(siblingNewWheres[N+j]!=null)
-                result = orPairs(result, (Where) siblingNewWheres[N+j]);
-            else
-                staticWheres[sn++] = wheres[j];
-        result = orPairs(result,toWhere(staticWheres));
-
-        if(pack && (changeType == FollowType.WIDE || changeType == FollowType.DIFF) && checkTrue(result, falseWhere)) { // follow мог упаковаться и соответственно изменится и надо проверить все на checkTrue
-            change.type = FollowType.WIDE;
-            return TRUE;
-        }
-
-        change.type = changeType;       
-        return result;
     }
 
     public Where followFalse(CheckWhere falseWhere, boolean pack, FollowChange change) {
@@ -328,13 +239,8 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
     // выполняет основные проверки на directMeansFrom
     public static CheckWhere orCheck(CheckWhere where1,CheckWhere where2) {
 
-/*        if(where1.isFalse() || where2.isTrue()) return where2;
-        if(where2.isFalse() || where1.isTrue()) return where1;
-
-        return toWhere(BaseUtils.add(where1.getAnd(), where2.getAnd(), instancer), true);
-  */
-        CheckWhere followWhere1 = checkff(where1, where2);
-        CheckWhere followWhere2 = checkff(where2, followWhere1);
+        CheckWhere followWhere1 = Settings.CHECK_FOLLOWS_WHEN_OBJECTS?where1:checkff(where1, where2);
+        CheckWhere followWhere2 = Settings.CHECK_FOLLOWS_WHEN_OBJECTS?where2:checkff(where2, followWhere1);
 
         if(followWhere1.isFalse() || followWhere2.isTrue()) return followWhere2;
         if(followWhere2.isFalse() || followWhere1.isTrue()) return followWhere1;
@@ -402,37 +308,38 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
 
     // на самом деле wheres чисто из object where состоит
     static boolean checkObjectTrue(AndObjectWhere[] wheres, int numWheres) {
-        // без checkff
-/*        AndObjectWhere[] noFollowWheres = wheres.clone(); int nf = 0;
-        for(int i=0;i<numWheres;i++)
-            if(noFollowWheres[i]!=null) {
-                int j=0;
-                for(;j<numWheres;j++)
-                    if(i!=j && noFollowWheres[j]!=null) // если !where => followWhere или !followWhere => where то return True.
-                        if(noFollowWheres[i] instanceof DataWhere) {
-                            if (noFollowWheres[j] instanceof NotWhere && (((NotWhere) noFollowWheres[j]).where).follow((DataWhere) noFollowWheres[i]))
-                                return true;
-                            if(noFollowWheres[j] instanceof DataWhere && ((DataWhere) noFollowWheres[i]).follow((DataWhere)noFollowWheres[j])) {
-                                noFollowWheres[i] = null; nf++;
-                                break;
-                            }
-                        } else
-                            if(noFollowWheres[j] instanceof NotWhere && ((NotWhere) noFollowWheres[j]).where.follow(((NotWhere)noFollowWheres[i]).where)) {
-                                noFollowWheres[i] = null; nf++;
-                                break;
-                            }
+        if(Settings.CHECK_FOLLOWS_WHEN_OBJECTS) {
+            AndObjectWhere[] noFollowWheres = wheres.clone(); int nf = 0;
+            for(int i=0;i<numWheres;i++)
+                if(noFollowWheres[i]!=null) {
+                    int j=0;
+                    for(;j<numWheres;j++)
+                        if(i!=j && noFollowWheres[j]!=null) // если !where => followWhere или !followWhere => where то return True.
+                            if(noFollowWheres[i] instanceof DataWhere) {
+                                if (noFollowWheres[j] instanceof NotWhere && (((NotWhere) noFollowWheres[j]).where).follow((DataWhere) noFollowWheres[i]))
+                                    return true;
+                                if(noFollowWheres[j] instanceof DataWhere && ((DataWhere) noFollowWheres[i]).follow((DataWhere)noFollowWheres[j])) {
+                                    noFollowWheres[i] = null; nf++;
+                                    break;
+                                }
+                            } else
+                                if(noFollowWheres[j] instanceof NotWhere && ((NotWhere) noFollowWheres[j]).where.follow(((NotWhere)noFollowWheres[i]).where)) {
+                                    noFollowWheres[i] = null; nf++;
+                                    break;
+                                }
+                }
+            if(nf>0) {
+                wheres = new AndObjectWhere[numWheres-nf]; numWheres = 0;
+                for(int i=0;i<noFollowWheres.length;i++)
+                    if(noFollowWheres[i]!=null)
+                        wheres[numWheres++] = noFollowWheres[i];
             }
-        if(nf>0) {
-            wheres = new AndObjectWhere[numWheres-nf]; numWheres = 0;
-            for(int i=0;i<noFollowWheres.length;i++)
-                if(noFollowWheres[i]!=null)
-                    wheres[numWheres++] = noFollowWheres[i];
         }
-  */
 
-/*        for(int i=0;i<numWheres;i++)
-            if(wheres[i] instanceof CompareWhere) // если есть хоть один Compare, запускаем дальше чтобы избавится от них
-                return ((CompareWhere)wheres[i]).checkTrue(toWhere(siblings(wheres,i,numWheres),true));*/
+        if(!Settings.SIMPLE_CHECK_COMPARE)
+            for(int i=0;i<numWheres;i++)
+                if(wheres[i] instanceof CompareWhere) // если есть хоть один Compare, запускаем дальше чтобы избавится от них
+                    return ((CompareWhere)wheres[i]).checkTrue(toWhere(siblings(wheres,i,numWheres),true));
 
         // сначала объединим все EqualsWhere в группы - если найдем разные ValueExpr'ы в группе вывалимся, assert что нету CompareWhere
         EqualMap equals = new EqualMap(numWheres*2);
@@ -464,23 +371,23 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
                     return true;
             }
 
-        // эвристика - для CompareWhere проверяем "единичные" следствия - частный случай самой верхней проверки (CompareWhere.checkTrue)
-        for(int i=0;i<numWheres;i++) // вообще говоря исключая логику транзитивности такой подход практически эквивалентен верхней проверке (если только не будет скажем A=B, A>B, B>A)
-            if(wheres[i] instanceof CompareWhere) {
-                Equal equal1, equal2; Compare compare1, compare2;
-                CompareWhere compareWhere = (CompareWhere) wheres[i];
-                if((equal1=equals.get(compareWhere.operator1))!=null) {
-                    if(compareWhere instanceof EqualsWhere) {
-                        if(equal1.contains(compareWhere.operator2))
-                            return true;
+        if(!Settings.SIMPLE_CHECK_COMPARE) { // эвристика - для CompareWhere проверяем "единичные" следствия - частный случай самой верхней проверки (CompareWhere.checkTrue)
+            for(int i=0;i<numWheres;i++) // вообще говоря исключая логику транзитивности такой подход практически эквивалентен верхней проверке (если только не будет скажем A=B, A>B, B>A)
+                if(wheres[i] instanceof CompareWhere) {
+                    Equal equal1, equal2; Compare compare1, compare2;
+                    CompareWhere compareWhere = (CompareWhere) wheres[i];
+                    if((equal1=equals.get(compareWhere.operator1))!=null) {
+                        if(compareWhere instanceof EqualsWhere) {
+                            if(equal1.contains(compareWhere.operator2))
+                                return true;
+                        }
+                        else
+                            if((equal2 = equals.get(compareWhere.operator2))!=null && !equal1.equals(equal2) && (compare1 = compare.get(equal1))!=null &&
+                                    (compare2 = compare.get(equal2))!=null && compare1.greater.contains(compare2))
+                                return true;
                     }
-                    else
-                        if((equal2 = equals.get(compareWhere.operator2))!=null && !equal1.equals(equal2) && (compare1 = compare.get(equal1))!=null &&
-                                (compare2 = compare.get(equal2))!=null && compare1.greater.contains(compare2))
-                            return true;
                 }
-            }
-
+        }
 
         return false;
     }

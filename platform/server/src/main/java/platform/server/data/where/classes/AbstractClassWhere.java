@@ -31,8 +31,6 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         public AndClassSet get(K key) {
             AndClassSet result = super.get(key);
             assert BusinessLogics.checkClasses || result!=null;
-            if(result==null)
-                result = result;
             return result;
         }
 

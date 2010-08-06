@@ -9,6 +9,7 @@ import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.property.*;
 import platform.server.session.*;
+import platform.server.Settings;
 
 import java.util.*;
 
@@ -88,10 +89,10 @@ public class DistrGroupProperty<T extends PropertyInterface, L extends PropertyI
         Expr distributeExpr = distribute.mapExpr(mapKeys, new PropertyChangesModifier(modifier, propertyChanges), null);
         DataChanges dataChanges = groupProperty.getDataChanges(new PropertyChange<T>(mapKeys, distributeExpr, distributeExpr.getWhere().or(nullWhere)), null, modifier).changes;
         if(changedWhere!=null) {
-            if(SIMPLE_SCHEME)
-                changedWhere.add(propertyChange.where);
-            else
+            if (Settings.CALCULATE_GROUP_DATA_CHANGED)
                 getExpr(propertyChange.mapKeys, new DataChangesModifier(modifier, dataChanges), changedWhere);
+            else
+                changedWhere.add(propertyChange.where);
         }
         return new MapDataChanges<Interface<T>>(dataChanges);
     }

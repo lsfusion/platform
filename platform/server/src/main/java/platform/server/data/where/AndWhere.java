@@ -39,13 +39,6 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
         return wheres;
     }
 
-    public Where oldff(CheckWhere falseWhere, boolean sureNotTrue, boolean pack, FollowChange change) {
-        // на checkTrue нет смысла проверять, потому как or равенства true эквивалентно or true каждого, а значит внутренний ff их сам уберет 
-        Where result = not().oldff(falseWhere, false, pack, change).not();
-        change.not();
-        return result;
-    }
-
     public Where followFalse(CheckWhere falseWhere, boolean pack, FollowChange change) {
         Where result = not().followFalse(falseWhere, pack, change).not();
         change.not();
@@ -163,6 +156,10 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
         return decisions;
     }
 
+    public static Where andPairs(Where where1, Where where2) {
+        return OrWhere.orPairs(where1.not(), where2.not()).not();
+    }
+
     public Where pairs(AndObjectWhere pair) {
 
         if(pair instanceof ObjectWhere) return null;
@@ -173,7 +170,7 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
             if(paired.common.length==pairAnd.wheres.length || paired.getDiff1().length==0) // тогда не скобки а следствия пусть followFalse - directMeans устраняют
                 return null;
 
-            return OrWhere.orPairs(OrWhere.orPairs(toWhere(paired.getDiff1()),toWhere(paired.getDiff2())).not(),toWhere(paired.common).not()).not(); // (W1 OR W2) AND P
+            return andPairs(OrWhere.orPairs(toWhere(paired.getDiff1()),toWhere(paired.getDiff2())),toWhere(paired.common)); // (W1 OR W2) AND P
         }
 
         // поищем decision'ы
@@ -183,9 +180,28 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
                 if(pairedDecision!=null) return pairedDecision;
             }
 
+        // поищем means'ы
+
         // значит не сpair'ились
         return null;
     }
+
+    // X OR (Y AND Z) и X=>Y, то равно Y AND (X OR Z)
+    public static Where changeMeans(AndObjectWhere where, AndObjectWhere pair, CheckWhere orSiblings, boolean packExprs) {
+        OrObjectWhere[] orWheres = pair.getOr();
+        for(int k=0;k<orWheres.length;k++) {
+            if(where.means(orWheres[k])) { // значит можно поменять местами
+                Where andSiblings = toWhere(siblings(orWheres, k), pair); // если сокращается хоть что-то, меняем местами
+                FollowChange change = new FollowChange();
+                Where meanWhere = where.followFalse(OrWhere.orCheck(OrWhere.orCheck(andSiblings, orWheres[k].not()), orSiblings), packExprs, change);
+                if(change.type!= FollowType.EQUALS)
+                    return AndWhere.andPairs(orWheres[k],OrWhere.orPairs(meanWhere,andSiblings));
+            }
+        }
+
+        return null;
+    }
+
 
     public boolean twins(AbstractSourceJoin o) {
         return BaseUtils.equalArraySets(wheres, ((AndWhere) o).wheres);

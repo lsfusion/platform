@@ -4,6 +4,7 @@ import platform.interop.Compare;
 import platform.server.data.expr.Expr;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
+import platform.server.Settings;
 
 import java.util.Collection;
 import java.util.Map;
@@ -15,7 +16,7 @@ public class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty
     }
 
     Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Map<Interface<T>,? extends Expr> joinImplement, Modifier<? extends Changes> modifier) {
-        if(SIMPLE_SCHEME)
+        if(Settings.NO_INCREMENT_MAX_GROUP_PROPERTY)
             return calculateNewExpr(joinImplement, modifier); 
         Expr prevExpr = getExpr(joinImplement);
         return changedExpr.ifElse(changedExpr.compare(prevExpr,Compare.GREATER).or(prevExpr.getWhere().not()),

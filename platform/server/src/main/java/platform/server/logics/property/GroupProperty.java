@@ -6,6 +6,7 @@ import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
+import platform.server.Settings;
 
 import java.util.*;
 
@@ -52,7 +53,7 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
 
     public Expr calculateExpr(Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
 
-        if(!hasChanges(modifier) || (changedWhere==null && (!isStored() || (SIMPLE_SCHEME && this instanceof MaxGroupProperty)))) return calculateNewExpr(joinImplement, modifier);
+        if(!hasChanges(modifier) || (changedWhere==null && (!isStored() || (Settings.NO_INCREMENT_MAX_GROUP_PROPERTY && this instanceof MaxGroupProperty)))) return calculateNewExpr(joinImplement, modifier);
 
         // если нужна инкрементность
         Map<T, KeyExpr> mapKeys = groupProperty.getMapKeys(); // изначально чтобы новые и старые группировочные записи в одном контексте были

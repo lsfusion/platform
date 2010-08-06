@@ -459,7 +459,6 @@ public class DataSession extends SQLSession implements ChangesSession {
 
             // подготовили - теперь надо сохранить в курсор и записать классы
             changeTable = changeTable.writeRows(session, changesQuery, baseClass);
-            changeTable.out(session);
 
             for(Property property : properties)
                 tables.put(property,changeTable);

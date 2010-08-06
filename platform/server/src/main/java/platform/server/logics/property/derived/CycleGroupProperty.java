@@ -13,6 +13,7 @@ import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.property.*;
 import platform.server.session.*;
+import platform.server.Settings;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -52,10 +53,10 @@ public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyIn
 //        return toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere()),changedWhere,modifier);
         DataChanges dataChanges = toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere().or(getNullWhere(change, modifier, toChangeKeys))),null, modifier).changes;
         if(changedWhere!=null) {
-            if(SIMPLE_SCHEME)
-                changedWhere.add(change.where);
-            else
+            if (Settings.CALCULATE_GROUP_DATA_CHANGED)
                 getExpr(change.mapKeys, new DataChangesModifier(modifier, dataChanges), changedWhere);
+            else
+                changedWhere.add(change.where);
         }
         return new MapDataChanges<Interface<T>>(dataChanges);
     }

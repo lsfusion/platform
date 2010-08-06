@@ -39,6 +39,7 @@ import platform.server.view.form.PropertyObjectInterface;
 import platform.server.view.form.RemoteForm;
 import platform.server.view.form.client.RemoteFormView;
 import platform.server.view.navigator.*;
+import platform.server.caches.IdentityLazy;
 
 import java.io.*;
 import java.rmi.NotBoundException;
@@ -680,7 +681,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             fillPropertyList(depend, set);
         set.add(property);
     }
-//    @IdentityLazy
+    @IdentityLazy
     Iterable<Property> getPropertyList() {
         LinkedHashSet<Property> linkedSet = new LinkedHashSet<Property>();
         for (Property property : properties)

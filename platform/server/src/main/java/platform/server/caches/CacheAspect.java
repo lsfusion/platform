@@ -68,10 +68,7 @@ public class CacheAspect {
         }
     }
 
-    private Object lazyExecute(Object object,ProceedingJoinPoint thisJoinPoint,Object[] args) throws Throwable {
-        if(args.length>0 && args[0] instanceof NoCacheInterface)
-            return thisJoinPoint.proceed();
-
+    private Object lazyExecute(ImmutableObject object,ProceedingJoinPoint thisJoinPoint,Object[] args) throws Throwable {
         Invocation invoke = new Invocation(thisJoinPoint,args);
         Map caches = ((ImmutableObject)object).getCaches();
         Object result = caches.get(invoke);
@@ -82,7 +79,6 @@ public class CacheAspect {
         return result;
     }
 
-/*
     static class IdentityInvocation {
         final WeakReference<Object> targetRef;
 
@@ -165,21 +161,25 @@ public class CacheAspect {
             }
         }
     }
-  */
+
 //    public final static SoftHashMap<IdentityInvocation, Object> lazyIdentityExecute = new SoftHashMap<IdentityInvocation, Object>();
-//    public final static IdentityInvocationWeakMap lazyIdentityExecute = new IdentityInvocationWeakMap();
+    public final static IdentityInvocationWeakMap lazyIdentityExecute = new IdentityInvocationWeakMap();
 
     private Object lazyIdentityExecute(Object target, ProceedingJoinPoint thisJoinPoint, Object[] args) throws Throwable {
-        return lazyExecute(target, thisJoinPoint, args);
+        if(args.length>0 && args[0] instanceof NoCacheInterface)
+            return thisJoinPoint.proceed();
+        
+        if(target instanceof ImmutableObject)
+            return lazyExecute((ImmutableObject) target, thisJoinPoint, args);
 
-/*        IdentityInvocation invocation = new IdentityInvocation(lazyIdentityExecute.getRefQueue(), target, thisJoinPoint, args);
+        IdentityInvocation invocation = new IdentityInvocation(lazyIdentityExecute.getRefQueue(), target, thisJoinPoint, args);
         Object result = lazyIdentityExecute.get(invocation);
         if (result == null) {
             result = thisJoinPoint.proceed();
             lazyIdentityExecute.put(invocation, result);
         }
 
-        return result;*/
+        return result;
     }
 
     //@net.jcip.annotations.Immutable

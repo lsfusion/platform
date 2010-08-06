@@ -30,36 +30,6 @@ abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere<Object
         return new OrObjectWhere[]{this};
     }
 
-    public Where oldff(CheckWhere falseWhere, boolean sureNotTrue, boolean pack, FollowChange change) {
-        // исходим из предположения что что !(not()=>falseWhere) то есть !(op,this,true).checkTrue
-        if(!sureNotTrue && OrWhere.checkTrue(this,falseWhere)) {
-            change.type = FollowType.WIDE;
-            return TRUE;
-        }
-        if(OrWhere.checkTrue(not(),falseWhere)) {
-            change.type = FollowType.NARROW;
-            return FALSE;
-        }
-        if(pack) {
-            Where result = packFollowFalse((Where)falseWhere);
-            if(BaseUtils.hashEquals(this,result))
-                return this;
-            // если упаковался еще раз на orTrue проверим
-            if(OrWhere.checkTrue(result,falseWhere)) {
-                change.type = FollowType.WIDE;
-                return TRUE;
-            }
-            if(OrWhere.checkTrue(result.not(),falseWhere)) {
-                change.type = FollowType.NARROW;
-                return FALSE;
-            }
-
-            change.type = FollowType.DIFF;
-            return result;
-        }
-        return this;
-    }
-
     public Where followFalse(CheckWhere falseWhere, boolean pack, FollowChange change) {
         if(OrWhere.checkTrue(not(),falseWhere)) {
             change.type = FollowType.NARROW;

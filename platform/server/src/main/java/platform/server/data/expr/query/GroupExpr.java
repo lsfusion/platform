@@ -21,12 +21,11 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
+import platform.server.Settings;
 
 import java.util.*;
 
 public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
-
-    protected final static boolean SIMPLE_SCHEME = false;
 
     @IdentityLazy
     public Where getJoinsWhere() {
@@ -136,7 +135,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
 
     // "определяет" вытаскивать case'ы или нет
     private static Collection<? extends Case<? extends Expr>> getExprCases(Expr expr,boolean max) {
-        return max && !SIMPLE_SCHEME?expr.getCases():Collections.singleton(new Case<Expr>(Where.TRUE,expr));
+        return max && Settings.SPLIT_GROUP_MAX_EXPRCASES?expr.getCases():Collections.singleton(new Case<Expr>(Where.TRUE,expr));
     }
 
     private Collection<ClassExprWhere> packNoChange = new ArrayList<ClassExprWhere>();
@@ -207,9 +206,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
             addNoChange(packClasses);
             return this;
         } else {
-            Expr result = createInner(packInnerGroup, packExpr, isMax());
-//            if(!SIMPLE_SCHEME)
-//                result = result.followFalse(falseWhere, true);
+            Expr result = createInner(packInnerGroup, packExpr, isMax()).followFalse(falseWhere, true);
             packClassExprs.put(packClasses, result);
             return result;
         }
@@ -375,7 +372,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
 
     // "определяет" разбивать на innerJoins или нет
     private static Collection<InnerSelectJoin> getInnerJoins(Expr expr, Map<BaseExpr, BaseExpr> outerInner, boolean max) {
-        return getFullWhere(expr, outerInner).getKeyEquals().getInnerJoins(max && !SIMPLE_SCHEME);
+        return getFullWhere(expr, outerInner).getKeyEquals().getInnerJoins(Settings.SPLIT_GROUP_INNER_JOINS(max));
     }
 
     private static Expr createInnerSplit(Map<BaseExpr, BaseExpr> outerInner, Expr expr,boolean max) {
