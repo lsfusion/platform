@@ -4,10 +4,10 @@ import java.sql.SQLException;
 
 public abstract class DataAdapter implements SQLSyntax {
 
-    String server;
-    String dataBase;
-    String userID;
-    String password;
+    public String server;
+    public String dataBase;
+    public String userID;
+    public String password;
 
     // для debuga
     protected DataAdapter() {

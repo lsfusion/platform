@@ -24,12 +24,22 @@
         <constructor-arg><value>exp</value></constructor-arg>
     </bean>
 
+    <bean id="backup" class="tmc.backup.BackupTask">
+		<constructor-arg><ref bean="dataAdapter"/></constructor-arg>
+        <constructor-arg><value type="int">4</value></constructor-arg>
+        <constructor-arg><value type="int">3</value></constructor-arg>
+        <constructor-arg><value>backup/</value></constructor-arg>
+        <property name="binPath" value="C:/Program Files/PostgreSQL/8.4/bin/"></property>
+    </bean>
+
     <bean id="scheduler" class="platform.server.logics.scheduler.Scheduler">
         <constructor-arg><value type="int">5000</value></constructor-arg>
+        <constructor-arg><value type="int">1</value></constructor-arg>
         <constructor-arg>
             <list>
                 <ref bean="priceImport"/>
                 <ref bean="saleExport"/>
+                <ref bean="backup"/>
             </list>
         </constructor-arg>
     </bean>
