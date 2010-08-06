@@ -193,23 +193,7 @@ public abstract class GridTable extends ClientFormTable
 
         getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
-//                            System.out.println("changeSel");
-                final ClientGroupObjectValue changeObject = model.getSelectedObject();
-                if (changeObject != null) {
-                    SwingUtils.invokeLaterSingleAction(logicsSupplier.getGroupObject().getActionID()
-                            , new ActionListener() {
-                                public void actionPerformed(ActionEvent ae) {
-                                    try {
-                                        if (changeObject.equals(model.getSelectedObject())) {
-                                            currentObject = model.getSelectedObject(); // нужно менять текущий выбранный объект для правильного скроллирования
-                                            form.changeGroupObject(logicsSupplier.getGroupObject(), model.getSelectedObject());
-                                        }
-                                    } catch (IOException e) {
-                                        throw new RuntimeException("Ошибка при изменении текущего объекта", e);
-                                    }
-                                }
-                            }, 50);
-                }
+                changeCurrentObject();
             }
         });
 
@@ -282,6 +266,25 @@ public abstract class GridTable extends ClientFormTable
         });
 
         initializeActionMap();
+    }
+
+    private void changeCurrentObject() {
+        final ClientGroupObjectValue changeObject = model.getSelectedObject();
+        if (changeObject != null) {
+            SwingUtils.invokeLaterSingleAction(logicsSupplier.getGroupObject().getActionID()
+                    , new ActionListener() {
+                        public void actionPerformed(ActionEvent ae) {
+                            try {
+                                if (changeObject.equals(model.getSelectedObject())) {
+                                    currentObject = model.getSelectedObject(); // нужно менять текущий выбранный объект для правильного скроллирования
+                                    form.changeGroupObject(logicsSupplier.getGroupObject(), model.getSelectedObject());
+                                }
+                            } catch (IOException e) {
+                                throw new RuntimeException("Ошибка при изменении текущего объекта", e);
+                            }
+                        }
+                    }, 50);
+        }
     }
 
     private boolean isCellFocusable(int rowIndex, int columnIndex) {
@@ -464,6 +467,8 @@ public abstract class GridTable extends ClientFormTable
 
             selectRow(newindex);
         }
+
+        changeCurrentObject();
     }
 
     public void selectObject(ClientGroupObjectValue value) {
