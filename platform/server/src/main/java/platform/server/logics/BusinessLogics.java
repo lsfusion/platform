@@ -83,14 +83,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private static final Object serviceMonitor = new Object();
 
     public static void start(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, JRException {
-        String logLevel = System.getProperty("platform.server.logLevel");
+        String logLevel = System.getProperty("platform.server.loglevel");
         if (logLevel != null) {
             LogManager.getLogManager().getLogger("").setLevel(Level.parse(logLevel));
+        } else {
+            LogManager.getLogManager().getLogger("").setLevel(Level.SEVERE);
         }
 
         stopped = false;
 
-        logger.info("Server is starting...");
+        logger.severe("Server is starting...");
 
         XmlBeanFactory factory = new XmlBeanFactory(new FileSystemResource("conf/settings.xml"));
 
@@ -99,7 +101,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         registry.rebind("BusinessLogics", BL);
 
-        logger.info("Server has successfully started");
+        logger.severe("Server has successfully started");
 
         synchronized (serviceMonitor) {
             while (!stopped) {

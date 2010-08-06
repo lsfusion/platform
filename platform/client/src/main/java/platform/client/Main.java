@@ -80,8 +80,8 @@ public class Main {
 
                     String user = System.getProperty("platform.client.user");
                     String password = System.getProperty("platform.client.password");
-                    String logLevel = System.getProperty("platform.client.logLevel");
-                    
+                    String logLevel = System.getProperty("platform.client.loglevel");
+
                     remoteLogics = (RemoteLogicsInterface) Naming.lookup("rmi://" + serverHost + ":" + serverPort + "/BusinessLogics");
                     computerId = remoteLogics.getComputer(OSUtils.getLocalHostName());
 
@@ -93,6 +93,8 @@ public class Main {
 
                     if (logLevel != null) {
                         LogManager.getLogManager().getLogger("").setLevel(Level.parse(logLevel));
+                    } else {
+                        LogManager.getLogManager().getLogger("").setLevel(Level.SEVERE);
                     }
 
                     if (remoteNavigator == null) return;
