@@ -375,6 +375,12 @@ public abstract class GridTable extends ClientFormTable
             }
         });
 
+        getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                moveToFocusableCellIfNeeded();
+            }
+        });
+
         this.moveToNextCellAction = nextAction;
     }
 
@@ -458,8 +464,6 @@ public abstract class GridTable extends ClientFormTable
 
             selectRow(newindex);
         }
-
-        moveToFocusableCellIfNeeded();
     }
 
     public void selectObject(ClientGroupObjectValue value) {
