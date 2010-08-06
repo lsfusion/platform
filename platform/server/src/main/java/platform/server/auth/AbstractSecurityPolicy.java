@@ -9,7 +9,7 @@ public class AbstractSecurityPolicy<T> {
     private Set<T> permitted = new HashSet();
     private Set<T> denied = new HashSet();
 
-    boolean defaultPermission = true;
+    public boolean defaultPermission = true;
 
     public void permit(T obj) { permitted.add(obj); }
     public void deny(T obj) { denied.add(obj); }
@@ -28,6 +28,8 @@ public class AbstractSecurityPolicy<T> {
             denied.remove(obj);
             permitted.add(obj);
         }
+
+        defaultPermission = policy.defaultPermission;
     }
 
     public boolean checkPermission(T obj) {

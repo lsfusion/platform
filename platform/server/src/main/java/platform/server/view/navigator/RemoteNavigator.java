@@ -7,7 +7,6 @@ package platform.server.view.navigator;
 
 // навигатор работает с абстрактной BL
 
-import platform.base.BaseUtils;
 import platform.interop.RemoteObject;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
@@ -15,8 +14,8 @@ import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
@@ -25,6 +24,7 @@ import platform.server.logics.property.PropertyInterface;
 import platform.server.session.*;
 import platform.server.view.form.*;
 import platform.server.view.form.client.RemoteFormView;
+import platform.base.BaseUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -41,13 +41,13 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
 
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
 
-    public RemoteNavigator(T BL,User currentUser, int computer, int port) throws RemoteException {
+    public RemoteNavigator(T iBL, User currentUser, int computer, int port) throws RemoteException {
         super(port);
 
-        this.BL = BL;
+        BL = iBL;
         classCache = new ClassCache();
 
-        securityPolicy = this.BL.authPolicy.getSecurityPolicy(currentUser);
+        securityPolicy = BL.policyManager.getSecurityPolicy(currentUser);
 
         user = new DataObject(currentUser.ID, BL.customUser);
         this.computer = new DataObject(computer, BL.computer);

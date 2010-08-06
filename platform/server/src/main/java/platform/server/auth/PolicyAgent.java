@@ -3,7 +3,7 @@ package platform.server.auth;
 import java.util.ArrayList;
 import java.util.List;
 
-class UserPolicy {
+class PolicyAgent {
 
     List<SecurityPolicy> securityPolicies = new ArrayList<SecurityPolicy>();
 
@@ -13,7 +13,7 @@ class UserPolicy {
 
     public SecurityPolicy getSecurityPolicy() {
 
-        SecurityPolicy resultPolicy = new SecurityPolicy();
+        SecurityPolicy resultPolicy = new SecurityPolicy(-1);
         for (SecurityPolicy policy : securityPolicies) {
             resultPolicy.override(policy);
         }

@@ -3,7 +3,7 @@ package platform.server.auth;
 import java.util.ArrayList;
 import java.util.List;
 
-public class User extends UserPolicy {
+public class User extends PolicyAgent {
 
     public final int ID;
 

@@ -9,6 +9,7 @@ import java.io.*;
 import java.awt.event.KeyEvent;
 
 import platform.interop.form.screen.ExternalScreenParameters;
+import platform.server.auth.SecurityPolicy;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.*;
@@ -898,8 +899,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         return null;
     }
 
-    public CommitSaleCheckRetailNavigatorForm commitSaleBrowse;
-    public SaleCheckCertNavigatorForm saleCheckCertBrowse;
+    private NavigatorElement saleRetailCashRegisterElement;
+    private NavigatorForm commitSaleForm;
+    private NavigatorForm saleCheckCertForm;
+    private NavigatorForm cachRegManagementForm;
+    private NavigatorForm returnSaleCheckRetailArticleForm;
+    public CommitSaleCheckRetailNavigatorForm commitSaleBrowseForm;
+    public SaleCheckCertNavigatorForm saleCheckCertBrowseForm;
     public ReturnSaleCheckRetailNavigatorForm returnSaleCheckRetailBrowse;
 
     protected void initNavigators() throws JRException, FileNotFoundException {
@@ -921,16 +927,16 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addNavigatorForm(new ReturnDeliveryLocalNavigatorForm(returnDelivery, 1195, false));
 
         NavigatorElement sale = new NavigatorElement(baseElement, 1200, "Управление продажами");
-        NavigatorElement saleRetail = new NavigatorElement(sale, 1250, "Управление розничными продажами");
-        NavigatorElement saleRetailCashRegister = new NavigatorElement(saleRetail, 1300, "Касса");
-        NavigatorForm commitSale = addNavigatorForm(new CommitSaleCheckRetailNavigatorForm(saleRetailCashRegister, 1310, true));
-        commitSaleBrowse = addNavigatorForm(new CommitSaleCheckRetailNavigatorForm(commitSale, 1320, false));
-        NavigatorForm saleCheckCert = addNavigatorForm(new SaleCheckCertNavigatorForm(saleRetailCashRegister, 1325, true));
-        saleCheckCertBrowse = addNavigatorForm(new SaleCheckCertNavigatorForm(saleCheckCert, 1335, false));
-        NavigatorForm returnSaleCheckRetailArticle = addNavigatorForm(new ReturnSaleCheckRetailNavigatorForm(saleRetailCashRegister, true, 1345));
-        returnSaleCheckRetailBrowse = addNavigatorForm(new ReturnSaleCheckRetailNavigatorForm(returnSaleCheckRetailArticle, false, 1355));
-        addNavigatorForm(cashRegController.createCashRegManagementNavigatorForm(saleRetailCashRegister, 1365));
-        NavigatorElement saleRetailInvoice = new NavigatorElement(saleRetail, 1400, "Безналичный расчет");
+        NavigatorElement saleRetailElement = new NavigatorElement(sale, 1250, "Управление розничными продажами");
+        saleRetailCashRegisterElement = new NavigatorElement(saleRetailElement, 1300, "Касса");
+        commitSaleForm = addNavigatorForm(new CommitSaleCheckRetailNavigatorForm(saleRetailCashRegisterElement, 1310, true));
+        commitSaleBrowseForm = addNavigatorForm(new CommitSaleCheckRetailNavigatorForm(commitSaleForm, 1320, false));
+        saleCheckCertForm = addNavigatorForm(new SaleCheckCertNavigatorForm(saleRetailCashRegisterElement, 1325, true));
+        saleCheckCertBrowseForm = addNavigatorForm(new SaleCheckCertNavigatorForm(saleCheckCertForm, 1335, false));
+        returnSaleCheckRetailArticleForm = addNavigatorForm(new ReturnSaleCheckRetailNavigatorForm(saleRetailCashRegisterElement, true, 1345));
+        returnSaleCheckRetailBrowse = addNavigatorForm(new ReturnSaleCheckRetailNavigatorForm(returnSaleCheckRetailArticleForm, false, 1355));
+        cachRegManagementForm = addNavigatorForm(cashRegController.createCashRegManagementNavigatorForm(saleRetailCashRegisterElement, 1365));
+        NavigatorElement saleRetailInvoice = new NavigatorElement(saleRetailElement, 1400, "Безналичный расчет");
         NavigatorForm saleRetailInvoiceForm = addNavigatorForm(new OrderSaleInvoiceRetailNavigatorForm(saleRetailInvoice, 1410, true));
         addNavigatorForm(new OrderSaleInvoiceRetailNavigatorForm(saleRetailInvoiceForm, 1420, false));
         NavigatorForm saleInvoiceCert = addNavigatorForm(new SaleInvoiceCertNavigatorForm(saleRetailInvoice, 1440, true));
@@ -2245,7 +2251,29 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-        User admin = addUser("admin", "fusion");
-    }
+        SecurityPolicy permitAllPolicy = addPolicy("Разрешить всё", "Политика разрешает все действия.");
 
+        SecurityPolicy permitCachRegister = addPolicy("Разрешить только кассовые формы", "Политика разрешает открытие только форма для работы за кассой.");
+        permitCachRegister.navigator.defaultPermission = false;
+        permitCachRegister.navigator.permit(commitSaleForm);
+        permitCachRegister.navigator.permit(saleCheckCertForm);
+        permitCachRegister.navigator.permit(returnSaleCheckRetailArticleForm);
+        permitCachRegister.navigator.permit(cachRegManagementForm);
+
+        SecurityPolicy docViewDeny = addPolicy("Запретить просмотр документов", "Запрещает просмотр свойств документов.");
+        docViewDeny.property.view.deny(documentGroup.getProperties());
+
+        SecurityPolicy docChangeDeny = addPolicy("Запретить редактирование документов", "Запрещает редактирование свойств документов.");
+        docChangeDeny.property.change.deny(documentGroup.getProperties());
+
+        SecurityPolicy readOnlyPolicy = addPolicy("Запретить редактирование всех свойств", "Режим \"только чтение\". Запрещает редактирование всех свойств на формах.");
+        readOnlyPolicy.property.change.defaultPermission = false;
+        readOnlyPolicy.cls.edit.add.defaultPermission = false;
+        readOnlyPolicy.cls.edit.change.defaultPermission = false;
+        readOnlyPolicy.cls.edit.remove.defaultPermission = false;
+
+        User admin = addUser("admin", "fusion");
+        //админ игнорит настройки в базе, ему разрешено всё
+        admin.addSecurityPolicy(permitAllPolicy);
+    }
 }

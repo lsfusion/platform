@@ -1,6 +1,15 @@
 package platform.server.auth;
 
 public class SecurityPolicy {
+    public final int ID;
+
+    SecurityPolicy() {
+        this(-1);
+    }
+
+    public SecurityPolicy(int ID) {
+        this.ID = ID;
+    }
 
     public ClassSecurityPolicy cls = new ClassSecurityPolicy();
     public PropertySecurityPolicy property = new PropertySecurityPolicy();

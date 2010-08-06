@@ -1,6 +1,5 @@
 package tmc.integration.imp;
 
-import platform.server.logics.property.Property;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.DataObject;
@@ -10,8 +9,7 @@ import platform.server.view.form.PropertyObjectInterface;
 import platform.server.view.form.RemoteForm;
 import platform.server.view.navigator.ClassNavigatorForm;
 import platform.server.classes.ValueClass;
-import platform.server.auth.AuthPolicy;
-import platform.server.session.DataSession;
+import platform.server.auth.PolicyManager;
 import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
 
@@ -21,8 +19,6 @@ import java.sql.SQLException;
 import java.io.IOException;
 
 import org.xBaseJ.DBF;
-import org.xBaseJ.xBaseJException;
-import org.xBaseJ.fields.NumField;
 import tmc.VEDBusinessLogics;
 
 public class CustomerCheckRetailImportActionProperty extends ActionProperty {
@@ -45,7 +41,7 @@ public class CustomerCheckRetailImportActionProperty extends ActionProperty {
 
             RemoteForm remoteForm = new RemoteForm(
                     new ClassNavigatorForm(BL, BL.customerCheckRetail),
-                    BL, BL.createSession(), AuthPolicy.defaultSecurityPolicy, null, null,
+                    BL, BL.createSession(), PolicyManager.defaultSecurityPolicy, null, null,
                     new DataObject(executeForm.form.mapper.computer, BL.computer));
 
             for (int i = 0; i < recordCount; i++) {

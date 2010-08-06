@@ -6,10 +6,10 @@ import org.xBaseJ.fields.CharField;
 import org.xBaseJ.fields.NumField;
 import org.xBaseJ.fields.DateField;
 import org.xBaseJ.fields.Field;
+import platform.server.auth.PolicyManager;
 import platform.server.view.form.*;
 import platform.server.view.form.filter.NotNullFilter;
 import platform.server.session.DataSession;
-import platform.server.auth.AuthPolicy;
 import platform.server.logics.DataObject;
 import platform.server.logics.scheduler.FlagSemaphoreTask;
 import platform.base.BaseUtils;
@@ -105,15 +105,15 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
     private FormData getDataSale(DataSession session, Map<Field, PropertyView> map) throws Exception {
 
         // Выгружаем продажи по кассе
-        RemoteForm remoteForm = new RemoteForm(BL.commitSaleBrowse, BL, session, AuthPolicy.defaultSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.computer)); // здесь надо переделать на нормальный компьютер
+        RemoteForm remoteForm = new RemoteForm(BL.commitSaleBrowseForm, BL, session, PolicyManager.defaultSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.computer)); // здесь надо переделать на нормальный компьютер
 
         setRemoteFormFilter(remoteForm);
 
         PropertyView quantity = remoteForm.getPropertyView(BL.articleQuantity);
         quantity.toDraw.addTempFilter(new NotNullFilter(quantity.view));
 
-        ObjectImplement doc = remoteForm.mapper.mapObject(BL.commitSaleBrowse.objDoc);
-        ObjectImplement art = remoteForm.mapper.mapObject(BL.commitSaleBrowse.objArt);
+        ObjectImplement doc = remoteForm.mapper.mapObject(BL.commitSaleBrowseForm.objDoc);
+        ObjectImplement art = remoteForm.mapper.mapObject(BL.commitSaleBrowseForm.objArt);
 
         map.put(barField, remoteForm.getPropertyView(BL.barcode));
         map.put(nameField, remoteForm.getPropertyView(BL.name));
@@ -133,15 +133,15 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
     private FormData getDataCert(DataSession session, Map<Field, PropertyView> map) throws Exception {
 
         // Выгружаем продажи по кассе
-        RemoteForm remoteForm = new RemoteForm(BL.saleCheckCertBrowse, BL, session, AuthPolicy.defaultSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.computer)); // здесь надо переделать на нормальный компьютер
+        RemoteForm remoteForm = new RemoteForm(BL.saleCheckCertBrowseForm, BL, session, PolicyManager.defaultSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.computer)); // здесь надо переделать на нормальный компьютер
 
         setRemoteFormFilter(remoteForm);
 
         PropertyView issued = remoteForm.getPropertyView(BL.issueObligation);
         issued.toDraw.addTempFilter(new NotNullFilter(issued.view));
 
-        ObjectImplement doc = remoteForm.mapper.mapObject(BL.saleCheckCertBrowse.objDoc);
-        ObjectImplement obligation = remoteForm.mapper.mapObject(BL.saleCheckCertBrowse.objObligation);
+        ObjectImplement doc = remoteForm.mapper.mapObject(BL.saleCheckCertBrowseForm.objDoc);
+        ObjectImplement obligation = remoteForm.mapper.mapObject(BL.saleCheckCertBrowseForm.objObligation);
 
         map.put(barField, remoteForm.getPropertyView(BL.barcode));
         map.put(nameField, remoteForm.getPropertyView(BL.name));
@@ -159,7 +159,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
     private FormData getDataReturn(DataSession session, Map<Field, PropertyView> map) throws Exception {
 
         // Выгружаем продажи по кассе
-        RemoteForm remoteForm = new RemoteForm(BL.returnSaleCheckRetailBrowse, BL, session, AuthPolicy.defaultSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.computer)); // здесь надо переделать на нормальный компьютер
+        RemoteForm remoteForm = new RemoteForm(BL.returnSaleCheckRetailBrowse, BL, session, PolicyManager.defaultSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.computer)); // здесь надо переделать на нормальный компьютер
 
         setRemoteFormFilter(remoteForm);
 

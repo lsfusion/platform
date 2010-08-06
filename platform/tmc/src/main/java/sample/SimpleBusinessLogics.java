@@ -1238,12 +1238,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
 
-        SecurityPolicy securityPolicy;
-
-        User user1 = addUser("user1", "");
-        User user2 = addUser("user2", "");
-
-        securityPolicy = new SecurityPolicy();
+        SecurityPolicy securityPolicy = addPolicy("Базовая политка", "Запрещает использование чего-то тут...");
 
         securityPolicy.property.view.deny(currentGroup.getProperties());
 //        securityPolicy.property.change.deny(extIncDetailArticle.property);
@@ -1255,8 +1250,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         securityPolicy.cls.edit.add.deny(document.getConcreteChildren());
         securityPolicy.cls.edit.remove.deny(baseGroup.getClasses());
 
-        user2.addSecurityPolicy(securityPolicy);
-
+        User user1 = addUser("user1", "");
+        User user2 = addUser("user2", "");
     }
 
     // ------------------------------------- Временные методы --------------------------- //

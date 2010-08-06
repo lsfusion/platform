@@ -18,12 +18,14 @@ public class NavigatorElement<T extends BusinessLogics<T>> {
         this.ID = ID;
         this.caption = caption;
 
-        if (parent != null)
+        if (parent != null) {
+            this.parent = parent;
             parent.add(this);
+        }
     }
 
     private NavigatorElement parent;
-    NavigatorElement getParent() { return parent; }
+    public NavigatorElement getParent() { return parent; }
 
     private List<NavigatorElement<T>> children = new ArrayList<NavigatorElement<T>>();
     Collection<NavigatorElement<T>> getChildren() { return children; }

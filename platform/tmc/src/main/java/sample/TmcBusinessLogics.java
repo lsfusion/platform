@@ -1867,13 +1867,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     }
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-
-        SecurityPolicy securityPolicy;
-
-        User user1 = addUser("user1", "");
-        User user2 = addUser("user2", "");
-
-        securityPolicy = new SecurityPolicy();
+        SecurityPolicy securityPolicy = addPolicy("Базовая полтика", "Запрещает редактирование некоторых свойств.");
 
         securityPolicy.property.view.deny(extIncDocumentSumPay);
         securityPolicy.property.view.deny(incSumsGroup.getProperties());
@@ -1886,8 +1880,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         securityPolicy.cls.edit.add.deny(document.getConcreteChildren());
         securityPolicy.cls.edit.remove.deny(baseGroup.getClasses());
 
-        user2.addSecurityPolicy(securityPolicy);
-
+        User user1 = addUser("user1", "");
+        User user2 = addUser("user2", "");
     }
 
     // ------------------------------------- Временные методы --------------------------- //

@@ -36,6 +36,8 @@ public interface RemoteFormInterface extends Remote {
 
     void changeClass(int objectID, int classID) throws RemoteException;
 
+    boolean canChangeClass(int objectID) throws RemoteException;
+
     void changeGridClass(int objectID,int idClass) throws RemoteException;
 
     boolean switchClassView(int groupID) throws RemoteException;

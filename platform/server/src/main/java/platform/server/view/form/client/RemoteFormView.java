@@ -222,6 +222,10 @@ public class RemoteFormView<T extends BusinessLogics<T>,F extends RemoteForm<T>>
         }
     }
 
+    public boolean canChangeClass(int objectID) throws RemoteException {
+        return form.canChangeClass((CustomObjectImplement)form.getObjectImplement(objectID));
+    }
+
     public void changeGridClass(int objectID,int idClass) {
         ((CustomObjectImplement) form.getObjectImplement(objectID)).changeGridClass(idClass);
     }

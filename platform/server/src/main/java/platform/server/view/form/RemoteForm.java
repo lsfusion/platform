@@ -230,7 +230,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
     public void serializePropertyEditorType(DataOutputStream outStream, PropertyView<?> propertyView) throws SQLException, IOException {
 
         PropertyValueImplement<?> change = propertyView.view.getChangeProperty();
-        if(change.canBeChanged(this)) {
+        if(securityPolicy.property.change.checkPermission(change.property) && change.canBeChanged(this)) {
             outStream.writeBoolean(false);
             TypeSerializer.serialize(outStream,change.property.getType());
         } else
@@ -349,8 +349,14 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
     }
 
     public void changeClass(CustomObjectImplement object, DataObject change, int classID) throws SQLException {
-        object.changeClass(session, change, classID);
-        dataChanged = true;
+        if (securityPolicy.cls.edit.change.checkPermission(object.currentClass)) {
+            object.changeClass(session, change, classID);
+            dataChanged = true;
+        }
+    }
+
+    public boolean canChangeClass(CustomObjectImplement object) {
+        return securityPolicy.cls.edit.change.checkPermission(object.currentClass);
     }
 
     public List<ClientAction> changeProperty(PropertyView<?> property, Object value) throws SQLException {
@@ -366,11 +372,13 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
     }
 
     public List<ClientAction> changeProperty(PropertyObjectImplement<?> property, Object value, RemoteFormView executeForm, GroupObjectImplement groupObject) throws SQLException {
-
-        dataChanged = true;
-
-        // изменяем св-во
-        return property.execute(session, value, this, executeForm, groupObject);
+        if (securityPolicy.property.change.checkPermission(property.property)) {
+            dataChanged = true;
+            // изменяем св-во
+            return property.execute(session, value, this, executeForm, groupObject);
+        } else {
+            return null;
+        }
     }
 
     // Обновление данных
@@ -1209,8 +1217,12 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
             if (object.equals(mapper.mapObject(autoActions.getKey())))
                 for(PropertyObjectNavigator autoAction : autoActions.getValue()) {
                     PropertyObjectImplement action = mapper.mapProperty(autoAction);
-                    if(action.isInInterface(null))
-                        actions.addAll(changeProperty(action, action.getChangeProperty().read(session, this)==null?true:null, form));
+                    if(action.isInInterface(null)) {
+                        List<ClientAction> change = changeProperty(action, action.getChangeProperty().read(session, this)==null?true:null, form);
+                        if (change != null) {
+                            actions.addAll(change);
+                        }
+                    }
                 }
         return actions;
     }

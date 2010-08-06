@@ -13,7 +13,8 @@ import platform.interop.exceptions.LoginException;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
-import platform.server.auth.AuthPolicy;
+import platform.server.auth.PolicyManager;
+import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
 import platform.server.classes.*;
 import platform.server.data.*;
@@ -152,14 +153,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         try {
-            Integer userID = readUser(login, session);
-            if (userID == null)
-                throw new LoginException();
-            String checkPassword = (String) userPassword.read(session, new DataObject(userID, customUser));
-            if (checkPassword != null && !password.trim().equals(checkPassword.trim()))
-                throw new LoginException();
 
-            return new RemoteNavigator(this, authPolicy.users.get(userID), computer, exportPort);
+            User user = readUser(login, session);
+            if (user == null) {
+                throw new LoginException();
+            }
+            String checkPassword = (String) userPassword.read(session, new DataObject(user.ID, customUser));
+            if (checkPassword != null && !password.trim().equals(checkPassword.trim())) {
+                throw new LoginException();
+            }
+
+            return new RemoteNavigator(this, user, computer, exportPort);
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -184,6 +188,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public ConcreteCustomClass systemUser;
     public ConcreteCustomClass customUser;
     public ConcreteCustomClass computer;
+    public ConcreteCustomClass policy;
 
     public Integer getComputer(String strHostName) {
         try {
@@ -246,29 +251,94 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
 
     protected User addUser(String login, String defaultPassword) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-
         DataSession session = createSession();
 
-        Integer userID = readUser(login, session);
-        if (userID == null) {
+        User user = readUser(login, session);
+        if (user == null) {
             DataObject addObject = session.addObject(customUser, session.modifier);
             userLogin.execute(login, session, session.modifier, addObject);
             userPassword.execute(defaultPassword, session, session.modifier, addObject);
-            userID = (Integer) addObject.object;
+            Integer userID = (Integer) addObject.object;
+            session.apply(this);
+            User userObject = new User(userID);
+            policyManager.putUser(userID, userObject);
+        }
+
+        session.close();
+
+        return user;
+    }
+
+    private User readUser(String login, DataSession session) throws SQLException {
+        Integer userId = (Integer) loginToUser.read(session, new DataObject(login, StringClass.get(30)));
+        if (userId == null) {
+            return null;
+        }
+
+        User userObject = new User(userId);
+        policyManager.putUser(userId, userObject);
+
+        List<Integer> userPoliciesIds = readUserPoliciesIds(userId);
+        for (int policyId : userPoliciesIds) {
+            SecurityPolicy policy = policyManager.getPolicy(policyId);
+            if (policy != null) {
+                userObject.addSecurityPolicy( policy );
+            }
+        }
+
+        return userObject;
+    }
+
+    private List<Integer> readUserPoliciesIds(Integer userId) {
+        try {
+            ArrayList<Integer> result = new ArrayList<Integer>();
+            DataSession session = createSession();
+
+            Query<String, Object> q = new Query<String, Object>(BaseUtils.toList("userId", "policyId"));
+            Expr orderExpr = userPolicyOrder.getExpr(session.modifier, q.mapKeys.get("userId"), q.mapKeys.get("policyId"));
+
+            q.properties.put("pOrder", orderExpr);
+            q.and(orderExpr.getWhere());
+            q.and(q.mapKeys.get("userId").compare(new DataObject(userId, customUser), Compare.EQUALS));
+
+            OrderedMap<Object, Boolean> orderBy = new OrderedMap(BaseUtils.toList("pOrder"), false);
+            Set<Map<String, Object>> keys = q.execute(session, orderBy, 0).keySet();
+            if (keys.size() != 0) {
+                for (Map<String, Object> keyMap : keys) {
+                    result.add((Integer) keyMap.get("policyId"));
+                }
+            }
+
+            session.close();
+
+            return result;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected SecurityPolicy addPolicy(String policyName, String description) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
+        DataSession session = createSession();
+
+        Integer policyID = readPolicy(policyName, session);
+        if (policyID == null) {
+            DataObject addObject = session.addObject(policy, session.modifier);
+            name.execute(policyName, session, session.modifier, addObject);
+            policyDescription.execute(description, session, session.modifier, addObject);
+            policyID = (Integer) addObject.object;
             session.apply(this);
         }
 
         session.close();
 
-        User userObject = new User(userID);
-        authPolicy.users.put(userID, userObject);
-        return userObject;
+        SecurityPolicy policyObject = new SecurityPolicy(policyID);
+        policyManager.putPolicy(policyID, policyObject);
+        return policyObject;
     }
 
-    private Integer readUser(String login, DataSession session) throws SQLException {
-        return (Integer) loginToUser.read(session, new DataObject(login, StringClass.get(30)));
+    private Integer readPolicy(String name, DataSession session) throws SQLException {
+        return (Integer) nameToPolicy.read(session, new DataObject(name, StringClass.get(50)));
     }
-
 
     protected LP groeq2;
     protected LP greater2, less2;
@@ -303,6 +373,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP currentUserName;
     protected LP<?> loginToUser;
 
+    public LP policyDescription;
+    protected LP<?> nameToPolicy ;
+    public LP userPolicyOrder;
+
     public LP hostname;
 
     void initBase() {
@@ -324,7 +398,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         systemUser = addConcreteClass(9999974, "Системный пользователь", user);
         computer = addConcreteClass(9999975, "Рабочее место", baseClass);
 
-        hostname = addDProp(baseGroup, "hostname", "Имя хоста", StringClass.get(100), computer);
+        policy = addConcreteClass(9999973, "Политика безопасности", namedObject);
 
         tableFactory = new TableFactory();
         for (int i = 0; i < TableFactory.MAX_INTERFACE; i++) { // заполним базовые таблицы
@@ -359,6 +433,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         transactionLater = addSUProp("Транзакция позже", Union.OVERRIDE, addJProp("Дата позже", greater2, date, 1, date, 2),
                 addJProp("", and1, addJProp("Дата=дата", equals2, date, 1, date, 2), 1, 2, addJProp("Код транзакции после", greater2, 1, 2), 1, 2));
 
+        hostname = addDProp(baseGroup, "hostname", "Имя хоста", StringClass.get(100), computer);
+
         currentDate = addDProp(baseGroup, "currentDate", "Тек. дата", DateClass.instance);
         currentHour = addTProp(Time.HOUR);
         currentEpoch = addTProp(Time.EPOCH);
@@ -374,6 +450,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         name = addCUProp(baseGroup, "Имя", addDProp("name", "Имя", StringClass.get(50), namedObject),
                 addJProp(string2, userFirstName, 1, userLastName, 1));
 
+        nameToPolicy = addCGProp(null, "nameToPolicy", "Политика", object(policy), name, name, 1);
+        policyDescription = addDProp(baseGroup, "description", "Описание", StringClass.get(100), policy);
+
+        userPolicyOrder = addDProp(baseGroup, "userPolicyOrder", "Порядок политики", IntegerClass.instance, customUser, policy);
+
         barcode = addDProp(baseGroup, "barcode", "Штрих-код", StringClass.get(13), barcodeObject);
         barcodeToObject = addCGProp(null, "barcodeToObject", "Объект", object(barcodeObject), barcode, barcode, 1);
         barcodeObjectName = addJProp(baseGroup, "Объект", name, barcodeToObject, 1);
@@ -381,6 +462,24 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         currentUserName = addJProp("Имя тек. польз.", name, currentUser);
 
         reverseBarcode = addSDProp("Реверс", LogicalClass.instance);
+    }
+
+    void initBaseNavigators() {
+        NavigatorElement policy = new NavigatorElement(baseElement, 50000, "Политики безопасности");
+        addNavigatorForm(new UserPolicyNavigatorForm(policy, 50100));
+    }
+
+    private class UserPolicyNavigatorForm extends NavigatorForm {
+        protected UserPolicyNavigatorForm(NavigatorElement parent, int ID) {
+            super(parent, ID, "Политики пользователей");
+
+            ObjectNavigator objUser = addSingleGroupObjectImplement(customUser, "Пользователь", properties, baseGroup, true);
+            ObjectNavigator objPolicy = addSingleGroupObjectImplement(policy, "Политика", properties, baseGroup, true);
+
+            addObjectActions(this, objUser);
+ 
+            addPropertyView(objUser, objPolicy, properties, baseGroup, true);
+        }
     }
 
     Map<ValueClass, ActionProperty> addObjectActions = new HashMap<ValueClass, ActionProperty>();
@@ -489,6 +588,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         logger.info("Initializing navigators...");
 
         baseElement.add(baseClass.getBaseClassForm(this));
+        initBaseNavigators();
         initNavigators();
 
         synchronizeDB();
@@ -619,7 +719,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected abstract void initNavigators() throws JRException, FileNotFoundException;
 
-    public AuthPolicy authPolicy = new AuthPolicy();
+    public PolicyManager policyManager = new PolicyManager();
 
     protected abstract void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException;
 
