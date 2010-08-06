@@ -272,6 +272,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected LP groeq2;
     protected LP greater2, less2;
+    protected LP greater22, less22;
     protected LP between;
     protected LP object1, and1, andNot1;
     protected LP equals2, diff2;
@@ -345,6 +346,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         groeq2 = addCFProp(Compare.GREATER_EQUALS);
         greater2 = addCFProp(Compare.GREATER);
         less2 = addCFProp(Compare.LESS);
+        greater22 = addJProp(greater2, concat2, 1, 2, concat2, 3, 4);
+        less22 = addJProp(less2, concat2, 1, 2, concat2, 3, 4);
         diff2 = addCFProp(Compare.NOT_EQUALS);
         divideDouble = addSFProp("((prm1)/(prm2))", DoubleClass.instance, 2);
         between = addJProp("Между", and1, groeq2, 1, 2, groeq2, 3, 1);
@@ -884,7 +887,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                         if (!(keep = property.mapTable.table.name.equals(prevTable.name))) { // если в другой таблице
                             session.addColumn(property.mapTable.table.name, property.field);
                             // делаем запрос на перенос
-                            System.out.print("Идет перенос колонки " + property.field + " из таблицы " + prevTable.name + " в таблицу " + property.mapTable.table.name + "... ");
+                            System.out.print("Идет перенос колонки " + property.field + " (" + property.caption + ")" + " из таблицы " + prevTable.name + " в таблицу " + property.mapTable.table.name + "... ");
                             Query<KeyField, PropertyField> moveColumn = new Query<KeyField, PropertyField>(property.mapTable.table);
                             Expr moveExpr = prevTable.joinAnd(BaseUtils.join(BaseUtils.join(foundInterfaces, ((Property<PropertyInterface>) property).mapTable.mapKeys), moveColumn.mapKeys)).getExpr(prevTable.findProperty(sID));
                             moveColumn.properties.put(property.field, moveExpr);
@@ -1315,6 +1318,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     private <P extends PropertyInterface> LP mapLGProp(AbstractGroup group, GroupProperty<P> property, List<PropertyInterfaceImplement<P>> listImplements) {
         return mapLGProp(group, new PropertyImplement<PropertyInterfaceImplement<P>, GroupProperty.Interface<P>>(property, property.getMapInterfaces()), listImplements);
+    }
+
+    protected <P extends PropertyInterface> LP addOProp(String caption, LP<P> sum, boolean percent, boolean ascending, boolean includeLast, int partNum, Object... params) {
+        return addOProp((AbstractGroup)null, genSID(), caption, sum, percent, ascending, includeLast, partNum, params);
     }
 
     protected <P extends PropertyInterface> LP addOProp(AbstractGroup group, String caption, LP<P> sum, boolean percent, boolean ascending, boolean includeLast, int partNum, Object... params) {
