@@ -134,5 +134,10 @@
             <artifactId>jxl</artifactId>
             <version>2.6</version>
         </dependency>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <version>1.6.2</version>
+        </dependency>
     </dependencies>
 </project>
