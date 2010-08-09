@@ -24,10 +24,6 @@ public interface RemoteFormInterface extends Remote {
     byte[] getPropertyChangeType(int propertyID) throws RemoteException;
     boolean canChangeClass(int objectID) throws RemoteException;
 
-    boolean switchClassView(int groupID) throws RemoteException;
-
-    boolean changeClassView(int groupID, byte classView) throws RemoteException;
-
     List<? extends ClientAction> getApplyActions() throws RemoteException;
 
     String checkApplyActions(int actionID, ClientActionResult result) throws RemoteException;
@@ -60,6 +56,10 @@ public interface RemoteFormInterface extends Remote {
     void changeClass(int objectID, int classID) throws RemoteException;
     
     void addObject(int objectID, int classID) throws RemoteException;
+
+    void switchClassView(int groupID) throws RemoteException;
+
+    void changeClassView(int groupID, byte classView) throws RemoteException;
 
     void changeGridClass(int objectID,int idClass) throws RemoteException;
 

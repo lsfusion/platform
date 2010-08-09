@@ -260,19 +260,14 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
             object.changeValue(session, value.get(object));
     }
 
-    public boolean switchClassView(GroupObjectImplement group) {
-        return changeClassView(group, ClassViewType.switchView(group.curClassView));
+    public void switchClassView(GroupObjectImplement group) {
+        changeClassView(group, ClassViewType.switchView(group.curClassView));
     }
 
-    public boolean changeClassView(GroupObjectImplement group,byte show) {
+    public void changeClassView(GroupObjectImplement group,byte show) {
 
-        if ((show & group.banClassView) != 0) return false;
-
-        if(group.curClassView == show) return false;
         group.curClassView = show;
-
         group.updated = group.updated | GroupObjectImplement.UPDATED_CLASSVIEW;
-        return true;
     }
 
     // сстандартные фильтры

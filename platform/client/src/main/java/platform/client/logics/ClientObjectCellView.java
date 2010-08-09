@@ -3,6 +3,7 @@ package platform.client.logics;
 import platform.base.BaseUtils;
 import platform.client.form.ClientForm;
 import platform.client.form.PropertyEditorComponent;
+import platform.interop.ClassViewType;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
 
@@ -27,9 +28,10 @@ public class ClientObjectCellView extends ClientObjectView {
 
     public PropertyEditorComponent getEditorComponent(ClientForm form, Object value) throws IOException, ClassNotFoundException {
 
-        if (form.switchClassView(object.groupObject))
+        if ((object.groupObject.banClassView & (ClassViewType.GRID | ClassViewType.PANEL)) == 0) {
+            form.switchClassView(object.groupObject);
             return null;
-        else
+        } else
             return baseType.getEditorComponent(form, this, value, getFormat(), design);
     }
 

@@ -552,26 +552,22 @@ public class ClientForm {
         applyRemoteChanges();
     }
 
-    public boolean switchClassView(ClientGroupObjectImplementView groupObject) throws IOException {
+    public void switchClassView(ClientGroupObjectImplementView groupObject) throws IOException {
 
         SwingUtils.stopSingleAction(groupObject.getActionID(), true);
 
-        if (remoteForm.switchClassView(groupObject.getID())) {
-            applyRemoteChanges();
-            return true;
-        } else
-            return false;
+        remoteForm.switchClassView(groupObject.getID());
+        
+        applyRemoteChanges();
     }
 
-    public boolean changeClassView(ClientGroupObjectImplementView groupObject, byte show) throws IOException {
+    public void changeClassView(ClientGroupObjectImplementView groupObject, byte show) throws IOException {
 
         SwingUtils.stopSingleAction(groupObject.getActionID(), true);
 
-        if (remoteForm.changeClassView(groupObject.getID(), show)) {
-            applyRemoteChanges();
-            return true;
-        } else
-            return false;
+        remoteForm.changeClassView(groupObject.getID(), show);
+
+        applyRemoteChanges();
     }
 
     public void changeOrder(ClientCellView property, Order modiType) throws IOException {

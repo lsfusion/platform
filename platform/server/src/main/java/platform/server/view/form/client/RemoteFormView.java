@@ -252,12 +252,12 @@ public class RemoteFormView<T extends BusinessLogics<T>,F extends RemoteForm<T>>
         ((CustomObjectImplement) form.getObjectImplement(objectID)).changeGridClass(idClass);
     }
 
-    public boolean switchClassView(int groupID) {
-        return form.switchClassView(form.getGroupObjectImplement(groupID));
+    public void switchClassView(int groupID) {
+        form.switchClassView(form.getGroupObjectImplement(groupID));
     }
 
-    public boolean changeClassView(int groupID, byte classView) {
-        return form.changeClassView(form.getGroupObjectImplement(groupID), classView);
+    public void changeClassView(int groupID, byte classView) {
+        form.changeClassView(form.getGroupObjectImplement(groupID), classView);
     }
 
     public void changePropertyOrder(int propertyID, byte modiType) {
