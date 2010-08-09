@@ -147,7 +147,7 @@ public abstract class ClientFormLayout extends JPanel {
 
         if (super.processKeyBinding(ks, e, condition, pressed)) return true;
 
-        return true;
+        return false;
     }
 
     // добавляем визуальный компонент
