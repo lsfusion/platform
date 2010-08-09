@@ -62,6 +62,18 @@ public class ClientForm {
         return formID;
     }
 
+    public KeyStroke getKeyStroke() {
+        return formView.keyStroke;
+    }
+
+    public String getCaption() {
+        return  formView.caption;
+    }
+
+    public String getFullCaption() {
+        return  formView.getFullCaption();
+    }
+
     private static final Map<Integer, ClientFormView> cacheClientFormView = new HashMap<Integer, ClientFormView>();
 
     private static ClientFormView cacheClientFormView(RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {

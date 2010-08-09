@@ -1,28 +1,30 @@
 package tmc.integration.exp;
 
+import platform.interop.action.*;
+import platform.server.classes.DataClass;
+import platform.server.classes.DoubleClass;
+import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.view.form.*;
-import platform.server.view.form.client.RemoteFormView;
 import platform.server.view.form.client.DefaultFormView;
+import platform.server.view.form.client.RemoteFormView;
 import platform.server.view.form.filter.NotNullFilter;
-import platform.server.view.navigator.PropertyViewNavigator;
-import platform.server.view.navigator.NavigatorForm;
 import platform.server.view.navigator.NavigatorElement;
-import platform.server.classes.ValueClass;
-import platform.server.classes.DoubleClass;
-import platform.server.classes.DataClass;
-import platform.interop.action.*;
-
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.Map;
-import java.sql.SQLException;
-
+import platform.server.view.navigator.NavigatorForm;
+import platform.server.view.navigator.PropertyViewNavigator;
 import tmc.VEDBusinessLogics;
+
+import javax.swing.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class CashRegController {
 
@@ -224,6 +226,9 @@ public class CashRegController {
             DefaultFormView design = super.createDefaultRichDesign();
             design.setFont(VEDBusinessLogics.FONT_HUGE_BOLD, true);
             design.setPanelLabelAbove(BL.baseGroup, true);
+
+            design.setKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F5, InputEvent.SHIFT_DOWN_MASK | InputEvent.SHIFT_MASK));
+
             return design;
         }
     }

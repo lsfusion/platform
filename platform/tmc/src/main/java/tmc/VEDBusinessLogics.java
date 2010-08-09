@@ -1,47 +1,51 @@
 package tmc;
 
 import net.sf.jasperreports.engine.JRException;
-
-import java.awt.event.InputEvent;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
-import java.io.*;
-import java.awt.event.KeyEvent;
-
+import platform.base.BaseUtils;
+import platform.interop.ClassViewType;
+import platform.interop.Compare;
+import platform.interop.action.ClientAction;
+import platform.interop.action.ClientActionResult;
+import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
+import platform.interop.form.layout.SimplexComponentDirections;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.server.auth.SecurityPolicy;
+import platform.server.auth.User;
+import platform.server.classes.*;
+import platform.server.data.Time;
+import platform.server.data.Union;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
-import platform.server.data.*;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.AggregateProperty;
 import platform.server.logics.property.group.AbstractGroup;
-import platform.server.classes.*;
 import platform.server.session.DataSession;
+import platform.server.view.form.GroupObjectImplement;
+import platform.server.view.form.ObjectImplement;
+import platform.server.view.form.RemoteForm;
 import platform.server.view.form.client.ContainerView;
+import platform.server.view.form.client.DefaultFormView;
 import platform.server.view.navigator.*;
 import platform.server.view.navigator.filter.*;
-import platform.server.view.form.client.DefaultFormView;
-import platform.server.view.form.*;
-import platform.server.auth.User;
-import platform.interop.Compare;
-import platform.interop.ClassViewType;
-import platform.interop.action.*;
-import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
-import platform.interop.form.layout.SimplexComponentDirections;
-import platform.base.BaseUtils;
+import tmc.integration.PanelExternalScreen;
+import tmc.integration.PanelExternalScreenParameters;
+import tmc.integration.exp.CashRegController;
+import tmc.integration.imp.CustomerCheckRetailImportActionProperty;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.rmi.RemoteException;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-
-import tmc.integration.PanelExternalScreen;
-import tmc.integration.PanelExternalScreenParameters;
-import tmc.integration.imp.CustomerCheckRetailImportActionProperty;
-import tmc.integration.exp.CashRegController;
+import java.util.Map;
 
 
 public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
@@ -1099,7 +1103,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             if (hasExternalScreen()) {
                 addPropertyView(documentBarcodePriceOv, objDoc, objBarcode).setToDraw(objBarcode.groupTo);
-                //getPropertyView(documentBarcodePriceOv).setToDraw(objBarcode.groupTo);                               
+                //getPropertyView(documentBarcodePriceOv).setToDraw(objBarcode.groupTo);
             }
         }
 
@@ -1238,6 +1242,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             DefaultFormView design = super.createDefaultRichDesign();
             design.get(objArt.groupTo).gridView.constraints.fillVertical = 3;
+
+            design.setKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.SHIFT_DOWN_MASK | InputEvent.SHIFT_MASK));
+
             return design;
         }
 
@@ -1798,7 +1805,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         @Override
         public DefaultFormView createDefaultRichDesign() {
             DefaultFormView design = super.createDefaultRichDesign();
-    
+
             design.getGroupObjectContainer(objDoc.groupTo).title = "Клиент";
             design.getGroupObjectContainer(objDoc.groupTo).design.background = new Color(192, 192, 192);
 
@@ -1870,6 +1877,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             }
 
             design.setReadOnly(true, objInner.groupTo);
+
+            design.setKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F4, InputEvent.SHIFT_DOWN_MASK | InputEvent.SHIFT_MASK));
 
             return design;
         }
@@ -2131,6 +2140,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.setEnabled(allGroup, false, objObligation.groupTo);
 
             design.get(objObligation.groupTo).gridView.defaultComponent = true;
+
+            design.setKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_DOWN_MASK | InputEvent.SHIFT_MASK));
+
             return design;
         }
 

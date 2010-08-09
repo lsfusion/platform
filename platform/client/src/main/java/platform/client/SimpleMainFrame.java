@@ -7,6 +7,7 @@ import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
@@ -22,16 +23,23 @@ public class SimpleMainFrame extends MainFrame {
             }
         };
 
-        JTabbedPane mainPane = new JTabbedPane(JTabbedPane.BOTTOM);
+        final JTabbedPane mainPane = new JTabbedPane(JTabbedPane.BOTTOM);
 
         StringTokenizer st = new StringTokenizer(forms, ",");
         while (st.hasMoreTokens()) {
             Integer formID = Integer.parseInt(st.nextToken());
-            ClientForm form = new ClientForm(navigator.remoteNavigator.createForm(formID, false), navigator);
-            form.getComponent().setFocusTraversalPolicyProvider(true);
-            //form.getComponent().setFocusTraversalPolicy(new FormFocusTraversalPolicy()); // ставим другую TraversalPolicy, чтобы работало быстрее на слабых компьютерах
-            String caption = navigator.remoteNavigator.getCaption(formID); // надо будет переделать, чтобы не было лишнего вызова
-            mainPane.addTab(caption, form.getComponent());
+            final ClientForm form = new ClientForm(navigator.remoteNavigator.createForm(formID, false), navigator);
+            mainPane.addTab(form.getFullCaption(), form.getComponent());
+
+            KeyStroke keyStroke = form.getKeyStroke();
+            if (keyStroke != null) {
+                mainPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyStroke, formID);
+                mainPane.getActionMap().put(formID, new AbstractAction() {
+                    public void actionPerformed(ActionEvent e) {
+                        mainPane.setSelectedComponent(form.getComponent());
+                    }
+                });
+            }
         }
         setContentPane(mainPane);
         mainPane.setFocusable(false);

@@ -1,19 +1,26 @@
 package platform.client.logics;
 
 import platform.base.OrderedMap;
+import platform.client.SwingUtils;
 import platform.client.form.LogicsSupplier;
 
+import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 public class ClientFormView implements Serializable, LogicsSupplier {
 
     public boolean readOnly = false;
+
+    public KeyStroke keyStroke = null;
+
+    public String caption = "";
 
     // нужен именно List, чтобы проще был обход по дереву
     // считается, что containers уже топологически отсортированы
@@ -85,6 +92,18 @@ public class ClientFormView implements Serializable, LogicsSupplier {
         return getIDProps().get(id);
     }
 
+    public String getFullCaption() {
+        if (keyStroke != null) {
+            StringBuilder fullCaption = new StringBuilder(caption);
+            fullCaption.append(" (");
+            fullCaption.append(SwingUtils.getKeyStrokeCaption(keyStroke));
+            fullCaption.append(")");
+
+            return fullCaption.toString();
+        }
+        return caption;
+    }
+
     abstract class DeSerializeInstancer<T> {
           abstract T newObject(DataInputStream inStream) throws IOException, ClassNotFoundException;
     }
@@ -147,5 +166,9 @@ public class ClientFormView implements Serializable, LogicsSupplier {
             else
                 order.add(getObject(cellID, inStream.readBoolean()));
         }
+
+        keyStroke = (KeyStroke) new ObjectInputStream(inStream).readObject();
+
+        caption = inStream.readUTF();
     }
 }

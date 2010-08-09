@@ -16,6 +16,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -65,6 +66,10 @@ public class FormView implements ClientSerialize {
 
     public boolean readOnly = false;
 
+    public KeyStroke keyStroke = null;
+
+    public String caption = "";
+
     public FormView() {
     }
 
@@ -113,6 +118,10 @@ public class FormView implements ClientSerialize {
                 outStream.writeBoolean(orderCell instanceof ClassCellView);
             }
         }
+
+        new ObjectOutputStream(outStream).writeObject(keyStroke);
+
+        outStream.writeUTF(caption);
     }
 
     public void addIntersection(ComponentView comp1, ComponentView comp2, DoNotIntersectSimplexConstraint cons) {
@@ -400,6 +409,14 @@ public class FormView implements ClientSerialize {
 
     public void setReadOnly(CellView property, boolean readOnly) {
         property.readOnly = readOnly;
+    }
+
+    public void setKeyStroke(KeyStroke keyStroke) {
+        this.keyStroke = keyStroke;
+    }
+
+    public void setCaption(String caption) {
+        this.caption = caption;
     }
 
     public void setEnabled(AbstractGroup group, boolean readOnly, GroupObjectNavigator groupObject) {

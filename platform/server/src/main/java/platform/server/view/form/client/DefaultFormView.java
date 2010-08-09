@@ -199,6 +199,7 @@ public class DefaultFormView extends FormView {
         closeView.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
         formButtonContainer.add(closeView);
 
+        caption = navigatorForm.caption;
     }
 
     private void addComponent(GroupObjectImplementView groupObject, ComponentView childComponent, AbstractGroup groupAbstract) {
