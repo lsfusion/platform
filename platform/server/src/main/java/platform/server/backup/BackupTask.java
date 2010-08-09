@@ -1,4 +1,4 @@
-package tmc.backup;
+package platform.server.backup;
 
 import platform.server.data.sql.DataAdapter;
 import platform.server.logics.scheduler.SchedulerTask;
