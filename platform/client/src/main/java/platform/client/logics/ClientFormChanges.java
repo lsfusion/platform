@@ -8,6 +8,8 @@ import java.util.*;
 
 public class ClientFormChanges {
 
+    public Boolean dataChanged; 
+
     public String message;
 
     public final Map<ClientGroupObjectImplementView,Byte> classViews;
@@ -97,5 +99,6 @@ public class ClientFormChanges {
             dropProperties.add(clientFormView.getProperty(inStream.readInt()));
 
         message = inStream.readUTF();
+        dataChanged = (Boolean) BaseUtils.deserializeObject(inStream);
     }
 }

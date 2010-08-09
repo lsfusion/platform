@@ -414,6 +414,8 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         if(applyString==null) {
             refreshData();
             addObjectOnTransaction();
+
+            dataChanged = true; // временно пока applyChanges синхронен, для того чтобы пересылался факт изменения данных
         }
         return applyString;
     }
@@ -480,10 +482,6 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
     }
 
     public Collection<Property> hintsSave = new HashSet<Property>();
-
-    public boolean hasSessionChanges() {
-        return session.changes.hasChanges();
-    }
 
     public RemoteForm<T> createForm(NavigatorForm<T> form, Map<ObjectNavigator, DataObject> mapObjects) throws SQLException {
         return new RemoteForm<T>(form, BL, session, securityPolicy, focusView, classView, mapper.computer, DataObject.getMapValues(mapObjects));
@@ -1070,6 +1068,9 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
             transaction.rollback();
             throw e;
         }
+
+        if(dataChanged)
+            result.dataChanged = session.changes.hasChanges();
 
         userGroupSeeks.clear();
 

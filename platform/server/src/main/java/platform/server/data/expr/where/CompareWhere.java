@@ -9,6 +9,7 @@ import platform.server.data.expr.VariableExprSet;
 import platform.server.data.query.ContextEnumerator;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.innerjoins.ObjectJoinSets;
+import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.*;
@@ -50,7 +51,7 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Data
             GreaterWhere backCompare = new GreaterWhere(operator2, operator1);
             CompareWhere signCompare = this instanceof GreaterWhere ? new EqualsWhere(operator1, operator2) : new GreaterWhere(operator1, operator2);
 
-            OrObjectWhere[] operators = operator1.getWhere().and(operator2.getWhere()).getOr();
+            OrObjectWhere[] operators = getOperandWhere().getOr();
             OrObjectWhere[] symmetricOrs = new OrObjectWhere[operators.length+2];
             System.arraycopy(operators, 0, symmetricOrs, 0, operators.length);
             symmetricOrs[operators.length] = backCompare.not();
@@ -99,6 +100,15 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Data
     }
 
     public ObjectJoinSets groupObjectJoinSets() {
-        return operator1.getWhere().and(operator2.getWhere()).groupObjectJoinSets().and(new ObjectJoinSets(this));
+        return getOperandWhere().groupObjectJoinSets().and(new ObjectJoinSets(this));
+    }
+
+    @Override
+    public KeyEquals groupKeyEquals() {
+        return getOperandWhere().groupKeyEquals().and(super.groupKeyEquals());
+    }
+
+    protected Where getOperandWhere() {
+        return operator1.getWhere().and(operator2.getWhere());
     }
 }

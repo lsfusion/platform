@@ -85,13 +85,6 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
     }
 
     @Override
-    public ObjectJoinSets groupObjectJoinSets() {
-        assert !(operator1 instanceof KeyExpr && !operator2.hasKey((KeyExpr) operator1));
-        assert !(operator2 instanceof KeyExpr && !operator1.hasKey((KeyExpr) operator2));
-        return super.groupObjectJoinSets();
-    }
-
-    @Override
     public KeyEquals groupKeyEquals() {
         if(operator1 instanceof KeyExpr && !operator2.hasKey((KeyExpr) operator1))
             return new KeyEquals((KeyExpr) operator1, operator2);
@@ -103,7 +96,7 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
     @Override
     public MeanClassWhere getMeanClassWhere() {
         Map<VariableClassExpr,VariableClassExpr> equals = new HashMap<VariableClassExpr, VariableClassExpr>();
-        ClassExprWhere classWhere = operator1.getWhere().getClassWhere().and(operator2.getWhere().getClassWhere());
+        ClassExprWhere classWhere = getOperandWhere().getClassWhere();
 
         if(operator2 instanceof VariableClassExpr && operator1 instanceof StaticClassExpr)
             classWhere = classWhere.and(new ClassExprWhere((VariableClassExpr)operator2,((StaticClassExpr)operator1).getStaticClass()));

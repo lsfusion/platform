@@ -2,6 +2,7 @@ package platform.server.data.expr;
 
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.where.MapWhere;
+import platform.server.data.expr.query.OrderExpr;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ContextEnumerator;
@@ -87,7 +88,11 @@ public abstract class InnerExpr extends VariableClassExpr implements JoinData {
     }
 
     public void fillFollowSet(DataWhereSet fillSet) {
-        fillSet.add((DataWhere) getWhere());
+        Where where = getWhere();
+        if(where instanceof DataWhere)
+            fillSet.add((DataWhere) getWhere());
+        else
+            assert this instanceof OrderExpr;
     }
 
 }

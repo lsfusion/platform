@@ -41,43 +41,6 @@ public class GreaterWhere extends CompareWhere {
         return Compare.GREATER;
     }
 
-    /*
-    public String getSource(CompileSource compile) {
-        if(compile instanceof ToString)
-            return operator1.getSource(compile) + ">" + operator2.getSource(compile);
-
-        String op2Source = operator2.getSource(compile);
-        String result = operator1.getSource(compile) + ">" + op2Source;
-        if(!operator2.getWhere().isTrue())
-            result = "(" + op2Source + " IS NULL OR " + result + ")";
-        return result;
-    }
-
-    @Override
-    protected String getNotSource(CompileSource compile) {
-        String op1Source = operator1.getSource(compile);
-        String op2Source = operator2.getSource(compile);
-        String result = "NOT " + op1Source + ">" + op2Source;
-//        if(!operator2.getWhere().isTrue())
-//            result = "(" + op2Source + " IS NOT NULL AND " + result + ")";
-        if(!operator1.getWhere().isTrue())
-            result = "(" + op1Source + " IS NULL OR " + result + ")";
-        return result;
-    }
-
-    public DataWhereSet getExprFollows() {
-        return operator1.getFollows();
-    }
-
-    public InnerJoins getInnerJoins() {
-        return operator1.getWhere().getInnerJoins().and(new InnerJoins(this));
-    }
-
-    public ClassExprWhere calculateClassWhere() {
-        return operator1.getWhere().getClassWhere();
-    }
-      */
-
     // а вот тут надо извратится и сделать Or проверив сначала null'ы
     public String getSource(CompileSource compile) {
         return operator1.getSource(compile) + ">" + operator2.getSource(compile);
@@ -98,6 +61,6 @@ public class GreaterWhere extends CompareWhere {
     }
 
     public ClassExprWhere calculateClassWhere() {
-        return operator1.getWhere().getClassWhere().and(operator2.getWhere().getClassWhere());
+        return getOperandWhere().getClassWhere();
     }
 }

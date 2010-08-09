@@ -12,6 +12,8 @@ import java.util.*;
 // появляется по сути для отделения клиента, именно он возвращается назад клиенту
 public class FormChanges {
 
+    Boolean dataChanged = null;
+
     public String message = "";
 
     public Map<GroupObjectImplement,Byte> classViews = new HashMap<GroupObjectImplement, Byte>();
@@ -137,5 +139,7 @@ public class FormChanges {
             outStream.writeInt(propertyView.ID);
 
         outStream.writeUTF(message);
+
+        BaseUtils.serializeObject(outStream, dataChanged);
     }
 }

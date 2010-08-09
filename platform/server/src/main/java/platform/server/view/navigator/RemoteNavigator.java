@@ -35,7 +35,7 @@ import java.util.*;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
-public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject implements RemoteNavigatorInterface, FocusView<T>, CustomClassView, UserController {
+public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject implements RemoteNavigatorInterface, FocusView<T>, CustomClassView, UserController, CurrentClassView {
 
     T BL;
 
@@ -153,12 +153,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
 
     //используется для RelevantClassNavigator
     CustomClass currentClass;
-    public boolean changeCurrentClass(int classID) {
+    public boolean changeCurrentClass(ConcreteCustomClass customClass) {
+        if (currentClass!=null && currentClass.equals(customClass)) return false;
 
-        CustomClass changeClass = BL.baseClass.findClassID(classID);
-        if (currentClass != null && currentClass.equals(changeClass)) return false;
-
-        currentClass = changeClass;
+        currentClass = customClass;
         return true;
     }
 
@@ -210,7 +208,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
                     remoteForm.userGroupSeeks.put(groupObject,userSeeks);
             }
 
-            return new RemoteFormView<T,RemoteForm<T>>(remoteForm,navigatorForm.getRichDesign(),navigatorForm.getReportDesign(),exportPort);
+            return new RemoteFormView<T,RemoteForm<T>>(remoteForm,navigatorForm.getRichDesign(),navigatorForm.getReportDesign(),exportPort,this);
 
         } catch (Exception e) {
            throw new RuntimeException(e);

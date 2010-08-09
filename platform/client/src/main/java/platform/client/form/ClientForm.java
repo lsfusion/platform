@@ -22,8 +22,7 @@ import platform.interop.Scroll;
 import platform.interop.action.ClientAction;
 import platform.interop.action.ClientActionResult;
 import platform.interop.form.RemoteFormInterface;
-import platform.interop.form.response.ChangeGroupObjectResponse;
-import platform.interop.form.response.ChangePropertyViewResponse;
+import platform.interop.form.RemoteChanges;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,7 +30,6 @@ import java.awt.event.*;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.util.*;
 import java.util.List;
 
@@ -91,29 +89,26 @@ public class ClientForm {
         return cacheClientFormView.get(ID);
     }
 
-    public ClientForm(RemoteFormInterface iremoteForm, ClientNavigator iclientNavigator) throws IOException, ClassNotFoundException {
+    public ClientForm(RemoteFormInterface remoteForm, ClientNavigator clientNavigator) throws IOException, ClassNotFoundException {
 
         ID = idGenerator.idShift();
 
         // Форма нужна, чтобы с ней общаться по поводу данных и прочих
-        remoteForm = iremoteForm;
+        this.remoteForm = remoteForm;
 
         // Навигатор нужен, чтобы уведомлять его об изменениях активных объектов, чтобы он мог себя переобновлять
-        clientNavigator = iclientNavigator;
+        this.clientNavigator = clientNavigator;
 
-        actionDispatcher = new ClientFormActionDispatcher(clientNavigator);
+        actionDispatcher = new ClientFormActionDispatcher(this.clientNavigator);
 
         formView = cacheClientFormView(remoteForm);
 
         // так неправильно делать по двум причинам :
         // 1. лишний ping
         // 2. compID могут совпадать. Пока это используется только в диалогах, поэтому не столь критично
-        formID = remoteForm.getID();
+        formID = this.remoteForm.getID();
 
         initializeForm();
-
-        applyFormChanges();
-
     }
 
     // ------------------------------------------------------------------------------------ //
@@ -144,8 +139,7 @@ public class ClientForm {
 
                     // если вдруг изменились данные в сессии
                     ClientExternalScreen.invalidate(getID());
-                    applyFormChanges();
-                    dataChanged();
+                    applyRemoteChanges();
                 } catch (IOException e) {
                     throw new RuntimeException("Ошибка при активации формы", e);
                 }
@@ -163,8 +157,7 @@ public class ClientForm {
 
         initializeOrders();
 
-        dataChanged();
-
+        applyRemoteChanges();
     }
 
     // здесь хранится список всех GroupObjects плюс при необходимости null
@@ -401,16 +394,38 @@ public class ClientForm {
         }
     }
 
-    void applyFormChanges() throws IOException {
-        applyFormChanges(remoteForm.getFormChangesByteArray());
+    private void applyRemoteChanges() throws IOException {
+        RemoteChanges remoteChanges = remoteForm.getRemoteChanges();
+
+        for(ClientAction action : remoteChanges.actions)
+            action.dispatch(actionDispatcher);
+
+        Log.incrementBytesReceived(remoteChanges.form.length);
+        applyFormChanges(new ClientFormChanges(new DataInputStream(new CompressingInputStream(new ByteArrayInputStream(remoteChanges.form))), formView));
+        
+        clientNavigator.changeCurrentClass(remoteChanges.classID);
     }
 
-    void applyFormChanges(byte[] changes) throws IOException {
-        Log.incrementBytesReceived(changes.length);
-        applyFormChanges(new ClientFormChanges(new DataInputStream(new CompressingInputStream(new ByteArrayInputStream(changes))), formView));
-    }
+    private Color defaultApplyBackground;
+    private boolean dataChanged;
+    
+    private void applyFormChanges(ClientFormChanges formChanges) {
 
-    void applyFormChanges(ClientFormChanges formChanges) {
+        if(formChanges.dataChanged!=null && buttonApply!=null) {
+            if (defaultApplyBackground == null)
+                defaultApplyBackground = buttonApply.getBackground();
+
+            dataChanged = formChanges.dataChanged;
+            if (dataChanged) {
+                buttonApply.setBackground(Color.green);
+                buttonApply.setEnabled(true);
+                buttonCancel.setEnabled(true);
+            } else {
+                buttonApply.setBackground(defaultApplyBackground);
+                buttonApply.setEnabled(false);
+                buttonCancel.setEnabled(false);
+            }
+        }
 
         // Сначала меняем виды объектов
 
@@ -477,13 +492,10 @@ public class ClientForm {
         if (!objectValue.equals(curObjectValue)) {
 
             // приходится вот так возвращать класс, чтобы не было лишних запросов
-            ChangeGroupObjectResponse response = remoteForm.changeGroupObject(groupObject.getID(), Serializer.serializeClientGroupObjectValue(objectValue));
-
+            remoteForm.changeGroupObject(groupObject.getID(), Serializer.serializeClientGroupObjectValue(objectValue));
             controllers.get(groupObject).setCurrentGroupObject(objectValue,true);
 
-            applyFormChanges(response.formChanges);
-
-            clientNavigator.changeCurrentClass(remoteForm,response.classID);
+            applyRemoteChanges();
         }
 
     }
@@ -492,9 +504,7 @@ public class ClientForm {
 
         remoteForm.changeGroupObject(groupObject.getID(), changeType.serialize());
 
-        applyFormChanges();
-
-        clientNavigator.changeCurrentClass(remoteForm,groupObject.get(0));
+        applyRemoteChanges();
     }
 
     public void changeProperty(ClientCellView property, Object value, boolean all) throws IOException {
@@ -504,10 +514,8 @@ public class ClientForm {
 
         if (property instanceof ClientPropertyView) {
 
-            ChangePropertyViewResponse response = remoteForm.changePropertyView(property.getID(), BaseUtils.serializeObject(value), all); 
-            dispatchActions(response.actions);
-            dataChanged();
-            applyFormChanges(response.formChanges);
+            remoteForm.changePropertyView(property.getID(), BaseUtils.serializeObject(value), all);
+            applyRemoteChanges();
 
         } else {
 
@@ -516,36 +524,18 @@ public class ClientForm {
             } else {
 
                 ClientObjectImplementView object = ((ClientObjectCellView)property).object;
-                dispatchActions(remoteForm.changeObject(object.getID(), value));
-
+                remoteForm.changeObject(object.getID(), value);
                 controllers.get(property.getGroupObject()).setCurrentObject(object, value);
-
-                applyFormChanges();
-
-                clientNavigator.changeCurrentClass(remoteForm,object);
+                applyRemoteChanges();
             }
         }
 
     }
 
-    private List<ClientActionResult> dispatchActions(List<? extends ClientAction> actions) throws IOException {
-        
-        if (actions == null) return null;
-
-        List<ClientActionResult> result = new ArrayList<ClientActionResult>();
-
-        for(ClientAction action : actions)
-            result.add(action.dispatch(actionDispatcher));
-
-        return result;
-    }
-
     void addObject(ClientObjectImplementView object, ClientConcreteClass cls) throws IOException {
         
         remoteForm.addObject(object.getID(), cls.ID);
-        dataChanged();
-
-        applyFormChanges();
+        applyRemoteChanges();
     }
 
     public void changeClass(ClientObjectImplementView object, ClientConcreteClass cls) throws IOException {
@@ -553,17 +543,13 @@ public class ClientForm {
         SwingUtils.stopSingleAction(object.groupObject.getActionID(), true);
 
         remoteForm.changeClass(object.getID(), (cls == null) ? -1 : cls.ID);
-        dataChanged();
-
-        applyFormChanges();
-
-        clientNavigator.changeCurrentClass(remoteForm, object);
+        applyRemoteChanges();
     }
 
     public void changeGridClass(ClientObjectImplementView object, ClientObjectClass cls) throws IOException {
 
         remoteForm.changeGridClass(object.getID(), cls.ID);
-        applyFormChanges();
+        applyRemoteChanges();
     }
 
     public boolean switchClassView(ClientGroupObjectImplementView groupObject) throws IOException {
@@ -571,7 +557,7 @@ public class ClientForm {
         SwingUtils.stopSingleAction(groupObject.getActionID(), true);
 
         if (remoteForm.switchClassView(groupObject.getID())) {
-            applyFormChanges();
+            applyRemoteChanges();
             return true;
         } else
             return false;
@@ -582,7 +568,7 @@ public class ClientForm {
         SwingUtils.stopSingleAction(groupObject.getActionID(), true);
 
         if (remoteForm.changeClassView(groupObject.getID(), show)) {
-            applyFormChanges();
+            applyRemoteChanges();
             return true;
         } else
             return false;
@@ -595,7 +581,7 @@ public class ClientForm {
         else
             remoteForm.changeObjectOrder(property.getID(), modiType.serialize());
 
-        applyFormChanges();
+        applyRemoteChanges();
     }
 
     @SuppressWarnings({"UnusedDeclaration"})
@@ -615,14 +601,14 @@ public class ClientForm {
                 remoteForm.addFilter(Serializer.serializeClientFilter(filter));
             }
 
-        applyFormChanges();
+        applyRemoteChanges();
     }
 
     private void setRegularFilter(ClientRegularFilterGroupView filterGroup, ClientRegularFilterView filter) throws IOException {
 
         remoteForm.setRegularFilter(filterGroup.ID, (filter == null) ? -1 : filter.ID);
 
-        applyFormChanges();
+        applyRemoteChanges();
     }
 
     public void changePageSize(ClientGroupObjectImplementView groupObject, int pageSize) throws IOException {
@@ -647,7 +633,7 @@ public class ClientForm {
 
             remoteForm.refreshData();
 
-            applyFormChanges();
+            applyRemoteChanges();
 
         } catch (IOException e) {
             throw new RuntimeException("Ошибка при обновлении формы", e);
@@ -658,7 +644,7 @@ public class ClientForm {
 
         try {
 
-            if (remoteForm.hasSessionChanges()) {
+            if (dataChanged) {
 
                 String okMessage = "";
                 for (ClientGroupObjectImplementView groupObject : formView.groupObjects) {
@@ -693,13 +679,11 @@ public class ClientForm {
 
                 if (message == null) {
                     Log.printSuccessMessage("Изменения были удачно записаны...");
-                    dataChanged();
+                    applyRemoteChanges();
                 } else {
                     Log.printFailedMessage(message);
                     return false;
                 }
-
-                applyFormChanges();
             }
 
         } catch (IOException e) {
@@ -714,12 +698,12 @@ public class ClientForm {
 
         try {
 
-            if (remoteForm.hasSessionChanges()) {
+            if (dataChanged) {
 
                 if (SwingUtils.showConfirmDialog(getComponent(), "Вы действительно хотите отменить сделанные изменения ?", null, JOptionPane.WARNING_MESSAGE, SwingUtils.NO_BUTTON) == JOptionPane.YES_OPTION) {
                     remoteForm.cancelChanges();
-                    dataChanged();
-                    applyFormChanges();
+
+                    applyRemoteChanges();
                 }
             }
 
@@ -740,29 +724,6 @@ public class ClientForm {
 
     boolean nullPressed() {
         return true;
-    }
-
-    private Color defaultApplyBackground;
-
-    private void dataChanged() throws RemoteException {
-
-        if (defaultApplyBackground == null)
-            defaultApplyBackground = buttonApply.getBackground();
-
-        boolean formHasChanged = remoteForm.hasSessionChanges();
-        
-        if (formHasChanged) {
-
-            buttonApply.setBackground(Color.green);
-            buttonApply.setEnabled(true);
-            buttonCancel.setEnabled(true);
-        } else {
-
-            buttonApply.setBackground(defaultApplyBackground);
-            buttonApply.setEnabled(false);
-            buttonCancel.setEnabled(false);
-        }
-
     }
 
     public void dropLayoutCaches() {

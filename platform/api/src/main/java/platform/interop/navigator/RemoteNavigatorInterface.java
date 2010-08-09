@@ -17,8 +17,6 @@ public interface RemoteNavigatorInterface extends Remote {
 
     byte[] getElementsByteArray(int groupID) throws RemoteException;
 
-    boolean changeCurrentClass(int classID) throws RemoteException;
-
     String getCaption(int formID) throws RemoteException;
     
     final static int NAVIGATORGROUP_RELEVANTFORM = -2;
