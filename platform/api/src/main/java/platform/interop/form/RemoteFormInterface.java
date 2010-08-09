@@ -18,10 +18,6 @@ public interface RemoteFormInterface extends Remote {
 
     public RemoteChanges getRemoteChanges() throws RemoteException;
 
-    // 2 метода пока вообще нигде не используются, все классы сразу прилетают на клиента
-    byte[] getBaseClassByteArray(int objectID) throws RemoteException;
-    byte[] getChildClassesByteArray(int objectID, int classID) throws RemoteException;
-
     int getID() throws RemoteException;
 
     // синхронная проверка на то можно ли менять свойство
