@@ -1,18 +1,21 @@
 package platform.fullclient.layout;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import bibliothek.gui.dock.common.*;
+import bibliothek.gui.dock.common.CControl;
+import bibliothek.gui.dock.common.CGridArea;
+import bibliothek.gui.dock.common.MultipleCDockableFactory;
+import bibliothek.gui.dock.common.MultipleCDockableLayout;
 import bibliothek.gui.dock.common.event.CDockableAdapter;
 import bibliothek.gui.dock.common.intern.CDockable;
 import bibliothek.util.xml.XElement;
 import net.sf.jasperreports.engine.JRException;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.form.RemoteFormInterface;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class ViewManager {
@@ -22,7 +25,6 @@ public class ViewManager {
     List<FormDockable> pages = new ArrayList<FormDockable>();
 
     private FormFactory pageFactory;
-
 
     private CGridArea gridArea;
 
@@ -44,108 +46,31 @@ public class ViewManager {
         return gridArea;
     }
 
+    private void openForm(FormDockable page) {
+        page.addCDockableStateListener(new CDockableStateAdapter(page));
+        page.setLocation(gridArea.getStationLocation());
+        control.add(page);
+        page.setVisible(true);
+    }
 
-    public void openClient(int iformID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException, JRException {
-        try {
-            final ClientFormDockable page = new ClientFormDockable(iformID, navigator, currentSession, pageFactory);
-            forms.add(page.getForm());
-            page.addCDockableStateListener(new CDockableAdapter() {
-                @Override
-                public void visibilityChanged(CDockable dockable) {
-                    if (dockable.isVisible()) {
-                        pages.add(page);
-                    } else {
-                        pages.remove(page);
-                        forms.remove(page.formID);
-                    }
-                }
-            });
-
-            page.setLocation(gridArea.getStationLocation());
-            control.add(page);
-            page.setVisible(true);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void openClient(int formID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException, JRException {
+        openForm(new ClientFormDockable(formID, navigator, currentSession, pageFactory));
     }
 
     public void openClient(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException, JRException {
-        final ClientFormDockable page = new ClientFormDockable(navigator, remoteForm, pageFactory);
-        forms.add(page.getForm());
-        page.addCDockableStateListener(new CDockableAdapter() {
-            @Override
-            public void visibilityChanged(CDockable dockable) {
-                if (dockable.isVisible()) {
-                    pages.add(page);
-                } else {
-                    pages.remove(page);
-                    forms.remove(page.formID);
-                }
-            }
-        });
-        control.add(page);
-        page.setLocation(gridArea.getStationLocation());
-        page.setVisible(true);
+        openForm(new ClientFormDockable(navigator, remoteForm, pageFactory));
     }
 
-    public void openReport(int iformID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException {
-        final ReportDockable page = new ReportDockable(iformID, navigator, currentSession, pageFactory);
-        forms.add(page.getForm());
-        page.addCDockableStateListener(new CDockableAdapter() {
-            @Override
-            public void visibilityChanged(CDockable dockable) {
-                if (dockable.isVisible()) {
-                    pages.add(page);
-                } else {
-                    pages.remove(page);
-                    forms.remove(page.formID);
-                }
-            }
-        });
-
-        control.add(page);
-        page.setLocation(gridArea.getStationLocation());
-        page.setVisible(true);
+    public void openReport(int formID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException {
+        openForm(new ReportDockable(formID, navigator, currentSession, pageFactory));
     }
 
     public void openReport(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
-
-        final ReportDockable page = new ReportDockable(navigator, remoteForm, pageFactory);
-        forms.add(page.getForm());
-        page.addCDockableStateListener(new CDockableAdapter() {
-            @Override
-            public void visibilityChanged(CDockable dockable) {
-                if (dockable.isVisible()) {
-                    pages.add(page);
-                } else {
-                    pages.remove(page);
-                    forms.remove(page.formID);
-                }
-            }
-        });
-        control.add(page);
-        page.setLocation(gridArea.getStationLocation());
-        page.setVisible(true);
+        openForm(new ReportDockable(navigator, remoteForm, pageFactory));
     }
 
     public void openReport(String fileName, String directory) throws JRException {
-
-        final ReportDockable page = new ReportDockable(fileName, directory, pageFactory);
-        forms.add(page.getForm());
-        page.addCDockableStateListener(new CDockableAdapter() {
-            @Override
-            public void visibilityChanged(CDockable dockable) {
-                if (dockable.isVisible()) {
-                    pages.add(page);
-                } else {
-                    pages.remove(page);
-                    forms.remove(page.formID);
-                }
-            }
-        });
-        control.add(page);
-        page.setLocation(gridArea.getStationLocation());
-        page.setVisible(true);
+        openForm(new ReportDockable(fileName, directory, pageFactory));
     }
 
     private class FormFactory implements MultipleCDockableFactory<FormDockable, FormLayout> {
@@ -161,78 +86,68 @@ public class ViewManager {
 
         public FormDockable read(FormLayout layout) {
             try {
-                String name = layout.getName();
-
-                Form picture = forms.getPicture(name);
-                if (picture == null)
-                    return null;
-
-                final FormDockable page = new FormDockable(picture.getType(), this, picture.getName(), mainNavigator);
-
-                page.addCDockableStateListener(new CDockableAdapter() {
-                    @Override
-                    public void visibilityChanged(CDockable dockable) {
-                        if (dockable.isVisible()) {
-                            pages.add(page);
-                        } else {
-                            pages.remove(page);
-                            forms.remove(page.formID);
-                        }
-                    }
-                });
+                FormDockable page = new ClientFormDockable(layout.getFormID(), this, mainNavigator);
+                page.addCDockableStateListener(new CDockableStateAdapter(page));
                 return page;
             }
             catch (Exception e) {
+                e.printStackTrace();
                 return null;
             }
         }
 
         public FormLayout write(FormDockable dockable) {
             FormLayout layout = new FormLayout();
-            layout.setName(dockable.getForm().getName());
+            layout.setFormID(dockable.getFormID());
             return layout;
         }
     }
 
+    private class CDockableStateAdapter extends CDockableAdapter {
+        private FormDockable page;
 
-    private static class FormLayout implements MultipleCDockableLayout {
-        /**
-         * the name of the picture
-         */
-        private String name;
-
-        /**
-         * Sets the name of the picture that is shown.
-         *
-         * @param name the name of the picture
-         */
-        public void setName(String name) {
-            this.name = name;
+        public CDockableStateAdapter(FormDockable page) {
+            this.page = page;
         }
 
-        /**
-         * Gets the name of the picture that is shown.
-         *
-         * @return the name
-         */
-        public String getName() {
-            return name;
+        @Override
+        public void visibilityChanged(CDockable dockable) {
+            if (dockable.isVisible()) {
+                forms.add(page.getFormID());
+                pages.add(page);
+            } else {
+                pages.remove(page);
+                forms.remove(page.getFormID());
+            }
+        }
+    };
+
+
+    private static class FormLayout implements MultipleCDockableLayout {
+        private Integer formID;
+
+        public Integer getFormID() {
+            return formID;
+        }
+
+        public void setFormID(Integer formID) {
+            this.formID = formID;
         }
 
         public void readStream(DataInputStream in) throws IOException {
-            name = in.readUTF();
+            formID = in.readInt();
         }
 
         public void readXML(XElement element) {
-            name = element.getString();
+            formID = element.getInt();
         }
 
         public void writeStream(DataOutputStream out) throws IOException {
-            out.writeUTF(name);
+            out.writeInt(formID);
         }
 
         public void writeXML(XElement element) {
-            element.setString(name);
+            element.setInt(formID);
         }
     }
 }

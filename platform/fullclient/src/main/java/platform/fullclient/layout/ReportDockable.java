@@ -7,6 +7,7 @@ import net.sf.jasperreports.engine.export.JExcelApiExporter;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.view.JRViewer;
+import platform.base.Pair;
 import platform.client.Log;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.CompressingInputStream;
@@ -20,8 +21,10 @@ import java.util.Map;
 
 public class ReportDockable extends FormDockable {
 
-    public ReportDockable(int iformID, ClientNavigator navigator, boolean currentSession, MultipleCDockableFactory<FormDockable,?> factory) throws IOException, ClassNotFoundException {
-        super(iformID, navigator, currentSession, factory);
+    private JasperDesignWrapper design = null;
+
+    public ReportDockable(int formID, ClientNavigator navigator, boolean currentSession, MultipleCDockableFactory<FormDockable,?> factory) throws IOException, ClassNotFoundException {
+        super(formID, navigator, currentSession, factory);
     }
 
     public ReportDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, MultipleCDockableFactory<FormDockable,?> factory) throws ClassNotFoundException, IOException {
@@ -30,7 +33,7 @@ public class ReportDockable extends FormDockable {
 
     // из файла
     ReportDockable(String fileName,String directory, MultipleCDockableFactory<FormDockable,?> factory) throws JRException {
-        super(0, factory, "Caption");
+        super(0, factory);
 
         setActiveComponent(prepareViewer(new JRViewer((JasperPrint) JRLoader.loadObject(directory+fileName))),fileName);
     }
@@ -39,10 +42,16 @@ public class ReportDockable extends FormDockable {
     Component getActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
 
         try {
-            return prepareViewer(new JRViewer(createJasperPrint(remoteForm, false)));
+            design = retrieveJasperDesign(remoteForm, false);
+            return prepareViewer(new JRViewer(createJasperPrint(remoteForm, design.getJasperDesign())));
         } catch (JRException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    protected String getCaption() {
+        return design != null ? design.getCaption() : "";
     }
 
     private JRViewer prepareViewer(final JRViewer viewer) {
@@ -60,26 +69,25 @@ public class ReportDockable extends FormDockable {
     }
 
 
-    private static final Map<Integer, JasperDesign> cacheJasperDesign = new HashMap();
+    private static final Map<Pair<Integer, Boolean>, JasperDesignWrapper> cacheJasperDesign = new HashMap();
 
-    private static JasperDesign retrieveJasperDesign(RemoteFormInterface remoteForm, boolean toExcel) throws IOException, ClassNotFoundException {
+    private static JasperDesignWrapper retrieveJasperDesign(RemoteFormInterface remoteForm, boolean toExcel) throws IOException, ClassNotFoundException {
+        Pair idExcel = new Pair(remoteForm.getID(), toExcel);
 
-        int ID = remoteForm.getID();
-
-        if (!remoteForm.hasCustomReportDesign() || !cacheJasperDesign.containsKey(ID)) {
+        if (!remoteForm.hasCustomReportDesign() || !cacheJasperDesign.containsKey(idExcel)) {
 
             byte[] state = remoteForm.getReportDesignByteArray(toExcel);
             Log.incrementBytesReceived(state.length);
 
-            cacheJasperDesign.put(ID, (JasperDesign) new ObjectInputStream(new CompressingInputStream(new ByteArrayInputStream(state))).readObject());
+            ObjectInputStream objIn = new ObjectInputStream(new CompressingInputStream(new ByteArrayInputStream(state)));
+            JasperDesign jasperDesign = (JasperDesign) objIn.readObject();
+            cacheJasperDesign.put(idExcel, new JasperDesignWrapper(jasperDesign, objIn.readUTF()));
         }
 
-        return cacheJasperDesign.get(ID);
+        return cacheJasperDesign.get(idExcel);
     }
 
-    public static JasperPrint createJasperPrint(RemoteFormInterface remoteForm, boolean toExcel) throws ClassNotFoundException, IOException, JRException {
-
-        JasperDesign design = retrieveJasperDesign(remoteForm, toExcel);
+    public static JasperPrint createJasperPrint(RemoteFormInterface remoteForm, JasperDesign design) throws ClassNotFoundException, IOException, JRException {
         JasperReport report = JasperCompileManager.compileReport(design);
 
         JasperPrint print = JasperFillManager.fillReport(report,new HashMap(),
@@ -96,7 +104,8 @@ public class ReportDockable extends FormDockable {
             File tempFile = File.createTempFile("lsf", ".xls");
 
             JExcelApiExporter xlsExporter = new JExcelApiExporter();
-            xlsExporter.setParameter(JRExporterParameter.JASPER_PRINT, createJasperPrint(remoteForm, true));
+            JasperDesignWrapper design = retrieveJasperDesign(remoteForm, true);
+            xlsExporter.setParameter(JRExporterParameter.JASPER_PRINT, createJasperPrint(remoteForm, design.getJasperDesign()));
             xlsExporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
             xlsExporter.exportReport();
 

@@ -9,9 +9,9 @@ import platform.base.BaseUtils;
 import platform.interop.*;
 import platform.interop.action.ClientAction;
 import platform.interop.action.ClientActionResult;
+import platform.interop.form.RemoteChanges;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
-import platform.interop.form.RemoteChanges;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
 import platform.server.logics.BusinessLogics;
@@ -21,7 +21,6 @@ import platform.server.view.form.client.report.DefaultJasperDesign;
 import platform.server.view.form.filter.Filter;
 import platform.server.view.navigator.NavigatorForm;
 import platform.server.view.navigator.ObjectNavigator;
-import platform.server.view.navigator.RemoteNavigator;
 
 import java.io.*;
 import java.rmi.RemoteException;
@@ -94,7 +93,9 @@ public class RemoteFormView<T extends BusinessLogics<T>,F extends RemoteForm<T>>
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
             CompressingOutputStream compStream = new CompressingOutputStream(outStream);
-            new ObjectOutputStream(compStream).writeObject(getReportDesign(toExcel));
+            ObjectOutputStream objOut = new ObjectOutputStream(compStream);
+            objOut.writeObject(getReportDesign(toExcel));
+            objOut.writeUTF(richDesign.caption);
             compStream.finish();
         } catch (IOException e) {
             throw new RuntimeException(e);

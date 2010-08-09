@@ -7,6 +7,7 @@ package platform.server.view.navigator;
 
 // навигатор работает с абстрактной BL
 
+import platform.base.BaseUtils;
 import platform.interop.RemoteObject;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
@@ -14,8 +15,8 @@ import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
-import platform.server.data.query.Query;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.query.Query;
 import platform.server.data.where.Where;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
@@ -24,7 +25,6 @@ import platform.server.logics.property.PropertyInterface;
 import platform.server.session.*;
 import platform.server.view.form.*;
 import platform.server.view.form.client.RemoteFormView;
-import platform.base.BaseUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -60,7 +60,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     }
 
     WeakHashMap<DataSession, Object> sessions = new WeakHashMap<DataSession, Object>();
-    
+
     public void changeCurrentUser(DataObject user) {
         this.user = user;
 
@@ -86,7 +86,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
             Query<Object,String> query = new Query<Object,String>(new HashMap<Object, KeyExpr>());
             query.properties.put("name", BL.currentUserName.getExpr(session.modifier));
             objectStream.writeObject(BaseUtils.nvl((String)query.execute(session).singleValue().get("name"),"(без имени)").trim());
-            
+
             session.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -131,7 +131,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     }
 
     public byte[] getElementsByteArray(int groupID) {
-        
+
         List<NavigatorElement> listElements = getElements(groupID);
 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
@@ -219,12 +219,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
 
     public void addCacheObject(ConcreteCustomClass cls, int value) {
         classCache.put(cls, value);
-    }
-
-    public String getCaption(int formID){
-
-        // инстанцирует форму
-        return BL.baseElement.getNavigatorElement(formID).caption;
     }
 }
 

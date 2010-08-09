@@ -13,17 +13,18 @@ public class FormRepository {
 	private List<FormRepositoryListener> listeners = new ArrayList<FormRepositoryListener>();
 	
 	/** the formsList in this repository*/
-	private List<Form> formsList = new ArrayList<Form>();
+	private List<Integer> formsList = new ArrayList<Integer>();
 	
 	/**
 	 * Writes the formsList of this repository into <code>out</code>.
 	 * @param out the stream to write into
 	 * @throws IOException if an I/O error occurs
 	 */
-	public void write( DataOutputStream out ) throws IOException{
-	    out.writeInt( formsList.size() );
-	    for( Form picture : formsList)
-	        picture.write( out );
+	public void write(DataOutputStream out) throws IOException {
+	    out.writeInt(formsList.size());
+	    for (Integer formID : formsList) {
+            out.writeInt(formID);
+        }
 	}
 
 
@@ -32,53 +33,37 @@ public class FormRepository {
 	 * @param in the stream to read from
 	 * @throws IOException if an I/O error occurs
 	 */
-	public void read( DataInputStream in ) throws IOException{
-	    while( !formsList.isEmpty() )
-	        remove( formsList.get( formsList.size()-1 ) );
+	public void read(DataInputStream in) throws IOException {
+	    while (!formsList.isEmpty()) {
+	        remove(formsList.get(formsList.size()-1));
+        }
 
-	    for( int i = 0, n = in.readInt(); i<n; i++ ){
-	        Form picture = new Form();
-	        picture.read( in );
-	        add( picture );
+	    for (int i = 0, n = in.readInt(); i < n; ++i) {
+	        add(in.readInt());
 	    }
 	}
 
 	/**
-	 * Adds a picture to the list of formsList.
-	 * @param picture the new picture
+	 * Adds a formID to the list of formsList.
+	 * @param formID the new formID
 	 */
-	public void add( Form picture ){
-		formsList.add( picture );
-		for( FormRepositoryListener listener : listeners.toArray( new FormRepositoryListener[ listeners.size() ] ) )
-			listener.pictureAdded( picture );
+	public void add(Integer formID) {
+		if (formsList.add(formID)) {
+            for (FormRepositoryListener listener : listeners.toArray(new FormRepositoryListener[listeners.size()])) {
+                listener.pictureAdded(formID);
+            }
+        }
 	}
 	
 	/**
-	 * Removes a picture from the list of formsList.
-	 * @param picture the picture to remove
+	 * Removes a formID from the list of formsList.
+	 * @param formID the formID to remove
 	 */
-	public void remove( Form picture ){
-		if( formsList.remove( picture )){
-			for( FormRepositoryListener listener : listeners.toArray( new FormRepositoryListener[ listeners.size() ] ) )
-				listener.pictureRemoved( picture );	
+	public void remove(Integer formID) {
+		if (formsList.remove(formID)) {
+			for (FormRepositoryListener listener : listeners.toArray(new FormRepositoryListener[listeners.size()])) {
+				listener.pictureRemoved(formID);
+            }
 		}
 	}
-
-    public void remove(int type){
-        for (Form form:formsList){
-            if (form.getType()==type){
-                formsList.remove(form);
-                break;
-            }
-        }
-    }
-
-	public Form getPicture( String name ){
-		for( Form picture : formsList)
-			if( picture.getName().equals( name ))
-				return picture;
-		
-		return null;
-	}
-
 }
