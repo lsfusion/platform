@@ -91,7 +91,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         if (showType != null)
             showType.hideViews();
 
-        form.getComponent().validate();
+        // нет смысла вызывать validate или invalidate, так как setVisible услышит сам SimplexLayout и сделает главному контейнеру invalidate
     }
 
     private void showViews() {
@@ -108,7 +108,6 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         if (showType != null)
             showType.showViews();
 
-        form.getComponent().validate();
     }
 
     public void setClassView(Byte setClassView) {

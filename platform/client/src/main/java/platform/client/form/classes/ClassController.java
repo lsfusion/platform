@@ -46,7 +46,6 @@ public class ClassController {
 
             protected void needToBeRevalidated() {
                 form.dropLayoutCaches();
-                form.getComponent().validate();
             }
 
             protected void widthDecreased() {

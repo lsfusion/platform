@@ -14,7 +14,6 @@ import platform.interop.form.layout.SimplexSolverDirections;
 import platform.interop.form.layout.SingleSimplexConstraint;
 
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.util.*;
@@ -87,13 +86,20 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
     public void componentMoved(ComponentEvent e) {
     }
 
+    // приходится вызывать invalidate, поскольку это событие обрабатывается в EventDispatchingThread и приходит позже нормального validate
     public void componentShown(ComponentEvent e) {
-        componentsChanged = true;
+        if (!componentsChanged) {
+            componentsChanged = true;
+            mainContainer.invalidate();
+        }
     }
 
     public void componentHidden(ComponentEvent e) {
-        componentsChanged = true;
-    }
+        if (!componentsChanged) {
+            componentsChanged = true;
+            mainContainer.invalidate();
+        }
+   }
 
     public Dimension preferredLayoutSize(Container parent) {
         return new Dimension(500, 500);
@@ -515,7 +521,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
     public void invalidateLayout(Container target) {
     }
 
-    // приходится делать не через invalidateLayout, поскольку механизм invalidate() считает, что отрисовка проходит всегда очень быстро
+    // приходится делать не через dropLayoutCaches, поскольку механизм invalidate() считает, что отрисовка проходит всегда очень быстро
     // в итоге invalidate срабатывает даже при добавлении / удалении объектов
 
     public void dropCaches() {

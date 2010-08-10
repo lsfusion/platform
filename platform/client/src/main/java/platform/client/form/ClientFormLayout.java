@@ -178,6 +178,7 @@ public abstract class ClientFormLayout extends JPanel {
 
     public void dropCaches() {
         layoutManager.dropCaches();
+        mainContainer.revalidate();
     }
 
     public void addBinding(KeyStroke key, String id, AbstractAction action) {
