@@ -87,6 +87,9 @@ public class CashRegController {
                 Double quantity = (quantityObject instanceof Double) ? (Double)quantityObject : 1.0;
                 Double price = (Double)row.values.get(remoteForm.mapper.mapPropertyView(priceProp));
                 String artName = ((String)row.values.get(remoteForm.mapper.mapPropertyView(nameProp))).trim();
+                artName = artName.replace(',', '.');
+                artName = artName.replace('"', ' ');
+                artName = artName.replace('\'', ' ');
                 Double sumPos = (Double) row.values.get(remoteForm.mapper.mapPropertyView(sumProp));
 
                 result += price / 100;

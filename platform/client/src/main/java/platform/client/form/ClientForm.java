@@ -55,11 +55,6 @@ public class ClientForm {
         return ID;
     }
 
-    private int formID;
-    public int getFormID() {
-        return formID;
-    }
-
     public KeyStroke getKeyStroke() {
         return formView.keyStroke;
     }
@@ -102,11 +97,6 @@ public class ClientForm {
         actionDispatcher = new ClientFormActionDispatcher(this.clientNavigator);
 
         formView = cacheClientFormView(remoteForm);
-
-        // так неправильно делать по двум причинам :
-        // 1. лишний ping
-        // 2. compID могут совпадать. Пока это используется только в диалогах, поэтому не столь критично
-        formID = this.remoteForm.getID();
 
         initializeForm();
     }
