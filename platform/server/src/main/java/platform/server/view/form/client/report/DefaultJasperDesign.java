@@ -258,14 +258,20 @@ public class DefaultJasperDesign {
             Collection<ReportDrawField> drawFields = new ArrayList<ReportDrawField>();
 
             // сначала все коды
-            for(ObjectImplementView object : group)
-                drawFields.add(new ReportDrawField(object.objectCellView));
+            for(ObjectImplementView object : group) {
+                ReportDrawField reportField = object.objectCellView.getReportDrawField();
+                if (reportField != null)
+                    drawFields.add(reportField);
+            }
 
             // бежим по всем свойствам входящим в объектам
             for(PropertyCellView property : formView.properties) {
 
-                if (group.view == property.view.toDraw)
-                    drawFields.add(new ReportDrawField(property));
+                if (group.view == property.view.toDraw) {
+                    ReportDrawField reportField = property.getReportDrawField();
+                    if (reportField != null)
+                        drawFields.add(reportField);
+                }
             }
 
             boolean detail = (group == drawGroups.get(drawGroups.size()-1));

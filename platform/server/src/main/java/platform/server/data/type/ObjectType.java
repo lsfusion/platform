@@ -72,9 +72,10 @@ public class ObjectType implements Type<Integer> {
         return NumberFormat.getInstance();
     }
 
-    public void fillReportDrawField(ReportDrawField reportField) {
+    public boolean fillReportDrawField(ReportDrawField reportField) {
         reportField.valueClass = Integer.class;
         reportField.alignment = JRAlignment.HORIZONTAL_ALIGN_RIGHT;
+        return true;
     }
 
     public ConcreteClass getDataClass(Object value, SQLSession session, BaseClass baseClass) throws SQLException {

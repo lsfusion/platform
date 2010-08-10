@@ -94,8 +94,8 @@ public class RemoteFormView<T extends BusinessLogics<T>,F extends RemoteForm<T>>
         try {
             CompressingOutputStream compStream = new CompressingOutputStream(outStream);
             ObjectOutputStream objOut = new ObjectOutputStream(compStream);
-            objOut.writeObject(getReportDesign(toExcel));
             objOut.writeUTF(richDesign.caption);
+            objOut.writeObject(getReportDesign(toExcel));
             compStream.finish();
         } catch (IOException e) {
             throw new RuntimeException(e);

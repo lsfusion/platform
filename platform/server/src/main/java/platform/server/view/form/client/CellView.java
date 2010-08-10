@@ -84,10 +84,9 @@ abstract public class CellView extends ComponentView {
             return getDefaultCaption();
     }
 
-    public void fillReportDrawField(ReportDrawField reportField) {
+    public ReportDrawField getReportDrawField() {
 
-        reportField.sID = getSID();
-        reportField.caption = getCaption();
+        ReportDrawField reportField = new ReportDrawField(getSID(), getCaption());
 
         Type type = getType();
 
@@ -102,6 +101,9 @@ abstract public class CellView extends ComponentView {
             reportField.pattern = ((SimpleDateFormat)format).toPattern();
         }
 
-        getType().fillReportDrawField(reportField);
+        if (!getType().fillReportDrawField(reportField))
+            return null;
+
+        return reportField;
     }
 }

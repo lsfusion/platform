@@ -31,10 +31,12 @@ public class DateClass extends DataClass<Date> {
         return java.util.Date.class;
     }
 
-    public void fillReportDrawField(ReportDrawField reportField) {
-        super.fillReportDrawField(reportField);
+    public boolean fillReportDrawField(ReportDrawField reportField) {
+        if (!super.fillReportDrawField(reportField))
+            return false;
 
         reportField.alignment = JRAlignment.HORIZONTAL_ALIGN_RIGHT;
+        return true;
     }
 
     public byte getTypeID() {

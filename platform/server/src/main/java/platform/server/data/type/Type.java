@@ -29,7 +29,7 @@ public interface Type<T> extends Reader<T> {
     int getMinimumWidth();
     int getPreferredWidth();
     int getMaximumWidth();
-    void fillReportDrawField(ReportDrawField reportField);
+    boolean fillReportDrawField(ReportDrawField reportField);
 
     boolean isCompatible(Type type);
 

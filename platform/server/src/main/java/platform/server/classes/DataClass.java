@@ -145,9 +145,10 @@ public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, AndCl
     public int getMaximumWidth() {
         return Integer.MAX_VALUE;
     }
-    public void fillReportDrawField(ReportDrawField reportField) {
+    public boolean fillReportDrawField(ReportDrawField reportField) {
         reportField.valueClass = getJavaClass();
         reportField.alignment = JRAlignment.HORIZONTAL_ALIGN_LEFT;
+        return !reportField.valueClass.isArray();
     }
 
     public ObjectImplement newObject(int ID, String SID, String caption, CustomClassView classView, boolean addOnTransaction) {

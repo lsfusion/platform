@@ -17,10 +17,12 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
         return NumberFormat.getInstance();
     }
 
-    public void fillReportDrawField(ReportDrawField reportField) {
-        super.fillReportDrawField(reportField);
+    public boolean fillReportDrawField(ReportDrawField reportField) {
+        if (!super.fillReportDrawField(reportField))
+            return false;
 
         reportField.alignment = JRAlignment.HORIZONTAL_ALIGN_RIGHT;
+        return true;
     }
 
     abstract int getWhole();

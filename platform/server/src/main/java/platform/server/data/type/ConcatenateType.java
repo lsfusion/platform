@@ -81,7 +81,7 @@ public class ConcatenateType implements Type<byte[]> {
         throw new RuntimeException("not supported");
     }
 
-    public void fillReportDrawField(ReportDrawField reportField) {
+    public boolean fillReportDrawField(ReportDrawField reportField) {
         throw new RuntimeException("not supported");
     }
 

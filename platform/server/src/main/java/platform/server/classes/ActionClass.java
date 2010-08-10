@@ -2,6 +2,7 @@ package platform.server.classes;
 
 import platform.interop.Data;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.view.form.client.report.ReportDrawField;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -60,5 +61,10 @@ public class ActionClass extends DataClass<Object> {
     public Object read(Object value) {
         if(value!=null) return true;
         return null;
+    }
+
+    @Override
+    public boolean fillReportDrawField(ReportDrawField reportField) {
+        return false;
     }
 }

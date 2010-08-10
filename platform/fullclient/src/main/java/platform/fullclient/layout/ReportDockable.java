@@ -80,8 +80,9 @@ public class ReportDockable extends FormDockable {
             Log.incrementBytesReceived(state.length);
 
             ObjectInputStream objIn = new ObjectInputStream(new CompressingInputStream(new ByteArrayInputStream(state)));
+            String caption = objIn.readUTF();
             JasperDesign jasperDesign = (JasperDesign) objIn.readObject();
-            cacheJasperDesign.put(idExcel, new JasperDesignWrapper(jasperDesign, objIn.readUTF()));
+            cacheJasperDesign.put(idExcel, new JasperDesignWrapper(jasperDesign, caption));
         }
 
         return cacheJasperDesign.get(idExcel);

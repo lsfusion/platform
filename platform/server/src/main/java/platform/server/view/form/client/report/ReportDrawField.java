@@ -15,8 +15,9 @@ public class ReportDrawField implements AbstractRowLayoutElement {
 
     public String pattern;
 
-    public ReportDrawField(CellView cellView) {
-        cellView.fillReportDrawField(this);
+    public ReportDrawField(String sID, String caption) {
+        this.sID = sID;
+        this.caption = caption;
     }
 
     public int getCaptionWidth() {

@@ -28,10 +28,12 @@ public class LogicalClass extends DataClass<Boolean> {
         return Boolean.class;
     }
 
-    public void fillReportDrawField(ReportDrawField reportField) {
-        super.fillReportDrawField(reportField);
+    public boolean fillReportDrawField(ReportDrawField reportField) {
+        if (!super.fillReportDrawField(reportField))
+            return false;
 
         reportField.alignment = JRAlignment.HORIZONTAL_ALIGN_CENTER;
+        return true;
     }
 
     public byte getTypeID() {
