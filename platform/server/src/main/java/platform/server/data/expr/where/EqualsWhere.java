@@ -67,8 +67,8 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
     }
 
     public boolean twins(AbstractSourceJoin o) {
-        return (operator1.equals(((EqualsWhere)o).operator1) && operator2.equals(((EqualsWhere)o).operator2)) ||
-               (operator1.equals(((EqualsWhere)o).operator2) && operator2.equals(((EqualsWhere)o).operator1)) ;
+        return (BaseUtils.hashEquals(operator1,((EqualsWhere)o).operator1) && BaseUtils.hashEquals(operator2,((EqualsWhere)o).operator2) ||
+               (BaseUtils.hashEquals(operator1,((EqualsWhere)o).operator2) && BaseUtils.hashEquals(operator2,((EqualsWhere)o).operator1)));
     }
 
     @IdentityLazy

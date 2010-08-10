@@ -5,10 +5,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.DeclareParents;
 import org.aspectj.lang.reflect.MethodSignature;
-import platform.base.SoftHashMap;
-import platform.base.WeakIdentityHashMap;
-import platform.base.WeakIdentityHashSet;
-import platform.base.ImmutableObject;
+import platform.base.*;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.query.AbstractSourceJoin;
 
@@ -256,6 +253,23 @@ public class CacheAspect {
         return lazyTwinExecute(object, thisJoinPoint, thisJoinPoint.getArgs());
     }
 
+    public final static SoftHashMap<Object, Object> lazyTwinManualExecute = new SoftHashMap<Object, Object>();
+    private Object lazyTwinManualExecute(Object object, ProceedingJoinPoint thisJoinPoint, Object[] args) throws Throwable {
+        Object twin = lazyTwinManualExecute.get(object);
+        if(twin==null) {
+            twin = object;
+            lazyTwinManualExecute.put(object, object);
+        }
+        if (twin == object)
+            return thisJoinPoint.proceed();
+        else // нужно вызвать тот же метод но twin объекта
+            return thisJoinPoint.proceed(BaseUtils.add(new Object[]{twin}, args));
+    }
+    @Around("execution(@platform.server.caches.TwinManualLazy * *.*(..)) && target(object)")
+    public Object callTwinManualMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
+        return lazyTwinManualExecute(object, thisJoinPoint, thisJoinPoint.getArgs());
+    }
+    
     @Around("execution(@platform.server.caches.ParamTwinLazy * *.*(..)) && target(object)")
     // с call'ом есть баги
     public Object callParamTwinMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {

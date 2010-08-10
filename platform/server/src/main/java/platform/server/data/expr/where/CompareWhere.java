@@ -103,11 +103,6 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Data
         return getOperandWhere().groupObjectJoinSets().and(new ObjectJoinSets(this));
     }
 
-    @Override
-    public KeyEquals groupKeyEquals() {
-        return getOperandWhere().groupKeyEquals().and(super.groupKeyEquals());
-    }
-
     protected Where getOperandWhere() {
         return operator1.getWhere().and(operator2.getWhere());
     }
