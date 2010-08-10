@@ -27,7 +27,7 @@ public class MessageFileClientAction extends ClientAction {
         this.multiplier = multiplier;
     }
 
-    public ClientActionResult dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
         return dispatcher.execute(this);
     }
 }

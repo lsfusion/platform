@@ -405,14 +405,23 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
     // Применение изменений
     public String applyChanges() throws SQLException {
-        String applyString = session.apply(BL);
-        if(applyString==null) {
-            refreshData();
-            addObjectOnTransaction();
-
-            dataChanged = true; // временно пока applyChanges синхронен, для того чтобы пересылался факт изменения данных
-        }
+        String applyString = checkChanges();
+        if(applyString==null)
+            writeChanges();    
         return applyString;
+    }
+
+    public void rollbackChanges() throws SQLException {
+        session.rollbackTransaction();
+    }
+
+    public void writeChanges() throws SQLException {
+        session.write(BL);
+
+        refreshData();
+        addObjectOnTransaction();
+
+        dataChanged = true; // временно пока applyChanges синхронен, для того чтобы пересылался факт изменения данных
     }
 
     public void cancelChanges() throws SQLException {

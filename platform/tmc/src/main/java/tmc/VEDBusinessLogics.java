@@ -5,7 +5,6 @@ import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.action.ClientAction;
-import platform.interop.action.ClientActionResult;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexComponentDirections;
 import platform.interop.form.screen.ExternalScreenParameters;
@@ -44,7 +43,6 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 
@@ -1567,7 +1565,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
 
         @Override
-        public List<? extends ClientAction> getApplyActions(RemoteForm<VEDBusinessLogics> remoteForm) {
+        public boolean hasClientApply() {
+            return toAdd;
+        }
+
+        @Override
+        public ClientAction getClientApply(RemoteForm<VEDBusinessLogics> remoteForm) {
             if (toAdd) {
 
                 ObjectImplement doc = remoteForm.mapper.mapObject(objDoc);
@@ -1580,16 +1583,16 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         getPropertyView(orderSalePayNoObligation, objDoc),
                         getPropertyView(orderSalePayCard, objDoc), getPropertyView(orderSalePayCash, objDoc));
             } else
-                return super.getApplyActions(remoteForm);
+                return super.getClientApply(remoteForm);
         }
 
         @Override
-        public String checkApplyActions(int actionID, ClientActionResult result) {
+        public String checkClientApply(Object result) {
 
-            String check = cashRegController.checkCashRegApplyActions(actionID, result);
+            String check = cashRegController.checkCashRegApplyActions(result);
             if (check != null) return check;
 
-            return super.checkApplyActions(actionID, result);
+            return super.checkClientApply(result);
         }
 
         @Override
@@ -1884,7 +1887,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
 
         @Override
-        public List<? extends ClientAction> getApplyActions(RemoteForm remoteForm) {
+        public boolean hasClientApply() {
+            return toAdd;
+        }
+
+        @Override
+        public ClientAction getClientApply(RemoteForm remoteForm) {
             if (toAdd) {
 
                 ObjectImplement doc = remoteForm.mapper.mapObject(objDoc);
@@ -1898,16 +1906,16 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         getPropertyView(returnSalePay, objDoc),
                         null, null);
             } else
-                return super.getApplyActions(remoteForm);
+                return super.getClientApply(remoteForm);
         }
 
         @Override
-        public String checkApplyActions(int actionID, ClientActionResult result) {
+        public String checkClientApply(Object result) {
 
-            String check = cashRegController.checkCashRegApplyActions(actionID, result);
+            String check = cashRegController.checkCashRegApplyActions(result);
             if (check != null) return check;
 
-            return super.checkApplyActions(actionID, result);
+            return super.checkClientApply(result);
         }
     }
 
@@ -2173,7 +2181,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
 
         @Override
-        public List<? extends ClientAction> getApplyActions(RemoteForm<VEDBusinessLogics> remoteForm) {
+        public boolean hasClientApply() {
+            return toAdd;
+        }
+
+        @Override
+        public ClientAction getClientApply(RemoteForm<VEDBusinessLogics> remoteForm) {
             if (toAdd) {
 
                 ObjectImplement doc = remoteForm.mapper.mapObject(objDoc);
@@ -2187,16 +2200,16 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         getPropertyView(orderSalePayCard, objDoc), getPropertyView(orderSalePayCash, objDoc));
 
             } else
-                return super.getApplyActions(remoteForm);
+                return super.getClientApply(remoteForm);
         }
 
         @Override
-        public String checkApplyActions(int actionID, ClientActionResult result) {
+        public String checkClientApply(Object result) {
 
-            String check = cashRegController.checkCashRegApplyActions(actionID, result);
+            String check = cashRegController.checkCashRegApplyActions(result);
             if (check != null) return check;
 
-            return super.checkApplyActions(actionID, result);
+            return super.checkClientApply(result);
         }
 
         @Override

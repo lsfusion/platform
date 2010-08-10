@@ -1,25 +1,25 @@
 package platform.interop.action;
 
-import platform.interop.form.RemoteFormInterface;
-
-import java.io.IOException;
-
 // такая дебильная схема с Dispatcher'ом чтобы модульность не нарушать
 public interface ClientActionDispatcher {
 
-    public ClientActionResult execute(FormClientAction action);
+    public Object execute(FormClientAction action);
 
-    public RuntimeClientActionResult execute(RuntimeClientAction action);
+    public Object execute(RuntimeClientAction action);
 
-    public ClientActionResult execute(ExportFileClientAction action);
+    public Object execute(ExportFileClientAction action);
 
-    public ImportFileClientActionResult execute(ImportFileClientAction action);
+    public Object execute(ImportFileClientAction action);
 
-    public ClientActionResult execute(SleepClientAction action);
+    public Object execute(SleepClientAction action);
 
-    public ClientActionResult execute(MessageFileClientAction action);
+    public Object execute(MessageFileClientAction action);
 
-    public ClientActionResult execute(UserChangedClientAction action);
+    public Object execute(UserChangedClientAction action);
 
-    public ClientActionResult execute(MessageClientAction action);
+    public Object execute(MessageClientAction action);
+
+    public Object execute(ResultClientAction action);
+
+    public Object execute(CustomClientAction action);
 }

@@ -2,6 +2,5 @@ package platform.interop.action;
 
 import java.io.Serializable;
 
-public class ClientActionResult implements Serializable {
-
+public class ClientApply implements Serializable {
 }

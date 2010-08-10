@@ -8,7 +8,9 @@ import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import platform.base.BaseUtils;
 import platform.interop.*;
 import platform.interop.action.ClientAction;
-import platform.interop.action.ClientActionResult;
+import platform.interop.action.ResultClientAction;
+import platform.interop.action.ClientApply;
+import platform.interop.action.CheckFailed;
 import platform.interop.form.RemoteChanges;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
@@ -317,25 +319,44 @@ public class RemoteFormView<T extends BusinessLogics<T>,F extends RemoteForm<T>>
         }
     }
 
-    public List<? extends ClientAction> getApplyActions() throws RemoteException {
-        return form.navigatorForm.getApplyActions(form);
+    public boolean hasClientApply() {
+        return form.navigatorForm.hasClientApply();
     }
 
-    public String checkApplyActions(int actionID, ClientActionResult result) {
-        return form.navigatorForm.checkApplyActions(actionID, result);
-    }
-
-    public String checkChanges() {
+    public ClientApply getClientApply() throws RemoteException {
         try {
-            return form.checkChanges();
+            String checkString = form.checkChanges();
+            if(checkString!=null)
+                return new CheckFailed(checkString);            
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return form.navigatorForm.getClientApply(form);
+    }
+
+    public void applyClientChanges(Object clientResult) {
+        String checkClientApply = form.navigatorForm.checkClientApply(clientResult);
+        try {
+            if(checkClientApply!=null) {
+                form.rollbackChanges();
+                actions.add(new ResultClientAction(checkClientApply, true));
+            } else {
+                form.writeChanges();
+                actions.add(new ResultClientAction("Изменения были удачно записаны...", false));
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public String applyChanges() {
+    public void applyChanges() throws RemoteException {
         try {
-            return form.applyChanges();
+            String result = form.applyChanges();
+            if(result!=null)
+                actions.add(new ResultClientAction(result, true));
+            else
+                actions.add(new ResultClientAction("Изменения были удачно записаны...", false));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

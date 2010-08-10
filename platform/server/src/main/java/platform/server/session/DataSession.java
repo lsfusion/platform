@@ -504,7 +504,13 @@ public class DataSession extends SQLSession implements ChangesSession {
     }
 
     public String check(final BusinessLogics<?> BL) throws SQLException {
-        return check(BL, new Increment(this));
+        startTransaction();
+        
+        String constraintsResult = check(BL, new Increment(this));
+        if(constraintsResult != null)
+            rollbackTransaction();
+
+        return constraintsResult;
     }
 
     public String check(final BusinessLogics<?> BL, Increment increment) throws SQLException {
@@ -523,15 +529,17 @@ public class DataSession extends SQLSession implements ChangesSession {
     
     public String apply(final BusinessLogics<?> BL) throws SQLException {
         // делается UpdateAggregations (для мн-ва persistent+constraints)
-        startTransaction();
-
-        Increment increment = new Increment(this);
-        String constraintsResult = check(BL, increment);
-        if (constraintsResult != null) {
-            rollbackTransaction();
+        String constraintsResult = check(BL);
+        if (constraintsResult != null)
             return constraintsResult;
-        }
 
+        write(BL);
+
+        return null;
+    }
+
+    public void write(BusinessLogics<?> BL) throws SQLException {
+        Increment increment = new Increment(this);
         Collection<IncrementChangeTable> temporary = new ArrayList<IncrementChangeTable>();
 
         // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
@@ -559,7 +567,7 @@ public class DataSession extends SQLSession implements ChangesSession {
             modifyRecords(new ModifyQuery(changeTable.table, modifyQuery));
         }
 
-        for(Map.Entry<DataObject,ConcreteObjectClass> newClass : newClasses.entrySet())
+        for(Map.Entry<DataObject, ConcreteObjectClass> newClass : newClasses.entrySet())
             newClass.getValue().saveClassChanges(this,newClass.getKey());
 
         commitTransaction();
@@ -568,8 +576,6 @@ public class DataSession extends SQLSession implements ChangesSession {
             dropTemporaryTable(addTable);
 
         restart(false);
-
-        return null;
     }
 
     private final Map<Integer,Integer> viewIDs = new HashMap<Integer, Integer>();

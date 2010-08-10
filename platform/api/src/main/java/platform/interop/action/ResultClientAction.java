@@ -2,14 +2,15 @@ package platform.interop.action;
 
 import java.io.IOException;
 
-public class MessageClientAction extends ClientAction {
+public class ResultClientAction extends ClientAction {
 
     public String message;
-    public String caption;
 
-    public MessageClientAction(String message, String caption) {
+    public boolean failed;
+
+    public ResultClientAction(String message, boolean failed) {
         this.message = message;
-        this.caption = caption;
+        this.failed = failed;
     }
 
     public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {

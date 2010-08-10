@@ -1,11 +1,10 @@
 package platform.interop.form;
 
 import platform.interop.action.ClientAction;
-import platform.interop.action.ClientActionResult;
+import platform.interop.action.ClientApply;
 import platform.interop.remote.PendingRemote;
 
 import java.rmi.RemoteException;
-import java.util.List;
 
 public interface RemoteFormInterface extends PendingRemote {
 
@@ -24,13 +23,8 @@ public interface RemoteFormInterface extends PendingRemote {
     byte[] getPropertyChangeType(int propertyID) throws RemoteException;
     boolean canChangeClass(int objectID) throws RemoteException;
 
-    List<? extends ClientAction> getApplyActions() throws RemoteException;
-
-    String checkApplyActions(int actionID, ClientActionResult result) throws RemoteException;
-
-    String checkChanges() throws RemoteException;
-
-    String applyChanges() throws RemoteException;
+    boolean hasClientApply() throws RemoteException; // чисто для оптимизации одного RMI вызова
+    ClientApply getClientApply() throws RemoteException;
 
     RemoteDialogInterface createClassPropertyDialog(int viewID, int value) throws RemoteException;
 
@@ -77,6 +71,9 @@ public interface RemoteFormInterface extends PendingRemote {
 
     void cancelChanges() throws RemoteException;
 
+    void applyClientChanges(Object clientResult) throws RemoteException;
+    void applyChanges() throws RemoteException;
+    
     final static int GID_SHIFT = 1000;
 
     final static int CHANGEGROUPOBJECT_FIRSTROW = 0;

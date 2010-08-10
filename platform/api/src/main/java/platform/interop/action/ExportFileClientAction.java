@@ -17,7 +17,7 @@ public class ExportFileClientAction extends ClientAction {
         this.charsetName = charsetName;
     }
 
-    public ClientActionResult dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
         return dispatcher.execute(this);
     }
 }

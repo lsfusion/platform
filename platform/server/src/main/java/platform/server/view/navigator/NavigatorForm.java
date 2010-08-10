@@ -6,7 +6,6 @@ import platform.base.BaseUtils;
 import platform.base.ListPermutations;
 import platform.base.OrderedMap;
 import platform.interop.action.ClientAction;
-import platform.interop.action.ClientActionResult;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.logics.BusinessLogics;
@@ -358,11 +357,15 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
             propertyActions.add(action);
     }
 
-    public List<? extends ClientAction> getApplyActions(RemoteForm<T> form) {
+    public boolean hasClientApply() {
+        return false;
+    }
+
+    public ClientAction getClientApply(RemoteForm<T> form) {
         return null; // будем возвращать именно null, чтобы меньше данных передавалось        
     }
 
-    public String checkApplyActions(int actionID, ClientActionResult result) {
+    public String checkClientApply(Object result) {
         return null;
     }
 

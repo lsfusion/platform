@@ -2,13 +2,9 @@ package platform.interop.action;
 
 import java.io.IOException;
 
-public class SleepClientAction extends ClientAction {
+public abstract class CustomClientAction extends ClientAction {
 
-    public long millis;
-
-    public SleepClientAction(long millis) {
-        this.millis = millis;
-    }
+    public abstract Object execute();
 
     public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
         return dispatcher.execute(this);

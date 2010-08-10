@@ -87,11 +87,10 @@ public class ClientDialog extends JDialog {
             }
 
             @Override
-            public boolean okPressed() {
+            public void okPressed() {
 
                objectChosen = CHOSEN_VALUE;
                ClientDialog.this.setVisible(false);
-               return true;
             }
             
             @Override

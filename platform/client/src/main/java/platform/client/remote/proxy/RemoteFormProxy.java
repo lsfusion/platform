@@ -1,13 +1,11 @@
 package platform.client.remote.proxy;
 
-import platform.interop.action.ClientAction;
-import platform.interop.action.ClientActionResult;
 import platform.interop.form.RemoteChanges;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
+import platform.interop.action.ClientApply;
 
 import java.rmi.RemoteException;
-import java.util.List;
 
 public class RemoteFormProxy<T extends RemoteFormInterface>
         extends RemoteObjectProxy<T>
@@ -130,20 +128,22 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         target.refreshData();
     }
 
-    public List<? extends ClientAction> getApplyActions() throws RemoteException {
-        return target.getApplyActions();
+    public boolean hasClientApply() throws RemoteException {
+        return target.hasClientApply();
     }
 
-    public String checkApplyActions(int actionID, ClientActionResult result) throws RemoteException {
-        return target.checkApplyActions(actionID, result);
+    public ClientApply getClientApply() throws RemoteException {
+        return target.getClientApply();
     }
 
-    public String checkChanges() throws RemoteException {
-        return target.checkChanges();
+    @PendingRemoteMethod
+    public void applyClientChanges(Object clientResult) throws RemoteException {
+        target.applyClientChanges(clientResult);
     }
 
-    public String applyChanges() throws RemoteException {
-        return target.applyChanges();
+    @PendingRemoteMethod
+    public void applyChanges() throws RemoteException {
+        target.applyChanges();
     }
 
     @PendingRemoteMethod

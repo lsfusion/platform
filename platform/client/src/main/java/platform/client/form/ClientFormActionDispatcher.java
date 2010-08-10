@@ -1,6 +1,7 @@
 package platform.client.form;
 
 import platform.client.Main;
+import platform.client.Log;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.action.*;
 
@@ -15,19 +16,19 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
         this.clientNavigator = clientNavigator;
     }
 
-    public ClientActionResult execute(FormClientAction action) {
+    public Object execute(FormClientAction action) {
         try {
             if (action.isPrintForm)
                 Main.frame.runReport(clientNavigator, action.remoteForm);
             else
                 Main.frame.runForm(clientNavigator, action.remoteForm);
+            return true;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return null;
     }
 
-    public RuntimeClientActionResult execute(RuntimeClientAction action) {
+    public Object execute(RuntimeClientAction action) {
         
         try {
 
@@ -59,7 +60,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
         }
     }
 
-    public ClientActionResult execute(ExportFileClientAction action) {
+    public Object execute(ExportFileClientAction action) {
 
         try {
 
@@ -70,14 +71,14 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
                 output.write(action.fileText.getBytes(action.charsetName));
             output.close();
 
-            return null;
+            return true;
             
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public ImportFileClientActionResult execute(ImportFileClientAction action) {
+    public Object execute(ImportFileClientAction action) {
 
         try {
 
@@ -105,17 +106,17 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
         }
     }
 
-    public ClientActionResult execute(SleepClientAction action) {
+    public Object execute(SleepClientAction action) {
         
         try {
             Thread.sleep(action.millis);
+            return true;
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        return null;
     }
 
-    public ClientActionResult execute(MessageFileClientAction action) {
+    public Object execute(MessageFileClientAction action) {
 
         try {
 
@@ -145,30 +146,44 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
             JOptionPane.showMessageDialog(null, fileText,
                                           action.caption, JOptionPane.INFORMATION_MESSAGE);
 
-            return null;
+            return true;
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public ClientActionResult execute(UserChangedClientAction action) {
+    public Object execute(UserChangedClientAction action) {
         try {
             Main.frame.drawCurrentUser(clientNavigator.remoteNavigator);
+
+            return true;
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
-
-        return null;
     }
 
-    public ClientActionResult execute(MessageClientAction action) {
+    public Object execute(MessageClientAction action) {
 
         JOptionPane.showMessageDialog(null, action.message,
                                       action.caption, JOptionPane.INFORMATION_MESSAGE);
 
-        return null;
+        return true;
+    }
+
+    public Object execute(ResultClientAction action) {
+        if(action.failed) {
+            Log.printFailedMessage(action.message);
+            return null;
+        } else {
+            Log.printSuccessMessage(action.message);
+            return true;
+        }
+    }
+
+    public Object execute(CustomClientAction action) {
+        return action.execute();
     }
 }

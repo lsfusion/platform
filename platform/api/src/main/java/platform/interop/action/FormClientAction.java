@@ -16,7 +16,7 @@ public class FormClientAction extends ClientAction {
         this.remoteForm = remoteForm;
     }
 
-    public ClientActionResult dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
         return dispatcher.execute(this);
     }
 }

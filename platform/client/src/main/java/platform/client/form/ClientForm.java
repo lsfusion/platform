@@ -20,7 +20,8 @@ import platform.interop.CompressingInputStream;
 import platform.interop.Order;
 import platform.interop.Scroll;
 import platform.interop.action.ClientAction;
-import platform.interop.action.ClientActionResult;
+import platform.interop.action.ClientApply;
+import platform.interop.action.CheckFailed;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.RemoteChanges;
 
@@ -626,7 +627,7 @@ public class ClientForm {
         }
     }
 
-    boolean applyChanges() {
+    void applyChanges() {
 
         try {
 
@@ -639,45 +640,29 @@ public class ClientForm {
 
                 if (!okMessage.isEmpty()) {
                     if (!(SwingUtils.showConfirmDialog(getComponent(), okMessage, null, JOptionPane.QUESTION_MESSAGE, SwingUtils.YES_BUTTON) == JOptionPane.YES_OPTION)) {
-                        return false;
+                        return;
                     }
                 }
 
-                List<? extends ClientAction> actions = remoteForm.getApplyActions();
-                if (actions != null) {
+                if(remoteForm.hasClientApply()) {
+                    ClientApply clientApply = remoteForm.getClientApply();
+                    if(clientApply instanceof CheckFailed) // чтобы не делать лишний RMI вызов
+                        Log.printFailedMessage(((CheckFailed)clientApply).message);
+                    else {
+                        remoteForm.applyClientChanges(((ClientAction)clientApply).dispatch(actionDispatcher));
 
-                    String checkMessage = remoteForm.checkChanges();
-                    if (checkMessage != null) {
-                        Log.printFailedMessage(checkMessage);
-                        return false;
+                        applyRemoteChanges();
                     }
-
-                    for (ClientAction action : actions) {
-                        String message = remoteForm.checkApplyActions(action.ID, action.dispatch(actionDispatcher));
-                        if (message != null) {
-                            Log.printFailedMessage(message);
-                            return false;
-                        }
-                    }
-                }
-
-                String message = remoteForm.applyChanges();
-
-                if (message == null) {
-                    Log.printSuccessMessage("Изменения были удачно записаны...");
-                    applyRemoteChanges();
                 } else {
-                    Log.printFailedMessage(message);
-                    return false;
+                    remoteForm.applyChanges();
+
+                    applyRemoteChanges();
                 }
             }
 
         } catch (IOException e) {
             throw new RuntimeException("Ошибка при применении изменений", e);
         }
-
-        
-        return true;
     }
 
     boolean cancelChanges() {
@@ -700,8 +685,8 @@ public class ClientForm {
         return true;
     }
 
-    public boolean okPressed() {
-        return applyChanges();
+    public void okPressed() {
+        applyChanges();
     }
 
     boolean closePressed() {

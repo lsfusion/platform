@@ -1,6 +1,8 @@
 package platform.interop.action;
 
-public class RuntimeClientActionResult extends ClientActionResult {
+import java.io.Serializable;
+
+public class RuntimeClientActionResult implements Serializable {
 
     public byte[] output;
     public byte[] input;

@@ -1,6 +1,8 @@
 package platform.interop.action;
 
-public class ImportFileClientActionResult extends ClientActionResult {
+import java.io.Serializable;
+
+public class ImportFileClientActionResult implements Serializable {
 
     public boolean fileExists = true;
     public String fileContent;
