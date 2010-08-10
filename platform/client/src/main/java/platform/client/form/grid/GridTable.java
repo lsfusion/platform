@@ -312,7 +312,7 @@ public abstract class GridTable extends ClientFormTable
         }
     }
 
-    public boolean editCellAt(int row, int column, EventObject e){
+    public boolean editCellAt(int row, int column, EventObject e) {
         if (super.editCellAt(row, column, e)) {
             //нужно для редактирования нефокусных ячеек
             isNavigatingFromAction = true;
@@ -370,6 +370,12 @@ public abstract class GridTable extends ClientFormTable
         // set top and end actions
         actionMap.put("selectFirstColumn", firstAction);
         actionMap.put("selectLastColumn", lastAction);
+
+
+        InputMap im = getInputMap(JTable.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        KeyStroke down = KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0);
+        KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+        im.put(enter, im.get(down));
 
         //имитируем продвижение фокуса вперёд, если изначально попадаем на нефокусную ячейку
         addFocusListener(new FocusAdapter() {
@@ -622,33 +628,51 @@ public abstract class GridTable extends ClientFormTable
             this.isNext = isNext;
         }
 
+        private int moveNext(int row, int column, boolean isNext) {
+            int num = row * getColumnCount() + column;
+            if (isNext) {
+                num++;
+            } else {
+                num--;
+            }
+            if (num < 0) {
+                num = getColumnCount() * getRowCount() - 1;
+            }
+            if (num >= getColumnCount() * getRowCount()) {
+                num = 0;
+            }
+            return num;
+            //changeSelection(num / getColumnCount(), num % getColumnCount(), false, false);
+        }
+
         public void actionPerformed(ActionEvent e) {
             if (!hasFocusableCells || gridRows.size() == 0) return;
             isNavigatingFromAction = true;
 
             int initRow = getSelectedRow();
             int initColumn = getSelectedColumn();
-            
-            int row = initRow + 1; //просто, чтоб отличались от начальных значений
-            int column = initColumn + 1;
+
+            int row = getSelectedRow();//initRow + 1; //просто, чтоб отличались от начальных значений
+            int column = getSelectedColumn();
             int oRow;
             int oColumn;
             do {
-                oldMoveAction.actionPerformed(e);
+                //oldMoveAction.actionPerformed(e);
+                int next = moveNext(row, column, isNext);
 
                 oRow = row;
                 oColumn = column;
-                
-                row = getSelectedRow();
-                column = getSelectedColumn();
-                if (((row == 0 && column == 0 && isNext) || (row == getRowCount() - 1 && column == getColumnCount() - 1) && (!isNext))
+
+                row = next / getColumnCount();
+                column = next % getColumnCount();
+                if (((row == 0 && column == 0 && isNext) || (row == getRowCount() - 1 && column == getColumnCount() - 1 && (!isNext)))
                         && isCellFocusable(initRow, initColumn)) {
                     changeSelection(initRow, initColumn, false, false);
                     break;
                 }
-            } while ((oRow!=row || oColumn!=column) && !isCellFocusable(row, column));
-
+            } while ((oRow != row || oColumn != column) && !isCellFocusable(row, column));
             isNavigatingFromAction = false;
+            changeSelection(row, column, false, false);
         }
     }
 
@@ -671,7 +695,7 @@ public abstract class GridTable extends ClientFormTable
             int column = getSelectedColumn();
             int oRow = row + 1;
             int oColumn = column + 1;
-            while ((oRow!=row || oColumn!=column) && !isCellFocusable(row, column)) {
+            while ((oRow != row || oColumn != column) && !isCellFocusable(row, column)) {
                 oldMoveAction.actionPerformed(e);
                 oRow = row;
                 oColumn = column;
