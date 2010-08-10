@@ -63,7 +63,7 @@ public class GridController {
             }
         };
 
-        gridView = new GridView(logicsSupplier, form, view.showFind ? findController.getView() : null, view.showFilter ? filterController.getView() : null) {
+        gridView = new GridView(logicsSupplier, form, view.showFind ? findController.getView() : null, view.showFilter ? filterController.getView() : null, view.tabVertical) {
 
             protected void needToBeShown() {
                 hidden = false;

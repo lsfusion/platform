@@ -9,6 +9,7 @@ public class GridView extends ComponentView implements ClientSerialize {
     public boolean showFilter = true;
 
     public byte minRowCount = 0;
+    public boolean tabVertical = false;
 
     public GridView(int ID) {
         super(ID);
@@ -22,5 +23,6 @@ public class GridView extends ComponentView implements ClientSerialize {
         outStream.writeBoolean(showFilter);
 
         outStream.writeByte(minRowCount);
+        outStream.writeBoolean(tabVertical);
     }
 }

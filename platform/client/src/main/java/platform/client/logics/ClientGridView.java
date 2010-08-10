@@ -10,6 +10,7 @@ public class ClientGridView extends ClientComponentView {
     public boolean showFilter;
 
     public byte minRowCount;
+    public boolean tabVertical = true;
 
     public ClientGridView(DataInputStream inStream, Collection<ClientContainerView> containers) throws IOException, ClassNotFoundException {
         super(inStream, containers);
@@ -18,5 +19,6 @@ public class ClientGridView extends ClientComponentView {
         showFilter = inStream.readBoolean();
 
         minRowCount = inStream.readByte();
+        tabVertical = inStream.readBoolean();
     }
 }

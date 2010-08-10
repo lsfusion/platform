@@ -97,6 +97,8 @@ public abstract class GridTable extends ClientFormTable
 
     protected abstract void needToBeHidden();
 
+    protected abstract boolean tabVertical();
+
     public Object convertValueFromString(String value, int row, int column) {
         Object parsedValue = null;
         try {
@@ -162,6 +164,12 @@ public abstract class GridTable extends ClientFormTable
         //noinspection SimplifiableIfStatement
         if (form.isDialogMode() && form.isReadOnlyMode() && ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0)))
             return false;
+
+        if (ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0))) {
+            if (isEditing()) {
+                getCellEditor().stopCellEditing();
+            }
+        }
 
         return super.processKeyBinding(ks, ae, condition, pressed);    //To change body of overridden methods use File | Settings | File Templates.
     }
@@ -370,12 +378,6 @@ public abstract class GridTable extends ClientFormTable
         // set top and end actions
         actionMap.put("selectFirstColumn", firstAction);
         actionMap.put("selectLastColumn", lastAction);
-
-
-        InputMap im = getInputMap(JTable.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        KeyStroke down = KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0);
-        KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
-        im.put(enter, im.get(down));
 
         //имитируем продвижение фокуса вперёд, если изначально попадаем на нефокусную ячейку
         addFocusListener(new FocusAdapter() {
@@ -629,14 +631,28 @@ public abstract class GridTable extends ClientFormTable
         }
 
         private int moveNext(int row, int column, boolean isNext) {
-            int num = row * getColumnCount() + column;
+
             if (isNext) {
-                num++;
+                if (tabVertical()) {
+                    row++;
+                } else {
+                    column++;
+                }
             } else {
-                num--;
+                if (tabVertical()) {
+                    row--;
+                } else {
+                    column--;
+                }
+            }
+            int num = 0;
+            if (tabVertical()) {
+                num = column * getRowCount() + row;
+            } else {
+                num = row * getColumnCount() + column;
             }
             if (num < 0) {
-                num = getColumnCount() * getRowCount() - 1;
+                num += getColumnCount() * getRowCount();
             }
             if (num >= getColumnCount() * getRowCount()) {
                 num = 0;
@@ -656,6 +672,9 @@ public abstract class GridTable extends ClientFormTable
             int column = getSelectedColumn();
             int oRow;
             int oColumn;
+            if (row == -1 && column == -1) {
+                changeSelection(0, 0, false, false);
+            }
             do {
                 //oldMoveAction.actionPerformed(e);
                 int next = moveNext(row, column, isNext);
@@ -663,12 +682,18 @@ public abstract class GridTable extends ClientFormTable
                 oRow = row;
                 oColumn = column;
 
-                row = next / getColumnCount();
-                column = next % getColumnCount();
+                if (tabVertical()) {
+                    column = next / getRowCount();
+                    row = next % getRowCount();
+                } else {
+                    row = next / getColumnCount();
+                    column = next % getColumnCount();
+                }
                 if (((row == 0 && column == 0 && isNext) || (row == getRowCount() - 1 && column == getColumnCount() - 1 && (!isNext)))
                         && isCellFocusable(initRow, initColumn)) {
                     changeSelection(initRow, initColumn, false, false);
-                    break;
+                    isNavigatingFromAction = false;
+                    return;
                 }
             } while ((oRow != row || oColumn != column) && !isCellFocusable(row, column));
             isNavigatingFromAction = false;
