@@ -1,11 +1,11 @@
 package platform.interop.navigator;
 
 import platform.interop.form.RemoteFormInterface;
+import platform.interop.remote.PendingRemote;
 
-import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-public interface RemoteNavigatorInterface extends Remote {
+public interface RemoteNavigatorInterface extends PendingRemote {
 
     String getForms(String formSet) throws RemoteException;
 

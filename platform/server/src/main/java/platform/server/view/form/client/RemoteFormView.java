@@ -28,7 +28,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 // фасад для работы с клиентом
-public class RemoteFormView<T extends BusinessLogics<T>,F extends RemoteForm<T>> extends RemoteObject implements RemoteFormInterface {
+public class RemoteFormView<T extends BusinessLogics<T>,F extends RemoteForm<T>> extends platform.interop.remote.RemoteObject implements RemoteFormInterface {
 
     public final F form;
     public final FormView richDesign;

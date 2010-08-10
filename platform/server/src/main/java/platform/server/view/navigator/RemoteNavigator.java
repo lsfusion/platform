@@ -8,9 +8,9 @@ package platform.server.view.navigator;
 // навигатор работает с абстрактной BL
 
 import platform.base.BaseUtils;
-import platform.interop.RemoteObject;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
+import platform.interop.remote.RemoteObject;
 import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
 import platform.server.classes.ConcreteCustomClass;

@@ -6,7 +6,7 @@ import org.springframework.core.io.FileSystemResource;
 import platform.base.*;
 import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
-import platform.interop.RemoteObject;
+import platform.interop.remote.RemoteObject;
 import platform.interop.action.ClientAction;
 import platform.interop.action.UserChangedClientAction;
 import platform.interop.exceptions.LoginException;

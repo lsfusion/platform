@@ -2,12 +2,12 @@ package platform.interop.form;
 
 import platform.interop.action.ClientAction;
 import platform.interop.action.ClientActionResult;
+import platform.interop.remote.PendingRemote;
 
-import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
 
-public interface RemoteFormInterface extends Remote {
+public interface RemoteFormInterface extends PendingRemote {
 
     // операции с ответом
     byte[] getReportDesignByteArray(boolean toExcel) throws RemoteException;
@@ -39,9 +39,9 @@ public interface RemoteFormInterface extends Remote {
     RemoteDialogInterface createObjectDialog(int objectID) throws RemoteException;
 
     RemoteDialogInterface createObjectDialog(int objectID, int value) throws RemoteException;
-    
+
     // операции без ответа, можно pendiть до первой операции с ответом
-    
+
     void changePageSize(int groupID, int pageSize) throws RemoteException;
     void gainedFocus() throws RemoteException;
 
@@ -54,7 +54,7 @@ public interface RemoteFormInterface extends Remote {
     void changeObject(int objectID, Object value) throws RemoteException;
 
     void changeClass(int objectID, int classID) throws RemoteException;
-    
+
     void addObject(int objectID, int classID) throws RemoteException;
 
     void switchClassView(int groupID) throws RemoteException;

@@ -3,6 +3,7 @@ package platform.client;
 import platform.base.OSUtils;
 import platform.client.exceptions.ClientExceptionManager;
 import platform.client.exceptions.ExceptionThreadGroup;
+import platform.client.remote.proxy.RemoteBusinessLogicProxy;
 import platform.client.form.SimplexLayout;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.form.RemoteFormInterface;
@@ -82,7 +83,10 @@ public class Main {
                     String password = System.getProperty("platform.client.password");
                     String logLevel = System.getProperty("platform.client.loglevel");
 
-                    remoteLogics = (RemoteLogicsInterface) Naming.lookup("rmi://" + serverHost + ":" + serverPort + "/BusinessLogics");
+
+                    RemoteLogicsInterface remote = (RemoteLogicsInterface) Naming.lookup("rmi://" + serverHost + ":" + serverPort + "/BusinessLogics");
+                    remoteLogics = new RemoteBusinessLogicProxy(remote);
+
                     computerId = remoteLogics.getComputer(OSUtils.getLocalHostName());
 
                     RemoteNavigatorInterface remoteNavigator;
