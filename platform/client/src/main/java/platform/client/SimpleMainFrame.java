@@ -29,6 +29,7 @@ public class SimpleMainFrame extends MainFrame {
         while (st.hasMoreTokens()) {
             Integer formID = Integer.parseInt(st.nextToken());
             final ClientForm form = new ClientForm(navigator.remoteNavigator.createForm(formID, false), navigator);
+            form.getComponent().setFocusTraversalPolicyProvider(true);
             mainPane.addTab(form.getFullCaption(), form.getComponent());
 
             KeyStroke keyStroke = form.getKeyStroke();
