@@ -1,17 +1,14 @@
 package platform.server.logics.scheduler;
 
-import java.util.Calendar;
 import java.util.List;
 
 public class Scheduler implements Runnable {
 
     private int sleepTime;
-    private int backupHour;
     private List<SchedulerTask> tasks;
 
-    public Scheduler(int sleepTime, int backupHour, List<SchedulerTask> tasks) {
+    public Scheduler(int sleepTime, List<SchedulerTask> tasks) {
         this.sleepTime = sleepTime;
-        this.backupHour = backupHour;
         this.tasks = tasks;
     }
 
@@ -26,23 +23,12 @@ public class Scheduler implements Runnable {
     }
 
     public void run() {
-        boolean dayBackup = false;
 
         while (true) {
-            Calendar calendar = Calendar.getInstance();
-            int hour = calendar.get(Calendar.HOUR_OF_DAY);
-
-            if (dayBackup && hour != backupHour)
-                dayBackup = false;
 
             for (SchedulerTask task : tasks)
                 try {
-                    if (!task.getID().equals("dump")) {
-                        task.execute();
-                    } else if(hour == backupHour && !dayBackup) {
-                        task.execute();
-                        dayBackup = true;
-                    }
+                    task.execute();
                 } catch (Exception e) {
                     System.out.println("Ошибка выполнении задания " + task.getID() + " : ");
                     e.printStackTrace();

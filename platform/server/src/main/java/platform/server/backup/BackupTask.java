@@ -11,15 +11,18 @@ import java.text.ParseException;
 
 public class BackupTask implements SchedulerTask {
     private DataAdapter adapter;
+    private int backupHour;
     private int firstDays;
     private int base;
     private String dumpDir;
     private String binPath;
     private Date date;
     private DateFormat dateFormat;
+    boolean dayBackup = false;
 
-    public BackupTask(DataAdapter adapter, int firstDays, int base, String dumpDir) {
+    public BackupTask(DataAdapter adapter, int backupHour, int firstDays, int base, String dumpDir) {
         this.adapter = adapter;
+        this.backupHour = backupHour;
         this.firstDays = firstDays;
         this.base = base;
         this.dumpDir = dumpDir;
@@ -35,7 +38,7 @@ public class BackupTask implements SchedulerTask {
     public void setBinPath(String binPath) {
         this.binPath = binPath;
     }
-                                            
+
     public String getID() {
         return "dump";
     }
@@ -68,6 +71,18 @@ public class BackupTask implements SchedulerTask {
     }
 
     public void execute() throws Exception {
+        Calendar calendar = Calendar.getInstance();
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+
+        if (hour != backupHour) {
+            dayBackup = false;
+            return;
+        }
+
+        if (dayBackup) {
+            return;
+        }
+        dayBackup = true;
         Date date = new Date();
         String dateTime = dateFormat.format(date);
         File f = new File(dumpDir);
@@ -78,9 +93,18 @@ public class BackupTask implements SchedulerTask {
         fileList.add(dateTime);
 
         String path = "\"" + ((binPath == null) ? "" : binPath) + "pg_dump.exe" + "\"";
-        String execute = "cmd /c start \"\" /B " + path + " --host " + adapter.server + " --port 5432 --username " + adapter.userID +
-                " --format tar --blobs --verbose --file \"" + dumpDir + dateTime + "\" " + adapter.dataBase +
-                " 2>> \"" + dumpDir + "log.txt\"";
+        String server = adapter.server;
+        String host = "", port = "5432";
+        if (server.contains(":")) {
+            host = server.substring(0, server.lastIndexOf(':'));
+            port = server.substring(server.lastIndexOf(':') + 1);
+        } else {
+            host = server;
+        }
+
+        String execute = "cmd /c start \"\" /B " + path + " --host " + host + " --port " + port + " --username " +
+                adapter.userID + " --format tar --blobs --verbose --file \"" + dumpDir + dateTime + "\" " +
+                adapter.dataBase + " 2>> \"" + dumpDir + "log.txt\"";
         Runtime rt = Runtime.getRuntime();
         Process p = rt.exec(execute);
 
