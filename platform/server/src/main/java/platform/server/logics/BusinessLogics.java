@@ -49,9 +49,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
+import java.util.logging.*;
 
 // @GenericImmutable нельзя так как Spring валится
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends RemoteObject implements RemoteLogicsInterface {
@@ -89,6 +87,21 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         } else {
             LogManager.getLogManager().getLogger("").setLevel(Level.SEVERE);
         }
+        Handler consoleHandler = new StreamHandler(System.out, new SimpleFormatter()) {
+            @Override
+            public synchronized void publish(LogRecord record) {
+                try {
+                    String message = getFormatter().format(record);
+                    System.out.write(message.getBytes());
+                } catch (Exception exception) {
+                    reportError(null, exception, ErrorManager.FORMAT_FAILURE);
+                    return;
+                }
+            }
+        };
+
+        LogManager.getLogManager().getLogger("").getHandlers()[0].setLevel(Level.OFF);
+        LogManager.getLogManager().getLogger("").addHandler(consoleHandler);
 
         stopped = false;
 
@@ -284,7 +297,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         for (int policyId : userPoliciesIds) {
             SecurityPolicy policy = policyManager.getPolicy(policyId);
             if (policy != null) {
-                userObject.addSecurityPolicy( policy );
+                userObject.addSecurityPolicy(policy);
             }
         }
 
@@ -376,7 +389,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP<?> loginToUser;
 
     public LP policyDescription;
-    protected LP<?> nameToPolicy ;
+    protected LP<?> nameToPolicy;
     public LP userPolicyOrder;
 
     public LP hostname;
@@ -479,7 +492,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             ObjectNavigator objPolicy = addSingleGroupObjectImplement(policy, "Политика", properties, baseGroup, true);
 
             addObjectActions(this, objUser);
- 
+
             addPropertyView(objUser, objPolicy, properties, baseGroup, true);
         }
     }
@@ -786,6 +799,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             fillPropertyList(depend, set);
         set.add(property);
     }
+
     @IdentityLazy
     Iterable<Property> getPropertyList() {
         LinkedHashSet<Property> linkedSet = new LinkedHashSet<Property>();
@@ -1423,7 +1437,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected <P extends PropertyInterface> LP addOProp(String caption, LP<P> sum, boolean percent, boolean ascending, boolean includeLast, int partNum, Object... params) {
-        return addOProp((AbstractGroup)null, genSID(), caption, sum, percent, ascending, includeLast, partNum, params);
+        return addOProp((AbstractGroup) null, genSID(), caption, sum, percent, ascending, includeLast, partNum, params);
     }
 
     protected <P extends PropertyInterface> LP addOProp(AbstractGroup group, String caption, LP<P> sum, boolean percent, boolean ascending, boolean includeLast, int partNum, Object... params) {
