@@ -68,23 +68,6 @@ public class ClientForm {
         return  formView.getFullCaption();
     }
 
-    private static final Map<Integer, ClientFormView> cacheClientFormView = new HashMap<Integer, ClientFormView>();
-
-    private static ClientFormView cacheClientFormView(RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
-
-        int ID = remoteForm.getID();
-
-        if (!cacheClientFormView.containsKey(ID)) {
-
-            byte[] state = remoteForm.getRichDesignByteArray();
-            Log.incrementBytesReceived(state.length);
-
-            cacheClientFormView.put(ID, new ClientFormView(new DataInputStream(new CompressingInputStream(new ByteArrayInputStream(state)))));
-        }
-
-        return cacheClientFormView.get(ID);
-    }
-
     public ClientForm(RemoteFormInterface remoteForm, ClientNavigator clientNavigator) throws IOException, ClassNotFoundException {
 
         ID = idGenerator.idShift();
@@ -97,7 +80,7 @@ public class ClientForm {
 
         actionDispatcher = new ClientFormActionDispatcher(this.clientNavigator);
 
-        formView = cacheClientFormView(remoteForm);
+        formView = new ClientFormView(new DataInputStream(new CompressingInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray()))));
 
         initializeForm();
     }

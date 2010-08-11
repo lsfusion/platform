@@ -437,7 +437,7 @@ public class RemoteFormView<T extends BusinessLogics<T>,F extends RemoteForm<T>>
         }
     }
 
-    public RemoteDialogInterface createObjectDialog(int objectID, int value) throws RemoteException {
+    public RemoteDialogInterface createObjectDialogWithValue(int objectID, int value) throws RemoteException {
         try {
             RemoteDialog<T> dialogForm = form.createObjectDialog(objectID, value);
             return new RemoteDialogView<T>(dialogForm,dialogForm.navigatorForm.getRichDesign(),dialogForm.navigatorForm.getReportDesign(),exportPort,currentClassView);

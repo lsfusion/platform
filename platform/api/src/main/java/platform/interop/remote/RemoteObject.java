@@ -1,5 +1,6 @@
 package platform.interop.remote;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -23,16 +24,56 @@ public class RemoteObject extends UnicastRemoteObject implements PendingRemote {
 
     public Object execute(MethodInvocation[] invocations) throws RemoteException {
         Object result = null;
-        Class thisClass = this.getClass();
         for (MethodInvocation invocation : invocations) {
             try {
-                Method method = thisClass.getMethod(invocation.name, invocation.params);
-                result = method.invoke(this, invocation.args);
-            } catch (Exception e) {
+                result = invoke(this, invocation);
+            } catch (NoSuchMethodException e) {
+                logger.log(Level.SEVERE, "Ошибка при вызове метода: " + invocation.name, e);
+            } catch (InvocationTargetException e) {
+                logger.log(Level.SEVERE, "Ошибка при вызове метода: " + invocation.name, e);
+            } catch (IllegalAccessException e) {
                 logger.log(Level.SEVERE, "Ошибка при вызове метода: " + invocation.name, e);
             }
         }
 
         return result;
+    }
+
+    public Object[] createAndExecute(MethodInvocation creator, MethodInvocation[] invocations) throws RemoteException {
+        if (invocations == null) {
+            invocations = new MethodInvocation[0];
+        }
+
+        Object createdObject = null;
+        try {
+            createdObject = invoke(this, creator);
+        } catch (NoSuchMethodException e) {
+            throw new RemoteException("Не могу создать объект через вызов метода: " + creator.toString());
+        } catch (InvocationTargetException e) {
+            throw new RemoteException("Не могу создать объект через вызов метода: " + creator.toString());
+        } catch (IllegalAccessException e) {
+            throw new RemoteException("Не могу создать объект через вызов метода: " + creator.toString());
+        }
+
+        Object[] result = new Object[invocations.length + 1];
+        result[0] = createdObject;
+        for (int i = 0; i < invocations.length; ++i) {
+            try {
+                result[i+1] = invoke(createdObject, invocations[i]);
+            } catch (NoSuchMethodException e) {
+                logger.log(Level.SEVERE, "Ошибка при вызове метода: " + invocations[i].name, e);
+            } catch (InvocationTargetException e) {
+                logger.log(Level.SEVERE, "Ошибка при вызове метода: " + invocations[i].name, e);
+            } catch (IllegalAccessException e) {
+                logger.log(Level.SEVERE, "Ошибка при вызове метода: " + invocations[i].name, e);
+            }
+        }
+        
+        return result;
+    }
+
+    private Object invoke(Object target, MethodInvocation invocation) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+        Method method = target.getClass().getMethod(invocation.name, invocation.params);
+        return method.invoke(target, invocation.args);
     }
 }

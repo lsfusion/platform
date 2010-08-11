@@ -32,7 +32,7 @@ public interface RemoteFormInterface extends PendingRemote {
 
     RemoteDialogInterface createObjectDialog(int objectID) throws RemoteException;
 
-    RemoteDialogInterface createObjectDialog(int objectID, int value) throws RemoteException;
+    RemoteDialogInterface createObjectDialogWithValue(int objectID, int value) throws RemoteException;
 
     // операции без ответа, можно pendiть до первой операции с ответом
 

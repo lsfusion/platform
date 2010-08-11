@@ -1,15 +1,21 @@
 package platform.client.remote.proxy;
 
+import platform.interop.action.ClientApply;
 import platform.interop.form.RemoteChanges;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
-import platform.interop.action.ClientApply;
+import platform.interop.remote.MethodInvocation;
 
 import java.rmi.RemoteException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class RemoteFormProxy<T extends RemoteFormInterface>
         extends RemoteObjectProxy<T>
         implements RemoteFormInterface {
+
+    public static final Map<Integer, byte[]> cachedRichDesign = new HashMap<Integer, byte[]>();
 
     public RemoteFormProxy(T target) {
         super(target);
@@ -19,6 +25,7 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return target.getReportDesignByteArray(toExcel);
     }
 
+    @ImmutableMethod
     public boolean hasCustomReportDesign() throws RemoteException {
         return target.hasCustomReportDesign();
     }
@@ -31,6 +38,7 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return target.getRemoteChanges();
     }
 
+    @ImmutableMethod
     public byte[] getRichDesignByteArray() throws RemoteException {
         return target.getRichDesignByteArray();
     }
@@ -119,6 +127,7 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         target.setRegularFilter(groupID, filterID);
     }
 
+    @ImmutableMethod
     public int getID() throws RemoteException {
         return target.getID();
     }
@@ -155,19 +164,40 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return target.getPropertyChangeType(propertyID);
     }
 
+    @NonFlushRemoteMethod
+    private RemoteDialogInterface createDialog(String methodName, Object... args) throws RemoteException {
+        List<MethodInvocation> invocations = getImmutableMethodInvocations(RemoteDialogProxy.class);
+
+        MethodInvocation creator = MethodInvocation.create(this.getClass(), methodName, args);
+
+        Object[] result = target.createAndExecute(creator, invocations.toArray(new MethodInvocation[invocations.size()]));
+
+        RemoteDialogInterface remoteDialog = (RemoteDialogInterface) result[0];
+        RemoteDialogProxy proxy = new RemoteDialogProxy(remoteDialog);
+        for (int i = 0; i < invocations.size(); ++i) {
+            proxy.setProperty(invocations.get(i).name, result[i + 1]);
+        }
+
+        return proxy;
+    }
+
+    @NonRedirectRemoteMethod
     public RemoteDialogInterface createClassPropertyDialog(int viewID, int value) throws RemoteException {
-        return new RemoteDialogProxy(target.createClassPropertyDialog(viewID, value));
+        return createDialog("createClassPropertyDialog", viewID, value);
     }
 
+    @NonRedirectRemoteMethod
     public RemoteDialogInterface createEditorPropertyDialog(int viewID) throws RemoteException {
-        return new RemoteDialogProxy(target.createEditorPropertyDialog(viewID));
+        return createDialog("createEditorPropertyDialog", viewID);
     }
 
+    @NonRedirectRemoteMethod
     public RemoteDialogInterface createObjectDialog(int objectID) throws RemoteException {
-        return new RemoteDialogProxy(target.createObjectDialog(objectID));
+        return createDialog("createObjectDialog", objectID);
     }
 
-    public RemoteDialogInterface createObjectDialog(int objectID, int value) throws RemoteException {
-        return new RemoteDialogProxy(target.createObjectDialog(objectID, value));
+    @NonRedirectRemoteMethod
+    public RemoteDialogInterface createObjectDialogWithValue(int objectID, int value) throws RemoteException {
+        return createDialog("createObjectDialogWithValue", objectID, value);
     }
 }

@@ -44,7 +44,7 @@ public class ClientObjectCellView extends ClientObjectView {
     }
 
     public RemoteDialogInterface createClassForm(RemoteFormInterface form, Integer value) throws RemoteException {
-        return form.createObjectDialog(object.getID(), BaseUtils.objectToInt(value));
+        return form.createObjectDialogWithValue(object.getID(), BaseUtils.objectToInt(value));
     }
 
     @Override

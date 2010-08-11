@@ -1,6 +1,7 @@
 package platform.interop.remote;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 
 public class MethodInvocation implements Serializable {
@@ -33,5 +34,15 @@ public class MethodInvocation implements Serializable {
     @Override
     public int hashCode() {
         return 31 * (31 * name.hashCode() + Arrays.hashCode(params)) + Arrays.hashCode(args);
+    }
+
+    public static MethodInvocation create(Class clazz, String name, Object... args) {
+        for (Method method : clazz.getMethods()) {
+            if (method.getName().equals(name)) {
+                return new MethodInvocation(name, method.getParameterTypes(), args, method.getReturnType());
+            }
+        }
+
+        return null;
     }
 }

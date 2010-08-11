@@ -5,6 +5,7 @@ import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import platform.client.remote.proxy.NonRedirectRemoteMethod;
 import platform.client.remote.proxy.RemoteObjectProxy;
 import platform.interop.remote.MethodInvocation;
 
@@ -42,7 +43,8 @@ public class PendingExecutionAspect {
 
     @Around("execution(" +
             "!@(platform.client.remote.proxy.PendingRemoteMethod" +
-            " || platform.client.remote.proxy.NonFlushRemoteMethod)" +
+            " || platform.client.remote.proxy.NonFlushRemoteMethod" +
+            " || platform.client.remote.proxy.ImmutableMethod)" +
             " * platform.client.remote.proxy.RemoteObjectProxy+.*(..))" +
             " && target(object)")
     public Object executePendingMethods(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
@@ -55,14 +57,41 @@ public class PendingExecutionAspect {
             if (lastRemoteObject != null) {
                 lastRemoteObject.flushPendingInvocations();
             }
+            lastRemoteObject = null;
             return thisJoinPoint.proceed();
         }
 
-        //если отлаживали методы у этого же объекта, то вызываем этот метод вместе с остальными
-        moveInvocationToQueue(thisJoinPoint, object);
-
+        Method method = ((MethodSignature) thisJoinPoint.getSignature()).getMethod();
+        Object result = null;
+        if (method.getAnnotation(NonRedirectRemoteMethod.class) == null) {
+            //если отлаживали методы у этого же объекта, то вызываем этот метод вместе с остальными
+            logger.finest("  Moving returning method to invocation queue.");
+            moveInvocationToQueue(thisJoinPoint, object);
+            result = remoteObject.flushPendingInvocations();
+        } else {
+            //@NonRedirectRemoteMethod показывает, что метод нельзя передавать для выполнения на сервер
+            remoteObject.flushPendingInvocations();
+            result = thisJoinPoint.proceed();
+        }
+        
         lastRemoteObject = null;
+        return result;
+    }
 
-        return remoteObject.flushPendingInvocations();
+    @Around("execution(" +
+            "@platform.client.remote.proxy.ImmutableMethod" +
+            " * platform.client.remote.proxy.RemoteObjectProxy+.*(..))" +
+            " && target(object)")
+    public Object executeImmutableMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
+        String name = thisJoinPoint.getSignature().getName();
+        RemoteObjectProxy remoteObject = (RemoteObjectProxy) object;
+        logger.finest("Running immutable method: " + name);
+        if (remoteObject.hasProperty(name)) {
+            logger.finest("  Returning cached value: " + remoteObject.getProperty(name));
+            return remoteObject.getProperty(name);
+        } else {
+            logger.finest("  Returning direct value: ");
+            return thisJoinPoint.proceed();
+        }
     }
 }

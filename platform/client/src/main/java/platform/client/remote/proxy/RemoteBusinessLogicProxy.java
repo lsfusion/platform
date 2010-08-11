@@ -4,8 +4,10 @@ import platform.interop.RemoteLogicsInterface;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
+import platform.interop.remote.MethodInvocation;
 
 import java.rmi.RemoteException;
+import java.util.List;
 
 public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         extends RemoteObjectProxy<T>
@@ -23,8 +25,21 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         return target.findClass(name);
     }
 
+    @NonRedirectRemoteMethod
     public RemoteNavigatorInterface createNavigator(String login, String password, int computer) throws RemoteException {
-        return new RemoteNavigatorProxy(target.createNavigator(login, password, computer));
+        List<MethodInvocation> invocations = getImmutableMethodInvocations(RemoteNavigatorProxy.class);
+
+        MethodInvocation creator = MethodInvocation.create(this.getClass(), "createNavigator", login, password, computer);
+
+        Object[] result = target.createAndExecute(creator, invocations.toArray(new MethodInvocation[invocations.size()]));
+
+        RemoteNavigatorInterface remoteDialog = (RemoteNavigatorInterface) result[0];
+        RemoteNavigatorProxy proxy = new RemoteNavigatorProxy(remoteDialog);
+        for (int i = 0; i < invocations.size(); ++i) {
+            proxy.setProperty(invocations.get(i).name, result[i+1]);
+        }
+
+        return proxy;
     }
 
     public Integer getComputer(String hostname) throws RemoteException {
