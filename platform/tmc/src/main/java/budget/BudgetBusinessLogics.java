@@ -30,7 +30,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         super(iAdapter, port);
     }
 
-    AbstractGroup salaryGroup, dateTimeGroup, extraGroup, inOperationGroup, payerGroup;
+    AbstractGroup salaryGroup, dateTimeGroup, extraGroup, inOperationGroup, payerGroup, baseCurGroup;
 
     protected void initGroups() {
         salaryGroup = new AbstractGroup("Параметры запрлаты");
@@ -38,6 +38,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         extraGroup = new AbstractGroup("Параметры затрат");
         inOperationGroup = new AbstractGroup("Параметры прихода");
         payerGroup = new AbstractGroup("Параметры плательщика");
+        baseCurGroup = new AbstractGroup("Сумма в базовой валюте");
 
     }
 
@@ -83,8 +84,9 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
     LP isWorkingMonthForPerson;
 
-    LP personDepartSum, personDepartSumInBC, payMonthTotal, extraMonthTotal, totalOutOper, totalOutOperInBC, totalMisOper, totalMisOperInBC, monthNum, exchangeRate, nearestPredDate, nearestExchangeRate;
-    LP baseCurrency, rateDate, userRateDay, dateByMY, rateDay;
+    LP personDepartSum, personDepartSumInBC, payMonthTotal, extraMonthTotal, totalOutOper, departmentOutOperInBC, totalMisOper, totalMisOperInBC, monthNum, exchangeRate, nearestPredDate, nearestExchangeRate;
+    LP baseCurrency, baseCurrencyName;
+    LP rateDate, userRateDay, dateByMY, rateDay;
 
     protected void initProperties() {
 
@@ -93,6 +95,8 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         personDepartment = addDProp("personDepartment", "Отдел", department, person);
 
         baseCurrency = addDProp("baseCurrency", "Базовая валюта", currency);
+        baseCurrencyName = addJProp(baseGroup, "Базовая валюта", name, baseCurrency);
+
         rateDate = addDProp("rateDate", "Дата курса", DoubleClass.instance);
         userRateDay = addDProp("userRateDay", "День месяца для курса", IntegerClass.instance, absMonth, IntegerClass.instance);
         rateDay = addSUProp(Union.OVERRIDE, addCProp(IntegerClass.instance, 1, absMonth, IntegerClass.instance), userRateDay);
@@ -262,10 +266,6 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP totalReimbursementDep = addSGProp(baseGroup, "Возмещено", addJProp(multiplyDouble2, reimbursementSum, 1, reimbursementRate, 1), reimbursementPayer, 1, reimbursementCurrencyIn, 1, reimbursementDepartment, 1);
         addDUProp(baseGroup, "Осталось", totalDebtDep, totalReimbursementDep);
 
-        //LP rateBC = addJProp(nearestExchangeRate, curCurrency, 1, 2, 3, baseCurrency, addJProp(dateByMY, 1, 2), 1, 2);
-        //LP salaryInBC = addJProp("К выплате в БВ", multiplyDouble2, roundSalary, 1, 2, 3, rateBC, 1, 2, 3);
-        //personDepartSumInBC = addSGProp("Всего к выплате в БВ", salaryInBC, personDepartment, 3, 1, 2);
-
         personDepartSum = addSGProp(baseGroup, "Всего к выплате", roundSalary, personDepartment, 3, 1, 2, curCurrency, 1, 2, 3);
         payMonthTotal = addSGProp(baseGroup, "Всего выплачено", payTotal, personDepartment, 1, 2, 3, curCurrency, 2, 3, 1);
 
@@ -277,9 +277,13 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP misOperVal = addJProp("Опер. расход ком.", and1, outSum, 1, is(misOperation), 1);
         totalMisOper = addSGProp(baseGroup, "Всего по опер. расходу ком.", misOperVal, opDep, 1, transactionMonth, 1, transactionYear, 1, outCur, 1);
 
-        LP outRateBC = addJProp(nearestExchangeRate, outCur, 1, baseCurrency, addJProp(dateByMY, transactionMonth, 1, transactionYear, 1), 1);
+        //LP rateBC = addJProp(nearestExchangeRate, curCurrency, 1, 2, 3, baseCurrency, addJProp(dateByMY, 1, 2), 1, 2);
+        //LP salaryInBC = addJProp("К выплате в БВ", multiplyDouble2, roundSalary, 1, 2, 3, rateBC, 1, 2, 3);
+        //personDepartSumInBC = addSGProp("Всего к выплате в БВ", salaryInBC, personDepartment, 3, 1, 2);
+
+        LP outRateBC = addJProp(nearestExchangeRate, outCur, 1, baseCurrency, date, 1);
         LP outOperValInBC = addJProp("Опер. расход в БВ", multiplyDouble2, outOperVal, 1, outRateBC, 1);
-        totalOutOperInBC = addSGProp("Всего по опер. расходу в БВ", outOperValInBC, opDep, 1, transactionMonth, 1, transactionYear, 1);
+        departmentOutOperInBC = addSGProp(baseCurGroup, "Всего по опер. расходу в БВ", outOperValInBC, opDep, 1, transactionMonth, 1, transactionYear, 1);
     }
 
 
@@ -556,17 +560,14 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             ObjectNavigator objDepartment = addSingleGroupObjectImplement(department, "Отдел", properties, baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
             objDepartment.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
-            //ObjectNavigator objBaseCurrency = addSingleGroupObjectImplement(currency, "Базовая валюта", properties, baseGroup);
-            //        objBaseCurrency.groupTo.initClassView = ClassViewType.PANEL;
-            //        objBaseCurrency.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
-            addPropertyView(baseCurrency);
+            addPropertyView(baseCurrencyName);
 
             ObjectNavigator objYearOp = addSingleGroupObjectImplement(YearClass.instance, "Год", properties, baseGroup);
             objYearOp.groupTo.initClassView = ClassViewType.PANEL;
             objYearOp.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
             ObjectNavigator objMonthOp = addSingleGroupObjectImplement(absMonth, "Месяц", properties, baseGroup);
-            //addPropertyView(totalOutOperInBC, objDepartment, objMonthOp, objYearOp);
-            //addPropertyView(personDepartSumInBC, objDepartment, objMonthOp, objYearOp);
+
+            addPropertyView(properties, baseCurGroup, true, objDepartment, objMonthOp, objYearOp);
 
             ObjectNavigator objCurrency = addSingleGroupObjectImplement(currency, "Валюта", properties, baseGroup);
 
