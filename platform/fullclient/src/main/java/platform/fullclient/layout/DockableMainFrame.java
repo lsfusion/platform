@@ -61,25 +61,12 @@ public class DockableMainFrame extends MainFrame {
 
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent event) {
-                File baseDir = null;
-                try {
-                    baseDir = new File(System.getProperty("user.home"), ".fusion\\" + Main.remoteLogics.getName());
-                } catch (RemoteException e) {
-                    //по умолчанию
-                    baseDir = new File(System.getProperty("user.home"), ".fusion");
-                }
-
-                baseDir.mkdirs();
-
+                super.windowClosing(event);
                 try {
                     control.save("default");
-                    DataOutputStream out = new DataOutputStream(new FileOutputStream(new File(baseDir, "binary.data")));
+                    DataOutputStream out = new DataOutputStream(new FileOutputStream(new File(baseDir, "layout.data")));
                     view.getForms().write(out);
                     control.getResources().writeStream(out);
-                    FileWriter fileWr = new FileWriter(new File(baseDir, "info.txt"));
-                    fileWr.write(getWidth() + " " + getHeight() + '\n');
-
-                    fileWr.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -106,16 +93,8 @@ public class DockableMainFrame extends MainFrame {
         view = new ViewManager(control, mainNavigator);
         control.setTheme(ThemeMap.KEY_ECLIPSE_THEME);
 
-        File baseDir = null;
         try {
-            baseDir = new File(System.getProperty("user.home"), ".fusion\\" + Main.remoteLogics.getName());
-        } catch (RemoteException e) {
-            //по умолчанию
-            baseDir = new File(System.getProperty("user.home"), ".fusion");
-        }
-
-        try {
-            DataInputStream in = new DataInputStream(new FileInputStream(new File(baseDir, "binary.data")));
+            DataInputStream in = new DataInputStream(new FileInputStream(new File(baseDir, "layout.data")));
             view.getForms().read(in);
             control.getResources().readStream(in);
             in.close();
@@ -123,17 +102,6 @@ public class DockableMainFrame extends MainFrame {
             e.printStackTrace();
         }
 
-        try {
-            Scanner in = new Scanner(new FileReader(new File(baseDir, "info.txt")));
-            int wWidth = in.nextInt();
-            int wHeight = in.nextInt();
-            setSize(wWidth, wHeight);
-            in.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-            Dimension size = Toolkit.getDefaultToolkit().getScreenSize().getSize();
-            setSize(size.width, size.height - 30);
-        }
 
         add(control.getContentArea(), BorderLayout.CENTER);
         CGrid grid = new CGrid(control);

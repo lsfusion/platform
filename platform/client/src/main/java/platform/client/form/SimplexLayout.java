@@ -26,7 +26,6 @@ import java.util.logging.Logger;
  */
 public class SimplexLayout implements LayoutManager2, ComponentListener {
     private final static Logger logger = Logger.getLogger(SimplexLayout.class.getName());
-    public static boolean ignoreLayout = false;
     public boolean disableLayout = false;
 
     Dimension oldDimension;
@@ -150,7 +149,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
 
     public void layoutContainer(final Container parent) {
 
-        if (disableLayout || ignoreLayout) return;
+        if (disableLayout) return;
 
         if (parent != mainContainer) return;
 
@@ -159,7 +158,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
         boolean dimensionChanged = true;
         if (oldDimension != null) {
             dimensionChanged = (Math.abs(dimension.getHeight() - oldDimension.getHeight()) +
-                                Math.abs(dimension.getWidth() - oldDimension.getWidth()) > 8);
+                                Math.abs(dimension.getWidth() - oldDimension.getWidth()) > 0);
         }
 
         if (!dimensionChanged && !componentsChanged) return;
@@ -182,7 +181,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
             cache.clear();
         }
 
-        logger.info("Begin layoutContainer");
+        logger.info("Begin layoutContainer " + dimension);
 
         LpSolve solver = null;
 

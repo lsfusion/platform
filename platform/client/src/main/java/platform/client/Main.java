@@ -118,14 +118,10 @@ public class Main {
                             }
                     );
 
-                    // вот таким вот извращенным методом приходится отключать SimplexLayout, чтобы он не вызывался по два раза
-                    // проблема в том, что setVisible сразу вызывает отрисовку, а setExtendedState "моделирует" нажатии кнопки ОС и все идет просто в EventDispatchThread
-                    SimplexLayout.ignoreLayout = true;
-                    frame.setVisible(true);
-                    SimplexLayout.ignoreLayout = false;
-
                     frame.setExtendedState(Frame.MAXIMIZED_BOTH);
                     logger.info("After setExtendedState");
+
+                    frame.setVisible(true);
 
                 } catch (Exception e) {
 //                    ClientExceptionManager.handleException(e);
