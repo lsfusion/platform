@@ -137,6 +137,7 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         target.refreshData();
     }
 
+    @ImmutableMethod
     public boolean hasClientApply() throws RemoteException {
         return target.hasClientApply();
     }
