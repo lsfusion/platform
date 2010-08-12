@@ -6,12 +6,11 @@ import javax.swing.*;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.DocumentFilter;
 import javax.swing.text.InternationalFormatter;
-import java.text.NumberFormat;
-import java.text.ParseException;
+import java.text.*;
 
-public class IntegerPropertyEditor extends TextFieldPropertyEditor {
+public class DoublePropertyEditor extends TextFieldPropertyEditor {
 
-    public IntegerPropertyEditor(Object value, NumberFormat format, ComponentDesign design, Class<?> valueClass) {
+    public DoublePropertyEditor(Object value, NumberFormat format, ComponentDesign design, Class<?> valueClass) {
         super(design);
 
         InternationalFormatter formatter = new InternationalFormatter(format) {
@@ -20,12 +19,10 @@ public class IntegerPropertyEditor extends TextFieldPropertyEditor {
                 return filter;
             }
 
-            private DocumentFilter filter = new IntFilter();
+            private DocumentFilter filter = new DoubleFilter();
         };
         formatter.setValueClass(valueClass);
-
         this.setHorizontalAlignment(JTextField.RIGHT);
-
         setFormatterFactory(new DefaultFormatterFactory(formatter));
 
         if (value != null) {
@@ -33,9 +30,10 @@ public class IntegerPropertyEditor extends TextFieldPropertyEditor {
         }
 
         // выглядит странно, но где-то внутри это позволяет
-        // обойти баг со сбрасыванием выделения из-за форматтера 
+        // обойти баг со сбрасыванием выделения из-за форматтера
         setText(getText());
     }
+
 
     public Object getCellEditorValue() {
 
