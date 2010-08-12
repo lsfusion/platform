@@ -10,7 +10,7 @@ import java.io.ObjectOutputStream;
 
 /**
  *  Example of use:
- *
+ *  <pre><code>
  *      public DefaultFormView createDefaultRichDesign() {
  *          DefaultFormView design = super.createDefaultRichDesign();
  *
@@ -21,6 +21,7 @@ import java.io.ObjectOutputStream;
  *
  *          return design;
  *      }
+ *  </code></pre>
  */
 public class Highlighter implements ClientSerialize {
     private Color color;
