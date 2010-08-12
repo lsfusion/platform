@@ -22,6 +22,8 @@ public class ClientComponentView implements Serializable {
 
     public boolean defaultComponent = false;
 
+    public final boolean show;
+
     ClientComponentView(DataInputStream inStream, Collection<ClientContainerView> containers) throws IOException, ClassNotFoundException {
 
         compID = inStream.readInt();
@@ -47,5 +49,7 @@ public class ClientComponentView implements Serializable {
         constraints.ID = compID;
 
         defaultComponent = inStream.readBoolean();
+
+        show = inStream.readBoolean();
     }
 }

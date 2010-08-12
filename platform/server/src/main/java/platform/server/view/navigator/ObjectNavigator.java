@@ -1,6 +1,5 @@
 package platform.server.view.navigator;
 
-import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.view.form.PropertyObjectInterface;
 
@@ -11,9 +10,6 @@ public class ObjectNavigator extends CellViewNavigator implements PropertyInterf
     public GroupObjectNavigator groupTo;
 
     public String caption;
-    public boolean show = true;
-    public boolean showTree = false;
-    public boolean showClass = false;
 
     public boolean addOnTransaction = false;
     public boolean resetOnApply = false;
@@ -24,11 +20,6 @@ public class ObjectNavigator extends CellViewNavigator implements PropertyInterf
         super(ID);
         this.caption = caption;
         this.baseClass = baseClass;
-
-        if (baseClass instanceof CustomClass && !((CustomClass)baseClass).children.isEmpty()) {
-            showTree = true;
-            showClass = true;
-        }
     }
 
     public PropertyObjectInterface doMapping(Mapper mapper) {

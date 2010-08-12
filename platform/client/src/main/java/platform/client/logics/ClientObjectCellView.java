@@ -14,16 +14,12 @@ import java.util.Collection;
 
 public class ClientObjectCellView extends ClientObjectView {
 
-    public final boolean show;
-
     public int getShiftID() {
         return 1000;
     }
 
     public ClientObjectCellView(DataInputStream inStream, Collection<ClientContainerView> containers, ClientObjectImplementView object) throws IOException, ClassNotFoundException {
         super(inStream, containers, object);
-
-        show = inStream.readBoolean();
     }
 
     public PropertyEditorComponent getEditorComponent(ClientForm form, Object value) throws IOException, ClassNotFoundException {

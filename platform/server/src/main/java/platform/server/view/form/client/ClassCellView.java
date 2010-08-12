@@ -1,5 +1,6 @@
 package platform.server.view.form.client;
 
+import platform.server.classes.CustomClass;
 import platform.server.classes.StringClass;
 import platform.server.data.type.Type;
 import platform.server.view.navigator.ObjectNavigator;
@@ -14,6 +15,7 @@ public class ClassCellView extends CellView implements ClientSerialize {
 
         this.view = view;
         this.type = new StringClass(30);
+        this.show = view.baseClass instanceof CustomClass && !((CustomClass)view.baseClass).children.isEmpty();
     }
 
     Type getType() {

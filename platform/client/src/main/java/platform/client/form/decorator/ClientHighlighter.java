@@ -31,7 +31,7 @@ public class ClientHighlighter implements Serializable {
                     comp.setBackground(color);
                 } else {
                     Color bgColor = comp.getBackground();
-                    comp.setBackground(new Color((color.getRed() & bgColor.getRed()), (color.getGreen() & bgColor.getGreen()), (color.getBlue() & color.getBlue())));
+                    comp.setBackground(new Color(color.getRGB() & bgColor.getRGB()));
                 }
             }
         }

@@ -30,6 +30,8 @@ public class ComponentView implements ClientSerialize {
 
     public boolean defaultComponent = false;
 
+    public boolean show = true;
+    
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeInt(ID);
 
@@ -48,5 +50,7 @@ public class ComponentView implements ClientSerialize {
         }
 
         outStream.writeBoolean(defaultComponent);
+
+        outStream.writeBoolean(show);
     }
 }

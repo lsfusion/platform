@@ -127,8 +127,11 @@ public class GridController {
 
     public void addProperty(ClientPropertyView property) {
 //                System.out.println("addProperty " + property.toString());
-        if (gridTable.addColumn(property))
-            gridTable.updateTable();
+        if (property.show) {
+            if (gridTable.addColumn(property)) {
+                gridTable.updateTable();
+            }
+        }
 
         if (property.externalScreen != null) {
             addExternalScreenComponent(property);
@@ -137,8 +140,11 @@ public class GridController {
 
     public void removeProperty(ClientPropertyView property) {
 //                System.out.println("removeProperty " + property.toString());
-        if (gridTable.removeColumn(property))
-            gridTable.updateTable();
+        if (property.show) {
+            if (gridTable.removeColumn(property)) {
+                gridTable.updateTable();
+            }
+        }
     }
 
     public void setGridObjects(List<ClientGroupObjectValue> gridObjects) {

@@ -26,6 +26,7 @@ import platform.server.view.form.ObjectImplement;
 import platform.server.view.form.RemoteForm;
 import platform.server.view.form.client.ContainerView;
 import platform.server.view.form.client.DefaultFormView;
+import platform.server.view.form.client.ObjectImplementView;
 import platform.server.view.navigator.*;
 import platform.server.view.navigator.filter.*;
 import tmc.integration.PanelExternalScreen;
@@ -1085,7 +1086,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             if (toAdd) {
                 objDoc.groupTo.initClassView = ClassViewType.PANEL;
                 objDoc.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
-                objDoc.show = false;
                 objDoc.addOnTransaction = true;
             } else {
                 addPropertyView(orderUserName, objDoc);
@@ -1111,6 +1111,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             DefaultFormView design = super.createDefaultRichDesign();
 
             if (toAdd) {
+                design.get(objDoc).objectCellView.show = false;
 
                 design.setFont(FONT_MEDIUM_BOLD, objDoc.groupTo);
 
@@ -1459,9 +1460,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             }
             //getPropertyView(documentBarcodePriceOv).setToDraw(objBarcode.groupTo);
 
-            objArt.show = false;
-            objArt.showClass = false;
-            objArt.showTree = false;
             objArt.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
 
 //            addFixedFilter(new OrFilterNavigator(new CompareFilterNavigator(addPropertyObjectImplement(outStore, objDoc), Compare.EQUALS, shopImplement),
@@ -1487,6 +1485,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             design.get(objArt.groupTo).gridView.defaultComponent = true;
 
+            ObjectImplementView objArtView = design.get(objArt);
+            objArtView.objectCellView.show = false;
+            objArtView.classCellView.show = false;
+            objArtView.classView.show = false;
+
             return design;
         }
     }
@@ -1510,9 +1513,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             objObligation = addSingleGroupObjectImplement(obligation, "Оплачено купонами/ сертификатами", properties, baseGroup, true);
             addPropertyView(objDoc, objObligation, properties, baseGroup, true, orderSaleUseObligation);
-            objObligation.show = false;
-            objObligation.showClass = false;
-            objObligation.showTree = false;
             objObligation.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
 //            addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(obligationDocument, objObligation))));
 //            addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(orderSaleObligationCanNotBeUsed, objDoc, objObligation)));
@@ -1520,9 +1520,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             objCoupon = addSingleGroupObjectImplement(coupon, "Выдано купонов", properties, baseGroup, true);
             addPropertyView(objDoc, objCoupon, properties, baseGroup, true, issueObligation);
-            objCoupon.show = false;
-            objCoupon.showClass = false;
-            objCoupon.showTree = false;
             objCoupon.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
 //            addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(obligationDocument, objObligation))));
 //            addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(orderSaleObligationCanNotBeUsed, objDoc, objObligation)));
@@ -1561,6 +1558,16 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.get(objObligation.groupTo).gridView.showFilter = false;
             design.addIntersection(design.getGroupObjectContainer(objCoupon.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
+            ObjectImplementView objCouponView = design.get(objCoupon);
+            objCouponView.objectCellView.show = false;
+            objCouponView.classCellView.show = false;
+            objCouponView.classView.show = false;
+
+            ObjectImplementView objObligationView = design.get(objObligation);
+            objObligationView.objectCellView.show = false;
+            objObligationView.classCellView.show = false;
+            objObligationView.classView.show = false;
+            
             return design;
         }
 
@@ -2120,8 +2127,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             if (!toAdd)
                 addPropertyView(date, objDoc);
             objObligation = addSingleGroupObjectImplement(giftObligation, "Подарочный сертификат", properties, allGroup, true);
-            objObligation.show = false;
-            objObligation.showClass = false;
             addPropertyView(objDoc, objObligation, properties, allGroup, true);
 
             RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));
@@ -2149,6 +2154,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             design.get(objObligation.groupTo).gridView.defaultComponent = true;
 
+            ObjectImplementView objObligationView = design.get(objObligation);
+            objObligationView.objectCellView.show = false;
+            objObligationView.classCellView.show = false;
+            
             design.setKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_DOWN_MASK | InputEvent.SHIFT_MASK));
 
             return design;

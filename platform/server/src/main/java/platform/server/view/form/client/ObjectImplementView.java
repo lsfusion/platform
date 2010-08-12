@@ -20,7 +20,7 @@ public class ObjectImplementView implements ClientSerialize {
 
         objectCellView = new ObjectCellView(idGen.idShift(), view);
         classCellView = new ClassCellView(idGen.idShift(), view);
-        classView = new ClassView(idGen.idShift());
+        classView = new ClassView(idGen.idShift(), view);
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
@@ -30,14 +30,8 @@ public class ObjectImplementView implements ClientSerialize {
         outStream.writeBoolean(view.addOnTransaction);
 
         view.baseClass.serialize(outStream);
-
         objectCellView.serialize(outStream);
-        outStream.writeBoolean(view.show);
-
         classCellView.serialize(outStream);
-        outStream.writeBoolean(view.showClass);
-
         classView.serialize(outStream);
-        outStream.writeBoolean(view.showTree);        
     }
 }
