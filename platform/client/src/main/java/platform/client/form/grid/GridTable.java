@@ -19,7 +19,10 @@ import platform.interop.Scroll;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.*;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
@@ -500,6 +503,15 @@ public abstract class GridTable extends ClientFormTable
         return getSelectedValue(gridColumns.indexOf(property));
     }
 
+    public Object getValue(ClientCellView property, int row) {
+        Map<ClientGroupObjectValue, Object> keyValue = gridValues.get(property);
+        if (keyValue != null) {
+            ClientGroupObjectValue objValue = gridRows.get(row);
+            return objValue != null ? keyValue.get(objValue) : null;
+        }
+        return null;
+    }
+
     private Object getSelectedValue(int col) {
 
         int row = getSelectedRow();
@@ -576,6 +588,10 @@ public abstract class GridTable extends ClientFormTable
 
     public ClientCellView getCellView(int col) {
         return gridColumns.get(col);
+    }
+
+    public Object getPropertyValue(ClientCellView cellView) {
+        return gridRows ;
     }
 
     private final List<ClientCellView> orders = new ArrayList<ClientCellView>();

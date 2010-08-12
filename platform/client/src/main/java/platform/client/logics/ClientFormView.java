@@ -3,6 +3,7 @@ package platform.client.logics;
 import platform.base.OrderedMap;
 import platform.client.SwingUtils;
 import platform.client.form.LogicsSupplier;
+import platform.client.form.decorator.ClientHighlighter;
 
 import javax.swing.*;
 import java.io.DataInputStream;
@@ -138,6 +139,18 @@ public class ClientFormView implements Serializable, LogicsSupplier {
             ClientRegularFilterGroupView newObject(DataInputStream inStream) throws IOException, ClassNotFoundException {
                 return new ClientRegularFilterGroupView(inStream,containers);
             }});
+
+        Map<String, ClientPropertyView> sIDtoProperty = new HashMap();
+        for (ClientPropertyView property : properties) {
+            sIDtoProperty.put(property.getSID(), property);
+        }
+
+        for (ClientGroupObjectImplementView groupObject : groupObjects) {
+            ClientHighlighter highlighter = groupObject.gridView.highlighter;
+            if (highlighter != null) {
+                highlighter.init(sIDtoProperty);
+            }
+        }
 
         int orderCount = inStream.readInt();
         for(int i=0;i<orderCount;i++) {

@@ -15,19 +15,19 @@ public class PropertyCellView extends CellView implements ClientSerialize {
         this.view = view;
     }
 
-    Type getType() {
+    public Type getType() {
         return view.view.property.getType();
     }
 
-    int getID() {
+    public int getID() {
         return view.ID;
     }
 
-    String getSID() {
+    public String getSID() {
         return view.getSID();
     }
 
-    String getDefaultCaption() {
+    public String getDefaultCaption() {
         return view.view.property.caption;
     }
 
