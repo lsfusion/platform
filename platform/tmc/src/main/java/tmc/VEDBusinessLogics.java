@@ -2276,20 +2276,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-        SecurityPolicy permitAllPolicy = addPolicy("Разрешить всё", "Политика разрешает все действия.");
-
         SecurityPolicy permitCachRegister = addPolicy("Разрешить только кассовые формы", "Политика разрешает открытие только форма для работы за кассой.");
         permitCachRegister.navigator.defaultPermission = false;
         permitCachRegister.navigator.permit(commitSaleForm);
         permitCachRegister.navigator.permit(saleCheckCertForm);
         permitCachRegister.navigator.permit(returnSaleCheckRetailArticleForm);
         permitCachRegister.navigator.permit(cachRegManagementForm);
-
-        SecurityPolicy readOnlyPolicy = addPolicy("Запретить редактирование всех свойств", "Режим \"только чтение\". Запрещает редактирование всех свойств на формах.");
-        readOnlyPolicy.property.change.defaultPermission = false;
-        readOnlyPolicy.cls.edit.add.defaultPermission = false;
-        readOnlyPolicy.cls.edit.change.defaultPermission = false;
-        readOnlyPolicy.cls.edit.remove.defaultPermission = false;
 
         User admin = addUser("admin", "fusion");
         //админ игнорит настройки в базе, ему разрешено всё

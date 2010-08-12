@@ -484,6 +484,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         addNavigatorForm(new UserPolicyNavigatorForm(policy, 50100));
     }
 
+    protected SecurityPolicy permitAllPolicy, readOnlyPolicy;
+    void initBaseAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
+        permitAllPolicy = addPolicy("Разрешить всё", "Политика разрешает все действия.");
+
+        readOnlyPolicy = addPolicy("Запретить редактирование всех свойств", "Режим \"только чтение\". Запрещает редактирование всех свойств на формах.");
+        readOnlyPolicy.property.change.defaultPermission = false;
+        readOnlyPolicy.cls.edit.add.defaultPermission = false;
+        readOnlyPolicy.cls.edit.change.defaultPermission = false;
+        readOnlyPolicy.cls.edit.remove.defaultPermission = false;
+    }
+
     private class UserPolicyNavigatorForm extends NavigatorForm {
         protected UserPolicyNavigatorForm(NavigatorElement parent, int ID) {
             super(parent, ID, "Политики пользователей");
@@ -608,6 +619,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         synchronizeDB();
 
+        initBaseAuthentication();
         initAuthentication();
 
         // считаем системного пользователя
