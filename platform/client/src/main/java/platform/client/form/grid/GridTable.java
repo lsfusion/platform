@@ -590,10 +590,6 @@ public abstract class GridTable extends ClientFormTable
         return gridColumns.get(col);
     }
 
-    public Object getPropertyValue(ClientCellView cellView) {
-        return gridRows ;
-    }
-
     private final List<ClientCellView> orders = new ArrayList<ClientCellView>();
     private final List<Boolean> orderDirections = new ArrayList<Boolean>();
 
