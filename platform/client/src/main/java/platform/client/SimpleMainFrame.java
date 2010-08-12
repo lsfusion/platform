@@ -28,7 +28,7 @@ public class SimpleMainFrame extends MainFrame {
         StringTokenizer st = new StringTokenizer(forms, ",");
         while (st.hasMoreTokens()) {
             Integer formID = Integer.parseInt(st.nextToken());
-            final ClientForm form = new ClientForm(navigator.remoteNavigator.createForm(formID, false), navigator);
+            final ClientForm form = new ClientForm(remoteNavigator.createForm(formID, false), null);
             form.getComponent().setFocusTraversalPolicyProvider(true);
             mainPane.addTab(form.getFullCaption(), form.getComponent());
 
@@ -47,12 +47,12 @@ public class SimpleMainFrame extends MainFrame {
     }
 
     @Override
-    public void runReport(ClientNavigator clientNavigator, RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException {
+    public void runReport(RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException {
         // надо здесь подумать, что вызывать
     }
 
     @Override
-    public void runForm(ClientNavigator clientNavigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
+    public void runForm(RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
         // надо здесь подумать, что вызывать
     }
 }

@@ -41,8 +41,6 @@ public class ClientFormDockable extends FormDockable {
         return clientForm.getCaption();
     }
 
-    // Р·Р°РєСЂС‹РІР°СЋС‚СЃСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»РµРј
     void closed() {
-        // РЅР°РґРѕ СѓРґР°Р»РёС‚СЊ RemoteForm
     }
 }

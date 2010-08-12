@@ -5,7 +5,7 @@ import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import platform.client.remote.proxy.NonRedirectRemoteMethod;
+import platform.client.remote.proxy.NonPendingRemoteMethod;
 import platform.client.remote.proxy.RemoteObjectProxy;
 import platform.interop.remote.MethodInvocation;
 
@@ -63,7 +63,7 @@ public class PendingExecutionAspect {
 
         Method method = ((MethodSignature) thisJoinPoint.getSignature()).getMethod();
         Object result = null;
-        if (method.getAnnotation(NonRedirectRemoteMethod.class) == null) {
+        if (method.getAnnotation(NonPendingRemoteMethod.class) == null) {
             //если отлаживали методы у этого же объекта, то вызываем этот метод вместе с остальными
             logger.finest("  Moving returning method to invocation queue.");
             moveInvocationToQueue(thisJoinPoint, object);
@@ -73,7 +73,7 @@ public class PendingExecutionAspect {
             remoteObject.flushPendingInvocations();
             result = thisJoinPoint.proceed();
         }
-        
+
         lastRemoteObject = null;
         return result;
     }

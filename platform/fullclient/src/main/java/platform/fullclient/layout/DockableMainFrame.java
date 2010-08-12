@@ -31,10 +31,11 @@ public class DockableMainFrame extends MainFrame {
     ViewManager view;
 
 
+    private ClientNavigator mainNavigator;
     public DockableMainFrame(RemoteNavigatorInterface remoteNavigator) throws ClassNotFoundException, IOException {
         super(remoteNavigator);
 
-        ClientNavigator mainNavigator = new ClientNavigator(remoteNavigator) {
+        mainNavigator = new ClientNavigator(remoteNavigator) {
 
             public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
                 try {
@@ -75,14 +76,14 @@ public class DockableMainFrame extends MainFrame {
     }
 
     @Override
-    public void runReport(ClientNavigator clientNavigator, RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException {
-        view.openReport(clientNavigator, remoteForm);
+    public void runReport(RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException {
+        view.openReport(mainNavigator, remoteForm);
     }
 
     @Override
-    public void runForm(ClientNavigator clientNavigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
+    public void runForm(RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
         try {
-            view.openClient(clientNavigator, remoteForm);
+            view.openClient(mainNavigator, remoteForm);
         } catch (JRException e) {
             throw new RuntimeException(e);
         }

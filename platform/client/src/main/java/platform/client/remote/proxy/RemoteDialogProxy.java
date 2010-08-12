@@ -13,6 +13,7 @@ public class RemoteDialogProxy<T extends RemoteDialogInterface>
     }
 
     public Object getDialogValue() throws RemoteException {
+        logRemoteMethodCall("getDialogValue");
         return target.getDialogValue();
     }
 }

@@ -18,20 +18,22 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
     }
 
     public String getName() throws RemoteException {
+        logRemoteMethodCall("getName");
         return target.getName();
     }
 
     public byte[] findClass(String name) throws RemoteException {
+        logRemoteMethodCall("findClass");
         return target.findClass(name);
     }
 
-    @NonRedirectRemoteMethod
+    @NonPendingRemoteMethod
     public RemoteNavigatorInterface createNavigator(String login, String password, int computer) throws RemoteException {
         List<MethodInvocation> invocations = getImmutableMethodInvocations(RemoteNavigatorProxy.class);
 
         MethodInvocation creator = MethodInvocation.create(this.getClass(), "createNavigator", login, password, computer);
 
-        Object[] result = target.createAndExecute(creator, invocations.toArray(new MethodInvocation[invocations.size()]));
+        Object[] result = createAndExecute(creator, invocations.toArray(new MethodInvocation[invocations.size()]));
 
         RemoteNavigatorInterface remoteDialog = (RemoteNavigatorInterface) result[0];
         RemoteNavigatorProxy proxy = new RemoteNavigatorProxy(remoteDialog);
@@ -43,14 +45,17 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
     }
 
     public Integer getComputer(String hostname) throws RemoteException {
+        logRemoteMethodCall("getComputer");
         return target.getComputer(hostname);
     }
 
     public ExternalScreen getExternalScreen(int screenID) throws RemoteException {
+        logRemoteMethodCall("getExternalScreen");
         return target.getExternalScreen(screenID);
     }
 
     public ExternalScreenParameters getExternalScreenParameters(int screenID, int computerId) throws RemoteException {
+        logRemoteMethodCall("getExternalScreenParameters");
         return target.getExternalScreenParameters(screenID, computerId);
     }
 }

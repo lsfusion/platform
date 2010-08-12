@@ -1,10 +1,7 @@
 package platform.client.form;
 
 import platform.client.SwingUtils;
-import platform.client.navigator.ClientNavigator;
-import platform.client.navigator.ClientNavigatorForm;
 import platform.interop.form.RemoteDialogInterface;
-import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,10 +13,9 @@ import java.io.IOException;
 
 public class ClientDialog extends JDialog {
 
-    final ClientNavigator navigator;
     private ClientForm currentForm;
 
-    public ClientDialog(Component owner, RemoteNavigatorInterface remoteNavigator, RemoteDialogInterface dialog) throws IOException, ClassNotFoundException {
+    public ClientDialog(Component owner, RemoteDialogInterface dialog) throws IOException, ClassNotFoundException {
         super(SwingUtils.getWindow(owner), Dialog.ModalityType.DOCUMENT_MODAL); // обозначаем parent'а и модальность
 
         setLayout(new BorderLayout());
@@ -28,18 +24,11 @@ public class ClientDialog extends JDialog {
         setUndecorated(true);
         getRootPane().setBorder(BorderFactory.createLineBorder(Color.gray, 1));
 
-        navigator = new ClientNavigator(remoteNavigator) {
-
-           public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
-//               setCurrentForm(((RemoteDialogInterface)currentForm.remoteForm).createFormDialog(remoteNavigator));
-           }
-        };
-
         addWindowListener(new WindowAdapter() {
 
-           public void windowActivated(WindowEvent e) {
-               KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(currentForm.getComponent());
-           }
+            public void windowActivated(WindowEvent e) {
+                KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(currentForm.getComponent());
+            }
 
         });
 
@@ -60,44 +49,46 @@ public class ClientDialog extends JDialog {
 
     public int objectChosen = NOT_CHOSEN;
 
-    boolean isReadOnlyMode() { return true; }
+    boolean isReadOnlyMode() {
+        return true;
+    }
 
     // необходим чтобы в диалоге менять формы (панели)
     void setCurrentForm(RemoteDialogInterface remoteForm) throws IOException, ClassNotFoundException {
 
         if (currentForm != null) remove(currentForm.getComponent());
-        currentForm = new ClientForm(remoteForm, navigator) {
+        currentForm = new ClientForm(remoteForm, null) {
 
             @Override
             public boolean isDialogMode() {
-               return true;
+                return true;
             }
 
             @Override
             public boolean isReadOnlyMode() {
-               return super.isReadOnlyMode() || ClientDialog.this.isReadOnlyMode();
+                return super.isReadOnlyMode() || ClientDialog.this.isReadOnlyMode();
             }
 
             @Override
             boolean nullPressed() {
 
-               objectChosen = CHOSEN_NULL;
-               ClientDialog.this.setVisible(false);
-               return true;
+                objectChosen = CHOSEN_NULL;
+                ClientDialog.this.setVisible(false);
+                return true;
             }
 
             @Override
             public void okPressed() {
 
-               objectChosen = CHOSEN_VALUE;
-               ClientDialog.this.setVisible(false);
+                objectChosen = CHOSEN_VALUE;
+                ClientDialog.this.setVisible(false);
             }
-            
+
             @Override
             boolean closePressed() {
 
-               ClientDialog.this.setVisible(false);
-               return true;
+                ClientDialog.this.setVisible(false);
+                return true;
             }
         };
         add(currentForm.getComponent(), BorderLayout.CENTER);

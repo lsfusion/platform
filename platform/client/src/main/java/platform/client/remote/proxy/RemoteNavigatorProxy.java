@@ -16,10 +16,11 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
     }
 
     public String getForms(String formSet) throws RemoteException {
+        logRemoteMethodCall("getForms");
         return target.getForms(formSet);
     }
 
-    @NonRedirectRemoteMethod
+    @NonPendingRemoteMethod
     public RemoteFormInterface createForm(int formID, boolean currentSession) throws RemoteException {
         List<MethodInvocation> invocations = getImmutableMethodInvocations(RemoteFormProxy.class);
 
@@ -36,7 +37,7 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
 
         MethodInvocation creator = MethodInvocation.create(this.getClass(), "createForm", formID, currentSession);
 
-        Object[] result = target.createAndExecute(creator, invocations.toArray(new MethodInvocation[invocations.size()]));
+        Object[] result = createAndExecute(creator, invocations.toArray(new MethodInvocation[invocations.size()]));
 
         RemoteFormInterface remoteForm = (RemoteFormInterface) result[0];
         RemoteFormProxy proxy = new RemoteFormProxy(remoteForm);
@@ -55,10 +56,12 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
 
     @ImmutableMethod
     public byte[] getCurrentUserInfoByteArray() throws RemoteException {
+        logRemoteMethodCall("getCurrentUserInfoByteArray");
         return target.getCurrentUserInfoByteArray();
     }
 
     public byte[] getElementsByteArray(int groupID) throws RemoteException {
+        logRemoteMethodCall("getElementsByteArray");
         return target.getElementsByteArray(groupID);
     }
 }

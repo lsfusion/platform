@@ -78,7 +78,7 @@ public class ClientForm {
         // Навигатор нужен, чтобы уведомлять его об изменениях активных объектов, чтобы он мог себя переобновлять
         this.clientNavigator = clientNavigator;
 
-        actionDispatcher = new ClientFormActionDispatcher(this.clientNavigator);
+        actionDispatcher = new ClientFormActionDispatcher();
 
         formView = new ClientFormView(new DataInputStream(new CompressingInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray()))));
 
@@ -109,11 +109,12 @@ public class ClientForm {
 
                 try {
                     remoteForm.gainedFocus();
-                    clientNavigator.currentFormChanged();
+                    if (clientNavigator != null) {
+                        clientNavigator.currentFormChanged();
+                    }
 
                     // если вдруг изменились данные в сессии
                     ClientExternalScreen.invalidate(getID());
-                    applyRemoteChanges();
                 } catch (IOException e) {
                     throw new RuntimeException("Ошибка при активации формы", e);
                 }
@@ -376,8 +377,10 @@ public class ClientForm {
 
         Log.incrementBytesReceived(remoteChanges.form.length);
         applyFormChanges(new ClientFormChanges(new DataInputStream(new CompressingInputStream(new ByteArrayInputStream(remoteChanges.form))), formView));
-        
-        clientNavigator.changeCurrentClass(remoteChanges.classID);
+
+        if (clientNavigator != null) {
+            clientNavigator.changeCurrentClass(remoteChanges.classID);
+        }
     }
 
     private Color defaultApplyBackground;
@@ -591,7 +594,7 @@ public class ClientForm {
     void print() {
 
         try {
-            Main.frame.runReport(clientNavigator, remoteForm);
+            Main.frame.runReport(remoteForm);
         } catch (Exception e) {
             throw new RuntimeException("Ошибка при печати формы", e);
         }

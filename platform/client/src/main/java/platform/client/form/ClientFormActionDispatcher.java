@@ -10,18 +10,12 @@ import java.io.*;
 
 public class ClientFormActionDispatcher implements ClientActionDispatcher {
 
-    ClientNavigator clientNavigator;
-
-    public ClientFormActionDispatcher(ClientNavigator clientNavigator) {
-        this.clientNavigator = clientNavigator;
-    }
-
     public Object execute(FormClientAction action) {
         try {
             if (action.isPrintForm)
-                Main.frame.runReport(clientNavigator, action.remoteForm);
+                Main.frame.runReport(action.remoteForm);
             else
-                Main.frame.runForm(clientNavigator, action.remoteForm);
+                Main.frame.runForm(action.remoteForm);
             return true;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -155,7 +149,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
 
     public Object execute(UserChangedClientAction action) {
         try {
-            Main.frame.drawCurrentUser(clientNavigator.remoteNavigator);
+            Main.frame.updateUser();
 
             return true;
         } catch (IOException e) {

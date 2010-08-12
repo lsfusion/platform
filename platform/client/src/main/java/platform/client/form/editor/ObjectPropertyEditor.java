@@ -37,10 +37,10 @@ public class ObjectPropertyEditor extends JDialog implements PropertyEditorCompo
     public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) throws IOException, ClassNotFoundException {
 
         if (editEvent instanceof KeyEvent && ((KeyEvent)editEvent).getKeyCode() == KeyEvent.VK_SPACE) {
-            clientDialog = new ClientNavigatorDialog(owner,navigator,dialog);
+            clientDialog = new ClientNavigatorDialog(owner, dialog);
             clientDialog.setBounds(owner.getBounds());
         } else {
-            clientDialog = new ClientDialog(owner,navigator,dialog);
+            clientDialog = new ClientDialog(owner, dialog);
             clientDialog.setSize(500, 300);
             SwingUtils.requestLocation(clientDialog, new Point((int)(tableLocation.getX() + cellRectangle.getX()), (int)(tableLocation.getY() + cellRectangle.getMaxY())));
         }
