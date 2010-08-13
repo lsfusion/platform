@@ -148,12 +148,12 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
     }
 
-    public void addPanelProperty(ClientPropertyView property) {
+    public void addPanelProperty(ClientPropertyView property, Object value) {
 
         if (grid != null)
             grid.removeProperty(property);
-        
-        panel.addProperty(property);
+
+        panel.addProperty(property, value);
 
     }
 

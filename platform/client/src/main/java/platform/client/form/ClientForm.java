@@ -19,11 +19,11 @@ import platform.client.navigator.ClientNavigator;
 import platform.interop.CompressingInputStream;
 import platform.interop.Order;
 import platform.interop.Scroll;
+import platform.interop.action.CheckFailed;
 import platform.interop.action.ClientAction;
 import platform.interop.action.ClientApply;
-import platform.interop.action.CheckFailed;
-import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.RemoteChanges;
+import platform.interop.form.RemoteFormInterface;
 
 import javax.swing.*;
 import java.awt.*;
@@ -407,9 +407,10 @@ public class ClientForm {
 
         // Сначала меняем виды объектов
 
-        for (ClientPropertyView property : formChanges.panelProperties.keySet()) {
+        for (Map.Entry<ClientPropertyView, Object> propValue : formChanges.panelProperties.entrySet()) {
+            ClientPropertyView property = propValue.getKey();
             if (property.shouldBeDrawn(this))
-                controllers.get(property.groupObject).addPanelProperty(property);
+                controllers.get(property.groupObject).addPanelProperty(property, propValue.getValue());
         }
 
         for (ClientPropertyView property : formChanges.gridProperties.keySet()) {

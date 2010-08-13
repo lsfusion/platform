@@ -117,15 +117,18 @@ public abstract class PanelController {
         setGroupObjectIDValue(value);
     }
 
-    public void addProperty(ClientPropertyView property) {
+    public void addProperty(ClientPropertyView property, Object value) {
 
-        if (controllers.get(property) == null) {
+        CellController controller = controllers.get(property);
+        if (controller == null && value != null) {
 
             CellController propController = new CellController(property, form);
             addGroupObjectActions(propController.getView());
             propController.addView(formLayout);
 
             controllers.put(property, propController);
+        } else if (controller != null && value == null) {
+            removeProperty(property);
         }
 
     }
@@ -141,10 +144,10 @@ public abstract class PanelController {
     }
 
     public void setPropertyValue(ClientPropertyView property, Object value) {
-
         CellController propmodel = controllers.get(property);
-        propmodel.setValue(value);
-
+        if (propmodel != null) {
+            propmodel.setValue(value);
+        }
     }
 
     protected abstract void addGroupObjectActions(JComponent comp);
