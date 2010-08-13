@@ -192,8 +192,8 @@ public class DockableMainFrame extends MainFrame {
     public SingleCDockable createDockable(String title, JComponent navigator) {
         DefaultSingleCDockable dockable = new DefaultSingleCDockable(title, title, navigator);
         dockable.setCloseable(true);
-        dockable.setDefaultLocation(CDockable.ExtendedMode.MINIMIZED, CLocation.base().minimalEast());
-        dockable.setDefaultLocation(CDockable.ExtendedMode.EXTERNALIZED, CLocation.external(0, 0, 300, 300));
+        //dockable.setDefaultLocation(CDockable.ExtendedMode.MINIMIZED, CLocation.base().minimalEast());
+        //dockable.setDefaultLocation(CDockable.ExtendedMode.EXTERNALIZED, CLocation.external(0, 0, 300, 300));
         return dockable;
     }
 }

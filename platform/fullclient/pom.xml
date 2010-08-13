@@ -101,28 +101,13 @@
         </dependency>
         <dependency>
             <groupId>bibliothek.gui</groupId>
-            <artifactId>demonstration</artifactId>
-            <version>1.0.7</version>
-        </dependency>
-        <dependency>
-            <groupId>bibliothek.gui</groupId>
-            <artifactId>notes</artifactId>
-            <version>1.0.7</version>
-        </dependency>
-        <dependency>
-            <groupId>bibliothek.gui</groupId>
             <artifactId>dockingFramesCore</artifactId>
-            <version>1.0.7</version>
+            <version>1.0.8_5e</version>
         </dependency>
         <dependency>
             <groupId>bibliothek.gui</groupId>
             <artifactId>dockingFramesCommon</artifactId>
-            <version>1.0.7</version>
-        </dependency>
-        <dependency>
-            <groupId>bibliothek.gui</groupId>
-            <artifactId>interfaces</artifactId>
-            <version>1.0.7</version>
+            <version>1.0.8_5e</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>

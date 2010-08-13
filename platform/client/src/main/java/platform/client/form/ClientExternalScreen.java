@@ -23,7 +23,7 @@ public class ClientExternalScreen {
             try {
                 // нужно оставить этот вызов здесь, чтобы класс параметров экрана подгрузился до создания самого объекта экрана
                 ExternalScreenParameters params = Main.remoteLogics.getExternalScreenParameters(screenID, Main.computerId);
-                
+
                 screen = new ClientExternalScreen(Main.remoteLogics.getExternalScreen(screenID));
                 screen.initialize();
                 screens.put(screenID, screen);
@@ -55,6 +55,7 @@ public class ClientExternalScreen {
     }
 
     private transient Map<Integer, Map<ExternalScreenComponent, ExternalScreenConstraints>> components = new HashMap<Integer, Map<ExternalScreenComponent, ExternalScreenConstraints>>();
+
     public void add(int formID, ExternalScreenComponent comp, ExternalScreenConstraints cons) {
         if (!components.containsKey(formID)) {
             components.put(formID, new HashMap<ExternalScreenComponent, ExternalScreenConstraints>());
@@ -63,26 +64,28 @@ public class ClientExternalScreen {
     }
 
     public void remove(int formID, ExternalScreenComponent comp) {
-        components.get(formID).remove(comp); 
+        components.get(formID).remove(comp);
     }
 
     public void invalidate() {
         valid = false;
     }
 
-    public static void invalidate(int formID){
-        for (ClientExternalScreen curScreen : screens.values()){
-            if (curScreen.components.containsKey(formID) && !curScreen.components.get(formID).isEmpty()){
+    public static void invalidate(int formID) {
+        for (ClientExternalScreen curScreen : screens.values()) {
+            if (curScreen.components.containsKey(formID) && !curScreen.components.get(formID).isEmpty()) {
                 curScreen.invalidate();
             }
         }
     }
 
-    public static void repaintAll(int formID){
-        for (ClientExternalScreen curScreen : screens.values()){
+    public static void repaintAll(int formID) {
+        for (ClientExternalScreen curScreen : screens.values()) {
             if (!curScreen.valid) {
-                curScreen.screen.repaint(curScreen.components.get(formID));
-                curScreen.valid = true;
+                if (curScreen.components.containsKey(formID) && !curScreen.components.get(formID).isEmpty()) {
+                    curScreen.screen.repaint(curScreen.components.get(formID));
+                    curScreen.valid = true;
+                }
             }
         }
     }
