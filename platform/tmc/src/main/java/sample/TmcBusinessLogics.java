@@ -183,12 +183,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
     private void initArticleProperties() {
 
-        artGroup = addDProp("Гр. тов.", articleGroup, article);
+        artGroup = addDProp("articlegroup", "Гр. тов.", articleGroup, article);
         artGroupName = addJProp(artgrGroup, "Имя гр. тов.", name, artGroup, 1);
 
-        artBarCode = addDProp(baseGroup, "Штрих-код", NumericClass.get(13, 0), article);
-        artWeight = addDProp(baseGroup, "Вес (кг.)", NumericClass.get(6, 3), article);
-        artPackCount = addDProp(baseGroup, "Кол-во в уп.", IntegerClass.instance, article);
+        artBarCode = addDProp(baseGroup, "barCode", "Штрих-код", NumericClass.get(13, 0), article);
+        artWeight = addDProp(baseGroup, "weight", "Вес (кг.)", NumericClass.get(6, 3), article);
+        artPackCount = addDProp(baseGroup, "count", "Кол-во в уп.", IntegerClass.instance, article);
 
     }
 
@@ -205,12 +205,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
     private void initExtIncProperties() {
 
-        extIncSupplier = addDProp("Поставщик", supplier, extIncomeDocument);
+        extIncSupplier = addDProp("supplier", "Поставщик", supplier, extIncomeDocument);
         extIncSupplierName = addJProp(supplierGroup, "extIncSupplierName", "Имя поставщика", name, extIncSupplier, 1);
 
         extIncDetailDocument = addDProp("extIncDetailDocument", "Документ", extIncomeDocument, extIncomeDetail);
 
-        extIncDetailArticle = addDProp("Товар", article, extIncomeDetail);
+        extIncDetailArticle = addDProp("article", "Товар", article, extIncomeDetail);
         extIncDetailArticleName = addJProp(artclGroup, "extIncDetailArticleName", "Имя товара", name, extIncDetailArticle, 1);
     }
 
@@ -456,7 +456,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         extIncQuantity = addSGProp(quantGroup, "extIncQuantity" , "Кол-во прих.", extIncDetailQuantity, extIncDetailDocument, 1, extIncDetailArticle, 1);
 
-        intraQuantity = addDProp(quantGroup, "Кол-во внутр.", DoubleClass.instance, intraDocument, article);
+        intraQuantity = addDProp(quantGroup, "innerCount","Кол-во внутр.", DoubleClass.instance, intraDocument, article);
 
         receiptQuantity = addDProp(quantGroup, "receiptQuantity", "Кол-во в чеке", DoubleClass.instance, receipt, article);
         cashSaleQuantity = addSGProp(quantGroup, "cashSaleQuantity", "Кол-во прод.", receiptQuantity, receiptSaleDocument, 1, 2);
@@ -1105,58 +1105,58 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         // конкретные классы
         CustomClass articleFood = addConcreteClass("Продтовары", article);
-        addDProp(baseGroup, "Срок годности", StringClass.get(10), articleFood);
+        addDProp(baseGroup, "expTime", "Срок годности", StringClass.get(10), articleFood);
 
         CustomClass articleAlcohol = addConcreteClass("Алкоголь", articleFood);
-        addDProp(baseGroup, "Крепость", IntegerClass.instance, articleAlcohol);
+        addDProp(baseGroup, "alchohol", "Крепость", IntegerClass.instance, articleAlcohol);
 
         CustomClass articleVodka = addConcreteClass("Водка", articleAlcohol);
-        addDProp(baseGroup, "Прейск.", LogicalClass.instance, articleVodka);
+        addDProp(baseGroup, "vodka","Прейск.", LogicalClass.instance, articleVodka);
 
         CustomClass articleBeer = addConcreteClass("Пиво", articleAlcohol);
-        addDProp(baseGroup, "Тип", StringClass.get(10), articleBeer);
-        addDProp(baseGroup, "Упак.", StringClass.get(10), articleBeer);
+        addDProp(baseGroup, "beerType", "Тип", StringClass.get(10), articleBeer);
+        addDProp(baseGroup, "beerPack", "Упак.", StringClass.get(10), articleBeer);
 
         CustomClass wineTaste = addConcreteClass("Вкус вина", namedObject);
         CustomClass articleWine = addConcreteClass("Вино", articleAlcohol);
-        addJProp(baseGroup, "Вкус", name, addDProp("Код вкуса", wineTaste, articleWine), 1);
+        addJProp(baseGroup, "Вкус", name, addDProp("vineCode", "Код вкуса", wineTaste, articleWine), 1);
 
         CustomClass articleMilkGroup = addConcreteClass("Молочные продукты", articleFood);
-        addDProp(baseGroup, "Жирн.", DoubleClass.instance, articleMilkGroup);
+        addDProp(baseGroup, "milkProd", "Жирн.", DoubleClass.instance, articleMilkGroup);
 
         CustomClass articleMilk = addConcreteClass("Молоко", articleMilkGroup);
-        addDProp(baseGroup, "Упак.", StringClass.get(10),  articleMilk);
+        addDProp(baseGroup, "milkPack", "Упак.", StringClass.get(10),  articleMilk);
 
         CustomClass articleCheese = addConcreteClass("Сыр", articleMilkGroup);
-        addDProp(baseGroup, "Вес.", LogicalClass.instance, articleCheese);
+        addDProp(baseGroup, "cheeseWeight", "Вес.", LogicalClass.instance, articleCheese);
 
         CustomClass articleCurd = addConcreteClass("Творог", articleMilkGroup);
 
         CustomClass articleBreadGroup = addConcreteClass("Хлебобулочные изделия", articleFood);
-        addDProp(baseGroup, "Вес", IntegerClass.instance, articleBreadGroup);
+        addDProp(baseGroup, "bunWeight", "Вес", IntegerClass.instance, articleBreadGroup);
 
         CustomClass articleBread = addConcreteClass("Хлеб", articleBreadGroup);
-        addDProp(baseGroup, "Вес", IntegerClass.instance, articleBread);
+        addDProp(baseGroup, "breadWight", "Вес", IntegerClass.instance, articleBread);
 
         CustomClass articleCookies = addConcreteClass("Печенье", articleBreadGroup);
 
         CustomClass articleJuice = addConcreteClass("Соки", articleFood);
-        addDProp(baseGroup, "Вкус", StringClass.get(10), articleJuice);
-        addDProp(baseGroup, "Литраж", IntegerClass.instance, articleJuice);
+        addDProp(baseGroup, "juiceTaste", "Вкус", StringClass.get(10), articleJuice);
+        addDProp(baseGroup, "juiceSize", "Литраж", IntegerClass.instance, articleJuice);
 
         CustomClass articleClothes = addConcreteClass("Одежда", article);
-        addDProp(baseGroup, "Модель", StringClass.get(10), articleClothes);
+        addDProp(baseGroup, "wearModel", "Модель", StringClass.get(10), articleClothes);
 
         CustomClass shirtSize = addConcreteClass("Размер майки", namedObject);
         CustomClass articleTShirt = addConcreteClass("Майки", articleClothes);
-        addJProp(baseGroup, "Размер", name, addDProp("Код размера", shirtSize, articleTShirt), 1);
+        addJProp(baseGroup, "Размер", name, addDProp("shirtSize", "Код размера", shirtSize, articleTShirt), 1);
 
         CustomClass articleJeans = addConcreteClass("Джинсы", articleClothes);
-        addDProp(baseGroup, "Ширина", IntegerClass.instance, articleJeans);
-        addDProp(baseGroup, "Длина", IntegerClass.instance, articleJeans);
+        addDProp(baseGroup, "jeansWidth", "Ширина", IntegerClass.instance, articleJeans);
+        addDProp(baseGroup, "jeansLength", "Длина", IntegerClass.instance, articleJeans);
 
         CustomClass articleShooes = addConcreteClass("Обувь", article);
-        addDProp(baseGroup, "Цвет", StringClass.get(10), articleShooes);
+        addDProp(baseGroup, "shoesColor", "Цвет", StringClass.get(10), articleShooes);
     }
 
     protected void initConstraints() {
@@ -1166,21 +1166,21 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
     protected void initPersistents() {
 
-        persistents.add((AggregateProperty)docStore.property);
+        addPersistent((AggregateProperty)docStore.property);
 
-        persistents.add((AggregateProperty)docDate.property);
+        addPersistent((AggregateProperty)docDate.property);
 
-        persistents.add((AggregateProperty)extIncQuantity.property);
+        addPersistent((AggregateProperty)extIncQuantity.property);
 
-        persistents.add((AggregateProperty)incStoreQuantity.property);
-        persistents.add((AggregateProperty)outStoreQuantity.property);
-        persistents.add((AggregateProperty)maxChangesParamsDate.property);
-        persistents.add((AggregateProperty)maxChangesParamsDoc.property);
+        addPersistent((AggregateProperty)incStoreQuantity.property);
+        addPersistent((AggregateProperty)outStoreQuantity.property);
+        addPersistent((AggregateProperty)maxChangesParamsDate.property);
+        addPersistent((AggregateProperty)maxChangesParamsDoc.property);
 
-        persistents.add((AggregateProperty)extIncLastDetail.property);
+        addPersistent((AggregateProperty)extIncLastDetail.property);
 
-//        persistents.add((AggregateProperty)outQStore.property);
-//        persistents.add((AggregateProperty)incQStore.property);
+//        addPersistent((AggregateProperty)outQStore.property);
+//        addPersistent((AggregateProperty)incQStore.property);
     }
 
     protected void initTables() {

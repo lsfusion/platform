@@ -474,26 +474,26 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
     protected void initPersistents() {
 
-        persistents.add((AggregateProperty)quantity.property);
-        persistents.add((AggregateProperty)balanceStoreQuantity.property);
+        addPersistent((AggregateProperty)quantity.property);
+        addPersistent((AggregateProperty)balanceStoreQuantity.property);
 
-        persistents.add((AggregateProperty)incStore.property);
+        addPersistent((AggregateProperty)incStore.property);
 
-        persistents.add((AggregateProperty)currentIncDate.property);
-        persistents.add((AggregateProperty)currentIncDoc.property);
-        persistents.add((AggregateProperty)currentRevalDate.property);
-        persistents.add((AggregateProperty)currentRevalDoc.property);
-        persistents.add((AggregateProperty)currentTaxDate.property);
-        persistents.add((AggregateProperty)currentTaxDoc.property);
-        persistents.add((AggregateProperty)currentLocTaxDate.property);
-        persistents.add((AggregateProperty)currentLocTaxDoc.property);
+        addPersistent((AggregateProperty)currentIncDate.property);
+        addPersistent((AggregateProperty)currentIncDoc.property);
+        addPersistent((AggregateProperty)currentRevalDate.property);
+        addPersistent((AggregateProperty)currentRevalDoc.property);
+        addPersistent((AggregateProperty)currentTaxDate.property);
+        addPersistent((AggregateProperty)currentTaxDoc.property);
+        addPersistent((AggregateProperty)currentLocTaxDate.property);
+        addPersistent((AggregateProperty)currentLocTaxDoc.property);
 
-        persistents.add((AggregateProperty)currentAdd.property);
-        persistents.add((AggregateProperty)currentVatOut.property);
-        persistents.add((AggregateProperty)currentLocTax.property);
-        persistents.add((AggregateProperty)currentPriceIn.property);
+        addPersistent((AggregateProperty)currentAdd.property);
+        addPersistent((AggregateProperty)currentVatOut.property);
+        addPersistent((AggregateProperty)currentLocTax.property);
+        addPersistent((AggregateProperty)currentPriceIn.property);
         
-        persistents.add((AggregateProperty)currentPriceOut.property);
+        addPersistent((AggregateProperty)currentPriceOut.property);
     }
 
     protected void initTables() {

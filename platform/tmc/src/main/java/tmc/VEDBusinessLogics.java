@@ -825,39 +825,39 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     protected void initPersistents() {
-        persistents.add((AggregateProperty) balanceSklCommitedQuantity.property);
-        persistents.add((AggregateProperty) balanceSklFreeQuantity.property);
+        addPersistent((AggregateProperty) balanceSklCommitedQuantity.property);
+        addPersistent((AggregateProperty) balanceSklFreeQuantity.property);
 
-        persistents.add((AggregateProperty) articleFreeQuantity.property);
-        persistents.add((AggregateProperty) articleFreeOrderQuantity.property);
+        addPersistent((AggregateProperty) articleFreeQuantity.property);
+        addPersistent((AggregateProperty) articleFreeOrderQuantity.property);
 
-        persistents.add((AggregateProperty) incStore.property);
-        persistents.add((AggregateProperty) outStore.property);
-        persistents.add((AggregateProperty) orderSupplier.property);
+        addPersistent((AggregateProperty) incStore.property);
+        addPersistent((AggregateProperty) outStore.property);
+        addPersistent((AggregateProperty) orderSupplier.property);
 
-        persistents.add((AggregateProperty) priceStore.property);
-        persistents.add((AggregateProperty) inDocumentPrice.property);
+        addPersistent((AggregateProperty) priceStore.property);
+        addPersistent((AggregateProperty) inDocumentPrice.property);
 
-        persistents.add((AggregateProperty) currentShopPriceDate.property);
-        persistents.add((AggregateProperty) currentShopPriceDoc.property);
+        addPersistent((AggregateProperty) currentShopPriceDate.property);
+        addPersistent((AggregateProperty) currentShopPriceDoc.property);
 
-        persistents.add((AggregateProperty) currentNDSDate.property);
-        persistents.add((AggregateProperty) currentNDSDoc.property);
+        addPersistent((AggregateProperty) currentNDSDate.property);
+        addPersistent((AggregateProperty) currentNDSDoc.property);
 
-        persistents.add((AggregateProperty) innerQuantity.property);
+        addPersistent((AggregateProperty) innerQuantity.property);
 
-        persistents.add((AggregateProperty) clientSum.property);
+        addPersistent((AggregateProperty) clientSum.property);
 
-        persistents.add((AggregateProperty) inAction.property);
-        persistents.add((AggregateProperty) inCoupon.property);
+        addPersistent((AggregateProperty) inAction.property);
+        addPersistent((AggregateProperty) inCoupon.property);
 
-        persistents.add((AggregateProperty) obligationIssued.property);
+        addPersistent((AggregateProperty) obligationIssued.property);
 
         // все связанное с ассортиментами чтобы веселее работало
-        persistents.add((AggregateProperty) articleStoreSupplier.property);
-        persistents.add((AggregateProperty) articleStorePeriod.property);
-        persistents.add((AggregateProperty) articleStoreMin.property);
-        persistents.add((AggregateProperty) articleFullStoreDemand.property);
+        addPersistent((AggregateProperty) articleStoreSupplier.property);
+        addPersistent((AggregateProperty) articleStorePeriod.property);
+        addPersistent((AggregateProperty) articleStoreMin.property);
+        addPersistent((AggregateProperty) articleFullStoreDemand.property);
     }
 
     protected void initTables() {

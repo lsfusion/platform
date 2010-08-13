@@ -486,6 +486,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected SecurityPolicy permitAllPolicy, readOnlyPolicy;
+
     void initBaseAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         permitAllPolicy = addPolicy("Разрешить всё", "Политика разрешает все действия.");
 
@@ -751,8 +752,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected abstract void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException;
 
+    Set<String> idSet = new HashSet<String>();
+
     public String genSID() {
-        return "property" + properties.size();
+        String id = "property" + properties.size();
+        idSet.add(id);
+        return id;
+    }
+
+    public void addPersistent(AggregateProperty property) {
+        assert idSet.contains(property.sID);
+        persistents.add(property);
     }
 
     protected void setPropOrder(LP<?> prop, LP<?> propRel, boolean before) {
@@ -1117,15 +1127,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         AbstractCustomClass customClass = new AbstractCustomClass(null, caption, parents);
         group.add(customClass);
         return customClass;
-    }
-
-    // без ID
-    protected LP addDProp(String caption, ValueClass value, ValueClass... params) {
-        return addDProp((AbstractGroup) null, caption, value, params);
-    }
-
-    protected LP addDProp(AbstractGroup group, String caption, ValueClass value, ValueClass... params) {
-        return addDProp(group, genSID(), caption, value, params);
     }
 
     protected LP addDProp(String sID, String caption, ValueClass value, ValueClass... params) {
@@ -1588,7 +1589,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         if (persist)
             for (Property property : suggestPersist)
-                persistents.add((AggregateProperty) addProperty(null, new LP(property)).property);
+                addPersistent((AggregateProperty) addProperty(null, new LP(property)).property);
 
         for (int i = 0; i < mgProps.size(); i++)
             result[i] = mapLGProp(group, mgProps.get(i), groupImplements);
