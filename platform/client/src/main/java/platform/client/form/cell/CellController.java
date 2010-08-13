@@ -68,6 +68,11 @@ public class CellController implements CellViewListener {
     public void setValue(Object ivalue) {
         view.setValue(ivalue);
         if (extView != null) {
+            String oldValue = (extView.getValue() == null) ? "" : extView.getValue();
+            String newValue = (ivalue == null) ? "" : ivalue.toString();
+            if (oldValue.equals(newValue)){
+                return;
+            }
             extView.setValue((ivalue == null) ? "" : ivalue.toString());
             key.externalScreen.invalidate();
         }

@@ -115,6 +115,7 @@ public class ClientForm {
 
                     // если вдруг изменились данные в сессии
                     ClientExternalScreen.invalidate(getID());
+                    ClientExternalScreen.repaintAll(getID());
                 } catch (IOException e) {
                     throw new RuntimeException("Ошибка при активации формы", e);
                 }

@@ -25,21 +25,21 @@ public class PanelExternalScreen implements ExternalScreen {
         }
     }
 
-    private String format(String a, String b){
+    private String format(String a, String b) {
         String result;
-        if (b.contains(".")){
+        if (b.contains(".")) {
             b = b.substring(0, b.indexOf('.'));
         }
-        if (a.length()+b.length()>19) {
-            result = a.substring(0, 19-b.length())+"."+b;
+        if (a.length() + b.length() > 19) {
+            result = a.substring(0, 19 - b.length()) + "." + b;
         } else {
-            result = a + BaseUtils.padLeft(b, 20-a.length());
+            result = a + BaseUtils.padLeft(b, 20 - a.length());
         }
         return result;
     }
 
-    private String check(String a){
-        return a!=null ? a : "";
+    private String check(String a) {
+        return a != null ? a : "";
     }
 
     // пока игнорируем все Exception'ы, чтобы лишний раз не травмировать пользователя
@@ -57,21 +57,17 @@ public class PanelExternalScreen implements ExternalScreen {
         String output = format(check(out[1]), check(out[2])) + format(check(out[3]), check(out[4]));
 //        System.out.println(output);
 
-        if (output.trim().equals("")){
-            return;
-        }
+
         ActiveXComponent commActive = null;
 
         try {
-            if (components.keySet().iterator().next().getValue() != null) {
-                logger.info("Before creating ActiveX");
-                commActive = new ActiveXComponent("MSCommLib.MSComm");
-                commActive.setProperty("CommPort", commPort);
-                commActive.setProperty("PortOpen", true);
-                commActive.setProperty("Output", new String(output.getBytes("Cp866"), "Cp1251"));
-                commActive.setProperty("PortOpen", false);
-                logger.info("After ActiveX work");
-            }
+            logger.info("Before creating ActiveX");
+            commActive = new ActiveXComponent("MSCommLib.MSComm");
+            commActive.setProperty("CommPort", commPort);
+            commActive.setProperty("PortOpen", true);
+            commActive.setProperty("Output", new String(output.getBytes("Cp866"), "Cp1251"));
+            commActive.setProperty("PortOpen", false);
+            logger.info("After ActiveX work");
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
