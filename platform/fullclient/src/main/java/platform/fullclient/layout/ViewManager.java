@@ -96,7 +96,7 @@ public class ViewManager {
             return layout;
         }
 
-        public boolean match(MultipleCDockable dockable, MultipleCDockableLayout layout) {
+        public boolean match(FormDockable dockable, FormLayout layout) {
             return false;
         }
     }
