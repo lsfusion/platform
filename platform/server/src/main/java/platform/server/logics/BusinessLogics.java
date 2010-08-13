@@ -6,6 +6,7 @@ import org.springframework.core.io.FileSystemResource;
 import platform.base.*;
 import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
+import platform.interop.action.MessageClientAction;
 import platform.interop.remote.RemoteObject;
 import platform.interop.action.ClientAction;
 import platform.interop.action.UserChangedClientAction;
@@ -2408,7 +2409,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addProperty(group, new LP<ClassPropertyInterface>(new SeekActionProperty(genSID(), caption, new ValueClass[]{baseClass}, lp == null ? null : lp.property)));
     }
 
-    public class SeekActionProperty extends ActionProperty {
+    protected LP addMAProp(String message, String caption) {
+        return addMAProp(message, null, caption);
+    }
+
+    protected LP addMAProp(String message, AbstractGroup group, String caption) {
+        return addProperty(group, new LP<ClassPropertyInterface>(new MessageActionProperty(message, genSID(), caption)));
+    }
+
+    public static class SeekActionProperty extends ActionProperty {
 
         Property property;
 
@@ -2424,8 +2433,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 objects = form.mapper.mapProperty(form.navigatorForm.getPropertyImplement(property)).mapping.values();
             else
                 objects = form.getObjects();
-            for (Map.Entry<ClassPropertyInterface, DataObject> key : keys.entrySet())
-                if (mapObjects.get(key.getKey()) == null)
+            for (Map.Entry<ClassPropertyInterface, DataObject> key : keys.entrySet()) {
+                if (mapObjects.get(key.getKey()) == null) {
                     for (ObjectImplement object : objects) {
                         ConcreteClass keyClass = form.session.getCurrentClass(key.getValue());
                         if (keyClass instanceof ConcreteValueClass && object.getBaseClass().isCompatibleParent((ValueClass) keyClass)) {
@@ -2437,6 +2446,21 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                             userSeeks.put(object, key.getValue().object);
                         }
                     }
+                }
+            }
+        }
+    }
+
+    public static class MessageActionProperty extends ActionProperty {
+        private String message;
+
+        private MessageActionProperty(String message, String sID, String caption) {
+            super(sID, caption, new ValueClass[]{});
+            this.message = message;
+        }
+
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
+            actions.add(new MessageClientAction(message, caption));
         }
     }
 

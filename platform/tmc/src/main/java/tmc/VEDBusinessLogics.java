@@ -634,11 +634,22 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP couponCanBeUsed = addJProp(greater2, addJProp(date, obligationIssued, 1), 2, date, 1);
 
-        barcodeAction2 = addJProp(true, "Ввод штрих-кода 2", addCUProp(addSCProp(addIfElseUProp(articleQuantity, articleOrderQuantity, is(commitInc), 1)),
-                addIfElseUProp(orderSaleUseObligation, issueObligation, addJProp(diff2, 1, obligationIssued, 2), 1, 2), addJProp(equals2, orderContragent, 1, 2),
-                xorActionArticle, articleFormatToSell, NDS, documentRevalued, addJProp(and1, changeUser, 2, is(baseClass), 1)), 1, barcodeToObject, 2);
-        barcodeAction3 = addJProp(true, "Ввод штрих-кода 3", addCUProp(addJProp(and(false, false), changeUser, 2, is(baseClass), 1, is(baseClass), 3), addSCProp(returnInnerQuantity)), 1, barcodeToObject, 3, 2);
+        barcodeAction2 = addJProp(true, "Ввод штрих-кода 2",
+                addCUProp(
+                        addSCProp(addIfElseUProp(articleQuantity, articleOrderQuantity, is(commitInc), 1)),
+                        addIfElseUProp(orderSaleUseObligation, issueObligation, addJProp(diff2, 1, obligationIssued, 2), 1, 2),
+                        addJProp(equals2, orderContragent, 1, 2),
+                        xorActionArticle, articleFormatToSell, NDS, documentRevalued,
+                        addJProp(and1, changeUser, 2, is(baseClass), 1)
+                ), 1, barcodeToObject, 2);
+        barcodeAction3 = addJProp(true, "Ввод штрих-кода 3",
+                addCUProp(
+                        addJProp(and(false, false), changeUser, 2, is(baseClass), 1, is(baseClass), 3),
+                        addSCProp(returnInnerQuantity)
+                ), 1, barcodeToObject, 3, 2);
         seekAction = addJProp(true, "Поиск штрих-кода", addSAProp(null), barcodeToObject, 1);
+
+        barcodeNotFoundMessage = addJProp(true, "", and(false, true), addMAProp("Штрих-код не найден!", "Ошибка"), is(StringClass.get(13)), 1, barcodeToObject, 1);
 
         LP xorCouponArticleGroup = addDProp(couponGroup, "xorCouponArticleGroup", "Вкл.", LogicalClass.instance, articleGroup);
         LP xorCouponArticle = addDProp(couponGroup, "xorCouponArticle", "Вкл./искл.", LogicalClass.instance, article);
@@ -684,6 +695,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP barcodeAction2;
     LP barcodeAction3;
     LP seekAction;
+    LP barcodeNotFoundMessage;
     LP orderClientSum;
     public LP orderArticleSaleSumWithDiscount;
     public LP orderSaleDocPrice;
@@ -1095,9 +1107,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             addAutoAction(objBarcode, addPropertyObjectImplement(barcodeAction2, objDoc, objBarcode));
             addAutoAction(objBarcode, addPropertyObjectImplement(seekAction, objBarcode));
-
-            //if(!toAdd)
-
+            addAutoAction(objBarcode, addPropertyObjectImplement(barcodeNotFoundMessage, objBarcode));
 
             if (hasExternalScreen()) {
                 addPropertyView(documentBarcodePriceOv, objDoc, objBarcode).setToDraw(objBarcode.groupTo);
@@ -1773,7 +1783,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addRegularFilterGroup(filterOutGroup);
             }
 
-            addAutoAction(objBarcode, true, addPropertyObjectImplement(barcodeAction3, objDoc, objInner, objBarcode), addPropertyObjectImplement(seekAction, objBarcode));
+            addAutoAction(objBarcode, true,
+                    addPropertyObjectImplement(barcodeAction3, objDoc, objInner, objBarcode),
+                    addPropertyObjectImplement(seekAction, objBarcode),
+                    addPropertyObjectImplement(barcodeNotFoundMessage, objBarcode));
         }
 
         @Override
