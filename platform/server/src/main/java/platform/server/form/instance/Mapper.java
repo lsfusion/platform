@@ -69,7 +69,7 @@ public class Mapper {
 
         if (propertyDrawMapper.containsKey(propKey)) return propertyDrawMapper.get(propKey);
 
-        PropertyDrawInstance propValue = new PropertyDrawInstance<T>(propKey.ID, propKey.getSID(), mapProperty(propKey.propertyObject), groupMapper.get(propKey.toDraw), propKey.forcePanel);
+        PropertyDrawInstance propValue = new PropertyDrawInstance<T>(propKey.ID, propKey.getSID(), mapProperty(propKey.propertyObject), groupMapper.get(propKey.toDraw), propKey.forceViewType);
         
         propertyDrawMapper.put(propKey, propValue);
         return propValue;

@@ -10,16 +10,16 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     // в какой "класс" рисоваться, ессно одмн из Object.GroupTo должен быть ToDraw
     public GroupObjectInstance toDraw;
 
-    public boolean forcePanel;
+    public byte forceViewType;
 
     public String toString() {
         return propertyObject.toString();
     }
 
-    public PropertyDrawInstance(int ID, String sID, PropertyObjectInstance<P> propertyObject, GroupObjectInstance toDraw, boolean forcePanel) {
+    public PropertyDrawInstance(int ID, String sID, PropertyObjectInstance<P> propertyObject, GroupObjectInstance toDraw, byte forceViewType) {
         super(ID,sID);
         this.propertyObject = propertyObject;
         this.toDraw = toDraw;
-        this.forcePanel = forcePanel;
+        this.forceViewType = forceViewType;
     }
 }

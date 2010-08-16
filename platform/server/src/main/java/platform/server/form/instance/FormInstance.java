@@ -26,6 +26,7 @@ import platform.server.data.query.Query;
 import platform.server.data.type.TypeSerializer;
 import platform.server.data.where.Where;
 import platform.server.form.entity.*;
+import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.form.instance.filter.FilterInstance;
@@ -41,8 +42,6 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyValueImplement;
 import platform.server.session.*;
-import platform.server.form.entity.filter.FilterEntity;
-import platform.server.form.entity.OrderEntity;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -981,8 +980,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 // прогоняем через кэши чтобы каждый раз не запускать isInInterface
                 boolean inGridInterface, inInterface;
 
-                if (drawProperty.forcePanel) {
+                byte forceViewType = drawProperty.forceViewType;
+                if (forceViewType == ClassViewType.PANEL) {
                     inGridInterface = false;
+                } else if (forceViewType == ClassViewType.GRID) {
+                    inGridInterface = true;
                 } else {
                     if(refresh || classUpdated(drawProperty.propertyObject,drawProperty.toDraw)) {
                         inGridInterface = drawProperty.propertyObject.isInInterface(drawProperty.toDraw);

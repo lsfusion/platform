@@ -1,5 +1,6 @@
 package platform.server.form.entity;
 
+import platform.interop.ClassViewType;
 import platform.server.logics.property.PropertyInterface;
 
 public class PropertyDrawEntity<P extends PropertyInterface> extends CellEntity {
@@ -14,9 +15,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends CellEntity 
     }
 
     public boolean shouldBeLast = false;
-    public boolean forcePanel = false;
-    public void setForcePanel(boolean forcePanel) {
-        this.forcePanel = forcePanel;
+    public byte forceViewType = ClassViewType.HIDE;
+
+    public void setForceViewType(byte forceViewType) {
+        this.forceViewType = forceViewType;
     }
 
     @Override

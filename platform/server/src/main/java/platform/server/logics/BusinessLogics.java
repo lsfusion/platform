@@ -4,19 +4,21 @@ import net.sf.jasperreports.engine.JRException;
 import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.core.io.FileSystemResource;
 import platform.base.*;
+import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
-import platform.interop.action.MessageClientAction;
-import platform.interop.remote.RemoteObject;
 import platform.interop.action.ClientAction;
+import platform.interop.action.MessageClientAction;
 import platform.interop.action.UserChangedClientAction;
 import platform.interop.exceptions.LoginException;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
+import platform.interop.remote.RemoteObject;
 import platform.server.auth.PolicyManager;
 import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
+import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
@@ -29,6 +31,11 @@ import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.OrderInstance;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.form.instance.remote.RemoteForm;
+import platform.server.form.navigator.NavigatorElement;
+import platform.server.form.navigator.RemoteNavigator;
+import platform.server.form.navigator.UserController;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.AddObjectActionProperty;
@@ -40,10 +47,6 @@ import platform.server.logics.scheduler.Scheduler;
 import platform.server.logics.table.ImplementTable;
 import platform.server.logics.table.TableFactory;
 import platform.server.session.DataSession;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
-import platform.server.form.navigator.*;
-import platform.server.caches.IdentityLazy;
 
 import java.io.*;
 import java.rmi.NotBoundException;
@@ -2392,8 +2395,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public void addObjectActions(FormEntity form, ObjectEntity object) {
-        form.addActionObjectDraw(getImportObjectAction(object.baseClass), object).setToDraw(object.groupTo).setForcePanel(true);
-        form.addActionObjectDraw(getAddObjectAction(object.baseClass)).setToDraw(object.groupTo).setForcePanel(true);
+        form.addActionObjectDraw(getImportObjectAction(object.baseClass), object).setToDraw(object.groupTo).setForceViewType(ClassViewType.PANEL);
+        form.addActionObjectDraw(getAddObjectAction(object.baseClass)).setToDraw(object.groupTo).setForceViewType(ClassViewType.PANEL);
         form.addActionObjectDraw(getDeleteObjectAction(object.baseClass), object);
     }
 
