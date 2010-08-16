@@ -766,7 +766,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public void addPersistent(AggregateProperty property) {
-        assert idSet.contains(property.sID);
+        assert !idSet.contains(property.sID);
         persistents.add(property);
     }
 
