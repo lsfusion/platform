@@ -75,9 +75,9 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     }
 
     @PendingRemoteMethod
-    public void changePropertyView(int propertyID, byte[] object, boolean all) throws RemoteException {
-        logRemoteMethodCall("changePropertyView");
-        target.changePropertyView(propertyID, object, all);
+    public void changePropertyDraw(int propertyID, byte[] object, boolean all) throws RemoteException {
+        logRemoteMethodCall("changePropertyDraw");
+        target.changePropertyDraw(propertyID, object, all);
     }
 
     @PendingRemoteMethod

@@ -1,8 +1,8 @@
 package platform.client.form.cell;
 
-import platform.client.form.ClientForm;
 import platform.client.form.ClientFormLayout;
-import platform.client.logics.ClientCellView;
+import platform.client.form.ClientFormController;
+import platform.client.logics.ClientCell;
 import platform.interop.form.screen.ExternalScreenComponent;
 
 import javax.swing.*;
@@ -10,9 +10,9 @@ import java.io.IOException;
 
 public class CellController implements CellViewListener {
 
-    private ClientCellView key;
+    private ClientCell key;
 
-    protected ClientCellView getKey() {
+    protected ClientCell getKey() {
         return key;
     }
 
@@ -24,10 +24,10 @@ public class CellController implements CellViewListener {
         return view.getComponent();
     }
 
-    protected final ClientForm form;
+    protected final ClientFormController form;
 
     // форма нужна, поскольку ObjectEditor'у она нужна, чтобы создать диалог
-    public CellController(ClientCellView ikey, final ClientForm iform) {
+    public CellController(ClientCell ikey, final ClientFormController iform) {
 
         key = ikey;
         form = iform;

@@ -11,7 +11,7 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.DataProperty;
 import platform.server.logics.property.Property;
-import platform.server.view.form.RemoteForm;
+import platform.server.form.instance.FormInstance;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -34,7 +34,7 @@ public interface ChangesSession {
     public ObjectValue getObjectValue(Object value, Type type) throws SQLException;
 
     // узнает список изменений произошедших без него
-    public Collection<Property> update(RemoteForm<?> toUpdate, Collection<CustomClass> updateClasses) throws SQLException;
+    public Collection<Property> update(FormInstance<?> toUpdate, Collection<CustomClass> updateClasses) throws SQLException;
 
     public String apply(BusinessLogics<?> BL) throws SQLException;
 }

@@ -1,10 +1,10 @@
 package platform.client.form.queries;
 
-import platform.client.form.ClientForm;
+import platform.client.form.ClientFormController;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.form.cell.CellTable;
-import platform.client.logics.ClientCellView;
-import platform.client.logics.ClientPropertyView;
+import platform.client.logics.ClientCell;
+import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.ClientUserValueLink;
 
 import javax.swing.*;
@@ -13,14 +13,14 @@ import java.awt.*;
 class UserValueLinkView extends ValueLinkView {
 
     private final ClientUserValueLink valueLink;
-    private ClientPropertyView property;
+    private ClientPropertyDraw property;
 
     private final CellTable valueView;
 
     // нужен для получения текущих значений в таблице
     private final GroupObjectLogicsSupplier logicsSupplier;
 
-    public UserValueLinkView(ClientUserValueLink ivalueLink, ClientPropertyView iproperty, GroupObjectLogicsSupplier ilogicsSupplier) {
+    public UserValueLinkView(ClientUserValueLink ivalueLink, ClientPropertyDraw iproperty, GroupObjectLogicsSupplier ilogicsSupplier) {
         super();
 
         valueLink = ivalueLink;
@@ -46,11 +46,11 @@ class UserValueLinkView extends ValueLinkView {
                 return false;
             }
 
-            public ClientCellView getCellView(int col) {
+            public ClientCell getCell(int col) {
                 return property;
             }
 
-            public ClientForm getForm() {
+            public ClientFormController getForm() {
                 return logicsSupplier.getForm();
             }
 
@@ -65,7 +65,7 @@ class UserValueLinkView extends ValueLinkView {
         return valueView.requestFocusInWindow();
     }
 
-    public void propertyChanged(ClientPropertyView iproperty) {
+    public void propertyChanged(ClientPropertyDraw iproperty) {
 
         property = iproperty;
 

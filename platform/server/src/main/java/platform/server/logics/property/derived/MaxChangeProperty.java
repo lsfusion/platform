@@ -3,15 +3,15 @@ package platform.server.logics.property.derived;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.where.WhereBuilder;
+import platform.server.form.entity.ObjectEntity;
+import platform.server.form.entity.PropertyObjectEntity;
+import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.AggregateProperty;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
-import platform.server.view.navigator.ObjectNavigator;
-import platform.server.view.navigator.PropertyInterfaceNavigator;
-import platform.server.view.navigator.PropertyObjectNavigator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,7 +29,7 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
 
         public abstract Expr getExpr();
 
-        public abstract PropertyInterfaceNavigator getInterface(Map<P,DataObject> mapValues, ObjectNavigator valueObject);
+        public abstract PropertyObjectInterfaceEntity getInterface(Map<P,DataObject> mapValues, ObjectEntity valueObject);
     }
 
     public static class KeyInterface<P extends PropertyInterface> extends Interface<P> {
@@ -46,7 +46,7 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
             return propertyInterface.changeExpr;
         }
 
-        public PropertyInterfaceNavigator getInterface(Map<P, DataObject> mapValues, ObjectNavigator valueObject) {
+        public PropertyObjectInterfaceEntity getInterface(Map<P, DataObject> mapValues, ObjectEntity valueObject) {
             return mapValues.get(propertyInterface);
         }
     }
@@ -65,7 +65,7 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
             return toChange.changeExpr;
         }
 
-        public PropertyInterfaceNavigator getInterface(Map<P, DataObject> mapValues, ObjectNavigator valueObject) {
+        public PropertyObjectInterfaceEntity getInterface(Map<P, DataObject> mapValues, ObjectEntity valueObject) {
             return valueObject;
         }
     }
@@ -108,10 +108,10 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
         return resultExpr;
     }
 
-    public PropertyObjectNavigator<Interface<P>> getPropertyNavigator(Map<P, DataObject> mapValues, ObjectNavigator valueObject) {
-        Map<Interface<P>, PropertyInterfaceNavigator> interfaceImplement = new HashMap<Interface<P>, PropertyInterfaceNavigator>();
+    public PropertyObjectEntity<Interface<P>> getPropertyObjectEntity(Map<P, DataObject> mapValues, ObjectEntity valueObject) {
+        Map<Interface<P>, PropertyObjectInterfaceEntity> interfaceImplement = new HashMap<Interface<P>, PropertyObjectInterfaceEntity>();
         for(Interface<P> propertyInterface : interfaces)
             interfaceImplement.put(propertyInterface, propertyInterface.getInterface(mapValues, valueObject));
-        return new PropertyObjectNavigator<Interface<P>>(this,interfaceImplement);
+        return new PropertyObjectEntity<Interface<P>>(this,interfaceImplement);
     }
 }

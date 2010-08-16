@@ -19,6 +19,8 @@ import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
+import platform.server.form.instance.GroupObjectInstance;
+import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.SessionDataProperty;
@@ -27,9 +29,7 @@ import platform.server.logics.property.group.AbstractNode;
 import platform.server.logics.table.MapKeysTable;
 import platform.server.logics.table.TableFactory;
 import platform.server.session.*;
-import platform.server.view.form.GroupObjectImplement;
-import platform.server.view.form.PropertyObjectInterface;
-import platform.server.view.form.client.RemoteFormView;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -371,7 +371,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return changed==null?null:new WhereBuilder();
     }
 
-    public List<ClientAction> execute(Map<T, DataObject> keys, DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteFormView executeForm, Map<T, PropertyObjectInterface> mapObjects, GroupObjectImplement groupObject) throws SQLException {
+    public List<ClientAction> execute(Map<T, DataObject> keys, DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteForm executeForm, Map<T, PropertyObjectInterfaceInstance> mapObjects, GroupObjectInstance groupObject) throws SQLException {
         return getChangeImplement().execute(keys, session, value, modifier, executeForm, mapObjects, groupObject);
     }
 }

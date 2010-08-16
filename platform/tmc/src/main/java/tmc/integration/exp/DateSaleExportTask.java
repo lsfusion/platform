@@ -1,9 +1,9 @@
 package tmc.integration.exp;
 
+import platform.server.form.instance.FormInstance;
+import platform.server.form.instance.filter.CompareFilterInstance;
 import tmc.VEDBusinessLogics;
-import platform.server.view.form.RemoteForm;
-import platform.server.view.form.PropertyView;
-import platform.server.view.form.filter.CompareFilter;
+import platform.server.form.instance.PropertyDrawInstance;
 import platform.server.logics.DataObject;
 import platform.server.classes.DateClass;
 import platform.interop.Compare;
@@ -37,12 +37,12 @@ public class DateSaleExportTask extends AbstractSaleExportTask {
         return exportDate;
     }
 
-    protected void setRemoteFormFilter(RemoteForm remoteForm) throws ParseException {
+    protected void setRemoteFormFilter(FormInstance formInstance) throws ParseException {
 
-        PropertyView<?> date = remoteForm.getPropertyView(BL.date);
-        date.toDraw.addTempFilter(new CompareFilter(date.view, Compare.EQUALS, new DataObject(DateConverter.dateToSql(getExportDate()), DateClass.instance)));
+        PropertyDrawInstance<?> date = formInstance.getPropertyDraw(BL.date);
+        date.toDraw.addTempFilter(new CompareFilterInstance(date.propertyObject, Compare.EQUALS, new DataObject(DateConverter.dateToSql(getExportDate()), DateClass.instance)));
     }
 
-    protected void updateRemoteFormProperties(RemoteForm remoteForm) throws SQLException {
+    protected void updateRemoteFormProperties(FormInstance formInstance) throws SQLException {
     }
 }

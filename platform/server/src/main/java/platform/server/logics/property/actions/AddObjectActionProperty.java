@@ -2,13 +2,13 @@ package platform.server.logics.property.actions;
 
 import platform.interop.action.ClientAction;
 import platform.server.classes.*;
+import platform.server.form.instance.FormInstance;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.view.form.PropertyObjectInterface;
-import platform.server.view.form.RemoteForm;
-import platform.server.view.form.client.RemoteFormView;
+import platform.server.form.instance.remote.RemoteForm;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -26,8 +26,8 @@ public class AddObjectActionProperty extends ActionProperty {
         this.valueClass = valueClass;
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
-        RemoteForm<?> form = (RemoteForm<?>)executeForm.form;
+    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+        FormInstance<?> form = (FormInstance<?>)executeForm.form;
         if (valueClass.hasChildren())
             form.addObject((ConcreteCustomClass)form.getCustomClass((Integer)value.getValue()));
         else

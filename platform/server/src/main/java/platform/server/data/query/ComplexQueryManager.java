@@ -23,13 +23,13 @@ public class ComplexQueryManager {
         }
     }
 
-    @DeclareParents(value="platform.server.view.form.RemoteForm",defaultImpl=CounterImpl.class)
+    @DeclareParents(value="platform.server.entity.form.FormInstance",defaultImpl=CounterImpl.class)
     private Counter counterInterface;
-    @Before("call(* platform.server.view.form.RemoteForm.endApply(..)) && target(counter)")
+    @Before("call(* platform.server.entity.form.FormInstance.endApply(..)) && target(counter)")
     public void callBeforeStart(Counter counter) {
         counter.start();
     }
-    @Before("cflow(execution(* platform.server.view.form.RemoteForm.endApply(..)) && target(counter)) && " +
+    @Before("cflow(execution(* platform.server.entity.form.FormInstance.endApply(..)) && target(counter)) && " +
             "call(platform.server.table.classes.where.MeanClassWheres platform.server.where.AbstractWhere.calculateMeanClassWheres())")
     public void callBeforeLazy(Counter counter) {
         counter.add();

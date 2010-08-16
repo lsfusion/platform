@@ -39,7 +39,7 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
 
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
-        Vector<ClientPropertyView> sources = new Vector<ClientPropertyView>();
+        Vector<ClientPropertyDraw> sources = new Vector<ClientPropertyDraw>();
         sources.addAll(logicsSupplier.getGroupObjectProperties());
 
         JComboBox propertyView = new QueryConditionComboBox(sources);
@@ -48,13 +48,13 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
         if (logicsSupplier.getDefaultProperty() != null)
             propertyView.setSelectedItem(logicsSupplier.getDefaultProperty());
 
-        filter.property = (ClientPropertyView) propertyView.getSelectedItem();
+        filter.property = (ClientPropertyDraw) propertyView.getSelectedItem();
 
         propertyView.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent ie) {
 
-                filter.property = (ClientPropertyView)ie.getItem();
+                filter.property = (ClientPropertyDraw)ie.getItem();
                 filterChanged();
             }
         });

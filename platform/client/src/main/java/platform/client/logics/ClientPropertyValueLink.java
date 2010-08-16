@@ -5,7 +5,7 @@ import java.io.IOException;
 
 public class ClientPropertyValueLink extends ClientValueLink {
 
-    public ClientPropertyView property;
+    public ClientPropertyDraw property;
 
     public String toString() { return "Свойство"; }
 

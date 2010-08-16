@@ -2,7 +2,7 @@ package platform.client.form;
 
 import platform.client.form.classes.ClassController;
 import platform.client.form.classes.ClassDialog;
-import platform.client.logics.ClientObjectImplementView;
+import platform.client.logics.ClientObject;
 import platform.client.logics.classes.ClientConcreteClass;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.interop.ClassViewType;
@@ -12,14 +12,14 @@ import java.io.IOException;
 class ObjectController {
 
     // объект, при помощи которого будет происходить общение с внешним миром
-    private final ClientForm form;
+    private final ClientFormController form;
 
-    private final ClientObjectImplementView object;
+    private final ClientObject object;
 
     // управление классами
     public ClassController classController;
 
-    public ObjectController(ClientObjectImplementView iobject, ClientForm iform) throws IOException {
+    public ObjectController(ClientObject iobject, ClientFormController iform) throws IOException {
 
         object = iobject;
         form = iform;

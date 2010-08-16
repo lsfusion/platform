@@ -1,8 +1,8 @@
 package platform.client.form.decorator;
 
-import platform.client.form.cell.ClientCellViewTable;
+import platform.client.form.cell.CellTableInterface;
 import platform.client.form.grid.GridTable;
-import platform.client.logics.ClientPropertyView;
+import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class ClientHighlighter implements Serializable {
     private Color color;
-    private ClientPropertyView cellView;
+    private ClientPropertyDraw property;
     private transient String sID;
 
     public ClientHighlighter(DataInputStream inStream) throws IOException, ClassNotFoundException {
@@ -23,10 +23,10 @@ public class ClientHighlighter implements Serializable {
     }
 
     public void highlight(JComponent comp, HighlighterContext context) {
-        ClientCellViewTable table = context.getTable();
+        CellTableInterface table = context.getTable();
         if (table instanceof GridTable) {
             GridTable gridTable = (GridTable)table;
-            if (gridTable.getValue(cellView, context.getRow()) == null) {
+            if (gridTable.getValue(property, context.getRow()) == null) {
                 if (!context.isHasFocus() && !context.isSelected()) {
                     comp.setBackground(color);
                 } else {
@@ -37,7 +37,7 @@ public class ClientHighlighter implements Serializable {
         }
     }
 
-    public void init(Map<String, ClientPropertyView> sIDtoProperty) {
-        cellView = sIDtoProperty.get(sID);
+    public void init(Map<String, ClientPropertyDraw> sIDtoProperty) {
+        property = sIDtoProperty.get(sID);
     }
 }

@@ -1,6 +1,6 @@
 package platform.client;
 
-import platform.client.form.ClientForm;
+import platform.client.form.ClientFormController;
 import platform.client.navigator.ClientNavigator;
 import platform.client.navigator.ClientNavigatorForm;
 import platform.interop.form.RemoteFormInterface;
@@ -28,7 +28,7 @@ public class SimpleMainFrame extends MainFrame {
         StringTokenizer st = new StringTokenizer(forms, ",");
         while (st.hasMoreTokens()) {
             Integer formID = Integer.parseInt(st.nextToken());
-            final ClientForm form = new ClientForm(remoteNavigator.createForm(formID, false), null);
+            final ClientFormController form = new ClientFormController(remoteNavigator.createForm(formID, false), null);
             form.getComponent().setFocusTraversalPolicyProvider(true);
             mainPane.addTab(form.getFullCaption(), form.getComponent());
 

@@ -1,24 +1,24 @@
 package platform.client.form.showtype;
 
-import platform.client.form.ClientForm;
 import platform.client.form.ClientFormLayout;
+import platform.client.form.ClientFormController;
 import platform.client.form.GroupObjectLogicsSupplier;
-import platform.client.logics.ClientShowTypeView;
+import platform.client.logics.ClientShowType;
 import platform.interop.ClassViewType;
 
 import java.io.IOException;
 
 public abstract class ShowTypeController {
 
-    ClientShowTypeView view;
+    ClientShowType key;
 
-    ShowTypeView showView;
+    ShowTypeView view;
 
-    public ShowTypeController(ClientShowTypeView iview, GroupObjectLogicsSupplier logicsSupplier, final ClientForm form) {
+    public ShowTypeController(ClientShowType iview, GroupObjectLogicsSupplier logicsSupplier, final ClientFormController form) {
 
-        view = iview;
+        key = iview;
 
-        showView = new ShowTypeView(logicsSupplier) {
+        view = new ShowTypeView(logicsSupplier) {
 
             protected void buttonPressed(String action) {
 
@@ -34,7 +34,7 @@ public abstract class ShowTypeController {
     }
 
     public void addView(ClientFormLayout formLayout) {
-        formLayout.add(view, showView);
+        formLayout.add(key, view);
     }
 
     Byte classView;
@@ -44,7 +44,7 @@ public abstract class ShowTypeController {
         if (!classView.equals(this.classView)) {
 
             this.classView = classView;
-            showView.changeClassView(classView, banClassView);
+            view.changeClassView(classView, banClassView);
 
             if (classView.equals(ClassViewType.HIDE))
                 needToBeHidden();

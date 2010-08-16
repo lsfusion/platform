@@ -2,17 +2,17 @@ package platform.client.form.grid;
 
 import platform.base.BaseUtils;
 import platform.client.SwingUtils;
-import platform.client.form.ClientForm;
+import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormTable;
 import platform.client.form.GroupObjectLogicsSupplier;
+import platform.client.form.cell.CellTableInterface;
 import platform.client.form.cell.ClientAbstractCellEditor;
 import platform.client.form.cell.ClientAbstractCellRenderer;
-import platform.client.form.cell.ClientCellViewTable;
 import platform.client.form.sort.GridHeaderMouseListener;
 import platform.client.form.sort.GridHeaderRenderer;
-import platform.client.logics.ClientCellView;
+import platform.client.logics.ClientCell;
 import platform.client.logics.ClientGroupObjectValue;
-import platform.client.logics.ClientPropertyView;
+import platform.client.logics.ClientPropertyDraw;
 import platform.interop.Order;
 import platform.interop.Scroll;
 
@@ -31,9 +31,9 @@ import java.util.*;
 import java.util.List;
 
 public abstract class GridTable extends ClientFormTable
-        implements ClientCellViewTable {
+        implements CellTableInterface {
 
-    private final List<ClientCellView> gridColumns = new ArrayList<ClientCellView>();
+    private final List<ClientCell> gridColumns = new ArrayList<ClientCell>();
 
     private List<ClientGroupObjectValue> gridRows = new ArrayList<ClientGroupObjectValue>();
 
@@ -44,7 +44,7 @@ public abstract class GridTable extends ClientFormTable
 
     private ClientGroupObjectValue currentObject;
 
-    private final Map<ClientCellView, Map<ClientGroupObjectValue, Object>> gridValues = new HashMap<ClientCellView, Map<ClientGroupObjectValue, Object>>();
+    private final Map<ClientCell, Map<ClientGroupObjectValue, Object>> gridValues = new HashMap<ClientCell, Map<ClientGroupObjectValue, Object>>();
 
     private final Model model;
     private final JTableHeader header;
@@ -76,7 +76,7 @@ public abstract class GridTable extends ClientFormTable
 
         createDefaultColumnsFromModel();
         hasFocusableCells = false;
-        for (ClientCellView property : gridColumns) {
+        for (ClientCell property : gridColumns) {
 
             TableColumn column = getColumnModel().getColumn(gridColumns.indexOf(property));
             column.setMinWidth(property.getMinimumWidth(this));
@@ -180,19 +180,19 @@ public abstract class GridTable extends ClientFormTable
     private final GroupObjectLogicsSupplier logicsSupplier;
 
     // пока пусть GridTable напрямую общается с формой, а не через Controller, так как ей много о чем надо с ней говорить, а Controller будет просто бюрократию создавать
-    private final ClientForm form;
+    private final ClientFormController form;
 
-    public ClientForm getForm() {
+    public ClientFormController getForm() {
         return form;
     }
 
-    private ClientCellView currentCell;
+    private ClientCell currentCell;
 
-    public ClientCellView getCurrentCell() {
+    public ClientCell getCurrentCell() {
         return currentCell;
     }
 
-    public GridTable(GroupObjectLogicsSupplier ilogicsSupplier, ClientForm iform) {
+    public GridTable(GroupObjectLogicsSupplier ilogicsSupplier, ClientFormController iform) {
 
         logicsSupplier = ilogicsSupplier;
         form = iform;
@@ -218,14 +218,14 @@ public abstract class GridTable extends ClientFormTable
 //        header.setDefaultRenderer(new GridHeaderRenderer.MultiLineHeaderRenderer(header.getDefaultRenderer()) {
 
             protected Boolean getSortDirection(int column) {
-                return GridTable.this.getSortDirection(getCellView(column));
+                return GridTable.this.getSortDirection(getCell(column));
             }
         });
 
         header.addMouseListener(new GridHeaderMouseListener() {
 
             protected Boolean getSortDirection(int column) {
-                return GridTable.this.getSortDirection(getCellView(column));
+                return GridTable.this.getSortDirection(getCell(column));
             }
 
             protected TableColumnModel getColumnModel() {
@@ -235,7 +235,7 @@ public abstract class GridTable extends ClientFormTable
             protected void changeOrder(int column, Order modiType) {
 
                 try {
-                    changeGridOrder(getCellView(column), modiType);
+                    changeGridOrder(getCell(column), modiType);
                 } catch (IOException e) {
                     throw new RuntimeException("Ошибка изменении сортировки", e);
                 }
@@ -345,10 +345,10 @@ public abstract class GridTable extends ClientFormTable
 
                 String toolTip = (String) columnModel.getColumn(index).getHeaderValue();
 
-                ClientCellView cellView = gridColumns.get(modelIndex);
-                if (cellView instanceof ClientPropertyView) {
-                    ClientPropertyView propertyView = (ClientPropertyView) cellView;
-                    toolTip += " (sID: " + propertyView.getSID() + ")";
+                ClientCell cellView = gridColumns.get(modelIndex);
+                if (cellView instanceof ClientPropertyDraw) {
+                    ClientPropertyDraw propertyDrawView = (ClientPropertyDraw) cellView;
+                    toolTip += " (sID: " + propertyDrawView.getSID() + ")";
                 }
 
                 return toolTip;
@@ -406,13 +406,13 @@ public abstract class GridTable extends ClientFormTable
         }
     }
 
-    public boolean addColumn(final ClientCellView property) {
+    public boolean addColumn(final ClientCell property) {
 
         if (gridColumns.indexOf(property) == -1) {
 
-            Iterator<ClientCellView> icp = gridColumns.iterator();
+            Iterator<ClientCell> icp = gridColumns.iterator();
 
-            List<ClientCellView> cells = logicsSupplier.getCells();
+            List<ClientCell> cells = logicsSupplier.getCells();
 
             // конечно кривова-то определять порядок по номеру в листе, но потом надо будет сделать по другому
             int ind = cells.indexOf(property), ins = 0;
@@ -439,7 +439,7 @@ public abstract class GridTable extends ClientFormTable
             return false;
     }
 
-    public boolean removeColumn(ClientCellView property) {
+    public boolean removeColumn(ClientCell property) {
 
         if (gridColumns.remove(property)) {
 
@@ -492,18 +492,18 @@ public abstract class GridTable extends ClientFormTable
         }
     }
 
-    public void setColumnValues(ClientCellView property, Map<ClientGroupObjectValue, Object> values) {
+    public void setColumnValues(ClientCell property, Map<ClientGroupObjectValue, Object> values) {
 
         gridValues.put(property, values);
         repaint();
 
     }
 
-    public Object getSelectedValue(ClientCellView property) {
+    public Object getSelectedValue(ClientCell property) {
         return getSelectedValue(gridColumns.indexOf(property));
     }
 
-    public Object getValue(ClientCellView property, int row) {
+    public Object getValue(ClientCell property, int row) {
         Map<ClientGroupObjectValue, Object> keyValue = gridValues.get(property);
         if (keyValue != null) {
             ClientGroupObjectValue objValue = gridRows.get(row);
@@ -568,7 +568,7 @@ public abstract class GridTable extends ClientFormTable
             return gridRows.get(rowIndex);
         }
 
-        public ClientCellView getSelectedCell() {
+        public ClientCell getSelectedCell() {
 
             int colView = getSelectedColumn();
             if (colView < 0 || colView >= getColumnCount())
@@ -586,14 +586,14 @@ public abstract class GridTable extends ClientFormTable
         return true;
     }
 
-    public ClientCellView getCellView(int col) {
+    public ClientCell getCell(int col) {
         return gridColumns.get(col);
     }
 
-    private final List<ClientCellView> orders = new ArrayList<ClientCellView>();
+    private final List<ClientCell> orders = new ArrayList<ClientCell>();
     private final List<Boolean> orderDirections = new ArrayList<Boolean>();
 
-    public void changeGridOrder(ClientCellView property, Order modiType) throws IOException {
+    public void changeGridOrder(ClientCell property, Order modiType) throws IOException {
 
         form.changeOrder(property, modiType);
 
@@ -622,7 +622,7 @@ public abstract class GridTable extends ClientFormTable
         }
     }
 
-    private Boolean getSortDirection(ClientCellView property) {
+    private Boolean getSortDirection(ClientCell property) {
         int ordNum = orders.indexOf(property);
         return (ordNum != -1) ? orderDirections.get(ordNum) : null;
     }

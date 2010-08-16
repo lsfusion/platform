@@ -19,14 +19,14 @@ import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
+import platform.server.form.entity.FormEntity;
+import platform.server.form.instance.listener.CustomClassListener;
+import platform.server.form.instance.CustomObjectInstance;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.group.AbstractNode;
-import platform.server.view.form.CustomClassView;
-import platform.server.view.form.CustomObjectImplement;
-import platform.server.view.form.ObjectImplement;
-import platform.server.view.navigator.ClassNavigatorForm;
-import platform.server.view.navigator.NavigatorElement;
-import platform.server.view.navigator.NavigatorForm;
+import platform.server.form.instance.ObjectInstance;
+import platform.server.form.entity.ClassFormEntity;
+import platform.server.form.navigator.NavigatorElement;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -258,17 +258,17 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
         return result;
     }
 
-    public NavigatorForm getClassForm(BusinessLogics<?> BL, SecurityPolicy securityPolicy) {
+    public FormEntity getClassForm(BusinessLogics<?> BL, SecurityPolicy securityPolicy) {
         for (NavigatorElement element : relevantElements)
-            if (element instanceof NavigatorForm && securityPolicy.navigator.checkPermission(element))
-                return (NavigatorForm) element;
+            if (element instanceof FormEntity && securityPolicy.navigator.checkPermission(element))
+                return (FormEntity) element;
         return getBaseClassForm(BL);
     }
 
-    private NavigatorForm baseClassForm = null;
-    public NavigatorForm getBaseClassForm(BusinessLogics<?> BL) {
+    private FormEntity baseClassForm = null;
+    public FormEntity getBaseClassForm(BusinessLogics<?> BL) {
         if(baseClassForm==null) {
-            baseClassForm = new ClassNavigatorForm(BL,this);
+            baseClassForm = new ClassFormEntity(BL,this);
             for(CustomClass child : children)
                 baseClassForm.add(child.getBaseClassForm(BL));
         }
@@ -297,8 +297,8 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
 
     public abstract ConcreteCustomClass getSingleClass();
 
-    public ObjectImplement newObject(int ID, String SID, String caption, CustomClassView classView, boolean addOnTransaction) {
-        return new CustomObjectImplement(ID, SID, this, caption, classView, addOnTransaction);
+    public ObjectInstance newObject(int ID, String SID, String caption, CustomClassListener classListener, boolean addOnTransaction) {
+        return new CustomObjectInstance(ID, SID, this, caption, classListener, addOnTransaction);
     }
 
     private static class ActionExpr extends VariableClassExpr {

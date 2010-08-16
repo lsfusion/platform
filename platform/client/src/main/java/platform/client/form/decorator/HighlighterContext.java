@@ -1,16 +1,16 @@
 package platform.client.form.decorator;
 
-import platform.client.form.cell.ClientCellViewTable;
+import platform.client.form.cell.CellTableInterface;
 
 public class HighlighterContext {
-    private ClientCellViewTable table;
+    private CellTableInterface table;
     private Object value;
     private boolean selected;
     private boolean hasFocus;
     private int row;
     private int column;
 
-    public HighlighterContext(ClientCellViewTable table, Object value, boolean selected, boolean hasFocus, int row, int column) {
+    public HighlighterContext(CellTableInterface table, Object value, boolean selected, boolean hasFocus, int row, int column) {
         this.table = table;
         this.value = value;
         this.selected = selected;
@@ -19,7 +19,7 @@ public class HighlighterContext {
         this.column = column;
     }
 
-    public ClientCellViewTable getTable() {
+    public CellTableInterface getTable() {
         return table;
     }
 

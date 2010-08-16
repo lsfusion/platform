@@ -19,20 +19,20 @@ import java.util.Map;
 
 public class GroupObjectController implements GroupObjectLogicsSupplier {
 
-    private final ClientGroupObjectImplementView groupObject;
+    private final ClientGroupObject groupObject;
     private final LogicsSupplier logicsSupplier;
-    private final ClientForm form;
+    private final ClientFormController form;
 
     private final PanelController panel;
     private GridController grid;
     private ShowTypeController showType;
-    private final Map<ClientObjectImplementView, ObjectController> objects = new HashMap<ClientObjectImplementView, ObjectController>();
+    private final Map<ClientObject, ObjectController> objects = new HashMap<ClientObject, ObjectController>();
 
     private ClientGroupObjectValue currentObject;
 
     private Byte classView;
 
-    public GroupObjectController(ClientGroupObjectImplementView igroupObject, LogicsSupplier ilogicsSupplier, ClientForm iform, ClientFormLayout formLayout) throws IOException {
+    public GroupObjectController(ClientGroupObject igroupObject, LogicsSupplier ilogicsSupplier, ClientFormController iform, ClientFormLayout formLayout) throws IOException {
 
         groupObject = igroupObject;
         logicsSupplier = ilogicsSupplier; 
@@ -48,18 +48,18 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         if (groupObject != null) {
 
             // Grid идет как единый неделимый JComponent, поэтому смысла передавать туда FormLayout нет
-            grid = new GridController(groupObject.gridView, this, form);
+            grid = new GridController(groupObject.grid, this, form);
             addGroupObjectActions(grid.getView());
 
             grid.addView(formLayout);
 
-            for (ClientObjectImplementView object : groupObject) {
+            for (ClientObject object : groupObject) {
 
                 objects.put(object, new ObjectController(object, form));
                 objects.get(object).addView(formLayout);
             }
 
-            showType = new ShowTypeController(groupObject.showTypeView, this, form) {
+            showType = new ShowTypeController(groupObject.showType, this, form) {
 
                 protected void needToBeShown() {
                     GroupObjectController.this.showViews();
@@ -85,7 +85,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
             grid.hideViews();
 
         if (groupObject != null)
-            for (ClientObjectImplementView object : groupObject)
+            for (ClientObject object : groupObject)
                 objects.get(object).hideViews();
 
         if (showType != null)
@@ -102,7 +102,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
             grid.showViews();
 
         if (groupObject != null)
-            for (ClientObjectImplementView object : groupObject)
+            for (ClientObject object : groupObject)
                 objects.get(object).showViews();
 
         if (showType != null)
@@ -138,7 +138,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
             }
 
 
-            for (ClientObjectImplementView object : groupObject) {
+            for (ClientObject object : groupObject) {
                 objects.get(object).changeClassView(classView);
             }
 
@@ -148,7 +148,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
     }
 
-    public void addPanelProperty(ClientPropertyView property, Object value) {
+    public void addPanelProperty(ClientPropertyDraw property, Object value) {
 
         if (grid != null)
             grid.removeProperty(property);
@@ -157,14 +157,14 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
     }
 
-    public void addGridProperty(ClientPropertyView property) {
+    public void addGridProperty(ClientPropertyDraw property) {
 
         panel.removeProperty(property);
         grid.addProperty(property);
 
     }
 
-    public void dropProperty(ClientPropertyView property) {
+    public void dropProperty(ClientPropertyDraw property) {
 
         panel.removeProperty(property);
         grid.removeProperty(property);
@@ -203,7 +203,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
     }
 
-    public void setCurrentObject(ClientObjectImplementView object, Object value) {
+    public void setCurrentObject(ClientObject object, Object value) {
 
         if (currentObject == null) return;
 
@@ -217,17 +217,17 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         panel.setCurrentClass(value);
     }
 
-    public void setPanelPropertyValue(ClientPropertyView property, Object value) {
+    public void setPanelPropertyValue(ClientPropertyDraw property, Object value) {
 
         panel.setPropertyValue(property, value);
     }
 
-    public void setGridPropertyValues(ClientPropertyView property, Map<ClientGroupObjectValue,Object> values) {
+    public void setGridPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue,Object> values) {
 
         grid.setPropertyValues(property, values);
     }
 
-    public void changeGridOrder(ClientCellView property, Order modiType) throws IOException {
+    public void changeGridOrder(ClientCell property, Order modiType) throws IOException {
         grid.changeGridOrder(property, modiType);
     }
     
@@ -253,26 +253,26 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
     // реализация GroupObjectLogicsSupplier
 
-    public List<ClientObjectImplementView> getObjects() {
+    public List<ClientObject> getObjects() {
         return logicsSupplier.getObjects();
     }
 
-    public List<ClientPropertyView> getProperties() {
+    public List<ClientPropertyDraw> getProperties() {
         return logicsSupplier.getProperties();
     }
 
-    public List<ClientCellView> getCells() {
+    public List<ClientCell> getCells() {
         return logicsSupplier.getCells();
     }
 
-    public ClientGroupObjectImplementView getGroupObject() {
+    public ClientGroupObject getGroupObject() {
         return groupObject;
     }
 
-    public List<ClientPropertyView> getGroupObjectProperties() {
+    public List<ClientPropertyDraw> getGroupObjectProperties() {
 
-        ArrayList<ClientPropertyView> properties = new ArrayList<ClientPropertyView>();
-        for (ClientPropertyView property : getProperties()) {
+        ArrayList<ClientPropertyDraw> properties = new ArrayList<ClientPropertyDraw>();
+        for (ClientPropertyDraw property : getProperties()) {
             if (groupObject.equals(property.groupObject))
                 properties.add(property);
         }
@@ -280,27 +280,27 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         return properties;
     }
 
-    public ClientPropertyView getDefaultProperty() {
+    public ClientPropertyDraw getDefaultProperty() {
 
-        ClientCellView currentCell = grid.getCurrentCell();
-        if (currentCell instanceof ClientPropertyView)
-            return (ClientPropertyView) currentCell;
+        ClientCell currentCell = grid.getCurrentCell();
+        if (currentCell instanceof ClientPropertyDraw)
+            return (ClientPropertyDraw) currentCell;
         else
             return null;
     }
 
-    public Object getSelectedValue(ClientPropertyView cell) {
+    public Object getSelectedValue(ClientPropertyDraw cell) {
         return grid.getSelectedValue(cell);
     }
 
-    public ClientForm getForm() {
+    public ClientFormController getForm() {
         return form;
     }
 
     public String getSaveMessage() {
 
         String message = "";
-        for (ClientObjectImplementView object : groupObject) {
+        for (ClientObject object : groupObject) {
             if (object.addOnTransaction) {
                 message += "Создать новый " + object.caption + " ?";
             }

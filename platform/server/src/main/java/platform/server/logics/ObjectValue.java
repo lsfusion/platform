@@ -5,13 +5,13 @@ import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.where.Where;
+import platform.server.form.instance.ObjectInstance;
 import platform.server.logics.property.Property;
 import platform.server.session.Changes;
 import platform.server.session.ChangesSession;
 import platform.server.session.Modifier;
-import platform.server.view.form.GroupObjectImplement;
-import platform.server.view.form.ObjectImplement;
-import platform.server.view.form.filter.CompareValue;
+import platform.server.form.instance.GroupObjectInstance;
+import platform.server.form.instance.filter.CompareValue;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -36,7 +36,7 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractMapV
             return new DataObject(value, objectClass);
     }
 
-    public Expr getExpr(Set<GroupObjectImplement> classGroup, Map<ObjectImplement, ? extends Expr> classSource, Modifier<? extends Changes> modifier) throws SQLException {
+    public Expr getExpr(Set<GroupObjectInstance> classGroup, Map<ObjectInstance, ? extends Expr> classSource, Modifier<? extends Changes> modifier) throws SQLException {
         return getExpr();
     }
 
@@ -48,11 +48,11 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractMapV
     }
 
     
-    public boolean classUpdated(GroupObjectImplement classGroup) {return false;}
-    public boolean objectUpdated(GroupObjectImplement classGroup) {return false;}
+    public boolean classUpdated(GroupObjectInstance classGroup) {return false;}
+    public boolean objectUpdated(GroupObjectInstance classGroup) {return false;}
     public boolean dataUpdated(Collection<Property> changedProps) {return false;}
     public void fillProperties(Set<Property> properties) {}
-    public boolean isInInterface(GroupObjectImplement classGroup) {return true;}
+    public boolean isInInterface(GroupObjectInstance classGroup) {return true;}
 
     public abstract Where order(Expr expr, boolean desc, Where orderWhere);
 

@@ -2,9 +2,9 @@ package platform.server.classes;
 
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.BaseExpr;
+import platform.server.form.instance.listener.CustomClassListener;
+import platform.server.form.instance.ObjectInstance;
 import platform.server.logics.property.group.AbstractGroup;
-import platform.server.view.form.CustomClassView;
-import platform.server.view.form.ObjectImplement;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -19,7 +19,7 @@ public interface ValueClass extends RemoteClass {
 
     void serialize(DataOutputStream outStream) throws IOException;
 
-    ObjectImplement newObject(int ID, String SID, String caption, CustomClassView classView, boolean addOnTransaction);
+    ObjectInstance newObject(int ID, String SID, String caption, CustomClassListener classListener, boolean addOnTransaction);
 
     // получает выражение чисто для получения класса
     BaseExpr getClassExpr();

@@ -43,7 +43,7 @@ public interface RemoteFormInterface extends PendingRemote {
 
     void changeGroupObject(int groupID, byte changeType) throws RemoteException;
 
-    void changePropertyView(int propertyID, byte[] object, boolean all) throws RemoteException;
+    void changePropertyDraw(int propertyID, byte[] object, boolean all) throws RemoteException;
 
     void changeObject(int objectID, Object value) throws RemoteException;
 

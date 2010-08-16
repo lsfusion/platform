@@ -1,7 +1,7 @@
 package platform.client.form.classes;
 
 import platform.client.SwingUtils;
-import platform.client.logics.ClientObjectImplementView;
+import platform.client.logics.ClientObject;
 import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientConcreteClass;
 import platform.client.logics.classes.ClientObjectClass;
@@ -76,7 +76,7 @@ public class ClassDialog extends JDialog {
         }
     }
 
-    public static ClientConcreteClass dialogConcreteClass(Component owner, ClientObjectImplementView object, ClientObjectClass value) {
+    public static ClientConcreteClass dialogConcreteClass(Component owner, ClientObject object, ClientObjectClass value) {
 
         ClassDialog dialog = new ClassDialog(owner, (ClientObjectClass)object.baseClass, value);
         SwingUtils.requestLocation(dialog, java.awt.MouseInfo.getPointerInfo().getLocation());

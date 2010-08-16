@@ -1,6 +1,6 @@
 package platform.client.logics.filter;
 
-import platform.client.logics.ClientPropertyView;
+import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.ClientValueLink;
 import platform.interop.Compare;
 import platform.interop.FilterType;
@@ -10,7 +10,7 @@ import java.io.IOException;
 
 public class ClientPropertyFilter {
 
-    public ClientPropertyView property;
+    public ClientPropertyDraw property;
     public ClientValueLink value;
 
     public Compare compare;

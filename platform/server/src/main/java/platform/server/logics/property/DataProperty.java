@@ -9,11 +9,11 @@ import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.query.Join;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.session.*;
-import platform.server.view.form.PropertyObjectInterface;
-import platform.server.view.form.client.RemoteFormView;
+import platform.server.form.instance.remote.RemoteForm;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -88,7 +88,7 @@ public abstract class DataProperty extends UserProperty {
         return value;
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
+    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
         session.changeProperty(this, keys, value);
     }
 }

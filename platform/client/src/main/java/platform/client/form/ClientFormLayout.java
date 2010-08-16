@@ -1,9 +1,9 @@
 package platform.client.form;
 
 import platform.client.FormFocusTraversalPolicy;
-import platform.client.logics.ClientComponentView;
-import platform.client.logics.ClientContainerView;
-import platform.client.logics.ClientGroupObjectImplementView;
+import platform.client.logics.ClientComponent;
+import platform.client.logics.ClientContainer;
+import platform.client.logics.ClientGroupObject;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,13 +31,13 @@ public abstract class ClientFormLayout extends JPanel {
     private SimplexLayout layoutManager;
 
     // отображение объектов от сервера на контейнеры для рисования
-    private Map<ClientContainerView, ClientFormContainer> contviews;
+    private Map<ClientContainer, ClientFormContainer> contviews;
 
     private boolean hasFocus = false;
 
     protected abstract void gainedFocus();
 
-    public ClientFormLayout(List<ClientContainerView> containers) {
+    public ClientFormLayout(List<ClientContainer> containers) {
 
         createContainerViews(containers);
 
@@ -68,7 +68,7 @@ public abstract class ClientFormLayout extends JPanel {
         policy = new FormFocusTraversalPolicy();
         setFocusTraversalPolicy(policy);
 
-        // вот таким вот маразматичным способом делается, чтобы при нажатии мышкой в ClientForm фокус оставался на ней, а не уходил куда-то еще
+        // вот таким вот маразматичным способом делается, чтобы при нажатии мышкой в ClientFormController фокус оставался на ней, а не уходил куда-то еще
         // теоретически можно найти способ как это сделать не так извращенно, но копаться в исходниках Swing'а очень долго
         addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
@@ -77,15 +77,15 @@ public abstract class ClientFormLayout extends JPanel {
         });
     }
 
-    private void createContainerViews(List<ClientContainerView> containers) {
+    private void createContainerViews(List<ClientContainer> containers) {
 
-        contviews = new HashMap<ClientContainerView, ClientFormContainer>();
+        contviews = new HashMap<ClientContainer, ClientFormContainer>();
 
         // считываем все контейнеры от сервера и создаем контейнеры отображения с соответствующей древовидной структурой
         while (true) {
 
             boolean found = false;
-            for (ClientContainerView container : containers) {
+            for (ClientContainer container : containers) {
                 if ((container.container == null || contviews.containsKey(container.container)) && !contviews.containsKey(container)) {
 
                     ClientFormContainer contview = new ClientFormContainer(container);
@@ -111,11 +111,11 @@ public abstract class ClientFormLayout extends JPanel {
 
     }
 
-    private Map<KeyStroke, Map<ClientGroupObjectImplementView, Runnable>> bindings = new HashMap<KeyStroke, Map<ClientGroupObjectImplementView, Runnable>>();
+    private Map<KeyStroke, Map<ClientGroupObject, Runnable>> bindings = new HashMap<KeyStroke, Map<ClientGroupObject, Runnable>>();
 
-    public void addKeyBinding(KeyStroke ks, ClientGroupObjectImplementView groupObject, Runnable run) {
+    public void addKeyBinding(KeyStroke ks, ClientGroupObject groupObject, Runnable run) {
         if (!bindings.containsKey(ks))
-            bindings.put(ks, new HashMap<ClientGroupObjectImplementView, Runnable>());
+            bindings.put(ks, new HashMap<ClientGroupObject, Runnable>());
         bindings.get(ks).put(groupObject, run);
     }
 
@@ -128,9 +128,9 @@ public abstract class ClientFormLayout extends JPanel {
         Component comp = e.getComponent(); //KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
         while (comp != null && !(comp instanceof Window) && comp != this) {
             if (comp instanceof JComponent) {
-                ClientGroupObjectImplementView groupObject = (ClientGroupObjectImplementView)((JComponent)comp).getClientProperty("groupObject");
+                ClientGroupObject groupObject = (ClientGroupObject)((JComponent)comp).getClientProperty("groupObject");
                 if (groupObject != null) {
-                    Map<ClientGroupObjectImplementView, Runnable> keyBinding = bindings.get(ks);
+                    Map<ClientGroupObject, Runnable> keyBinding = bindings.get(ks);
                     if (keyBinding != null && keyBinding.containsKey(groupObject)) {
                         keyBinding.get(groupObject).run();
                         return true;
@@ -141,7 +141,7 @@ public abstract class ClientFormLayout extends JPanel {
             comp = comp.getParent();
         }
 
-        Map<ClientGroupObjectImplementView, Runnable> keyBinding = bindings.get(ks);
+        Map<ClientGroupObject, Runnable> keyBinding = bindings.get(ks);
         if (keyBinding != null && !keyBinding.isEmpty())
             keyBinding.values().iterator().next().run();
 
@@ -151,11 +151,11 @@ public abstract class ClientFormLayout extends JPanel {
     }
 
     // добавляем визуальный компонент
-    public boolean add(ClientComponentView component, Component view) {
-        if (!contviews.get(component.container).isAncestorOf(view)) {
-            contviews.get(component.container).addComponent(view, component.constraints);
-            contviews.get(component.container).repaint();
-            if (component.defaultComponent){
+    public boolean add(ClientComponent key, Component view) {
+        if (!contviews.get(key.container).isAncestorOf(view)) {
+            contviews.get(key.container).addComponent(view, key.constraints);
+            contviews.get(key.container).repaint();
+            if (key.defaultComponent){
                 policy.addDefault(view);
             }
             return true;
@@ -164,11 +164,11 @@ public abstract class ClientFormLayout extends JPanel {
     }
 
     // удаляем визуальный компонент
-    public boolean remove(ClientComponentView component, Component view) {
-       if (contviews.get(component.container).isAncestorOf(view)) {
-            contviews.get(component.container).removeComponent(view);
-            contviews.get(component.container).repaint();
-            if (component.defaultComponent){
+    public boolean remove(ClientComponent key, Component view) {
+       if (contviews.get(key.container).isAncestorOf(view)) {
+            contviews.get(key.container).removeComponent(view);
+            contviews.get(key.container).repaint();
+            if (key.defaultComponent){
                 policy.removeDefault(view);
             }
             return true;

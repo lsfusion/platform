@@ -12,7 +12,7 @@ import platform.server.data.expr.KeyType;
 import platform.server.data.query.Query;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.DataObject;
-import platform.server.view.form.client.report.ReportDrawField;
+import platform.server.form.view.report.ReportDrawField;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;

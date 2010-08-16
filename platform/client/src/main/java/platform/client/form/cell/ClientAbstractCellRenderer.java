@@ -3,8 +3,8 @@ package platform.client.form.cell;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.decorator.ClientHighlighter;
 import platform.client.form.decorator.HighlighterContext;
-import platform.client.logics.ClientCellView;
-import platform.client.logics.ClientGroupObjectImplementView;
+import platform.client.logics.ClientCell;
+import platform.client.logics.ClientGroupObject;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
@@ -22,18 +22,18 @@ public class ClientAbstractCellRenderer extends JComponent
                                                    boolean hasFocus,
                                                    int row,
                                                    int column) {
-        ClientCellViewTable viewTable = (ClientCellViewTable) table;
-        ClientCellView property = viewTable.getCellView(column);
+        CellTableInterface cellTable = (CellTableInterface) table;
+        ClientCell property = cellTable.getCell(column);
         PropertyRendererComponent currentComp = property.getRendererComponent();
         currentComp.setValue(value, isSelected, hasFocus);
 
         JComponent comp = currentComp.getComponent();
 
-        ClientGroupObjectImplementView groupObject = property.getGroupObject();
+        ClientGroupObject groupObject = property.getGroupObject();
         if (groupObject != null) {
-            ClientHighlighter highlighter = groupObject.gridView.highlighter;
+            ClientHighlighter highlighter = groupObject.grid.highlighter;
             if (highlighter != null) {
-                highlighter.highlight(comp, new HighlighterContext(viewTable, value, isSelected, hasFocus, row, column));
+                highlighter.highlight(comp, new HighlighterContext(cellTable, value, isSelected, hasFocus, row, column));
             }
         }
 

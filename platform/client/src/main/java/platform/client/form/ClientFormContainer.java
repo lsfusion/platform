@@ -1,30 +1,30 @@
 package platform.client.form;
 
-import platform.client.logics.ClientContainerView;
+import platform.client.logics.ClientContainer;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 
-// класс контейнеров отображения всех объектов на ClientForm
+// класс контейнеров отображения всех объектов на ClientFormController
 // ведет подсчет количество child'ов и прячет/показывает себя, если их становится 0
 class ClientFormContainer extends JPanel{
 
-    private final ClientContainerView view;
+    private final ClientContainer key;
 
-    public ClientFormContainer(ClientContainerView iview) {
+    public ClientFormContainer(ClientContainer key) {
 
         setOpaque(false);
         
-        view = iview;
+        this.key = key;
 
-        String title = view.getTitle();
+        String title = this.key.getTitle();
         if (title != null) {
             TitledBorder border = BorderFactory.createTitledBorder(title);
             setBorder(border);
         }
 
-        view.design.designComponent(this);
+        this.key.design.designComponent(this);
 
 //        this.setBackground(new Color((int)(Math.random()*255), (int)(Math.random()*255), (int)(Math.random()*255)));
 

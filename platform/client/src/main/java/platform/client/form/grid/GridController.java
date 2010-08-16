@@ -1,6 +1,6 @@
 package platform.client.form.grid;
 
-import platform.client.form.ClientForm;
+import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormLayout;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.form.queries.FilterController;
@@ -18,22 +18,22 @@ import java.util.Map;
 
 public class GridController {
 
-    private final ClientGridView view;
+    private final ClientGrid key;
 
-    private final GridView gridView;
+    private final GridView view;
     public JComponent getView() {
-        return gridView;
+        return view;
     }
 
-    private final GridTable gridTable;
+    private final GridTable table;
 
-    private final ClientForm form;
+    private final ClientFormController form;
 
     private final GroupObjectLogicsSupplier logicsSupplier;
 
-    public GridController(ClientGridView iview, GroupObjectLogicsSupplier ilogicsSupplier, ClientForm iform) {
+    public GridController(ClientGrid key, GroupObjectLogicsSupplier ilogicsSupplier, ClientFormController iform) {
 
-        view = iview;
+        this.key = key;
         logicsSupplier = ilogicsSupplier;
         form = iform;
 
@@ -43,7 +43,7 @@ public class GridController {
 
                 form.changeFind(getConditions());
 
-                gridTable.requestFocusInWindow();
+                table.requestFocusInWindow();
                 return true;
             }
         };
@@ -58,12 +58,12 @@ public class GridController {
                     throw new RuntimeException("Ошибка при применении фильтра", e);
                 }
 
-                gridTable.requestFocusInWindow();
+                table.requestFocusInWindow();
                 return true;
             }
         };
 
-        gridView = new GridView(logicsSupplier, form, view.showFind ? findController.getView() : null, view.showFilter ? filterController.getView() : null, view.tabVertical) {
+        view = new GridView(logicsSupplier, form, GridController.this.key.showFind ? findController.getView() : null, GridController.this.key.showFilter ? filterController.getView() : null, GridController.this.key.tabVertical) {
 
             protected void needToBeShown() {
                 hidden = false;
@@ -75,61 +75,61 @@ public class GridController {
                 hideViews();
             }
         };
-        gridTable = gridView.getTable();
+        table = view.getTable();
 
-        if (view.minRowCount > 0) { // вообще говоря, так делать неправильно, посколько и HeaderHeight и RowHeight могут изменяться во времени
-            Dimension minSize = gridTable.getMinimumSize();
-            minSize.height = Math.max(minSize.height, (int)gridTable.getTableHeader().getPreferredSize().getHeight() + view.minRowCount * gridTable.getRowHeight());
-            gridView.setMinimumSize(minSize);
+        if (this.key.minRowCount > 0) { // вообще говоря, так делать неправильно, посколько и HeaderHeight и RowHeight могут изменяться во времени
+            Dimension minSize = table.getMinimumSize();
+            minSize.height = Math.max(minSize.height, (int) table.getTableHeader().getPreferredSize().getHeight() + this.key.minRowCount * table.getRowHeight());
+            view.setMinimumSize(minSize);
         }
     }
 
     public void addView(ClientFormLayout formLayout) {
-        formLayout.add(view, gridView);
-        for (Map.Entry<ClientCellView, ExternalScreenComponent> entry : extViews.entrySet()) {
+        formLayout.add(key, view);
+        for (Map.Entry<ClientCell, ExternalScreenComponent> entry : extViews.entrySet()) {
             entry.getKey().externalScreen.add(form.getID(), entry.getValue(), entry.getKey().externalScreenConstraints);
         }
     }
 
     public void addGroupObjectCells() {
 //                System.out.println("addGroupObjectCells");
-        for (ClientObjectImplementView object : logicsSupplier.getGroupObject()) {
-            if (object.objectCellView.show)
-               gridTable.addColumn(object.objectCellView);
-            if (object.classCellView.show)
-                gridTable.addColumn(object.classCellView);
+        for (ClientObject object : logicsSupplier.getGroupObject()) {
+            if (object.objectIDCell.show)
+               table.addColumn(object.objectIDCell);
+            if (object.classCell.show)
+                table.addColumn(object.classCell);
         }
 
         // здесь еще добавить значения идентификаторов
         fillTableObjectID();
 
-        gridTable.updateTable();
+        table.updateTable();
     }
 
     public void removeGroupObjectCells() {
 //                System.out.println("removeGroupObjectCells");
-        for (ClientObjectImplementView object : logicsSupplier.getGroupObject()) {
-            if(object.objectCellView.show)
-                gridTable.removeColumn(object.objectCellView);
-            gridTable.removeColumn(object.classCellView);
+        for (ClientObject object : logicsSupplier.getGroupObject()) {
+            if(object.objectIDCell.show)
+                table.removeColumn(object.objectIDCell);
+            table.removeColumn(object.classCell);
         }
-        gridTable.updateTable();
+        table.updateTable();
     }
 
-    private Map<ClientCellView, ExternalScreenComponent> extViews = new HashMap<ClientCellView, ExternalScreenComponent>();
+    private Map<ClientCell, ExternalScreenComponent> extViews = new HashMap<ClientCell, ExternalScreenComponent>();
 
-    private void addExternalScreenComponent(ClientCellView key) {
+    private void addExternalScreenComponent(ClientCell key) {
         if (!extViews.containsKey(key)) {
             ExternalScreenComponent extView = new ExternalScreenComponent();
             extViews.put(key, extView);
         }
     }
 
-    public void addProperty(ClientPropertyView property) {
+    public void addProperty(ClientPropertyDraw property) {
 //                System.out.println("addProperty " + property.toString());
         if (property.show) {
-            if (gridTable.addColumn(property)) {
-                gridTable.updateTable();
+            if (table.addColumn(property)) {
+                table.updateTable();
             }
         }
 
@@ -138,17 +138,17 @@ public class GridController {
         }
     }
 
-    public void removeProperty(ClientPropertyView property) {
+    public void removeProperty(ClientPropertyDraw property) {
 //                System.out.println("removeProperty " + property.toString());
         if (property.show) {
-            if (gridTable.removeColumn(property)) {
-                gridTable.updateTable();
+            if (table.removeColumn(property)) {
+                table.updateTable();
             }
         }
     }
 
     public void setGridObjects(List<ClientGroupObjectValue> gridObjects) {
-        gridTable.setGridObjects(gridObjects);
+        table.setGridObjects(gridObjects);
 
         //здесь еще добавить значения идентификаторов
         fillTableObjectID();
@@ -159,11 +159,11 @@ public class GridController {
     }
 
     public void selectObject(ClientGroupObjectValue currentObject) {
-        gridTable.selectObject(currentObject);
+        table.selectObject(currentObject);
     }
 
-    public void setPropertyValues(ClientPropertyView property, Map<ClientGroupObjectValue, Object> values) {
-        gridTable.setColumnValues(property, values);
+    public void setPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
+        table.setColumnValues(property, values);
         if (extViews.containsKey(property)) {
             Object value = getSelectedValue(property);
             extViews.get(property).setValue((value == null) ? "" : value.toString());
@@ -171,55 +171,55 @@ public class GridController {
         }
     }
 
-    public void changeGridOrder(ClientCellView property, Order modiType) throws IOException {
-        gridTable.changeGridOrder(property, modiType);
+    public void changeGridOrder(ClientCell property, Order modiType) throws IOException {
+        table.changeGridOrder(property, modiType);
     }
 
-    public ClientCellView getCurrentCell() {
-        return gridTable.getCurrentCell();
+    public ClientCell getCurrentCell() {
+        return table.getCurrentCell();
     }
 
-    public Object getSelectedValue(ClientPropertyView cell) {
-        return gridTable.getSelectedValue(cell);
+    public Object getSelectedValue(ClientPropertyDraw cell) {
+        return table.getSelectedValue(cell);
     }
 
     public boolean requestFocusInWindow() {
-        return gridTable.requestFocusInWindow();
+        return table.requestFocusInWindow();
     }
 
     boolean hidden = false;
     public void hideViews() {
-        gridView.setVisible(false);
+        view.setVisible(false);
     }
 
     public void showViews() {
         if (!hidden)
-            gridView.setVisible(true);
+            view.setVisible(true);
     }
 
     private void fillTableObjectID() {
 
-        for (ClientObjectImplementView object : logicsSupplier.getGroupObject())
-            if(object.objectCellView.show) {
+        for (ClientObject object : logicsSupplier.getGroupObject())
+            if(object.objectIDCell.show) {
                 Map<ClientGroupObjectValue, Object> values = new HashMap<ClientGroupObjectValue, Object>();
-                for (ClientGroupObjectValue value : gridTable.getGridRows())
+                for (ClientGroupObjectValue value : table.getGridRows())
                     values.put(value, value.get(object));
-                gridTable.setColumnValues(object.objectCellView, values);
+                table.setColumnValues(object.objectIDCell, values);
             }
     }
 
     private void fillTableObjectClasses(List<ClientGroupObjectClass> classes) {
 
-        for (ClientObjectImplementView object : logicsSupplier.getGroupObject()) {
+        for (ClientObject object : logicsSupplier.getGroupObject()) {
 
             Map<ClientGroupObjectValue, Object> cls = new HashMap<ClientGroupObjectValue, Object>();
 
-            List<ClientGroupObjectValue> gridRows = gridTable.getGridRows();
+            List<ClientGroupObjectValue> gridRows = table.getGridRows();
             for (int i = 0; i < gridRows.size(); i++) {
                 cls.put(gridRows.get(i), classes.get(i).get(object));
             }
 
-            gridTable.setColumnValues(object.classCellView, cls);
+            table.setColumnValues(object.classCell, cls);
         }
     }
 }

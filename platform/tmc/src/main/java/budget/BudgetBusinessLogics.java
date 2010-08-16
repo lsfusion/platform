@@ -9,15 +9,15 @@ import platform.server.auth.User;
 import platform.server.classes.*;
 import platform.server.data.Union;
 import platform.server.data.sql.DataAdapter;
+import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.ObjectEntity;
+import platform.server.form.view.DefaultFormView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.group.AbstractGroup;
-import platform.server.view.form.client.DefaultFormView;
-import platform.server.view.navigator.NavigatorElement;
-import platform.server.view.navigator.NavigatorForm;
-import platform.server.view.navigator.ObjectNavigator;
-import platform.server.view.navigator.filter.CompareFilterNavigator;
-import platform.server.view.navigator.filter.NotNullFilterNavigator;
+import platform.server.form.navigator.NavigatorElement;
+import platform.server.form.entity.filter.CompareFilterEntity;
+import platform.server.form.entity.filter.NotNullFilterEntity;
 import sample.SampleBusinessLogics;
 
 import java.io.FileNotFoundException;
@@ -315,137 +315,137 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         User admin = addUser("admin", "fusion");
     }
 
-    NavigatorForm mainAccountForm, salesArticleStoreForm;
+    FormEntity mainAccountForm, salesArticleStoreForm;
 
     protected void initNavigators() throws JRException, FileNotFoundException {
 
         NavigatorElement primaryData = new NavigatorElement(baseElement, 100, "Первичные данные");
-        NavigatorForm specialRecordForm = addNavigatorForm(new SpecialRecordNavigatorForm(primaryData, 113, "Затраты по сотрудникам"));
-        NavigatorForm recordForm = new RecordNavigatorForm(primaryData, 114, "Прочие операции");
-        NavigatorForm salaryForm = addNavigatorForm(new ExtraNavigatorForm(primaryData, 115, "Дополнительные затраты"));
-        NavigatorForm missionForm = new MissionNavigatorForm(primaryData, 116, "Командировка");
-        NavigatorForm exchangeRatesForm = new ExchangeRatesForm(primaryData, 117, "Курсы валют");
+        FormEntity specialRecordForm = addFormEntity(new SpecialRecordFormEntity(primaryData, 113, "Затраты по сотрудникам"));
+        FormEntity recordForm = new RecordFormEntity(primaryData, 114, "Прочие операции");
+        FormEntity salaryForm = addFormEntity(new ExtraFormEntity(primaryData, 115, "Дополнительные затраты"));
+        FormEntity missionForm = new MissionFormEntity(primaryData, 116, "Командировка");
+        FormEntity exchangeRatesForm = new ExchangeRatesFormEntity(primaryData, 117, "Курсы валют");
 
         NavigatorElement aggregateData = new NavigatorElement(baseElement, 200, "Сводная информация");
-        NavigatorForm departmentBalance = new DepartmentBalanceForm(aggregateData, 214, "Баланс по отделам");
-        NavigatorForm employeeExtraSum = addNavigatorForm(new DepartmentRevenueForm(aggregateData, 218, "Обороты по отделам"));
-        NavigatorForm reimbursement = addNavigatorForm(new ReimbursementForm(aggregateData, 215, "Компенсация"));
+        FormEntity departmentBalance = new DepartmentBalanceFormEntity(aggregateData, 214, "Баланс по отделам");
+        FormEntity employeeExtraSum = addFormEntity(new DepartmentRevenueFormEntity(aggregateData, 218, "Обороты по отделам"));
+        FormEntity reimbursement = addFormEntity(new ReimbursementFormEntity(aggregateData, 215, "Компенсация"));
     }
 
 
-    private class RecordNavigatorForm extends NavigatorForm {
+    private class RecordFormEntity extends FormEntity {
 
-        public RecordNavigatorForm(NavigatorElement parent, int ID, String caption) {
+        public RecordFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDepartment = addSingleGroupObjectImplement(department, "Отдел", properties, baseGroup);
+            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", properties, baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
             objDepartment.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
-            ObjectNavigator objInOp = addSingleGroupObjectImplement(inOperation, "Операция прихода", properties, baseGroup);
-            ObjectNavigator objOutOp = addSingleGroupObjectImplement(outOperation, "Операция расхода", properties, baseGroup);
-            ObjectNavigator objExOp = addSingleGroupObjectImplement(exOperation, "Операция конверсии", properties, baseGroup);
+            ObjectEntity objInOp = addSingleGroupObject(inOperation, "Операция прихода", properties, baseGroup);
+            ObjectEntity objOutOp = addSingleGroupObject(outOperation, "Операция расхода", properties, baseGroup);
+            ObjectEntity objExOp = addSingleGroupObject(exOperation, "Операция конверсии", properties, baseGroup);
 
-            addPropertyView(objExOp, properties, inOperationGroup);
-            addPropertyView(objOutOp, properties, payerGroup);
+            addPropertyDraw(objExOp, properties, inOperationGroup);
+            addPropertyDraw(objOutOp, properties, payerGroup);
 
             addObjectActions(this, objInOp);
             addObjectActions(this, objOutOp);
             addObjectActions(this, objExOp);
 
 
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(opDep, objInOp), Compare.EQUALS, objDepartment));
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(opDep, objOutOp), Compare.EQUALS, objDepartment));
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(opDep, objExOp), Compare.EQUALS, objDepartment));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(opDep, objInOp), Compare.EQUALS, objDepartment));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(opDep, objOutOp), Compare.EQUALS, objDepartment));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(opDep, objExOp), Compare.EQUALS, objDepartment));
 
         }
     }
 
-    private class ExtraNavigatorForm extends NavigatorForm {
-        private ObjectNavigator objMonthOp;
-        private ObjectNavigator objCur;
+    private class ExtraFormEntity extends FormEntity {
+        private ObjectEntity objMonthOp;
+        private ObjectEntity objCur;
 
-        public ExtraNavigatorForm(NavigatorElement parent, int ID, String caption) {
+        public ExtraFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDepartment = addSingleGroupObjectImplement(department, "Отдел", properties, baseGroup);
+            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", properties, baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
             objDepartment.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
-            ObjectNavigator objExtraStateOp = addSingleGroupObjectImplement(extraSection, "Статья затрат", properties, baseGroup);
-            ObjectNavigator objYearOp = addSingleGroupObjectImplement(YearClass.instance, "Год", properties, baseGroup);
+            ObjectEntity objExtraStateOp = addSingleGroupObject(extraSection, "Статья затрат", properties, baseGroup);
+            ObjectEntity objYearOp = addSingleGroupObject(YearClass.instance, "Год", properties, baseGroup);
             objYearOp.groupTo.initClassView = ClassViewType.PANEL;
             objYearOp.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
-            objMonthOp = addSingleGroupObjectImplement(absMonth, "Месяц", properties, baseGroup);
-            objCur = addSingleGroupObjectImplement(currency, "Затраты", properties, baseGroup);
-            ObjectNavigator objExtraOp = addSingleGroupObjectImplement(extraCost, "Доп. затраты", properties, baseGroup);
+            objMonthOp = addSingleGroupObject(absMonth, "Месяц", properties, baseGroup);
+            objCur = addSingleGroupObject(currency, "Затраты", properties, baseGroup);
+            ObjectEntity objExtraOp = addSingleGroupObject(extraCost, "Доп. затраты", properties, baseGroup);
 
-            addPropertyView(objExtraStateOp, objYearOp, objMonthOp, properties, baseGroup);
-            addPropertyView(objDepartment, objMonthOp, objYearOp, objExtraStateOp, properties, baseGroup);
-            addPropertyView(objDepartment, objMonthOp, objYearOp, properties, baseGroup);
+            addPropertyDraw(objExtraStateOp, objYearOp, objMonthOp, properties, baseGroup);
+            addPropertyDraw(objDepartment, objMonthOp, objYearOp, objExtraStateOp, properties, baseGroup);
+            addPropertyDraw(objDepartment, objMonthOp, objYearOp, properties, baseGroup);
 
             addObjectActions(this, objExtraStateOp);
             addObjectActions(this, objExtraOp);
-            addPropertyView(objExtraOp, properties, payerGroup);
-            //NotNullFilterNavigator documentFilter = new NotNullFilterNavigator(getPropertyImplement(salaryInMonth));
+            addPropertyDraw(objExtraOp, properties, payerGroup);
+            //NotNullFilterEntity documentFilter = new NotNullFilterEntity(getPropertyObject(salaryInMonth));
             //addFixedFilter(documentFilter);
 
-            addPropertyView(objDepartment, objMonthOp, objYearOp, objCur, properties, extraGroup);
+            addPropertyDraw(objDepartment, objMonthOp, objYearOp, objCur, properties, extraGroup);
 
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(outYear, objExtraOp), Compare.EQUALS, objYearOp));
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(outMonth, objExtraOp), Compare.EQUALS, objMonthOp));
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(operationDepartment, objExtraOp), Compare.EQUALS, objDepartment));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(outYear, objExtraOp), Compare.EQUALS, objYearOp));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(outMonth, objExtraOp), Compare.EQUALS, objMonthOp));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(operationDepartment, objExtraOp), Compare.EQUALS, objDepartment));
         }
 
         @Override
         public DefaultFormView createDefaultRichDesign() {
             DefaultFormView design = super.createDefaultRichDesign();
 
-            design.get(objCur.groupTo).gridView.constraints.fillHorizontal /= 2;
+            design.get(objCur.groupTo).grid.constraints.fillHorizontal /= 2;
             design.addIntersection(design.getGroupObjectContainer(objMonthOp.groupTo), design.getGroupObjectContainer(objCur.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             return design;
         }
     }
 
-    private class SpecialRecordNavigatorForm extends NavigatorForm {
+    private class SpecialRecordFormEntity extends FormEntity {
 
-        private ObjectNavigator objExtraStateOp;
-        private ObjectNavigator objPayOp;
-        private ObjectNavigator objMonthOp;
-        private ObjectNavigator objCur;
+        private ObjectEntity objExtraStateOp;
+        private ObjectEntity objPayOp;
+        private ObjectEntity objMonthOp;
+        private ObjectEntity objCur;
 
-        public SpecialRecordNavigatorForm(NavigatorElement parent, int ID, String caption) {
+        public SpecialRecordFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
-            ObjectNavigator objDepartment = addSingleGroupObjectImplement(department, "Отдел", properties, baseGroup);
+            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", properties, baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
             objDepartment.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
-            ObjectNavigator objPersonOp = addSingleGroupObjectImplement(person, "Персонал", properties, baseGroup);
-            ObjectNavigator objYearOp = addSingleGroupObjectImplement(YearClass.instance, "Год", properties, baseGroup);
+            ObjectEntity objPersonOp = addSingleGroupObject(person, "Персонал", properties, baseGroup);
+            ObjectEntity objYearOp = addSingleGroupObject(YearClass.instance, "Год", properties, baseGroup);
             objYearOp.groupTo.initClassView = ClassViewType.PANEL;
             objYearOp.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
-            objMonthOp = addSingleGroupObjectImplement(absMonth, "Месяц", properties, baseGroup);
-            objCur = addSingleGroupObjectImplement(currency, "Затраты", properties, baseGroup);
-            objExtraStateOp = addSingleGroupObjectImplement(extraPersonSection, "Статья затрат", properties, baseGroup);
+            objMonthOp = addSingleGroupObject(absMonth, "Месяц", properties, baseGroup);
+            objCur = addSingleGroupObject(currency, "Затраты", properties, baseGroup);
+            objExtraStateOp = addSingleGroupObject(extraPersonSection, "Статья затрат", properties, baseGroup);
 
-            objPayOp = addSingleGroupObjectImplement(pay, "Выплата", properties, baseGroup);
+            objPayOp = addSingleGroupObject(pay, "Выплата", properties, baseGroup);
 
-            addPropertyView(objPersonOp, objYearOp, objMonthOp, properties, salaryGroup);
-            addPropertyView(objYearOp, objMonthOp, properties, dateTimeGroup);
-            addPropertyView(objPersonOp, objYearOp, objMonthOp, properties, dateTimeGroup);
-            addPropertyView(objPersonOp, objYearOp, objMonthOp, properties, baseGroup);
-            addPropertyView(objPersonOp, objExtraStateOp, objYearOp, objMonthOp, properties, baseGroup);
-            addPropertyView(objYearOp, objMonthOp, properties, baseGroup);
-            addPropertyView(objPayOp, properties, payerGroup);
+            addPropertyDraw(objPersonOp, objYearOp, objMonthOp, properties, salaryGroup);
+            addPropertyDraw(objYearOp, objMonthOp, properties, dateTimeGroup);
+            addPropertyDraw(objPersonOp, objYearOp, objMonthOp, properties, dateTimeGroup);
+            addPropertyDraw(objPersonOp, objYearOp, objMonthOp, properties, baseGroup);
+            addPropertyDraw(objPersonOp, objExtraStateOp, objYearOp, objMonthOp, properties, baseGroup);
+            addPropertyDraw(objYearOp, objMonthOp, properties, baseGroup);
+            addPropertyDraw(objPayOp, properties, payerGroup);
 
             addObjectActions(this, objPersonOp);
             addObjectActions(this, objPayOp);
 
 
-            addPropertyView(objPersonOp, objYearOp, objMonthOp, objCur, properties, baseGroup);
+            addPropertyDraw(objPersonOp, objYearOp, objMonthOp, objCur, properties, baseGroup);
 
-            addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(isWorkingMonthForPerson, objPersonOp, objMonthOp, objYearOp)));
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(outPerson, objPayOp), Compare.EQUALS, objPersonOp));
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(outYear, objPayOp), Compare.EQUALS, objYearOp));
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(outMonth, objPayOp), Compare.EQUALS, objMonthOp));
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(personDepartment, objPersonOp), Compare.EQUALS, objDepartment));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(isWorkingMonthForPerson, objPersonOp, objMonthOp, objYearOp)));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(outPerson, objPayOp), Compare.EQUALS, objPersonOp));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(outYear, objPayOp), Compare.EQUALS, objYearOp));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(outMonth, objPayOp), Compare.EQUALS, objMonthOp));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(personDepartment, objPersonOp), Compare.EQUALS, objDepartment));
         }
 
         @Override
@@ -453,9 +453,9 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
             DefaultFormView design = super.createDefaultRichDesign();
 
-            design.get(objExtraStateOp.groupTo).gridView.constraints.fillHorizontal /= 3;
+            design.get(objExtraStateOp.groupTo).grid.constraints.fillHorizontal /= 3;
             design.addIntersection(design.getGroupObjectContainer(objExtraStateOp.groupTo), design.getGroupObjectContainer(objPayOp.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-            design.get(objCur.groupTo).gridView.constraints.fillHorizontal /= 3;
+            design.get(objCur.groupTo).grid.constraints.fillHorizontal /= 3;
             design.addIntersection(design.getGroupObjectContainer(objMonthOp.groupTo), design.getGroupObjectContainer(objCur.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             return design;
@@ -463,78 +463,78 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
     }
 
 
-    private class MissionNavigatorForm extends NavigatorForm {
+    private class MissionFormEntity extends FormEntity {
 
-        public MissionNavigatorForm(NavigatorElement parent, int ID, String caption) {
+        public MissionFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
-            ObjectNavigator objDepartment = addSingleGroupObjectImplement(department, "Отдел", properties, baseGroup);
+            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", properties, baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
             objDepartment.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
-            ObjectNavigator objMission = addSingleGroupObjectImplement(mission, "Командировка", properties, baseGroup);
-            ObjectNavigator objPerson = addSingleGroupObjectImplement(person, "Сотрудник", properties, baseGroup);
-            ObjectNavigator objOutOp = addSingleGroupObjectImplement(misOperation, "Расх. команд.", properties, baseGroup);
+            ObjectEntity objMission = addSingleGroupObject(mission, "Командировка", properties, baseGroup);
+            ObjectEntity objPerson = addSingleGroupObject(person, "Сотрудник", properties, baseGroup);
+            ObjectEntity objOutOp = addSingleGroupObject(misOperation, "Расх. команд.", properties, baseGroup);
 
-            addPropertyView(objMission, objPerson, properties, baseGroup);
-            addPropertyView(objOutOp, properties, payerGroup);
+            addPropertyDraw(objMission, objPerson, properties, baseGroup);
+            addPropertyDraw(objOutOp, properties, payerGroup);
 
             addObjectActions(this, objMission);
             addObjectActions(this, objOutOp);
 
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(missionOperation, objOutOp), Compare.EQUALS, objMission));
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(operationDepartment, objOutOp), Compare.EQUALS, objDepartment));
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(personDepartment, objPerson), Compare.EQUALS, objDepartment));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(missionOperation, objOutOp), Compare.EQUALS, objMission));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(operationDepartment, objOutOp), Compare.EQUALS, objDepartment));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(personDepartment, objPerson), Compare.EQUALS, objDepartment));
         }
     }
 
-    private class DepartmentBalanceForm extends NavigatorForm {
+    private class DepartmentBalanceFormEntity extends FormEntity {
 
-        public DepartmentBalanceForm(NavigatorElement parent, int ID, String caption) {
+        public DepartmentBalanceFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDepartment = addSingleGroupObjectImplement(department, "Отдел", properties, baseGroup);
+            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", properties, baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
             objDepartment.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
-            ObjectNavigator objCur = addSingleGroupObjectImplement(currency, "Валюта", properties, baseGroup);
-            ObjectNavigator objInOp = addSingleGroupObjectImplement(inAbsOperation, "Операция пр.", properties, baseGroup, true);
-            ObjectNavigator objOutOp = addSingleGroupObjectImplement(outAbsOperation, "Операция расх.", properties, baseGroup, true);
-            addPropertyView(properties, baseGroup, true, objCur, objInOp);
-            addPropertyView(properties, baseGroup, true, objCur, objOutOp);
-            addPropertyView(properties, baseGroup, false, objDepartment, objCur);
+            ObjectEntity objCur = addSingleGroupObject(currency, "Валюта", properties, baseGroup);
+            ObjectEntity objInOp = addSingleGroupObject(inAbsOperation, "Операция пр.", properties, baseGroup, true);
+            ObjectEntity objOutOp = addSingleGroupObject(outAbsOperation, "Операция расх.", properties, baseGroup, true);
+            addPropertyDraw(properties, baseGroup, true, objCur, objInOp);
+            addPropertyDraw(properties, baseGroup, true, objCur, objOutOp);
+            addPropertyDraw(properties, baseGroup, false, objDepartment, objCur);
 
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(inCur, objInOp), Compare.EQUALS, objCur));
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(outCur, objOutOp), Compare.EQUALS, objCur));
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(opDep, objInOp), Compare.EQUALS, objDepartment));
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(opDep, objOutOp), Compare.EQUALS, objDepartment));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(inCur, objInOp), Compare.EQUALS, objCur));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(outCur, objOutOp), Compare.EQUALS, objCur));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(opDep, objInOp), Compare.EQUALS, objDepartment));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(opDep, objOutOp), Compare.EQUALS, objDepartment));
 
         }
     }
 
-    private class ReimbursementForm extends NavigatorForm {
-        private ObjectNavigator objCurrency;
-        private ObjectNavigator objDepartment;
-        private ObjectNavigator objOutOp;
-        private ObjectNavigator objReimbursement;
+    private class ReimbursementFormEntity extends FormEntity {
+        private ObjectEntity objCurrency;
+        private ObjectEntity objDepartment;
+        private ObjectEntity objOutOp;
+        private ObjectEntity objReimbursement;
 
-        public ReimbursementForm(NavigatorElement parent, int ID, String caption) {
+        public ReimbursementFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objPayer = addSingleGroupObjectImplement(payer, "Плательщик", properties, baseGroup);
-            objCurrency = addSingleGroupObjectImplement(currency, "Валюта", properties, baseGroup);
-            objDepartment = addSingleGroupObjectImplement(department, "Отдел", properties, baseGroup);
-            objOutOp = addSingleGroupObjectImplement(payerAbs, "Оплаты", properties, baseGroup);
-            objReimbursement = addSingleGroupObjectImplement(reimbursement, "Возмещение", properties, baseGroup);
+            ObjectEntity objPayer = addSingleGroupObject(payer, "Плательщик", properties, baseGroup);
+            objCurrency = addSingleGroupObject(currency, "Валюта", properties, baseGroup);
+            objDepartment = addSingleGroupObject(department, "Отдел", properties, baseGroup);
+            objOutOp = addSingleGroupObject(payerAbs, "Оплаты", properties, baseGroup);
+            objReimbursement = addSingleGroupObject(reimbursement, "Возмещение", properties, baseGroup);
 
             addObjectActions(this, objReimbursement);
-            addPropertyView(objPayer, objCurrency, properties, baseGroup);
-            addPropertyView(objPayer, objCurrency, objDepartment, properties, baseGroup);
-            addPropertyView(depBalanceQuantity, objCurrency, objDepartment);
+            addPropertyDraw(objPayer, objCurrency, properties, baseGroup);
+            addPropertyDraw(objPayer, objCurrency, objDepartment, properties, baseGroup);
+            addPropertyDraw(depBalanceQuantity, objCurrency, objDepartment);
             //depBalanceQuantity
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(operationPayer, objOutOp), Compare.EQUALS, objPayer));
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(reimbursementPayer, objReimbursement), Compare.EQUALS, objPayer));
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(outCur, objOutOp), Compare.EQUALS, objCurrency));
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(reimbursementCurrencyIn, objReimbursement), Compare.EQUALS, objCurrency));
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(opDep, objOutOp), Compare.EQUALS, objDepartment));
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(reimbursementDepartment, objReimbursement), Compare.EQUALS, objDepartment));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(operationPayer, objOutOp), Compare.EQUALS, objPayer));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(reimbursementPayer, objReimbursement), Compare.EQUALS, objPayer));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(outCur, objOutOp), Compare.EQUALS, objCurrency));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(reimbursementCurrencyIn, objReimbursement), Compare.EQUALS, objCurrency));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(opDep, objOutOp), Compare.EQUALS, objDepartment));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(reimbursementDepartment, objReimbursement), Compare.EQUALS, objDepartment));
 
 
         }
@@ -544,7 +544,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
             DefaultFormView design = super.createDefaultRichDesign();
 
-            //design.get(objCurrency.groupTo).gridView.constraints.fillHorizontal /= 2;
+            //design.get(objCurrency.groupTo).grid.constraints.fillHorizontal /= 2;
             design.addIntersection(design.getGroupObjectContainer(objCurrency.groupTo), design.getGroupObjectContainer(objDepartment.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             design.addIntersection(design.getGroupObjectContainer(objOutOp.groupTo), design.getGroupObjectContainer(objReimbursement.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
@@ -553,57 +553,57 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
     }
 
-    private class DepartmentRevenueForm extends NavigatorForm {
+    private class DepartmentRevenueFormEntity extends FormEntity {
 
-        public DepartmentRevenueForm(NavigatorElement parent, int ID, String caption) {
+        public DepartmentRevenueFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
-            ObjectNavigator objDepartment = addSingleGroupObjectImplement(department, "Отдел", properties, baseGroup);
+            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", properties, baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
             objDepartment.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
-            addPropertyView(baseCurrencyName);
+            addPropertyDraw(baseCurrencyName);
 
-            ObjectNavigator objYearOp = addSingleGroupObjectImplement(YearClass.instance, "Год", properties, baseGroup);
+            ObjectEntity objYearOp = addSingleGroupObject(YearClass.instance, "Год", properties, baseGroup);
             objYearOp.groupTo.initClassView = ClassViewType.PANEL;
             objYearOp.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
-            ObjectNavigator objMonthOp = addSingleGroupObjectImplement(absMonth, "Месяц", properties, baseGroup);
+            ObjectEntity objMonthOp = addSingleGroupObject(absMonth, "Месяц", properties, baseGroup);
 
-            addPropertyView(properties, baseCurGroup, true, objDepartment, objMonthOp, objYearOp);
+            addPropertyDraw(properties, baseCurGroup, true, objDepartment, objMonthOp, objYearOp);
 
-            ObjectNavigator objCurrency = addSingleGroupObjectImplement(currency, "Валюта", properties, baseGroup);
+            ObjectEntity objCurrency = addSingleGroupObject(currency, "Валюта", properties, baseGroup);
 
-            addPropertyView(properties, baseGroup, true, objDepartment, objMonthOp, objYearOp, objCurrency);
+            addPropertyDraw(properties, baseGroup, true, objDepartment, objMonthOp, objYearOp, objCurrency);
         }
     }
 
-    private class ExchangeRatesForm extends NavigatorForm {
+    private class ExchangeRatesFormEntity extends FormEntity {
 
-        public ExchangeRatesForm(NavigatorElement parent, int ID, String caption) {
+        public ExchangeRatesFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-//            ObjectNavigator objYearOp = addSingleGroupObjectImplement(IntegerClass.instance, "Год", properties, baseGroup);
+//            ObjectEntity objYearOp = addSingleGroupObject(IntegerClass.instance, "Год", properties, baseGroup);
 //                        objYearOp.groupTo.initClassView = ClassViewType.PANEL;
 //                        objYearOp.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
-//            ObjectNavigator objMonthOp = addSingleGroupObjectImplement(absMonth, "Месяц", properties, baseGroup);
+//            ObjectEntity objMonthOp = addSingleGroupObject(absMonth, "Месяц", properties, baseGroup);
 //
-//            addPropertyView(rateDay, objMonthOp, objYearOp);
-//            addPropertyView(userRateDay, objMonthOp, objYearOp);
-//            addPropertyView(dateByMY, objMonthOp, objYearOp);
+//            addPropertyDraw(rateDay, objMonthOp, objYearOp);
+//            addPropertyDraw(userRateDay, objMonthOp, objYearOp);
+//            addPropertyDraw(dateByMY, objMonthOp, objYearOp);
 
-            ObjectNavigator objSrcCurrency = addSingleGroupObjectImplement(currency, "Исходная валюта", properties, baseGroup);
-            ObjectNavigator objDstCurrency = addSingleGroupObjectImplement(currency, "Целевая валюта", properties, baseGroup);
+            ObjectEntity objSrcCurrency = addSingleGroupObject(currency, "Исходная валюта", properties, baseGroup);
+            ObjectEntity objDstCurrency = addSingleGroupObject(currency, "Целевая валюта", properties, baseGroup);
 
-            ObjectNavigator objDate = addSingleGroupObjectImplement(DateClass.instance, "Дата", properties, baseGroup);
+            ObjectEntity objDate = addSingleGroupObject(DateClass.instance, "Дата", properties, baseGroup);
             objDate.groupTo.initClassView = ClassViewType.PANEL;
             objDate.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
 
-            addPropertyView(exchangeRate, objSrcCurrency, objDstCurrency, objDate);
-            addPropertyView(nearestPredDate, objSrcCurrency, objDstCurrency, objDate);
-            addPropertyView(nearestExchangeRate, objSrcCurrency, objDstCurrency, objDate);
+            addPropertyDraw(exchangeRate, objSrcCurrency, objDstCurrency, objDate);
+            addPropertyDraw(nearestPredDate, objSrcCurrency, objDstCurrency, objDate);
+            addPropertyDraw(nearestExchangeRate, objSrcCurrency, objDstCurrency, objDate);
 
-            ObjectNavigator objDateRate = addSingleGroupObjectImplement(DateClass.instance, "Дата", properties, baseGroup);
-            addPropertyView(exchangeRate, objSrcCurrency, objDstCurrency, objDateRate);
+            ObjectEntity objDateRate = addSingleGroupObject(DateClass.instance, "Дата", properties, baseGroup);
+            addPropertyDraw(exchangeRate, objSrcCurrency, objDstCurrency, objDateRate);
 
-            addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(exchangeRate, objSrcCurrency, objDstCurrency, objDateRate)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(exchangeRate, objSrcCurrency, objDstCurrency, objDateRate)));
         }
     }
 }

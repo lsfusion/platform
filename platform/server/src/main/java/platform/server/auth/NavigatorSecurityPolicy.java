@@ -1,6 +1,6 @@
 package platform.server.auth;
 
-import platform.server.view.navigator.NavigatorElement;
+import platform.server.form.navigator.NavigatorElement;
 
 import java.util.Collection;
 

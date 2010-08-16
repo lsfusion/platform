@@ -1,6 +1,6 @@
 package platform.client.form.queries;
 
-import platform.client.logics.ClientPropertyView;
+import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,7 +17,7 @@ abstract class ValueLinkView extends JPanel {
         this.listener = listener;
     }
 
-    abstract void propertyChanged(ClientPropertyView property) ;
+    abstract void propertyChanged(ClientPropertyDraw property) ;
 
     public void stopEditing() {}
 }

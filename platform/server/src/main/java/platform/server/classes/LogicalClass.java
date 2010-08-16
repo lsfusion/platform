@@ -4,7 +4,7 @@ import net.sf.jasperreports.engine.JRAlignment;
 import platform.interop.Data;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
-import platform.server.view.form.client.report.ReportDrawField;
+import platform.server.form.view.report.ReportDrawField;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;

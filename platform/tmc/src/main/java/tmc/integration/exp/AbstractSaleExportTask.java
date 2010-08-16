@@ -7,8 +7,8 @@ import org.xBaseJ.fields.NumField;
 import org.xBaseJ.fields.DateField;
 import org.xBaseJ.fields.Field;
 import platform.server.auth.PolicyManager;
-import platform.server.view.form.*;
-import platform.server.view.form.filter.NotNullFilter;
+import platform.server.form.instance.*;
+import platform.server.form.instance.filter.NotNullFilterInstance;
 import platform.server.session.DataSession;
 import platform.server.logics.DataObject;
 import platform.server.logics.scheduler.FlagSemaphoreTask;
@@ -36,8 +36,8 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
     }
 
     protected abstract String getDbfName();
-    protected abstract void setRemoteFormFilter(RemoteForm remoteForm) throws ParseException;
-    protected abstract void updateRemoteFormProperties(RemoteForm remoteForm) throws SQLException;
+    protected abstract void setRemoteFormFilter(FormInstance formInstance) throws ParseException;
+    protected abstract void updateRemoteFormProperties(FormInstance formInstance) throws SQLException;
 
     CharField barField;
     CharField nameField;
@@ -102,90 +102,90 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
         outDbf.addField(percentField);
     }
 
-    private FormData getDataSale(DataSession session, Map<Field, PropertyView> map) throws Exception {
+    private FormData getDataSale(DataSession session, Map<Field, PropertyDrawInstance> map) throws Exception {
 
         // Выгружаем продажи по кассе
-        RemoteForm remoteForm = new RemoteForm(BL.commitSaleBrowseForm, BL, session, PolicyManager.defaultSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.computer)); // здесь надо переделать на нормальный компьютер
+        FormInstance formInstance = new FormInstance(BL.commitSaleBrowseForm, BL, session, PolicyManager.defaultSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.computer)); // здесь надо переделать на нормальный компьютер
 
-        setRemoteFormFilter(remoteForm);
+        setRemoteFormFilter(formInstance);
 
-        PropertyView quantity = remoteForm.getPropertyView(BL.articleQuantity);
-        quantity.toDraw.addTempFilter(new NotNullFilter(quantity.view));
+        PropertyDrawInstance quantity = formInstance.getPropertyDraw(BL.articleQuantity);
+        quantity.toDraw.addTempFilter(new NotNullFilterInstance(quantity.propertyObject));
 
-        ObjectImplement doc = remoteForm.mapper.mapObject(BL.commitSaleBrowseForm.objDoc);
-        ObjectImplement art = remoteForm.mapper.mapObject(BL.commitSaleBrowseForm.objArt);
+        ObjectInstance doc = formInstance.mapper.mapObject(BL.commitSaleBrowseForm.objDoc);
+        ObjectInstance art = formInstance.mapper.mapObject(BL.commitSaleBrowseForm.objArt);
 
-        map.put(barField, remoteForm.getPropertyView(BL.barcode));
-        map.put(nameField, remoteForm.getPropertyView(BL.name));
-        map.put(cenField, remoteForm.getPropertyView(BL.orderSalePrice));
-        map.put(kolField, remoteForm.getPropertyView(BL.articleQuantity));
-        map.put(dateField, remoteForm.getPropertyView(BL.date));
-        map.put(summField, remoteForm.getPropertyView(BL.orderArticleSaleSumCoeff));
-        map.put(percentField, remoteForm.getPropertyView(BL.orderArticleSaleDiscount));
+        map.put(barField, formInstance.getPropertyDraw(BL.barcode));
+        map.put(nameField, formInstance.getPropertyDraw(BL.name));
+        map.put(cenField, formInstance.getPropertyDraw(BL.orderSalePrice));
+        map.put(kolField, formInstance.getPropertyDraw(BL.articleQuantity));
+        map.put(dateField, formInstance.getPropertyDraw(BL.date));
+        map.put(summField, formInstance.getPropertyDraw(BL.orderArticleSaleSumCoeff));
+        map.put(percentField, formInstance.getPropertyDraw(BL.orderArticleSaleDiscount));
 
-        FormData data = remoteForm.getFormData(BaseUtils.toSetElements(doc.groupTo, art.groupTo), BaseUtils.toSetElements(doc.groupTo, art.groupTo));
+        FormData data = formInstance.getFormData(BaseUtils.toSetElements(doc.groupTo, art.groupTo), BaseUtils.toSetElements(doc.groupTo, art.groupTo));
 
-        updateRemoteFormProperties(remoteForm);
+        updateRemoteFormProperties(formInstance);
 
         return data;
     }
 
-    private FormData getDataCert(DataSession session, Map<Field, PropertyView> map) throws Exception {
+    private FormData getDataCert(DataSession session, Map<Field, PropertyDrawInstance> map) throws Exception {
 
         // Выгружаем продажи по кассе
-        RemoteForm remoteForm = new RemoteForm(BL.saleCheckCertBrowseForm, BL, session, PolicyManager.defaultSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.computer)); // здесь надо переделать на нормальный компьютер
+        FormInstance formInstance = new FormInstance(BL.saleCheckCertBrowseForm, BL, session, PolicyManager.defaultSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.computer)); // здесь надо переделать на нормальный компьютер
 
-        setRemoteFormFilter(remoteForm);
+        setRemoteFormFilter(formInstance);
 
-        PropertyView issued = remoteForm.getPropertyView(BL.issueObligation);
-        issued.toDraw.addTempFilter(new NotNullFilter(issued.view));
+        PropertyDrawInstance issued = formInstance.getPropertyDraw(BL.issueObligation);
+        issued.toDraw.addTempFilter(new NotNullFilterInstance(issued.propertyObject));
 
-        ObjectImplement doc = remoteForm.mapper.mapObject(BL.saleCheckCertBrowseForm.objDoc);
-        ObjectImplement obligation = remoteForm.mapper.mapObject(BL.saleCheckCertBrowseForm.objObligation);
+        ObjectInstance doc = formInstance.mapper.mapObject(BL.saleCheckCertBrowseForm.objDoc);
+        ObjectInstance obligation = formInstance.mapper.mapObject(BL.saleCheckCertBrowseForm.objObligation);
 
-        map.put(barField, remoteForm.getPropertyView(BL.barcode));
-        map.put(nameField, remoteForm.getPropertyView(BL.name));
-        map.put(cenField, remoteForm.getPropertyView(BL.obligationSum));
-        map.put(dateField, remoteForm.getPropertyView(BL.date));
-        map.put(summField, remoteForm.getPropertyView(BL.obligationSum));
+        map.put(barField, formInstance.getPropertyDraw(BL.barcode));
+        map.put(nameField, formInstance.getPropertyDraw(BL.name));
+        map.put(cenField, formInstance.getPropertyDraw(BL.obligationSum));
+        map.put(dateField, formInstance.getPropertyDraw(BL.date));
+        map.put(summField, formInstance.getPropertyDraw(BL.obligationSum));
 
-        FormData data = remoteForm.getFormData(BaseUtils.toSetElements(doc.groupTo, obligation.groupTo), BaseUtils.toSetElements(doc.groupTo, obligation.groupTo));
+        FormData data = formInstance.getFormData(BaseUtils.toSetElements(doc.groupTo, obligation.groupTo), BaseUtils.toSetElements(doc.groupTo, obligation.groupTo));
 
-        updateRemoteFormProperties(remoteForm);
+        updateRemoteFormProperties(formInstance);
 
         return data;
     }
 
-    private FormData getDataReturn(DataSession session, Map<Field, PropertyView> map) throws Exception {
+    private FormData getDataReturn(DataSession session, Map<Field, PropertyDrawInstance> map) throws Exception {
 
         // Выгружаем продажи по кассе
-        RemoteForm remoteForm = new RemoteForm(BL.returnSaleCheckRetailBrowse, BL, session, PolicyManager.defaultSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.computer)); // здесь надо переделать на нормальный компьютер
+        FormInstance formInstance = new FormInstance(BL.returnSaleCheckRetailBrowse, BL, session, PolicyManager.defaultSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.computer)); // здесь надо переделать на нормальный компьютер
 
-        setRemoteFormFilter(remoteForm);
+        setRemoteFormFilter(formInstance);
 
-        PropertyView returnQuantity = remoteForm.getPropertyView(BL.returnInnerQuantity);
-        returnQuantity.toDraw.addTempFilter(new NotNullFilter(returnQuantity.view));
+        PropertyDrawInstance returnQuantity = formInstance.getPropertyDraw(BL.returnInnerQuantity);
+        returnQuantity.toDraw.addTempFilter(new NotNullFilterInstance(returnQuantity.propertyObject));
 
-        ObjectImplement doc = remoteForm.mapper.mapObject(BL.returnSaleCheckRetailBrowse.objDoc);
-        ObjectImplement inner = remoteForm.mapper.mapObject(BL.returnSaleCheckRetailBrowse.objInner);
-        ObjectImplement article = remoteForm.mapper.mapObject(BL.returnSaleCheckRetailBrowse.objArt);
+        ObjectInstance doc = formInstance.mapper.mapObject(BL.returnSaleCheckRetailBrowse.objDoc);
+        ObjectInstance inner = formInstance.mapper.mapObject(BL.returnSaleCheckRetailBrowse.objInner);
+        ObjectInstance article = formInstance.mapper.mapObject(BL.returnSaleCheckRetailBrowse.objArt);
 
-        map.put(barField, remoteForm.getPropertyView(BL.barcode));
-        map.put(nameField, remoteForm.getPropertyView(BL.name));
-        map.put(cenField, remoteForm.getPropertyView(BL.orderSalePrice));
-        map.put(kolField, remoteForm.getPropertyView(BL.returnInnerQuantity));
-        map.put(dateField, remoteForm.getPropertyView(BL.date));
-        map.put(summField, remoteForm.getPropertyView(BL.returnArticleSalePay));
-        map.put(percentField, remoteForm.getPropertyView(BL.orderArticleSaleDiscount));
+        map.put(barField, formInstance.getPropertyDraw(BL.barcode));
+        map.put(nameField, formInstance.getPropertyDraw(BL.name));
+        map.put(cenField, formInstance.getPropertyDraw(BL.orderSalePrice));
+        map.put(kolField, formInstance.getPropertyDraw(BL.returnInnerQuantity));
+        map.put(dateField, formInstance.getPropertyDraw(BL.date));
+        map.put(summField, formInstance.getPropertyDraw(BL.returnArticleSalePay));
+        map.put(percentField, formInstance.getPropertyDraw(BL.orderArticleSaleDiscount));
 
-        FormData result = remoteForm.getFormData(BaseUtils.toSetElements(doc.groupTo, inner.groupTo, article.groupTo), BaseUtils.toSetElements(doc.groupTo, inner.groupTo, article.groupTo));
+        FormData result = formInstance.getFormData(BaseUtils.toSetElements(doc.groupTo, inner.groupTo, article.groupTo), BaseUtils.toSetElements(doc.groupTo, inner.groupTo, article.groupTo));
 
-        updateRemoteFormProperties(remoteForm);
+        updateRemoteFormProperties(formInstance);
 
         return result;
     }
 
-    private void writeToDbf(FormData data, Map<Field, PropertyView> map, boolean reverse) throws Exception {
+    private void writeToDbf(FormData data, Map<Field, PropertyDrawInstance> map, boolean reverse) throws Exception {
 
         Calendar calendar = Calendar.getInstance();
 
@@ -243,15 +243,15 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
 
             DataSession session = BL.createSession();
 
-            Map<Field, PropertyView> mapSale = new HashMap<Field, PropertyView>();
+            Map<Field, PropertyDrawInstance> mapSale = new HashMap<Field, PropertyDrawInstance>();
             FormData dataSale = getDataSale(session, mapSale);
             writeToDbf(dataSale, mapSale, false);
 
-            Map<Field, PropertyView> mapCert = new HashMap<Field, PropertyView>();
+            Map<Field, PropertyDrawInstance> mapCert = new HashMap<Field, PropertyDrawInstance>();
             FormData dataCert = getDataCert(session, mapCert);
             writeToDbf(dataCert, mapCert, false);
 
-            Map<Field, PropertyView> mapReturn = new HashMap<Field, PropertyView>();
+            Map<Field, PropertyDrawInstance> mapReturn = new HashMap<Field, PropertyDrawInstance>();
             FormData dataReturn = getDataReturn(session, mapReturn);
             writeToDbf(dataReturn, mapReturn, true);
 

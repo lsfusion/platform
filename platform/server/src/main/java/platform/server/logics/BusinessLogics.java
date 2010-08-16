@@ -24,6 +24,11 @@ import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.ObjectEntity;
+import platform.server.form.instance.FormInstance;
+import platform.server.form.instance.ObjectInstance;
+import platform.server.form.instance.OrderInstance;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.AddObjectActionProperty;
@@ -35,12 +40,9 @@ import platform.server.logics.scheduler.Scheduler;
 import platform.server.logics.table.ImplementTable;
 import platform.server.logics.table.TableFactory;
 import platform.server.session.DataSession;
-import platform.server.view.form.ObjectImplement;
-import platform.server.view.form.OrderView;
-import platform.server.view.form.PropertyObjectInterface;
-import platform.server.view.form.RemoteForm;
-import platform.server.view.form.client.RemoteFormView;
-import platform.server.view.navigator.*;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.form.instance.remote.RemoteForm;
+import platform.server.form.navigator.*;
 import platform.server.caches.IdentityLazy;
 
 import java.io.*;
@@ -482,7 +484,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     void initBaseNavigators() {
         NavigatorElement policy = new NavigatorElement(baseElement, 50000, "Политики безопасности");
-        addNavigatorForm(new UserPolicyNavigatorForm(policy, 50100));
+        addFormEntity(new UserPolicyFormEntity(policy, 50100));
     }
 
     protected SecurityPolicy permitAllPolicy, readOnlyPolicy;
@@ -497,16 +499,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         readOnlyPolicy.cls.edit.remove.defaultPermission = false;
     }
 
-    private class UserPolicyNavigatorForm extends NavigatorForm {
-        protected UserPolicyNavigatorForm(NavigatorElement parent, int ID) {
+    private class UserPolicyFormEntity extends FormEntity {
+        protected UserPolicyFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Политики пользователей");
 
-            ObjectNavigator objUser = addSingleGroupObjectImplement(customUser, "Пользователь", properties, baseGroup, true);
-            ObjectNavigator objPolicy = addSingleGroupObjectImplement(policy, "Политика", properties, baseGroup, true);
+            ObjectEntity objUser = addSingleGroupObject(customUser, "Пользователь", properties, baseGroup, true);
+            ObjectEntity objPolicy = addSingleGroupObject(policy, "Политика", properties, baseGroup, true);
 
             addObjectActions(this, objUser);
 
-            addPropertyView(objUser, objPolicy, properties, baseGroup, true);
+            addPropertyDraw(objUser, objPolicy, properties, baseGroup, true);
         }
     }
 
@@ -547,7 +549,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             return LogicalClass.instance;
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
             executeForm.form.session.user.changeCurrentUser(BaseUtils.singleValue(keys));
             actions.add(new UserChangedClientAction());
         }
@@ -603,7 +605,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         fillIDs();
 
-        initImplements();
+        initDatabaseMapping();
 
         // сначала инициализируем stored потому как используется для определения интерфейса
         logger.info("Initializing stored property...");
@@ -672,7 +674,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
           if(testType>=1) {
               initLogics();
               if(testType>=2)
-                  initImplements();
+                  initDatabaseMapping();
           }
 
           if(seed==null) {
@@ -738,7 +740,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected abstract void initIndexes();
 
-    void initImplements() {
+    void initDatabaseMapping() {
         initPersistents();
         initTables();
         initIndexes();
@@ -1154,7 +1156,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addProperty(group, new LP<ClassPropertyInterface>(new SessionDataProperty(sID, caption, params, value)));
     }
 
-    protected LP addFAProp(AbstractGroup group, String caption, NavigatorForm form, ObjectNavigator... params) {
+    protected LP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity... params) {
         return addProperty(group, new LP<ClassPropertyInterface>(new FormActionProperty(genSID(), caption, form, params)));
     }
 
@@ -1898,7 +1900,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             initClasses();
 
             if (implement)
-                initImplements();
+                initDatabaseMapping();
 
             if (properties) {
                 initProperties();
@@ -2384,15 +2386,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
     }
 
-    public <T extends NavigatorForm> T addNavigatorForm(T form) {
+    public <T extends FormEntity> T addFormEntity(T form) {
         form.richDesign = form.createDefaultRichDesign();
         return form;
     }
 
-    public void addObjectActions(NavigatorForm form, ObjectNavigator object) {
-        form.addActionObjectView(getImportObjectAction(object.baseClass), object).setToDraw(object.groupTo).setForcePanel(true);
-        form.addActionObjectView(getAddObjectAction(object.baseClass)).setToDraw(object.groupTo).setForcePanel(true);
-        form.addActionObjectView(getDeleteObjectAction(object.baseClass), object);
+    public void addObjectActions(FormEntity form, ObjectEntity object) {
+        form.addActionObjectDraw(getImportObjectAction(object.baseClass), object).setToDraw(object.groupTo).setForcePanel(true);
+        form.addActionObjectDraw(getAddObjectAction(object.baseClass)).setToDraw(object.groupTo).setForcePanel(true);
+        form.addActionObjectDraw(getDeleteObjectAction(object.baseClass), object);
     }
 
     private Scheduler scheduler;
@@ -2427,21 +2429,21 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             this.property = property;
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
-            RemoteForm<?> form = executeForm.form;
-            Collection<ObjectImplement> objects;
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            FormInstance<?> form = executeForm.form;
+            Collection<ObjectInstance> objects;
             if (property != null)
-                objects = form.mapper.mapProperty(form.navigatorForm.getPropertyImplement(property)).mapping.values();
+                objects = form.mapper.mapProperty(form.formEntity.getPropertyObject(property)).mapping.values();
             else
                 objects = form.getObjects();
             for (Map.Entry<ClassPropertyInterface, DataObject> key : keys.entrySet()) {
                 if (mapObjects.get(key.getKey()) == null) {
-                    for (ObjectImplement object : objects) {
+                    for (ObjectInstance object : objects) {
                         ConcreteClass keyClass = form.session.getCurrentClass(key.getValue());
                         if (keyClass instanceof ConcreteValueClass && object.getBaseClass().isCompatibleParent((ValueClass) keyClass)) {
-                            Map<OrderView, Object> userSeeks = form.userGroupSeeks.get(object.groupTo);
+                            Map<OrderInstance, Object> userSeeks = form.userGroupSeeks.get(object.groupTo);
                             if (userSeeks == null) {
-                                userSeeks = new HashMap<OrderView, Object>();
+                                userSeeks = new HashMap<OrderInstance, Object>();
                                 form.userGroupSeeks.put(object.groupTo, userSeeks);
                             }
                             userSeeks.put(object, key.getValue().object);
@@ -2460,7 +2462,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             this.message = message;
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
             actions.add(new MessageClientAction(message, caption));
         }
     }

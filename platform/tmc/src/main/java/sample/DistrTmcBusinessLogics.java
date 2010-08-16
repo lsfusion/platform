@@ -2,15 +2,17 @@ package sample;
 
 import net.sf.jasperreports.engine.JRException;
 import platform.interop.Compare;
-import platform.interop.UserInfo;
 import platform.server.auth.User;
 import platform.server.data.sql.DataAdapter;
+import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.GroupObjectEntity;
+import platform.server.form.entity.ObjectEntity;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
-import platform.server.view.navigator.*;
-import platform.server.view.navigator.filter.CompareFilterNavigator;
-import platform.server.view.navigator.filter.OrFilterNavigator;
-import platform.server.view.navigator.filter.NotNullFilterNavigator;
+import platform.server.form.navigator.*;
+import platform.server.form.entity.filter.CompareFilterEntity;
+import platform.server.form.entity.filter.OrFilterEntity;
+import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.classes.CustomClass;
 import platform.server.classes.NumericClass;
 
@@ -84,66 +86,66 @@ public class DistrTmcBusinessLogics extends BusinessLogics<DistrTmcBusinessLogic
 
     protected void initNavigators() throws JRException, FileNotFoundException {
 
-        new InDocumentArticleNavigatorForm(baseElement, 100, "Прих. документы");
-        new OutDocumentArticleNavigatorForm(baseElement, 101, "Расх. документы");
-        new SystemNavigatorForm(baseElement, 102, "Движение (документ*товар)");
+        new InDocumentArticleFormEntity(baseElement, 100, "Прих. документы");
+        new OutDocumentArticleFormEntity(baseElement, 101, "Расх. документы");
+        new SystemFormEntity(baseElement, 102, "Движение (документ*товар)");
     }
 
-    private class InDocumentArticleNavigatorForm extends NavigatorForm {
+    private class InDocumentArticleFormEntity extends FormEntity {
 
-        public InDocumentArticleNavigatorForm(NavigatorElement parent, int ID, String caption) {
+        public InDocumentArticleFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(inDocument, "Документ", properties,
+            ObjectEntity objDoc = addSingleGroupObject(inDocument, "Документ", properties,
                                                                         baseGroup);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties,
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties,
                                                                         baseGroup, true);
 
-            addPropertyView(objDoc, objArt, properties, baseGroup);
+            addPropertyDraw(objDoc, objArt, properties, baseGroup);
         }
     }
 
-    private class OutDocumentArticleNavigatorForm extends NavigatorForm {
+    private class OutDocumentArticleFormEntity extends FormEntity {
 
-        public OutDocumentArticleNavigatorForm(NavigatorElement parent, int ID, String caption) {
+        public OutDocumentArticleFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objOutDoc = addSingleGroupObjectImplement(outDocument, "Расх. документ", properties,
+            ObjectEntity objOutDoc = addSingleGroupObject(outDocument, "Расх. документ", properties,
                                                                         baseGroup);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties,
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties,
                                                                         baseGroup, true);
-            ObjectNavigator objInDoc = addSingleGroupObjectImplement(inDocument, "Прих. документ", properties,
+            ObjectEntity objInDoc = addSingleGroupObject(inDocument, "Прих. документ", properties,
                                                                         baseGroup);
 
-            addPropertyView(objOutDoc, objArt, properties, baseGroup);
-            addPropertyView(objArt, objInDoc, properties, baseGroup);
-            addPropertyView(objOutDoc, objArt, objInDoc, properties, baseGroup);
+            addPropertyDraw(objOutDoc, objArt, properties, baseGroup);
+            addPropertyDraw(objArt, objInDoc, properties, baseGroup);
+            addPropertyDraw(objOutDoc, objArt, objInDoc, properties, baseGroup);
 
-            addFixedFilter(new OrFilterNavigator(
-                    new CompareFilterNavigator(getPropertyImplement(remains), Compare.NOT_EQUALS, 0),
-                    new NotNullFilterNavigator(getPropertyImplement(outInQuantity))));
+            addFixedFilter(new OrFilterEntity(
+                    new CompareFilterEntity(getPropertyObject(remains), Compare.NOT_EQUALS, 0),
+                    new NotNullFilterEntity(getPropertyObject(outInQuantity))));
 
 //            addHintsNoUpdate(remains.property);
         }
     }
 
-    private class SystemNavigatorForm extends NavigatorForm {
+    private class SystemFormEntity extends FormEntity {
 
-        public SystemNavigatorForm(NavigatorElement parent, int ID, String caption) {
+        public SystemFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            GroupObjectNavigator group = new GroupObjectNavigator(IDShift(1));
+            GroupObjectEntity group = new GroupObjectEntity(IDShift(1));
 
-            ObjectNavigator objDoc = new ObjectNavigator(IDShift(1), document, "Документ");
-            ObjectNavigator objArt = new ObjectNavigator(IDShift(1), article, "Товар");
+            ObjectEntity objDoc = new ObjectEntity(IDShift(1), document, "Документ");
+            ObjectEntity objArt = new ObjectEntity(IDShift(1), article, "Товар");
 
             group.add(objDoc);
             group.add(objArt);
             addGroup(group);
 
-            addPropertyView(objDoc, properties, baseGroup);
-            addPropertyView(objArt, properties, baseGroup);
-            addPropertyView(objDoc, objArt, properties, baseGroup);
+            addPropertyDraw(objDoc, properties, baseGroup);
+            addPropertyDraw(objArt, properties, baseGroup);
+            addPropertyDraw(objDoc, objArt, properties, baseGroup);
         }
     }
 

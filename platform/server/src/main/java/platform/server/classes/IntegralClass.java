@@ -2,7 +2,7 @@ package platform.server.classes;
 
 import net.sf.jasperreports.engine.JRAlignment;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.view.form.client.report.ReportDrawField;
+import platform.server.form.view.report.ReportDrawField;
 
 import java.text.Format;
 import java.text.NumberFormat;

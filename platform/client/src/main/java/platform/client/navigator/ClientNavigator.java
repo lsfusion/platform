@@ -1,8 +1,6 @@
 package platform.client.navigator;
 
-import platform.client.logics.ClientObjectImplementView;
 import platform.client.logics.DeSerializer;
-import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import java.io.IOException;

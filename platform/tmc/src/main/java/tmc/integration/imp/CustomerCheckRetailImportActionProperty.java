@@ -1,13 +1,13 @@
 package tmc.integration.imp;
 
+import platform.server.form.instance.FormInstance;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.view.form.client.RemoteFormView;
-import platform.server.view.form.PropertyObjectInterface;
-import platform.server.view.form.RemoteForm;
-import platform.server.view.navigator.ClassNavigatorForm;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.form.instance.remote.RemoteForm;
+import platform.server.form.entity.ClassFormEntity;
 import platform.server.classes.ValueClass;
 import platform.server.auth.PolicyManager;
 import platform.interop.action.ClientAction;
@@ -30,7 +30,7 @@ public class CustomerCheckRetailImportActionProperty extends ActionProperty {
         this.BL = BL;
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
+    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
 
         DBF impFile = null;
 
@@ -39,8 +39,8 @@ public class CustomerCheckRetailImportActionProperty extends ActionProperty {
             impFile = new DBF("impcustomer.dbf");
             int recordCount = impFile.getRecordCount();
 
-            RemoteForm remoteForm = new RemoteForm(
-                    new ClassNavigatorForm(BL, BL.customerCheckRetail),
+            FormInstance formInstance = new FormInstance(
+                    new ClassFormEntity(BL, BL.customerCheckRetail),
                     BL, BL.createSession(), PolicyManager.defaultSecurityPolicy, null, null,
                     new DataObject(executeForm.form.mapper.computer, BL.computer));
 
@@ -48,13 +48,13 @@ public class CustomerCheckRetailImportActionProperty extends ActionProperty {
 
                 impFile.read();
 
-                remoteForm.addObject(BL.customerCheckRetail);
-                remoteForm.changeProperty(remoteForm.getPropertyView(BL.barcode), new String(impFile.getField("barcode").getBytes(), "Cp1251"));
-                remoteForm.changeProperty(remoteForm.getPropertyView(BL.name), new String(impFile.getField("name").getBytes(), "Cp1251"));
-                remoteForm.changeProperty(remoteForm.getPropertyView(BL.clientInitialSum), Double.parseDouble(impFile.getField("clientsum").get()));
+                formInstance.addObject(BL.customerCheckRetail);
+                formInstance.changeProperty(formInstance.getPropertyDraw(BL.barcode), new String(impFile.getField("barcode").getBytes(), "Cp1251"));
+                formInstance.changeProperty(formInstance.getPropertyDraw(BL.name), new String(impFile.getField("name").getBytes(), "Cp1251"));
+                formInstance.changeProperty(formInstance.getPropertyDraw(BL.clientInitialSum), Double.parseDouble(impFile.getField("clientsum").get()));
             }
 
-            String result = remoteForm.applyChanges();
+            String result = formInstance.applyChanges();
             if (result != null)
                 actions.add(new MessageClientAction(result, "Не удалось импортировать данные"));
 

@@ -1,13 +1,13 @@
 package platform.client.logics.classes;
 
-import platform.client.form.ClientForm;
+import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.cell.CellView;
 import platform.client.form.cell.TableCellView;
 import platform.client.form.editor.ObjectPropertyEditor;
 import platform.client.form.renderer.IntegerPropertyRenderer;
-import platform.client.logics.ClientCellView;
+import platform.client.logics.ClientCell;
 import platform.interop.ComponentDesign;
 
 import java.awt.*;
@@ -36,17 +36,17 @@ public class ClientObjectType implements ClientType {
 
     public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) { return new IntegerPropertyRenderer(format, design); }
 
-    public CellView getPanelComponent(ClientCellView key, ClientForm form) { return new TableCellView(key, form); }
+    public CellView getPanelComponent(ClientCell key, ClientFormController form) { return new TableCellView(key, form); }
 
-    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
+    public PropertyEditorComponent getEditorComponent(ClientFormController form, ClientCell property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
         return new ObjectPropertyEditor(form.getComponent(), form.clientNavigator.remoteNavigator, property.createEditorForm(form.remoteForm));
     }
 
-    public PropertyEditorComponent getClassComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException {
+    public PropertyEditorComponent getClassComponent(ClientFormController form, ClientCell property, Object value, Format format) throws IOException, ClassNotFoundException {
         return new ObjectPropertyEditor(form.getComponent(), form.clientNavigator.remoteNavigator, property.createClassForm(form.remoteForm, (Integer) value));
     }
 
-    public boolean shouldBeDrawn(ClientForm form) {
+    public boolean shouldBeDrawn(ClientFormController form) {
         return true;
     }
 

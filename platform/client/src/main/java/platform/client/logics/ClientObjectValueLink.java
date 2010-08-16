@@ -5,7 +5,7 @@ import java.io.IOException;
 
 public class ClientObjectValueLink extends ClientValueLink {
 
-    public ClientObjectImplementView object;
+    public ClientObject object;
 
     public String toString() { return "Объект"; }
 

@@ -1,16 +1,16 @@
 package platform.client.form.cell;
 
 import platform.client.SwingUtils;
-import platform.client.form.ClientForm;
+import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
-import platform.client.logics.ClientCellView;
+import platform.client.logics.ClientCell;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class ButtonCellView extends JButton implements CellView {
-    public ButtonCellView(final ClientCellView key, final ClientForm form) {
+    public ButtonCellView(final ClientCell key, final ClientFormController form) {
         super(key.getFullCaption());
 
         if (key.readOnly) {

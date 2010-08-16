@@ -1,6 +1,6 @@
 package platform.client.form.grid;
 
-import platform.client.form.ClientForm;
+import platform.client.form.ClientFormController;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.form.queries.QueryView;
 
@@ -20,7 +20,7 @@ public abstract class GridView extends JPanel {
         return gridTable;
     }
 
-    public GridView(GroupObjectLogicsSupplier logicsSupplier, ClientForm form, QueryView findView, QueryView filterView, boolean iTabVertical) {
+    public GridView(GroupObjectLogicsSupplier logicsSupplier, ClientFormController form, QueryView findView, QueryView filterView, boolean iTabVertical) {
         this.tabVertical = iTabVertical;
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 

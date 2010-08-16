@@ -1,7 +1,7 @@
 package platform.client.form.cell;
 
-import platform.client.form.ClientForm;
-import platform.client.logics.ClientCellView;
+import platform.client.form.ClientFormController;
+import platform.client.logics.ClientCell;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,8 +11,8 @@ public class TableCellView extends JPanel implements CellView {
     private final JLabel label;
     private final CellTable table;
 
-    private final ClientCellView key;
-    private final ClientForm form;
+    private final ClientCell key;
+    private final ClientFormController form;
 
     int getID() { return key.getID() + key.getShiftID(); }
 
@@ -26,7 +26,7 @@ public class TableCellView extends JPanel implements CellView {
         return o instanceof TableCellView && ((TableCellView) o).getID() == this.getID();
     }
 
-    public TableCellView(ClientCellView key, ClientForm form) {
+    public TableCellView(ClientCell key, ClientFormController form) {
 
         setOpaque(false);
 
@@ -51,11 +51,11 @@ public class TableCellView extends JPanel implements CellView {
                 return true;
             }
 
-            public ClientCellView getCellView(int col) {
+            public ClientCell getCell(int col) {
                 return TableCellView.this.key;
             }
 
-            public ClientForm getForm() {
+            public ClientFormController getForm() {
                 return TableCellView.this.form;
             }
         };

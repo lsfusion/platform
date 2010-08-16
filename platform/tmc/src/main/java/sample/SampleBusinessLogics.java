@@ -1,19 +1,23 @@
 package sample;
 
 import platform.server.data.sql.DataAdapter;
+import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.GroupObjectEntity;
+import platform.server.form.entity.ObjectEntity;
+import platform.server.form.entity.filter.RegularFilterEntity;
+import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.linear.LP;
 import platform.server.logics.BusinessLogics;
-import platform.server.view.navigator.*;
-import platform.server.view.navigator.filter.NotNullFilterNavigator;
-import platform.server.view.navigator.filter.CompareFilterNavigator;
+import platform.server.form.navigator.*;
+import platform.server.form.entity.filter.CompareFilterEntity;
+import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.auth.User;
 import platform.server.classes.AbstractCustomClass;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.DoubleClass;
 import platform.server.classes.IntegerClass;
 import platform.interop.Compare;
-import platform.interop.UserInfo;
 
 import java.io.IOException;
 import java.io.FileNotFoundException;
@@ -93,78 +97,78 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         User admin = addUser("admin", "fusion");
     }
 
-    NavigatorForm mainAccountForm, salesArticleStoreForm;
+    FormEntity mainAccountForm, salesArticleStoreForm;
 
     protected void initNavigators() throws JRException, FileNotFoundException {
 
         NavigatorElement primaryData = new NavigatorElement(baseElement, 100, "Первичные данные");
-            NavigatorForm documentForm = new DocumentNavigatorForm(primaryData, 110, "Документ");
+            FormEntity documentForm = new DocumentFormEntity(primaryData, 110, "Документ");
 
         NavigatorElement aggregateData = new NavigatorElement(baseElement, 200, "Сводная информация");
-            NavigatorForm storeArticleForm = new StoreArticleNavigatorForm(aggregateData, 211, "Товары по складам");
-            NavigatorForm systemForm = new SystemNavigatorForm(aggregateData, 212, "Движение (документ*товар)");
+            FormEntity storeArticleForm = new StoreArticleFormEntity(aggregateData, 211, "Товары по складам");
+            FormEntity systemForm = new SystemFormEntity(aggregateData, 212, "Движение (документ*товар)");
 
 //        extIncomeDocument.relevantElements.set(0, extIncDetailForm);
     }
 
-    private class DocumentNavigatorForm extends NavigatorForm {
+    private class DocumentFormEntity extends FormEntity {
 
-        public DocumentNavigatorForm(NavigatorElement parent, int ID, String caption) {
+        public DocumentFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(document, "Документ", properties, baseGroup);
+            ObjectEntity objDoc = addSingleGroupObject(document, "Документ", properties, baseGroup);
             addObjectActions(this, objDoc);
 
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties, baseGroup);
 
-            addPropertyView(objDoc, objArt, properties, baseGroup);
+            addPropertyDraw(objDoc, objArt, properties, baseGroup);
 
-            RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));
-            filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
-                                  new NotNullFilterNavigator(getPropertyImplement(quantity)),
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(IDShift(1));
+            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+                                  new NotNullFilterEntity(getPropertyObject(quantity)),
                                   "Документ",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, InputEvent.SHIFT_DOWN_MASK)));
             addRegularFilterGroup(filterGroup);
         }
     }
 
-    private class StoreArticleNavigatorForm extends NavigatorForm {
+    private class StoreArticleFormEntity extends FormEntity {
 
-        public StoreArticleNavigatorForm(NavigatorElement parent, int ID, String caption) {
+        public StoreArticleFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties, baseGroup);
 //            objArt.groupTo.initClassView = false; //objArt.groupTo.singleViewType = true;
-            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup);
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(document, "Документ", properties, baseGroup);
+            ObjectEntity objStore = addSingleGroupObject(store, "Склад", properties, baseGroup);
+            ObjectEntity objDoc = addSingleGroupObject(document, "Документ", properties, baseGroup);
 
-            addPropertyView(objStore, objArt, properties, baseGroup);
-            addPropertyView(objDoc, objArt, properties, baseGroup);
+            addPropertyDraw(objStore, objArt, properties, baseGroup);
+            addPropertyDraw(objDoc, objArt, properties, baseGroup);
 
-            addFixedFilter(new NotNullFilterNavigator(getPropertyImplement(quantity)));
-            addFixedFilter(new CompareFilterNavigator(getPropertyImplement(documentStore), Compare.EQUALS, objStore));
+            addFixedFilter(new NotNullFilterEntity(getPropertyObject(quantity)));
+            addFixedFilter(new CompareFilterEntity(getPropertyObject(documentStore), Compare.EQUALS, objStore));
         }
     }
 
-    private class SystemNavigatorForm extends NavigatorForm {
+    private class SystemFormEntity extends FormEntity {
 
-        public SystemNavigatorForm(NavigatorElement parent, int ID, String caption) {
+        public SystemFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            GroupObjectNavigator group = new GroupObjectNavigator(IDShift(1));
+            GroupObjectEntity group = new GroupObjectEntity(IDShift(1));
 
-            ObjectNavigator objDoc = new ObjectNavigator(IDShift(1), document, "Документ");
-            ObjectNavigator objArt = new ObjectNavigator(IDShift(1), article, "Товар");
+            ObjectEntity objDoc = new ObjectEntity(IDShift(1), document, "Документ");
+            ObjectEntity objArt = new ObjectEntity(IDShift(1), article, "Товар");
 
             group.add(objDoc);
             group.add(objArt);
             addGroup(group);
 
-            addPropertyView(objDoc, properties, baseGroup);
-            addPropertyView(objArt, properties, baseGroup);
-            addPropertyView(objDoc, objArt, properties, baseGroup);
-            addPropertyView(is(incomeDocument), objDoc);
-            addPropertyView(incQuantity, objDoc, objArt);
+            addPropertyDraw(objDoc, properties, baseGroup);
+            addPropertyDraw(objArt, properties, baseGroup);
+            addPropertyDraw(objDoc, objArt, properties, baseGroup);
+            addPropertyDraw(is(incomeDocument), objDoc);
+            addPropertyDraw(incQuantity, objDoc, objArt);
         }
     }
 

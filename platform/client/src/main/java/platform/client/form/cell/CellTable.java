@@ -1,9 +1,9 @@
 package platform.client.form.cell;
 
 import platform.base.BaseUtils;
-import platform.client.form.ClientForm;
+import platform.client.form.ClientFormController;
 import platform.client.form.SingleCellTable;
-import platform.client.logics.ClientCellView;
+import platform.client.logics.ClientCell;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -12,7 +12,7 @@ import java.text.ParseException;
 import java.util.EventObject;
 
 public abstract class CellTable extends SingleCellTable
-                        implements ClientCellViewTable {
+                        implements CellTableInterface {
 
     boolean checkEquals = true;
     private Object value;
@@ -30,7 +30,7 @@ public abstract class CellTable extends SingleCellTable
 
     }
 
-    public void keyChanged(ClientCellView key) {
+    public void keyChanged(ClientCell key) {
 
         checkEquals = key.checkEquals();
 
@@ -48,7 +48,7 @@ public abstract class CellTable extends SingleCellTable
     public Object convertValueFromString(String value, int row, int column) {
         Object parsedValue = null;
         try {
-            parsedValue = getCellView(column).parseString(getForm(), value);
+            parsedValue = getCell(column).parseString(getForm(), value);
         } catch (ParseException pe) {
             return null;
         }
@@ -91,8 +91,8 @@ public abstract class CellTable extends SingleCellTable
     protected abstract boolean cellValueChanged(Object value);
 
     public abstract boolean isDataChanging();
-    public abstract ClientCellView getCellView(int col);
-    public abstract ClientForm getForm();
+    public abstract ClientCell getCell(int col);
+    public abstract ClientFormController getForm();
 
     @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {

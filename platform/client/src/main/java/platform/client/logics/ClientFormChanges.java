@@ -12,40 +12,40 @@ public class ClientFormChanges {
 
     public String message;
 
-    public final Map<ClientGroupObjectImplementView,Byte> classViews;
-    public Map<ClientGroupObjectImplementView,ClientGroupObjectValue> objects;
-    public Map<ClientGroupObjectImplementView,ClientGroupObjectClass> classes;
-    public Map<ClientGroupObjectImplementView,List<ClientGroupObjectValue>> gridObjects;
-    public Map<ClientGroupObjectImplementView,List<ClientGroupObjectClass>> gridClasses;
-    public Map<ClientPropertyView,Map<ClientGroupObjectValue,Object>> gridProperties;
-    public Map<ClientPropertyView,Object> panelProperties;
-    public Set<ClientPropertyView> dropProperties;
+    public final Map<ClientGroupObject,Byte> classViews;
+    public Map<ClientGroupObject,ClientGroupObjectValue> objects;
+    public Map<ClientGroupObject,ClientGroupObjectClass> classes;
+    public Map<ClientGroupObject,List<ClientGroupObjectValue>> gridObjects;
+    public Map<ClientGroupObject,List<ClientGroupObjectClass>> gridClasses;
+    public Map<ClientPropertyDraw,Map<ClientGroupObjectValue,Object>> gridProperties;
+    public Map<ClientPropertyDraw,Object> panelProperties;
+    public Set<ClientPropertyDraw> dropProperties;
 
-    public ClientFormChanges(DataInputStream inStream,ClientFormView clientFormView) throws IOException {
+    public ClientFormChanges(DataInputStream inStream, ClientForm clientForm) throws IOException {
         
-        classViews = new HashMap<ClientGroupObjectImplementView, Byte>();
+        classViews = new HashMap<ClientGroupObject, Byte>();
         int count = inStream.readInt();
         for (int i = 0; i < count; i++)
-            classViews.put(clientFormView.getGroupObject(inStream.readInt()),inStream.readByte());
+            classViews.put(clientForm.getGroupObject(inStream.readInt()),inStream.readByte());
 
-        objects = new HashMap<ClientGroupObjectImplementView, ClientGroupObjectValue>();
+        objects = new HashMap<ClientGroupObject, ClientGroupObjectValue>();
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
-            ClientGroupObjectImplementView clientGroupObject = clientFormView.getGroupObject(inStream.readInt());
+            ClientGroupObject clientGroupObject = clientForm.getGroupObject(inStream.readInt());
             objects.put(clientGroupObject,new ClientGroupObjectValue(inStream, clientGroupObject, true));
         }
 
-        classes = new HashMap<ClientGroupObjectImplementView, ClientGroupObjectClass>();
+        classes = new HashMap<ClientGroupObject, ClientGroupObjectClass>();
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
-            ClientGroupObjectImplementView clientGroupObject = clientFormView.getGroupObject(inStream.readInt());
+            ClientGroupObject clientGroupObject = clientForm.getGroupObject(inStream.readInt());
             classes.put(clientGroupObject,new ClientGroupObjectClass(inStream, clientGroupObject, true));
         }
 
-        gridObjects = new HashMap<ClientGroupObjectImplementView, List<ClientGroupObjectValue>>();
+        gridObjects = new HashMap<ClientGroupObject, List<ClientGroupObjectValue>>();
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
-            ClientGroupObjectImplementView clientGroupObject = clientFormView.getGroupObject(inStream.readInt());
+            ClientGroupObject clientGroupObject = clientForm.getGroupObject(inStream.readInt());
             
             List<ClientGroupObjectValue> clientGridObjects = new ArrayList<ClientGroupObjectValue>();
             int listCount = inStream.readInt();
@@ -55,10 +55,10 @@ public class ClientFormChanges {
             gridObjects.put(clientGroupObject, clientGridObjects);
         }
 
-        gridClasses = new HashMap<ClientGroupObjectImplementView, List<ClientGroupObjectClass>>();
+        gridClasses = new HashMap<ClientGroupObject, List<ClientGroupObjectClass>>();
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
-            ClientGroupObjectImplementView clientGroupObject = clientFormView.getGroupObject(inStream.readInt());
+            ClientGroupObject clientGroupObject = clientForm.getGroupObject(inStream.readInt());
 
             List<ClientGroupObjectClass> clientGridClasses = new ArrayList<ClientGroupObjectClass>();
             int listCount = inStream.readInt();
@@ -68,35 +68,35 @@ public class ClientFormChanges {
             gridClasses.put(clientGroupObject, clientGridClasses);
         }
 
-//        for (ClientGroupObjectImplementView groupObject : gridObjects.keySet()) {
+//        for (ClientGroupObject groupObject : gridObjects.keySet()) {
 //            System.out.println(groupObject + " : " + gridObjects.get(groupObject).size());
 //        }
 
-        gridProperties = new HashMap<ClientPropertyView, Map<ClientGroupObjectValue, Object>>();
+        gridProperties = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
-            ClientPropertyView clientPropertyView = clientFormView.getProperty(inStream.readInt());
+            ClientPropertyDraw clientPropertyDrawView = clientForm.getProperty(inStream.readInt());
 
             Map<ClientGroupObjectValue, Object> gridPropertyValues = new HashMap<ClientGroupObjectValue, Object>();
             int mapCount = inStream.readInt();
             for (int j = 0; j < mapCount; j++)
-                gridPropertyValues.put(new ClientGroupObjectValue(inStream, clientPropertyView.groupObject),
+                gridPropertyValues.put(new ClientGroupObjectValue(inStream, clientPropertyDrawView.groupObject),
                                    BaseUtils.deserializeObject(inStream));
 
-            gridProperties.put(clientPropertyView, gridPropertyValues);
+            gridProperties.put(clientPropertyDrawView, gridPropertyValues);
         }
 
-        panelProperties = new HashMap<ClientPropertyView, Object>();
+        panelProperties = new HashMap<ClientPropertyDraw, Object>();
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
-            panelProperties.put(clientFormView.getProperty(inStream.readInt()),BaseUtils.deserializeObject(inStream));
+            panelProperties.put(clientForm.getProperty(inStream.readInt()),BaseUtils.deserializeObject(inStream));
         }
 
         //DropProperties
-        dropProperties = new HashSet<ClientPropertyView>();
+        dropProperties = new HashSet<ClientPropertyDraw>();
         count = inStream.readInt();
         for (int i = 0; i < count; i++)
-            dropProperties.add(clientFormView.getProperty(inStream.readInt()));
+            dropProperties.add(clientForm.getProperty(inStream.readInt()));
 
         message = inStream.readUTF();
         dataChanged = (Boolean) BaseUtils.deserializeObject(inStream);

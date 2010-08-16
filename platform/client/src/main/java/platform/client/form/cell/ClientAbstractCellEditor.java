@@ -3,7 +3,7 @@ package platform.client.form.cell;
 import platform.base.BaseUtils;
 import platform.client.SwingUtils;
 import platform.client.form.PropertyEditorComponent;
-import platform.client.logics.ClientCellView;
+import platform.client.logics.ClientCell;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
@@ -78,13 +78,13 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
         EventObject editEvent = this.editEvent;
         this.editEvent = null;
 
-        ClientCellViewTable cellTable = (ClientCellViewTable)table;
+        CellTableInterface cellTable = (CellTableInterface)table;
 
         if (cellTable.getForm().isReadOnlyMode() && cellTable.isDataChanging()) return null;
 
         cellTable.setEditEvent(editEvent);
 
-        ClientCellView property = cellTable.getCellView(column);
+        ClientCell property = cellTable.getCell(column);
 
         try {
             if(cellTable.isDataChanging())

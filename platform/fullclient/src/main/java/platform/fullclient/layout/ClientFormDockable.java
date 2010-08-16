@@ -2,7 +2,7 @@ package platform.fullclient.layout;
 
 import bibliothek.gui.dock.common.MultipleCDockableFactory;
 import net.sf.jasperreports.engine.JRException;
-import platform.client.form.ClientForm;
+import platform.client.form.ClientFormController;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.form.RemoteFormInterface;
 
@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public class ClientFormDockable extends FormDockable {
 
-    private ClientForm clientForm;
+    private ClientFormController clientForm;
 
     public ClientFormDockable(int iformID, ClientNavigator inavigator, boolean currentSession, MultipleCDockableFactory<FormDockable,?> factory) throws IOException, ClassNotFoundException {
         super(iformID, inavigator, currentSession, factory);
@@ -25,9 +25,9 @@ public class ClientFormDockable extends FormDockable {
         super(formID, factory, navigator);
     }
 
-    private ClientForm getClientForm(ClientNavigator navigator, RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException {
+    private ClientFormController getClientForm(ClientNavigator navigator, RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException {
         if (clientForm == null) {
-            clientForm = new ClientForm(remoteForm, navigator);
+            clientForm = new ClientFormController(remoteForm, navigator);
         }
         return clientForm;
     }

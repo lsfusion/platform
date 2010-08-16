@@ -8,15 +8,15 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.CompareWhere;
 import platform.server.data.where.Where;
+import platform.server.form.instance.GroupObjectInstance;
+import platform.server.form.instance.ObjectInstance;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.DataObject;
 import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
-import platform.server.view.form.GroupObjectImplement;
-import platform.server.view.form.ObjectImplement;
-import platform.server.view.form.PropertyObjectInterface;
-import platform.server.view.form.client.RemoteFormView;
+import platform.server.form.instance.remote.RemoteForm;
 
 import java.sql.SQLException;
 import java.util.Collections;
@@ -47,14 +47,14 @@ public class PropertyValueImplement<P extends PropertyInterface> extends Propert
         return property.getDialogClass(mapping, session.getCurrentClasses(mapping));
     }
 
-    public PropertyChange<P> getPropertyChange(Expr expr, Modifier<? extends Changes> modifier, Map<P, PropertyObjectInterface> mapObjects, GroupObjectImplement groupObject) throws SQLException {
+    public PropertyChange<P> getPropertyChange(Expr expr, Modifier<? extends Changes> modifier, Map<P, PropertyObjectInterfaceInstance> mapObjects, GroupObjectInstance groupObject) throws SQLException {
         Map<P, KeyExpr> mapKeys = property.getMapKeys();
-        // все кто ObjectImplement и в переданном groupObject, KeyExpr'ы остальным mapping
-        Map<P,ObjectImplement> groupChange = new HashMap<P,ObjectImplement>();
+        // все кто ObjectInstance и в переданном groupObject, KeyExpr'ы остальным mapping
+        Map<P, ObjectInstance> groupChange = new HashMap<P, ObjectInstance>();
         if(groupObject!=null) {
-            for(Map.Entry<P,PropertyObjectInterface> mapObject : mapObjects.entrySet())
-                if(mapObject.getValue() instanceof ObjectImplement && ((ObjectImplement)mapObject.getValue()).groupTo==groupObject)
-                    groupChange.put(mapObject.getKey(),(ObjectImplement)mapObject.getValue());
+            for(Map.Entry<P, PropertyObjectInterfaceInstance> mapObject : mapObjects.entrySet())
+                if(mapObject.getValue() instanceof ObjectInstance && ((ObjectInstance)mapObject.getValue()).groupTo==groupObject)
+                    groupChange.put(mapObject.getKey(),(ObjectInstance)mapObject.getValue());
         }
         return new PropertyChange<P>(mapKeys, expr, CompareWhere.compareValues(BaseUtils.filterNotKeys(mapKeys, groupChange.keySet()), mapping).and(groupObject==null? Where.TRUE:groupObject.getWhere(BaseUtils.crossJoin(groupChange, mapKeys), Collections.singleton(groupObject), modifier)));
     }
@@ -63,7 +63,7 @@ public class PropertyValueImplement<P extends PropertyInterface> extends Propert
         return !property.getDataChanges(getPropertyChange(property.changeExpr, modifier, null, null), null, modifier).changes.isEmpty();
     }
 
-    public List<ClientAction> execute(DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteFormView executeForm, Map<P, PropertyObjectInterface> mapObjects, GroupObjectImplement groupObject) throws SQLException {
+    public List<ClientAction> execute(DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteForm executeForm, Map<P, PropertyObjectInterfaceInstance> mapObjects, GroupObjectInstance groupObject) throws SQLException {
         return session.execute(property, getPropertyChange(session.getObjectValue(value, property.getType()).getExpr(), modifier, mapObjects, groupObject), modifier, executeForm, mapObjects);
     }
 }

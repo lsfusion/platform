@@ -12,12 +12,12 @@ import platform.server.data.expr.ValueExpr;
 import platform.server.data.query.Query;
 import platform.server.data.type.ParseException;
 import platform.server.data.type.Type;
+import platform.server.form.instance.ObjectInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.group.AbstractGroup;
-import platform.server.view.form.CustomClassView;
-import platform.server.view.form.DataObjectImplement;
-import platform.server.view.form.ObjectImplement;
-import platform.server.view.form.client.report.ReportDrawField;
+import platform.server.form.instance.listener.CustomClassListener;
+import platform.server.form.instance.DataObjectInstance;
+import platform.server.form.view.report.ReportDrawField;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -151,9 +151,9 @@ public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, AndCl
         return !reportField.valueClass.isArray();
     }
 
-    public ObjectImplement newObject(int ID, String SID, String caption, CustomClassView classView, boolean addOnTransaction) {
+    public ObjectInstance newObject(int ID, String SID, String caption, CustomClassListener classListener, boolean addOnTransaction) {
         assert !addOnTransaction;
-        return new DataObjectImplement(ID, SID, this, caption);
+        return new DataObjectInstance(ID, SID, this, caption);
     }
 
     public ConcreteClass getDataClass(Object value, SQLSession session, BaseClass baseClass) {

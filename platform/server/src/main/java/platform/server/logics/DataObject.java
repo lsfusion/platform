@@ -13,12 +13,12 @@ import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
+import platform.server.form.instance.GroupObjectInstance;
+import platform.server.form.instance.Mapper;
 import platform.server.session.ChangesSession;
-import platform.server.view.form.GroupObjectImplement;
-import platform.server.view.form.PropertyObjectInterface;
-import platform.server.view.navigator.Mapper;
-import platform.server.view.navigator.ObjectNavigator;
-import platform.server.view.navigator.PropertyInterfaceNavigator;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.form.entity.ObjectEntity;
+import platform.server.form.entity.PropertyObjectInterfaceEntity;
 
 import java.sql.SQLException;
 import java.util.Collections;
@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class DataObject extends ObjectValue<DataObject> implements PropertyObjectInterface, PropertyInterfaceNavigator {
+public class DataObject extends ObjectValue<DataObject> implements PropertyObjectInterfaceInstance, PropertyObjectInterfaceEntity {
 
     public Object object;
     public ConcreteClass objectClass;
@@ -101,7 +101,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return (desc?greater.not():greater).or(expr.compare(this,Compare.EQUALS).and(orderWhere));
     }
 
-    public AndClassSet getClassSet(GroupObjectImplement classGroup) {
+    public AndClassSet getClassSet(GroupObjectInstance classGroup) {
         return objectClass;
     }
 
@@ -113,7 +113,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return objectClass;
     }
 
-    public GroupObjectImplement getApplyObject() {
+    public GroupObjectInstance getApplyObject() {
         return null;
     }
 
@@ -121,11 +121,11 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return objectClass.getType();
     }
 
-    public PropertyObjectInterface doMapping(Mapper mapper) {
+    public PropertyObjectInterfaceInstance doMapping(Mapper mapper) {
         return this;
     }
 
-    public void fillObjects(Set<ObjectNavigator> objects) {
+    public void fillObjects(Set<ObjectEntity> objects) {
     }
 
     public int hashValues(HashValues hashValues) {

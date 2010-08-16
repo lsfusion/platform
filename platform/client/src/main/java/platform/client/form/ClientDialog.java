@@ -13,7 +13,7 @@ import java.io.IOException;
 
 public class ClientDialog extends JDialog {
 
-    private ClientForm currentForm;
+    private ClientFormController currentForm;
 
     public ClientDialog(Component owner, RemoteDialogInterface dialog) throws IOException, ClassNotFoundException {
         super(SwingUtils.getWindow(owner), Dialog.ModalityType.DOCUMENT_MODAL); // обозначаем parent'а и модальность
@@ -57,7 +57,7 @@ public class ClientDialog extends JDialog {
     void setCurrentForm(RemoteDialogInterface remoteForm) throws IOException, ClassNotFoundException {
 
         if (currentForm != null) remove(currentForm.getComponent());
-        currentForm = new ClientForm(remoteForm, null) {
+        currentForm = new ClientFormController(remoteForm, null) {
 
             @Override
             public boolean isDialogMode() {

@@ -7,14 +7,14 @@ import platform.interop.action.ClientAction;
 import platform.server.classes.*;
 import platform.server.data.type.ParseException;
 import platform.server.data.type.Type;
+import platform.server.form.instance.FormInstance;
+import platform.server.form.instance.PropertyDrawInstance;
+import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.view.form.PropertyObjectInterface;
-import platform.server.view.form.PropertyView;
-import platform.server.view.form.RemoteForm;
-import platform.server.view.form.client.RemoteFormView;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
 
 import java.io.ByteArrayInputStream;
 import java.sql.SQLException;
@@ -35,7 +35,7 @@ public class ImportFromExcelActionProperty extends ActionProperty {
     }
 
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions,
-                        RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
+                        RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
 
         Sheet sh;
         try {
@@ -53,16 +53,16 @@ public class ImportFromExcelActionProperty extends ActionProperty {
         }
 
         // находим используемые свойства
-        Map<String, PropertyView> definedProperties = new HashMap<String, PropertyView>();
+        Map<String, PropertyDrawInstance> definedProperties = new HashMap<String, PropertyDrawInstance>();
         for (Object prop : executeForm.form.properties) {
-            PropertyView property = (PropertyView) prop;
-            if (definedPropertiesSIDs.contains(property.view.property.sID)) {
-                definedProperties.put(property.view.property.sID, property);
+            PropertyDrawInstance property = (PropertyDrawInstance) prop;
+            if (definedPropertiesSIDs.contains(property.propertyObject.property.sID)) {
+                definedProperties.put(property.propertyObject.property.sID, property);
             }
         }
 
         for (int i = 1; i < sh.getRows(); ++i) {
-            RemoteForm<?> form = (RemoteForm<?>) executeForm.form;
+            FormInstance<?> form = (FormInstance<?>) executeForm.form;
             DataObject instance = form.addObject((ConcreteCustomClass) valueClass);
             
             for (int j = 0; j < sh.getColumns(); ++j) {
@@ -70,10 +70,10 @@ public class ImportFromExcelActionProperty extends ActionProperty {
                 String cellValue = cell.getContents();
 
                 String propertySID = sh.getCell(j, 0).getContents();
-                PropertyView property = definedProperties.get(propertySID);
+                PropertyDrawInstance property = definedProperties.get(propertySID);
                 if (property != null) {
                     try {
-                        Type type = property.view.getChangeProperty().property.getType();
+                        Type type = property.propertyObject.getChangeProperty().property.getType();
                         form.changeProperty(property, type.parseString(cellValue));
                     } catch (ParseException e) {
                         LOGGER.log(Level.WARNING, "не конвертировано значение совйства", e);

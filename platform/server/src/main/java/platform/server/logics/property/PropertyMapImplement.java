@@ -6,12 +6,12 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
+import platform.server.form.instance.GroupObjectInstance;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.session.*;
-import platform.server.view.form.GroupObjectImplement;
-import platform.server.view.form.PropertyObjectInterface;
-import platform.server.view.form.client.RemoteFormView;
+import platform.server.form.instance.remote.RemoteForm;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -55,7 +55,7 @@ public class PropertyMapImplement<T extends PropertyInterface,P extends Property
     public PropertyValueImplement<T> mapValues(Map<P, DataObject> mapValues) {
         return new PropertyValueImplement<T>(property, BaseUtils.join(mapping, mapValues));        
     }
-    public List<ClientAction> execute(Map<P, DataObject> keys, DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteFormView executeForm, Map<P, PropertyObjectInterface> mapObjects, GroupObjectImplement groupObject) throws SQLException {
+    public List<ClientAction> execute(Map<P, DataObject> keys, DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteForm executeForm, Map<P, PropertyObjectInterfaceInstance> mapObjects, GroupObjectInstance groupObject) throws SQLException {
         return mapValues(keys).execute(session, value, modifier, executeForm, BaseUtils.nullJoin(mapping, mapObjects), groupObject);
     }
 

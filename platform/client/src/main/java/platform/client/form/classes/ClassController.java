@@ -1,8 +1,8 @@
 package platform.client.form.classes;
 
-import platform.client.form.ClientForm;
+import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormLayout;
-import platform.client.logics.ClientObjectImplementView;
+import platform.client.logics.ClientObject;
 import platform.client.logics.classes.ClientConcreteClass;
 import platform.client.logics.classes.ClientObjectClass;
 
@@ -17,12 +17,12 @@ public class ClassController {
     private ClassTree view;
 
     // данные по объекту, класс которого обрабатывается
-    private final ClientObjectImplementView object;
+    private final ClientObject object;
 
     // объект, при помощи которого будет происходить общение с внешним миром
-    private final ClientForm form;
+    private final ClientFormController form;
 
-    public ClassController(ClientObjectImplementView iobject, ClientForm iform) throws IOException {
+    public ClassController(ClientObject iobject, ClientFormController iform) throws IOException {
 
         this.object = iobject;
         this.form = iform;
@@ -49,21 +49,21 @@ public class ClassController {
             }
 
             protected void widthDecreased() {
-                object.classView.constraints.fillHorizontal *= 0.95 ;
+                object.classChooser.constraints.fillHorizontal *= 0.95 ;
             }
 
             protected void widthIncreased() {
-                object.classView.constraints.fillHorizontal = 0.95 * object.classView.constraints.fillHorizontal + 0.05;
+                object.classChooser.constraints.fillHorizontal = 0.95 * object.classChooser.constraints.fillHorizontal + 0.05;
             }
         };
         classContainer.setVisible(false); // по умолчанию компонент невидим
 
-        formLayout.add(object.classView, classContainer);
+        formLayout.add(object.classChooser, classContainer);
     }
 
     public void showViews() {
 
-        if (object.classView.show) {
+        if (object.classChooser.show) {
 
             if (classContainer != null)
                 classContainer.setVisible(true);

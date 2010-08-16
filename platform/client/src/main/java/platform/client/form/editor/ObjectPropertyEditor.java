@@ -2,7 +2,6 @@ package platform.client.form.editor;
 
 import platform.client.SwingUtils;
 import platform.client.form.ClientDialog;
-import platform.client.form.ClientForm;
 import platform.client.form.ClientNavigatorDialog;
 import platform.client.form.PropertyEditorComponent;
 import platform.interop.form.RemoteDialogInterface;

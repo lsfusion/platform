@@ -23,6 +23,7 @@ import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeObject;
 import platform.server.data.where.WhereBuilder;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
@@ -31,10 +32,9 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.table.IDTable;
 import platform.server.logics.table.ImplementTable;
-import platform.server.view.form.PropertyObjectInterface;
-import platform.server.view.form.RemoteForm;
-import platform.server.view.form.client.RemoteFormView;
-import platform.server.view.navigator.UserController;
+import platform.server.form.instance.FormInstance;
+import platform.server.form.instance.remote.RemoteForm;
+import platform.server.form.navigator.UserController;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -111,7 +111,7 @@ public class DataSession extends SQLSession implements ChangesSession {
             removeClasses = new HashSet<CustomClass>();
         }
 
-        public UpdateChanges(SessionChanges changes, RemoteForm<?> form) {
+        public UpdateChanges(SessionChanges changes, FormInstance<?> form) {
             addClasses = new HashSet<CustomClass>(changes.add.keySet());
             removeClasses = new HashSet<CustomClass>(changes.remove.keySet());
             properties = new HashSet<Property>(form.getUpdateProperties(changes));
@@ -125,13 +125,13 @@ public class DataSession extends SQLSession implements ChangesSession {
     }
 
     // формы, для которых с момента последнего update уже был restart, соотвественно в значениях - изменения от посл. update (prev) до посл. apply
-    public Map<RemoteForm, UpdateChanges> appliedChanges = new HashMap<RemoteForm, UpdateChanges>();
+    public Map<FormInstance, UpdateChanges> appliedChanges = new HashMap<FormInstance, UpdateChanges>();
 
     // формы для которых с момента последнего update не было restart, соответственно в значениях - изменения от посл. update (prev) до посл. изменения
-    public Map<RemoteForm, UpdateChanges> incrementChanges = new HashMap<RemoteForm, UpdateChanges>();
+    public Map<FormInstance, UpdateChanges> incrementChanges = new HashMap<FormInstance, UpdateChanges>();
 
     // assert что те же формы что и в increment, соответственно в значениях - изменения от посл. apply до посл. update (prev)
-    public Map<RemoteForm, UpdateChanges> updateChanges = new HashMap<RemoteForm, UpdateChanges>();
+    public Map<FormInstance, UpdateChanges> updateChanges = new HashMap<FormInstance, UpdateChanges>();
 
     public SessionChanges changes = SessionChanges.EMPTY;
 
@@ -174,13 +174,13 @@ public class DataSession extends SQLSession implements ChangesSession {
         //    по кому не было restart :  from -> в applied (помечая что был restart)
 
         if(!cancel)
-            for(Map.Entry<RemoteForm,UpdateChanges> appliedChange : appliedChanges.entrySet())
-                appliedChange.getValue().add(new UpdateChanges(changes, (RemoteForm<?>) appliedChange.getKey()));
+            for(Map.Entry<FormInstance,UpdateChanges> appliedChange : appliedChanges.entrySet())
+                appliedChange.getValue().add(new UpdateChanges(changes, (FormInstance<?>) appliedChange.getKey()));
 
         assert Collections.disjoint(appliedChanges.keySet(),(cancel?updateChanges:incrementChanges).keySet());
         appliedChanges.putAll(cancel?updateChanges:incrementChanges);
-        incrementChanges = new HashMap<RemoteForm, UpdateChanges>();
-        updateChanges = new HashMap<RemoteForm, UpdateChanges>();
+        incrementChanges = new HashMap<FormInstance, UpdateChanges>();
+        updateChanges = new HashMap<FormInstance, UpdateChanges>();
 
         newClasses = new HashMap<DataObject, ConcreteObjectClass>();
 
@@ -232,21 +232,21 @@ public class DataSession extends SQLSession implements ChangesSession {
 
         // по тем по кому не было restart'а new -> to
         SessionChanges propertyChanges = changes.getSessionChanges(property);
-        for(Map.Entry<RemoteForm,UpdateChanges> incrementChange : incrementChanges.entrySet())
-            incrementChange.getValue().properties.addAll(((RemoteForm<?>) incrementChange.getKey()).getUpdateProperties(propertyChanges));
+        for(Map.Entry<FormInstance,UpdateChanges> incrementChange : incrementChanges.entrySet())
+            incrementChange.getValue().properties.addAll(((FormInstance<?>) incrementChange.getKey()).getUpdateProperties(propertyChanges));
     }
 
     public void updateProperties(Modifier<? extends Changes> modifier) {
-        for(Map.Entry<RemoteForm,UpdateChanges> incrementChange : incrementChanges.entrySet())
-            incrementChange.getValue().properties.addAll(((RemoteForm<?>) incrementChange.getKey()).getUpdateProperties(modifier));
+        for(Map.Entry<FormInstance,UpdateChanges> incrementChange : incrementChanges.entrySet())
+            incrementChange.getValue().properties.addAll(((FormInstance<?>) incrementChange.getKey()).getUpdateProperties(modifier));
     }
 
-    public <P extends PropertyInterface> List<ClientAction> execute(Property<P> property, PropertyChange<P> change, Modifier<? extends Changes> modifier, RemoteFormView executeForm, Map<P, PropertyObjectInterface> mapObjects) throws SQLException {
+    public <P extends PropertyInterface> List<ClientAction> execute(Property<P> property, PropertyChange<P> change, Modifier<? extends Changes> modifier, RemoteForm executeForm, Map<P, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
         return execute(property.getDataChanges(change, null, modifier), executeForm, mapObjects);
     }
 
 
-    public <P extends PropertyInterface> List<ClientAction> execute(MapDataChanges<P> mapChanges, RemoteFormView executeForm, Map<P, PropertyObjectInterface> mapObjects) throws SQLException {
+    public <P extends PropertyInterface> List<ClientAction> execute(MapDataChanges<P> mapChanges, RemoteForm executeForm, Map<P, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
 
         DataChanges dataChanges = mapChanges.changes;
 
@@ -300,7 +300,7 @@ public class DataSession extends SQLSession implements ChangesSession {
     }
 
     // узнает список изменений произошедших без него
-    public Collection<Property> update(RemoteForm<?> form, Collection<CustomClass> updateClasses) throws SQLException {
+    public Collection<Property> update(FormInstance<?> form, Collection<CustomClass> updateClasses) throws SQLException {
         // мн-во св-в constraints/persistent или все св-ва формы (то есть произвольное)
 
         UpdateChanges incrementChange = incrementChanges.get(form);

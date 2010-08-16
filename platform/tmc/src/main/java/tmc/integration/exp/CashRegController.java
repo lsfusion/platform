@@ -4,17 +4,17 @@ import platform.interop.action.*;
 import platform.server.classes.DataClass;
 import platform.server.classes.DoubleClass;
 import platform.server.classes.ValueClass;
+import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.PropertyDrawEntity;
+import platform.server.form.instance.*;
+import platform.server.form.instance.filter.NotNullFilterInstance;
+import platform.server.form.view.DefaultFormView;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.view.form.*;
-import platform.server.view.form.client.DefaultFormView;
-import platform.server.view.form.client.RemoteFormView;
-import platform.server.view.form.filter.NotNullFilter;
-import platform.server.view.navigator.NavigatorElement;
-import platform.server.view.navigator.NavigatorForm;
-import platform.server.view.navigator.PropertyViewNavigator;
+import platform.server.form.instance.remote.RemoteForm;
+import platform.server.form.navigator.NavigatorElement;
 import tmc.VEDBusinessLogics;
 
 import javax.swing.*;
@@ -37,15 +37,15 @@ public class CashRegController {
         this.BL = BL;
     }
 
-    public ClientAction getCashRegApplyActions(RemoteForm remoteForm, int payType,
-                                                      Set<GroupObjectImplement> propertyGroups, Set<GroupObjectImplement> classGroups,
-                                                      PropertyViewNavigator<?> priceProp, PropertyViewNavigator<?> quantityProp,
-                                                      PropertyViewNavigator<?> nameProp, PropertyViewNavigator<?> sumProp,
-                                                      PropertyViewNavigator<?> toPayProp,
-                                                      PropertyViewNavigator<?> sumCardProp, PropertyViewNavigator<?> sumCashProp) {
+    public ClientAction getCashRegApplyActions(FormInstance formInstance, int payType,
+                                                      Set<GroupObjectInstance> propertyGroups, Set<GroupObjectInstance> classGroups,
+                                                      PropertyDrawEntity<?> priceProp, PropertyDrawEntity<?> quantityProp,
+                                                      PropertyDrawEntity<?> nameProp, PropertyDrawEntity<?> sumProp,
+                                                      PropertyDrawEntity<?> toPayProp,
+                                                      PropertyDrawEntity<?> sumCardProp, PropertyDrawEntity<?> sumCashProp) {
 
         List<ClientAction> actions = new ArrayList<ClientAction>();
-        actions.add(new ExportFileClientAction("c:\\bill\\bill.txt", false, createBillTxt(remoteForm, payType,
+        actions.add(new ExportFileClientAction("c:\\bill\\bill.txt", false, createBillTxt(formInstance, payType,
                                                 propertyGroups, classGroups, priceProp, quantityProp,
                                                 nameProp, sumProp, toPayProp, sumCardProp, sumCashProp), CASHREGISTER_CHARSETNAME));
         actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, "/T", CASHREGISTER_CHARSETNAME));
@@ -54,22 +54,22 @@ public class CashRegController {
         return new ListClientAction(actions);
     }
 
-    private String createBillTxt(RemoteForm remoteForm, int payType,
-                                 Set<GroupObjectImplement> propertyGroups, Set<GroupObjectImplement> classGroups,
-                                 PropertyViewNavigator<?> priceProp, PropertyViewNavigator<?> quantityProp,
-                                 PropertyViewNavigator<?> nameProp, PropertyViewNavigator<?> sumProp,
-                                 PropertyViewNavigator<?> toPayProp,
-                                 PropertyViewNavigator<?> sumCardProp, PropertyViewNavigator<?> sumCashProp) {
+    private String createBillTxt(FormInstance formInstance, int payType,
+                                 Set<GroupObjectInstance> propertyGroups, Set<GroupObjectInstance> classGroups,
+                                 PropertyDrawEntity<?> priceProp, PropertyDrawEntity<?> quantityProp,
+                                 PropertyDrawEntity<?> nameProp, PropertyDrawEntity<?> sumProp,
+                                 PropertyDrawEntity<?> toPayProp,
+                                 PropertyDrawEntity<?> sumCardProp, PropertyDrawEntity<?> sumCashProp) {
 
         String result = payType + ",0000\n";
 
         FormData data;
 
-        PropertyView quantityView = remoteForm.mapper.mapPropertyView((PropertyViewNavigator<?>)quantityProp);
-        quantityView.toDraw.addTempFilter(new NotNullFilter(quantityView.view));
+        PropertyDrawInstance quantityView = formInstance.mapper.mapPropertyDraw((PropertyDrawEntity<?>)quantityProp);
+        quantityView.toDraw.addTempFilter(new NotNullFilterInstance(quantityView.propertyObject));
 
         try {
-            data = remoteForm.getFormData(propertyGroups, classGroups);
+            data = formInstance.getFormData(propertyGroups, classGroups);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
@@ -80,17 +80,17 @@ public class CashRegController {
 
         for (FormRow row : data.rows) {
 
-            Object quantityObject = row.values.get(remoteForm.mapper.mapPropertyView(quantityProp));
+            Object quantityObject = row.values.get(formInstance.mapper.mapPropertyDraw(quantityProp));
 
             if (quantityObject != null) {
 
                 Double quantity = (quantityObject instanceof Double) ? (Double)quantityObject : 1.0;
-                Double price = (Double)row.values.get(remoteForm.mapper.mapPropertyView(priceProp));
-                String artName = ((String)row.values.get(remoteForm.mapper.mapPropertyView(nameProp))).trim();
+                Double price = (Double)row.values.get(formInstance.mapper.mapPropertyDraw(priceProp));
+                String artName = ((String)row.values.get(formInstance.mapper.mapPropertyDraw(nameProp))).trim();
                 artName = artName.replace(',', '.');
                 artName = artName.replace('"', ' ');
                 artName = artName.replace('\'', ' ');
-                Double sumPos = (Double) row.values.get(remoteForm.mapper.mapPropertyView(sumProp));
+                Double sumPos = (Double) row.values.get(formInstance.mapper.mapPropertyDraw(sumProp));
 
                 result += price / 100;
                 result += ",0";
@@ -103,7 +103,7 @@ public class CashRegController {
             }
         }
 
-        Double toPay = (Double)data.rows.get(0).values.get(remoteForm.mapper.mapPropertyView(toPayProp));
+        Double toPay = (Double)data.rows.get(0).values.get(formInstance.mapper.mapPropertyDraw(toPayProp));
         if (toPay == null) toPay = 0.0;
         Double sumDisc = sumDoc - toPay;
         if (sumDisc > 0) {
@@ -111,7 +111,7 @@ public class CashRegController {
         }
 
         if (sumCardProp != null) {
-            Double sumCard = (Double)data.rows.get(0).values.get(remoteForm.mapper.mapPropertyView(sumCardProp));
+            Double sumCard = (Double)data.rows.get(0).values.get(formInstance.mapper.mapPropertyDraw(sumCardProp));
             if (sumCard != null && sumCard > 0) {
                 result += "~1," + sumCard / 100 + "\n";
             }
@@ -119,7 +119,7 @@ public class CashRegController {
 
         Double sumCash;
         if (sumCashProp != null) {
-            sumCash = (Double)data.rows.get(0).values.get(remoteForm.mapper.mapPropertyView(sumCashProp));
+            sumCash = (Double)data.rows.get(0).values.get(formInstance.mapper.mapPropertyDraw(sumCashProp));
             if (sumCash == null) sumCash = toPay;
         } else
             sumCash = toPay;
@@ -176,7 +176,7 @@ public class CashRegController {
             this.multiplier = multiplier;
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
 
             actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, command, CASHREGISTER_CHARSETNAME));
             actions.add(new SleepClientAction(CASHREGISTER_DELAY));
@@ -197,7 +197,7 @@ public class CashRegController {
             this.command = command;
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
             if (value.getValue() != null && value.getValue() instanceof Double) {
                 actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, command + ":" + (Double)value.getValue()/100, CASHREGISTER_CHARSETNAME));
                 actions.add(new SleepClientAction(CASHREGISTER_DELAY));
@@ -211,15 +211,15 @@ public class CashRegController {
         }
     }
 
-    public NavigatorForm createCashRegManagementNavigatorForm(NavigatorElement parent, int iID) {
-        return new CashRegManagementNavigatorForm(parent, iID);
+    public FormEntity createCashRegManagementFormEntity(NavigatorElement parent, int iID) {
+        return new CashRegManagementFormEntity(parent, iID);
     }
 
-    private class CashRegManagementNavigatorForm extends NavigatorForm {
+    private class CashRegManagementFormEntity extends FormEntity {
 
-        private CashRegManagementNavigatorForm(NavigatorElement parent, int iID) {
+        private CashRegManagementFormEntity(NavigatorElement parent, int iID) {
             super(parent, iID, "Операции с ФР");
-            addPropertyView(BL.properties, BL.cashRegGroup, true);
+            addPropertyDraw(BL.properties, BL.cashRegGroup, true);
         }
 
         @Override

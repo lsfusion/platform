@@ -10,11 +10,11 @@ import platform.server.data.PropertyField;
 import platform.server.data.type.Type;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.session.*;
-import platform.server.view.form.PropertyObjectInterface;
-import platform.server.view.form.client.RemoteFormView;
+import platform.server.form.instance.remote.RemoteForm;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -70,5 +70,5 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
         return false;
     }
 
-    public abstract void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException;
+    public abstract void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException;
 }

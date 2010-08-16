@@ -1,9 +1,9 @@
 package platform.client.form.queries;
 
 import platform.client.form.GroupObjectLogicsSupplier;
-import platform.client.logics.ClientObjectImplementView;
+import platform.client.logics.ClientObject;
 import platform.client.logics.ClientObjectValueLink;
-import platform.client.logics.ClientPropertyView;
+import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
 import java.awt.event.ItemEvent;
@@ -21,14 +21,14 @@ class ObjectValueLinkView extends ValueLinkView {
 
         valueLink = ivalueLink;
 
-        objectView = new QueryConditionComboBox(new Vector<ClientObjectImplementView>(logicsSupplier.getObjects()));
+        objectView = new QueryConditionComboBox(new Vector<ClientObject>(logicsSupplier.getObjects()));
 
-        valueLink.object = (ClientObjectImplementView) objectView.getSelectedItem();
+        valueLink.object = (ClientObject) objectView.getSelectedItem();
 
         objectView.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
-                valueLink.object = (ClientObjectImplementView)e.getItem();
+                valueLink.object = (ClientObject)e.getItem();
                 if (listener != null)
                     listener.valueChanged();
             }
@@ -38,6 +38,6 @@ class ObjectValueLinkView extends ValueLinkView {
 
     }
 
-    public void propertyChanged(ClientPropertyView property) {
+    public void propertyChanged(ClientPropertyDraw property) {
     }
 }

@@ -1,10 +1,10 @@
 package platform.client.logics.classes;
 
-import platform.client.form.ClientForm;
+import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.cell.CellView;
-import platform.client.logics.ClientCellView;
+import platform.client.logics.ClientCell;
 import platform.interop.ComponentDesign;
 
 import java.awt.*;
@@ -21,11 +21,11 @@ public interface ClientType {
     Format getDefaultFormat();
 
     PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design);
-    CellView getPanelComponent(ClientCellView key, ClientForm form);
+    CellView getPanelComponent(ClientCell key, ClientFormController form);
 
-    PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException;
-    PropertyEditorComponent getClassComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException;
+    PropertyEditorComponent getEditorComponent(ClientFormController form, ClientCell property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException;
+    PropertyEditorComponent getClassComponent(ClientFormController form, ClientCell property, Object value, Format format) throws IOException, ClassNotFoundException;
 
     Object parseString(String s) throws ParseException;
-    boolean shouldBeDrawn(ClientForm form);
+    boolean shouldBeDrawn(ClientFormController form);
 }

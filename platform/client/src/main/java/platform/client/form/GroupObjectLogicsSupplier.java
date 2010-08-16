@@ -1,19 +1,19 @@
 package platform.client.form;
 
-import platform.client.logics.ClientGroupObjectImplementView;
-import platform.client.logics.ClientPropertyView;
+import platform.client.logics.ClientGroupObject;
+import platform.client.logics.ClientPropertyDraw;
 
 import java.util.List;
 
 public interface GroupObjectLogicsSupplier extends LogicsSupplier {
 
-    ClientGroupObjectImplementView getGroupObject();
-    List<ClientPropertyView> getGroupObjectProperties();
+    ClientGroupObject getGroupObject();
+    List<ClientPropertyDraw> getGroupObjectProperties();
 
     // пока зафигачим в этот интерфейс, хотя может быть в дальнейшем выделим в отдельный
     // данный интерфейс отвечает за получение текущих выбранных значений
-    ClientPropertyView getDefaultProperty();
-    Object getSelectedValue(ClientPropertyView property);
+    ClientPropertyDraw getDefaultProperty();
+    Object getSelectedValue(ClientPropertyDraw property);
     
-    ClientForm getForm();
+    ClientFormController getForm();
 }
