@@ -120,14 +120,14 @@ public abstract class PanelController {
     public void addProperty(ClientPropertyDraw property, Object value) {
 
         CellController controller = controllers.get(property);
-        if (controller == null && value != null) {
+        if (controller == null && (!property.autoHide || value != null)) {
 
             CellController propController = new CellController(property, form);
             addGroupObjectActions(propController.getView());
             propController.addView(formLayout);
 
             controllers.put(property, propController);
-        } else if (controller != null && value == null) {
+        } else if (property.autoHide && controller != null && value == null) {
             removeProperty(property);
         }
 

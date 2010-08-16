@@ -22,6 +22,8 @@ public class ClientPropertyDraw extends ClientCell {
 
     public ClientGroupObject groupObject;
 
+    public boolean autoHide = false;
+    
     public ClientPropertyDraw(DataInputStream inStream, Collection<ClientContainer> containers, Collection<ClientGroupObject> groups) throws IOException, ClassNotFoundException {
         super(inStream, containers);
 
@@ -35,6 +37,8 @@ public class ClientPropertyDraw extends ClientCell {
                     break;
                 }
         }
+
+        autoHide = inStream.readBoolean();
     }
 
     public ClientGroupObject getGroupObject() {

@@ -10,6 +10,17 @@ public class PropertyDrawView extends CellView implements ClientSerialize {
 
     public PropertyDrawEntity<?> entity;
 
+    /**
+     * Example of use:
+     *  <pre><code>
+     *  LP someLP = ...;
+     *  ...
+     *  PropertyDrawEntity propertyDraw = getPropertyDraw(someLP);
+     *  design.get(propertyDraw).autoHide = true;
+     *  </code></pre>
+     */
+    public boolean autoHide = false;
+
     public PropertyDrawView(int ID, PropertyDrawEntity entity) {
         super(ID);
         this.entity = entity;
@@ -39,5 +50,7 @@ public class PropertyDrawView extends CellView implements ClientSerialize {
         outStream.writeBoolean(entity.toDraw==null);
         if(entity.toDraw!=null)
             outStream.writeInt(entity.toDraw.ID);
+
+        outStream.writeBoolean(autoHide);
     }
 }

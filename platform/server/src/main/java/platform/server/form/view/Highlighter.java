@@ -12,9 +12,9 @@ import java.io.ObjectOutputStream;
  *          DefaultFormView design = super.createDefaultRichDesign();
  *
  *          PropertyDrawEntity propertyEntity = getPropertyDraw(someLP);
- *          PropertyDrawView propertyView = design.get(propertyView);
- *
- *          design.get(propertyView.toDraw).grid.highlighter = new Highlighter(Color.yellow, propertyView);
+ *          PropertyDrawView propertyView = design.get(propertyEntity);
+ * 
+ *          design.get(propertyEntity.toDraw).grid.highlighter = new Highlighter(Color.yellow, propertyView);
  *
  *          return design;
  *      }
