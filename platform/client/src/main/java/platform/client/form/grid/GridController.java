@@ -19,6 +19,9 @@ import java.util.Map;
 public class GridController {
 
     private final ClientGrid key;
+    public ClientGrid getGrid() {
+        return key;
+    }
 
     private final GridView view;
     public JComponent getView() {

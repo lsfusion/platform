@@ -14,6 +14,7 @@ public class ClientGrid extends ClientComponent {
     public byte minRowCount;
     public boolean tabVertical = true;
     public ClientHighlighter highlighter;
+    public final boolean autoHide;
 
     public ClientGrid(DataInputStream inStream, Collection<ClientContainer> containers) throws IOException, ClassNotFoundException {
         super(inStream, containers);
@@ -26,5 +27,6 @@ public class ClientGrid extends ClientComponent {
         if (!inStream.readBoolean()) {
             highlighter = new ClientHighlighter(inStream);
         }
+        autoHide = inStream.readBoolean();
     }
 }

@@ -30,7 +30,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
     private ClientGroupObjectValue currentObject;
 
-    private Byte classView;
+    private byte classView = ClassViewType.HIDE;
 
     public GroupObjectController(ClientGroupObject igroupObject, LogicsSupplier ilogicsSupplier, ClientFormController iform, ClientFormLayout formLayout) throws IOException {
 
@@ -110,33 +110,20 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
     }
 
-    public void setClassView(Byte setClassView) {
+    public void setClassView(byte classView) {
 
-        if (classView == null || !classView.equals(setClassView)) {
-
-            classView = setClassView;
-            if (classView.equals(ClassViewType.GRID)) {
+        if (this.classView != classView) {
+            this.classView = classView;
+            if (classView == ClassViewType.GRID) {
                 panel.removeGroupObjectCells();
                 grid.addGroupObjectCells();
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        grid.requestFocusInWindow();
-                    }
-                });
-            } else if (classView.equals(ClassViewType.PANEL)) {
+            } else if (classView == ClassViewType.PANEL) {
                 panel.addGroupObjectCells();
                 grid.removeGroupObjectCells();
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        panel.requestFocusInWindow();
-                    }
-                });
-//                    panel.requestFocusInWindow();
             } else {
                 panel.removeGroupObjectCells();
                 grid.removeGroupObjectCells();
             }
-
 
             for (ClientObject object : groupObject) {
                 objects.get(object).changeClassView(classView);
@@ -145,7 +132,18 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
             if (showType != null)
                 showType.changeClassView(classView);
         }
+    }
 
+    public void requestFocusInWindow() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                if (classView == ClassViewType.GRID) {
+                    grid.requestFocusInWindow();
+                } else if (classView == ClassViewType.PANEL) {
+                    panel.requestFocusInWindow();
+                }
+            }
+        });
     }
 
     public void addPanelProperty(ClientPropertyDraw property, Object value) {
@@ -177,6 +175,10 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
     public void setGridObjects(List<ClientGroupObjectValue> gridObjects) {
         grid.setGridObjects(gridObjects);
+
+        if (grid.getGrid().autoHide) {
+            setClassView(gridObjects.size() != 0 ? ClassViewType.GRID : ClassViewType.HIDE);
+        }
     }
 
     public void setGridClasses(List<ClientGroupObjectClass> gridClasses) {

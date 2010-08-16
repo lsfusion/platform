@@ -438,8 +438,11 @@ public class ClientFormController {
         for (Map.Entry<ClientGroupObject,ClientGroupObjectValue> groupObject : formChanges.objects.entrySet())
             controllers.get(groupObject.getKey()).setCurrentGroupObject(groupObject.getValue(),false);
 
-        for (ClientGroupObject groupObject : formChanges.classViews.keySet())
-            controllers.get(groupObject).setClassView(formChanges.classViews.get(groupObject));
+        for (ClientGroupObject groupObject : formChanges.classViews.keySet()) {
+            GroupObjectController objectController = controllers.get(groupObject);
+            objectController.setClassView(formChanges.classViews.get(groupObject));
+            objectController.requestFocusInWindow();
+        }
 
         for (Map.Entry<ClientGroupObject,ClientGroupObjectClass> groupObject : formChanges.classes.entrySet())
             controllers.get(groupObject.getKey()).setCurrentGroupObjectClass(groupObject.getValue());
