@@ -25,7 +25,7 @@ public class ObjectView implements ClientSerialize {
 
     public void serialize(DataOutputStream outStream) throws IOException {
 
-        outStream.writeInt(entity.ID);
+        outStream.writeInt(entity.getID());
         outStream.writeUTF(entity.caption);
         outStream.writeBoolean(entity.addOnTransaction);
 

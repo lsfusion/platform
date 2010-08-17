@@ -14,7 +14,7 @@ import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.form.instance.GroupObjectInstance;
-import platform.server.form.instance.Mapper;
+import platform.server.form.instance.InstanceFactory;
 import platform.server.session.ChangesSession;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.entity.ObjectEntity;
@@ -121,7 +121,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return objectClass.getType();
     }
 
-    public PropertyObjectInterfaceInstance doMapping(Mapper mapper) {
+    public PropertyObjectInterfaceInstance getInstance(InstanceFactory instanceFactory) {
         return this;
     }
 

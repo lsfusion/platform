@@ -59,7 +59,7 @@ import java.util.Map.Entry;
 
 public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
-    public final int viewID;
+    public final int sessionID;
 
     final T BL;
 
@@ -108,68 +108,66 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     final FocusListener<T> focusListener;
     final CustomClassListener classListener;
 
-    public final FormEntity<T> formEntity;
+    public final FormEntity<T> entity;
 
-    public final Mapper mapper;
+    public final InstanceFactory instanceFactory;
 
-    public FormInstance(FormEntity<T> formEntity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, Map<ObjectEntity, Object> mapObjects) throws SQLException {
-        this.formEntity = formEntity;
+    public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer) throws SQLException {
+        this(entity, BL, session, securityPolicy, focusListener, classListener, computer, new HashMap<ObjectEntity, Object>());
+    }
+
+    public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, Map<ObjectEntity, Object> mapObjects) throws SQLException {
+        this.entity = entity;
         this.BL = BL;
         this.session = session;
         this.securityPolicy = securityPolicy;
 
-        mapper = new Mapper(computer);
+        instanceFactory = new InstanceFactory(computer);
 
         this.focusListener = focusListener;
         this.classListener = classListener;
 
-        viewID = this.session.generateViewID(formEntity.ID);
+        sessionID = this.session.generateID(entity.ID);
 
-        hintsNoUpdate = formEntity.hintsNoUpdate;
-        hintsSave = formEntity.hintsSave;
+        hintsNoUpdate = entity.hintsNoUpdate;
+        hintsSave = entity.hintsSave;
 
-        for (int i=0;i< formEntity.groups.size();i++)
-            groups.add(mapper.mapGroup(formEntity.groups.get(i),i, classListener));
+        for (int i=0;i< entity.groups.size();i++) {
+            GroupObjectInstance groupObject = instanceFactory.getInstance(entity.groups.get(i));
+            groupObject.order = i;
+            groupObject.setClassListener(classListener);
+            groups.add(groupObject);
+        }
 
-        for (PropertyDrawEntity propertyDrawEntity : formEntity.propertyDraws)
+        for (PropertyDrawEntity<?> propertyDrawEntity : entity.propertyDraws)
             if (this.securityPolicy.property.view.checkPermission(propertyDrawEntity.propertyObject.property))
-                properties.add(mapper.mapPropertyDraw(propertyDrawEntity));
+                properties.add(instanceFactory.getInstance(propertyDrawEntity));
 
-        for (FilterEntity filterEntity : formEntity.fixedFilters) {
-            FilterInstance filter = filterEntity.doMapping(mapper);
+        for (FilterEntity filterEntity : entity.fixedFilters) {
+            FilterInstance filter = filterEntity.getInstance(instanceFactory);
             filter.getApplyObject().fixedFilters.add(filter);
         }
 
-        for (RegularFilterGroupEntity filterGroupEntity : formEntity.regularFilterGroups) {
-
-            RegularFilterGroupInstance group = new RegularFilterGroupInstance(filterGroupEntity.ID);
-            for (RegularFilterEntity filter : filterGroupEntity.filters)
-                group.addFilter(new RegularFilterInstance(filter.ID, filter.filter.doMapping(mapper), filter.name, filter.key, filter.showKey));
-            regularFilterGroups.add(group);
+        for (RegularFilterGroupEntity filterGroupEntity : entity.regularFilterGroups) {
+            regularFilterGroups.add(instanceFactory.getInstance(filterGroupEntity));
         }
 
-        for (Entry<OrderEntity, Boolean> orderEntity : formEntity.fixedOrders.entrySet()) {
-            OrderInstance orderInstance = orderEntity.getKey().doMapping(mapper);
+        for (Entry<OrderEntity, Boolean> orderEntity : entity.fixedOrders.entrySet()) {
+            OrderInstance orderInstance = orderEntity.getKey().getInstance(instanceFactory);
             orderInstance.getApplyObject().fixedOrders.put(orderInstance, orderEntity.getValue());
         }
-
-        formEntity.onCreateForm(this);
 
         addObjectOnTransaction();
 
         for(Entry<ObjectEntity, Object> mapObject : mapObjects.entrySet()) {
-            ObjectInstance implement = mapper.mapObject(mapObject.getKey());
-            Map<OrderInstance, Object> seeks = userGroupSeeks.get(implement.groupTo);
+            ObjectInstance instance = instanceFactory.getInstance(mapObject.getKey());
+            Map<OrderInstance, Object> seeks = userGroupSeeks.get(instance.groupTo);
             if(seeks==null) {
                 seeks = new HashMap<OrderInstance, Object>();
-                userGroupSeeks.put(implement.groupTo, seeks);
+                userGroupSeeks.put(instance.groupTo, seeks);
             }
-            seeks.put(implement, mapObject.getValue());
+            seeks.put(instance, mapObject.getValue());
         }
-    }
-
-    public FormInstance(FormEntity<T> formEntity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer) throws SQLException {
-        this(formEntity, BL, session, securityPolicy, focusListener, classListener, computer, new HashMap<ObjectEntity, Object>());
     }
 
     public List<GroupObjectInstance> groups = new ArrayList<GroupObjectInstance>();
@@ -193,28 +191,28 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
     public GroupObjectInstance getGroupObjectInstance(int groupID) {
         for (GroupObjectInstance groupObject : groups)
-            if (groupObject.ID == groupID)
+            if (groupObject.getID() == groupID)
                 return groupObject;
         return null;
     }
 
     public ObjectInstance getObjectInstance(int objectID) {
         for (ObjectInstance object : getObjects())
-            if (object.ID == objectID)
+            if (object.getID() == objectID)
                 return object;
         return null;
     }
 
     public PropertyDrawInstance getPropertyDraw(int propertyID) {
         for (PropertyDrawInstance property : properties)
-            if (property.ID == propertyID)
+            if (property.getID() == propertyID)
                 return property;
         return null;
     }
 
     public RegularFilterGroupInstance getRegularFilterGroup(int groupID) {
         for (RegularFilterGroupInstance filterGroup : regularFilterGroups)
-            if (filterGroup.ID == groupID)
+            if (filterGroup.getID() == groupID)
                 return filterGroup;
         return null;
     }
@@ -392,11 +390,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         for (ObjectInstance object : getObjects()) {
             if (object instanceof CustomObjectInstance) {
                 CustomObjectInstance customObject = (CustomObjectInstance) object;
-                if (customObject.addOnTransaction) {
+                if (customObject.isAddOnTransaction()) {
                     addObject(customObject, (ConcreteCustomClass) customObject.gridClass);
                 }
             }
-            if (object.resetOnApply) {
+            if (object.isResetOnApply()) {
                 object.setDefaultValue(session);
             }
         }
@@ -445,9 +443,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     protected void objectChanged(ConcreteCustomClass cls, Integer objectID) {}
 
     public void changePageSize(GroupObjectInstance groupObject, int pageSize) {
-
-        groupObject.pageSize = pageSize;
-
+        groupObject.setPageSize(pageSize);
     }
 
     public void gainedFocus() {
@@ -491,7 +487,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     public Collection<Property> hintsSave = new HashSet<Property>();
 
     public FormInstance<T> createForm(FormEntity<T> form, Map<ObjectEntity, DataObject> mapObjects) throws SQLException {
-        return new FormInstance<T>(form, BL, session, securityPolicy, focusListener, classListener, mapper.computer, DataObject.getMapValues(mapObjects));
+        return new FormInstance<T>(form, BL, session, securityPolicy, focusListener, classListener, instanceFactory.computer, DataObject.getMapValues(mapObjects));
     }
 
     public List<ClientAction> changeObject(ObjectInstance object, Object value, RemoteForm form) throws SQLException {
@@ -867,10 +863,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
                 if(!updateKeys && group.curClassView == ClassViewType.GRID && (group.updated & GroupObjectInstance.UPDATED_OBJECT)!=0) { // скроллирование
                     int keyNum = group.keys.indexOf(dataKeys(currentObject));
-                    if(keyNum< group.pageSize && group.upKeys) { // если меньше PageSize осталось и сверху есть ключи
+                    if(keyNum< group.getPageSize() && group.upKeys) { // если меньше PageSize осталось и сверху есть ключи
                         updateKeys = true;
 
-                        int lowestInd = group.pageSize *2-1;
+                        int lowestInd = group.getPageSize() *2-1;
                         if (lowestInd >= group.keys.size()) // по сути END
                             orderSeeks = null;
                         else {
@@ -878,10 +874,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                             orderSeeks = group.keys.getValue(lowestInd);
                         }
                     } else // наоборот вниз
-                        if(keyNum>= group.keys.size()- group.pageSize && group.downKeys) {
+                        if(keyNum>= group.keys.size()- group.getPageSize() && group.downKeys) {
                             updateKeys = true;
 
-                            int highestInd = group.keys.size()- group.pageSize *2;
+                            int highestInd = group.keys.size()- group.getPageSize() *2;
                             if (highestInd < 0) // по сути HOME
                                 orderSeeks = new HashMap<OrderInstance, ObjectValue>();
                             else {
@@ -916,7 +912,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                             group.upKeys = true; assert !(orderSeeks!=null && orderSeeks.isEmpty());
                         }
 
-                        int readSize = group.pageSize *3/(direction ==DIRECTION_CENTER?2:1);
+                        int readSize = group.getPageSize() *3/(direction ==DIRECTION_CENTER?2:1);
                         if(direction==DIRECTION_UP || direction ==DIRECTION_CENTER) { // сначала Up
                             keyResult.putAll(executeKeys(group, orderSeeks, readSize, false).reverse());
                             group.upKeys = (keyResult.size()== readSize);
@@ -934,7 +930,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                         // параллельно будем обновлять ключи чтобы JoinSelect'ить
                         GroupObjectTable insertTable = groupTables.get(group);
                         if(insertTable==null) {
-                            insertTable = new GroupObjectTable(group, viewID * RemoteFormInterface.GID_SHIFT + group.ID);
+                            insertTable = new GroupObjectTable(group, sessionID * RemoteFormInterface.GID_SHIFT + group.getID());
                             session.createTemporaryTable(insertTable);
                         }
 
@@ -980,10 +976,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 // прогоняем через кэши чтобы каждый раз не запускать isInInterface
                 boolean inGridInterface, inInterface;
 
-                byte forceViewType = drawProperty.forceViewType;
-                if (forceViewType == ClassViewType.PANEL) {
+                Byte forceViewType = drawProperty.getForceViewType();
+                if (forceViewType != null && forceViewType == ClassViewType.PANEL) {
                     inGridInterface = false;
-                } else if (forceViewType == ClassViewType.GRID) {
+                } else if (forceViewType != null && forceViewType == ClassViewType.GRID) {
                     inGridInterface = true;
                 } else {
                     if(refresh || classUpdated(drawProperty.propertyObject,drawProperty.toDraw)) {
@@ -1193,29 +1189,29 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
     public DialogInstance<T> createClassPropertyDialog(int viewID, int value) throws RemoteException, SQLException {
         ClassFormEntity<T> classForm = new ClassFormEntity<T>(BL, getPropertyDraw(viewID).propertyObject.getDialogClass());
-        return new DialogInstance<T>(classForm, BL, session, securityPolicy, focusListener, classListener, classForm.object, mapper.computer, value);
+        return new DialogInstance<T>(classForm, BL, session, securityPolicy, focusListener, classListener, classForm.object, instanceFactory.computer, value);
     }
 
     public DialogInstance<T> createEditorPropertyDialog(int viewID) throws SQLException {
         PropertyValueImplement<?> change = getPropertyDraw(viewID).propertyObject.getChangeProperty();
         DataChangeFormEntity<T> formEntity = new DataChangeFormEntity<T>(BL, change.getDialogClass(session), change);
-        return new DialogInstance<T>(formEntity, BL, session, securityPolicy, focusListener, classListener, formEntity.object, mapper.computer, change.read(session, this));
+        return new DialogInstance<T>(formEntity, BL, session, securityPolicy, focusListener, classListener, formEntity.object, instanceFactory.computer, change.read(session, this));
     }
 
     public DialogInstance<T> createObjectDialog(int objectID) throws SQLException {
         CustomObjectInstance objectImplement = (CustomObjectInstance) getObjectInstance(objectID);
         ClassFormEntity<T> classForm = new ClassFormEntity<T>(BL, objectImplement.baseClass);
         if(objectImplement.currentClass!=null)
-            return new DialogInstance<T>(classForm, BL, session, securityPolicy, focusListener, classListener, classForm.object, mapper.computer, objectImplement.getObjectValue().getValue());
+            return new DialogInstance<T>(classForm, BL, session, securityPolicy, focusListener, classListener, classForm.object, instanceFactory.computer, objectImplement.getObjectValue().getValue());
         else
-            return new DialogInstance<T>(classForm, BL, session, securityPolicy, focusListener, classListener, classForm.object, mapper.computer);
+            return new DialogInstance<T>(classForm, BL, session, securityPolicy, focusListener, classListener, classForm.object, instanceFactory.computer);
     }
 
     public DialogInstance<T> createObjectDialog(int objectID, int value) throws RemoteException {
         try {
             CustomObjectInstance objectImplement = (CustomObjectInstance) getObjectInstance(objectID);
             ClassFormEntity<T> classForm = new ClassFormEntity<T>(BL, objectImplement.baseClass);
-            return new DialogInstance<T>(classForm, BL, session, securityPolicy, focusListener, classListener, classForm.object, mapper.computer, value);
+            return new DialogInstance<T>(classForm, BL, session, securityPolicy, focusListener, classListener, classForm.object, instanceFactory.computer, value);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -1224,10 +1220,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     private List<ClientAction> executeAutoActions(ObjectInstance object, RemoteForm form) throws SQLException {
 
         List<ClientAction> actions = new ArrayList<ClientAction>();
-        for (Entry<ObjectEntity, List<PropertyObjectEntity>> autoActions : formEntity.autoActions.entrySet())
-            if (object.equals(mapper.mapObject(autoActions.getKey())))
+        for (Entry<ObjectEntity, List<PropertyObjectEntity>> autoActions : entity.autoActions.entrySet())
+            if (object.equals(instanceFactory.getInstance(autoActions.getKey())))
                 for(PropertyObjectEntity autoAction : autoActions.getValue()) {
-                    PropertyObjectInstance action = mapper.mapProperty(autoAction);
+                    PropertyObjectInstance action = instanceFactory.getInstance(autoAction);
                     if(action.isInInterface(null)) {
                         List<ClientAction> change = changeProperty(action, action.getChangeProperty().read(session, this)==null?true:null, form);
                         if (change != null) {

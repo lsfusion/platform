@@ -2,10 +2,6 @@ package platform.server.form.instance;
 
 import platform.base.BaseUtils;
 import platform.server.classes.ConcreteValueClass;
-import platform.server.form.instance.FormInstance;
-import platform.server.form.instance.GroupObjectInstance;
-import platform.server.form.instance.ObjectInstance;
-import platform.server.form.instance.PropertyDrawInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 
@@ -34,14 +30,14 @@ public class FormChanges {
         for(GroupObjectInstance group : bv.groups) {
             List<Map<ObjectInstance, DataObject>> groupGridObjects = gridObjects.get(group);
             if(groupGridObjects!=null) {
-                System.out.println(group.ID +" - Grid Changes");
+                System.out.println(group.getID() +" - Grid Changes");
                 for(Map<ObjectInstance, DataObject> value : groupGridObjects)
                     System.out.println(value);
             }
 
             Map<ObjectInstance, ? extends ObjectValue> value = objects.get(group);
             if(value!=null)
-                System.out.println(group.ID +" - Object Changes "+value);
+                System.out.println(group.getID() +" - Object Changes "+value);
         }
 
         System.out.println(" ------- PROPERTIES ---------------");
@@ -72,20 +68,20 @@ public class FormChanges {
 
         outStream.writeInt(classViews.size());
         for (Map.Entry<GroupObjectInstance,Byte> classView : classViews.entrySet()) {
-            outStream.writeInt(classView.getKey().ID);
+            outStream.writeInt(classView.getKey().getID());
             outStream.writeByte(classView.getValue());
         }
 
         outStream.writeInt(objects.size());
         for (Map.Entry<GroupObjectInstance,Map<ObjectInstance,? extends ObjectValue>> objectValue : objects.entrySet()) {
-            outStream.writeInt(objectValue.getKey().ID);
+            outStream.writeInt(objectValue.getKey().getID());
             for (ObjectInstance object : objectValue.getKey().objects) // именно так чтобы гарантировано в том же порядке
                 BaseUtils.serializeObject(outStream,objectValue.getValue().get(object).getValue());
         }
 
         outStream.writeInt(classes.size()); // количество элементов в classes может быть меньше, поскольку в objects могут быть null'ы
         for (Map.Entry<GroupObjectInstance,Map<ObjectInstance,ConcreteValueClass>> classValue : classes.entrySet()) {
-            outStream.writeInt(classValue.getKey().ID);
+            outStream.writeInt(classValue.getKey().getID());
             for (ObjectInstance object : classValue.getKey().objects) { // именно так чтобы гарантировано в том же порядке
                 ConcreteValueClass cls = classValue.getValue().get(object);
                 if (cls == null) {
@@ -100,7 +96,7 @@ public class FormChanges {
         outStream.writeInt(gridObjects.size());
         for (Map.Entry<GroupObjectInstance,List<Map<ObjectInstance,DataObject>>> gridObject : gridObjects.entrySet()) {
 
-            outStream.writeInt(gridObject.getKey().ID);
+            outStream.writeInt(gridObject.getKey().getID());
 
             outStream.writeInt(gridObject.getValue().size());
             for (Map<ObjectInstance, DataObject> groupObjectValue : gridObject.getValue())
@@ -111,7 +107,7 @@ public class FormChanges {
         outStream.writeInt(gridClasses.size());
         for (Map.Entry<GroupObjectInstance,List<Map<ObjectInstance,ConcreteValueClass>>> gridClass : gridClasses.entrySet()) {
 
-            outStream.writeInt(gridClass.getKey().ID);
+            outStream.writeInt(gridClass.getKey().getID());
 
             outStream.writeInt(gridClass.getValue().size());
             for (Map<ObjectInstance, ConcreteValueClass> groupObjectValue : gridClass.getValue())
@@ -121,7 +117,7 @@ public class FormChanges {
 
         outStream.writeInt(gridProperties.size());
         for (Map.Entry<PropertyDrawInstance,Map<Map<ObjectInstance,DataObject>,Object>> gridProperty : gridProperties.entrySet()) {
-            outStream.writeInt(gridProperty.getKey().ID);
+            outStream.writeInt(gridProperty.getKey().getID());
 
             outStream.writeInt(gridProperty.getValue().size());
             for (Map.Entry<Map<ObjectInstance,DataObject>,Object> gridPropertyValue : gridProperty.getValue().entrySet()) {
@@ -133,14 +129,14 @@ public class FormChanges {
 
         outStream.writeInt(panelProperties.size());
         for (Map.Entry<PropertyDrawInstance,Object> panelProperty : panelProperties.entrySet()) {
-            outStream.writeInt(panelProperty.getKey().ID);
+            outStream.writeInt(panelProperty.getKey().getID());
 
             BaseUtils.serializeObject(outStream, panelProperty.getValue());
         }
 
         outStream.writeInt(dropProperties.size());
         for (PropertyDrawInstance propertyView : dropProperties)
-            outStream.writeInt(propertyView.ID);
+            outStream.writeInt(propertyView.getID());
 
         outStream.writeUTF(message);
 

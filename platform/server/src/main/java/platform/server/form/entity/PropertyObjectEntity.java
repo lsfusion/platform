@@ -1,7 +1,7 @@
 package platform.server.form.entity;
 
+import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.PropertyObjectInstance;
-import platform.server.form.instance.Mapper;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyImplement;
@@ -37,7 +37,7 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyI
         super(property, mapping);
     }
 
-    public PropertyObjectInstance doMapping(Mapper mapper) {
-        return mapper.mapProperty(this);
+    public PropertyObjectInstance getInstance(InstanceFactory instanceFactory) {
+        return instanceFactory.getInstance(this);
     }
 }

@@ -5,7 +5,7 @@ import platform.server.classes.DataClass;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.OrderEntity;
 import platform.server.form.entity.PropertyObjectEntity;
-import platform.server.form.instance.Mapper;
+import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.filter.FilterInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.PropertyInterface;
@@ -31,8 +31,8 @@ public class CompareFilterEntity<P extends PropertyInterface> extends PropertyFi
         this(iProperty,iCompare,new DataObject(iValue,(DataClass)iProperty.property.getType()));
     }
 
-    protected FilterInstance doMapping(PropertyObjectInstance<P> propertyImplement, Mapper mapper) throws SQLException {
-        return new CompareFilterInstance<P>(propertyImplement,compare,value.doMapping(mapper));
+    public FilterInstance getInstance(InstanceFactory instanceFactory) {
+        return instanceFactory.getInstance(this);
     }
 
     @Override

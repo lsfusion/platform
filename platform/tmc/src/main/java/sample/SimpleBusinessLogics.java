@@ -745,8 +745,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(incStore,objExtInc), Compare.EQUALS, addPropertyObject(outStore,objDoc)));
 
             DefaultFormView formView = new DefaultFormView(this);
-            formView.defaultOrders.put(getPropertyDraw(date,objExtInc), false);
-            formView.defaultOrders.put(objExtInc, false);
+            formView.defaultOrders.put(formView.get(getPropertyDraw(date,objExtInc)), false);
+            formView.defaultOrders.put(formView.get(objExtInc).objectIDCell, false);
             richDesign = formView;
         }
     }
@@ -952,8 +952,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
             addFixedFilter(new NotNullFilterEntity(getPropertyObject(priceOutChange)));
 
             DefaultFormView formView = new DefaultFormView(this);
-            formView.defaultOrders.put(getPropertyDraw(date), false);
-            formView.defaultOrders.put(objPrimDoc, false);
+            formView.defaultOrders.put(formView.get(getPropertyDraw(date)), false);
+            formView.defaultOrders.put(formView.get(objPrimDoc).objectIDCell, false);
             richDesign = formView;
         }
     }
@@ -974,7 +974,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
                                 new CompareFilterEntity(getPropertyObject(outStore),Compare.EQUALS,objStore)));
 
             DefaultFormView formView = new DefaultFormView(this);
-            formView.defaultOrders.put(getPropertyDraw(date), false);
+            formView.defaultOrders.put(formView.get(getPropertyDraw(date)), false);
             richDesign = formView;
         }
     }

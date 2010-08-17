@@ -25,15 +25,15 @@ public class FormData {
         Set<ObjectInstance> objects = firstRow.keys.keySet();
         outStream.writeInt(objects.size());
         for(ObjectInstance object : objects) {
-            outStream.writeUTF(object.sID);
-            outStream.writeInt(object.ID);
+            outStream.writeUTF(object.getsID());
+            outStream.writeInt(object.getID());
         }
 
         Set<PropertyDrawInstance> properties = firstRow.values.keySet();
         outStream.writeInt(properties.size());
         for(PropertyDrawInstance propertyView : properties) {
-            outStream.writeUTF(propertyView.sID);
-            outStream.writeInt(propertyView.ID);
+            outStream.writeUTF(propertyView.getsID());
+            outStream.writeInt(propertyView.getID());
         }
 
         outStream.writeInt(rows.size());

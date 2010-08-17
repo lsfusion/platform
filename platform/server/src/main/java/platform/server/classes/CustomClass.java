@@ -20,6 +20,7 @@ import platform.server.data.type.Type;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.CustomObjectInstance;
 import platform.server.logics.BusinessLogics;
@@ -297,8 +298,8 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
 
     public abstract ConcreteCustomClass getSingleClass();
 
-    public ObjectInstance newObject(int ID, String SID, String caption, CustomClassListener classListener, boolean addOnTransaction) {
-        return new CustomObjectInstance(ID, SID, this, caption, classListener, addOnTransaction);
+    public ObjectInstance newInstance(ObjectEntity entity) {
+        return new CustomObjectInstance(entity, this);
     }
 
     private static class ActionExpr extends VariableClassExpr {

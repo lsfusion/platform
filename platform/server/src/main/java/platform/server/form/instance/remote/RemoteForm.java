@@ -57,7 +57,7 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
         Set<Integer> hideGroupObjects = new HashSet<Integer>();
         for (GroupObjectInstance group : form.groups)
             if (group.curClassView == ClassViewType.HIDE)
-                hideGroupObjects.add(group.ID);
+                hideGroupObjects.add(group.getID());
 
         try {
 
@@ -307,11 +307,11 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
     }
 
     public int getID() {
-        return form.formEntity.ID;
+        return form.entity.ID;
     }
 
     public String getSID() {
-        return form.formEntity.sID;
+        return form.entity.sID;
     }
 
     public void refreshData() {
@@ -323,7 +323,7 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
     }
 
     public boolean hasClientApply() {
-        return form.formEntity.hasClientApply();
+        return form.entity.hasClientApply();
     }
 
     public ClientApply getClientApply() throws RemoteException {
@@ -335,11 +335,11 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
             throw new RuntimeException(e);
         }
 
-        return form.formEntity.getClientApply(form);
+        return form.entity.getClientApply(form);
     }
 
     public void applyClientChanges(Object clientResult) {
-        String checkClientApply = form.formEntity.checkClientApply(clientResult);
+        String checkClientApply = form.entity.checkClientApply(clientResult);
         try {
             if(checkClientApply!=null) {
                 form.rollbackChanges();
@@ -416,7 +416,7 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
     public RemoteDialogInterface createClassPropertyDialog(int viewID, int value) throws RemoteException {
         try {
             DialogInstance<T> dialogForm = form.createClassPropertyDialog(viewID, value);
-            return new RemoteDialog<T>(dialogForm,dialogForm.formEntity.getRichDesign(),dialogForm.formEntity.getReportDesign(),exportPort, currentClassListener);
+            return new RemoteDialog<T>(dialogForm,dialogForm.entity.getRichDesign(),dialogForm.entity.getReportDesign(),exportPort, currentClassListener);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -425,7 +425,7 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
     public RemoteDialogInterface createEditorPropertyDialog(int viewID) throws RemoteException {
         try {
             DialogInstance<T> dialogForm = form.createEditorPropertyDialog(viewID);
-            return new RemoteDialog<T>(dialogForm,dialogForm.formEntity.getRichDesign(),dialogForm.formEntity.getReportDesign(),exportPort, currentClassListener);
+            return new RemoteDialog<T>(dialogForm,dialogForm.entity.getRichDesign(),dialogForm.entity.getReportDesign(),exportPort, currentClassListener);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -434,7 +434,7 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
     public RemoteDialogInterface createObjectDialog(int objectID) {
         try {
             DialogInstance<T> dialogForm = form.createObjectDialog(objectID);
-            return new RemoteDialog<T>(dialogForm,dialogForm.formEntity.getRichDesign(),dialogForm.formEntity.getReportDesign(),exportPort, currentClassListener);
+            return new RemoteDialog<T>(dialogForm,dialogForm.entity.getRichDesign(),dialogForm.entity.getReportDesign(),exportPort, currentClassListener);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -443,7 +443,7 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
     public RemoteDialogInterface createObjectDialogWithValue(int objectID, int value) throws RemoteException {
         try {
             DialogInstance<T> dialogForm = form.createObjectDialog(objectID, value);
-            return new RemoteDialog<T>(dialogForm,dialogForm.formEntity.getRichDesign(),dialogForm.formEntity.getReportDesign(),exportPort, currentClassListener);
+            return new RemoteDialog<T>(dialogForm,dialogForm.entity.getRichDesign(),dialogForm.entity.getReportDesign(),exportPort, currentClassListener);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -12,6 +12,8 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ClientSeri
 
     public GroupObjectEntity entity;
 
+    public byte banClassView = 0;
+
     public GroupObjectView(IDGenerator idGen, GroupObjectEntity entity) {
         this.entity = entity;
 
@@ -20,6 +22,8 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ClientSeri
         
         grid = new GridView(idGen.idShift());
         showType = new ShowTypeView(idGen.idShift());
+
+        banClassView = entity.banClassView;
     }
 
     public GridView grid;
@@ -27,7 +31,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ClientSeri
 
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeInt(entity.ID);
-        outStream.writeByte(entity.banClassView);
+        outStream.writeByte(banClassView);
 
         outStream.writeInt(size());
         for(ObjectView object : this)

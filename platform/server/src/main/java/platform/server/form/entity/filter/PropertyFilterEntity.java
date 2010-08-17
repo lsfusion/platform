@@ -1,7 +1,7 @@
 package platform.server.form.entity.filter;
 
 import platform.server.form.entity.ObjectEntity;
-import platform.server.form.instance.Mapper;
+import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.filter.FilterInstance;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.form.instance.PropertyObjectInstance;
@@ -16,12 +16,6 @@ public abstract class PropertyFilterEntity<P extends PropertyInterface> extends 
 
     public PropertyFilterEntity(PropertyObjectEntity<P> iProperty) {
         property = iProperty;
-    }
-
-    protected abstract FilterInstance doMapping(PropertyObjectInstance<P> propertyImplement, Mapper mapper) throws SQLException;
-
-    public FilterInstance doMapping(Mapper mapper) throws SQLException {
-        return doMapping(mapper.mapProperty(property),mapper);
     }
 
     protected void fillObjects(Set<ObjectEntity> objects) {

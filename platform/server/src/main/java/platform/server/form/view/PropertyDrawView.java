@@ -31,7 +31,7 @@ public class PropertyDrawView extends CellView implements ClientSerialize {
     }
 
     public int getID() {
-        return entity.ID;
+        return entity.getID();
     }
 
     public String getSID() {
@@ -45,7 +45,7 @@ public class PropertyDrawView extends CellView implements ClientSerialize {
     public void serialize(DataOutputStream outStream) throws IOException {
         super.serialize(outStream);
 
-        outStream.writeInt(entity.ID);
+        outStream.writeInt(entity.getID());
         outStream.writeUTF(entity.propertyObject.property.sID);
         outStream.writeBoolean(entity.toDraw==null);
         if(entity.toDraw!=null)

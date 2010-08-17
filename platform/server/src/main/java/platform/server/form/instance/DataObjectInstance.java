@@ -8,6 +8,7 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.type.Type;
+import platform.server.form.entity.ObjectEntity;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.session.ChangesSession;
@@ -21,8 +22,8 @@ public class DataObjectInstance extends ObjectInstance {
     DataClass dataClass;
     Object value;
 
-    public DataObjectInstance(int ID, String sID, DataClass dataClass, String caption) {
-        super(ID,sID,caption);
+    public DataObjectInstance(ObjectEntity entity, DataClass dataClass) {
+        super(entity);
         this.dataClass = dataClass;
         value = this.dataClass.getDefaultValue();
     }
@@ -62,7 +63,7 @@ public class DataObjectInstance extends ObjectInstance {
     }
 
     public boolean classUpdated(GroupObjectInstance classGroup) {
-        return false; 
+        return false;
     }
 
     public boolean isInInterface(GroupObjectInstance group) {

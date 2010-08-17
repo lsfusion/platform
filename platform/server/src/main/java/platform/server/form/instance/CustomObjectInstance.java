@@ -8,6 +8,7 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
+import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
@@ -25,17 +26,18 @@ public class CustomObjectInstance extends ObjectInstance {
     public ConcreteCustomClass currentClass;
 
     private CustomClassListener classListener;
+    public void setClassListener(CustomClassListener classListener) {
+        this.classListener = classListener;
+    }
 
-    final boolean addOnTransaction;
+    public boolean isAddOnTransaction() {
+        return entity.addOnTransaction;
+    }
 
-    public CustomObjectInstance(int ID, String sID, CustomClass baseClass, String caption, CustomClassListener classListener, boolean addOnTransaction) {
-        super(ID,sID,caption);
+    public CustomObjectInstance(ObjectEntity entity, CustomClass baseClass) {
+        super(entity);
         this.baseClass = baseClass;
         gridClass = baseClass;
-
-        this.classListener = classListener;
-
-        this.addOnTransaction = addOnTransaction;
     }
 
     public CustomClass getBaseClass() {

@@ -2436,7 +2436,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             FormInstance<?> form = executeForm.form;
             Collection<ObjectInstance> objects;
             if (property != null)
-                objects = form.mapper.mapProperty(form.formEntity.getPropertyObject(property)).mapping.values();
+                objects = form.instanceFactory.getInstance(form.entity.getPropertyObject(property)).mapping.values();
             else
                 objects = form.getObjects();
             for (Map.Entry<ClassPropertyInterface, DataObject> key : keys.entrySet()) {

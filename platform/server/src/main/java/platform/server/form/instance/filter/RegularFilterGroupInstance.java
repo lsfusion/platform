@@ -1,5 +1,6 @@
 package platform.server.form.instance.filter;
 
+import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.form.instance.GroupObjectInstance;
 
 import java.io.Serializable;
@@ -8,9 +9,14 @@ import java.util.List;
 
 public class RegularFilterGroupInstance implements Serializable {
 
-    public int ID;
-    public RegularFilterGroupInstance(int iID) {
-        ID = iID;
+    RegularFilterGroupEntity entity;
+
+    public int getID() {
+        return entity.ID;
+    }
+
+    public RegularFilterGroupInstance(RegularFilterGroupEntity entity) {
+        this.entity = entity;
     }
 
     public List<RegularFilterInstance> filters = new ArrayList<RegularFilterInstance>();
@@ -20,7 +26,7 @@ public class RegularFilterGroupInstance implements Serializable {
 
     public RegularFilterInstance getFilter(int filterID) {
         for (RegularFilterInstance filter : filters)
-            if (filter.ID == filterID)
+            if (filter.getID() == filterID)
                 return filter;
         return null;
     }

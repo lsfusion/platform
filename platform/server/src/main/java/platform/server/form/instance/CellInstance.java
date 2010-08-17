@@ -1,15 +1,20 @@
 package platform.server.form.instance;
 
-public abstract class CellInstance {
+import platform.server.form.entity.CellEntity;
 
-    // идентификатор (в рамках формы)
-    public final int ID;
+public abstract class CellInstance<E extends CellEntity> {
 
-    // символьный идентификатор, нужен для обращению к свойствам в печатных формах
-    public final String sID;
+    protected E entity;
 
-    public CellInstance(int ID, String sID) {
-        this.ID = ID;
-        this.sID = sID;
+    public CellInstance(E entity) {
+        this.entity = entity;
+    }
+
+    public int getID() {
+        return entity.getID();
+    }
+
+    public String getsID() {
+        return entity.getSID();
     }
 }

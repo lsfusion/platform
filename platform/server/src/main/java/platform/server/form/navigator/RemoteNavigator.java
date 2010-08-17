@@ -107,7 +107,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
                 if (currentForm == null)
                     navigatorElements = new ArrayList();
                 else
-                    navigatorElements = new ArrayList(currentForm.formEntity.relevantElements);
+                    navigatorElements = new ArrayList(currentForm.entity.relevantElements);
                 break;
             case (RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTCLASS) :
                 if (currentClass == null)

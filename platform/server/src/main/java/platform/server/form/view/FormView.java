@@ -51,7 +51,7 @@ public class FormView implements ClientSerialize {
     // список фильтров
     public List<RegularFilterGroupView> regularFilters = new ArrayList<RegularFilterGroupView>();
 
-    public OrderedMap<CellEntity,Boolean> defaultOrders = new OrderedMap<CellEntity, Boolean>();
+    public OrderedMap<CellView,Boolean> defaultOrders = new OrderedMap<CellView, Boolean>();
 
     public FunctionView printFunction = new FunctionView(idGenerator.idShift());
     public FunctionView xlsFunction = new FunctionView(idGenerator.idShift());
@@ -93,8 +93,13 @@ public class FormView implements ClientSerialize {
         serializeList(outStream,regularFilters);
 
         outStream.writeInt(defaultOrders.size());
-        for(Map.Entry<CellEntity,Boolean> order : defaultOrders.entrySet()) {
-            outStream.writeBoolean(order.getKey() instanceof PropertyDrawEntity);
+        for(Map.Entry<CellView,Boolean> order : defaultOrders.entrySet()) {
+            if (order.getKey() instanceof ObjectIDCellView)
+                outStream.writeByte(0);
+            else if (order.getKey() instanceof ClassCellView)
+                outStream.writeByte(1);
+            else
+                outStream.writeByte(2);
             outStream.writeInt(order.getKey().ID);
             outStream.writeBoolean(order.getValue());
         }
@@ -129,6 +134,13 @@ public class FormView implements ClientSerialize {
         if (comp1.container != comp2.container)
             throw new RuntimeException("Запрещено создавать пересечения для объектов в разных контейнерах");
         comp1.constraints.intersects.put(comp2, cons);
+    }
+
+    public GroupObjectView getGroupObject(GroupObjectEntity entity) {
+        for (GroupObjectView groupObject : groupObjects)
+            if (entity.equals(groupObject.entity))
+                return groupObject;
+        return null;
     }
 
     public List<PropertyDrawView> getProperties() {

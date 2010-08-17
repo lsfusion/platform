@@ -155,10 +155,13 @@ public class ClientForm implements Serializable, LogicsSupplier {
         int orderCount = inStream.readInt();
         for(int i=0;i<orderCount;i++) {
             ClientCell order;
-            if(inStream.readBoolean())
-                order = getProperty(inStream.readInt());
-            else
+            Byte orderClass = inStream.readByte();
+            if (orderClass == 0)
                 order = getObject(inStream.readInt(), false);
+            else if (orderClass == 1)
+                order = getObject(inStream.readInt(), true);
+            else
+                order = getProperty(inStream.readInt());
             defaultOrders.put(order,inStream.readBoolean());
         }
 

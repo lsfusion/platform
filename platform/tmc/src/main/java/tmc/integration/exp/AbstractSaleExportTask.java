@@ -112,8 +112,8 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
         PropertyDrawInstance quantity = formInstance.getPropertyDraw(BL.articleQuantity);
         quantity.toDraw.addTempFilter(new NotNullFilterInstance(quantity.propertyObject));
 
-        ObjectInstance doc = formInstance.mapper.mapObject(BL.commitSaleBrowseForm.objDoc);
-        ObjectInstance art = formInstance.mapper.mapObject(BL.commitSaleBrowseForm.objArt);
+        ObjectInstance doc = formInstance.instanceFactory.getInstance(BL.commitSaleBrowseForm.objDoc);
+        ObjectInstance art = formInstance.instanceFactory.getInstance(BL.commitSaleBrowseForm.objArt);
 
         map.put(barField, formInstance.getPropertyDraw(BL.barcode));
         map.put(nameField, formInstance.getPropertyDraw(BL.name));
@@ -140,8 +140,8 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
         PropertyDrawInstance issued = formInstance.getPropertyDraw(BL.issueObligation);
         issued.toDraw.addTempFilter(new NotNullFilterInstance(issued.propertyObject));
 
-        ObjectInstance doc = formInstance.mapper.mapObject(BL.saleCheckCertBrowseForm.objDoc);
-        ObjectInstance obligation = formInstance.mapper.mapObject(BL.saleCheckCertBrowseForm.objObligation);
+        ObjectInstance doc = formInstance.instanceFactory.getInstance(BL.saleCheckCertBrowseForm.objDoc);
+        ObjectInstance obligation = formInstance.instanceFactory.getInstance(BL.saleCheckCertBrowseForm.objObligation);
 
         map.put(barField, formInstance.getPropertyDraw(BL.barcode));
         map.put(nameField, formInstance.getPropertyDraw(BL.name));
@@ -166,9 +166,9 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
         PropertyDrawInstance returnQuantity = formInstance.getPropertyDraw(BL.returnInnerQuantity);
         returnQuantity.toDraw.addTempFilter(new NotNullFilterInstance(returnQuantity.propertyObject));
 
-        ObjectInstance doc = formInstance.mapper.mapObject(BL.returnSaleCheckRetailBrowse.objDoc);
-        ObjectInstance inner = formInstance.mapper.mapObject(BL.returnSaleCheckRetailBrowse.objInner);
-        ObjectInstance article = formInstance.mapper.mapObject(BL.returnSaleCheckRetailBrowse.objArt);
+        ObjectInstance doc = formInstance.instanceFactory.getInstance(BL.returnSaleCheckRetailBrowse.objDoc);
+        ObjectInstance inner = formInstance.instanceFactory.getInstance(BL.returnSaleCheckRetailBrowse.objInner);
+        ObjectInstance article = formInstance.instanceFactory.getInstance(BL.returnSaleCheckRetailBrowse.objArt);
 
         map.put(barField, formInstance.getPropertyDraw(BL.barcode));
         map.put(nameField, formInstance.getPropertyDraw(BL.name));

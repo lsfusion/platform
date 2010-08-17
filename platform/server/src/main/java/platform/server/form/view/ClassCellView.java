@@ -23,7 +23,7 @@ public class ClassCellView extends CellView implements ClientSerialize {
     }
 
     int getID() {
-        return entity.ID;
+        return entity.getID();
     }
 
     String getSID() {

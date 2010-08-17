@@ -21,7 +21,7 @@ public class GroupObjectTable extends SessionTable<GroupObjectTable> {
 
         mapKeys = new HashMap<KeyField, ObjectInstance>();
         for(ObjectInstance object : group.objects) {
-            KeyField objKeyField = new KeyField("object"+ object.sID, object.getType());
+            KeyField objKeyField = new KeyField("object"+ object.getsID(), object.getType());
             mapKeys.put(objKeyField,object);
             keys.add(objKeyField);
         }

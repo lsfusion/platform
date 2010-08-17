@@ -1,8 +1,6 @@
 package platform.server.form.instance;
 
 import platform.base.BaseUtils;
-import platform.server.form.instance.ObjectInstance;
-import platform.server.form.instance.PropertyDrawInstance;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -20,11 +18,11 @@ public class FormRow {
 
     public void serialize(DataOutputStream outStream) throws IOException {
         for(Map.Entry<ObjectInstance,Object> key : keys.entrySet()) {
-            outStream.writeInt(key.getKey().ID);
+            outStream.writeInt(key.getKey().getID());
             BaseUtils.serializeObject(outStream,key.getValue());
         }
         for(Map.Entry<PropertyDrawInstance,Object> property : values.entrySet()) {
-            outStream.writeInt(property.getKey().ID);
+            outStream.writeInt(property.getKey().getID());
             BaseUtils.serializeObject(outStream,property.getValue());
         }
     }

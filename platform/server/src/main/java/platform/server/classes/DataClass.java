@@ -12,6 +12,7 @@ import platform.server.data.expr.ValueExpr;
 import platform.server.data.query.Query;
 import platform.server.data.type.ParseException;
 import platform.server.data.type.Type;
+import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.group.AbstractGroup;
@@ -151,9 +152,9 @@ public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, AndCl
         return !reportField.valueClass.isArray();
     }
 
-    public ObjectInstance newObject(int ID, String SID, String caption, CustomClassListener classListener, boolean addOnTransaction) {
-        assert !addOnTransaction;
-        return new DataObjectInstance(ID, SID, this, caption);
+    public ObjectInstance newInstance(ObjectEntity entity) {
+        assert !entity.addOnTransaction;
+        return new DataObjectInstance(entity, this);
     }
 
     public ConcreteClass getDataClass(Object value, SQLSession session, BaseClass baseClass) {

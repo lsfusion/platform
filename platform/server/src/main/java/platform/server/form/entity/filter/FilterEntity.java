@@ -1,8 +1,8 @@
 package platform.server.form.entity.filter;
 
 import platform.server.form.entity.ObjectEntity;
+import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.filter.FilterInstance;
-import platform.server.form.instance.Mapper;
 
 import java.sql.SQLException;
 import java.util.HashSet;
@@ -10,7 +10,7 @@ import java.util.Set;
 
 public abstract class FilterEntity {
 
-    public abstract FilterInstance doMapping(Mapper mapper) throws SQLException;
+    public abstract FilterInstance getInstance(InstanceFactory instanceFactory);
 
     protected abstract void fillObjects(Set<ObjectEntity> objects);
     

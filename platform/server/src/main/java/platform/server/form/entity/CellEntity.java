@@ -2,17 +2,22 @@ package platform.server.form.entity;
 
 public class CellEntity {
 
-    // идентификатор (в рамках формы)
-    public final int ID;
+    private final int ID;
+    public int getID() {
+        return ID;
+    }
 
     public CellEntity(int ID) {
         this.ID = ID;
     }
 
-    // символьный идентификатор, нужен для обращению к свойствам в печатных формах
-    public String sID;
+    private String SID;
+    
     public String getSID() {
-        if (sID != null) return sID; else return "obj" + ID;
+        if (SID != null) return SID; else return "obj" + getID();
     }
-
+    
+    public void setSID(String sID) {
+        this.SID = sID;
+    }
 }

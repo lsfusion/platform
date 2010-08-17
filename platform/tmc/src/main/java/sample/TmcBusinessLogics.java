@@ -1360,8 +1360,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             addPropertyDraw(objDoc, properties, outSumsGroup);
             addPropertyDraw(objDetail, properties, outSumsGroup);
 
-            objDoc.sID = "objDoc";
-            getPropertyDraw(name.property, objDoc.groupTo).sID = "docName";
+            objDoc.setSID("objDoc");
+            getPropertyDraw(name.property, objDoc.groupTo).setSID("docName");
 
             //
             reportDesign = JRXmlLoader.load(getClass().getResourceAsStream("/tmc/reports/extIncLog.jrxml"));
@@ -1683,7 +1683,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             addFixedFilter(new CompareFilterEntity(getPropertyObject(primDocStore), Compare.EQUALS, objStore));
 
             DefaultFormView formView = new DefaultFormView(this);
-            formView.defaultOrders.put(getPropertyDraw(primDocDate), false);
+            formView.defaultOrders.put(formView.get(getPropertyDraw(primDocDate)), false);
             richDesign = formView;
         }
     }
@@ -1701,7 +1701,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(isDocStoreArtInclude, objDoc, objStore, objArt)));
 
             DefaultFormView formView = new DefaultFormView(this);
-            formView.defaultOrders.put(getPropertyDraw(docDate), false);
+            formView.defaultOrders.put(formView.get(getPropertyDraw(docDate)), false);
             richDesign = formView;
         }
     }
@@ -1843,7 +1843,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             addFixedFilter(new CompareFilterEntity(getPropertyObject(docDate), Compare.LESS_EQUALS, objDateTo));
 
             DefaultFormView formView = new DefaultFormView(this);
-            formView.defaultOrders.put(getPropertyDraw(docDate), true);
+            formView.defaultOrders.put(formView.get(getPropertyDraw(docDate)), true);
             richDesign = formView;
 
         }

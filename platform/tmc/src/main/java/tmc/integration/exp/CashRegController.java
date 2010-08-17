@@ -65,7 +65,7 @@ public class CashRegController {
 
         FormData data;
 
-        PropertyDrawInstance quantityView = formInstance.mapper.mapPropertyDraw((PropertyDrawEntity<?>)quantityProp);
+        PropertyDrawInstance quantityView = formInstance.instanceFactory.getInstance((PropertyDrawEntity<?>)quantityProp);
         quantityView.toDraw.addTempFilter(new NotNullFilterInstance(quantityView.propertyObject));
 
         try {
@@ -80,17 +80,17 @@ public class CashRegController {
 
         for (FormRow row : data.rows) {
 
-            Object quantityObject = row.values.get(formInstance.mapper.mapPropertyDraw(quantityProp));
+            Object quantityObject = row.values.get(formInstance.instanceFactory.getInstance(quantityProp));
 
             if (quantityObject != null) {
 
                 Double quantity = (quantityObject instanceof Double) ? (Double)quantityObject : 1.0;
-                Double price = (Double)row.values.get(formInstance.mapper.mapPropertyDraw(priceProp));
-                String artName = ((String)row.values.get(formInstance.mapper.mapPropertyDraw(nameProp))).trim();
+                Double price = (Double)row.values.get(formInstance.instanceFactory.getInstance(priceProp));
+                String artName = ((String)row.values.get(formInstance.instanceFactory.getInstance(nameProp))).trim();
                 artName = artName.replace(',', '.');
                 artName = artName.replace('"', ' ');
                 artName = artName.replace('\'', ' ');
-                Double sumPos = (Double) row.values.get(formInstance.mapper.mapPropertyDraw(sumProp));
+                Double sumPos = (Double) row.values.get(formInstance.instanceFactory.getInstance(sumProp));
 
                 result += price / 100;
                 result += ",0";
@@ -103,7 +103,7 @@ public class CashRegController {
             }
         }
 
-        Double toPay = (Double)data.rows.get(0).values.get(formInstance.mapper.mapPropertyDraw(toPayProp));
+        Double toPay = (Double)data.rows.get(0).values.get(formInstance.instanceFactory.getInstance(toPayProp));
         if (toPay == null) toPay = 0.0;
         Double sumDisc = sumDoc - toPay;
         if (sumDisc > 0) {
@@ -111,7 +111,7 @@ public class CashRegController {
         }
 
         if (sumCardProp != null) {
-            Double sumCard = (Double)data.rows.get(0).values.get(formInstance.mapper.mapPropertyDraw(sumCardProp));
+            Double sumCard = (Double)data.rows.get(0).values.get(formInstance.instanceFactory.getInstance(sumCardProp));
             if (sumCard != null && sumCard > 0) {
                 result += "~1," + sumCard / 100 + "\n";
             }
@@ -119,7 +119,7 @@ public class CashRegController {
 
         Double sumCash;
         if (sumCashProp != null) {
-            sumCash = (Double)data.rows.get(0).values.get(formInstance.mapper.mapPropertyDraw(sumCashProp));
+            sumCash = (Double)data.rows.get(0).values.get(formInstance.instanceFactory.getInstance(sumCashProp));
             if (sumCash == null) sumCash = toPay;
         } else
             sumCash = toPay;

@@ -9,7 +9,9 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.MapKeysInterface;
 import platform.server.data.where.Where;
+import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.instance.filter.FilterInstance;
+import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
@@ -22,24 +24,37 @@ import java.util.*;
 
 public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 
+    GroupObjectEntity entity;
+
     public Collection<ObjectInstance> objects;
 
     // глобальный идентификатор чтобы писать во GroupObjectTable
-    public final int ID;
+    public int getID() {
+        return entity.ID;
+    }
 
-    public GroupObjectInstance(int ID,Collection<ObjectInstance> objects,int order,int pageSize, byte initClassView, byte banClassView) {
-
-        assert (ID < RemoteFormInterface.GID_SHIFT);
-
-        this.ID = ID;
-        this.order = order;
+    private int pageSize = 0;
+    public int getPageSize() {
+        return pageSize;
+    }
+    public void setPageSize(int pageSize) {
         this.pageSize = pageSize;
-        this.curClassView = initClassView;
-        this.banClassView = banClassView;
+    }
+
+    public GroupObjectInstance(GroupObjectEntity entity, Collection<ObjectInstance> objects) {
+
+        this.entity = entity;
+
+        assert (getID() < RemoteFormInterface.GID_SHIFT);
+
         this.objects = objects;
 
         for(ObjectInstance object : objects)
             object.groupTo = this;
+
+        // текущее состояние
+        this.curClassView = entity.initClassView;
+        this.pageSize = entity.pageSize;
     }
 
     public Map<ObjectInstance, KeyExpr> getMapKeys() {
@@ -50,7 +65,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 
     // классовый вид включен или нет
     public byte curClassView = ClassViewType.GRID;
-    public byte banClassView = 0;
 
     // закэшированные
 
@@ -165,8 +179,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 
     public int updated = UPDATED_GRIDCLASS | UPDATED_CLASSVIEW | UPDATED_ORDER | UPDATED_FILTER;
 
-    public int pageSize = 50;
-
     Map<ObjectInstance,ObjectValue> getGroupObjectValue() {
         Map<ObjectInstance,ObjectValue> result = new HashMap<ObjectInstance, ObjectValue>();
         for(ObjectInstance object : objects)
@@ -221,5 +233,11 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
             if(read != i.next() instanceof CustomObjectInstance)
                 return false;
         return true;
+    }
+
+    public void setClassListener(CustomClassListener classListener) {
+        for (ObjectInstance object : objects)
+            if (object instanceof CustomObjectInstance)
+                ((CustomObjectInstance)object).setClassListener(classListener);
     }
 }

@@ -3,7 +3,7 @@ package platform.server.form.entity.filter;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.filter.FilterInstance;
 import platform.server.form.instance.filter.OrFilterInstance;
-import platform.server.form.instance.Mapper;
+import platform.server.form.instance.InstanceFactory;
 
 import java.sql.SQLException;
 import java.util.Set;
@@ -18,8 +18,8 @@ public class OrFilterEntity extends FilterEntity {
         this.op2 = op2;
     }
 
-    public FilterInstance doMapping(Mapper mapper) throws SQLException {
-        return new OrFilterInstance(op1.doMapping(mapper),op2.doMapping(mapper));
+    public FilterInstance getInstance(InstanceFactory instanceFactory) {
+        return new OrFilterInstance(op1.getInstance(instanceFactory),op2.getInstance(instanceFactory));
     }
 
     protected void fillObjects(Set<ObjectEntity> objects) {

@@ -11,6 +11,7 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.form.instance.FormInstance;
+import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
@@ -193,11 +194,11 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
             // придется поискать есть ли еще такие sID, чтобы добиться уникальности sID
             boolean foundSID = false;
             for (PropertyDrawEntity property : propertyDraws)
-                if (BaseUtils.nullEquals(property.sID, propertyImplement.property.sID)) {
+                if (BaseUtils.nullEquals(property.getSID(), propertyImplement.property.sID)) {
                     foundSID = true;
                     break;
                 }
-            propertyDraw.sID = propertyImplement.property.sID + ((foundSID) ? propertyDraw.ID : "");
+            propertyDraw.setSID(propertyImplement.property.sID + ((foundSID) ? propertyDraw.getID() : ""));
         }
 
 
@@ -380,6 +381,4 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
         return  propertyDraw;
     }
 
-    public void onCreateForm(FormInstance<T> form) throws SQLException {
-    }
 }

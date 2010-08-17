@@ -4,6 +4,7 @@ import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.type.Type;
+import platform.server.form.entity.ObjectEntity;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
@@ -18,7 +19,7 @@ import java.util.Map;
 import java.util.Set;
 
 // на самом деле нужен collection но при extend'е нужна конкретная реализация
-public abstract class ObjectInstance extends CellInstance implements PropertyObjectInterfaceInstance {
+public abstract class ObjectInstance extends CellInstance<ObjectEntity> implements PropertyObjectInterfaceInstance {
 
     // 0 !!! - изменился объект, 1 !!! - класс объекта, 3 !!! - класса, 4 - классовый вид
     public final static int UPDATED_OBJECT = (1);
@@ -29,17 +30,21 @@ public abstract class ObjectInstance extends CellInstance implements PropertyObj
 
     public GroupObjectInstance groupTo;
 
-    public String caption = "";
+    public String getCaption() {
+        return entity.caption;
+    }
 
-    public boolean resetOnApply = false;
+    public boolean isResetOnApply() {
+        return entity.resetOnApply;
+    }
 
-    public ObjectInstance(int ID, String sID, String caption) {
-        super(ID,sID);
-        this.caption = caption;
+    public ObjectInstance(ObjectEntity entity) {
+        super(entity);
+        this.entity = entity;
     }
 
     public String toString() {
-        return caption;
+        return getCaption();
     }
 
     protected abstract Expr getExpr();

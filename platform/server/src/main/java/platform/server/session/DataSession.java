@@ -579,7 +579,7 @@ public class DataSession extends SQLSession implements ChangesSession {
     }
 
     private final Map<Integer,Integer> viewIDs = new HashMap<Integer, Integer>();
-    public int generateViewID(int ID) {
+    public int generateID(int ID) {
         Integer idCounter;
         synchronized(viewIDs) {
             idCounter = viewIDs.get(ID);

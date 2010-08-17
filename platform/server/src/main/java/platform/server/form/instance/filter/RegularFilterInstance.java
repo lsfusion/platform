@@ -1,27 +1,38 @@
 package platform.server.form.instance.filter;
 
-import platform.server.form.instance.filter.FilterInstance;
+import platform.server.form.entity.filter.RegularFilterEntity;
 
 import javax.swing.*;
 import java.io.Serializable;
 
 public class RegularFilterInstance implements Serializable {
 
-    public int ID;
-    public transient FilterInstance filter;
-    public String name;
-    public KeyStroke key;
-    public boolean showKey = true;
+    private RegularFilterEntity entity;
 
-    public RegularFilterInstance(int iID, FilterInstance ifilter, String iname, KeyStroke ikey, boolean ishowKey) {
-        ID = iID;
+    public transient FilterInstance filter;
+
+    public int getID() {
+        return entity.ID;
+    }
+
+    public String getName() {
+        return entity.name;
+    }
+
+    public KeyStroke getKey() {
+        return entity.key;
+    }
+
+    public boolean isShowKey() {
+        return entity.showKey;
+    }
+
+    public RegularFilterInstance(RegularFilterEntity entity, FilterInstance ifilter) {
+        this.entity = entity;
         filter = ifilter;
-        name = iname;
-        key = ikey;
-        showKey = ishowKey; 
     }
 
     public String toString() {
-        return name;
+        return getName();
     }
 }

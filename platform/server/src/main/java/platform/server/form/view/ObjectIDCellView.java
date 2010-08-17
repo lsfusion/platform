@@ -18,7 +18,7 @@ public class ObjectIDCellView extends CellView {
     }
 
     int getID() {
-        return entity.ID;
+        return entity.getID();
     }
 
     String getSID() {

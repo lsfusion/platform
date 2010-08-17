@@ -2,6 +2,7 @@ package platform.server.classes;
 
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.BaseExpr;
+import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.logics.property.group.AbstractGroup;
@@ -19,7 +20,7 @@ public interface ValueClass extends RemoteClass {
 
     void serialize(DataOutputStream outStream) throws IOException;
 
-    ObjectInstance newObject(int ID, String SID, String caption, CustomClassListener classListener, boolean addOnTransaction);
+    ObjectInstance newInstance(ObjectEntity entity);
 
     // получает выражение чисто для получения класса
     BaseExpr getClassExpr();

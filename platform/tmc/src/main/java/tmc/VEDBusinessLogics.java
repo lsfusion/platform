@@ -19,8 +19,10 @@ import platform.server.form.entity.*;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.GroupObjectInstance;
 import platform.server.form.instance.ObjectInstance;
+import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
+import platform.server.form.view.GroupObjectView;
 import platform.server.form.view.ObjectView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
@@ -1591,8 +1593,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         public ClientAction getClientApply(FormInstance<VEDBusinessLogics> formInstance) {
             if (toAdd) {
 
-                ObjectInstance doc = formInstance.mapper.mapObject(objDoc);
-                ObjectInstance art = formInstance.mapper.mapObject(objArt);
+                ObjectInstance doc = formInstance.instanceFactory.getInstance(objDoc);
+                ObjectInstance art = formInstance.instanceFactory.getInstance(objArt);
 
                 return cashRegController.getCashRegApplyActions(formInstance, 1,
                         BaseUtils.toSetElements(doc.groupTo, art.groupTo), BaseUtils.toSetElements(art.groupTo),
@@ -1611,22 +1613,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             if (check != null) return check;
 
             return super.checkClientApply(result);
-        }
-
-        @Override
-        public void onCreateForm(FormInstance<VEDBusinessLogics> form) throws SQLException {
-
-            if (couponStart.read(form.session, form) == null) {
-                GroupObjectInstance group;
-                group = form.mapper.groupMapper.get(objCoupon.groupTo);
-                group.curClassView = ClassViewType.HIDE;
-                group.banClassView = ClassViewType.GRID | ClassViewType.PANEL;
-                if (toAdd) {
-                    group = form.mapper.groupMapper.get(objIssue.groupTo);
-                    group.curClassView = ClassViewType.HIDE;
-                    group.banClassView = ClassViewType.GRID | ClassViewType.PANEL;
-                }
-            }
         }
 
         @Override
@@ -1916,9 +1902,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         public ClientAction getClientApply(FormInstance formInstance) {
             if (toAdd) {
 
-                ObjectInstance doc = formInstance.mapper.mapObject(objDoc);
-                ObjectInstance inner = formInstance.mapper.mapObject(objInner);
-                ObjectInstance art = formInstance.mapper.mapObject(objArt);
+                ObjectInstance doc = formInstance.instanceFactory.getInstance(objDoc);
+                ObjectInstance inner = formInstance.instanceFactory.getInstance(objInner);
+                ObjectInstance art = formInstance.instanceFactory.getInstance(objArt);
 
                 return cashRegController.getCashRegApplyActions(formInstance, 2,
                         BaseUtils.toSetElements(doc.groupTo, inner.groupTo, art.groupTo), BaseUtils.toSetElements(inner.groupTo, art.groupTo),
@@ -2212,8 +2198,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         public ClientAction getClientApply(FormInstance<VEDBusinessLogics> formInstance) {
             if (toAdd) {
 
-                ObjectInstance doc = formInstance.mapper.mapObject(objDoc);
-                ObjectInstance obligation = formInstance.mapper.mapObject(objObligation);
+                ObjectInstance doc = formInstance.instanceFactory.getInstance(objDoc);
+                ObjectInstance obligation = formInstance.instanceFactory.getInstance(objObligation);
 
                 return cashRegController.getCashRegApplyActions(formInstance, 1,
                         BaseUtils.toSetElements(doc.groupTo, obligation.groupTo), BaseUtils.toSetElements(obligation.groupTo),

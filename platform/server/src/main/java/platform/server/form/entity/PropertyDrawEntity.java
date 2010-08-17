@@ -15,9 +15,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends CellEntity 
     }
 
     public boolean shouldBeLast = false;
-    public byte forceViewType = ClassViewType.HIDE;
+    public Byte forceViewType = null;
 
-    public void setForceViewType(byte forceViewType) {
+    public void setForceViewType(Byte forceViewType) {
         this.forceViewType = forceViewType;
     }
 

@@ -17,18 +17,18 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
 
     ObjectInstance dialogObject;
 
-    private DialogInstance(FormEntity<T> formEntity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> tFocusView, CustomClassListener classListener, ObjectEntity dialogEntity, PropertyObjectInterfaceInstance computer, Map<ObjectEntity, Object> mapObjects) throws SQLException {
-        super(formEntity, BL, session, securityPolicy, tFocusView, classListener, computer, mapObjects);
+    private DialogInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> tFocusView, CustomClassListener classListener, ObjectEntity dialogEntity, PropertyObjectInterfaceInstance computer, Map<ObjectEntity, Object> mapObjects) throws SQLException {
+        super(entity, BL, session, securityPolicy, tFocusView, classListener, computer, mapObjects);
         
-        dialogObject = mapper.mapObject(dialogEntity);
+        dialogObject = instanceFactory.getInstance(dialogEntity);
     }
 
-    public DialogInstance(FormEntity<T> formEntity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, ObjectEntity dialogEntity, PropertyObjectInterfaceInstance computer) throws SQLException {
-        this(formEntity, BL, session, securityPolicy, focusListener, classListener, dialogEntity, computer, new HashMap<ObjectEntity, Object>());
+    public DialogInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, ObjectEntity dialogEntity, PropertyObjectInterfaceInstance computer) throws SQLException {
+        this(entity, BL, session, securityPolicy, focusListener, classListener, dialogEntity, computer, new HashMap<ObjectEntity, Object>());
     }
 
-    public DialogInstance(FormEntity<T> formEntity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, ObjectEntity dialogEntity, PropertyObjectInterfaceInstance computer, Object dialogValue) throws SQLException {
-        this(formEntity, BL, session, securityPolicy, focusListener, classListener, dialogEntity, computer, Collections.singletonMap(dialogEntity, dialogValue));
+    public DialogInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, ObjectEntity dialogEntity, PropertyObjectInterfaceInstance computer, Object dialogValue) throws SQLException {
+        this(entity, BL, session, securityPolicy, focusListener, classListener, dialogEntity, computer, Collections.singletonMap(dialogEntity, dialogValue));
     }
 
     public Object getDialogValue() {
