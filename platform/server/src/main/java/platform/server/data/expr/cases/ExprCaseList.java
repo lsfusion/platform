@@ -87,4 +87,11 @@ public class ExprCaseList extends AddCaseList<BaseExpr,ExprCase> {
             hash = 31*hash + exprCase.hashContext(hashContext);
         return hash;
     }
+
+    public long getComplexity() {
+        long complexity = 0;
+        for(ExprCase exprCase : this)
+            complexity += exprCase.getComplexity();
+        return complexity;
+    }
 }

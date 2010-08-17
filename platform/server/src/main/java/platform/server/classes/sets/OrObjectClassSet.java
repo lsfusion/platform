@@ -92,12 +92,12 @@ public class OrObjectClassSet implements OrClassSet, AndClassSet {
         assert (!isEmpty());
         assert !unknown;
 
-        Set<CustomClass> commonParents = new HashSet<CustomClass>(BaseUtils.merge(Arrays.asList(up.getCommonClasses()),set.toCollection()));
+        Set<CustomClass> commonParents = new HashSet<CustomClass>(BaseUtils.merge(Arrays.asList(up.getCommonClasses()),set.toSet()));
         while(commonParents.size()>1) {
             Iterator<CustomClass> i = commonParents.iterator();
             CustomClass first = i.next(); i.remove();
             CustomClass second = i.next(); i.remove();
-            commonParents.addAll(first.commonParents(second).toCollection());
+            commonParents.addAll(first.commonParents(second).toSet());
         }
         return commonParents.iterator().next();
     }

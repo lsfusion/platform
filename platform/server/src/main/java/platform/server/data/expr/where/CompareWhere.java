@@ -9,7 +9,6 @@ import platform.server.data.expr.VariableExprSet;
 import platform.server.data.query.ContextEnumerator;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.innerjoins.ObjectJoinSets;
-import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.*;
@@ -105,5 +104,9 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Data
 
     protected Where getOperandWhere() {
         return operator1.getWhere().and(operator2.getWhere());
+    }
+
+    public long calculateComplexity() {
+        return operator1.getComplexity() + operator2.getComplexity() + 1;
     }
 }

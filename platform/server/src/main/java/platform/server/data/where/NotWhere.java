@@ -81,4 +81,8 @@ public class NotWhere extends ObjectWhere {
     public Where packFollowFalse(Where falseWhere) {
         return where.packFollowFalse(falseWhere).not();
     }
+
+    public long calculateComplexity() {
+        return where.getComplexity();
+    }
 }

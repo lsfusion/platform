@@ -7,6 +7,7 @@ import platform.server.caches.MapValues;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.query.SourceJoin;
+import platform.server.data.Table;
 
 import java.util.Collections;
 import java.util.HashSet;

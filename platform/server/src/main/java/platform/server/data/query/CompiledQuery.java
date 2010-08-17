@@ -146,9 +146,10 @@ public class CompiledQuery<K,V> {
         for(Map.Entry<V,Expr> property : query.properties.entrySet())
             propertyReaders.put(property.getKey(),query.where.isFalse()?NullReader.instance:property.getValue().getReader(query.where));
 
-        Collection<InnerSelectJoin> queryJoins = query.where.getInnerJoins();
+        boolean useFJ = syntax.useFJ();
+        Collection<InnerSelectJoin> queryJoins = query.where.getInnerJoins(useFJ, false);
 
-        unionAll = !(syntax.useFJ() || queryJoins.size() < 2);
+        unionAll = !(useFJ || queryJoins.size() < 2);
         if (unionAll) {
             Map<V, Type> castTypes = new HashMap<V, Type>();
             for(Map.Entry<V,Reader> propertyReader : propertyReaders.entrySet())
@@ -156,17 +157,8 @@ public class CompiledQuery<K,V> {
                     castTypes.put(propertyReader.getKey(), (Type)propertyReader.getValue());
 
             String fromString = "";
-            Where restWhere = query.where; // по-хорошему надо если первый null и второй null, и ВООБЩЕ не null, то cast'ить первый и тогда PostgreSQL перестанет дуреть 
-            while(queryJoins.size()!=0) {
-                InnerSelectJoin queryJoin = queryJoins.iterator().next();
+            for(InnerSelectJoin queryJoin : queryJoins) {
                 fromString = (fromString.length()==0?"":fromString+" UNION ALL ") + getInnerSelect(query.mapKeys, queryJoin, queryJoin.fullWhere.followTrue(query.properties), params, new OrderedMap<V, Boolean>(), 0, syntax, keyNames, propertyNames, keyOrder, propertyOrder, castTypes);
-
-                if(queryJoins.size()==1) // временная проверка, потому как из-за keyEquals where.and(!fullWhere) вообще может зациклиться 
-                    break;
-
-                restWhere = restWhere.and(queryJoin.fullWhere.not()).pack();
-                queryJoins = restWhere.getInnerJoins();
-
                 castTypes = null;
             }
 

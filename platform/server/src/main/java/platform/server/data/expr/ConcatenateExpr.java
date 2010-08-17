@@ -126,4 +126,8 @@ public class ConcatenateExpr extends BaseExpr {
     public void enumerate(ContextEnumerator enumerator) {
         enumerator.fill(exprs);
     }
+
+    public long calculateComplexity() {
+        return getComplexity(exprs) + 1;
+    }
 }

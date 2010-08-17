@@ -235,10 +235,14 @@ public class Table extends ImmutableObject implements MapKeysInterface<KeyField>
         public boolean isIn(VariableExprSet set) {
             for(int i=0;i<set.size;i++) {
                 VariableClassExpr expr = set.get(i);
-                if(expr instanceof Expr && equals(((Expr)expr).getJoin()))
+                if(expr instanceof Expr && BaseUtils.hashEquals(this,((Expr)expr).getJoin()))
                     return true;
             }
             return false;
+        }
+
+        private long getComplexity() {
+            return AbstractSourceJoin.getComplexity(joins.values()); 
         }
 
         @Override
@@ -314,6 +318,10 @@ public class Table extends ImmutableObject implements MapKeysInterface<KeyField>
 
             public int hashOuter(HashContext hashContext) {
                 return Join.this.hashOuter(hashContext);
+            }
+
+            public long calculateComplexity() {
+                return Join.this.getComplexity();
             }
         }
 
@@ -404,6 +412,10 @@ public class Table extends ImmutableObject implements MapKeysInterface<KeyField>
             public void fillFollowSet(DataWhereSet fillSet) {
                 super.fillFollowSet(fillSet);
                 fillSet.add((DataWhere) Join.this.getWhere());
+            }
+
+            public long calculateComplexity() {
+                return Join.this.getComplexity();
             }
         }
 

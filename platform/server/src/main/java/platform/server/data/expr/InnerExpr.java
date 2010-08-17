@@ -81,6 +81,10 @@ public abstract class InnerExpr extends VariableClassExpr implements JoinData {
         public boolean twins(AbstractSourceJoin o) {
             return InnerExpr.this.equals(((NotNull) o).getExpr());
         }
+
+        public long calculateComplexity() {
+            return InnerExpr.this.getComplexity();
+        }
     }
 
     public static <K> VariableExprSet getExprFollows(Map<K, BaseExpr> map) {

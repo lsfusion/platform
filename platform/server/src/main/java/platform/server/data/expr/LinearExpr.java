@@ -119,4 +119,8 @@ public class LinearExpr extends StaticClassExpr {
     public IntegralClass getStaticClass() {
         return map.getType();
     }
+
+    public long calculateComplexity() {
+        return map.getComplexity();
+    }
 }

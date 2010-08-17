@@ -9,6 +9,8 @@ import platform.server.data.query.CompileSource;
 import platform.server.data.query.ContextEnumerator;
 import platform.server.data.where.classes.ClassExprWhere;
 
+import java.util.Arrays;
+
 public abstract class FormulaWhere<WhereType extends Where> extends AbstractWhere {
 
     public final boolean check; // если true в неправильном состоянии
@@ -112,5 +114,9 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
         if(checkTrue==null)
             checkTrue = checkFormulaTrue();
         return checkTrue;
+    }
+
+    public long calculateComplexity() {
+        return getComplexity(Arrays.asList(wheres)) + 1;
     }
 }

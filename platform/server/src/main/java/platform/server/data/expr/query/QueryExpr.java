@@ -11,9 +11,7 @@ import platform.server.data.query.ContextEnumerator;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public abstract class QueryExpr<K extends BaseExpr,I extends OuterContext<I>,J extends QueryJoin> extends InnerExpr {
 
@@ -106,12 +104,12 @@ public abstract class QueryExpr<K extends BaseExpr,I extends OuterContext<I>,J e
 
     // чисто для Lazy
     @IdentityLazy
-    private Set<KeyExpr> getKeys() {
+    public Set<KeyExpr> getKeys() {
         return getKeys(query, group);
     }
 
     @IdentityLazy
-    private Set<ValueExpr> getValues() {
+    public Set<ValueExpr> getValues() {
         return enumValues(group.keySet(), query.getEnum());
     }
 
@@ -150,5 +148,9 @@ public abstract class QueryExpr<K extends BaseExpr,I extends OuterContext<I>,J e
 
     protected static <I extends OuterContext<I>,K extends BaseExpr> Set<KeyExpr> getKeys(I expr, Map<K, BaseExpr> group) {
         return enumKeys(group.keySet(),expr.getEnum());
+    }
+
+    public long calculateComplexity() {
+        return (getComplexity(Arrays.asList(query.getEnum())) + getComplexity(group.keySet())) * 100 + getComplexity(group.values());
     }
 }

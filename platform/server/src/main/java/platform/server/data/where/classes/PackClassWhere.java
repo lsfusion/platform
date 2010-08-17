@@ -70,4 +70,8 @@ public class PackClassWhere extends DataWhere {
     public ClassExprWhere calculateClassWhere() {
         return packWhere;
     }
+
+    public long calculateComplexity() {
+        return 1;
+    }
 }

@@ -69,4 +69,8 @@ public class TimeExpr extends StaticClassExpr {
 
     public void enumerate(ContextEnumerator enumerator) {
     }
+
+    public long calculateComplexity() {
+        return 1;
+    }
 }

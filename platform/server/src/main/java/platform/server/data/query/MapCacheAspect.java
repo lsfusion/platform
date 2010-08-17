@@ -20,10 +20,7 @@ import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
-import platform.server.logics.property.AggregateProperty;
-import platform.server.logics.property.AndFormulaProperty;
-import platform.server.logics.property.Property;
-import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.*;
 import platform.server.session.Changes;
 import platform.server.session.MapDataChanges;
 import platform.server.session.Modifier;
@@ -523,10 +520,16 @@ public class MapCacheAspect {
             hashCaches.put(implement, new ExprResult(expr, changedWheres!=null?cacheWheres.toWhere():null));
             logger.info("getExpr - not cached "+property);
 
+            // проверим
+            if(checkInfinite && !(property instanceof FormulaProperty))
+                expr.checkInfiniteKeys();
+
             if(changedWheres!=null) changedWheres.add(cacheWheres.toWhere());
             return expr;
         }
     }
+
+    public static boolean checkInfinite = false;
 
     // aspect который ловит getExpr'ы и оборачивает их в query, для mapKeys после чего join'ит их чтобы импользовать кэши
     @Around("call(platform.server.data.expr.Expr platform.server.logics.property.Property.getExpr(java.util.Map,platform.server.session.Modifier,platform.server.data.where.WhereBuilder)) " +

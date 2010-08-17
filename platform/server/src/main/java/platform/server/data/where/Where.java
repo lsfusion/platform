@@ -73,10 +73,9 @@ public interface Where extends SourceJoin, OuterContext<Where>, KeyType, CheckWh
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    Collection<InnerSelectJoin> getInnerJoins(); // должен быть выполнен pack()
+    Collection<InnerSelectJoin> getInnerJoins(boolean notExclusive, boolean noJoins); // должен быть выполнен pack()
     ObjectJoinSets groupObjectJoinSets(); // protected
-    KeyEquals groupKeyEquals();  // protected
-    KeyEquals getKeyEquals(); // для ускорения в GroupExpr.getInnerJoins
+    KeyEquals getKeyEquals();
     MeanClassWheres groupMeanClassWheres();
 
     abstract public ClassExprWhere getClassWhere();

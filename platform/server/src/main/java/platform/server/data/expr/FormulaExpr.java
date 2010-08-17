@@ -105,5 +105,9 @@ public class FormulaExpr extends StaticClassExpr {
     public ConcreteValueClass getStaticClass() {
         return valueClass;
     }
+
+    public long calculateComplexity() {
+        return getComplexity(params.values());
+    }
 }
 

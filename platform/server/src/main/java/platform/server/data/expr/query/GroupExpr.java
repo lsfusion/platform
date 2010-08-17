@@ -14,15 +14,20 @@ import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.expr.cases.MapCase;
 import platform.server.data.expr.where.EqualsWhere;
 import platform.server.data.query.CompileSource;
+import platform.server.data.query.Query;
 import platform.server.data.query.innerjoins.InnerSelectJoin;
 import platform.server.data.query.innerjoins.KeyEqual;
 import platform.server.data.query.innerjoins.ObjectJoinSets;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
+import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
+import platform.server.data.Table;
 import platform.server.Settings;
+import platform.server.logics.BusinessLogics;
+import platform.server.classes.DataClass;
 
 import java.util.*;
 
@@ -35,8 +40,76 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
 
     protected GroupExpr(Map<BaseExpr, BaseExpr> group, Expr expr) {
         super(expr, group);
+
+//        assert checkInfinite(false);
     }
 
+/*    //не очень красиво решено
+    private class CheckInfinite extends ToString {
+
+        boolean correct = true;
+        private CheckInfinite() {
+            super(getValues(), getKeys());
+        }
+
+        @Override
+        public String getSource(Table.Join.Expr expr) {
+            for(Expr inE : expr.getJoin().joins.values())
+                inE.getSource(this);
+            return super.getSource(expr);
+        }
+
+        @Override
+        public String getSource(Table.Join.IsIn where) {
+            for(Expr inE : where.getJoin().joins.values())
+                inE.getSource(this);
+            return super.getSource(where);
+        }
+
+        @Override
+        public String getSource(OrderExpr orderExpr) {
+            for(Expr inE : orderExpr.group.values())
+                inE.getSource(this);
+            return super.getSource(orderExpr);
+        }
+
+        @Override
+        public String getSource(GroupExpr groupExpr) {
+            for(Expr inE : groupExpr.group.values())
+                inE.getSource(this);            
+            correct = correct && groupExpr.checkInfinite(true);
+            return super.getSource(groupExpr);
+        }
+    }
+
+    public boolean checkInfinite(boolean inner) {
+        Where fullWhere = getFullWhere();
+
+        if(!inner) {
+            for(Map.Entry<BaseExpr,BaseExpr> groupExpr : group.entrySet())
+                if(groupExpr.getValue() instanceof KeyExpr) { // может транслировать
+                    Type type = groupExpr.getKey().getType(fullWhere);
+                    if(type instanceof DataClass)
+                        fullWhere = fullWhere.and(groupExpr.getKey().compare(new ValueExpr(((DataClass)type).getDefaultValue(), (DataClass)type), Compare.EQUALS));
+                }
+        }
+
+        for(InnerSelectJoin innerJoin : fullWhere.getInnerJoins(true, false)) {
+            if(!innerJoin.checkKeys(getKeys()))
+                return false;
+
+            if(!inner) {
+                // проверим что внутренним хватает ключей
+                CheckInfinite check = new CheckInfinite();
+                innerJoin.where.getSource(check);
+                if(!check.correct)
+                    return false;
+            }
+        }
+
+        return true;
+    }
+  */
     public abstract boolean isMax();
 
     // трансляция
@@ -155,7 +228,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
     public Expr packFollowFalse(Where falseWhere) {
         // с рекурсией, помогает бывает, даже иногда в null
         Expr packInner = packInnerFollowFalse(falseWhere);
-        if(packInner!=this) // если изменился
+        if(packInner.getComplexity() < getComplexity()) // если изменился !BaseUtils.hashEquals(packInner,this)
             return packInner.followFalse(falseWhere, true);
         else
             return this;
@@ -358,15 +431,14 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
 
     // "определяет" разбивать на innerJoins или нет
     private static Collection<InnerSelectJoin> getInnerJoins(Expr expr, Map<BaseExpr, BaseExpr> outerInner, boolean max) {
-        return getFullWhere(expr, outerInner).getKeyEquals().getInnerJoins(Settings.SPLIT_GROUP_INNER_JOINS(max));
+        // если sum (не max) то exclusive
+        return getFullWhere(expr, outerInner).getInnerJoins(max, !Settings.SPLIT_GROUP_INNER_JOINS(max));
     }
 
     private static Expr createInnerSplit(Map<BaseExpr, BaseExpr> outerInner, Expr expr,boolean max) {
 
         Expr result = CaseExpr.NULL;
-        Iterator<InnerSelectJoin> it = getInnerJoins(expr, outerInner, max).iterator();
-        while(it.hasNext()) {
-            InnerSelectJoin innerJoin = it.next();
+        for(InnerSelectJoin innerJoin : getInnerJoins(expr, outerInner, max)) {
             Expr innerResult;
             if(!innerJoin.keyEqual.isEmpty()) { // translatе'им expr
                 QueryTranslator equalTranslator = innerJoin.keyEqual.getTranslator();
@@ -376,10 +448,6 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
 
             // берем keyEquals
             result = add(result, innerResult, max);
-            if(!max) { // для max'а нельзя ни followFalse'ить ни тем более push'ать, потому как для этого множества может изменит выражение\группировки
-                expr = expr.and(innerJoin.fullWhere.not());
-                it = getInnerJoins(expr, outerInner, max).iterator(); // именно так потому как иначе нарушается assertion
-            }
         }
         return result;
     }

@@ -7,14 +7,16 @@ import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DNFWheres;
 import platform.server.data.where.Where;
+import platform.server.caches.IdentityLazy;
+import platform.base.ImmutableObject;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class KeyEqual implements DNFWheres.Interface<KeyEqual> {
+public class KeyEqual extends ImmutableObject implements DNFWheres.Interface<KeyEqual> {
 
-    private final Map<KeyExpr, BaseExpr> keyExprs;
+    public final Map<KeyExpr, BaseExpr> keyExprs;
 
     public KeyEqual() {
         this.keyExprs = new HashMap<KeyExpr, BaseExpr>();
@@ -46,6 +48,7 @@ public class KeyEqual implements DNFWheres.Interface<KeyEqual> {
         return keyExprs.isEmpty();
     }
 
+    @IdentityLazy
     public QueryTranslator getTranslator() {
         return new PartialQueryTranslator(keyExprs);
     }

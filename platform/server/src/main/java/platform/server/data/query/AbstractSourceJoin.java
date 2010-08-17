@@ -4,6 +4,7 @@ import platform.base.ArrayInstancer;
 import platform.base.BaseUtils;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.OuterContext;
+import platform.server.caches.ManualLazy;
 import platform.server.data.Table;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.KeyType;
@@ -115,5 +116,22 @@ abstract public class AbstractSourceJoin<T extends OuterContext<T>> extends Abst
         for(SourceJoin element : array)
             element.enumValues(result);
         return result;
+    }
+
+    public static long getComplexity(Collection<? extends SourceJoin> elements) {
+        long complexity = 0;
+        for(SourceJoin element : elements)
+            complexity += element.getComplexity();
+        return complexity;
+    }
+
+    protected abstract long calculateComplexity();
+    
+    private Long complexity;    
+    @ManualLazy
+    public long getComplexity() {
+        if(complexity==null)
+            complexity = calculateComplexity();
+        return complexity;
     }
 }

@@ -2,6 +2,10 @@ package platform.server.data.query.innerjoins;
 
 import platform.server.data.query.JoinSet;
 import platform.server.data.where.Where;
+import platform.server.data.expr.KeyExpr;
+import platform.base.BaseUtils;
+
+import java.util.Set;
 
 public class InnerSelectJoin {
     public final KeyEqual keyEqual;
@@ -17,5 +21,9 @@ public class InnerSelectJoin {
         this.fullWhere = where.and(keyEqual.getWhere());
 
         assert where.getKeyEquals().getSingleKey().isEmpty();
+    }
+
+    public boolean checkKeys(Set<KeyExpr> keys) {
+        return BaseUtils.merge(keyEqual.keyExprs.keySet(),joins.getJoinFollows().toSet()).containsAll(keys);
     }
 }

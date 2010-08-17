@@ -83,4 +83,8 @@ public class KeyExpr extends VariableClassExpr {
 
     public void fillFollowSet(DataWhereSet fillSet) {
     }
+
+    public long calculateComplexity() {
+        return 1;
+    }
 }

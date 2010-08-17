@@ -18,4 +18,7 @@ public interface SourceJoin {
 
     void enumKeys(Set<KeyExpr> keys);
     void enumValues(Set<ValueExpr> values);
+
+    // для дебага, определяет сложность выражения, предполагается что например packFollowFalse уменьшает сложность выражения чтобы не допустить рекурсию
+    public abstract long getComplexity();
 }

@@ -29,4 +29,8 @@ public class ExprCase extends Case<BaseExpr> {
     int hashContext(HashContext hashContext) {
         return where.hashOuter(hashContext)*31+ data.hashOuter(hashContext);
     }
+
+    public long getComplexity() {
+        return where.getComplexity() + data.getComplexity();
+    }
 }

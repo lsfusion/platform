@@ -208,4 +208,7 @@ public class CaseExpr extends Expr {
         return result.getExpr();
     }
 
+    public long calculateComplexity() {
+        return cases.getComplexity();
+    }
 }

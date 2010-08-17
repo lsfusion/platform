@@ -62,4 +62,8 @@ public class CurrentUserExpr extends VariableClassExpr {
 
     public void enumerate(ContextEnumerator enumerator) {
     }
+
+    public long calculateComplexity() {
+        return 1;
+    }
 }

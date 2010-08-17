@@ -87,4 +87,8 @@ public class IsClassExpr extends StaticClassExpr {
     public boolean twins(AbstractSourceJoin obj) {
         return expr.equals(((IsClassExpr)obj).expr) && baseClass.equals(((IsClassExpr)obj).baseClass);
     }
+
+    public long calculateComplexity() {
+        return expr.getComplexity() + 1;
+    }
 }

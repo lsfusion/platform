@@ -99,4 +99,8 @@ public class IsClassWhere extends DataWhere {
     public boolean twins(AbstractSourceJoin obj) {
         return expr.equals(((IsClassWhere)obj).expr) && classes.equals(((IsClassWhere)obj).classes);
     }
+
+    public long calculateComplexity() {
+        return expr.getComplexity();
+    }
 }

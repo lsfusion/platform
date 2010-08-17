@@ -475,10 +475,10 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
             result.or(where.groupObjectJoinSets());
         return result;
     }
-    public KeyEquals groupKeyEquals() {
+    public KeyEquals calculateKeyEquals() {
         KeyEquals result = new KeyEquals();
         for(Where where : wheres)
-            result.or(where.groupKeyEquals());
+            result.addAll(where.getKeyEquals());
         return result;
     }
     public MeanClassWheres calculateMeanClassWheres() {

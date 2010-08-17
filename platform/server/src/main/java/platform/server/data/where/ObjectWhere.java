@@ -76,7 +76,7 @@ abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere<Object
 
     abstract protected void fillDataJoinWheres(MapWhere<JoinData> joins, Where andWhere);
 
-    public KeyEquals groupKeyEquals() {
+    public KeyEquals calculateKeyEquals() {
         return new KeyEquals(this);  // в operator'ах никаких equals быть не может
     }
 }

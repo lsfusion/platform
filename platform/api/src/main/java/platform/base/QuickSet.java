@@ -2,6 +2,8 @@ package platform.base;
 
 import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
 
 public class QuickSet<T> {
     public int size;
@@ -30,8 +32,8 @@ public class QuickSet<T> {
         indexes = set.indexes.clone();
     }
 
-    public Collection<T> toCollection() {
-        Collection<T> result = new ArrayList<T>();
+    public Set<T> toSet() {
+        Set<T> result = new HashSet<T>();
         for(int i=0;i<size;i++)
             result.add(get(i));
         return result;

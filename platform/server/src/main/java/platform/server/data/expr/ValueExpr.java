@@ -126,4 +126,8 @@ public class ValueExpr extends StaticClassExpr {
     public static boolean noStaticEquals(Set<? extends Expr> col1, Set<? extends Expr> col2) {
         return removeStatic(col1).equals(removeStatic(col2));
     }
+
+    public long calculateComplexity() {
+        return 1;
+    }
 }

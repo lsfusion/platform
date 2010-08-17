@@ -350,6 +350,10 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
 
         public void enumerate(ContextEnumerator enumerator) {
         }
+
+        public long calculateComplexity() {
+            return 1;
+        }
     }
 
     public BaseExpr getClassExpr() {

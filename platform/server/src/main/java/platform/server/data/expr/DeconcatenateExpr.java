@@ -111,4 +111,8 @@ public class DeconcatenateExpr extends SingleClassExpr {
     public String getSource(CompileSource compile) {
         return ((ConcatenateType) expr.getType(compile.keyType)).getDeconcatenateSource(expr.getSource(compile), part, compile.syntax);
     }
+
+    public long calculateComplexity() {
+        return expr.getComplexity()+1;
+    }
 }

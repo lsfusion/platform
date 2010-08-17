@@ -90,10 +90,10 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
             result = result.and(where.groupObjectJoinSets());
         return result;
     }
-    public KeyEquals groupKeyEquals() {
+    public KeyEquals calculateKeyEquals() {
         KeyEquals result = new KeyEquals(TRUE);
         for(Where where : wheres)
-            result = result.and(where.groupKeyEquals());
+            result = result.and(where.getKeyEquals());
         return result;
     }
     public MeanClassWheres calculateMeanClassWheres() {

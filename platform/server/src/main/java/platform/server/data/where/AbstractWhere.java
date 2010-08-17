@@ -175,29 +175,18 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         return new Query<KeyExpr,Object>(BaseUtils.toMap(map.keySet()),this).join(map).getWhere();
     }
 
-    public KeyEquals getKeyEquals() { // для того чтобы устранить рекурсивные keyEquals
-        KeyEquals result = new KeyEquals();
+    public Collection<InnerSelectJoin> getInnerJoins(boolean notExclusive, boolean noJoins) {
+        if(notExclusive)
+            return getKeyEquals().getInnerJoins(noJoins);
+        else {
+            KeyEquals keyEquals = getKeyEquals();
+            Collection<InnerSelectJoin> innerJoins = keyEquals.getInnerJoins(noJoins); // получаем notExclusive
+            if(innerJoins.size()<=1) // exclusive по определению
+                return innerJoins;
 
-        KeyEquals keyEquals = groupKeyEquals();
-        for(int i=0;i<keyEquals.size;i++) {
-            KeyEqual keyEqual = keyEquals.getKey(i);
-            Where where = keyEquals.getValue(i);
-
-            if(keyEqual.isEmpty())
-                result.add(keyEqual, where);
-            else {
-                Where transWhere = where.translateQuery(keyEqual.getTranslator()); // может еще создать keyEquals
-                KeyEquals transKeyEquals = transWhere.getKeyEquals();
-                for(int j=0;j<transKeyEquals.size;j++)
-                    result.add(keyEqual.and(transKeyEquals.getKey(j)), transKeyEquals.getValue(j)); // assert keyEqual не пересекается с transKeyEqual
-            }
+            InnerSelectJoin firstJoin = innerJoins.iterator().next();
+            return BaseUtils.add(keyEquals.getWhere().and(firstJoin.fullWhere.not()).getInnerJoins(false,noJoins),firstJoin); // assert что keyEquals.getWhere тоже самое что this только упрощенное транслятором
         }
-        
-        return result;
-    }
-
-    public Collection<InnerSelectJoin> getInnerJoins() {
-        return getKeyEquals().getInnerJoins(true);
     }
 
     public Type getKeyType(KeyExpr expr) {
@@ -209,4 +198,14 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     }
 
     public abstract Where translateOuter(MapTranslate translator);
+
+    protected abstract KeyEquals calculateKeyEquals();
+
+    private KeyEquals keyEquals = null;
+    @ManualLazy
+    public KeyEquals getKeyEquals() {
+        if(keyEquals == null)
+            keyEquals = calculateKeyEquals();
+        return keyEquals;
+    }
 }

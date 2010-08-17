@@ -4,18 +4,23 @@ import platform.interop.Compare;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.BaseClass;
+import platform.server.classes.DataClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.Query;
+import platform.server.data.query.innerjoins.KeyEqual;
 import platform.server.data.translator.QueryTranslator;
+import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.type.Reader;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
+import platform.server.logics.BusinessLogics;
+import platform.base.BaseUtils;
 
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 
 // абстрактный класс выражений
 
@@ -87,6 +92,25 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
 
     public static <K> Where getWhere(Map<K, ? extends Expr> map) {
         return getWhere(map.values());
+    }
+
+    public void checkInfiniteKeys() {
+        Set<KeyExpr> keys = new HashSet<KeyExpr>();
+        enumKeys(keys);
+
+        Map<KeyExpr,BaseExpr> keyValues = new HashMap<KeyExpr, BaseExpr>();
+        Set<KeyExpr> keyRest = new HashSet<KeyExpr>();
+        for(KeyExpr key : keys) {
+            Type type = key.getType(getWhere());
+            if(type instanceof DataClass)
+                keyValues.put(key, new ValueExpr(((DataClass)type).getDefaultValue(), (DataClass)type));
+            else
+                keyRest.add(key);
+        }
+
+        Query<KeyExpr,Object> query = new Query<KeyExpr,Object>(BaseUtils.toMap(keyRest));
+        query.and(translateQuery(new PartialQueryTranslator(keyValues)).getWhere());
+        query.compile(BusinessLogics.debugSyntax);
     }
 }
 
