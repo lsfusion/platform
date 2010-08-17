@@ -133,7 +133,7 @@ public class LinearOperandMap extends HashMap<BaseExpr,Integer> {
             else
                 linearCases.sum(operandFollow.scale(operand.getValue()));
         }
-        return linearCases.sum(followedMap.getExpr());
+        return linearCases.sum(followedMap.size()==0?CaseExpr.NULL:followedMap.getExpr());
     }
 
     public BaseExpr getExpr() {

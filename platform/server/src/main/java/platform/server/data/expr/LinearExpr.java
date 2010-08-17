@@ -27,12 +27,9 @@ public class LinearExpr extends StaticClassExpr {
 
     public LinearExpr(LinearOperandMap map) {
         this.map = map;
-        // повырезаем все смежные getWhere с нулевыми коэффицентами
         assert (map.size()>0);
         assert !(map.size()==1 && BaseUtils.singleValue(map).equals(1));
     }
-
-
 
     public Type getType(KeyType keyType) {
         return getStaticClass();

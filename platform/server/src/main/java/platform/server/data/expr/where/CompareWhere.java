@@ -93,9 +93,7 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Data
 
     @Override
     public Where packFollowFalse(Where falseWhere) {
-        // нет гарантии как в случае 0>L(A+B) OR !(A OR B) что не упакуется до пустого
-        return operator1.followFalse(falseWhere,true).compare(operator2.followFalse(falseWhere,true),getCompare());
-//        return operator1.packFollowFalse(falseWhere).compare(operator2.packFollowFalse(falseWhere),getCompare());
+        return operator1.packFollowFalse(falseWhere).compare(operator2.packFollowFalse(falseWhere),getCompare());
     }
 
     public ObjectJoinSets groupObjectJoinSets() {

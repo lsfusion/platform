@@ -54,7 +54,7 @@ public class ObjectJoinSets extends DNFWheres<ObjectJoinSet, Where, ObjectJoinSe
             }
         }
 
-        // упакуем entry
+/*        // упакуем entry
         for(Iterator<Map.Entry<ObjectJoinSet,Where>> it = result.entrySet().iterator();it.hasNext();) {
             Map.Entry<ObjectJoinSet,Where> resultJoin = it.next();
             Where packWhere = resultJoin.getValue().pack();
@@ -62,7 +62,7 @@ public class ObjectJoinSets extends DNFWheres<ObjectJoinSet, Where, ObjectJoinSe
                 it.remove();
             else
                 resultJoin.setValue(packWhere);
-        }
+        }*/
         
         return result;
     }
