@@ -30,7 +30,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
     private ClientGroupObjectValue currentObject;
 
-    private byte classView = ClassViewType.GRID;
+    private byte classView = ClassViewType.HIDE;
 
     public GroupObjectController(ClientGroupObject igroupObject, LogicsSupplier ilogicsSupplier, ClientFormController iform, ClientFormLayout formLayout) throws IOException {
 
@@ -73,6 +73,8 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
             showType.setBanClassView(groupObject.banClassView);
 
             showType.addView(formLayout);
+
+            setClassView(ClassViewType.GRID);
         }
 
     }

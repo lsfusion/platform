@@ -35,7 +35,7 @@ class ObjectController {
 
     }
 
-    Byte classView = ClassViewType.GRID;
+    Byte classView = ClassViewType.HIDE;
     public void changeClassView(Byte classView) {
 
         this.classView = classView;

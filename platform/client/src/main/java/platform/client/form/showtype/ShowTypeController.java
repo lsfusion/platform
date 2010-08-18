@@ -37,7 +37,7 @@ public abstract class ShowTypeController {
         formLayout.add(key, view);
     }
 
-    Byte classView = ClassViewType.GRID;
+    Byte classView = ClassViewType.HIDE;
 
     public void changeClassView(Byte classView) {
 
