@@ -84,7 +84,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
     LP isWorkingMonthForPerson;
 
-    LP personDepartSum, personDepartSumInBC, payMonthTotal, extraMonthTotal, totalOutOper, departmentOutOperInBC, totalMisOper, totalMisOperInBC, monthNum, exchangeRate, nearestPredDate, nearestExchangeRate;
+    LP personDepartSum, personDepartSumInBC, payMonthTotal, extraMonthTotal, totalOutOper, departmentOutOperInBC, totalMisOper, totalMisOperInBC, monthNum, exchangeRate, nearestPredDate, nearestExchangeRate, nearestExchangeRateOp;
     LP baseCurrency, baseCurrencyName;
     LP rateDate, userRateDay, dateByMY, rateDay;
 
@@ -137,6 +137,9 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP lessCmpDate = addJProp(and(false, true, false), object(DateClass.instance), 3, exchangeRate, 1, 2, 3, greater2, 3, 4, is(DateClass.instance), 4);
         nearestPredDate = addMGProp((AbstractGroup) null, "nearestPredDate", "Ближайшая меньшая дата", lessCmpDate, 1, 2, 4);
         nearestExchangeRate = addJProp("Ближайший курс обмена", exchangeRate, 1, 2, nearestPredDate, 1, 2, 3);
+
+        LP nearestPredDateOp = addJProp("Ближайшая дата курса для операции", nearestPredDate, 1, 2, date, 3);
+        nearestExchangeRateOp = addJProp("Ближайший курс обмена операции", exchangeRate, 1, 2, nearestPredDateOp, 1, 2, 3);
 
         outPerson = addDProp("personP", "Сотрудник", person, absOutPerson);
         outMonth = addDProp("outM", "Месяц", absMonth, absOutTime);
@@ -281,7 +284,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         //LP salaryInBC = addJProp("К выплате в БВ", multiplyDouble2, roundSalary, 1, 2, 3, rateBC, 1, 2, 3);
         //personDepartSumInBC = addSGProp("Всего к выплате в БВ", salaryInBC, personDepartment, 3, 1, 2);
 
-        LP outRateBC = addJProp(nearestExchangeRate, outCur, 1, baseCurrency, date, 1);
+        LP outRateBC = addJProp(nearestExchangeRateOp, outCur, 1, baseCurrency, 1);
         LP outOperValInBC = addJProp("Опер. расход в БВ", multiplyDouble2, outOperVal, 1, outRateBC, 1);
         departmentOutOperInBC = addSGProp(baseCurGroup, "Всего по опер. расходу в БВ", outOperValInBC, opDep, 1, transactionMonth, 1, transactionYear, 1);
     }
