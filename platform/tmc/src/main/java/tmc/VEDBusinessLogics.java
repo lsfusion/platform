@@ -1561,6 +1561,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 design.get(objIssue.groupTo).grid.constraints.fillHorizontal /= 3;
                 design.get(objIssue.groupTo).grid.minRowCount = 2;
                 design.get(objIssue.groupTo).grid.showFilter = false;
+                design.get(objIssue.groupTo).grid.autoHide = true;
                 design.addIntersection(design.getGroupObjectContainer(objIssue.groupTo), design.getGroupObjectContainer(objCoupon.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
                 design.addIntersection(design.getGroupObjectContainer(objIssue.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             }
@@ -1569,6 +1570,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.get(objObligation.groupTo).grid.minRowCount = 2;
             design.get(objCoupon.groupTo).grid.showFilter = false;
             design.get(objObligation.groupTo).grid.showFilter = false;
+            design.get(objCoupon.groupTo).grid.autoHide = true;
             design.addIntersection(design.getGroupObjectContainer(objCoupon.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             ObjectView objCouponView = design.get(objCoupon);
