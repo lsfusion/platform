@@ -1,6 +1,5 @@
 package platform.interop.form;
 
-import platform.interop.action.ClientAction;
 import platform.interop.action.ClientApply;
 import platform.interop.remote.PendingRemote;
 
@@ -60,6 +59,8 @@ public interface RemoteFormInterface extends PendingRemote {
     void changePropertyOrder(int propertyID, byte modiType) throws RemoteException;
 
     void changeObjectOrder(int propertyID, byte modiType) throws RemoteException;
+
+    void changeObjectClassOrder(int propertyID, byte modiType) throws RemoteException;
 
     void clearUserFilters() throws RemoteException;
 

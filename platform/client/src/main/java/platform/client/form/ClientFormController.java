@@ -554,10 +554,13 @@ public class ClientFormController {
 
     public void changeOrder(ClientCell property, Order modiType) throws IOException {
 
-        if(property instanceof ClientPropertyDraw)
+        if (property instanceof ClientPropertyDraw) {
             remoteForm.changePropertyOrder(property.getID(), modiType.serialize());
-        else
+        } if (property instanceof ClientClassCell) {
+            remoteForm.changeObjectClassOrder(property.getID(), modiType.serialize());
+        } else {
             remoteForm.changeObjectOrder(property.getID(), modiType.serialize());
+        }
 
         applyRemoteChanges();
     }

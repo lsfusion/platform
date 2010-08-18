@@ -1,9 +1,6 @@
 package platform.server.form.instance;
 
-import platform.server.classes.ConcreteClass;
-import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.ConcreteObjectClass;
-import platform.server.classes.CustomClass;
+import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.type.ObjectType;
@@ -13,16 +10,23 @@ import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.property.Property;
+import platform.server.session.Changes;
 import platform.server.session.ChangesSession;
+import platform.server.session.Modifier;
 
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
 public class CustomObjectInstance extends ObjectInstance {
 
     public CustomClass baseClass;
     CustomClass gridClass;
-    
+
+    public DataObjectClassInstance objectClassInstance;
+
     public ConcreteCustomClass currentClass;
 
     private CustomClassListener classListener;
@@ -38,6 +42,7 @@ public class CustomObjectInstance extends ObjectInstance {
         super(entity);
         this.baseClass = baseClass;
         gridClass = baseClass;
+        objectClassInstance = new DataObjectClassInstance();
     }
 
     public CustomClass getBaseClass() {
@@ -170,4 +175,39 @@ public class CustomObjectInstance extends ObjectInstance {
     public Type getType() {
         return ObjectType.instance;
     }
+
+    public class DataObjectClassInstance implements OrderInstance {
+
+        public GroupObjectInstance getApplyObject() {
+            return CustomObjectInstance.this.getApplyObject();
+        }
+
+        public Type getType() {
+            return SystemClass.instance;
+        }
+
+        public Expr getExpr(Set<GroupObjectInstance> classGroup, Map<ObjectInstance, ? extends Expr> classSource, Modifier<? extends Changes> modifier) throws SQLException {
+            return CustomObjectInstance.this.getExpr(classGroup, classSource, modifier).classExpr(CustomObjectInstance.this.baseClass.getBaseClass());
+        }
+
+        public boolean classUpdated(GroupObjectInstance classGroup) {
+            return false;
+        }
+
+        public boolean objectUpdated(GroupObjectInstance classGroup) {
+            return false;
+        }
+
+        public boolean dataUpdated(Collection<Property> changedProps) {
+            return false;
+        }
+
+        public void fillProperties(Set<Property> properties) {
+        }
+
+        public boolean isInInterface(GroupObjectInstance classGroup) {
+            return groupTo == classGroup;
+        }
+    }
+
 }

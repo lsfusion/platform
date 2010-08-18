@@ -134,6 +134,12 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     }
 
     @PendingRemoteMethod
+    public void changeObjectClassOrder(int propertyID, byte modiType) throws RemoteException {
+        logRemoteMethodCall("changeObjectClassOrder");
+        target.changeObjectClassOrder(propertyID, modiType);
+    }
+
+    @PendingRemoteMethod
     public void clearUserFilters() throws RemoteException {
         logRemoteMethodCall("clearUserFilters");
         target.clearUserFilters();

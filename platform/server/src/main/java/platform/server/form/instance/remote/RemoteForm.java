@@ -6,26 +6,29 @@ import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import platform.base.BaseUtils;
-import platform.interop.*;
-import platform.interop.action.ClientAction;
-import platform.interop.action.ResultClientAction;
-import platform.interop.action.ClientApply;
+import platform.interop.ClassViewType;
+import platform.interop.CompressingOutputStream;
+import platform.interop.Order;
+import platform.interop.Scroll;
 import platform.interop.action.CheckFailed;
+import platform.interop.action.ClientAction;
+import platform.interop.action.ClientApply;
+import platform.interop.action.ResultClientAction;
 import platform.interop.form.RemoteChanges;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
+import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.*;
 import platform.server.form.instance.filter.FilterInstance;
 import platform.server.form.instance.filter.RegularFilterGroupInstance;
 import platform.server.form.instance.listener.CurrentClassListener;
 import platform.server.form.view.FormView;
+import platform.server.form.view.report.DefaultJasperDesign;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
-import platform.server.form.view.report.DefaultJasperDesign;
-import platform.server.form.entity.FormEntity;
 
 import java.io.*;
 import java.rmi.RemoteException;
@@ -279,6 +282,15 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
         ObjectInstance object = form.getObjectInstance(objectID);
         try {
             object.groupTo.changeOrder(object, Order.deserialize(modiType));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void changeObjectClassOrder(int propertyID, byte modiType) throws RemoteException {
+        CustomObjectInstance object = (CustomObjectInstance)form.getObjectInstance(propertyID);
+        try {
+            object.groupTo.changeOrder(object.objectClassInstance, Order.deserialize(modiType));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
