@@ -1,7 +1,7 @@
 package platform.client.form.showtype;
 
-import platform.client.form.ClientFormLayout;
 import platform.client.form.ClientFormController;
+import platform.client.form.ClientFormLayout;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.logics.ClientShowType;
 import platform.interop.ClassViewType;
@@ -37,7 +37,7 @@ public abstract class ShowTypeController {
         formLayout.add(key, view);
     }
 
-    Byte classView;
+    Byte classView = ClassViewType.GRID;
 
     public void changeClassView(Byte classView) {
 
@@ -65,5 +65,6 @@ public abstract class ShowTypeController {
     Byte banClassView;
     public void setBanClassView(Byte banClassView) {
         this.banClassView = banClassView;
+        view.changeClassView(classView, banClassView);
     }
 }

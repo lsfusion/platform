@@ -53,7 +53,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
             object.groupTo = this;
 
         // текущее состояние
-        this.curClassView = entity.initClassView;
+        if (this.curClassView != entity.initClassView) {
+            this.curClassView = entity.initClassView;
+            this.updated |= UPDATED_CLASSVIEW;
+        }
         this.pageSize = entity.pageSize;
     }
 
@@ -177,7 +180,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
     public final static int UPDATED_ORDER = (1 << 5);
     public final static int UPDATED_FILTER = (1 << 6);
 
-    public int updated = UPDATED_GRIDCLASS | UPDATED_CLASSVIEW | UPDATED_ORDER | UPDATED_FILTER;
+    public int updated = UPDATED_GRIDCLASS | UPDATED_ORDER | UPDATED_FILTER;
 
     Map<ObjectInstance,ObjectValue> getGroupObjectValue() {
         Map<ObjectInstance,ObjectValue> result = new HashMap<ObjectInstance, ObjectValue>();
