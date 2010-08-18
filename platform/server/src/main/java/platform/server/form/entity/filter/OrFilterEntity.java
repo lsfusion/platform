@@ -10,8 +10,8 @@ import java.util.Set;
 
 public class OrFilterEntity extends FilterEntity {
 
-    FilterEntity op1;
-    FilterEntity op2;
+    public FilterEntity op1;
+    public FilterEntity op2;
 
     public OrFilterEntity(FilterEntity op1, FilterEntity op2) {
         this.op1 = op1;
@@ -19,7 +19,7 @@ public class OrFilterEntity extends FilterEntity {
     }
 
     public FilterInstance getInstance(InstanceFactory instanceFactory) {
-        return new OrFilterInstance(op1.getInstance(instanceFactory),op2.getInstance(instanceFactory));
+        return instanceFactory.getInstance(this);
     }
 
     protected void fillObjects(Set<ObjectEntity> objects) {

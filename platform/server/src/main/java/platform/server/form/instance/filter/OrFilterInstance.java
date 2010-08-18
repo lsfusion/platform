@@ -21,8 +21,8 @@ import java.util.Set;
 
 public class OrFilterInstance extends FilterInstance {
 
-    FilterInstance op1;
-    FilterInstance op2;
+    public FilterInstance op1;
+    public FilterInstance op2;
 
     public OrFilterInstance(FilterInstance op1, FilterInstance op2) {
         this.op1 = op1;

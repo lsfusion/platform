@@ -87,6 +87,10 @@ public class InstanceFactory {
         return new NotFilterInstance(entity.filter.getInstance(this));
     }
 
+    public OrFilterInstance getInstance(OrFilterEntity entity) {
+        return new OrFilterInstance(entity.op1.getInstance(this),entity.op2.getInstance(this));
+    }
+
     public RegularFilterGroupInstance getInstance(RegularFilterGroupEntity entity) {
 
         RegularFilterGroupInstance group = new RegularFilterGroupInstance(entity);
