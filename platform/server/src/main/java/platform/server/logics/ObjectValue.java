@@ -36,7 +36,7 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractMapV
             return new DataObject(value, objectClass);
     }
 
-    public Expr getExpr(Set<GroupObjectInstance> classGroup, Map<ObjectInstance, ? extends Expr> classSource, Modifier<? extends Changes> modifier) throws SQLException {
+    public Expr getExpr(Map<ObjectInstance, ? extends Expr> classSource, Modifier<? extends Changes> modifier) throws SQLException {
         return getExpr();
     }
 

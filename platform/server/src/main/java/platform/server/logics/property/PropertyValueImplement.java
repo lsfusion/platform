@@ -56,7 +56,7 @@ public class PropertyValueImplement<P extends PropertyInterface> extends Propert
                 if(mapObject.getValue() instanceof ObjectInstance && ((ObjectInstance)mapObject.getValue()).groupTo==groupObject)
                     groupChange.put(mapObject.getKey(),(ObjectInstance)mapObject.getValue());
         }
-        return new PropertyChange<P>(mapKeys, expr, CompareWhere.compareValues(BaseUtils.filterNotKeys(mapKeys, groupChange.keySet()), mapping).and(groupObject==null? Where.TRUE:groupObject.getWhere(BaseUtils.crossJoin(groupChange, mapKeys), Collections.singleton(groupObject), modifier)));
+        return new PropertyChange<P>(mapKeys, expr, CompareWhere.compareValues(BaseUtils.filterNotKeys(mapKeys, groupChange.keySet()), mapping).and(groupObject==null? Where.TRUE:groupObject.getWhere(BaseUtils.crossJoin(groupChange, mapKeys), modifier)));
     }
 
     public boolean canBeChanged(Modifier<? extends Changes> modifier) throws SQLException {

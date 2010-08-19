@@ -61,8 +61,8 @@ public class OrFilterInstance extends FilterInstance {
             return apply2;
     }
 
-    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Set<GroupObjectInstance> classGroup, Modifier<? extends Changes> modifier) throws SQLException {
-        return op1.getWhere(mapKeys, classGroup, modifier).or(op2.getWhere(mapKeys, classGroup, modifier));
+    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) throws SQLException {
+        return op1.getWhere(mapKeys, modifier).or(op2.getWhere(mapKeys, modifier));
     }
 
     public boolean isInInterface(GroupObjectInstance classGroup) {

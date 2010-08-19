@@ -676,12 +676,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
         Map<OrderInstance, Expr> orderExprs = new HashMap<OrderInstance, Expr>();
         for(Map.Entry<OrderInstance,Boolean> toOrder : orders.entrySet())
-            orderExprs.put(toOrder.getKey(),toOrder.getKey().getExpr(Collections.singleton(group), mapKeys, this));
+            orderExprs.put(toOrder.getKey(),toOrder.getKey().getExpr(mapKeys, this));
 
         Set<KeyExpr> usedContext = null;
         if(readSize==1 && orderSeeks!=null && down) { // в частном случае если есть "висячие" ключи не в фильтре и нужна одна запись ставим равно вместо >
             usedContext = new HashSet<KeyExpr>();
-            group.getFilterWhere(mapKeys, Collections.singleton(group), this).enumKeys(usedContext); // именно после ff'са
+            group.getFilterWhere(mapKeys, this).enumKeys(usedContext); // именно после ff'са
             for(Expr expr : orderExprs.values())
                 if(!(expr instanceof KeyExpr))
                     expr.enumKeys(usedContext);
@@ -702,7 +702,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         } else
             orderWhere = Where.FALSE;
 
-        return new Query<ObjectInstance, OrderInstance>(mapKeys,orderExprs,group.getWhere(mapKeys, Collections.singleton(group), this).and(down?orderWhere:orderWhere.not())).executeClasses(session, down?orders:Query.reverseOrder(orders), readSize, BL.baseClass);
+        return new Query<ObjectInstance, OrderInstance>(mapKeys,orderExprs,group.getWhere(mapKeys, this).and(down?orderWhere:orderWhere.not())).executeClasses(session, down?orders:Query.reverseOrder(orders), readSize, BL.baseClass);
     }
 
     // считывает одну запись
@@ -1030,7 +1030,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
             if(panelProperties.size()>0) { // читаем "панельные" свойства
                 Query<Object, PropertyDrawInstance> selectProps = new Query<Object, PropertyDrawInstance>(new HashMap<Object, KeyExpr>());
                 for(PropertyDrawInstance<?> drawProperty : panelProperties)
-                    selectProps.properties.put(drawProperty, drawProperty.propertyObject.getExpr(null,null, this));
+                    selectProps.properties.put(drawProperty, drawProperty.propertyObject.getExpr(null, this));
 
                 Map<PropertyDrawInstance,Object> resultProps = selectProps.execute(session).singleValue();
                 for(PropertyDrawInstance drawProp : panelProperties)
@@ -1047,7 +1047,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 selectProps.and(keyTable.joinAnd(BaseUtils.join(keyTable.mapKeys,selectProps.mapKeys)).getWhere());
 
                 for(PropertyDrawInstance<?> drawProperty : groupList)
-                    selectProps.properties.put(drawProperty, drawProperty.propertyObject.getExpr(Collections.singleton(group), selectProps.mapKeys, this));
+                    selectProps.properties.put(drawProperty, drawProperty.propertyObject.getExpr(selectProps.mapKeys, this));
 
                 OrderedMap<Map<ObjectInstance, Object>, Map<PropertyDrawInstance, Object>> resultProps = selectProps.execute(session);
 
@@ -1130,13 +1130,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         applyFilters();
         applyOrders();
 
-        Collection<ObjectInstance> classObjects = new ArrayList<ObjectInstance>();
-        for(GroupObjectInstance group : classGroups)
-            classObjects.addAll(group.objects);
-
         // пока сделаем тупо получаем один большой запрос
 
-        Query<ObjectInstance,Object> query = new Query<ObjectInstance,Object>(classObjects);
+        Query<ObjectInstance,Object> query = new Query<ObjectInstance,Object>(GroupObjectInstance.getObjects(classGroups));
         OrderedMap<Object,Boolean> queryOrders = new OrderedMap<Object, Boolean>();
 
         for (GroupObjectInstance group : groups) {
@@ -1144,16 +1140,16 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
             if (classGroups.contains(group)) {
 
                 // не фиксированные ключи
-                query.and(group.getWhere(query.mapKeys, classGroups, this));
+                query.and(group.getWhere(query.mapKeys, this));
 
                 // закинем Order'ы
                 for(Entry<OrderInstance, Boolean> order : group.orders.entrySet()) {
-                    query.properties.put(order.getKey(),order.getKey().getExpr(classGroups, query.mapKeys, this));
+                    query.properties.put(order.getKey(),order.getKey().getExpr(query.mapKeys, this));
                     queryOrders.put(order.getKey(),order.getValue());
                 }
 
                 for(ObjectInstance object : group.objects) {
-                    query.properties.put(object,object.getExpr(classGroups,query.mapKeys));
+                    query.properties.put(object,object.getExpr(query.mapKeys, this));
                     queryOrders.put(object,false);
                 }
             }
@@ -1163,7 +1159,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
         for(PropertyDrawInstance<?> property : properties)
             if (propertyGroups.contains(property.propertyObject.getApplyObject()))
-                query.properties.put(property, property.propertyObject.getExpr(classGroups, query.mapKeys, this));
+                query.properties.put(property, property.propertyObject.getExpr(query.mapKeys, this));
 
         OrderedMap<Map<ObjectInstance, Object>, Map<Object, Object>> resultSelect = query.execute(session,queryOrders,0);
         for(Entry<Map<ObjectInstance, Object>, Map<Object, Object>> row : resultSelect.entrySet()) {
@@ -1171,7 +1167,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
             for(GroupObjectInstance group : groups)
                 if (propertyGroups.contains(group))
                     for(ObjectInstance object : group.objects)
-                        if (classObjects.contains(object))
+                        if (classGroups.contains(group))
                             groupValue.put(object,row.getKey().get(object));
                         else
                             groupValue.put(object,object.getObjectValue().getValue());

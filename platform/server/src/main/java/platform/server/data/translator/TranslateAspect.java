@@ -4,6 +4,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import platform.server.caches.MapValues;
+import platform.server.caches.InnerContext;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.query.SourceJoin;
@@ -27,10 +28,8 @@ public class TranslateAspect {
     }
 
     @Around("call(* *.translateInner(platform.server.data.translator.MapTranslate)) && target(toTranslate)  && args(translator)")
-    public Object callTranslateInner(ProceedingJoinPoint thisJoinPoint, SourceJoin toTranslate, MapTranslate translator) throws Throwable {
-        Set<ValueExpr> values = new HashSet<ValueExpr>();
-        toTranslate.enumValues(values);
-        if(translator.identityValues(values))
+    public Object callTranslateInner(ProceedingJoinPoint thisJoinPoint, InnerContext toTranslate, MapTranslate translator) throws Throwable {
+        if(translator.identityValues(toTranslate.getValues()))
             return toTranslate;
         else
             return thisJoinPoint.proceed();

@@ -46,7 +46,7 @@ public abstract class FilterInstance implements Updated {
 
     public abstract GroupObjectInstance getApplyObject();
 
-    public abstract Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Set<GroupObjectInstance> classGroup, Modifier<? extends Changes> modifier) throws SQLException;
+    public abstract Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) throws SQLException;
 
     public void resolveAdd(DataSession session, Modifier<? extends Changes> modifier, CustomObjectInstance object, DataObject addObject) throws SQLException {
     }

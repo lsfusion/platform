@@ -15,5 +15,5 @@ public interface CompareValue extends Updated {
 
 //    AndClassSet getValueClass(GroupObjectInstance ClassGroup) {return null;}
 
-    Expr getExpr(Set<GroupObjectInstance> classGroup, Map<ObjectInstance, ? extends Expr> classSource, Modifier<? extends Changes> modifier) throws SQLException;
+    Expr getExpr(Map<ObjectInstance, ? extends Expr> classSource, Modifier<? extends Changes> modifier) throws SQLException;
 }

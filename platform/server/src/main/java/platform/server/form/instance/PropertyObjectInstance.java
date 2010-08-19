@@ -106,11 +106,11 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
     }
 
 
-    public Expr getExpr(Set<GroupObjectInstance> classGroup, Map<ObjectInstance, ? extends Expr> classSource, Modifier<? extends Changes> modifier) throws SQLException {
+    public Expr getExpr(Map<ObjectInstance, ? extends Expr> classSource, Modifier<? extends Changes> modifier) throws SQLException {
 
         Map<P, Expr> joinImplement = new HashMap<P, Expr>();
         for(P propertyInterface : property.interfaces)
-            joinImplement.put(propertyInterface, mapping.get(propertyInterface).getExpr(classGroup, classSource, modifier));
+            joinImplement.put(propertyInterface, mapping.get(propertyInterface).getExpr(classSource, modifier));
         return property.getExpr(joinImplement,modifier,null);
     }
 

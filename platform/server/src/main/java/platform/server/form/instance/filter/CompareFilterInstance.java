@@ -71,8 +71,8 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
         return super.objectUpdated(classGroup) || value.objectUpdated(classGroup);
     }
 
-    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Set<GroupObjectInstance> classGroup, Modifier<? extends Changes> modifier) throws SQLException {
-        return property.getExpr(classGroup, mapKeys, modifier).compare(value.getExpr(classGroup, mapKeys, modifier), compare);
+    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) throws SQLException {
+        return property.getExpr(mapKeys, modifier).compare(value.getExpr(mapKeys, modifier), compare);
     }
 
     @Override
@@ -107,7 +107,7 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
             changeWhere = changeWhere.and(mapWhere);
         }
         session.execute(property.property, new PropertyChange<P>(mapKeys,
-                            value.getExpr(Collections.singleton(object.groupTo), BaseUtils.filterKeys(mapObjects, property.getObjectInstances()), modifier), changeWhere),
+                            value.getExpr(BaseUtils.filterKeys(mapObjects, object.groupTo.objects), modifier), changeWhere),
                             modifier, null, null);
     }
 }

@@ -186,8 +186,8 @@ public class CustomObjectInstance extends ObjectInstance {
             return SystemClass.instance;
         }
 
-        public Expr getExpr(Set<GroupObjectInstance> classGroup, Map<ObjectInstance, ? extends Expr> classSource, Modifier<? extends Changes> modifier) throws SQLException {
-            return CustomObjectInstance.this.getExpr(classGroup, classSource, modifier).classExpr(CustomObjectInstance.this.baseClass.getBaseClass());
+        public Expr getExpr(Map<ObjectInstance, ? extends Expr> classSource, Modifier<? extends Changes> modifier) throws SQLException {
+            return CustomObjectInstance.this.getExpr(classSource, modifier).classExpr(CustomObjectInstance.this.baseClass.getBaseClass());
         }
 
         public boolean classUpdated(GroupObjectInstance classGroup) {

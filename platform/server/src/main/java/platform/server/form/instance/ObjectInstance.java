@@ -12,11 +12,13 @@ import platform.server.logics.property.Property;
 import platform.server.session.Changes;
 import platform.server.session.ChangesSession;
 import platform.server.session.Modifier;
+import platform.base.BaseUtils;
 
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.HashSet;
 
 // на самом деле нужен collection но при extend'е нужна конкретная реализация
 public abstract class ObjectInstance extends CellInstance<ObjectEntity> implements PropertyObjectInterfaceInstance {
@@ -47,11 +49,6 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
         return getCaption();
     }
 
-    protected abstract Expr getExpr();
-    public Expr getExpr(Set<GroupObjectInstance> classGroup, Map<ObjectInstance, ? extends Expr> classSource) {
-        return (classGroup!=null && classGroup.contains(groupTo)?classSource.get(this):getExpr());
-    }
-
     public abstract ValueClass getBaseClass();
     public abstract void setDefaultValue(ChangesSession session) throws SQLException;
 
@@ -77,8 +74,14 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
     public boolean objectUpdated(GroupObjectInstance classGroup) { return groupTo!=classGroup && (updated & UPDATED_OBJECT)!=0; }
     public boolean dataUpdated(Collection<Property> changedProps) { return false; }
     public void fillProperties(Set<Property> properties) { }
-    public Expr getExpr(Set<GroupObjectInstance> classGroup, Map<ObjectInstance, ? extends Expr> classSource, Modifier<? extends Changes> modifier) {
-        return getExpr(classGroup, classSource);
+
+    protected abstract Expr getExpr();
+    public Expr getExpr(Map<ObjectInstance, ? extends Expr> classSource, Modifier<? extends Changes> modifier) {
+        Expr result;
+        if(classSource!=null && (result = classSource.get(this))!=null)
+            return result;
+        else
+            return getExpr();
     }
 
     public GroupObjectInstance getApplyObject() {

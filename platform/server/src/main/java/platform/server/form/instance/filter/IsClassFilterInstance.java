@@ -7,7 +7,6 @@ import platform.server.form.instance.*;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
-import platform.server.form.instance.GroupObjectInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInstance;
 
@@ -15,7 +14,6 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Map;
-import java.util.Set;
 
 public class IsClassFilterInstance<P extends PropertyInterface> extends PropertyFilterInstance<P> {
 
@@ -31,7 +29,7 @@ public class IsClassFilterInstance<P extends PropertyInterface> extends Property
         isClass = form.getCustomClass(inStream.readInt());
     }
 
-    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Set<GroupObjectInstance> classGroup, Modifier<? extends Changes> modifier) throws SQLException {
-        return modifier.getSession().getIsClassWhere(property.getExpr(classGroup, mapKeys, modifier), isClass, null);
+    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) throws SQLException {
+        return modifier.getSession().getIsClassWhere(property.getExpr(mapKeys, modifier), isClass, null);
     }
 }

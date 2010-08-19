@@ -26,6 +26,13 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 
     GroupObjectEntity entity;
 
+    public final static Collection<ObjectInstance> getObjects(Set<GroupObjectInstance> groups) {
+        Collection<ObjectInstance> result = new ArrayList<ObjectInstance>();
+        for(GroupObjectInstance group : groups)
+            result.addAll(group.objects);
+        return result;
+    }
+
     public Collection<ObjectInstance> objects;
 
     // глобальный идентификатор чтобы писать во GroupObjectTable
@@ -204,22 +211,22 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         throw new RuntimeException("key not found");
     }
 
-    public Where getFilterWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Set<GroupObjectInstance> classGroup, Modifier<? extends Changes> modifier) throws SQLException {
+    public Where getFilterWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) throws SQLException {
         Where where = Where.TRUE;
         for(FilterInstance filt : filters)
-            where = where.and(filt.getWhere(mapKeys, classGroup, modifier));
+            where = where.and(filt.getWhere(mapKeys, modifier));
         return where;
     }
 
-    private Where getClassWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Set<GroupObjectInstance> classGroup, Modifier<? extends Changes> modifier) {
+    private Where getClassWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) {
         Where where = Where.TRUE;
         for(ObjectInstance object : objects)
             where = where.and(modifier.getSession().getIsClassWhere(mapKeys.get(object), object.getGridClass(), null));
         return where;
     }
 
-    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Set<GroupObjectInstance> classGroup, Modifier<? extends Changes> modifier) throws SQLException {
-        return getFilterWhere(mapKeys, classGroup, modifier).and(getClassWhere(mapKeys, classGroup, modifier));
+    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) throws SQLException {
+        return getFilterWhere(mapKeys, modifier).and(getClassWhere(mapKeys, modifier));
     }
 
     Map<ObjectInstance,ObjectValue> getNulls() {

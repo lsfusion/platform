@@ -49,8 +49,8 @@ public class NotFilterInstance extends FilterInstance {
         return filter.getApplyObject();
     }
 
-    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Set<GroupObjectInstance> classGroup, Modifier<? extends Changes> modifier) throws SQLException {
-        return filter.getWhere(mapKeys, classGroup, modifier).not();
+    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) throws SQLException {
+        return filter.getWhere(mapKeys, modifier).not();
     }
 
     public boolean isInInterface(GroupObjectInstance classGroup) {
