@@ -45,7 +45,7 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
         fixedFilters.add(filter);
     }
 
-    public OrderedMap<OrderEntity, Boolean> fixedOrders = new OrderedMap<OrderEntity, Boolean>();
+    public OrderedMap<OrderEntity<?>, Boolean> fixedOrders = new OrderedMap<OrderEntity<?>, Boolean>();
 
     public void addFixedOrder(OrderEntity order, boolean descending) {
         fixedOrders.put(order, descending);

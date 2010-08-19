@@ -2,10 +2,13 @@ package platform.server.form.entity;
 
 import platform.interop.ClassViewType;
 import platform.interop.form.RemoteFormInterface;
+import platform.server.form.instance.GroupObjectInstance;
+import platform.server.form.instance.InstanceFactory;
+import platform.server.form.instance.Instantiable;
 
 import java.util.ArrayList;
 
-public class GroupObjectEntity extends ArrayList<ObjectEntity> {
+public class GroupObjectEntity extends ArrayList<ObjectEntity> implements Instantiable<GroupObjectInstance> {
 
     public final int ID;
 
@@ -23,5 +26,8 @@ public class GroupObjectEntity extends ArrayList<ObjectEntity> {
     public byte initClassView = ClassViewType.GRID;
     public byte banClassView = 0;
     public int pageSize = 10;
-    
+
+    public GroupObjectInstance getInstance(InstanceFactory instanceFactory) {
+        return instanceFactory.getInstance(this);
+    }
 }

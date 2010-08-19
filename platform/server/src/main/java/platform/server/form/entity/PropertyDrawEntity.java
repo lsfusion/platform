@@ -1,9 +1,12 @@
 package platform.server.form.entity;
 
 import platform.interop.ClassViewType;
+import platform.server.form.instance.InstanceFactory;
+import platform.server.form.instance.Instantiable;
+import platform.server.form.instance.PropertyDrawInstance;
 import platform.server.logics.property.PropertyInterface;
 
-public class PropertyDrawEntity<P extends PropertyInterface> extends CellEntity {
+public class PropertyDrawEntity<P extends PropertyInterface> extends CellEntity implements Instantiable<PropertyDrawInstance> {
 
     public PropertyObjectEntity<P> propertyObject;
 
@@ -32,4 +35,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends CellEntity 
         this.toDraw = toDraw;
     }
 
+    public PropertyDrawInstance getInstance(InstanceFactory instanceFactory) {
+        return instanceFactory.getInstance(this);
+    }
 }

@@ -152,7 +152,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
             regularFilterGroups.add(instanceFactory.getInstance(filterGroupEntity));
         }
 
-        for (Entry<OrderEntity, Boolean> orderEntity : entity.fixedOrders.entrySet()) {
+        for (Entry<OrderEntity<?>, Boolean> orderEntity : entity.fixedOrders.entrySet()) {
             OrderInstance orderInstance = orderEntity.getKey().getInstance(instanceFactory);
             orderInstance.getApplyObject().fixedOrders.put(orderInstance, orderEntity.getValue());
         }

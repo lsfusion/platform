@@ -19,9 +19,9 @@ public class CompareFilterEntity<P extends PropertyInterface> extends PropertyFi
 
     public Compare compare;
 
-    public OrderEntity value;
+    public OrderEntity<?> value;
 
-    public CompareFilterEntity(PropertyObjectEntity<P> iProperty, Compare iCompare, OrderEntity iValue) {
+    public CompareFilterEntity(PropertyObjectEntity<P> iProperty, Compare iCompare, OrderEntity<?> iValue) {
         super(iProperty);
         value = iValue;
         compare = iCompare;

@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyImplement<PropertyObjectInterfaceEntity,P> implements OrderEntity {
+public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyImplement<PropertyObjectInterfaceEntity,P> implements OrderEntity<PropertyObjectInstance> {
 
     public Collection<ObjectEntity> getObjectInstances() {
         Collection<ObjectEntity> result = new ArrayList<ObjectEntity>();
