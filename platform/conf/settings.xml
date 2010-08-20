@@ -53,6 +53,11 @@
 		</map></property>
 	</bean>
 
+<!-- default ports: 6666, 6667, 6668 -->
+    <bean id="serverInstanceLocatorSettings" class="platform.server.net.ServerInstanceLocatorSettings">
+        <constructor-arg type="int"><value>6666</value></constructor-arg>
+    </bean>
+<!-- -->
     <!--bean id="dataAdapter" class="platform.server.data.sql.PostgreDataAdapter">
         <constructor-arg><value>bdg</value></constructor-arg>
         <constructor-arg><value>localhost</value></constructor-arg>

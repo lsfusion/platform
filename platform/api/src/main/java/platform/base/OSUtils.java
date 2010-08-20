@@ -1,6 +1,9 @@
 package platform.base;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -8,7 +11,7 @@ public class OSUtils {
 
     public static String getResourcePath(String resource, String path, Class<?> cls, boolean overwrite, boolean appendPath) throws IOException {
 
-        File file = createUserFile(appendPath ? ClassUtils.resolveName(cls, path + resource) : resource);
+        File file = getUserFile(appendPath ? ClassUtils.resolveName(cls, path + resource) : resource);
         if (overwrite || !file.exists()) { // пока сделаем так, хотя это не очень правильно, так как желательно все-таки обновлять dll'ки
 
             InputStream in = cls.getResourceAsStream(path + resource);
@@ -60,10 +63,14 @@ public class OSUtils {
         return userDir;
     }
 
-    public static File createUserFile(String fileName) {
+    public static File getUserFile(String fileName) {
+        return getUserFile(fileName, true);
+    }
+
+    public static File getUserFile(String fileName, boolean makeDir) {
         File userFile = new File(getUserDir().getAbsolutePath() + "/" + fileName);
         File userDir = userFile.getParentFile();
-        if (!userDir.exists())
+        if (makeDir && !userDir.exists())
             userDir.mkdirs();
         return userFile;
     }

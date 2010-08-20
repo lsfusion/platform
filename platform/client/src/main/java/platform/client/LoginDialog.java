@@ -3,30 +3,32 @@ package platform.client;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
-import platform.client.exceptions.ClientExceptionManager;
-import platform.interop.RemoteLogicsInterface;
-import platform.interop.navigator.RemoteNavigatorInterface;
+import platform.base.OSUtils;
+import platform.interop.ServerInfo;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Scanner;
 
 public class LoginDialog extends JDialog {
-
-    private final RemoteLogicsInterface BL;
-    private int computer;
 
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
     private JTextField loginField;
     private JPasswordField passwordField;
+    private JComboBox serverHost;
+    private String waitMessage = "Пожалуйста, подождите...";
 
-    public LoginDialog(int icomputer, RemoteLogicsInterface iBL) {
-
-        computer = icomputer;
-        BL = iBL;
-
+    public LoginDialog(LoginInfo defaultLoginInfo) {
+        defaultLoginInfo = restoreServerData(defaultLoginInfo);
         setContentPane(contentPane);
         setAlwaysOnTop(true);
         setUndecorated(true);
@@ -46,6 +48,66 @@ public class LoginDialog extends JDialog {
             }
         });
 
+        initServerHostList((MutableComboBoxModel) serverHost.getModel());
+        serverHost.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                update();
+            }
+        });
+
+        serverHost.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                update();
+            }
+        });
+
+        serverHost.getEditor().getEditorComponent().addKeyListener(new KeyListener() {
+            public void keyTyped(KeyEvent e) {
+                update();
+            }
+
+            public void keyPressed(KeyEvent e) {
+                update();
+            }
+
+            public void keyReleased(KeyEvent e) {
+                update();
+            }
+        });
+
+        loginField.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                update();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                update();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                update();
+            }
+        });
+
+        if (defaultLoginInfo.getServerHost() != null) {
+            StringBuilder server = new StringBuilder(defaultLoginInfo.getServerHost());
+            if (defaultLoginInfo.getServerPort() != null) {
+                server.append(":");
+                server.append(defaultLoginInfo.getServerPort());
+            }
+            String item = server.toString();
+            ((MutableComboBoxModel) serverHost.getModel()).addElement(item);
+            serverHost.setSelectedItem(item);
+        }
+
+        if (defaultLoginInfo.getUserName() != null) {
+            loginField.setText(defaultLoginInfo.getUserName());
+        }
+
+        if (defaultLoginInfo.getPassword() != null) {
+            passwordField.setText(defaultLoginInfo.getPassword());
+        }
+
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
@@ -59,25 +121,108 @@ public class LoginDialog extends JDialog {
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
+        
     }
 
-    private RemoteNavigatorInterface result = null;
+    private boolean isValid(String server) {
+        int pos = server.indexOf(':');
+        if (pos != -1) {
+            if (pos == 0) {
+                return false;
+            }
+            try {
+                Integer.parseInt(server.substring(pos+1));
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+        return !server.isEmpty();
+    }
+
+    private boolean isOkEnabled() {
+        Object item = serverHost.getEditor().getItem();
+        if (waitMessage.equals(item)) {
+            return false;
+        } else {
+            if (loginField.getDocument().getLength() <= 0) {
+                return false;
+            }
+            else if (!(item instanceof ServerInfo) && !isValid(item.toString())) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private void update() {
+        buttonOK.setEnabled(isOkEnabled());
+    }
+
+    private void initServerHostList(MutableComboBoxModel serverHostModel) {
+        new ServerHostEnumerator(serverHostModel, waitMessage).execute();
+    }
+
+    private LoginInfo result = null;
 
     private void onOK() {
-
-        try {
-            result = BL.createNavigator(loginField.getText(), new String(passwordField.getPassword()), computer);
-            dispose();
-            SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            SplashScreen.start();
-                        }
-            });
-
-        } catch (Exception e) {
-            ClientExceptionManager.handleException(e, this);
-            throw new RuntimeException("Ошибка при подключении к серверу", e);
+        Object item = serverHost.getSelectedItem();
+        ServerInfo serverInfo;
+        if (item instanceof ServerInfo) {
+            serverInfo = (ServerInfo)item;
+        } else {
+            serverInfo = getServerInfo(item.toString());
         }
+        result = new LoginInfo(serverInfo.getHostName(), String.valueOf(serverInfo.getPort()), loginField.getText(), new String(passwordField.getPassword()));
+
+        storeServerData();
+        dispose();
+    }
+
+    private static final String configName = "login.dialog.cfg";
+
+    private void storeServerData() {
+        try {
+            FileWriter fileWr = new FileWriter(OSUtils.getUserFile(configName));
+            fileWr.write(result.getServerHost() + '\n');
+            fileWr.write(result.getServerPort());
+            fileWr.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private LoginInfo restoreServerData(LoginInfo loginInfo) {
+        try {
+            File file = OSUtils.getUserFile(configName, false);
+            if (file.exists()) {
+                FileReader fileRd = new FileReader(file);
+                Scanner scanner = new Scanner(fileRd);
+                String serverHost = scanner.nextLine();
+                if (serverHost.isEmpty()) {
+                    serverHost = loginInfo.getServerHost();
+                }
+                String serverPort = scanner.nextLine();
+                if (serverPort.isEmpty()) {
+                    serverPort = loginInfo.getServerPort();
+                }
+                return new LoginInfo(serverHost, serverPort, loginInfo.getUserName(), loginInfo.getPassword());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return loginInfo;
+        }
+
+        return loginInfo;
+    }
+
+    private ServerInfo getServerInfo(String server) {
+        int pos = server.indexOf(':');
+        if (pos == -1) {
+            return new ServerInfo(server, server, Integer.parseInt(System.getProperty("platform.client.hostport", "7652")));
+        }
+
+        return new ServerInfo(server, server.substring(0, pos), Integer.parseInt(server.substring(pos+1)));
     }
 
     private void onCancel() {
@@ -86,7 +231,7 @@ public class LoginDialog extends JDialog {
         dispose();
     }
 
-    public RemoteNavigatorInterface login() {
+    public LoginInfo login() {
 
         pack();
         setLocationRelativeTo(null);
@@ -125,18 +270,24 @@ public class LoginDialog extends JDialog {
         panel1.setLayout(new GridLayoutManager(2, 1, new Insets(4, 4, 4, 4), -1, -1));
         contentPane.add(panel1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(24, 48), null, 0, false));
         final JPanel panel2 = new JPanel();
-        panel2.setLayout(new GridLayoutManager(2, 2, new Insets(0, 0, 0, 0), -1, -1));
+        panel2.setLayout(new GridLayoutManager(3, 2, new Insets(0, 0, 0, 0), -1, -1));
         panel1.add(panel2, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         final JLabel label2 = new JLabel();
         label2.setText("Логин :");
-        panel2.add(label2, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        panel2.add(label2, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JLabel label3 = new JLabel();
         label3.setText("Пароль :");
-        panel2.add(label3, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        panel2.add(label3, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         loginField = new JTextField();
-        panel2.add(loginField, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        panel2.add(loginField, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         passwordField = new JPasswordField();
-        panel2.add(passwordField, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        panel2.add(passwordField, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        final JLabel label4 = new JLabel();
+        label4.setText("Сервер :");
+        panel2.add(label4, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        serverHost = new JComboBox();
+        serverHost.setEditable(true);
+        panel2.add(serverHost, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel3 = new JPanel();
         panel3.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
         panel1.add(panel3, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, 1, null, null, null, 0, false));

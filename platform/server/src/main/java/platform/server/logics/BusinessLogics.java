@@ -46,6 +46,8 @@ import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.scheduler.Scheduler;
 import platform.server.logics.table.ImplementTable;
 import platform.server.logics.table.TableFactory;
+import platform.server.net.ServerInstanceLocator;
+import platform.server.net.ServerInstanceLocatorSettings;
 import platform.server.session.DataSession;
 
 import java.io.*;
@@ -121,6 +123,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         registry.rebind("BusinessLogics", BL);
 
         logger.severe("Server has successfully started");
+
+        if (factory.containsBean("serverInstanceLocatorSettings")) {
+            ServerInstanceLocatorSettings settings = (ServerInstanceLocatorSettings) factory.getBean("serverInstanceLocatorSettings");
+            new ServerInstanceLocator().start(settings, BL.getExportPort());
+
+            logger.severe("Server instance locator successfully started");
+        }
 
         synchronized (serviceMonitor) {
             while (!stopped) {

@@ -3,8 +3,8 @@ package platform.client;
 import platform.base.OSUtils;
 import platform.client.exceptions.ClientExceptionManager;
 import platform.client.exceptions.ExceptionThreadGroup;
-import platform.client.remote.proxy.RemoteBusinessLogicProxy;
 import platform.client.form.SimplexLayout;
+import platform.client.remote.proxy.RemoteBusinessLogicProxy;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
@@ -13,10 +13,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.rmi.Naming;
-import java.io.IOException;
 import java.rmi.server.RMIClassLoader;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -83,17 +83,19 @@ public class Main {
                     String password = System.getProperty("platform.client.password");
                     String logLevel = System.getProperty("platform.client.loglevel");
 
+                    LoginInfo loginInfo = new LoginDialog(new LoginInfo(serverHost, serverPort, user, password)).login();
+                    if (loginInfo == null) {
+                        return;
+                    }
 
-                    RemoteLogicsInterface remote = (RemoteLogicsInterface) Naming.lookup("rmi://" + serverHost + ":" + serverPort + "/BusinessLogics");
+                    startSplashScreen();
+
+                    RemoteLogicsInterface remote = (RemoteLogicsInterface) Naming.lookup("rmi://" + loginInfo.getServerHost() + ":" + loginInfo.getServerPort() + "/BusinessLogics");
                     remoteLogics = new RemoteBusinessLogicProxy(remote);
 
                     computerId = remoteLogics.getComputer(OSUtils.getLocalHostName());
 
-                    RemoteNavigatorInterface remoteNavigator;
-                    if (user == null) {
-                        remoteNavigator = new LoginDialog(computerId, remoteLogics).login();
-                    } else
-                        remoteNavigator = remoteLogics.createNavigator(user, password, computerId);
+                    RemoteNavigatorInterface remoteNavigator = remoteLogics.createNavigator(loginInfo.getUserName(), loginInfo.getPassword(), computerId);
 
                     if (logLevel != null) {
                         LogManager.getLogManager().getLogger("").setLevel(Level.parse(logLevel));
@@ -101,7 +103,6 @@ public class Main {
                         LogManager.getLogManager().getLogger("").setLevel(Level.SEVERE);
                     }
 
-                    if (remoteNavigator == null) return;
                     logger.info("Before init frame");
                     frame = module.initFrame(remoteNavigator);
                     logger.info("After init frame");
@@ -109,11 +110,7 @@ public class Main {
                     frame.addWindowListener(
                             new WindowAdapter() {
                                 public void windowOpened(WindowEvent e) {
-                                    SwingUtilities.invokeLater(new Runnable() {
-                                        public void run() {
-                                            SplashScreen.close();
-                                        }
-                                    });
+                                    closeSplashScreen();
                                 }
                             }
                     );
@@ -124,12 +121,28 @@ public class Main {
                     frame.setVisible(true);
 
                 } catch (Exception e) {
-//                    ClientExceptionManager.handleException(e);
+                    closeSplashScreen();
                     throw new RuntimeException("Ошибка при инициализации приложения", e);
                 }
 
             }
         }.start();
+    }
+
+    private static void startSplashScreen() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                SplashScreen.start();
+            }
+        });
+    }
+
+    private static void closeSplashScreen() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                SplashScreen.close();
+            }
+        });
     }
 
     public static void main(final String[] args) {

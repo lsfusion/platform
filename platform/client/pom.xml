@@ -102,15 +102,20 @@
         <artifactId>forms_rt</artifactId>
         <version>7.0.3</version>
     </dependency>
-     <dependency>
-         <groupId>org.aspectj</groupId>
-         <artifactId>aspectjrt</artifactId>
-         <version>1.6.5</version>
-     </dependency>
-     <dependency>
-         <groupId>net.sf.jacob-project</groupId>
-         <artifactId>jacob</artifactId>
-         <version>1.15-M3</version>
-     </dependency>
+    <dependency>
+        <groupId>org.aspectj</groupId>
+        <artifactId>aspectjrt</artifactId>
+        <version>1.6.5</version>
+    </dependency>
+    <dependency>
+        <groupId>net.sf.jacob-project</groupId>
+        <artifactId>jacob</artifactId>
+        <version>1.15-M3</version>
+    </dependency>
+    <dependency>
+        <groupId>org.jboss.netty</groupId>
+        <artifactId>netty</artifactId>
+        <version>3.2.1.Final</version>
+    </dependency>
   </dependencies>
 </project>
