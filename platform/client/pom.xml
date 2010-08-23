@@ -117,5 +117,9 @@
         <artifactId>netty</artifactId>
         <version>3.2.1.Final</version>
     </dependency>
-  </dependencies>
+    <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>1.4</version>
+    </dependency>  </dependencies>
 </project>
