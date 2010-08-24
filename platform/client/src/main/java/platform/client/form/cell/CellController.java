@@ -6,6 +6,8 @@ import platform.client.logics.ClientCell;
 import platform.interop.form.screen.ExternalScreenComponent;
 
 import javax.swing.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 
 public class CellController implements CellViewListener {
@@ -42,9 +44,10 @@ public class CellController implements CellViewListener {
         view.addListener(this);
 
         if (key.editKey != null)
-            form.getComponent().addKeyBinding(key.editKey, key.getGroupObject(), new Runnable() {
-                public void run() {
-                    startEditing();
+            form.getComponent().addKeyBinding(key.editKey, key.getGroupObject(), new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    startEditing(e);
                 }
             });
 
@@ -78,8 +81,8 @@ public class CellController implements CellViewListener {
         }
     }
 
-    public void startEditing() {
-        view.startEditing();
+    public void startEditing(KeyEvent e) {
+        view.startEditing(e);
     }
 
     public boolean cellValueChanged(Object ivalue) {

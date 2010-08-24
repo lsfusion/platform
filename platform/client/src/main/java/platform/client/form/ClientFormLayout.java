@@ -8,6 +8,7 @@ import platform.client.logics.ClientGroupObject;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -111,11 +112,11 @@ public abstract class ClientFormLayout extends JPanel {
 
     }
 
-    private Map<KeyStroke, Map<ClientGroupObject, Runnable>> bindings = new HashMap<KeyStroke, Map<ClientGroupObject, Runnable>>();
+    private Map<KeyStroke, Map<ClientGroupObject, KeyListener>> bindings = new HashMap<KeyStroke, Map<ClientGroupObject, KeyListener>>();
 
-    public void addKeyBinding(KeyStroke ks, ClientGroupObject groupObject, Runnable run) {
+    public void addKeyBinding(KeyStroke ks, ClientGroupObject groupObject, KeyListener run) {
         if (!bindings.containsKey(ks))
-            bindings.put(ks, new HashMap<ClientGroupObject, Runnable>());
+            bindings.put(ks, new HashMap<ClientGroupObject, KeyListener>());
         bindings.get(ks).put(groupObject, run);
     }
 
@@ -130,9 +131,9 @@ public abstract class ClientFormLayout extends JPanel {
             if (comp instanceof JComponent) {
                 ClientGroupObject groupObject = (ClientGroupObject)((JComponent)comp).getClientProperty("groupObject");
                 if (groupObject != null) {
-                    Map<ClientGroupObject, Runnable> keyBinding = bindings.get(ks);
+                    Map<ClientGroupObject, KeyListener> keyBinding = bindings.get(ks);
                     if (keyBinding != null && keyBinding.containsKey(groupObject)) {
-                        keyBinding.get(groupObject).run();
+                        keyBinding.get(groupObject).keyPressed(e);
                         return true;
                     }
                     break;
@@ -141,9 +142,9 @@ public abstract class ClientFormLayout extends JPanel {
             comp = comp.getParent();
         }
 
-        Map<ClientGroupObject, Runnable> keyBinding = bindings.get(ks);
+        Map<ClientGroupObject, KeyListener> keyBinding = bindings.get(ks);
         if (keyBinding != null && !keyBinding.isEmpty())
-            keyBinding.values().iterator().next().run();
+            keyBinding.values().iterator().next().keyPressed(e);
 
         if (super.processKeyBinding(ks, e, condition, pressed)) return true;
 

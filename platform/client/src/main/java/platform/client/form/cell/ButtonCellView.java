@@ -8,6 +8,7 @@ import platform.client.logics.ClientCell;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 
 public class ButtonCellView extends JButton implements CellView {
     public ButtonCellView(final ClientCell key, final ClientFormController form) {
@@ -52,7 +53,7 @@ public class ButtonCellView extends JButton implements CellView {
         // собственно, а как в Button нужно устанавливать value
     }
 
-    public void startEditing() {
+    public void startEditing(KeyEvent e) {
         doClick(20);
     }
 }

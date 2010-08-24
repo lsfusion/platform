@@ -8,6 +8,8 @@ import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
+import java.lang.reflect.Field;
+import java.util.LinkedList;
 
 public class TableCellView extends JPanel implements CellView {
 
@@ -95,7 +97,7 @@ public class TableCellView extends JPanel implements CellView {
         table.setValue(ivalue);
     }
 
-    public void startEditing() {
+    public void startEditing(KeyEvent e) {
 
         if (table.isEditing()) return;
 
@@ -111,6 +113,29 @@ public class TableCellView extends JPanel implements CellView {
 
             tableEditor.requestFocusInWindow();
 
+            try {
+
+                KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+                Field markerField = DefaultKeyboardFocusManager.class.getDeclaredField("typeAheadMarkers");
+                markerField.setAccessible(true);
+                LinkedList markers = (LinkedList)markerField.get(focusManager);
+                for (Object marker : markers) {
+                    ClassLoader clsLoader = ClassLoader.getSystemClassLoader();
+                    Class cls = clsLoader.loadClass(DefaultKeyboardFocusManager.class.getCanonicalName()+"$TypeAheadMarker");
+                    Field after = cls.getDeclaredField("after");
+                    after.setAccessible(true);
+//                    System.out.println(after.get(marker));
+//                    System.out.println(e.getWhen());
+//                    after.set(marker, e.getWhen()-1);
+                    after.set(marker, 0);
+                }
+
+
+            } catch (Exception ex) {
+//                ex.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+
+/*
             final KeyEventDispatcher dispatcher = new KeyEventDispatcher() {
                 public boolean dispatchKeyEvent(KeyEvent e) {
                     if (table.isEditing()) {
@@ -132,7 +157,7 @@ public class TableCellView extends JPanel implements CellView {
                 public void focusLost(FocusEvent e) {
                     KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(dispatcher);
                 }
-            });
+            }); */
 
         }
     }
