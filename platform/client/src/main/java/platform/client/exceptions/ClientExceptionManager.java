@@ -1,8 +1,10 @@
 package platform.client.exceptions;
 
 import platform.client.Log;
+import platform.client.rmi.ConnectionLostManager;
 
 import java.awt.*;
+import java.rmi.ConnectIOException;
 
 public class ClientExceptionManager {
 
@@ -11,6 +13,15 @@ public class ClientExceptionManager {
     }
 
     public static void handleException(Throwable e, Component parentComponent) {
+
+        // Проверяем на потерю соединения и делаем особую обработку
+        while (e != null && e != e.getCause()) {
+            if (e instanceof ConnectIOException) {
+                ConnectionLostManager.setConnectionLost(true);
+                return;
+            }
+            e = e.getCause();
+        }
 
         String message = e.getLocalizedMessage();
         while (e instanceof RuntimeException && e.getCause() != null) {

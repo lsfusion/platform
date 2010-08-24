@@ -28,9 +28,10 @@ public class LoginDialog extends JDialog {
     private JComboBox serverHost;
     private JCheckBox savePassword;
     private String waitMessage = "Пожалуйста, подождите...";
+    private LoginInfo defaultLoginInfo;
 
     public LoginDialog(LoginInfo defaultLoginInfo) {
-        defaultLoginInfo = restoreLoginData(defaultLoginInfo);
+        this.defaultLoginInfo = restoreLoginData(defaultLoginInfo);
         setContentPane(contentPane);
         setAlwaysOnTop(true);
         setUndecorated(true);
@@ -205,25 +206,26 @@ public class LoginDialog extends JDialog {
                 FileReader fileRd = new FileReader(file);
                 Scanner scanner = new Scanner(fileRd);
                 String serverHost = scanner.hasNextLine() ? scanner.nextLine() : "";
-                if (serverHost.isEmpty()) {
+                if (loginInfo.getServerHost() != null) {
                     serverHost = loginInfo.getServerHost();
                 }
                 String serverPort = scanner.hasNextLine() ? scanner.nextLine() : "";
-                if (serverPort.isEmpty()) {
+                if (loginInfo.getServerPort() != null) {
                     serverPort = loginInfo.getServerPort();
                 }
                 String userName = scanner.hasNextLine() ? scanner.nextLine() : "";
-                if (userName.isEmpty()) {
+                if (loginInfo.getUserName() != null) {
                     userName = loginInfo.getUserName();
                 }
                 String savePwd = scanner.hasNextLine() ? scanner.nextLine() : "";
                 savePassword.setSelected(Boolean.valueOf(savePwd));
-                String password;
+                String password = "";
                 if (scanner.hasNextLine()) {
                     password = scanner.nextLine();
                     byte[] pass = Base64.decodeBase64(password);
                     password = new String(pass);
-                } else {
+                }
+                if (loginInfo.getPassword() != null) {
                     password = loginInfo.getPassword();
                 }
 
@@ -240,7 +242,7 @@ public class LoginDialog extends JDialog {
     private ServerInfo getServerInfo(String server) {
         int pos = server.indexOf(':');
         if (pos == -1) {
-            return new ServerInfo(server, server, Integer.parseInt(System.getProperty("platform.client.hostport", "7652")));
+            return new ServerInfo(server, server, Integer.parseInt(System.getProperty(PropertyConstants.PLATFORM_CLIENT_HOSTPORT, "7652")));
         }
 
         return new ServerInfo(server, server.substring(0, pos), Integer.parseInt(server.substring(pos + 1)));
@@ -253,13 +255,18 @@ public class LoginDialog extends JDialog {
     }
 
     public LoginInfo login() {
+        boolean needData = defaultLoginInfo.getServerHost() == null || defaultLoginInfo.getServerPort() == null ||
+                defaultLoginInfo.getUserName() == null || defaultLoginInfo.getPassword() == null;
+        if (!Boolean.getBoolean(PropertyConstants.PLATFORM_CLIENT_AUTOLOGIN) || needData) {
+            pack();
+            setLocationRelativeTo(null);
 
-        pack();
-        setLocationRelativeTo(null);
+            setVisible(true);
 
-        setVisible(true);
+            return result;
+        }
 
-        return result;
+        return defaultLoginInfo;
     }
 
     {

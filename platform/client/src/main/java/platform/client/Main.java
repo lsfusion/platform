@@ -5,6 +5,8 @@ import platform.client.exceptions.ClientExceptionManager;
 import platform.client.exceptions.ExceptionThreadGroup;
 import platform.client.form.SimplexLayout;
 import platform.client.remote.proxy.RemoteBusinessLogicProxy;
+import platform.client.rmi.ConnectionLostManager;
+import platform.client.rmi.RMITimeoutSocketFactory;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
@@ -18,6 +20,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.rmi.Naming;
 import java.rmi.server.RMIClassLoader;
+import java.rmi.server.RMIFailureHandler;
+import java.rmi.server.RMISocketFactory;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -76,19 +80,39 @@ public class Main {
 
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
-                    String serverHost = System.getProperty("platform.client.hostname", "localhost");
-                    String serverPort = System.getProperty("platform.client.hostport", "7652");
+                    String serverHost = System.getProperty(PropertyConstants.PLATFORM_CLIENT_HOSTNAME);
+                    String serverPort = System.getProperty(PropertyConstants.PLATFORM_CLIENT_HOSTPORT);
+                    String user       = System.getProperty(PropertyConstants.PLATFORM_CLIENT_USER);
+                    String password   = System.getProperty(PropertyConstants.PLATFORM_CLIENT_PASSWORD);
+                    String logLevel   = System.getProperty(PropertyConstants.PLATFORM_CLIENT_LOGLEVEL);
+                    String timeout    = System.getProperty(PropertyConstants.PLATFORM_CLIENT_CONNECTION_LOST_TIMEOUT, "3000");
 
-                    String user = System.getProperty("platform.client.user");
-                    String password = System.getProperty("platform.client.password");
-                    String logLevel = System.getProperty("platform.client.loglevel");
-
-                    LoginInfo loginInfo = new LoginDialog(new LoginInfo(serverHost, serverPort, user, password)).login();
+                    LoginInfo loginInfo = new LoginInfo(serverHost, serverPort, user, password);
+                    boolean needData = serverHost == null || serverPort == null || user == null || password == null;
+                    if (!Boolean.getBoolean(PropertyConstants.PLATFORM_CLIENT_AUTOLOGIN) || needData) {
+                        loginInfo = new LoginDialog(loginInfo).login();
+                    }
                     if (loginInfo == null) {
                         return;
                     }
 
                     startSplashScreen();
+
+                    RMISocketFactory socketFactory = RMISocketFactory.getSocketFactory();
+                    if (socketFactory == null) {
+                        socketFactory = RMISocketFactory.getDefaultSocketFactory();
+                    }
+
+                    socketFactory = new RMITimeoutSocketFactory(socketFactory, Integer.valueOf(timeout));
+
+                    RMISocketFactory.setFailureHandler(new RMIFailureHandler() {
+
+                        public boolean failure(Exception ex) {
+                            return true;
+                        }
+                    });
+
+                    RMISocketFactory.setSocketFactory(socketFactory);
 
                     RemoteLogicsInterface remote = (RemoteLogicsInterface) Naming.lookup("rmi://" + loginInfo.getServerHost() + ":" + loginInfo.getServerPort() + "/BusinessLogics");
                     remoteLogics = new RemoteBusinessLogicProxy(remote);
@@ -117,6 +141,8 @@ public class Main {
 
                     frame.setExtendedState(Frame.MAXIMIZED_BOTH);
                     logger.info("After setExtendedState");
+
+                    ConnectionLostManager.install(frame);
 
                     frame.setVisible(true);
 

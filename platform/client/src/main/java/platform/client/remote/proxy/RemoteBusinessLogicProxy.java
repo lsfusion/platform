@@ -58,4 +58,7 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         logRemoteMethodCall("getExternalScreenParameters");
         return target.getExternalScreenParameters(screenID, computerId);
     }
+
+    public void ping() throws RemoteException {
+    }
 }

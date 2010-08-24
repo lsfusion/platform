@@ -121,5 +121,16 @@
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
         <version>1.4</version>
-    </dependency>  </dependencies>
+    </dependency> 
+    <dependency>
+        <groupId>org.swinglabs</groupId>
+        <artifactId>jxlayer</artifactId>
+        <version>3.0.4</version>
+    </dependency>
+    <dependency>
+        <groupId>com.jhlabs</groupId>
+        <artifactId>filters</artifactId>
+        <version>2.0.235</version>
+    </dependency>
+  </dependencies>
 </project>

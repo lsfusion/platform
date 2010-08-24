@@ -524,6 +524,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         readOnlyPolicy.cls.edit.remove.defaultPermission = false;
     }
 
+    public void ping() throws RemoteException {
+    }
+
     private class UserPolicyFormEntity extends FormEntity {
         protected UserPolicyFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Политики пользователей");

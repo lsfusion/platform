@@ -15,8 +15,6 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class ServerHostEnumerator extends SwingWorker<List<ServerInfo>, ServerInfo> {
     private MutableComboBoxModel serverHostModel;
@@ -51,7 +49,7 @@ public class ServerHostEnumerator extends SwingWorker<List<ServerInfo>, ServerIn
 
         DatagramChannel dc = (DatagramChannel) cb.bind(new InetSocketAddress(0));
 
-        String[] broadcastPorts = System.getProperty("platform.client.broadcastPorts", "6666,6667-6668").split(",");
+        String[] broadcastPorts = System.getProperty("platform.client.broadcastPorts", "6666,6667-6669").split(",");
         for (String port : broadcastPorts) {
             int pos = port.indexOf('-');
             if (pos == -1) {
@@ -89,33 +87,6 @@ public class ServerHostEnumerator extends SwingWorker<List<ServerInfo>, ServerIn
     @Override
     protected void done() {
         serverHostModel.removeElement(waitMessage);
-    }
-
-    private static class DaemonThreadFactory implements ThreadFactory {
-        static final AtomicInteger poolNumber = new AtomicInteger(1);
-        final ThreadGroup group;
-        final AtomicInteger threadNumber = new AtomicInteger(1);
-        final String namePrefix;
-
-        DaemonThreadFactory() {
-            SecurityManager s = System.getSecurityManager();
-            group = (s != null)? s.getThreadGroup() :
-                                 Thread.currentThread().getThreadGroup();
-            namePrefix = "pool-" +
-                          poolNumber.getAndIncrement() +
-                         "-thread-";
-        }
-
-        public Thread newThread(Runnable r) {
-            Thread t = new Thread(group, r,
-                                  namePrefix + threadNumber.getAndIncrement(),
-                                  0);
-            if (!t.isDaemon())
-                t.setDaemon(true);
-            if (t.getPriority() != Thread.NORM_PRIORITY)
-                t.setPriority(Thread.NORM_PRIORITY);
-            return t;
-        }
     }
 
     private class ServerInfoClientHandler extends SimpleChannelUpstreamHandler {
