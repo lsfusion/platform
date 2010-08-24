@@ -92,23 +92,23 @@ public class LoginDialog extends JDialog {
             }
         });
 
-        if (defaultLoginInfo.getServerHost() != null) {
-            StringBuilder server = new StringBuilder(defaultLoginInfo.getServerHost());
-            if (defaultLoginInfo.getServerPort() != null) {
+        if (this.defaultLoginInfo.getServerHost() != null) {
+            StringBuilder server = new StringBuilder(this.defaultLoginInfo.getServerHost());
+            if (this.defaultLoginInfo.getServerPort() != null) {
                 server.append(":");
-                server.append(defaultLoginInfo.getServerPort());
+                server.append(this.defaultLoginInfo.getServerPort());
             }
             String item = server.toString();
             ((MutableComboBoxModel) serverHost.getModel()).addElement(item);
             serverHost.setSelectedItem(item);
         }
 
-        if (defaultLoginInfo.getUserName() != null) {
-            loginField.setText(defaultLoginInfo.getUserName());
+        if (this.defaultLoginInfo.getUserName() != null) {
+            loginField.setText(this.defaultLoginInfo.getUserName());
         }
 
-        if (defaultLoginInfo.getPassword() != null) {
-            passwordField.setText(defaultLoginInfo.getPassword());
+        if (this.defaultLoginInfo.getPassword() != null) {
+            passwordField.setText(this.defaultLoginInfo.getPassword());
         }
 
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -260,6 +260,8 @@ public class LoginDialog extends JDialog {
         if (!Boolean.getBoolean(PropertyConstants.PLATFORM_CLIENT_AUTOLOGIN) || needData) {
             pack();
             setLocationRelativeTo(null);
+
+            loginField.requestFocusInWindow();
 
             setVisible(true);
 
