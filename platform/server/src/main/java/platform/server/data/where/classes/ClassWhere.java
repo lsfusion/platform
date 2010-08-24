@@ -74,20 +74,6 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
         super(mapSets);
     }
 
-    public Map<K, ValueClass> getCommonParent(Collection<K> keys) {
-
-        assert !isFalse();
-
-        Map<K, ValueClass> result = new HashMap<K, ValueClass>();
-        for(K key : keys) {
-            OrClassSet orSet = wheres[0].get(key).getOr();
-            for(int i=1;i<wheres.length;i++)
-                orSet = orSet.or(wheres[i].get(key).getOr());
-            result.put(key,orSet.getCommonClass());
-        }
-        return result;
-    }
-
     public ClassExprWhere map(Map<K, BaseExpr> map) {
         ClassExprWhere result = ClassExprWhere.FALSE;
         for(And<K> andWhere : wheres) {

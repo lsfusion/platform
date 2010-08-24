@@ -32,11 +32,11 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
         super(sID, caption, getInterfaces(classes));
     }
 
-    public Map<ClassPropertyInterface, ValueClass> getMapClasses() {
+    public CommonClasses<ClassPropertyInterface> getCommonClasses() {
         Map<ClassPropertyInterface, ValueClass> result = new HashMap<ClassPropertyInterface, ValueClass>();
         for(ClassPropertyInterface propertyInterface : interfaces)
             result.put(propertyInterface,propertyInterface.interfaceClass);
-        return result;
+        return new CommonClasses<ClassPropertyInterface>(result, getValueClass());
     }
 
     @Override

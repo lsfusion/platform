@@ -10,6 +10,7 @@ import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.ContextEnumerator;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
+import platform.base.BaseUtils;
 
 import java.util.*;
 
@@ -97,7 +98,7 @@ public abstract class QueryExpr<K extends BaseExpr,I extends OuterContext<I>,J e
         }
 
         public boolean equalsInner(QueryInnerContext object) {
-            return QueryExpr.this.getClass()==object.getThis().getClass() &&  query.equals(object.getThis().query) && group.equals(object.getThis().group);
+            return QueryExpr.this.getClass()==object.getThis().getClass() &&  BaseUtils.hashEquals(query,object.getThis().query) && BaseUtils.hashEquals(group,object.getThis().group);
         }
     }
     protected final QueryInnerContext innerContext = new QueryInnerContext();

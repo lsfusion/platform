@@ -14,7 +14,6 @@ import platform.server.form.entity.PropertyObjectEntity;
 import platform.server.form.view.DefaultFormView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.AggregateProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.form.navigator.*;
 import platform.server.form.entity.filter.*;
@@ -278,6 +277,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         LP intraIncStore = addDProp("intraIncStore", "Склад (прих.)", store, intraDocument); 
 
         incStore = addCUProp("Склад (прих.)", extIncStore, intraIncStore);
+        addPersistent(incStore);
         LP incStoreName = addJProp(baseGroup, "Имя склада (прих.)", name, incStore, 1);
         outStore = addDProp("outStore", "Склад (расх.)", store, outcomeDocument);
         LP outStoreName = addJProp(baseGroup, "Имя склада (расх.)", name, outStore, 1);
@@ -302,6 +302,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         LP invQuantity = addDUProp("invQuantity","Кол-во инв.", invDBBalance, invBalance);
 
         quantity = addCUProp(baseGroup, "quantity", "Кол-во", articleQuantity, exchDltQuantity, invQuantity, returnDocQuantity);
+        addPersistent(quantity);
 
         // кол-во по документу
         LP documentQuantity = addSGProp(baseGroup, "documentQuantity", "Кол-во (всего)", quantity, 1);
@@ -310,7 +311,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         LP incStoreQuantity = addSGProp("incStoreQuantity", "Прих. на скл.", quantity, incStore, 1, 2);
         LP outStoreQuantity = addSGProp("outStoreQuantity", "Расх. со скл.", quantity, outStore, 1, 2);
         balanceStoreQuantity = addDUProp(baseGroup, "balanceStoreQuantity", "Ост. на скл.", incStoreQuantity, outStoreQuantity);
-        
+        addPersistent(balanceStoreQuantity);
+
         LP balanceQuantity = addSGProp(baseGroup, "balanceQuantity", "Ост. тов.", balanceStoreQuantity, 2);
 
         // остатки для документов
@@ -346,7 +348,10 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         LP[] maxRevalProps = addMGProp(lastDocumentGroup, new String[]{"currentRevalDate","currentRevalDoc"}, new String[]{"Дата посл. переоц.","Посл. док. переоц."}, 1,
                 addJProp("Дата переоц.", and1, date, 1, revalAdd, 1, 2), 1, 2, revalFormat, 1);
         currentRevalDate = maxRevalProps[0]; currentRevalDoc = maxRevalProps[1];
+        addPersistent(currentRevalDate); addPersistent(currentRevalDoc);
+
         currentAdd = addJProp(currentGroup, "currentAdd", "Надбавка (тек. форм.)", revalAdd, currentRevalDoc, 1, 2, 1);
+        addPersistent(currentAdd);
         LP currentStoreAdd = addJProp(currentGroup, "Надбавка (тек. скл.)",currentAdd, 2, storeFormat, 1);
         revalCurrentAdd = addJProp(baseGroup, "Надбавка (тек. док.)", currentAdd, 2, revalFormat, 1);
 
@@ -355,14 +360,18 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         LP[] maxTaxProps = addMGProp(lastDocumentGroup, new String[]{"currentTaxDate","currentTaxDoc"}, new String[]{"Дата посл. НДС","Посл. док. НДС"}, 1,
                 addJProp("Дата НДС", and1, date, 1, taxVatOut, 1, 2), 1, 2);
         currentTaxDate = maxTaxProps[0]; currentTaxDoc = maxTaxProps[1];
+        addPersistent(currentTaxDate); addPersistent(currentTaxDoc);
         currentVatOut = addJProp(currentGroup, "currentVatOut", "НДС (тек.)", taxVatOut, currentTaxDoc, 1, 1);
+        addPersistent(currentVatOut);
 
         // Местный налог
         locTaxValue = addDProp(baseGroup, "locTaxValue", "Местн. нал.", DoubleClass.instance, locTaxDocument, article);
         LP[] maxLocTaxProps = addMGProp(lastDocumentGroup, new String[]{"currentLocTaxDate","currentLocTaxDoc"}, new String[]{"Дата посл. местн. нал.","Посл. док. местн. нал."}, 1,
                 addJProp("Дата переоц.", and1, date, 1, locTaxValue, 1, 2), 1, 2, locTaxRegion, 1);
         currentLocTaxDate = maxLocTaxProps[0]; currentLocTaxDoc = maxLocTaxProps[1];
+        addPersistent(currentLocTaxDate); addPersistent(currentLocTaxDoc);
         currentLocTax = addJProp(currentGroup, "currentLocTax", "Местн. нал. (тек. рег.)", locTaxValue, currentLocTaxDoc, 1, 2, 1);
+        addPersistent(currentLocTax);
         LP currentStoreLocTax = addJProp(currentGroup, "Местн. нал. (тек. скл.)",currentLocTax, 2, storeRegion, 1);
         locCurrentTax = addJProp(baseGroup, "Местн. нал. (тек. док.)", currentLocTax, 2, locTaxRegion, 1);
 
@@ -379,7 +388,9 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         LP[] maxIncProps = addMGProp(lastDocumentGroup, new String[]{"currentIncDate","currentIncDoc"}, new String[]{"Дата посл. прих. по скл.","Посл. прих. по скл."}, 1,
                 addJProp("Дата прих. (кол-во)", and1, date, 1, quantity, 1, 2), 1, incStore, 1, 2);
         currentIncDate = maxIncProps[0]; currentIncDoc = maxIncProps[1];
+        addPersistent(currentIncDate); addPersistent(currentIncDoc);
         currentPriceIn = addJProp(currentGroup, "currentPriceIn", "Цена пост. (тек.)", priceIn, currentIncDoc, 1, 2, 2);
+        addPersistent(currentPriceIn);
 
         outPriceIn.setDerivedChange(currentPriceIn, outStore, 1, 2, quantity, 1, 2); // подставляем тек. цену со склада расх
         addSUProp(baseGroup, "Цена пост. (док. расх.)",Union.OVERRIDE, addJProp("Цена пост. (док. расх. тек.)", currentPriceIn, outStore, 1, 2), outPriceIn);
@@ -393,6 +404,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
                                            currentStoreAdd, 1, 2), 1, 2,
                                            currentVatOut, 2), 1, 2,
                                            currentStoreLocTax, 1, 2), 1, 2);
+        addPersistent(currentPriceOut);
 
         // прих. суммы по позициям
         LP extIncDetailSumIn = addJProp(baseGroup, "Сумма пост.", round,
@@ -470,35 +482,6 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
                                             addJProp("Склад документа", equals2, incStore, 1, 2), 1, 2));
     }
 
-
-    protected void initConstraints() {
-
-//        Constraints.put(balanceStoreQuantity.Property,new PositiveConstraint());
-    }
-
-    protected void initPersistents() {
-
-        addPersistent((AggregateProperty)quantity.property);
-        addPersistent((AggregateProperty)balanceStoreQuantity.property);
-
-        addPersistent((AggregateProperty)incStore.property);
-
-        addPersistent((AggregateProperty)currentIncDate.property);
-        addPersistent((AggregateProperty)currentIncDoc.property);
-        addPersistent((AggregateProperty)currentRevalDate.property);
-        addPersistent((AggregateProperty)currentRevalDoc.property);
-        addPersistent((AggregateProperty)currentTaxDate.property);
-        addPersistent((AggregateProperty)currentTaxDoc.property);
-        addPersistent((AggregateProperty)currentLocTaxDate.property);
-        addPersistent((AggregateProperty)currentLocTaxDoc.property);
-
-        addPersistent((AggregateProperty)currentAdd.property);
-        addPersistent((AggregateProperty)currentVatOut.property);
-        addPersistent((AggregateProperty)currentLocTax.property);
-        addPersistent((AggregateProperty)currentPriceIn.property);
-        
-        addPersistent((AggregateProperty)currentPriceOut.property);
-    }
 
     protected void initTables() {
 

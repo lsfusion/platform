@@ -14,7 +14,6 @@ import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyObjectEntity;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.AggregateProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.navigator.*;
@@ -317,6 +316,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         secDocDate = addCUProp("Дата", extOutDate, exchDate);
 
         docDate = addCUProp("docDate", "Дата", secDocDate, primDocDate);
+        addPersistent(docDate);
     }
 
     // ------------------------------------ Свойства по документам ------------------------------------------- //
@@ -391,6 +391,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         fixedStore = addCUProp("Склад (парам.)", receiptStore, intraOutStore, extOutStore, exchStore);
 
         docStore = addCUProp("docStore", "Склад", extIncStore, intraOutStore, extOutStore, exchStore, revalStore);
+        addPersistent(docStore);
 
         docStoreName = addJProp(storeGroup, "docStoreName", "Имя склада", name, docStore, 1);
     }
@@ -459,6 +460,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         extIncDocumentQuantity = addSGProp(quantGroup, "extIncDocumentQuantity", "Кол-во (всего)", extIncDetailQuantity, extIncDetailDocument, 1);
 
         extIncQuantity = addSGProp(quantGroup, "extIncQuantity" , "Кол-во прих.", extIncDetailQuantity, extIncDetailDocument, 1, extIncDetailArticle, 1);
+        addPersistent(extIncQuantity);
 
         intraQuantity = addDProp(quantGroup, "innerCount","Кол-во внутр.", DoubleClass.instance, intraDocument, article);
 
@@ -521,7 +523,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     private void initQuantityStoreProperties() {
 
         incStoreQuantity = addSGProp("incStoreQuantity", "Прих. на скл.", incQuantity, incQStore, 1, 2);
+        addPersistent(incStoreQuantity);
         outStoreQuantity = addSGProp("outStoreQuantity", "Расх. со скл.", outQuantity, outQStore, 1, 2);
+        addPersistent(outStoreQuantity);
 
         balanceStoreQuantity = addDUProp(balanceGroup, "Ост. на скл.", incStoreQuantity, outStoreQuantity);
     }
@@ -632,8 +636,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         changesParamsDate = addJProp("Дата изм. пар.", and1, primDocDate, 1, isDocArtChangesParams, 1, 2);
         LP[] maxChangesProps = addMGProp(baseGroup, new String[]{"maxChangesParamsDate","maxChangesParamsDoc"},
                 new String[]{"Посл. дата изм. парам.","Посл. док. изм. парам."}, 1, changesParamsDate, 1, primDocStore, 1, 2);
-        maxChangesParamsDate = maxChangesProps[0];
-        maxChangesParamsDoc = maxChangesProps[1];
+        maxChangesParamsDate = maxChangesProps[0]; maxChangesParamsDoc = maxChangesProps[1];
+        addPersistent(maxChangesParamsDate); addPersistent(maxChangesParamsDoc);
+
     }
 
     // ------------------------------------------------------------------------------------------------------- //
@@ -697,6 +702,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         // ------------------------- Последняя строка ------------------------------ //
         
         extIncLastDetail = addMGProp(baseGroup,"extIncLastDetail", "Посл. строка", object(extIncomeDetail), extIncDetailDocument, 1, extIncDetailArticle, 1);
+        addPersistent(extIncLastDetail);
 
         extIncPriceIn = addJProp(incPrmsGroup, "Цена пост. (прих.)", extIncDetailPriceIn, extIncLastDetail, 1, 2);
         extIncVATIn = addJProp(incPrmsGroup, "НДС пост. (прих.)", extIncDetailVATIn, extIncLastDetail, 1, 2);
@@ -1161,30 +1167,6 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         CustomClass articleShooes = addConcreteClass("Обувь", article);
         addDProp(baseGroup, "shoesColor", "Цвет", StringClass.get(10), articleShooes);
-    }
-
-    protected void initConstraints() {
-
-//        Constraints.put(balanceStoreQuantity.Property,new PositiveConstraint());
-    }
-
-    protected void initPersistents() {
-
-        addPersistent((AggregateProperty)docStore.property);
-
-        addPersistent((AggregateProperty)docDate.property);
-
-        addPersistent((AggregateProperty)extIncQuantity.property);
-
-        addPersistent((AggregateProperty)incStoreQuantity.property);
-        addPersistent((AggregateProperty)outStoreQuantity.property);
-        addPersistent((AggregateProperty)maxChangesParamsDate.property);
-        addPersistent((AggregateProperty)maxChangesParamsDoc.property);
-
-        addPersistent((AggregateProperty)extIncLastDetail.property);
-
-//        addPersistent((AggregateProperty)outQStore.property);
-//        addPersistent((AggregateProperty)incQStore.property);
     }
 
     protected void initTables() {

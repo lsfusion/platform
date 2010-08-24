@@ -112,5 +112,10 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
         query.and(translateQuery(new PartialQueryTranslator(keyValues)).getWhere());
         query.compile(BusinessLogics.debugSyntax);
     }
+
+    // проверка на статичность, временно потом более сложный алгоритм надо будет
+    public boolean isValue() {
+        return enumKeys(this).isEmpty();
+    }
 }
 

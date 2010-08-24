@@ -80,13 +80,6 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP itemsCount = addSGProp(baseGroup, "Количество единиц товара в документах", quantity, documentStore, 1, 2);
     }
 
-    protected void initConstraints() {
-//        balanceQuantity.property.constraint = new PositiveConstraint();
-    }
-
-    protected void initPersistents() {
-    }
-
     protected void initTables() {
     }
 

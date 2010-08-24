@@ -7,11 +7,10 @@ import platform.base.QuickMap;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrClassSet;
+import platform.server.classes.ValueClass;
 import platform.server.logics.BusinessLogics;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 
 // !!! equals'ы и hashCode должны только в meanWheres вызываться
@@ -328,5 +327,19 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
 
     protected AbstractClassWhere(And<K> where) {
         super(where);
+    }
+
+    public Map<K, ValueClass> getCommonParent(Collection<K> keys) {
+
+        assert !isFalse();
+
+        Map<K, ValueClass> result = new HashMap<K, ValueClass>();
+        for(K key : keys) {
+            OrClassSet orSet = wheres[0].get(key).getOr();
+            for(int i=1;i<wheres.length;i++)
+                orSet = orSet.or(wheres[i].get(key).getOr());
+            result.put(key,orSet.getCommonClass());
+        }
+        return result;
     }
 }

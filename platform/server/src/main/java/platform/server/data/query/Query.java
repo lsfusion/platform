@@ -211,7 +211,7 @@ public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInter
 
     public boolean equalsInner(Query<?,?> object) {
         // нужно проверить что совпадут
-        return where.equals(object.where) && BaseUtils.multiSet(properties.values()).equals(BaseUtils.multiSet(object.properties.values()));
+        return BaseUtils.hashEquals(where,object.where) && BaseUtils.hashEquals(BaseUtils.multiSet(properties.values()),BaseUtils.multiSet(object.properties.values()));
     }
 }
 

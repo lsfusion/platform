@@ -2,6 +2,7 @@ package platform.server.logics.property;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.base.Result;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.ValueClass;
 import platform.server.data.*;
@@ -16,6 +17,12 @@ import java.sql.SQLException;
 import java.util.*;
 
 public abstract class AggregateProperty<T extends PropertyInterface> extends Property<T> {
+
+    public boolean stored = false;
+
+    public boolean isStored() {
+        return stored && !DataSession.reCalculateAggr; // для тестирования 2-е условие
+    }
 
     protected AggregateProperty(String SID,String caption,List<T> interfaces) {
         super(SID,caption,interfaces);
@@ -97,11 +104,21 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
         return calculateClassExpr(getMapKeys()).getSelfType();
     }
 
+    // потом можно убрать когда getCommonClass будет в OrConcatenateClass
+    @Override
     @IdentityLazy
-    public Map<T, ValueClass> getMapClasses() {
+    public Map<T,ValueClass> getMapClasses() {
         Query<T, String> query = new Query<T, String>(this);
         query.and(calculateClassExpr(query.mapKeys).getWhere());
         return query.<T>getClassWhere(new ArrayList<String>()).getCommonParent(interfaces);
+    }
+
+    @IdentityLazy
+    public CommonClasses<T> getCommonClasses() {
+        Query<T, String> query = new Query<T, String>(this);
+        query.properties.put("value", calculateClassExpr(query.mapKeys));
+        Map<Object, ValueClass> mapClasses = query.<Object>getClassWhere(query.properties.keySet()).getCommonParent(BaseUtils.<Object,T,String>merge(interfaces, query.properties.keySet()));
+        return new CommonClasses<T>(BaseUtils.filterKeys(mapClasses, interfaces), mapClasses.get("value"));
     }
 
     protected ClassWhere<Field> getClassWhere(PropertyField storedField) {

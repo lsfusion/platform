@@ -13,15 +13,16 @@ import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ContextEnumerator;
 import platform.server.data.query.JoinData;
+import platform.server.data.query.innerjoins.ObjectJoinSets;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
-import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
+import platform.server.data.where.DataWhereSet;
+import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
-import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.CustomObjectInstance;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.group.AbstractNode;
@@ -302,11 +303,11 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
         return new CustomObjectInstance(entity, this);
     }
 
-    private static class ActionExpr extends VariableClassExpr {
+    private static class ClassExpr extends NotNullExpr {
 
         private final ValueClass valueClass;
 
-        private ActionExpr(ValueClass valueClass) {
+        private ClassExpr(ValueClass valueClass) {
             this.valueClass = valueClass;
         }
 
@@ -314,15 +315,27 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
             return this;
         }
 
-        public void fillFollowSet(DataWhereSet fillSet) {
+        public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+            throw new RuntimeException("not supported");
         }
 
         protected VariableExprSet calculateExprFollows() {
-            return new VariableExprSet();
+            return new VariableExprSet(this);
         }
 
-        public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
-            throw new RuntimeException("not supported");
+        private class NotNull extends NotNullExpr.NotNull {
+
+            protected DataWhereSet calculateFollows() {
+                return new DataWhereSet();
+            }
+
+            public ClassExprWhere calculateClassWhere() {
+                return new ClassExprWhere(ClassExpr.this, valueClass.getUpSet());
+            }
+
+            public ObjectJoinSets groupObjectJoinSets() {
+                return new ObjectJoinSets(this);
+            }
         }
 
         public Type getType(KeyType keyType) {
@@ -330,7 +343,7 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
         }
 
         public Where calculateWhere() {
-            return Where.TRUE;
+            return new NotNull();
         }
 
         public Expr translateQuery(QueryTranslator translator) {
@@ -338,14 +351,16 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
         }
 
         public boolean twins(AbstractSourceJoin obj) {
-            return valueClass.equals((ActionExpr)obj);
+            return valueClass.equals(((ClassExpr)obj).valueClass);
         }
 
         public int hashOuter(HashContext hashContext) {
-            return 1562;
+            return valueClass.hashCode();
         }
 
         public String getSource(CompileSource compile) {
+            if(compile instanceof ToString)
+                return "act(" + valueClass + ")";
             throw new RuntimeException("not supported");
         }
 
@@ -358,6 +373,6 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
     }
 
     public BaseExpr getClassExpr() {
-        return new ActionExpr(this);
+        return new ClassExpr(this);
     }
 }

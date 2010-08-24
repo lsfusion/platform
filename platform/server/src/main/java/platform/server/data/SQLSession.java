@@ -16,23 +16,21 @@ import java.sql.*;
 import java.util.*;
 import java.util.logging.Logger;
 
-public class SQLSession {
+public abstract class SQLSession {
     private final static Logger logger = Logger.getLogger(SQLSession.class.getName());
 
     public SQLSyntax syntax;
     
     private Connection connection;
 
-    protected static interface User {
-        TypeObject getSQLUser();
-    }
+    protected abstract TypeObject getSQLUser();
+    protected abstract TypeObject getID();
     
-    private final User sqlUser; // вообще достаточно reader'а но не хочется ради этого делать отдельный интерфейс
     public final static String userParam = "adsadaweewuser";
+    public final static String sessionParam = "dsfreerewrewrsf";
 
-    public SQLSession(DataAdapter adapter, User sqlUser) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+    public SQLSession(DataAdapter adapter) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         syntax = adapter;
-        this.sqlUser = sqlUser;
         connection = adapter.startConnection();
         connection.setAutoCommit(true);
     }
@@ -351,7 +349,7 @@ public class SQLSession {
 
     public PreparedStatement getStatement(String command, Map<String, TypeObject> paramObjects) throws SQLException {
 
-        char[][] params = new char[paramObjects.size()+1][];
+        char[][] params = new char[paramObjects.size()+2][];
         TypeObject[] values = new TypeObject[params.length];
         int paramNum = 0;
         for(Map.Entry<String,TypeObject> param : paramObjects.entrySet()) {
@@ -359,7 +357,9 @@ public class SQLSession {
             values[paramNum++] = param.getValue();
         }
         params[paramNum] = userParam.toCharArray();
-        values[paramNum++] = sqlUser.getSQLUser();
+        values[paramNum++] = getSQLUser();
+        params[paramNum] = sessionParam.toCharArray();
+        values[paramNum++] = getID();
 
         // те которые isString сразу транслируем
         List<TypeObject> preparedParams = new ArrayList<TypeObject>();

@@ -79,20 +79,22 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
                 // второй просто транслируем первым
                 PartialQueryTranslator cleanTranslator1 = new PartialQueryTranslator(cleanEq1);
                 Map<KeyExpr, Expr> cleanEq2 = cleanTranslator1.translate(diffEq2);
-                Where andWhere = where2.translateQuery(cleanTranslator1).and(where1.translateQuery(new PartialQueryTranslator(cleanEq2)));
+                PartialQueryTranslator cleanTranslator2 = new PartialQueryTranslator(cleanEq2);
+                Where andWhere = where2.translateQuery(cleanTranslator1).and(where1.translateQuery(cleanTranslator2));
 
-                // сливаем same'ы
+                // сливаем same'ы, их также надо translate'ить так как могут быть несвободными от противоположных ключей 
                 Where extraWhere = Where.TRUE;
-                Map<KeyExpr,BaseExpr> andEq = new HashMap<KeyExpr,BaseExpr>(sameEq1);
-                for(Map.Entry<KeyExpr,BaseExpr> andKeyExpr : sameEq2.entrySet()) {
-                    BaseExpr expr = andEq.get(andKeyExpr.getKey());
-                    if(expr==null || !expr.isValue())
-                        andEq.put(andKeyExpr.getKey(),andKeyExpr.getValue());
-                    if(expr!=null && !BaseUtils.hashEquals(expr, andKeyExpr.getValue())) // закидываем compare
-                        extraWhere = extraWhere.and(EqualsWhere.create(expr, andKeyExpr.getValue()));
+                Map<KeyExpr,Expr> mergeSame = new HashMap<KeyExpr,Expr>(cleanTranslator2.translate(sameEq1));
+                for(Map.Entry<KeyExpr,Expr> andKeyExpr : cleanTranslator1.translate(sameEq2).entrySet()) {
+                    Expr expr = mergeSame.get(andKeyExpr.getKey());
+                    if(!expr.isValue()) // предпочитаем статичные значение
+                        mergeSame.put(andKeyExpr.getKey(),andKeyExpr.getValue());
+                    if(!BaseUtils.hashEquals(expr, andKeyExpr.getValue())) // закидываем compare
+                        extraWhere = extraWhere.and(expr.compare(andKeyExpr.getValue(), Compare.EQUALS));
                 }
 
-                for(Map.Entry<KeyExpr,Expr> mergeEntry : BaseUtils.merge(cleanEq1, cleanEq2).entrySet()) // assertion что не пересекаются
+                Map<KeyExpr,BaseExpr> andEq = new HashMap<KeyExpr, BaseExpr>();
+                for(Map.Entry<KeyExpr,Expr> mergeEntry : BaseUtils.merge(mergeSame,BaseUtils.merge(cleanEq1, cleanEq2)).entrySet()) // assertion что не пересекаются
                     if(mergeEntry.getValue() instanceof BaseExpr)
                         andEq.put(mergeEntry.getKey(), (BaseExpr) mergeEntry.getValue());
                     else // выкидываем Expr

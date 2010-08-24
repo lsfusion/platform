@@ -69,12 +69,6 @@ public class DistrTmcBusinessLogics extends BusinessLogics<DistrTmcBusinessLogic
 //        setDefProp(outInQuantity,calcQuantity,true);
     }
 
-    protected void initConstraints() {
-    }
-
-    protected void initPersistents() {
-    }
-
     protected void initTables() {
         tableFactory.include("article",article);
         tableFactory.include("document", transaction);

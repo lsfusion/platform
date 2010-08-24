@@ -140,6 +140,7 @@ public class DataSession extends SQLSession implements ChangesSession {
     public final LP<?> name;
     public final CustomClass transaction;
     public final LP<?> date;
+    public final ConcreteCustomClass sessionClass;
 
     // для отладки
     public static boolean reCalculateAggr = false;
@@ -148,12 +149,10 @@ public class DataSession extends SQLSession implements ChangesSession {
 
     public final UserController user;
 
-    public DataSession(DataAdapter adapter, final UserController user, BaseClass baseClass, CustomClass namedObject, LP<?> name, CustomClass transaction, LP<?> date, List<DerivedChange<?,?>> notDeterministic) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
-        super(adapter, new User() {
-            public TypeObject getSQLUser() {
-                return new TypeObject(user.getCurrentUser().object, ObjectType.instance);
-            }
-        });
+    public DataObject applyObject = null;
+
+    public DataSession(DataAdapter adapter, final UserController user, BaseClass baseClass, CustomClass namedObject, ConcreteCustomClass sessionClass, LP<?> name, CustomClass transaction, LP<?> date, List<DerivedChange<?,?>> notDeterministic) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+        super(adapter);
 
         this.user = user;
         this.baseClass = baseClass;
@@ -162,6 +161,15 @@ public class DataSession extends SQLSession implements ChangesSession {
         this.transaction = transaction;
         this.date = date;
         this.notDeterministic = notDeterministic;
+        this.sessionClass = sessionClass;
+    }
+
+    public TypeObject getSQLUser() {
+        return new TypeObject(user.getCurrentUser().object, ObjectType.instance);
+    }
+
+    protected TypeObject getID() {
+        return applyObject ==null?new TypeObject(0, ObjectType.instance):new TypeObject(applyObject);
     }
 
     public void restart(boolean cancel) throws SQLException {
@@ -539,6 +547,8 @@ public class DataSession extends SQLSession implements ChangesSession {
     }
 
     public void write(BusinessLogics<?> BL) throws SQLException {
+        applyObject = addObject(sessionClass, modifier);
+
         Increment increment = new Increment(this);
         Collection<IncrementChangeTable> temporary = new ArrayList<IncrementChangeTable>();
 
@@ -576,6 +586,8 @@ public class DataSession extends SQLSession implements ChangesSession {
             dropTemporaryTable(addTable);
 
         restart(false);
+
+        applyObject = null;
     }
 
     private final Map<Integer,Integer> viewIDs = new HashMap<Integer, Integer>();

@@ -4,6 +4,7 @@ import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.data.PropertyField;
+import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.query.Join;
@@ -12,14 +13,13 @@ import platform.server.data.where.WhereBuilder;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.SessionDataProperty;
 import platform.server.session.*;
 import platform.server.form.instance.remote.RemoteForm;
+import platform.server.caches.hash.HashValues;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public abstract class DataProperty extends UserProperty {
 

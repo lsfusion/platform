@@ -19,8 +19,6 @@ import java.util.Set;
 
 public class SessionDataProperty extends DataProperty {
 
-    private final static Set<SessionDataProperty> properties = new HashSet<SessionDataProperty>();
-    
     public SessionDataProperty(String sID, String caption, ValueClass[] classes, ValueClass value) {
         super(sID, caption, classes, value);
 
@@ -33,6 +31,12 @@ public class SessionDataProperty extends DataProperty {
             return CaseExpr.NULL;
         return super.calculateExpr(joinImplement, modifier, changedWhere);
     }
+
+    public boolean isStored() {
+        return false;
+    }
+
+    private final static Set<SessionDataProperty> properties = new HashSet<SessionDataProperty>();
 
     protected static class UsedChanges extends Changes<UsedChanges> {
         private final Set<SessionDataProperty> properties;
@@ -114,7 +118,7 @@ public class SessionDataProperty extends DataProperty {
         public <P extends PropertyInterface> Expr changed(Property<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere) {
             if(property instanceof SessionDataProperty) {
                 changedWhere.add(ClassProperty.getIsClassWhere((Map<ClassPropertyInterface,? extends Expr>)joinImplement, this, changedWhere));
-                return ((SessionDataProperty)property).value.getClassExpr();
+                return ((DataProperty)property).value.getClassExpr();
             }
             return null;
         }

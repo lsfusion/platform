@@ -314,15 +314,6 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
     }
 
 
-    protected void initConstraints() {
-//        balanceQuantity.property.constraint = new PositiveConstraint();
-    }
-
-    protected void initPersistents() {
-//        persistents.add((AggregateProperty) totalMonth.property);
-//        persistents.add((AggregateProperty) lastMonthNum.property);
-    }
-
     protected void initTables() {
         tableFactory.include("salary", person, absMonth, YearClass.instance);
         tableFactory.include("currency", person, absMonth, YearClass.instance);

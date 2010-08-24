@@ -75,7 +75,7 @@ public class LinearExpr extends StaticClassExpr {
 
     @IdentityLazy
     public int hashOuter(HashContext hashContext) {
-        return map.hashContext(hashContext);
+        return map.hashContext(hashContext) * 5;
     }
 
     @ParamLazy

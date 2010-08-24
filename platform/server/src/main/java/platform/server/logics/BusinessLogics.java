@@ -219,6 +219,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public ConcreteCustomClass customUser;
     public ConcreteCustomClass computer;
     public ConcreteCustomClass policy;
+    public ConcreteCustomClass session;
 
     public Integer getComputer(String strHostName) {
         try {
@@ -390,6 +391,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP currentHour;
     protected LP currentEpoch;
     public LP currentUser;
+    public LP currentSession;
     protected LP changeUser;
     public LP<PropertyInterface> barcode;
     public LP barcodeToObject;
@@ -429,6 +431,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         computer = addConcreteClass(9999975, "Рабочее место", baseClass);
 
         policy = addConcreteClass(9999973, "Политика безопасности", namedObject);
+        session = addConcreteClass(9999972, "Транзакция", baseClass); 
 
         tableFactory = new TableFactory();
         for (int i = 0; i < TableFactory.MAX_INTERFACE; i++) { // заполним базовые таблицы
@@ -439,7 +442,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         baseElement = new NavigatorElement<T>(0, "Base Group");
+    }
 
+    void initBaseProperties() {
         // математические св-ва
         equals2 = addCFProp(Compare.EQUALS);
         object1 = addAFProp();
@@ -469,6 +474,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         currentHour = addTProp(Time.HOUR);
         currentEpoch = addTProp(Time.EPOCH);
         currentUser = addProperty(null, new LP<PropertyInterface>(new CurrentUserFormulaProperty(genSID(), user)));
+        currentSession = addProperty(null, new LP<PropertyInterface>(new CurrentSessionFormulaProperty(genSID(), session)));
         changeUser = addProperty(null, new LP<ClassPropertyInterface>(new ChangeUserActionProperty(genSID(), customUser)));
 
         userLogin = addDProp(baseGroup, "userLogin", "Логин", StringClass.get(30), customUser);
@@ -492,6 +498,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         currentUserName = addJProp("Имя тек. польз.", name, currentUser);
 
         reverseBarcode = addSDProp("Реверс", LogicalClass.instance);
+
+        // заполним сессии
+        LP sessionUser = addDProp("sessionUser", "Пользователь сессии", user, session);
+        sessionUser.setDerivedChange(currentUser, true, is(session), 1);
+        addJProp(baseGroup, "Пользователь сессии", name, sessionUser, 1);
+        LP sessionDate = addDProp(baseGroup, "sessionDate", "Дата сессии", DateClass.instance, session);
+        sessionDate.setDerivedChange(currentDate, true, is(session), 1);
     }
 
     void initBaseNavigators() {
@@ -613,15 +626,20 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         initBase();
 
-        initLogics();
+        initGroups();
+
+        initClasses();
+
+        // после classes и до properties, чтобы можно было бы создать таблицы и использовать persistent таблицы в частности для определения классов
+        initTables();
+
+        initBaseProperties();
+
+        initProperties();
 
         fillIDs();
 
-        initDatabaseMapping();
-
-        // сначала инициализируем stored потому как используется для определения интерфейса
-        logger.info("Initializing stored property...");
-        initStored();
+        initIndexes();
 
         assert checkProps();
 
@@ -736,27 +754,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected abstract void initProperties();
 
-    protected abstract void initConstraints();
-
-    // инициализируется логика
-    void initLogics() {
-        initGroups();
-        initClasses();
-        initProperties();
-        initConstraints();
-    }
-
-    protected abstract void initPersistents();
-
     protected abstract void initTables();
 
     protected abstract void initIndexes();
-
-    void initDatabaseMapping() {
-        initPersistents();
-        initTables();
-        initIndexes();
-    }
 
     public NavigatorElement<T> baseElement;
 
@@ -774,9 +774,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return id;
     }
 
-    public void addPersistent(AggregateProperty property) {
+    private void addPersistent(AggregateProperty property) {
         assert !idSet.contains(property.sID);
-        persistents.add(property);
+        property.stored = true;
+
+        logger.info("Initializing stored property...");
+        property.markStored(tableFactory);        
+    }
+
+    public void addPersistent(LP lp) {
+        addPersistent((AggregateProperty)lp.property);
     }
 
     protected void setPropOrder(LP<?> prop, LP<?> propRel, boolean before) {
@@ -817,7 +824,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public DataSession createSession(UserController userController) throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        return new DataSession(adapter, userController, baseClass, namedObject, name, transaction, date, notDeterministic);
+        return new DataSession(adapter, userController, baseClass, namedObject, session, name, transaction, date, notDeterministic);
     }
 
     public List<DerivedChange<?, ?>> notDeterministic = new ArrayList<DerivedChange<?, ?>>();
@@ -854,11 +861,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return false;
     }
 
-
+    @IdentityLazy    
     public List<Property> getStoredProperties() {
         List<Property> result = new ArrayList<Property>();
         for (Property property : getPropertyList())
-            if (persistents.contains(property) || property instanceof StoredDataProperty)
+            if (property.isStored())
                 result.add(property);
         return result;
     }
@@ -877,14 +884,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             if (property.isStored() || property.isFalse)
                 result.add(property);
         return result;
-    }
-
-    public void initStored() {
-        // привяжем к таблицам все свойства
-        for (Property property : getStoredProperties()) {
-            logger.info("Initializing stored - " + property + "...");
-            property.markStored(tableFactory);
-        }
     }
 
     public void fillIDs() {
@@ -1107,9 +1106,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     boolean checkPersistent(SQLSession session) throws SQLException {
 //        System.out.println("checking persistent...");
-        for (AggregateProperty property : persistents) {
+        for (Property property : getStoredProperties()) {
 //            System.out.println(Property.caption);
-            if (!property.checkAggregation(session, property.caption)) // Property.caption.equals("Расх. со скл.")
+            if (property instanceof AggregateProperty && !((AggregateProperty)property).checkAggregation(session, property.caption)) // Property.caption.equals("Расх. со скл.")
                 return false;
 //            Property.Out(Adapter);
         }
@@ -1148,7 +1147,80 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addDProp(AbstractGroup group, String sID, String caption, ValueClass value, ValueClass... params) {
-        return addProperty(group, new LP<ClassPropertyInterface>(new StoredDataProperty(sID, caption, params, value)));
+        StoredDataProperty dataProperty = new StoredDataProperty(sID, caption, params, value);
+        LP lp = addProperty(group, new LP<ClassPropertyInterface>(dataProperty));
+        dataProperty.markStored(tableFactory);
+        return lp;
+    }
+
+    protected <D extends PropertyInterface> LP addDCProp(String sID, String caption, LP<D> derivedProp, Object... params) {
+        return addDCProp(null, sID, caption, derivedProp, params);
+    }
+
+    protected <D extends PropertyInterface> LP addDCProp(AbstractGroup group, String sID, String caption, LP<D> derivedProp, Object... params) {
+
+        // считываем override'ы с конца
+        List<ValueClass> backClasses = new ArrayList<ValueClass>();
+        int i=params.length-1;
+        while(i>0 && (params[i]==null || params[i] instanceof ValueClass))
+            backClasses.add((ValueClass) params[i--]);
+        params = Arrays.copyOfRange(params,0,i+1);
+        ValueClass[] overrideClasses = BaseUtils.reverse(backClasses).toArray(new ValueClass[1]);
+
+        boolean defaultChanged = false;
+        if(params[0] instanceof Boolean) {
+            defaultChanged = (Boolean)params[0];
+            params = Arrays.copyOfRange(params,1,params.length);
+        }
+
+        // придется создавать Join свойство чтобы считать его класс
+        List<LI> list = readLI(params);
+
+        int propsize = derivedProp.listInterfaces.size();
+        int dersize = getIntNum(params);
+        JoinProperty<AndFormulaProperty.Interface> joinProperty = new JoinProperty<AndFormulaProperty.Interface>(sID, caption, dersize, false);
+        LP<JoinProperty.Interface> listProperty = new LP<JoinProperty.Interface>(joinProperty);
+
+        AndFormulaProperty andProperty = new AndFormulaProperty(genSID(),new boolean[list.size()-propsize]);
+        Map<AndFormulaProperty.Interface,PropertyInterfaceImplement<JoinProperty.Interface>> mapImplement = new HashMap<AndFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>();
+        mapImplement.put(andProperty.objectInterface, DerivedProperty.createJoin(mapImplement(derivedProp, mapLI(list.subList(0, propsize), listProperty.listInterfaces))));
+        Iterator<AndFormulaProperty.AndInterface> itAnd = andProperty.andInterfaces.iterator();
+        for(PropertyInterfaceImplement<JoinProperty.Interface> partProperty : mapLI(list.subList(propsize, list.size()), listProperty.listInterfaces))
+            mapImplement.put(itAnd.next(), partProperty);
+
+        joinProperty.implement = new PropertyImplement<PropertyInterfaceImplement<JoinProperty.Interface>,AndFormulaProperty.Interface>(andProperty, mapImplement);
+
+        // получаем классы
+        Result<ValueClass> value = new Result<ValueClass>();
+        ValueClass[] commonClasses = listProperty.getCommonClasses(value);
+
+        // override'им классы
+        ValueClass valueClass;
+        if(overrideClasses.length>dersize) {
+            valueClass = overrideClasses[dersize];
+            assert !overrideClasses[dersize].isCompatibleParent(value.result);
+            overrideClasses = Arrays.copyOfRange(params,0,dersize, ValueClass[].class);  
+        } else
+            valueClass = value.result;
+
+        // выполняем само создание свойства
+        LP derDataProp = addDProp(group, sID, caption, valueClass, overrideClasses(commonClasses, overrideClasses));
+        derDataProp.setDerivedChange(defaultChanged, derivedProp, params);
+        return derDataProp;
+    }
+
+    private static ValueClass[] overrideClasses(ValueClass[] commonClasses, ValueClass[] overrideClasses) {
+        ValueClass[] classes = new ValueClass[commonClasses.length];
+        int ic = 0;
+        for(ValueClass common : commonClasses) {
+            ValueClass overrideClass;
+            if(ic<overrideClasses.length && ((overrideClass = overrideClasses[ic])!=null)) {
+                classes[ic++] = overrideClass;
+                assert !overrideClass.isCompatibleParent(common);
+            } else
+                classes[ic++] = common;
+        }
+        return classes;
     }
 
     // сессионные
@@ -1205,7 +1277,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected <P extends PropertyInterface> LP addTCProp(AbstractGroup group, Time time, String sID, String caption, LP<P> changeProp, ValueClass... classes) {
-        TimeChangeDataProperty<P> timeProperty = new TimeChangeDataProperty<P>(sID, caption, classes, changeProp.listInterfaces);
+        TimeChangeDataProperty<P> timeProperty = new TimeChangeDataProperty<P>(sID, caption, overrideClasses(changeProp.getMapClasses(),classes), changeProp.listInterfaces);
         changeProp.property.timeChanges.put(time, timeProperty);
         return addProperty(group, new LP<ClassPropertyInterface>(timeProperty));
     }
@@ -1603,7 +1675,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         if (persist)
             for (Property property : suggestPersist)
-                addPersistent((AggregateProperty) addProperty(null, new LP(property)).property);
+                addPersistent(addProperty(null, new LP(property)));
 
         for (int i = 0; i < mgProps.size(); i++)
             result[i] = mapLGProp(group, mgProps.get(i), groupImplements);
@@ -1781,6 +1853,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addUProp(group, sID, caption, Union.SUM, params);
     }
 
+    protected LP addLProp(LP lp, ValueClass... classes) {
+        return addDCProp("LG_"+lp.property.sID, "Лог "+lp.property, object1, BaseUtils.add(BaseUtils.add(directLI(lp), new Object[]{addJProp(equals2, 1, currentSession), lp.listInterfaces.size()+1}), classes));
+    }
 
     // XOR
     protected LP addXorUProp(LP prop1, LP prop2) {
@@ -1903,31 +1978,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public void fillData() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
-    }
-
-    // генерирует белую БЛ
-    void openTest(DataAdapter adapter, boolean classes, boolean properties, boolean implement, boolean persistent, boolean changes) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException {
-
-        if (classes) {
-            initClasses();
-
-            if (implement)
-                initDatabaseMapping();
-
-            if (properties) {
-                initProperties();
-
-                if (persistent)
-                    initPersistents();
-
-                if (changes) {
-                    synchronizeDB();
-
-                    fillData();
-                }
-            }
-
-        }
     }
 
     /*    // случайным образом генерирует классы

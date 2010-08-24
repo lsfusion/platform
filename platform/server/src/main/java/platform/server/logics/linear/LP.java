@@ -2,6 +2,7 @@ package platform.server.logics.linear;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.base.Result;
 import platform.interop.action.ClientAction;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
@@ -13,6 +14,7 @@ import platform.server.logics.property.*;
 import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
+import platform.server.classes.ValueClass;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -44,12 +46,18 @@ public class LP<T extends PropertyInterface> {
         setDerivedChange(valueProperty, null, params);
     }
 
+    public <D extends PropertyInterface> void setDerivedChange(boolean defaultChanged, LP<D> valueProperty, Object... params) {
+        setDerivedChange(defaultChanged, valueProperty, null, params);
+    }
+
     public <D extends PropertyInterface> void setDerivedChange(LP<D> valueProperty, BusinessLogics<?> BL, Object... params) {
-        boolean defaultChanged = false;
-        if(params[0] instanceof Boolean) {
-            defaultChanged = (Boolean)params[0];
-            params = Arrays.copyOfRange(params,1,params.length);
-        }
+        if(params[0] instanceof Boolean)
+            setDerivedChange((Boolean)params[0], valueProperty, BL, Arrays.copyOfRange(params,1,params.length));
+        else
+            setDerivedChange(false, valueProperty, BL, params);
+    }
+
+    public <D extends PropertyInterface> void setDerivedChange(boolean defaultChanged, LP<D> valueProperty, BusinessLogics<?> BL, Object... params) {
         List<PropertyInterfaceImplement<T>> defImplements = BusinessLogics.readImplements(listInterfaces,params);
         DerivedChange<D,T> derivedChange = new DerivedChange<D,T>(property,BusinessLogics.mapImplement(valueProperty,defImplements.subList(0,valueProperty.listInterfaces.size())),
                 BaseUtils.<PropertyInterfaceImplement<T>, PropertyMapImplement<?, T>>immutableCast(defImplements.subList(valueProperty.listInterfaces.size(), defImplements.size())),
@@ -72,6 +80,16 @@ public class LP<T extends PropertyInterface> {
 
     public OrderedMap<T, KeyExpr> getMapKeys() {
         return BaseUtils.listMap(listInterfaces, property.getMapKeys());
+    }
+
+    public ValueClass[] getMapClasses() {
+        return BaseUtils.mapList(listInterfaces, property.getMapClasses()).toArray(new ValueClass[1]);
+    }
+
+    public ValueClass[] getCommonClasses(Result<ValueClass> value) {
+        Property.CommonClasses<T> common = property.getCommonClasses();
+        value.result = common.value;
+        return BaseUtils.mapList(listInterfaces, common.interfaces).toArray(new ValueClass[1]);
     }
 
     public ClassWhere<Integer> getClassWhere() {

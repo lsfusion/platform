@@ -2,12 +2,10 @@ package platform.server.logics.property;
 
 import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
-import platform.interop.Compare;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
-import platform.server.classes.DataClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.*;
 import platform.server.data.expr.*;
@@ -26,7 +24,6 @@ import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.SessionDataProperty;
-import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.logics.table.MapKeysTable;
@@ -188,7 +185,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return calculateExpr(joinImplement, defaultModifier, null);
     }
 
-    // нужен только для SessionDataProperty и неинициализированных 
     public Expr calculateClassExpr(Map<T, ? extends Expr> joinImplement) {
         return calculateExpr(joinImplement, SessionDataProperty.modifier, null);
     }
@@ -236,7 +232,19 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public PropertyField field;
 
-    public abstract Map<T, ValueClass> getMapClasses();
+    public static class CommonClasses<T extends PropertyInterface> {
+        public Map<T, ValueClass> interfaces;
+        public ValueClass value;
+
+        public CommonClasses(Map<T, ValueClass> interfaces, ValueClass value) {
+            this.interfaces = interfaces;
+            this.value = value;
+        }
+    }
+    public Map<T, ValueClass> getMapClasses() {
+        return getCommonClasses().interfaces;
+    }
+    public abstract CommonClasses<T> getCommonClasses();
     protected abstract ClassWhere<Field> getClassWhere(PropertyField storedField);
 
     public boolean cached = false;
@@ -253,9 +261,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
         assert !cached;
     }
-    public boolean isStored() {
-        return field !=null && (!DataSession.reCalculateAggr || this instanceof StoredDataProperty); // для тестирования 2-е условие
-    }
+    public abstract boolean isStored();
 
     public boolean isFalse = false;
     public boolean checkChange = true;

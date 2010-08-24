@@ -2,24 +2,30 @@ package platform.server.data.expr;
 
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.ValueClass;
-import platform.server.data.SQLSession;
+import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ContextEnumerator;
 import platform.server.data.query.JoinData;
+import platform.server.data.query.innerjoins.ObjectJoinSets;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
+import platform.server.data.where.DataWhere;
+import platform.server.data.where.classes.ClassExprWhere;
+import platform.base.QuickMap;
 
-public class CurrentUserExpr extends VariableClassExpr {
+public class CurrentEnvironmentExpr extends NotNullExpr {
 
-    private final ValueClass userClass;
+    private final String paramString;
+    private final ValueClass paramClass;
 
-    public CurrentUserExpr(ValueClass userClass) {
-        this.userClass = userClass;
+    public CurrentEnvironmentExpr(String paramString, ValueClass paramClass) {
+        this.paramString = paramString;
+        this.paramClass = paramClass;
     }
 
     protected VariableExprSet calculateExprFollows() {
@@ -29,7 +35,7 @@ public class CurrentUserExpr extends VariableClassExpr {
     public void fillFollowSet(DataWhereSet fillSet) {
     }
 
-    public CurrentUserExpr translateOuter(MapTranslate translator) {
+    public CurrentEnvironmentExpr translateOuter(MapTranslate translator) {
         return this;
     }
 
@@ -37,11 +43,7 @@ public class CurrentUserExpr extends VariableClassExpr {
     }
 
     public Type getType(KeyType keyType) {
-        return userClass.getType();
-    }
-
-    public Where calculateWhere() {
-        return Where.TRUE;
+        return paramClass.getType();
     }
 
     public Expr translateQuery(QueryTranslator translator) {
@@ -49,15 +51,15 @@ public class CurrentUserExpr extends VariableClassExpr {
     }
 
     public boolean twins(AbstractSourceJoin obj) {
-        return true;
+        return paramString.equals(((CurrentEnvironmentExpr)obj).paramString);
     }
 
     public int hashOuter(HashContext hashContext) {
-        return 7895;
+        return paramString.hashCode();
     }
 
     public String getSource(CompileSource compile) {
-        return SQLSession.userParam;
+        return paramString;
     }
 
     public void enumerate(ContextEnumerator enumerator) {
@@ -66,4 +68,23 @@ public class CurrentUserExpr extends VariableClassExpr {
     public long calculateComplexity() {
         return 1;
     }
+
+    public class NotNull extends NotNullExpr.NotNull {
+        protected DataWhereSet calculateFollows() {
+            return new DataWhereSet();
+        }
+
+        public ClassExprWhere calculateClassWhere() {
+            return new ClassExprWhere(CurrentEnvironmentExpr.this, paramClass.getUpSet());
+        }
+
+        public ObjectJoinSets groupObjectJoinSets() {
+            return new ObjectJoinSets(this);
+        }
+    }
+
+    public Where calculateWhere() {
+        return new NotNull();
+    }
+
 }

@@ -132,11 +132,6 @@ public abstract class BaseExpr extends Expr {
             return expr.sum(this);
     }
 
-    // проверка на статичность, временно потом более сложный алгоритм надо будет
-    public boolean isValue() {
-        return enumKeys(this).isEmpty();
-    }
-
     public boolean hasKey(KeyExpr key) {
         return enumKeys(this).contains(key);
     }

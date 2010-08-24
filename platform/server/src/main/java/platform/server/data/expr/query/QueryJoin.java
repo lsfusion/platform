@@ -10,6 +10,7 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
+import platform.base.BaseUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -104,6 +105,6 @@ public abstract class QueryJoin<K extends BaseExpr,I extends OuterContext<I>> ex
     }
 
     public boolean equalsInner(QueryJoin<K, I> object) {
-        return getClass() == object.getClass() && query.equals(object.query) && group.equals(object.group);
+        return getClass() == object.getClass() && BaseUtils.hashEquals(query,object.query) && BaseUtils.hashEquals(group,object.group);
     }
 }

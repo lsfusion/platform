@@ -58,7 +58,7 @@ public abstract class GroupPairs<G,O,I> implements Iterable<I>  {
                     iterations[i] = iterators[i].next();
                     break;
                 } else {
-                    iterators[i] = new Pairs<O,O>(group1[i],group2[i]).iterator();
+                    iterators[i] = SymmetricPairs.create(group1[i],group2[i]).iterator();
                     iterations[i] = iterators[i].next();
                 }
             }

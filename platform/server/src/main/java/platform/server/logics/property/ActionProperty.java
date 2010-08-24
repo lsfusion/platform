@@ -22,6 +22,10 @@ public abstract class ActionProperty extends UserProperty {
 
     private String name;
 
+    public boolean isStored() {
+        return false;
+    }
+
     public ActionProperty(String sID, String caption, ValueClass[] classes) {
         this("", sID, caption, classes);
     }

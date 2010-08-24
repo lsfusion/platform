@@ -6,6 +6,10 @@ public abstract class Permutations<Permute> implements Iterable<Permute> {
 
     int size;
 
+    protected Permutations(int size) {
+        this.size = size;
+    }
+
     public Iterator<Permute> iterator() {
         return new PermuteIterator();
     }

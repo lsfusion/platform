@@ -44,7 +44,8 @@ public class DerivedProperty {
         return new PropertyImplement<PropertyInterfaceImplement<K>,L>(implement.property,mapImplements(implement.mapping,map));
     }
 
-    private static <L extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<?,T> createJoin(PropertyImplement<PropertyInterfaceImplement<T>,L> implement) {
+    // фильтрует только используемые интерфейсы и создает Join свойство с mapping'ом на эти интерфейсы
+    public static <L extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<?,T> createJoin(PropertyImplement<PropertyInterfaceImplement<T>,L> implement) {
         // определяем какие интерфейсы использовали
         Set<T> usedInterfaces = new HashSet<T>(); Set<PropertyMapImplement<?,T>> usedProperties = new HashSet<PropertyMapImplement<?,T>>();
         for(PropertyInterfaceImplement<T> interfaceImplement : implement.mapping.values())

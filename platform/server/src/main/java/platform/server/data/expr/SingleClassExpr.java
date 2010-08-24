@@ -15,7 +15,7 @@ public abstract class SingleClassExpr extends BaseExpr {
     public abstract SingleClassExpr translateOuter(MapTranslate translator);
 
     private boolean isTrueWhere() {
-        return this instanceof KeyExpr || this instanceof CurrentUserExpr;
+        return this instanceof KeyExpr || this instanceof CurrentEnvironmentExpr;
     }
 
     private Expr classExpr;

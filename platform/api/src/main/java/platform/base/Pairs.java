@@ -4,13 +4,12 @@ import java.util.*;
 
 public class Pairs<T,V> extends Permutations<Map<T,V>> {
 
-    List<T> from;
-    List<V> to;
-    public Pairs(Collection<? extends T> iFrom, Collection<? extends V> iTo) {
-        from = new ArrayList<T>(iFrom);
-        to = new ArrayList<V>(iTo);
-        if((size=from.size())!=to.size())
-            size = -1;
+    private List<T> from;
+    private List<V> to;
+    public Pairs(List<T> from, List<V> to) {
+        super(from.size()==to.size()?from.size():-1);
+        this.from = from;
+        this.to = to;
     }
 
     Map<T, V> getPermute(PermuteIterator permute) {

@@ -133,7 +133,7 @@ public class MapCacheAspect {
         }
 
         public boolean equalsInner(JoinImplement<K> object) {
-            return exprs.equals(object.exprs) && mapValues.equals(object.mapValues);
+            return BaseUtils.hashEquals(exprs,object.exprs) && BaseUtils.hashEquals(mapValues,object.mapValues);
         }
     }
 
@@ -351,7 +351,7 @@ public class MapCacheAspect {
         }
 
         public boolean equalsInner(DataChangesInterfaceImplement<P, U> o) {
-            return change.equals(o.change) && usedChanges.equals(o.usedChanges) && where == o.where;
+            return BaseUtils.hashEquals(change,o.change) && BaseUtils.hashEquals(usedChanges,o.usedChanges) && where == o.where;
         }
 
         @IdentityLazy
@@ -445,7 +445,7 @@ public class MapCacheAspect {
         }
 
         public boolean equalsInner(ExprInterfaceImplement<P, U> o) {
-            return joinImplement.equals(o.joinImplement) && usedChanges.equals(o.usedChanges) && where == o.where;
+            return BaseUtils.hashEquals(joinImplement,o.joinImplement) && BaseUtils.hashEquals(usedChanges,o.usedChanges) && where == o.where;
         }
 
         @IdentityLazy

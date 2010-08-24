@@ -9,8 +9,8 @@ public class ListPermutations<T> extends Permutations<List<T>> {
     List<T> to;
 
     public ListPermutations(Collection<T> toCollection) {
+        super(toCollection.size());
         to = new ArrayList<T>(toCollection);
-        size = to.size();
     }
 
     List<T> getPermute(PermuteIterator permute) {

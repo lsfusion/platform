@@ -72,7 +72,7 @@ public class PropertyChange<T extends PropertyInterface> extends TwinsInnerConte
     }
 
     public boolean equalsInner(PropertyChange<T> object) {
-        return where.equals(object.where) && expr.equals(object.expr);
+        return BaseUtils.hashEquals(where,object.where) && BaseUtils.hashEquals(expr,object.expr);
     }
 
     @IdentityLazy
