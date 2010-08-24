@@ -5,6 +5,9 @@ import platform.client.logics.ClientCell;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
 
 public class TableCellView extends JPanel implements CellView {
 
@@ -107,6 +110,30 @@ public class TableCellView extends JPanel implements CellView {
             }
 
             tableEditor.requestFocusInWindow();
+
+            final KeyEventDispatcher dispatcher = new KeyEventDispatcher() {
+                public boolean dispatchKeyEvent(KeyEvent e) {
+                    if (table.isEditing()) {
+                        KeyboardFocusManager.getCurrentKeyboardFocusManager().redispatchEvent(tableEditor, e);
+                        return true;
+                    } else {
+                        KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(this);
+                        return false;
+                    }
+                }
+            };
+
+            KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(dispatcher);
+
+            tableEditor.addFocusListener(new FocusListener() {
+                public void focusGained(FocusEvent e) {
+                    KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(dispatcher);
+                }
+                public void focusLost(FocusEvent e) {
+                    KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(dispatcher);
+                }
+            });
+
         }
     }
 }
