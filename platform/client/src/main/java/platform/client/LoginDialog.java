@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 import java.util.Scanner;
 
 public class LoginDialog extends JDialog {
@@ -27,8 +28,11 @@ public class LoginDialog extends JDialog {
     private JPasswordField passwordField;
     private JComboBox serverHost;
     private JCheckBox savePassword;
+    private JLabel warning;
+    private JPanel warningPanel;
     private String waitMessage = "Пожалуйста, подождите...";
     private LoginInfo defaultLoginInfo;
+    private boolean autoLogin = false;
 
     public LoginDialog(LoginInfo defaultLoginInfo) {
         this.defaultLoginInfo = restoreLoginData(defaultLoginInfo);
@@ -111,6 +115,8 @@ public class LoginDialog extends JDialog {
             passwordField.setText(this.defaultLoginInfo.getPassword());
         }
 
+        warningPanel.setVisible(false);
+
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
@@ -162,7 +168,10 @@ public class LoginDialog extends JDialog {
     }
 
     private void initServerHostList(MutableComboBoxModel serverHostModel) {
-        new ServerHostEnumerator(serverHostModel, waitMessage).execute();
+        SwingWorker<List<ServerInfo>, ServerInfo> serverHostEnumerator = Main.module.getServerHostEnumerator(serverHostModel, waitMessage);
+        if (serverHostEnumerator != null) {
+            serverHostEnumerator.execute();
+        }
     }
 
     private LoginInfo result = null;
@@ -175,7 +184,7 @@ public class LoginDialog extends JDialog {
         } else {
             serverInfo = getServerInfo(item.toString());
         }
-        result = new LoginInfo(serverInfo.getHostName(), String.valueOf(serverInfo.getPort()), loginField.getText(), new String(passwordField.getPassword()));
+        result = defaultLoginInfo = new LoginInfo(serverInfo.getHostName(), String.valueOf(serverInfo.getPort()), loginField.getText(), new String(passwordField.getPassword()));
 
         storeServerData();
         dispose();
@@ -254,10 +263,19 @@ public class LoginDialog extends JDialog {
         dispose();
     }
 
+    public void setWarningMsg(String msg) {
+        this.warning.setText(msg);
+        this.warningPanel.setVisible(msg != null && !msg.isEmpty());
+    }
+
+    public void setAutoLogin(boolean autoLogin) {
+        this.autoLogin = autoLogin;
+    }
+
     public LoginInfo login() {
         boolean needData = defaultLoginInfo.getServerHost() == null || defaultLoginInfo.getServerPort() == null ||
                 defaultLoginInfo.getUserName() == null || defaultLoginInfo.getPassword() == null;
-        if (!Boolean.getBoolean(PropertyConstants.PLATFORM_CLIENT_AUTOLOGIN) || needData) {
+        if (!autoLogin || needData) {
             pack();
             setLocationRelativeTo(null);
 
@@ -297,7 +315,7 @@ public class LoginDialog extends JDialog {
         label1.setText("");
         contentPane.add(label1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         final JPanel panel1 = new JPanel();
-        panel1.setLayout(new GridLayoutManager(3, 1, new Insets(4, 4, 4, 4), -1, -1));
+        panel1.setLayout(new GridLayoutManager(4, 1, new Insets(4, 4, 4, 4), -1, -1));
         contentPane.add(panel1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(24, 48), null, 0, false));
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new GridLayoutManager(3, 2, new Insets(0, 0, 0, 0), -1, -1));
@@ -320,7 +338,7 @@ public class LoginDialog extends JDialog {
         panel2.add(serverHost, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel3 = new JPanel();
         panel3.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
-        panel1.add(panel3, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, 1, null, null, null, 0, false));
+        panel1.add(panel3, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, 1, null, null, null, 0, false));
         final Spacer spacer1 = new Spacer();
         panel3.add(spacer1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         final JPanel panel4 = new JPanel();
@@ -339,6 +357,14 @@ public class LoginDialog extends JDialog {
         savePassword = new JCheckBox();
         savePassword.setText("Запомнить пароль");
         panel1.add(savePassword, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        warningPanel = new JPanel();
+        warningPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        warningPanel.setBackground(new Color(-39322));
+        panel1.add(warningPanel, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, new Dimension(-1, 30), new Dimension(-1, 30), null, 0, false));
+        warning = new JLabel();
+        warning.setBackground(new Color(-986896));
+        warning.setText("");
+        warningPanel.add(warning, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 1, false));
         label2.setLabelFor(loginField);
         label3.setLabelFor(passwordField);
     }

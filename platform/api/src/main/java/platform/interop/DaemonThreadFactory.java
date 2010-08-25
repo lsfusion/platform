@@ -1,4 +1,4 @@
-package platform.client;
+package platform.interop;
 
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;

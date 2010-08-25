@@ -3,9 +3,9 @@ package platform.client.rmi;
 import com.jhlabs.image.BlurFilter;
 import org.jdesktop.jxlayer.plaf.effect.BufferedImageOpEffect;
 import org.jdesktop.jxlayer.plaf.ext.LockableUI;
-import platform.client.DaemonThreadFactory;
 import platform.client.Main;
 import platform.client.PropertyConstants;
+import platform.interop.DaemonThreadFactory;
 
 import javax.swing.*;
 import java.awt.*;

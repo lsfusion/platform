@@ -1,4 +1,4 @@
-package platform.client;
+package platform.fullclient;
 
 import org.jboss.netty.bootstrap.ConnectionlessBootstrap;
 import org.jboss.netty.channel.*;
@@ -8,6 +8,7 @@ import org.jboss.netty.channel.socket.nio.NioDatagramChannelFactory;
 import org.jboss.netty.handler.codec.serialization.ObjectDecoder;
 import org.jboss.netty.handler.codec.string.StringEncoder;
 import org.jboss.netty.util.CharsetUtil;
+import platform.interop.DaemonThreadFactory;
 import platform.interop.ServerInfo;
 
 import javax.swing.*;
