@@ -16,15 +16,14 @@ public class ClientExceptionManager {
     public static void handleException(Throwable e, Component parentComponent) {
 
         // Проверяем на потерю соединения и делаем особую обработку
-        while (e != null) {
-            if (e instanceof ConnectIOException || e instanceof ConnectException) {
+        for (Throwable ex = e; ex != null; ex = ex.getCause()) {
+            if (ex instanceof ConnectIOException || ex instanceof ConnectException) {
                 ConnectionLostManager.setConnectionLost(true);
                 return;
             }
-            if (e == e.getCause()) {
+            if (ex == ex.getCause()) {
                 break;
             }
-            e = e.getCause();
         }
 
         String message = e.getLocalizedMessage();
