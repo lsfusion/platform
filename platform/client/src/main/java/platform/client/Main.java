@@ -44,6 +44,16 @@ public class Main {
     public static ModuleFactory module;
 
     public static void start(final String[] args, ModuleFactory startModule) {
+        boolean turnOnRmiLogging = Boolean.getBoolean(PropertyConstants.PLATFORM_CLIENT_LOG_RMI);
+        if (turnOnRmiLogging) {
+            String logBaseDir = System.getProperty(PropertyConstants.PLATFORM_CLIENT_LOG_BASEDIR);
+            if (logBaseDir != null) {
+                ClientLoggingManager.turnOnRmiLogging(logBaseDir);
+            } else {
+                ClientLoggingManager.turnOnRmiLogging();
+            }
+        }
+
         module = startModule;
 
         try {
