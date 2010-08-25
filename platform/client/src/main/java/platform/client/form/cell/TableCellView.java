@@ -101,8 +101,6 @@ public class TableCellView extends JPanel implements CellView {
 
         if (table.isEditing()) return;
 
-        System.out.println("Start Editing");
-
         table.editCellAt(0, 0);
 
         final Component tableEditor = table.getEditorComponent();
