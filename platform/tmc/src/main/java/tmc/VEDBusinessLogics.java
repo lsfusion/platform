@@ -405,6 +405,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         articleQuantity = addCUProp("Кол-во", outerCommitedQuantity, articleInnerQuantity);
         articleOrderQuantity = addCUProp("Заяв. кол-во", outerOrderQuantity, articleInnerQuantity);
+        LP absQuantity = addSGProp("Всего тов.", addJProp(abs, articleQuantity, 1, 2), 1);
+        addConstraint(addJProp("Нельзя создавать пустые документы", addJProp(andNot1, is(order), 1, addJProp(greater2, absQuantity, 1, vzero), 1), 1), false);
 
         // ожидаемый приход на склад
         articleFreeOrderQuantity = addSUProp("articleFreeOrderQuantity", "Ожидаемое своб. кол-во", Union.SUM, articleFreeQuantity, addSGProp(moveGroup, "Ожидается приход", addJProp(andNot1, articleOrderQuantity, 1, 2, is(commitInc), 1), incStore, 1, 2)); // сумма по еще не пришедшим
