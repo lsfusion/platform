@@ -17,4 +17,8 @@ public class PropertyConstants {
     public static final String PLATFORM_CLIENT_CONNECTION_LOST_TIMEOUT = "platform.client.connection.lost.timeout";
 
     public static final String PLATFORM_CLIENT_CONNECTION_LOST_PING_DELAY = "platform.client.connection.lost.ping.delay";
+
+    public static final String PLATFORM_CLIENT_LOG_RMI = "platform.client.log.rmi";
+
+    public static final String PLATFORM_CLIENT_LOG_BASEDIR = "platform.client.log.basedir";
 }
