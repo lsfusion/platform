@@ -571,14 +571,19 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP monthDay = addSFProp("EXTRACT(DOY FROM prm1)", IntegerClass.instance, 1);
         LP isOrderContragentBirthDay = addJProp(equals2, addJProp(monthDay, date, 1), 1, addJProp(monthDay, addJProp(customerCheckRetailBorn, orderContragent, 1), 1), 1);
-        LP articleActionActive = addJProp(and(false, false, false, false, true, true, true, true, true, true), articleQuantity, 1, 2, is(orderSaleArticleRetail), 1, is(articleAction), 3, inAction, 3, 2, isStarted, 3,
+        LP articleActionActive = addJProp(and(false, false, false, false, true, true, true, true, true), articleQuantity, 1, 2, is(orderSaleArticleRetail), 1, is(articleAction), 3, inAction, 3, 2, isStarted, 3,
                 addJProp(less2, articleQuantity, 1, 2, articleActionQuantity, 3), 1, 2, 3,
                 addJProp(and(false, true), articleActionBirthDay, 2, is(orderSaleArticleRetail), 1, isOrderContragentBirthDay, 1), 1, 3,
-                addJProp(actionNoExtraDiscount, articleSaleAction, 1), 2,
                 addJProp(less2, orderClientSum, 1, articleActionClientSum, 2), 1, 3,
                 addJProp(less2, orderHour, 1, articleActionHourFrom, 2), 1, 3,
                 addJProp(greater2, orderHour, 1, articleActionHourTo, 2), 1, 3);
-        orderArticleSaleDiscount = addDCProp(baseGroup, "orderArticleSaleDiscount", "Скидка", addSUProp(Union.MAX, addSGProp(addMGProp(addJProp(and1, actionDiscount, 3, articleActionActive, 1, 2, 3), 1, 2, articleActionToGroup, 3), 1, 2), addJProp(and1, addJProp(customerCheckRetailDiscount, orderContragent, 1), 1, is(article), 2)), true, 1, 2, is(orderSaleArticleRetail), 1);
+        
+        orderArticleSaleDiscount = addDCProp(baseGroup, "orderArticleSaleDiscount", "Скидка", addJProp(andNot1,
+                addSUProp(Union.MAX,
+                    addSGProp(addMGProp(addJProp(and1, actionDiscount, 3, articleActionActive, 1, 2, 3), 1, 2, articleActionToGroup, 3), 1, 2),
+                    addJProp(and1, addJProp(customerCheckRetailDiscount, orderContragent, 1), 1, is(article), 2)), 1, 2,
+                addJProp(actionNoExtraDiscount, articleSaleAction, 1), 2),
+                true, 1, 2, is(orderSaleArticleRetail), 1);
 
         LP orderArticleSaleSum = addJProp(documentPriceGroup, "Сумма прод.", multiplyDouble2, articleQuantity, 1, 2, orderSaleDocPrice, 1, 2);
         LP round1 = addSFProp("(ROUND(CAST((prm1) as NUMERIC(15,3)),-1))", IntegerClass.instance, 1);

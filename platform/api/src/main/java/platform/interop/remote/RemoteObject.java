@@ -8,7 +8,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class RemoteObject extends UnicastRemoteObject implements PendingRemote {
-    private static Logger logger = Logger.getLogger(RemoteObject.class.getName());
 
     final protected int exportPort;
 
@@ -27,12 +26,10 @@ public class RemoteObject extends UnicastRemoteObject implements PendingRemote {
         for (MethodInvocation invocation : invocations) {
             try {
                 result = invoke(this, invocation);
-            } catch (NoSuchMethodException e) {
-                logger.log(Level.SEVERE, "Ошибка при вызове метода: " + invocation.name, e);
             } catch (InvocationTargetException e) {
-                logger.log(Level.SEVERE, "Ошибка при вызове метода: " + invocation.name, e);
-            } catch (IllegalAccessException e) {
-                logger.log(Level.SEVERE, "Ошибка при вызове метода: " + invocation.name, e);
+                throw new RemoteException("Ошибка при вызове метода: " + invocation.name, e.getTargetException());
+            } catch (Exception e) {
+                throw new RemoteException("Ошибка при вызове метода: " + invocation.name, e);
             }
         }
 
@@ -47,11 +44,7 @@ public class RemoteObject extends UnicastRemoteObject implements PendingRemote {
         Object createdObject = null;
         try {
             createdObject = invoke(this, creator);
-        } catch (NoSuchMethodException e) {
-            throw new RemoteException("Не могу создать объект через вызов метода: " + creator.toString());
-        } catch (InvocationTargetException e) {
-            throw new RemoteException("Не могу создать объект через вызов метода: " + creator.toString());
-        } catch (IllegalAccessException e) {
+        } catch (Exception e) {
             throw new RemoteException("Не могу создать объект через вызов метода: " + creator.toString());
         }
 
@@ -60,12 +53,10 @@ public class RemoteObject extends UnicastRemoteObject implements PendingRemote {
         for (int i = 0; i < invocations.length; ++i) {
             try {
                 result[i+1] = invoke(createdObject, invocations[i]);
-            } catch (NoSuchMethodException e) {
-                logger.log(Level.SEVERE, "Ошибка при вызове метода: " + invocations[i].name, e);
             } catch (InvocationTargetException e) {
-                logger.log(Level.SEVERE, "Ошибка при вызове метода: " + invocations[i].name, e);
-            } catch (IllegalAccessException e) {
-                logger.log(Level.SEVERE, "Ошибка при вызове метода: " + invocations[i].name, e);
+                throw new RemoteException("Ошибка при вызове метода: " + invocations[i].name, e.getTargetException());
+            } catch (Exception e) {
+                throw new RemoteException("Ошибка при вызове метода: " + invocations[i].name, e);
             }
         }
         
