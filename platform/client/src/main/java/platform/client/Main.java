@@ -53,6 +53,13 @@ public class Main {
             throw new RuntimeException(e);
         }
 
+        KeyboardFocusManager.setCurrentKeyboardFocusManager(new DefaultKeyboardFocusManager() {
+            @Override
+            protected void enqueueKeyEvents(long after, Component untilFocused) {
+                super.enqueueKeyEvents(0, untilFocused);
+            }
+        });
+
         new Thread(new ExceptionThreadGroup(), "Init thread") {
 
             public void run() {

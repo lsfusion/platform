@@ -101,6 +101,8 @@ public class TableCellView extends JPanel implements CellView {
 
         if (table.isEditing()) return;
 
+        System.out.println("Start Editing");
+
         table.editCellAt(0, 0);
 
         final Component tableEditor = table.getEditorComponent();
@@ -112,53 +114,6 @@ public class TableCellView extends JPanel implements CellView {
             }
 
             tableEditor.requestFocusInWindow();
-
-            try {
-
-                KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
-                Field markerField = DefaultKeyboardFocusManager.class.getDeclaredField("typeAheadMarkers");
-                markerField.setAccessible(true);
-                LinkedList markers = (LinkedList)markerField.get(focusManager);
-                for (Object marker : markers) {
-                    ClassLoader clsLoader = ClassLoader.getSystemClassLoader();
-                    Class cls = clsLoader.loadClass(DefaultKeyboardFocusManager.class.getCanonicalName()+"$TypeAheadMarker");
-                    Field after = cls.getDeclaredField("after");
-                    after.setAccessible(true);
-//                    System.out.println(after.get(marker));
-//                    System.out.println(e.getWhen());
-//                    after.set(marker, e.getWhen()-1);
-                    after.set(marker, 0);
-                }
-
-
-            } catch (Exception ex) {
-//                ex.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-
-/*
-            final KeyEventDispatcher dispatcher = new KeyEventDispatcher() {
-                public boolean dispatchKeyEvent(KeyEvent e) {
-                    if (table.isEditing()) {
-                        KeyboardFocusManager.getCurrentKeyboardFocusManager().redispatchEvent(tableEditor, e);
-                        return true;
-                    } else {
-                        KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(this);
-                        return false;
-                    }
-                }
-            };
-
-            KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(dispatcher);
-
-            tableEditor.addFocusListener(new FocusListener() {
-                public void focusGained(FocusEvent e) {
-                    KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(dispatcher);
-                }
-                public void focusLost(FocusEvent e) {
-                    KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(dispatcher);
-                }
-            }); */
-
         }
     }
 }
