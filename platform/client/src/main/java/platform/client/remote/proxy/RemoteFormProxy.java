@@ -24,183 +24,219 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     }
 
     public byte[] getReportDesignByteArray(boolean toExcel) throws RemoteException {
-        logRemoteMethodCall("getReportDesignByteArray");
-        return target.getReportDesignByteArray(toExcel);
+        logRemoteMethodStartCall("getReportDesignByteArray");
+        byte[] result = target.getReportDesignByteArray(toExcel);
+        logRemoteMethodEndCall("getReportDesignByteArray", result);
+        return result;
     }
 
     @ImmutableMethod
     public boolean hasCustomReportDesign() throws RemoteException {
-        logRemoteMethodCall("hasCustomReportDesign");
-        return target.hasCustomReportDesign();
+        logRemoteMethodStartCall("hasCustomReportDesign");
+        boolean result = target.hasCustomReportDesign();
+        logRemoteMethodEndCall("hasCustomReportDesign", result);
+        return result;
     }
 
     public byte[] getReportDataByteArray() throws RemoteException {
-        logRemoteMethodCall("getReportDataByteArray");
-        return target.getReportDataByteArray();
+        logRemoteMethodStartCall("getReportDataByteArray");
+        byte[] result = target.getReportDataByteArray();
+        logRemoteMethodEndCall("getReportDataByteArray", result);
+        return result;
     }
 
     public RemoteChanges getRemoteChanges() throws RemoteException {
-        logRemoteMethodCall("getRemoteChanges");
-        return target.getRemoteChanges();
+        logRemoteMethodStartCall("getRemoteChanges");
+        RemoteChanges result = target.getRemoteChanges();
+        logRemoteMethodEndCall("getRemoteChanges", result);
+        return result;
     }
 
     @ImmutableMethod
     public byte[] getRichDesignByteArray() throws RemoteException {
-        logRemoteMethodCall("getRichDesignByteArray");
-        return target.getRichDesignByteArray();
+        logRemoteMethodStartCall("getRichDesignByteArray");
+        byte[] result = target.getRichDesignByteArray();
+        logRemoteMethodEndCall("getRemoteChanges", result);
+        return result;
     }
 
     @PendingRemoteMethod
     public void changePageSize(int groupID, int pageSize) throws RemoteException {
-        logRemoteMethodCall("changePageSize");
+        logRemoteMethodStartVoidCall("changePageSize");
         target.changePageSize(groupID, pageSize);
+        logRemoteMethodEndVoidCall("changePageSize");
     }
 
     @PendingRemoteMethod
     public void gainedFocus() throws RemoteException {
-        logRemoteMethodCall("gainedFocus");
+        logRemoteMethodStartVoidCall("gainedFocus");
         target.gainedFocus();
+        logRemoteMethodEndVoidCall("gainedFocus");
     }
 
     @PendingRemoteMethod
     public void changeGroupObject(int groupID, byte[] value) throws RemoteException {
-        logRemoteMethodCall("changeGroupObject");
+        logRemoteMethodStartCall("changeGroupObject");
         target.changeGroupObject(groupID, value);
+        logRemoteMethodEndVoidCall("changeGroupObject");
     }
 
     @PendingRemoteMethod
     public void changeGroupObject(int groupID, byte changeType) throws RemoteException {
-        logRemoteMethodCall("changeGroupObject");
+        logRemoteMethodStartVoidCall("changeGroupObject");
         target.changeGroupObject(groupID, changeType);
+        logRemoteMethodEndVoidCall("changeGroupObject");
     }
 
     @PendingRemoteMethod
     public void changePropertyDraw(int propertyID, byte[] object, boolean all) throws RemoteException {
-        logRemoteMethodCall("changePropertyDraw");
+        logRemoteMethodStartCall("changePropertyDraw");
         target.changePropertyDraw(propertyID, object, all);
+        logRemoteMethodEndVoidCall("changePropertyDraw");
     }
 
     @PendingRemoteMethod
     public void changeObject(int objectID, Object value) throws RemoteException {
-        logRemoteMethodCall("changeObject");
+        logRemoteMethodStartVoidCall("changeObject");
         target.changeObject(objectID, value);
+        logRemoteMethodEndVoidCall("changeObject");
     }
 
     @PendingRemoteMethod
     public void addObject(int objectID, int classID) throws RemoteException {
-        logRemoteMethodCall("addObject");
+        logRemoteMethodStartVoidCall("addObject");
         target.addObject(objectID, classID);
+        logRemoteMethodEndVoidCall("addObject");
     }
 
     @PendingRemoteMethod
     public void changeClass(int objectID, int classID) throws RemoteException {
-        logRemoteMethodCall("changeClass");
+        logRemoteMethodStartVoidCall("changeClass");
         target.changeClass(objectID, classID);
+        logRemoteMethodEndVoidCall("changeClass");
     }
 
     public boolean canChangeClass(int objectID) throws RemoteException {
-        logRemoteMethodCall("canChangeClass");
-        return target.canChangeClass(objectID);
+        logRemoteMethodStartCall("canChangeClass");
+        boolean result = target.canChangeClass(objectID);
+        logRemoteMethodEndCall("canChangeClass", result);
+        return result;
     }
 
     @PendingRemoteMethod
     public void changeGridClass(int objectID, int idClass) throws RemoteException {
-        logRemoteMethodCall("changeGridClass");
+        logRemoteMethodStartVoidCall("changeGridClass");
         target.changeGridClass(objectID, idClass);
+        logRemoteMethodEndVoidCall("changeGridClass");
     }
 
     @PendingRemoteMethod
     public void switchClassView(int groupID) throws RemoteException {
-        logRemoteMethodCall("switchClassView");
+        logRemoteMethodStartVoidCall("switchClassView");
         target.switchClassView(groupID);
+        logRemoteMethodEndVoidCall("switchClassView");
     }
 
     @PendingRemoteMethod
     public void changeClassView(int groupID, byte classView) throws RemoteException {
-        logRemoteMethodCall("changeClassView");
+        logRemoteMethodStartVoidCall("changeClassView");
         target.changeClassView(groupID, classView);
+        logRemoteMethodEndVoidCall("changeClassView");
     }
 
     @PendingRemoteMethod
     public void changePropertyOrder(int propertyID, byte modiType) throws RemoteException {
-        logRemoteMethodCall("changePropertyOrder");
+        logRemoteMethodStartVoidCall("changePropertyOrder");
         target.changePropertyOrder(propertyID, modiType);
+        logRemoteMethodEndVoidCall("changePropertyOrder");
     }
 
     @PendingRemoteMethod
     public void changeObjectOrder(int propertyID, byte modiType) throws RemoteException {
-        logRemoteMethodCall("changeObjectOrder");
+        logRemoteMethodStartVoidCall("changeObjectOrder");
         target.changeObjectOrder(propertyID, modiType);
+        logRemoteMethodEndVoidCall("changeObjectOrder");
     }
 
     @PendingRemoteMethod
     public void changeObjectClassOrder(int propertyID, byte modiType) throws RemoteException {
-        logRemoteMethodCall("changeObjectClassOrder");
+        logRemoteMethodStartVoidCall("changeObjectClassOrder");
         target.changeObjectClassOrder(propertyID, modiType);
+        logRemoteMethodEndVoidCall("changeObjectClassOrder");
     }
 
     @PendingRemoteMethod
     public void clearUserFilters() throws RemoteException {
-        logRemoteMethodCall("clearUserFilters");
+        logRemoteMethodStartVoidCall("clearUserFilters");
         target.clearUserFilters();
+        logRemoteMethodEndVoidCall("clearUserFilters");
     }
 
     @PendingRemoteMethod
     public void addFilter(byte[] state) throws RemoteException {
-        logRemoteMethodCall("addFilter");
+        logRemoteMethodStartVoidCall("addFilter");
         target.addFilter(state);
+        logRemoteMethodEndVoidCall("addFilter");
     }
 
     @PendingRemoteMethod
     public void setRegularFilter(int groupID, int filterID) throws RemoteException {
-        logRemoteMethodCall("setRegularFilter");
+        logRemoteMethodStartVoidCall("setRegularFilter");
         target.setRegularFilter(groupID, filterID);
+        logRemoteMethodEndVoidCall("setRegularFilter");
     }
 
     @ImmutableMethod
     public int getID() throws RemoteException {
-        logRemoteMethodCall("getID");
-        return target.getID();
+        logRemoteMethodStartCall("getID");
+        int result = target.getID();
+        logRemoteMethodEndCall("getID", result);
+        return result;
     }
 
     @PendingRemoteMethod
     public void refreshData() throws RemoteException {
-        logRemoteMethodCall("refreshData");
+        logRemoteMethodStartCall("refreshData");
         target.refreshData();
     }
 
     @ImmutableMethod
     public boolean hasClientApply() throws RemoteException {
-        logRemoteMethodCall("hasClientApply");
+        logRemoteMethodStartCall("hasClientApply");
         return target.hasClientApply();
     }
 
     public ClientApply getClientApply() throws RemoteException {
-        logRemoteMethodCall("getClientApply");
+        logRemoteMethodStartCall("getClientApply");
         return target.getClientApply();
     }
 
     @PendingRemoteMethod
     public void applyClientChanges(Object clientResult) throws RemoteException {
-        logRemoteMethodCall("applyClientChanges");
+        logRemoteMethodStartVoidCall("applyClientChanges");
         target.applyClientChanges(clientResult);
+        logRemoteMethodEndVoidCall("applyClientChanges");
     }
 
     @PendingRemoteMethod
     public void applyChanges() throws RemoteException {
-        logRemoteMethodCall("applyChanges");
+        logRemoteMethodStartVoidCall("applyChanges");
         target.applyChanges();
+        logRemoteMethodStartVoidCall("applyChanges");
     }
 
     @PendingRemoteMethod
     public void cancelChanges() throws RemoteException {
-        logRemoteMethodCall("cancelChanges");
+        logRemoteMethodStartVoidCall("cancelChanges");
         target.cancelChanges();
+        logRemoteMethodEndVoidCall("cancelChanges");
     }
 
     public byte[] getPropertyChangeType(int propertyID) throws RemoteException {
-        logRemoteMethodCall("getPropertyChangeType");
-        return target.getPropertyChangeType(propertyID);
+        logRemoteMethodStartCall("getPropertyChangeType");
+        byte[] result = target.getPropertyChangeType(propertyID);
+        logRemoteMethodEndCall("getPropertyChangeType", result);
+        return result;
     }
 
     @NonFlushRemoteMethod

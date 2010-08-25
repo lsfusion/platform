@@ -16,8 +16,10 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
     }
 
     public String getForms(String formSet) throws RemoteException {
-        logRemoteMethodCall("getForms");
-        return target.getForms(formSet);
+        logRemoteMethodStartCall("getForms");
+        String result = target.getForms(formSet);
+        logRemoteMethodEndCall("getForms", result);
+        return result;
     }
 
     @NonPendingRemoteMethod
@@ -56,12 +58,16 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
 
     @ImmutableMethod
     public byte[] getCurrentUserInfoByteArray() throws RemoteException {
-        logRemoteMethodCall("getCurrentUserInfoByteArray");
-        return target.getCurrentUserInfoByteArray();
+        logRemoteMethodStartCall("getCurrentUserInfoByteArray");
+        byte[] result = target.getCurrentUserInfoByteArray();
+        logRemoteMethodEndCall("getCurrentUserInfoByteArray", result);
+        return result;
     }
 
     public byte[] getElementsByteArray(int groupID) throws RemoteException {
-        logRemoteMethodCall("getElementsByteArray");
-        return target.getElementsByteArray(groupID);
+        logRemoteMethodStartCall("getElementsByteArray");
+        byte[] result = target.getElementsByteArray(groupID);
+        logRemoteMethodEndCall("getElementsByteArray", result);
+        return result;
     }
 }

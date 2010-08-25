@@ -13,7 +13,9 @@ public class RemoteDialogProxy<T extends RemoteDialogInterface>
     }
 
     public Object getDialogValue() throws RemoteException {
-        logRemoteMethodCall("getDialogValue");
-        return target.getDialogValue();
+        logRemoteMethodStartCall("getDialogValue");
+        Object result = target.getDialogValue();
+        logRemoteMethodEndCall("getDialogValue", result);
+        return result;
     }
 }

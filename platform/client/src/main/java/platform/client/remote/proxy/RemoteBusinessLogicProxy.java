@@ -18,13 +18,17 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
     }
 
     public String getName() throws RemoteException {
-        logRemoteMethodCall("getName");
-        return target.getName();
+        logRemoteMethodStartCall("getName");
+        String result = target.getName();
+        logRemoteMethodEndCall("getName", result);
+        return result;
     }
 
     public byte[] findClass(String name) throws RemoteException {
-        logRemoteMethodCall("findClass");
-        return target.findClass(name);
+        logRemoteMethodStartCall("findClass");
+        byte[] result = target.findClass(name);
+        logRemoteMethodEndCall("findClass", result);
+        return result;
     }
 
     @NonPendingRemoteMethod
@@ -45,18 +49,24 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
     }
 
     public Integer getComputer(String hostname) throws RemoteException {
-        logRemoteMethodCall("getComputer");
-        return target.getComputer(hostname);
+        logRemoteMethodStartCall("getComputer");
+        Integer result = target.getComputer(hostname);
+        logRemoteMethodEndCall("getComputer", result);
+        return result;
     }
 
     public ExternalScreen getExternalScreen(int screenID) throws RemoteException {
-        logRemoteMethodCall("getExternalScreen");
-        return target.getExternalScreen(screenID);
+        logRemoteMethodStartCall("getExternalScreen");
+        ExternalScreen result = target.getExternalScreen(screenID);
+        logRemoteMethodEndCall("getExternalScreen", result);
+        return result;        
     }
 
     public ExternalScreenParameters getExternalScreenParameters(int screenID, int computerId) throws RemoteException {
-        logRemoteMethodCall("getExternalScreenParameters");
-        return target.getExternalScreenParameters(screenID, computerId);
+        logRemoteMethodStartCall("getExternalScreenParameters");
+        ExternalScreenParameters result = target.getExternalScreenParameters(screenID, computerId);
+        logRemoteMethodEndCall("getExternalScreenParameters", result);
+        return result;
     }
 
     public void ping() throws RemoteException {
