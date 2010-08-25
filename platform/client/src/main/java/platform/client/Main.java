@@ -71,6 +71,12 @@ public class Main {
             }
         });
 
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            public void uncaughtException(Thread t, Throwable e) {
+                ClientExceptionManager.handleException(e);
+            }
+        });
+
         new Thread(new ExceptionThreadGroup(), "Init thread") {
 
             public void run() {
