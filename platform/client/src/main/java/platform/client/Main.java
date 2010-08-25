@@ -105,7 +105,7 @@ public class Main {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
                     String logLevel = System.getProperty(PropertyConstants.PLATFORM_CLIENT_LOGLEVEL);
-                    String timeout  = System.getProperty(PropertyConstants.PLATFORM_CLIENT_CONNECTION_LOST_TIMEOUT, "3000");
+                    String timeout  = System.getProperty(PropertyConstants.PLATFORM_CLIENT_CONNECTION_LOST_TIMEOUT, "10000");
 
                     initRMISocketFactory(timeout);
 
