@@ -431,7 +431,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         computer = addConcreteClass(9999975, "Рабочее место", baseClass);
 
         policy = addConcreteClass(9999973, "Политика безопасности", namedObject);
-        session = addConcreteClass(9999972, "Транзакция", baseClass); 
+        session = addConcreteClass(9999972, "Транзакция", baseClass);
 
         tableFactory = new TableFactory();
         for (int i = 0; i < TableFactory.MAX_INTERFACE; i++) { // заполним базовые таблицы
@@ -640,6 +640,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         initProperties();
 
+        Set idSet = new HashSet<String>();
+        for (Property property : properties) {
+           assert idSet.add(property.sID): "Same sid " + property.sID;
+        }
+
         fillIDs();
 
         initIndexes();
@@ -772,7 +777,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     Set<String> idSet = new HashSet<String>();
 
     public String genSID() {
-        String id = "property" + properties.size();
+        String id = "property" + idSet.size();
         idSet.add(id);
         return id;
     }
@@ -782,11 +787,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         property.stored = true;
 
         logger.info("Initializing stored property...");
-        property.markStored(tableFactory);        
+        property.markStored(tableFactory);
     }
 
     public void addPersistent(LP lp) {
-        addPersistent((AggregateProperty)lp.property);
+        addPersistent((AggregateProperty) lp.property);
     }
 
     protected void setPropOrder(LP<?> prop, LP<?> propRel, boolean before) {
@@ -864,7 +869,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return false;
     }
 
-    @IdentityLazy    
+    @IdentityLazy
     public List<Property> getStoredProperties() {
         List<Property> result = new ArrayList<Property>();
         for (Property property : getPropertyList())
@@ -1111,7 +1116,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 //        System.out.println("checking persistent...");
         for (Property property : getStoredProperties()) {
 //            System.out.println(Property.caption);
-            if (property instanceof AggregateProperty && !((AggregateProperty)property).checkAggregation(session, property.caption)) // Property.caption.equals("Расх. со скл.")
+            if (property instanceof AggregateProperty && !((AggregateProperty) property).checkAggregation(session, property.caption)) // Property.caption.equals("Расх. со скл.")
                 return false;
 //            Property.Out(Adapter);
         }
@@ -1164,16 +1169,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         // считываем override'ы с конца
         List<ValueClass> backClasses = new ArrayList<ValueClass>();
-        int i=params.length-1;
-        while(i>0 && (params[i]==null || params[i] instanceof ValueClass))
+        int i = params.length - 1;
+        while (i > 0 && (params[i] == null || params[i] instanceof ValueClass))
             backClasses.add((ValueClass) params[i--]);
-        params = Arrays.copyOfRange(params,0,i+1);
+        params = Arrays.copyOfRange(params, 0, i + 1);
         ValueClass[] overrideClasses = BaseUtils.reverse(backClasses).toArray(new ValueClass[1]);
 
         boolean defaultChanged = false;
-        if(params[0] instanceof Boolean) {
-            defaultChanged = (Boolean)params[0];
-            params = Arrays.copyOfRange(params,1,params.length);
+        if (params[0] instanceof Boolean) {
+            defaultChanged = (Boolean) params[0];
+            params = Arrays.copyOfRange(params, 1, params.length);
         }
 
         // придется создавать Join свойство чтобы считать его класс
@@ -1184,14 +1189,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         JoinProperty<AndFormulaProperty.Interface> joinProperty = new JoinProperty<AndFormulaProperty.Interface>(sID, caption, dersize, false);
         LP<JoinProperty.Interface> listProperty = new LP<JoinProperty.Interface>(joinProperty);
 
-        AndFormulaProperty andProperty = new AndFormulaProperty(genSID(),new boolean[list.size()-propsize]);
-        Map<AndFormulaProperty.Interface,PropertyInterfaceImplement<JoinProperty.Interface>> mapImplement = new HashMap<AndFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>();
+        AndFormulaProperty andProperty = new AndFormulaProperty(genSID(), new boolean[list.size() - propsize]);
+        Map<AndFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>> mapImplement = new HashMap<AndFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>();
         mapImplement.put(andProperty.objectInterface, DerivedProperty.createJoin(mapImplement(derivedProp, mapLI(list.subList(0, propsize), listProperty.listInterfaces))));
         Iterator<AndFormulaProperty.AndInterface> itAnd = andProperty.andInterfaces.iterator();
-        for(PropertyInterfaceImplement<JoinProperty.Interface> partProperty : mapLI(list.subList(propsize, list.size()), listProperty.listInterfaces))
+        for (PropertyInterfaceImplement<JoinProperty.Interface> partProperty : mapLI(list.subList(propsize, list.size()), listProperty.listInterfaces))
             mapImplement.put(itAnd.next(), partProperty);
 
-        joinProperty.implement = new PropertyImplement<PropertyInterfaceImplement<JoinProperty.Interface>,AndFormulaProperty.Interface>(andProperty, mapImplement);
+        joinProperty.implement = new PropertyImplement<PropertyInterfaceImplement<JoinProperty.Interface>, AndFormulaProperty.Interface>(andProperty, mapImplement);
 
         // получаем классы
         Result<ValueClass> value = new Result<ValueClass>();
@@ -1199,10 +1204,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         // override'им классы
         ValueClass valueClass;
-        if(overrideClasses.length>dersize) {
+        if (overrideClasses.length > dersize) {
             valueClass = overrideClasses[dersize];
             assert !overrideClasses[dersize].isCompatibleParent(value.result);
-            overrideClasses = Arrays.copyOfRange(params,0,dersize, ValueClass[].class);  
+            overrideClasses = Arrays.copyOfRange(params, 0, dersize, ValueClass[].class);
         } else
             valueClass = value.result;
 
@@ -1215,9 +1220,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private static ValueClass[] overrideClasses(ValueClass[] commonClasses, ValueClass[] overrideClasses) {
         ValueClass[] classes = new ValueClass[commonClasses.length];
         int ic = 0;
-        for(ValueClass common : commonClasses) {
+        for (ValueClass common : commonClasses) {
             ValueClass overrideClass;
-            if(ic<overrideClasses.length && ((overrideClass = overrideClasses[ic])!=null)) {
+            if (ic < overrideClasses.length && ((overrideClass = overrideClasses[ic]) != null)) {
                 classes[ic++] = overrideClass;
                 assert !overrideClass.isCompatibleParent(common);
             } else
@@ -1280,7 +1285,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected <P extends PropertyInterface> LP addTCProp(AbstractGroup group, Time time, String sID, String caption, LP<P> changeProp, ValueClass... classes) {
-        TimeChangeDataProperty<P> timeProperty = new TimeChangeDataProperty<P>(sID, caption, overrideClasses(changeProp.getMapClasses(),classes), changeProp.listInterfaces);
+        TimeChangeDataProperty<P> timeProperty = new TimeChangeDataProperty<P>(sID, caption, overrideClasses(changeProp.getMapClasses(), classes), changeProp.listInterfaces);
         changeProp.property.timeChanges.put(time, timeProperty);
         return addProperty(group, new LP<ClassPropertyInterface>(timeProperty));
     }
@@ -1857,7 +1862,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addLProp(LP lp, ValueClass... classes) {
-        return addDCProp("LG_"+lp.property.sID, "Лог "+lp.property, object1, BaseUtils.add(BaseUtils.add(directLI(lp), new Object[]{addJProp(equals2, 1, currentSession), lp.listInterfaces.size()+1}), classes));
+        return addDCProp("LG_" + lp.property.sID, "Лог " + lp.property, object1, BaseUtils.add(BaseUtils.add(directLI(lp), new Object[]{addJProp(equals2, 1, currentSession), lp.listInterfaces.size() + 1}), classes));
     }
 
     // XOR
