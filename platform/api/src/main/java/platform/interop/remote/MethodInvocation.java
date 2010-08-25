@@ -19,7 +19,7 @@ public class MethodInvocation implements Serializable {
 
     @Override
     public String toString() {
-        return retClass.getSimpleName() + " " + name + "(" + Arrays.toString(args) + ')';
+        return retClass.getSimpleName() + " " + name + "(" + Arrays.toString(params) + ')';
     }
 
     @Override
