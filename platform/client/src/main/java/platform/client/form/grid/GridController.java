@@ -19,7 +19,7 @@ import java.util.Map;
 public class GridController {
 
     private final ClientGrid key;
-    public ClientGrid getGrid() {
+    public ClientGrid getKey() {
         return key;
     }
 

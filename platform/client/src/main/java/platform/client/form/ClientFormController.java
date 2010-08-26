@@ -459,8 +459,12 @@ public class ClientFormController {
                 controllers.get(property.groupObject).setGridPropertyValues(property, formChanges.gridProperties.get(property));
         }
 
-        formLayout.getComponent().validate();
-        ClientExternalScreen.repaintAll(getID());
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                formLayout.getComponent().validate();
+                ClientExternalScreen.repaintAll(getID());
+            }
+        });
 
         // выдадим сообщение если было от сервера
         if(formChanges.message.length()>0)

@@ -178,7 +178,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
     public void setGridObjects(List<ClientGroupObjectValue> gridObjects) {
         grid.setGridObjects(gridObjects);
 
-        if (grid.getGrid().autoHide) {
+        if (grid.getKey().autoHide) {
             setClassView(gridObjects.size() != 0 ? ClassViewType.GRID : ClassViewType.HIDE);
         }
     }
