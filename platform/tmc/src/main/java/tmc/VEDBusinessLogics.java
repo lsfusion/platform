@@ -275,25 +275,22 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         articleToGroup = addDProp("articleToGroup", "Группа товаров", articleGroup, article);
         articleToGroupName = addJProp(baseGroup, "Группа товаров", name, articleToGroup, 1);
 
-        incStore = addCUProp("incStore", "Склад (прих.)", // generics
+        incStore = addCUProp("incStore", true, "Склад (прих.)", // generics
                 addDProp("incShop", "Магазин (прих.)", shop, orderShopInc),
                 addDProp("incWarehouse", "Распред. центр (прих.)", warehouse, orderWarehouseInc));
-        addPersistent(incStore);
         incStoreName = addJProp(baseGroup, "Склад (прих.)", name, incStore, 1);
-        outStore = addCUProp("outCStore", "Склад (расх.)", // generics
+        outStore = addCUProp("outCStore", true, "Склад (расх.)", // generics
                 addDProp("outStore", "Склад (расх.)", store, orderStoreOut),
                 addDProp("outShop", "Магазин (расх.)", shop, orderShopOut),
                 addDProp("outWarehouse", "Распред. центр (расх.)", warehouse, orderWarehouseOut));
-        addPersistent(outStore);
         addJProp(baseGroup, "Склад (расх.)", name, outStore, 1);
 
         computerShop = addDProp("computerShop", "Магазин рабочего места", shop, computer);
         panelScreenComPort = addDProp(baseGroup, "panelComPort", "COM-порт табло", IntegerClass.instance, computer);
         addJProp(baseGroup, "Магазин рабочего места", name, computerShop, 1);
 
-        orderSupplier = addCUProp("orderSupplier", "Поставщик", addDProp("localSupplier", "Местный поставщик", localSupplier, orderLocal),
+        orderSupplier = addCUProp("orderSupplier", true, "Поставщик", addDProp("localSupplier", "Местный поставщик", localSupplier, orderLocal),
                 addDProp("importSupplier", "Импортный поставщик", importSupplier, orderDeliveryImport));
-        addPersistent(orderSupplier);
 
         LP outSubject = addCUProp(addJProp(and1, orderSupplier, 1, is(orderDelivery), 1), outStore);
 
@@ -360,10 +357,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         innerBalanceCheck = addDProp(documentGroup, "innerBalanceCheck", "Остаток инв.", DoubleClass.instance, balanceCheck, article, commitDelivery);
         innerBalanceCheckDB = addDProp("innerBalanceCheckDB", "Остаток (по учету)", DoubleClass.instance, balanceCheck, article, commitDelivery);
 
-        innerQuantity = addCUProp(documentGroup, "innerQuantity", "Кол-во", returnOuterQuantity, orderInnerQuantity,
+        innerQuantity = addCUProp(documentGroup, "innerQuantity", true, "Кол-во", returnOuterQuantity, orderInnerQuantity,
                 addDGProp(2, false, returnInnerCommitQuantity, 1, 2, 3, returnInnerFreeQuantity, 1, 2, 3, 4, date, 4, 4),
                 addDUProp("balanceCheckQuantity", "Кол-во инв.", innerBalanceCheckDB, innerBalanceCheck));
-        addPersistent(innerQuantity);
 
         LP incSklCommitedQuantity = addSGProp(moveGroup, "Кол-во прихода парт. на скл.",
                 addCUProp(addJProp(and1, outerCommitedQuantity, 1, 2, equals2, 1, 3),
@@ -372,14 +368,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP outSklCommitedQuantity = addSGProp(moveGroup, "Кол-во отгр. парт. на скл.", addJProp("Кол-во отгр. парт.", and1, innerQuantity, 1, 2, 3, is(commitOut), 1), outStore, 1, 2, 3);
         LP outSklQuantity = addSGProp(moveGroup, "Кол-во заяв. парт. на скл.", innerQuantity, outStore, 1, 2, 3);
 
-        balanceSklCommitedQuantity = addDUProp(moveGroup, "balanceSklCommitedQuantity", "Остаток парт. на скл.", incSklCommitedQuantity, outSklCommitedQuantity);
-        addPersistent(balanceSklCommitedQuantity);
-        balanceSklFreeQuantity = addDUProp(moveGroup, "balanceSklFreeQuantity", "Свободное кол-во на скл.", incSklCommitedQuantity, outSklQuantity);
-        addPersistent(balanceSklFreeQuantity);
+        balanceSklCommitedQuantity = addDUProp(moveGroup, "balanceSklCommitedQuantity", true, "Остаток парт. на скл.", incSklCommitedQuantity, outSklCommitedQuantity);
+        balanceSklFreeQuantity = addDUProp(moveGroup, "balanceSklFreeQuantity", true, "Свободное кол-во на скл.", incSklCommitedQuantity, outSklQuantity);
         addConstraint(addJProp("Кол-во резерва должно быть не меньше нуля", greater2, vzero, balanceSklFreeQuantity, 1, 2, 3), false);
 
-        articleFreeQuantity = addSGProp(moveGroup, "articleFreeQuantity", "Свободное кол-во на скл.", balanceSklFreeQuantity, 1, 2);
-        addPersistent(articleFreeQuantity);
+        articleFreeQuantity = addSGProp(moveGroup, "articleFreeQuantity", true, "Свободное кол-во на скл.", balanceSklFreeQuantity, 1, 2);
 
         innerBalanceCheckDB.setDerivedChange(balanceSklCommitedQuantity, outStore, 1, 2, 3);
 
@@ -409,8 +402,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addConstraint(addJProp("Нельзя создавать пустые документы", addJProp(andNot1, is(order), 1, addJProp(greater2, absQuantity, 1, vzero), 1), 1), false);
 
         // ожидаемый приход на склад
-        articleFreeOrderQuantity = addSUProp("articleFreeOrderQuantity", "Ожидаемое своб. кол-во", Union.SUM, articleFreeQuantity, addSGProp(moveGroup, "Ожидается приход", addJProp(andNot1, articleOrderQuantity, 1, 2, is(commitInc), 1), incStore, 1, 2)); // сумма по еще не пришедшим
-        addPersistent(articleFreeOrderQuantity);
+        articleFreeOrderQuantity = addSUProp("articleFreeOrderQuantity", true, "Ожидаемое своб. кол-во", Union.SUM, articleFreeQuantity, addSGProp(moveGroup, "Ожидается приход", addJProp(andNot1, articleOrderQuantity, 1, 2, is(commitInc), 1), incStore, 1, 2)); // сумма по еще не пришедшим
 
         articleBalanceCheck = addDGProp(documentGroup, "articleBalanceCheck", "Остаток инв.", 2, false, innerBalanceCheck, 1, 2, innerBalanceCheckDB, 1, 2, 3, date, 3, 3);
 
@@ -438,9 +430,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP xorActionAll = addDProp(baseGroup, "xorActionAll", "Вкл./искл.", LogicalClass.instance, action);
         LP xorActionArticleGroup = addDProp(baseGroup, "xorActionArticleGroup", "Вкл./искл.", LogicalClass.instance, action, articleGroup);
         xorActionArticle = addDProp(baseGroup, "xorArticle", "Вкл./искл.", LogicalClass.instance, action, article);
-        inAction = addXorUProp(baseGroup, "inAction", "В акции", xorActionArticle, addXorUProp(
+        inAction = addXorUProp(baseGroup, "inAction", true, "В акции", xorActionArticle, addXorUProp(
                 addJProp(and1, xorActionAll, 1, is(article), 2), addJProp(xorActionArticleGroup, 1, articleToGroup, 2)));
-        addPersistent(inAction);
 
         LP isStarted = addJProp(baseGroup, "Началась", and(true, true), is(action), 1,
                 addJProp(less2, currentDate, actionFrom, 1), 1,
@@ -462,8 +453,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         // продажа облигаций
         issueObligation = addCUProp(documentPriceGroup, "Выдать", addDProp("saleCertGiftObligation", "Выдать", LogicalClass.instance, saleCert, giftObligation),
                 addDProp("orderSaleCoupon", "Выдать", LogicalClass.instance, commitSaleCheckArticleRetail, coupon));
-        obligationIssued = addCGProp(null, "obligationIssued", "Выд. документ", addJProp(and1, 1, issueObligation, 1, 2), issueObligation, 2);
-        addPersistent(obligationIssued);
+        obligationIssued = addCGProp(null, "obligationIssued", true, "Выд. документ", addJProp(and1, 1, issueObligation, 1, 2), issueObligation, 2);
 
         obligationSum = addDProp(baseGroup, "obligationSum", "Сумма", DoubleClass.instance, obligation);
         obligationSumFrom = addDProp(baseGroup, "obligationSumFrom", "Сумма покупки", DoubleClass.instance, obligation);
@@ -481,12 +471,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP revalueShop = addDProp("revalueShop", "Магазин", shop, documentRevalue);
         addJProp(baseGroup, "Магазин", name, revalueShop, 1);
-        priceStore = addCUProp("priceStore", "Склад (цены)", incStore, revalueShop);
-        addPersistent(priceStore);
+        priceStore = addCUProp("priceStore", true, "Склад (цены)", incStore, revalueShop);
 
         documentRevalued = addDProp(documentGroup, "isRevalued", "Переоц.", LogicalClass.instance, documentRevalue, article);
-        inDocumentPrice = addCUProp("inDocumentPrice", "Изм. цены", documentRevalued, addJProp(and1, is(commitWholeShopInc), 1, articleQuantity, 1, 2));
-        addPersistent(inDocumentPrice);
+        inDocumentPrice = addCUProp("inDocumentPrice", true, "Изм. цены", documentRevalued, addJProp(and1, is(commitWholeShopInc), 1, articleQuantity, 1, 2));
 
         LP[] maxShopPriceProps = addMGProp((AbstractGroup) null, true, new String[]{"currentShopPriceDate", "currentShopPriceDoc"}, new String[]{"Дата посл. цены в маг.", "Посл. док. цены в маг."}, 1,
                 addJProp(and1, date, 1, inDocumentPrice, 1, 2), 1, priceStore, 1, 2);
@@ -529,27 +517,23 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP supplierToWarehouse = addDProp(logisticsGroup, "supplierToWarehouse", "Пост. на распред. центр", LogicalClass.instance, supplier);
 
         // абстрактный товар \ склад - поставщик
-        articleStoreSupplier = addSUProp("articleStoreSupplier", "Пост. товара на склад", Union.OVERRIDE, addJProp(and1, articleSupplier, 2, is(store), 1),
+        articleStoreSupplier = addSUProp("articleStoreSupplier", true, "Пост. товара на склад", Union.OVERRIDE, addJProp(and1, articleSupplier, 2, is(store), 1),
                 addJProp(and1, shopWarehouse, 1, addJProp(supplierToWarehouse, articleSupplier, 1), 2));
-        addPersistent(articleStoreSupplier);
         LP storeSupplierCycle = addCUProp(addJProp(and1, supplierCycle, 2, is(store), 1), addJProp(and1, shopCycle, 1, is(warehouse), 2));
 
-        articleStorePeriod = addJProp("articleStorePeriod", "Цикл поставок на склад", storeSupplierCycle, 1, articleStoreSupplier, 1, 2);
-        addPersistent(articleStorePeriod);
+        articleStorePeriod = addJProp("articleStorePeriod", true, "Цикл поставок на склад", storeSupplierCycle, 1, articleStoreSupplier, 1, 2);
 
         LP articleFormatToSell = addDProp(logisticsGroup, "articleFormatToSell", "В ассортименте", LogicalClass.instance, format, article);
         LP articleFormatMin = addDProp(logisticsGroup, "articleFormatMin", "Страх. запас", DoubleClass.instance, format, article);
 
         LP articleStoreToSell = addCUProp(logisticsGroup, "articleStoreToSell", "В ассортименте", addJProp(articleFormatToSell, shopFormat, 1, 2),
                 addDProp("articleWarehouseToSell", "В ассортименте", LogicalClass.instance, warehouse, article));
-        articleStoreMin = addJProp("articleStoreMin", "Страх. запас", and1, addCUProp(logisticsGroup, "Страх. запас", addJProp(articleFormatMin, shopFormat, 1, 2),
+        articleStoreMin = addJProp("articleStoreMin", true, "Страх. запас", and1, addCUProp(logisticsGroup, "Страх. запас", addJProp(articleFormatMin, shopFormat, 1, 2),
                 addDProp("articleWarehouseMin", "Страх. запас", DoubleClass.instance, warehouse, article)), 1, 2, articleStoreToSell, 1, 2);
-        addPersistent(articleStoreMin);
         LP articleStoreForecast = addJProp(and1, addDProp(logisticsGroup, "articleStoreForecast", "Прогноз прод. (в день)", DoubleClass.instance, store, article), 1, 2, articleStoreToSell, 1, 2);
 
         // MAX((страховой запас+прогноз расхода до следующего цикла поставки)-остаток,0) (по внутренним складам)
-        articleFullStoreDemand = addSUProp("articleFullStoreDemand", "Общ. необходимость", Union.SUM, addJProp(multiplyDouble2, addSupplierProperty(articleStoreForecast), 1, 2, articleStorePeriod, 1, 2), addSupplierProperty(articleStoreMin));
-        addPersistent(articleFullStoreDemand);
+        articleFullStoreDemand = addSUProp("articleFullStoreDemand", true, "Общ. необходимость", Union.SUM, addJProp(multiplyDouble2, addSupplierProperty(articleStoreForecast), 1, 2, articleStorePeriod, 1, 2), addSupplierProperty(articleStoreMin));
         LP articleStoreRequired = addJProp(onlyPositive, addDUProp(articleFullStoreDemand, addSupplierProperty(articleFreeOrderQuantity)), 1, 2);
 
         documentLogisticsRequired = addJProp(documentLogisticsGroup, "Необходимо", articleStoreRequired, incStore, 1, 2);
@@ -632,8 +616,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP clientSaleSum = addSGProp(orderSalePayNoObligation, orderContragent, 1);
         orderClientSaleSum.setDerivedChange(clientSaleSum, orderContragent, 1);
-        clientSum = addSUProp(baseGroup, "clientSum", "Нак. сумма", Union.SUM, clientSaleSum, clientInitialSum);
-        addPersistent(clientSum);
+        clientSum = addSUProp(baseGroup, "clientSum", true, "Нак. сумма", Union.SUM, clientSaleSum, clientInitialSum);
 
         orderSalePayCash = addDProp(documentPriceGroup, "orderSalePayCash", "Наличными", DoubleClass.instance, orderSaleCheckRetail);
         orderSalePayCard = addDProp(documentPriceGroup, "orderSalePayCard", "Карточкой", DoubleClass.instance, orderSaleCheckRetail);
@@ -667,8 +650,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP xorCouponArticleGroup = addDProp(couponGroup, "xorCouponArticleGroup", "Вкл.", LogicalClass.instance, articleGroup);
         LP xorCouponArticle = addDProp(couponGroup, "xorCouponArticle", "Вкл./искл.", LogicalClass.instance, article);
-        inCoupon = addXorUProp(couponGroup, "inCoupon", "Выд. купон", xorCouponArticle, addJProp(xorCouponArticleGroup, articleToGroup, 1));
-        addPersistent(inCoupon);
+        inCoupon = addXorUProp(couponGroup, "inCoupon", true, "Выд. купон", xorCouponArticle, addJProp(xorCouponArticleGroup, articleToGroup, 1));
 
         couponIssueSum = addDProp(couponGroup, "couponIssueSum", "Сумма купона", DoubleClass.instance, DoubleClass.instance);
 

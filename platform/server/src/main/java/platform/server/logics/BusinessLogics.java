@@ -642,7 +642,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         Set idSet = new HashSet<String>();
         for (Property property : properties) {
-           assert idSet.add(property.sID): "Same sid " + property.sID;
+            assert idSet.add(property.sID) : "Same sid " + property.sID;
         }
 
         fillIDs();
@@ -1151,12 +1151,20 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addDProp(String sID, String caption, ValueClass value, ValueClass... params) {
-        return addDProp(null, sID, caption, value, params);
+        return addDProp(sID, false, caption, value, params);
+    }
+
+    protected LP addDProp(String sID, boolean persistent, String caption, ValueClass value, ValueClass... params) {
+        return addDProp(null, sID, persistent, caption, value, params);
     }
 
     protected LP addDProp(AbstractGroup group, String sID, String caption, ValueClass value, ValueClass... params) {
+        return addDProp(group, sID, false, caption, value, params);
+    }
+
+    protected LP addDProp(AbstractGroup group, String sID, boolean persistent, String caption, ValueClass value, ValueClass... params) {
         StoredDataProperty dataProperty = new StoredDataProperty(sID, caption, params, value);
-        LP lp = addProperty(group, new LP<ClassPropertyInterface>(dataProperty));
+        LP lp = addProperty(group, persistent, new LP<ClassPropertyInterface>(dataProperty));
         dataProperty.markStored(tableFactory);
         return lp;
     }
@@ -1165,7 +1173,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addDCProp(null, sID, caption, derivedProp, params);
     }
 
+    protected <D extends PropertyInterface> LP addDCProp(String sID, boolean persistent, String caption, LP<D> derivedProp, Object... params) {
+        return addDCProp(null, sID, persistent, caption, derivedProp, params);
+    }
+
     protected <D extends PropertyInterface> LP addDCProp(AbstractGroup group, String sID, String caption, LP<D> derivedProp, Object... params) {
+        return addDCProp(group, sID, false, caption, derivedProp, params);
+    }
+
+    protected <D extends PropertyInterface> LP addDCProp(AbstractGroup group, String sID, boolean persistent, String caption, LP<D> derivedProp, Object... params) {
 
         // считываем override'ы с конца
         List<ValueClass> backClasses = new ArrayList<ValueClass>();
@@ -1212,7 +1228,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             valueClass = value.result;
 
         // выполняем само создание свойства
-        LP derDataProp = addDProp(group, sID, caption, valueClass, overrideClasses(commonClasses, overrideClasses));
+        LP derDataProp = addDProp(group, sID, persistent, caption, valueClass, overrideClasses(commonClasses, overrideClasses));
         derDataProp.setDerivedChange(defaultChanged, derivedProp, params);
         return derDataProp;
     }
@@ -1244,8 +1260,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addSDProp(null, sID, caption, value, params);
     }
 
+    protected LP addSDProp(String sID, boolean persistent, String caption, ValueClass value, ValueClass... params) {
+        return addSDProp(null, sID, persistent, caption, value, params);
+    }
+
     protected LP addSDProp(AbstractGroup group, String sID, String caption, ValueClass value, ValueClass... params) {
-        return addProperty(group, new LP<ClassPropertyInterface>(new SessionDataProperty(sID, caption, params, value)));
+        return addSDProp(group, sID, false, caption, value, params);
+    }
+
+    protected LP addSDProp(AbstractGroup group, String sID, boolean persistent, String caption, ValueClass value, ValueClass... params) {
+        return addProperty(group, persistent, new LP<ClassPropertyInterface>(new SessionDataProperty(sID, caption, params, value)));
     }
 
     protected LP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity... params) {
@@ -1272,8 +1296,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addCProp(null, sID, caption, valueClass, value, params);
     }
 
+    protected LP addCProp(String sID, boolean persistent, String caption, ConcreteValueClass valueClass, Object value, ValueClass... params) {
+        return addCProp(null, sID, persistent, caption, valueClass, value, params);
+    }
+
     protected LP addCProp(AbstractGroup group, String sID, String caption, ConcreteValueClass valueClass, Object value, ValueClass... params) {
-        return addProperty(group, new LP<ClassPropertyInterface>(new ClassProperty(sID, caption, params, valueClass, value)));
+        return addCProp(group, sID, false, caption, valueClass, value, params);
+    }
+
+    protected LP addCProp(AbstractGroup group, String sID, boolean persistent, String caption, ConcreteValueClass valueClass, Object value, ValueClass... params) {
+        return addProperty(group, persistent, new LP<ClassPropertyInterface>(new ClassProperty(sID, caption, params, valueClass, value)));
     }
 
     protected LP addTProp(Time time) {
@@ -1281,13 +1313,21 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected <P extends PropertyInterface> LP addTCProp(Time time, String sID, String caption, LP<P> changeProp, ValueClass... classes) {
-        return addTCProp(null, time, genSID(), caption, changeProp, classes);
+        return addTCProp(null, time, sID, caption, changeProp, classes);
+    }
+
+    protected <P extends PropertyInterface> LP addTCProp(Time time, String sID, boolean persistent, String caption, LP<P> changeProp, ValueClass... classes) {
+        return addTCProp(null, time, sID, persistent, caption, changeProp, classes);
     }
 
     protected <P extends PropertyInterface> LP addTCProp(AbstractGroup group, Time time, String sID, String caption, LP<P> changeProp, ValueClass... classes) {
+        return addTCProp(group, time, sID, false, caption, changeProp, classes);
+    }
+
+    protected <P extends PropertyInterface> LP addTCProp(AbstractGroup group, Time time, String sID, boolean persistent, String caption, LP<P> changeProp, ValueClass... classes) {
         TimeChangeDataProperty<P> timeProperty = new TimeChangeDataProperty<P>(sID, caption, overrideClasses(changeProp.getMapClasses(), classes), changeProp.listInterfaces);
         changeProp.property.timeChanges.put(time, timeProperty);
-        return addProperty(group, new LP<ClassPropertyInterface>(timeProperty));
+        return addProperty(group, persistent, new LP<ClassPropertyInterface>(timeProperty));
     }
 
     protected LP addSFProp(String formula, ConcreteValueClass value, int paramCount) {
@@ -1454,9 +1494,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     private <T extends LP<?>> T addProperty(AbstractGroup group, T lp) {
+        return addProperty(group, false, lp);
+    }
+
+    private <T extends LP<?>> T addProperty(AbstractGroup group, boolean persistent, T lp) {
         lproperties.add(lp);
         properties.add(lp.property);
         if (group != null) group.add(lp.property);
+        if (persistent){
+            addPersistent(lp);
+        }
         return lp;
     }
 
@@ -1469,7 +1516,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addJProp(String sID, String caption, LP mainProp, Object... params) {
-        return addJProp(null, sID, caption, mainProp, params);
+        return addJProp(sID, false, caption, mainProp, params);
+    }
+
+    protected LP addJProp(String sID, boolean persistent, String caption, LP mainProp, Object... params) {
+        return addJProp(null, sID, persistent, caption, mainProp, params);
     }
 
     protected LP addJProp(AbstractGroup group, String caption, LP mainProp, Object... params) {
@@ -1506,21 +1557,33 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addJProp(group, false, sID, caption, mainProp, params);
     }
 
+    protected LP addJProp(AbstractGroup group, String sID, boolean persistent, String caption, LP mainProp, Object... params) {
+        return addJProp(group, false, sID, persistent, caption, mainProp, params);
+    }
+
     protected LP addJProp(boolean implementChange, LP mainProp, Object... params) {
         return addJProp(null, implementChange, genSID(), "sys", mainProp, params);
     }
 
     protected LP addJProp(AbstractGroup group, boolean implementChange, String sID, String caption, LP mainProp, Object... params) {
+        return addJProp(group, implementChange, sID, false, caption, mainProp, params);
+    }
+
+    protected LP addJProp(AbstractGroup group, boolean implementChange, String sID, boolean persistent, String caption, LP mainProp, Object... params) {
 
         JoinProperty<?> property = new JoinProperty(sID, caption, getIntNum(params), implementChange);
 
         LP listProperty = new LP<JoinProperty.Interface>(property);
         property.implement = mapImplement(mainProp, readImplements(listProperty.listInterfaces, params));
 
-        return addProperty(group, listProperty);
+        return addProperty(group, persistent, listProperty);
     }
 
     private <T extends PropertyInterface> LP addGProp(AbstractGroup group, String sID, String caption, LP<T> groupProp, boolean sum, Object... params) {
+        return addGProp(group, sID, false, caption, groupProp, sum, params);
+    }
+
+    private <T extends PropertyInterface> LP addGProp(AbstractGroup group, String sID, boolean persistent, String caption, LP<T> groupProp, boolean sum, Object... params) {
 
         GroupProperty<T> property;
         List<PropertyInterfaceImplement<T>> listImplements = readImplements(groupProp.listInterfaces, params);
@@ -1529,19 +1592,27 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         else
             property = new MaxGroupProperty<T>(sID, caption, listImplements, groupProp.property);
 
-        return mapLGProp(group, property, listImplements);
+        return mapLGProp(group, persistent, property, listImplements);
     }
 
-    private <P extends PropertyInterface, L extends PropertyInterface> LP mapLProp(AbstractGroup group, PropertyMapImplement<L, P> implement, LP<P> property) {
-        return addProperty(group, new LP<L>(implement.property, BaseUtils.mapList(property.listInterfaces, BaseUtils.reverse(implement.mapping))));
+    private <P extends PropertyInterface, L extends PropertyInterface> LP mapLProp(AbstractGroup group, boolean persistent, PropertyMapImplement<L, P> implement, LP<P> property) {
+        return addProperty(group, persistent, new LP<L>(implement.property, BaseUtils.mapList(property.listInterfaces, BaseUtils.reverse(implement.mapping))));
     }
 
     private <P extends PropertyInterface, L extends PropertyInterface> LP mapLGProp(AbstractGroup group, PropertyImplement<PropertyInterfaceImplement<P>, L> implement, List<PropertyInterfaceImplement<P>> listImplements) {
-        return addProperty(group, new LP<L>(implement.property, BaseUtils.mapList(listImplements, BaseUtils.reverse(implement.mapping))));
+        return mapLGProp(group, false, implement, listImplements);
+    }
+
+    private <P extends PropertyInterface, L extends PropertyInterface> LP mapLGProp(AbstractGroup group, boolean persistent, PropertyImplement<PropertyInterfaceImplement<P>, L> implement, List<PropertyInterfaceImplement<P>> listImplements) {
+        return addProperty(group, persistent, new LP<L>(implement.property, BaseUtils.mapList(listImplements, BaseUtils.reverse(implement.mapping))));
     }
 
     private <P extends PropertyInterface> LP mapLGProp(AbstractGroup group, GroupProperty<P> property, List<PropertyInterfaceImplement<P>> listImplements) {
-        return mapLGProp(group, new PropertyImplement<PropertyInterfaceImplement<P>, GroupProperty.Interface<P>>(property, property.getMapInterfaces()), listImplements);
+        return mapLGProp(group, false, property, listImplements);
+    }
+
+    private <P extends PropertyInterface> LP mapLGProp(AbstractGroup group, boolean persistent, GroupProperty<P> property, List<PropertyInterfaceImplement<P>> listImplements) {
+        return mapLGProp(group, persistent, new PropertyImplement<PropertyInterfaceImplement<P>, GroupProperty.Interface<P>>(property, property.getMapInterfaces()), listImplements);
     }
 
     protected <P extends PropertyInterface> LP addOProp(String caption, LP<P> sum, boolean percent, boolean ascending, boolean includeLast, int partNum, Object... params) {
@@ -1553,6 +1624,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected <P extends PropertyInterface> LP addOProp(AbstractGroup group, String sID, String caption, LP<P> sum, boolean percent, boolean ascending, boolean includeLast, int partNum, Object... params) {
+        return addOProp(group, sID, false, caption, sum, percent, ascending, includeLast, partNum, params);
+    }
+
+    protected <P extends PropertyInterface> LP addOProp(AbstractGroup group, String sID, boolean persistent, String caption, LP<P> sum, boolean percent, boolean ascending, boolean includeLast, int partNum, Object... params) {
         List<LI> li = readLI(params);
 
         Collection<PropertyInterfaceImplement<P>> partitions = mapLI(li.subList(0, partNum), sum.listInterfaces);
@@ -1564,7 +1639,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         else
             orderProperty = DerivedProperty.createOProp(sID, caption, sum.property, partitions, orders, includeLast);
 
-        return mapLProp(group, orderProperty, sum);
+        return mapLProp(group, persistent, orderProperty, sum);
     }
 
     protected <R extends PropertyInterface, L extends PropertyInterface> LP addUGProp(AbstractGroup group, String caption, boolean ascending, LP<R> restriction, LP<L> ungroup, Object... params) {
@@ -1572,13 +1647,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected <R extends PropertyInterface, L extends PropertyInterface> LP addUGProp(AbstractGroup group, String sID, String caption, boolean ascending, LP<R> restriction, LP<L> ungroup, Object... params) {
+        return addUGProp(group, sID, false, caption, ascending, restriction, ungroup, params);
+    }
+
+    protected <R extends PropertyInterface, L extends PropertyInterface> LP addUGProp(AbstractGroup group, String sID, boolean persistent, String caption, boolean ascending, LP<R> restriction, LP<L> ungroup, Object... params) {
         List<LI> li = readLI(params);
 
         Map<L, PropertyInterfaceImplement<R>> groupImplement = new HashMap<L, PropertyInterfaceImplement<R>>();
         for (int i = 0; i < ungroup.listInterfaces.size(); i++)
             groupImplement.put(ungroup.listInterfaces.get(i), li.get(i).map(restriction.listInterfaces));
         OrderedMap<PropertyInterfaceImplement<R>, Boolean> orders = new OrderedMap<PropertyInterfaceImplement<R>, Boolean>(mapLI(li.subList(ungroup.listInterfaces.size(), li.size()), restriction.listInterfaces), ascending);
-        return mapLProp(group, DerivedProperty.createUGProp(sID, caption, new PropertyImplement<PropertyInterfaceImplement<R>, L>(ungroup.property, groupImplement), orders, restriction.property), restriction);
+        return mapLProp(group, persistent, DerivedProperty.createUGProp(sID, caption, new PropertyImplement<PropertyInterfaceImplement<R>, L>(ungroup.property, groupImplement), orders, restriction.property), restriction);
     }
 
     /*
@@ -1652,11 +1731,19 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addSGProp(String sID, String caption, LP groupProp, Object... params) {
-        return addSGProp(null, sID, caption, groupProp, params);
+        return addSGProp(sID, false, caption, groupProp, params);
+    }
+
+    protected LP addSGProp(String sID, boolean persistent, String caption, LP groupProp, Object... params) {
+        return addSGProp(null, sID, persistent, caption, groupProp, params);
     }
 
     protected LP addSGProp(AbstractGroup group, String sID, String caption, LP groupProp, Object... params) {
-        return addGProp(group, sID, caption, groupProp, true, params);
+        return addSGProp(group, sID, false, caption, groupProp, params);
+    }
+
+    protected LP addSGProp(AbstractGroup group, String sID, boolean persistent, String caption, LP groupProp, Object... params) {
+        return addGProp(group, sID, persistent, caption, groupProp, true, params);
     }
 
     protected LP addMGProp(LP groupProp, Object... params) {
@@ -1709,14 +1796,22 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addCGProp(group, true, sID, caption, groupProp, dataProp, params);
     }
 
+    protected <T extends PropertyInterface, P extends PropertyInterface> LP addCGProp(AbstractGroup group, String sID, boolean persistent, String caption, LP<T> groupProp, LP<P> dataProp, Object... params) {
+        return addCGProp(group, true, sID, persistent, caption, groupProp, dataProp, params);
+    }
+
     protected <T extends PropertyInterface, P extends PropertyInterface> LP addCGProp(AbstractGroup group, boolean checkChange, String sID, String caption, LP<T> groupProp, LP<P> dataProp, Object... params) {
+        return addCGProp(group, checkChange, sID, false, caption, groupProp, dataProp, params);
+    }
+
+    protected <T extends PropertyInterface, P extends PropertyInterface> LP addCGProp(AbstractGroup group, boolean checkChange, String sID, boolean persistent, String caption, LP<T> groupProp, LP<P> dataProp, Object... params) {
         List<PropertyInterfaceImplement<T>> listImplements = readImplements(groupProp.listInterfaces, params);
         CycleGroupProperty<T, P> property = new CycleGroupProperty<T, P>(sID, caption, listImplements, groupProp.property, dataProp.property);
 
         // нужно добавить ограничение на уникальность
         properties.add(property.getConstrainedProperty(checkChange));
 
-        return mapLGProp(group, property, listImplements);
+        return mapLGProp(group, persistent, property, listImplements);
     }
 
     protected <T extends PropertyInterface, P extends PropertyInterface> LP addDGProp(int orders, boolean ascending, LP<T> groupProp, Object... params) {
@@ -1728,6 +1823,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected <T extends PropertyInterface, P extends PropertyInterface> LP addDGProp(AbstractGroup group, String sID, String caption, int orders, boolean ascending, LP<T> groupProp, Object... params) {
+        return addDGProp(group, sID, false, caption, orders, ascending, groupProp, params);
+    }
+
+    protected <T extends PropertyInterface, P extends PropertyInterface> LP addDGProp(AbstractGroup group, String sID, boolean persistent, String caption, int orders, boolean ascending, LP<T> groupProp, Object... params) {
         List<PropertyInterfaceImplement<T>> listImplements = readImplements(groupProp.listInterfaces, params);
         int intNum = listImplements.size();
 
@@ -1738,10 +1837,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 (PropertyMapImplement<P, T>) listImplements.get(intNum - orders - 1));
 
         // нужно добавить ограничение на уникальность
-        return mapLGProp(group, property, groupImplements);
+        return mapLGProp(group, persistent, property, groupImplements);
     }
 
     protected LP addUProp(AbstractGroup group, String sID, String caption, Union unionType, Object... params) {
+        return addUProp(group, sID, false, caption, unionType, params);
+    }
+
+    protected LP addUProp(AbstractGroup group, String sID, boolean persistent, String caption, Union unionType, Object... params) {
 
         int intNum = ((LP) params[unionType == Union.SUM ? 1 : 0]).listInterfaces.size();
 
@@ -1788,7 +1891,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
         }
 
-        return addProperty(group, listProperty);
+        return addProperty(group, persistent, listProperty);
     }
 
     // объединение классовое (непересекающихся) свойств
@@ -1805,15 +1908,23 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addCUProp(String sID, String caption, LP... props) {
-        return addCUProp(null, sID, caption, props);
+        return addCUProp(sID, false, caption, props);
+    }
+
+    protected LP addCUProp(String sID, boolean persistent, String caption, LP... props) {
+        return addCUProp(null, sID, persistent, caption, props);
     }
 
     Collection<LP[]> checkCUProps = new ArrayList<LP[]>();
 
     // объединяет разные по классам св-ва
     protected LP addCUProp(AbstractGroup group, String sID, String caption, LP... props) {
+        return addCUProp(group, sID, false, caption, props);
+    }
+
+    protected LP addCUProp(AbstractGroup group, String sID, boolean persistent, String caption, LP... props) {
         assert checkCUProps.add(props);
-        return addXSUProp(group, sID, caption, props);
+        return addXSUProp(group, sID, persistent, caption, props);
     }
 
     // разница
@@ -1833,7 +1944,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addDUProp(null, sID, caption, prop1, prop2);
     }
 
+    protected LP addDUProp(String sID, boolean persistent, String caption, LP prop1, LP prop2) {
+        return addDUProp(null, sID, persistent, caption, prop1, prop2);
+    }
+
     protected LP addDUProp(AbstractGroup group, String sID, String caption, LP prop1, LP prop2) {
+        return addDUProp(group, sID, false, caption, prop1, prop2);
+    }
+
+    protected LP addDUProp(AbstractGroup group, String sID, boolean persistent, String caption, LP prop1, LP prop2) {
         int intNum = prop1.listInterfaces.size();
         Object[] params = new Object[2 * (2 + intNum)];
         params[0] = 1;
@@ -1844,7 +1963,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         params[3 + intNum] = prop2;
         for (int i = 0; i < intNum; i++)
             params[4 + intNum + i] = i + 1;
-        return addUProp(group, sID, caption, Union.SUM, params);
+        return addUProp(group, sID, persistent, caption, Union.SUM, params);
     }
 
     protected LP addNUProp(LP prop) {
@@ -1852,13 +1971,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addNUProp(AbstractGroup group, String sID, String caption, LP prop) {
+        return addNUProp(group, sID, false, caption, prop);
+    }
+
+    protected LP addNUProp(AbstractGroup group, String sID, boolean persistent, String caption, LP prop) {
         int intNum = prop.listInterfaces.size();
         Object[] params = new Object[2 + intNum];
         params[0] = -1;
         params[1] = prop;
         for (int i = 0; i < intNum; i++)
             params[2 + i] = i + 1;
-        return addUProp(group, sID, caption, Union.SUM, params);
+        return addUProp(group, sID, persistent, caption, Union.SUM, params);
     }
 
     protected LP addLProp(LP lp, ValueClass... classes) {
@@ -1871,6 +1994,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addXorUProp(AbstractGroup group, String sID, String caption, LP prop1, LP prop2) {
+        return addXorUProp(group, sID, false, caption, prop1, prop2);
+    }
+
+    protected LP addXorUProp(AbstractGroup group, String sID, boolean persistent, String caption, LP prop1, LP prop2) {
         int intNum = prop1.listInterfaces.size();
         Object[] params = new Object[2 * (1 + intNum)];
         params[0] = prop1;
@@ -1879,7 +2006,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         params[1 + intNum] = prop2;
         for (int i = 0; i < intNum; i++)
             params[2 + intNum + i] = i + 1;
-        return addXSUProp(group, sID, caption, addJProp(andNot1, getUParams(new LP[]{prop1, prop2}, 0)), addJProp(andNot1, getUParams(new LP[]{prop2, prop1}, 0)));
+        return addXSUProp(group, sID, persistent, caption, addJProp(andNot1, getUParams(new LP[]{prop1, prop2}, 0)), addJProp(andNot1, getUParams(new LP[]{prop2, prop1}, 0)));
     }
 
     // IF и IF ELSE
@@ -1888,7 +2015,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addIfProp(AbstractGroup group, String sID, String caption, LP prop, boolean not, LP ifProp, Object... params) {
-        return addJProp(group, sID, caption, and(not), BaseUtils.add(getUParams(new LP[]{prop}, 0), BaseUtils.add(new LP[]{ifProp}, params)));
+        return addIfProp(group, sID, false, caption, prop, not, ifProp, params);
+    }
+
+    protected LP addIfProp(AbstractGroup group, String sID, boolean persistent, String caption, LP prop, boolean not, LP ifProp, Object... params) {
+        return addJProp(group, sID, persistent, caption, and(not), BaseUtils.add(getUParams(new LP[]{prop}, 0), BaseUtils.add(new LP[]{ifProp}, params)));
     }
 
     protected LP addIfElseUProp(LP prop1, LP prop2, LP ifProp, Object... params) {
@@ -1900,7 +2031,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addIfElseUProp(AbstractGroup group, String sID, String caption, LP prop1, LP prop2, LP ifProp, Object... params) {
-        return addXSUProp(group, sID, caption, addIfProp(prop1, false, ifProp, params), addIfProp(prop2, true, ifProp, params));
+        return addIfElseUProp(group, sID, false, caption, prop1, prop2, ifProp, params);
+    }
+
+    protected LP addIfElseUProp(AbstractGroup group, String sID, boolean persistent, String caption, LP prop1, LP prop2, LP ifProp, Object... params) {
+        return addXSUProp(group, sID, persistent, caption, addIfProp(prop1, false, ifProp, params), addIfProp(prop2, true, ifProp, params));
     }
 
     // объединение пересекающихся свойств
@@ -1917,15 +2052,23 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addSUProp(String sID, String caption, Union unionType, LP... props) {
-        return addSUProp(null, sID, caption, unionType, props);
+        return addSUProp(sID, false, caption, unionType, props);
+    }
+
+    protected LP addSUProp(String sID, boolean persistent, String caption, Union unionType, LP... props) {
+        return addSUProp(null, sID, persistent, caption, unionType, props);
     }
 
     Collection<LP[]> checkSUProps = new ArrayList<LP[]>();
 
     // объединяет разные по классам св-ва
     protected LP addSUProp(AbstractGroup group, String sID, String caption, Union unionType, LP... props) {
+        return addSUProp(group, sID, false, caption, unionType, props);
+    }
+
+    protected LP addSUProp(AbstractGroup group, String sID, boolean persistent, String caption, Union unionType, LP... props) {
         assert checkSUProps.add(props);
-        return addUProp(group, sID, caption, unionType, getUParams(props, (unionType == Union.SUM ? 1 : 0)));
+        return addUProp(group, sID, persistent, caption, unionType, getUParams(props, (unionType == Union.SUM ? 1 : 0)));
     }
 
     protected LP addXSUProp(AbstractGroup group, String caption, LP... props) {
@@ -1934,7 +2077,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     // объединяет заведомо непересекающиеся но не классовые свойства
     protected LP addXSUProp(AbstractGroup group, String sID, String caption, LP... props) {
-        return addUProp(group, sID, caption, Union.EXCLUSIVE, getUParams(props, 0));
+        return addXSUProp(group, sID, false, caption, props);
+    }
+
+    protected LP addXSUProp(AbstractGroup group, String sID, boolean persistent, String caption, LP... props) {
+        return addUProp(group, sID, persistent, caption, Union.EXCLUSIVE, getUParams(props, 0));
     }
 
     protected LP[] addMUProp(AbstractGroup group, String[] ids, String[] captions, int extra, LP... props) {

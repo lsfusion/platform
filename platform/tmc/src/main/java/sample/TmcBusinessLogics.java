@@ -315,8 +315,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         primDocDate = addCUProp(paramsGroup, "Дата", extIncDate, intraDate, revalDate);
         secDocDate = addCUProp("Дата", extOutDate, exchDate);
 
-        docDate = addCUProp("docDate", "Дата", secDocDate, primDocDate);
-        addPersistent(docDate);
+        docDate = addCUProp("docDate", true, "Дата", secDocDate, primDocDate);
     }
 
     // ------------------------------------ Свойства по документам ------------------------------------------- //
@@ -390,8 +389,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         primDocStore = addCUProp(paramsGroup, "Склад (изм.)", extIncStore, intraIncStore, revalStore);
         fixedStore = addCUProp("Склад (парам.)", receiptStore, intraOutStore, extOutStore, exchStore);
 
-        docStore = addCUProp("docStore", "Склад", extIncStore, intraOutStore, extOutStore, exchStore, revalStore);
-        addPersistent(docStore);
+        docStore = addCUProp("docStore", true, "Склад", extIncStore, intraOutStore, extOutStore, exchStore, revalStore);
 
         docStoreName = addJProp(storeGroup, "docStoreName", "Имя склада", name, docStore, 1);
     }
@@ -459,8 +457,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         extIncDetailQuantity = addDProp(quantGroup, "extIncDetailQuantity", "Кол-во", DoubleClass.instance, extIncomeDetail);
         extIncDocumentQuantity = addSGProp(quantGroup, "extIncDocumentQuantity", "Кол-во (всего)", extIncDetailQuantity, extIncDetailDocument, 1);
 
-        extIncQuantity = addSGProp(quantGroup, "extIncQuantity" , "Кол-во прих.", extIncDetailQuantity, extIncDetailDocument, 1, extIncDetailArticle, 1);
-        addPersistent(extIncQuantity);
+        extIncQuantity = addSGProp(quantGroup, "extIncQuantity" , true, "Кол-во прих.", extIncDetailQuantity, extIncDetailDocument, 1, extIncDetailArticle, 1);
 
         intraQuantity = addDProp(quantGroup, "innerCount","Кол-во внутр.", DoubleClass.instance, intraDocument, article);
 
@@ -522,10 +519,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
     private void initQuantityStoreProperties() {
 
-        incStoreQuantity = addSGProp("incStoreQuantity", "Прих. на скл.", incQuantity, incQStore, 1, 2);
-        addPersistent(incStoreQuantity);
-        outStoreQuantity = addSGProp("outStoreQuantity", "Расх. со скл.", outQuantity, outQStore, 1, 2);
-        addPersistent(outStoreQuantity);
+        incStoreQuantity = addSGProp("incStoreQuantity", true, "Прих. на скл.", incQuantity, incQStore, 1, 2);
+        outStoreQuantity = addSGProp("outStoreQuantity", true, "Расх. со скл.", outQuantity, outQStore, 1, 2);
 
         balanceStoreQuantity = addDUProp(balanceGroup, "Ост. на скл.", incStoreQuantity, outStoreQuantity);
     }
