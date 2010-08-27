@@ -410,6 +410,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP userPolicyOrder;
 
     public LP hostname;
+    public LP onlyNotZero;
 
     void initBase() {
 
@@ -505,6 +506,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         addJProp(baseGroup, "Пользователь сессии", name, sessionUser, 1);
         LP sessionDate = addDProp(baseGroup, "sessionDate", "Дата сессии", DateClass.instance, session);
         sessionDate.setDerivedChange(currentDate, true, is(session), 1);
+        onlyNotZero = addJProp(andNot1, 1, addJProp(equals2, 1, vzero), 1);
     }
 
     void initBaseNavigators() {
@@ -1501,7 +1503,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         lproperties.add(lp);
         properties.add(lp.property);
         if (group != null) group.add(lp.property);
-        if (persistent){
+        if (persistent) {
             addPersistent(lp);
         }
         return lp;
@@ -1743,7 +1745,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addSGProp(AbstractGroup group, String sID, boolean persistent, String caption, LP groupProp, Object... params) {
-        return addGProp(group, sID, persistent, caption, groupProp, true, params);
+        LP property = addGProp(group, sID, persistent, caption, groupProp, true, params);
+        if (persistent) {
+            return addJProp(onlyNotZero, directLI(property));
+        } else {
+            return property;
+        }
     }
 
     protected LP addMGProp(LP groupProp, Object... params) {
