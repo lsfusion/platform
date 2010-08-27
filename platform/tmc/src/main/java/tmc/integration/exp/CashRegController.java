@@ -84,8 +84,10 @@ public class CashRegController {
 
             if (quantityObject != null) {
 
+                Object priceObject = row.values.get(formInstance.instanceFactory.getInstance(priceProp));
+                
                 Double quantity = (quantityObject instanceof Double) ? (Double)quantityObject : 1.0;
-                Double price = (Double)row.values.get(formInstance.instanceFactory.getInstance(priceProp));
+                Double price = (priceObject instanceof Double) ? (Double)priceObject : 0.0;
                 String artName = ((String)row.values.get(formInstance.instanceFactory.getInstance(nameProp))).trim();
                 artName = artName.replace(',', '.');
                 artName = artName.replace('"', ' ');
