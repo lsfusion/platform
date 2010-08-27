@@ -56,7 +56,6 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
         return proxy;
     }
 
-    @ImmutableMethod
     public byte[] getCurrentUserInfoByteArray() throws RemoteException {
         logRemoteMethodStartCall("getCurrentUserInfoByteArray");
         byte[] result = target.getCurrentUserInfoByteArray();
