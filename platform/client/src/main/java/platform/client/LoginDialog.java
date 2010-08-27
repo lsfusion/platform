@@ -96,6 +96,26 @@ public class LoginDialog extends JDialog {
             }
         });
 
+        loginField.addFocusListener(new FocusListener() {
+            public void focusGained(FocusEvent e) {
+                JTextField textField = (JTextField) e.getComponent();
+                textField.selectAll();
+            }
+
+            public void focusLost(FocusEvent e) {
+            }
+        });
+
+        passwordField.addFocusListener(new FocusListener() {
+            public void focusGained(FocusEvent e) {
+                JTextField textField = (JTextField) e.getComponent();
+                textField.selectAll();
+            }
+
+            public void focusLost(FocusEvent e) {
+            }
+        });
+
         if (this.defaultLoginInfo.getServerHost() != null) {
             StringBuilder server = new StringBuilder(this.defaultLoginInfo.getServerHost());
             if (this.defaultLoginInfo.getServerPort() != null) {

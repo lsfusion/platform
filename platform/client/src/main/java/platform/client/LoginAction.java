@@ -6,9 +6,7 @@ import platform.interop.RemoteLogicsInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import java.net.MalformedURLException;
-import java.rmi.Naming;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
+import java.rmi.*;
 
 public final class LoginAction {
 
@@ -18,23 +16,27 @@ public final class LoginAction {
     private String password;
     private LoginInfo loginInfo;
     private LoginDialog loginDialog;
-    
+
     private RemoteLogicsInterface remoteLogics;
     private int computerId;
     private RemoteNavigatorInterface remoteNavigator;
+    final static int OK = 0;
+    final static int HOST_NAME_ERROR = 1;
+    final static int CONNECT_ERROR = 2;
+    final static int ERROR = 3;
 
     private LoginAction() {
         this.serverHost = System.getProperty(PropertyConstants.PLATFORM_CLIENT_HOSTNAME);
         this.serverPort = System.getProperty(PropertyConstants.PLATFORM_CLIENT_HOSTPORT);
-        this.user       = System.getProperty(PropertyConstants.PLATFORM_CLIENT_USER);
-        this.password   = System.getProperty(PropertyConstants.PLATFORM_CLIENT_PASSWORD);
-        this.loginInfo  = new LoginInfo(serverHost, serverPort, user, password);
+        this.user = System.getProperty(PropertyConstants.PLATFORM_CLIENT_USER);
+        this.password = System.getProperty(PropertyConstants.PLATFORM_CLIENT_PASSWORD);
+        this.loginInfo = new LoginInfo(serverHost, serverPort, user, password);
     }
 
     private static class LoginActionHolder {
         private static LoginAction instance = new LoginAction();
     }
-    
+
     public static LoginAction getDefault() {
         return LoginActionHolder.instance;
     }
@@ -54,19 +56,31 @@ public final class LoginAction {
             return false;
         }
 
-        while (!connect()) {
-            loginDialog.setWarningMsg("Проверьте имя пользователя и пароль.");
+        int status = connect();
+        while (!(status == OK)) {
+            switch (status) {
+                case HOST_NAME_ERROR:
+                    loginDialog.setWarningMsg("Проверьте адрес сервера.");
+                    break;
+                case CONNECT_ERROR:
+                    loginDialog.setWarningMsg("Ошибка подключения к серверу.");
+                    break;
+                case ERROR:
+                    loginDialog.setWarningMsg("Проверьте имя пользователя и пароль.");
+                    break;
+            }
             loginDialog.setAutoLogin(false);
             loginInfo = loginDialog.login();
             if (loginInfo == null) {
                 return false;
             }
+            status = connect();
         }
 
         return true;
     }
 
-    private boolean connect() {
+    private int connect() {
         RemoteLogicsInterface remoteLogics;
         int computerId;
         RemoteNavigatorInterface remoteNavigator;
@@ -76,15 +90,22 @@ public final class LoginAction {
             remoteLogics = new RemoteBusinessLogicProxy(remote);
             computerId = remoteLogics.getComputer(OSUtils.getLocalHostName());
             remoteNavigator = remoteLogics.createNavigator(loginInfo.getUserName(), loginInfo.getPassword(), computerId);
+        } catch (UnknownHostException e) {
+            System.out.println(e.getCause());
+            return HOST_NAME_ERROR;
+        } catch (ConnectException e) {
+            System.out.println(e.getCause());
+            return CONNECT_ERROR;
         } catch (Exception e) {
-            return false;
+            e.printStackTrace();
+            return ERROR;
         }
 
         this.remoteLogics = remoteLogics;
         this.computerId = computerId;
         this.remoteNavigator = remoteNavigator;
 
-        return true;
+        return OK;
     }
 
     public RemoteLogicsInterface getRemoteLogics() {
