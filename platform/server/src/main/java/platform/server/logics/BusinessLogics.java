@@ -634,6 +634,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         initGroups();
 
         initClasses();
+        checkClasses(); //проверка на то, что у каждого абстрактного класса есть конкретный потомок
 
         // после classes и до properties, чтобы можно было бы создать таблицы и использовать persistent таблицы в частности для определения классов
         initTables();
@@ -697,6 +698,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         currentDate.execute(DateConverter.dateToSql(new Date()), session, session.modifier);
         session.apply(this);
         session.close();
+    }
+
+    private void checkClasses(){
+        checkClass(baseClass);
+    }
+
+    private void checkClass(CustomClass c) {
+        assert (!(c instanceof AbstractCustomClass) || (c.hasChildren())) : "Doesn't exist concrete class";
+        for (CustomClass children : c.children){
+            checkClass(children);
+        }
     }
 
     public final int systemUserObject;
