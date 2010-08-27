@@ -560,7 +560,7 @@ public class ClientFormController {
 
         if (property instanceof ClientPropertyDraw) {
             remoteForm.changePropertyOrder(property.getID(), modiType.serialize());
-        } if (property instanceof ClientClassCell) {
+        } else if (property instanceof ClientClassCell) {
             remoteForm.changeObjectClassOrder(property.getID(), modiType.serialize());
         } else {
             remoteForm.changeObjectOrder(property.getID(), modiType.serialize());
