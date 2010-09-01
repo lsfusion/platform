@@ -291,8 +291,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             userPassword.execute(defaultPassword, session, session.modifier, addObject);
             Integer userID = (Integer) addObject.object;
             session.apply(this);
-            User userObject = new User(userID);
-            policyManager.putUser(userID, userObject);
+            user = new User(userID);
+            policyManager.putUser(userID, user);
         }
 
         session.close();
@@ -659,13 +659,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         logger.info("Initializing navigators...");
 
         baseElement.add(baseClass.getBaseClassForm(this));
+        initBaseAuthentication();
+        initAuthentication();
+
         initBaseNavigators();
         initNavigators();
 
         synchronizeDB();
-
-        initBaseAuthentication();
-        initAuthentication();
 
         // считаем системного пользователя
         try {
