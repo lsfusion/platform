@@ -220,7 +220,7 @@ public abstract class GridTable extends ClientFormTable
 
         // так делается, потому что почему-то сам JTable ну ни в какую не хочет изменять свою высоту (getHeight())
         // приходится это делать за него, а то JViewPort смотрит именно на getHeight()
-        setSize(getWidth(), getRowHeight() * getRowCount());
+//        setSize(getWidth(), getRowHeight() * getRowCount());
     }
 
     public void changeCurrentObject() {
