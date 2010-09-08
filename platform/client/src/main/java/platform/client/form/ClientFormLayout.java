@@ -79,7 +79,6 @@ public abstract class ClientFormLayout extends JPanel {
     }
 
     private void createContainerViews(List<ClientContainer> containers) {
-
         contviews = new HashMap<ClientContainer, ClientFormContainer>();
 
         // считываем все контейнеры от сервера и создаем контейнеры отображения с соответствующей древовидной структурой
@@ -88,17 +87,14 @@ public abstract class ClientFormLayout extends JPanel {
             boolean found = false;
             for (ClientContainer container : containers) {
                 if ((container.container == null || contviews.containsKey(container.container)) && !contviews.containsKey(container)) {
-
                     ClientFormContainer contview = new ClientFormContainer(container);
                     contview.setLayout(layoutManager);
+
                     if (container.container == null) {
-
                         mainContainer = contview;
-
                         layoutManager = new SimplexLayout(mainContainer, container.constraints);
                         mainContainer.setLayout(layoutManager);
-                    }
-                    else {
+                    } else {
                         contviews.get(container.container).add(contview, container.constraints);
                     }
                     contviews.put(container, contview);
@@ -107,9 +103,7 @@ public abstract class ClientFormLayout extends JPanel {
             }
 
             if (!found) break;
-
         }
-
     }
 
     private Map<KeyStroke, Map<ClientGroupObject, KeyListener>> bindings = new HashMap<KeyStroke, Map<ClientGroupObject, KeyListener>>();

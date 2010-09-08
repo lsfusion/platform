@@ -101,10 +101,9 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
         return property.getChangeImplement().mapValues(getInterfaceValues());
     }
 
-    public List<ClientAction> execute(DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteForm executeForm, GroupObjectInstance groupObject) throws SQLException {
-        return property.execute(getInterfaceValues(), session, value, modifier, executeForm, mapping, groupObject);
+    public List<ClientAction> execute(DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteForm executeForm, GroupObjectInstance groupObject, Map<ObjectInstance, DataObject> mapDataValues) throws SQLException {
+        return property.execute(getInterfaceValues(), session, value, modifier, executeForm, mapping, groupObject, mapDataValues);
     }
-
 
     public Expr getExpr(Map<ObjectInstance, ? extends Expr> classSource, Modifier<? extends Changes> modifier) throws SQLException {
 

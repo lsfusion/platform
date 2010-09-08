@@ -1,6 +1,7 @@
 package platform.client.form;
 
 import javax.swing.*;
+import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
@@ -12,7 +13,11 @@ import java.util.EventObject;
 public abstract class ClientFormTable extends JTable {
 
     protected ClientFormTable() {
-        super();
+        this(null);
+    }
+
+    protected ClientFormTable(TableModel model) {
+        super(model);
 
         setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
@@ -107,16 +112,5 @@ public abstract class ClientFormTable extends JTable {
         if (ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0))) return false;
 
         return consumed;
-    }
-
-    protected void selectRow(int rowNumber) {
-
-        final int colSel = getColumnModel().getSelectionModel().getLeadSelectionIndex();
-        if (colSel == -1)
-            changeSelection(rowNumber, 0, false, false);
-        else
-            getSelectionModel().setLeadSelectionIndex(rowNumber);
-
-        scrollRectToVisible(getCellRect(rowNumber, (colSel == -1) ? 0 : colSel, true));
     }
 }

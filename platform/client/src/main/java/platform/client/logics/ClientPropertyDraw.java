@@ -21,24 +21,49 @@ public class ClientPropertyDraw extends ClientCell {
     private String sID;
 
     public ClientGroupObject groupObject;
+    public ClientGroupObject[] columnGroupObjects;
+    public ClientPropertyDraw[] columnDisplayProperties;
+    public int[] columnDisplayPropertiesIds;
 
     public boolean autoHide = false;
-    
+
     public ClientPropertyDraw(DataInputStream inStream, Collection<ClientContainer> containers, Collection<ClientGroupObject> groups) throws IOException, ClassNotFoundException {
         super(inStream, containers);
 
         ID = inStream.readInt();
         sID = inStream.readUTF();
-        if(!inStream.readBoolean()) {
+        if (inStream.readBoolean()) {
             int groupID = inStream.readInt();
-            for(ClientGroupObject group : groups)
-                if(group.getID() == groupID) {
-                    groupObject = group;
-                    break;
-                }
+            groupObject = getClientGroupObject(groups, groupID);
+        }
+
+        if (inStream.readBoolean()) {
+            int length = inStream.readInt();
+            columnGroupObjects = new ClientGroupObject[length];
+            columnDisplayPropertiesIds = new int[length];
+            for (int i = 0; i < length; ++i) {
+                int groupID = inStream.readInt();
+                columnGroupObjects[i] = getClientGroupObject(groups, groupID);
+            }
+            for (int i = 0; i < length; ++i) {
+                columnDisplayPropertiesIds[i] = inStream.readInt();
+            }
+        } else {
+            //чтобы не проверять везде на null
+            columnGroupObjects = new ClientGroupObject[0];
+            columnDisplayPropertiesIds = new int[0];
         }
 
         autoHide = inStream.readBoolean();
+    }
+
+    private ClientGroupObject getClientGroupObject(Collection<ClientGroupObject> groups, int groupID) {
+        for (ClientGroupObject group : groups) {
+            if (group.getID() == groupID) {
+                return group;
+            }
+        }
+        return null;
     }
 
     public ClientGroupObject getGroupObject() {
@@ -77,7 +102,7 @@ public class ClientPropertyDraw extends ClientCell {
 
     public ClientType getPropertyChangeType(ClientFormController form) throws IOException {
         DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(form.remoteForm.getPropertyChangeType(this.ID)));
-        if(inStream.readBoolean()) return null;
+        if (inStream.readBoolean()) return null;
 
         return ClientTypeSerializer.deserialize(inStream);
     }

@@ -199,13 +199,15 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
     public Map<ObjectInstance,DataObject> findGroupObjectValue(Map<ObjectInstance,Object> map) {
         for(Map<ObjectInstance,DataObject> keyRow : keys.keySet()) {
             boolean equal = true;
-            for(Map.Entry<ObjectInstance,DataObject> keyEntry : keyRow.entrySet())
+            for(Map.Entry<ObjectInstance,DataObject> keyEntry : keyRow.entrySet()) {
                 if(!keyEntry.getValue().object.equals(map.get(keyEntry.getKey()))) {
                     equal = false;
                     break;
                 }
-            if(equal)
+            }
+            if(equal) {
                 return keyRow;
+            }
         }
 
         throw new RuntimeException("key not found");

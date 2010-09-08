@@ -96,6 +96,13 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     }
 
     @PendingRemoteMethod
+    public void changePropertyDrawWithColumnKeys(int propertyID, byte[] object, boolean all, byte[] columnKeys) throws RemoteException {
+        logRemoteMethodStartCall("changePropertyDrawWithColumnKeys");
+        target.changePropertyDrawWithColumnKeys(propertyID, object, all, columnKeys);
+        logRemoteMethodEndVoidCall("changePropertyDrawWithColumnKeys");
+    }
+
+    @PendingRemoteMethod
     public void changeObject(int objectID, Object value) throws RemoteException {
         logRemoteMethodStartVoidCall("changeObject");
         target.changeObject(objectID, value);

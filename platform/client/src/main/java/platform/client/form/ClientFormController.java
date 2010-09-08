@@ -356,7 +356,7 @@ public class ClientFormController {
             formLayout.add(form.okFunction, buttonOK);
 
             formLayout.addBinding(escape, "escapePressed", closeAction);
-            formLayout.add(form.CloseFunction, buttonClose);
+            formLayout.add(form.closeFunction, buttonClose);
         }
     }
 
@@ -405,70 +405,21 @@ public class ClientFormController {
             }
         }
 
-        // Сначала меняем виды объектов
-
-        for (Map.Entry<ClientPropertyDraw, Object> propValue : formChanges.panelProperties.entrySet()) {
-            ClientPropertyDraw property = propValue.getKey();
-            if (property.shouldBeDrawn(this))
-                controllers.get(property.groupObject).addPanelProperty(property, propValue.getValue());
-        }
-
-        for (ClientPropertyDraw property : formChanges.gridProperties.keySet()) {
-            if (property.shouldBeDrawn(this))
-                controllers.get(property.groupObject).addGridProperty(property);
-        }
-
-        for (ClientPropertyDraw property : formChanges.dropProperties) {
-            controllers.get(property.groupObject).dropProperty(property);
-        }
-
-
-        // Затем подгружаем новые данные
-
-        // Сначала новые объекты
-
-        for (ClientGroupObject groupObject : formChanges.gridObjects.keySet()) {
-            controllers.get(groupObject).setGridObjects(formChanges.gridObjects.get(groupObject));
-        }
-
-        for (ClientGroupObject groupObject : formChanges.gridClasses.keySet()) {
-            controllers.get(groupObject).setGridClasses(formChanges.gridClasses.get(groupObject));
-        }
-
-        for (Map.Entry<ClientGroupObject,ClientGroupObjectValue> groupObject : formChanges.objects.entrySet())
-            controllers.get(groupObject.getKey()).setCurrentGroupObject(groupObject.getValue(),false);
-
-        for (ClientGroupObject groupObject : formChanges.classViews.keySet()) {
-            GroupObjectController objectController = controllers.get(groupObject);
-            objectController.setClassView(formChanges.classViews.get(groupObject));
-            objectController.requestFocusInWindow();
-        }
-
-        for (Map.Entry<ClientGroupObject,ClientGroupObjectClass> groupObject : formChanges.classes.entrySet())
-            controllers.get(groupObject.getKey()).setCurrentGroupObjectClass(groupObject.getValue());
-
-        // Затем их свойства
-
-        for (ClientPropertyDraw property : formChanges.panelProperties.keySet()) {
-            if (property.shouldBeDrawn(this))
-                controllers.get(property.groupObject).setPanelPropertyValue(property, formChanges.panelProperties.get(property));
-        }
-
-        for (ClientPropertyDraw property : formChanges.gridProperties.keySet()) {
-            if (property.shouldBeDrawn(this))
-                controllers.get(property.groupObject).setGridPropertyValues(property, formChanges.gridProperties.get(property));
+        for (GroupObjectController controller : controllers.values()) {
+            controller.processFormChanges(formChanges);
         }
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                formLayout.getComponent().validate();
+                formLayout.getComponent().revalidate();
                 ClientExternalScreen.repaintAll(getID());
             }
         });
 
         // выдадим сообщение если было от сервера
-        if(formChanges.message.length()>0)
-            Log.printFailedMessage(formChanges.message);        
+        if (formChanges.message.length() > 0) {
+            Log.printFailedMessage(formChanges.message);
+        }
     }
 
     public void changeGroupObject(ClientGroupObject groupObject, ClientGroupObjectValue objectValue) throws IOException {
@@ -476,14 +427,12 @@ public class ClientFormController {
         ClientGroupObjectValue curObjectValue = controllers.get(groupObject).getCurrentObject();
 
         if (!objectValue.equals(curObjectValue)) {
-
             // приходится вот так возвращать класс, чтобы не было лишних запросов
             remoteForm.changeGroupObject(groupObject.getID(), Serializer.serializeClientGroupObjectValue(objectValue));
-            controllers.get(groupObject).setCurrentGroupObject(objectValue,true);
+            controllers.get(groupObject).setCurrentGroupObject(objectValue, true);
 
             applyRemoteChanges();
         }
-
     }
 
     public void changeGroupObject(ClientGroupObject groupObject, Scroll changeType) throws IOException {
@@ -493,6 +442,12 @@ public class ClientFormController {
         applyRemoteChanges();
     }
 
+
+    public void changePropertyDrawWithColumnKeys(ClientPropertyDraw property, Object value, boolean all, ClientGroupObjectValue columnKey) throws IOException {
+        remoteForm.changePropertyDrawWithColumnKeys(property.getID(), BaseUtils.serializeObject(value), all, Serializer.serializeClientGroupObjectValue(columnKey));
+        applyRemoteChanges();
+    }
+    
     public void changeProperty(ClientCell property, Object value, boolean all) throws IOException {
 
         if (property.getGroupObject() != null) // для глобальных свойств пока не может быть отложенных действий
@@ -515,7 +470,6 @@ public class ClientFormController {
                 applyRemoteChanges();
             }
         }
-
     }
 
     void addObject(ClientObject object, ClientConcreteClass cls) throws IOException {
@@ -597,10 +551,7 @@ public class ClientFormController {
     }
 
     public void changePageSize(ClientGroupObject groupObject, int pageSize) throws IOException {
-
         remoteForm.changePageSize(groupObject.getID(), pageSize);
-
-//        applyFormChanges();
     }
 
     void print() {

@@ -20,6 +20,7 @@ import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.instance.GroupObjectInstance;
+import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -380,7 +381,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return changed==null?null:new WhereBuilder();
     }
 
+    public List<ClientAction> execute(Map<T, DataObject> keys, DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteForm executeForm, Map<T, PropertyObjectInterfaceInstance> mapObjects, GroupObjectInstance groupObject, Map<ObjectInstance, DataObject> mapDataValues) throws SQLException {
+        return getChangeImplement().execute(keys, session, value, modifier, executeForm, mapObjects, groupObject, mapDataValues);
+    }
+
     public List<ClientAction> execute(Map<T, DataObject> keys, DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteForm executeForm, Map<T, PropertyObjectInterfaceInstance> mapObjects, GroupObjectInstance groupObject) throws SQLException {
-        return getChangeImplement().execute(keys, session, value, modifier, executeForm, mapObjects, groupObject);
+        return execute(keys, session, value, modifier, executeForm, mapObjects, groupObject, null);
     }
 }

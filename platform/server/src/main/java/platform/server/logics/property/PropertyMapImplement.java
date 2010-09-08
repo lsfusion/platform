@@ -7,6 +7,7 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.form.instance.GroupObjectInstance;
+import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -55,8 +56,8 @@ public class PropertyMapImplement<T extends PropertyInterface,P extends Property
     public PropertyValueImplement<T> mapValues(Map<P, DataObject> mapValues) {
         return new PropertyValueImplement<T>(property, BaseUtils.join(mapping, mapValues));        
     }
-    public List<ClientAction> execute(Map<P, DataObject> keys, DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteForm executeForm, Map<P, PropertyObjectInterfaceInstance> mapObjects, GroupObjectInstance groupObject) throws SQLException {
-        return mapValues(keys).execute(session, value, modifier, executeForm, BaseUtils.nullJoin(mapping, mapObjects), groupObject);
+    public List<ClientAction> execute(Map<P, DataObject> keys, DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteForm executeForm, Map<P, PropertyObjectInterfaceInstance> mapObjects, GroupObjectInstance groupObject, Map<ObjectInstance, DataObject> mapDataValues) throws SQLException {
+        return mapValues(keys).execute(session, value, modifier, executeForm, BaseUtils.nullJoin(mapping, mapObjects), groupObject, mapDataValues);
     }
 
     public void fill(Set<P> interfaces, Set<PropertyMapImplement<?, P>> properties) {

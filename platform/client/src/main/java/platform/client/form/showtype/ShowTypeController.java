@@ -40,16 +40,16 @@ public abstract class ShowTypeController {
     Byte classView = ClassViewType.HIDE;
 
     public void changeClassView(Byte classView) {
-
         if (!classView.equals(this.classView)) {
 
             this.classView = classView;
             view.changeClassView(classView, banClassView);
 
-            if (classView.equals(ClassViewType.HIDE))
+            if (classView.equals(ClassViewType.HIDE)) {
                 needToBeHidden();
-            else
+            } else {
                 needToBeShown();
+            }
         }
     }
 

@@ -8,8 +8,10 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
     public PropertyObjectInstance<P> propertyObject;
 
-    // в какой "класс" рисоваться, ессно одмн из Object.GroupTo должен быть ToDraw
+    // в какой "класс" рисоваться, ессно один из Object.GroupTo должен быть ToDraw
     public GroupObjectInstance toDraw;
+    public GroupObjectInstance[] columnGroupObjects;
+    public PropertyDrawInstance[] columnDisplayProperties;
 
     public Byte getForceViewType() {
         return entity.forceViewType;
@@ -19,9 +21,11 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return propertyObject.toString();
     }
 
-    public PropertyDrawInstance(PropertyDrawEntity<P> entity, PropertyObjectInstance<P> propertyObject, GroupObjectInstance toDraw) {
+    public PropertyDrawInstance(PropertyDrawEntity<P> entity, PropertyObjectInstance<P> propertyObject, GroupObjectInstance toDraw, GroupObjectInstance[] columnGroupObjects, PropertyDrawInstance[] columnDisplayProperties) {
         super(entity);
         this.propertyObject = propertyObject;
         this.toDraw = toDraw;
+        this.columnGroupObjects = columnGroupObjects;
+        this.columnDisplayProperties = columnDisplayProperties;
     }
 }

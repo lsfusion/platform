@@ -1,6 +1,7 @@
 package platform.server.form.view;
 
 import platform.server.data.type.Type;
+import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 
 import java.io.DataOutputStream;
@@ -9,7 +10,7 @@ import java.io.IOException;
 public class PropertyDrawView extends CellView implements ClientSerialize {
 
     public PropertyDrawEntity<?> entity;
-
+    
     /**
      * Example of use:
      *  <pre><code>
@@ -47,9 +48,23 @@ public class PropertyDrawView extends CellView implements ClientSerialize {
 
         outStream.writeInt(entity.getID());
         outStream.writeUTF(entity.propertyObject.property.sID);
-        outStream.writeBoolean(entity.toDraw==null);
-        if(entity.toDraw!=null)
+        outStream.writeBoolean(entity.toDraw!=null);
+        if(entity.toDraw!=null) {
             outStream.writeInt(entity.toDraw.ID);
+        }
+
+        GroupObjectEntity[] columnGroupObjects = entity.getColumnGroupObjects();
+        PropertyDrawEntity[] columnDisplayProperties = entity.getColumnDisplayProperties();
+        outStream.writeBoolean(columnGroupObjects != null);
+        if (columnGroupObjects != null) {
+            outStream.writeInt(columnGroupObjects.length);
+            for (int i = 0; i < columnGroupObjects.length; ++i) {
+                outStream.writeInt(columnGroupObjects[i].ID);
+            }
+            for (int i = 0; i < columnGroupObjects.length; ++i) {
+                outStream.writeInt(columnDisplayProperties[i].getID());
+            }
+        }
 
         outStream.writeBoolean(autoHide);
     }

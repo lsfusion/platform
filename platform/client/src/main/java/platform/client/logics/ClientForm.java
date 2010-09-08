@@ -40,7 +40,7 @@ public class ClientForm implements Serializable, LogicsSupplier {
     public ClientFunction applyFunction;
     public ClientFunction cancelFunction;
     public ClientFunction okFunction;
-    public ClientFunction CloseFunction;
+    public ClientFunction closeFunction;
 
     private final List<ClientCell> order = new ArrayList<ClientCell>();
 
@@ -144,6 +144,13 @@ public class ClientForm implements Serializable, LogicsSupplier {
         for (ClientPropertyDraw property : properties) {
             sIDtoProperty.put(property.getSID(), property);
         }
+        //заполняем свойства в колонках
+        for (ClientPropertyDraw property : properties) {
+            property.columnDisplayProperties = new ClientPropertyDraw[property.columnDisplayPropertiesIds.length];
+            for (int i = 0; i < property.columnDisplayProperties.length; ++i) {
+                property.columnDisplayProperties[i] = getProperty(property.columnDisplayPropertiesIds[i]);
+            }
+        }
 
         for (ClientGroupObject groupObject : groupObjects) {
             ClientHighlighter highlighter = groupObject.grid.highlighter;
@@ -172,7 +179,7 @@ public class ClientForm implements Serializable, LogicsSupplier {
         applyFunction = new ClientFunction(inStream,containers);
         cancelFunction = new ClientFunction(inStream,containers);
         okFunction = new ClientFunction(inStream,containers);
-        CloseFunction = new ClientFunction(inStream,containers);
+        closeFunction = new ClientFunction(inStream,containers);
 
         int cellCount = inStream.readInt();
         for(int i=0;i<cellCount;i++) {

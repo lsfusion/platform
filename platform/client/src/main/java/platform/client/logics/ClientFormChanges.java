@@ -32,7 +32,7 @@ public class ClientFormChanges {
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
             ClientGroupObject clientGroupObject = clientForm.getGroupObject(inStream.readInt());
-            objects.put(clientGroupObject,new ClientGroupObjectValue(inStream, clientGroupObject, true));
+            objects.put(clientGroupObject, new ClientGroupObjectValue(inStream, clientGroupObject));
         }
 
         classes = new HashMap<ClientGroupObject, ClientGroupObjectClass>();
@@ -49,8 +49,9 @@ public class ClientFormChanges {
             
             List<ClientGroupObjectValue> clientGridObjects = new ArrayList<ClientGroupObjectValue>();
             int listCount = inStream.readInt();
-            for (int j = 0; j < listCount; j++)
+            for (int j = 0; j < listCount; j++) {
                 clientGridObjects.add(new ClientGroupObjectValue(inStream, clientGroupObject));
+            }
 
             gridObjects.put(clientGroupObject, clientGridObjects);
         }
@@ -75,21 +76,22 @@ public class ClientFormChanges {
         gridProperties = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
-            ClientPropertyDraw clientPropertyDrawView = clientForm.getProperty(inStream.readInt());
+            ClientPropertyDraw clientPropertyDraw = clientForm.getProperty(inStream.readInt());
 
             Map<ClientGroupObjectValue, Object> gridPropertyValues = new HashMap<ClientGroupObjectValue, Object>();
             int mapCount = inStream.readInt();
-            for (int j = 0; j < mapCount; j++)
-                gridPropertyValues.put(new ClientGroupObjectValue(inStream, clientPropertyDrawView.groupObject),
-                                   BaseUtils.deserializeObject(inStream));
+            for (int j = 0; j < mapCount; j++) {
+                gridPropertyValues.put(new ClientGroupObjectValue(inStream, clientPropertyDraw),
+                        BaseUtils.deserializeObject(inStream));
+            }
 
-            gridProperties.put(clientPropertyDrawView, gridPropertyValues);
+            gridProperties.put(clientPropertyDraw, gridPropertyValues);
         }
 
         panelProperties = new HashMap<ClientPropertyDraw, Object>();
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
-            panelProperties.put(clientForm.getProperty(inStream.readInt()),BaseUtils.deserializeObject(inStream));
+            panelProperties.put(clientForm.getProperty(inStream.readInt()), BaseUtils.deserializeObject(inStream));
         }
 
         //DropProperties

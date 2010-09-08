@@ -222,6 +222,26 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
         }
     }
 
+    public void changePropertyDrawWithColumnKeys(int propertyID, byte[] object, boolean all, byte[] columnKeys) {
+        try {
+            PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
+
+            DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(columnKeys));
+            Map<ObjectInstance, DataObject> mapDataValues = new HashMap<ObjectInstance, DataObject>();
+            for (GroupObjectInstance groupInstance : propertyDraw.columnGroupObjects) {
+                Map<ObjectInstance, Object> mapValues = new HashMap<ObjectInstance, Object>();
+                for (ObjectInstance objectInstance : groupInstance.objects) {
+                    mapValues.put(objectInstance, BaseUtils.deserializeObject(inStream));
+                }
+                mapDataValues.putAll( groupInstance.findGroupObjectValue(mapValues) );
+            }
+
+            actions.addAll(form.changeProperty(propertyDraw, BaseUtils.deserializeObject(object), this, all, mapDataValues));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void changeObject(int objectID, Object value) {
         try {
             ObjectInstance objectImplement = form.getObjectInstance(objectID);

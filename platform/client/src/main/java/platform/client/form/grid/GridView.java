@@ -11,7 +11,6 @@ public abstract class GridView extends JPanel {
 
     final JPanel queriesContainer;
 
-    public boolean tabVertical = false;
     final JScrollPane pane;
     final GridBagConstraints paneConstraints;
 
@@ -20,12 +19,10 @@ public abstract class GridView extends JPanel {
         return gridTable;
     }
 
-    public GridView(GroupObjectLogicsSupplier logicsSupplier, ClientFormController form, QueryView findView, QueryView filterView, boolean iTabVertical) {
-        this.tabVertical = iTabVertical;
+    public GridView(GroupObjectLogicsSupplier logicsSupplier, ClientFormController form, QueryView findView, QueryView filterView, boolean tabVertical) {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         gridTable = new GridTable(logicsSupplier, form) {
-
             protected void needToBeShown() {
                 GridView.this.needToBeShown();
             }
@@ -33,13 +30,9 @@ public abstract class GridView extends JPanel {
             protected void needToBeHidden() {
                 GridView.this.needToBeHidden();
             }
-
-            protected boolean tabVertical() {
-                return tabVertical;
-            }
         };
 
-        gridTable.getTableHeader().setPreferredSize(new Dimension(1000, 34));
+        gridTable.setTabVertical(tabVertical);
 
         pane = new JScrollPane(gridTable);
         pane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);

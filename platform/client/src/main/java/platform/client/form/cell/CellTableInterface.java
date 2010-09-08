@@ -10,6 +10,4 @@ public interface CellTableInterface {
     boolean isDataChanging();
     ClientCell getCell(int col);
     ClientFormController getForm();
-
-    void setEditEvent(EventObject editEvent);
 }

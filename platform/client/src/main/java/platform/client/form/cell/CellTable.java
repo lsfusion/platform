@@ -9,10 +9,9 @@ import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.awt.event.KeyEvent;
 import java.text.ParseException;
-import java.util.EventObject;
 
 public abstract class CellTable extends SingleCellTable
-                        implements CellTableInterface {
+        implements CellTableInterface {
 
     boolean checkEquals = true;
     private Object value;
@@ -27,7 +26,6 @@ public abstract class CellTable extends SingleCellTable
 
         setDefaultRenderer(Object.class, new ClientAbstractCellRenderer());
         setDefaultEditor(Object.class, new ClientAbstractCellEditor());
-
     }
 
     public void keyChanged(ClientCell key) {
@@ -52,16 +50,17 @@ public abstract class CellTable extends SingleCellTable
         } catch (ParseException pe) {
             return null;
         }
-        
+
         return parsedValue;
     }
 
     public void stopEditing() {
 
         CellEditor editor = getCellEditor();
-        if (editor != null)
+        if (editor != null) {
             editor.stopCellEditing();
-   }
+        }
+    }
 
     class PropertyModel extends AbstractTableModel {
 
@@ -78,20 +77,21 @@ public abstract class CellTable extends SingleCellTable
         }
 
         public Object getValueAt(int row, int col) {
-                return value;
+            return value;
         }
 
         public void setValueAt(Object value, int row, int col) {
             if (checkEquals && BaseUtils.nullEquals(value, getValueAt(row, col))) return;
             cellValueChanged(value);
         }
-
     }
 
     protected abstract boolean cellValueChanged(Object value);
 
     public abstract boolean isDataChanging();
+
     public abstract ClientCell getCell(int col);
+
     public abstract ClientFormController getForm();
 
     @Override
@@ -102,10 +102,5 @@ public abstract class CellTable extends SingleCellTable
         if (e.getKeyCode() == KeyEvent.VK_ENTER && e.getModifiers() == 0 && pressed && !isDataChanging()) return false;
 
         return super.processKeyBinding(ks, e, condition, pressed);
-    }
-
-    private EventObject editEvent;
-    public void setEditEvent(EventObject editEvent) {
-        this.editEvent = editEvent;
     }
 }

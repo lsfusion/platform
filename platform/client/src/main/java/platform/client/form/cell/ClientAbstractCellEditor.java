@@ -82,8 +82,6 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
 
         if (cellTable.getForm().isReadOnlyMode() && cellTable.isDataChanging()) return null;
 
-        cellTable.setEditEvent(editEvent);
-
         ClientCell property = cellTable.getCell(column);
 
         try {

@@ -67,15 +67,14 @@ public class GridController {
         };
 
         view = new GridView(logicsSupplier, form, GridController.this.key.showFind ? findController.getView() : null, GridController.this.key.showFilter ? filterController.getView() : null, GridController.this.key.tabVertical) {
-
             protected void needToBeShown() {
-                hidden = false;
-                showViews();
+                if (!hidden && !view.isVisible()) {
+                    view.setVisible(true);
+                }
             }
 
             protected void needToBeHidden() {
-                hidden = true;
-                hideViews();
+                view.setVisible(false);
             }
         };
         table = view.getTable();
@@ -95,28 +94,26 @@ public class GridController {
     }
 
     public void addGroupObjectCells() {
-//                System.out.println("addGroupObjectCells");
         for (ClientObject object : logicsSupplier.getGroupObject()) {
-            if (object.objectIDCell.show)
-               table.addColumn(object.objectIDCell);
-            if (object.classCell.show)
+            if (object.objectIDCell.show) {
+                table.addColumn(object.objectIDCell);
+            }
+            if (object.classCell.show) {
                 table.addColumn(object.classCell);
+            }
         }
 
         // здесь еще добавить значения идентификаторов
         fillTableObjectID();
-
-        table.updateTable();
     }
 
     public void removeGroupObjectCells() {
-//                System.out.println("removeGroupObjectCells");
         for (ClientObject object : logicsSupplier.getGroupObject()) {
-            if(object.objectIDCell.show)
+            if (object.objectIDCell.show) {
                 table.removeColumn(object.objectIDCell);
+            }
             table.removeColumn(object.classCell);
         }
-        table.updateTable();
     }
 
     private Map<ClientCell, ExternalScreenComponent> extViews = new HashMap<ClientCell, ExternalScreenComponent>();
@@ -129,11 +126,8 @@ public class GridController {
     }
 
     public void addProperty(ClientPropertyDraw property) {
-//                System.out.println("addProperty " + property.toString());
         if (property.show) {
-            if (table.addColumn(property)) {
-                table.updateTable();
-            }
+            table.addColumn(property);
         }
 
         if (property.externalScreen != null) {
@@ -142,19 +136,20 @@ public class GridController {
     }
 
     public void removeProperty(ClientPropertyDraw property) {
-//                System.out.println("removeProperty " + property.toString());
         if (property.show) {
-            if (table.removeColumn(property)) {
-                table.updateTable();
-            }
+            table.removeColumn(property);
         }
     }
 
     public void setGridObjects(List<ClientGroupObjectValue> gridObjects) {
-        table.setGridObjects(gridObjects);
+        table.setRowKeys(gridObjects);
 
         //здесь еще добавить значения идентификаторов
         fillTableObjectID();
+    }
+
+    public void setColumnKeys(ClientPropertyDraw drawProperty, Map<ClientGroupObject, List<ClientGroupObjectValue>> groupColumnKeys) {
+        table.setColumnKeys(drawProperty, groupColumnKeys);
     }
 
     public void setGridClasses(List<ClientGroupObjectClass> gridClasses) {
@@ -191,24 +186,27 @@ public class GridController {
     }
 
     boolean hidden = false;
+
     public void hideViews() {
+        hidden = true;
         view.setVisible(false);
     }
 
     public void showViews() {
-        if (!hidden)
-            view.setVisible(true);
+        hidden = false;
+        view.setVisible(true);
     }
 
     private void fillTableObjectID() {
-
-        for (ClientObject object : logicsSupplier.getGroupObject())
-            if(object.objectIDCell.show) {
+        for (ClientObject object : logicsSupplier.getGroupObject()) {
+            if (object.objectIDCell.show) {
                 Map<ClientGroupObjectValue, Object> values = new HashMap<ClientGroupObjectValue, Object>();
-                for (ClientGroupObjectValue value : table.getGridRows())
+                for (ClientGroupObjectValue value : table.getRowKeys()) {
                     values.put(value, value.get(object));
+                }
                 table.setColumnValues(object.objectIDCell, values);
             }
+        }
     }
 
     private void fillTableObjectClasses(List<ClientGroupObjectClass> classes) {
@@ -217,12 +215,20 @@ public class GridController {
 
             Map<ClientGroupObjectValue, Object> cls = new HashMap<ClientGroupObjectValue, Object>();
 
-            List<ClientGroupObjectValue> gridRows = table.getGridRows();
+            List<ClientGroupObjectValue> gridRows = table.getRowKeys();
             for (int i = 0; i < gridRows.size(); i++) {
                 cls.put(gridRows.get(i), classes.get(i).get(object));
             }
 
             table.setColumnValues(object.classCell, cls);
         }
+    }
+
+    public void updateTable() {
+        table.updateTable();
+    }
+
+    public void setGridDisplayPropertiesValues(Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> columnDisplayValues) {
+        table.setGridDisplayPropertiesValues(columnDisplayValues);
     }
 }

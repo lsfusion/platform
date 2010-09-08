@@ -44,6 +44,8 @@ public interface RemoteFormInterface extends PendingRemote {
 
     void changePropertyDraw(int propertyID, byte[] object, boolean all) throws RemoteException;
 
+    void changePropertyDrawWithColumnKeys(int propertyID, byte[] object, boolean all, byte[] columnKeys) throws RemoteException;
+
     void changeObject(int objectID, Object value) throws RemoteException;
 
     void changeClass(int objectID, int classID) throws RemoteException;
