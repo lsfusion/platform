@@ -299,6 +299,7 @@ public abstract class GridTable extends ClientFormTable
     private void adjustSelection() {
         //надо сдвинуть ViewPort - иначе дергаться будет
         if (newCurrentObjectIndex != -1) {
+            selectRow(newCurrentObjectIndex);
             if (oldCurrentObjectIndex != -1 && newCurrentObjectIndex != oldCurrentObjectIndex) {
                 final Point viewPos = ((JViewport) getParent()).getViewPosition();
                 final int dltpos = (newCurrentObjectIndex - oldCurrentObjectIndex) * getRowHeight();
@@ -306,8 +307,6 @@ public abstract class GridTable extends ClientFormTable
                 if (viewPos.y < 0) viewPos.y = 0;
                 ((JViewport) getParent()).setViewPosition(viewPos);
             }
-
-            selectRow(newCurrentObjectIndex);
         }
     }
 
