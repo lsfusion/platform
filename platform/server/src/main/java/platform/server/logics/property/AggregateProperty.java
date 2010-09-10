@@ -83,18 +83,15 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
     public static AggregateProperty recalculate = null;
     
     public void recalculateAggregation(SQLSession session) throws SQLException {
-        PropertyField writeField = field;
-        field = null;
+        stored = false;
         recalculate = this;
 
         Query<KeyField, PropertyField> writeQuery = new Query<KeyField, PropertyField>(mapTable.table);
         Expr recalculateExpr = getExpr(BaseUtils.join(mapTable.mapKeys, writeQuery.mapKeys));
-        writeQuery.properties.put(writeField, recalculateExpr);
+        writeQuery.properties.put(field, recalculateExpr);
         writeQuery.and(mapTable.table.joinAnd(writeQuery.mapKeys).getWhere().or(recalculateExpr.getWhere()));
 
         session.modifyRecords(new ModifyQuery(mapTable.table,writeQuery));
-
-        field = writeField;
     }
 
     int getCoeff(PropertyMapImplement<?, T> implement) { return 0; }

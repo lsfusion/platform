@@ -659,13 +659,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         logger.info("Initializing navigators...");
 
         baseElement.add(baseClass.getBaseClassForm(this));
+
+        synchronizeDB();
+
         initBaseAuthentication();
         initAuthentication();
 
         initBaseNavigators();
         initNavigators();
-
-        synchronizeDB();
 
         // считаем системного пользователя
         try {
