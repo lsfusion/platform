@@ -4,6 +4,7 @@ import platform.server.data.Field;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
 import platform.server.data.SessionTable;
+import platform.server.data.query.Join;
 import platform.server.data.expr.Expr;
 import platform.server.data.type.ObjectType;
 import platform.server.data.where.Where;
@@ -19,8 +20,8 @@ public abstract class ChangeClassTable<This extends ChangeClassTable<This>> exte
 
     public final KeyField object;
 
-    ChangeClassTable(String iTable,int iClassID) {
-        super(iTable+"_"+iClassID);
+    protected ChangeClassTable(String table) {
+        super(table);
 
         object = new KeyField("property", ObjectType.instance);
         keys.add(object);
@@ -33,7 +34,10 @@ public abstract class ChangeClassTable<This extends ChangeClassTable<This>> exte
         keys.add(this.object);
     }
 
+    public platform.server.data.query.Join<PropertyField> join(Expr expr) {
+        return join(Collections.singletonMap(object, expr));
+    }
     public Where getJoinWhere(Expr expr) {
-        return join(Collections.singletonMap(object, expr)).getWhere();
+        return join(expr).getWhere();
     }
 }

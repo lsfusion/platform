@@ -31,8 +31,8 @@ public class DistrTmcBusinessLogics extends BusinessLogics<DistrTmcBusinessLogic
 
     CustomClass article,document,inDocument,outDocument;
     protected void initClasses() {
-        article = addConcreteClass("Товар", namedObject);
-        document = addConcreteClass("Документ", namedObject, transaction);
+        article = addConcreteClass("Товар", baseClass.named);
+        document = addConcreteClass("Документ", baseClass.named, transaction);
         inDocument = addConcreteClass("Приходный документ", document);
         outDocument = addConcreteClass("Расходный документ", document);
     }

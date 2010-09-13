@@ -3,7 +3,7 @@ package platform.client.form.cell;
 import platform.base.BaseUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.SingleCellTable;
-import platform.client.logics.ClientCell;
+import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -28,7 +28,7 @@ public abstract class CellTable extends SingleCellTable
         setDefaultEditor(Object.class, new ClientAbstractCellEditor());
     }
 
-    public void keyChanged(ClientCell key) {
+    public void keyChanged(ClientPropertyDraw key) {
 
         checkEquals = key.checkEquals();
 
@@ -46,7 +46,7 @@ public abstract class CellTable extends SingleCellTable
     public Object convertValueFromString(String value, int row, int column) {
         Object parsedValue = null;
         try {
-            parsedValue = getCell(column).parseString(getForm(), value);
+            parsedValue = getProperty(column).parseString(getForm(), value);
         } catch (ParseException pe) {
             return null;
         }
@@ -89,8 +89,6 @@ public abstract class CellTable extends SingleCellTable
     protected abstract boolean cellValueChanged(Object value);
 
     public abstract boolean isDataChanging();
-
-    public abstract ClientCell getCell(int col);
 
     public abstract ClientFormController getForm();
 

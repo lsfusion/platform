@@ -28,6 +28,9 @@ public class NullValue extends ObjectValue<NullValue> {
     public Expr getExpr() {
         return Expr.NULL;
     }
+    public Expr getSystemExpr() {
+        return Expr.NULL;
+    }
 
     public Object getValue() {
         return null;

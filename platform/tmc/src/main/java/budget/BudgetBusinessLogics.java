@@ -65,18 +65,18 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         inOperation = addConcreteClass(4, "Опер. приход", inAbsOperation, departmentAbs);
         outOperation = addConcreteClass(5, "Опер. расход", outAbsOperation, departmentAbs, payerAbs);
         misOperation = addConcreteClass(13, "Опер. расход ком.", outAbsOperation, departmentAbs, payerAbs);
-        payer = addAbstractClass("Плательщик", namedObject);
+        payer = addAbstractClass("Плательщик", baseClass.named);
 
-        absMonth = addConcreteClass(6, "Месяц", namedObject);
-        currency = addConcreteClass(8, "Валюта", namedObject);
-        section = addConcreteClass(9, "Статья ком.", namedObject);
+        absMonth = addConcreteClass(6, "Месяц", baseClass.named);
+        currency = addConcreteClass(8, "Валюта", baseClass.named);
+        section = addConcreteClass(9, "Статья ком.", baseClass.named);
         person = addConcreteClass(10, "Сотрудник", payer);
-        extraSection = addAbstractClass("Статья затрат", namedObject);
+        extraSection = addAbstractClass("Статья затрат", baseClass.named);
         mission = addConcreteClass(12, "Командировка", baseClass);
 
-        department = addConcreteClass(14, "Отдел", namedObject);
-        sectionOut = addConcreteClass(15, "Статья расх.", namedObject);
-        city = addConcreteClass(16, "Город", namedObject);
+        department = addConcreteClass(14, "Отдел", baseClass.named);
+        sectionOut = addConcreteClass(15, "Статья расх.", baseClass.named);
+        city = addConcreteClass(16, "Город", baseClass.named);
         extraPersonSection = addConcreteClass(17, "Статья затрат перс.", extraSection);
         extraAdmSection = addConcreteClass(18, "Статья затрат админ.", extraSection);
         contractor = addConcreteClass(19, "Контрагент", payer);

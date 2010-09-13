@@ -7,8 +7,8 @@ import java.io.IOException;
 
 public class PropertyField extends Field {
 
-    public PropertyField(String iName, Type iType) {
-        super(iName,iType);
+    public PropertyField(String name, Type type) {
+        super(name,type);
     }
 
     public PropertyField(DataInputStream inStream) throws IOException {

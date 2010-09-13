@@ -9,6 +9,7 @@ import platform.server.classes.StringClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.SystemValueExpr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.type.Type;
@@ -69,6 +70,9 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
 
     public ValueExpr getExpr() {
         return new ValueExpr(object,objectClass);
+    }
+    public Expr getSystemExpr() {
+        return new SystemValueExpr(object, objectClass);
     }
 
     public Object getValue() {

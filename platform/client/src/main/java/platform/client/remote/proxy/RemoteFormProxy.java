@@ -103,13 +103,6 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     }
 
     @PendingRemoteMethod
-    public void changeObject(int objectID, Object value) throws RemoteException {
-        logRemoteMethodStartVoidCall("changeObject");
-        target.changeObject(objectID, value);
-        logRemoteMethodEndVoidCall("changeObject");
-    }
-
-    @PendingRemoteMethod
     public void addObject(int objectID, int classID) throws RemoteException {
         logRemoteMethodStartVoidCall("addObject");
         target.addObject(objectID, classID);
@@ -163,20 +156,6 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         logRemoteMethodStartVoidCall("changePropertyOrderWithColumnKeys");
         target.changePropertyOrderWithColumnKeys(propertyID, modiType, columnKeys);
         logRemoteMethodEndVoidCall("changePropertyOrderWithColumnKeys");
-    }
-
-    @PendingRemoteMethod
-    public void changeObjectOrder(int propertyID, byte modiType) throws RemoteException {
-        logRemoteMethodStartVoidCall("changeObjectOrder");
-        target.changeObjectOrder(propertyID, modiType);
-        logRemoteMethodEndVoidCall("changeObjectOrder");
-    }
-
-    @PendingRemoteMethod
-    public void changeObjectClassOrder(int propertyID, byte modiType) throws RemoteException {
-        logRemoteMethodStartVoidCall("changeObjectClassOrder");
-        target.changeObjectClassOrder(propertyID, modiType);
-        logRemoteMethodEndVoidCall("changeObjectClassOrder");
     }
 
     @PendingRemoteMethod

@@ -31,13 +31,13 @@ import java.util.List;
 public abstract class GridTable extends ClientFormTable
         implements CellTableInterface {
 
-    private final List<ClientCell> columnProperties = new ArrayList<ClientCell>();
+    private final List<ClientPropertyDraw> columnProperties = new ArrayList<ClientPropertyDraw>();
 
     private List<ClientGroupObjectValue> rowKeys = new ArrayList<ClientGroupObjectValue>();
-    private Map<ClientPropertyDraw, List<ClientGroupObjectValue>> columnKeys = new HashMap();
-    private Map<ClientPropertyDraw, Map<ClientGroupObject, List<ClientGroupObjectValue>>> propertyColumnKeys = new HashMap();
-    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> columnDisplayValues = new HashMap();
-    private final Map<ClientCell, Map<ClientGroupObjectValue, Object>> values = new HashMap();
+    private Map<ClientPropertyDraw, List<ClientGroupObjectValue>> columnKeys = new HashMap<ClientPropertyDraw, List<ClientGroupObjectValue>>();
+    private Map<ClientPropertyDraw, Map<ClientGroupObject, List<ClientGroupObjectValue>>> propertyColumnKeys = new HashMap<ClientPropertyDraw, Map<ClientGroupObject, List<ClientGroupObjectValue>>>();
+    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> columnDisplayValues = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+    private final Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
 
     private ClientGroupObjectValue currentObject;
 
@@ -256,7 +256,7 @@ public abstract class GridTable extends ClientFormTable
         int rowHeight = 0;
         hasFocusableCells = false;
         for (int i = 0; i < model.getColumnCount(); ++i) {
-            ClientCell cell = model.getColumnProperty(i);
+            ClientPropertyDraw cell = model.getColumnProperty(i);
 
             TableColumn column = getColumnModel().getColumn(i);
             if (newColumnCount != oldColumnCount) {
@@ -468,8 +468,8 @@ public abstract class GridTable extends ClientFormTable
         return form;
     }
 
-    public ClientCell getCurrentCell() {
-        return getSelectedCell();
+    public ClientPropertyDraw getCurrentProperty() {
+        return getSelectedProperty();
     }
 
     @Override
@@ -529,14 +529,14 @@ public abstract class GridTable extends ClientFormTable
         }
     }
 
-    public boolean addColumn(final ClientCell property) {
+    public boolean addColumn(final ClientPropertyDraw property) {
         if (columnProperties.indexOf(property) == -1) {
-            List<ClientCell> cells = logicsSupplier.getCells();
+            List<ClientPropertyDraw> cells = logicsSupplier.getProperties();
 
             // конечно кривовато определять порядок по номеру в листе, но потом надо будет сделать по другому
             int ind = cells.indexOf(property), ins = 0;
 
-            Iterator<ClientCell> icp = columnProperties.iterator();
+            Iterator<ClientPropertyDraw> icp = columnProperties.iterator();
             while (icp.hasNext() && cells.indexOf(icp.next()) < ind) {
                 ins++;
             }
@@ -547,7 +547,7 @@ public abstract class GridTable extends ClientFormTable
             return false;
     }
 
-    public boolean removeColumn(ClientCell property) {
+    public boolean removeColumn(ClientPropertyDraw property) {
         if (columnProperties.remove(property)) {
             values.remove(property);
             return true;
@@ -556,11 +556,11 @@ public abstract class GridTable extends ClientFormTable
         return false;
     }
 
-    public void setColumnValues(ClientCell property, Map<ClientGroupObjectValue, Object> pvalues) {
+    public void setColumnValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> pvalues) {
         values.put(property, pvalues);
     }
 
-    public Object getSelectedValue(ClientCell property) {
+    public Object getSelectedValue(ClientPropertyDraw property) {
         return getSelectedValue(model.getMinPropertyIndex(property));
     }
 
@@ -573,7 +573,7 @@ public abstract class GridTable extends ClientFormTable
         }
     }
 
-    public Object getValue(ClientCell property, int row) {
+    public Object getValue(ClientPropertyDraw property, int row) {
         int col = model.getMinPropertyIndex(property);
         if (row != -1 && row < getRowCount() && col != -1 && col < getColumnCount()) {
             return model.getValueAt(row, col);
@@ -596,7 +596,7 @@ public abstract class GridTable extends ClientFormTable
         }
     }
 
-    public ClientCell getSelectedCell() {
+    public ClientPropertyDraw getSelectedProperty() {
         int colView = getSelectedColumn();
         if (colView < 0 || colView >= getColumnCount()) {
             return null;
@@ -614,7 +614,7 @@ public abstract class GridTable extends ClientFormTable
         return true;
     }
 
-    public ClientCell getCell(int col) {
+    public ClientPropertyDraw getProperty(int col) {
         return model.getColumnProperty(col);
     }
 
@@ -623,7 +623,7 @@ public abstract class GridTable extends ClientFormTable
 
     public void changeGridOrder(int col, Order modiType) throws IOException {
         ClientGroupObjectValue columnKey = model.getColumnKey(col);
-        ClientCell property = model.getColumnProperty(col);
+        ClientPropertyDraw property = model.getColumnProperty(col);
         if (columnKey == null) {
             form.changeOrder(property, modiType);
         } else {
@@ -657,7 +657,7 @@ public abstract class GridTable extends ClientFormTable
         tableHeader.resizeAndRepaint();
     }
 
-    public void changeGridOrder(ClientCell property, Order modiType) throws IOException {
+    public void changeGridOrder(ClientPropertyDraw property, Order modiType) throws IOException {
         changeGridOrder(model.getMinPropertyIndex(property), modiType);
     }
 
@@ -796,12 +796,8 @@ public abstract class GridTable extends ClientFormTable
 
             String toolTip = (String) columnModel.getColumn(index).getHeaderValue();
 
-            ClientCell cellView = model.getColumnProperty(modelIndex);
-            if (cellView instanceof ClientPropertyDraw) {
-                ClientPropertyDraw propertyDrawView = (ClientPropertyDraw) cellView;
-                toolTip += " (sID: " + propertyDrawView.getSID() + ")";
-            }
-
+            ClientPropertyDraw cellView = model.getColumnProperty(modelIndex);
+            toolTip += " (sID: " + cellView.getSID() + ")";
             return toolTip;
         }
     }

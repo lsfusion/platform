@@ -46,9 +46,9 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
     protected void initClasses() {
 
-        article = addConcreteClass("Товар", namedObject);
-        store = addConcreteClass("Склад", namedObject);
-        document = addAbstractClass("Документ", namedObject, transaction);
+        article = addConcreteClass("Товар", baseClass.named);
+        store = addConcreteClass("Склад", baseClass.named);
+        document = addAbstractClass("Документ", baseClass.named, transaction);
         incomeDocument = addConcreteClass("Приход", document);
         outcomeDocument = addConcreteClass("Расход", document);
     }

@@ -8,11 +8,15 @@ public class BaseClass extends AbstractCustomClass {
     public ObjectTable table;
 
     public final UnknownClass unknown;
+    public final AbstractCustomClass named;
+    public final CustomObjectClass objectClass;
 
-    public BaseClass(Integer ID, String caption) {
-        super(ID, caption);
+    public BaseClass(String caption) {
+        super(caption);
         table = new ObjectTable(this);
         unknown = new UnknownClass(this);
+        named = new AbstractCustomClass("Объект с именем", this);
+        objectClass = new CustomObjectClass(named);
     }
 
     @Override
@@ -26,7 +30,7 @@ public class BaseClass extends AbstractCustomClass {
         return findClassID((int)idClass);
     }
 
-    public ConcreteClass findConcreteClassID(Integer idClass) {
+    public ConcreteObjectClass findConcreteClassID(Integer idClass) {
         if(idClass==null) return unknown;
 
         return findConcreteClassID((int)idClass);

@@ -2,7 +2,6 @@ package platform.server.classes;
 
 import platform.server.classes.sets.*;
 import platform.server.data.SQLSession;
-import platform.server.data.expr.ValueExpr;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.table.ObjectTable;
@@ -12,8 +11,12 @@ import java.util.Collections;
 
 public class ConcreteCustomClass extends CustomClass implements ConcreteValueClass,ConcreteObjectClass {
 
-    public ConcreteCustomClass(Integer ID, String caption, CustomClass... parents) {
-        super(ID, caption, parents);
+    public final int sID;
+
+    public ConcreteCustomClass(int sID, String caption, CustomClass... parents) {
+        super(caption, parents);
+
+        this.sID = sID;
     }
 
     public boolean inSet(AndClassSet set) {
@@ -24,8 +27,8 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         classSet.add(this);            
     }
 
-    public ValueExpr getIDExpr() {
-        return new ValueExpr(ID, SystemClass.instance);
+    public ObjectValue getClassObject() {
+        return new DataObject(ID, getBaseClass().objectClass);
     }
 
     public OrObjectClassSet getOr() {

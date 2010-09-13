@@ -46,8 +46,6 @@ public interface RemoteFormInterface extends PendingRemote {
 
     void changePropertyDrawWithColumnKeys(int propertyID, byte[] object, boolean all, byte[] columnKeys) throws RemoteException;
 
-    void changeObject(int objectID, Object value) throws RemoteException;
-
     void changeClass(int objectID, int classID) throws RemoteException;
 
     void addObject(int objectID, int classID) throws RemoteException;
@@ -61,10 +59,6 @@ public interface RemoteFormInterface extends PendingRemote {
     void changePropertyOrder(int propertyID, byte modiType) throws RemoteException;
 
     void changePropertyOrderWithColumnKeys(int propertyID, byte modiType, byte[] columnKeys) throws RemoteException;
-
-    void changeObjectOrder(int propertyID, byte modiType) throws RemoteException;
-
-    void changeObjectClassOrder(int propertyID, byte modiType) throws RemoteException;
 
     void clearUserFilters() throws RemoteException;
 

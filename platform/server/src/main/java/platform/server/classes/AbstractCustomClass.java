@@ -4,8 +4,8 @@ import platform.server.classes.sets.ConcreteCustomClassSet;
 
 public class AbstractCustomClass extends CustomClass {
 
-    public AbstractCustomClass(Integer ID, String caption, CustomClass... parents) {
-        super(ID, caption, parents);
+    public AbstractCustomClass(String caption, CustomClass... parents) {
+        super(caption, parents);
     }
 
     public void fillNextConcreteChilds(ConcreteCustomClassSet classSet) {

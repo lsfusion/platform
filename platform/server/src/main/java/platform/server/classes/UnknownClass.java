@@ -4,11 +4,11 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.ObjectClassSet;
 import platform.server.classes.sets.OrObjectClassSet;
 import platform.server.data.SQLSession;
-import platform.server.data.expr.Expr;
-import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
+import platform.server.logics.NullValue;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -22,7 +22,7 @@ public class UnknownClass implements ConcreteObjectClass {
 
     public final BaseClass baseClass;
     
-    UnknownClass(BaseClass baseClass) {
+    public UnknownClass(BaseClass baseClass) {
         this.baseClass = baseClass;
     }
 
@@ -47,8 +47,8 @@ public class UnknownClass implements ConcreteObjectClass {
         return new OrObjectClassSet();
     }
 
-    public Expr getIDExpr() {
-        return CaseExpr.NULL;
+    public ObjectValue getClassObject() {
+        return NullValue.instance;
     }
 
     public Type getType() {

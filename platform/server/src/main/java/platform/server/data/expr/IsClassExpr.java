@@ -5,6 +5,7 @@ import platform.server.caches.TwinLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.classes.SystemClass;
+import platform.server.classes.CustomObjectClass;
 import platform.server.data.Table;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.AbstractSourceJoin;
@@ -45,11 +46,11 @@ public class IsClassExpr extends StaticClassExpr {
     }
 
     public Type getType(KeyType keyType) {
-        return SystemClass.instance;
+        return getStaticClass().getType();
     }
 
-    public SystemClass getStaticClass() {
-        return SystemClass.instance;
+    public CustomObjectClass getStaticClass() {
+        return baseClass.objectClass;
     }
 
     @ParamLazy

@@ -4,7 +4,7 @@ import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.cell.CellView;
 import platform.client.form.cell.TableCellView;
-import platform.client.logics.ClientCell;
+import platform.client.logics.ClientPropertyDraw;
 import platform.interop.ComponentDesign;
 
 import java.awt.*;
@@ -46,15 +46,15 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
 
     protected abstract PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design);
 
-    public CellView getPanelComponent(ClientCell key, ClientFormController form) {
+    public CellView getPanelComponent(ClientPropertyDraw key, ClientFormController form) {
         return new TableCellView(key, form);
     }
 
-    public PropertyEditorComponent getEditorComponent(ClientFormController form, ClientCell property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
+    public PropertyEditorComponent getEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
         return getComponent(value, format, design);
     }
 
-    public PropertyEditorComponent getClassComponent(ClientFormController form, ClientCell property, Object value, Format format) throws IOException, ClassNotFoundException {
+    public PropertyEditorComponent getClassComponent(ClientFormController form, ClientPropertyDraw property, Object value, Format format) throws IOException, ClassNotFoundException {
         return getComponent(value, format, null);
     }
 

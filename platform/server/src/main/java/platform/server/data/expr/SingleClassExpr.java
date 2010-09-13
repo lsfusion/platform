@@ -23,7 +23,7 @@ public abstract class SingleClassExpr extends BaseExpr {
         if(classExpr==null) {
             ConcreteObjectClass singleClass;
             if(!isTrueWhere() && ((singleClass = ((OrObjectClassSet)getSet()).getSingleClass(baseClass))!=null))
-                classExpr = singleClass.getIDExpr().and(getWhere());
+                classExpr = singleClass.getClassObject().getSystemExpr().and(getWhere());
             else
                 classExpr = new IsClassExpr(this,baseClass);
         }

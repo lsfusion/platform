@@ -21,11 +21,7 @@ public class ClientObject implements Serializable {
     // вручную заполняется
     public ClientGroupObject groupObject;
 
-    public ClientObjectIDCell objectIDCell;
-
     public ClientClass baseClass;
-
-    public ClientClassCell classCell;
 
     public ClientClassChooser classChooser;
 
@@ -39,10 +35,8 @@ public class ClientObject implements Serializable {
 
         baseClass = ClientClass.deserialize(inStream);
 
-        objectIDCell = new ClientObjectIDCell(inStream, containers, this);
-        classCell = new ClientClassCell(inStream, containers, this);
         classChooser = new ClientClassChooser(inStream,containers);
     }
 
-    public String toString() { return objectIDCell.caption; }
+    public String toString() { return caption; }
 }

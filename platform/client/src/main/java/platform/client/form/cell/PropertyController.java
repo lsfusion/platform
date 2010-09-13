@@ -2,7 +2,7 @@ package platform.client.form.cell;
 
 import platform.client.form.ClientFormLayout;
 import platform.client.form.ClientFormController;
-import platform.client.logics.ClientCell;
+import platform.client.logics.ClientPropertyDraw;
 import platform.interop.form.screen.ExternalScreenComponent;
 
 import javax.swing.*;
@@ -10,11 +10,11 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 
-public class CellController implements CellViewListener {
+public class PropertyController implements CellViewListener {
 
-    private ClientCell key;
+    private ClientPropertyDraw key;
 
-    protected ClientCell getKey() {
+    protected ClientPropertyDraw getKey() {
         return key;
     }
 
@@ -29,10 +29,10 @@ public class CellController implements CellViewListener {
     protected final ClientFormController form;
 
     // форма нужна, поскольку ObjectEditor'у она нужна, чтобы создать диалог
-    public CellController(ClientCell ikey, final ClientFormController iform) {
+    public PropertyController(ClientPropertyDraw key, final ClientFormController form) {
 
-        key = ikey;
-        form = iform;
+        this.key = key;
+        this.form = form;
 
         view = key.getPanelComponent(form);
 

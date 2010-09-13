@@ -3,7 +3,6 @@ package platform.client.form.queries;
 import platform.client.form.ClientFormController;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.form.cell.CellTable;
-import platform.client.logics.ClientCell;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.ClientUserValueLink;
 
@@ -46,7 +45,7 @@ class UserValueLinkView extends ValueLinkView {
                 return false;
             }
 
-            public ClientCell getCell(int col) {
+            public ClientPropertyDraw getProperty(int col) {
                 return property;
             }
 

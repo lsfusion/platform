@@ -3,7 +3,7 @@ package platform.client.logics.classes;
 import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.editor.FileActionPropertyEditor;
-import platform.client.logics.ClientCell;
+import platform.client.logics.ClientPropertyDraw;
 import platform.interop.ComponentDesign;
 
 import java.io.DataInputStream;
@@ -32,7 +32,7 @@ public class ClientFileActionClass extends ClientActionClass {
     }
 
     @Override
-    public PropertyEditorComponent getEditorComponent(ClientFormController form, ClientCell property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
+    public PropertyEditorComponent getEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
 //         return new FileActionPropertyEditor("Файлы таблиц (*.xls)", "xls");
          return new FileActionPropertyEditor(filterDescription, filterExtensions);
     }

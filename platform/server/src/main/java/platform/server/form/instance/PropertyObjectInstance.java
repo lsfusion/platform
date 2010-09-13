@@ -134,6 +134,6 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
             }
         }
 
-        return new PropertyObjectInstance(property, remapping);
+        return new PropertyObjectInstance<P>(property, remapping);
     }
 }

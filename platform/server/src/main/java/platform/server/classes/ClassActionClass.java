@@ -13,8 +13,6 @@ import java.util.Map;
 // Action с выбором конкретного класса
 public class ClassActionClass extends ActionClass {
 
-    private static final Map<CustomClass, ClassActionClass> instances = new HashMap<CustomClass, ClassActionClass>();
-
     @Override
     public DataClass getCompatible(DataClass compClass) {
         return compClass instanceof ClassActionClass ? this : null;
@@ -30,19 +28,12 @@ public class ClassActionClass extends ActionClass {
         return Integer.class;
     }
 
-    CustomClass baseClass;
+    private final CustomClass baseClass;
+    private final CustomClass defaultClass;
 
-    public ClassActionClass(CustomClass baseClass) {
+    public ClassActionClass(CustomClass baseClass, CustomClass defaultClass) {
         this.baseClass = baseClass;
-    }
-
-    public static ClassActionClass getInstance(CustomClass baseClass) {
-
-        if (!instances.containsKey(baseClass)) {
-            instances.put(baseClass, new ClassActionClass(baseClass));
-        }
-
-        return instances.get(baseClass);
+        this.defaultClass = defaultClass;
     }
 
     @Override
@@ -50,6 +41,7 @@ public class ClassActionClass extends ActionClass {
         super.serialize(outStream);
 
         baseClass.serialize(outStream);
+        defaultClass.serialize(outStream);
     }
 
     @Override

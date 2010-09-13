@@ -94,15 +94,15 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
     protected void initClasses() {
 
-        article = addConcreteClass("Товар", namedObject);
-        articleGroup = addConcreteClass("Группа товаров", namedObject);
+        article = addConcreteClass("Товар", baseClass.named);
+        articleGroup = addConcreteClass("Группа товаров", baseClass.named);
 
-        store = addConcreteClass("Склад", namedObject);
+        store = addConcreteClass("Склад", baseClass.named);
 
-        supplier = addConcreteClass("Поставщик", namedObject);
-        customer = addConcreteClass("Покупатель", namedObject);
+        supplier = addConcreteClass("Поставщик", baseClass.named);
+        customer = addConcreteClass("Покупатель", baseClass.named);
 
-        document = addAbstractClass("Документ", namedObject);
+        document = addAbstractClass("Документ", baseClass.named);
         primaryDocument = addAbstractClass("Первичный документ", document);
         secondaryDocument = addAbstractClass("Непервичный документ", document);
         quantityDocument = addAbstractClass("Товарный документ", document);
@@ -1122,7 +1122,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         addDProp(baseGroup, "beerType", "Тип", StringClass.get(10), articleBeer);
         addDProp(baseGroup, "beerPack", "Упак.", StringClass.get(10), articleBeer);
 
-        CustomClass wineTaste = addConcreteClass("Вкус вина", namedObject);
+        CustomClass wineTaste = addConcreteClass("Вкус вина", baseClass.named);
         CustomClass articleWine = addConcreteClass("Вино", articleAlcohol);
         addJProp(baseGroup, "Вкус", name, addDProp("vineCode", "Код вкуса", wineTaste, articleWine), 1);
 
@@ -1152,7 +1152,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         CustomClass articleClothes = addConcreteClass("Одежда", article);
         addDProp(baseGroup, "wearModel", "Модель", StringClass.get(10), articleClothes);
 
-        CustomClass shirtSize = addConcreteClass("Размер майки", namedObject);
+        CustomClass shirtSize = addConcreteClass("Размер майки", baseClass.named);
         CustomClass articleTShirt = addConcreteClass("Майки", articleClothes);
         addJProp(baseGroup, "Размер", name, addDProp("shirtSize", "Код размера", shirtSize, articleTShirt), 1);
 

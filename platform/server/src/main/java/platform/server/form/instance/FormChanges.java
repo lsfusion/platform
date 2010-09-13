@@ -18,9 +18,7 @@ public class FormChanges {
 
     public Map<GroupObjectInstance, Byte> classViews = new HashMap<GroupObjectInstance, Byte>();
     public Map<GroupObjectInstance, Map<ObjectInstance, ? extends ObjectValue>> objects = new HashMap<GroupObjectInstance, Map<ObjectInstance, ? extends ObjectValue>>();
-    public Map<GroupObjectInstance, Map<ObjectInstance, ConcreteValueClass>> classes = new HashMap<GroupObjectInstance, Map<ObjectInstance, ConcreteValueClass>>();
     public Map<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> gridObjects = new HashMap<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>>();
-    public Map<GroupObjectInstance, List<Map<ObjectInstance, ConcreteValueClass>>> gridClasses = new HashMap<GroupObjectInstance, List<Map<ObjectInstance, ConcreteValueClass>>>();
     public Map<PropertyDrawInstance, Map<Map<ObjectInstance, DataObject>, Object>> gridProperties = new HashMap<PropertyDrawInstance, Map<Map<ObjectInstance, DataObject>, Object>>();
     public Map<PropertyDrawInstance, Object> panelProperties = new HashMap<PropertyDrawInstance, Object>();
     public Set<PropertyDrawInstance> dropProperties = new HashSet<PropertyDrawInstance>();
@@ -81,21 +79,6 @@ public class FormChanges {
             }
         }
 
-        outStream.writeInt(classes.size()); // количество элементов в classes может быть меньше, поскольку в objects могут быть null'ы
-        for (Map.Entry<GroupObjectInstance, Map<ObjectInstance, ConcreteValueClass>> classValue : classes.entrySet()) {
-            outStream.writeInt(classValue.getKey().getID());
-            // именно так чтобы гарантировано в том же порядке
-            for (ObjectInstance object : classValue.getKey().objects) {
-                ConcreteValueClass cls = classValue.getValue().get(object);
-                if (cls == null) {
-                    outStream.writeBoolean(true);
-                } else {
-                    outStream.writeBoolean(false);
-                    cls.serialize(outStream);
-                }
-            }
-        }
-
         outStream.writeInt(gridObjects.size());
         for (Map.Entry<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> gridObject : gridObjects.entrySet()) {
 
@@ -106,20 +89,6 @@ public class FormChanges {
                 // именно так чтобы гарантировано в том же порядке
                 for (ObjectInstance object : gridObject.getKey().objects) {
                     BaseUtils.serializeObject(outStream, groupObjectValue.get(object).object);
-                }
-            }
-        }
-
-        outStream.writeInt(gridClasses.size());
-        for (Map.Entry<GroupObjectInstance, List<Map<ObjectInstance, ConcreteValueClass>>> gridClass : gridClasses.entrySet()) {
-
-            outStream.writeInt(gridClass.getKey().getID());
-
-            outStream.writeInt(gridClass.getValue().size());
-            for (Map<ObjectInstance, ConcreteValueClass> groupObjectValue : gridClass.getValue()) {
-                // именно так чтобы гарантировано в том же порядке
-                for (ObjectInstance object : gridClass.getKey().objects) {
-                    groupObjectValue.get(object).serialize(outStream);
                 }
             }
         }

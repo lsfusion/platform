@@ -12,7 +12,7 @@ import java.util.Map;
 public class RemoveClassTable extends ChangeClassTable<RemoveClassTable> {
 
     public RemoveClassTable(int classID) {
-        super("removechange",classID);
+        super("removechange_"+classID);
     }
 
     public RemoveClassTable(String name,KeyField object,ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows) {

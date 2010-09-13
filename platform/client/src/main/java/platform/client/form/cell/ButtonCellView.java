@@ -3,7 +3,7 @@ package platform.client.form.cell;
 import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
-import platform.client.logics.ClientCell;
+import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -11,7 +11,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
 public class ButtonCellView extends JButton implements CellView {
-    public ButtonCellView(final ClientCell key, final ClientFormController form) {
+    public ButtonCellView(final ClientPropertyDraw key, final ClientFormController form) {
         super(key.getFullCaption());
 
         if (key.readOnly) {

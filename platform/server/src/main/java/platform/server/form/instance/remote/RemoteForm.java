@@ -232,17 +232,6 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
         }
     }
 
-    public void changeObject(int objectID, Object value) {
-        try {
-            ObjectInstance objectImplement = form.getObjectInstance(objectID);
-            actions.addAll(form.changeObject(objectImplement, value, this));
-            
-            updateCurrentClass = objectImplement;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public void addObject(int objectID, int classID) {
         CustomObjectInstance object = (CustomObjectInstance) form.getObjectInstance(objectID);
         try {
@@ -306,24 +295,6 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
         try {
             Map<ObjectInstance, DataObject> keys = deserializeKeys(propertyDraw, columnKeys);
             propertyDraw.toDraw.changeOrder(propertyDraw.propertyObject.getRemappedPropertyObject(keys), Order.deserialize(modiType));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void changeObjectOrder(int objectID, byte modiType) {
-        ObjectInstance object = form.getObjectInstance(objectID);
-        try {
-            object.groupTo.changeOrder(object, Order.deserialize(modiType));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void changeObjectClassOrder(int propertyID, byte modiType) throws RemoteException {
-        CustomObjectInstance object = (CustomObjectInstance)form.getObjectInstance(propertyID);
-        try {
-            object.groupTo.changeOrder(object.objectClassInstance, Order.deserialize(modiType));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

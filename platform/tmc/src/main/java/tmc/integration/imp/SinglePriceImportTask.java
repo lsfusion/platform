@@ -210,7 +210,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
 
             session.execute(returnPriceChanges.add(returnChanges), null, null);
 
-            session.apply(BL);
+            System.out.println(session.apply(BL));
 
         } finally {
             if (impFile != null)

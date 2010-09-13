@@ -3,6 +3,7 @@ package platform.server.classes;
 import platform.interop.Data;
 import platform.server.auth.SecurityPolicy;
 import platform.server.caches.ManualLazy;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.sets.ConcreteCustomClassSet;
 import platform.server.classes.sets.CustomClassSet;
@@ -50,8 +51,7 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
     public Integer ID;
 
     public String caption;
-    public CustomClass(Integer ID, String caption, CustomClass... parents) {
-        this.ID = ID;
+    public CustomClass(String caption, CustomClass... parents) {
         this.caption = caption;
         this.parents = new ArrayList<CustomClass>();
         children = new ArrayList<CustomClass>();
@@ -374,5 +374,11 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
 
     public BaseExpr getClassExpr() {
         return new ClassExpr(this);
+    }
+
+    // чисто для IdentityLazy, потом если сделать для static'ов можно вернуть в ClassActionClass
+    @IdentityLazy
+    public ClassActionClass getActionClass(CustomClass defaultClass) {
+        return new ClassActionClass(this, defaultClass);        
     }
 }

@@ -131,10 +131,6 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
             setGridObjects(fc.gridObjects.get(groupObject));
         }
 
-        if (fc.gridClasses.containsKey(groupObject)) {
-            setGridClasses(fc.gridClasses.get(groupObject));
-        }
-
         if (fc.objects.containsKey(groupObject)) {
             setCurrentGroupObject(fc.objects.get(groupObject), false);
         }
@@ -142,10 +138,6 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         if (fc.classViews.containsKey(groupObject)) {
             setClassView(fc.classViews.get(groupObject));
             requestFocusInWindow();
-        }
-
-        if (fc.classes.containsKey(groupObject)) {
-            setCurrentGroupObjectClass(fc.classes.get(groupObject));
         }
 
         // Затем их свойства
@@ -216,16 +208,6 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
     public void setClassView(byte classView) {
         if (this.classView != classView) {
             this.classView = classView;
-            if (classView == ClassViewType.GRID) {
-                panel.removeGroupObjectCells();
-                grid.addGroupObjectCells();
-            } else if (classView == ClassViewType.PANEL) {
-                panel.addGroupObjectCells();
-                grid.removeGroupObjectCells();
-            } else {
-                panel.removeGroupObjectCells();
-                grid.removeGroupObjectCells();
-            }
 
             for (ClientObject object : groupObject) {
                 objects.get(object).changeClassView(classView);
@@ -283,17 +265,12 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         }
     }
 
-    public void setGridClasses(List<ClientGroupObjectClass> gridClasses) {
-        grid.setGridClasses(gridClasses);
-    }
-
     public void setCurrentGroupObject(ClientGroupObjectValue value, Boolean userChange) {
         boolean realChange = !value.equals(currentObject);
 
         currentObject = value;
 
         if (realChange) {
-            panel.selectObject(currentObject);
             grid.selectObject(currentObject);
         }
     }
@@ -307,10 +284,6 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         setCurrentGroupObject(curValue, false);
     }
 
-    public void setCurrentGroupObjectClass(ClientGroupObjectClass value) {
-        panel.setCurrentClass(value);
-    }
-
     public void setPanelPropertyValue(ClientPropertyDraw property, Object value) {
         panel.setPropertyValue(property, value);
     }
@@ -319,7 +292,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         grid.setPropertyValues(property, values);
     }
 
-    public void changeGridOrder(ClientCell property, Order modiType) throws IOException {
+    public void changeGridOrder(ClientPropertyDraw property, Order modiType) throws IOException {
         grid.changeGridOrder(property, modiType);
     }
 
@@ -351,10 +324,6 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         return logicsSupplier.getProperties();
     }
 
-    public List<ClientCell> getCells() {
-        return logicsSupplier.getCells();
-    }
-
     public ClientGroupObject getGroupObject() {
         return groupObject;
     }
@@ -371,12 +340,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
     }
 
     public ClientPropertyDraw getDefaultProperty() {
-
-        ClientCell currentCell = grid.getCurrentCell();
-        if (currentCell instanceof ClientPropertyDraw)
-            return (ClientPropertyDraw) currentCell;
-        else
-            return null;
+        return grid.getCurrentProperty();
     }
 
     public Object getSelectedValue(ClientPropertyDraw cell) {

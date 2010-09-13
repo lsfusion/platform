@@ -25,8 +25,6 @@ public class CustomObjectInstance extends ObjectInstance {
     public CustomClass baseClass;
     CustomClass gridClass;
 
-    public DataObjectClassInstance objectClassInstance;
-
     public ConcreteCustomClass currentClass;
 
     private CustomClassListener classListener;
@@ -42,7 +40,6 @@ public class CustomObjectInstance extends ObjectInstance {
         super(entity);
         this.baseClass = baseClass;
         gridClass = baseClass;
-        objectClassInstance = new DataObjectClassInstance();
     }
 
     public CustomClass getBaseClass() {
@@ -175,39 +172,4 @@ public class CustomObjectInstance extends ObjectInstance {
     public Type getType() {
         return ObjectType.instance;
     }
-
-    public class DataObjectClassInstance implements OrderInstance {
-
-        public GroupObjectInstance getApplyObject() {
-            return CustomObjectInstance.this.getApplyObject();
-        }
-
-        public Type getType() {
-            return SystemClass.instance;
-        }
-
-        public Expr getExpr(Map<ObjectInstance, ? extends Expr> classSource, Modifier<? extends Changes> modifier) throws SQLException {
-            return CustomObjectInstance.this.getExpr(classSource, modifier).classExpr(CustomObjectInstance.this.baseClass.getBaseClass());
-        }
-
-        public boolean classUpdated(GroupObjectInstance classGroup) {
-            return false;
-        }
-
-        public boolean objectUpdated(GroupObjectInstance classGroup) {
-            return false;
-        }
-
-        public boolean dataUpdated(Collection<Property> changedProps) {
-            return false;
-        }
-
-        public void fillProperties(Set<Property> properties) {
-        }
-
-        public boolean isInInterface(GroupObjectInstance classGroup) {
-            return groupTo == classGroup;
-        }
-    }
-
 }

@@ -4,9 +4,7 @@ import platform.base.DefaultIDGenerator;
 import platform.base.IDGenerator;
 import platform.base.OrderedMap;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
-import platform.server.form.entity.CellEntity;
 import platform.server.form.entity.GroupObjectEntity;
-import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.group.AbstractGroup;
@@ -51,7 +49,7 @@ public class FormView implements ClientSerialize {
     // список фильтров
     public List<RegularFilterGroupView> regularFilters = new ArrayList<RegularFilterGroupView>();
 
-    public OrderedMap<CellView,Boolean> defaultOrders = new OrderedMap<CellView, Boolean>();
+    public OrderedMap<PropertyDrawView,Boolean> defaultOrders = new OrderedMap<PropertyDrawView, Boolean>();
 
     public FunctionView printFunction = new FunctionView(idGenerator.idShift());
     public FunctionView xlsFunction = new FunctionView(idGenerator.idShift());
@@ -62,7 +60,7 @@ public class FormView implements ClientSerialize {
     public FunctionView okFunction = new FunctionView(idGenerator.idShift());
     public FunctionView closeFunction = new FunctionView(idGenerator.idShift());
 
-    public List<CellView> order = new ArrayList<CellView>();
+    public List<PropertyDrawView> order = new ArrayList<PropertyDrawView>();
 
     public boolean readOnly = false;
 
@@ -93,13 +91,7 @@ public class FormView implements ClientSerialize {
         serializeList(outStream,regularFilters);
 
         outStream.writeInt(defaultOrders.size());
-        for(Map.Entry<CellView,Boolean> order : defaultOrders.entrySet()) {
-            if (order.getKey() instanceof ObjectIDCellView)
-                outStream.writeByte(0);
-            else if (order.getKey() instanceof ClassCellView)
-                outStream.writeByte(1);
-            else
-                outStream.writeByte(2);
+        for(Map.Entry<PropertyDrawView,Boolean> order : defaultOrders.entrySet()) {
             outStream.writeInt(order.getKey().ID);
             outStream.writeBoolean(order.getValue());
         }
@@ -114,15 +106,8 @@ public class FormView implements ClientSerialize {
         closeFunction.serialize(outStream);
 
         outStream.writeInt(order.size());
-        for(CellView orderCell : order) {
+        for(PropertyDrawView orderCell : order)
             outStream.writeInt(orderCell.getID());
-            if (orderCell instanceof PropertyDrawView)
-                outStream.writeBoolean(true);
-            else {
-                outStream.writeBoolean(false);
-                outStream.writeBoolean(orderCell instanceof ClassCellView);
-            }
-        }
 
         new ObjectOutputStream(outStream).writeObject(keyStroke);
 
@@ -147,19 +132,6 @@ public class FormView implements ClientSerialize {
         return properties;
     }
 
-    public List<CellView> getCells() {
-
-        List<CellView> result = new ArrayList<CellView>(getProperties());
-
-        for (GroupObjectView groupObject : groupObjects)
-            for (ObjectView object : groupObject) {
-                result.add(object.objectIDCell);
-                result.add(object.classCell);
-            }
-
-        return result;
-    }
-
 
     public List<PropertyDrawView> getProperties(AbstractGroup group) {
 
@@ -171,31 +143,6 @@ public class FormView implements ClientSerialize {
             }
         }
 
-        return result;
-    }
-
-    public List<CellView> getCells(AbstractGroup group) {
-
-        List<CellView> result = new ArrayList<CellView>(getProperties(group));
-
-        for (GroupObjectView groupObject : groupObjects)
-            for (ObjectView object : groupObject)
-                if (group.hasChild(object.entity.baseClass.getParent())) {
-                    result.add(object.objectIDCell);
-                    result.add(object.classCell);
-                }
-
-        return result;
-    }
-
-     public List<CellView> getCells(ObjectEntity objectEntity) {
-        List<CellView> result = new ArrayList<CellView>(getProperties(objectEntity.groupTo));
-        for (GroupObjectView groupObject : groupObjects)
-            for (ObjectView object : groupObject)
-                if (object.entity.equals(objectEntity)) {
-                    result.add(object.objectIDCell);
-                    result.add(object.classCell);
-                }
         return result;
     }
 
@@ -251,20 +198,16 @@ public class FormView implements ClientSerialize {
         return result;
     }
 
-    public void setFont(Font font, boolean cells) {
+    public void setFont(Font font) {
 
-        for (CellView property : cells ? getCells() : getProperties()) {
+        for (PropertyDrawView property : getProperties()) {
             setFont(property, font);
         }
     }
 
     public void setFont(AbstractGroup group, Font font) {
-        setFont(group, font, false);
-    }
 
-    public void setFont(AbstractGroup group, Font font, boolean cells) {
-
-        for (CellView property : cells ? getCells(group) : getProperties(group)) {
+        for (PropertyDrawView property : getProperties(group)) {
             setFont(property, font);
         }
     }
@@ -305,7 +248,7 @@ public class FormView implements ClientSerialize {
         }
     }
 
-    public void setFont(CellView property, Font font) {
+    public void setFont(PropertyDrawView property, Font font) {
         property.design.font = font;
     }
 
@@ -367,13 +310,13 @@ public class FormView implements ClientSerialize {
         }
     }
 
-    public void setFocusable(ObjectEntity objectEntity, boolean focusable, boolean cells) {
-        for (CellView property : cells ? getCells(objectEntity) : getProperties(objectEntity.groupTo)) {
+    public void setFocusable(ObjectEntity objectEntity, boolean focusable) {
+        for (PropertyDrawView property : getProperties(objectEntity.groupTo)) {
             setFocusable(property, focusable);
         }
     }
 
-    public void setFocusable(CellView property, boolean focusable) {
+    public void setFocusable(PropertyDrawView property, boolean focusable) {
         property.focusable = focusable;
     }
 
@@ -413,13 +356,13 @@ public class FormView implements ClientSerialize {
         }
     }
 
-    public void setReadOnly(ObjectEntity objectEntity, boolean readOnly, boolean cells) {
-        for (CellView property : cells ? getCells(objectEntity) : getProperties(objectEntity.groupTo)) {
+    public void setReadOnly(ObjectEntity objectEntity, boolean readOnly) {
+        for (PropertyDrawView property : getProperties(objectEntity.groupTo)) {
             setReadOnly(property, readOnly);
         }
     }
 
-    public void setReadOnly(CellView property, boolean readOnly) {
+    public void setReadOnly(PropertyDrawView property, boolean readOnly) {
         property.readOnly = readOnly;
     }
 
@@ -461,12 +404,12 @@ public class FormView implements ClientSerialize {
         setReadOnly(!readOnly, groupObject);
     }
 
-    public void setEnabled(ObjectEntity objectEntity, boolean readOnly, boolean cells) {
-        setFocusable(objectEntity, readOnly, cells);
-        setReadOnly(objectEntity, !readOnly, cells);
+    public void setEnabled(ObjectEntity objectEntity, boolean readOnly) {
+        setFocusable(objectEntity, readOnly);
+        setReadOnly(objectEntity, !readOnly);
     }
 
-    public void setEnabled(CellView property, boolean readOnly) {
+    public void setEnabled(PropertyDrawView property, boolean readOnly) {
         setFocusable(property, readOnly);
         setReadOnly(property, !readOnly);
     }
@@ -493,7 +436,7 @@ public class FormView implements ClientSerialize {
         }
     }
 
-    public void setEditKey(CellView property, KeyStroke keyStroke) {
+    public void setEditKey(PropertyDrawView property, KeyStroke keyStroke) {
         property.editKey = keyStroke;
     }
 
@@ -511,7 +454,7 @@ public class FormView implements ClientSerialize {
         }
     }
 
-    public void setPanelLabelAbove(CellView property, boolean panelLabelAbove) {
+    public void setPanelLabelAbove(PropertyDrawView property, boolean panelLabelAbove) {
         property.panelLabelAbove = panelLabelAbove;
     }
 }

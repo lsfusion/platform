@@ -30,7 +30,7 @@ public class ClientForm implements Serializable, LogicsSupplier {
     public List<ClientGroupObject> groupObjects;
     private List<ClientPropertyDraw> properties;
 
-    public final OrderedMap<ClientCell,Boolean> defaultOrders = new OrderedMap<ClientCell, Boolean>();
+    public final OrderedMap<ClientPropertyDraw,Boolean> defaultOrders = new OrderedMap<ClientPropertyDraw, Boolean>();
     public List<ClientRegularFilterGroup> regularFilters;
 
     public ClientFunction printFunction;
@@ -42,7 +42,7 @@ public class ClientForm implements Serializable, LogicsSupplier {
     public ClientFunction okFunction;
     public ClientFunction closeFunction;
 
-    private final List<ClientCell> order = new ArrayList<ClientCell>();
+    private final List<ClientPropertyDraw> order = new ArrayList<ClientPropertyDraw>();
 
     public List<ClientObject> getObjects() {
 
@@ -58,25 +58,9 @@ public class ClientForm implements Serializable, LogicsSupplier {
          return properties;
      }
 
-     public List<ClientCell> getCells() {
-         return order;
-     }
-
     public ClientGroupObject getGroupObject(int id) {
         for (ClientGroupObject groupObject : groupObjects)
             if (groupObject.getID() == id) return groupObject;
-        return null;
-    }
-
-    ClientCell getObject(int id, boolean classView) {
-        for (ClientGroupObject groupObject : groupObjects)
-            for (ClientObject object : groupObject)
-                if (object.getID() == id) {
-                    if (classView)
-                        return object.classCell;
-                    else
-                        return object.objectIDCell;
-                }
         return null;
     }
 
@@ -161,14 +145,7 @@ public class ClientForm implements Serializable, LogicsSupplier {
 
         int orderCount = inStream.readInt();
         for(int i=0;i<orderCount;i++) {
-            ClientCell order;
-            Byte orderClass = inStream.readByte();
-            if (orderClass == 0)
-                order = getObject(inStream.readInt(), false);
-            else if (orderClass == 1)
-                order = getObject(inStream.readInt(), true);
-            else
-                order = getProperty(inStream.readInt());
+            ClientPropertyDraw order = getProperty(inStream.readInt());
             defaultOrders.put(order,inStream.readBoolean());
         }
 
@@ -184,10 +161,7 @@ public class ClientForm implements Serializable, LogicsSupplier {
         int cellCount = inStream.readInt();
         for(int i=0;i<cellCount;i++) {
             int cellID = inStream.readInt();
-            if(inStream.readBoolean()) // property
-                order.add(getProperty(cellID));
-            else
-                order.add(getObject(cellID, inStream.readBoolean()));
+            order.add(getProperty(cellID));
         }
 
         keyStroke = (KeyStroke) new ObjectInputStream(inStream).readObject();

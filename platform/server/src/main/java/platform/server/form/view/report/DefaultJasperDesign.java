@@ -257,13 +257,6 @@ public class DefaultJasperDesign {
 
             Collection<ReportDrawField> drawFields = new ArrayList<ReportDrawField>();
 
-            // сначала все коды
-            for(ObjectView object : group) {
-                ReportDrawField reportField = object.objectIDCell.getReportDrawField();
-                if (reportField != null)
-                    drawFields.add(reportField);
-            }
-
             // бежим по всем свойствам входящим в объектам
             for(PropertyDrawView property : formView.properties) {
 

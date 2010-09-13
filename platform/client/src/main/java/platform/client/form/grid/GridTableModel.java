@@ -7,22 +7,22 @@ import java.util.*;
 
 public class GridTableModel extends AbstractTableModel {
     private Object[][] data = new Object[0][0];
-    private ClientCell[] columnProps = new ClientCell[0];
+    private ClientPropertyDraw[] columnProps = new ClientPropertyDraw[0];
     private ClientGroupObjectValue[] columnKeys = new ClientGroupObjectValue[0];
     private String[] columnNames = new String[0];
 
-    public void update(List<ClientCell> columnProperties,
+    public void update(List<ClientPropertyDraw> columnProperties,
                              List<ClientGroupObjectValue> rowKeys,
                              Map<ClientPropertyDraw, List<ClientGroupObjectValue>> mapColumnKeys,
                              Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> columnDisplayValues,
-                             Map<ClientCell, Map<ClientGroupObjectValue, Object>> values) {
+                             Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values) {
 
-        List<ClientCell> columnPropsList = new ArrayList<ClientCell>();
+        List<ClientPropertyDraw> columnPropsList = new ArrayList<ClientPropertyDraw>();
         List<ClientGroupObjectValue> columnKeysList = new ArrayList<ClientGroupObjectValue>();
 
-        for (ClientCell cell : columnProperties) {
+        for (ClientPropertyDraw cell : columnProperties) {
             //noinspection SuspiciousMethodCalls
-            if (cell instanceof ClientPropertyDraw && mapColumnKeys.containsKey(cell)) {
+            if (mapColumnKeys.containsKey(cell)) {
                 ClientPropertyDraw propertyDraw = (ClientPropertyDraw) cell;
 
                 for (ClientGroupObjectValue key : mapColumnKeys.get(propertyDraw)) {
@@ -36,7 +36,7 @@ public class GridTableModel extends AbstractTableModel {
         }
 
         if (columnProps.length != columnPropsList.size()) {
-            columnProps = new ClientCell[columnPropsList.size()];
+            columnProps = new ClientPropertyDraw[columnPropsList.size()];
             columnKeys = new ClientGroupObjectValue[columnKeysList.size()];
             columnNames = new String[columnKeysList.size()];
         }
@@ -66,7 +66,7 @@ public class GridTableModel extends AbstractTableModel {
 
         //заполняем имена колонок
         for (int i = 0; i < columnNames.length; ++i) {
-            ClientCell cell = columnProps[i];
+            ClientPropertyDraw cell = columnProps[i];
             ClientGroupObjectValue columnKey = columnKeys[i];
 
             columnNames[i] = cell.getFullCaption();
@@ -138,7 +138,7 @@ public class GridTableModel extends AbstractTableModel {
         fireTableCellUpdated(row, col);
     }
 
-    public int getMinPropertyIndex(ClientCell property) {
+    public int getMinPropertyIndex(ClientPropertyDraw property) {
         for (int i = 0; i < columnProps.length; ++i) {
             if (property == columnProps[i]) {
                 return i;
@@ -147,7 +147,7 @@ public class GridTableModel extends AbstractTableModel {
         return -1;
     }
 
-    public ClientCell getColumnProperty(int index) {
+    public ClientPropertyDraw getColumnProperty(int index) {
         return columnProps[index];
     }
 

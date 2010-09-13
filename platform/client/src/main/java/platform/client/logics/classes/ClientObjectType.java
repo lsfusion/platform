@@ -7,7 +7,7 @@ import platform.client.form.cell.CellView;
 import platform.client.form.cell.TableCellView;
 import platform.client.form.editor.ObjectPropertyEditor;
 import platform.client.form.renderer.IntegerPropertyRenderer;
-import platform.client.logics.ClientCell;
+import platform.client.logics.ClientPropertyDraw;
 import platform.interop.ComponentDesign;
 
 import java.awt.*;
@@ -42,15 +42,15 @@ public class ClientObjectType implements ClientType {
         return new IntegerPropertyRenderer(format, design);
     }
 
-    public CellView getPanelComponent(ClientCell key, ClientFormController form) {
+    public CellView getPanelComponent(ClientPropertyDraw key, ClientFormController form) {
         return new TableCellView(key, form);
     }
 
-    public PropertyEditorComponent getEditorComponent(ClientFormController form, ClientCell property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
+    public PropertyEditorComponent getEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
         return new ObjectPropertyEditor(form.getComponent(), form.clientNavigator.remoteNavigator, property.createEditorForm(form.remoteForm));
     }
 
-    public PropertyEditorComponent getClassComponent(ClientFormController form, ClientCell property, Object value, Format format) throws IOException, ClassNotFoundException {
+    public PropertyEditorComponent getClassComponent(ClientFormController form, ClientPropertyDraw property, Object value, Format format) throws IOException, ClassNotFoundException {
         return new ObjectPropertyEditor(form.getComponent(), form.clientNavigator.remoteNavigator, property.createClassForm(form.remoteForm, (Integer) value));
     }
 

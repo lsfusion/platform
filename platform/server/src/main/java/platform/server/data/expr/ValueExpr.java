@@ -21,19 +21,13 @@ import java.util.Map;
 import java.util.Set;
 
 
-public class ValueExpr extends StaticClassExpr {
-
-    public final Object object;
-    public final ConcreteClass objectClass;
+public class ValueExpr extends AbstractValueExpr {
 
     public ValueExpr(Object object, ConcreteClass objectClass) {
-        this.object = object;
-        this.objectClass = objectClass;
-
-        assert !(this.objectClass instanceof LogicalClass && !this.object.equals(true));
+        super(object, objectClass);
     }
 
-    public static ValueExpr TRUE = new ValueExpr(true,LogicalClass.instance);
+    public static SystemValueExpr TRUE = new SystemValueExpr(true,LogicalClass.instance);
     public static Expr get(Where where) {
         return TRUE.and(where);
     }
@@ -43,18 +37,7 @@ public class ValueExpr extends StaticClassExpr {
     }
 
     public String getSource(CompileSource compile) {
-        String source = compile.params.get(this);
-        if(source==null) source = getString(compile.syntax);
-        return source;
-    }
-
-    public String getString(SQLSyntax syntax) {
-        return objectClass.getType().getString(object, syntax);
-    }
-
-    @Override
-    public String toString() {
-        return object + " - " + objectClass;
+        return compile.params.get(this);
     }
 
     public void enumerate(ContextEnumerator enumerator) {
@@ -109,7 +92,6 @@ public class ValueExpr extends StaticClassExpr {
     private static Set<ValueExpr> staticExprs;
     {
         staticExprs = new HashSet<ValueExpr>();
-        staticExprs.add(ValueExpr.TRUE);
         staticExprs.add(ValueExpr.ZERO);
         staticExprs.add(null);
     }

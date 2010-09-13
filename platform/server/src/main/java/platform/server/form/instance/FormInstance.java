@@ -9,16 +9,14 @@ import platform.interop.exceptions.ComplexQueryException;
 import platform.interop.form.RemoteFormInterface;
 import platform.server.auth.SecurityPolicy;
 import platform.server.caches.ManualLazy;
-import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.ConcreteValueClass;
-import platform.server.classes.CustomClass;
-import platform.server.classes.DataClass;
+import platform.server.classes.*;
 import platform.server.data.KeyField;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.EqualsWhere;
 import platform.server.data.query.Query;
 import platform.server.data.type.TypeSerializer;
+import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.FilterEntity;
@@ -35,6 +33,7 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyValueImplement;
+import platform.server.logics.property.ObjectClassProperty;
 import platform.server.session.*;
 
 import java.io.DataOutputStream;
@@ -229,7 +228,14 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         PropertyValueImplement<?> change = propertyDraw.propertyObject.getChangeProperty();
         if (securityPolicy.property.change.checkPermission(change.property) && change.canBeChanged(this)) {
             outStream.writeBoolean(false);
-            TypeSerializer.serialize(outStream, change.property.getType());
+            Type type = change.property.getType();
+            if(change.property instanceof ObjectClassProperty) {
+                PropertyObjectInterfaceInstance object = BaseUtils.singleValue(propertyDraw.propertyObject.mapping);
+                if(object instanceof ObjectInstance)
+                    type = ((CustomObjectInstance) object).baseClass.getActionClass(((CustomObjectInstance) object).currentClass);
+            }
+
+            TypeSerializer.serialize(outStream, type);
         } else
             outStream.writeBoolean(true);
     }
@@ -654,16 +660,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     // оболочка изменения group, чтобы отослать клиенту
     private void updateGroupObject(GroupObjectInstance group, FormChanges changes, Map<ObjectInstance, ? extends ObjectValue> value) throws SQLException {
 
-        Map<ObjectInstance, ConcreteValueClass> cls = new HashMap<ObjectInstance, ConcreteValueClass>();
-        for (ObjectInstance object : value.keySet()) {
-            ObjectValue objectValue = value.get(object);
-            if (objectValue instanceof DataObject) {
-                cls.put(object, (ConcreteValueClass) session.getCurrentClass((DataObject) objectValue));
-            } // если не DataObject, а null, то можно даже не кидать в результат ничего - нету смысла
-        }
-
         changes.objects.put(group, value);
-        changes.classes.put(group, cls);
 
         changeGroupObject(group, value);
     }
@@ -878,7 +875,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                         }
                 if (!updateKeys) // классы удалились\добавились
                     for (ObjectInstance object : group.objects)
-                        if (object.classChanged(changedClasses) || object.classUpdated()) {
+                        if (object.classChanged(changedClasses)) {  // || object.classUpdated() сомнительный or
                             updateKeys = true;
                             break;
                         }
@@ -989,19 +986,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                         groupTables.put(group, insertTable.writeKeys(session, viewKeys));
 
                         List<Map<ObjectInstance, DataObject>> resultObjects = new ArrayList<Map<ObjectInstance, DataObject>>(group.keys.keySet());
-                        List<Map<ObjectInstance, ConcreteValueClass>> resultClasses = new ArrayList<Map<ObjectInstance, ConcreteValueClass>>();
 
                         // заполняем классы полученных рядов
-                        for (Map<ObjectInstance, DataObject> row : resultObjects) {
-                            Map<ObjectInstance, ConcreteValueClass> rowClass = new HashMap<ObjectInstance, ConcreteValueClass>();
-                            for (ObjectInstance object : row.keySet()) {
-                                rowClass.put(object, (ConcreteValueClass) session.getCurrentClass(row.get(object)));
-                            }
-                            resultClasses.add(rowClass);
-                        }
-
                         result.gridObjects.put(group, resultObjects);
-                        result.gridClasses.put(group, resultClasses);
 
                         // если есть в новых ключах старый ключ, то делаем его активным
                         if (keepObject && group.keys.containsKey(dataKeys(currentObject)))

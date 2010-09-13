@@ -4,7 +4,7 @@ import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.cell.CellView;
-import platform.client.logics.ClientCell;
+import platform.client.logics.ClientPropertyDraw;
 import platform.interop.ComponentDesign;
 
 import java.awt.*;
@@ -26,11 +26,11 @@ public interface ClientType {
 
     PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design);
 
-    CellView getPanelComponent(ClientCell key, ClientFormController form);
+    CellView getPanelComponent(ClientPropertyDraw key, ClientFormController form);
 
-    PropertyEditorComponent getEditorComponent(ClientFormController form, ClientCell property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException;
+    PropertyEditorComponent getEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException;
 
-    PropertyEditorComponent getClassComponent(ClientFormController form, ClientCell property, Object value, Format format) throws IOException, ClassNotFoundException;
+    PropertyEditorComponent getClassComponent(ClientFormController form, ClientPropertyDraw property, Object value, Format format) throws IOException, ClassNotFoundException;
 
     Object parseString(String s) throws ParseException;
 

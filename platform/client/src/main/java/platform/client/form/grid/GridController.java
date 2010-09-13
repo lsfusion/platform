@@ -88,37 +88,14 @@ public class GridController {
 
     public void addView(ClientFormLayout formLayout) {
         formLayout.add(key, view);
-        for (Map.Entry<ClientCell, ExternalScreenComponent> entry : extViews.entrySet()) {
+        for (Map.Entry<ClientPropertyDraw, ExternalScreenComponent> entry : extViews.entrySet()) {
             entry.getKey().externalScreen.add(form.getID(), entry.getValue(), entry.getKey().externalScreenConstraints);
         }
     }
 
-    public void addGroupObjectCells() {
-        for (ClientObject object : logicsSupplier.getGroupObject()) {
-            if (object.objectIDCell.show) {
-                table.addColumn(object.objectIDCell);
-            }
-            if (object.classCell.show) {
-                table.addColumn(object.classCell);
-            }
-        }
+    private Map<ClientPropertyDraw, ExternalScreenComponent> extViews = new HashMap<ClientPropertyDraw, ExternalScreenComponent>();
 
-        // здесь еще добавить значения идентификаторов
-        fillTableObjectID();
-    }
-
-    public void removeGroupObjectCells() {
-        for (ClientObject object : logicsSupplier.getGroupObject()) {
-            if (object.objectIDCell.show) {
-                table.removeColumn(object.objectIDCell);
-            }
-            table.removeColumn(object.classCell);
-        }
-    }
-
-    private Map<ClientCell, ExternalScreenComponent> extViews = new HashMap<ClientCell, ExternalScreenComponent>();
-
-    private void addExternalScreenComponent(ClientCell key) {
+    private void addExternalScreenComponent(ClientPropertyDraw key) {
         if (!extViews.containsKey(key)) {
             ExternalScreenComponent extView = new ExternalScreenComponent();
             extViews.put(key, extView);
@@ -143,17 +120,10 @@ public class GridController {
 
     public void setGridObjects(List<ClientGroupObjectValue> gridObjects) {
         table.setRowKeys(gridObjects);
-
-        //здесь еще добавить значения идентификаторов
-        fillTableObjectID();
     }
 
     public void setColumnKeys(ClientPropertyDraw drawProperty, Map<ClientGroupObject, List<ClientGroupObjectValue>> groupColumnKeys) {
         table.setColumnKeys(drawProperty, groupColumnKeys);
-    }
-
-    public void setGridClasses(List<ClientGroupObjectClass> gridClasses) {
-        fillTableObjectClasses(gridClasses);
     }
 
     public void selectObject(ClientGroupObjectValue currentObject) {
@@ -169,12 +139,12 @@ public class GridController {
         }
     }
 
-    public void changeGridOrder(ClientCell property, Order modiType) throws IOException {
+    public void changeGridOrder(ClientPropertyDraw property, Order modiType) throws IOException {
         table.changeGridOrder(property, modiType);
     }
 
-    public ClientCell getCurrentCell() {
-        return table.getCurrentCell();
+    public ClientPropertyDraw getCurrentProperty() {
+        return table.getCurrentProperty();
     }
 
     public Object getSelectedValue(ClientPropertyDraw cell) {
@@ -195,33 +165,6 @@ public class GridController {
     public void showViews() {
         hidden = false;
         view.setVisible(true);
-    }
-
-    private void fillTableObjectID() {
-        for (ClientObject object : logicsSupplier.getGroupObject()) {
-            if (object.objectIDCell.show) {
-                Map<ClientGroupObjectValue, Object> values = new HashMap<ClientGroupObjectValue, Object>();
-                for (ClientGroupObjectValue value : table.getRowKeys()) {
-                    values.put(value, value.get(object));
-                }
-                table.setColumnValues(object.objectIDCell, values);
-            }
-        }
-    }
-
-    private void fillTableObjectClasses(List<ClientGroupObjectClass> classes) {
-
-        for (ClientObject object : logicsSupplier.getGroupObject()) {
-
-            Map<ClientGroupObjectValue, Object> cls = new HashMap<ClientGroupObjectValue, Object>();
-
-            List<ClientGroupObjectValue> gridRows = table.getRowKeys();
-            for (int i = 0; i < gridRows.size(); i++) {
-                cls.put(gridRows.get(i), classes.get(i).get(object));
-            }
-
-            table.setColumnValues(object.classCell, cls);
-        }
     }
 
     public void updateTable() {

@@ -362,7 +362,7 @@ public class ClientFormController {
 
     private void initializeOrders() throws IOException {
         // Применяем порядки по умолчанию
-        for (Map.Entry<ClientCell, Boolean> entry : form.defaultOrders.entrySet()) {
+        for (Map.Entry<ClientPropertyDraw, Boolean> entry : form.defaultOrders.entrySet()) {
             controllers.get(entry.getKey().getGroupObject()).changeGridOrder(entry.getKey(), Order.ADD);
             if (!entry.getValue()) {
                 controllers.get(entry.getKey().getGroupObject()).changeGridOrder(entry.getKey(), Order.DIR);
@@ -448,28 +448,13 @@ public class ClientFormController {
         applyRemoteChanges();
     }
     
-    public void changeProperty(ClientCell property, Object value, boolean all) throws IOException {
+    public void changeProperty(ClientPropertyDraw property, Object value, boolean all) throws IOException {
 
         if (property.getGroupObject() != null) // для глобальных свойств пока не может быть отложенных действий
             SwingUtils.stopSingleAction(property.getGroupObject().getActionID(), true);
 
-        if (property instanceof ClientPropertyDraw) {
-
-            remoteForm.changePropertyDraw(property.getID(), BaseUtils.serializeObject(value), all);
-            applyRemoteChanges();
-
-        } else {
-
-            if (property instanceof ClientClassCell) {
-                changeClass(((ClientClassCell)property).object, (ClientConcreteClass)value);
-            } else {
-
-                ClientObject object = ((ClientObjectIDCell)property).object;
-                remoteForm.changeObject(object.getID(), value);
-                controllers.get(property.getGroupObject()).setCurrentObject(object, value);
-                applyRemoteChanges();
-            }
-        }
+        remoteForm.changePropertyDraw(property.getID(), BaseUtils.serializeObject(value), all);
+        applyRemoteChanges();
     }
 
     void addObject(ClientObject object, ClientConcreteClass cls) throws IOException {
@@ -510,20 +495,14 @@ public class ClientFormController {
         applyRemoteChanges();
     }
 
-    public void changeOrder(ClientCell property, Order modiType, ClientGroupObjectValue columnKey) throws IOException {
+    public void changeOrder(ClientPropertyDraw property, Order modiType, ClientGroupObjectValue columnKey) throws IOException {
         remoteForm.changePropertyOrderWithColumnKeys(property.getID(), modiType.serialize(), Serializer.serializeClientGroupObjectValue(columnKey));
         applyRemoteChanges();
     }
 
-    public void changeOrder(ClientCell property, Order modiType) throws IOException {
+    public void changeOrder(ClientPropertyDraw property, Order modiType) throws IOException {
 
-        if (property instanceof ClientPropertyDraw) {
-            remoteForm.changePropertyOrder(property.getID(), modiType.serialize());
-        } else if (property instanceof ClientClassCell) {
-            remoteForm.changeObjectClassOrder(property.getID(), modiType.serialize());
-        } else {
-            remoteForm.changeObjectOrder(property.getID(), modiType.serialize());
-        }
+        remoteForm.changePropertyOrder(property.getID(), modiType.serialize());
 
         applyRemoteChanges();
     }

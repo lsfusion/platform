@@ -18,9 +18,7 @@ import platform.server.data.sql.DataAdapter;
 import platform.server.form.entity.*;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
-import platform.server.form.view.ContainerView;
-import platform.server.form.view.DefaultFormView;
-import platform.server.form.view.ObjectView;
+import platform.server.form.view.*;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.linear.LP;
@@ -135,27 +133,27 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     protected void initClasses() {
 
-        subject = addAbstractClass("Субъект", namedObject);
+        subject = addAbstractClass("Субъект", baseClass.named);
 
         action = addAbstractClass("Акция", baseClass);
         saleAction = addConcreteClass(1, "Распродажа", action);
         articleAction = addConcreteClass(2, "Акции по позициям", action);
 
-        groupArticleAction = addConcreteClass(3, "Группа акций", namedObject);
+        groupArticleAction = addConcreteClass(3, "Группа акций", baseClass.named);
 
         store = addAbstractClass("Склад", subject);
         shop = addConcreteClass(4, "Магазин", store);
         warehouse = addConcreteClass(5, "Распред. центр", store);
-        article = addConcreteClass(6, "Товар", namedObject, barcodeObject);
-        articleGroup = addConcreteClass(7, "Группа товаров", namedObject);
+        article = addConcreteClass(6, "Товар", baseClass.named, barcodeObject);
+        articleGroup = addConcreteClass(7, "Группа товаров", baseClass.named);
         supplier = addAbstractClass("Поставщик", subject);
         localSupplier = addConcreteClass(8, "Местный поставщик", supplier);
         importSupplier = addConcreteClass(9, "Импортный поставщик", supplier);
-        customerWhole = addConcreteClass(10, "Оптовый покупатель", namedObject);
-        customerInvoiceRetail = addConcreteClass(11, "Покупатель по накладным", namedObject);
-        customerCheckRetail = addConcreteClass(12, "Розничный покупатель", namedObject, barcodeObject);
+        customerWhole = addConcreteClass(10, "Оптовый покупатель", baseClass.named);
+        customerInvoiceRetail = addConcreteClass(11, "Покупатель по накладным", baseClass.named);
+        customerCheckRetail = addConcreteClass(12, "Розничный покупатель", baseClass.named, barcodeObject);
 
-        format = addConcreteClass(13, "Формат", namedObject);
+        format = addConcreteClass(13, "Формат", baseClass.named);
 
         documentShopPrice = addAbstractClass("Изменение цены в магазине", transaction);
         documentRevalue = addConcreteClass(14, "Переоценка в магазине", documentShopPrice);
@@ -244,7 +242,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         returnSaleInvoiceRetail = addConcreteClass(46, "Возврат розничного заказа по накладной", orderShopInc, orderInvoiceRetail, returnSaleInvoice);
         returnSaleCheckRetail = addConcreteClass(47, "Возврат реализации через кассу", orderShopInc, returnInner, commitInc, checkRetail);
 
-        obligation = addAbstractClass("Сертификат", namedObject, barcodeObject);
+        obligation = addAbstractClass("Сертификат", baseClass.named, barcodeObject);
         coupon = addConcreteClass(48, "Купон", obligation);
         giftObligation = addConcreteClass(49, "Подарочный сертификат", obligation);
     }
@@ -261,6 +259,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP invoiceNumber, invoiceSeries;
 
     protected void initProperties() {
+
+        LP notArticle = addJProp(baseGroup, "не тов", andNot1, is(baseClass), 1, is(article), 1); 
 
         LP removePercent = addSFProp("((prm1*(100-prm2))/100)", DoubleClass.instance, 2);
         LP percent = addSFProp("(prm1*prm2/100)", DoubleClass.instance, 2);
@@ -1002,28 +1002,30 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             DefaultFormView design = super.createDefaultRichDesign();
 
             if (getDefaultFont() != null)
-                design.setFont(getDefaultFont(), true);
+                design.setFont(getDefaultFont());
 
+            PropertyDrawView barcodeView = design.get(getPropertyDraw(stringObject, objBarcode));
+            
             design.get(getPropertyDraw(reverseBarcode)).setContainer(design.getPanelContainer(design.get(objBarcode.groupTo)));
-            design.addIntersection(design.get(objBarcode).objectIDCell, design.get(getPropertyDraw(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            design.addIntersection(barcodeView, design.get(getPropertyDraw(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             design.addIntersection(design.get(getPropertyDraw(reverseBarcode)), design.get(getPropertyDraw(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             if (getPropertyDraw(documentBarcodePriceOv) != null) {
                 design.addIntersection(design.get(getPropertyDraw(barcodeObjectName)), design.get(getPropertyDraw(documentBarcodePriceOv)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             }
 
-            design.setFont(design.get(objBarcode).objectIDCell, FONT_SMALL_BOLD);
+            design.setFont(barcodeView, FONT_SMALL_BOLD);
             design.setFont(reverseBarcode, FONT_SMALL_BOLD);
             design.setFont(barcodeObjectName, FONT_LARGE_BOLD);
             design.setFont(documentBarcodePriceOv, FONT_LARGE_BOLD);
             design.setBackground(barcodeObjectName, new Color(240, 240, 240));
 
-            design.setEditKey(design.get(objBarcode).objectIDCell, KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0));
+            design.setEditKey(barcodeView, KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0));
             design.setEditKey(reverseBarcode, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
 
             if (!isBarcodeFocusable()) {
                 design.setFocusable(reverseBarcode, false);
                 design.setFocusable(false, objBarcode.groupTo);
-                design.setFocusable(design.get(objBarcode).objectIDCell, false);
+                design.setFocusable(barcodeView, false);
             }
 
             return design;
@@ -1081,8 +1083,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             DefaultFormView design = super.createDefaultRichDesign();
 
             if (toAdd) {
-                design.get(objDoc).objectIDCell.show = false;
-
                 design.setFont(FONT_MEDIUM_BOLD, objDoc.groupTo);
 
                 // устанавливаем дизайн
@@ -1456,8 +1456,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.get(objArt.groupTo).grid.defaultComponent = true;
 
             ObjectView objArtView = design.get(objArt);
-            objArtView.objectIDCell.show = false;
-            objArtView.classCell.show = false;
             objArtView.classChooser.show = false;
 
             return design;
@@ -1531,13 +1529,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.addIntersection(design.getGroupObjectContainer(objCoupon.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             ObjectView objCouponView = design.get(objCoupon);
-            objCouponView.objectIDCell.show = false;
-            objCouponView.classCell.show = false;
             objCouponView.classChooser.show = false;
 
             ObjectView objObligationView = design.get(objObligation);
-            objObligationView.objectIDCell.show = false;
-            objObligationView.classCell.show = false;
             objObligationView.classChooser.show = false;
             
             return design;
@@ -1751,7 +1745,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             if (!noOuters)
                 design.addIntersection(design.getGroupObjectContainer(objInner.groupTo), design.getGroupObjectContainer(objOuter.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
-            design.setEnabled(objArt, false, true);
+            design.setEnabled(objArt, false);
             design.setEnabled(returnInnerQuantity, true, objArt.groupTo);
             design.get(objArt.groupTo).grid.defaultComponent = true;
 
@@ -1824,7 +1818,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             DefaultFormView design = super.createDefaultRichDesign();
 
             design.getGroupObjectContainer(objInner.groupTo).title = "Список чеков";
-            design.get(objInner).objectIDCell.caption = "Номер чека";
+            design.get(getPropertyDraw(customObject, objInner)).caption = "Номер чека";
             design.getGroupObjectContainer(objArt.groupTo).title = "Товарные позиции";
 
             PropertyDrawEntity barcodeNavigator = getPropertyDraw(barcodeObjectName);
@@ -2113,10 +2107,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             design.get(objObligation.groupTo).grid.defaultComponent = true;
 
-            ObjectView objObligationView = design.get(objObligation);
-            objObligationView.objectIDCell.show = false;
-            objObligationView.classCell.show = false;
-            
             design.setKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_DOWN_MASK | InputEvent.SHIFT_MASK));
 
             return design;

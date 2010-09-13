@@ -59,18 +59,18 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
     
     protected void initClasses() {
 
-        article = addConcreteClass("Товар", namedObject);
-        articleGroup = addConcreteClass("Группа товаров", namedObject);
+        article = addConcreteClass("Товар", baseClass.named);
+        articleGroup = addConcreteClass("Группа товаров", baseClass.named);
 
-        store = addConcreteClass("Склад", namedObject);
+        store = addConcreteClass("Склад", baseClass.named);
 
-        supplier = addConcreteClass("Поставщик", namedObject);
-        customer = addConcreteClass("Покупатель", namedObject);
-        format = addConcreteClass("Формат", namedObject);
-        region = addConcreteClass("Регион", namedObject);
-        category = addConcreteClass("Категория", namedObject);
+        supplier = addConcreteClass("Поставщик", baseClass.named);
+        customer = addConcreteClass("Покупатель", baseClass.named);
+        format = addConcreteClass("Формат", baseClass.named);
+        region = addConcreteClass("Регион", baseClass.named);
+        category = addConcreteClass("Категория", baseClass.named);
 
-        document = addAbstractClass("Документ", namedObject, transaction);
+        document = addAbstractClass("Документ", baseClass.named, transaction);
         priceOutDocument = addAbstractClass("Документ изм. цены", document);
         quantityDocument = addAbstractClass("Товарный документ", document);
         incomeDocument = addAbstractClass("Приходный документ", quantityDocument, priceOutDocument);
@@ -721,7 +721,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
             DefaultFormView formView = new DefaultFormView(this);
             formView.defaultOrders.put(formView.get(getPropertyDraw(date,objExtInc)), false);
-            formView.defaultOrders.put(formView.get(objExtInc).objectIDCell, false);
+            formView.defaultOrders.put(formView.get(getPropertyDraw(customObject, objExtInc)), false);
             richDesign = formView;
         }
     }
@@ -928,7 +928,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
             DefaultFormView formView = new DefaultFormView(this);
             formView.defaultOrders.put(formView.get(getPropertyDraw(date)), false);
-            formView.defaultOrders.put(formView.get(objPrimDoc).objectIDCell, false);
+            formView.defaultOrders.put(formView.get(getPropertyDraw(customObject, objPrimDoc)), false);
             richDesign = formView;
         }
     }

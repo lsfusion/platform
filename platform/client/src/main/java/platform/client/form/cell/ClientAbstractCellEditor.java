@@ -3,7 +3,7 @@ package platform.client.form.cell;
 import platform.base.BaseUtils;
 import platform.client.SwingUtils;
 import platform.client.form.PropertyEditorComponent;
-import platform.client.logics.ClientCell;
+import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
@@ -81,7 +81,7 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
 
         if (cellTable.getForm().isReadOnlyMode() && cellTable.isDataChanging()) return null;
 
-        ClientCell property = cellTable.getCell(column);
+        ClientPropertyDraw property = cellTable.getProperty(column);
 
         try {
             if (cellTable.isDataChanging())

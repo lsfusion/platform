@@ -227,7 +227,7 @@ public class CashRegController {
         @Override
         public DefaultFormView createDefaultRichDesign() {
             DefaultFormView design = super.createDefaultRichDesign();
-            design.setFont(VEDBusinessLogics.FONT_HUGE_BOLD, true);
+            design.setFont(VEDBusinessLogics.FONT_HUGE_BOLD);
             design.setPanelLabelAbove(BL.baseGroup, true);
 
             design.setKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F5, InputEvent.SHIFT_DOWN_MASK | InputEvent.SHIFT_MASK));

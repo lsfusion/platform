@@ -8,10 +8,7 @@ import platform.server.caches.IdentityLazy;
 import platform.server.caches.MapValuesIterable;
 import platform.server.caches.hash.HashValues;
 import platform.server.classes.*;
-import platform.server.data.KeyField;
-import platform.server.data.ModifyQuery;
-import platform.server.data.PropertyField;
-import platform.server.data.SQLSession;
+import platform.server.data.*;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.cases.CaseExpr;
@@ -23,6 +20,7 @@ import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeObject;
 import platform.server.data.where.WhereBuilder;
+import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
@@ -224,11 +222,12 @@ public class DataSession extends SQLSession implements ChangesSession {
 
         assert Collections.disjoint(addClasses,removeClasses);
 
-        changes = new SessionChanges(changes, addClasses, removeClasses, change, this);
+        changes = new SessionChanges(changes, addClasses, removeClasses, toClass, change, this);
 
         newClasses.put(change,toClass);
 
         // по тем по кому не было restart'а new -> to
+        updateProperties(changes.getSessionChanges(addClasses, removeClasses));
         for(UpdateChanges incrementChange : incrementChanges.values()) {
             incrementChange.addClasses.addAll(addClasses);
             incrementChange.removeClasses.addAll(removeClasses);
@@ -239,9 +238,12 @@ public class DataSession extends SQLSession implements ChangesSession {
         changes = new SessionChanges(changes, property, keys, newValue, this);
 
         // по тем по кому не было restart'а new -> to
-        SessionChanges propertyChanges = changes.getSessionChanges(property);
+        updateProperties(changes.getSessionChanges(property));
+    }
+
+    private void updateProperties(SessionChanges changes) {
         for(Map.Entry<FormInstance,UpdateChanges> incrementChange : incrementChanges.entrySet())
-            incrementChange.getValue().properties.addAll(((FormInstance<?>) incrementChange.getKey()).getUpdateProperties(propertyChanges));
+            incrementChange.getValue().properties.addAll(((FormInstance<?>) incrementChange.getKey()).getUpdateProperties(changes));
     }
 
     public void updateProperties(Modifier<? extends Changes> modifier) {
@@ -287,7 +289,7 @@ public class DataSession extends SQLSession implements ChangesSession {
             return value.objectClass;
         else
             return newClass;
-    }
+    }                                   
 
     public <T> Map<T, ConcreteClass> getCurrentClasses(Map<T, DataObject> map) {
         Map<T, ConcreteClass> result = new HashMap<T, ConcreteClass>();

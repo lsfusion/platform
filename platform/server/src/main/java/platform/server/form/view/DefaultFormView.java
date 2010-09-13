@@ -90,16 +90,6 @@ public class DefaultFormView extends FormView {
 
             for (ObjectView clientObject : clientGroup) {
 
-                clientObject.objectIDCell.constraints.order = -1000 + clientGroup.indexOf(clientObject);
-                addComponent(clientGroup, clientObject.objectIDCell, clientObject.entity.baseClass.getParent());
-
-                order.add(clientObject.objectIDCell);
-
-                clientObject.classCell.constraints.order = -500 + clientGroup.indexOf(clientObject);
-                addComponent(clientGroup, clientObject.classCell, clientObject.entity.baseClass.getParent());
-
-                order.add(clientObject.classCell);
-
                 clientObject.classChooser.constraints.order = 0;
                 clientObject.classChooser.constraints.fillVertical = 1;
                 clientObject.classChooser.constraints.fillHorizontal = 0.2;

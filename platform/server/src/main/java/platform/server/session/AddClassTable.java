@@ -12,7 +12,7 @@ import java.util.Map;
 public class AddClassTable extends ChangeClassTable<AddClassTable> {
 
     public AddClassTable(int classID) {
-        super("addchange",classID);
+        super("addchange_"+classID);
     }
 
     public AddClassTable(String name, KeyField object,ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows) {
