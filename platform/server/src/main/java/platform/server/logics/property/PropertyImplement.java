@@ -1,11 +1,12 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
+import platform.base.ImmutableObject;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class PropertyImplement<T,P extends PropertyInterface> {
+public class PropertyImplement<T,P extends PropertyInterface> extends ImmutableObject {
 
     public final Property<P> property;
     public final Map<P,T> mapping;

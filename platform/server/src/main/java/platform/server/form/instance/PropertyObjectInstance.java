@@ -1,6 +1,7 @@
 package platform.server.form.instance;
 
 import platform.interop.action.ClientAction;
+import platform.server.caches.IdentityLazy;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.sets.AndClassSet;
@@ -121,26 +122,18 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
         return property.getDialogClass(getInterfaceValues(), getInterfaceClasses());
     }
 
+    @IdentityLazy
+    public PropertyObjectInstance getRemappedPropertyObject(Map<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
+        Map<P, PropertyObjectInterfaceInstance> remapping = new HashMap<P, PropertyObjectInterfaceInstance>();
+        remapping.putAll(mapping);
+        for (P propertyInterface : property.interfaces) {
 
-    private Map<Map<ObjectInstance, DataObject>, PropertyObjectInstance> remappedPropertyObjects = new HashMap();
-
-    public PropertyObjectInstance getRemappedPropertyObject(Map<ObjectInstance, DataObject> mapKeyValues) {
-        PropertyObjectInstance propertyInstance = remappedPropertyObjects.get(mapKeyValues);
-        if (propertyInstance == null) {
-            Map<P, PropertyObjectInterfaceInstance> remapping = new HashMap();
-            remapping.putAll(mapping);
-            for (P propertyInterface : property.interfaces) {
-
-                DataObject dataObject = mapKeyValues.get(remapping.get(propertyInterface));
-                if (dataObject != null) {
-                    remapping.put(propertyInterface, dataObject);
-                }
+            DataObject dataObject = mapKeyValues.get(remapping.get(propertyInterface));
+            if (dataObject != null) {
+                remapping.put(propertyInterface, dataObject);
             }
-
-            propertyInstance = new PropertyObjectInstance(property, remapping);
-            remappedPropertyObjects.put(mapKeyValues, propertyInstance);
         }
 
-        return propertyInstance;
+        return new PropertyObjectInstance(property, remapping);
     }
 }
