@@ -512,12 +512,10 @@ public abstract class GridTable extends ClientFormTable
     }
 
     public boolean editCellAt(int row, int column, EventObject editEvent) {
+        multyChange = editEvent instanceof KeyEvent && ((KeyEvent) editEvent).getKeyCode() == KeyEvent.VK_F12;
         if (super.editCellAt(row, column, editEvent)) {
             //нужно для редактирования нефокусных ячеек
             changeSelectionInternal(row, column, false, false);
-
-            multyChange = editEvent instanceof KeyEvent && ((KeyEvent) editEvent).getKeyCode() == KeyEvent.VK_F12;
-
             return true;
         }
         return false;
