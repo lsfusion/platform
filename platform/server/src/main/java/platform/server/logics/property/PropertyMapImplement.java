@@ -56,8 +56,8 @@ public class PropertyMapImplement<T extends PropertyInterface,P extends Property
     public PropertyValueImplement<T> mapValues(Map<P, DataObject> mapValues) {
         return new PropertyValueImplement<T>(property, BaseUtils.join(mapping, mapValues));        
     }
-    public List<ClientAction> execute(Map<P, DataObject> keys, DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteForm executeForm, Map<P, PropertyObjectInterfaceInstance> mapObjects, GroupObjectInstance groupObject, Map<ObjectInstance, DataObject> mapDataValues) throws SQLException {
-        return mapValues(keys).execute(session, value, modifier, executeForm, BaseUtils.nullJoin(mapping, mapObjects), groupObject, mapDataValues);
+    public List<ClientAction> execute(Map<P, DataObject> keys, DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteForm executeForm, Map<P, PropertyObjectInterfaceInstance> mapObjects, GroupObjectInstance groupObject) throws SQLException {
+        return mapValues(keys).execute(session, value, modifier, executeForm, BaseUtils.nullJoin(mapping, mapObjects), groupObject);
     }
 
     public void fill(Set<P> interfaces, Set<PropertyMapImplement<?, P>> properties) {

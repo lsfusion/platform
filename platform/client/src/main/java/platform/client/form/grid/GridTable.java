@@ -10,10 +10,7 @@ import platform.client.form.cell.ClientAbstractCellEditor;
 import platform.client.form.cell.ClientAbstractCellRenderer;
 import platform.client.form.sort.GridHeaderMouseListener;
 import platform.client.form.sort.GridHeaderRenderer;
-import platform.client.logics.ClientCell;
-import platform.client.logics.ClientGroupObject;
-import platform.client.logics.ClientGroupObjectValue;
-import platform.client.logics.ClientPropertyDraw;
+import platform.client.logics.*;
 import platform.interop.Order;
 import platform.interop.Scroll;
 
@@ -82,13 +79,13 @@ public abstract class GridTable extends ClientFormTable
 //        header.setDefaultRenderer(new GridHeaderRenderer.MultiLineHeaderRenderer(header.getDefaultRenderer()) {
 
             protected Boolean getSortDirection(int column) {
-                return GridTable.this.getSortDirection(getCell(column));
+                return GridTable.this.getSortDirection(column);
             }
         });
 
         header.addMouseListener(new GridHeaderMouseListener() {
             protected Boolean getSortDirection(int column) {
-                return GridTable.this.getSortDirection(getCell(column));
+                return GridTable.this.getSortDirection(column);
             }
 
             protected TableColumnModel getColumnModel() {
@@ -98,7 +95,7 @@ public abstract class GridTable extends ClientFormTable
             protected void changeOrder(int column, Order modiType) {
 
                 try {
-                    changeGridOrder(getCell(column), modiType);
+                    changeGridOrder(column, modiType);
                 } catch (IOException e) {
                     throw new RuntimeException("Ошибка изменении сортировки", e);
                 }
@@ -290,6 +287,7 @@ public abstract class GridTable extends ClientFormTable
 
         if (model.getColumnCount() != 0) {
             setRowHeight(rowHeight);
+            tableHeader.resizeAndRepaint();
             needToBeShown();
         } else {
             needToBeHidden();
@@ -622,11 +620,17 @@ public abstract class GridTable extends ClientFormTable
         return model.getColumnProperty(col);
     }
 
-    private final List<ClientCell> orders = new ArrayList<ClientCell>();
+    private final List<Integer> orders = new ArrayList<Integer>();
     private final List<Boolean> orderDirections = new ArrayList<Boolean>();
 
-    public void changeGridOrder(ClientCell property, Order modiType) throws IOException {
-        form.changeOrder(property, modiType);
+    public void changeGridOrder(int col, Order modiType) throws IOException {
+        ClientGroupObjectValue columnKey = model.getColumnKey(col);
+        ClientCell property = model.getColumnProperty(col);
+        if (columnKey == null) {
+            form.changeOrder(property, modiType);
+        } else {
+            form.changeOrder(property, modiType, columnKey);
+        }
 
         int ordNum;
         switch (modiType) {
@@ -634,27 +638,33 @@ public abstract class GridTable extends ClientFormTable
                 orders.clear();
                 orderDirections.clear();
 
-                orders.add(property);
+                orders.add(col);
                 orderDirections.add(true);
                 break;
             case ADD:
-                orders.add(property);
+                orders.add(col);
                 orderDirections.add(true);
                 break;
             case DIR:
-                ordNum = orders.indexOf(property);
+                ordNum = orders.indexOf(col);
                 orderDirections.set(ordNum, !orderDirections.get(ordNum));
                 break;
             case REMOVE:
-                ordNum = orders.indexOf(property);
+                ordNum = orders.indexOf(col);
                 orders.remove(ordNum);
                 orderDirections.remove(ordNum);
                 break;
         }
+
+        tableHeader.resizeAndRepaint();
     }
 
-    private Boolean getSortDirection(ClientCell property) {
-        int ordNum = orders.indexOf(property);
+    public void changeGridOrder(ClientCell property, Order modiType) throws IOException {
+        changeGridOrder(model.getMinPropertyIndex(property), modiType);
+    }
+
+    private Boolean getSortDirection(int column) {
+        int ordNum = orders.indexOf(column);
         return (ordNum != -1) ? orderDirections.get(ordNum) : null;
     }
 

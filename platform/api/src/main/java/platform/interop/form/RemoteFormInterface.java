@@ -60,6 +60,8 @@ public interface RemoteFormInterface extends PendingRemote {
 
     void changePropertyOrder(int propertyID, byte modiType) throws RemoteException;
 
+    void changePropertyOrderWithColumnKeys(int propertyID, byte modiType, byte[] columnKeys) throws RemoteException;
+
     void changeObjectOrder(int propertyID, byte modiType) throws RemoteException;
 
     void changeObjectClassOrder(int propertyID, byte modiType) throws RemoteException;

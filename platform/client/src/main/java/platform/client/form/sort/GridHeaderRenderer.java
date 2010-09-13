@@ -44,8 +44,11 @@ public abstract class GridHeaderRenderer implements TableCellRenderer {
             label.setVerticalAlignment(JLabel.TOP);
 
             Boolean sortDir = getSortDirection(column);
-            if (sortDir != null)
+            if (sortDir != null) {
                 label.setIcon(sortDir ? arrowUpIcon : arrowDownIcon);
+            } else {
+                label.setIcon(null);
+            }
 
             label.setFont(label.getFont().deriveFont(Font.PLAIN, 10));
         }

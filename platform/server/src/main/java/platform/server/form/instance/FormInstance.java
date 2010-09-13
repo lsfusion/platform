@@ -357,22 +357,22 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     public List<ClientAction> changeProperty(PropertyDrawInstance<?> property, Object value, RemoteForm executeForm, boolean all) throws SQLException {
-        return changeProperty(property.propertyObject, value, executeForm, all ? property.toDraw : null, null);
+        return changeProperty(property.propertyObject, value, executeForm, all ? property.toDraw : null);
     }
 
     public List<ClientAction> changeProperty(PropertyDrawInstance<?> property, Object value, RemoteForm executeForm, boolean all, Map<ObjectInstance, DataObject> mapDataValues) throws SQLException {
-        return changeProperty(property.propertyObject, value, executeForm, all ? property.toDraw : null, mapDataValues);
+        return changeProperty(property.propertyObject.getRemappedPropertyObject(mapDataValues), value, executeForm, all ? property.toDraw : null);
     }
 
     public List<ClientAction> changeProperty(PropertyObjectInstance<?> property, Object value, RemoteForm executeForm) throws SQLException {
-        return changeProperty(property, value, executeForm, null, null);
+        return changeProperty(property, value, executeForm, null);
     }
 
-    public List<ClientAction> changeProperty(PropertyObjectInstance<?> property, Object value, RemoteForm executeForm, GroupObjectInstance groupObject, Map<ObjectInstance, DataObject> mapDataValues) throws SQLException {
+    public List<ClientAction> changeProperty(PropertyObjectInstance<?> property, Object value, RemoteForm executeForm, GroupObjectInstance groupObject) throws SQLException {
         if (securityPolicy.property.change.checkPermission(property.property)) {
             dataChanged = true;
             // изменяем св-во
-            return property.execute(session, value, this, executeForm, groupObject, mapDataValues);
+            return property.execute(session, value, this, executeForm, groupObject);
         } else {
             return null;
         }
@@ -671,42 +671,55 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     private OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> executeKeys(GroupObjectInstance group, Map<OrderInstance, ObjectValue> orderSeeks, int readSize, boolean down) throws SQLException {
         // assertion что group.orders начинается с orderSeeks
         OrderedMap<OrderInstance, Boolean> orders;
-        if (orderSeeks != null && readSize == 1)
+        if (orderSeeks != null && readSize == 1) {
             orders = group.orders.moveStart(orderSeeks.keySet());
-        else
+        } else {
             orders = group.orders;
+        }
 
         assert !(orderSeeks != null && !orders.starts(orderSeeks.keySet()));
 
         Map<ObjectInstance, KeyExpr> mapKeys = group.getMapKeys();
 
         Map<OrderInstance, Expr> orderExprs = new HashMap<OrderInstance, Expr>();
-        for (Map.Entry<OrderInstance, Boolean> toOrder : orders.entrySet())
+        for (Map.Entry<OrderInstance, Boolean> toOrder : orders.entrySet()) {
             orderExprs.put(toOrder.getKey(), toOrder.getKey().getExpr(mapKeys, this));
+        }
 
         Set<KeyExpr> usedContext = null;
         if (readSize == 1 && orderSeeks != null && down) { // в частном случае если есть "висячие" ключи не в фильтре и нужна одна запись ставим равно вместо >
             usedContext = new HashSet<KeyExpr>();
             group.getFilterWhere(mapKeys, this).enumKeys(usedContext); // именно после ff'са
-            for (Expr expr : orderExprs.values())
-                if (!(expr instanceof KeyExpr))
+            for (Expr expr : orderExprs.values()) {
+                if (!(expr instanceof KeyExpr)) {
                     expr.enumKeys(usedContext);
+                }
+            }
         }
 
         Where orderWhere; // строим условия на упорядочивание
         if (orderSeeks != null) {
-            ObjectValue toSeek;
             orderWhere = Where.TRUE;
-            for (Map.Entry<OrderInstance, Boolean> toOrder : orders.reverse().entrySet())
-                if ((toSeek = orderSeeks.get(toOrder.getKey())) != null) {
+            for (Map.Entry<OrderInstance, Boolean> toOrder : orders.reverse().entrySet()) {
+                ObjectValue toSeek = orderSeeks.get(toOrder.getKey());
+                if (toSeek != null) {
                     Expr expr = orderExprs.get(toOrder.getKey());
-                    if (readSize == 1 && down && expr instanceof KeyExpr && toSeek instanceof DataObject && ((DataObject) toSeek).getType() instanceof DataClass && !usedContext.contains((KeyExpr) expr))
+                    if (readSize == 1
+                        && down
+                        && expr instanceof KeyExpr
+                        && toSeek instanceof DataObject
+                        && ((DataObject) toSeek).getType() instanceof DataClass
+                        && !usedContext.contains((KeyExpr) expr)) {
+
                         orderWhere = orderWhere.and(new EqualsWhere((KeyExpr) expr, ((DataObject) toSeek).getExpr()));
-                    else
+                    } else {
                         orderWhere = toSeek.order(expr, toOrder.getValue(), orderWhere);
+                    }
                 }
-        } else
+            }
+        } else {
             orderWhere = Where.FALSE;
+        }
 
         return new Query<ObjectInstance, OrderInstance>(mapKeys, orderExprs, group.getWhere(mapKeys, this).and(down ? orderWhere : orderWhere.not())).executeClasses(session, down ? orders : Query.reverseOrder(orders), readSize, BL.baseClass);
     }
@@ -826,13 +839,15 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                     updateKeys |= !group.orders.equals(newOrders);
                 } else { // значит setOrders не изменился
                     for (Entry<OrderInstance, Boolean> setOrder : group.getSetOrders().entrySet()) {
-                        boolean isInInterface = group.orders.containsKey(setOrder.getKey());
-                        if ((refresh || classUpdated(setOrder.getKey(), group)) && !(setOrder.getKey().isInInterface(group) == isInInterface)) {
+                        OrderInstance orderInstance = setOrder.getKey();
+                        
+                        boolean isInInterface = group.orders.containsKey(orderInstance);
+                        if ((refresh || classUpdated(orderInstance, group)) && !(orderInstance.isInInterface(group) == isInInterface)) {
                             isInInterface = !isInInterface;
                             updateKeys = true;
                         }
                         if (isInInterface)
-                            newOrders.put(setOrder.getKey(), setOrder.getValue());
+                            newOrders.put(orderInstance, setOrder.getValue());
                     }
                 }
                 group.orders = newOrders;
@@ -1065,7 +1080,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 for (PropertyDrawInstance drawProp : panelProperties)
                     result.panelProperties.put(drawProp, resultProps.get(drawProp));
             }
-            
+
             for (Entry<GroupObjectInstance, Collection<PropertyDrawInstance>> mapGroup : groupProperties.entrySet()) { // читаем "табличные" свойства
                 GroupObjectInstance group = mapGroup.getKey();
                 Collection<PropertyDrawInstance> propertyList = mapGroup.getValue();

@@ -3,10 +3,7 @@ package platform.client.form.grid;
 import platform.client.logics.*;
 
 import javax.swing.table.AbstractTableModel;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class GridTableModel extends AbstractTableModel {
     private Object[][] data = new Object[0][0];
@@ -54,17 +51,15 @@ public class GridTableModel extends AbstractTableModel {
             ClientGroupObjectValue rowKey = rowKeys.get(i);
 
             for (int j = 0; j < columnProps.length; ++j) {
-                ClientGroupObjectValue columnKey = columnKeys[j];
-                if (columnKey != null) {
-                    for (Map.Entry<ClientGroupObjectValue, Object> entry : values.get(columnProps[j]).entrySet()) {
-                        ClientGroupObjectValue key = entry.getKey();
-                        if (key.contains(rowKey) && key.contains(columnKey)) {
-                            data[i][j] = entry.getValue();
-                            break;
-                        }
-                    }
+                Map<ClientGroupObjectValue, Object> propValues = values.get(columnProps[j]);
+                if (propValues != null) {
+                    ClientGroupObjectValue columnKey = columnKeys[j];
+                    ClientGroupObjectValue key = columnKey == null
+                                                  ? rowKey
+                                                  : new ClientGroupObjectValue(rowKey, columnKey);
+                    data[i][j] = propValues.get(key);
                 } else {
-                    data[i][j] = values.get(columnProps[j]).get(rowKey);
+                    data[i][j] = null;
                 }
             }
         }

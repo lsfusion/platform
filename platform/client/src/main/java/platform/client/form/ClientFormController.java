@@ -510,6 +510,11 @@ public class ClientFormController {
         applyRemoteChanges();
     }
 
+    public void changeOrder(ClientCell property, Order modiType, ClientGroupObjectValue columnKey) throws IOException {
+        remoteForm.changePropertyOrderWithColumnKeys(property.getID(), modiType.serialize(), Serializer.serializeClientGroupObjectValue(columnKey));
+        applyRemoteChanges();
+    }
+
     public void changeOrder(ClientCell property, Order modiType) throws IOException {
 
         if (property instanceof ClientPropertyDraw) {

@@ -149,17 +149,19 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         return setOrders;
     }
     private OrderedMap<OrderInstance,Boolean> userOrders = new OrderedMap<OrderInstance, Boolean>();
-    public void changeOrder(OrderInstance property, Order modiType) {
-        if (modiType == Order.REPLACE)
-            userOrders = new OrderedMap<OrderInstance, Boolean>();
 
-        if (modiType == Order.REMOVE)
+    public void changeOrder(OrderInstance property, Order modiType) {
+        if (modiType == Order.REPLACE) {
+            userOrders = new OrderedMap<OrderInstance, Boolean>();
+        }
+
+        if (modiType == Order.REMOVE) {
             userOrders.remove(property);
-        else
-        if (modiType == Order.DIR)
-            userOrders.put(property,!userOrders.get(property));
-        else
-            userOrders.put(property,false);
+        } else if (modiType == Order.DIR) {
+            userOrders.put(property, !userOrders.get(property));
+        } else {
+            userOrders.put(property, false);
+        }
 
         setOrders = null;
         updated |= UPDATED_ORDER;

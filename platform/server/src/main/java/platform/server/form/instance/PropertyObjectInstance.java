@@ -21,6 +21,10 @@ import java.util.*;
 
 public class PropertyObjectInstance<P extends PropertyInterface> extends PropertyImplement<PropertyObjectInterfaceInstance,P> implements OrderInstance {
 
+    public PropertyObjectInstance(Property<P> property,Map<P,? extends PropertyObjectInterfaceInstance> mapping) {
+        super(property, (Map<P, PropertyObjectInterfaceInstance>) mapping);
+    }
+
     // получает Grid в котором рисоваться
     public GroupObjectInstance getApplyObject() {
         GroupObjectInstance applyObject=null;
@@ -64,10 +68,6 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
         return false;
     }
 
-    public PropertyObjectInstance(Property<P> property,Map<P,? extends PropertyObjectInterfaceInstance> mapping) {
-        super(property, (Map<P, PropertyObjectInterfaceInstance>) mapping);
-    }
-
     public boolean dataUpdated(Collection<Property> changedProps) {
         return changedProps.contains(property);
     }
@@ -85,7 +85,7 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
                 mapInterface.put(implement.getKey(),implement.getValue().getCurrentClass());
         return mapInterface;
     }
-    
+
     public Map<P, ConcreteClass> getInterfaceClasses() {
         return getInterfaceClasses(null, null);
     }
@@ -101,8 +101,8 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
         return property.getChangeImplement().mapValues(getInterfaceValues());
     }
 
-    public List<ClientAction> execute(DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteForm executeForm, GroupObjectInstance groupObject, Map<ObjectInstance, DataObject> mapDataValues) throws SQLException {
-        return property.execute(getInterfaceValues(), session, value, modifier, executeForm, mapping, groupObject, mapDataValues);
+    public List<ClientAction> execute(DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteForm executeForm, GroupObjectInstance groupObject) throws SQLException {
+        return property.execute(getInterfaceValues(), session, value, modifier, executeForm, mapping, groupObject);
     }
 
     public Expr getExpr(Map<ObjectInstance, ? extends Expr> classSource, Modifier<? extends Changes> modifier) throws SQLException {
@@ -119,5 +119,28 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
 
     public CustomClass getDialogClass() {
         return property.getDialogClass(getInterfaceValues(), getInterfaceClasses());
+    }
+
+
+    private Map<Map<ObjectInstance, DataObject>, PropertyObjectInstance> remappedPropertyObjects = new HashMap();
+
+    public PropertyObjectInstance getRemappedPropertyObject(Map<ObjectInstance, DataObject> mapKeyValues) {
+        PropertyObjectInstance propertyInstance = remappedPropertyObjects.get(mapKeyValues);
+        if (propertyInstance == null) {
+            Map<P, PropertyObjectInterfaceInstance> remapping = new HashMap();
+            remapping.putAll(mapping);
+            for (P propertyInterface : property.interfaces) {
+
+                DataObject dataObject = mapKeyValues.get(remapping.get(propertyInterface));
+                if (dataObject != null) {
+                    remapping.put(propertyInterface, dataObject);
+                }
+            }
+
+            propertyInstance = new PropertyObjectInstance(property, remapping);
+            remappedPropertyObjects.put(mapKeyValues, propertyInstance);
+        }
+
+        return propertyInstance;
     }
 }
