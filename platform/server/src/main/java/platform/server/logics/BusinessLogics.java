@@ -30,6 +30,7 @@ import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
+import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.OrderInstance;
@@ -563,6 +564,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             addObjectActions(this, objUser);
 
             addPropertyDraw(objUser, objPolicy, properties, baseGroup, true);
+
+            PropertyDrawEntity balanceDraw = getPropertyDraw(userPolicyOrder, objPolicy.groupTo);
+            PropertyDrawEntity loginDraw = getPropertyDraw(userLogin, objUser.groupTo);
+            balanceDraw.addColumnGroupObject(objUser.groupTo, loginDraw);
         }
     }
 
