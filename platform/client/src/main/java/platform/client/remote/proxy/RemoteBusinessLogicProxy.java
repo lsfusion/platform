@@ -69,6 +69,10 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         return result;
     }
 
+    public void endSession(String clientInfo) throws RemoteException {
+        target.endSession(clientInfo);
+    }
+
     public void ping() throws RemoteException {
     }
 }

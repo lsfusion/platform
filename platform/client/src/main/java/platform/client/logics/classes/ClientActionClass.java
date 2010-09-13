@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.text.Format;
 import java.text.ParseException;
 
-public class ClientActionClass extends ClientDataClass implements ClientType {
+public class ClientActionClass extends ClientDataClass {
 
     public ClientActionClass(DataInputStream inStream) throws IOException {
         super(inStream);
@@ -35,13 +35,25 @@ public class ClientActionClass extends ClientDataClass implements ClientType {
         return null;
     }
 
-    public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) { return new ActionPropertyRenderer(caption); }
+    public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) {
+        return new ActionPropertyRenderer(caption);
+    }
 
-    public CellView getPanelComponent(ClientCell key, ClientFormController form) { return new ButtonCellView(key, form); }
+    public CellView getPanelComponent(ClientCell key, ClientFormController form) {
+        return new ButtonCellView(key, form);
+    }
 
-    public PropertyEditorComponent getEditorComponent(ClientFormController form, ClientCell property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException { return new ActionPropertyEditor(); }
-    public PropertyEditorComponent getClassComponent(ClientFormController form, ClientCell property, Object value, Format format) throws IOException, ClassNotFoundException { return null; }
-    protected PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) { return null; }
+    public PropertyEditorComponent getEditorComponent(ClientFormController form, ClientCell property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
+        return new ActionPropertyEditor();
+    }
+
+    public PropertyEditorComponent getClassComponent(ClientFormController form, ClientCell property, Object value, Format format) throws IOException, ClassNotFoundException {
+        return null;
+    }
+
+    protected PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) {
+        return null;
+    }
 
     @Override
     public boolean shouldBeDrawn(ClientFormController form) {

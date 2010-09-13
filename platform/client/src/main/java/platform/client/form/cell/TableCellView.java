@@ -5,11 +5,7 @@ import platform.client.logics.ClientCell;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
-import java.lang.reflect.Field;
-import java.util.LinkedList;
+import java.awt.event.*;
 
 public class TableCellView extends JPanel implements CellView {
 
@@ -19,7 +15,9 @@ public class TableCellView extends JPanel implements CellView {
     private final ClientCell key;
     private final ClientFormController form;
 
-    int getID() { return key.getID() + key.getShiftID(); }
+    int getID() {
+        return key.getID() + key.getShiftID();
+    }
 
     @Override
     public int hashCode() {
@@ -41,7 +39,7 @@ public class TableCellView extends JPanel implements CellView {
         setLayout(new BoxLayout(this, (key.panelLabelAbove ? BoxLayout.Y_AXIS : BoxLayout.X_AXIS)));
 
         label = new JLabel();
-        label.setBorder(BorderFactory.createEmptyBorder(0,4,0,4));
+        label.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 4));
         label.setText(key.getFullCaption());
         label.setAlignmentX(Component.CENTER_ALIGNMENT);
         add(label);
@@ -64,12 +62,25 @@ public class TableCellView extends JPanel implements CellView {
                 return TableCellView.this.form;
             }
         };
+
+        table.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                if (e.isMetaDown() && e.getClickCount() >= 2) {
+                    rightClick();
+                }
+            }
+        });
+
         table.setBorder(BorderFactory.createLineBorder(Color.gray));
 
         table.keyChanged(key);
 
         add(table);
 
+    }
+
+    public void rightClick() {
+        startEditing(null);
     }
 
     @Override
@@ -108,7 +119,7 @@ public class TableCellView extends JPanel implements CellView {
 
             // устанавливаем следущий компонент фокуса на текущий
             if (tableEditor instanceof JComponent) {
-                ((JComponent)tableEditor).setNextFocusableComponent(KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner());
+                ((JComponent) tableEditor).setNextFocusableComponent(KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner());
             }
 
             tableEditor.requestFocusInWindow();

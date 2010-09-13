@@ -25,22 +25,30 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
     public int getMinimumWidth(FontMetrics fontMetrics) {
         return fontMetrics.stringWidth(getMinimumMask()) + 8;
     }
+
     public int getPreferredWidth(FontMetrics fontMetrics) {
         return fontMetrics.stringWidth(getPreferredMask()) + 8;
     }
+
     public int getMaximumWidth(FontMetrics fontMetrics) {
         return Integer.MAX_VALUE;
+    }
+
+    public int getPreferredHeight(FontMetrics fontMetrics){
+        return fontMetrics.getHeight() + 1;
     }
 
     public String getMinimumMask() {
         return getPreferredMask();
     }
-    
+
     abstract public String getPreferredMask();
 
     protected abstract PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design);
 
-    public CellView getPanelComponent(ClientCell key, ClientFormController form) { return new TableCellView(key, form); }
+    public CellView getPanelComponent(ClientCell key, ClientFormController form) {
+        return new TableCellView(key, form);
+    }
 
     public PropertyEditorComponent getEditorComponent(ClientFormController form, ClientCell property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
         return getComponent(value, format, design);

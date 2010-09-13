@@ -1,5 +1,6 @@
 package platform.client;
 
+import platform.base.OSUtils;
 import platform.client.exceptions.ClientExceptionManager;
 import platform.client.exceptions.ExceptionThreadGroup;
 import platform.client.form.SimplexLayout;
@@ -134,6 +135,14 @@ public class Main {
                             new WindowAdapter() {
                                 public void windowOpened(WindowEvent e) {
                                     closeSplashScreen();
+                                }
+
+                                public void windowClosing(WindowEvent e) {
+                                    try {
+                                        remoteLogics.endSession(OSUtils.getLocalHostName() + " " + computerId);
+                                    } catch (Exception ex){
+                                        throw new RuntimeException(ex);
+                                    }
                                 }
                             }
                     );

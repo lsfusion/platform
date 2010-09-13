@@ -26,7 +26,11 @@ public class ClientObjectType implements ClientType {
         return fontMetrics.stringWidth("9 999 999") + 8;
     }
 
-    public int getMaximumWidth(FontMetrics fontMetrics) { 
+    public int getPreferredHeight(FontMetrics fontMetrics) {
+        return fontMetrics.getHeight() + 1;
+    }
+
+    public int getMaximumWidth(FontMetrics fontMetrics) {
         return getPreferredWidth(fontMetrics);
     }
 
@@ -34,9 +38,13 @@ public class ClientObjectType implements ClientType {
         return NumberFormat.getInstance();
     }
 
-    public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) { return new IntegerPropertyRenderer(format, design); }
+    public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) {
+        return new IntegerPropertyRenderer(format, design);
+    }
 
-    public CellView getPanelComponent(ClientCell key, ClientFormController form) { return new TableCellView(key, form); }
+    public CellView getPanelComponent(ClientCell key, ClientFormController form) {
+        return new TableCellView(key, form);
+    }
 
     public PropertyEditorComponent getEditorComponent(ClientFormController form, ClientCell property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
         return new ObjectPropertyEditor(form.getComponent(), form.clientNavigator.remoteNavigator, property.createEditorForm(form.remoteForm));

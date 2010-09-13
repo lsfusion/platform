@@ -15,17 +15,24 @@ import java.text.ParseException;
 public interface ClientType {
 
     int getMinimumWidth(FontMetrics fontMetrics);
+
     int getPreferredWidth(FontMetrics fontMetrics);
+
     int getMaximumWidth(FontMetrics fontMetrics);
+
+    int getPreferredHeight(FontMetrics fontMetrics);
 
     Format getDefaultFormat();
 
     PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design);
+
     CellView getPanelComponent(ClientCell key, ClientFormController form);
 
     PropertyEditorComponent getEditorComponent(ClientFormController form, ClientCell property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException;
+
     PropertyEditorComponent getClassComponent(ClientFormController form, ClientCell property, Object value, Format format) throws IOException, ClassNotFoundException;
 
     Object parseString(String s) throws ParseException;
+
     boolean shouldBeDrawn(ClientFormController form);
 }

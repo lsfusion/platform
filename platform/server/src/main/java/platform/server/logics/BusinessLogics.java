@@ -223,7 +223,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public Integer getComputer(String strHostName) {
         try {
-
             Integer result;
             DataSession session = createSession();
 
@@ -246,11 +245,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
 
             session.close();
-
+            logger.warning("Begin user session " + strHostName + " " + result);
             return result;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void endSession(String clientInfo) {
+        logger.warning("End user session " + clientInfo);
     }
 
     public Integer getServerComputer() {

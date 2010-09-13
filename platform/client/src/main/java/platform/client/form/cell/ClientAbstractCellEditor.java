@@ -14,7 +14,7 @@ import java.rmi.RemoteException;
 import java.util.EventObject;
 
 public class ClientAbstractCellEditor extends AbstractCellEditor
-                         implements TableCellEditor {
+        implements TableCellEditor {
 
     private EventObject editEvent;
 
@@ -31,7 +31,6 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
     public boolean isCellEditable(EventObject e) {
 
         editEvent = e;
-
         if (e instanceof KeyEvent) {
 
             KeyEvent event = (KeyEvent) e;
@@ -78,14 +77,14 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
         EventObject editEvent = this.editEvent;
         this.editEvent = null;
 
-        CellTableInterface cellTable = (CellTableInterface)table;
+        CellTableInterface cellTable = (CellTableInterface) table;
 
         if (cellTable.getForm().isReadOnlyMode() && cellTable.isDataChanging()) return null;
 
         ClientCell property = cellTable.getCell(column);
 
         try {
-            if(cellTable.isDataChanging())
+            if (cellTable.isDataChanging())
                 currentComp = property.getEditorComponent(cellTable.getForm(), ivalue);
             else
                 currentComp = property.getClassComponent(cellTable.getForm(), ivalue);
