@@ -26,7 +26,7 @@ public class ClientHighlighter implements Serializable {
         CellTableInterface table = context.getTable();
         if (table instanceof GridTable) {
             GridTable gridTable = (GridTable)table;
-            if (gridTable.getValue(property, context.getRow()) == null) {
+            if (gridTable.getValue(property, context.getRow()) != null) {
                 if (!context.isHasFocus() && !context.isSelected()) {
                     comp.setBackground(color);
                 } else {

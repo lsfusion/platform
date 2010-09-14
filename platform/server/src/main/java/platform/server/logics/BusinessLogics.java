@@ -29,6 +29,7 @@ import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.instance.FormInstance;
@@ -60,6 +61,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.List;
 import java.util.logging.*;
 
 // @GenericImmutable нельзя так как Spring валится
@@ -2710,6 +2712,19 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
     public void addObjectValue(FormEntity form, ObjectEntity object) {
         form.addObjectValueDraw(getObjectValueProperty(object.baseClass), object);
+    }
+
+    protected void addSelectionProperty(FormEntity form, GroupObjectEntity group) {
+        ObjectEntity objects[] = new ObjectEntity[group.size()];
+        ValueClass params[] = new ValueClass[group.size()];
+        for (int i = 0; i < params.length; ++i) {
+            objects[i] = group.get(i);
+            params[i] = objects[i].baseClass;
+        }
+
+        LP selectionProperty = addSDProp("Выбор", LogicalClass.instance, params);
+
+        form.addSelectionProperty(selectionProperty, objects);
     }
 
     private Scheduler scheduler;

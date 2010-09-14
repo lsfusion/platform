@@ -8,23 +8,24 @@ import platform.base.OrderedMap;
 import platform.interop.action.ClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
+import platform.server.form.entity.filter.FilterEntity;
+import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.form.instance.FormInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;
+import platform.server.form.view.DefaultFormView;
+import platform.server.form.view.FormView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.group.AbstractGroup;
-import platform.server.form.view.DefaultFormView;
-import platform.server.form.view.FormView;
-import platform.server.form.entity.filter.FilterEntity;
 
 import javax.swing.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -221,7 +222,7 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
         return propertyDraw;
     }
 
-    protected PropertyObjectEntity addPropertyObject(LP property, PropertyObjectInterfaceEntity... objects) {
+    public PropertyObjectEntity addPropertyObject(LP property, PropertyObjectInterfaceEntity... objects) {
 
         return new PropertyObjectEntity(property,objects);
     }
@@ -231,7 +232,7 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
         return getPropertyDraw(lp).propertyObject;
     }
 
-    protected PropertyDrawEntity<?> getPropertyDraw(LP<?> lp) {
+    public PropertyDrawEntity<?> getPropertyDraw(LP<?> lp) {
         return getPropertyDraw(lp.property);
     }
 
@@ -387,5 +388,19 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
     }
     public PropertyDrawEntity getObjectValueDraw(ObjectEntity object) {
         return objectValues.get(object);
+    }
+
+    public List<LP> selectionProperties = new ArrayList<LP>();
+    public void addSelectionProperty(LP selectionProperty, ObjectEntity[] objects) {
+        addPropertyDraw(selectionProperty, objects);
+
+        RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(IDShift(1));
+        filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+                                                      new NotNullFilterEntity(addPropertyObject(selectionProperty, objects)),
+                                                      "Показывать только выбранное",
+                                                      KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.ALT_DOWN_MASK)), false);
+        addRegularFilterGroup(filterGroup);
+
+        selectionProperties.add(selectionProperty);
     }
 }

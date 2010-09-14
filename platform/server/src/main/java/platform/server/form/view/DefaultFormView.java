@@ -8,6 +8,7 @@ import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
+import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 
@@ -139,6 +140,15 @@ public class DefaultFormView extends FormView {
 
         for (Map.Entry<ObjectEntity,PropertyDrawEntity> objectDraw : formEntity.objectValues.entrySet()) {
             get(objectDraw.getValue()).caption = objectDraw.getKey().caption;
+        }
+
+        for (LP selectionProperty : formEntity.selectionProperties) {
+            PropertyDrawEntity selectionPropEntity = formEntity.getPropertyDraw(selectionProperty);
+            PropertyDrawView selectionPropView = get(selectionPropEntity);
+            selectionPropView.editKey = KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.ALT_DOWN_MASK);
+
+
+            get(selectionPropEntity.toDraw).grid.highlighter = new Highlighter(Color.yellow, selectionPropView);
         }
 
         for (RegularFilterGroupEntity filterGroup : formEntity.regularFilterGroups) {

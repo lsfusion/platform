@@ -209,6 +209,8 @@ public abstract class GridTable extends ClientFormTable
     }
 
     public void updateTable() {
+        commitEditing();
+
         model.update(columnProperties, rowKeys, columnKeys, columnDisplayValues, values);
 
         refreshColumnModel();
@@ -456,12 +458,18 @@ public abstract class GridTable extends ClientFormTable
         }
 
         if (ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0))) {
-            if (isEditing()) {
-                getCellEditor().stopCellEditing();
-            }
+            commitEditing();
         }
 
         return super.processKeyBinding(ks, ae, condition, pressed);
+    }
+
+    private void commitEditing() {
+        if (isEditing()) {
+            if (!getCellEditor().stopCellEditing()) {
+                getCellEditor().cancelCellEditing();
+            }
+        }
     }
 
     public ClientFormController getForm() {
