@@ -24,11 +24,9 @@ public class GridTableModel extends AbstractTableModel {
         for (ClientPropertyDraw property : columnProperties) {
             //noinspection SuspiciousMethodCalls
             if (mapColumnKeys.containsKey(property)) {
-                ClientPropertyDraw propertyDraw = (ClientPropertyDraw) property;
-
-                for (ClientGroupObjectValue key : mapColumnKeys.get(propertyDraw)) {
+                for (ClientGroupObjectValue key : mapColumnKeys.get(property)) {
                     columnKeysList.add(key);
-                    columnPropsList.add(propertyDraw);
+                    columnPropsList.add(property);
                 }
             } else {
                 columnPropsList.add(property);
@@ -134,7 +132,7 @@ public class GridTableModel extends AbstractTableModel {
     }
 
     public void setValueAt(Object value, int row, int col) {
-        if (columnProps[col].checkEquals() && BaseUtils.nullEquals(value, data[row][col])) return;
+        if (columnProps[col].checkEquals && BaseUtils.nullEquals(value, data[row][col])) return;
 
         data[row][col] = value;
         fireTableCellUpdated(row, col);
