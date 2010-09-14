@@ -137,6 +137,10 @@ public class DefaultFormView extends FormView {
             }
         }
 
+        for (Map.Entry<ObjectEntity,PropertyDrawEntity> objectDraw : formEntity.objectValues.entrySet()) {
+            get(objectDraw.getValue()).caption = objectDraw.getKey().caption;
+        }
+
         for (RegularFilterGroupEntity filterGroup : formEntity.regularFilterGroups) {
 
             Set<ObjectEntity> groupObjects = new HashSet<ObjectEntity>();

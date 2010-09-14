@@ -381,4 +381,11 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
         return  propertyDraw;
     }
 
+    public Map<ObjectEntity, PropertyDrawEntity> objectValues = new HashMap<ObjectEntity, PropertyDrawEntity>();
+    public void addObjectValueDraw(ObjectValueProperty property, ObjectEntity object) {
+        objectValues.put(object, addPropertyDraw(new LP<ClassPropertyInterface>(property), object));
+    }
+    public PropertyDrawEntity getObjectValueDraw(ObjectEntity object) {
+        return objectValues.get(object);
+    }
 }

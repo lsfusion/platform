@@ -22,22 +22,18 @@ import java.util.Map;
 import java.util.List;
 import java.sql.SQLException;
 
-public class ObjectValueProperty extends UserProperty {
+public class ObjectValueProperty extends ExecuteProperty {
 
     private final ValueClass valueClass;
 
     public ObjectValueProperty(String SID, ValueClass valueClass) {
-        super(SID, "Класс объекта", new ValueClass[]{valueClass});
+        super(SID, "Объект", new ValueClass[]{valueClass});
 
         this.valueClass = valueClass;
     }
 
     protected ValueClass getValueClass() {
         return valueClass;
-    }
-
-    public boolean isStored() {
-        return false;
     }
 
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {

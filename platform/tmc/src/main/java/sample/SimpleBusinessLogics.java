@@ -705,6 +705,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
             ObjectEntity objDoc = addSingleGroupObject(returnDocument, "Документ", properties, baseGroup);
             ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties, baseGroup, true);
             ObjectEntity objExtInc = addSingleGroupObject(extIncomeDocument, "Приход", properties, baseGroup, true);
+            addObjectValue(this, objExtInc);
 
             addPropertyDraw(objDoc, objArt, properties, baseGroup);
             addPropertyDraw(objDoc, objExtInc, objArt, properties, baseGroup);
@@ -721,7 +722,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
             DefaultFormView formView = new DefaultFormView(this);
             formView.defaultOrders.put(formView.get(getPropertyDraw(date,objExtInc)), false);
-            formView.defaultOrders.put(formView.get(getPropertyDraw(customObject, objExtInc)), false);
+            formView.defaultOrders.put(formView.get(getObjectValueDraw(objExtInc)), false);
             richDesign = formView;
         }
     }
@@ -915,6 +916,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
             super(parent, ID, caption);
 
             ObjectEntity objPrimDoc = addSingleGroupObject(priceOutDocument, "Документ", properties, baseGroup);
+            addObjectValue(this, objPrimDoc);
 
             addPropertyDraw(objPrimDoc, objArt, properties, baseGroup);
 
@@ -928,7 +930,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
             DefaultFormView formView = new DefaultFormView(this);
             formView.defaultOrders.put(formView.get(getPropertyDraw(date)), false);
-            formView.defaultOrders.put(formView.get(getPropertyDraw(customObject, objPrimDoc)), false);
+            formView.defaultOrders.put(formView.get(getObjectValueDraw(objPrimDoc)), false);
             richDesign = formView;
         }
     }

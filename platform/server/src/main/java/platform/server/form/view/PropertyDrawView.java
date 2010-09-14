@@ -5,6 +5,7 @@ import platform.server.data.type.TypeSerializer;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.view.report.ReportDrawField;
+import platform.server.logics.property.ExecuteProperty;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenConstraints;
 
@@ -104,6 +105,8 @@ public class PropertyDrawView extends ComponentView implements ClientSerialize {
         }
 
         outStream.writeBoolean(autoHide);
+
+        outStream.writeBoolean(!(entity.propertyObject.property instanceof ExecuteProperty)); // 
     }
 
     public Dimension minimumSize;

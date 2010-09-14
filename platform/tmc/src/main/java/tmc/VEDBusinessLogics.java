@@ -260,8 +260,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     protected void initProperties() {
 
-        LP notArticle = addJProp(baseGroup, "не тов", andNot1, is(baseClass), 1, is(article), 1); 
-
         LP removePercent = addSFProp("((prm1*(100-prm2))/100)", DoubleClass.instance, 2);
         LP percent = addSFProp("(prm1*prm2/100)", DoubleClass.instance, 2);
 
@@ -985,13 +983,15 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         private BarcodeFormEntity(NavigatorElement parent, int iID, String caption) {
             super(parent, iID, caption);
 
-            addPropertyDraw(reverseBarcode);
-
             objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", properties, baseGroup, true);
             objBarcode.groupTo.initClassView = ClassViewType.PANEL;
             objBarcode.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
 
             objBarcode.resetOnApply = true;
+
+            addObjectValue(this, objBarcode);
+
+            addPropertyDraw(reverseBarcode);
 
 //            addAutoAction(objBarcode, addPropertyObject(barcodeAction, objBarcode));
         }
@@ -1004,7 +1004,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             if (getDefaultFont() != null)
                 design.setFont(getDefaultFont());
 
-            PropertyDrawView barcodeView = design.get(getPropertyDraw(stringObject, objBarcode));
+            PropertyDrawView barcodeView = design.get(getObjectValueDraw(objBarcode));
             
             design.get(getPropertyDraw(reverseBarcode)).setContainer(design.getPanelContainer(design.get(objBarcode.groupTo)));
             design.addIntersection(barcodeView, design.get(getPropertyDraw(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
@@ -1645,6 +1645,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             super(parent, ID, documentClass, toAdd);
 
             objInner = addSingleGroupObject(commitClass, getReturnCaption(), properties, baseGroup, true);
+            addObjectValue(this, objInner);
 
             addPropertyDraw(objInner, objDoc, properties, baseGroup, true, documentGroup, true);
 
@@ -1818,7 +1819,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             DefaultFormView design = super.createDefaultRichDesign();
 
             design.getGroupObjectContainer(objInner.groupTo).title = "Список чеков";
-            design.get(getPropertyDraw(customObject, objInner)).caption = "Номер чека";
+            design.get(getObjectValueDraw(objInner)).caption = "Номер чека";
             design.getGroupObjectContainer(objArt.groupTo).title = "Товарные позиции";
 
             PropertyDrawEntity barcodeNavigator = getPropertyDraw(barcodeObjectName);

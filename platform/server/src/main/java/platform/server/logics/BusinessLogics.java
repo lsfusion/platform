@@ -421,11 +421,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP objectClass;
     public LP classSID;
 
-    public LP customObject;
-    public LP stringObject;
-    public LP dateObject;
-    public LP integerObject;
-
     public static int genSystemClassID(int id) {
         return 9999976 - id;  
     }
@@ -480,10 +475,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         between = addJProp("Между", and1, groeq2, 1, 2, groeq2, 3, 1);
         vtrue = addCProp("Истина", LogicalClass.instance, true);
         vzero = addCProp("0", DoubleClass.instance, 0);
-
-        customObject = addProperty(baseGroup, new LP<ClassPropertyInterface>(new ObjectValueProperty(genSID(), baseClass)));
-        stringObject = addProperty(baseGroup, new LP<ClassPropertyInterface>(new ObjectValueProperty(genSID(), StringClass.get(50))));
-        dateObject = addProperty(baseGroup, new LP<ClassPropertyInterface>(new ObjectValueProperty(genSID(), DateClass.instance)));
 
         date = addDProp(baseGroup, "date", "Дата", DateClass.instance, transaction);
 
@@ -571,30 +562,19 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    Map<ValueClass, ActionProperty> addObjectActions = new HashMap<ValueClass, ActionProperty>();
-
+    @IdentityLazy
     private ActionProperty getAddObjectAction(ValueClass cls) {
-        assert cls instanceof CustomClass;
-        if (!addObjectActions.containsKey(cls))
-            addObjectActions.put(cls, new AddObjectActionProperty(genSID(), (CustomClass) cls));
-        return addObjectActions.get(cls);
+        return new AddObjectActionProperty(genSID(), (CustomClass) cls);
     }
 
-    public Map<ValueClass, ActionProperty> deleteObjectActions = new HashMap<ValueClass, ActionProperty>();
-
+    @IdentityLazy
     private ActionProperty getDeleteObjectAction(ValueClass cls) {
-        if (!deleteObjectActions.containsKey(cls))
-            deleteObjectActions.put(cls, new DeleteObjectActionProperty(genSID(), (CustomClass) cls));
-        return deleteObjectActions.get(cls);
+        return new DeleteObjectActionProperty(genSID(), (CustomClass) cls);
     }
 
-    public Map<ValueClass, ActionProperty> importObjectActions = new HashMap<ValueClass, ActionProperty>();
-
+    @IdentityLazy
     private ActionProperty getImportObjectAction(ValueClass cls) {
-        assert cls instanceof CustomClass;
-        if (!importObjectActions.containsKey(cls))
-            importObjectActions.put(cls, new ImportFromExcelActionProperty(genSID(), (CustomClass) cls));
-        return importObjectActions.get(cls);
+        return new ImportFromExcelActionProperty(genSID(), (CustomClass) cls);
     }
 
     private static class ChangeUserActionProperty extends ActionProperty {
@@ -2722,6 +2702,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         form.addActionObjectDraw(getImportObjectAction(object.baseClass), object).setToDraw(object.groupTo).setForceViewType(ClassViewType.PANEL);
         form.addActionObjectDraw(getAddObjectAction(object.baseClass)).setToDraw(object.groupTo).setForceViewType(ClassViewType.PANEL);
         form.addActionObjectDraw(getDeleteObjectAction(object.baseClass), object);
+    }
+
+    @IdentityLazy
+    private ObjectValueProperty getObjectValueProperty(ValueClass cls) {
+         return new ObjectValueProperty(genSID(), cls);
+    }
+    public void addObjectValue(FormEntity form, ObjectEntity object) {
+        form.addObjectValueDraw(getObjectValueProperty(object.baseClass), object);
     }
 
     private Scheduler scheduler;

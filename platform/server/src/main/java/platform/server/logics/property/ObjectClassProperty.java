@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Collections;
 import java.sql.SQLException;
 
-public class ObjectClassProperty extends UserProperty {
+public class ObjectClassProperty extends ExecuteProperty {
 
     private final BaseClass baseClass;
 
@@ -38,16 +38,12 @@ public class ObjectClassProperty extends UserProperty {
         return baseClass.objectClass;
     }
 
-    public boolean isStored() {
-        return false;
-    }
-
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
         FormInstance remoteForm = executeForm.form;
         if(mapObjects.size()>0 && BaseUtils.singleValue(mapObjects) instanceof ObjectInstance)
             remoteForm.changeClass((CustomObjectInstance) BaseUtils.singleValue(mapObjects), BaseUtils.singleValue(keys), (Integer)value.getValue());
         else
-            remoteForm.session.changeClass(BaseUtils.singleValue(keys), baseClass.findConcreteClassID((Integer) value.getValue()));
+            session.changeClass(BaseUtils.singleValue(keys), baseClass.findConcreteClassID((Integer) value.getValue()));
     }
 
     protected Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {

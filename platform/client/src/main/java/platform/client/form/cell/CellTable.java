@@ -30,7 +30,7 @@ public abstract class CellTable extends SingleCellTable
 
     public void keyChanged(ClientPropertyDraw key) {
 
-        checkEquals = key.checkEquals();
+        checkEquals = key.checkEquals;
 
         setMinimumSize(key.getMinimumSize(this));
         setPreferredSize(key.getPreferredSize(this));

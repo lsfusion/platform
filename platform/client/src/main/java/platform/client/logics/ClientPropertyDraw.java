@@ -140,9 +140,7 @@ public class ClientPropertyDraw extends ClientComponent {
         return fullCaption;
     }
 
-    public boolean checkEquals() {
-        return true;
-    }
+    public boolean checkEquals;
 
     private int ID = 0;
     private String sID;
@@ -209,6 +207,8 @@ public class ClientPropertyDraw extends ClientComponent {
         }
 
         autoHide = inStream.readBoolean();
+
+        checkEquals = inStream.readBoolean();
     }
 
     private ClientGroupObject getClientGroupObject(Collection<ClientGroupObject> groups, int groupID) {

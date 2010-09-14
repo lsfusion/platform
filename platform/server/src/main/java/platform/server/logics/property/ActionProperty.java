@@ -18,13 +18,9 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-public abstract class ActionProperty extends UserProperty {
+public abstract class ActionProperty extends ExecuteProperty {
 
     private String name;
-
-    public boolean isStored() {
-        return false;
-    }
 
     public ActionProperty(String sID, String caption, ValueClass[] classes) {
         this("", sID, caption, classes);
