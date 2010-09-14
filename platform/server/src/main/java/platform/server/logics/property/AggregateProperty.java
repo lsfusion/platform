@@ -92,6 +92,8 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
         writeQuery.and(mapTable.table.joinAnd(writeQuery.mapKeys).getWhere().or(recalculateExpr.getWhere()));
 
         session.modifyRecords(new ModifyQuery(mapTable.table,writeQuery));
+        stored = true;
+        recalculate = null;
     }
 
     int getCoeff(PropertyMapImplement<?, T> implement) { return 0; }
