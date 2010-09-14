@@ -295,6 +295,12 @@ public class DefaultJasperDesign {
 
             JRDesignStyle groupCellStyle = addGroupCellStyle(drawGroups.indexOf(group), drawGroups.size());
 
+            for (ObjectView view : group) {
+                ReportDrawField objField = new ReportDrawField(view.entity.getSID(), "");
+                view.entity.baseClass.getType().fillReportDrawField(objField);
+                addDesignField(objField);
+            }
+
             for(ReportDrawField reportField : drawFields) {
 
                 // закидываем сначала Field
