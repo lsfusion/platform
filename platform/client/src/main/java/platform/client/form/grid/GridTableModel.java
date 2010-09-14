@@ -1,5 +1,6 @@
 package platform.client.form.grid;
 
+import platform.base.BaseUtils;
 import platform.client.logics.*;
 
 import javax.swing.table.AbstractTableModel;
@@ -20,17 +21,17 @@ public class GridTableModel extends AbstractTableModel {
         List<ClientPropertyDraw> columnPropsList = new ArrayList<ClientPropertyDraw>();
         List<ClientGroupObjectValue> columnKeysList = new ArrayList<ClientGroupObjectValue>();
 
-        for (ClientPropertyDraw cell : columnProperties) {
+        for (ClientPropertyDraw property : columnProperties) {
             //noinspection SuspiciousMethodCalls
-            if (mapColumnKeys.containsKey(cell)) {
-                ClientPropertyDraw propertyDraw = (ClientPropertyDraw) cell;
+            if (mapColumnKeys.containsKey(property)) {
+                ClientPropertyDraw propertyDraw = (ClientPropertyDraw) property;
 
                 for (ClientGroupObjectValue key : mapColumnKeys.get(propertyDraw)) {
                     columnKeysList.add(key);
                     columnPropsList.add(propertyDraw);
                 }
             } else {
-                columnPropsList.add(cell);
+                columnPropsList.add(property);
                 columnKeysList.add(null);
             }
         }
@@ -66,13 +67,12 @@ public class GridTableModel extends AbstractTableModel {
 
         //заполняем имена колонок
         for (int i = 0; i < columnNames.length; ++i) {
-            ClientPropertyDraw cell = columnProps[i];
+            ClientPropertyDraw property = columnProps[i];
             ClientGroupObjectValue columnKey = columnKeys[i];
 
-            columnNames[i] = cell.getFullCaption();
+            columnNames[i] = property.getFullCaption();
 
-            if (cell instanceof ClientPropertyDraw && columnKey != null && !columnKey.isEmpty()) {
-                ClientPropertyDraw property = (ClientPropertyDraw) cell;
+            if (columnKey != null && !columnKey.isEmpty()) {
                 String paramCaption = "";
                 Iterator<Map.Entry<ClientObject, Object>> columnKeysIt = columnKey.entrySet().iterator();
                 for (int j = 0; j < property.columnGroupObjects.length; ++j) {
@@ -134,6 +134,8 @@ public class GridTableModel extends AbstractTableModel {
     }
 
     public void setValueAt(Object value, int row, int col) {
+        if (columnProps[col].checkEquals() && BaseUtils.nullEquals(value, data[row][col])) return;
+
         data[row][col] = value;
         fireTableCellUpdated(row, col);
     }
