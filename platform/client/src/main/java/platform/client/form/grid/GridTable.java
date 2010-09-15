@@ -317,8 +317,6 @@ public abstract class GridTable extends ClientFormTable
         } else {
             getSelectionModel().setLeadSelectionIndex(rowNumber);
         }
-
-        scrollRectToVisible(getCellRect(rowNumber, (colSel == -1) ? 0 : colSel, true));
     }
 
     private int newCurrentObjectIndex = -1;
@@ -381,10 +379,7 @@ public abstract class GridTable extends ClientFormTable
         oldCurrentObjectIndex = getSelectionModel().getLeadSelectionIndex();
         newCurrentObjectIndex = rowKeys.indexOf(value);
 
-        if (newCurrentObjectIndex != -1 && newCurrentObjectIndex != oldCurrentObjectIndex) {
-            //Выставляем именно первую активную колонку, иначе фокус на таблице - вообще нереально увидеть
-            selectRow(newCurrentObjectIndex);
-        }
+        adjustSelection();
     }
 
     protected abstract void needToBeShown();

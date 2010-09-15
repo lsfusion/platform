@@ -1072,16 +1072,16 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 GroupObjectInstance group = mapGroup.getKey();
 
                 //группируем свойства по набору групп в колонках, чтобы читать одним запросом
-                Map<List<GroupObjectInstance>, Collection<PropertyDrawInstance>> propertyMap =
-                        BaseUtils.group(new BaseUtils.Group<List<GroupObjectInstance>, PropertyDrawInstance>() {
+                Map<Set<GroupObjectInstance>, Collection<PropertyDrawInstance>> propertyMap =
+                        BaseUtils.group(new BaseUtils.Group<Set<GroupObjectInstance>, PropertyDrawInstance>() {
                             @Override
-                            public List<GroupObjectInstance> group(PropertyDrawInstance key) {
-                                return Arrays.asList(key.columnGroupObjects);
+                            public Set<GroupObjectInstance> group(PropertyDrawInstance key) {
+                                return new HashSet(Arrays.asList(key.columnGroupObjects));
                             }
                         }, mapGroup.getValue());
 
-                for (Entry<List<GroupObjectInstance>, Collection<PropertyDrawInstance>> entry : propertyMap.entrySet()) {
-                    List<GroupObjectInstance> columnGroupObjects = entry.getKey();
+                for (Entry<Set<GroupObjectInstance>, Collection<PropertyDrawInstance>> entry : propertyMap.entrySet()) {
+                    Set<GroupObjectInstance> columnGroupObjects = entry.getKey();
                     Collection<PropertyDrawInstance> propertyList = entry.getValue();
 
                     Map<ObjectInstance, KeyExpr> groupMapKeys = new HashMap<ObjectInstance, KeyExpr>();
