@@ -570,6 +570,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             addObjectActions(this, objUser);
 
             addPropertyDraw(objUser, objPolicy, properties, baseGroup, true);
+            addSelectionProperty(this, objUser.groupTo);
 
             PropertyDrawEntity balanceDraw = getPropertyDraw(userPolicyOrder, objPolicy.groupTo);
             PropertyDrawEntity loginDraw = getPropertyDraw(userLogin, objUser.groupTo);
@@ -2724,7 +2725,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         LP selectionProperty = addSDProp("Выбор", LogicalClass.instance, params);
 
-        form.addSelectionProperty(selectionProperty, group, objects);
+        form.addSelectionLP(selectionProperty, group, objects);
     }
 
     private Scheduler scheduler;

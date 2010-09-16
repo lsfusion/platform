@@ -375,12 +375,12 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
     }
 
     public List<LP> selectionProperties = new ArrayList<LP>();
-    public void addSelectionProperty(LP selectionProperty, GroupObjectEntity group, ObjectEntity[] objects) {
-        addPropertyDraw(selectionProperty, group, objects);
+    public void addSelectionLP(LP selectionProperty, GroupObjectEntity group, ObjectEntity[] objects) {
+        PropertyDrawEntity propertyDraw = addPropertyDraw(selectionProperty, group, objects);
 
         RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(IDShift(1));
         filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
-                                                      new NotNullFilterEntity(addPropertyObject(selectionProperty, objects)),
+                                                      new NotNullFilterEntity(propertyDraw.propertyObject),
                                                       "Показывать только выбранное",
                                                       KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.ALT_DOWN_MASK)), false);
         addRegularFilterGroup(filterGroup);
