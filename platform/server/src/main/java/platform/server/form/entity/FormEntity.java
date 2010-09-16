@@ -391,8 +391,8 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
     }
 
     public List<LP> selectionProperties = new ArrayList<LP>();
-    public void addSelectionProperty(LP selectionProperty, ObjectEntity[] objects) {
-        addPropertyDraw(selectionProperty, objects);
+    public void addSelectionProperty(LP selectionProperty, GroupObjectEntity group, ObjectEntity[] objects) {
+        addPropertyDraw(selectionProperty, group, objects);
 
         RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(IDShift(1));
         filterGroup.addFilter(new RegularFilterEntity(IDShift(1),

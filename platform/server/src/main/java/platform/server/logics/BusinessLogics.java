@@ -498,7 +498,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         userFirstName = addDProp(baseGroup, "userFirstName", "Имя", StringClass.get(30), customUser);
         userLastName = addDProp(baseGroup, "userLastName", "Фамилия", StringClass.get(30), customUser);
 
-        name = addCUProp(baseGroup, "Имя", addDProp("name", "Имя", StringClass.get(50), baseClass.named),
+        name = addCUProp(baseGroup, "Имя", addDProp("name", "Имя", StringClass.get(60), baseClass.named),
                 addJProp(string2, userFirstName, 1, userLastName, 1));
 
         nameToPolicy = addCGProp(null, "nameToPolicy", "Политика", object(policy), name, name, 1);
@@ -2724,7 +2724,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         LP selectionProperty = addSDProp("Выбор", LogicalClass.instance, params);
 
-        form.addSelectionProperty(selectionProperty, objects);
+        form.addSelectionProperty(selectionProperty, group, objects);
     }
 
     private Scheduler scheduler;
