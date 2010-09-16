@@ -4,7 +4,6 @@ import net.sf.jasperreports.engine.JRException;
 import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.core.io.FileSystemResource;
 import platform.base.*;
-import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.action.ClientAction;
@@ -420,11 +419,18 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP hostname;
     public LP onlyNotZero;
 
+    public LP delete;
+
     public LP objectClass;
     public LP classSID;
 
+    public LP customID;
+    public LP stringID;
+    public LP integerID;
+    public LP dateID;
+
     public static int genSystemClassID(int id) {
-        return 9999976 - id;  
+        return 9999976 - id;
     }
 
     void initBase() {
@@ -478,6 +484,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         vtrue = addCProp("Истина", LogicalClass.instance, true);
         vzero = addCProp("0", DoubleClass.instance, 0);
 
+        delete = addProperty(null, new LP<ClassPropertyInterface>(new DeleteObjectActionProperty(genSID(), baseClass)));
+
         date = addDProp(baseGroup, "date", "Дата", DateClass.instance, transaction);
 
         transactionLater = addSUProp("Транзакция позже", Union.OVERRIDE, addJProp("Дата позже", greater2, date, 1, date, 2),
@@ -517,7 +525,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         classSID = addDProp(baseGroup, "classSID", "Стат. код", IntegerClass.instance, baseClass.objectClass);
         objectClass = addProperty(null, new LP<ClassPropertyInterface>(new ObjectClassProperty(genSID(), baseClass)));
         addJProp(baseGroup, "Класс объекта", name, objectClass, 1);
-        
+
+        customID = addProperty(baseGroup, new LP<ClassPropertyInterface>(new ObjectValueProperty(genSID(), baseClass)));
+        stringID = addProperty(baseGroup, new LP<ClassPropertyInterface>(new ObjectValueProperty(genSID(), StringClass.get(100))));
+        integerID = addProperty(baseGroup, new LP<ClassPropertyInterface>(new ObjectValueProperty(genSID(), IntegerClass.instance)));
+        dateID = addProperty(baseGroup, new LP<ClassPropertyInterface>(new ObjectValueProperty(genSID(), DateClass.instance)));
+
         // заполним сессии
         LP sessionUser = addDProp("sessionUser", "Пользователь сессии", user, session);
         sessionUser.setDerivedChange(currentUser, true, is(session), 1);
@@ -567,11 +580,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     @IdentityLazy
     private ActionProperty getAddObjectAction(ValueClass cls) {
         return new AddObjectActionProperty(genSID(), (CustomClass) cls);
-    }
-
-    @IdentityLazy
-    private ActionProperty getDeleteObjectAction(ValueClass cls) {
-        return new DeleteObjectActionProperty(genSID(), (CustomClass) cls);
     }
 
     @IdentityLazy
@@ -666,9 +674,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         synchronizeDB();
 
         fillIDs();
-        
+
         initExternalScreens();
-        
+
         logger.info("Initializing navigators...");
 
         baseElement.add(baseClass.getBaseClassForm(this));
@@ -935,13 +943,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         Set<CustomClass> allClasses = new HashSet<CustomClass>();
         baseClass.fillChilds(allClasses);
 
-        // baseClass'у и baseClass.objectClass'у нужны ID сразу потому как учавствуют в addObject 
+        // baseClass'у и baseClass.objectClass'у нужны ID сразу потому как учавствуют в addObject
         baseClass.ID = 0;
         baseClass.named.ID = 1;
         baseClass.objectClass.ID = baseClass.objectClass.sID;
 
         session.startTransaction();
-        
+
         CustomClass usedClass;
         for (CustomClass customClass : allClasses)
             if (customClass instanceof ConcreteCustomClass) {
@@ -979,7 +987,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
 
         session.apply(this);
-        
+
         int free = 0;
         for (CustomClass customClass : allClasses)
             if (customClass instanceof AbstractCustomClass) {
@@ -2701,17 +2709,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public void addObjectActions(FormEntity form, ObjectEntity object) {
-        form.addActionObjectDraw(getImportObjectAction(object.baseClass), object).setToDraw(object.groupTo).setForceViewType(ClassViewType.PANEL);
-        form.addActionObjectDraw(getAddObjectAction(object.baseClass)).setToDraw(object.groupTo).setForceViewType(ClassViewType.PANEL);
-        form.addActionObjectDraw(getDeleteObjectAction(object.baseClass), object);
-    }
-
-    @IdentityLazy
-    private ObjectValueProperty getObjectValueProperty(ValueClass cls) {
-         return new ObjectValueProperty(genSID(), cls);
-    }
-    public void addObjectValue(FormEntity form, ObjectEntity object) {
-        form.addObjectValueDraw(getObjectValueProperty(object.baseClass), object);
+        form.addPropertyDraw(new LP<ClassPropertyInterface>(getImportObjectAction(object.baseClass))).setToDraw(object.groupTo);
+        form.addPropertyDraw(new LP<ClassPropertyInterface>(getAddObjectAction(object.baseClass))).setToDraw(object.groupTo);
+        form.addPropertyDraw(delete, object);
     }
 
     protected void addSelectionProperty(FormEntity form, GroupObjectEntity group) {

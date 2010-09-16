@@ -189,6 +189,7 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
     <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(GroupObjectEntity groupObject, PropertyObjectEntity<P> propertyImplement) {
 
         PropertyDrawEntity<P> propertyDraw = new PropertyDrawEntity<P>(IDShift(1), propertyImplement, (groupObject == null) ? getApplyObject(propertyImplement.getObjectInstances()) : groupObject);
+        propertyImplement.property.proceedDefaultDraw(propertyDraw);
 
         if (propertyImplement.property.sID != null) {
 
@@ -371,23 +372,6 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
 
     public String checkClientApply(Object result) {
         return null;
-    }
-
-    public List<PropertyDrawEntity> actionObjectDraws = new ArrayList<PropertyDrawEntity>();
-    public PropertyDrawEntity addActionObjectDraw(ActionProperty property, ObjectEntity... objects) {
-        PropertyDrawEntity propertyDraw = addPropertyDraw(new LP<ClassPropertyInterface>(property), objects);
-        propertyDraw.shouldBeLast = true;
-        actionObjectDraws.add( propertyDraw);
-
-        return  propertyDraw;
-    }
-
-    public Map<ObjectEntity, PropertyDrawEntity> objectValues = new HashMap<ObjectEntity, PropertyDrawEntity>();
-    public void addObjectValueDraw(ObjectValueProperty property, ObjectEntity object) {
-        objectValues.put(object, addPropertyDraw(new LP<ClassPropertyInterface>(property), object));
-    }
-    public PropertyDrawEntity getObjectValueDraw(ObjectEntity object) {
-        return objectValues.get(object);
     }
 
     public List<LP> selectionProperties = new ArrayList<LP>();

@@ -225,17 +225,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
     public void serializePropertyEditorType(DataOutputStream outStream, PropertyDrawInstance<?> propertyDraw) throws SQLException, IOException {
 
-        PropertyValueImplement<?> change = propertyDraw.propertyObject.getChangeProperty();
-        if (securityPolicy.property.change.checkPermission(change.property) && change.canBeChanged(this)) {
+        PropertyObjectInstance<?> change = propertyDraw.propertyObject.getChangeInstance();
+        if (securityPolicy.property.change.checkPermission(change.property) && change.getValueImplement().canBeChanged(this)) {
             outStream.writeBoolean(false);
-            Type type = change.property.getType();
-            if(change.property instanceof ObjectClassProperty) {
-                PropertyObjectInterfaceInstance object = BaseUtils.singleValue(propertyDraw.propertyObject.mapping);
-                if(object instanceof ObjectInstance)
-                    type = ((CustomObjectInstance) object).baseClass.getActionClass(((CustomObjectInstance) object).currentClass);
-            }
-
-            TypeSerializer.serialize(outStream, type);
+            TypeSerializer.serialize(outStream, change.getEditorType());
         } else
             outStream.writeBoolean(true);
     }
@@ -1009,6 +1002,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 boolean inGridInterface, inInterface;
 
                 Byte forceViewType = drawProperty.getForceViewType();
+
+                if(forceViewType != null && forceViewType == ClassViewType.HIDE) continue;
+
                 if (forceViewType != null && forceViewType == ClassViewType.PANEL) {
                     inGridInterface = false;
                 } else if (forceViewType != null && forceViewType == ClassViewType.GRID) {
@@ -1253,8 +1249,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     public DialogInstance<T> createEditorPropertyDialog(int viewID) throws SQLException {
-        PropertyValueImplement<?> change = getPropertyDraw(viewID).propertyObject.getChangeProperty();
-        DataChangeFormEntity<T> formEntity = new DataChangeFormEntity<T>(BL, change.getDialogClass(session), change);
+        PropertyObjectInstance<?> change = getPropertyDraw(viewID).propertyObject.getChangeInstance();
+        DataChangeFormEntity<T> formEntity = new DataChangeFormEntity<T>(BL, change.getDialogClass(), change.getValueImplement());
         return new DialogInstance<T>(formEntity, BL, session, securityPolicy, focusListener, classListener, formEntity.object, instanceFactory.computer, change.read(session, this));
     }
 
@@ -1285,7 +1281,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 for (PropertyObjectEntity autoAction : autoActions.getValue()) {
                     PropertyObjectInstance action = instanceFactory.getInstance(autoAction);
                     if (action.isInInterface(null)) {
-                        List<ClientAction> change = changeProperty(action, action.getChangeProperty().read(session, this) == null ? true : null, form);
+                        List<ClientAction> change = changeProperty(action, action.getChangeInstance().read(session, this) == null ? true : null, form);
                         if (change != null) {
                             actions.addAll(change);
                         }

@@ -1,13 +1,13 @@
 package platform.server.logics.property;
 
-import platform.server.classes.BaseClass;
 import platform.server.classes.ValueClass;
+import platform.server.classes.CustomClass;
+import platform.server.classes.ConcreteClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.session.DataSession;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
-import platform.server.session.SessionChanges;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.FormInstance;
@@ -15,6 +15,7 @@ import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.CustomObjectInstance;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
+import platform.server.data.type.Type;
 import platform.interop.action.ClientAction;
 import platform.base.BaseUtils;
 
@@ -24,16 +25,24 @@ import java.sql.SQLException;
 
 public class ObjectValueProperty extends ExecuteProperty {
 
-    private final ValueClass valueClass;
+    private final ValueClass typeClass;
 
     public ObjectValueProperty(String SID, ValueClass valueClass) {
         super(SID, "Объект", new ValueClass[]{valueClass});
 
-        this.valueClass = valueClass;
+        this.typeClass = valueClass;
     }
 
     protected ValueClass getValueClass() {
-        return valueClass;
+        return typeClass;
+    }
+
+    @Override
+    public CustomClass getDialogClass(Map<ClassPropertyInterface, DataObject> mapValues, Map<ClassPropertyInterface, ConcreteClass> mapClasses, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) {
+        if(mapObjects.size()>0 && BaseUtils.singleValue(mapObjects) instanceof ObjectInstance)
+            return ((CustomObjectInstance)BaseUtils.singleValue(mapObjects)).getBaseClass();
+        else
+            return super.getDialogClass(mapValues, mapClasses, mapObjects);
     }
 
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {

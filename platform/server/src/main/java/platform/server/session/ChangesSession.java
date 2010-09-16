@@ -28,7 +28,6 @@ public interface ChangesSession {
     public void changeProperty(DataProperty property, Map<ClassPropertyInterface, DataObject> keys, ObjectValue newValue) throws SQLException;
 
     public ConcreteClass getCurrentClass(DataObject value);
-    public <T> Map<T,ConcreteClass> getCurrentClasses(Map<T,DataObject> map);
 
     public DataObject getDataObject(Object value, Type type) throws SQLException;
     public ObjectValue getObjectValue(Object value, Type type) throws SQLException;

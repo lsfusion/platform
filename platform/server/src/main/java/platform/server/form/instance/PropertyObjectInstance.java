@@ -7,6 +7,7 @@ import platform.server.classes.CustomClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.type.Type;
+import platform.server.data.SQLSession;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyImplement;
@@ -98,9 +99,20 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
         return mapInterface;
     }
 
-    public PropertyValueImplement<?> getChangeProperty() {
-        return property.getChangeImplement().mapValues(getInterfaceValues());
+    public PropertyValueImplement<P> getValueImplement() {
+        return new PropertyValueImplement<P>(property, getInterfaceValues());
     }
+    public PropertyObjectInstance<?> getChangeInstance() {
+        return property.getChangeImplement().mapObjects(mapping);
+    }
+
+    public Type getEditorType() {
+        return property.getEditorType(mapping);
+    }
+
+    public Object read(SQLSession session, Modifier<? extends Changes> modifier) throws SQLException {
+        return property.read(session, getInterfaceValues(), modifier);
+    }    
 
     public List<ClientAction> execute(DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteForm executeForm, GroupObjectInstance groupObject) throws SQLException {
         return property.execute(getInterfaceValues(), session, value, modifier, executeForm, mapping, groupObject);
@@ -119,7 +131,7 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
     }
 
     public CustomClass getDialogClass() {
-        return property.getDialogClass(getInterfaceValues(), getInterfaceClasses());
+        return property.getDialogClass(getInterfaceValues(), getInterfaceClasses(), mapping);
     }
 
     @IdentityLazy

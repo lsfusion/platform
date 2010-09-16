@@ -30,10 +30,6 @@ public class PropertyValueImplement<P extends PropertyInterface> extends Propert
         super(property, mapping);
     }
 
-    public Object read(SQLSession session, Modifier<? extends Changes> modifier) throws SQLException {
-        return property.read(session, mapping, modifier);
-    }
-
     @Override
     public String toString() {
         return property.toString();
@@ -41,10 +37,6 @@ public class PropertyValueImplement<P extends PropertyInterface> extends Propert
 
     public int getID() {
         return property.ID;
-    }
-
-    public CustomClass getDialogClass(DataSession session) {
-        return property.getDialogClass(mapping, session.getCurrentClasses(mapping));
     }
 
     public PropertyChange<P> getPropertyChange(Expr expr, Modifier<? extends Changes> modifier, Map<P, PropertyObjectInterfaceInstance> mapObjects, GroupObjectInstance groupObject) throws SQLException {

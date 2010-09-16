@@ -1,6 +1,7 @@
 package platform.server.logics.property.actions;
 
 import platform.interop.action.ClientAction;
+import platform.interop.ClassViewType;
 import platform.server.classes.*;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
@@ -9,19 +10,24 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.form.instance.remote.RemoteForm;
+import platform.server.form.view.DefaultFormView;
+import platform.server.form.entity.PropertyDrawEntity;
+import platform.server.form.entity.PropertyObjectInterfaceEntity;
+import platform.base.BaseUtils;
 
+import javax.swing.*;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.awt.event.KeyEvent;
+import java.awt.event.InputEvent;
 
 public class AddObjectActionProperty extends ActionProperty {
-
-    public static final String NAME = "addAction";
 
     private CustomClass valueClass;
 
     public AddObjectActionProperty(String sID, CustomClass valueClass) {
-        super(NAME, sID, "Добавить (" + valueClass + ")", new ValueClass[] {}); // сам класс не передаем, поскольку это свойство "глобальное"
+        super(sID, "Добавить (" + valueClass + ")", new ValueClass[] {}); // сам класс не передаем, поскольку это свойство "глобальное"
 
         this.valueClass = valueClass;
     }
@@ -41,4 +47,17 @@ public class AddObjectActionProperty extends ActionProperty {
         else
             return super.getValueClass();
     }
+
+    @Override
+    public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity) {
+        super.proceedDefaultDraw(entity);
+        entity.shouldBeLast = true;
+        entity.forceViewType = ClassViewType.PANEL;
+    }
+    @Override
+    public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
+        super.proceedDefaultDesign(view, entity);
+        view.get(entity).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_L, InputEvent.ALT_DOWN_MASK);
+    }
+
 }

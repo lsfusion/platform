@@ -2,6 +2,7 @@ package platform.server.logics.property;
 
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
+import platform.server.data.type.Type;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
 import platform.server.session.SessionChanges;
@@ -16,8 +17,11 @@ import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.CustomObjectInstance;
+import platform.server.form.entity.PropertyDrawEntity;
+import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
+import platform.interop.ClassViewType;
 
 import java.util.Map;
 import java.util.List;
@@ -38,6 +42,15 @@ public class ObjectClassProperty extends ExecuteProperty {
         return baseClass.objectClass;
     }
 
+    @Override
+    public Type getEditorType(Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) {
+        if(mapObjects.size()>0 && BaseUtils.singleValue(mapObjects) instanceof ObjectInstance) {
+            CustomObjectInstance object = (CustomObjectInstance) BaseUtils.singleValue(mapObjects);
+            return object.baseClass.getActionClass(object.currentClass);
+        } else
+            return super.getEditorType(mapObjects);
+    }
+
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
         FormInstance remoteForm = executeForm.form;
         if(mapObjects.size()>0 && BaseUtils.singleValue(mapObjects) instanceof ObjectInstance)
@@ -52,5 +65,13 @@ public class ObjectClassProperty extends ExecuteProperty {
 
     protected <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier) {
         return modifier.newChanges().addChanges(new SessionChanges(modifier.getSession(), true));
+    }
+
+    @Override
+    public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity) {
+        super.proceedDefaultDraw(entity);
+        PropertyObjectInterfaceEntity mapObject = BaseUtils.singleValue(entity.propertyObject.mapping);
+        if(mapObject instanceof ObjectInstance && !((CustomObjectInstance)mapObject).getBaseClass().hasChildren())
+            entity.forceViewType = ClassViewType.HIDE;
     }
 }

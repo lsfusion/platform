@@ -31,6 +31,8 @@ import platform.server.logics.table.MapKeysTable;
 import platform.server.logics.table.TableFactory;
 import platform.server.session.*;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.form.view.DefaultFormView;
+import platform.server.form.entity.PropertyDrawEntity;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -199,7 +201,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     // получает базовый класс по сути нужен для определения класса фильтра
-    public CustomClass getDialogClass(Map<T, DataObject> mapValues, Map<T, ConcreteClass> mapClasses) {
+    public CustomClass getDialogClass(Map<T, DataObject> mapValues, Map<T, ConcreteClass> mapClasses, Map<T, PropertyObjectInterfaceInstance> mapObjects) {
         Map<T,Expr> mapExprs = new HashMap<T, Expr>();
         for(Map.Entry<T,DataObject> keyField : mapValues.entrySet())
             mapExprs.put(keyField.getKey(), new ValueExpr(keyField.getValue().object,mapClasses.get(keyField.getKey())));
@@ -208,6 +210,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public abstract Type getType();
+
+    public Type getEditorType(Map<T, PropertyObjectInterfaceInstance> mapObjects) {
+        return getType();
+    }
 
     @IdentityLazy
     public Type getInterfaceType(T propertyInterface) {
@@ -383,5 +389,12 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public List<ClientAction> execute(Map<T, DataObject> keys, DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteForm executeForm, Map<T, PropertyObjectInterfaceInstance> mapObjects, GroupObjectInstance groupObject) throws SQLException {
         return getChangeImplement().execute(keys, session, value, modifier, executeForm, mapObjects, groupObject);
+    }
+
+    // по умолчанию заполняет свойства
+    // assert что entity этого свойства
+    public void proceedDefaultDraw(PropertyDrawEntity<T> entity) {        
+    }
+    public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<T> entity) {
     }
 }

@@ -32,6 +32,7 @@ import platform.server.logics.DataObject;
 
 import java.io.*;
 import java.rmi.RemoteException;
+import java.rmi.server.Unreferenced;
 import java.sql.SQLException;
 import java.util.*;
 

@@ -124,29 +124,14 @@ public class DefaultFormView extends FormView {
 
             addComponent(groupObject, clientProperty, control.propertyObject.property.getParent());
             order.add(clientProperty);
-        }
 
-        // обработка хоткеев для экшенов
-        for (PropertyDrawEntity actionControl : formEntity.actionObjectDraws) {
-            ActionProperty prop = (ActionProperty) actionControl.propertyObject.property;
-            if (prop.getName().equals("addAction")) {
-                get(actionControl).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_L, InputEvent.ALT_DOWN_MASK);
-            } else if (prop.getName().equals("deleteAction")) {
-                get(actionControl).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.ALT_DOWN_MASK);
-            } else if (prop.getName().equals("importFromExcel")) {
-                get(actionControl).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.ALT_DOWN_MASK);
-            }
-        }
-
-        for (Map.Entry<ObjectEntity,PropertyDrawEntity> objectDraw : formEntity.objectValues.entrySet()) {
-            get(objectDraw.getValue()).caption = objectDraw.getKey().caption;
+            control.proceedDefaultDesign(this);
         }
 
         for (LP selectionProperty : formEntity.selectionProperties) {
             PropertyDrawEntity selectionPropEntity = formEntity.getPropertyDraw(selectionProperty);
             PropertyDrawView selectionPropView = get(selectionPropEntity);
             selectionPropView.editKey = KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.ALT_DOWN_MASK);
-
 
             get(selectionPropEntity.toDraw).grid.highlighter = new Highlighter(Color.yellow, selectionPropView);
         }

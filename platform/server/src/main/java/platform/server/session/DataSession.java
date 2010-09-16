@@ -291,13 +291,6 @@ public class DataSession extends SQLSession implements ChangesSession {
             return newClass;
     }                                   
 
-    public <T> Map<T, ConcreteClass> getCurrentClasses(Map<T, DataObject> map) {
-        Map<T, ConcreteClass> result = new HashMap<T, ConcreteClass>();
-        for(Map.Entry<T,DataObject> entry : map.entrySet())
-            result.put(entry.getKey(),getCurrentClass(entry.getValue()));
-        return result;
-    }
-
     public DataObject getDataObject(Object value, Type type) throws SQLException {
         return new DataObject(value,type.getDataClass(value, this, baseClass));
     }

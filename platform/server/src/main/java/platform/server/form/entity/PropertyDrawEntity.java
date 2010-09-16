@@ -4,6 +4,7 @@ import platform.base.Pair;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.Instantiable;
 import platform.server.form.instance.PropertyDrawInstance;
+import platform.server.form.view.DefaultFormView;
 import platform.server.logics.property.PropertyInterface;
 
 import java.util.ArrayList;
@@ -25,10 +26,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends CellEntity 
 
     public boolean shouldBeLast = false;
     public Byte forceViewType = null;
-
-    public void setForceViewType(Byte forceViewType) {
-        this.forceViewType = forceViewType;
-    }
 
     @Override
     public String toString() {
@@ -71,5 +68,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends CellEntity 
     public GroupObjectEntity[] getColumnGroupObjects() {
         convertColumnPairsToArrays();
         return columnGroupObjects;
+    }
+
+    public void proceedDefaultDesign(DefaultFormView defaultView) {
+        propertyObject.property.proceedDefaultDesign(defaultView, this);
     }
 }

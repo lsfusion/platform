@@ -989,8 +989,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             objBarcode.resetOnApply = true;
 
-            addObjectValue(this, objBarcode);
-
             addPropertyDraw(reverseBarcode);
 
 //            addAutoAction(objBarcode, addPropertyObject(barcodeAction, objBarcode));
@@ -1004,7 +1002,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             if (getDefaultFont() != null)
                 design.setFont(getDefaultFont());
 
-            PropertyDrawView barcodeView = design.get(getObjectValueDraw(objBarcode));
+            PropertyDrawView barcodeView = design.get(getPropertyDraw(stringID, objBarcode));
             
             design.get(getPropertyDraw(reverseBarcode)).setContainer(design.getPanelContainer(design.get(objBarcode.groupTo)));
             design.addIntersection(barcodeView, design.get(getPropertyDraw(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
@@ -1645,7 +1643,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             super(parent, ID, documentClass, toAdd);
 
             objInner = addSingleGroupObject(commitClass, getReturnCaption(), properties, baseGroup, true);
-            addObjectValue(this, objInner);
 
             addPropertyDraw(objInner, objDoc, properties, baseGroup, true, documentGroup, true);
 
@@ -1819,7 +1816,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             DefaultFormView design = super.createDefaultRichDesign();
 
             design.getGroupObjectContainer(objInner.groupTo).title = "Список чеков";
-            design.get(getObjectValueDraw(objInner)).caption = "Номер чека";
+            design.get(getPropertyDraw(customID, objInner)).caption = "Номер чека";
             design.getGroupObjectContainer(objArt.groupTo).title = "Товарные позиции";
 
             PropertyDrawEntity barcodeNavigator = getPropertyDraw(barcodeObjectName);

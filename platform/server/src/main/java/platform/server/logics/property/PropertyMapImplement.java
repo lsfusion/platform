@@ -9,6 +9,7 @@ import platform.server.data.where.WhereBuilder;
 import platform.server.form.instance.GroupObjectInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.form.instance.PropertyObjectInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.session.*;
@@ -52,6 +53,9 @@ public class PropertyMapImplement<T extends PropertyInterface,P extends Property
 
     public PropertyMapImplement<?,P> mapChangeImplement() {
         return property.getChangeImplement().map(mapping);
+    }
+    public PropertyObjectInstance<T> mapObjects(Map<P, PropertyObjectInterfaceInstance> mapObjects) {
+        return new PropertyObjectInstance<T>(property, BaseUtils.join(mapping, mapObjects));        
     }
     public PropertyValueImplement<T> mapValues(Map<P, DataObject> mapValues) {
         return new PropertyValueImplement<T>(property, BaseUtils.join(mapping, mapValues));        
