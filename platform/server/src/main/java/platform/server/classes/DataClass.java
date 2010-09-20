@@ -127,6 +127,7 @@ public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, AndCl
         if (type == Data.IMAGE) return ImageClass.instance;
         if (type == Data.WORD) return WordClass.instance;
         if (type == Data.EXCEL) return ExcelClass.instance;
+        if (type == Data.TEXT) return TextClass.instance;
 
         throw new IOException();
     }

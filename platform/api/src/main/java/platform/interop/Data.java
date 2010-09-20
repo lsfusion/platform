@@ -18,4 +18,5 @@ public class Data {
     public final static byte IMAGE = 13;
     public final static byte WORD = 14;
     public final static byte EXCEL = 15;
+    public final static byte TEXT = 16;
 }

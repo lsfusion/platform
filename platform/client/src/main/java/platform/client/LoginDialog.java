@@ -207,7 +207,7 @@ public class LoginDialog extends JDialog {
         result = defaultLoginInfo = new LoginInfo(serverInfo.getHostName(), String.valueOf(serverInfo.getPort()), loginField.getText(), new String(passwordField.getPassword()));
 
         storeServerData();
-        dispose();
+        setVisible(false);
     }
 
     private static final String configName = "login.dialog.cfg";
