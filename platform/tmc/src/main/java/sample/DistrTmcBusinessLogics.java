@@ -90,12 +90,12 @@ public class DistrTmcBusinessLogics extends BusinessLogics<DistrTmcBusinessLogic
         public InDocumentArticleFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDoc = addSingleGroupObject(inDocument, "Документ", properties,
-                                                                        baseGroup);
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties,
-                                                                        baseGroup, true);
+            ObjectEntity objDoc = addSingleGroupObject(inDocument, "Документ",
+                    baseGroup);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар",
+                    baseGroup, true);
 
-            addPropertyDraw(objDoc, objArt, properties, baseGroup);
+            addPropertyDraw(objDoc, objArt, baseGroup);
         }
     }
 
@@ -104,16 +104,16 @@ public class DistrTmcBusinessLogics extends BusinessLogics<DistrTmcBusinessLogic
         public OutDocumentArticleFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objOutDoc = addSingleGroupObject(outDocument, "Расх. документ", properties,
-                                                                        baseGroup);
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties,
-                                                                        baseGroup, true);
-            ObjectEntity objInDoc = addSingleGroupObject(inDocument, "Прих. документ", properties,
-                                                                        baseGroup);
+            ObjectEntity objOutDoc = addSingleGroupObject(outDocument, "Расх. документ",
+                    baseGroup);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар",
+                    baseGroup, true);
+            ObjectEntity objInDoc = addSingleGroupObject(inDocument, "Прих. документ",
+                    baseGroup);
 
-            addPropertyDraw(objOutDoc, objArt, properties, baseGroup);
-            addPropertyDraw(objArt, objInDoc, properties, baseGroup);
-            addPropertyDraw(objOutDoc, objArt, objInDoc, properties, baseGroup);
+            addPropertyDraw(objOutDoc, objArt, baseGroup);
+            addPropertyDraw(objArt, objInDoc, baseGroup);
+            addPropertyDraw(objOutDoc, objArt, objInDoc, baseGroup);
 
             addFixedFilter(new OrFilterEntity(
                     new CompareFilterEntity(getPropertyObject(remains), Compare.NOT_EQUALS, 0),
@@ -128,18 +128,18 @@ public class DistrTmcBusinessLogics extends BusinessLogics<DistrTmcBusinessLogic
         public SystemFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            GroupObjectEntity group = new GroupObjectEntity(IDShift(1));
+            GroupObjectEntity group = new GroupObjectEntity(genID());
 
-            ObjectEntity objDoc = new ObjectEntity(IDShift(1), document, "Документ");
-            ObjectEntity objArt = new ObjectEntity(IDShift(1), article, "Товар");
+            ObjectEntity objDoc = new ObjectEntity(genID(), document, "Документ");
+            ObjectEntity objArt = new ObjectEntity(genID(), article, "Товар");
 
             group.add(objDoc);
             group.add(objArt);
             addGroup(group);
 
-            addPropertyDraw(objDoc, properties, baseGroup);
-            addPropertyDraw(objArt, properties, baseGroup);
-            addPropertyDraw(objDoc, objArt, properties, baseGroup);
+            addPropertyDraw(objDoc, baseGroup);
+            addPropertyDraw(objArt, baseGroup);
+            addPropertyDraw(objDoc, objArt, baseGroup);
         }
     }
 

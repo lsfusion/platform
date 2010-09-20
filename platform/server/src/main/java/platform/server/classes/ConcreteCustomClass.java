@@ -8,6 +8,7 @@ import platform.server.logics.table.ObjectTable;
 
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.List;
 
 public class ConcreteCustomClass extends CustomClass implements ConcreteValueClass,ConcreteObjectClass {
 
@@ -82,5 +83,9 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
 
     public AndClassSet getKeepClass() {
         return getBaseClass().getUpSet();
+    }
+
+    public List<ConcreteCustomClass> getClasses() {
+        return Collections.singletonList(this);
     }
 }

@@ -128,14 +128,6 @@ public class DefaultFormView extends FormView {
             control.proceedDefaultDesign(this);
         }
 
-        for (LP selectionProperty : formEntity.selectionProperties) {
-            PropertyDrawEntity selectionPropEntity = formEntity.getPropertyDraw(selectionProperty);
-            PropertyDrawView selectionPropView = get(selectionPropEntity);
-            selectionPropView.editKey = KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.ALT_DOWN_MASK);
-
-            get(selectionPropEntity.toDraw).grid.highlighter = new Highlighter(Color.yellow, selectionPropView);
-        }
-
         for (RegularFilterGroupEntity filterGroup : formEntity.regularFilterGroups) {
 
             Set<ObjectEntity> groupObjects = new HashSet<ObjectEntity>();

@@ -568,8 +568,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
         void addArticleRegularFilterGroup(PropertyObjectEntity documentProp, PropertyObjectEntity... extraProps) {
 
-            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(IDShift(1));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new NotNullFilterEntity(documentProp),
                                   "Документ",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
@@ -577,7 +577,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
             int functionKey = KeyEvent.VK_F9;
 
             for (PropertyObjectEntity extraProp : extraProps) {
-                filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+                filterGroup.addFilter(new RegularFilterEntity(genID(),
                                       new NotNullFilterEntity(extraProp),
                                       extraProp.property.caption,
                                       KeyStroke.getKeyStroke(functionKey--, 0)));
@@ -591,11 +591,11 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public ExtIncOrderFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption, false);
 
-            ObjectEntity objDoc = addSingleGroupObject(extIncomeOrder, "Заказ", properties, baseGroup);
+            ObjectEntity objDoc = addSingleGroupObject(extIncomeOrder, "Заказ", baseGroup);
 
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties, baseGroup);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup);
 
-            addPropertyDraw(objDoc, objArt, properties, baseGroup);
+            addPropertyDraw(objDoc, objArt, baseGroup);
 
             PropertyObjectEntity orderImp = addPropertyObject(orderQuantity, objDoc, objArt);
             addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(orderImp),
@@ -609,11 +609,11 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public ExtIncFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption, false);
 
-            ObjectEntity objDoc = addSingleGroupObject(extIncomeDocument, "Документ", properties, baseGroup);
+            ObjectEntity objDoc = addSingleGroupObject(extIncomeDocument, "Документ", baseGroup);
 
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties, baseGroup);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup);
 
-            addPropertyDraw(objDoc, objArt, properties, baseGroup);
+            addPropertyDraw(objDoc, objArt, baseGroup);
 
             addArticleRegularFilterGroup(getPropertyObject(quantity));
         }
@@ -643,10 +643,10 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public IntraFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDoc = addSingleGroupObject(intraDocument, "Документ", properties, baseGroup);
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties, baseGroup);
+            ObjectEntity objDoc = addSingleGroupObject(intraDocument, "Документ", baseGroup);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup);
 
-            addPropertyDraw(objDoc, objArt, properties, baseGroup);
+            addPropertyDraw(objDoc, objArt, baseGroup);
 
             addArticleRegularFilterGroup(getPropertyObject(quantity), getPropertyObject(docOutBalanceQuantity), getPropertyObject(docIncBalanceQuantity));
 
@@ -660,10 +660,10 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public CashSaleFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDoc = addSingleGroupObject(cashSaleDocument, "Документ", properties, baseGroup);
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties, baseGroup, true);
+            ObjectEntity objDoc = addSingleGroupObject(cashSaleDocument, "Документ", baseGroup);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup, true);
 
-            addPropertyDraw(objDoc, objArt, properties, baseGroup);
+            addPropertyDraw(objDoc, objArt, baseGroup);
 
             addArticleRegularFilterGroup(getPropertyObject(quantity), getPropertyObject(docOutBalanceQuantity));
         }
@@ -674,10 +674,10 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public ClearingSaleFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDoc = addSingleGroupObject(clearingSaleDocument, "Документ", properties, baseGroup);
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties, baseGroup, true);
+            ObjectEntity objDoc = addSingleGroupObject(clearingSaleDocument, "Документ", baseGroup);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup, true);
 
-            addPropertyDraw(objDoc, objArt, properties, baseGroup);
+            addPropertyDraw(objDoc, objArt, baseGroup);
 
             addArticleRegularFilterGroup(getPropertyObject(quantity), getPropertyObject(docOutBalanceQuantity));
         }
@@ -688,10 +688,10 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public InvFormEntity(NavigatorElement parent, int ID, String caption, boolean groupStore) {
             super(parent, ID, caption);
 
-            ObjectEntity objDoc = addSingleGroupObject(invDocument, "Документ", properties, baseGroup);
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties, baseGroup, true);
+            ObjectEntity objDoc = addSingleGroupObject(invDocument, "Документ", baseGroup);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup, true);
 
-            addPropertyDraw(objDoc, objArt, properties, baseGroup);
+            addPropertyDraw(objDoc, objArt, baseGroup);
 
             addArticleRegularFilterGroup(getPropertyObject(quantity), getPropertyObject(docOutBalanceQuantity));
         }
@@ -702,13 +702,13 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public ReturnFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDoc = addSingleGroupObject(returnDocument, "Документ", properties, baseGroup);
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties, baseGroup, true);
-            ObjectEntity objExtInc = addSingleGroupObject(extIncomeDocument, "Приход", properties, baseGroup, true);
+            ObjectEntity objDoc = addSingleGroupObject(returnDocument, "Документ", baseGroup);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup, true);
+            ObjectEntity objExtInc = addSingleGroupObject(extIncomeDocument, "Приход", baseGroup, true);
 
-            addPropertyDraw(objDoc, objArt, properties, baseGroup);
-            addPropertyDraw(objDoc, objExtInc, objArt, properties, baseGroup);
-            addPropertyDraw(objExtInc, objArt, properties, baseGroup);
+            addPropertyDraw(objDoc, objArt, baseGroup);
+            addPropertyDraw(objDoc, objExtInc, objArt, baseGroup);
+            addPropertyDraw(objExtInc, objArt, baseGroup);
 
             addArticleRegularFilterGroup(addPropertyObject(quantity, objDoc, objArt),
                     addPropertyObject(docOutBalanceQuantity, objDoc, objArt));
@@ -721,7 +721,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
             DefaultFormView formView = new DefaultFormView(this);
             formView.defaultOrders.put(formView.get(getPropertyDraw(date,objExtInc)), false);
-            formView.defaultOrders.put(formView.get(getPropertyDraw(customID,objExtInc)), false);
+            formView.defaultOrders.put(formView.get(getPropertyDraw(objectValue,objExtInc)), false);
             richDesign = formView;
         }
     }
@@ -731,57 +731,57 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public ExchangeFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDoc = addSingleGroupObject(exchangeDocument, "Документ", properties, baseGroup);
-            ObjectEntity objArtTo = addSingleGroupObject(article, "Товар (на)", properties,
-                                                                        baseGroup);
-            ObjectEntity objArtFrom = addSingleGroupObject(article, "Товар (c)", properties,
-                                                                        baseGroup);
+            ObjectEntity objDoc = addSingleGroupObject(exchangeDocument, "Документ", baseGroup);
+            ObjectEntity objArtTo = addSingleGroupObject(article, "Товар (на)",
+                    baseGroup);
+            ObjectEntity objArtFrom = addSingleGroupObject(article, "Товар (c)",
+                    baseGroup);
 
-            addPropertyDraw(objDoc, objArtTo, properties, baseGroup);
+            addPropertyDraw(objDoc, objArtTo, baseGroup);
             addPropertyDraw(exchangeQuantity, objDoc, objArtFrom, objArtTo);
-            addPropertyDraw(objDoc, objArtFrom, properties, baseGroup);
+            addPropertyDraw(objDoc, objArtFrom, baseGroup);
 
-            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(IDShift(1));
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
 /*            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
                                   null,
                                   "Все",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));*/
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new NotNullFilterEntity(getPropertyObject(exchIncQuantity)),
                                   "Приход",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new NotNullFilterEntity(getPropertyObject(exchOutQuantity)),
                                   "Расход",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new CompareFilterEntity(getPropertyObject(docOutBalanceQuantity, objArtTo), Compare.NOT_EQUALS, 0),
                                   "Остаток",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new CompareFilterEntity(getPropertyObject(docOutBalanceQuantity, objArtTo), Compare.LESS, 0),
                                   "Отр. остаток",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)));
             addRegularFilterGroup(filterGroup);
 
-            filterGroup = new RegularFilterGroupEntity(IDShift(1));
+            filterGroup = new RegularFilterGroupEntity(genID());
 /*            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
                                   null,
                                   "Все",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, InputEvent.SHIFT_DOWN_MASK)));*/
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new NotNullFilterEntity(getPropertyObject(exchangeQuantity)),
                                   "Документ",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, InputEvent.SHIFT_DOWN_MASK)));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new CompareFilterEntity(getPropertyObject(docOutBalanceQuantity, objArtFrom), Compare.NOT_EQUALS, 0),
                                   "Остаток",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F8, InputEvent.SHIFT_DOWN_MASK)));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new CompareFilterEntity(getPropertyObject(docOutBalanceQuantity, objArtFrom), Compare.GREATER, 0),
                                   "Пол. остаток",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F7, InputEvent.SHIFT_DOWN_MASK)));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new CompareFilterEntity(getPropertyObject(docOutPriceOut, objArtFrom), Compare.EQUALS, getPropertyObject(docOutPriceOut, objArtTo)),
                                   "Одинаковая розн. цена",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F6, InputEvent.SHIFT_DOWN_MASK)));
@@ -795,19 +795,19 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public ExchangeMFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDoc = addSingleGroupObject(exchangeDocument, "Документ", properties, baseGroup);
+            ObjectEntity objDoc = addSingleGroupObject(exchangeDocument, "Документ", baseGroup);
 
-            GroupObjectEntity gobjArts = new GroupObjectEntity(IDShift(1));
+            GroupObjectEntity gobjArts = new GroupObjectEntity(genID());
 
-            ObjectEntity objArtTo = new ObjectEntity(IDShift(1), article, "Товар (на)");
-            ObjectEntity objArtFrom = new ObjectEntity(IDShift(1), article, "Товар (с)");
+            ObjectEntity objArtTo = new ObjectEntity(genID(), article, "Товар (на)");
+            ObjectEntity objArtFrom = new ObjectEntity(genID(), article, "Товар (с)");
 
             gobjArts.add(objArtTo);
             gobjArts.add(objArtFrom);
             addGroup(gobjArts);
 
-            addPropertyDraw(properties, baseGroup, false, objArtTo);
-            addPropertyDraw(properties, baseGroup, false, objArtFrom);
+            addPropertyDraw(baseGroup, false, objArtTo);
+            addPropertyDraw(baseGroup, false, objArtFrom);
             addPropertyDraw(exchangeQuantity, objDoc, objArtFrom, objArtTo);
 
             addFixedFilter(new NotNullFilterEntity(getPropertyObject(exchangeQuantity)));
@@ -819,20 +819,20 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public RevalueFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDoc = addSingleGroupObject(revalDocument, "Документ", properties, baseGroup);
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties, baseGroup);
+            ObjectEntity objDoc = addSingleGroupObject(revalDocument, "Документ", baseGroup);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup);
 
-            addPropertyDraw(objDoc, objArt, properties, baseGroup);
+            addPropertyDraw(objDoc, objArt, baseGroup);
 
             addHintsNoUpdate(currentRevalDate);
             addHintsNoUpdate(currentRevalDoc);
 
-            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(IDShift(1));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new NotNullFilterEntity(addPropertyObject(revalAdd, objDoc, objArt)),
                                   "Документ",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(revalCurrentAdd, objDoc, objArt))),
                                   "Не заданы значения",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
@@ -845,20 +845,20 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public TaxFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDoc = addSingleGroupObject(taxDocument, "Документ", properties, baseGroup);
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties, baseGroup, currentVatOut);
+            ObjectEntity objDoc = addSingleGroupObject(taxDocument, "Документ", baseGroup);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup, currentVatOut);
 
-            addPropertyDraw(objDoc, objArt, properties, baseGroup);
+            addPropertyDraw(objDoc, objArt, baseGroup);
 
             addHintsNoUpdate(currentTaxDate);
             addHintsNoUpdate(currentTaxDoc);
 
-            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(IDShift(1));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new NotNullFilterEntity(addPropertyObject(taxVatOut, objDoc, objArt)),
                                   "Документ",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(currentVatOut, objArt))),
                                   "Не заданы значения",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
@@ -871,20 +871,20 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public LocTaxFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDoc = addSingleGroupObject(locTaxDocument, "Документ", properties, baseGroup);
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties, baseGroup);
+            ObjectEntity objDoc = addSingleGroupObject(locTaxDocument, "Документ", baseGroup);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup);
 
-            addPropertyDraw(objDoc, objArt, properties, baseGroup);
+            addPropertyDraw(objDoc, objArt, baseGroup);
 
             addHintsNoUpdate(currentLocTaxDate);
             addHintsNoUpdate(currentLocTaxDoc);
 
-            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(IDShift(1));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new NotNullFilterEntity(addPropertyObject(locTaxValue, objDoc, objArt)),
                                   "Документ",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(locCurrentTax, objDoc, objArt))),
                                   "Не заданы значения",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
@@ -899,13 +899,13 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public StoreArticleFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            objStore = addSingleGroupObject(store, "Склад", properties, baseGroup);
+            objStore = addSingleGroupObject(store, "Склад", baseGroup);
             objStore.groupTo.initClassView = ClassViewType.PANEL;
             objStore.groupTo.banClassView = ClassViewType.GRID;
 
-            objArt = addSingleGroupObject(article, "Товар", properties, baseGroup);
+            objArt = addSingleGroupObject(article, "Товар", baseGroup);
 
-            addPropertyDraw(objStore, objArt, properties, baseGroup);
+            addPropertyDraw(objStore, objArt, baseGroup);
         }
     }
 
@@ -914,21 +914,21 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public StoreArticlePrimDocFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objPrimDoc = addSingleGroupObject(priceOutDocument, "Документ", properties, baseGroup);
+            ObjectEntity objPrimDoc = addSingleGroupObject(priceOutDocument, "Документ", baseGroup);
 
-            addPropertyDraw(objPrimDoc, objArt, properties, baseGroup);
+            addPropertyDraw(objPrimDoc, objArt, baseGroup);
 
-            addPropertyDraw(objPrimDoc, objStore, objArt, properties, priceOutChange);
+            addPropertyDraw(objPrimDoc, objStore, objArt, priceOutChange);
 
-            addPropertyDraw(objArt, properties, lastDocumentGroup, currentGroup);
+            addPropertyDraw(objArt, lastDocumentGroup, currentGroup);
 
-            addPropertyDraw(objStore, objArt, properties, lastDocumentGroup, currentGroup);
+            addPropertyDraw(objStore, objArt, lastDocumentGroup, currentGroup);
 
             addFixedFilter(new NotNullFilterEntity(getPropertyObject(priceOutChange)));
 
             DefaultFormView formView = new DefaultFormView(this);
             formView.defaultOrders.put(formView.get(getPropertyDraw(date)), false);
-            formView.defaultOrders.put(formView.get(getPropertyDraw(customID, objPrimDoc)), false);
+            formView.defaultOrders.put(formView.get(getPropertyDraw(objectValue, objPrimDoc)), false);
             richDesign = formView;
         }
     }
@@ -938,9 +938,9 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public StoreArticleDocFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDoc = addSingleGroupObject(quantityDocument, "Товарный документ", properties, baseGroup, date, incStore, outStore);
+            ObjectEntity objDoc = addSingleGroupObject(quantityDocument, "Товарный документ", baseGroup, date, incStore, outStore);
 
-            addPropertyDraw(objDoc, objArt, properties, baseGroup);
+            addPropertyDraw(objDoc, objArt, baseGroup);
 //            addPropertyDraw(property, baseGroup, true, objDoc);
 
             addFixedFilter(new NotNullFilterEntity(getPropertyObject(quantity)));
@@ -961,10 +961,10 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public ArticleStoreFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            objArt = addSingleGroupObject(article, "Товар", properties, baseGroup);
-            objStore = addSingleGroupObject(store, "Склад", properties, baseGroup);
+            objArt = addSingleGroupObject(article, "Товар", baseGroup);
+            objStore = addSingleGroupObject(store, "Склад", baseGroup);
 
-            addPropertyDraw(objStore, objArt, properties, baseGroup);
+            addPropertyDraw(objStore, objArt, baseGroup);
 //            addPropertyDraw(property, baseGroup, false, objArt.groupTo, objStore, objArt);
         }
     }
@@ -974,19 +974,19 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public ArticleMStoreFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            GroupObjectEntity gobjArtStore = new GroupObjectEntity(IDShift(1));
+            GroupObjectEntity gobjArtStore = new GroupObjectEntity(genID());
 
-            ObjectEntity objArt = new ObjectEntity(IDShift(1), article, "Товар");
-            ObjectEntity objStore = new ObjectEntity(IDShift(1), store, "Склад");
+            ObjectEntity objArt = new ObjectEntity(genID(), article, "Товар");
+            ObjectEntity objStore = new ObjectEntity(genID(), store, "Склад");
 
             gobjArtStore.add(objArt);
             gobjArtStore.add(objStore);
             addGroup(gobjArtStore);
 
-            addPropertyDraw(objArt, properties, baseGroup);
-            addPropertyDraw(objStore, properties, baseGroup);
+            addPropertyDraw(objArt, baseGroup);
+            addPropertyDraw(objStore, baseGroup);
 
-            addPropertyDraw(objStore, objArt, properties, baseGroup);
+            addPropertyDraw(objStore, objArt, baseGroup);
         }
     }
 
@@ -995,38 +995,38 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         SupplierStoreArticleFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objSupplier = addSingleGroupObject(supplier, "Поставщик", properties, baseGroup);
+            ObjectEntity objSupplier = addSingleGroupObject(supplier, "Поставщик", baseGroup);
             objSupplier.groupTo.initClassView = ClassViewType.PANEL;
             objSupplier.groupTo.banClassView = ClassViewType.GRID;
 
-            GroupObjectEntity gobjArtStore = new GroupObjectEntity(IDShift(1));
+            GroupObjectEntity gobjArtStore = new GroupObjectEntity(genID());
 
-            ObjectEntity objArt = new ObjectEntity(IDShift(1), article, "Товар");
-            ObjectEntity objStore = new ObjectEntity(IDShift(1), store, "Склад");
+            ObjectEntity objArt = new ObjectEntity(genID(), article, "Товар");
+            ObjectEntity objStore = new ObjectEntity(genID(), store, "Склад");
 
             gobjArtStore.add(objArt);
             gobjArtStore.add(objStore);
             addGroup(gobjArtStore);
 
-            addPropertyDraw(objStore, properties, baseGroup);
-            addPropertyDraw(objArt, properties, baseGroup);
-            addPropertyDraw(objStore, objArt, properties, baseGroup, supplierGroup);
-            addPropertyDraw(objStore, objSupplier, objArt, properties, storeSupplIsCurrent);
+            addPropertyDraw(objStore, baseGroup);
+            addPropertyDraw(objArt, baseGroup);
+            addPropertyDraw(objStore, objArt, baseGroup, supplierGroup);
+            addPropertyDraw(objStore, objSupplier, objArt, storeSupplIsCurrent);
 
             // установить фильтр по умолчанию на поставщик товара = поставщик
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(storeSupplArt, objStore, objSupplier, objArt)));
 
             // добавить стандартные фильтры
-            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(IDShift(1));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new NotNullFilterEntity(addPropertyObject(storeSupplIsCurrent, objStore, objSupplier, objArt)),
                                   "Текущий этого пост.",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new CompareFilterEntity(getPropertyObject(balanceStoreQuantity), Compare.GREATER, 0),
                                   "Есть на складе",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new CompareFilterEntity(getPropertyObject(balanceStoreQuantity), Compare.LESS_EQUALS, 0),
                                   "Нет на складе",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
@@ -1042,12 +1042,12 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public DateIntervalFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            gobjInterval = new GroupObjectEntity(IDShift(1));
+            gobjInterval = new GroupObjectEntity(genID());
             gobjInterval.initClassView = ClassViewType.PANEL;
             gobjInterval.banClassView = ClassViewType.GRID;
 
-            objDateFrom = new ObjectEntity(IDShift(1), DateClass.instance, "С даты :");
-            objDateTo = new ObjectEntity(IDShift(1), DateClass.instance, "По дату :");
+            objDateFrom = new ObjectEntity(genID(), DateClass.instance, "С даты :");
+            objDateTo = new ObjectEntity(genID(), DateClass.instance, "По дату :");
 
             gobjInterval.add(objDateFrom);
             gobjInterval.add(objDateTo);
@@ -1060,12 +1060,12 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public SupplyRangeFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objStore = addSingleGroupObject(store, "Склад", properties, baseGroup, currentGroup);
-            ObjectEntity objArticle = addSingleGroupObject(article, "Товар", properties, baseGroup, currentGroup);
-            ObjectEntity objSupplier = addSingleGroupObject(supplier, "Поставщик", properties, baseGroup, currentGroup);
+            ObjectEntity objStore = addSingleGroupObject(store, "Склад", baseGroup, currentGroup);
+            ObjectEntity objArticle = addSingleGroupObject(article, "Товар", baseGroup, currentGroup);
+            ObjectEntity objSupplier = addSingleGroupObject(supplier, "Поставщик", baseGroup, currentGroup);
 
-            addPropertyDraw(objStore, objArticle, properties, baseGroup, currentGroup, supplierGroup);
-            addPropertyDraw(objStore, objSupplier, objArticle, properties, baseGroup, currentGroup, supplierGroup, storeSupplIsCurrent);
+            addPropertyDraw(objStore, objArticle, baseGroup, currentGroup, supplierGroup);
+            addPropertyDraw(objStore, objSupplier, objArticle, baseGroup, currentGroup, supplierGroup, storeSupplIsCurrent);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(storeInRange, objStore, objArticle)));
             addSingleRegularFilterGroup(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(currentSupplier, objStore, objArticle))),
@@ -1082,18 +1082,18 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public RemainRangeFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            GroupObjectEntity gobjArtStore = new GroupObjectEntity(IDShift(1));
+            GroupObjectEntity gobjArtStore = new GroupObjectEntity(genID());
 
-            ObjectEntity objArt = new ObjectEntity(IDShift(1), article, "Товар");
-            ObjectEntity objStore = new ObjectEntity(IDShift(1), store, "Склад");
+            ObjectEntity objArt = new ObjectEntity(genID(), article, "Товар");
+            ObjectEntity objStore = new ObjectEntity(genID(), store, "Склад");
 
             gobjArtStore.add(objArt);
             gobjArtStore.add(objStore);
             addGroup(gobjArtStore);
 
-            addPropertyDraw(objArt, properties, baseGroup, currentGroup, supplierGroup);
-            addPropertyDraw(objStore, properties, baseGroup, currentGroup, supplierGroup);
-            addPropertyDraw(objStore, objArt, properties, baseGroup, currentGroup, supplierGroup);
+            addPropertyDraw(objArt, baseGroup, currentGroup, supplierGroup);
+            addPropertyDraw(objStore, baseGroup, currentGroup, supplierGroup);
+            addPropertyDraw(objStore, objArt, baseGroup, currentGroup, supplierGroup);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(storeInRange, objStore, objArt)));
             addSingleRegularFilterGroup(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(balanceStoreQuantity, objStore, objArt))),
@@ -1108,19 +1108,19 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
             ObjectEntity objFormat, objArticle;
             if(upFormat) {
-                objFormat = addSingleGroupObject(format, "Формат", properties, baseGroup, currentGroup);
+                objFormat = addSingleGroupObject(format, "Формат", baseGroup, currentGroup);
                 objFormat.groupTo.initClassView = ClassViewType.PANEL;
-                objArticle = addSingleGroupObject(article, "Товар", properties, baseGroup, currentGroup);
+                objArticle = addSingleGroupObject(article, "Товар", baseGroup, currentGroup);
             } else {
-                objArticle = addSingleGroupObject(article, "Товар", properties,baseGroup, currentGroup);
-                objFormat = addSingleGroupObject(format, "Формат", properties, baseGroup, currentGroup);
+                objArticle = addSingleGroupObject(article, "Товар", baseGroup, currentGroup);
+                objFormat = addSingleGroupObject(format, "Формат", baseGroup, currentGroup);
             }
 
-            ObjectEntity objStore = addSingleGroupObject(store, "Склад", properties, baseGroup, currentGroup);
+            ObjectEntity objStore = addSingleGroupObject(store, "Склад", baseGroup, currentGroup);
 
-            addPropertyDraw(objFormat, objArticle, properties, baseGroup, currentGroup);
-            addPropertyDraw(objArticle, objStore, properties, baseGroup, supplierGroup, currentGroup);
-            addPropertyDraw(objFormat, objArticle, objDateFrom, objDateTo, properties, saleFormatArticleBetweenDateSum,  resultABCSum);
+            addPropertyDraw(objFormat, objArticle, baseGroup, currentGroup);
+            addPropertyDraw(objArticle, objStore, baseGroup, supplierGroup, currentGroup);
+            addPropertyDraw(objFormat, objArticle, objDateFrom, objDateTo, saleFormatArticleBetweenDateSum,  resultABCSum);
 
             PropertyObjectEntity storeFormatImplement = addPropertyObject(storeFormat, objStore);
             addFixedFilter(new CompareFilterEntity(storeFormatImplement, Compare.EQUALS, objFormat));
@@ -1133,16 +1133,16 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
             super(parent, ID, caption);
 
             ObjectEntity objFormat, objArticle, objGroup;
-            objFormat = addSingleGroupObject(format, "Формат", properties, baseGroup, currentGroup);
-            objGroup = addSingleGroupObject(articleGroup, "Группа", properties, baseGroup, currentGroup);
-            objArticle = addSingleGroupObject(article, "Товар", properties,baseGroup, currentGroup);
-            ObjectEntity objStore = addSingleGroupObject(store, "Склад", properties, baseGroup, currentGroup);
+            objFormat = addSingleGroupObject(format, "Формат", baseGroup, currentGroup);
+            objGroup = addSingleGroupObject(articleGroup, "Группа", baseGroup, currentGroup);
+            objArticle = addSingleGroupObject(article, "Товар", baseGroup, currentGroup);
+            ObjectEntity objStore = addSingleGroupObject(store, "Склад", baseGroup, currentGroup);
 
-            addPropertyDraw(objArticle, objGroup, properties, baseGroup, currentGroup);
-            addPropertyDraw(objFormat, objArticle, properties, baseGroup, currentGroup);
-            addPropertyDraw(objArticle, objStore, properties, baseGroup, supplierGroup, currentGroup);
-            addPropertyDraw(objFormat, objArticle, objDateFrom, objDateTo, properties, saleFormatArticleBetweenDateQuantity, resultABCInsideGroupQuantity, saleFormatArticleBetweenDateSum, resultABCInsideGroupSum);
-            addPropertyDraw(objFormat, objGroup, objDateFrom, objDateTo, properties, saleFormatGroupBetweenDateSum, resultABCGroup);
+            addPropertyDraw(objArticle, objGroup, baseGroup, currentGroup);
+            addPropertyDraw(objFormat, objArticle, baseGroup, currentGroup);
+            addPropertyDraw(objArticle, objStore, baseGroup, supplierGroup, currentGroup);
+            addPropertyDraw(objFormat, objArticle, objDateFrom, objDateTo, saleFormatArticleBetweenDateQuantity, resultABCInsideGroupQuantity, saleFormatArticleBetweenDateSum, resultABCInsideGroupSum);
+            addPropertyDraw(objFormat, objGroup, objDateFrom, objDateTo, saleFormatGroupBetweenDateSum, resultABCGroup);
 
             PropertyObjectEntity artGroupImplement = addPropertyObject(artGroup, objArticle);
             addFixedFilter(new CompareFilterEntity(artGroupImplement, Compare.EQUALS, objGroup));
@@ -1158,10 +1158,10 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public SalesArticleStoreFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objArticle = addSingleGroupObject(article, "Товар", properties,
-                                                                        baseGroup);
-            ObjectEntity objStore = addSingleGroupObject(store, "Склад", properties,
-                                                                        baseGroup);
+            ObjectEntity objArticle = addSingleGroupObject(article, "Товар",
+                    baseGroup);
+            ObjectEntity objStore = addSingleGroupObject(store, "Склад",
+                    baseGroup);
 
             addPropertyDraw(saleArticleBetweenDateQuantity, objArticle, objDateFrom, objDateTo);
 
@@ -1178,11 +1178,11 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public StoreSupplierSpecFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objSupplier = addSingleGroupObject(supplier, "Поставщик", properties, baseGroup);
-            ObjectEntity objContract = addSingleGroupObject(contract, "Договор", properties, baseGroup, supplierGroup);
-            ObjectEntity objSpec = addSingleGroupObject(specification, "Спецификация", properties, baseGroup, contractGroup);
-            ObjectEntity objStore = addSingleGroupObject(store, "Склад", properties, baseGroup, formatGroup, regionGroup);
-            ObjectEntity objArticle = addSingleGroupObject(article, "Товар", properties, baseGroup);
+            ObjectEntity objSupplier = addSingleGroupObject(supplier, "Поставщик", baseGroup);
+            ObjectEntity objContract = addSingleGroupObject(contract, "Договор", baseGroup, supplierGroup);
+            ObjectEntity objSpec = addSingleGroupObject(specification, "Спецификация", baseGroup, contractGroup);
+            ObjectEntity objStore = addSingleGroupObject(store, "Склад", baseGroup, formatGroup, regionGroup);
+            ObjectEntity objArticle = addSingleGroupObject(article, "Товар", baseGroup);
 
             // связываем объекты друг с другом
             PropertyObjectEntity contractSupplierImplement = addPropertyObject(contractSupplier, objContract);
@@ -1201,8 +1201,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
                                         KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0));
 
             // добавляем множественные свойства
-            addPropertyDraw(objStore, objSpec, properties, baseGroup);
-            addPropertyDraw(objSpec, objArticle, properties, baseGroup);
+            addPropertyDraw(objStore, objSpec, baseGroup);
+            addPropertyDraw(objSpec, objArticle, baseGroup);
 
             // указываем, что верхние три товара будут идти в панель
             objSupplier.groupTo.initClassView = ClassViewType.PANEL;
@@ -1219,7 +1219,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
         SecurityPolicy securityPolicy = addPolicy("Базовая политка", "Запрещает использование чего-то тут...");
 
-        securityPolicy.property.view.deny(currentGroup.getProperties());
+        securityPolicy.property.view.deny(currentGroup.getProperties(null));
 //        securityPolicy.property.change.deny(extIncDetailArticle.property);
 //        securityPolicy.property.change.deny(extIncDetailQuantity.property);
 

@@ -1,10 +1,12 @@
 package platform.server.logics.property.group;
 
 import platform.server.classes.ConcreteCustomClass;
+import platform.server.classes.ValueClass;
 import platform.server.logics.property.Property;
+import platform.server.logics.linear.LP;
+import platform.server.caches.IdentityLazy;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class AbstractGroup extends AbstractNode {
@@ -12,53 +14,55 @@ public class AbstractGroup extends AbstractNode {
     public String caption;
     public boolean createContainer = true;
 
-    public AbstractGroup(String icaption) {
-        caption = icaption;
+    public AbstractGroup(String caption) {
+        this.caption = caption;
     }
 
-    Collection<AbstractNode> children = new ArrayList<AbstractNode>();
+    List<AbstractNode> children = new ArrayList<AbstractNode>();
     public void add(AbstractNode prop) {
         children.add(prop);
         prop.parent = this;
     }
 
-    public boolean hasChild(AbstractNode prop) {
-        if (this == prop) return true;
-        for (AbstractNode child : children) {
-            if (child == prop) return true;
-            if (child instanceof AbstractGroup && ((AbstractGroup)child).hasChild(prop)) return true;
+    protected void setChildOrder(LP<?> child, LP<?> childRel, boolean before) {
+        setChildOrder(child.property, childRel.property, before);
+    }
+
+    protected void setChildOrder(Property child, Property childRel, boolean before) {
+
+        int indProp = children.indexOf(child);
+        int indPropRel = children.indexOf(childRel);
+
+        if (before) {
+            if (indPropRel < indProp) {
+                for (int i = indProp; i >= indPropRel + 1; i--)
+                    children.set(i, children.get(i - 1));
+                children.set(indPropRel, child);
+            }
         }
+    }
+
+
+    @IdentityLazy
+    public List<ConcreteCustomClass> getClasses() {
+        List<ConcreteCustomClass> result = new ArrayList<ConcreteCustomClass>();
+        for (AbstractNode child : children)
+            result.addAll(child.getClasses());
+        return result;
+    }
+
+    public boolean hasChild(Property prop) {
+        for (AbstractNode child : children)
+            if(child.hasChild(prop))
+                return true;
         return false;
     }
 
-    public List<ConcreteCustomClass> getClasses() {
-        List<ConcreteCustomClass> result = new ArrayList<ConcreteCustomClass>();
-        fillClasses(result);
-        return result;
-    }
-
-    private void fillClasses(List<ConcreteCustomClass> classes) {
-        for (AbstractNode child : children) {
-            if (child instanceof AbstractGroup)
-                ((AbstractGroup)child).fillClasses(classes);
-            if (child instanceof ConcreteCustomClass)
-                classes.add((ConcreteCustomClass)child);
-        }
-    }
-
-    public List<Property> getProperties() {
+    @IdentityLazy
+    public List<Property> getProperties(ValueClass[] classes) {
         List<Property> result = new ArrayList<Property>();
-        fillProperties(result);
+        for (AbstractNode child : children)
+            result.addAll(child.getProperties(classes));
         return result;
     }
-
-    private void fillProperties(List<Property> properties) {
-        for (AbstractNode child : children) {
-            if (child instanceof AbstractGroup)
-                ((AbstractGroup)child).fillProperties(properties);
-            if (child instanceof Property)
-                properties.add((Property)child);
-        }
-    }
-
 }

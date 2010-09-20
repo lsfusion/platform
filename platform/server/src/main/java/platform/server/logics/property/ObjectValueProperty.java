@@ -13,10 +13,15 @@ import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.CustomObjectInstance;
+import platform.server.form.entity.PropertyDrawEntity;
+import platform.server.form.entity.PropertyObjectInterfaceEntity;
+import platform.server.form.entity.ObjectEntity;
+import platform.server.form.view.DefaultFormView;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.type.Type;
 import platform.interop.action.ClientAction;
+import platform.interop.ClassViewType;
 import platform.base.BaseUtils;
 
 import java.util.Map;
@@ -57,5 +62,13 @@ public class ObjectValueProperty extends ExecuteProperty {
 
     protected <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier) {
         return ClassProperty.getIsClassUsedChanges(interfaces, modifier);
+    }
+
+    @Override
+    public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
+        super.proceedDefaultDesign(view, entity);
+        PropertyObjectInterfaceEntity mapObject = BaseUtils.singleValue(entity.propertyObject.mapping);
+        if(mapObject instanceof ObjectEntity)
+            view.get(entity).caption = ((ObjectEntity)mapObject).caption; 
     }
 }

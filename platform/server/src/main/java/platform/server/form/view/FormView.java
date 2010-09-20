@@ -8,6 +8,7 @@ import platform.server.form.entity.GroupObjectEntity;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.group.AbstractGroup;
+import platform.server.logics.property.group.AbstractNode;
 import platform.server.form.entity.ObjectEntity;
 
 import javax.swing.*;
@@ -132,26 +133,17 @@ public class FormView implements ClientSerialize {
         return properties;
     }
 
+    public List<PropertyDrawView> getProperties(AbstractNode group) {
 
-    public List<PropertyDrawView> getProperties(AbstractGroup group) {
-
-        List<PropertyDrawView> result = new ArrayList<PropertyDrawView>();
-
-        for (PropertyDrawView property : properties) {
-            if (group.hasChild(property.entity.propertyObject.property)) {
-                result.add(property);
-            }
-        }
-
-        return result;
+        return getProperties(group, null);
     }
 
-    public List<PropertyDrawView> getProperties(AbstractGroup group, GroupObjectEntity groupObject) {
+    public List<PropertyDrawView> getProperties(AbstractNode group, GroupObjectEntity groupObject) {
 
         List<PropertyDrawView> result = new ArrayList<PropertyDrawView>();
 
         for (PropertyDrawView property : properties) {
-            if (groupObject.equals(property.entity.toDraw) && group.hasChild(property.entity.propertyObject.property)) {
+            if ((groupObject==null || groupObject.equals(property.entity.toDraw)) && group.hasChild(property.entity.propertyObject.property)) {
                 result.add(property);
             }
         }

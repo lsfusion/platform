@@ -9,9 +9,9 @@ import platform.server.session.SessionChanges;
 import platform.server.session.DataSession;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ValueClass;
+import platform.server.classes.CustomClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.NullValue;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.FormInstance;
@@ -19,13 +19,14 @@ import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.CustomObjectInstance;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
+import platform.server.form.entity.ObjectEntity;
+import platform.server.form.entity.FormEntity;
 import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
 import platform.interop.ClassViewType;
 
 import java.util.Map;
 import java.util.List;
-import java.util.Collections;
 import java.sql.SQLException;
 
 public class ObjectClassProperty extends ExecuteProperty {
@@ -68,10 +69,10 @@ public class ObjectClassProperty extends ExecuteProperty {
     }
 
     @Override
-    public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity) {
-        super.proceedDefaultDraw(entity);
+    public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity form) {
+        super.proceedDefaultDraw(entity, form);
         PropertyObjectInterfaceEntity mapObject = BaseUtils.singleValue(entity.propertyObject.mapping);
-        if(mapObject instanceof ObjectInstance && !((CustomObjectInstance)mapObject).getBaseClass().hasChildren())
+        if(mapObject instanceof ObjectEntity && !((CustomClass)((ObjectEntity)mapObject).baseClass).hasChildren())
             entity.forceViewType = ClassViewType.HIDE;
     }
 }

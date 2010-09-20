@@ -964,7 +964,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private class GlobalFormEntity extends FormEntity {
         protected GlobalFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Глобальные параметры");
-            addPropertyDraw(properties, allGroup, true);
+            addPropertyDraw(allGroup, true);
         }
     }
 
@@ -983,7 +983,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         private BarcodeFormEntity(NavigatorElement parent, int iID, String caption) {
             super(parent, iID, caption);
 
-            objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", properties, baseGroup, true);
+            objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", baseGroup, true);
             objBarcode.groupTo.initClassView = ClassViewType.PANEL;
             objBarcode.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
 
@@ -1002,7 +1002,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             if (getDefaultFont() != null)
                 design.setFont(getDefaultFont());
 
-            PropertyDrawView barcodeView = design.get(getPropertyDraw(stringID, objBarcode));
+            PropertyDrawView barcodeView = design.get(getPropertyDraw(objectValue, objBarcode));
             
             design.get(getPropertyDraw(reverseBarcode)).setContainer(design.getPanelContainer(design.get(objBarcode.groupTo)));
             design.addIntersection(barcodeView, design.get(getPropertyDraw(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
@@ -1052,7 +1052,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             this.toAdd = toAdd;
 
-            objDoc = addSingleGroupObject(documentClass, "Документ", properties, getDocumentProps());
+            objDoc = addSingleGroupObject(documentClass, "Документ", getDocumentProps());
 
 
             if (toAdd) {
@@ -1190,11 +1190,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected ArticleFormEntity(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd, boolean filled) {
             super(parent, ID, documentClass, toAdd);
 
-            objArt = addSingleGroupObject(article, "Товар", properties, getArticleProps());
-            addPropertyDraw(objDoc, objArt, properties, getDocumentArticleProps());
+            objArt = addSingleGroupObject(article, "Товар", getArticleProps());
+            addPropertyDraw(objDoc, objArt, getDocumentArticleProps());
 
-            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(IDShift(1));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                     getDocumentArticleFilter(),
                     "Документ",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)), !toAdd || filled);
@@ -1226,11 +1226,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         // такое дебильное множественное наследование
         public void fillExtraLogisticsFilters(RegularFilterGroupEntity filterGroup, boolean toAdd) {
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                     new NotNullFilterEntity(getPropertyObject(documentLogisticsSupplied)),
                     "Поставляется",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)), toAdd);
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                     new NotNullFilterEntity(getPropertyObject(documentLogisticsRequired)),
                     "Необходимо",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0)));
@@ -1262,7 +1262,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         @Override
         protected void fillExtraFilters(RegularFilterGroupEntity filterGroup, boolean toAdd) {
             if (!fixFilters)
-                filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+                filterGroup.addFilter(new RegularFilterEntity(genID(),
                         new NotNullFilterEntity(addPropertyObject(documentFreeQuantity, objDoc, objArt)),
                         "Дост. кол-во",
                         KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)), toAdd);
@@ -1325,22 +1325,22 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             super(parent, ID, documentClass, toAdd, filled);
 
             if (!noOuters) {
-                objOuter = addSingleGroupObject(commitClass, "Партия", properties, baseGroup, true);
-                addPropertyDraw(objOuter, objDoc, properties, baseGroup, true, documentGroup, true);
-                addPropertyDraw(objOuter, objDoc, objArt, properties, baseGroup, true, documentGroup, true);
-                addPropertyDraw(objOuter, objArt, properties, baseGroup, true);
+                objOuter = addSingleGroupObject(commitClass, "Партия", baseGroup, true);
+                addPropertyDraw(objOuter, objDoc, baseGroup, true, documentGroup, true);
+                addPropertyDraw(objOuter, objDoc, objArt, baseGroup, true, documentGroup, true);
+                addPropertyDraw(objOuter, objArt, baseGroup, true);
 
                 NotNullFilterEntity documentFilter = new NotNullFilterEntity(getPropertyObject(innerQuantity));
                 NotNullFilterEntity documentFreeFilter = new NotNullFilterEntity(getPropertyObject(documentInnerFreeQuantity));
                 if (fixFilters)
                     addFixedFilter(new OrFilterEntity(documentFilter, documentFreeFilter));
-                RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(IDShift(1));
-                filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+                RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+                filterGroup.addFilter(new RegularFilterEntity(genID(),
                         documentFilter,
                         "Документ",
                         KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)), !toAdd || filled);
                 if (!fixFilters)
-                    filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+                    filterGroup.addFilter(new RegularFilterEntity(genID(),
                             documentFreeFilter,
                             "Дост. кол-во",
                             KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)), toAdd && !filled);
@@ -1477,27 +1477,27 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             objDoc.caption = "Чек";
 
-            objObligation = addSingleGroupObject(obligation, "Оплачено купонами/ сертификатами", properties, baseGroup, true);
-            addPropertyDraw(objDoc, objObligation, properties, baseGroup, true, orderSaleUseObligation);
+            objObligation = addSingleGroupObject(obligation, "Оплачено купонами/ сертификатами", baseGroup, true);
+            addPropertyDraw(objDoc, objObligation, baseGroup, true, orderSaleUseObligation);
             objObligation.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
 //            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(obligationDocument, objObligation))));
 //            addFixedFilter(new NotNullFilterEntity(addPropertyObject(orderSaleObligationCanNotBeUsed, objDoc, objObligation)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(orderSaleUseObligation, objDoc, objObligation)));
 
-            objCoupon = addSingleGroupObject(coupon, "Выдано купонов", properties, baseGroup, true);
-            addPropertyDraw(objDoc, objCoupon, properties, baseGroup, true, issueObligation);
+            objCoupon = addSingleGroupObject(coupon, "Выдано купонов", baseGroup, true);
+            addPropertyDraw(objDoc, objCoupon, baseGroup, true, issueObligation);
             objCoupon.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
 //            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(obligationDocument, objObligation))));
 //            addFixedFilter(new NotNullFilterEntity(addPropertyObject(orderSaleObligationCanNotBeUsed, objDoc, objObligation)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(issueObligation, objDoc, objCoupon)));
 
             if (toAdd) {
-                objIssue = addSingleGroupObject(DoubleClass.instance, "Выдать купоны", properties);
+                objIssue = addSingleGroupObject(DoubleClass.instance, "Выдать купоны");
                 addPropertyDraw(couponToIssueQuantity, objDoc, objIssue);
                 objIssue.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
                 addFixedFilter(new NotNullFilterEntity(addPropertyObject(couponToIssueConstraint, objDoc, objIssue)));
 
-                addPropertyDraw(properties, cashRegOperGroup, true);
+                addPropertyDraw(cashRegOperGroup, true);
             } else {
                 addPropertyDraw(checkRetailExported, objDoc);
             }
@@ -1642,32 +1642,32 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected ReturnSaleFormEntity(NavigatorElement parent, int ID, boolean toAdd, CustomClass documentClass, CustomClass commitClass) {
             super(parent, ID, documentClass, toAdd);
 
-            objInner = addSingleGroupObject(commitClass, getReturnCaption(), properties, baseGroup, true);
+            objInner = addSingleGroupObject(commitClass, getReturnCaption(), baseGroup, true);
 
-            addPropertyDraw(objInner, objDoc, properties, baseGroup, true, documentGroup, true);
+            addPropertyDraw(objInner, objDoc, baseGroup, true, documentGroup, true);
 
             NotNullFilterEntity documentFilter = new NotNullFilterEntity(getPropertyObject(sumReturnedQuantity));
             NotNullFilterEntity documentFreeFilter = new NotNullFilterEntity(getPropertyObject(sumReturnedQuantityFree));
             if (fixFilters)
                 addFixedFilter(new OrFilterEntity(documentFilter, documentFreeFilter));
-            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(IDShift(1));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                     documentFilter,
                     "Документ",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F10, InputEvent.SHIFT_DOWN_MASK)), !toAdd);
             if (!fixFilters)
-                filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+                filterGroup.addFilter(new RegularFilterEntity(genID(),
                         documentFreeFilter,
                         "Дост. кол-во",
                         KeyStroke.getKeyStroke(KeyEvent.VK_F9, InputEvent.SHIFT_DOWN_MASK)), toAdd);
             addRegularFilterGroup(filterGroup);
 
-            objArt = addSingleGroupObject(article, "Товар", properties);
+            objArt = addSingleGroupObject(article, "Товар");
 
             addPropertyDraw(changeQuantityOrder, objInner, objArt);
             addPropertyDraw(barcode, objArt);
             addPropertyDraw(name, objArt);
-            addPropertyDraw(objInner, objDoc, objArt, properties, baseGroup, true, documentGroup, true);
+            addPropertyDraw(objInner, objDoc, objArt, baseGroup, true, documentGroup, true);
             addPropertyDraw(orderSalePrice, objInner, objArt);
             addPropertyDraw(orderArticleSaleDiscount, objInner, objArt);
             addPropertyDraw(orderArticleSaleSumWithDiscount, objInner, objArt);
@@ -1678,13 +1678,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             NotNullFilterEntity articleFreeFilter = new NotNullFilterEntity(getPropertyObject(returnFreeQuantity));
             if (fixFilters)
                 addFixedFilter(new OrFilterEntity(articleFilter, articleFreeFilter));
-            RegularFilterGroupEntity articleFilterGroup = new RegularFilterGroupEntity(IDShift(1));
-            articleFilterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            RegularFilterGroupEntity articleFilterGroup = new RegularFilterGroupEntity(genID());
+            articleFilterGroup.addFilter(new RegularFilterEntity(genID(),
                     articleFilter,
                     "Документ",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)), !toAdd);
             if (!fixFilters)
-                articleFilterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+                articleFilterGroup.addFilter(new RegularFilterEntity(genID(),
                         articleFreeFilter,
                         "Дост. кол-во",
                         KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)), toAdd);
@@ -1697,24 +1697,24 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(incStore, objDoc), Compare.EQUALS, shopImplement));
 
             if (!noOuters) {
-                objOuter = addSingleGroupObject(commitDelivery, "Партия", properties, baseGroup, true);
+                objOuter = addSingleGroupObject(commitDelivery, "Партия", baseGroup, true);
 
-                addPropertyDraw(objInner, objOuter, objDoc, properties, baseGroup, true, documentGroup, true);
-                addPropertyDraw(objInner, objOuter, objDoc, objArt, properties, baseGroup, true, documentGroup, true);
-                addPropertyDraw(objInner, objOuter, properties, baseGroup, true);
-                addPropertyDraw(objInner, objOuter, objArt, properties, baseGroup, true);
+                addPropertyDraw(objInner, objOuter, objDoc, baseGroup, true, documentGroup, true);
+                addPropertyDraw(objInner, objOuter, objDoc, objArt, baseGroup, true, documentGroup, true);
+                addPropertyDraw(objInner, objOuter, baseGroup, true);
+                addPropertyDraw(objInner, objOuter, objArt, baseGroup, true);
 
                 NotNullFilterEntity documentCommitFilter = new NotNullFilterEntity(getPropertyObject(returnInnerCommitQuantity));
                 NotNullFilterEntity documentCommitFreeFilter = new NotNullFilterEntity(getPropertyObject(returnInnerFreeQuantity));
                 if (fixFilters)
                     addFixedFilter(new OrFilterEntity(documentCommitFilter, documentCommitFreeFilter));
-                RegularFilterGroupEntity filterOutGroup = new RegularFilterGroupEntity(IDShift(1));
-                filterOutGroup.addFilter(new RegularFilterEntity(IDShift(1),
+                RegularFilterGroupEntity filterOutGroup = new RegularFilterGroupEntity(genID());
+                filterOutGroup.addFilter(new RegularFilterEntity(genID(),
                         documentCommitFilter,
                         "Документ",
                         KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0)), !toAdd);
                 if (!fixFilters)
-                    filterOutGroup.addFilter(new RegularFilterEntity(IDShift(1),
+                    filterOutGroup.addFilter(new RegularFilterEntity(genID(),
                             documentCommitFreeFilter,
                             "Макс. кол-во",
                             KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0)), toAdd);
@@ -1801,7 +1801,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             objDoc.caption = "Возвратный чек";
 
             if (toAdd) {
-                addPropertyDraw(properties, cashRegOperGroup, true);
+                addPropertyDraw(cashRegOperGroup, true);
             } else {
                 addPropertyDraw(checkRetailExported, objDoc);
             }
@@ -1816,7 +1816,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             DefaultFormView design = super.createDefaultRichDesign();
 
             design.getGroupObjectContainer(objInner.groupTo).title = "Список чеков";
-            design.get(getPropertyDraw(customID, objInner)).caption = "Номер чека";
+            design.get(getPropertyDraw(objectValue, objInner)).caption = "Номер чека";
             design.getGroupObjectContainer(objArt.groupTo).title = "Товарные позиции";
 
             PropertyDrawEntity barcodeNavigator = getPropertyDraw(barcodeObjectName);
@@ -1881,13 +1881,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected SupplierArticleFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Ассортимент поставщиков");
 
-            ObjectEntity objSupplier = addSingleGroupObject(supplier, "Поставщик", properties, allGroup, true);
+            ObjectEntity objSupplier = addSingleGroupObject(supplier, "Поставщик", allGroup, true);
             addObjectActions(this, objSupplier);
 
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties, allGroup, true);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар", allGroup, true);
             addObjectActions(this, objArt);
 
-            addPropertyDraw(objSupplier, objArt, properties, allGroup, true);
+            addPropertyDraw(objSupplier, objArt, allGroup, true);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(articleSupplier, objArt), Compare.EQUALS, objSupplier));
         }
@@ -1899,14 +1899,14 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected StoreArticleFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Остатки по складу");
 
-            ObjectEntity objStore = addSingleGroupObject(store, "Склад", properties, allGroup, true);
-            objArt = addSingleGroupObject(article, "Товар", properties, allGroup, true);
-            ObjectEntity objOuter = addSingleGroupObject(commitDelivery, "Партия", properties, allGroup, true);
+            ObjectEntity objStore = addSingleGroupObject(store, "Склад", allGroup, true);
+            objArt = addSingleGroupObject(article, "Товар", allGroup, true);
+            ObjectEntity objOuter = addSingleGroupObject(commitDelivery, "Партия", allGroup, true);
 
-            addPropertyDraw(objStore, objArt, properties, allGroup, true);
-            addPropertyDraw(objStore, objOuter, properties, allGroup, true);
-            addPropertyDraw(objOuter, objArt, properties, baseGroup, true);
-            addPropertyDraw(objStore, objOuter, objArt, properties, allGroup, true);
+            addPropertyDraw(objStore, objArt, allGroup, true);
+            addPropertyDraw(objStore, objOuter, allGroup, true);
+            addPropertyDraw(objOuter, objArt, baseGroup, true);
+            addPropertyDraw(objStore, objOuter, objArt, allGroup, true);
         }
 
         @Override
@@ -1922,12 +1922,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected FormatArticleFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Остатки по форматам");
 
-            ObjectEntity objFormat = addSingleGroupObject(format, "Формат", properties, allGroup, true);
+            ObjectEntity objFormat = addSingleGroupObject(format, "Формат", allGroup, true);
             addObjectActions(this, objFormat);
 
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties, allGroup, true);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар", allGroup, true);
 
-            addPropertyDraw(objFormat, objArt, properties, allGroup, true);
+            addPropertyDraw(objFormat, objArt, allGroup, true);
 
             addAutoAction(objBarcode, addPropertyObject(barcodeAction2, objFormat, objBarcode));
         }
@@ -1952,7 +1952,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         protected void fillExtraFilters(RegularFilterGroupEntity filterGroup, boolean toAdd) {
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                     new NotFilterEntity(new NotNullFilterEntity(getPropertyObject(currentNDS))),
                     "Без НДС",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)), toAdd);
@@ -1971,11 +1971,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected IncomePriceFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Реестр цен", true);
 
-            ObjectEntity objDoc = addSingleGroupObject(commitWholeShopInc, "Документ", properties, baseGroup, true);
+            ObjectEntity objDoc = addSingleGroupObject(commitWholeShopInc, "Документ", baseGroup, true);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties, baseGroup, true);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup, true);
 
-            addPropertyDraw(objDoc, objArt, properties, articleQuantity, shopPrice);
+            addPropertyDraw(objDoc, objArt, articleQuantity, shopPrice);
 
             addFixedFilter(new NotNullFilterEntity(getPropertyObject(shopPrice)));
 
@@ -1988,11 +1988,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected RevalueActFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Акт переоценки", true);
 
-            ObjectEntity objDoc = addSingleGroupObject(documentShopPrice, "Документ", properties, baseGroup, true);
+            ObjectEntity objDoc = addSingleGroupObject(documentShopPrice, "Документ", baseGroup, true);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties, baseGroup, true);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup, true);
 
-            addPropertyDraw(objDoc, objArt, properties, articleQuantity, shopPrice, prevPrice, revalBalance);
+            addPropertyDraw(objDoc, objArt, articleQuantity, shopPrice, prevPrice, revalBalance);
 
             addFixedFilter(new CompareFilterEntity(getPropertyObject(shopPrice), Compare.NOT_EQUALS, getPropertyObject(prevPrice)));
 
@@ -2004,32 +2004,32 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected ActionFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Акции");
 
-            ObjectEntity objAction = addSingleGroupObject(action, "Акция", properties, allGroup, true);
+            ObjectEntity objAction = addSingleGroupObject(action, "Акция", allGroup, true);
             addObjectActions(this, objAction);
 
-            ObjectEntity objArtGroup = addSingleGroupObject(articleGroup, "Группа товаров", properties, allGroup, true);
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties, allGroup, true);
+            ObjectEntity objArtGroup = addSingleGroupObject(articleGroup, "Группа товаров", allGroup, true);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар", allGroup, true);
 
             if (noArticleGroups)
                 objArtGroup.groupTo.initClassView = ClassViewType.HIDE;
 
-            addPropertyDraw(objAction, objArtGroup, properties, allGroup, true);
-            addPropertyDraw(objAction, objArt, properties, allGroup, true);
+            addPropertyDraw(objAction, objArtGroup, allGroup, true);
+            addPropertyDraw(objAction, objArt, allGroup, true);
 
-            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(IDShift(1));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                     new CompareFilterEntity(addPropertyObject(articleToGroup, objArt), Compare.EQUALS, objArtGroup),
                     "В группе",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0)), !noArticleGroups);
             addRegularFilterGroup(filterGroup);
 
             PropertyObjectEntity inActionImpl = addPropertyObject(inAction, objAction, objArt);
-            RegularFilterGroupEntity inActionGroup = new RegularFilterGroupEntity(IDShift(1));
-            inActionGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            RegularFilterGroupEntity inActionGroup = new RegularFilterGroupEntity(genID());
+            inActionGroup.addFilter(new RegularFilterEntity(genID(),
                     new NotNullFilterEntity(inActionImpl),
                     "В акции",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0)));
-            inActionGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            inActionGroup.addFilter(new RegularFilterEntity(genID(),
                     new NotFilterEntity(new NotNullFilterEntity(inActionImpl)),
                     "Не в акции",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0)));
@@ -2044,11 +2044,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected PricersFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Ценники", true);
 
-            ObjectEntity objDoc = addSingleGroupObject(documentShopPrice, "Документ", properties, baseGroup, true);
+            ObjectEntity objDoc = addSingleGroupObject(documentShopPrice, "Документ", baseGroup, true);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties, baseGroup, true);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup, true);
 
-            addPropertyDraw(objDoc, objArt, properties, shopPrice);
+            addPropertyDraw(objDoc, objArt, shopPrice);
 
             addFixedFilter(new NotNullFilterEntity(getPropertyObject(shopPrice)));
             addFixedFilter(new NotFilterEntity(new CompareFilterEntity(getPropertyObject(shopPrice), Compare.EQUALS, addPropertyObject(prevPrice, objDoc, objArt))));
@@ -2077,11 +2077,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             if (!toAdd)
                 addPropertyDraw(date, objDoc);
-            objObligation = addSingleGroupObject(giftObligation, "Подарочный сертификат", properties, allGroup, true);
-            addPropertyDraw(objDoc, objObligation, properties, allGroup, true);
+            objObligation = addSingleGroupObject(giftObligation, "Подарочный сертификат", allGroup, true);
+            addPropertyDraw(objDoc, objObligation, allGroup, true);
 
-            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(IDShift(1));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                     new NotNullFilterEntity(addPropertyObject(issueObligation, objDoc, objObligation)),
                     "Документ",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)), true);
@@ -2132,7 +2132,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             objDoc.caption = "Чек";
 
             if (toAdd) {
-                addPropertyDraw(properties, cashRegOperGroup, true);
+                addPropertyDraw(cashRegOperGroup, true);
             }
         }
 
@@ -2190,11 +2190,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected CouponIntervalFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Интервалы цен по купонам");
 
-            ObjectEntity objIntervalAdd = addSingleGroupObject(DoubleClass.instance, "Цена товара от", properties, couponGroup, true);
+            ObjectEntity objIntervalAdd = addSingleGroupObject(DoubleClass.instance, "Цена товара от", couponGroup, true);
             objIntervalAdd.groupTo.initClassView = ClassViewType.PANEL;
             objIntervalAdd.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
 
-            ObjectEntity objInterval = addSingleGroupObject(DoubleClass.instance, "Цена товара", properties, couponGroup, true);
+            ObjectEntity objInterval = addSingleGroupObject(DoubleClass.instance, "Цена товара", couponGroup, true);
             objInterval.groupTo.banClassView = ClassViewType.PANEL | ClassViewType.HIDE;
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(couponIssueSum, objInterval)));
         }
@@ -2204,26 +2204,26 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected CouponArticleFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Товары по купонам");
 
-            ObjectEntity objArtGroup = addSingleGroupObject(articleGroup, "Группа товаров", properties, baseGroup, true, couponGroup, true);
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties, baseGroup, true, couponGroup, true);
+            ObjectEntity objArtGroup = addSingleGroupObject(articleGroup, "Группа товаров", baseGroup, true, couponGroup, true);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup, true, couponGroup, true);
 
             if (noArticleGroups)
                 objArtGroup.groupTo.initClassView = ClassViewType.HIDE;
 
-            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(IDShift(1));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                     new CompareFilterEntity(addPropertyObject(articleToGroup, objArt), Compare.EQUALS, objArtGroup),
                     "В группе",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0)), !noArticleGroups);
             addRegularFilterGroup(filterGroup);
 
             PropertyObjectEntity inCouponImpl = addPropertyObject(inCoupon, objArt);
-            RegularFilterGroupEntity inCouponGroup = new RegularFilterGroupEntity(IDShift(1));
-            inCouponGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            RegularFilterGroupEntity inCouponGroup = new RegularFilterGroupEntity(genID());
+            inCouponGroup.addFilter(new RegularFilterEntity(genID(),
                     new NotNullFilterEntity(inCouponImpl),
                     "В акции",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0)));
-            inCouponGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            inCouponGroup.addFilter(new RegularFilterEntity(genID(),
                     new NotFilterEntity(new NotNullFilterEntity(inCouponImpl)),
                     "Не в акции",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0)));

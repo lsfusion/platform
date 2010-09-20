@@ -193,6 +193,10 @@ public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, AndCl
         return true;
     }
 
+    public DataClass getBaseClass() {
+        return this;
+    }
+
     public Object parseString(String s) throws ParseException {
         throw new RuntimeException("Parsing values from string is not supported");
     }

@@ -9,7 +9,6 @@ import platform.interop.action.ClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.form.entity.filter.FilterEntity;
-import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.form.instance.FormInstance;
@@ -20,10 +19,9 @@ import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.group.AbstractGroup;
+import platform.server.logics.property.group.AbstractNode;
 
 import javax.swing.*;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
@@ -59,29 +57,27 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
 
     protected RegularFilterGroupEntity addSingleRegularFilterGroup(FilterEntity ifilter, String iname, KeyStroke ikey) {
 
-        RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(IDShift(1));
-        filterGroup.addFilter(new RegularFilterEntity(IDShift(1), ifilter, iname, ikey));
+        RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+        filterGroup.addFilter(new RegularFilterEntity(genID(), ifilter, iname, ikey));
         addRegularFilterGroup(filterGroup);
 
         return filterGroup;
     }
 
     // счетчик идентификаторов
-    int IDCount = 0;
-
-    public int IDShift(int Offs) {
-        IDCount += Offs;
-        return IDCount;
+    private int IDCount = 0;
+    public int genID() {
+        return IDCount++;
     }
 
-    protected ObjectEntity addSingleGroupObject(ValueClass baseClass, String caption, List<Property> properties, Object... groups) {
+    protected ObjectEntity addSingleGroupObject(ValueClass baseClass, String caption, Object... groups) {
 
-        GroupObjectEntity groupObject = new GroupObjectEntity(IDShift(1));
-        ObjectEntity object = new ObjectEntity(IDShift(1), baseClass, caption);
+        GroupObjectEntity groupObject = new GroupObjectEntity(genID());
+        ObjectEntity object = new ObjectEntity(genID(), baseClass, caption);
         groupObject.add(object);
         addGroup(groupObject);
 
-        addPropertyDraw(properties, groups, object);
+        addPropertyDraw(groups, object);
 
         return object;
     }
@@ -90,67 +86,54 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
         groups.add(group);
     }
 
-    protected void addPropertyDraw(ObjectEntity object, List<Property> properties, Object... groups) {
-        addPropertyDraw(properties, groups, object);
+    protected void addPropertyDraw(ObjectEntity object, Object... groups) {
+        addPropertyDraw(groups, object);
     }
 
-    protected void addPropertyDraw(ObjectEntity object1, ObjectEntity object2, List<Property> properties, Object... groups) {
-        addPropertyDraw(properties, groups, object1, object2);
+    protected void addPropertyDraw(ObjectEntity object1, ObjectEntity object2, Object... groups) {
+        addPropertyDraw(groups, object1, object2);
     }
 
-    protected void addPropertyDraw(ObjectEntity object1, ObjectEntity object2, ObjectEntity object3, List<Property> properties, Object... groups) {
-        addPropertyDraw(properties, groups, object1, object2, object3);
+    protected void addPropertyDraw(ObjectEntity object1, ObjectEntity object2, ObjectEntity object3, Object... groups) {
+        addPropertyDraw(groups, object1, object2, object3);
     }
 
-    protected void addPropertyDraw(ObjectEntity object1, ObjectEntity object2, ObjectEntity object3, ObjectEntity object4, List<Property> properties, Object... groups) {
-        addPropertyDraw(properties, groups, object1, object2, object3, object4);
+    protected void addPropertyDraw(ObjectEntity object1, ObjectEntity object2, ObjectEntity object3, ObjectEntity object4, Object... groups) {
+        addPropertyDraw(groups, object1, object2, object3, object4);
     }
 
-    private void addPropertyDraw(List<Property> properties, Object[] groups, ObjectEntity... objects) {
+    private void addPropertyDraw(Object[] groups, ObjectEntity... objects) {
 
         for (int i = 0; i < groups.length; i++) {
 
             Object group = groups[i];
             if (group instanceof Boolean) continue;
 
-            if (group instanceof AbstractGroup) {
+            if (group instanceof AbstractNode) {
                 boolean upClasses = false;
                 if ((i+1)<groups.length && groups[i+1] instanceof Boolean) upClasses = (Boolean)groups[i+1];
-                addPropertyDraw(properties, (AbstractGroup)group, upClasses, objects);
+                addPropertyDraw((AbstractNode)group, upClasses, objects);
             }
             else if (group instanceof LP)
                 this.addPropertyDraw((LP)group, objects);
         }
     }
 
-    void addPropertyDraw(List<Property> properties, Boolean upClasses, ObjectEntity... objects) {
-        addPropertyDraw(properties, (AbstractGroup)null, upClasses, objects);
+    protected void addPropertyDraw(AbstractNode group, boolean upClasses, ObjectEntity... objects) {
+        addPropertyDraw(group, upClasses, null, objects);
     }
 
-    protected void addPropertyDraw(List<Property> properties, AbstractGroup group, Boolean upClasses, ObjectEntity... objects) {
-        addPropertyDraw(properties, group, upClasses, null, objects);
-    }
+    protected void addPropertyDraw(AbstractNode group, boolean upClasses, GroupObjectEntity groupObject, ObjectEntity... objects) {
+        ValueClass[] valueClasses = new ValueClass[objects.length]; int ic = 0;
+        for(ObjectEntity object : objects)
+            valueClasses[ic++] = object.baseClass;
 
-    protected void addPropertyDraw(List<Property> properties, AbstractGroup group, Boolean upClasses, GroupObjectEntity groupObject, ObjectEntity... objects) {
-
-        // приходится делать именно так, так как важен порядок следования свойств
-
-        for (Property property : properties) {
-
-            if (property.getParent() == null) continue;
-
-            if (group == null && !(property instanceof DataProperty)) continue;
-
-            if (group != null && !group.hasChild(property)) continue;
-
-            if (property.interfaces.size() == objects.length) {
-
+        for(Property property : group.getProperties(valueClasses))
+            if (property.interfaces.size() == objects.length)
                 addPropertyDraw(property, upClasses, groupObject, objects);
-            }
-        }
     }
 
-    <P extends PropertyInterface<P>> void addPropertyDraw(Property<P> property, Boolean upClasses, GroupObjectEntity groupObject, ObjectEntity... objects) {
+    <P extends PropertyInterface<P>> void addPropertyDraw(Property<P> property, boolean upClasses, GroupObjectEntity groupObject, ObjectEntity... objects) {
 
         for (List<P> mapping : new ListPermutations<P>(property.interfaces)) {
 
@@ -188,8 +171,8 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
 
     <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(GroupObjectEntity groupObject, PropertyObjectEntity<P> propertyImplement) {
 
-        PropertyDrawEntity<P> propertyDraw = new PropertyDrawEntity<P>(IDShift(1), propertyImplement, (groupObject == null) ? getApplyObject(propertyImplement.getObjectInstances()) : groupObject);
-        propertyImplement.property.proceedDefaultDraw(propertyDraw);
+        PropertyDrawEntity<P> propertyDraw = new PropertyDrawEntity<P>(genID(), propertyImplement, (groupObject == null) ? getApplyObject(propertyImplement.getObjectInstances()) : groupObject);
+        propertyImplement.property.proceedDefaultDraw(propertyDraw, this);
 
         if (propertyImplement.property.sID != null) {
 
@@ -277,22 +260,24 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
         return resultPropertyDraw;
     }
 
-    protected PropertyDrawEntity getPropertyDraw(Property property, GroupObjectEntity groupObject) {
+    public PropertyDrawEntity getPropertyDraw(AbstractNode group, ObjectEntity object) {
+        return getPropertyDraw(group, object.groupTo);
+    }
+
+    public PropertyDrawEntity getPropertyDraw(AbstractNode group, GroupObjectEntity groupObject) {
 
         PropertyDrawEntity resultPropertyDraw = null;
-        for (PropertyDrawEntity<?> propertyDraw : propertyDraws)
-            if (propertyDraw.propertyObject.property.equals(property) && propertyDraw.toDraw.equals(groupObject))
+        for (PropertyDrawEntity propertyDraw : propertyDraws)
+            if (group.hasChild(propertyDraw.propertyObject.property) && propertyDraw.toDraw.equals(groupObject))
                 resultPropertyDraw = propertyDraw;
 
         return resultPropertyDraw;
     }
 
-    public void addHintsNoUpdate(List<Property> properties, AbstractGroup group) {
+    public void addHintsNoUpdate(AbstractGroup group) {
 
-        for (Property property : properties) {
-            if ((group == null || group.hasChild(property)))
-                addHintsNoUpdate(property);
-        }
+        for (Property property : group.getProperties(null))
+            addHintsNoUpdate(property);
     }
 
     public Collection<Property> hintsNoUpdate = new HashSet<Property>();
@@ -372,19 +357,5 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
 
     public String checkClientApply(Object result) {
         return null;
-    }
-
-    public List<LP> selectionProperties = new ArrayList<LP>();
-    public void addSelectionLP(LP selectionProperty, GroupObjectEntity group, ObjectEntity[] objects) {
-        PropertyDrawEntity propertyDraw = addPropertyDraw(selectionProperty, group, objects);
-
-        RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(IDShift(1));
-        filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
-                                                      new NotNullFilterEntity(propertyDraw.propertyObject),
-                                                      "Показывать только выбранное",
-                                                      KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.ALT_DOWN_MASK)), false);
-        addRegularFilterGroup(filterGroup);
-
-        selectionProperties.add(selectionProperty);
     }
 }

@@ -2,7 +2,6 @@ package platform.server.logics.property.actions;
 
 import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
-import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.classes.BaseClass;
 import platform.server.form.instance.CustomObjectInstance;
@@ -15,6 +14,7 @@ import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.entity.PropertyDrawEntity;
+import platform.server.form.entity.FormEntity;
 
 import javax.swing.*;
 import java.sql.SQLException;
@@ -34,8 +34,8 @@ public class DeleteObjectActionProperty extends ActionProperty {
     }
 
     @Override
-    public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity) {
-        super.proceedDefaultDraw(entity);
+    public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity form) {
+        super.proceedDefaultDraw(entity, form);
         entity.shouldBeLast = true;
     }
     @Override

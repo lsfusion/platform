@@ -109,15 +109,15 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         public DocumentFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDoc = addSingleGroupObject(document, "Документ", properties, baseGroup);
+            ObjectEntity objDoc = addSingleGroupObject(document, "Документ", baseGroup);
             addObjectActions(this, objDoc);
 
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties, baseGroup);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup);
 
-            addPropertyDraw(objDoc, objArt, properties, baseGroup);
+            addPropertyDraw(objDoc, objArt, baseGroup);
 
-            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(IDShift(1));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new NotNullFilterEntity(getPropertyObject(quantity)),
                                   "Документ",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, InputEvent.SHIFT_DOWN_MASK)));
@@ -130,13 +130,13 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         public StoreArticleFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties, baseGroup);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup);
 //            objArt.groupTo.initClassView = false; //objArt.groupTo.singleViewType = true;
-            ObjectEntity objStore = addSingleGroupObject(store, "Склад", properties, baseGroup);
-            ObjectEntity objDoc = addSingleGroupObject(document, "Документ", properties, baseGroup);
+            ObjectEntity objStore = addSingleGroupObject(store, "Склад", baseGroup);
+            ObjectEntity objDoc = addSingleGroupObject(document, "Документ", baseGroup);
 
-            addPropertyDraw(objStore, objArt, properties, baseGroup);
-            addPropertyDraw(objDoc, objArt, properties, baseGroup);
+            addPropertyDraw(objStore, objArt, baseGroup);
+            addPropertyDraw(objDoc, objArt, baseGroup);
 
             addFixedFilter(new NotNullFilterEntity(getPropertyObject(quantity)));
             addFixedFilter(new CompareFilterEntity(getPropertyObject(documentStore), Compare.EQUALS, objStore));
@@ -148,18 +148,18 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         public SystemFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            GroupObjectEntity group = new GroupObjectEntity(IDShift(1));
+            GroupObjectEntity group = new GroupObjectEntity(genID());
 
-            ObjectEntity objDoc = new ObjectEntity(IDShift(1), document, "Документ");
-            ObjectEntity objArt = new ObjectEntity(IDShift(1), article, "Товар");
+            ObjectEntity objDoc = new ObjectEntity(genID(), document, "Документ");
+            ObjectEntity objArt = new ObjectEntity(genID(), article, "Товар");
 
             group.add(objDoc);
             group.add(objArt);
             addGroup(group);
 
-            addPropertyDraw(objDoc, properties, baseGroup);
-            addPropertyDraw(objArt, properties, baseGroup);
-            addPropertyDraw(objDoc, objArt, properties, baseGroup);
+            addPropertyDraw(objDoc, baseGroup);
+            addPropertyDraw(objArt, baseGroup);
+            addPropertyDraw(objDoc, objArt, baseGroup);
             addPropertyDraw(is(incomeDocument), objDoc);
             addPropertyDraw(incQuantity, objDoc, objArt);
         }

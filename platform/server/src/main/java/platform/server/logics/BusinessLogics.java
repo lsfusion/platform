@@ -28,7 +28,6 @@ import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.form.entity.FormEntity;
-import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.instance.FormInstance;
@@ -46,6 +45,8 @@ import platform.server.logics.property.actions.DeleteObjectActionProperty;
 import platform.server.logics.property.actions.ImportFromExcelActionProperty;
 import platform.server.logics.property.derived.*;
 import platform.server.logics.property.group.AbstractGroup;
+import platform.server.logics.property.group.AbstractNode;
+import platform.server.logics.property.group.PropertySet;
 import platform.server.logics.scheduler.Scheduler;
 import platform.server.logics.table.ImplementTable;
 import platform.server.logics.table.TableFactory;
@@ -433,10 +434,64 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return 9999976 - id;
     }
 
+    @IdentityLazy
+    public SelectionProperty getSelectionProperty(ValueClass[] typeClasses) {
+        SelectionProperty property = new SelectionProperty(genSID(), typeClasses);
+        addProperty(null, new LP<ClassPropertyInterface>(property));
+        return property;
+    }
+
+    public class SelectionPropertySet extends PropertySet {
+
+        protected Class<?> getPropertyClass() {
+            return SelectionProperty.class;
+        }
+
+        public boolean hasChild(Property prop) {
+            return prop instanceof SelectionProperty;
+        }
+
+        protected Property getProperty(ValueClass[] classes) {
+            return getSelectionProperty(classes);
+        }
+    }
+
+    protected SelectionPropertySet selection;
+
+    @IdentityLazy
+    public ObjectValueProperty getObjectValueProperty(ValueClass typeClass) {
+        ObjectValueProperty property = new ObjectValueProperty(genSID(), typeClass);
+        addProperty(null, new LP<ClassPropertyInterface>(property));
+        return property;
+    }
+    
+    public class ObjectValuePropertySet extends PropertySet {
+
+        protected Class<?> getPropertyClass() {
+            return ObjectValueProperty.class;
+        }
+
+        @Override
+        protected boolean isInInterface(ValueClass[] classes) {
+            return classes.length == 1;
+        }
+        
+        protected Property getProperty(ValueClass[] classes) {
+            return getObjectValueProperty(classes[0].getBaseClass());
+        }
+    }
+
+    protected ObjectValuePropertySet objectValue;
+
     void initBase() {
 
         baseGroup = new AbstractGroup("Атрибуты");
         baseGroup.createContainer = false;
+
+        objectValue = new ObjectValuePropertySet();
+        baseGroup.add(objectValue);
+
+        selection = new SelectionPropertySet(); 
 
         aggrGroup = new AbstractGroup("Аггрегированные атрибуты");
         aggrGroup.createContainer = false;
@@ -526,11 +581,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         objectClass = addProperty(null, new LP<ClassPropertyInterface>(new ObjectClassProperty(genSID(), baseClass)));
         addJProp(baseGroup, "Класс объекта", name, objectClass, 1);
 
-        customID = addProperty(baseGroup, new LP<ClassPropertyInterface>(new ObjectValueProperty(genSID(), baseClass)));
-        stringID = addProperty(baseGroup, new LP<ClassPropertyInterface>(new ObjectValueProperty(genSID(), StringClass.get(100))));
-        integerID = addProperty(baseGroup, new LP<ClassPropertyInterface>(new ObjectValueProperty(genSID(), IntegerClass.instance)));
-        dateID = addProperty(baseGroup, new LP<ClassPropertyInterface>(new ObjectValueProperty(genSID(), DateClass.instance)));
-
         // заполним сессии
         LP sessionUser = addDProp("sessionUser", "Пользователь сессии", user, session);
         sessionUser.setDerivedChange(currentUser, true, is(session), 1);
@@ -564,13 +614,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         protected UserPolicyFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Политики пользователей");
 
-            ObjectEntity objUser = addSingleGroupObject(customUser, "Пользователь", properties, baseGroup, true);
-            ObjectEntity objPolicy = addSingleGroupObject(policy, "Политика", properties, baseGroup, true);
+            ObjectEntity objUser = addSingleGroupObject(customUser, "Пользователь", selection, baseGroup, true);
+            ObjectEntity objPolicy = addSingleGroupObject(policy, "Политика", baseGroup, true);
 
             addObjectActions(this, objUser);
 
-            addPropertyDraw(objUser, objPolicy, properties, baseGroup, true);
-            addSelectionProperty(this, objUser.groupTo);
+            addPropertyDraw(objUser, objPolicy, baseGroup, true);
 
             PropertyDrawEntity balanceDraw = getPropertyDraw(userPolicyOrder, objPolicy.groupTo);
             PropertyDrawEntity loginDraw = getPropertyDraw(userLogin, objUser.groupTo);
@@ -831,24 +880,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         addPersistent((AggregateProperty) lp.property);
     }
 
-    protected void setPropOrder(LP<?> prop, LP<?> propRel, boolean before) {
-        setPropOrder(prop.property, propRel.property, before);
-    }
-
-    protected void setPropOrder(Property prop, Property propRel, boolean before) {
-
-        int indProp = properties.indexOf(prop);
-        int indPropRel = properties.indexOf(propRel);
-
-        if (before) {
-            if (indPropRel < indProp) {
-                for (int i = indProp; i >= indPropRel + 1; i--)
-                    properties.set(i, properties.get(i - 1));
-                properties.set(indPropRel, prop);
-            }
-        }
-    }
-
     protected void addIndex(LP<?>... lps) {
         List<Property> index = new ArrayList<Property>();
         for (LP<?> lp : lps)
@@ -878,7 +909,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public TableFactory tableFactory;
     public List<LP> lproperties = new ArrayList<LP>();
-    public List<Property> properties = new ArrayList<Property>();
+    public Set<Property> properties = new HashSet<Property>();
     protected Set<AggregateProperty> persistents = new HashSet<AggregateProperty>();
     protected Set<List<? extends Property>> indexes = new HashSet<List<? extends Property>>();
 
@@ -1910,7 +1941,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         CycleGroupProperty<T, P> property = new CycleGroupProperty<T, P>(sID, caption, listImplements, groupProp.property, dataProp.property);
 
         // нужно добавить ограничение на уникальность
-        properties.add(property.getConstrainedProperty(checkChange));
+        addProperty(null, new LP(property.getConstrainedProperty(checkChange)));
 
         return mapLGProp(group, persistent, property, listImplements);
     }
@@ -2713,19 +2744,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         form.addPropertyDraw(new LP<ClassPropertyInterface>(getImportObjectAction(object.baseClass))).setToDraw(object.groupTo);
         form.addPropertyDraw(new LP<ClassPropertyInterface>(getAddObjectAction(object.baseClass))).setToDraw(object.groupTo);
         form.addPropertyDraw(delete, object);
-    }
-
-    protected void addSelectionProperty(FormEntity form, GroupObjectEntity group) {
-        ObjectEntity objects[] = new ObjectEntity[group.size()];
-        ValueClass params[] = new ValueClass[group.size()];
-        for (int i = 0; i < params.length; ++i) {
-            objects[i] = group.get(i);
-            params[i] = objects[i].baseClass;
-        }
-
-        LP selectionProperty = addSDProp("Выбор", LogicalClass.instance, params);
-
-        form.addSelectionLP(selectionProperty, group, objects);
     }
 
     private Scheduler scheduler;

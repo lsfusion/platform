@@ -826,7 +826,6 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         extIncDetailSumPay.setDerivedChange(extIncDetailCalcSumPay);
 
         extIncDetailSumInc = addUProp(incSumsGroup, "extIncDetailSumInc", "Сумма пост.", Union.SUM, 1, extIncDetailSumPay, 1, -1, extIncDetailSumVATIn, 1);
-        setPropOrder(extIncDetailSumInc, extIncDetailSumVATIn, true);
 
         extIncDocumentSumInc = addSGProp(incSumsGroup, "extIncDocumentSumInc", "Сумма пост.", extIncDetailSumInc, extIncDetailDocument, 1);
         extIncDocumentSumVATIn = addSGProp(incSumsGroup, "extIncDocumentSumVATIn", "Сумма НДС", extIncDetailSumVATIn, extIncDetailDocument, 1);
@@ -897,7 +896,6 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         extIncDetailSumLocTax = addJProp(outSumsGroup, "extIncDetailSumLocTax", "Сумма местн. нал.", round,
                 addJProp("Сумма местн. нал. (неокр.)", revPercent, extIncDetailSumPriceOut, 1, extIncDetailLocTax, 1), 1);
-        setPropOrder(extIncDetailSumLocTax, extIncDetailSumPriceOut, true);
         extIncDocumentSumLocTax = addSGProp(outSumsGroup, "extIncDocumentSumLocTax", "Сумма местн. нал. (всего)", extIncDetailSumLocTax, extIncDetailDocument, 1);
 
         extIncDetailSumWVAT = addDUProp("Сумма с НДС (розн.)", extIncDetailSumPriceOut, extIncDetailSumLocTax);
@@ -912,7 +910,6 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         extIncDetailSumVATOut = addJProp(outSumsGroup, "extIncDetailSumVATOut", "Сумма НДС розн.", round,
                 addJProp("Сумма НДС (розн. неокр.)", revPercent, extIncDetailSumWVAT, 1, extIncDetailVATOut, 1), 1);
-        setPropOrder(extIncDetailSumVATOut, extIncDetailSumLocTax, true);
         extIncDocumentSumVATOut = addSGProp(outSumsGroup, "extIncDocumentSumVATOut", "Сумма НДС розн. (всего)", extIncDetailSumVATOut, extIncDetailDocument, 1);
 
         extIncDetailSumWAdd = addDUProp("Сумма с торг. надб.", extIncDetailSumWVAT, extIncDetailSumVATOut);
@@ -925,7 +922,6 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     private void initSumAddProperties() {
 
         extIncDetailSumAdd = addUProp(outSumsGroup, "extIncDetailSumAdd", "Сумма торг. надб.", Union.SUM, 1, extIncDetailSumWAdd, 1, -1, extIncDetailSumInc, 1);
-        setPropOrder(extIncDetailSumAdd, extIncDetailSumVATOut, true);
         extIncDocumentSumAdd = addSGProp(outSumsGroup, "extIncDocumentSumAdd", "Сумма торг. надб. (всего)", extIncDetailSumAdd, extIncDetailDocument, 1);
     }
 
@@ -1259,12 +1255,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         void addArticleRegularFilterGroup(PropertyObjectEntity documentProp, Object documentValue, PropertyObjectEntity... extraProps) {
 
-            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(IDShift(1));
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
 /*            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
                                   null,
                                   "Все",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));*/
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new CompareFilterEntity(documentProp, Compare.NOT_EQUALS, documentValue),
                                   "Документ",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
@@ -1272,7 +1268,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             int functionKey = KeyEvent.VK_F9;
 
             for (PropertyObjectEntity extraProp : extraProps) {
-                filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+                filterGroup.addFilter(new RegularFilterEntity(genID(),
                                       new CompareFilterEntity(extraProp, Compare.NOT_EQUALS, 0),
                                       extraProp.property.caption,
                                       KeyStroke.getKeyStroke(functionKey--, 0)));
@@ -1288,8 +1284,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         ExtIncDocumentFormEntity(NavigatorElement parent, int iID, String caption, boolean isPrintForm) {
             super(parent, iID, caption, isPrintForm);
 
-            objDoc = addSingleGroupObject(extIncomeDocument, "Документ", properties,
-                                                   baseGroup, storeGroup, supplierGroup, quantGroup, incSumsGroup);
+            objDoc = addSingleGroupObject(extIncomeDocument, "Документ",
+                    baseGroup, storeGroup, supplierGroup, quantGroup, incSumsGroup);
         }
     }
 
@@ -1303,8 +1299,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public ExtIncDetailFormEntity(NavigatorElement parent, int ID, String caption, boolean isPrintForm) {
             super(parent, ID, caption, isPrintForm);
 
-            objDetail = addSingleGroupObject(extIncomeDetail, "Строка", properties,
-                                                                      artclGroup, quantGroup, incPrmsGroup, incSumsGroup, outPrmsGroup);
+            objDetail = addSingleGroupObject(extIncomeDetail, "Строка",
+                    artclGroup, quantGroup, incPrmsGroup, incSumsGroup, outPrmsGroup);
 
             PropertyObjectEntity detDocument = addPropertyObject(extIncDetailDocument, objDetail);
             addFixedFilter(new CompareFilterEntity(detDocument, Compare.EQUALS, objDoc));
@@ -1316,10 +1312,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public ExtIncFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption, false);
 
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties,
-                                                                        baseGroup);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар",
+                    baseGroup);
 
-            addPropertyDraw(objDoc, objArt, properties,
+            addPropertyDraw(objDoc, objArt,
                     balanceGroup, extIncQuantity, incPrmsGroup, outPrmsGroup);
 
             addArticleRegularFilterGroup(getPropertyObject(extIncQuantity), 0);
@@ -1334,8 +1330,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
             objDoc.groupTo.banClassView = ClassViewType.GRID;
 
-            addPropertyDraw(objDoc, properties, outSumsGroup);
-            addPropertyDraw(objDetail, properties, outSumsGroup);
+            addPropertyDraw(objDoc, outSumsGroup);
+            addPropertyDraw(objDetail, outSumsGroup);
 
             objDoc.setSID("objDoc");
             getPropertyDraw(name.property, objDoc.groupTo).setSID("docName");
@@ -1350,12 +1346,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public IntraFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDoc = addSingleGroupObject(intraDocument, "Документ", properties,
-                                                                        baseGroup, storeGroup);
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties,
-                                                                        baseGroup);
+            ObjectEntity objDoc = addSingleGroupObject(intraDocument, "Документ",
+                    baseGroup, storeGroup);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар",
+                    baseGroup);
 
-            addPropertyDraw(objDoc, objArt, properties,
+            addPropertyDraw(objDoc, objArt,
                     balanceGroup, intraQuantity, incPrmsGroup, outPrmsGroup);
 
             addArticleRegularFilterGroup(getPropertyObject(intraQuantity), 0,
@@ -1371,12 +1367,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public ExtOutFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDoc = addSingleGroupObject(extOutcomeDocument, "Документ", properties,
-                                                                        baseGroup, storeGroup);
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties,
-                                                                        baseGroup, true);
+            ObjectEntity objDoc = addSingleGroupObject(extOutcomeDocument, "Документ",
+                    baseGroup, storeGroup);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар",
+                    baseGroup, true);
 
-            addPropertyDraw(objDoc, objArt, properties,
+            addPropertyDraw(objDoc, objArt,
                     balanceGroup, extOutQuantity, incPrmsGroup, outPrmsGroup);
 
             addArticleRegularFilterGroup(getPropertyObject(extOutQuantity), 0,
@@ -1389,13 +1385,13 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public CashSaleFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDoc = addSingleGroupObject(cashSaleDocument, "Документ", properties,
-                                                                        baseGroup, storeGroup, outSumsGroup, accountGroup);
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties,
-                                                                        baseGroup, true);
+            ObjectEntity objDoc = addSingleGroupObject(cashSaleDocument, "Документ",
+                    baseGroup, storeGroup, outSumsGroup, accountGroup);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар",
+                    baseGroup, true);
 
-            addPropertyDraw(objDoc, objArt, properties,
-                        balanceGroup, cashSaleQuantity, outSumsGroup, accountGroup);
+            addPropertyDraw(objDoc, objArt,
+                    balanceGroup, cashSaleQuantity, outSumsGroup, accountGroup);
 
             addArticleRegularFilterGroup(getPropertyObject(cashSaleQuantity), 0,
                                          getPropertyObject(docOutBalanceQuantity));
@@ -1409,24 +1405,24 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public ReceiptFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDoc = addSingleGroupObject(cashSaleDocument, "Документ", properties,
-                                                                        baseGroup, storeGroup, outSumsGroup, accountGroup);
+            ObjectEntity objDoc = addSingleGroupObject(cashSaleDocument, "Документ",
+                    baseGroup, storeGroup, outSumsGroup, accountGroup);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
             objDoc.groupTo.banClassView = ClassViewType.GRID;
 
-            ObjectEntity objReceipt = addSingleGroupObject(receipt, "Чек", properties,
-                                                                        baseGroup, outSumsGroup);
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties,
-                                                                        baseGroup, true);
+            ObjectEntity objReceipt = addSingleGroupObject(receipt, "Чек",
+                    baseGroup, outSumsGroup);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар",
+                    baseGroup, true);
 
-            addPropertyDraw(objDoc, objArt, properties,
-                        balanceGroup);
+            addPropertyDraw(objDoc, objArt,
+                    balanceGroup);
 
-            addPropertyDraw(objReceipt, objArt, properties,
-                        receiptQuantity, incPrmsGroup, outPrmsGroup, outSumsGroup);
+            addPropertyDraw(objReceipt, objArt,
+                    receiptQuantity, incPrmsGroup, outPrmsGroup, outSumsGroup);
 
-            addPropertyDraw(objDoc, objArt, properties,
-                        accountGroup);
+            addPropertyDraw(objDoc, objArt,
+                    accountGroup);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(receiptSaleDocument, objReceipt), Compare.EQUALS, objDoc));
 
@@ -1440,13 +1436,13 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public ClearingSaleFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDoc = addSingleGroupObject(clearingSaleDocument, "Документ", properties,
-                                                                        baseGroup, storeGroup, customerGroup, extOutDocumentSumPriceOut);
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties,
-                                                                        baseGroup, true);
+            ObjectEntity objDoc = addSingleGroupObject(clearingSaleDocument, "Документ",
+                    baseGroup, storeGroup, customerGroup, extOutDocumentSumPriceOut);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар",
+                    baseGroup, true);
 
-            addPropertyDraw(objDoc, objArt, properties,
-                        balanceGroup, clearingSaleQuantity, incPrmsGroup, outPrmsGroup);
+            addPropertyDraw(objDoc, objArt,
+                    balanceGroup, clearingSaleQuantity, incPrmsGroup, outPrmsGroup);
 
             addArticleRegularFilterGroup(getPropertyObject(clearingSaleQuantity), 0,
                                          getPropertyObject(docOutBalanceQuantity));
@@ -1460,18 +1456,18 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             ObjectEntity objStore = null;
             if (groupStore) {
-                objStore = addSingleGroupObject(store, "Склад", properties,
-                                                                            baseGroup, accountGroup);
+                objStore = addSingleGroupObject(store, "Склад",
+                        baseGroup, accountGroup);
                 objStore.groupTo.initClassView = ClassViewType.PANEL;
                 objStore.groupTo.banClassView = ClassViewType.GRID;
             }
 
-            ObjectEntity objDoc = addSingleGroupObject(invDocument, "Документ", properties,
-                                                                        baseGroup);
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties,
-                                                                        baseGroup, true);
+            ObjectEntity objDoc = addSingleGroupObject(invDocument, "Документ",
+                    baseGroup);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар",
+                    baseGroup, true);
 
-            addPropertyDraw(objDoc, objArt, properties,
+            addPropertyDraw(objDoc, objArt,
                     balanceGroup, invBalance, invQuantity, incPrmsGroup, outPrmsGroup, accountGroup);
 
             addArticleRegularFilterGroup(getPropertyObject(invQuantity), 0,
@@ -1480,7 +1476,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             if (groupStore)
                 addFixedFilter(new CompareFilterEntity(addPropertyObject(revalStore, objDoc), Compare.EQUALS, objStore));
             else
-                addPropertyDraw(properties, storeGroup, false, objDoc);
+                addPropertyDraw(storeGroup, false, objDoc);
         }
     }
 
@@ -1489,12 +1485,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public ReturnFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDoc = addSingleGroupObject(returnDocument, "Документ", properties,
-                                                                        baseGroup, storeGroup, supplierGroup);
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties,
-                                                                        baseGroup, true);
+            ObjectEntity objDoc = addSingleGroupObject(returnDocument, "Документ",
+                    baseGroup, storeGroup, supplierGroup);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар",
+                    baseGroup, true);
 
-            addPropertyDraw(objDoc, objArt, properties,
+            addPropertyDraw(objDoc, objArt,
                     balanceGroup, returnQuantity, incPrmsGroup, outPrmsGroup);
 
             addArticleRegularFilterGroup(getPropertyObject(returnQuantity), 0,
@@ -1507,60 +1503,60 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public ExchangeFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDoc = addSingleGroupObject(exchangeDocument, "Документ", properties,
-                                                                        baseGroup, storeGroup);
-            ObjectEntity objArtTo = addSingleGroupObject(article, "Товар (на)", properties,
-                                                                        baseGroup);
-            ObjectEntity objArtFrom = addSingleGroupObject(article, "Товар (c)", properties,
-                                                                        baseGroup);
+            ObjectEntity objDoc = addSingleGroupObject(exchangeDocument, "Документ",
+                    baseGroup, storeGroup);
+            ObjectEntity objArtTo = addSingleGroupObject(article, "Товар (на)",
+                    baseGroup);
+            ObjectEntity objArtFrom = addSingleGroupObject(article, "Товар (c)",
+                    baseGroup);
 
-            addPropertyDraw(objDoc, objArtTo, properties,
+            addPropertyDraw(objDoc, objArtTo,
                     docOutBalanceQuantity, exchIncQuantity, exchOutQuantity, incPrmsGroup, outPrmsGroup);
             addPropertyDraw(docOutBalanceQuantity, objDoc, objArtFrom);
             addPropertyDraw(exchangeQuantity, objDoc, objArtFrom, objArtTo);
-            addPropertyDraw(objDoc, objArtFrom, properties, incPrmsGroup, outPrmsGroup);
+            addPropertyDraw(objDoc, objArtFrom, incPrmsGroup, outPrmsGroup);
 
-            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(IDShift(1));
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
 /*            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
                                   null,
                                   "Все",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));*/
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new NotNullFilterEntity(getPropertyObject(exchIncQuantity)),
                                   "Приход",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new NotNullFilterEntity(getPropertyObject(exchOutQuantity)),
                                   "Расход",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new CompareFilterEntity(getPropertyObject(docOutBalanceQuantity, objArtTo), Compare.NOT_EQUALS, 0),
                                   "Остаток",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new CompareFilterEntity(getPropertyObject(docOutBalanceQuantity, objArtTo), Compare.LESS, 0),
                                   "Отр. остаток",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)));
             addRegularFilterGroup(filterGroup);
 
-            filterGroup = new RegularFilterGroupEntity(IDShift(1));
+            filterGroup = new RegularFilterGroupEntity(genID());
 /*            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
                                   null,
                                   "Все",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, InputEvent.SHIFT_DOWN_MASK)));*/
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new NotNullFilterEntity(getPropertyObject(exchangeQuantity)),
                                   "Документ",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, InputEvent.SHIFT_DOWN_MASK)));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new CompareFilterEntity(getPropertyObject(docOutBalanceQuantity, objArtFrom), Compare.NOT_EQUALS, 0),
                                   "Остаток",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F8, InputEvent.SHIFT_DOWN_MASK)));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new CompareFilterEntity(getPropertyObject(docOutBalanceQuantity, objArtFrom), Compare.GREATER, 0),
                                   "Пол. остаток",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F7, InputEvent.SHIFT_DOWN_MASK)));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new CompareFilterEntity(getPropertyObject(docOverPriceOut, objArtFrom), Compare.EQUALS, getPropertyObject(docOverPriceOut, objArtTo)),
                                   "Одинаковая розн. цена",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F6, InputEvent.SHIFT_DOWN_MASK)));
@@ -1574,20 +1570,20 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public ExchangeMFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDoc = addSingleGroupObject(exchangeDocument, "Документ", properties,
-                                                                        baseGroup, storeGroup);
+            ObjectEntity objDoc = addSingleGroupObject(exchangeDocument, "Документ",
+                    baseGroup, storeGroup);
 
-            GroupObjectEntity gobjArts = new GroupObjectEntity(IDShift(1));
+            GroupObjectEntity gobjArts = new GroupObjectEntity(genID());
 
-            ObjectEntity objArtTo = new ObjectEntity(IDShift(1), article, "Товар (на)");
-            ObjectEntity objArtFrom = new ObjectEntity(IDShift(1), article, "Товар (с)");
+            ObjectEntity objArtTo = new ObjectEntity(genID(), article, "Товар (на)");
+            ObjectEntity objArtFrom = new ObjectEntity(genID(), article, "Товар (с)");
 
             gobjArts.add(objArtTo);
             gobjArts.add(objArtFrom);
             addGroup(gobjArts);
 
-            addPropertyDraw(properties, baseGroup, false, objArtTo);
-            addPropertyDraw(properties, baseGroup, false, objArtFrom);
+            addPropertyDraw(baseGroup, false, objArtTo);
+            addPropertyDraw(baseGroup, false, objArtFrom);
             addPropertyDraw(exchangeQuantity, objDoc, objArtFrom, objArtTo);
 
             addFixedFilter(new NotNullFilterEntity(getPropertyObject(exchangeQuantity)));
@@ -1601,18 +1597,18 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             ObjectEntity objStore = null;
             if (groupStore) {
-                objStore = addSingleGroupObject(store, "Склад", properties,
-                                                                            baseGroup, accountGroup);
+                objStore = addSingleGroupObject(store, "Склад",
+                        baseGroup, accountGroup);
                 objStore.groupTo.initClassView = ClassViewType.PANEL;
                 objStore.groupTo.banClassView = ClassViewType.GRID;
             }
 
-            ObjectEntity objDoc = addSingleGroupObject(revalDocument, "Документ", properties,
-                                                                        baseGroup);
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties,
-                                                                        baseGroup);
+            ObjectEntity objDoc = addSingleGroupObject(revalDocument, "Документ",
+                    baseGroup);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар",
+                    baseGroup);
 
-            addPropertyDraw(objDoc, objArt, properties,
+            addPropertyDraw(objDoc, objArt,
                     revalOverBalanceQuantity, isRevalued, incPrmsGroupBefore, outPrmsGroupBefore, outPrmsGroupAfter);
 
             addArticleRegularFilterGroup(getPropertyObject(isRevalued), false,
@@ -1621,7 +1617,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             if (groupStore)
                 addFixedFilter(new CompareFilterEntity(addPropertyObject(revalStore, objDoc), Compare.EQUALS, objStore));
             else
-                addPropertyDraw(properties, storeGroup, false, objDoc);
+                addPropertyDraw(storeGroup, false, objDoc);
         }
     }
 
@@ -1632,15 +1628,15 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public StoreArticleFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            objStore = addSingleGroupObject(store, "Склад", properties,
-                                                                        baseGroup, accountGroup);
+            objStore = addSingleGroupObject(store, "Склад",
+                    baseGroup, accountGroup);
             objStore.groupTo.initClassView = ClassViewType.PANEL;
             objStore.groupTo.banClassView = ClassViewType.GRID;
 
-            objArt = addSingleGroupObject(article, "Товар", properties,
-                                                                        baseGroup);
+            objArt = addSingleGroupObject(article, "Товар",
+                    baseGroup);
 
-            addPropertyDraw(objStore, objArt, properties,
+            addPropertyDraw(objStore, objArt,
                     baseGroup, balanceGroup, incPrmsGroup, outPrmsGroup);
         }
     }
@@ -1650,10 +1646,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public StoreArticlePrimDocFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objPrimDoc = addSingleGroupObject(primaryDocument, "Документ", properties,
-                                                                                    baseGroup, paramsGroup);
+            ObjectEntity objPrimDoc = addSingleGroupObject(primaryDocument, "Документ",
+                    baseGroup, paramsGroup);
 
-            addPropertyDraw(objPrimDoc, objArt, properties,
+            addPropertyDraw(objPrimDoc, objArt,
                     paramsGroup);
 
             addFixedFilter(new NotNullFilterEntity(getPropertyObject(isDocArtChangesParams)));
@@ -1670,8 +1666,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public StoreArticleDocFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDoc = addSingleGroupObject(quantityDocument, "Товарный документ", properties,
-                                                                                    baseGroup, docDate, storeGroup, true, supplierGroup, true, customerGroup, true);
+            ObjectEntity objDoc = addSingleGroupObject(quantityDocument, "Товарный документ",
+                    baseGroup, docDate, storeGroup, true, supplierGroup, true, customerGroup, true);
 
             addPropertyDraw(dltDocStoreQuantity, objDoc, objStore, objArt);
 
@@ -1690,19 +1686,19 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public ArticleStoreFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            objArt = addSingleGroupObject(article, "Товар", properties,
-                                                                        baseGroup);
+            objArt = addSingleGroupObject(article, "Товар",
+                    baseGroup);
 
-            objStore = addSingleGroupObject(store, "Склад", properties,
-                                                                        baseGroup);
+            objStore = addSingleGroupObject(store, "Склад",
+                    baseGroup);
 
-            addPropertyDraw(objStore, objArt, properties,
+            addPropertyDraw(objStore, objArt,
                     baseGroup, balanceGroup, incPrmsGroup, outPrmsGroup);
 
-            addPropertyDraw(properties, baseGroup, false, objArt.groupTo, objStore, objArt);
-            addPropertyDraw(properties, balanceGroup, false, objArt.groupTo, objStore, objArt);
-            addPropertyDraw(properties, incPrmsGroup, false, objArt.groupTo, objStore, objArt);
-            addPropertyDraw(properties, outPrmsGroup, false, objArt.groupTo, objStore, objArt);
+            addPropertyDraw(baseGroup, false, objArt.groupTo, objStore, objArt);
+            addPropertyDraw(balanceGroup, false, objArt.groupTo, objStore, objArt);
+            addPropertyDraw(incPrmsGroup, false, objArt.groupTo, objStore, objArt);
+            addPropertyDraw(outPrmsGroup, false, objArt.groupTo, objStore, objArt);
         }
 
     }
@@ -1712,22 +1708,22 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public ArticleMStoreFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            GroupObjectEntity gobjArtStore = new GroupObjectEntity(IDShift(1));
+            GroupObjectEntity gobjArtStore = new GroupObjectEntity(genID());
 
-            ObjectEntity objArt = new ObjectEntity(IDShift(1), article, "Товар");
-            ObjectEntity objStore = new ObjectEntity(IDShift(1), store, "Склад");
+            ObjectEntity objArt = new ObjectEntity(genID(), article, "Товар");
+            ObjectEntity objStore = new ObjectEntity(genID(), store, "Склад");
 
             gobjArtStore.add(objArt);
             gobjArtStore.add(objStore);
             addGroup(gobjArtStore);
 
             // добавить свойства по товару
-            addPropertyDraw(properties, baseGroup, false, objArt);
+            addPropertyDraw(baseGroup, false, objArt);
             // добавить свойства по складу
-            addPropertyDraw(properties, baseGroup, false, objStore);
+            addPropertyDraw(baseGroup, false, objStore);
 
             // добавить множественные свойства по товару и складу
-            addPropertyDraw(objStore, objArt, properties,
+            addPropertyDraw(objStore, objArt,
                     baseGroup, balanceGroup, incPrmsGroup, outPrmsGroup);
         }
     }
@@ -1738,38 +1734,38 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             super(parent, ID, caption);
 
             // создать блок "Поставщик"
-            ObjectEntity objSupplier = addSingleGroupObject(supplier, "Поставщик", properties,
-                                                                                    baseGroup);
+            ObjectEntity objSupplier = addSingleGroupObject(supplier, "Поставщик",
+                    baseGroup);
             objSupplier.groupTo.initClassView = ClassViewType.PANEL;
             objSupplier.groupTo.banClassView = ClassViewType.GRID;
 
             // создать блок "Склад"
-            ObjectEntity objStore = addSingleGroupObject(store, "Склад", properties,
-                                                                        baseGroup);
+            ObjectEntity objStore = addSingleGroupObject(store, "Склад",
+                    baseGroup);
             objStore.groupTo.initClassView = ClassViewType.PANEL;
 
             // создать блок "Товар"
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", properties,
-                                                                        baseGroup, true);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар",
+                    baseGroup, true);
 
             // добавить множественные свойства
-            addPropertyDraw(objStore, objArt, properties,
+            addPropertyDraw(objStore, objArt,
                     baseGroup, balanceGroup, incPrmsGroup, outPrmsGroup);
 
             // установить фильтр по умолчанию на поставщик товара = поставщик
             addFixedFilter(new CompareFilterEntity(addPropertyObject(storeSupplier, objStore, objArt), Compare.EQUALS, objSupplier));
 
             // добавить стандартные фильтры
-            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(IDShift(1));
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
 /*            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
                                   null,
                                   "Все",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));*/
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new CompareFilterEntity(getPropertyObject(balanceStoreQuantity), Compare.GREATER, 0),
                                   "Есть на складе",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
-            filterGroup.addFilter(new RegularFilterEntity(IDShift(1),
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new CompareFilterEntity(getPropertyObject(balanceStoreQuantity), Compare.LESS_EQUALS, 0),
                                   "Нет на складе",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
@@ -1787,12 +1783,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public DateIntervalFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            gobjInterval = new GroupObjectEntity(IDShift(1));
+            gobjInterval = new GroupObjectEntity(genID());
             gobjInterval.initClassView = ClassViewType.PANEL;
             gobjInterval.banClassView = ClassViewType.GRID;
 
-            objDateFrom = new ObjectEntity(IDShift(1), DateClass.instance, "С даты :");
-            objDateTo = new ObjectEntity(IDShift(1), DateClass.instance, "По дату :");
+            objDateFrom = new ObjectEntity(genID(), DateClass.instance, "С даты :");
+            objDateTo = new ObjectEntity(genID(), DateClass.instance, "По дату :");
 
             gobjInterval.add(objDateFrom);
             gobjInterval.add(objDateTo);
@@ -1805,10 +1801,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public MainAccountFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objStore = addSingleGroupObject(store, "Склад", properties,
-                                                                        baseGroup);
-            ObjectEntity objDoc = addSingleGroupObject(document, "Документ", properties,
-                                                                                    baseGroup, docDate);
+            ObjectEntity objStore = addSingleGroupObject(store, "Склад",
+                    baseGroup);
+            ObjectEntity objDoc = addSingleGroupObject(document, "Документ",
+                    baseGroup, docDate);
 
 //            addPropertyDraw(balanceDocStoreDateMSumAccount, objStore, objDateFrom);
 //            addPropertyDraw(balanceDocStoreDateESumAccount, objStore, objDateTo);
@@ -1832,10 +1828,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public SalesArticleStoreFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objArticle = addSingleGroupObject(article, "Товар", properties,
-                                                                        baseGroup);
-            ObjectEntity objStore = addSingleGroupObject(store, "Склад", properties,
-                                                                        baseGroup);
+            ObjectEntity objArticle = addSingleGroupObject(article, "Товар",
+                    baseGroup);
+            ObjectEntity objStore = addSingleGroupObject(store, "Склад",
+                    baseGroup);
 
             addPropertyDraw(saleArticleBetweenDateQuantity, objArticle, objDateFrom, objDateTo);
 
@@ -1851,7 +1847,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         SecurityPolicy securityPolicy = addPolicy("Базовая полтика", "Запрещает редактирование некоторых свойств.");
 
         securityPolicy.property.view.deny(extIncDocumentSumPay);
-        securityPolicy.property.view.deny(incSumsGroup.getProperties());
+        securityPolicy.property.view.deny(incSumsGroup.getProperties(null));
         securityPolicy.property.change.deny(extIncDetailArticle);
         securityPolicy.property.change.deny(extIncDetailQuantity);
 

@@ -6,6 +6,7 @@ import platform.server.caches.IdentityLazy;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
+import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.*;
 import platform.server.data.expr.*;
@@ -20,7 +21,6 @@ import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.instance.GroupObjectInstance;
-import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -33,6 +33,7 @@ import platform.server.session.*;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.entity.PropertyDrawEntity;
+import platform.server.form.entity.FormEntity;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -393,8 +394,23 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     // по умолчанию заполняет свойства
     // assert что entity этого свойства
-    public void proceedDefaultDraw(PropertyDrawEntity<T> entity) {        
+    public void proceedDefaultDraw(PropertyDrawEntity<T> entity, FormEntity form) {        
     }
     public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<T> entity) {
+    }
+
+    public boolean hasChild(Property prop) {
+        return prop.equals(this);
+    }
+
+    public List<ConcreteCustomClass> getClasses() {
+        return new ArrayList<ConcreteCustomClass>();
+    }
+
+    public List<Property> getProperties(ValueClass[] classes) {
+        if(interfaces.size()==classes.length)
+            return Collections.singletonList((Property)this);
+        else
+            return new ArrayList<Property>();
     }
 }

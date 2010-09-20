@@ -2,6 +2,7 @@ package platform.server.logics.property;
 
 import platform.base.BaseUtils;
 import platform.interop.Compare;
+import platform.interop.ClassViewType;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
@@ -9,6 +10,11 @@ import platform.server.session.Changes;
 import platform.server.session.MapDataChanges;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
+import platform.server.form.entity.PropertyDrawEntity;
+import platform.server.form.entity.PropertyObjectInterfaceEntity;
+import platform.server.form.entity.ObjectEntity;
+import platform.server.form.entity.FormEntity;
+import platform.server.classes.CustomClass;
 
 import java.util.*;
 
@@ -135,5 +141,15 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
             return ((PropertyMapImplement<?,Interface>)BaseUtils.singleValue(implement.mapping)).mapChangeImplement();
         else
             return super.getChangeImplement();
+    }
+
+    @Override
+    public void proceedDefaultDraw(PropertyDrawEntity<Interface> entity, FormEntity form) {
+        super.proceedDefaultDraw(entity, form);
+        if (implement.mapping.size() == 1 && ((PropertyMapImplement<?, Interface>) BaseUtils.singleValue(implement.mapping)).property instanceof ObjectClassProperty) {
+            PropertyObjectInterfaceEntity mapObject = BaseUtils.singleValue(entity.propertyObject.mapping);
+            if (mapObject instanceof ObjectEntity && !((CustomClass) ((ObjectEntity) mapObject).baseClass).hasChildren())
+                entity.forceViewType = ClassViewType.HIDE;
+        }
     }
 }

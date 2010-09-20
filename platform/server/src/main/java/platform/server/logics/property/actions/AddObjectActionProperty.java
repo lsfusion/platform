@@ -12,8 +12,7 @@ import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.entity.PropertyDrawEntity;
-import platform.server.form.entity.PropertyObjectInterfaceEntity;
-import platform.base.BaseUtils;
+import platform.server.form.entity.FormEntity;
 
 import javax.swing.*;
 import java.sql.SQLException;
@@ -49,8 +48,8 @@ public class AddObjectActionProperty extends ActionProperty {
     }
 
     @Override
-    public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity) {
-        super.proceedDefaultDraw(entity);
+    public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity form) {
+        super.proceedDefaultDraw(entity, form);
         entity.shouldBeLast = true;
         entity.forceViewType = ClassViewType.PANEL;
     }

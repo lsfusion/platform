@@ -24,4 +24,6 @@ public interface ValueClass extends RemoteClass {
 
     // получает выражение чисто для получения класса
     BaseExpr getClassExpr();
+
+    ValueClass getBaseClass();
 }

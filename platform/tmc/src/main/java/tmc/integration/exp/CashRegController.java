@@ -221,7 +221,7 @@ public class CashRegController {
 
         private CashRegManagementFormEntity(NavigatorElement parent, int iID) {
             super(parent, iID, "Операции с ФР");
-            addPropertyDraw(BL.properties, BL.cashRegGroup, true);
+            addPropertyDraw(BL.cashRegGroup, true);
         }
 
         @Override

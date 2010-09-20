@@ -356,15 +356,15 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         public RecordFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", properties, baseGroup);
+            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
             objDepartment.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
-            ObjectEntity objInOp = addSingleGroupObject(inOperation, "Операция прихода", properties, baseGroup);
-            ObjectEntity objOutOp = addSingleGroupObject(outOperation, "Операция расхода", properties, baseGroup);
-            ObjectEntity objExOp = addSingleGroupObject(exOperation, "Операция конверсии", properties, baseGroup);
+            ObjectEntity objInOp = addSingleGroupObject(inOperation, "Операция прихода", baseGroup);
+            ObjectEntity objOutOp = addSingleGroupObject(outOperation, "Операция расхода", baseGroup);
+            ObjectEntity objExOp = addSingleGroupObject(exOperation, "Операция конверсии", baseGroup);
 
-            addPropertyDraw(objExOp, properties, inOperationGroup);
-            addPropertyDraw(objOutOp, properties, payerGroup);
+            addPropertyDraw(objExOp, inOperationGroup);
+            addPropertyDraw(objOutOp, payerGroup);
 
             addObjectActions(this, objInOp);
             addObjectActions(this, objOutOp);
@@ -385,28 +385,28 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         public ExtraFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", properties, baseGroup);
+            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
             objDepartment.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
-            ObjectEntity objExtraStateOp = addSingleGroupObject(extraSection, "Статья затрат", properties, baseGroup);
-            ObjectEntity objYearOp = addSingleGroupObject(YearClass.instance, "Год", properties, baseGroup);
+            ObjectEntity objExtraStateOp = addSingleGroupObject(extraSection, "Статья затрат", baseGroup);
+            ObjectEntity objYearOp = addSingleGroupObject(YearClass.instance, "Год", baseGroup);
             objYearOp.groupTo.initClassView = ClassViewType.PANEL;
             objYearOp.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
-            objMonthOp = addSingleGroupObject(absMonth, "Месяц", properties, baseGroup);
-            objCur = addSingleGroupObject(currency, "Затраты", properties, baseGroup);
-            ObjectEntity objExtraOp = addSingleGroupObject(extraCost, "Доп. затраты", properties, baseGroup);
+            objMonthOp = addSingleGroupObject(absMonth, "Месяц", baseGroup);
+            objCur = addSingleGroupObject(currency, "Затраты", baseGroup);
+            ObjectEntity objExtraOp = addSingleGroupObject(extraCost, "Доп. затраты", baseGroup);
 
-            addPropertyDraw(objExtraStateOp, objYearOp, objMonthOp, properties, baseGroup);
-            addPropertyDraw(objDepartment, objMonthOp, objYearOp, objExtraStateOp, properties, baseGroup);
-            addPropertyDraw(objDepartment, objMonthOp, objYearOp, properties, baseGroup);
+            addPropertyDraw(objExtraStateOp, objYearOp, objMonthOp, baseGroup);
+            addPropertyDraw(objDepartment, objMonthOp, objYearOp, objExtraStateOp, baseGroup);
+            addPropertyDraw(objDepartment, objMonthOp, objYearOp, baseGroup);
 
             addObjectActions(this, objExtraStateOp);
             addObjectActions(this, objExtraOp);
-            addPropertyDraw(objExtraOp, properties, payerGroup);
+            addPropertyDraw(objExtraOp, payerGroup);
             //NotNullFilterEntity documentFilter = new NotNullFilterEntity(getPropertyObject(salaryInMonth));
             //addFixedFilter(documentFilter);
 
-            addPropertyDraw(objDepartment, objMonthOp, objYearOp, objCur, properties, extraGroup);
+            addPropertyDraw(objDepartment, objMonthOp, objYearOp, objCur, extraGroup);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(outYear, objExtraOp), Compare.EQUALS, objYearOp));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(outMonth, objExtraOp), Compare.EQUALS, objMonthOp));
@@ -432,32 +432,32 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
         public SpecialRecordFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
-            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", properties, baseGroup);
+            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
             objDepartment.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
-            ObjectEntity objPersonOp = addSingleGroupObject(person, "Персонал", properties, baseGroup);
-            ObjectEntity objYearOp = addSingleGroupObject(YearClass.instance, "Год", properties, baseGroup);
+            ObjectEntity objPersonOp = addSingleGroupObject(person, "Персонал", baseGroup);
+            ObjectEntity objYearOp = addSingleGroupObject(YearClass.instance, "Год", baseGroup);
             objYearOp.groupTo.initClassView = ClassViewType.PANEL;
             objYearOp.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
-            objMonthOp = addSingleGroupObject(absMonth, "Месяц", properties, baseGroup);
-            objCur = addSingleGroupObject(currency, "Затраты", properties, baseGroup);
-            objExtraStateOp = addSingleGroupObject(extraPersonSection, "Статья затрат", properties, baseGroup);
+            objMonthOp = addSingleGroupObject(absMonth, "Месяц", baseGroup);
+            objCur = addSingleGroupObject(currency, "Затраты", baseGroup);
+            objExtraStateOp = addSingleGroupObject(extraPersonSection, "Статья затрат", baseGroup);
 
-            objPayOp = addSingleGroupObject(pay, "Выплата", properties, baseGroup);
+            objPayOp = addSingleGroupObject(pay, "Выплата", baseGroup);
 
-            addPropertyDraw(objPersonOp, objYearOp, objMonthOp, properties, salaryGroup);
-            addPropertyDraw(objYearOp, objMonthOp, properties, dateTimeGroup);
-            addPropertyDraw(objPersonOp, objYearOp, objMonthOp, properties, dateTimeGroup);
-            addPropertyDraw(objPersonOp, objYearOp, objMonthOp, properties, baseGroup);
-            addPropertyDraw(objPersonOp, objExtraStateOp, objYearOp, objMonthOp, properties, baseGroup);
-            addPropertyDraw(objYearOp, objMonthOp, properties, baseGroup);
-            addPropertyDraw(objPayOp, properties, payerGroup);
+            addPropertyDraw(objPersonOp, objYearOp, objMonthOp, salaryGroup);
+            addPropertyDraw(objYearOp, objMonthOp, dateTimeGroup);
+            addPropertyDraw(objPersonOp, objYearOp, objMonthOp, dateTimeGroup);
+            addPropertyDraw(objPersonOp, objYearOp, objMonthOp, baseGroup);
+            addPropertyDraw(objPersonOp, objExtraStateOp, objYearOp, objMonthOp, baseGroup);
+            addPropertyDraw(objYearOp, objMonthOp, baseGroup);
+            addPropertyDraw(objPayOp, payerGroup);
 
             addObjectActions(this, objPersonOp);
             addObjectActions(this, objPayOp);
 
 
-            addPropertyDraw(objPersonOp, objYearOp, objMonthOp, objCur, properties, baseGroup);
+            addPropertyDraw(objPersonOp, objYearOp, objMonthOp, objCur, baseGroup);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(isWorkingMonthForPerson, objPersonOp, objMonthOp, objYearOp)));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(outPerson, objPayOp), Compare.EQUALS, objPersonOp));
@@ -485,15 +485,15 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
         public MissionFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
-            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", properties, baseGroup);
+            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
             objDepartment.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
-            ObjectEntity objMission = addSingleGroupObject(mission, "Командировка", properties, baseGroup);
-            ObjectEntity objPerson = addSingleGroupObject(person, "Сотрудник", properties, baseGroup);
-            ObjectEntity objOutOp = addSingleGroupObject(misOperation, "Расх. команд.", properties, baseGroup);
+            ObjectEntity objMission = addSingleGroupObject(mission, "Командировка", baseGroup);
+            ObjectEntity objPerson = addSingleGroupObject(person, "Сотрудник", baseGroup);
+            ObjectEntity objOutOp = addSingleGroupObject(misOperation, "Расх. команд.", baseGroup);
 
-            addPropertyDraw(objMission, objPerson, properties, baseGroup);
-            addPropertyDraw(objOutOp, properties, payerGroup);
+            addPropertyDraw(objMission, objPerson, baseGroup);
+            addPropertyDraw(objOutOp, payerGroup);
 
             addObjectActions(this, objMission);
             addObjectActions(this, objOutOp);
@@ -509,15 +509,15 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         public DepartmentBalanceFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", properties, baseGroup);
+            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
             objDepartment.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
-            ObjectEntity objCur = addSingleGroupObject(currency, "Валюта", properties, baseGroup);
-            ObjectEntity objInOp = addSingleGroupObject(inAbsOperation, "Операция пр.", properties, baseGroup, true);
-            ObjectEntity objOutOp = addSingleGroupObject(outAbsOperation, "Операция расх.", properties, baseGroup, true);
-            addPropertyDraw(properties, baseGroup, true, objCur, objInOp);
-            addPropertyDraw(properties, baseGroup, true, objCur, objOutOp);
-            addPropertyDraw(properties, baseGroup, false, objDepartment, objCur);
+            ObjectEntity objCur = addSingleGroupObject(currency, "Валюта", baseGroup);
+            ObjectEntity objInOp = addSingleGroupObject(inAbsOperation, "Операция пр.", baseGroup, true);
+            ObjectEntity objOutOp = addSingleGroupObject(outAbsOperation, "Операция расх.", baseGroup, true);
+            addPropertyDraw(baseGroup, true, objCur, objInOp);
+            addPropertyDraw(baseGroup, true, objCur, objOutOp);
+            addPropertyDraw(baseGroup, false, objDepartment, objCur);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(inCur, objInOp), Compare.EQUALS, objCur));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(outCur, objOutOp), Compare.EQUALS, objCur));
@@ -536,15 +536,15 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         public ReimbursementFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objPayer = addSingleGroupObject(payer, "Плательщик", properties, baseGroup);
-            objCurrency = addSingleGroupObject(currency, "Валюта", properties, baseGroup);
-            objDepartment = addSingleGroupObject(department, "Отдел", properties, baseGroup);
-            objOutOp = addSingleGroupObject(payerAbs, "Оплаты", properties, baseGroup);
-            objReimbursement = addSingleGroupObject(reimbursement, "Возмещение", properties, baseGroup);
+            ObjectEntity objPayer = addSingleGroupObject(payer, "Плательщик", baseGroup);
+            objCurrency = addSingleGroupObject(currency, "Валюта", baseGroup);
+            objDepartment = addSingleGroupObject(department, "Отдел", baseGroup);
+            objOutOp = addSingleGroupObject(payerAbs, "Оплаты", baseGroup);
+            objReimbursement = addSingleGroupObject(reimbursement, "Возмещение", baseGroup);
 
             addObjectActions(this, objReimbursement);
-            addPropertyDraw(objPayer, objCurrency, properties, baseGroup);
-            addPropertyDraw(objPayer, objCurrency, objDepartment, properties, baseGroup);
+            addPropertyDraw(objPayer, objCurrency, baseGroup);
+            addPropertyDraw(objPayer, objCurrency, objDepartment, baseGroup);
             addPropertyDraw(depBalanceQuantity, objCurrency, objDepartment);
             //depBalanceQuantity
             addFixedFilter(new CompareFilterEntity(addPropertyObject(operationPayer, objOutOp), Compare.EQUALS, objPayer));
@@ -575,23 +575,23 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
         public DepartmentRevenueFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
-            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", properties, baseGroup);
+            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
             objDepartment.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
             addPropertyDraw(baseCurrencyName);
 
-            ObjectEntity objYearOp = addSingleGroupObject(YearClass.instance, "Год", properties, baseGroup);
+            ObjectEntity objYearOp = addSingleGroupObject(YearClass.instance, "Год", baseGroup);
             objYearOp.groupTo.initClassView = ClassViewType.PANEL;
             objYearOp.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
-            ObjectEntity objMonthOp = addSingleGroupObject(absMonth, "Месяц", properties, baseGroup);
+            ObjectEntity objMonthOp = addSingleGroupObject(absMonth, "Месяц", baseGroup);
 
-            addPropertyDraw(properties, baseCurGroup, true, objDepartment, objMonthOp, objYearOp);
+            addPropertyDraw(baseCurGroup, true, objDepartment, objMonthOp, objYearOp);
 
-            ObjectEntity objCurrency = addSingleGroupObject(currency, "Валюта", properties, baseGroup);
+            ObjectEntity objCurrency = addSingleGroupObject(currency, "Валюта", baseGroup);
 
-            addPropertyDraw(properties, personGroup, true, objDepartment, objMonthOp, objYearOp, objCurrency);
-            addPropertyDraw(properties, extraGroup, true, objDepartment, objMonthOp, objYearOp, objCurrency);
-            addPropertyDraw(properties, outGroup, true, objDepartment, objMonthOp, objYearOp, objCurrency);
+            addPropertyDraw(personGroup, true, objDepartment, objMonthOp, objYearOp, objCurrency);
+            addPropertyDraw(extraGroup, true, objDepartment, objMonthOp, objYearOp, objCurrency);
+            addPropertyDraw(outGroup, true, objDepartment, objMonthOp, objYearOp, objCurrency);
         }
     }
 
@@ -609,10 +609,10 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 //            addPropertyDraw(userRateDay, objMonthOp, objYearOp);
 //            addPropertyDraw(dateByMY, objMonthOp, objYearOp);
 
-            ObjectEntity objSrcCurrency = addSingleGroupObject(currency, "Исходная валюта", properties, baseGroup);
-            ObjectEntity objDstCurrency = addSingleGroupObject(currency, "Целевая валюта", properties, baseGroup);
+            ObjectEntity objSrcCurrency = addSingleGroupObject(currency, "Исходная валюта", baseGroup);
+            ObjectEntity objDstCurrency = addSingleGroupObject(currency, "Целевая валюта", baseGroup);
 
-            ObjectEntity objDate = addSingleGroupObject(DateClass.instance, "Дата", properties, baseGroup);
+            ObjectEntity objDate = addSingleGroupObject(DateClass.instance, "Дата", baseGroup);
             objDate.groupTo.initClassView = ClassViewType.PANEL;
             objDate.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
 
@@ -620,7 +620,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             addPropertyDraw(nearestPredDate, objSrcCurrency, objDstCurrency, objDate);
             addPropertyDraw(nearestExchangeRate, objSrcCurrency, objDstCurrency, objDate);
 
-            ObjectEntity objDateRate = addSingleGroupObject(DateClass.instance, "Дата", properties, baseGroup);
+            ObjectEntity objDateRate = addSingleGroupObject(DateClass.instance, "Дата", baseGroup);
             addPropertyDraw(exchangeRate, objSrcCurrency, objDstCurrency, objDateRate);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(exchangeRate, objSrcCurrency, objDstCurrency, objDateRate)));

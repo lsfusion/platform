@@ -27,6 +27,7 @@ import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.CustomObjectInstance;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.group.AbstractNode;
+import platform.server.logics.property.Property;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.entity.ClassFormEntity;
 import platform.server.form.navigator.NavigatorElement;
@@ -380,5 +381,13 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
     @IdentityLazy
     public ClassActionClass getActionClass(CustomClass defaultClass) {
         return new ClassActionClass(this, defaultClass);        
+    }
+
+    public boolean hasChild(Property prop) {
+        return false;
+    }
+
+    public List<Property> getProperties(ValueClass[] classes) {
+        return new ArrayList<Property>();
     }
 }
