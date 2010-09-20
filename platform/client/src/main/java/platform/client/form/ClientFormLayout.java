@@ -140,9 +140,7 @@ public abstract class ClientFormLayout extends JPanel {
         if (keyBinding != null && !keyBinding.isEmpty())
             keyBinding.values().iterator().next().keyPressed(e);
 
-        if (super.processKeyBinding(ks, e, condition, pressed)) return true;
-
-        return false;
+        return super.processKeyBinding(ks, e, condition, pressed);
     }
 
     // добавляем визуальный компонент

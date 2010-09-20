@@ -26,7 +26,7 @@ public class TableCellView extends JPanel implements CellView {
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof TableCellView && ((TableCellView) o).getID() == this.getID();
+        return o instanceof TableCellView && ((TableCellView) o).key.equals(key);
     }
 
     public TableCellView(ClientPropertyDraw key, ClientFormController form) {
@@ -124,5 +124,9 @@ public class TableCellView extends JPanel implements CellView {
 
             tableEditor.requestFocusInWindow();
         }
+    }
+
+    public void keyUpdated() {
+        label.setText(key.getFullCaption());
     }
 }

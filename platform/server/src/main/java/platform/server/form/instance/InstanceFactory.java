@@ -59,24 +59,23 @@ public class InstanceFactory {
 
     public <T extends PropertyInterface> PropertyDrawInstance getInstance(PropertyDrawEntity<T> entity) {
         GroupObjectEntity[] entColumnGroupObjects = entity.getColumnGroupObjects();
-        PropertyDrawEntity[] entColumnDisplayProperties = entity.getColumnDisplayProperties();
 
         int length = entColumnGroupObjects == null ? 0 : entColumnGroupObjects.length;
         GroupObjectInstance columnGroupObjects[] = new GroupObjectInstance[length];
-        PropertyDrawInstance columnDisplayProperties[] = new PropertyDrawInstance[length];
         for (int i = 0; i < length; ++i) {
+            //noinspection ConstantConditions
             columnGroupObjects[i] = getInstance(entColumnGroupObjects[i]);
-            columnDisplayProperties[i] = getInstance(entColumnDisplayProperties[i]);
         }
 
         if (!propertyDrawInstances.containsKey(entity)) {
-            propertyDrawInstances.put(entity, new PropertyDrawInstance<T>(entity, getInstance(entity.propertyObject), getInstance(entity.toDraw), columnGroupObjects, columnDisplayProperties));
+            propertyDrawInstances.put(entity, new PropertyDrawInstance<T>(entity, getInstance(entity.propertyObject), getInstance(entity.toDraw), columnGroupObjects));
         }
 
         return propertyDrawInstances.get(entity);
     }
 
     public final PropertyObjectInterfaceInstance computer;
+    @SuppressWarnings({"UnusedDeclaration"})
     public PropertyObjectInterfaceInstance getInstance(CurrentComputerEntity entity) {
         return computer;
     }

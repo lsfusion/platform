@@ -386,7 +386,8 @@ public class ClientFormController {
 
     private Color defaultApplyBackground;
     private boolean dataChanged;
-    
+
+    private ClientFormChanges cachedFormChanges = new ClientFormChanges();
     private void applyFormChanges(ClientFormChanges formChanges) {
 
         if(formChanges.dataChanged!=null && buttonApply!=null) {
@@ -405,8 +406,11 @@ public class ClientFormController {
             }
         }
 
+        cachedFormChanges.gridObjects.putAll(formChanges.gridObjects);
+        cachedFormChanges.gridProperties.putAll(formChanges.gridProperties);
+
         for (GroupObjectController controller : controllers.values()) {
-            controller.processFormChanges(formChanges);
+            controller.processFormChanges(formChanges, cachedFormChanges.gridObjects, cachedFormChanges.gridProperties);
         }
 
         SwingUtilities.invokeLater(new Runnable() {
@@ -444,14 +448,20 @@ public class ClientFormController {
 
 
     public void changePropertyDrawWithColumnKeys(ClientPropertyDraw property, Object value, boolean all, ClientGroupObjectValue columnKey) throws IOException {
+        // для глобальных свойств пока не может быть отложенных действий
+        if (property.getGroupObject() != null) {
+            SwingUtils.stopSingleAction(property.getGroupObject().getActionID(), true);
+        }
+
         remoteForm.changePropertyDrawWithColumnKeys(property.getID(), BaseUtils.serializeObject(value), all, Serializer.serializeClientGroupObjectValue(columnKey));
         applyRemoteChanges();
     }
     
     public void changeProperty(ClientPropertyDraw property, Object value, boolean all) throws IOException {
-
-        if (property.getGroupObject() != null) // для глобальных свойств пока не может быть отложенных действий
+        // для глобальных свойств пока не может быть отложенных действий
+        if (property.getGroupObject() != null) {
             SwingUtils.stopSingleAction(property.getGroupObject().getActionID(), true);
+        }
 
         remoteForm.changePropertyDraw(property.getID(), BaseUtils.serializeObject(value), all);
         applyRemoteChanges();

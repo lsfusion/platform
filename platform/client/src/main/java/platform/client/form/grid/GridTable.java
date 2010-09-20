@@ -31,13 +31,12 @@ import java.util.List;
 public abstract class GridTable extends ClientFormTable
         implements CellTableInterface {
 
-    private final List<ClientPropertyDraw> columnProperties = new ArrayList<ClientPropertyDraw>();
+    private final List<ClientPropertyDraw> properties = new ArrayList<ClientPropertyDraw>();
 
     private List<ClientGroupObjectValue> rowKeys = new ArrayList<ClientGroupObjectValue>();
     private Map<ClientPropertyDraw, List<ClientGroupObjectValue>> columnKeys = new HashMap<ClientPropertyDraw, List<ClientGroupObjectValue>>();
-    private Map<ClientPropertyDraw, Map<ClientGroupObject, List<ClientGroupObjectValue>>> propertyColumnKeys = new HashMap<ClientPropertyDraw, Map<ClientGroupObject, List<ClientGroupObjectValue>>>();
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> columnDisplayValues = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
-    private final Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
 
     private ClientGroupObjectValue currentObject;
 
@@ -211,7 +210,7 @@ public abstract class GridTable extends ClientFormTable
     public void updateTable() {
         commitEditing();
 
-        model.update(columnProperties, rowKeys, columnKeys, columnDisplayValues, values);
+        model.update(properties, rowKeys, columnKeys, columnDisplayValues, values);
 
         refreshColumnModel();
         changeCurrentObject();
@@ -330,49 +329,12 @@ public abstract class GridTable extends ClientFormTable
         newCurrentObjectIndex = rowKeys.indexOf(currentObject);
     }
 
-    public void setGridDisplayPropertiesValues(Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> pcolumnDisplayValues) {
-        columnDisplayValues.putAll( pcolumnDisplayValues );
+    public void setDisplayPropertiesValues(Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> pcolumnDisplayValues) {
+        this.columnDisplayValues = pcolumnDisplayValues;
     }
 
-    public void setColumnKeys(ClientPropertyDraw drawProperty, Map<ClientGroupObject, List<ClientGroupObjectValue>> groupColumnKeys) {
-        if (groupColumnKeys == null || groupColumnKeys.isEmpty()) {
-            return;
-        }
-
-        OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>> keys = (OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>>) propertyColumnKeys.get(drawProperty);
-        if (keys == null) {
-            keys = new OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>>();
-            //сразу вставляем все ключи, чтобы сохранить порядок
-            for (ClientGroupObject columnGroup : drawProperty.columnGroupObjects) {
-                keys.put(columnGroup, null);
-            }
-
-            propertyColumnKeys.put(drawProperty, keys);
-        }
-
-        keys.putAll(groupColumnKeys);
-
-        //находим декартово произведение ключей колонок
-        List<ClientGroupObjectValue> propColumnKeys = new ArrayList<ClientGroupObjectValue>();
-        for (Map.Entry<ClientGroupObject, List<ClientGroupObjectValue>> entry : keys.entrySet()) {
-            List<ClientGroupObjectValue> groupObjectKeys = entry.getValue();
-
-            if (propColumnKeys.size() == 0) {
-                for (ClientGroupObjectValue groupObjectKey : groupObjectKeys) {
-                    propColumnKeys.add(new ClientGroupObjectValue(groupObjectKey));
-                }
-            } else {
-                List<ClientGroupObjectValue> newPropColumnKeys = new ArrayList<ClientGroupObjectValue>();
-                for (ClientGroupObjectValue propColumnKey : propColumnKeys) {
-                    for (ClientGroupObjectValue groupObjectKey : groupObjectKeys) {
-                        newPropColumnKeys.add(new ClientGroupObjectValue(propColumnKey, groupObjectKey));
-                    }
-                }
-                propColumnKeys = newPropColumnKeys;
-            }
-        }
-
-        columnKeys.put(drawProperty, propColumnKeys);
+    public void setColumnKeys(Map<ClientPropertyDraw, List<ClientGroupObjectValue>> columnKeys) {
+        this.columnKeys = columnKeys;
     }
 
     public void selectObject(ClientGroupObjectValue value) {
@@ -532,26 +494,26 @@ public abstract class GridTable extends ClientFormTable
         }
     }
 
-    public boolean addColumn(final ClientPropertyDraw property) {
-        if (columnProperties.indexOf(property) == -1) {
+    public boolean addProperty(final ClientPropertyDraw property) {
+        if (properties.indexOf(property) == -1) {
             List<ClientPropertyDraw> cells = logicsSupplier.getProperties();
 
             // конечно кривовато определять порядок по номеру в листе, но потом надо будет сделать по другому
             int ind = cells.indexOf(property), ins = 0;
 
-            Iterator<ClientPropertyDraw> icp = columnProperties.iterator();
+            Iterator<ClientPropertyDraw> icp = properties.iterator();
             while (icp.hasNext() && cells.indexOf(icp.next()) < ind) {
                 ins++;
             }
 
-            columnProperties.add(ins, property);
+            properties.add(ins, property);
             return true;
         } else
             return false;
     }
 
-    public boolean removeColumn(ClientPropertyDraw property) {
-        if (columnProperties.remove(property)) {
+    public boolean removeProperty(ClientPropertyDraw property) {
+        if (properties.remove(property)) {
             values.remove(property);
             return true;
         }

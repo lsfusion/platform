@@ -16,8 +16,14 @@ public class ClientGroupObjectValue extends OrderedMap<ClientObject,Object>
     }
 
     public ClientGroupObjectValue(DataInputStream inStream, ClientPropertyDraw clientPropertyDraw) throws IOException {
-        for (ClientObject clientObject : clientPropertyDraw.groupObject) {
-            put(clientObject, deserializeObject(inStream));
+        this(inStream, clientPropertyDraw, true);
+    }
+
+    public ClientGroupObjectValue(DataInputStream inStream, ClientPropertyDraw clientPropertyDraw, boolean deserializeGroupKeys) throws IOException {
+        if (deserializeGroupKeys) {
+            for (ClientObject clientObject : clientPropertyDraw.groupObject) {
+                put(clientObject, deserializeObject(inStream));
+            }
         }
 
         for (ClientGroupObject columnGroupObject : clientPropertyDraw.columnGroupObjects) {

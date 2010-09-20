@@ -12,15 +12,26 @@ public class ClientFormChanges {
 
     public String message;
 
-    public final Map<ClientGroupObject,Byte> classViews;
+    public Map<ClientGroupObject,Byte> classViews;
     public Map<ClientGroupObject,ClientGroupObjectValue> objects;
     public Map<ClientGroupObject,List<ClientGroupObjectValue>> gridObjects;
     public Map<ClientPropertyDraw,Map<ClientGroupObjectValue,Object>> gridProperties;
-    public Map<ClientPropertyDraw,Object> panelProperties;
+    public Map<ClientPropertyDraw,Map<ClientGroupObjectValue,Object>> panelProperties;
     public Set<ClientPropertyDraw> dropProperties;
 
+    public ClientFormChanges()  {
+        classViews = new HashMap<ClientGroupObject, Byte>();
+        objects = new HashMap<ClientGroupObject, ClientGroupObjectValue>();
+        gridObjects = new HashMap<ClientGroupObject, List<ClientGroupObjectValue>>();
+        gridProperties = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+        panelProperties = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+        dropProperties = new HashSet<ClientPropertyDraw>();
+        message = null;
+        dataChanged = false;
+    }
+    
     public ClientFormChanges(DataInputStream inStream, ClientForm clientForm) throws IOException {
-        
+
         classViews = new HashMap<ClientGroupObject, Byte>();
         int count = inStream.readInt();
         for (int i = 0; i < count; i++)
@@ -47,30 +58,8 @@ public class ClientFormChanges {
             gridObjects.put(clientGroupObject, clientGridObjects);
         }
 
-//        for (ClientGroupObject groupObject : gridObjects.keySet()) {
-//            System.out.println(groupObject + " : " + gridObjects.get(groupObject).size());
-//        }
-
-        gridProperties = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
-        count = inStream.readInt();
-        for (int i = 0; i < count; i++) {
-            ClientPropertyDraw clientPropertyDraw = clientForm.getProperty(inStream.readInt());
-
-            Map<ClientGroupObjectValue, Object> gridPropertyValues = new HashMap<ClientGroupObjectValue, Object>();
-            int mapCount = inStream.readInt();
-            for (int j = 0; j < mapCount; j++) {
-                gridPropertyValues.put(new ClientGroupObjectValue(inStream, clientPropertyDraw),
-                        BaseUtils.deserializeObject(inStream));
-            }
-
-            gridProperties.put(clientPropertyDraw, gridPropertyValues);
-        }
-
-        panelProperties = new HashMap<ClientPropertyDraw, Object>();
-        count = inStream.readInt();
-        for (int i = 0; i < count; i++) {
-            panelProperties.put(clientForm.getProperty(inStream.readInt()), BaseUtils.deserializeObject(inStream));
-        }
+        gridProperties = deserializeProperties(inStream, clientForm, true);
+        panelProperties = deserializeProperties(inStream, clientForm, false);
 
         //DropProperties
         dropProperties = new HashSet<ClientPropertyDraw>();
@@ -80,5 +69,25 @@ public class ClientFormChanges {
 
         message = inStream.readUTF();
         dataChanged = (Boolean) BaseUtils.deserializeObject(inStream);
+    }
+
+    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> deserializeProperties(DataInputStream inStream,
+                                                                                               ClientForm clientForm,
+                                                                                               boolean deserializeKeys) throws IOException {
+        Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> properties = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+        int count = inStream.readInt();
+        for (int i = 0; i < count; i++) {
+            ClientPropertyDraw clientPropertyDraw = clientForm.getProperty(inStream.readInt());
+
+            Map<ClientGroupObjectValue, Object> propertyValues = new HashMap<ClientGroupObjectValue, Object>();
+            int mapCount = inStream.readInt();
+            for (int j = 0; j < mapCount; j++) {
+                propertyValues.put(new ClientGroupObjectValue(inStream, clientPropertyDraw, deserializeKeys),
+                        BaseUtils.deserializeObject(inStream));
+            }
+
+            properties.put(clientPropertyDraw, propertyValues);
+        }
+        return properties;
     }
 }

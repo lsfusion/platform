@@ -9,4 +9,5 @@ public interface CellView {
     void addListener(CellViewListener listener);
     void setValue(Object ivalue);
     void startEditing(KeyEvent e);
+    void keyUpdated();
 }

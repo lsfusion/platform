@@ -12,14 +12,14 @@ import java.io.IOException;
 
 public class PropertyController implements CellViewListener {
 
-    private ClientPropertyDraw key;
+    protected ClientPropertyDraw key;
 
     protected ClientPropertyDraw getKey() {
         return key;
     }
 
     protected final CellView view;
-    private ExternalScreenComponent extView;
+    protected ExternalScreenComponent extView;
 
     // возвращаем только как компоненту, большего пока не надо
     public JComponent getView() {
@@ -102,5 +102,9 @@ public class PropertyController implements CellViewListener {
 
     public void showViews() {
         getView().setVisible(true);
+    }
+
+    protected void keyUpdated() {
+        view.keyUpdated();
     }
 }

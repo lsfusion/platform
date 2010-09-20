@@ -22,8 +22,17 @@ public class ClientComponent implements Serializable {
 
     public boolean defaultComponent = false;
 
-    public final boolean show;
+    public boolean show;
 
+    //пришлось сделать "конструктор копирования" для ремаппинга
+    protected ClientComponent(ClientComponent original) {
+        this.design = original.design;
+        this.container = original.container;
+        this.constraints = original.constraints;
+        this.defaultComponent = original.defaultComponent = false;
+        this.show = original.show;
+    }
+    
     ClientComponent(DataInputStream inStream, Collection<ClientContainer> containers) throws IOException, ClassNotFoundException {
 
         compID = inStream.readInt();

@@ -56,7 +56,7 @@ public class ClientPropertyDraw extends ClientComponent {
         return getPreferredHeight(comp);
     }
 
-    private Dimension minimumSize;
+    protected Dimension minimumSize;
 
     public Dimension getMinimumSize(JComponent comp) {
         if (minimumSize != null)
@@ -78,7 +78,7 @@ public class ClientPropertyDraw extends ClientComponent {
         return baseType.getPreferredHeight(comp.getFontMetrics(design.getFont(comp)));
     }
 
-    private Dimension preferredSize;
+    protected Dimension preferredSize;
 
     public Dimension getPreferredSize(JComponent comp) {
         if (preferredSize != null)
@@ -100,7 +100,7 @@ public class ClientPropertyDraw extends ClientComponent {
         return getPreferredHeight(comp);
     }
 
-    private Dimension maximumSize;
+    protected Dimension maximumSize;
 
     public Dimension getMaximumSize(JComponent comp) {
         if (maximumSize != null)
@@ -108,7 +108,7 @@ public class ClientPropertyDraw extends ClientComponent {
         return new Dimension(getMaximumWidth(comp), getMaximumHeight(comp));
     }
 
-    private transient PropertyRendererComponent renderer;
+    protected transient PropertyRendererComponent renderer;
 
     public PropertyRendererComponent getRendererComponent() {
         if (renderer == null) renderer = baseType.getRendererComponent(getFormat(), caption, design);
@@ -121,7 +121,7 @@ public class ClientPropertyDraw extends ClientComponent {
 
     // на данный момент ClientFormController нужна для 2-х целей : как owner, создаваемых диалогов и как провайдер RemoteFormInterface, для получения того, что мы вообще редактируем
 
-    private Format format;
+    protected Format format;
 
     Format getFormat() {
         if (format == null) return baseType.getDefaultFormat();
@@ -142,8 +142,8 @@ public class ClientPropertyDraw extends ClientComponent {
 
     public boolean checkEquals;
 
-    private int ID = 0;
-    private String sID;
+    protected int ID = 0;
+    protected String sID;
 
     public ClientGroupObject groupObject;
     public ClientGroupObject[] columnGroupObjects;
@@ -152,6 +152,33 @@ public class ClientPropertyDraw extends ClientComponent {
 
     public boolean autoHide = false;
 
+    //пришлось сделать "конструктор копирования" для ремаппинга
+    protected ClientPropertyDraw(ClientPropertyDraw original) {
+        super(original);
+        this.baseType = original.baseType;
+        this.caption = original.caption;
+        this.editKey = original.editKey;
+        this.showEditKey = original.showEditKey;
+        this.focusable = original.focusable;
+        this.readOnly = original.readOnly;
+        this.panelLabelAbove = original.panelLabelAbove;
+        this.externalScreen = original.externalScreen;
+        this.externalScreenConstraints = original.externalScreenConstraints;
+        this.minimumSize = original.minimumSize;
+        this.preferredSize = original.preferredSize;
+        this.maximumSize = original.maximumSize;
+        this.renderer = original.renderer;
+        this.format = original.format;
+        this.checkEquals = original.checkEquals;
+        this.ID = original.ID;
+        this.sID = original.sID;
+        this.groupObject = original.groupObject;
+        this.columnGroupObjects = original.columnGroupObjects;
+        this.columnDisplayProperties = original.columnDisplayProperties;
+        this.columnDisplayPropertiesIds = original.columnDisplayPropertiesIds;
+        this.autoHide = original.autoHide = false;
+    }
+    
     public ClientPropertyDraw(DataInputStream inStream, Collection<ClientContainer> containers, Collection<ClientGroupObject> groups) throws IOException, ClassNotFoundException {
         super(inStream, containers);
 

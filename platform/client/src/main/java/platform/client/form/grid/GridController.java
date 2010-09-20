@@ -1,5 +1,6 @@
 package platform.client.form.grid;
 
+import platform.client.form.PropertiesController;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormLayout;
 import platform.client.form.GroupObjectLogicsSupplier;
@@ -16,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GridController {
+public class GridController extends PropertiesController {
 
     private final ClientGrid key;
     public ClientGrid getKey() {
@@ -104,7 +105,7 @@ public class GridController {
 
     public void addProperty(ClientPropertyDraw property) {
         if (property.show) {
-            table.addColumn(property);
+            table.addProperty(property);
         }
 
         if (property.externalScreen != null) {
@@ -114,7 +115,7 @@ public class GridController {
 
     public void removeProperty(ClientPropertyDraw property) {
         if (property.show) {
-            table.removeColumn(property);
+            table.removeProperty(property);
         }
     }
 
@@ -123,7 +124,13 @@ public class GridController {
     }
 
     public void setColumnKeys(ClientPropertyDraw drawProperty, Map<ClientGroupObject, List<ClientGroupObjectValue>> groupColumnKeys) {
-        table.setColumnKeys(drawProperty, groupColumnKeys);
+        super.setColumnKeys(drawProperty, groupColumnKeys);
+        table.setColumnKeys(columnKeys);
+    }
+
+    public void setDisplayPropertiesValues(Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> pcolumnDisplayValues) {
+        super.setDisplayPropertiesValues(pcolumnDisplayValues);
+        table.setDisplayPropertiesValues(columnDisplayValues);
     }
 
     public void selectObject(ClientGroupObjectValue currentObject) {
@@ -167,11 +174,7 @@ public class GridController {
         view.setVisible(true);
     }
 
-    public void updateTable() {
+    public void update() {
         table.updateTable();
-    }
-
-    public void setGridDisplayPropertiesValues(Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> columnDisplayValues) {
-        table.setGridDisplayPropertiesValues(columnDisplayValues);
     }
 }

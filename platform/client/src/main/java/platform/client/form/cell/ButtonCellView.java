@@ -11,8 +11,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
 public class ButtonCellView extends JButton implements CellView {
+    private ClientPropertyDraw key;
+
     public ButtonCellView(final ClientPropertyDraw key, final ClientFormController form) {
         super(key.getFullCaption());
+        this.key = key;
 
         if (key.readOnly) {
             setEnabled(false);
@@ -55,5 +58,9 @@ public class ButtonCellView extends JButton implements CellView {
 
     public void startEditing(KeyEvent e) {
         doClick(20);
+    }
+
+    public void keyUpdated() {
+        setText(key.getFullCaption());
     }
 }

@@ -20,7 +20,7 @@ public class FormChanges {
     public Map<GroupObjectInstance, Map<ObjectInstance, ? extends ObjectValue>> objects = new HashMap<GroupObjectInstance, Map<ObjectInstance, ? extends ObjectValue>>();
     public Map<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> gridObjects = new HashMap<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>>();
     public Map<PropertyDrawInstance, Map<Map<ObjectInstance, DataObject>, Object>> gridProperties = new HashMap<PropertyDrawInstance, Map<Map<ObjectInstance, DataObject>, Object>>();
-    public Map<PropertyDrawInstance, Object> panelProperties = new HashMap<PropertyDrawInstance, Object>();
+    public Map<PropertyDrawInstance, Map<Map<ObjectInstance, DataObject>, Object>> panelProperties = new HashMap<PropertyDrawInstance, Map<Map<ObjectInstance, DataObject>, Object>>();
     public Set<PropertyDrawInstance> dropProperties = new HashSet<PropertyDrawInstance>();
 
     void out(FormInstance<?> bv) {
@@ -48,8 +48,12 @@ public class FormChanges {
         }
 
         System.out.println(" ------- Panel ---------------");
-        for (PropertyDrawInstance property : panelProperties.keySet())
-            System.out.println(property + " - " + panelProperties.get(property));
+        for (PropertyDrawInstance property : panelProperties.keySet()) {
+            Map<Map<ObjectInstance, DataObject>, Object> propertyValues = panelProperties.get(property);
+            System.out.println(property + " ---- property");
+            for (Map<ObjectInstance, DataObject> gov : propertyValues.keySet())
+                System.out.println(gov + " - " + propertyValues.get(gov));
+        }
 
         System.out.println(" ------- Drop ---------------");
         for (PropertyDrawInstance property : dropProperties)
@@ -93,37 +97,8 @@ public class FormChanges {
             }
         }
 
-        outStream.writeInt(gridProperties.size());
-        for (Map.Entry<PropertyDrawInstance, Map<Map<ObjectInstance, DataObject>, Object>> gridProperty : gridProperties.entrySet()) {
-            PropertyDrawInstance propertyDrawInstance = gridProperty.getKey();
-
-            outStream.writeInt(propertyDrawInstance.getID());
-
-            outStream.writeInt(gridProperty.getValue().size());
-            for (Map.Entry<Map<ObjectInstance, DataObject>, Object> gridPropertyValue : gridProperty.getValue().entrySet()) {
-                Map<ObjectInstance, DataObject> objectValues = gridPropertyValue.getKey();
-
-                // именно так чтобы гарантировано в том же порядке
-                for (ObjectInstance object : propertyDrawInstance.toDraw.objects) {
-                    BaseUtils.serializeObject(outStream, objectValues.get(object).getValue());
-                }
-
-                for (GroupObjectInstance columnGroupObject : propertyDrawInstance.columnGroupObjects) {
-                    for (ObjectInstance object : columnGroupObject.objects) {
-                        BaseUtils.serializeObject(outStream, objectValues.get(object).getValue());
-                    }
-                }
-                
-                BaseUtils.serializeObject(outStream, gridPropertyValue.getValue());
-            }
-        }
-
-        outStream.writeInt(panelProperties.size());
-        for (Map.Entry<PropertyDrawInstance, Object> panelProperty : panelProperties.entrySet()) {
-            outStream.writeInt(panelProperty.getKey().getID());
-
-            BaseUtils.serializeObject(outStream, panelProperty.getValue());
-        }
+        serializeProperties(outStream, gridProperties, true);
+        serializeProperties(outStream, panelProperties, false);
 
         outStream.writeInt(dropProperties.size());
         for (PropertyDrawInstance propertyView : dropProperties) {
@@ -133,5 +108,36 @@ public class FormChanges {
         outStream.writeUTF(message);
 
         BaseUtils.serializeObject(outStream, dataChanged);
+    }
+
+    private void serializeProperties(DataOutputStream outStream,
+                                     Map<PropertyDrawInstance, Map<Map<ObjectInstance, DataObject>, Object>> properties,
+                                     boolean serializeKeys) throws IOException {
+        outStream.writeInt(properties.size());
+        for (Map.Entry<PropertyDrawInstance, Map<Map<ObjectInstance, DataObject>, Object>> gridProperty : properties.entrySet()) {
+            PropertyDrawInstance propertyDrawInstance = gridProperty.getKey();
+
+            outStream.writeInt(propertyDrawInstance.getID());
+
+            outStream.writeInt(gridProperty.getValue().size());
+            for (Map.Entry<Map<ObjectInstance, DataObject>, Object> gridPropertyValue : gridProperty.getValue().entrySet()) {
+                Map<ObjectInstance, DataObject> objectValues = gridPropertyValue.getKey();
+
+                if (serializeKeys) {
+                    // именно так чтобы гарантировано в том же порядке
+                    for (ObjectInstance object : propertyDrawInstance.toDraw.objects) {
+                        BaseUtils.serializeObject(outStream, objectValues.get(object).getValue());
+                    }
+                }
+
+                for (GroupObjectInstance columnGroupObject : propertyDrawInstance.columnGroupObjects) {
+                    for (ObjectInstance object : columnGroupObject.objects) {
+                        BaseUtils.serializeObject(outStream, objectValues.get(object).getValue());
+                    }
+                }
+
+                BaseUtils.serializeObject(outStream, gridPropertyValue.getValue());
+            }
+        }
     }
 }
