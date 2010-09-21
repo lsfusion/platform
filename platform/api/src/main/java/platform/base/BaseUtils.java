@@ -66,6 +66,15 @@ public class BaseUtils {
         return result;
     }
 
+    public static <K,E,V> OrderedMap<K,V> innerJoin(OrderedMap<K, E> map, Map<E,V> joinMap) {
+        OrderedMap<K,V> result = new OrderedMap<K, V>();
+        for(Map.Entry<K,E> entry : map.entrySet()) {
+            V joinValue = joinMap.get(entry.getValue());
+            if(joinValue!=null) result.put(entry.getKey(), joinValue);
+        }
+        return result;
+    }
+
     public static <K,V> Map<K,V> filterValues(Map<K,V> map, Collection<V> values) {
         Map<K,V> result = new HashMap<K, V>();
         for(Map.Entry<K,V> entry : map.entrySet())
