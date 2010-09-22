@@ -996,7 +996,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                         updateGroupObject(group, result, group.keys.isEmpty() ? group.getNulls() : group.keys.getKey(activeRow));
                     }
                     group.updated = (group.updated | GroupObjectInstance.UPDATED_KEYS);
-                }
+                } else
+                    if((group.updated & GroupObjectInstance.UPDATED_OBJECT)!=0) // так как объект может меняться скажем в результате ActionProperty и нужно об этом сказать клиенту
+                        result.objects.put(group, group.getGroupObjectValue());
             }
 
             final Map<PropertyDrawInstance,Set<GroupObjectInstance>> readProperties = new HashMap<PropertyDrawInstance, Set<GroupObjectInstance>>();
