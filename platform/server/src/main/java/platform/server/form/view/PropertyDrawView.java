@@ -106,7 +106,8 @@ public class PropertyDrawView extends ComponentView implements ClientSerialize {
 
         outStream.writeBoolean(autoHide);
 
-        outStream.writeBoolean(!(entity.propertyObject.property instanceof ExecuteProperty)); // 
+        outStream.writeBoolean(!(entity.propertyObject.property instanceof ExecuteProperty)); //
+        outStream.writeBoolean(entity.propertyObject.property.askConform);
     }
 
     public Dimension minimumSize;

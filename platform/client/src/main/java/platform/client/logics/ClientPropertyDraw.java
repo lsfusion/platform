@@ -27,7 +27,7 @@ import java.awt.*;
 public class ClientPropertyDraw extends ClientComponent {
 
     // символьный идентификатор, нужен для обращению к свойствам в печатных формах
-    ClientType baseType;
+    public ClientType baseType;
 
     public String caption;
 
@@ -141,6 +141,7 @@ public class ClientPropertyDraw extends ClientComponent {
     }
 
     public boolean checkEquals;
+    public boolean askConform;
 
     protected int ID = 0;
     protected String sID;
@@ -177,8 +178,9 @@ public class ClientPropertyDraw extends ClientComponent {
         this.columnDisplayProperties = original.columnDisplayProperties;
         this.columnDisplayPropertiesIds = original.columnDisplayPropertiesIds;
         this.autoHide = original.autoHide = false;
+        this.askConform = original.askConform;
     }
-    
+
     public ClientPropertyDraw(DataInputStream inStream, Collection<ClientContainer> containers, Collection<ClientGroupObject> groups) throws IOException, ClassNotFoundException {
         super(inStream, containers);
 
@@ -236,6 +238,7 @@ public class ClientPropertyDraw extends ClientComponent {
         autoHide = inStream.readBoolean();
 
         checkEquals = inStream.readBoolean();
+        askConform = inStream.readBoolean();
     }
 
     private ClientGroupObject getClientGroupObject(Collection<ClientGroupObject> groups, int groupID) {
@@ -252,6 +255,18 @@ public class ClientPropertyDraw extends ClientComponent {
     }
 
     public PropertyEditorComponent getEditorComponent(ClientFormController form, Object value) throws IOException, ClassNotFoundException {
+
+        if (askConform) {
+            int n = JOptionPane.showConfirmDialog(
+                    null,
+                    baseType.getConformedMessage() + " \"" + caption + "\"?",
+                    "LS Fusion",
+                    JOptionPane.YES_NO_OPTION);
+            if (n != JOptionPane.YES_OPTION) {
+                return null;
+            }
+        }
+        
         ClientType changeType = getPropertyChangeType(form);
         if (changeType == null) return null;
         return changeType.getEditorComponent(form, this, value, getFormat(), design);

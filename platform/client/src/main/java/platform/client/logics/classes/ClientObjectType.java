@@ -61,4 +61,8 @@ public class ClientObjectType implements ClientType {
     public Object parseString(String s) throws ParseException {
         throw new ParseException("ObjectClass не поддерживает конвертацию из строки.", 0);
     }
+
+    public String getConformedMessage() {
+        return "Вы действительно хотите редактировать свойство";
+    }
 }

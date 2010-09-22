@@ -44,6 +44,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public String caption;
 
+    public boolean askConform = false;
+
     public String toString() {
         return caption;
     }

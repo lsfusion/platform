@@ -63,4 +63,9 @@ public class ClientActionClass extends ClientDataClass {
     public Object parseString(String s) throws ParseException {
         throw new ParseException("ActionClass не поддерживает конвертацию из строки.", 0);
     }
+
+    @Override
+    public String getConformedMessage() {
+        return "Вы действительно хотите выполнить действие";
+    }
 }

@@ -35,4 +35,6 @@ public interface ClientType {
     Object parseString(String s) throws ParseException;
 
     boolean shouldBeDrawn(ClientFormController form);
+    
+    String getConformedMessage();
 }

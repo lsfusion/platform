@@ -61,4 +61,8 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
     public boolean shouldBeDrawn(ClientFormController form) {
         return true;
     }
+
+    public String getConformedMessage(){
+        return "Вы действительно хотите редактировать свойство";
+    }
 }
