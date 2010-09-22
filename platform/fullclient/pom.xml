@@ -102,12 +102,12 @@
         <dependency>
             <groupId>bibliothek.gui</groupId>
             <artifactId>dockingFramesCore</artifactId>
-            <version>1.0.8_5e</version>
+            <version>1.0.8_5f</version>
         </dependency>
         <dependency>
             <groupId>bibliothek.gui</groupId>
             <artifactId>dockingFramesCommon</artifactId>
-            <version>1.0.8_5e</version>
+            <version>1.0.8_5f</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>

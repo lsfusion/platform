@@ -45,6 +45,7 @@ public class ViewManager {
         page.setLocation(gridArea.getStationLocation());
         control.add(page);
         page.setVisible(true);
+        page.setRemoveOnClose(true);
     }
 
     public void openClient(int formID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException, JRException {
