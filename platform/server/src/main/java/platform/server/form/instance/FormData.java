@@ -2,17 +2,20 @@ package platform.server.form.instance;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 // считанные данные (должен быть интерфейс Serialize)
 public class FormData {
 
     public List<FormRow> rows = new ArrayList<FormRow>();
+    private List<ObjectInstance> orderedKeys;
+
     public void add(Map<ObjectInstance,Object> keys,Map<PropertyDrawInstance,Object> properties) {
         rows.add(new FormRow(keys,properties));
+    }
+
+    public void setOrderedKeys(List<ObjectInstance> keys) {
+        orderedKeys = keys;
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
@@ -22,7 +25,7 @@ public class FormData {
 
         FormRow firstRow = rows.iterator().next();
 
-        Set<ObjectInstance> objects = firstRow.keys.keySet();
+        Collection<ObjectInstance> objects = (orderedKeys == null ? firstRow.keys.keySet() : orderedKeys);
         outStream.writeInt(objects.size());
         for(ObjectInstance object : objects) {
             outStream.writeUTF(object.getsID());

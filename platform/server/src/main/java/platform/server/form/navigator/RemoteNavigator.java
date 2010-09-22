@@ -228,7 +228,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
                     formInstance.userGroupSeeks.put(groupObject,userSeeks);
             }
 
-            return new RemoteForm<T, FormInstance<T>>(formInstance, formEntity.getRichDesign(), formEntity.getReportDesign(),exportPort,this);
+            return new RemoteForm<T, FormInstance<T>>(formInstance, formEntity.getRichDesign(), exportPort,this);
 
         } catch (Exception e) {
            throw new RuntimeException(e);

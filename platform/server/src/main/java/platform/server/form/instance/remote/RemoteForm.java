@@ -20,13 +20,14 @@ import platform.interop.form.RemoteFormInterface;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
 import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.GroupObjectHierarchy;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.*;
 import platform.server.form.instance.filter.FilterInstance;
 import platform.server.form.instance.filter.RegularFilterGroupInstance;
 import platform.server.form.instance.listener.CurrentClassListener;
 import platform.server.form.view.FormView;
-import platform.server.form.view.report.DefaultJasperDesign;
+import platform.server.form.view.report.ReportDesignGenerator;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 
@@ -40,70 +41,25 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
 
     public final F form;
     public final FormView richDesign;
-    public final JasperDesign reportDesign;
 
     private final CurrentClassListener currentClassListener;
 
-    public RemoteForm(F form, FormView richDesign, JasperDesign reportDesign, int port, CurrentClassListener currentClassListener) throws RemoteException {
+    public RemoteForm(F form, FormView richDesign, int port, CurrentClassListener currentClassListener) throws RemoteException {
         super(port);
         
         this.form = form;
         this.richDesign = richDesign;
-        this.reportDesign = reportDesign;
         this.currentClassListener = currentClassListener;
     }
 
-    private JasperDesign getReportDesign(boolean toExcel) {
-
-        if (reportDesign != null) return reportDesign;
-
-        Set<Integer> hideGroupObjects = new HashSet<Integer>();
-        for (GroupObjectInstance group : form.groups)
-            if (group.curClassView == ClassViewType.HIDE)
-                hideGroupObjects.add(group.getID());
-
-        try {
-
-            File customReport = new File(getCustomReportName());
-            if (customReport.exists()) {
-                return JRXmlLoader.load(customReport);
-            }
-
-            JasperDesign design = new DefaultJasperDesign(richDesign, hideGroupObjects, toExcel).design;
-
-            String autoReportName = getAutoReportName();
-            if (!(new File(autoReportName).exists())) {
-                DynamicJasperHelper.generateJRXML(JasperCompileManager.compileReport(design),
-                                                  "UTF-8", autoReportName);
-            }
-
-            return design;
-            
-        } catch (JRException e) {
-            throw new RuntimeException("Ошибка при создании дизайна отчета по умолчанию", e);
-        }
-    }
-
-    private String getCustomReportName() {
-        return "reports/custom/" + getSID() + ".jrxml";
-    }
-
-    private String getAutoReportName() {
-        return "reports/auto/" + getSID() + ".jrxml";
-    }
-
-    public boolean hasCustomReportDesign() {
-        return reportDesign != null || new File(getCustomReportName()).exists();
-    }
-
-    public byte[] getReportDesignByteArray(boolean toExcel) {
-
+    public byte[] getReportHierarchyByteArray() {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
             CompressingOutputStream compStream = new CompressingOutputStream(outStream);
             ObjectOutputStream objOut = new ObjectOutputStream(compStream);
-            objOut.writeUTF(richDesign.caption);
-            objOut.writeObject(getReportDesign(toExcel));
+            Map<String, List<String>> dependencies = form.entity.getReportHierarchy().getReportHierarchyMap();
+            objOut.writeUTF(GroupObjectHierarchy.rootNodeName);
+            objOut.writeObject(dependencies);
             compStream.finish();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -111,17 +67,110 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
         return outStream.toByteArray();
     }
 
-    public byte[] getReportDataByteArray() {
-
+    public byte[] getReportDesignsByteArray(boolean toExcel) {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
             CompressingOutputStream compStream = new CompressingOutputStream(outStream);
-            form.getFormData(hasCustomReportDesign()).serialize(new DataOutputStream(compStream));
+            ObjectOutputStream objOut = new ObjectOutputStream(compStream);
+            Map<String, JasperDesign> res = getReportDesigns(toExcel);
+            objOut.writeObject(res);
             compStream.finish();
-        } catch (Exception e) {
+            return outStream.toByteArray();
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return outStream.toByteArray();
+    }
+
+    public byte[] getReportSourcesByteArray() {
+        ReportSourceGenerator<T> sourceGenerator = new ReportSourceGenerator<T>(form, form.entity.getReportHierarchy());
+        try {
+            Map<String, FormData> sources = sourceGenerator.generate();
+            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+            CompressingOutputStream compStream = new CompressingOutputStream(outStream);
+            DataOutputStream dataStream = new DataOutputStream(compStream);
+            dataStream.writeInt(sources.size());
+            for (Map.Entry<String, FormData> source : sources.entrySet()) {
+                dataStream.writeUTF(source.getKey());
+                source.getValue().serialize(dataStream);
+            }
+            compStream.finish();
+            return outStream.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Map<String, JasperDesign> getCustomReportDesigns() {
+        try {
+            GroupObjectHierarchy.ReportHierarchy hierarchy = form.entity.getReportHierarchy();
+            Map<String, JasperDesign> designs = new HashMap<String, JasperDesign>();
+            List<String> ids = new ArrayList<String>();
+            ids.add(GroupObjectHierarchy.rootNodeName);
+            for (GroupObjectHierarchy.ReportNode node : hierarchy.getAllNodes()) {
+                ids.add(node.getID());
+            }
+            for (String id : ids) {
+                File subReportFile = new File(getCustomReportName(id));
+                if (subReportFile.exists()) {
+                    JasperDesign subreport = JRXmlLoader.load(subReportFile);
+                    designs.put(id, subreport);
+                }
+            }
+            return designs;
+        } catch (JRException e) {
+            return null;
+        }
+    }
+
+    private Map<String, JasperDesign> getReportDesigns(boolean toExcel) {
+        if (hasCustomReportDesign())  {
+            Map<String, JasperDesign> designs = getCustomReportDesigns();
+            if (designs != null) {
+                return designs;
+            }
+        }
+
+        Set<Integer> hidedGroupsId = new HashSet<Integer>();
+        for (GroupObjectInstance group : form.groups) {
+            if (group.curClassView == ClassViewType.HIDE) {
+                hidedGroupsId.add(group.getID());
+            }
+        }
+        try {
+            ReportDesignGenerator generator =
+                    new ReportDesignGenerator(richDesign, form.entity.getReportHierarchy(), hidedGroupsId, toExcel);
+            Map<String, JasperDesign> designs = generator.generate();
+            for (Map.Entry<String, JasperDesign> entry : designs.entrySet()) {
+                String id = entry.getKey();
+                String reportName = (id.equals(GroupObjectHierarchy.rootNodeName) ? getAutoReportName("") : getAutoReportName(id));
+                DynamicJasperHelper.generateJRXML(JasperCompileManager.compileReport(entry.getValue()), "UTF-8", reportName);
+            }
+            return designs;
+        } catch (JRException e) {
+            throw new RuntimeException("Ошибка при создании дизайна", e);
+        }
+    }
+
+    private String getCustomReportName(String name) {
+        if (name.equals(GroupObjectHierarchy.rootNodeName)) {
+            return "reports/custom/" + getSID() + ".jrxml";
+        } else {
+            return "reports/custom/" + getSID() + "_" + name + ".jrxml";
+        }
+    }
+
+    private String getAutoReportName(String name) {
+        if (name.equals(GroupObjectHierarchy.rootNodeName)) {
+            return "reports/auto/" + getSID() + ".jrxml";
+        } else {
+            return "reports/auto/" + getSID() + "_" + name + ".jrxml";
+        }
+    }
+
+    public boolean hasCustomReportDesign() {
+        return new File(getCustomReportName(GroupObjectHierarchy.rootNodeName)).exists();
     }
 
     public byte[] getRichDesignByteArray() {
@@ -440,7 +489,7 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
     public RemoteDialogInterface createClassPropertyDialog(int viewID, int value) throws RemoteException {
         try {
             DialogInstance<T> dialogForm = form.createClassPropertyDialog(viewID, value);
-            return new RemoteDialog<T>(dialogForm,dialogForm.entity.getRichDesign(),dialogForm.entity.getReportDesign(),exportPort, currentClassListener);
+            return new RemoteDialog<T>(dialogForm,dialogForm.entity.getRichDesign(),exportPort, currentClassListener);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -449,7 +498,7 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
     public RemoteDialogInterface createEditorPropertyDialog(int viewID) throws RemoteException {
         try {
             DialogInstance<T> dialogForm = form.createEditorPropertyDialog(viewID);
-            return new RemoteDialog<T>(dialogForm,dialogForm.entity.getRichDesign(),dialogForm.entity.getReportDesign(),exportPort, currentClassListener);
+            return new RemoteDialog<T>(dialogForm,dialogForm.entity.getRichDesign(),exportPort, currentClassListener);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -458,7 +507,7 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
     public RemoteDialogInterface createObjectDialog(int objectID) {
         try {
             DialogInstance<T> dialogForm = form.createObjectDialog(objectID);
-            return new RemoteDialog<T>(dialogForm,dialogForm.entity.getRichDesign(),dialogForm.entity.getReportDesign(),exportPort, currentClassListener);
+            return new RemoteDialog<T>(dialogForm,dialogForm.entity.getRichDesign(), exportPort, currentClassListener);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -467,7 +516,7 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
     public RemoteDialogInterface createObjectDialogWithValue(int objectID, int value) throws RemoteException {
         try {
             DialogInstance<T> dialogForm = form.createObjectDialog(objectID, value);
-            return new RemoteDialog<T>(dialogForm,dialogForm.entity.getRichDesign(),dialogForm.entity.getReportDesign(),exportPort, currentClassListener);
+            return new RemoteDialog<T>(dialogForm,dialogForm.entity.getRichDesign(), exportPort, currentClassListener);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -476,7 +525,7 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
     public RemoteFormInterface createForm(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects) {
         try {
             FormInstance<T> formInstance = form.createForm(formEntity, mapObjects);
-            return new RemoteForm<T, FormInstance<T>>(formInstance, formEntity.getRichDesign(), formEntity.getReportDesign(),exportPort, currentClassListener);
+            return new RemoteForm<T, FormInstance<T>>(formInstance, formEntity.getRichDesign(), exportPort, currentClassListener);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

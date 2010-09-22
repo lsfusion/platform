@@ -37,7 +37,7 @@ public class ActionClass extends DataClass<Object> {
     }
 
     public String getDB(SQLSyntax syntax) {
-        throw new RuntimeException("Неправильный вызов интерфейса");
+        return syntax.getBitType();
     }
 
     public boolean isSafeString(Object value) {

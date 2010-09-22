@@ -8,11 +8,12 @@ import java.rmi.RemoteException;
 public interface RemoteFormInterface extends PendingRemote {
 
     // операции с ответом
-    byte[] getReportDesignByteArray(boolean toExcel) throws RemoteException;
     boolean hasCustomReportDesign() throws RemoteException;
     byte[] getRichDesignByteArray() throws RemoteException;
 
-    byte[] getReportDataByteArray() throws RemoteException;
+    byte[] getReportHierarchyByteArray() throws RemoteException;
+    byte[] getReportDesignsByteArray(boolean toExcel) throws RemoteException;
+    byte[] getReportSourcesByteArray() throws RemoteException;
 
     public RemoteChanges getRemoteChanges() throws RemoteException;
 

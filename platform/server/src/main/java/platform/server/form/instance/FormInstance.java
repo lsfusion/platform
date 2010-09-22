@@ -773,12 +773,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         return updated.dataUpdated(changedProps);
     }
 
-    private void applyFilters() {
+    void applyFilters() {
         for (GroupObjectInstance group : groups)
             group.filters = group.getSetFilters();
     }
 
-    private void applyOrders() {
+    void applyOrders() {
         for (GroupObjectInstance group : groups)
             group.orders = group.getSetOrders();
     }

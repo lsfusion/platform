@@ -22,14 +22,7 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     public RemoteFormProxy(T target) {
         super(target);
     }
-
-    public byte[] getReportDesignByteArray(boolean toExcel) throws RemoteException {
-        logRemoteMethodStartCall("getReportDesignByteArray");
-        byte[] result = target.getReportDesignByteArray(toExcel);
-        logRemoteMethodEndCall("getReportDesignByteArray", result);
-        return result;
-    }
-
+    
     @ImmutableMethod
     public boolean hasCustomReportDesign() throws RemoteException {
         logRemoteMethodStartCall("hasCustomReportDesign");
@@ -38,13 +31,27 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
-    public byte[] getReportDataByteArray() throws RemoteException {
-        logRemoteMethodStartCall("getReportDataByteArray");
-        byte[] result = target.getReportDataByteArray();
-        logRemoteMethodEndCall("getReportDataByteArray", result);
+    public byte[] getReportDesignsByteArray(boolean toExcel) throws RemoteException {
+        logRemoteMethodStartCall("getReportDesignsByteArray");
+        byte[] result = target.getReportDesignsByteArray(toExcel);
+        logRemoteMethodEndCall("getReportDesignsByteArray", result);
         return result;
     }
 
+    public byte[] getReportSourcesByteArray() throws RemoteException {
+        logRemoteMethodStartCall("getReportSourcesByteArray");
+        byte[] result = target.getReportSourcesByteArray();
+        logRemoteMethodEndCall("getReportSourcesByteArray", result);
+        return result;
+    }
+
+    public byte[] getReportHierarchyByteArray() throws RemoteException {
+        logRemoteMethodStartCall("getReportHierarchyByteArray");
+        byte[] result = target.getReportHierarchyByteArray();
+        logRemoteMethodEndCall("getReportHierarchyByteArray", result);
+        return result;
+    }
+    
     public RemoteChanges getRemoteChanges() throws RemoteException {
         logRemoteMethodStartCall("getRemoteChanges");
         RemoteChanges result = target.getRemoteChanges();

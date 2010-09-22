@@ -1,24 +1,26 @@
 package sample;
 
 import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.xml.JRXmlLoader;
-import platform.interop.Compare;
 import platform.interop.ClassViewType;
+import platform.interop.Compare;
 import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
+import platform.server.classes.*;
 import platform.server.data.Union;
 import platform.server.data.sql.DataAdapter;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyObjectEntity;
+import platform.server.form.entity.filter.CompareFilterEntity;
+import platform.server.form.entity.filter.NotNullFilterEntity;
+import platform.server.form.entity.filter.RegularFilterEntity;
+import platform.server.form.entity.filter.RegularFilterGroupEntity;
+import platform.server.form.navigator.NavigatorElement;
+import platform.server.form.view.DefaultFormView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.group.AbstractGroup;
-import platform.server.form.view.DefaultFormView;
-import platform.server.form.navigator.*;
-import platform.server.form.entity.filter.*;
-import platform.server.classes.*;
 
 import javax.swing.*;
 import java.awt.event.InputEvent;
@@ -1335,9 +1337,6 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             objDoc.setSID("objDoc");
             getPropertyDraw(name.property, objDoc.groupTo).setSID("docName");
-
-            //
-            reportDesign = JRXmlLoader.load(getClass().getResourceAsStream("/tmc/reports/extIncLog.jrxml"));
         }
     }
 

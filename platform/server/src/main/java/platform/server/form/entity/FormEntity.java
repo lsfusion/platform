@@ -1,7 +1,5 @@
 package platform.server.form.entity;
 
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.design.JasperDesign;
 import platform.base.BaseUtils;
 import platform.base.ListPermutations;
 import platform.base.OrderedMap;
@@ -17,7 +15,8 @@ import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.*;
+import platform.server.logics.property.Property;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
 
@@ -201,7 +200,7 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
             propertyDraws.add(propertyDraw);
         
 
-        assert richDesign == null && reportDesign == null;
+        assert richDesign == null;
 
         return propertyDraw;
     }
@@ -318,8 +317,19 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
     public DefaultFormView createDefaultRichDesign() { return new DefaultFormView(this); }
     public FormView getRichDesign() { if (richDesign == null) return new DefaultFormView(this); else return richDesign; }
 
-    protected JasperDesign reportDesign;
-    public JasperDesign getReportDesign() throws JRException { return reportDesign; }
+    protected GroupObjectHierarchy groupHierarchy;
+
+    public GroupObjectHierarchy.ReportHierarchy getReportHierarchy() {
+        if (groupHierarchy == null) {
+            FormGroupHierarchyCreator creator = new FormGroupHierarchyCreator(this);
+            groupHierarchy = creator.createHierarchy();
+        }
+        return groupHierarchy.createReportHierarchy();
+    }
+
+    public GroupObjectHierarchy getGroupHierarchy() {
+        return groupHierarchy;
+    }
 
     public ArrayList<NavigatorElement> relevantElements = new ArrayList<NavigatorElement>();
 
