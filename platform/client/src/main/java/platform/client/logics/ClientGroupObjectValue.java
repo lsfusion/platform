@@ -15,10 +15,6 @@ public class ClientGroupObjectValue extends OrderedMap<ClientObject,Object>
         }
     }
 
-    public ClientGroupObjectValue(DataInputStream inStream, ClientPropertyDraw clientPropertyDraw) throws IOException {
-        this(inStream, clientPropertyDraw, true);
-    }
-
     public ClientGroupObjectValue(DataInputStream inStream, ClientPropertyDraw clientPropertyDraw, boolean deserializeGroupKeys) throws IOException {
         if (deserializeGroupKeys) {
             for (ClientObject clientObject : clientPropertyDraw.groupObject) {

@@ -47,17 +47,24 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
 
     // в интерфейсе
     public boolean isInInterface(GroupObjectInstance classGroup) {
+        return isInInterface(classGroup==null?new HashSet<GroupObjectInstance>():Collections.singleton(classGroup), false);
+    }
 
+    public boolean isInInterface(Set<GroupObjectInstance> classGroups, boolean any) {
+        // assert что classGroups все в GRID представлении
         Map<P, AndClassSet> classImplement = new HashMap<P, AndClassSet>();
         for(P propertyInterface : property.interfaces)
-            classImplement.put(propertyInterface, mapping.get(propertyInterface).getClassSet(classGroup));
-        return property.allInInterface(classImplement);
+            classImplement.put(propertyInterface, mapping.get(propertyInterface).getClassSet(classGroups));
+        if(any)
+            return property.anyInInterface(classImplement);
+        else
+            return property.allInInterface(classImplement); 
     }
 
     // проверяет на то что изменился верхний объект
-    public boolean objectUpdated(GroupObjectInstance classGroup) {
+    public boolean objectUpdated(Set<GroupObjectInstance> skipGroups) {
         for(PropertyObjectInterfaceInstance intObject : mapping.values())
-            if(intObject.objectUpdated(classGroup)) return true;
+            if(intObject.objectUpdated(skipGroups)) return true;
 
         return false;
     }

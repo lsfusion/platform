@@ -82,24 +82,18 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
     public void processFormChanges(ClientFormChanges fc,
                                    Map<ClientGroupObject,List<ClientGroupObjectValue>> cachedGridObjects,
-                                   Map<ClientPropertyDraw,Map<ClientGroupObjectValue,Object>> cachedGridProperties) {
+                                   Map<ClientPropertyDraw,Map<ClientGroupObjectValue,Object>> cachedProperties) {
 
         // Сначала меняем виды объектов
 
-        for (ClientPropertyDraw property : fc.panelProperties.keySet()) {
+        for (ClientPropertyDraw property : fc.properties.keySet()) {
             if (property.groupObject == groupObject && property.shouldBeDrawn(form)) {
-                addPanelProperty(property);
+                addDrawProperty(property, fc.panelProperties.contains(property));
             }
         }
 
-        for (ClientPropertyDraw property : fc.gridProperties.keySet()) {
-            if (property.groupObject == groupObject && property.shouldBeDrawn(form)) {
-                addGridProperty(property);
-            }
-        }
-
-        setupColumnObjects(grid, gridProperties, cachedGridObjects, cachedGridProperties);
-        setupColumnObjects(panel, panelProperties, cachedGridObjects, cachedGridProperties);
+        setupColumnObjects(grid, gridProperties, cachedGridObjects, cachedProperties);
+        setupColumnObjects(panel, panelProperties, cachedGridObjects, cachedProperties);
 
         for (ClientPropertyDraw property : fc.dropProperties) {
             if (property.groupObject == groupObject) {
@@ -124,15 +118,9 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         }
 
         // Затем их свойства
-        for (ClientPropertyDraw property : fc.panelProperties.keySet()) {
-            if (property.groupObject == groupObject && property.shouldBeDrawn(form)) {
-                setPanelPropertyValues(property, fc.panelProperties.get(property));
-            }
-        }
-        
-        for (ClientPropertyDraw property : fc.gridProperties.keySet()) {
-            if (property.groupObject == groupObject && property.shouldBeDrawn(form)) {
-                setGridPropertyValues(property, fc.gridProperties.get(property));
+        for (Map.Entry<ClientPropertyDraw,Map<ClientGroupObjectValue,Object>> readProperty : fc.properties.entrySet()) {
+            if (readProperty.getKey().groupObject == groupObject && readProperty.getKey().shouldBeDrawn(form)) {
+                setDrawPropertyValues(readProperty.getKey(), readProperty.getValue(), fc.panelProperties.contains(readProperty.getKey()));
             }
         }
 
@@ -171,10 +159,6 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
             grid.update();
         }
         panel.update();
-    }
-
-    private void setPanelPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
-        panel.setPropertyValues(property, values);
     }
 
     private void hideViews() {
@@ -260,6 +244,13 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         panelProperties.remove(property);
     }
 
+    public void addDrawProperty(ClientPropertyDraw property, boolean toPanel) {
+        if(toPanel)
+            addPanelProperty(property);
+        else
+            addGridProperty(property);
+    }
+
     public void dropProperty(ClientPropertyDraw property) {
         grid.removeProperty(property);
         gridProperties.remove(property);
@@ -300,9 +291,13 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         setCurrentGroupObject(curValue, false);
     }
 
-    public void setGridPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue,Object> values) {
-        grid.setPropertyValues(property, values);
+    private void setDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values, boolean toPanel) {
+        if(toPanel)
+            panel.setPropertyValues(property, values);
+        else
+            grid.setPropertyValues(property, values);
     }
+
 
     public void changeGridOrder(ClientPropertyDraw property, Order modiType) throws IOException {
         grid.changeGridOrder(property, modiType);

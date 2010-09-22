@@ -4,9 +4,11 @@ import platform.server.classes.ConcreteClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.logics.DataObject;
 
+import java.util.Set;
+
 public interface PropertyObjectInterfaceInstance extends OrderInstance {
 
-    AndClassSet getClassSet(GroupObjectInstance classGroup);
+    AndClassSet getClassSet(Set<GroupObjectInstance> classGroups);
 
     DataObject getDataObject();
 

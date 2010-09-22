@@ -399,24 +399,24 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         }
     }
 
-    public String checkChanges() throws SQLException {
-        return session.check(BL);
-    }
-
     // Применение изменений
-    public String applyChanges() throws SQLException {
-        String applyString = checkChanges();
-        if (applyString == null)
-            writeChanges();
-        return applyString;
+    public String applyChanges(boolean noCommit) throws SQLException {
+        String applyString = session.apply(BL, true);
+        if(applyString!=null)
+            return applyString;
+
+        if(!noCommit)
+            commitApply();
+
+        return null;
     }
 
-    public void rollbackChanges() throws SQLException {
-        session.rollbackTransaction();
+    public void rollbackApply() throws SQLException {
+        session.rollbackApply();
     }
 
-    public void writeChanges() throws SQLException {
-        session.write(BL);
+    public void commitApply() throws SQLException {
+        session.commitApply();
 
         refreshData();
         addObjectOnTransaction();
@@ -758,7 +758,14 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
     private boolean objectUpdated(Updated updated, GroupObjectInstance groupObject) {
         assert !refresh;
-        return updated.objectUpdated(groupObject);
+        return updated.objectUpdated(Collections.singleton(groupObject));
+    }
+
+    private boolean objectUpdated(Updated updated, Set<GroupObjectInstance> groupObjects) {
+        for(GroupObjectInstance groupObject : groupObjects)
+            if((groupObject.updated & GroupObjectInstance.UPDATED_KEYS) != 0)
+                return true;
+        return updated.objectUpdated(groupObjects);
     }
 
     private boolean dataUpdated(Updated updated, Collection<Property> changedProps) {
@@ -780,7 +787,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
         ApplyTransaction transaction = new ApplyTransaction();
 
-        FormChanges result = new FormChanges();
+        final FormChanges result = new FormChanges();
 
         try {
             // если изменились данные, применяем изменения
@@ -992,80 +999,91 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 }
             }
 
-            final Collection<PropertyDrawInstance> panelProperties = new ArrayList<PropertyDrawInstance>();
-            final Collection<PropertyDrawInstance> groupProperties = new ArrayList<PropertyDrawInstance>();
+            final Map<PropertyDrawInstance,Set<GroupObjectInstance>> readProperties = new HashMap<PropertyDrawInstance, Set<GroupObjectInstance>>();
 
             for (PropertyDrawInstance<?> drawProperty : properties) {
 
-                // прогоняем через кэши чтобы каждый раз не запускать isInInterface
-                boolean inGridInterface, inInterface;
-
-                Byte forceViewType = drawProperty.getForceViewType();
-
-                if(forceViewType != null && forceViewType == ClassViewType.HIDE) continue;
-
-                if (forceViewType != null && forceViewType == ClassViewType.PANEL) {
-                    inGridInterface = false;
-                } else if (forceViewType != null && forceViewType == ClassViewType.GRID) {
-                    inGridInterface = true;
-                } else {
-                    if (refresh || classUpdated(drawProperty.propertyObject, drawProperty.toDraw)) {
-                        inGridInterface = drawProperty.propertyObject.isInInterface(drawProperty.toDraw);
-                        cacheInGridInterface.put(drawProperty, inGridInterface);
-                    } else { // пусть будут assert
-                        inGridInterface = cacheInGridInterface.get(drawProperty);
-                        assert inGridInterface == drawProperty.propertyObject.isInInterface(drawProperty.toDraw);
-                    }
-                }
-
-                if (drawProperty.toDraw == null) {
-                    inInterface = inGridInterface;
-                } else {
-                    if (refresh || classUpdated(drawProperty.propertyObject, null)) { // здесь еще можно вставить : что если inGridInterface и не null'ы
-                        inInterface = drawProperty.propertyObject.isInInterface(null);
-                        cacheInInterface.put(drawProperty, inInterface);
-                    } else {
-                        inInterface = cacheInInterface.get(drawProperty);
-                        assert inInterface == drawProperty.propertyObject.isInInterface(null);
-                    }
-                }
-
                 if (drawProperty.toDraw != null && drawProperty.toDraw.curClassView == ClassViewType.HIDE) continue;
 
-                boolean read = refresh || dataUpdated(drawProperty.propertyObject, changedProps) ||
-                               drawProperty.toDraw != null && (drawProperty.toDraw.updated & GroupObjectInstance.UPDATED_KEYS) != 0;
-                if (inGridInterface && drawProperty.toDraw != null && drawProperty.toDraw.curClassView == ClassViewType.GRID) { // в grid'е
-                    if (read || objectUpdated(drawProperty.propertyObject, drawProperty.toDraw)) {
-                        groupProperties.add(drawProperty);
+                Byte forceViewType = drawProperty.getForceViewType();
+                if (forceViewType != null && forceViewType==ClassViewType.HIDE) continue;
+
+                boolean read = refresh || dataUpdated(drawProperty.propertyObject, changedProps);
+                
+                Set<GroupObjectInstance> columnGroupGrids = new HashSet<GroupObjectInstance>();
+                for(GroupObjectInstance columnGroup : drawProperty.columnGroupObjects)
+                    if(columnGroup.curClassView == ClassViewType.GRID)
+                        columnGroupGrids.add(columnGroup);
+                    else
+                        read = read || (columnGroup.updated & GroupObjectInstance.UPDATED_CLASSVIEW)!=0;
+
+                Set<GroupObjectInstance> keyGridObjects = null;
+                if (drawProperty.toDraw != null && drawProperty.toDraw.curClassView == ClassViewType.GRID && (forceViewType==null || forceViewType==ClassViewType.GRID) &&
+                        drawProperty.propertyObject.isInInterface(keyGridObjects=BaseUtils.add(columnGroupGrids, drawProperty.toDraw), forceViewType!=null)) { // в grid'е
+                    if (read || objectUpdated(drawProperty.propertyObject, keyGridObjects)) {
+                        readProperties.put(drawProperty, keyGridObjects);
                         isDrawed.add(drawProperty);
                     }
-                } else if (inInterface) { // в панели
-                    if (read || objectUpdated(drawProperty.propertyObject, null)) {
-                        panelProperties.add(drawProperty);
+                } else if (drawProperty.propertyObject.isInInterface(columnGroupGrids, false)) { // в панели
+                    if (read || (drawProperty.toDraw!=null && (drawProperty.toDraw.updated & GroupObjectInstance.UPDATED_CLASSVIEW)!=0) || objectUpdated(drawProperty.propertyObject, columnGroupGrids)) {
+                        readProperties.put(drawProperty, columnGroupGrids);
                         isDrawed.add(drawProperty);
+
+                        result.panelProperties.add(drawProperty);
                     }
                 } else if (isDrawed.remove(drawProperty))
                     result.dropProperties.add(drawProperty); // вкидываем удаление из интерфейса
             }
 
-            Map<PropertyDrawInstance, Map<Map<ObjectInstance, DataObject>, Object>> propValues = new HashMap<PropertyDrawInstance, Map<Map<ObjectInstance, DataObject>, Object>>();
-            readPropertiesValues(BaseUtils.merge(panelProperties, groupProperties), propValues, panelProperties);
+            for (Entry<Set<GroupObjectInstance>, Set<PropertyDrawInstance>> entry : BaseUtils.groupSet(readProperties).entrySet()) {
+                Set<GroupObjectInstance> keyGroupObjects = entry.getKey();
+                Collection<PropertyDrawInstance> propertyList = entry.getValue();
 
-            // заполняем "панельные" свойства
-            for (PropertyDrawInstance panelProperty : panelProperties) {
-                result.panelProperties.put(panelProperty, propValues.get(panelProperty));
+                Map<ObjectInstance, KeyExpr> groupMapKeys = new HashMap<ObjectInstance, KeyExpr>();
+                for (GroupObjectInstance keyObject : keyGroupObjects) {
+                    groupMapKeys.putAll(keyObject.getMapKeys());
+                }
+
+                Query<ObjectInstance, PropertyDrawInstance> selectProps = new Query<ObjectInstance, PropertyDrawInstance>(groupMapKeys);
+                for (GroupObjectInstance keyGroup : keyGroupObjects) {
+                    GroupObjectTable columnKeyTable = groupTables.get(keyGroup);
+                    selectProps.and(columnKeyTable.joinAnd(BaseUtils.join(columnKeyTable.mapKeys, selectProps.mapKeys)).getWhere());
+                }
+
+                for (PropertyDrawInstance<?> propertyDraw : propertyList) {
+                    selectProps.properties.put(propertyDraw, propertyDraw.propertyObject.getExpr(selectProps.mapKeys, this));
+                }
+
+                OrderedMap<Map<ObjectInstance, Object>, Map<PropertyDrawInstance, Object>> queryResult = selectProps.execute(session);
+                for (PropertyDrawInstance<?> propertyDraw : propertyList) {
+                    Map<Map<ObjectInstance, DataObject>, Object> propertyValues = new HashMap<Map<ObjectInstance, DataObject>, Object>();
+                    for (Entry<Map<ObjectInstance, Object>, Map<PropertyDrawInstance, Object>> resultRow : queryResult.entrySet()) {
+                        Map<ObjectInstance, Object> keyRow = resultRow.getKey();
+
+                        Map<ObjectInstance, DataObject> row = new HashMap<ObjectInstance, DataObject>();
+                        for (GroupObjectInstance keyGroup : keyGroupObjects) {
+                            row.putAll(keyGroup.findGroupObjectValue(keyRow));
+                        }
+
+                        for(GroupObjectInstance columnGroup : propertyDraw.columnGroupObjects) // временно так
+                            if(columnGroup.curClassView != ClassViewType.GRID)
+                                for(ObjectInstance columnObject : columnGroup.objects)
+                                    row.put(columnObject, columnObject.getDataObject());
+
+                        propertyValues.put(row, resultRow.getValue().get(propertyDraw));
+                    }
+
+                    result.properties.put(propertyDraw, propertyValues);
+                }
             }
-            // заполняем "табличные" свойства
-            for (PropertyDrawInstance gridProperty : groupProperties) {
-                result.gridProperties.put(gridProperty, propValues.get(gridProperty));
-            }
+
         } catch (ComplexQueryException e) {
             transaction.rollback();
             if (dataChanged) { // если изменились данные cancel'им изменения
                 cancelChanges();
-                result = endApply();
-                result.message = e.getMessage() + ". Изменения будут отменены";
-                return result;
+                FormChanges cancelResult = endApply();
+                cancelResult.message = e.getMessage() + ". Изменения будут отменены";
+                return cancelResult;
             } else
                 throw e;
         } catch (RuntimeException e) {
@@ -1093,58 +1111,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 //        result.out(this);
 
         return result;
-    }
-
-    private void readPropertiesValues(Collection<PropertyDrawInstance> properties,
-                                      Map<PropertyDrawInstance, Map<Map<ObjectInstance, DataObject>, Object>> propValues,
-                                      final Collection<PropertyDrawInstance> nullGroupProperties) throws SQLException {
-        //группируем свойства по набору групп в колонках, чтобы читать одним запросом
-        Map<Set<GroupObjectInstance>, Collection<PropertyDrawInstance>> propertyMap =
-                BaseUtils.group(new BaseUtils.Group<Set<GroupObjectInstance>, PropertyDrawInstance>() {
-                    public Set<GroupObjectInstance> group(PropertyDrawInstance key) {
-                        HashSet<GroupObjectInstance> keyObjects = new HashSet<GroupObjectInstance>(Arrays.asList(key.columnGroupObjects));
-                        if (!nullGroupProperties.contains(key)) {
-                            keyObjects.add(key.toDraw);
-                        }
-                        return keyObjects;
-                    }
-                }, properties);
-
-        for (Entry<Set<GroupObjectInstance>, Collection<PropertyDrawInstance>> entry : propertyMap.entrySet()) {
-            Set<GroupObjectInstance> keyGroupObjects = entry.getKey();
-            Collection<PropertyDrawInstance> propertyList = entry.getValue();
-
-            Map<ObjectInstance, KeyExpr> groupMapKeys = new HashMap<ObjectInstance, KeyExpr>();
-            for (GroupObjectInstance keyObject : keyGroupObjects) {
-                groupMapKeys.putAll(keyObject.getMapKeys());
-            }
-
-            Query<ObjectInstance, PropertyDrawInstance> selectProps = new Query<ObjectInstance, PropertyDrawInstance>(groupMapKeys);
-            for (GroupObjectInstance keyGroup : keyGroupObjects) {
-                GroupObjectTable columnKeyTable = groupTables.get(keyGroup);
-                selectProps.and(columnKeyTable.joinAnd(BaseUtils.join(columnKeyTable.mapKeys, selectProps.mapKeys)).getWhere());
-            }
-
-            for (PropertyDrawInstance<?> propertyDraw : propertyList) {
-                selectProps.properties.put(propertyDraw, propertyDraw.propertyObject.getExpr(selectProps.mapKeys, this));
-            }
-
-            OrderedMap<Map<ObjectInstance, Object>, Map<PropertyDrawInstance, Object>> queryResult = selectProps.execute(session);
-            for (PropertyDrawInstance<?> propertyDraw : propertyList) {
-                Map<Map<ObjectInstance, DataObject>, Object> propertyValues = new HashMap<Map<ObjectInstance, DataObject>, Object>();
-                for (Entry<Map<ObjectInstance, Object>, Map<PropertyDrawInstance, Object>> resultRow : queryResult.entrySet()) {
-                    Map<ObjectInstance, Object> keyRow = resultRow.getKey();
-
-                    Map<ObjectInstance, DataObject> row = new HashMap<ObjectInstance, DataObject>();
-                    for (GroupObjectInstance keyGroup : keyGroupObjects) {
-                        row.putAll(keyGroup.findGroupObjectValue(keyRow));
-                    }
-
-                    propertyValues.put(row, resultRow.getValue().get(propertyDraw));
-                }
-                propValues.put(propertyDraw, propertyValues);
-            }
-        }
     }
 
     // возвращает какие объекты на форме показываются

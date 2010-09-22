@@ -33,8 +33,8 @@ public class NotFilterInstance extends FilterInstance {
         return filter.classUpdated(classGroup);
     }
 
-    public boolean objectUpdated(GroupObjectInstance classGroup) {
-        return filter.objectUpdated(classGroup);
+    public boolean objectUpdated(Set<GroupObjectInstance> skipGroups) {
+        return filter.objectUpdated(skipGroups);
     }
 
     public boolean dataUpdated(Collection<Property> changedProps) {

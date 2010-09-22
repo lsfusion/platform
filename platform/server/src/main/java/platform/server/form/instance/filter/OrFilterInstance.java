@@ -39,8 +39,8 @@ public class OrFilterInstance extends FilterInstance {
         return op1.classUpdated(classGroup) || op2.classUpdated(classGroup);
     }
 
-    public boolean objectUpdated(GroupObjectInstance classGroup) {
-        return op1.objectUpdated(classGroup) || op2.objectUpdated(classGroup);
+    public boolean objectUpdated(Set<GroupObjectInstance> skipGroups) {
+        return op1.objectUpdated(skipGroups) || op2.objectUpdated(skipGroups);
     }
 
     public boolean dataUpdated(Collection<Property> changedProps) {

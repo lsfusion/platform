@@ -54,7 +54,7 @@ public class CustomerCheckRetailImportActionProperty extends ActionProperty {
                 formInstance.changeProperty(formInstance.getPropertyDraw(BL.clientInitialSum), Double.parseDouble(impFile.getField("clientsum").get()));
             }
 
-            String result = formInstance.applyChanges();
+            String result = formInstance.applyChanges(false);
             if (result != null)
                 actions.add(new MessageClientAction(result, "Не удалось импортировать данные"));
 

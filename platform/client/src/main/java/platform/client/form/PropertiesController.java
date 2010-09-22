@@ -13,7 +13,7 @@ import java.util.Map;
 public class PropertiesController {
     protected Map<ClientPropertyDraw, List<ClientGroupObjectValue>> columnKeys = new HashMap<ClientPropertyDraw, List<ClientGroupObjectValue>>();
     protected Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> columnDisplayValues = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
-    protected Map<ClientPropertyDraw, Map<ClientGroupObject, List<ClientGroupObjectValue>>> groupColumnKeys = new HashMap<ClientPropertyDraw, Map<ClientGroupObject, List<ClientGroupObjectValue>>>();
+    private Map<ClientPropertyDraw, Map<ClientGroupObject, List<ClientGroupObjectValue>>> groupColumnKeys = new HashMap<ClientPropertyDraw, Map<ClientGroupObject, List<ClientGroupObjectValue>>>();
 
     public void setColumnKeys(ClientPropertyDraw property,
                               Map<ClientGroupObject, List<ClientGroupObjectValue>> groupColumnKeys) {

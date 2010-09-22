@@ -10,14 +10,10 @@ import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.property.Property;
-import platform.server.session.Changes;
 import platform.server.session.ChangesSession;
-import platform.server.session.Modifier;
 
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 
 public class CustomObjectInstance extends ObjectInstance {
@@ -51,8 +47,8 @@ public class CustomObjectInstance extends ObjectInstance {
         groupTo.updated = groupTo.updated | GroupObjectInstance.UPDATED_GRIDCLASS;
     }
 
-    public AndClassSet getClassSet(GroupObjectInstance classGroup) {
-        if(groupTo==classGroup)
+    public AndClassSet getClassSet(Set<GroupObjectInstance> classGroups) {
+        if(classGroups.contains(groupTo))
             return getGridClass().getUpSet();
         else
             return getCurrentClass();

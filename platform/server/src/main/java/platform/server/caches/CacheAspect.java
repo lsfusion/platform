@@ -348,7 +348,7 @@ public class CacheAspect {
                 }
                 return true;
             } else {
-                assert false;
+//                assert false;
                 
                 twins1.diff.add(twins2);
                 twins2.diff.add(twins1);

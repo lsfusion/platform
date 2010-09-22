@@ -10,8 +10,8 @@ public abstract class GroupPairs<G,O,I> implements Iterable<I>  {
     private final Map<G, Set<O>> map2;
 
     public GroupPairs(Map<O,G> group1, Map<O,G> group2, boolean mapConstruct) {
-        this.map1 = BaseUtils.groupSet(group1, group1.keySet());
-        this.map2 = BaseUtils.groupSet(group2, group2.keySet());
+        this.map1 = BaseUtils.groupSet(group1);
+        this.map2 = BaseUtils.groupSet(group2);
     }
 
     public GroupPairs(BaseUtils.Group<G, O> getter, Set<O> set1, Set<O> set2) {

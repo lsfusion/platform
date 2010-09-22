@@ -105,7 +105,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return (desc?greater.not():greater).or(expr.compare(this,Compare.EQUALS).and(orderWhere));
     }
 
-    public AndClassSet getClassSet(GroupObjectInstance classGroup) {
+    public AndClassSet getClassSet(Set<GroupObjectInstance> classGroups) {
         return objectClass;
     }
 

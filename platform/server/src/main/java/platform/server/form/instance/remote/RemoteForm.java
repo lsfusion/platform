@@ -32,7 +32,6 @@ import platform.server.logics.DataObject;
 
 import java.io.*;
 import java.rmi.RemoteException;
-import java.rmi.server.Unreferenced;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -343,26 +342,26 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
         return form.entity.hasClientApply();
     }
 
-    public ClientApply getClientApply() throws RemoteException {
+    public ClientApply applyClientChanges() throws RemoteException {
         try {
-            String checkString = form.checkChanges();
-            if(checkString!=null)
-                return new CheckFailed(checkString);            
+            String result = form.applyChanges(true);
+            if(result!=null)
+                return new CheckFailed(result);
+            else
+                return form.entity.getClientApply(form);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
-        return form.entity.getClientApply(form);
     }
 
-    public void applyClientChanges(Object clientResult) {
+    public void confirmClientChanges(Object clientResult) throws RemoteException {
         String checkClientApply = form.entity.checkClientApply(clientResult);
         try {
             if(checkClientApply!=null) {
-                form.rollbackChanges();
+                form.rollbackApply();
                 actions.add(new ResultClientAction(checkClientApply, true));
             } else {
-                form.writeChanges();
+                form.commitApply();
                 actions.add(new ResultClientAction("Изменения были удачно записаны...", false));
             }
         } catch (SQLException e) {
@@ -370,9 +369,17 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
         }
     }
 
+    public void rollbackClientChanges() throws RemoteException {
+        try {
+            form.rollbackApply();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void applyChanges() throws RemoteException {
         try {
-            String result = form.applyChanges();
+            String result = form.applyChanges(false);
             if(result!=null)
                 actions.add(new ResultClientAction(result, true));
             else

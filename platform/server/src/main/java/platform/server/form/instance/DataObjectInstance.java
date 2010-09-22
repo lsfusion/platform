@@ -15,6 +15,7 @@ import platform.server.session.ChangesSession;
 
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Set;
 
 // ObjectInstance table'ы
 public class DataObjectInstance extends ObjectInstance {
@@ -28,7 +29,7 @@ public class DataObjectInstance extends ObjectInstance {
         value = this.dataClass.getDefaultValue();
     }
 
-    public AndClassSet getClassSet(GroupObjectInstance classGroup) {
+    public AndClassSet getClassSet(Set<GroupObjectInstance> classGroups) {
         return dataClass;
     }
 

@@ -20,7 +20,6 @@ import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeObject;
 import platform.server.data.where.WhereBuilder;
-import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
@@ -192,6 +191,8 @@ public class DataSession extends SQLSession implements ChangesSession {
 
         changes.dropTables(this);
         changes = SessionChanges.EMPTY;
+
+        applyObject = null; // сбрасываем в том числе когда cancel потому как cancel drop'ает в том числе и добавление объекта
     }
 
     public DataObject addObject(ConcreteCustomClass customClass, Modifier<? extends Changes> modifier) throws SQLException {
@@ -506,52 +507,33 @@ public class DataSession extends SQLSession implements ChangesSession {
         }
     }
 
-    public String check(final BusinessLogics<?> BL) throws SQLException {
-        startTransaction();
-        
-        String constraintsResult = check(BL, new Increment(this));
-        if(constraintsResult != null)
-            rollbackTransaction();
-
-        return constraintsResult;
-    }
-
-    public String check(final BusinessLogics<?> BL, Increment increment) throws SQLException {
-
-        // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
-        for(Property<?> property : BL.getAppliedProperties()) {
-            if(property.hasChanges(increment)) {
-                String constraintResult = increment.check(property);
-                if(constraintResult!=null)
-                    return constraintResult;
-            }
-        }
-
-        return null;
-    }
-    
     public String apply(final BusinessLogics<?> BL) throws SQLException {
-        // делается UpdateAggregations (для мн-ва persistent+constraints)
-        String constraintsResult = check(BL);
-        if (constraintsResult != null)
-            return constraintsResult;
-
-        write(BL);
-
-        return null;
+        return apply(BL, false);
     }
 
-    public void write(BusinessLogics<?> BL) throws SQLException {
-        applyObject = addObject(sessionClass, modifier);
+    public String apply(final BusinessLogics<?> BL, boolean noCommit) throws SQLException {
+        // делается UpdateAggregations (для мн-ва persistent+constraints)
+        if(applyObject==null)
+            applyObject = addObject(sessionClass, modifier);
+        
+        startTransaction();
+
+        Collection<IncrementChangeTable> temporary = new ArrayList<IncrementChangeTable>();
 
         Increment increment = new Increment(this);
-        Collection<IncrementChangeTable> temporary = new ArrayList<IncrementChangeTable>();
 
         // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
         for(Property<?> property : BL.getAppliedProperties())
-            if(property.hasChanges(increment))
+            if(property.hasChanges(increment)) {
+                String constraintResult = increment.check(property);
+                if(constraintResult!=null) {
+                    // не надо DROP'ать так как Rollback автоматически drop'ает все temporary таблицы 
+                    rollbackTransaction();
+                    return constraintResult;
+                }
                 if(property.isStored()) // сохраним изменения в таблицы
                     temporary.add(increment.read(Collections.<Property>singleton(property),baseClass));
+            }
 
         // записываем в базу
         for(Collection<Property> groupTable : BaseUtils.group(new BaseUtils.Group<ImplementTable,Property>(){public ImplementTable group(Property key) {return key.mapTable.table;}},
@@ -575,14 +557,25 @@ public class DataSession extends SQLSession implements ChangesSession {
         for(Map.Entry<DataObject, ConcreteObjectClass> newClass : newClasses.entrySet())
             newClass.getValue().saveClassChanges(this,newClass.getKey());
 
-        commitTransaction();
-
         for(IncrementChangeTable addTable : temporary)
             dropTemporaryTable(addTable);
+        
+        if(!noCommit)
+            commitApply();
+
+        return null;
+    }
+
+    // для noCommit - распределенных транзакций
+    public void rollbackApply() throws SQLException {
+        rollbackTransaction();
+    }
+
+    // для noCommit - распределенных транзакций
+    public void commitApply() throws SQLException {
+        commitTransaction();
 
         restart(false);
-
-        applyObject = null;
     }
 
     private final Map<Integer,Integer> viewIDs = new HashMap<Integer, Integer>();

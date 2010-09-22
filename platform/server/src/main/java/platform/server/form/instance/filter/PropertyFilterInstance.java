@@ -33,8 +33,8 @@ public abstract class PropertyFilterInstance<P extends PropertyInterface> extend
         return property.classUpdated(classGroup);
     }
 
-    public boolean objectUpdated(GroupObjectInstance classGroup) {
-        return property.objectUpdated(classGroup);
+    public boolean objectUpdated(Set<GroupObjectInstance> skipGroups) {
+        return property.objectUpdated(skipGroups);
     }
 
     public boolean dataUpdated(Collection<Property> changedProps) {

@@ -356,6 +356,12 @@ public class BaseUtils {
         return result;
     }
 
+    public static <K> Set<K> add(Set<K> col,K add) {
+        Set<K> result = new HashSet<K>(col);
+        result.add(add);
+        return result;
+    }
+
     public static <K> Collection<K> remove(Collection<? extends K> set,Collection<? extends K> remove) {
         Collection<K> result = new ArrayList<K>(set);
         result.removeAll(remove);
@@ -573,6 +579,10 @@ public class BaseUtils {
                 return getter.get(key);
             }
         },keys);
+    }
+
+    public static <G,K> Map<G,Set<K>> groupSet(final Map<K, G> getter) {
+        return groupSet(getter, getter.keySet());
     }
 
     public static <K> Map<K,Integer> multiSet(Collection<K> col) {

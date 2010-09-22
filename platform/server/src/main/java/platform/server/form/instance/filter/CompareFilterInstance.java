@@ -20,7 +20,6 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -67,8 +66,8 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
     }
 
     @Override
-    public boolean objectUpdated(GroupObjectInstance classGroup) {
-        return super.objectUpdated(classGroup) || value.objectUpdated(classGroup);
+    public boolean objectUpdated(Set<GroupObjectInstance> skipGroups) {
+        return super.objectUpdated(skipGroups) || value.objectUpdated(skipGroups);
     }
 
     public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) throws SQLException {

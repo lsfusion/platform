@@ -12,13 +12,11 @@ import platform.server.logics.property.Property;
 import platform.server.session.Changes;
 import platform.server.session.ChangesSession;
 import platform.server.session.Modifier;
-import platform.base.BaseUtils;
 
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
 
 // на самом деле нужен collection но при extend'е нужна конкретная реализация
 public abstract class ObjectInstance extends CellInstance<ObjectEntity> implements PropertyObjectInterfaceInstance {
@@ -71,7 +69,7 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
 
     public abstract Type getType();
 
-    public boolean objectUpdated(GroupObjectInstance classGroup) { return groupTo!=classGroup && (updated & UPDATED_OBJECT)!=0; }
+    public boolean objectUpdated(Set<GroupObjectInstance> skipGroups) { return !skipGroups.contains(groupTo) && (updated & UPDATED_OBJECT)!=0; }
     public boolean dataUpdated(Collection<Property> changedProps) { return false; }
     public void fillProperties(Set<Property> properties) { }
 

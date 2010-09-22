@@ -387,7 +387,9 @@ public class ClientFormController {
     private Color defaultApplyBackground;
     private boolean dataChanged;
 
-    private ClientFormChanges cachedFormChanges = new ClientFormChanges();
+    public final Map<ClientGroupObject,List<ClientGroupObjectValue>> currentGridObjects = new HashMap<ClientGroupObject, List<ClientGroupObjectValue>>();
+    public final Map<ClientPropertyDraw,Map<ClientGroupObjectValue,Object>> currentProperties = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+
     private void applyFormChanges(ClientFormChanges formChanges) {
 
         if(formChanges.dataChanged!=null && buttonApply!=null) {
@@ -406,11 +408,11 @@ public class ClientFormController {
             }
         }
 
-        cachedFormChanges.gridObjects.putAll(formChanges.gridObjects);
-        cachedFormChanges.gridProperties.putAll(formChanges.gridProperties);
+        currentGridObjects.putAll(formChanges.gridObjects);
+        currentProperties.putAll(formChanges.properties);
 
         for (GroupObjectController controller : controllers.values()) {
-            controller.processFormChanges(formChanges, cachedFormChanges.gridObjects, cachedFormChanges.gridProperties);
+            controller.processFormChanges(formChanges, currentGridObjects, currentProperties);
         }
 
         SwingUtilities.invokeLater(new Runnable() {
@@ -588,11 +590,18 @@ public class ClientFormController {
                 }
 
                 if(remoteForm.hasClientApply()) {
-                    ClientApply clientApply = remoteForm.getClientApply();
+                    ClientApply clientApply = remoteForm.applyClientChanges();
                     if(clientApply instanceof CheckFailed) // чтобы не делать лишний RMI вызов
                         Log.printFailedMessage(((CheckFailed)clientApply).message);
                     else {
-                        remoteForm.applyClientChanges(((ClientAction)clientApply).dispatch(actionDispatcher));
+                        Object clientResult = null;
+                        try {
+                            clientResult = ((ClientAction) clientApply).dispatch(actionDispatcher);
+                        } catch (Exception e) {
+                            remoteForm.rollbackClientChanges();
+                            throw new RuntimeException("Ошибка при применении изменений", e);
+                        }
+                        remoteForm.confirmClientChanges(clientResult);
 
                         applyRemoteChanges();
                     }

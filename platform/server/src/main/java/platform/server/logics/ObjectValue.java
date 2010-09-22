@@ -50,7 +50,7 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractMapV
 
     
     public boolean classUpdated(GroupObjectInstance classGroup) {return false;}
-    public boolean objectUpdated(GroupObjectInstance classGroup) {return false;}
+    public boolean objectUpdated(Set<GroupObjectInstance> skipGroups) {return false;}
     public boolean dataUpdated(Collection<Property> changedProps) {return false;}
     public void fillProperties(Set<Property> properties) {}
     public boolean isInInterface(GroupObjectInstance classGroup) {return true;}
