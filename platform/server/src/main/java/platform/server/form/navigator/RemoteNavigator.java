@@ -15,8 +15,10 @@ import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
+import platform.server.classes.StringClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
+import platform.server.data.type.ObjectType;
 import platform.server.data.where.Where;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.instance.*;
@@ -73,6 +75,20 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         for(DataSession session : sessions.keySet())
             session.updateProperties(userModifier);
     }
+
+    public void relogin(String login) throws RemoteException {
+        try {
+            DataSession session = BL.createSession(this);
+            Integer userId = (Integer) BL.loginToUser.read(session, new DataObject(login, StringClass.get(30)));
+            DataObject user =  session.getDataObject(userId, ObjectType.instance);
+            changeCurrentUser(user);
+            session.close();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    
 
     PropertyObjectInterfaceInstance computer;
     // просто закэшируем, чтобы быстрее было

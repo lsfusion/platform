@@ -15,6 +15,8 @@ public interface RemoteNavigatorInterface extends PendingRemote {
 
     byte[] getElementsByteArray(int groupID) throws RemoteException;
 
+    void relogin(String login) throws RemoteException;
+
     final static int NAVIGATORGROUP_RELEVANTFORM = -2;
     final static int NAVIGATORGROUP_RELEVANTCLASS = -3;
 }

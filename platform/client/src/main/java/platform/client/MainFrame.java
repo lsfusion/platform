@@ -1,6 +1,5 @@
 package platform.client;
 
-import platform.client.navigator.ClientNavigator;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
@@ -14,7 +13,7 @@ import java.util.Scanner;
 
 public abstract class MainFrame extends JFrame {
     protected File baseDir;
-    private RemoteNavigatorInterface remoteNavigator;
+    public RemoteNavigatorInterface remoteNavigator;
 
     public MainFrame(RemoteNavigatorInterface remoteNavigator) throws ClassNotFoundException, IOException {
         super();

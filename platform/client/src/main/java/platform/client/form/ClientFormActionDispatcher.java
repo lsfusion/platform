@@ -2,10 +2,12 @@ package platform.client.form;
 
 import platform.client.Main;
 import platform.client.Log;
-import platform.client.navigator.ClientNavigator;
 import platform.interop.action.*;
+import platform.interop.exceptions.LoginException;
 
 import javax.swing.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.io.*;
 
 public class ClientFormActionDispatcher implements ClientActionDispatcher {
@@ -23,7 +25,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
     }
 
     public Object execute(RuntimeClientAction action) {
-        
+
         try {
 
             Process p = Runtime.getRuntime().exec(action.command, action.environment, (action.directory == null ? null : new File(action.directory)));
@@ -66,7 +68,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
             output.close();
 
             return true;
-            
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -101,7 +103,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
     }
 
     public Object execute(SleepClientAction action) {
-        
+
         try {
             Thread.sleep(action.millis);
             return true;
@@ -134,11 +136,11 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
 
             String fileText = action.charsetName == null ? new String(fileContent) : new String(fileContent, action.charsetName);
             if (action.multiplier > 0) {
-                fileText = ((Double)(Double.parseDouble(fileText) * 100)).toString();
+                fileText = ((Double) (Double.parseDouble(fileText) * 100)).toString();
             }
 
             JOptionPane.showMessageDialog(null, fileText,
-                                          action.caption, JOptionPane.INFORMATION_MESSAGE);
+                    action.caption, JOptionPane.INFORMATION_MESSAGE);
 
             return true;
 
@@ -159,16 +161,52 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
         }
     }
 
+    public Object execute(UserReloginClientAction action) {
+        try {
+            final JPasswordField jpf = new JPasswordField();
+            JOptionPane jop = new JOptionPane(jpf,
+                    JOptionPane.QUESTION_MESSAGE,
+                    JOptionPane.OK_CANCEL_OPTION);
+            JDialog dialog = jop.createDialog("Введите пароль");
+            dialog.addComponentListener(new ComponentAdapter() {
+                @Override
+                public void componentShown(ComponentEvent e) {
+                    jpf.requestFocusInWindow();
+                }
+            });
+            dialog.setVisible(true);
+            int result = (jop.getValue() != null) ? (Integer) jop.getValue() : JOptionPane.CANCEL_OPTION;
+            dialog.dispose();
+            String password = null;
+            if (result == JOptionPane.OK_OPTION) {
+                password = new String(jpf.getPassword());
+                boolean check = Main.remoteLogics.checkUser(action.login, password);
+                if (check) {
+                    Main.frame.remoteNavigator.relogin(action.login);
+                    Main.frame.updateUser();
+                } else
+                    throw new RuntimeException();
+            }
+            return true;
+        } catch (LoginException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public Object execute(MessageClientAction action) {
 
         JOptionPane.showMessageDialog(null, action.message,
-                                      action.caption, JOptionPane.INFORMATION_MESSAGE);
+                action.caption, JOptionPane.INFORMATION_MESSAGE);
 
         return true;
     }
 
     public Object execute(ResultClientAction action) {
-        if(action.failed) {
+        if (action.failed) {
             Log.printFailedMessage(action.message);
             return null;
         } else {

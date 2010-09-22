@@ -13,15 +13,13 @@ import platform.client.Main;
 import platform.client.MainFrame;
 import platform.client.navigator.ClientNavigator;
 import platform.client.navigator.ClientNavigatorForm;
+import platform.interop.exceptions.LoginException;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.*;
 import java.rmi.RemoteException;
 import java.util.*;
@@ -32,6 +30,7 @@ public class DockableMainFrame extends MainFrame {
 
 
     private ClientNavigator mainNavigator;
+
     public DockableMainFrame(RemoteNavigatorInterface remoteNavigator) throws ClassNotFoundException, IOException {
         super(remoteNavigator);
 
@@ -131,6 +130,7 @@ public class DockableMainFrame extends MainFrame {
         Menubar.add(createFileMenu());
         Menubar.add(createWindowMenu());
         Menubar.add(createViewMenu());
+        Menubar.add(createOptionsMenu());
         Menubar.add(createHelpMenu());
         setJMenuBar(Menubar);
     }
@@ -141,11 +141,11 @@ public class DockableMainFrame extends MainFrame {
     }
 
     private JMenu createViewMenu() {
-        RootMenuPiece layout = new RootMenuPiece( "Вид", false );
-        layout.add( new SubmenuPiece( "LookAndFeel", true, new CLookAndFeelMenuPiece( control )));
-        layout.add( new SubmenuPiece( "Тема", true, new CThemeMenuPiece( control )));
-        layout.add( CPreferenceMenuPiece.setup( control ));
-        layout.add(new SeparatingMenuPiece(new CLayoutChoiceMenuPiece(control, false), true, false, false ));
+        RootMenuPiece layout = new RootMenuPiece("Вид", false);
+        layout.add(new SubmenuPiece("LookAndFeel", true, new CLookAndFeelMenuPiece(control)));
+        layout.add(new SubmenuPiece("Тема", true, new CThemeMenuPiece(control)));
+        layout.add(CPreferenceMenuPiece.setup(control));
+        layout.add(new SeparatingMenuPiece(new CLayoutChoiceMenuPiece(control, false), true, false, false));
 
         return layout.getMenu();
     }
@@ -174,6 +174,54 @@ public class DockableMainFrame extends MainFrame {
             }
         });
         Menu.add(OpenReport);
+        return Menu;
+    }
+
+    JMenu createOptionsMenu() {
+        JMenu Menu = new JMenu("Настройки");
+        final JMenuItem About = new JMenuItem("Изменить пользователя");
+        About.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                try {
+                    final JTextField login = new JTextField();
+                    final JPasswordField jpf = new JPasswordField();
+                    JOptionPane jop = new JOptionPane(new Object[]{new JLabel("Логин"), login, new JLabel("Пароль"), jpf},
+                            JOptionPane.QUESTION_MESSAGE,
+                            JOptionPane.OK_CANCEL_OPTION);
+                    JDialog dialog = jop.createDialog("Введите логин и пароль");
+                    dialog.addComponentListener(new ComponentAdapter() {
+                        @Override
+                        public void componentShown(ComponentEvent e) {
+                            login.requestFocusInWindow();
+                        }
+                    });
+                    dialog.setVisible(true);
+                    int result = (jop.getValue() != null) ? (Integer) jop.getValue() : JOptionPane.CANCEL_OPTION;
+                    dialog.dispose();
+                    String password = null;
+                    if (result == JOptionPane.OK_OPTION) {
+                        password = new String(jpf.getPassword());
+
+                        boolean check = Main.remoteLogics.checkUser(login.getText(), password);
+                        if (check) {
+                            Main.frame.remoteNavigator.relogin(login.getText());
+                            Main.frame.updateUser();
+                        } else
+                            throw new RuntimeException();
+
+                    }
+                } catch (LoginException e) {
+                    throw new RuntimeException(e);
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+        Menu.add(About);
         return Menu;
     }
 

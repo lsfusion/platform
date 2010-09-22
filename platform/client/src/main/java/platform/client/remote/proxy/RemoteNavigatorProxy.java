@@ -69,4 +69,8 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
         logRemoteMethodEndCall("getElementsByteArray", result);
         return result;
     }
+
+    public void relogin(String login) throws RemoteException {
+        target.relogin(login);
+    }
 }

@@ -73,6 +73,10 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         target.endSession(clientInfo);
     }
 
+    public boolean checkUser(String login, String password) throws RemoteException {
+        return target.checkUser(login, password);
+    }
+
     public void ping() throws RemoteException {
     }
 }

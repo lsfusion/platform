@@ -23,4 +23,6 @@ public interface RemoteLogicsInterface extends PendingRemote, PingRemote {
     ExternalScreenParameters getExternalScreenParameters(int screenID, int computerId) throws RemoteException;
     
     void endSession(String clientInfo) throws RemoteException;
+
+    boolean checkUser(String login, String password) throws RemoteException;
 }

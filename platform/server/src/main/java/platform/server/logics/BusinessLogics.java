@@ -9,6 +9,7 @@ import platform.interop.RemoteLogicsInterface;
 import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.interop.action.UserChangedClientAction;
+import platform.interop.action.UserReloginClientAction;
 import platform.interop.exceptions.LoginException;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
@@ -21,12 +22,14 @@ import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.query.Query;
 import platform.server.data.query.Join;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.where.Where;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
@@ -45,14 +48,13 @@ import platform.server.logics.property.actions.DeleteObjectActionProperty;
 import platform.server.logics.property.actions.ImportFromExcelActionProperty;
 import platform.server.logics.property.derived.*;
 import platform.server.logics.property.group.AbstractGroup;
-import platform.server.logics.property.group.AbstractNode;
 import platform.server.logics.property.group.PropertySet;
 import platform.server.logics.scheduler.Scheduler;
 import platform.server.logics.table.ImplementTable;
 import platform.server.logics.table.TableFactory;
 import platform.server.net.ServerInstanceLocator;
 import platform.server.net.ServerInstanceLocatorSettings;
-import platform.server.session.DataSession;
+import platform.server.session.*;
 
 import java.io.*;
 import java.rmi.NotBoundException;
@@ -199,6 +201,35 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
 
             return new RemoteNavigator(this, user, computer, exportPort);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                session.close();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    public boolean checkUser(String login, String password) {
+        DataSession session;
+        try {
+            session = createSession();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            User user = readUser(login, session);
+            if (user == null) {
+                throw new LoginException();
+            }
+            String checkPassword = (String) userPassword.read(session, new DataObject(user.ID, customUser));
+            if (checkPassword != null && !password.trim().equals(checkPassword.trim())) {
+                throw new LoginException();
+            }
+
+            return true;
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -411,7 +442,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP userFirstName;
     public LP userLastName;
     public LP currentUserName;
-    protected LP<?> loginToUser;
+    public LP<?> loginToUser;
 
     public LP policyDescription;
     protected LP<?> nameToPolicy;
@@ -464,7 +495,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         addProperty(null, new LP<ClassPropertyInterface>(property));
         return property;
     }
-    
+
     public class ObjectValuePropertySet extends PropertySet {
 
         protected Class<?> getPropertyClass() {
@@ -475,7 +506,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         protected boolean isInInterface(ValueClass[] classes) {
             return classes.length == 1;
         }
-        
+
         protected Property getProperty(ValueClass[] classes) {
             return getObjectValueProperty(classes[0].getBaseClass());
         }
@@ -491,7 +522,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         objectValue = new ObjectValuePropertySet();
         baseGroup.add(objectValue);
 
-        selection = new SelectionPropertySet(); 
+        selection = new SelectionPropertySet();
 
         aggrGroup = new AbstractGroup("Аггрегированные атрибуты");
         aggrGroup.createContainer = false;
@@ -649,8 +680,21 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            executeForm.form.session.user.changeCurrentUser(BaseUtils.singleValue(keys));
-            actions.add(new UserChangedClientAction());
+            DataObject user = BaseUtils.singleValue(keys);
+            if (executeForm.form.BL.requiredPassword) {
+                actions.add(new UserReloginClientAction(executeForm.form.BL.getUserName(user).trim()));
+            } else {
+                executeForm.form.session.user.changeCurrentUser(user);
+                actions.add(new UserChangedClientAction());
+            }
+        }
+    }
+
+    public String getUserName(DataObject user) {
+        try {
+            return (String) userLogin.read(createSession(), user);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -772,13 +816,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         session.close();
     }
 
-    private void checkClasses(){
+    private void checkClasses() {
         checkClass(baseClass);
     }
 
     private void checkClass(CustomClass c) {
         assert (!(c instanceof AbstractCustomClass) || (c.hasChildren())) : "Doesn't exist concrete class";
-        for (CustomClass children : c.children){
+        for (CustomClass children : c.children) {
             checkClass(children);
         }
     }
@@ -990,20 +1034,20 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     throw new RuntimeException("Одинаковые идентификаторы у классов " + customClass.caption + " и " + usedClass.caption);
 
                 // ищем класс с таким sID, если не находим создаем
-                Query<String,Object> findClass = new Query<String,Object>(Collections.singleton("key"));
+                Query<String, Object> findClass = new Query<String, Object>(Collections.singleton("key"));
                 findClass.and(classSID.getExpr(session.modifier, BaseUtils.singleValue(findClass.mapKeys)).compare(new ValueExpr(concreteClass.sID, IntegerClass.instance), Compare.EQUALS));
                 OrderedMap<Map<String, Object>, Map<Object, Object>> result = findClass.execute(session);
-                if(result.size()==0) { // не найдено добавляем новый объект и заменяем ему classID и caption
+                if (result.size() == 0) { // не найдено добавляем новый объект и заменяем ему classID и caption
                     DataObject classObject;
-                    if(concreteClass.equals(baseClass.objectClass)) { // добавим с явным ID объект
-                        classObject = new DataObject(baseClass.objectClass.sID,baseClass.unknown);
+                    if (concreteClass.equals(baseClass.objectClass)) { // добавим с явным ID объект
+                        classObject = new DataObject(baseClass.objectClass.sID, baseClass.unknown);
                         session.changeClass(classObject, baseClass.objectClass);
                     } else {
                         classObject = session.addObject(baseClass.objectClass, session.modifier);
                         concreteClass.ID = (Integer) classObject.object;
 
                         // также для обратной совместимости в objects меняем старые ID на новые
-                        Query<KeyField,PropertyField> update = new Query<KeyField,PropertyField>(baseClass.table);
+                        Query<KeyField, PropertyField> update = new Query<KeyField, PropertyField>(baseClass.table);
                         Join<PropertyField> baseJoin = baseClass.table.join(update.mapKeys);
                         update.and(baseJoin.getExpr(baseClass.table.objectClass).compare(new ValueExpr(concreteClass.sID, SystemClass.instance), Compare.EQUALS));
                         update.properties.put(baseClass.table.objectClass, new ValueExpr(classObject.object, SystemClass.instance));
@@ -1245,6 +1289,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     // функционал по заполнению св-в по номерам, нужен для BL
 
     int genIDClasses = 0;
+
     protected ConcreteCustomClass addConcreteClass(String caption, CustomClass... parents) {
         return addConcreteClass(baseGroup, genIDClasses++, caption, parents);
     }
@@ -1466,7 +1511,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addAFProp(boolean... nots) {
-        return addAFProp((AbstractGroup)null, nots);
+        return addAFProp((AbstractGroup) null, nots);
     }
 
     protected LP addAFProp(String sID, boolean... nots) {
@@ -2246,6 +2291,18 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public final static boolean checkClasses = false;
+
+    public boolean isRequiredPassword() {
+        return requiredPassword;
+    }
+
+    public void setRequiredPassword(boolean requiredPassword) {
+        this.requiredPassword = requiredPassword;
+    }
+
+    public boolean requiredPassword = true;
+
+
 
     private boolean checkProps() {
         if (checkClasses)

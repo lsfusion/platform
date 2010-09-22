@@ -47,10 +47,11 @@
 	<bean id="businessLogics" class="tmc.VEDBusinessLogics">
 		<constructor-arg><ref bean="dataAdapter"/></constructor-arg>
 		<constructor-arg type="int"><value>7652</value></constructor-arg>
-		<property name="scheduler"><ref bean="scheduler"/></property>
+        <property name="scheduler"><ref bean="scheduler"/></property>
 		<property name="formSets"><map>
     	    <entry><key><value>cashregister</value></key><value>1310,1325,1345,1365</value></entry>
 		</map></property>
+        <property name="requiredPassword" value="false"/>
 	</bean>
 
 <!-- default ports: 6666, 6667, 6668 -->

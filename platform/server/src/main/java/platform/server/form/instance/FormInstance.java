@@ -53,7 +53,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
     public final int sessionID;
 
-    final T BL;
+    public final T BL;
 
     public DataSession session;
 
