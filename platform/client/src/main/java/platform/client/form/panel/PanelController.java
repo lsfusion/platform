@@ -32,7 +32,7 @@ public abstract class PanelController extends PropertiesController {
         // так делать конечно немного неправильно, так как теоретически objectID может вообще не быть в панели
         for (ClientPropertyDraw property : logicsSupplier.getProperties()) {
             Map<ClientGroupObjectValue, PropertyController> propControllers = controllers.get(property);
-            if (propControllers != null) {
+            if (propControllers != null && !propControllers.isEmpty()) {
                 propControllers.values().iterator().next().getView().requestFocusInWindow();
             }
         }
