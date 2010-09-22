@@ -385,7 +385,7 @@ public class ClientFormController {
     }
 
     private Color defaultApplyBackground;
-    private boolean dataChanged;
+    public boolean dataChanged;
 
     public final Map<ClientGroupObject,List<ClientGroupObjectValue>> currentGridObjects = new HashMap<ClientGroupObject, List<ClientGroupObjectValue>>();
     public final Map<ClientPropertyDraw,Map<ClientGroupObjectValue,Object>> currentProperties = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();

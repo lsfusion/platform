@@ -1,12 +1,14 @@
 package platform.fullclient.layout;
 
 import bibliothek.gui.dock.common.*;
+import bibliothek.gui.dock.common.action.predefined.CCloseAction;
 import bibliothek.gui.dock.common.event.CDockableAdapter;
 import bibliothek.gui.dock.common.intern.CDockable;
 import net.sf.jasperreports.engine.JRException;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.form.RemoteFormInterface;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +47,7 @@ public class ViewManager {
         page.setLocation(gridArea.getStationLocation());
         control.add(page);
         page.setVisible(true);
-        page.setRemoveOnClose(true);
+        changeCloseAction(page);
     }
 
     public void openClient(int formID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException, JRException {
@@ -68,6 +70,28 @@ public class ViewManager {
         openForm(new ReportDockable(fileName, directory, pageFactory));
     }
 
+    public void changeCloseAction(FormDockable page) {
+        page.setCloseable(false);
+        page.setRemoveOnClose(true);
+        page.addAction(new CCloseAction(control) {
+            @Override
+            public void close(CDockable dockable) {
+                if (((FormDockable) dockable).pageChanged()) {
+                    int n = JOptionPane.showConfirmDialog(
+                            null,
+                            "Вы действительно хотите закрыть окно не применив изменения в базу данных?",
+                            "LS Fusion",
+                            JOptionPane.YES_NO_OPTION);
+                    if (n == JOptionPane.YES_OPTION) {
+                        super.close(dockable);
+                    }
+                } else {
+                    super.close(dockable);
+                }
+            }
+        });
+    }
+
     private class FormFactory implements MultipleCDockableFactory<FormDockable, FormLayout> {
         ClientNavigator mainNavigator;
 
@@ -83,6 +107,7 @@ public class ViewManager {
             try {
                 FormDockable page = new ClientFormDockable(layout.getFormID(), this, mainNavigator);
                 page.addCDockableStateListener(new CDockableStateAdapter(page));
+                changeCloseAction(page);
                 return page;
             }
             catch (Exception e) {

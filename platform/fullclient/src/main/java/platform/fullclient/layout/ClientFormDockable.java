@@ -13,15 +13,15 @@ public class ClientFormDockable extends FormDockable {
 
     private ClientFormController clientForm;
 
-    public ClientFormDockable(int iformID, ClientNavigator inavigator, boolean currentSession, MultipleCDockableFactory<FormDockable,?> factory) throws IOException, ClassNotFoundException {
+    public ClientFormDockable(int iformID, ClientNavigator inavigator, boolean currentSession, MultipleCDockableFactory<FormDockable, ?> factory) throws IOException, ClassNotFoundException {
         super(iformID, inavigator, currentSession, factory);
     }
 
-    public ClientFormDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, MultipleCDockableFactory<FormDockable,?> factory) throws IOException, ClassNotFoundException, JRException {
+    public ClientFormDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, MultipleCDockableFactory<FormDockable, ?> factory) throws IOException, ClassNotFoundException, JRException {
         super(navigator, remoteForm, factory);
     }
 
-    public ClientFormDockable(int formID, MultipleCDockableFactory<FormDockable,?> factory, ClientNavigator navigator) throws IOException, ClassNotFoundException, IOException {
+    public ClientFormDockable(int formID, MultipleCDockableFactory<FormDockable, ?> factory, ClientNavigator navigator) throws IOException, ClassNotFoundException, IOException {
         super(formID, factory, navigator);
     }
 
@@ -30,6 +30,11 @@ public class ClientFormDockable extends FormDockable {
             clientForm = new ClientFormController(remoteForm, navigator);
         }
         return clientForm;
+    }
+
+    @Override
+    public boolean pageChanged() {
+        return clientForm.dataChanged;
     }
 
     @Override

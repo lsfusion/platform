@@ -17,7 +17,6 @@ abstract class FormDockable extends DefaultMultipleCDockable {
     protected FormDockable(int formID, MultipleCDockableFactory<FormDockable,?> factory) {
         super(factory);
         this.formID = formID;
-        setCloseable(true);
         setMinimizable(true);
         setMaximizable(true);
         setExternalizable(false);
@@ -61,5 +60,9 @@ abstract class FormDockable extends DefaultMultipleCDockable {
 
     public int getFormID() {
         return formID;
+    }
+    
+    public boolean pageChanged(){
+        return false;
     }
 }
