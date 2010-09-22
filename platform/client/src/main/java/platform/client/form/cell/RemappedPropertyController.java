@@ -55,6 +55,7 @@ public class RemappedPropertyController extends PropertyController {
         }
 
         public void setDisplayValues(Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> columnDisplayValues) {
+            columnKeysCaption = "";
             if (columnKey != null && !columnKey.isEmpty()) {
                 String paramCaption = "";
                 Iterator<Map.Entry<ClientObject, Object>> columnKeysIt = columnKey.entrySet().iterator();
@@ -70,10 +71,16 @@ public class RemappedPropertyController extends PropertyController {
                     if (paramCaption.length() != 0) {
                         paramCaption += ", ";
                     }
-                    paramCaption += columnDisplayValues.get(columnProperty).get(partColumnKey);
+
+                    Object displayValue = columnDisplayValues.get(columnProperty).get(partColumnKey);
+                    if (displayValue != null) {
+                        paramCaption += displayValue;
+                    }
                 }
 
-                columnKeysCaption = "[" + paramCaption + "]";
+                if (paramCaption.length() > 0) {
+                    columnKeysCaption += "[" + paramCaption + "]";
+                }
             }
         }
     }

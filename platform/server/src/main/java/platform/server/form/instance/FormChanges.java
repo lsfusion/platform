@@ -108,16 +108,15 @@ public class FormChanges {
             for (Map.Entry<Map<ObjectInstance, DataObject>, Object> gridPropertyValue : gridProperty.getValue().entrySet()) {
                 Map<ObjectInstance, DataObject> objectValues = gridPropertyValue.getKey();
 
-                if (!panelProperties.contains(propertyDrawInstance)) {
-                    // именно так чтобы гарантировано в том же порядке
-                    for (ObjectInstance object : propertyDrawInstance.toDraw.objects) {
-                        BaseUtils.serializeObject(outStream, objectValues.get(object).getValue());
-                    }
+                for (ObjectInstance object : propertyDrawInstance.toDraw.objects) {
+                    DataObject val = objectValues.get(object);
+                    BaseUtils.serializeObject(outStream, val==null ? null : val.getValue());
                 }
 
                 for (GroupObjectInstance columnGroupObject : propertyDrawInstance.columnGroupObjects) {
                     for (ObjectInstance object : columnGroupObject.objects) {
-                        BaseUtils.serializeObject(outStream, objectValues.get(object).getValue());
+                        DataObject val = objectValues.get(object);
+                        BaseUtils.serializeObject(outStream, val==null ? null : val.getValue());
                     }
                 }
 

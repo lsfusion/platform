@@ -30,7 +30,7 @@ public class GridTableModel extends AbstractTableModel {
                 }
             } else {
                 columnPropsList.add(property);
-                columnKeysList.add(null);
+                columnKeysList.add(new ClientGroupObjectValue());
             }
         }
 
@@ -53,7 +53,7 @@ public class GridTableModel extends AbstractTableModel {
                 Map<ClientGroupObjectValue, Object> propValues = values.get(columnProps[j]);
                 if (propValues != null) {
                     ClientGroupObjectValue columnKey = columnKeys[j];
-                    ClientGroupObjectValue key = columnKey == null
+                    ClientGroupObjectValue key = columnKey.isEmpty()
                                                   ? rowKey
                                                   : new ClientGroupObjectValue(rowKey, columnKey);
                     data[i][j] = propValues.get(key);
@@ -70,7 +70,7 @@ public class GridTableModel extends AbstractTableModel {
 
             columnNames[i] = property.getFullCaption();
 
-            if (columnKey != null && !columnKey.isEmpty()) {
+            if (!columnKey.isEmpty()) {
                 String paramCaption = "";
                 Iterator<Map.Entry<ClientObject, Object>> columnKeysIt = columnKey.entrySet().iterator();
                 for (int j = 0; j < property.columnGroupObjects.length; ++j) {
@@ -85,10 +85,15 @@ public class GridTableModel extends AbstractTableModel {
                     if (paramCaption.length() != 0) {
                         paramCaption += ", ";
                     }
-                    paramCaption += columnDisplayValues.get(columnProperty).get(partColumnKey);
+                    Object displayValue = columnDisplayValues.get(columnProperty).get(partColumnKey);
+                    if (displayValue != null) {
+                        paramCaption += displayValue;
+                    }
                 }
 
-                columnNames[i] += "[" + paramCaption + "]";
+                if (paramCaption.length() > 0) {
+                    columnNames[i] += "[" + paramCaption + "]";
+                }
             }
         }
     }

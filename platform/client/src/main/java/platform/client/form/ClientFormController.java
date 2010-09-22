@@ -16,6 +16,7 @@ import platform.client.logics.classes.ClientConcreteClass;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.filter.ClientPropertyFilter;
 import platform.client.navigator.ClientNavigator;
+import platform.interop.ClassViewType;
 import platform.interop.CompressingInputStream;
 import platform.interop.Order;
 import platform.interop.Scroll;
@@ -408,6 +409,12 @@ public class ClientFormController {
             }
         }
 
+        for (Map.Entry<ClientGroupObject, Byte> entry : formChanges.classViews.entrySet()) {
+            byte classView = entry.getValue();
+            if (classView != ClassViewType.GRID) {
+                currentGridObjects.remove(entry.getKey());
+            }
+        }
         currentGridObjects.putAll(formChanges.gridObjects);
         currentProperties.putAll(formChanges.properties);
 
@@ -434,7 +441,7 @@ public class ClientFormController {
 
         if (!objectValue.equals(curObjectValue)) {
             // приходится вот так возвращать класс, чтобы не было лишних запросов
-            remoteForm.changeGroupObject(groupObject.getID(), Serializer.serializeClientGroupObjectValue(objectValue));
+            remoteForm.changeGroupObject(groupObject.getID(), objectValue.serialize());
             controllers.get(groupObject).setCurrentGroupObject(objectValue, true);
 
             applyRemoteChanges();
@@ -455,18 +462,12 @@ public class ClientFormController {
             SwingUtils.stopSingleAction(property.getGroupObject().getActionID(), true);
         }
 
-        remoteForm.changePropertyDrawWithColumnKeys(property.getID(), BaseUtils.serializeObject(value), all, Serializer.serializeClientGroupObjectValue(columnKey));
+        remoteForm.changePropertyDraw(property.getID(), BaseUtils.serializeObject(value), all, columnKey.serialize(property));
         applyRemoteChanges();
     }
     
     public void changeProperty(ClientPropertyDraw property, Object value, boolean all) throws IOException {
-        // для глобальных свойств пока не может быть отложенных действий
-        if (property.getGroupObject() != null) {
-            SwingUtils.stopSingleAction(property.getGroupObject().getActionID(), true);
-        }
-
-        remoteForm.changePropertyDraw(property.getID(), BaseUtils.serializeObject(value), all);
-        applyRemoteChanges();
+        changePropertyDrawWithColumnKeys(property, value, all, new ClientGroupObjectValue());
     }
 
     void addObject(ClientObject object, ClientConcreteClass cls) throws IOException {
@@ -508,14 +509,7 @@ public class ClientFormController {
     }
 
     public void changeOrder(ClientPropertyDraw property, Order modiType, ClientGroupObjectValue columnKey) throws IOException {
-        remoteForm.changePropertyOrderWithColumnKeys(property.getID(), modiType.serialize(), Serializer.serializeClientGroupObjectValue(columnKey));
-        applyRemoteChanges();
-    }
-
-    public void changeOrder(ClientPropertyDraw property, Order modiType) throws IOException {
-
-        remoteForm.changePropertyOrder(property.getID(), modiType.serialize());
-
+        remoteForm.changePropertyOrder(property.getID(), modiType.serialize(), columnKey.serialize(property));
         applyRemoteChanges();
     }
 

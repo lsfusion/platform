@@ -446,12 +446,7 @@ public abstract class GridTable extends ClientFormTable
             Object value = model.getValueAt(row, col);
 
             try {
-                ClientGroupObjectValue columnKey = model.getColumnKey(col);
-                if (columnKey == null) {
-                    form.changeProperty(model.getColumnProperty(col), value, multyChange);
-                } else {
-                    form.changePropertyDrawWithColumnKeys((ClientPropertyDraw)model.getColumnProperty(col), value, multyChange, columnKey);
-                }
+                form.changePropertyDrawWithColumnKeys((ClientPropertyDraw)model.getColumnProperty(col), value, multyChange, model.getColumnKey(col));
             } catch (IOException ioe) {
                 throw new RuntimeException("Ошибка при изменении значения свойства", ioe);
             }
@@ -587,13 +582,8 @@ public abstract class GridTable extends ClientFormTable
     private final List<Boolean> orderDirections = new ArrayList<Boolean>();
 
     public void changeGridOrder(int col, Order modiType) throws IOException {
-        ClientGroupObjectValue columnKey = model.getColumnKey(col);
         ClientPropertyDraw property = model.getColumnProperty(col);
-        if (columnKey == null) {
-            form.changeOrder(property, modiType);
-        } else {
-            form.changeOrder(property, modiType, columnKey);
-        }
+        form.changeOrder(property, modiType, model.getColumnKey(col));
 
         int ordNum;
         switch (modiType) {

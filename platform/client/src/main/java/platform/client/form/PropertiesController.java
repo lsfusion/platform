@@ -17,47 +17,28 @@ public class PropertiesController {
 
     public void setColumnKeys(ClientPropertyDraw property,
                               Map<ClientGroupObject, List<ClientGroupObjectValue>> groupColumnKeys) {
-        if (groupColumnKeys == null || groupColumnKeys.isEmpty()) {
-            return;
-        }
-
-        Map<ClientGroupObject, List<ClientGroupObjectValue>> keys = this.groupColumnKeys.get(property);
-        if (keys == null) {
-            keys = new OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>>();
-            //сразу вставляем все ключи, чтобы сохранить порядок
-            for (ClientGroupObject columnGroup : property.columnGroupObjects) {
-                keys.put(columnGroup, null);
-            }
-
-            this.groupColumnKeys.put(property, keys);
-        }
-
-        keys.putAll(groupColumnKeys);
+        this.groupColumnKeys.put(property, groupColumnKeys);
+        groupColumnKeys.putAll(groupColumnKeys);
 
         //находим декартово произведение ключей колонок
         List<ClientGroupObjectValue> propColumnKeys = new ArrayList<ClientGroupObjectValue>();
-        for (Map.Entry<ClientGroupObject, List<ClientGroupObjectValue>> entry : keys.entrySet()) {
+        propColumnKeys.add(new ClientGroupObjectValue());
+        for (Map.Entry<ClientGroupObject, List<ClientGroupObjectValue>> entry : groupColumnKeys.entrySet()) {
             List<ClientGroupObjectValue> groupObjectKeys = entry.getValue();
 
-            if (propColumnKeys.size() == 0) {
+            List<ClientGroupObjectValue> newPropColumnKeys = new ArrayList<ClientGroupObjectValue>();
+            for (ClientGroupObjectValue propColumnKey : propColumnKeys) {
                 for (ClientGroupObjectValue groupObjectKey : groupObjectKeys) {
-                    propColumnKeys.add(new ClientGroupObjectValue(groupObjectKey));
+                    newPropColumnKeys.add(new ClientGroupObjectValue(propColumnKey, groupObjectKey));
                 }
-            } else {
-                List<ClientGroupObjectValue> newPropColumnKeys = new ArrayList<ClientGroupObjectValue>();
-                for (ClientGroupObjectValue propColumnKey : propColumnKeys) {
-                    for (ClientGroupObjectValue groupObjectKey : groupObjectKeys) {
-                        newPropColumnKeys.add(new ClientGroupObjectValue(propColumnKey, groupObjectKey));
-                    }
-                }
-                propColumnKeys = newPropColumnKeys;
             }
+            propColumnKeys = newPropColumnKeys;
         }
 
         columnKeys.put(property, propColumnKeys);
     }
 
     public void setDisplayPropertiesValues(Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> pcolumnDisplayValues) {
-        columnDisplayValues.putAll( pcolumnDisplayValues );
+        columnDisplayValues = pcolumnDisplayValues;
     }
 }

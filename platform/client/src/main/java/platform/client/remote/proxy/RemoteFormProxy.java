@@ -96,17 +96,10 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     }
 
     @PendingRemoteMethod
-    public void changePropertyDraw(int propertyID, byte[] object, boolean all) throws RemoteException {
+    public void changePropertyDraw(int propertyID, byte[] object, boolean all, byte[] columnKeys) throws RemoteException {
         logRemoteMethodStartCall("changePropertyDraw");
-        target.changePropertyDraw(propertyID, object, all);
+        target.changePropertyDraw(propertyID, object, all, columnKeys);
         logRemoteMethodEndVoidCall("changePropertyDraw");
-    }
-
-    @PendingRemoteMethod
-    public void changePropertyDrawWithColumnKeys(int propertyID, byte[] object, boolean all, byte[] columnKeys) throws RemoteException {
-        logRemoteMethodStartCall("changePropertyDrawWithColumnKeys");
-        target.changePropertyDrawWithColumnKeys(propertyID, object, all, columnKeys);
-        logRemoteMethodEndVoidCall("changePropertyDrawWithColumnKeys");
     }
 
     @PendingRemoteMethod
@@ -152,17 +145,10 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     }
 
     @PendingRemoteMethod
-    public void changePropertyOrder(int propertyID, byte modiType) throws RemoteException {
+    public void changePropertyOrder(int propertyID, byte modiType, byte[] columnKeys) throws RemoteException {
         logRemoteMethodStartVoidCall("changePropertyOrder");
-        target.changePropertyOrder(propertyID, modiType);
+        target.changePropertyOrder(propertyID, modiType, columnKeys);
         logRemoteMethodEndVoidCall("changePropertyOrder");
-    }
-
-    @PendingRemoteMethod
-    public void changePropertyOrderWithColumnKeys(int propertyID, byte modiType, byte[] columnKeys) throws RemoteException {
-        logRemoteMethodStartVoidCall("changePropertyOrderWithColumnKeys");
-        target.changePropertyOrderWithColumnKeys(propertyID, modiType, columnKeys);
-        logRemoteMethodEndVoidCall("changePropertyOrderWithColumnKeys");
     }
 
     @PendingRemoteMethod

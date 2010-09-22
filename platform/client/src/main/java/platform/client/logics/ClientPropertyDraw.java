@@ -314,4 +314,14 @@ public class ClientPropertyDraw extends ClientComponent {
     public boolean shouldBeDrawn(ClientFormController form) {
         return baseType.shouldBeDrawn(form);
     }
+
+    private ClientGroupObject[] keyObjects;
+    public ClientGroupObject[] getKeyObjects() {
+        if (keyObjects == null) {
+            keyObjects = new ClientGroupObject[columnGroupObjects.length + 1];
+            keyObjects[0] = groupObject;
+            System.arraycopy(columnGroupObjects, 0, keyObjects, 1, columnGroupObjects.length);
+        }
+        return keyObjects;
+    }
 }

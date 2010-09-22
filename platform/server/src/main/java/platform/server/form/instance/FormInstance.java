@@ -1067,11 +1067,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                             row.putAll(keyGroup.findGroupObjectValue(keyRow));
                         }
 
-                        for(GroupObjectInstance columnGroup : propertyDraw.columnGroupObjects) // временно так
-                            if(columnGroup.curClassView != ClassViewType.GRID)
-                                for(ObjectInstance columnObject : columnGroup.objects)
-                                    row.put(columnObject, columnObject.getDataObject());
-
                         propertyValues.put(row, resultRow.getValue().get(propertyDraw));
                     }
 

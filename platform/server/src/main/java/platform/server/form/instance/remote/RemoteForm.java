@@ -263,15 +263,7 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
     private List<ClientAction> actions = new ArrayList<ClientAction>();
     private ObjectInstance updateCurrentClass = null;
 
-    public void changePropertyDraw(int propertyID, byte[] object, boolean all) {
-        try {
-            actions.addAll(form.changeProperty(form.getPropertyDraw(propertyID), BaseUtils.deserializeObject(object), this, all));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void changePropertyDrawWithColumnKeys(int propertyID, byte[] object, boolean all, byte[] columnKeys) {
+    public void changePropertyDraw(int propertyID, byte[] object, boolean all, byte[] columnKeys) {
         try {
             PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
             Map<ObjectInstance, DataObject> keys = deserializeKeys(propertyDraw, columnKeys);
@@ -317,29 +309,28 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
         form.changeClassView(form.getGroupObjectInstance(groupID), classView);
     }
 
-    public void changePropertyOrder(int propertyID, byte modiType) {
-        PropertyDrawInstance<?> propertyView = form.getPropertyDraw(propertyID);
-        try {
-            propertyView.toDraw.changeOrder(propertyView.propertyObject, Order.deserialize(modiType));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private Map<ObjectInstance, DataObject> deserializeKeys(PropertyDrawInstance<?> propertyDraw, byte[] columnKeys) throws IOException {
         DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(columnKeys));
         Map<ObjectInstance, DataObject> keys = new HashMap<ObjectInstance, DataObject>();
         for (GroupObjectInstance groupInstance : propertyDraw.columnGroupObjects) {
             Map<ObjectInstance, Object> mapValues = new HashMap<ObjectInstance, Object>();
+            boolean found = false;
             for (ObjectInstance objectInstance : groupInstance.objects) {
-                mapValues.put(objectInstance, BaseUtils.deserializeObject(inStream));
+                Object val = BaseUtils.deserializeObject(inStream);
+                if (val != null) {
+                    mapValues.put(objectInstance, val);
+                    found = true;
+                }
             }
-            keys.putAll( groupInstance.findGroupObjectValue(mapValues) );
+
+            if (found) {
+                keys.putAll( groupInstance.findGroupObjectValue(mapValues) );
+            }
         }
         return keys;
     }
 
-    public void changePropertyOrderWithColumnKeys(int propertyID, byte modiType, byte[] columnKeys) throws RemoteException {
+    public void changePropertyOrder(int propertyID, byte modiType, byte[] columnKeys) throws RemoteException {
         PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
         try {
             Map<ObjectInstance, DataObject> keys = deserializeKeys(propertyDraw, columnKeys);

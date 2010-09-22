@@ -73,8 +73,7 @@ public class ClientFormChanges {
             Map<ClientGroupObjectValue, Object> propertyValues = new HashMap<ClientGroupObjectValue, Object>();
             int mapCount = inStream.readInt();
             for (int j = 0; j < mapCount; j++) {
-                propertyValues.put(new ClientGroupObjectValue(inStream, clientPropertyDraw, !panelProperties.contains(clientPropertyDraw)),
-                        BaseUtils.deserializeObject(inStream));
+                propertyValues.put(new ClientGroupObjectValue(inStream, clientPropertyDraw), BaseUtils.deserializeObject(inStream));
             }
 
             properties.put(clientPropertyDraw, propertyValues);
