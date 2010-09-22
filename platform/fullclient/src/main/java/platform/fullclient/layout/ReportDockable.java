@@ -63,11 +63,6 @@ public class ReportDockable extends FormDockable {
         return viewer;
     }
 
-    // закрываются пользователем
-    void closed() {
-        // пока ничего не делаем
-    }
-
 
     private static final Map<Pair<Integer, Boolean>, JasperDesignWrapper> cacheJasperDesign = new HashMap();
 

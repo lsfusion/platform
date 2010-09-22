@@ -116,6 +116,8 @@ public class ViewManager {
             } else {
                 pages.remove(page);
                 forms.remove(page.getFormID());
+                control.remove(page);
+                page.closed();
             }
         }
     }

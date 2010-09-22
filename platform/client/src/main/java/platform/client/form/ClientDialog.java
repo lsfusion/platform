@@ -18,6 +18,7 @@ public class ClientDialog extends JDialog {
     public ClientDialog(Component owner, RemoteDialogInterface dialog) throws IOException, ClassNotFoundException {
         super(SwingUtils.getWindow(owner), Dialog.ModalityType.DOCUMENT_MODAL); // обозначаем parent'а и модальность
 
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
         // делаем, чтобы не выглядел как диалог

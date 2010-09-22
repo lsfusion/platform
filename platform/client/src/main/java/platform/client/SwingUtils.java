@@ -1,12 +1,11 @@
 package platform.client;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class SwingUtils {
 
@@ -49,14 +48,19 @@ public class SwingUtils {
         return pt;
     }
 
-    private final static Map<String, Timer> timers = new HashMap();
-    public static void invokeLaterSingleAction(String actionID, ActionListener actionListener, int delay) {
+    private final static WeakHashMap<String, Timer> timers = new WeakHashMap<String, Timer>();
+    public static void invokeLaterSingleAction(final String actionID, final ActionListener actionListener, int delay) {
 
         stopSingleAction(actionID, false);
 
         if (actionListener != null) {
 
-            Timer timer = new Timer(delay, actionListener);
+            final Timer timer = new Timer(delay, new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    actionListener.actionPerformed(e);
+                    timers.remove(actionID);
+                }
+            });
             timer.setRepeats(false);
 
             timer.start();
@@ -75,6 +79,7 @@ public class SwingUtils {
                     action.actionPerformed(null);
             }
             timer.stop();
+            timers.remove(actionID);
         }
     }
 

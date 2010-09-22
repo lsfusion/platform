@@ -38,7 +38,7 @@ public class ClientFormController {
 
     private final ClientForm form;
 
-    public final RemoteFormInterface remoteForm;
+    public RemoteFormInterface remoteForm;
     public final ClientNavigator clientNavigator;
     public final ClientFormActionDispatcher actionDispatcher;
 

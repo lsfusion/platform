@@ -1,5 +1,6 @@
 package platform.client.form;
 
+import platform.client.ContainerFocusListener;
 import platform.client.FormFocusTraversalPolicy;
 import platform.client.logics.ClientComponent;
 import platform.client.logics.ClientContainer;
@@ -7,12 +8,7 @@ import platform.client.logics.ClientGroupObject;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.awt.event.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,9 +30,9 @@ public abstract class ClientFormLayout extends JPanel {
     // отображение объектов от сервера на контейнеры для рисования
     private Map<ClientContainer, ClientFormContainer> contviews;
 
-    private boolean hasFocus = false;
-
     protected abstract void gainedFocus();
+
+    private FocusListener focusListener;
 
     public ClientFormLayout(List<ClientContainer> containers) {
 
@@ -45,25 +41,14 @@ public abstract class ClientFormLayout extends JPanel {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         add(mainContainer);
 
-        // следим за тем, когда форма становится активной
-        final String FOCUS_OWNER_PROPERTY = "focusOwner";
-
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener(FOCUS_OWNER_PROPERTY, new PropertyChangeListener() {
-
-            public void propertyChange(PropertyChangeEvent evt) {
-                Component focusComponent = (Component)evt.getNewValue();
-                if (focusComponent != null) {
-                    boolean newHasFocus = (ClientFormLayout.this.isAncestorOf(focusComponent)) | (focusComponent.equals(ClientFormLayout.this));
-                    if (hasFocus != newHasFocus) {
-                        hasFocus = newHasFocus;
-                        if (hasFocus) {
-                            gainedFocus();
-                        }
-                    }
-                }
-
+        // приходится делать StrongRef, иначе он тут же соберется сборщиком мусора так как ContainerFocusListener держит его как WeakReference
+        focusListener = new FocusAdapter() {
+            public void focusGained(FocusEvent e) {
+                gainedFocus();
             }
-        });
+        };
+
+        ContainerFocusListener.addListener(this, focusListener);
 
         setFocusCycleRoot(true);
         policy = new FormFocusTraversalPolicy();

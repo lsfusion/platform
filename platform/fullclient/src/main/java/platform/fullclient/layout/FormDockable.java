@@ -50,12 +50,14 @@ abstract class FormDockable extends DefaultMultipleCDockable {
         setTitleText(caption);
     }
 
+    // закрываются пользователем
+    void closed(){
+        getContentPane().removeAll();
+    }
+    
     abstract Component getActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException;
 
     protected abstract String getCaption();
-
-    // закрываются пользователем
-    void closed(){}
 
     public int getFormID() {
         return formID;
