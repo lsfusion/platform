@@ -1,5 +1,6 @@
 package platform.client.form.grid;
 
+import platform.base.OrderedMap;
 import platform.client.form.PropertiesController;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormLayout;
@@ -123,7 +124,7 @@ public class GridController extends PropertiesController {
         table.setRowKeys(gridObjects);
     }
 
-    public void setColumnKeys(ClientPropertyDraw drawProperty, Map<ClientGroupObject, List<ClientGroupObjectValue>> groupColumnKeys) {
+    public void setColumnKeys(ClientPropertyDraw drawProperty, OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>> groupColumnKeys) {
         super.setColumnKeys(drawProperty, groupColumnKeys);
         table.setColumnKeys(columnKeys);
     }

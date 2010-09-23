@@ -134,7 +134,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         //читаем ключи и свойства в колонки
         for (ClientPropertyDraw property : properties) {
             if (property.columnGroupObjects.length != 0) {
-                Map<ClientGroupObject, List<ClientGroupObjectValue>> groupColumnKeys = new OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>>();
+                OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>> groupColumnKeys = new OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>>();
                 Map<ClientPropertyDraw,Map<ClientGroupObjectValue,Object>> columnDisplayValues = new HashMap<ClientPropertyDraw,Map<ClientGroupObjectValue,Object>>();
                 for (int i = 0; i < property.columnGroupObjects.length; ++i) {
                     ClientGroupObject columnGroupObject = property.columnGroupObjects[i];

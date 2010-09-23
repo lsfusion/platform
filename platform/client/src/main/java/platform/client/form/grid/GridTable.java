@@ -1,6 +1,5 @@
 package platform.client.form.grid;
 
-import platform.base.OrderedMap;
 import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormTable;
@@ -446,7 +445,7 @@ public abstract class GridTable extends ClientFormTable
             Object value = model.getValueAt(row, col);
 
             try {
-                form.changePropertyDrawWithColumnKeys((ClientPropertyDraw)model.getColumnProperty(col), value, multyChange, model.getColumnKey(col));
+                form.changePropertyDraw((ClientPropertyDraw)model.getColumnProperty(col), value, multyChange, model.getColumnKey(col));
             } catch (IOException ioe) {
                 throw new RuntimeException("Ошибка при изменении значения свойства", ioe);
             }

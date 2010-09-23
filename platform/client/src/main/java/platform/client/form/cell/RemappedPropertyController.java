@@ -24,7 +24,7 @@ public class RemappedPropertyController extends PropertyController {
     public boolean cellValueChanged(Object ivalue) {
 
         try {
-            form.changePropertyDrawWithColumnKeys(getKey(), ivalue, false, columnKey);
+            form.changePropertyDraw(getKey(), ivalue, false, columnKey);
         } catch (IOException e) {
             throw new RuntimeException("Ошибка при изменении значения свойства", e);
         }

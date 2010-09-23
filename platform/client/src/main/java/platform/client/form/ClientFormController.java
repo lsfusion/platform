@@ -456,7 +456,7 @@ public class ClientFormController {
     }
 
 
-    public void changePropertyDrawWithColumnKeys(ClientPropertyDraw property, Object value, boolean all, ClientGroupObjectValue columnKey) throws IOException {
+    public void changePropertyDraw(ClientPropertyDraw property, Object value, boolean all, ClientGroupObjectValue columnKey) throws IOException {
         // для глобальных свойств пока не может быть отложенных действий
         if (property.getGroupObject() != null) {
             SwingUtils.stopSingleAction(property.getGroupObject().getActionID(), true);
@@ -467,7 +467,7 @@ public class ClientFormController {
     }
     
     public void changeProperty(ClientPropertyDraw property, Object value, boolean all) throws IOException {
-        changePropertyDrawWithColumnKeys(property, value, all, new ClientGroupObjectValue());
+        changePropertyDraw(property, value, all, new ClientGroupObjectValue());
     }
 
     void addObject(ClientObject object, ClientConcreteClass cls) throws IOException {
