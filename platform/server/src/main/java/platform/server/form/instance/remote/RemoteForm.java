@@ -144,7 +144,7 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
             Map<String, JasperDesign> designs = generator.generate();
             for (Map.Entry<String, JasperDesign> entry : designs.entrySet()) {
                 String id = entry.getKey();
-                String reportName = (id.equals(GroupObjectHierarchy.rootNodeName) ? getAutoReportName("") : getAutoReportName(id));
+                String reportName = getAutoReportName(id);
                 DynamicJasperHelper.generateJRXML(JasperCompileManager.compileReport(entry.getValue()), "UTF-8", reportName);
             }
             return designs;
