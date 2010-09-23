@@ -79,7 +79,7 @@ public class ViewManager {
                 if (((FormDockable) dockable).pageChanged()) {
                     int n = JOptionPane.showConfirmDialog(
                             null,
-                            "Вы действительно хотите закрыть окно не применив изменения в базу данных?",
+                            "Вы действительно хотите закрыть окно, не применив изменения в базу данных?",
                             "LS Fusion",
                             JOptionPane.YES_NO_OPTION);
                     if (n == JOptionPane.YES_OPTION) {

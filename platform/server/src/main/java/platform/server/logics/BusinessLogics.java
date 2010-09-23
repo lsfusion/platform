@@ -2282,6 +2282,30 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         lp.property.setConstraint(checkChange);
     }
 
+    protected void setNotNull(LP property) {
+
+        ValueClass[] values = property.getMapClasses();
+
+        int size = values.length;
+        boolean boolArray[] = new boolean[size];
+        for (int i = 0; i < size - 1; i++) {
+            boolArray[i] = false;
+        }
+        boolArray[size - 1] = true;
+        Object params[] = new Object[3 * size + 1];
+        for (int i = 0; i < size; i++) {
+            params[2 * i] = is(values[i]);
+            params[2 * i + 1] = i + 1;
+        }
+
+        params[2 * size] = property;
+        for (int i = 1; i < size + 1; i++) {
+            params[i + 2 * size] = i;
+        }
+        LP checkProp = addJProp("Не задано свойство \"" + property.property.caption + "\"", and(boolArray), params);
+        addConstraint(checkProp, false);
+    }
+
     private boolean intersect(LP[] props) {
         for (int i = 0; i < props.length; i++)
             for (int j = i + 1; j < props.length; j++)
@@ -2301,7 +2325,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public boolean requiredPassword = true;
-
 
 
     private boolean checkProps() {
