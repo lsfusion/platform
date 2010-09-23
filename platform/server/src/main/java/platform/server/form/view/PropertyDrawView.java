@@ -33,6 +33,8 @@ public class PropertyDrawView extends ComponentView implements ClientSerialize {
      */
     public boolean autoHide = false;
 
+    public GroupObjectEntity keyBindingGroup = null;
+
     public PropertyDrawView(int ID, PropertyDrawEntity entity) {
         super(ID);
         this.entity = entity;
@@ -89,6 +91,10 @@ public class PropertyDrawView extends ComponentView implements ClientSerialize {
         outStream.writeBoolean(entity.toDraw!=null);
         if(entity.toDraw!=null) {
             outStream.writeInt(entity.toDraw.ID);
+        }
+        outStream.writeBoolean(keyBindingGroup!=null);
+        if(keyBindingGroup!=null) {
+            outStream.writeInt(keyBindingGroup.ID);
         }
 
         GroupObjectEntity[] columnGroupObjects = entity.getColumnGroupObjects();

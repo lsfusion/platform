@@ -33,6 +33,7 @@ import platform.server.data.where.Where;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
+import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.OrderInstance;
@@ -2821,8 +2822,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public void addObjectActions(FormEntity form, ObjectEntity object) {
-        form.addPropertyDraw(new LP<ClassPropertyInterface>(getImportObjectAction(object.baseClass))).setToDraw(object.groupTo);
-        form.addPropertyDraw(new LP<ClassPropertyInterface>(getAddObjectAction(object.baseClass))).setToDraw(object.groupTo);
+        form.forceDefaultDraw.put(form.addPropertyDraw(new LP<ClassPropertyInterface>(getImportObjectAction(object.baseClass))),object.groupTo);
+        form.forceDefaultDraw.put(form.addPropertyDraw(new LP<ClassPropertyInterface>(getAddObjectAction(object.baseClass))),object.groupTo);
         form.addPropertyDraw(delete, object);
     }
 

@@ -368,4 +368,6 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
     public String checkClientApply(Object result) {
         return null;
     }
+
+    public Map<PropertyDrawEntity, GroupObjectEntity> forceDefaultDraw = new HashMap<PropertyDrawEntity, GroupObjectEntity>();
 }

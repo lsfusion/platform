@@ -369,6 +369,8 @@ public class CompiledQuery<K,V> {
                 for(Map.Entry<String,KeyExpr> keyJoin : joinKeys.entrySet()) { // дозаполним ключи
                     String keySource = keySelect.get(keyJoin.getValue());
                     if(keySource==null) {
+                        if(!inner)
+                            keySource = keySource;
                         assert inner;
                         keySelect.put(keyJoin.getValue(),keyJoin.getKey());
                     } else

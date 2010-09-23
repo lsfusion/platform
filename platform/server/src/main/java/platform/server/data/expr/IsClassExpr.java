@@ -37,7 +37,9 @@ public class IsClassExpr extends StaticClassExpr {
     }
 
     public VariableExprSet calculateExprFollows() {
-        return expr.getExprFollows();
+        VariableExprSet result = new VariableExprSet(expr.getExprFollows());
+        result.add(getJoinExpr());
+        return result;
     }
 
     public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {

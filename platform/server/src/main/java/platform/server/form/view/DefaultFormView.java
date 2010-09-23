@@ -11,6 +11,7 @@ import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
+import platform.base.BaseUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -113,11 +114,17 @@ public class DefaultFormView extends FormView {
 
         for (PropertyDrawEntity control : formEntity.propertyDraws) {
 
-            GroupObjectView groupObject = mgroupObjects.get(control.toDraw);
-
             PropertyDrawView clientProperty = new PropertyDrawView(idGenerator.idShift(), control);
             clientProperty.constraints.order = formEntity.propertyDraws.indexOf(control);
             clientProperty.constraints.insetsSibling = new Insets(0,0,2,2);
+
+            GroupObjectEntity groupDraw = formEntity.forceDefaultDraw.get(control);
+            if(groupDraw!=null) {
+                clientProperty.keyBindingGroup = groupDraw;
+            } else {
+                groupDraw = control.toDraw;
+            }
+            GroupObjectView groupObject = mgroupObjects.get(groupDraw);
 
             mproperties.put(control, clientProperty);
             properties.add(clientProperty);

@@ -273,7 +273,7 @@ public abstract class GridTable extends ClientFormTable
             boolean samePropAsPrevious = i != 0 && cell == model.getColumnProperty(i - 1);
             final int index = i;
             if (!samePropAsPrevious && cell.editKey != null) {
-                form.getComponent().addKeyBinding(cell.editKey, cell.getGroupObject(), new KeyAdapter() {
+                form.getComponent().addKeyBinding(cell.editKey, cell.getKeyBindingGroup(), new KeyAdapter() {
                     @Override
                     public void keyPressed(KeyEvent e) {
                         int leadRow = getSelectionModel().getLeadSelectionIndex();

@@ -219,6 +219,11 @@ public class ClientPropertyDraw extends ClientComponent {
         }
 
         if (inStream.readBoolean()) {
+            int groupID = inStream.readInt();
+            keyBindingGroup = getClientGroupObject(groups, groupID);
+        }
+
+        if (inStream.readBoolean()) {
             int length = inStream.readInt();
             columnGroupObjects = new ClientGroupObject[length];
             columnDisplayPropertiesIds = new int[length];
@@ -248,6 +253,11 @@ public class ClientPropertyDraw extends ClientComponent {
             }
         }
         return null;
+    }
+
+    ClientGroupObject keyBindingGroup = null;
+    public ClientGroupObject getKeyBindingGroup() {
+        return BaseUtils.nvl(keyBindingGroup, getGroupObject());
     }
 
     public ClientGroupObject getGroupObject() {
