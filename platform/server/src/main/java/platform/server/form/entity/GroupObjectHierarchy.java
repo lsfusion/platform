@@ -13,12 +13,12 @@ import java.util.*;
 public class GroupObjectHierarchy {
     public static final String rootNodeName = "__ROOT__";
 
-    private Set<GroupObjectEntity> groups;
+    private List<GroupObjectEntity> groups;
     private Map<GroupObjectEntity, List<GroupObjectEntity>> dependencies;
     private Set<GroupObjectEntity> markedGroups;
 
-    public GroupObjectHierarchy(Collection<GroupObjectEntity> groupObjects, Map<GroupObjectEntity, List<GroupObjectEntity>> depends) {
-        groups = new HashSet<GroupObjectEntity>(groupObjects);
+    public GroupObjectHierarchy(List<GroupObjectEntity> groupObjects, Map<GroupObjectEntity, List<GroupObjectEntity>> depends) {
+        groups = new ArrayList<GroupObjectEntity>(groupObjects);
         dependencies = new HashMap<GroupObjectEntity, List<GroupObjectEntity>>(depends);
         markedGroups = new HashSet<GroupObjectEntity>();
         for (GroupObjectEntity group : groups) {
@@ -30,7 +30,7 @@ public class GroupObjectHierarchy {
     }
 
     public GroupObjectHierarchy() {
-        groups = new HashSet<GroupObjectEntity>();
+        groups = new ArrayList<GroupObjectEntity>();
         dependencies = new HashMap<GroupObjectEntity, List<GroupObjectEntity>>();
         markedGroups = new HashSet<GroupObjectEntity>();
     }
@@ -192,7 +192,7 @@ public class GroupObjectHierarchy {
         private Map<ReportNode, List<ReportNode>> dependencies = new HashMap<ReportNode, List<ReportNode>>();
         private Map<GroupObjectEntity, ReportNode> groupToReportNode = new HashMap<GroupObjectEntity, ReportNode>();
 
-        public ReportHierarchy(Set<GroupObjectEntity> groupObjects, Map<GroupObjectEntity, List<GroupObjectEntity>> depends,
+        public ReportHierarchy(List<GroupObjectEntity> groupObjects, Map<GroupObjectEntity, List<GroupObjectEntity>> depends,
                                Set<GroupObjectEntity> markedGroups) {
 
             for (GroupObjectEntity group : groupObjects) {

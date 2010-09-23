@@ -27,7 +27,6 @@ import static platform.server.form.entity.GroupObjectHierarchy.ReportNode;
  */
 
 public class ReportDesignGenerator {
-
     private GroupObjectHierarchy.ReportHierarchy hierarchy;
     private FormView formView;
     private Set<Integer> hiddenGroupsId;
@@ -59,7 +58,7 @@ public class ReportDesignGenerator {
         for (ReportNode childNode : children) {
             JRDesignBand detail = new JRDesignBand();
 
-            if (treeGroupLevel == 0) {
+            if (node == null) {
                 treeGroupLevel = childNode.getGroupLevel();
             }
             String sid = childNode.getID();
