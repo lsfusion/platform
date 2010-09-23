@@ -4,6 +4,9 @@ import static platform.base.BaseUtils.*;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.client.form.ClientFormController;
+import platform.client.form.GroupObjectController;
+import platform.interop.ClassViewType;
 
 import java.io.*;
 import java.util.Map;
@@ -17,23 +20,26 @@ public class ClientGroupObjectValue extends OrderedMap<ClientObject,Object>
         }
     }
 
-    public ClientGroupObjectValue(DataInputStream inStream, ClientPropertyDraw propertyDraw) throws IOException {
-        for (ClientGroupObject group : propertyDraw.getKeyObjects()) {
-            for (ClientObject clientObject : group) {
-                Object keyValue = deserializeObject(inStream);
-                if (keyValue != null) {
-                    put(clientObject, keyValue);
+    public ClientGroupObjectValue(DataInputStream inStream, ClientPropertyDraw clientPropertyDraw, boolean deserializeGroupKeys, Map<ClientGroupObject, Byte> classViews, Map<ClientGroupObject, GroupObjectController> controllers) throws IOException {
+        if (deserializeGroupKeys) {
+            for (ClientObject clientObject : clientPropertyDraw.groupObject) {
+                put(clientObject, deserializeObject(inStream));
+            }
+        }
+
+        for (ClientGroupObject columnGroupObject : clientPropertyDraw.columnGroupObjects) {
+            Byte newType = classViews.get(columnGroupObject);
+            if((newType!=null?newType:controllers.get(columnGroupObject).classView) == ClassViewType.GRID) {
+                for (ClientObject clientObject : columnGroupObject) {
+                    put(clientObject, deserializeObject(inStream));
                 }
             }
         }
     }
-    
+
     public ClientGroupObjectValue(DataInputStream inStream, ClientGroupObject clientGroupObject) throws IOException {
         for (ClientObject clientObject : clientGroupObject) {
-            Object keyValue = deserializeObject(inStream);
-            if (keyValue != null) {
-                put(clientObject, keyValue);
-            }
+            put(clientObject, deserializeObject(inStream));
         }
     }
 

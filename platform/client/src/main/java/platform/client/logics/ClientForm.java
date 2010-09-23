@@ -58,6 +58,13 @@ public class ClientForm implements Serializable, LogicsSupplier {
          return properties;
      }
 
+    public ClientObject getObject(int id) {
+        for (ClientGroupObject groupObject : groupObjects)
+            for(ClientObject object : groupObject)
+                if (object.getID() == id) return object;
+        return null;
+    }
+
     public ClientGroupObject getGroupObject(int id) {
         for (ClientGroupObject groupObject : groupObjects)
             if (groupObject.getID() == id) return groupObject;

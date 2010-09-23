@@ -601,8 +601,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         }
 
         Collection<Group> groups = new ArrayList<Group>();
-        Map<PropertyDrawInstance, Boolean> cacheInGridInterface;
-        Map<PropertyDrawInstance, Boolean> cacheInInterface;
         Set<PropertyDrawInstance> isDrawed;
         Map<RegularFilterGroupInstance, RegularFilterInstance> regularFilterValues;
 
@@ -615,8 +613,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         ApplyTransaction() {
             for (GroupObjectInstance group : FormInstance.this.groups)
                 groups.add(new Group(group));
-            cacheInGridInterface = new HashMap<PropertyDrawInstance, Boolean>(FormInstance.this.cacheInGridInterface);
-            cacheInInterface = new HashMap<PropertyDrawInstance, Boolean>(FormInstance.this.cacheInInterface);
             isDrawed = new HashSet<PropertyDrawInstance>(FormInstance.this.isDrawed);
             regularFilterValues = new HashMap<RegularFilterGroupInstance, RegularFilterInstance>(FormInstance.this.regularFilterValues);
 
@@ -631,8 +627,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         void rollback() throws SQLException {
             for (Group group : groups)
                 group.rollback();
-            FormInstance.this.cacheInGridInterface = cacheInGridInterface;
-            FormInstance.this.cacheInInterface = cacheInInterface;
             FormInstance.this.isDrawed = isDrawed;
             FormInstance.this.regularFilterValues = regularFilterValues;
 
@@ -745,8 +739,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     // "закэшированная" проверка присутствия в интерфейсе, отличается от кэша тем что по сути функция от mutable объекта
-    protected Map<PropertyDrawInstance, Boolean> cacheInGridInterface = new HashMap<PropertyDrawInstance, Boolean>();
-    protected Map<PropertyDrawInstance, Boolean> cacheInInterface = new HashMap<PropertyDrawInstance, Boolean>();
     protected Set<PropertyDrawInstance> isDrawed = new HashSet<PropertyDrawInstance>();
 
     boolean refresh = true;
@@ -1041,12 +1033,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 Set<GroupObjectInstance> keyGroupObjects = entry.getKey();
                 Collection<PropertyDrawInstance> propertyList = entry.getValue();
 
-                Map<ObjectInstance, KeyExpr> groupMapKeys = new HashMap<ObjectInstance, KeyExpr>();
-                for (GroupObjectInstance keyObject : keyGroupObjects) {
-                    groupMapKeys.putAll(keyObject.getMapKeys());
-                }
+                Set<ObjectInstance> keyObjects = new HashSet<ObjectInstance>();
+                for (GroupObjectInstance keyGroupObject : keyGroupObjects)
+                    keyObjects.addAll(keyGroupObject.objects);
 
-                Query<ObjectInstance, PropertyDrawInstance> selectProps = new Query<ObjectInstance, PropertyDrawInstance>(groupMapKeys);
+                Query<ObjectInstance, PropertyDrawInstance> selectProps = new Query<ObjectInstance, PropertyDrawInstance>(keyObjects);
                 for (GroupObjectInstance keyGroup : keyGroupObjects) {
                     GroupObjectTable columnKeyTable = groupTables.get(keyGroup);
                     selectProps.and(columnKeyTable.joinAnd(BaseUtils.join(columnKeyTable.mapKeys, selectProps.mapKeys)).getWhere());

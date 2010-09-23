@@ -378,7 +378,7 @@ public class ClientFormController {
             action.dispatch(actionDispatcher);
 
         Log.incrementBytesReceived(remoteChanges.form.length);
-        applyFormChanges(new ClientFormChanges(new DataInputStream(new CompressingInputStream(new ByteArrayInputStream(remoteChanges.form))), form));
+        applyFormChanges(new ClientFormChanges(new DataInputStream(new CompressingInputStream(new ByteArrayInputStream(remoteChanges.form))), form, controllers));
 
         if (clientNavigator != null) {
             clientNavigator.changeCurrentClass(remoteChanges.classID);

@@ -3,6 +3,7 @@ package platform.server.form.instance;
 import platform.base.BaseUtils;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.interop.ClassViewType;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -108,15 +109,18 @@ public class FormChanges {
             for (Map.Entry<Map<ObjectInstance, DataObject>, Object> gridPropertyValue : gridProperty.getValue().entrySet()) {
                 Map<ObjectInstance, DataObject> objectValues = gridPropertyValue.getKey();
 
-                for (ObjectInstance object : propertyDrawInstance.toDraw.objects) {
-                    DataObject val = objectValues.get(object);
-                    BaseUtils.serializeObject(outStream, val==null ? null : val.getValue());
+                if (!panelProperties.contains(propertyDrawInstance)) {
+                    // именно так чтобы гарантировано в том же порядке
+                    for (ObjectInstance object : propertyDrawInstance.toDraw.objects) {
+                        BaseUtils.serializeObject(outStream, objectValues.get(object).getValue());
+                    }
                 }
 
                 for (GroupObjectInstance columnGroupObject : propertyDrawInstance.columnGroupObjects) {
-                    for (ObjectInstance object : columnGroupObject.objects) {
-                        DataObject val = objectValues.get(object);
-                        BaseUtils.serializeObject(outStream, val==null ? null : val.getValue());
+                    if(columnGroupObject.curClassView == ClassViewType.GRID) {
+                        for (ObjectInstance object : columnGroupObject.objects) {
+                            BaseUtils.serializeObject(outStream, objectValues.get(object).getValue());
+                        }
                     }
                 }
 

@@ -257,6 +257,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP certToIssued, obligationSumFrom;
     LP documentBarcodePrice, documentBarcodePriceOv;
     LP invoiceNumber, invoiceSeries;
+    LP orderBirthDay;
 
     protected void initProperties() {
 
@@ -293,7 +294,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP outSubject = addCUProp(addJProp(and1, orderSupplier, 1, is(orderDelivery), 1), outStore);
 
         customerCheckRetailPhone = addDProp(baseGroup, "checkRetailCustomerPhone", "Телефон", StringClass.get(20), customerCheckRetail);
-        customerCheckRetailBorn = addDProp(baseGroup, "checkRetailCustomerBorn", "Дата роджения", DateClass.instance, customerCheckRetail);
+        customerCheckRetailBorn = addDProp(baseGroup, "checkRetailCustomerBorn", "Дата рождения", DateClass.instance, customerCheckRetail);
         customerCheckRetailAddress = addDProp(baseGroup, "checkRetailCustomerAddress", "Адрес", StringClass.get(40), customerCheckRetail);
         clientInitialSum = addDProp(baseGroup, "clientInitialSum", "Начальная сумма", DoubleClass.instance, customerCheckRetail);
 
@@ -553,11 +554,14 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         documentBarcodePriceOv = addSUProp("Цена", Union.OVERRIDE, documentBarcodePrice, addJProp(and1, addJProp(obligationSum, barcodeToObject, 1), 2, is(order), 1));
 
         LP monthDay = addSFProp("EXTRACT(DOY FROM prm1)", IntegerClass.instance, 1);
-        LP isOrderContragentBirthDay = addJProp(equals2, addJProp(monthDay, date, 1), 1, addJProp(monthDay, addJProp(customerCheckRetailBorn, orderContragent, 1), 1), 1);
+        orderBirthDay = addDCProp("orderBirthDay", "День рожд.", addJProp(equals2, monthDay, 1, addJProp(monthDay, customerCheckRetailBorn, 1), 2), true, date, 1, orderContragent, 1);
+
+        LP orderArticleSaleSum = addJProp(documentPriceGroup, "Сумма прод.", multiplyDouble2, articleQuantity, 1, 2, orderSaleDocPrice, 1, 2);
+        
         LP articleActionActive = addJProp(and(false, false, false, false, true, true, true, true, true), articleQuantity, 1, 2, is(orderSaleArticleRetail), 1, is(articleAction), 3, inAction, 3, 2, isStarted, 3,
                 addJProp(less2, articleQuantity, 1, 2, articleActionQuantity, 3), 1, 2, 3,
-                addJProp(and(false, true), articleActionBirthDay, 2, is(orderSaleArticleRetail), 1, isOrderContragentBirthDay, 1), 1, 3,
-                addJProp(less2, orderClientSum, 1, articleActionClientSum, 2), 1, 3,
+                addJProp(and(false, true), articleActionBirthDay, 2, is(orderSaleArticleRetail), 1, orderBirthDay, 1), 1, 3,
+                addJProp(less2, addSUProp(Union.SUM, orderClientSum, addSGProp(orderArticleSaleSum, 1)), 1, articleActionClientSum, 2), 1, 3,
                 addJProp(less2, orderHour, 1, articleActionHourFrom, 2), 1, 3,
                 addJProp(greater2, orderHour, 1, articleActionHourTo, 2), 1, 3);
         
@@ -568,7 +572,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addJProp(actionNoExtraDiscount, articleSaleAction, 1), 2),
                 true, 1, 2, is(orderSaleArticleRetail), 1);
 
-        LP orderArticleSaleSum = addJProp(documentPriceGroup, "Сумма прод.", multiplyDouble2, articleQuantity, 1, 2, orderSaleDocPrice, 1, 2);
         LP round1 = addSFProp("(ROUND(CAST((prm1) as NUMERIC(15,3)),-1))", IntegerClass.instance, 1);
         LP orderArticleSaleDiscountSum = addJProp(documentPriceGroup, "Сумма скидки", round1, addJProp(percent, orderArticleSaleSum, 1, 2, orderArticleSaleDiscount, 1, 2), 1, 2);
         orderArticleSaleSumWithDiscount = addDUProp(documentPriceGroup, "Сумма к оплате", orderArticleSaleSum, orderArticleSaleDiscountSum);
@@ -1385,7 +1388,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         @Override
         protected Object[] getDocumentProps() {
             return new Object[]{nameContragentImpl, phoneContragentImpl, bornContragentImpl, addressContragentImpl, initialSumContragentImpl, orderClientSum,
-                    orderSalePay, orderSaleDiscountSum, orderSalePayNoObligation, orderSalePayCash, orderSalePayCard, orderSaleToDo, orderSaleToDoSum};
+                    orderSalePay, orderSaleDiscountSum, orderSalePayNoObligation, orderSalePayCash, orderSalePayCard, orderSaleToDo, orderSaleToDoSum, orderBirthDay};
         }
 
         @Override
@@ -2191,11 +2194,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected CouponIntervalFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Интервалы цен по купонам");
 
-            ObjectEntity objIntervalAdd = addSingleGroupObject(DoubleClass.instance, "Цена товара от", couponGroup, true);
+            ObjectEntity objIntervalAdd = addSingleGroupObject(DoubleClass.instance, "Цена товара от", objectValue, couponGroup, true);
             objIntervalAdd.groupTo.initClassView = ClassViewType.PANEL;
             objIntervalAdd.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
 
-            ObjectEntity objInterval = addSingleGroupObject(DoubleClass.instance, "Цена товара", couponGroup, true);
+            ObjectEntity objInterval = addSingleGroupObject(DoubleClass.instance, "Цена товара", objectValue, couponGroup, true);
             objInterval.groupTo.banClassView = ClassViewType.PANEL | ClassViewType.HIDE;
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(couponIssueSum, objInterval)));
         }
