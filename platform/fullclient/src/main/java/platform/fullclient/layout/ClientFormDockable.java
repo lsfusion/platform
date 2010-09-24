@@ -50,11 +50,12 @@ public class ClientFormDockable extends FormDockable {
     void closed() {
         super.closed();
 
-        // сбрасываем ссылку на RemoteFormInterface, чтобы его как можно быстрее собрал сборщик мусора
-        clientForm.remoteForm = null;
-
         // удаляем ссылку на clientForm, поскольку ClientFormDockable совершенно не собирается быть собранным сборщиком мусора,
         // поскольку на него хранят ссылку внутренние объекты DockingFrames
+        clientForm.closed();
         clientForm = null;
+
+        // на всякий случай
+        System.gc();
     }
 }

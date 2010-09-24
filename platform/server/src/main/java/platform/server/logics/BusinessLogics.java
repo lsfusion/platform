@@ -97,12 +97,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private static final Object serviceMonitor = new Object();
 
     public static void start(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, JRException {
+
+        // делаем, чтобы сборщик мусора срабатывал каждую минуту - для удаления ненужных connection'ов
+        System.setProperty("sun.rmi.dgc.server.gcInterval", "60000");
+
         String logLevel = System.getProperty("platform.server.loglevel");
         if (logLevel != null) {
             LogManager.getLogManager().getLogger("").setLevel(Level.parse(logLevel));
         } else {
             LogManager.getLogManager().getLogger("").setLevel(Level.SEVERE);
         }
+
         Handler consoleHandler = new StreamHandler(System.out, new SimpleFormatter()) {
             @Override
             public synchronized void publish(LogRecord record) {

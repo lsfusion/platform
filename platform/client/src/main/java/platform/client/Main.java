@@ -46,6 +46,10 @@ public class Main {
     public static ModuleFactory module;
 
     public static void start(final String[] args, ModuleFactory startModule) {
+
+        // делаем, чтобы сборщик мусора срабатывал каждую минуту - для удаления ненужных connection'ов
+        System.setProperty("sun.rmi.dgc.client.gcInterval", "60000");
+
         boolean turnOnRmiLogging = Boolean.getBoolean(PropertyConstants.PLATFORM_CLIENT_LOG_RMI);
         if (turnOnRmiLogging) {
             String logBaseDir = System.getProperty(PropertyConstants.PLATFORM_CLIENT_LOG_BASEDIR);

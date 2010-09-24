@@ -18,7 +18,7 @@ public class ObjectPropertyEditor extends JDialog implements PropertyEditorCompo
 
     private final Component owner;
     private final RemoteNavigatorInterface navigator;
-    private final RemoteDialogInterface dialog;
+    private RemoteDialogInterface dialog;
 
     private ClientDialog clientDialog;
 
@@ -27,10 +27,6 @@ public class ObjectPropertyEditor extends JDialog implements PropertyEditorCompo
         this.owner = owner;
         this.navigator = navigator;
         this.dialog = dialog;
-    }
-
-    Object objectChosen() throws RemoteException {
-        return dialog.getDialogValue();
     }
 
     public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) throws IOException, ClassNotFoundException {
@@ -43,17 +39,16 @@ public class ObjectPropertyEditor extends JDialog implements PropertyEditorCompo
             clientDialog.setSize(500, 300);
             SwingUtils.requestLocation(clientDialog, new Point((int)(tableLocation.getX() + cellRectangle.getX()), (int)(tableLocation.getY() + cellRectangle.getMaxY())));
         }
+        dialog = null; // лучше сбрасывать ссылку, чтобы раньше начал отрабатывать сборщик мусора
 
         clientDialog.setVisible(true);
+        clientDialog.dispose(); // приходится в явную делать dispose, поскольку dialog может закрываться через setVisible
+        clientDialog.closed();
         return null;
     }
 
     public Object getCellEditorValue() throws RemoteException {
-        
-        if (clientDialog.objectChosen == ClientDialog.CHOSEN_NULL)
-            return null;
-        else
-            return objectChosen();
+        return clientDialog.dialogValue;
     }
 
     public boolean valueChanged() {

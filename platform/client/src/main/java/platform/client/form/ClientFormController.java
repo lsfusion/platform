@@ -108,6 +108,9 @@ public class ClientFormController {
             @Override
             protected void gainedFocus() {
 
+                if (remoteForm == null) // типа если сработал closed, то ничего вызывать не надо
+                    return;
+
                 try {
                     remoteForm.gainedFocus();
                     if (clientNavigator != null) {
@@ -645,5 +648,13 @@ public class ClientFormController {
 
     public void dropLayoutCaches() {
         formLayout.dropCaches();
+    }
+
+    public void closed() {
+        // здесь мы сбрасываем ссылку на remoteForm для того, чтобы сборщик мусора быстрее собрал удаленные объекты
+        // это нужно, чтобы connection'ы на сервере закрывались как можно быстрее
+        if (remoteForm != null) {
+            remoteForm = null;
+        }
     }
 }

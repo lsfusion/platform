@@ -10,6 +10,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.rmi.RemoteException;
 
 public class ClientDialog extends JDialog {
 
@@ -46,19 +47,19 @@ public class ClientDialog extends JDialog {
 
     public static int NOT_CHOSEN = 0;
     public static int CHOSEN_VALUE = 1;
-    public static int CHOSEN_NULL = 2;
 
     public int objectChosen = NOT_CHOSEN;
+    public Object dialogValue;
 
     boolean isReadOnlyMode() {
         return true;
     }
 
     // необходим чтобы в диалоге менять формы (панели)
-    void setCurrentForm(RemoteDialogInterface remoteForm) throws IOException, ClassNotFoundException {
+    void setCurrentForm(final RemoteDialogInterface remoteDialog) throws IOException, ClassNotFoundException {
 
         if (currentForm != null) remove(currentForm.getComponent());
-        currentForm = new ClientFormController(remoteForm, null) {
+        currentForm = new ClientFormController(remoteDialog, null) {
 
             @Override
             public boolean isDialogMode() {
@@ -73,7 +74,8 @@ public class ClientDialog extends JDialog {
             @Override
             boolean nullPressed() {
 
-                objectChosen = CHOSEN_NULL;
+                objectChosen = CHOSEN_VALUE;
+                dialogValue = null;
                 ClientDialog.this.setVisible(false);
                 return true;
             }
@@ -82,6 +84,11 @@ public class ClientDialog extends JDialog {
             public void okPressed() {
 
                 objectChosen = CHOSEN_VALUE;
+                try {
+                    dialogValue = remoteDialog.getDialogValue();
+                } catch (RemoteException e) {
+                    throw new RuntimeException("Ошибка при получении значения диалога", e);
+                }
                 ClientDialog.this.setVisible(false);
             }
 
@@ -97,4 +104,8 @@ public class ClientDialog extends JDialog {
         validate();
     }
 
+    public void closed() {
+        if (currentForm != null)
+            currentForm.closed();
+    }
 }
