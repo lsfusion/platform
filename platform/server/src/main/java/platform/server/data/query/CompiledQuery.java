@@ -556,7 +556,7 @@ public class CompiledQuery<K,V> {
                 Where fullWhere = Where.FALSE;
                 for(OrderExpr.Query query : queries.keySet()) {
                     queryExprs.add(query.expr);
-                    queryExprs.addAll(query.orders);
+                    queryExprs.addAll(query.orders.keySet());
                     queryExprs.addAll(query.partitions);
 
                     // кэшируем так как не самая быстрая операция
@@ -583,7 +583,7 @@ public class CompiledQuery<K,V> {
                 for(Map.Entry<OrderExpr.Query,String> expr : queries.entrySet()) // ORDER BY не проверяем на Clause потому как всегда должна быть
                     propertySelect.put(expr.getValue(),"SUM(" + fromPropertySelect.get(expr.getKey().expr) +
                             ") OVER ("+ BaseUtils.clause("PARTITION BY ",BaseUtils.toString(BaseUtils.filterKeys(fromPropertySelect, expr.getKey().partitions).values(),",")) +
-                            " ORDER BY " + BaseUtils.toString(BaseUtils.mapList(expr.getKey().orders,fromPropertySelect),",") + ")");
+                            " ORDER BY " + Query.stringOrder(BaseUtils.mapOrder(expr.getKey().orders,fromPropertySelect), syntax) + ")");
                 return "(" + syntax.getSelect(fromSelect, SQLSession.stringExpr(keySelect,propertySelect),
                         BaseUtils.toString(whereSelect," AND "),"","","") + ")";
             }

@@ -58,16 +58,13 @@ public class InstanceFactory {
     }
 
     public <T extends PropertyInterface> PropertyDrawInstance getInstance(PropertyDrawEntity<T> entity) {
-        GroupObjectEntity[] entColumnGroupObjects = entity.getColumnGroupObjects();
-
-        int length = entColumnGroupObjects == null ? 0 : entColumnGroupObjects.length;
-        GroupObjectInstance columnGroupObjects[] = new GroupObjectInstance[length];
-        for (int i = 0; i < length; ++i) {
-            //noinspection ConstantConditions
-            columnGroupObjects[i] = getInstance(entColumnGroupObjects[i]);
-        }
 
         if (!propertyDrawInstances.containsKey(entity)) {
+            GroupObjectInstance columnGroupObjects[] = new GroupObjectInstance[entity.columnGroupObjects.size()]; int ig = 0;
+            for (Map.Entry<GroupObjectEntity,PropertyDrawEntity> columnGroupObject : entity.columnGroupObjects.entrySet()) {
+                columnGroupObjects[ig++] = getInstance(columnGroupObject.getKey());
+            }
+
             propertyDrawInstances.put(entity, new PropertyDrawInstance<T>(entity, getInstance(entity.propertyObject), getInstance(entity.toDraw), columnGroupObjects));
         }
 

@@ -17,6 +17,7 @@ import java.awt.*;
 import java.text.Format;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.Map;
 
 public class PropertyDrawView extends ComponentView implements ClientSerialize {
 
@@ -97,17 +98,10 @@ public class PropertyDrawView extends ComponentView implements ClientSerialize {
             outStream.writeInt(keyBindingGroup.ID);
         }
 
-        GroupObjectEntity[] columnGroupObjects = entity.getColumnGroupObjects();
-        PropertyDrawEntity[] columnDisplayProperties = entity.getColumnDisplayProperties();
-        outStream.writeBoolean(columnGroupObjects != null);
-        if (columnGroupObjects != null) {
-            outStream.writeInt(columnGroupObjects.length);
-            for (int i = 0; i < columnGroupObjects.length; ++i) {
-                outStream.writeInt(columnGroupObjects[i].ID);
-            }
-            for (int i = 0; i < columnGroupObjects.length; ++i) {
-                outStream.writeInt(columnDisplayProperties[i].getID());
-            }
+        outStream.writeInt(entity.columnGroupObjects.size());
+        for (Map.Entry<GroupObjectEntity,PropertyDrawEntity> columnGroupObject : entity.columnGroupObjects.entrySet()) {
+            outStream.writeInt(columnGroupObject.getKey().ID);
+            outStream.writeInt(columnGroupObject.getValue().getID());
         }
 
         outStream.writeBoolean(autoHide);

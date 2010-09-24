@@ -57,6 +57,13 @@ public class BaseUtils {
         return result;
     }
 
+    public static <K,E,V> OrderedMap<V,E> mapOrder(OrderedMap<K,E> list, Map<K,V> map) { // map предполагается reversed
+        OrderedMap<V,E> result = new OrderedMap<V,E>();
+        for(Map.Entry<K,E> entry : list.entrySet())
+            result.put(map.get(entry.getKey()), entry.getValue());
+        return result;
+    }
+
     public static <K,E,V> Map<K,V> innerJoin(Map<K,E> map, Map<E,V> joinMap) {
         Map<K,V> result = new HashMap<K, V>();
         for(Map.Entry<K,E> entry : map.entrySet()) {

@@ -4,6 +4,7 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.PullExpr;
 import platform.base.ImmutableObject;
+import platform.base.OrderedMap;
 
 import java.util.*;
 
@@ -30,6 +31,13 @@ public class QueryTranslator extends ImmutableObject {
         Map<K, Expr> transMap = new HashMap<K, Expr>();
         for(Map.Entry<K,? extends Expr> entry : map.entrySet())
             transMap.put(entry.getKey(),entry.getValue().translateQuery(this));
+        return transMap;
+    }
+
+    public <K> OrderedMap<Expr, K> translate(OrderedMap<? extends Expr, K> map) {
+        OrderedMap<Expr, K> transMap = new OrderedMap<Expr, K>();
+        for(Map.Entry<? extends Expr,K> entry : map.entrySet())
+            transMap.put(entry.getKey().translateQuery(this),entry.getValue());
         return transMap;
     }
 

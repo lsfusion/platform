@@ -223,21 +223,13 @@ public class ClientPropertyDraw extends ClientComponent {
             keyBindingGroup = getClientGroupObject(groups, groupID);
         }
 
-        if (inStream.readBoolean()) {
-            int length = inStream.readInt();
-            columnGroupObjects = new ClientGroupObject[length];
-            columnDisplayPropertiesIds = new int[length];
-            for (int i = 0; i < length; ++i) {
-                int groupID = inStream.readInt();
-                columnGroupObjects[i] = getClientGroupObject(groups, groupID);
-            }
-            for (int i = 0; i < length; ++i) {
-                columnDisplayPropertiesIds[i] = inStream.readInt();
-            }
-        } else {
-            //чтобы не проверять везде на null
-            columnGroupObjects = new ClientGroupObject[0];
-            columnDisplayPropertiesIds = new int[0];
+        int length = inStream.readInt();
+        columnGroupObjects = new ClientGroupObject[length];
+        columnDisplayPropertiesIds = new int[length];
+        for (int i = 0; i < length; ++i) {
+            int groupID = inStream.readInt();
+            columnGroupObjects[i] = getClientGroupObject(groups, groupID);
+            columnDisplayPropertiesIds[i] = inStream.readInt();
         }
 
         autoHide = inStream.readBoolean();

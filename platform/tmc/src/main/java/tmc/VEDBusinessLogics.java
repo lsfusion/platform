@@ -1074,7 +1074,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addAutoAction(objBarcode, addPropertyObject(barcodeNotFoundMessage, objBarcode));
 
             if (hasExternalScreen()) {
-                addPropertyDraw(documentBarcodePriceOv, objDoc, objBarcode).setToDraw(objBarcode.groupTo);
+                addPropertyDraw(documentBarcodePriceOv, objDoc, objBarcode).toDraw = objBarcode.groupTo;
                 //getPropertyDraw(documentBarcodePriceOv).setToDraw(objBarcode.groupTo);
             }
         }
@@ -1810,7 +1810,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addPropertyDraw(checkRetailExported, objDoc);
             }
 
-            addPropertyDraw(documentBarcodePriceOv, objInner, objBarcode).setToDraw(objBarcode.groupTo);
+            addPropertyDraw(documentBarcodePriceOv, objInner, objBarcode).toDraw = objBarcode.groupTo;
             //addPropertyDraw(returnArticleSalePay, objArt);
         }
 

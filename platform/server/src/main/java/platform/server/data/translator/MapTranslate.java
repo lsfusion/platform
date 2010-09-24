@@ -1,6 +1,7 @@
 package platform.server.data.translator;
 
 import platform.server.data.expr.*;
+import platform.base.OrderedMap;
 
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,8 @@ public interface MapTranslate {
     <K> Map<BaseExpr,K> translateKeys(Map<? extends BaseExpr, K> map);
 
     <K> Map<K, Expr> translate(Map<K, ? extends Expr> map);
+
+    <K> OrderedMap<Expr, K> translate(OrderedMap<? extends Expr, K> map);
 
     List<BaseExpr> translateDirect(List<BaseExpr> list);
 

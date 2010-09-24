@@ -1,6 +1,7 @@
 package platform.server.data.expr.query;
 
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ParamLazy;
@@ -26,10 +27,10 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
 
     public static class Query extends AbstractOuterContext<Query> {
         public Expr expr;
-        public List<Expr> orders;
+        public OrderedMap<Expr, Boolean> orders;
         public Set<Expr> partitions;
 
-        public Query(Expr expr, List<Expr> orders, Set<Expr> partitions) {
+        public Query(Expr expr, OrderedMap<Expr, Boolean> orders, Set<Expr> partitions) {
             this.expr = expr;
             this.orders = orders;
             this.partitions = partitions;
@@ -43,8 +44,8 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
         @IdentityLazy
         public int hashOuter(HashContext hashContext) {
             int hash = 0;
-            for(Expr order : orders)
-                hash = hash * 31 + order.hashOuter(hashContext);
+            for(Map.Entry<Expr,Boolean> order : orders.entrySet())
+                hash = hash * 31 + order.getKey().hashOuter(hashContext) ^ order.getValue().hashCode();
             hash = hash * 31;
             for(Expr partition : partitions)
                 hash += partition.hashOuter(hashContext);
@@ -53,7 +54,7 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
 
         @IdentityLazy
         public Where getWhere() {
-            return expr.getWhere().and(Expr.getWhere(orders)).and(Expr.getWhere(partitions));
+            return expr.getWhere().and(Expr.getWhere(orders.keySet())).and(Expr.getWhere(partitions));
         }
 
         @IdentityLazy
@@ -72,11 +73,11 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
         }
 
         public SourceJoin[] getEnum() { // !!! Включим ValueExpr.TRUE потому как в OrderSelect.getSource - при проталкивании partition'а может создать TRUE
-            return AbstractSourceJoin.merge(partitions,AbstractSourceJoin.merge(orders, expr, ValueExpr.TRUE));
+            return AbstractSourceJoin.merge(partitions,AbstractSourceJoin.merge(orders.keySet(), expr, ValueExpr.TRUE));
         }
     }
 
-    private OrderExpr(Map<KeyExpr,BaseExpr> group, Expr expr, List<Expr> orders, Set<Expr> partitions) {
+    private OrderExpr(Map<KeyExpr,BaseExpr> group, Expr expr, OrderedMap<Expr, Boolean> orders, Set<Expr> partitions) {
         super(new Query(expr, orders, partitions),group);
     }
 
@@ -152,7 +153,7 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
             return this;
     }
 
-    protected static Expr createBase(Map<KeyExpr, BaseExpr> group, Expr expr, List<Expr> orders, Set<Expr> partitions) {
+    protected static Expr createBase(Map<KeyExpr, BaseExpr> group, Expr expr, OrderedMap<Expr, Boolean> orders, Set<Expr> partitions) {
         // проверим если в group есть ключи которые ссылаются на ValueExpr и они есть в partition'е - убираем их из partition'а
         Map<KeyExpr,BaseExpr> restGroup = new HashMap<KeyExpr, BaseExpr>();
         Set<Expr> restPartitions = new HashSet<Expr>(partitions);
@@ -172,10 +173,10 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
         return BaseExpr.create(new OrderExpr(restGroup,expr,orders,restPartitions));
     }
 
-    public static Expr create(Expr expr, List<Expr> orders, Set<Expr> partitions, Map<KeyExpr, ? extends Expr> group) {
+    public static Expr create(Expr expr, OrderedMap<Expr, Boolean> orders, Set<Expr> partitions, Map<KeyExpr, ? extends Expr> group) {
         ExprCaseList result = new ExprCaseList();
         for(MapCase<KeyExpr> mapCase : CaseExpr.pullCases(group))
-            result.add(mapCase.where, createBase(mapCase.data, expr, orders,partitions));
+            result.add(mapCase.where, createBase(mapCase.data, expr, orders, partitions));
         return result.getExpr();
     }
 }

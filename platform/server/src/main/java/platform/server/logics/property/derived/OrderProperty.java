@@ -75,9 +75,9 @@ public class OrderProperty<T extends PropertyInterface> extends FunctionProperty
 
         WhereBuilder orderWhere = cascadeWhere(changedWhere);
         Map<PropertyInterfaceImplement<T>,Expr> partitionImplements = getPartitionImplements(mapKeys, modifier, orderWhere);
-        List<Expr> orderExprs = new ArrayList<Expr>();
-        for(int i=0;i<orders.size();i++)
-            orderExprs.add(orders.getKey(i).mapExpr(mapKeys, modifier, orderWhere));
+        OrderedMap<Expr, Boolean> orderExprs = new OrderedMap<Expr, Boolean>();
+        for(Map.Entry<PropertyInterfaceImplement<T>,Boolean> order : orders.entrySet())
+            orderExprs.put(order.getKey().mapExpr(mapKeys, modifier, orderWhere), order.getValue());
         Expr propertyExpr = property.getExpr(mapKeys, modifier, orderWhere);
 
         Map<KeyExpr, ? extends Expr> mapExprs = BaseUtils.crossJoin(BaseUtils.join(getMapInterfaces(),mapKeys),joinImplement);        

@@ -131,7 +131,7 @@ public class ClientForm implements Serializable, LogicsSupplier {
                 return new ClientRegularFilterGroup(inStream,containers);
             }});
 
-        Map<String, ClientPropertyDraw> sIDtoProperty = new HashMap();
+        Map<String, ClientPropertyDraw> sIDtoProperty = new HashMap<String, ClientPropertyDraw>();
         for (ClientPropertyDraw property : properties) {
             sIDtoProperty.put(property.getSID(), property);
         }

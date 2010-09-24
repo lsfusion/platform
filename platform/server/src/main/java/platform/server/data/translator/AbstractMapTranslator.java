@@ -2,6 +2,7 @@ package platform.server.data.translator;
 
 import platform.server.data.expr.*;
 import platform.base.ImmutableObject;
+import platform.base.OrderedMap;
 
 import java.util.*;
 
@@ -33,6 +34,13 @@ public abstract class AbstractMapTranslator extends ImmutableObject implements M
         Map<K, Expr> transMap = new HashMap<K, Expr>();
         for(Map.Entry<K,? extends Expr> entry : map.entrySet())
             transMap.put(entry.getKey(),entry.getValue().translateOuter(this));
+        return transMap;
+    }
+
+    public <K> OrderedMap<Expr, K> translate(OrderedMap<? extends Expr, K> map) {
+        OrderedMap<Expr, K> transMap = new OrderedMap<Expr, K>();
+        for(Map.Entry<? extends Expr,K> entry : map.entrySet())
+            transMap.put(entry.getKey().translateOuter(this),entry.getValue());
         return transMap;
     }
 
