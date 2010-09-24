@@ -280,7 +280,6 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
     }
 
     public Collection<Property> hintsNoUpdate = new HashSet<Property>();
-    public Collection<Property> hintsSave = new HashSet<Property>();
 
     protected void addHintsNoUpdate(LP<?> prop) {
         addHintsNoUpdate(prop.property);
@@ -288,10 +287,6 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
 
     protected void addHintsNoUpdate(Property prop) {
         hintsNoUpdate.add(prop);
-    }
-
-    void addHintsSave(Property prop) {
-        hintsSave.add(prop);
     }
 
     private static String genSID(int iID) {

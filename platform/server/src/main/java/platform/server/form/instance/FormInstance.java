@@ -123,7 +123,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         sessionID = this.session.generateID(entity.ID);
 
         hintsNoUpdate = entity.hintsNoUpdate;
-        hintsSave = entity.hintsSave;
 
         for (int i = 0; i < entity.groups.size(); i++) {
             GroupObjectInstance groupObject = instanceFactory.getInstance(entity.groups.get(i));
@@ -483,8 +482,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     public Collection<Property> getNoUpdateProperties() {
         return hintsNoUpdate;
     }
-
-    public Collection<Property> hintsSave = new HashSet<Property>();
 
     public FormInstance<T> createForm(FormEntity<T> form, Map<ObjectEntity, DataObject> mapObjects) throws SQLException {
         return new FormInstance<T>(form, BL, session, securityPolicy, focusListener, classListener, instanceFactory.computer, DataObject.getMapValues(mapObjects));
