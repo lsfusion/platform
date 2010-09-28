@@ -645,6 +645,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public void ping() throws RemoteException {
+        return;
     }
 
     private class UserPolicyFormEntity extends FormEntity {
@@ -1224,7 +1225,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                             logger.info("Done");
                         } else // надо проверить что тип не изменился
                             if (!prevTable.findProperty(sID).type.equals(property.field.type))
-                                session.modifyColumn(property.mapTable.table.name, property.field);
+                                session.modifyColumn(property.mapTable.table.name, property.field, prevTable.findProperty(sID).type);
                         is.remove();
                     }
                     break;
