@@ -312,7 +312,9 @@ public abstract class GridTable extends ClientFormTable
     protected void selectRow(int rowNumber) {
         final int colSel = getColumnModel().getSelectionModel().getLeadSelectionIndex();
         if (colSel == -1) {
+            isInternalNavigating = true;
             changeSelection(rowNumber, 0, false, false);
+            isInternalNavigating = false;
         } else {
             getSelectionModel().setLeadSelectionIndex(rowNumber);
         }
@@ -457,17 +459,13 @@ public abstract class GridTable extends ClientFormTable
         }
     }
 
-    public void changeSelectionInternal(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
-        isInternalNavigating = true;
-        changeSelection(rowIndex, columnIndex, toggle, extend);
-        isInternalNavigating = false;
-    }
-
     public boolean editCellAt(int row, int column, EventObject editEvent) {
         multyChange = editEvent instanceof KeyEvent && ((KeyEvent) editEvent).getKeyCode() == KeyEvent.VK_F12;
         if (super.editCellAt(row, column, editEvent)) {
             //нужно для редактирования нефокусных ячеек
-            changeSelectionInternal(row, column, false, false);
+            isInternalNavigating = true;
+            changeSelection(row, column, false, false);
+            isInternalNavigating = false;
             return true;
         }
         return false;
