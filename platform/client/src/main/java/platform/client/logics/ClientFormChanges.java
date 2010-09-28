@@ -3,6 +3,7 @@ package platform.client.logics;
 import platform.base.BaseUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.GroupObjectController;
+import platform.interop.form.PropertyRead;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -18,21 +19,10 @@ public class ClientFormChanges {
     public final Map<ClientGroupObject,ClientGroupObjectValue> objects;
     public final Map<ClientGroupObject,List<ClientGroupObjectValue>> gridObjects;
 
-    public final Map<ClientPropertyDraw,Map<ClientGroupObjectValue,Object>> properties;
+    public final Map<ClientPropertyRead,Map<ClientGroupObjectValue,Object>> properties;
     public final Set<ClientPropertyDraw> panelProperties;
     public final Set<ClientPropertyDraw> dropProperties;
 
-    public ClientFormChanges()  {
-        classViews = new HashMap<ClientGroupObject, Byte>();
-        objects = new HashMap<ClientGroupObject, ClientGroupObjectValue>();
-        gridObjects = new HashMap<ClientGroupObject, List<ClientGroupObjectValue>>();
-        properties = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
-        panelProperties = new HashSet<ClientPropertyDraw>(); 
-        dropProperties = new HashSet<ClientPropertyDraw>();
-        message = null;
-        dataChanged = false;
-    }
-    
     public ClientFormChanges(DataInputStream inStream, ClientForm clientForm, Map<ClientGroupObject, GroupObjectController> controllers) throws IOException {
 
         classViews = new HashMap<ClientGroupObject, Byte>();
@@ -67,19 +57,33 @@ public class ClientFormChanges {
         for (int i = 0; i < count; i++)
             panelProperties.add(clientForm.getProperty(inStream.readInt()));
 
-        properties = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+        properties = new HashMap<ClientPropertyRead, Map<ClientGroupObjectValue, Object>>();
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
-            ClientPropertyDraw clientPropertyDraw = clientForm.getProperty(inStream.readInt());
+
+            ClientPropertyRead clientPropertyRead;
+            switch(inStream.readByte()) {
+                case PropertyRead.DRAW:
+                    clientPropertyRead = clientForm.getProperty(inStream.readInt());
+                    break;
+                case PropertyRead.CAPTION:
+                    clientPropertyRead = clientForm.getProperty(inStream.readInt()).captionRead;
+                    break;
+                case PropertyRead.HIGHLIGHT:
+                    clientPropertyRead = clientForm.getGroupObject(inStream.readInt());
+                    break;
+                default:
+                    throw new IOException();
+            }
 
             Map<ClientGroupObjectValue, Object> propertyValues = new HashMap<ClientGroupObjectValue, Object>();
             int mapCount = inStream.readInt();
             for (int j = 0; j < mapCount; j++) {
-                propertyValues.put(new ClientGroupObjectValue(inStream, clientPropertyDraw, !panelProperties.contains(clientPropertyDraw), classViews, controllers),
+                propertyValues.put(new ClientGroupObjectValue(inStream, clientPropertyRead, panelProperties, classViews, controllers),
                         BaseUtils.deserializeObject(inStream));
             }
 
-            properties.put(clientPropertyDraw, propertyValues);
+            properties.put(clientPropertyRead, propertyValues);
         }
 
         //DropProperties

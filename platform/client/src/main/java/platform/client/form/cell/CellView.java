@@ -9,5 +9,6 @@ public interface CellView {
     void addListener(CellViewListener listener);
     void setValue(Object ivalue);
     void startEditing(KeyEvent e);
-    void keyUpdated();
+    void setCaption(String caption);
+    void setHighlight(Object highlight);
 }

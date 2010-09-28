@@ -2,6 +2,7 @@ package platform.client.form.cell;
 
 import platform.client.form.ClientFormController;
 import platform.client.logics.ClientPropertyDraw;
+import platform.client.logics.ClientGroupObjectValue;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,27 +14,27 @@ public class TableCellView extends JPanel implements CellView {
     private final CellTable table;
 
     private final ClientPropertyDraw key;
+    private final ClientGroupObjectValue columnKey; // пока чисто для кэширования
     private final ClientFormController form;
 
-    int getID() {
-        return key.getID();
-    }
+    private Object highlight;
 
     @Override
     public int hashCode() {
-        return getID();
+        return key.getID() * 31 + columnKey.hashCode();
     }
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof TableCellView && ((TableCellView) o).key.equals(key);
+        return o instanceof TableCellView && ((TableCellView) o).key.equals(key) && ((TableCellView) o).columnKey.equals(columnKey);
     }
 
-    public TableCellView(ClientPropertyDraw key, ClientFormController form) {
+    public TableCellView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {
 
         setOpaque(false);
 
         this.key = key;
+        this.columnKey = columnKey;
         this.form = form;
 
         setLayout(new BoxLayout(this, (key.panelLabelAbove ? BoxLayout.Y_AXIS : BoxLayout.X_AXIS)));
@@ -56,6 +57,10 @@ public class TableCellView extends JPanel implements CellView {
 
             public ClientPropertyDraw getProperty(int col) {
                 return TableCellView.this.key;
+            }
+
+            public Object getHighlightValue(int row) {
+                return TableCellView.this.highlight;
             }
 
             public ClientFormController getForm() {
@@ -108,6 +113,10 @@ public class TableCellView extends JPanel implements CellView {
         table.setValue(ivalue);
     }
 
+    public void setHighlight(Object highlight) {
+        this.highlight = highlight;
+    }
+
     public void startEditing(KeyEvent e) {
 
         if (table.isEditing()) return;
@@ -126,7 +135,7 @@ public class TableCellView extends JPanel implements CellView {
         }
     }
 
-    public void keyUpdated() {
-        label.setText(key.getFullCaption());
+    public void setCaption(String caption) {
+        label.setText(caption);
     }
 }

@@ -5,6 +5,7 @@ import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.cell.CellView;
 import platform.client.logics.ClientPropertyDraw;
+import platform.client.logics.ClientGroupObjectValue;
 import platform.interop.ComponentDesign;
 
 import java.awt.*;
@@ -26,7 +27,7 @@ public interface ClientType {
 
     PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design);
 
-    CellView getPanelComponent(ClientPropertyDraw key, ClientFormController form);
+    CellView getPanelComponent(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form);
 
     PropertyEditorComponent getEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException;
 

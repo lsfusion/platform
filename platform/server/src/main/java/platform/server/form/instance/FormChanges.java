@@ -20,7 +20,8 @@ public class FormChanges {
     public Map<GroupObjectInstance, Map<ObjectInstance, ? extends ObjectValue>> objects = new HashMap<GroupObjectInstance, Map<ObjectInstance, ? extends ObjectValue>>();
     public Map<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> gridObjects = new HashMap<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>>();
 
-    public Map<PropertyDrawInstance, Map<Map<ObjectInstance, DataObject>, Object>> properties = new HashMap<PropertyDrawInstance, Map<Map<ObjectInstance, DataObject>, Object>>();
+    public Map<PropertyReadInstance, Map<Map<ObjectInstance, DataObject>, Object>> properties = new HashMap<PropertyReadInstance, Map<Map<ObjectInstance, DataObject>, Object>>();
+
     public Set<PropertyDrawInstance> panelProperties = new HashSet<PropertyDrawInstance>();
     public Set<PropertyDrawInstance> dropProperties = new HashSet<PropertyDrawInstance>();
 
@@ -41,7 +42,7 @@ public class FormChanges {
 
         System.out.println(" ------- PROPERTIES ---------------");
         System.out.println(" ------- Group ---------------");
-        for (PropertyDrawInstance property : properties.keySet()) {
+        for (PropertyReadInstance property : properties.keySet()) {
             Map<Map<ObjectInstance, DataObject>, Object> propertyValues = properties.get(property);
             System.out.println(property + " ---- property");
             for (Map<ObjectInstance, DataObject> gov : propertyValues.keySet())
@@ -100,28 +101,20 @@ public class FormChanges {
         }
         
         outStream.writeInt(properties.size());
-        for (Map.Entry<PropertyDrawInstance, Map<Map<ObjectInstance, DataObject>, Object>> gridProperty : properties.entrySet()) {
-            PropertyDrawInstance propertyDrawInstance = gridProperty.getKey();
+        for (Map.Entry<PropertyReadInstance,Map<Map<ObjectInstance,DataObject>,Object>> gridProperty : properties.entrySet()) {
+            PropertyReadInstance propertyReadInstance = gridProperty.getKey();
 
-            outStream.writeInt(propertyDrawInstance.getID());
+            // сериализация PropertyReadInterface
+            outStream.writeByte(propertyReadInstance.getTypeID());
+            outStream.writeInt(propertyReadInstance.getID());
 
             outStream.writeInt(gridProperty.getValue().size());
             for (Map.Entry<Map<ObjectInstance, DataObject>, Object> gridPropertyValue : gridProperty.getValue().entrySet()) {
                 Map<ObjectInstance, DataObject> objectValues = gridPropertyValue.getKey();
 
-                if (!panelProperties.contains(propertyDrawInstance)) {
-                    // именно так чтобы гарантировано в том же порядке
-                    for (ObjectInstance object : propertyDrawInstance.toDraw.objects) {
-                        BaseUtils.serializeObject(outStream, objectValues.get(object).getValue());
-                    }
-                }
-
-                for (GroupObjectInstance columnGroupObject : propertyDrawInstance.columnGroupObjects) {
-                    if(columnGroupObject.curClassView == ClassViewType.GRID) {
-                        for (ObjectInstance object : columnGroupObject.objects) {
-                            BaseUtils.serializeObject(outStream, objectValues.get(object).getValue());
-                        }
-                    }
+                // именно так чтобы гарантировано в том же порядке
+                for (ObjectInstance object : propertyReadInstance.getSerializeList(panelProperties)) {
+                    BaseUtils.serializeObject(outStream, objectValues.get(object).getValue());
                 }
 
                 BaseUtils.serializeObject(outStream, gridPropertyValue.getValue());

@@ -308,8 +308,10 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
         isPrintForm = iisPrintForm;
     }
 
-    public FormView richDesign;
+    public Map<PropertyDrawEntity, GroupObjectEntity> forceDefaultDraw = new HashMap<PropertyDrawEntity, GroupObjectEntity>();
     public DefaultFormView createDefaultRichDesign() { return new DefaultFormView(this); }
+
+    public FormView richDesign;
     public FormView getRichDesign() { if (richDesign == null) return new DefaultFormView(this); else return richDesign; }
 
     protected GroupObjectHierarchy groupHierarchy;
@@ -363,6 +365,4 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
     public String checkClientApply(Object result) {
         return null;
     }
-
-    public Map<PropertyDrawEntity, GroupObjectEntity> forceDefaultDraw = new HashMap<PropertyDrawEntity, GroupObjectEntity>();
 }

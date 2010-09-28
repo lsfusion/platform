@@ -661,7 +661,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             PropertyDrawEntity balanceDraw = getPropertyDraw(userPolicyOrder, objPolicy.groupTo);
             PropertyDrawEntity loginDraw = getPropertyDraw(userLogin, objUser.groupTo);
-            balanceDraw.addColumnGroupObject(objUser.groupTo, loginDraw);
+            balanceDraw.addColumnGroupObject(objUser.groupTo);
+            balanceDraw.setPropertyCaption(loginDraw.propertyObject);
         }
     }
 

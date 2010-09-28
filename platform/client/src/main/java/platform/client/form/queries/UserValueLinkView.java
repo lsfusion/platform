@@ -49,6 +49,10 @@ class UserValueLinkView extends ValueLinkView {
                 return property;
             }
 
+            public Object getHighlightValue(int row) {
+                return null;
+            }
+
             public ClientFormController getForm() {
                 return logicsSupplier.getForm();
             }

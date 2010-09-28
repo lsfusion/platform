@@ -17,7 +17,6 @@ import java.awt.*;
 import java.text.Format;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.Map;
 
 public class PropertyDrawView extends ComponentView implements ClientSerialize {
 
@@ -99,15 +98,14 @@ public class PropertyDrawView extends ComponentView implements ClientSerialize {
         }
 
         outStream.writeInt(entity.columnGroupObjects.size());
-        for (Map.Entry<GroupObjectEntity,PropertyDrawEntity> columnGroupObject : entity.columnGroupObjects.entrySet()) {
-            outStream.writeInt(columnGroupObject.getKey().ID);
-            outStream.writeInt(columnGroupObject.getValue().getID());
+        for (GroupObjectEntity columnGroupObject : entity.columnGroupObjects) {
+            outStream.writeInt(columnGroupObject.ID);
         }
 
         outStream.writeBoolean(autoHide);
 
         outStream.writeBoolean(!(entity.propertyObject.property instanceof ExecuteProperty)); //
-        outStream.writeBoolean(entity.propertyObject.property.askConform);
+        outStream.writeBoolean(entity.propertyObject.property.askConfirm);
     }
 
     public Dimension minimumSize;

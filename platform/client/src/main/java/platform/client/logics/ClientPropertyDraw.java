@@ -1,10 +1,8 @@
 package platform.client.logics;
 
 import platform.base.BaseUtils;
-import platform.client.form.ClientFormController;
-import platform.client.form.PropertyEditorComponent;
-import platform.client.form.ClientExternalScreen;
-import platform.client.form.PropertyRendererComponent;
+import static platform.base.BaseUtils.deserializeObject;
+import platform.client.form.*;
 import platform.client.form.cell.CellView;
 import platform.client.logics.classes.ClientType;
 import platform.client.logics.classes.ClientTypeSerializer;
@@ -21,10 +19,48 @@ import java.io.ObjectInputStream;
 import java.rmi.RemoteException;
 import java.text.ParseException;
 import java.text.Format;
-import java.util.Collection;
+import java.util.*;
+import java.util.List;
 import java.awt.*;
 
-public class ClientPropertyDraw extends ClientComponent {
+public class ClientPropertyDraw extends ClientComponent implements ClientPropertyRead {
+
+    public List<ClientObject> getDeserializeGroupList(Map<ClientGroupObject, Byte> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
+        List<ClientObject> result = new ArrayList<ClientObject>();
+        for (ClientGroupObject columnGroupObject : columnGroupObjects)
+            result.addAll(columnGroupObject.getDeserializeList(classViews, controllers));
+        return result;
+    }
+
+    public List<ClientObject> getDeserializeList(Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, Byte> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
+        List<ClientObject> result = getDeserializeGroupList(classViews, controllers);
+        if (!panelProperties.contains(this))
+            result = BaseUtils.mergeList(groupObject, result);
+        return result;
+    }
+
+    public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectController controller) {
+        controller.updateDrawPropertyValues(this, readKeys);
+    }
+
+    public class Caption implements ClientPropertyRead {
+        public List<ClientObject> getDeserializeList(Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, Byte> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
+            return getDeserializeGroupList(classViews, controllers); 
+        }
+
+        public ClientGroupObject getGroupObject() {
+            return ClientPropertyDraw.this.getGroupObject();
+        }
+
+        public boolean shouldBeDrawn(ClientFormController form) {
+            return ClientPropertyDraw.this.shouldBeDrawn(form); 
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectController controller) {
+            controller.updateDrawPropertyCaptions(ClientPropertyDraw.this, readKeys);
+        }
+    }
+    public Caption captionRead = new Caption();
 
     // символьный идентификатор, нужен для обращению к свойствам в печатных формах
     public ClientType baseType;
@@ -115,8 +151,8 @@ public class ClientPropertyDraw extends ClientComponent {
         return renderer;
     }
 
-    public CellView getPanelComponent(ClientFormController form) {
-        return baseType.getPanelComponent(this, form);
+    public CellView getPanelComponent(ClientFormController form, ClientGroupObjectValue columnKey) {
+        return baseType.getPanelComponent(this, columnKey, form);
     }
 
     // на данный момент ClientFormController нужна для 2-х целей : как owner, создаваемых диалогов и как провайдер RemoteFormInterface, для получения того, что мы вообще редактируем
@@ -141,45 +177,16 @@ public class ClientPropertyDraw extends ClientComponent {
     }
 
     public boolean checkEquals;
-    public boolean askConform;
+    public boolean askConfirm;
 
     protected int ID = 0;
     protected String sID;
 
     public ClientGroupObject groupObject;
-    public ClientGroupObject[] columnGroupObjects;
+    public List<ClientGroupObject> columnGroupObjects;
     public ClientPropertyDraw[] columnDisplayProperties;
-    public int[] columnDisplayPropertiesIds;
 
     public boolean autoHide = false;
-
-    //пришлось сделать "конструктор копирования" для ремаппинга
-    protected ClientPropertyDraw(ClientPropertyDraw original) {
-        super(original);
-        this.baseType = original.baseType;
-        this.caption = original.caption;
-        this.editKey = original.editKey;
-        this.showEditKey = original.showEditKey;
-        this.focusable = original.focusable;
-        this.readOnly = original.readOnly;
-        this.panelLabelAbove = original.panelLabelAbove;
-        this.externalScreen = original.externalScreen;
-        this.externalScreenConstraints = original.externalScreenConstraints;
-        this.minimumSize = original.minimumSize;
-        this.preferredSize = original.preferredSize;
-        this.maximumSize = original.maximumSize;
-        this.renderer = original.renderer;
-        this.format = original.format;
-        this.checkEquals = original.checkEquals;
-        this.ID = original.ID;
-        this.sID = original.sID;
-        this.groupObject = original.groupObject;
-        this.columnGroupObjects = original.columnGroupObjects;
-        this.columnDisplayProperties = original.columnDisplayProperties;
-        this.columnDisplayPropertiesIds = original.columnDisplayPropertiesIds;
-        this.autoHide = original.autoHide = false;
-        this.askConform = original.askConform;
-    }
 
     public ClientPropertyDraw(DataInputStream inStream, Collection<ClientContainer> containers, Collection<ClientGroupObject> groups) throws IOException, ClassNotFoundException {
         super(inStream, containers);
@@ -224,18 +231,14 @@ public class ClientPropertyDraw extends ClientComponent {
         }
 
         int length = inStream.readInt();
-        columnGroupObjects = new ClientGroupObject[length];
-        columnDisplayPropertiesIds = new int[length];
-        for (int i = 0; i < length; ++i) {
-            int groupID = inStream.readInt();
-            columnGroupObjects[i] = getClientGroupObject(groups, groupID);
-            columnDisplayPropertiesIds[i] = inStream.readInt();
-        }
+        columnGroupObjects = new ArrayList<ClientGroupObject>();
+        for (int i = 0; i < length; ++i)
+            columnGroupObjects.add(getClientGroupObject(groups, inStream.readInt()));
 
         autoHide = inStream.readBoolean();
 
         checkEquals = inStream.readBoolean();
-        askConform = inStream.readBoolean();
+        askConfirm = inStream.readBoolean();
     }
 
     private ClientGroupObject getClientGroupObject(Collection<ClientGroupObject> groups, int groupID) {
@@ -258,7 +261,7 @@ public class ClientPropertyDraw extends ClientComponent {
 
     public PropertyEditorComponent getEditorComponent(ClientFormController form, Object value) throws IOException, ClassNotFoundException {
 
-        if (askConform) {
+        if (askConfirm) {
             int n = JOptionPane.showConfirmDialog(
                     null,
                     baseType.getConformedMessage() + " \"" + caption + "\"?",
@@ -315,15 +318,5 @@ public class ClientPropertyDraw extends ClientComponent {
 
     public boolean shouldBeDrawn(ClientFormController form) {
         return baseType.shouldBeDrawn(form);
-    }
-
-    private ClientGroupObject[] keyObjects;
-    public ClientGroupObject[] getKeyObjects() {
-        if (keyObjects == null) {
-            keyObjects = new ClientGroupObject[columnGroupObjects.length + 1];
-            keyObjects[0] = groupObject;
-            System.arraycopy(columnGroupObjects, 0, keyObjects, 1, columnGroupObjects.length);
-        }
-        return keyObjects;
     }
 }

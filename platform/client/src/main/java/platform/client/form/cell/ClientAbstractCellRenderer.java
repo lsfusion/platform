@@ -1,9 +1,6 @@
 package platform.client.form.cell;
 
 import platform.client.form.PropertyRendererComponent;
-import platform.client.form.decorator.ClientHighlighter;
-import platform.client.form.decorator.HighlighterContext;
-import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
@@ -29,13 +26,13 @@ public class ClientAbstractCellRenderer extends JComponent
 
         JComponent comp = currentComp.getComponent();
 
-        ClientGroupObject groupObject = property.getGroupObject();
-        if (groupObject != null) {
-            ClientHighlighter highlighter = groupObject.grid.highlighter;
-            if (highlighter != null) {
-                highlighter.highlight(comp, new HighlighterContext(cellTable, value, isSelected, hasFocus, row, column));
+        if (cellTable.getHighlightValue(row) != null)
+            if (!hasFocus && !isSelected) {
+                comp.setBackground(Color.yellow);
+            } else {
+                Color bgColor = comp.getBackground();
+                comp.setBackground(new Color(Color.yellow.getRGB() & bgColor.getRGB()));
             }
-        }
 
         renderers.add(comp);
 

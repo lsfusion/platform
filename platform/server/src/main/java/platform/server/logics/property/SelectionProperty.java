@@ -10,12 +10,10 @@ import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
-import platform.server.form.view.Highlighter;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
-import java.awt.*;
 
 public class SelectionProperty extends SessionDataProperty {
 
@@ -31,13 +29,13 @@ public class SelectionProperty extends SessionDataProperty {
                                                       "Отмеченные",
                                                       KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.ALT_DOWN_MASK)), false);
         form.addRegularFilterGroup(filterGroup);
+
+        entity.toDraw.propertyHighlight = entity.propertyObject;
     }
 
     @Override
     public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
         PropertyDrawView selectionPropView = view.get(entity);
         selectionPropView.editKey = KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.ALT_DOWN_MASK);
-
-        view.get(entity.toDraw).grid.highlighter = new Highlighter(Color.yellow, selectionPropView);
     }
 }

@@ -3,6 +3,7 @@ package platform.client.form.cell;
 import platform.client.form.ClientFormLayout;
 import platform.client.form.ClientFormController;
 import platform.client.logics.ClientPropertyDraw;
+import platform.client.logics.ClientGroupObjectValue;
 import platform.interop.form.screen.ExternalScreenComponent;
 
 import javax.swing.*;
@@ -12,6 +13,7 @@ import java.io.IOException;
 
 public class PropertyController implements CellViewListener {
 
+    protected ClientGroupObjectValue columnKey;
     protected ClientPropertyDraw key;
 
     protected ClientPropertyDraw getKey() {
@@ -29,12 +31,14 @@ public class PropertyController implements CellViewListener {
     protected final ClientFormController form;
 
     // форма нужна, поскольку ObjectEditor'у она нужна, чтобы создать диалог
-    public PropertyController(ClientPropertyDraw key, final ClientFormController form) {
+    public PropertyController(ClientPropertyDraw key, final ClientFormController form, ClientGroupObjectValue columnKey) {
 
         this.key = key;
         this.form = form;
+        this.columnKey = columnKey;
 
-        view = key.getPanelComponent(form);
+        view = key.getPanelComponent(form, columnKey);
+        view.setCaption(key.getFullCaption());
 
         if (key.focusable != null)
             view.getComponent().setFocusable(key.focusable);
@@ -88,7 +92,7 @@ public class PropertyController implements CellViewListener {
     public boolean cellValueChanged(Object ivalue) {
 
         try {
-            form.changeProperty(getKey(), ivalue, false);
+            form.changePropertyDraw(getKey(), ivalue, false, columnKey);
         } catch (IOException e) {
             throw new RuntimeException("Ошибка при изменении значения свойства", e);
         }
@@ -104,7 +108,12 @@ public class PropertyController implements CellViewListener {
         getView().setVisible(true);
     }
 
-    protected void keyUpdated() {
-        view.keyUpdated();
+    public void setCaption(String caption) {
+        view.setCaption(caption);
     }
+
+    public void setHighlight(Object highlight) {
+        view.setHighlight(highlight);
+    }
+
 }

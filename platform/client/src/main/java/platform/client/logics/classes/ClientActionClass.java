@@ -8,6 +8,7 @@ import platform.client.form.cell.CellView;
 import platform.client.form.editor.ActionPropertyEditor;
 import platform.client.form.renderer.ActionPropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
+import platform.client.logics.ClientGroupObjectValue;
 import platform.interop.ComponentDesign;
 
 import java.awt.*;
@@ -39,8 +40,8 @@ public class ClientActionClass extends ClientDataClass {
         return new ActionPropertyRenderer(caption);
     }
 
-    public CellView getPanelComponent(ClientPropertyDraw key, ClientFormController form) {
-        return new ButtonCellView(key, form);
+    public CellView getPanelComponent(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {
+        return new ButtonCellView(key, columnKey, form);
     }
 
     public PropertyEditorComponent getEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {

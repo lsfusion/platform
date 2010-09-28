@@ -6,6 +6,9 @@ import platform.client.logics.ClientPropertyDraw;
 public interface CellTableInterface {
 
     boolean isDataChanging();
+
     ClientPropertyDraw getProperty(int col);
+    Object getHighlightValue(int row);
+
     ClientFormController getForm();
 }

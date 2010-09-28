@@ -8,6 +8,7 @@ import platform.client.form.cell.TableCellView;
 import platform.client.form.editor.ObjectPropertyEditor;
 import platform.client.form.renderer.IntegerPropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
+import platform.client.logics.ClientGroupObjectValue;
 import platform.interop.ComponentDesign;
 
 import java.awt.*;
@@ -42,8 +43,8 @@ public class ClientObjectType implements ClientType {
         return new IntegerPropertyRenderer(format, design);
     }
 
-    public CellView getPanelComponent(ClientPropertyDraw key, ClientFormController form) {
-        return new TableCellView(key, form);
+    public CellView getPanelComponent(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {
+        return new TableCellView(key, columnKey, form);
     }
 
     public PropertyEditorComponent getEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {

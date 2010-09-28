@@ -34,8 +34,9 @@ public abstract class GridTable extends ClientFormTable
 
     private List<ClientGroupObjectValue> rowKeys = new ArrayList<ClientGroupObjectValue>();
     private Map<ClientPropertyDraw, List<ClientGroupObjectValue>> columnKeys = new HashMap<ClientPropertyDraw, List<ClientGroupObjectValue>>();
-    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> columnDisplayValues = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> captions = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+    private Map<ClientGroupObjectValue,Object> highlights = new HashMap<ClientGroupObjectValue,Object>();
 
     private ClientGroupObjectValue currentObject;
 
@@ -209,7 +210,7 @@ public abstract class GridTable extends ClientFormTable
     public void updateTable() {
         commitEditing();
 
-        model.update(properties, rowKeys, columnKeys, columnDisplayValues, values);
+        model.update(properties, rowKeys, columnKeys, captions, values, highlights);
 
         refreshColumnModel();
         changeCurrentObject();
@@ -326,14 +327,6 @@ public abstract class GridTable extends ClientFormTable
         rowKeys = irowKeys;
 
         newCurrentObjectIndex = rowKeys.indexOf(currentObject);
-    }
-
-    public void setDisplayPropertiesValues(Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> pcolumnDisplayValues) {
-        this.columnDisplayValues = pcolumnDisplayValues;
-    }
-
-    public void setColumnKeys(Map<ClientPropertyDraw, List<ClientGroupObjectValue>> columnKeys) {
-        this.columnKeys = columnKeys;
     }
 
     public void selectObject(ClientGroupObjectValue value) {
@@ -509,14 +502,28 @@ public abstract class GridTable extends ClientFormTable
     public boolean removeProperty(ClientPropertyDraw property) {
         if (properties.remove(property)) {
             values.remove(property);
+            captions.remove(property);
+            columnKeys.remove(property);
             return true;
         }
 
         return false;
     }
 
-    public void setColumnValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> pvalues) {
-        values.put(property, pvalues);
+    public void updateColumnCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> captions) {
+        this.captions.put(property, captions);
+    }
+
+    public void setColumnValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
+        this.values.put(property, values);
+    }
+
+    public void updateColumnKeys(ClientPropertyDraw property, List<ClientGroupObjectValue> columnKeys) {
+        this.columnKeys.put(property, columnKeys);
+    }
+
+    public void updateHighlightValues(Map<ClientGroupObjectValue,Object> highlights) {
+        this.highlights = highlights;
     }
 
     public Object getSelectedValue(ClientPropertyDraw property) {
@@ -575,6 +582,10 @@ public abstract class GridTable extends ClientFormTable
 
     public ClientPropertyDraw getProperty(int col) {
         return model.getColumnProperty(col);
+    }
+
+    public Object getHighlightValue(int row) {
+        return model.getHighlightValue(row);
     }
 
     private final List<Integer> orders = new ArrayList<Integer>();

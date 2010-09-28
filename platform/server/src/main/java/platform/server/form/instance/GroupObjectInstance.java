@@ -5,6 +5,7 @@ import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Order;
 import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.PropertyRead;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.MapKeysInterface;
@@ -22,7 +23,21 @@ import platform.server.session.Modifier;
 import java.sql.SQLException;
 import java.util.*;
 
-public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
+public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, PropertyReadInstance {
+
+    public final PropertyObjectInstance propertyHighlight;
+
+    public PropertyObjectInstance getPropertyObject() {
+        return propertyHighlight;
+    }
+
+    public byte getTypeID() {
+        return PropertyRead.HIGHLIGHT;
+    }
+
+    public List<ObjectInstance> getSerializeList(Set<PropertyDrawInstance> panelProperties) {
+        return curClassView==ClassViewType.GRID?new ArrayList<ObjectInstance>(objects):new ArrayList<ObjectInstance>();
+    }
 
     GroupObjectEntity entity;
 
@@ -48,13 +63,15 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         this.pageSize = pageSize;
     }
 
-    public GroupObjectInstance(GroupObjectEntity entity, Collection<ObjectInstance> objects) {
+    public GroupObjectInstance(GroupObjectEntity entity, Collection<ObjectInstance> objects, PropertyObjectInstance propertyHighlight) {
 
         this.entity = entity;
 
         assert (getID() < RemoteFormInterface.GID_SHIFT);
 
         this.objects = objects;
+
+        this.propertyHighlight = propertyHighlight;
 
         for(ObjectInstance object : objects)
             object.groupTo = this;

@@ -27,6 +27,8 @@ public class GroupObjectEntity extends ArrayList<ObjectEntity> implements Instan
     public byte banClassView = 0;
     public int pageSize = 10;
 
+    public PropertyObjectEntity propertyHighlight;
+
     public GroupObjectInstance getInstance(InstanceFactory instanceFactory) {
         return instanceFactory.getInstance(this);
     }

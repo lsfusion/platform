@@ -392,7 +392,6 @@ public class ClientFormController {
     public boolean dataChanged;
 
     public final Map<ClientGroupObject,List<ClientGroupObjectValue>> currentGridObjects = new HashMap<ClientGroupObject, List<ClientGroupObjectValue>>();
-    public final Map<ClientPropertyDraw,Map<ClientGroupObjectValue,Object>> currentProperties = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
 
     private void applyFormChanges(ClientFormChanges formChanges) {
 
@@ -419,10 +418,9 @@ public class ClientFormController {
             }
         }
         currentGridObjects.putAll(formChanges.gridObjects);
-        currentProperties.putAll(formChanges.properties);
 
         for (GroupObjectController controller : controllers.values()) {
-            controller.processFormChanges(formChanges, currentGridObjects, currentProperties);
+            controller.processFormChanges(formChanges, currentGridObjects);
         }
 
         SwingUtilities.invokeLater(new Runnable() {
@@ -467,10 +465,6 @@ public class ClientFormController {
 
         remoteForm.changePropertyDraw(property.getID(), BaseUtils.serializeObject(value), all, columnKey.serialize(property));
         applyRemoteChanges();
-    }
-    
-    public void changeProperty(ClientPropertyDraw property, Object value, boolean all) throws IOException {
-        changePropertyDraw(property, value, all, new ClientGroupObjectValue());
     }
 
     void addObject(ClientObject object, ClientConcreteClass cls) throws IOException {

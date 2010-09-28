@@ -10,7 +10,6 @@ public class GridView extends ComponentView implements ClientSerialize {
 
     public byte minRowCount = 0;
     public boolean tabVertical = false;
-    public Highlighter highlighter;
     public boolean autoHide = false;
 
     public GridView(int ID) {
@@ -27,10 +26,6 @@ public class GridView extends ComponentView implements ClientSerialize {
         outStream.writeByte(minRowCount);
         outStream.writeBoolean(tabVertical);
 
-        outStream.writeBoolean(highlighter == null);
-        if (highlighter != null) {
-            highlighter.serialize(outStream);
-        }
         outStream.writeBoolean(autoHide);
     }
 }

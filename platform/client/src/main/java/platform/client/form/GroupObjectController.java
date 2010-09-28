@@ -1,6 +1,7 @@
 package platform.client.form;
 
 import platform.base.OrderedMap;
+import platform.base.BaseUtils;
 import platform.client.form.grid.GridController;
 import platform.client.form.panel.PanelController;
 import platform.client.form.showtype.ShowTypeController;
@@ -81,19 +82,25 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
     private Set<ClientPropertyDraw> panelProperties = new HashSet<ClientPropertyDraw>();
 
     public void processFormChanges(ClientFormChanges fc,
-                                   Map<ClientGroupObject,List<ClientGroupObjectValue>> cachedGridObjects,
-                                   Map<ClientPropertyDraw,Map<ClientGroupObjectValue,Object>> cachedProperties) {
+                                   Map<ClientGroupObject, List<ClientGroupObjectValue>> cachedGridObjects
+    ) {
 
         // Сначала меняем виды объектов
+        for (ClientPropertyRead read : fc.properties.keySet()) // интересуют только свойства
+            if(read instanceof ClientPropertyDraw) {
+                ClientPropertyDraw property = (ClientPropertyDraw) read;
+                if (property.groupObject == groupObject && property.shouldBeDrawn(form)) {
+                    addDrawProperty(property, fc.panelProperties.contains(property));
 
-        for (ClientPropertyDraw property : fc.properties.keySet()) {
-            if (property.groupObject == groupObject && property.shouldBeDrawn(form)) {
-                addDrawProperty(property, fc.panelProperties.contains(property));
+                    OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>> groupColumnKeys = new OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>>();
+                    for (ClientGroupObject columnGroupObject : property.columnGroupObjects)
+                        if (cachedGridObjects.containsKey(columnGroupObject)) {
+                            groupColumnKeys.put(columnGroupObject, cachedGridObjects.get(columnGroupObject));
+                        }
+
+                    updateDrawColumnKeys(property, ClientGroupObject.mergeGroupValues(groupColumnKeys));
+                }
             }
-        }
-
-        setupColumnObjects(grid, gridProperties, cachedGridObjects, cachedProperties);
-        setupColumnObjects(panel, panelProperties, cachedGridObjects, cachedProperties);
 
         for (ClientPropertyDraw property : fc.dropProperties) {
             if (property.groupObject == groupObject) {
@@ -118,40 +125,13 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         }
 
         // Затем их свойства
-        for (Map.Entry<ClientPropertyDraw,Map<ClientGroupObjectValue,Object>> readProperty : fc.properties.entrySet()) {
-            if (readProperty.getKey().groupObject == groupObject && readProperty.getKey().shouldBeDrawn(form)) {
-                setDrawPropertyValues(readProperty.getKey(), readProperty.getValue(), fc.panelProperties.contains(readProperty.getKey()));
+        for (Map.Entry<ClientPropertyRead,Map<ClientGroupObjectValue,Object>> readProperty : fc.properties.entrySet()) {
+            if (readProperty.getKey().getGroupObject() == groupObject && readProperty.getKey().shouldBeDrawn(form)) {
+                readProperty.getKey().update(readProperty.getValue(), this);
             }
         }
 
         update();
-    }
-
-    private void setupColumnObjects(PropertiesController controller,
-                                    Set<ClientPropertyDraw> properties,
-                                    Map<ClientGroupObject,List<ClientGroupObjectValue>> cachedGridObjects,
-                                    Map<ClientPropertyDraw,Map<ClientGroupObjectValue,Object>> cachedGridProperties) {
-        //читаем ключи и свойства в колонки
-        for (ClientPropertyDraw property : properties) {
-            if (property.columnGroupObjects.length != 0) {
-                OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>> groupColumnKeys = new OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>>();
-                Map<ClientPropertyDraw,Map<ClientGroupObjectValue,Object>> columnDisplayValues = new HashMap<ClientPropertyDraw,Map<ClientGroupObjectValue,Object>>();
-                for (int i = 0; i < property.columnGroupObjects.length; ++i) {
-                    ClientGroupObject columnGroupObject = property.columnGroupObjects[i];
-                    ClientPropertyDraw columnDisplayProperty = property.columnDisplayProperties[i];
-
-                    if (cachedGridObjects.containsKey(columnGroupObject)) {
-                        groupColumnKeys.put(columnGroupObject, cachedGridObjects.get(columnGroupObject));
-                    }
-                    if (cachedGridProperties.containsKey(columnDisplayProperty)) {
-                        columnDisplayValues.put(columnDisplayProperty, cachedGridProperties.get(columnDisplayProperty));
-                    }
-                }
-
-                controller.setColumnKeys(property, groupColumnKeys);
-                controller.setDisplayPropertiesValues(columnDisplayValues);
-            }
-        }
     }
 
     private void update() {
@@ -291,11 +271,32 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         setCurrentGroupObject(curValue, false);
     }
 
-    private void setDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values, boolean toPanel) {
-        if(toPanel)
-            panel.setPropertyValues(property, values);
+    public void updateDrawColumnKeys(ClientPropertyDraw property, List<ClientGroupObjectValue> groupColumnKeys) {
+        if(panelProperties.contains(property))
+            panel.updateColumnKeys(property, groupColumnKeys);
         else
-            grid.setPropertyValues(property, values);
+            grid.updateColumnKeys(property, groupColumnKeys);
+    }
+
+    public void updateDrawPropertyCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> captions) {
+        if(panelProperties.contains(property))
+            panel.updatePropertyCaptions(property, captions);
+        else
+            grid.updatePropertyCaptions(property, captions);
+    }
+
+    public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
+        if(panelProperties.contains(property))
+            panel.updatePropertyValues(property, values);
+        else
+            grid.updatePropertyValues(property, values);
+    }
+
+    public void updateDrawHighlightValues(Map<ClientGroupObjectValue, Object> highlights) {
+        if(classView == ClassViewType.GRID)
+            grid.updateHighlightValues(highlights);
+        else
+            panel.updateHighlightValue(BaseUtils.singleValue(highlights));
     }
 
 

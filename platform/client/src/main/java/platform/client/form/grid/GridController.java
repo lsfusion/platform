@@ -1,7 +1,5 @@
 package platform.client.form.grid;
 
-import platform.base.OrderedMap;
-import platform.client.form.PropertiesController;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormLayout;
 import platform.client.form.GroupObjectLogicsSupplier;
@@ -18,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GridController extends PropertiesController {
+public class GridController {
 
     private final ClientGrid key;
     public ClientGrid getKey() {
@@ -124,21 +122,23 @@ public class GridController extends PropertiesController {
         table.setRowKeys(gridObjects);
     }
 
-    public void setColumnKeys(ClientPropertyDraw drawProperty, OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>> groupColumnKeys) {
-        super.setColumnKeys(drawProperty, groupColumnKeys);
-        table.setColumnKeys(columnKeys);
+    public void updateColumnKeys(ClientPropertyDraw drawProperty, List<ClientGroupObjectValue> groupColumnKeys) {
+        table.updateColumnKeys(drawProperty, groupColumnKeys);
     }
 
-    public void setDisplayPropertiesValues(Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> pcolumnDisplayValues) {
-        super.setDisplayPropertiesValues(pcolumnDisplayValues);
-        table.setDisplayPropertiesValues(columnDisplayValues);
+    public void updatePropertyCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> captions) {
+        table.updateColumnCaptions(property, captions);
     }
 
+    public void updateHighlightValues(Map<ClientGroupObjectValue, Object> highlights) {
+        table.updateHighlightValues(highlights);
+    }
+    
     public void selectObject(ClientGroupObjectValue currentObject) {
         table.selectObject(currentObject);
     }
 
-    public void setPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
+    public void updatePropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
         table.setColumnValues(property, values);
         if (extViews.containsKey(property)) {
             Object value = getSelectedValue(property);

@@ -5,10 +5,7 @@ import platform.server.form.entity.filter.*;
 import platform.server.form.instance.filter.*;
 import platform.server.logics.property.PropertyInterface;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class InstanceFactory {
 
@@ -39,7 +36,7 @@ public class InstanceFactory {
             for (ObjectEntity object : entity)
                 objects.add(getInstance(object));
 
-            groupInstances.put(entity, new GroupObjectInstance(entity, objects));
+            groupInstances.put(entity, new GroupObjectInstance(entity, objects, entity.propertyHighlight!=null?getInstance(entity.propertyHighlight):null));
         }
 
         return groupInstances.get(entity);
@@ -60,12 +57,12 @@ public class InstanceFactory {
     public <T extends PropertyInterface> PropertyDrawInstance getInstance(PropertyDrawEntity<T> entity) {
 
         if (!propertyDrawInstances.containsKey(entity)) {
-            GroupObjectInstance columnGroupObjects[] = new GroupObjectInstance[entity.columnGroupObjects.size()]; int ig = 0;
-            for (Map.Entry<GroupObjectEntity,PropertyDrawEntity> columnGroupObject : entity.columnGroupObjects.entrySet()) {
-                columnGroupObjects[ig++] = getInstance(columnGroupObject.getKey());
+            List<GroupObjectInstance> columnGroupObjects = new ArrayList<GroupObjectInstance>();
+            for (GroupObjectEntity columnGroupObject : entity.columnGroupObjects) {
+                columnGroupObjects.add(getInstance(columnGroupObject));
             }
 
-            propertyDrawInstances.put(entity, new PropertyDrawInstance<T>(entity, getInstance(entity.propertyObject), getInstance(entity.toDraw), columnGroupObjects));
+            propertyDrawInstances.put(entity, new PropertyDrawInstance<T>(entity, getInstance(entity.propertyObject), getInstance(entity.toDraw), columnGroupObjects, entity.propertyCaption==null?null:getInstance(entity.propertyCaption)));
         }
 
         return propertyDrawInstances.get(entity);

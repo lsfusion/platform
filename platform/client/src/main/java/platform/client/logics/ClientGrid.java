@@ -1,7 +1,5 @@
 package platform.client.logics;
 
-import platform.client.form.decorator.ClientHighlighter;
-
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Collection;
@@ -13,7 +11,6 @@ public class ClientGrid extends ClientComponent {
 
     public byte minRowCount;
     public boolean tabVertical = true;
-    public ClientHighlighter highlighter;
     public final boolean autoHide;
 
     public ClientGrid(DataInputStream inStream, Collection<ClientContainer> containers) throws IOException, ClassNotFoundException {
@@ -24,9 +21,6 @@ public class ClientGrid extends ClientComponent {
 
         minRowCount = inStream.readByte();
         tabVertical = inStream.readBoolean();
-        if (!inStream.readBoolean()) {
-            highlighter = new ClientHighlighter(inStream);
-        }
         autoHide = inStream.readBoolean();
     }
 }

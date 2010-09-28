@@ -11,18 +11,19 @@ public class GridTableModel extends AbstractTableModel {
     private ClientPropertyDraw[] columnProps = new ClientPropertyDraw[0];
     private ClientGroupObjectValue[] columnKeys = new ClientGroupObjectValue[0];
     private String[] columnNames = new String[0];
+    private Object[] rowHighlights = new Object[0];
 
     public void update(List<ClientPropertyDraw> columnProperties,
                              List<ClientGroupObjectValue> rowKeys,
                              Map<ClientPropertyDraw, List<ClientGroupObjectValue>> mapColumnKeys,
-                             Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> columnDisplayValues,
-                             Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values) {
+                             Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> columnCaptions,
+                             Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values,
+                             Map<ClientGroupObjectValue,Object> highlights) {
 
         List<ClientPropertyDraw> columnPropsList = new ArrayList<ClientPropertyDraw>();
         List<ClientGroupObjectValue> columnKeysList = new ArrayList<ClientGroupObjectValue>();
 
         for (ClientPropertyDraw property : columnProperties) {
-            //noinspection SuspiciousMethodCalls
             if (mapColumnKeys.containsKey(property)) {
                 for (ClientGroupObjectValue key : mapColumnKeys.get(property)) {
                     columnKeysList.add(key);
@@ -46,6 +47,9 @@ public class GridTableModel extends AbstractTableModel {
             data = new Object[rowKeys.size()][columnProps.length];
         }
 
+        if(rowHighlights.length != rowKeys.size())
+            rowHighlights = new Object[rowKeys.size()];
+        
         for (int i = 0; i < rowKeys.size(); ++i) {
             ClientGroupObjectValue rowKey = rowKeys.get(i);
 
@@ -53,48 +57,23 @@ public class GridTableModel extends AbstractTableModel {
                 Map<ClientGroupObjectValue, Object> propValues = values.get(columnProps[j]);
                 if (propValues != null) {
                     ClientGroupObjectValue columnKey = columnKeys[j];
-                    ClientGroupObjectValue key = columnKey.isEmpty()
-                                                  ? rowKey
-                                                  : new ClientGroupObjectValue(rowKey, columnKey);
+                    ClientGroupObjectValue key = new ClientGroupObjectValue(rowKey, columnKey);
                     data[i][j] = propValues.get(key);
                 } else {
                     data[i][j] = null;
                 }
             }
+
+            rowHighlights[i] = highlights.get(rowKey);
         }
 
         //заполняем имена колонок
         for (int i = 0; i < columnNames.length; ++i) {
-            ClientPropertyDraw property = columnProps[i];
-            ClientGroupObjectValue columnKey = columnKeys[i];
-
-            columnNames[i] = property.getFullCaption();
-
-            if (!columnKey.isEmpty()) {
-                String paramCaption = "";
-                Iterator<Map.Entry<ClientObject, Object>> columnKeysIt = columnKey.entrySet().iterator();
-                for (int j = 0; j < property.columnGroupObjects.length; ++j) {
-                    ClientPropertyDraw columnProperty = property.columnDisplayProperties[j];
-                    ClientGroupObject columnGroupObject = property.columnGroupObjects[j];
-
-                    ClientGroupObjectValue partColumnKey = new ClientGroupObjectValue();
-                    for (int k = 0; k < columnGroupObject.size(); ++k) {
-                        Map.Entry<ClientObject, Object> entry = columnKeysIt.next();
-                        partColumnKey.put(entry.getKey(), entry.getValue());
-                    }
-                    if (paramCaption.length() != 0) {
-                        paramCaption += ", ";
-                    }
-                    Object displayValue = columnDisplayValues.get(columnProperty).get(partColumnKey);
-                    if (displayValue != null) {
-                        paramCaption += displayValue;
-                    }
-                }
-
-                if (paramCaption.length() > 0) {
-                    columnNames[i] += "[" + paramCaption + "]";
-                }
-            }
+            Map<ClientGroupObjectValue, Object> columnCaption = columnCaptions.get(columnProps[i]);
+            if(columnCaption!=null)
+                columnNames[i] = BaseUtils.nullToString(columnCaption.get(columnKeys[i]));
+            else // значит на сервере propertyCaption'а нету и надо читать просто FullCaption
+                columnNames[i] = columnProps[i].getFullCaption();
         }
     }
 
@@ -158,5 +137,9 @@ public class GridTableModel extends AbstractTableModel {
 
     public ClientGroupObjectValue getColumnKey(int index) {
         return columnKeys[index];
+    }
+
+    public Object getHighlightValue(int index) {
+        return rowHighlights[index];
     }
 }

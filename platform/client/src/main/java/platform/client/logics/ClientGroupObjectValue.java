@@ -10,6 +10,7 @@ import platform.interop.ClassViewType;
 
 import java.io.*;
 import java.util.Map;
+import java.util.Set;
 
 public class ClientGroupObjectValue extends OrderedMap<ClientObject,Object>
                              implements Serializable {
@@ -20,20 +21,9 @@ public class ClientGroupObjectValue extends OrderedMap<ClientObject,Object>
         }
     }
 
-    public ClientGroupObjectValue(DataInputStream inStream, ClientPropertyDraw clientPropertyDraw, boolean deserializeGroupKeys, Map<ClientGroupObject, Byte> classViews, Map<ClientGroupObject, GroupObjectController> controllers) throws IOException {
-        if (deserializeGroupKeys) {
-            for (ClientObject clientObject : clientPropertyDraw.groupObject) {
-                put(clientObject, deserializeObject(inStream));
-            }
-        }
-
-        for (ClientGroupObject columnGroupObject : clientPropertyDraw.columnGroupObjects) {
-            Byte newType = classViews.get(columnGroupObject);
-            if((newType!=null?newType:controllers.get(columnGroupObject).classView) == ClassViewType.GRID) {
-                for (ClientObject clientObject : columnGroupObject) {
-                    put(clientObject, deserializeObject(inStream));
-                }
-            }
+    public ClientGroupObjectValue(DataInputStream inStream, ClientPropertyRead clientPropertyDraw, Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, Byte> classViews, Map<ClientGroupObject, GroupObjectController> controllers) throws IOException {
+        for (ClientObject clientObject : clientPropertyDraw.getDeserializeList(panelProperties, classViews, controllers)) {
+            put(clientObject, deserializeObject(inStream));
         }
     }
 

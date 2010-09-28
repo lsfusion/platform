@@ -3,7 +3,6 @@ package platform.client.logics;
 import platform.base.OrderedMap;
 import platform.client.SwingUtils;
 import platform.client.form.LogicsSupplier;
-import platform.client.form.decorator.ClientHighlighter;
 
 import javax.swing.*;
 import java.io.DataInputStream;
@@ -130,25 +129,6 @@ public class ClientForm implements Serializable, LogicsSupplier {
             ClientRegularFilterGroup newObject(DataInputStream inStream) throws IOException, ClassNotFoundException {
                 return new ClientRegularFilterGroup(inStream,containers);
             }});
-
-        Map<String, ClientPropertyDraw> sIDtoProperty = new HashMap<String, ClientPropertyDraw>();
-        for (ClientPropertyDraw property : properties) {
-            sIDtoProperty.put(property.getSID(), property);
-        }
-        //заполняем свойства в колонках
-        for (ClientPropertyDraw property : properties) {
-            property.columnDisplayProperties = new ClientPropertyDraw[property.columnDisplayPropertiesIds.length];
-            for (int i = 0; i < property.columnDisplayProperties.length; ++i) {
-                property.columnDisplayProperties[i] = getProperty(property.columnDisplayPropertiesIds[i]);
-            }
-        }
-
-        for (ClientGroupObject groupObject : groupObjects) {
-            ClientHighlighter highlighter = groupObject.grid.highlighter;
-            if (highlighter != null) {
-                highlighter.init(sIDtoProperty);
-            }
-        }
 
         int orderCount = inStream.readInt();
         for(int i=0;i<orderCount;i++) {
