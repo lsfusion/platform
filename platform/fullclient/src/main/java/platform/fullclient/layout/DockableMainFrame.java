@@ -88,22 +88,32 @@ public class DockableMainFrame extends MainFrame {
         }
     }
 
+    // важно, что в случае каких-либо Exception'ов при восстановлении форм нужно все игнорировать и открывать расположение "по умолчанию"
     private void initDockStations(ClientNavigator mainNavigator) {
+
         control = new CControl(this);
         view = new ViewManager(control, mainNavigator);
         control.setTheme(ThemeMap.KEY_ECLIPSE_THEME);
 
+        DataInputStream in = null;
         try {
-            DataInputStream in = new DataInputStream(new FileInputStream(new File(baseDir, "layout.data")));
+            in = new DataInputStream(new FileInputStream(new File(baseDir, "layout.data")));
             view.getForms().read(in);
             control.getResources().readStream(in);
-            in.close();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
-
         add(control.getContentArea(), BorderLayout.CENTER);
+        add(new JButton("Hello World"), BorderLayout.SOUTH);
         CGrid grid = new CGrid(control);
         grid.add(0, 0, 1, 2, createDockable("Навигатор", mainNavigator));
         grid.add(0, 2, 1, 1, createDockable("Связанные формы", mainNavigator.relevantFormNavigator));
@@ -113,16 +123,21 @@ public class DockableMainFrame extends MainFrame {
         grid.add(0, 5, 6, 0.15, createStatusDockable(statusComponent));
         control.getContentArea().deploy(grid);
 
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
         for (String s : control.layouts()) {
             if (s.equals("default")) {
-                control.load("default");
+                try {
+                    control.load("default");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    control.getContentArea().deploy(grid); // иначе покажется пустая форма
+                }
                 break;
             }
         }
         setupMenu();
         setVisible(true);
+
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
 

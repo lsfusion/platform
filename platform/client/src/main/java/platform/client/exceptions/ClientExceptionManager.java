@@ -4,6 +4,9 @@ import platform.client.Log;
 import platform.client.rmi.ConnectionLostManager;
 
 import java.awt.*;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.rmi.ConnectException;
 import java.rmi.ConnectIOException;
 
@@ -31,6 +34,12 @@ public class ClientExceptionManager {
             e = e.getCause();
             message += " : \n" + e.getLocalizedMessage();
         }
+
+        message += "\n-----------\n";
+        OutputStream os = new ByteArrayOutputStream();
+        e.printStackTrace(new PrintStream(os));
+        message += os.toString();
+
         Log.printFailedMessage(message, parentComponent);
 
         e.printStackTrace();
