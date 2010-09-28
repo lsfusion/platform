@@ -25,10 +25,11 @@ class PropertyValueLinkView extends ValueLinkView {
         propertyView.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
-
-                valueLink.property = (ClientPropertyDraw)e.getItem();
-                if (listener != null)
-                    listener.valueChanged();
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    valueLink.property = (ClientPropertyDraw)e.getItem();
+                    if (listener != null)
+                        listener.valueChanged();
+                }
             }
         });
 

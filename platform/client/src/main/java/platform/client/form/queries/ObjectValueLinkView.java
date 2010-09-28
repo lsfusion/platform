@@ -28,9 +28,11 @@ class ObjectValueLinkView extends ValueLinkView {
         objectView.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
-                valueLink.object = (ClientObject)e.getItem();
-                if (listener != null)
-                    listener.valueChanged();
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    valueLink.object = (ClientObject)e.getItem();
+                    if (listener != null)
+                        listener.valueChanged();
+                }
             }
         });
 

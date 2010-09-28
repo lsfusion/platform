@@ -215,8 +215,10 @@ public class ClientFormController {
 
                     public void itemStateChanged(ItemEvent ie) {
                         try {
-                            setRegularFilter(filterGroup,
-                                    ie.getItem() instanceof ClientRegularFilter ?(ClientRegularFilter)ie.getItem():null);
+                            if (ie.getStateChange() == ItemEvent.SELECTED) {
+                                setRegularFilter(filterGroup,
+                                        ie.getItem() instanceof ClientRegularFilter ?(ClientRegularFilter)ie.getItem():null);
+                            }
                         } catch (IOException e) {
                             throw new RuntimeException("Ошибка при изменении регулярного фильтра", e);
                         }

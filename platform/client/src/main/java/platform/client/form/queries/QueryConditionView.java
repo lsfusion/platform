@@ -53,9 +53,10 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
         propertyView.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent ie) {
-
-                filter.property = (ClientPropertyDraw)ie.getItem();
-                filterChanged();
+                if (ie.getStateChange() == ItemEvent.SELECTED) {
+                    filter.property = (ClientPropertyDraw)ie.getItem();
+                    filterChanged();
+                }
             }
         });
 
@@ -70,8 +71,10 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
 
         compareView.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                filter.compare = ((Pair<String,Compare>)e.getItem()).second;
-                conditionChanged();
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    filter.compare = ((Pair<String,Compare>)e.getItem()).second;
+                    conditionChanged();
+                }
             }
         });
 
@@ -101,8 +104,10 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
         classValueLinkView.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent ie) {
-                filter.value = (ClientValueLink)classValueLinkView.getSelectedItem();
-                filterChanged();
+                if (ie.getStateChange() == ItemEvent.SELECTED) {
+                    filter.value = (ClientValueLink)classValueLinkView.getSelectedItem();
+                    filterChanged();
+                }
             }
         });
 
