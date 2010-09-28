@@ -40,7 +40,7 @@ public class ClientExceptionManager {
         e.printStackTrace(new PrintStream(os));
         message += os.toString();
 
-        Log.printFailedMessage(message, parentComponent);
+        Log.printFailedMessage(message.substring(0, 2000), parentComponent);
 
         e.printStackTrace();
     }

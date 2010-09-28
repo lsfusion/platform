@@ -113,7 +113,6 @@ public class DockableMainFrame extends MainFrame {
         }
 
         add(control.getContentArea(), BorderLayout.CENTER);
-        add(new JButton("Hello World"), BorderLayout.SOUTH);
         CGrid grid = new CGrid(control);
         grid.add(0, 0, 1, 2, createDockable("Навигатор", mainNavigator));
         grid.add(0, 2, 1, 1, createDockable("Связанные формы", mainNavigator.relevantFormNavigator));
