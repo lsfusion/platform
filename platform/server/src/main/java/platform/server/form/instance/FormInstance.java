@@ -472,10 +472,16 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     public Collection<Property> getUpdateProperties() {
 
         Set<Property> result = new HashSet<Property>();
-        for (PropertyDrawInstance<?> propView : properties)
+        for (PropertyDrawInstance<?> propView : properties) {
             result.add(propView.propertyObject.property);
-        for (GroupObjectInstance group : groups)
+            if(propView.propertyCaption!=null)
+                result.add(propView.propertyCaption.property);
+        }
+        for (GroupObjectInstance group : groups) {
+            if(group.propertyHighlight!=null)
+                result.add(group.propertyHighlight.property);
             group.fillUpdateProperties(result);
+        }
         return result;
     }
 

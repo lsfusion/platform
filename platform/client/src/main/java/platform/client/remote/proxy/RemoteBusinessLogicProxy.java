@@ -77,6 +77,7 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         return target.checkUser(login, password);
     }
 
+    @NonFlushRemoteMethod
     public void ping() throws RemoteException {
         target.ping();
     }

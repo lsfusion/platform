@@ -262,15 +262,6 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         }
     }
 
-    public void setCurrentObject(ClientObject object, Object value) {
-        if (currentObject == null) return;
-
-        ClientGroupObjectValue curValue = (ClientGroupObjectValue) currentObject.clone();
-
-        curValue.put(object, value);
-        setCurrentGroupObject(curValue, false);
-    }
-
     public void updateDrawColumnKeys(ClientPropertyDraw property, List<ClientGroupObjectValue> groupColumnKeys) {
         if(panelProperties.contains(property))
             panel.updateColumnKeys(property, groupColumnKeys);
