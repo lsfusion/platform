@@ -38,6 +38,7 @@ abstract public class ClientClass implements Serializable {
         if (type == Data.WORD) return new ClientWordClass(inStream);
         if (type == Data.EXCEL) return new ClientExcelClass(inStream);
         if (type == Data.TEXT) return new ClientTextClass(inStream);
+        if (type == Data.YEAR) return new ClientIntegerClass(inStream);
 
         throw new IOException();
     }

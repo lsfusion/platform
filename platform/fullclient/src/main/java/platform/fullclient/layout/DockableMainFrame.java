@@ -110,6 +110,7 @@ public class DockableMainFrame extends MainFrame {
         grid.add(0, 3, 1, 1, createDockable("Классовые формы", mainNavigator.relevantClassNavigator));
         grid.add(0, 4, 1, 1, createDockable("Лог", Log.getPanel()));
         grid.add(1, 0, 5, 5, view.getGridArea());
+        grid.add(0, 5, 6, 0.15, createStatusDockable(statusComponent));
         control.getContentArea().deploy(grid);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -242,6 +243,13 @@ public class DockableMainFrame extends MainFrame {
         dockable.setCloseable(true);
         //dockable.setDefaultLocation(CDockable.ExtendedMode.MINIMIZED, CLocation.base().minimalEast());
         //dockable.setDefaultLocation(CDockable.ExtendedMode.EXTERNALIZED, CLocation.external(0, 0, 300, 300));
+        return dockable;
+    }
+
+    public SingleCDockable createStatusDockable(JComponent navigator) {
+        DefaultSingleCDockable dockable = new DefaultSingleCDockable("Log", "", navigator);
+        dockable.setTitleShown(false);
+        dockable.setResizeLockedVertically(true);
         return dockable;
     }
 }

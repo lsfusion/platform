@@ -1,10 +1,12 @@
 package platform.server.data.sql;
 
 import platform.base.BaseUtils;
+import platform.server.data.type.Type;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+
 
 public class PostgreDataAdapter extends DataAdapter {
 
@@ -34,20 +36,20 @@ public class PostgreDataAdapter extends DataAdapter {
 
     public void ensureDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-        Connection connect = DriverManager.getConnection("jdbc:postgresql://"+ server +"/postgres?user=" + userID + "&password=" + password);
+        Connection connect = DriverManager.getConnection("jdbc:postgresql://" + server + "/postgres?user=" + userID + "&password=" + password);
 /*        try {
             connect.createStatement().execute("DROP DATABASE "+ dataBase);
         } catch (SQLException e) {
         }*/
         try {
-            connect.createStatement().execute("CREATE DATABASE "+ dataBase + " WITH ENCODING='UTF8' ");
+            connect.createStatement().execute("CREATE DATABASE " + dataBase + " WITH ENCODING='UTF8' ");
         } catch (SQLException e) {
         }
         connect.close();
     }
 
     public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        return DriverManager.getConnection("jdbc:postgresql://"+ server +"/"+ dataBase +"?user=" + userID + "&password=" + password );
+        return DriverManager.getConnection("jdbc:postgresql://" + server + "/" + dataBase + "?user=" + userID + "&password=" + password);
     }
 
     public String getCommandEnd() {
@@ -65,7 +67,7 @@ public class PostgreDataAdapter extends DataAdapter {
 
     public String isNULL(String expr1, String expr2, boolean notSafe) {
 //        return "(CASE WHEN "+Expr1+" IS NULL THEN "+Expr2+" ELSE "+Expr1+" END)";
-        return "COALESCE("+ expr1 +","+ expr2 +")";
+        return "COALESCE(" + expr1 + "," + expr2 + ")";
     }
 
     public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String top) {
@@ -82,18 +84,20 @@ public class PostgreDataAdapter extends DataAdapter {
 
     @Override
     public String getOrderDirection(boolean descending) {
-        return descending?"DESC NULLS LAST":"ASC NULLS FIRST";
+        return descending ? "DESC NULLS LAST" : "ASC NULLS FIRST";
     }
 
     @Override
     public boolean isBinaryString() {
         return true;
     }
+
     @Override
     public String getBinaryType(int length) {
 //        return "bit(" + length * 8 + ")";
         return getStringType(length);
     }
+
     @Override
     public String getBinaryConcatenate() {
         return "||";
@@ -106,5 +110,10 @@ public class PostgreDataAdapter extends DataAdapter {
 
     public boolean nullUnionTrouble() {
         return true;
+    }
+
+    @Override
+    public String typeConvertSuffix(Type oldType, Type newType, String name) {
+        return "USING " + name + "::" + newType.getDB(this);
     }
 }

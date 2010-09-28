@@ -78,5 +78,6 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
     }
 
     public void ping() throws RemoteException {
+        target.ping();
     }
 }

@@ -31,19 +31,24 @@ public final class Log {
 
         bytesReceived += cnt;
         out.stateChanged();
+        if (Main.pingThread != null)
+            Main.pingThread.incrementBytes(cnt);
     }
 
     private static String getMsgHeader() {
         return "--- " + DateFormat.getInstance().format(new Date(System.currentTimeMillis())) + " ---\n";
     }
+
     private static String getMsgFooter() {
         return "";
     }
 
 
-    private final static LogView out  = new LogView();
+    private final static LogView out = new LogView();
 
-    public static JPanel getPanel() { return out; }
+    public static JPanel getPanel() {
+        return out;
+    }
 
     public static void printSuccessMessage(String message) {
         printmsg(message);
@@ -62,7 +67,7 @@ public final class Log {
     public static void printFailedMessage(String message, Component parentComponent) {
 
         printmsg(message);
-        
+
         // пока таким образом определим есть ли он на экране
         if (out.getTopLevelAncestor() != null) {
             out.setTemporaryBackground(Color.red);
@@ -99,7 +104,7 @@ public final class Log {
 
             view.setText(text);
             if (!text.isEmpty())
-                view.setCaretPosition(text.length()-1);
+                view.setCaretPosition(text.length() - 1);
 
 //            info.setText("Bytes received : " + bytesReceived);
         }
@@ -128,13 +133,13 @@ public final class Log {
 
             public LogTextArea() {
                 super();
-                
+
                 setEditable(false);
             }
 
             public void updateUI() {
                 super.updateUI();
-                
+
                 JTextField fontGetter = new JTextField();
                 setFont(fontGetter.getFont());
             }

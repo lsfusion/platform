@@ -2,6 +2,7 @@ package platform.server.data.sql;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import platform.server.data.type.Type;
 
 public interface SQLSyntax {
 
@@ -64,4 +65,5 @@ public interface SQLSyntax {
 
     String getHour();
     String getEpoch();
+    String typeConvertSuffix(Type oldType, Type newType, String name);
 }

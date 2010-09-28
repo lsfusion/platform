@@ -14,6 +14,7 @@ import java.util.Scanner;
 public abstract class MainFrame extends JFrame {
     protected File baseDir;
     public RemoteNavigatorInterface remoteNavigator;
+    public JComponent statusComponent;
 
     public MainFrame(RemoteNavigatorInterface remoteNavigator) throws ClassNotFoundException, IOException {
         super();
@@ -58,6 +59,7 @@ public abstract class MainFrame extends JFrame {
                 }
             }
         });
+        statusComponent = new JLabel(" Ping:");
     }
 
     public void updateUser() throws IOException, ClassNotFoundException {

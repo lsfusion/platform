@@ -7,6 +7,7 @@ import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.StringTokenizer;
@@ -23,6 +24,7 @@ public class SimpleMainFrame extends MainFrame {
             }
         };
 
+        Container cont = getContentPane();
         final JTabbedPane mainPane = new JTabbedPane(JTabbedPane.BOTTOM);
 
         StringTokenizer st = new StringTokenizer(forms, ",");
@@ -42,7 +44,11 @@ public class SimpleMainFrame extends MainFrame {
                 });
             }
         }
-        setContentPane(mainPane);
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(statusComponent, BorderLayout.WEST);
+        cont.setLayout(new BoxLayout(cont, BoxLayout.Y_AXIS));
+        cont.add(mainPane);
+        cont.add(panel);
         mainPane.setFocusable(false);
     }
 

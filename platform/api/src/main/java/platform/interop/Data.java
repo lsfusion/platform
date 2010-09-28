@@ -19,4 +19,5 @@ public class Data {
     public final static byte WORD = 14;
     public final static byte EXCEL = 15;
     public final static byte TEXT = 16;
+    public final static byte YEAR = 17;
 }

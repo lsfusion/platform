@@ -18,7 +18,7 @@ public class StringClass extends DataClass<String> {
         return "Строка "+length;
     }
 
-    int length;
+    public int length;
 
     public StringClass(int length) {
         this.length = length;

@@ -1,5 +1,7 @@
 package platform.server.data.sql;
 
+import platform.server.data.type.Type;
+
 import java.sql.SQLException;
 
 public abstract class DataAdapter implements SQLSyntax {
@@ -130,5 +132,9 @@ public abstract class DataAdapter implements SQLSyntax {
 
     public String getEpoch() {
         return "EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)";
+    }
+
+    public String typeConvertSuffix(Type oldType, Type newType, String name){
+        return "";
     }
 }

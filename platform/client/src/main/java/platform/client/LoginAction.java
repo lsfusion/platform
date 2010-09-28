@@ -10,7 +10,7 @@ import java.rmi.*;
 
 public final class LoginAction {
 
-    private String serverHost;
+    public String serverHost;
     private String serverPort;
     private String user;
     private String password;

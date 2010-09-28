@@ -44,6 +44,7 @@ public class Main {
     public static int computerId;
 
     public static ModuleFactory module;
+    public static PingThread pingThread;
 
     public static void start(final String[] args, ModuleFactory startModule) {
 
@@ -110,7 +111,7 @@ public class Main {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
                     String logLevel = System.getProperty(PropertyConstants.PLATFORM_CLIENT_LOGLEVEL);
-                    String timeout  = System.getProperty(PropertyConstants.PLATFORM_CLIENT_CONNECTION_LOST_TIMEOUT, "7200000");
+                    String timeout = System.getProperty(PropertyConstants.PLATFORM_CLIENT_CONNECTION_LOST_TIMEOUT, "7200000");
 
                     initRMISocketFactory(timeout);
 
@@ -135,6 +136,9 @@ public class Main {
                     frame = module.initFrame(remoteNavigator);
                     logger.info("After init frame");
 
+                    pingThread = new PingThread(remoteLogics, Integer.parseInt(System.getProperty("platform.client.pingTime", "1000")));
+                    pingThread.start();
+
                     frame.addWindowListener(
                             new WindowAdapter() {
                                 public void windowOpened(WindowEvent e) {
@@ -144,7 +148,7 @@ public class Main {
                                 public void windowClosing(WindowEvent e) {
                                     try {
                                         remoteLogics.endSession(OSUtils.getLocalHostName() + " " + computerId);
-                                    } catch (Exception ex){
+                                    } catch (Exception ex) {
                                         throw new RuntimeException(ex);
                                     }
                                 }

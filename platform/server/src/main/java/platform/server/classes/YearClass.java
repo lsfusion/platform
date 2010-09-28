@@ -1,5 +1,7 @@
 package platform.server.classes;
 
+import platform.interop.Data;
+
 import java.text.DateFormat;
 import java.text.Format;
 import java.util.Calendar;
@@ -21,5 +23,10 @@ public class YearClass extends IntegerClass {
     @Override
     public Object getDefaultValue() {
         return Calendar.getInstance().get(Calendar.YEAR);
+    }
+
+    @Override
+    public byte getTypeID() {
+        return Data.YEAR;
     }
 }
