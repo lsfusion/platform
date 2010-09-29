@@ -15,6 +15,7 @@ import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.RemoteObject;
+import platform.server.net.ServerSocketFactory;
 import platform.server.auth.PolicyManager;
 import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
@@ -22,18 +23,15 @@ import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.query.Query;
 import platform.server.data.query.Join;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.data.where.Where;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
-import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.OrderInstance;
@@ -62,6 +60,8 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.RMIFailureHandler;
+import java.rmi.server.RMISocketFactory;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
@@ -107,6 +107,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         } else {
             LogManager.getLogManager().getLogger("").setLevel(Level.SEVERE);
         }
+
+        initRMISocketFactory();
 
         Handler consoleHandler = new StreamHandler(System.out, new SimpleFormatter()) {
             @Override
@@ -154,6 +156,24 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         logger.info("Server has successfully stopped");
+    }
+
+    private static void initRMISocketFactory() throws IOException {
+        RMISocketFactory socketFactory = RMISocketFactory.getSocketFactory();
+        if (socketFactory == null) {
+            socketFactory = RMISocketFactory.getDefaultSocketFactory();
+        }
+
+        socketFactory = new ServerSocketFactory();
+
+        RMISocketFactory.setFailureHandler(new RMIFailureHandler() {
+
+            public boolean failure(Exception ex) {
+                return true;
+            }
+        });
+
+        RMISocketFactory.setSocketFactory(socketFactory);
     }
 
     public static void stop(String[] args) throws RemoteException, NotBoundException {
@@ -2829,8 +2849,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public void addObjectActions(FormEntity form, ObjectEntity object) {
-        form.forceDefaultDraw.put(form.addPropertyDraw(new LP<ClassPropertyInterface>(getImportObjectAction(object.baseClass))),object.groupTo);
-        form.forceDefaultDraw.put(form.addPropertyDraw(new LP<ClassPropertyInterface>(getAddObjectAction(object.baseClass))),object.groupTo);
+        form.forceDefaultDraw.put(form.addPropertyDraw(new LP<ClassPropertyInterface>(getImportObjectAction(object.baseClass))), object.groupTo);
+        form.forceDefaultDraw.put(form.addPropertyDraw(new LP<ClassPropertyInterface>(getAddObjectAction(object.baseClass))), object.groupTo);
         form.addPropertyDraw(delete, object);
     }
 

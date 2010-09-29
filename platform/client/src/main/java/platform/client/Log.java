@@ -31,8 +31,6 @@ public final class Log {
 
         bytesReceived += cnt;
         out.stateChanged();
-        if (Main.pingThread != null)
-            Main.pingThread.incrementBytes(cnt);
     }
 
     private static String getMsgHeader() {

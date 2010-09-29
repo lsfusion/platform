@@ -2,10 +2,7 @@ package platform.fullclient.layout;
 
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.design.JasperDesign;
-import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import platform.base.Pair;
-import platform.client.Log;
-import platform.interop.CompressingInputStream;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.ReportConstants;
 
@@ -76,7 +73,7 @@ public class ReportGenerator {
 
     private static Pair<String, Map<String, java.util.List<String>>> retrieveReportHierarchy(RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
         byte[] hierarchyArray = remoteForm.getReportHierarchyByteArray();
-        ObjectInputStream objStream = new ObjectInputStream(new CompressingInputStream(new ByteArrayInputStream(hierarchyArray)));
+        ObjectInputStream objStream = new ObjectInputStream(new ByteArrayInputStream(hierarchyArray));
         String rootID = objStream.readUTF();
         Map<String, java.util.List<String>> hierarchy = (Map<String, java.util.List<String>>) objStream.readObject();
         return new Pair<String, Map<String, java.util.List<String>>>(rootID, hierarchy);
@@ -84,13 +81,13 @@ public class ReportGenerator {
 
     private static Map<String, JasperDesign> retrieveReportDesigns(RemoteFormInterface remoteForm, boolean toExcel) throws IOException, ClassNotFoundException {
         byte[] designsArray = remoteForm.getReportDesignsByteArray(toExcel);
-        ObjectInputStream objStream = new ObjectInputStream(new CompressingInputStream(new ByteArrayInputStream(designsArray)));
+        ObjectInputStream objStream = new ObjectInputStream(new ByteArrayInputStream(designsArray));
         return (Map<String, JasperDesign>) objStream.readObject();
     }
 
     private static Map<String, ClientReportData> retrieveReportSources(RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
         byte[] sourcesArray = remoteForm.getReportSourcesByteArray();
-        DataInputStream dataStream = new DataInputStream(new CompressingInputStream(new ByteArrayInputStream(sourcesArray)));
+        DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(sourcesArray));
         int size = dataStream.readInt();
         Map<String, ClientReportData> sources = new HashMap<String, ClientReportData>();
         for (int i = 0; i < size; i++) {

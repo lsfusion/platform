@@ -14,7 +14,7 @@ public class PingThread extends Thread {
     long sum;
     int counter;
     Queue<Long> queue = new LinkedList<Long>();
-    long totalSum, curSum;
+    long oldIn, oldOut;
 
     public PingThread(RemoteLogicsInterface remoteLogics, int time) {
         this.remoteLogics = remoteLogics;
@@ -36,9 +36,14 @@ public class PingThread extends Thread {
                 }
 
                 if (counter % 5 == 0) {
-                    ((JLabel) Main.frame.statusComponent).setText(" Ping:" + sum / queue.size() + " ms, Current: " + curSum + " b, Total: " + totalSum + " b");
-                    counter %= 5;
-                    curSum = 0;
+                    long newIn = Main.socketFactory.inSum;
+                    long newOut = Main.socketFactory.outSum;
+
+                    ((JLabel) Main.frame.statusComponent).setText(" Пинг:" + sum / queue.size() + " мс, отправлено: " + (newOut - oldOut) +
+                            "байт, получено: " + (newIn - oldIn) + " байт, всего отправлено: " + newOut + " байт, всего получено: " + newIn + " байт");
+                    counter = 0;
+                    oldIn = newIn;
+                    oldOut = newOut;
                 }
                 Thread.sleep(time);
             }
@@ -50,8 +55,4 @@ public class PingThread extends Thread {
         }
     }
 
-    public void incrementBytes(int cnt){
-        totalSum += cnt;
-        curSum += cnt;
-    }
 }

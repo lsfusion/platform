@@ -59,7 +59,7 @@ public abstract class MainFrame extends JFrame {
                 }
             }
         });
-        statusComponent = new JLabel(" Ping:");
+        statusComponent = new JLabel(" ");
     }
 
     public void updateUser() throws IOException, ClassNotFoundException {

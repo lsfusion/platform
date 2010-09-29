@@ -7,7 +7,6 @@ import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
-import platform.interop.CompressingOutputStream;
 import platform.interop.Order;
 import platform.interop.Scroll;
 import platform.interop.action.CheckFailed;
@@ -55,12 +54,10 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
     public byte[] getReportHierarchyByteArray() {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
-            CompressingOutputStream compStream = new CompressingOutputStream(outStream);
-            ObjectOutputStream objOut = new ObjectOutputStream(compStream);
+            ObjectOutputStream objOut = new ObjectOutputStream(outStream);
             Map<String, List<String>> dependencies = form.entity.getReportHierarchy().getReportHierarchyMap();
             objOut.writeUTF(GroupObjectHierarchy.rootNodeName);
             objOut.writeObject(dependencies);
-            compStream.finish();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -70,11 +67,9 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
     public byte[] getReportDesignsByteArray(boolean toExcel) {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
-            CompressingOutputStream compStream = new CompressingOutputStream(outStream);
-            ObjectOutputStream objOut = new ObjectOutputStream(compStream);
+            ObjectOutputStream objOut = new ObjectOutputStream(outStream);
             Map<String, JasperDesign> res = getReportDesigns(toExcel);
             objOut.writeObject(res);
-            compStream.finish();
             return outStream.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -86,14 +81,12 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
         try {
             Map<String, FormData> sources = sourceGenerator.generate();
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-            CompressingOutputStream compStream = new CompressingOutputStream(outStream);
-            DataOutputStream dataStream = new DataOutputStream(compStream);
+            DataOutputStream dataStream = new DataOutputStream(outStream);
             dataStream.writeInt(sources.size());
             for (Map.Entry<String, FormData> source : sources.entrySet()) {
                 dataStream.writeUTF(source.getKey());
                 source.getValue().serialize(dataStream);
             }
-            compStream.finish();
             return outStream.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -178,9 +171,7 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
         //будем использовать стандартный OutputStream, чтобы кол-во передаваемых данных было бы как можно меньше
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
-            CompressingOutputStream compStream = new CompressingOutputStream(outStream);
-            richDesign.serialize(new DataOutputStream(compStream)); 
-            compStream.finish();
+            richDesign.serialize(new DataOutputStream(outStream));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -202,9 +193,7 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
         try {
-            CompressingOutputStream compStream = new CompressingOutputStream(outStream);
-            form.endApply().serialize(new DataOutputStream(compStream));
-            compStream.finish();
+            form.endApply().serialize(new DataOutputStream(outStream));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

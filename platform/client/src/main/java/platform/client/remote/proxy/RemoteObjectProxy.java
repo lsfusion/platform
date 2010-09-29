@@ -2,7 +2,6 @@ package platform.client.remote.proxy;
 
 import platform.interop.remote.MethodInvocation;
 import platform.interop.remote.PendingRemote;
-import platform.interop.CompressingOutputStream;
 
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;

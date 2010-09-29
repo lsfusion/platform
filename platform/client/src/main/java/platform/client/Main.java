@@ -45,6 +45,7 @@ public class Main {
 
     public static ModuleFactory module;
     public static PingThread pingThread;
+    public static RMITimeoutSocketFactory socketFactory;
 
     public static void start(final String[] args, ModuleFactory startModule) {
 
@@ -172,12 +173,12 @@ public class Main {
     }
 
     private static void initRMISocketFactory(String timeout) throws IOException {
-        RMISocketFactory socketFactory = RMISocketFactory.getSocketFactory();
-        if (socketFactory == null) {
-            socketFactory = RMISocketFactory.getDefaultSocketFactory();
+        RMISocketFactory factory = RMISocketFactory.getSocketFactory();
+        if (factory == null) {
+            factory = RMISocketFactory.getDefaultSocketFactory();
         }
 
-        socketFactory = new RMITimeoutSocketFactory(socketFactory, Integer.valueOf(timeout));
+        socketFactory = new RMITimeoutSocketFactory(factory, Integer.valueOf(timeout));
 
         RMISocketFactory.setFailureHandler(new RMIFailureHandler() {
 

@@ -17,7 +17,6 @@ import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.filter.ClientPropertyFilter;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.ClassViewType;
-import platform.interop.CompressingInputStream;
 import platform.interop.Order;
 import platform.interop.Scroll;
 import platform.interop.action.CheckFailed;
@@ -81,7 +80,7 @@ public class ClientFormController {
 
         actionDispatcher = new ClientFormActionDispatcher();
 
-        form = new ClientForm(new DataInputStream(new CompressingInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray()))));
+        form = new ClientForm(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
 
         initializeForm();
     }
@@ -385,7 +384,7 @@ public class ClientFormController {
             action.dispatch(actionDispatcher);
 
         Log.incrementBytesReceived(remoteChanges.form.length);
-        applyFormChanges(new ClientFormChanges(new DataInputStream(new CompressingInputStream(new ByteArrayInputStream(remoteChanges.form))), form, controllers));
+        applyFormChanges(new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(remoteChanges.form)), form, controllers));
 
         if (clientNavigator != null) {
             clientNavigator.changeCurrentClass(remoteChanges.classID);
