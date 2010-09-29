@@ -444,10 +444,7 @@ public class ClientFormController {
         ClientGroupObjectValue curObjectValue = controllers.get(groupObject).getCurrentObject();
 
         if (!objectValue.equals(curObjectValue)) {
-            // приходится вот так возвращать класс, чтобы не было лишних запросов
             remoteForm.changeGroupObject(groupObject.getID(), objectValue.serialize());
-            controllers.get(groupObject).setCurrentGroupObject(objectValue, true);
-
             applyRemoteChanges();
         }
     }

@@ -116,7 +116,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         }
 
         if (fc.objects.containsKey(groupObject)) {
-            setCurrentGroupObject(fc.objects.get(groupObject), false);
+            setCurrentGroupObject(fc.objects.get(groupObject));
         }
 
         if (fc.classViews.containsKey(groupObject)) {
@@ -126,8 +126,9 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
         // Затем их свойства
         for (Map.Entry<ClientPropertyRead,Map<ClientGroupObjectValue,Object>> readProperty : fc.properties.entrySet()) {
-            if (readProperty.getKey().getGroupObject() == groupObject && readProperty.getKey().shouldBeDrawn(form)) {
-                readProperty.getKey().update(readProperty.getValue(), this);
+            ClientPropertyRead propertyRead = readProperty.getKey();
+            if (propertyRead.getGroupObject() == groupObject && propertyRead.shouldBeDrawn(form)) {
+                propertyRead.update(readProperty.getValue(), this);
             }
         }
 
@@ -252,12 +253,9 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         }
     }
 
-    public void setCurrentGroupObject(ClientGroupObjectValue value, Boolean userChange) {
-        boolean realChange = !value.equals(currentObject);
-
-        currentObject = value;
-
-        if (realChange) {
+    public void setCurrentGroupObject(ClientGroupObjectValue value) {
+        if (!value.equals(currentObject)) {
+            currentObject = value;
             grid.selectObject(currentObject);
         }
     }

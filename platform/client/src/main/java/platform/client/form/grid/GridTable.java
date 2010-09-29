@@ -57,6 +57,8 @@ public abstract class GridTable extends ClientFormTable
     private final ClientFormController form;
     private boolean tabVertical = false;
 
+    private int viewMoveInterval = 0;
+    
     public GridTable(GroupObjectLogicsSupplier ilogicsSupplier, ClientFormController iform) {
         super(new GridTableModel());
 
@@ -213,7 +215,6 @@ public abstract class GridTable extends ClientFormTable
         model.update(properties, rowKeys, columnKeys, captions, values, highlights);
 
         refreshColumnModel();
-        changeCurrentObject();
         adjustSelection();
 
         // так делается, потому что почему-то сам JTable ну ни в какую не хочет изменять свою высоту (getHeight())
@@ -228,8 +229,9 @@ public abstract class GridTable extends ClientFormTable
                     , new ActionListener() {
                         public void actionPerformed(ActionEvent ae) {
                             try {
-                                if (changeObject.equals(getSelectedObject())) {
-                                    currentObject = getSelectedObject(); // нужно менять текущий выбранный объект для правильного скроллирования
+                                ClientGroupObjectValue newCurrentObject = getSelectedObject();
+                                if (changeObject.equals(newCurrentObject)) {
+                                    selectObject(newCurrentObject);
                                     form.changeGroupObject(logicsSupplier.getGroupObject(), getSelectedObject());
                                 }
                             } catch (IOException e) {
@@ -297,45 +299,49 @@ public abstract class GridTable extends ClientFormTable
 
     private void adjustSelection() {
         //надо сдвинуть ViewPort - иначе дергаться будет
-        if (newCurrentObjectIndex != -1) {
-            selectRow(newCurrentObjectIndex);
-            if (oldCurrentObjectIndex != -1 && newCurrentObjectIndex != oldCurrentObjectIndex) {
-                final Point viewPos = ((JViewport) getParent()).getViewPosition();
-                final int dltpos = (newCurrentObjectIndex - oldCurrentObjectIndex) * getRowHeight();
-                viewPos.y += dltpos;
-                if (viewPos.y < 0) viewPos.y = 0;
-                ((JViewport) getParent()).setViewPosition(viewPos);
-            }
-        }
+        final Point viewPos = ((JViewport) getParent()).getViewPosition();
+        final int dltpos = viewMoveInterval * getRowHeight();
+        viewPos.y += dltpos;
+        if (viewPos.y < 0) viewPos.y = 0;
+        ((JViewport) getParent()).setViewPosition(viewPos);
+        viewMoveInterval = 0;
+        
+        selectRow(rowKeys.indexOf(currentObject));
     }
 
     protected void selectRow(int rowNumber) {
+        if (rowNumber < 0 || rowNumber > getRowCount()) {
+            return;
+        }
+
         final int colSel = getColumnModel().getSelectionModel().getLeadSelectionIndex();
         if (colSel == -1) {
             isInternalNavigating = true;
             changeSelection(rowNumber, 0, false, false);
             isInternalNavigating = false;
+            moveToFocusableCellIfNeeded();
         } else {
             getSelectionModel().setLeadSelectionIndex(rowNumber);
         }
+
+        scrollRectToVisible(getCellRect(rowNumber, (colSel == -1) ? 0 : colSel, true));
     }
 
-    private int newCurrentObjectIndex = -1;
-    private int oldCurrentObjectIndex = -1;
-
     public void setRowKeys(List<ClientGroupObjectValue> irowKeys) {
-        oldCurrentObjectIndex = rowKeys.indexOf(currentObject);
+        int oldIndex = rowKeys.indexOf(currentObject);
+        int newIndex = irowKeys.indexOf(currentObject);
 
         rowKeys = irowKeys;
 
-        newCurrentObjectIndex = rowKeys.indexOf(currentObject);
+        if (oldIndex != -1 && newIndex != -1) {
+            viewMoveInterval = newIndex - oldIndex;
+        }
     }
 
     public void selectObject(ClientGroupObjectValue value) {
-        oldCurrentObjectIndex = getSelectionModel().getLeadSelectionIndex();
-        newCurrentObjectIndex = rowKeys.indexOf(value);
-
-        adjustSelection();
+        if (rowKeys.contains(value)) {
+            currentObject = value;
+        }
     }
 
     protected abstract void needToBeShown();
