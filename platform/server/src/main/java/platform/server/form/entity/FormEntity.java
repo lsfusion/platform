@@ -350,11 +350,6 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
         //todo:
     }
 
-    public int getID() {
-        //todo:
-        return 0;
-    }
-
     public void serialize(DataOutputStream outStream) throws IOException {
         super.serialize(outStream);
         outStream.writeBoolean(isPrintForm);
