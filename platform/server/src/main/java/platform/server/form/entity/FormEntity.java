@@ -4,6 +4,7 @@ import platform.base.BaseUtils;
 import platform.base.ListPermutations;
 import platform.base.OrderedMap;
 import platform.interop.action.ClientAction;
+import platform.interop.serialization.IdentitySerializable;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.form.entity.filter.FilterEntity;
@@ -19,6 +20,8 @@ import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
+import platform.interop.serialization.CustomSerializable;
+import platform.interop.serialization.SerializationPool;
 
 import javax.swing.*;
 import java.io.DataOutputStream;
@@ -26,7 +29,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
 
-public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> {
+public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> implements IdentitySerializable {
     private final static Logger logger = Logger.getLogger(FormEntity.class.getName());
 
     public boolean isReadOnly() {
@@ -198,7 +201,7 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
 
         if (count >= 0)
             propertyDraws.add(propertyDraw);
-        
+
 
         assert richDesign == null;
 
@@ -331,6 +334,17 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
     public ArrayList<NavigatorElement> relevantElements = new ArrayList<NavigatorElement>();
 
     public byte getTypeID() {
+        return 0;
+    }
+
+    public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        pool.serializeList(outStream, groups);
+        pool.serializeList(outStream, propertyDraws);
+        //todo:
+    }
+
+    public int getID() {
+        //todo:
         return 0;
     }
 

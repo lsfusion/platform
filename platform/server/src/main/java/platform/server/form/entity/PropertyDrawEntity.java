@@ -1,16 +1,21 @@
 package platform.server.form.entity;
 
 import platform.base.IdentityObject;
+import platform.interop.serialization.IdentitySerializable;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.Instantiable;
 import platform.server.form.instance.PropertyDrawInstance;
 import platform.server.form.view.DefaultFormView;
 import platform.server.logics.property.PropertyInterface;
+import platform.interop.serialization.CustomSerializable;
+import platform.interop.serialization.SerializationPool;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 
-public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObject implements Instantiable<PropertyDrawInstance> {
+public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObject implements Instantiable<PropertyDrawInstance>, IdentitySerializable {
 
     public PropertyObjectEntity<P> propertyObject;
 
@@ -50,5 +55,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public void proceedDefaultDesign(DefaultFormView defaultView) {
         propertyObject.property.proceedDefaultDesign(defaultView, this);
+    }
+
+    public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        //todo:
     }
 }

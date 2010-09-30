@@ -2,14 +2,18 @@ package platform.server.form.entity;
 
 import platform.interop.ClassViewType;
 import platform.interop.form.RemoteFormInterface;
+import platform.interop.serialization.IdentitySerializable;
 import platform.server.form.instance.GroupObjectInstance;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.Instantiable;
+import platform.interop.serialization.CustomSerializable;
+import platform.interop.serialization.SerializationPool;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 
-public class GroupObjectEntity extends ArrayList<ObjectEntity> implements Instantiable<GroupObjectInstance> {
-
+public class GroupObjectEntity extends ArrayList<ObjectEntity> implements Instantiable<GroupObjectInstance>, IdentitySerializable {
     private final int ID;
     public int getID() {
         return ID;
@@ -34,5 +38,9 @@ public class GroupObjectEntity extends ArrayList<ObjectEntity> implements Instan
 
     public GroupObjectInstance getInstance(InstanceFactory instanceFactory) {
         return instanceFactory.getInstance(this);
+    }
+
+    public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        //todo:
     }
 }
