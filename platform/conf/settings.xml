@@ -5,7 +5,7 @@
            http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
 	<bean id="dataAdapter" class="platform.server.data.sql.PostgreDataAdapter">
-		<constructor-arg><value>ved</value></constructor-arg>
+		<constructor-arg><value>ved3</value></constructor-arg>
 		<constructor-arg><value>localhost</value></constructor-arg>
 		<constructor-arg><value>postgres</value></constructor-arg>
 		<constructor-arg><value>11111</value></constructor-arg>

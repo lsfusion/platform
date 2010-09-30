@@ -154,7 +154,7 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
 
     <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LP<P> property, GroupObjectEntity groupObject, ObjectEntity... objects) {
 
-        return addPropertyDraw(groupObject, new PropertyObjectEntity<P>(property, objects));
+        return addPropertyDraw(groupObject, new PropertyObjectEntity<P>(genID(), property, objects));
     }
 
     public GroupObjectEntity getApplyObject(Collection<ObjectEntity> objects) {
@@ -207,7 +207,7 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
 
     public PropertyObjectEntity addPropertyObject(LP property, PropertyObjectInterfaceEntity... objects) {
 
-        return new PropertyObjectEntity(property,objects);
+        return new PropertyObjectEntity(genID(), property,objects);
     }
 
 

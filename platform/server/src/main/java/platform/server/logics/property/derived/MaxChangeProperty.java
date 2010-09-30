@@ -108,10 +108,10 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
         return resultExpr;
     }
 
-    public PropertyObjectEntity<Interface<P>> getPropertyObjectEntity(Map<P, DataObject> mapValues, ObjectEntity valueObject) {
+    public PropertyObjectEntity<Interface<P>> getPropertyObjectEntity(int ID, Map<P, DataObject> mapValues, ObjectEntity valueObject) {
         Map<Interface<P>, PropertyObjectInterfaceEntity> interfaceImplement = new HashMap<Interface<P>, PropertyObjectInterfaceEntity>();
         for(Interface<P> propertyInterface : interfaces)
             interfaceImplement.put(propertyInterface, propertyInterface.getInterface(mapValues, valueObject));
-        return new PropertyObjectEntity<Interface<P>>(this,interfaceImplement);
+        return new PropertyObjectEntity<Interface<P>>(ID, this,interfaceImplement);
     }
 }
