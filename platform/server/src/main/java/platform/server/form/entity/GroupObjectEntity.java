@@ -10,7 +10,10 @@ import java.util.ArrayList;
 
 public class GroupObjectEntity extends ArrayList<ObjectEntity> implements Instantiable<GroupObjectInstance> {
 
-    public final int ID;
+    private final int ID;
+    public int getID() {
+        return ID;
+    }
 
     public GroupObjectEntity(int iID) {
         ID = iID;

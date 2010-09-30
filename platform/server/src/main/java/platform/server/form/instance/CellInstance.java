@@ -1,8 +1,8 @@
 package platform.server.form.instance;
 
-import platform.server.form.entity.CellEntity;
+import platform.base.IdentityObject;
 
-public abstract class CellInstance<E extends CellEntity> {
+public abstract class CellInstance<E extends IdentityObject> {
 
     protected E entity;
 

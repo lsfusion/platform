@@ -120,7 +120,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         this.focusListener = focusListener;
         this.classListener = classListener;
 
-        sessionID = this.session.generateID(entity.ID);
+        sessionID = this.session.generateID(entity.getID());
 
         hintsNoUpdate = entity.hintsNoUpdate;
 

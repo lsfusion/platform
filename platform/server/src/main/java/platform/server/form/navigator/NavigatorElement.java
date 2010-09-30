@@ -10,7 +10,11 @@ import java.util.List;
 
 public class NavigatorElement<T extends BusinessLogics<T>> {
 
-    public final int ID;
+    private final int ID;
+    public int getID() {
+        return ID;
+    }
+
     public String caption = "";
 
     public NavigatorElement(int iID, String icaption) { this(null, iID, icaption); }
@@ -61,7 +65,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> {
 
     public NavigatorElement<T> getNavigatorElement(int elementID) {
 
-        if (ID == elementID) return this;
+        if (getID() == elementID) return this;
 
         for(NavigatorElement<T> child : children) {
             NavigatorElement<T> element = child.getNavigatorElement(elementID);
@@ -77,7 +81,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> {
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeByte(getTypeID());
 
-        outStream.writeInt(ID);
+        outStream.writeInt(getID());
         outStream.writeUTF(caption);
         outStream.writeBoolean(hasChildren());
     }

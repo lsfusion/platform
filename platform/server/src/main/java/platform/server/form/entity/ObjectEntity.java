@@ -1,12 +1,13 @@
 package platform.server.form.entity;
 
+import platform.base.IdentityObject;
 import platform.server.classes.ValueClass;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 
 import java.util.Set;
 
-public class ObjectEntity extends CellEntity implements PropertyObjectInterfaceEntity {
+public class ObjectEntity extends IdentityObject implements PropertyObjectInterfaceEntity {
 
     public GroupObjectEntity groupTo;
 

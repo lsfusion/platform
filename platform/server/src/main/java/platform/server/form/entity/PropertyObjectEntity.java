@@ -26,7 +26,7 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyI
         objects.addAll(getObjectInstances());
     }
 
-    public int ID = 0;
+    private int ID = 0;
 
     public PropertyObjectEntity(int ID, LP<P> property, PropertyObjectInterfaceEntity... objects) {
         super(property.property);
@@ -42,5 +42,9 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyI
 
     public PropertyObjectInstance getInstance(InstanceFactory instanceFactory) {
         return instanceFactory.getInstance(this);
+    }
+
+    public int getID() {
+        return ID;
     }
 }

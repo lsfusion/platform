@@ -52,7 +52,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     // глобальный идентификатор чтобы писать во GroupObjectTable
     public int getID() {
-        return entity.ID;
+        return entity.getID();
     }
 
     private int pageSize = 0;

@@ -26,7 +26,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ClientSeri
     public ShowTypeView showType;
 
     public void serialize(DataOutputStream outStream) throws IOException {
-        outStream.writeInt(entity.ID);
+        outStream.writeInt(entity.getID());
         outStream.writeByte(entity.banClassView);
 
         outStream.writeInt(size());

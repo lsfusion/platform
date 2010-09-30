@@ -82,7 +82,7 @@ public class ReportDesignGenerator {
     private void createDesignGroups(JasperDesign design, ReportNode node, ReportNode parent, int treeGroupLevel) throws JRException {
         List<GroupObjectEntity> groups = node.getGroupList();
         for (GroupObjectEntity group : groups) {
-            boolean hiddenGroup = hiddenGroupsId.contains(group.ID);
+            boolean hiddenGroup = hiddenGroupsId.contains(group.getID());
             GroupObjectView groupView = formView.getGroupObject(group);
             List<ReportDrawField> drawFields = new ArrayList<ReportDrawField>();
 
@@ -110,11 +110,11 @@ public class ReportDesignGenerator {
                 } else {
 
                     if (captionWidth + preferredWidth <= pageWidth) {
-                        JRDesignGroup designGroup = addDesignGroup(design, groupView, "designGroup" + group.ID);
+                        JRDesignGroup designGroup = addDesignGroup(design, groupView, "designGroup" + group.getID());
                         reportLayout = new ReportGroupRowLayout(designGroup);
                     } else {
-                        JRDesignGroup captionGroup = addDesignGroup(design, groupView, "captionGroup" + group.ID);
-                        JRDesignGroup textGroup = addDesignGroup(design, groupView, "textGroup" + group.ID);
+                        JRDesignGroup captionGroup = addDesignGroup(design, groupView, "captionGroup" + group.getID());
+                        JRDesignGroup textGroup = addDesignGroup(design, groupView, "textGroup" + group.getID());
                         reportLayout = new ReportGroupColumnLayout(captionGroup, textGroup);
                     }
                 }

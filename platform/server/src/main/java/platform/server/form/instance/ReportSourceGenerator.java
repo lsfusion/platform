@@ -58,7 +58,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         Collection<ReportNode> nodes = hierarchy.getAllNodes();
         for (ReportNode node : nodes) {
             for (GroupObjectEntity group : node.getGroupList()) {
-                GroupObjectInstance instance = idToInstance.get(group.ID);
+                GroupObjectInstance instance = idToInstance.get(group.getID());
                 Map<ObjectInstance, KeyExpr> groupExprs = KeyExpr.getMapKeys(instance.objects);
                 instanceToExpr.putAll(groupExprs);
             }
@@ -66,7 +66,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
 
         for (ReportNode node : nodes) {
             for (GroupObjectEntity group : node.getGroupList()) {
-                GroupObjectInstance instance = idToInstance.get(group.ID);
+                GroupObjectInstance instance = idToInstance.get(group.getID());
                 for (Map.Entry<OrderInstance, Boolean> order : instance.orders.entrySet()) {
                     orders.put(order.getKey(), order.getValue());
                 }
@@ -125,7 +125,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
             List<GroupObjectInstance> groups = new ArrayList<GroupObjectInstance>(parentGroups);
             List<GroupObjectInstance> localGroups = new ArrayList<GroupObjectInstance>();
             for (GroupObjectEntity group : node.getGroupList()) {
-                GroupObjectInstance groupInstance = idToInstance.get(group.ID);
+                GroupObjectInstance groupInstance = idToInstance.get(group.getID());
                 localGroups.add(groupInstance);
             }
             groups.addAll(localGroups);

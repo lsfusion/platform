@@ -250,7 +250,7 @@ public class DefaultJasperDesign {
 
         List<GroupObjectView> drawGroups = new ArrayList<GroupObjectView>();
         for(GroupObjectView group : formView.groupObjects)
-            if (!hideGroupObjects.contains(group.entity.ID))
+            if (!hideGroupObjects.contains(group.entity.getID()))
                 drawGroups.add(group);
 
         for(GroupObjectView group : drawGroups) {
@@ -283,12 +283,12 @@ public class DefaultJasperDesign {
             } else {
 
                 if (captionWidth + preferredWidth <= pageWidth) {
-                    JRDesignGroup designGroup = addDesignGroup(group, "designGroup" + group.entity.ID);
+                    JRDesignGroup designGroup = addDesignGroup(group, "designGroup" + group.entity.getID());
                     reportLayout = new ReportGroupRowLayout(designGroup);
                 }
                 else {
-                    JRDesignGroup captionGroup = addDesignGroup(group, "captionGroup" + group.entity.ID);
-                    JRDesignGroup textGroup = addDesignGroup(group, "textGroup" + group.entity.ID);
+                    JRDesignGroup captionGroup = addDesignGroup(group, "captionGroup" + group.entity.getID());
+                    JRDesignGroup textGroup = addDesignGroup(group, "textGroup" + group.entity.getID());
                     reportLayout = new ReportGroupColumnLayout(captionGroup, textGroup);
                 }
             }

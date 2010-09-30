@@ -90,16 +90,16 @@ public class PropertyDrawView extends ComponentView implements ClientSerialize {
         outStream.writeUTF(entity.propertyObject.property.sID);
         outStream.writeBoolean(entity.toDraw!=null);
         if(entity.toDraw!=null) {
-            outStream.writeInt(entity.toDraw.ID);
+            outStream.writeInt(entity.toDraw.getID());
         }
         outStream.writeBoolean(keyBindingGroup!=null);
         if(keyBindingGroup!=null) {
-            outStream.writeInt(keyBindingGroup.ID);
+            outStream.writeInt(keyBindingGroup.getID());
         }
 
         outStream.writeInt(entity.columnGroupObjects.size());
         for (GroupObjectEntity columnGroupObject : entity.columnGroupObjects) {
-            outStream.writeInt(columnGroupObject.ID);
+            outStream.writeInt(columnGroupObject.getID());
         }
 
         outStream.writeBoolean(autoHide);

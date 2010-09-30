@@ -1,17 +1,16 @@
 package platform.server.form.entity;
 
-import platform.base.OrderedMap;
+import platform.base.IdentityObject;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.Instantiable;
 import platform.server.form.instance.PropertyDrawInstance;
-import platform.server.form.instance.PropertyReadInstance;
 import platform.server.form.view.DefaultFormView;
 import platform.server.logics.property.PropertyInterface;
 
 import java.util.List;
 import java.util.ArrayList;
 
-public class PropertyDrawEntity<P extends PropertyInterface> extends CellEntity implements Instantiable<PropertyDrawInstance> {
+public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObject implements Instantiable<PropertyDrawInstance> {
 
     public PropertyObjectEntity<P> propertyObject;
 

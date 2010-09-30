@@ -1,13 +1,13 @@
-package platform.server.form.entity;
+package platform.base;
 
-public class CellEntity {
+public class IdentityObject {
 
     private final int ID;
     public int getID() {
         return ID;
     }
 
-    public CellEntity(int ID) {
+    public IdentityObject(int ID) {
         this.ID = ID;
     }
 
