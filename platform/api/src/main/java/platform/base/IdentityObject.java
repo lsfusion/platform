@@ -2,9 +2,16 @@ package platform.base;
 
 public class IdentityObject {
 
-    private final int ID;
+    private int ID;
     public int getID() {
         return ID;
+    }
+
+    public void setID(int ID) {
+        this.ID = ID;
+    }
+
+    public IdentityObject() {
     }
 
     public IdentityObject(int ID) {

@@ -9,6 +9,7 @@ import platform.server.form.instance.Instantiable;
 import platform.interop.serialization.CustomSerializable;
 import platform.interop.serialization.SerializationPool;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,6 +42,10 @@ public class GroupObjectEntity extends ArrayList<ObjectEntity> implements Instan
     }
 
     public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        //todo:
+    }
+
+    public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
         //todo:
     }
 }

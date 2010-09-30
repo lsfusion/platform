@@ -20,10 +20,10 @@ import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
-import platform.interop.serialization.CustomSerializable;
 import platform.interop.serialization.SerializationPool;
 
 import javax.swing.*;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
@@ -47,6 +47,9 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
     }
 
     public OrderedMap<OrderEntity<?>, Boolean> fixedOrders = new OrderedMap<OrderEntity<?>, Boolean>();
+
+    public FormEntity() {
+    }
 
     public void addFixedOrder(OrderEntity order, boolean descending) {
         fixedOrders.put(order, descending);
@@ -340,6 +343,10 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
     public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeList(outStream, groups);
         pool.serializeList(outStream, propertyDraws);
+        //todo:
+    }
+
+    public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
         //todo:
     }
 

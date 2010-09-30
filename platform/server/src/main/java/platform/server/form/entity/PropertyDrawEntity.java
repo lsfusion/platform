@@ -10,6 +10,7 @@ import platform.server.logics.property.PropertyInterface;
 import platform.interop.serialization.CustomSerializable;
 import platform.interop.serialization.SerializationPool;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
@@ -35,6 +36,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return propertyObject.toString();
     }
 
+    public PropertyDrawEntity() {
+    }
+
     public PropertyDrawEntity(int ID, PropertyObjectEntity<P> propertyObject, GroupObjectEntity toDraw) {
         super(ID);
         this.propertyObject = propertyObject;
@@ -58,6 +62,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        //todo:
+    }
+
+    public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
         //todo:
     }
 }

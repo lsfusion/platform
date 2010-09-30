@@ -4,15 +4,13 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class SerializationPool {
     private Map<Integer, Class<? extends CustomSerializable>> idToClass = new HashMap<Integer,Class<? extends CustomSerializable>>();
     private Map<Class<? extends CustomSerializable>, Integer> classToId = new HashMap<Class<? extends CustomSerializable>, Integer>();
 
-    private Map<Integer, Object> objects = new HashMap<Integer, Object>();
+    private Map<Integer, CustomSerializable> objects = new HashMap<Integer, CustomSerializable>();
 
     public SerializationPool() {
     }
@@ -24,31 +22,43 @@ public class SerializationPool {
         classToId.put(clazz, classId);
     }
 
-    public Object get(int id) {
+    public CustomSerializable get(int id) {
         return objects.get(id);
     }
 
-    public void put(int id, Object value) {
+    public void put(int id, CustomSerializable value) {
         objects.put(id, value);
     }
 
     public int getClassId(Class clazz) {
+        if (!classToId.containsKey(clazz)) {
+            throw new IllegalArgumentException("Неизвестный класс: " + clazz);
+        }
         return classToId.get(clazz);
     }
 
-    public Class getClassName(int classId) {
+    public Class<? extends CustomSerializable> getClassById(int classId) {
+        if (!idToClass.containsKey(classId)) {
+            throw new IllegalArgumentException("Неизвестный идентификатор класса сериализации: " + classId);
+        }
         return idToClass.get(classId);
     }
 
-    public Object deserialize(DataInputStream inStream) throws IOException {
-        int classId = inStream.readInt();
-
-        Class clazz = getClassName(classId);
-        if (clazz == null) {
-            throw new IllegalArgumentException("Неизвестный идентификатор класса сериализации");
+    public List<CustomSerializable> deserializeList(DataInputStream inStream) throws IOException {
+        List<CustomSerializable> list = new ArrayList<CustomSerializable>();
+        int size = inStream.readInt();
+        for (int i = 0; i < size; ++size) {
+            CustomSerializable element = deserializeObject(inStream);
+            list.add(element);
         }
+        return list;
+    }
 
-        Object instance;
+    public CustomSerializable deserializeObject(DataInputStream inStream) throws IOException {
+        int classId = inStream.readInt();
+        Class<? extends CustomSerializable> clazz = getClassById(classId);
+
+        CustomSerializable instance;
         if (IdentitySerializable.class.isAssignableFrom(clazz)) {
             int id = inStream.readInt();
             instance = get(id);
@@ -56,7 +66,7 @@ public class SerializationPool {
                 instance = createNewInstance(inStream, clazz, id);
             }
         } else {
-            instance = createNewInstance(inStream, clazz);
+            instance = createNewInstance(inStream, clazz, -1);
         }
 
         return instance;
@@ -79,30 +89,23 @@ public class SerializationPool {
         }
     }
 
-    private Object createNewInstance(DataInputStream inStream, Class clazz, int id) {
+    private CustomSerializable createNewInstance(DataInputStream inStream, Class<? extends CustomSerializable> clazz, int id) {
         try {
-            //class SampleClass implements IdentitySerializable
-            //    Обязательный конструктор
-            //    public SampleClass(SerializationPool pool, int id, DataInputStream inStream)
-            Constructor ctor = clazz.getConstructor(Integer.class, DataInputStream.class);
-            return ctor.newInstance(id, inStream);
+            Constructor<? extends CustomSerializable> ctor = clazz.getConstructor();
+            CustomSerializable instance = ctor.newInstance();
+
+            //ложим объект в пул, если надо
+            if (IdentitySerializable.class.isAssignableFrom(clazz)) {
+                put(id, instance);
+            }
+
+            instance.customDeserialize(this, id, inStream);
+            return instance;
         } catch (Exception e) {
             throw new RuntimeException("Не могу создать объект класса: " + clazz.toString());
         }
     }
 
-    private Object createNewInstance(DataInputStream inStream, Class clazz) {
-        try {
-            //class SampleClass implements CustomSerializable
-            //    Обязательный конструктор
-            //    public SampleClass(SerializationPool pool, DataInputStream inStream)
-            Constructor ctor = clazz.getConstructor(DataInputStream.class);
-            return ctor.newInstance(inStream);
-        } catch (Exception e) {
-            throw new RuntimeException("Не могу создать объект класса: " + clazz.toString());
-        }
-    }
-    
     public <T extends CustomSerializable> void serializeList(DataOutputStream outStream, Collection<T> list) throws IOException {
         serializeList(outStream, null, list);
     }
