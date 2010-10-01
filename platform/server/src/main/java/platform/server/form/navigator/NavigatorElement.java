@@ -1,5 +1,6 @@
 package platform.server.form.navigator;
 
+import platform.base.BaseUtils;
 import platform.server.logics.BusinessLogics;
 
 import java.io.DataOutputStream;
@@ -31,8 +32,8 @@ public class NavigatorElement<T extends BusinessLogics<T>> {
         }
     }
 
-    private NavigatorElement parent;
-    public NavigatorElement getParent() { return parent; }
+    private NavigatorElement<T> parent;
+    public NavigatorElement<T> getParent() { return parent; }
 
     private List<NavigatorElement<T>> children = new ArrayList<NavigatorElement<T>>();
     Collection<NavigatorElement<T>> getChildren() { return children; }
@@ -55,6 +56,10 @@ public class NavigatorElement<T extends BusinessLogics<T>> {
 
         for (NavigatorElement child : children)
             child.fillChildren(result);
+    }
+
+    public void replaceChild(NavigatorElement<T> from, NavigatorElement<T> to) {
+        BaseUtils.replaceListElements(children, from, to);
     }
 
     public void add(NavigatorElement<T> child) {

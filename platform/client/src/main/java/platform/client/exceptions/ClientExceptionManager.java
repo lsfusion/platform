@@ -12,11 +12,11 @@ import java.rmi.ConnectIOException;
 
 public class ClientExceptionManager {
 
-    public static void handleException(Throwable e) {
-        handleException(e, null);
+    public static void handle(Throwable e) {
+        handle(e, null);
     }
 
-    public static void handleException(Throwable e, Component parentComponent) {
+    public static void handle(Throwable e, Component parentComponent) {
 
         // Проверяем на потерю соединения и делаем особую обработку
         for (Throwable ex = e; ex != null; ex = ex.getCause()) {

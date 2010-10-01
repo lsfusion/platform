@@ -8,6 +8,7 @@ package platform.server.form.navigator;
 // навигатор работает с абстрактной BL
 
 import platform.base.BaseUtils;
+import platform.base.IOUtils;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.RemoteObject;
@@ -30,12 +31,10 @@ import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
+import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.*;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.rmi.RemoteException;
 import java.util.*;
 
@@ -197,15 +196,25 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
          return formEntity;
     }
 
+    private void setFormEntity(int formID, FormEntity<T> formEntity) {
+        FormEntity<T> prevEntity = (FormEntity) BL.baseElement.getNavigatorElement(formID);
+        if(prevEntity ==null)
+            throw new RuntimeException("Форма с заданным идентификатором не найдена");
+
+        prevEntity.getParent().replaceChild(prevEntity, formEntity);
+    }
+
     public String getForms(String formSet) throws RemoteException {
         return BL.getForms(formSet);
     }
 
     public RemoteFormInterface createForm(int formID, boolean currentSession) {
+        return createForm(getFormEntity(formID), currentSession);
+    }
+
+    public RemoteFormInterface createForm(FormEntity<T> formEntity, boolean currentSession) {
 
        try {
-            FormEntity<T> formEntity = getFormEntity(formID);
-
             DataSession session;
             if (currentSession && currentForm != null)
                 session = currentForm.session;
@@ -232,6 +241,42 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
 
         } catch (Exception e) {
            throw new RuntimeException(e);
+        }
+    }
+
+    public RemoteFormInterface createForm(byte[] formState) throws RemoteException {
+        return createForm((FormEntity<T>)FormEntity.deserialize(formState), false);
+    }
+
+    public void saveForm(int formID, byte[] formState) throws RemoteException {
+        setFormEntity(formID, (FormEntity<T>)FormEntity.deserialize(formState));
+
+        try {
+            IOUtils.putFileBytes(new File("conf/forms/form" + formID), formState);
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка при сохранении состояния формы на диск", e);
+        }
+    }
+
+    public byte[] getRichDesignByteArray(int formID) throws RemoteException {
+        try {
+            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+            DataOutputStream dataStream = new DataOutputStream(outStream);
+            getFormEntity(formID).richDesign.serialize(dataStream);
+            return outStream.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public byte[] getFormEntityByteArray(int formID) throws RemoteException {
+        try {
+            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+            DataOutputStream dataStream = new DataOutputStream(outStream);
+            new ServerSerializationPool().serializeObject(dataStream, getFormEntity(formID));
+            return outStream.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

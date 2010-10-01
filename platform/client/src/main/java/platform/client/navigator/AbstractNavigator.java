@@ -1,6 +1,7 @@
 package platform.client.navigator;
 
 import platform.client.ExpandingTreeNode;
+import platform.client.logics.DeSerializer;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
@@ -27,7 +28,7 @@ public abstract class AbstractNavigator extends JPanel {
 
     final AbstractNavigator.NavigatorTree tree;
 
-    AbstractNavigator(RemoteNavigatorInterface iremoteNavigator) {
+    public AbstractNavigator(RemoteNavigatorInterface iremoteNavigator) {
 
         remoteNavigator = iremoteNavigator;
 
@@ -185,6 +186,9 @@ public abstract class AbstractNavigator extends JPanel {
         }
     }
 
-    abstract protected java.util.List<ClientNavigatorElement> getNodeElements(int elementID) throws IOException;
+    protected java.util.List<ClientNavigatorElement> getNodeElements(int elementID) throws IOException {
+        return DeSerializer.deserializeListClientNavigatorElement(
+                                                remoteNavigator.getElementsByteArray(elementID));
+    }
 
 }

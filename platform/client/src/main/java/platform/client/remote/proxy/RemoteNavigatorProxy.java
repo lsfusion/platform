@@ -26,9 +26,9 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
     public RemoteFormInterface createForm(int formID, boolean currentSession) throws RemoteException {
         List<MethodInvocation> invocations = getImmutableMethodInvocations(RemoteFormProxy.class);
 
-        boolean hasCachedRichDisignByteArray = false;
+        boolean hasCachedRichDesignByteArray = false;
         if (RemoteFormProxy.cachedRichDesign.get(formID) != null) {
-            hasCachedRichDisignByteArray = true;
+            hasCachedRichDesignByteArray = true;
             for (int i = 0; i < invocations.size(); ++i) {
                 if (invocations.get(i).name.equals("getRichDesignByteArray")) {
                     invocations.remove(i);
@@ -37,7 +37,25 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
             }
         }
 
-        MethodInvocation creator = MethodInvocation.create(this.getClass(), "createForm", formID, currentSession);
+        RemoteFormProxy proxy = createForm(invocations, MethodInvocation.create(this.getClass(), "createForm", formID, currentSession));
+
+        if (hasCachedRichDesignByteArray) {
+            proxy.setProperty("getRichDesignByteArray", RemoteFormProxy.cachedRichDesign.get(formID));
+        } else {
+            RemoteFormProxy.cachedRichDesign.put(formID, (byte[]) proxy.getProperty("getRichDesignByteArray"));
+        }
+
+        return proxy;
+    }
+
+    @NonPendingRemoteMethod
+    public RemoteFormInterface createForm(byte[] formState) throws RemoteException {
+        return createForm(getImmutableMethodInvocations(RemoteFormProxy.class),
+                          MethodInvocation.create(this.getClass(), "createForm", formState));
+    }
+
+    @NonFlushRemoteMethod
+    private RemoteFormProxy createForm(List<MethodInvocation> invocations, MethodInvocation creator) throws RemoteException {
 
         Object[] result = createAndExecute(creator, invocations.toArray(new MethodInvocation[invocations.size()]));
 
@@ -47,13 +65,19 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
             proxy.setProperty(invocations.get(i).name, result[i + 1]);
         }
 
-        if (hasCachedRichDisignByteArray) {
-            proxy.setProperty("getRichDesignByteArray", RemoteFormProxy.cachedRichDesign.get(formID));
-        } else {
-            RemoteFormProxy.cachedRichDesign.put(formID, (byte[]) proxy.getProperty("getRichDesignByteArray"));
-        }
-
         return proxy;
+    }
+
+    public void saveForm(int formID, byte[] formState) throws RemoteException {
+        target.saveForm(formID, formState);
+    }
+
+    public byte[] getRichDesignByteArray(int formID) throws RemoteException {
+        return target.getRichDesignByteArray(formID);
+    }
+
+    public byte[] getFormEntityByteArray(int formID) throws RemoteException {
+        return target.getFormEntityByteArray(formID);
     }
 
     public byte[] getCurrentUserInfoByteArray() throws RemoteException {

@@ -7,6 +7,6 @@ public class ExceptionThreadGroup extends ThreadGroup {
     }
 
     public void uncaughtException(Thread t, Throwable e) {
-        ClientExceptionManager.handleException(e);
+        ClientExceptionManager.handle(e);
     }
 }

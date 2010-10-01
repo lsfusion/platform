@@ -548,6 +548,13 @@ public class BaseUtils {
         return result;
     }
 
+    public static <T> void replaceListElements(List<T> list, T from, T to) {
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i) == from)
+                list.set(i, to);
+        }
+    }
+
 
     public static abstract class Group<G,K> {
         public abstract G group(K key);

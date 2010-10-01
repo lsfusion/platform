@@ -38,7 +38,8 @@ public class MethodInvocation implements Serializable {
 
     public static MethodInvocation create(Class clazz, String name, Object... args) {
         for (Method method : clazz.getMethods()) {
-            if (method.getName().equals(name)) {
+            //todo : надо бы еще проверять и на сами классы, если у методов будет одинаковое имя и количество параметров
+            if (method.getName().equals(name) && method.getParameterTypes().length == args.length) {
                 return new MethodInvocation(name, method.getParameterTypes(), args, method.getReturnType());
             }
         }

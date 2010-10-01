@@ -49,6 +49,8 @@ public class Main {
 
     public static void start(final String[] args, ModuleFactory startModule) {
 
+        System.setProperty("sun.awt.exception.handler", ClientExceptionManager.class.getName());
+
         // делаем, чтобы сборщик мусора срабатывал каждую минуту - для удаления ненужных connection'ов
         System.setProperty("sun.rmi.dgc.client.gcInterval", "60000");
 
@@ -67,7 +69,7 @@ public class Main {
         try {
             loadLibraries();
         } catch (IOException e) {
-            ClientExceptionManager.handleException(e);
+            ClientExceptionManager.handle(e);
             throw new RuntimeException(e);
         }
 
@@ -80,7 +82,7 @@ public class Main {
 
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             public void uncaughtException(Thread t, Throwable e) {
-                ClientExceptionManager.handleException(e);
+                ClientExceptionManager.handle(e);
             }
         });
 

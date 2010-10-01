@@ -11,6 +11,7 @@ import net.sf.jasperreports.engine.JRException;
 import platform.client.Log;
 import platform.client.Main;
 import platform.client.MainFrame;
+import platform.client.descriptor.view.LogicsDescriptorView;
 import platform.client.navigator.ClientNavigator;
 import platform.client.navigator.ClientNavigatorForm;
 import platform.interop.exceptions.LoginException;
@@ -193,9 +194,11 @@ public class DockableMainFrame extends MainFrame {
     }
 
     JMenu createOptionsMenu() {
-        JMenu Menu = new JMenu("Настройки");
-        final JMenuItem About = new JMenuItem("Изменить пользователя");
-        About.addActionListener(new ActionListener() {
+
+        JMenu menu = new JMenu("Настройки");
+
+        final JMenuItem changeUser = new JMenuItem("Изменить пользователя");
+        changeUser.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 try {
                     final JTextField login = new JTextField();
@@ -236,8 +239,21 @@ public class DockableMainFrame extends MainFrame {
                 }
             }
         });
-        Menu.add(About);
-        return Menu;
+        menu.add(changeUser);
+
+        final JMenuItem logicsConfigurator = new JMenuItem("Настройка бизнес-логики");
+        logicsConfigurator.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+
+                LogicsDescriptorView view = new LogicsDescriptorView(DockableMainFrame.this, mainNavigator.remoteNavigator);
+                view.setBounds(DockableMainFrame.this.getBounds());
+                view.setVisible(true);
+            }
+        });
+        menu.add(logicsConfigurator);
+
+        return menu;
     }
 
     JMenu createHelpMenu() {

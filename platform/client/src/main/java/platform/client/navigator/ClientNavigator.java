@@ -19,11 +19,6 @@ public abstract class ClientNavigator extends AbstractNavigator {
         relevantClassNavigator = new RelevantClassNavigator(iremoteNavigator);
     }
 
-    protected List<ClientNavigatorElement> getNodeElements(int elementID) throws IOException {
-        return DeSerializer.deserializeListClientNavigatorElement(
-                                                remoteNavigator.getElementsByteArray(elementID));
-    }
-
     public void currentFormChanged() {
         relevantFormNavigator.tree.createRootNode();
     }
@@ -56,6 +51,7 @@ public abstract class ClientNavigator extends AbstractNavigator {
             openRelevantForm(element);
         }
 
+        @Override
         protected List<ClientNavigatorElement> getNodeElements(int elementID) throws IOException {
             return DeSerializer.deserializeListClientNavigatorElement(
                                                 remoteNavigator.getElementsByteArray((elementID == -1) ? RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTFORM : elementID));
@@ -73,6 +69,7 @@ public abstract class ClientNavigator extends AbstractNavigator {
             openClassForm(element);
         }
 
+        @Override
         protected List<ClientNavigatorElement> getNodeElements(int elementID) throws IOException {
             return DeSerializer.deserializeListClientNavigatorElement(
                                                 remoteNavigator.getElementsByteArray((elementID == -1) ? RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTCLASS : elementID));
@@ -81,4 +78,3 @@ public abstract class ClientNavigator extends AbstractNavigator {
     }
 
 }
-

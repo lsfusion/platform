@@ -21,8 +21,10 @@ import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
 import platform.interop.serialization.SerializationPool;
+import platform.server.serialization.ServerSerializationPool;
 
 import javax.swing.*;
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -381,5 +383,18 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
 
     public String checkClientApply(Object result) {
         return null;
+    }
+
+    public static FormEntity<?> deserialize(byte[] formState) {
+        DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(formState));
+        try {
+            FormView richDesign = (FormView)new ServerSerializationPool().deserializeObject(inStream);
+            FormEntity formEntity = (FormEntity)new ServerSerializationPool().deserializeObject(inStream);
+            formEntity.richDesign = richDesign;
+            return formEntity;
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка при десериализации формы на сервере", e);
+        }
+
     }
 }
