@@ -62,6 +62,17 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+//        pool.serializeObject(outStream, propertyObject);
+        pool.serializeObject(outStream, toDraw);
+        pool.serializeCollection(outStream, columnGroupObjects);
+//        pool.serializeObject(propertyCaption);
+
+        outStream.writeBoolean(shouldBeLast);
+        outStream.writeBoolean(forceViewType != null);
+        if (forceViewType != null) {
+            outStream.writeByte(forceViewType);
+        }
+
         //todo:
     }
 

@@ -1,6 +1,7 @@
 package platform.server.logics;
 
 import platform.interop.Compare;
+import platform.interop.serialization.SerializationPool;
 import platform.server.caches.hash.HashValues;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.DoubleClass;
@@ -21,6 +22,9 @@ import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -154,5 +158,15 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
 
     public boolean isNull() {
         return false;
+    }
+
+    public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        //todo:
+
+    }
+
+    public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+        //todo:
+
     }
 }

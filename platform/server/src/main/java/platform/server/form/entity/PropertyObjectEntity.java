@@ -1,5 +1,7 @@
 package platform.server.form.entity;
 
+import platform.interop.serialization.IdentitySerializable;
+import platform.interop.serialization.SerializationPool;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.PropertyObjectInstance;
 import platform.server.logics.linear.LP;
@@ -7,12 +9,15 @@ import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyImplement;
 import platform.server.logics.property.PropertyInterface;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyImplement<PropertyObjectInterfaceEntity,P> implements OrderEntity<PropertyObjectInstance> {
+public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyImplement<PropertyObjectInterfaceEntity,P> implements OrderEntity<PropertyObjectInstance>, IdentitySerializable {
 
     public Collection<ObjectEntity> getObjectInstances() {
         Collection<ObjectEntity> result = new ArrayList<ObjectEntity>();
@@ -46,5 +51,16 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyI
 
     public int getID() {
         return ID;
+    }
+
+    public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+//        pool.serializeObject(property);
+        for (PropertyObjectInterfaceEntity mappedObject : mapping.values()) {
+//            pool.serializeObject(mappedObject);
+        }
+    }
+
+    public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+        //todo:
     }
 }

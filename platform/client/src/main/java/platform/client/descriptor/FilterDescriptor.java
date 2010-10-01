@@ -1,11 +1,20 @@
 package platform.client.descriptor;
 
-/**
- * Created by IntelliJ IDEA.
- * User: User
- * Date: 29.09.2010
- * Time: 15:52:56
- * To change this template use File | Settings | File Templates.
- */
-public class FilterDescriptor {
+import platform.interop.serialization.CustomSerializable;
+import platform.interop.serialization.SerializationPool;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
+public class FilterDescriptor implements CustomSerializable {
+    public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        //todo:
+
+    }
+
+    public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+        //todo:
+
+    }
 }

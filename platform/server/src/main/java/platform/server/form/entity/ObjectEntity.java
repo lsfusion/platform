@@ -1,13 +1,18 @@
 package platform.server.form.entity;
 
 import platform.base.IdentityObject;
+import platform.interop.serialization.IdentitySerializable;
+import platform.interop.serialization.SerializationPool;
 import platform.server.classes.ValueClass;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.Set;
 
-public class ObjectEntity extends IdentityObject implements PropertyObjectInterfaceEntity {
+public class ObjectEntity extends IdentityObject implements PropertyObjectInterfaceEntity, IdentitySerializable {
 
     public GroupObjectEntity groupTo;
 
@@ -30,5 +35,13 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
 
     public void fillObjects(Set<ObjectEntity> objects) {
         objects.add(this);
-    }    
+    }
+
+    public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        //todo:
+    }
+
+    public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+        //todo:
+    }
 }

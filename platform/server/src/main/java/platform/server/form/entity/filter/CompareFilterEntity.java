@@ -1,6 +1,7 @@
 package platform.server.form.entity.filter;
 
 import platform.interop.Compare;
+import platform.interop.serialization.SerializationPool;
 import platform.server.classes.DataClass;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.OrderEntity;
@@ -9,10 +10,10 @@ import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.filter.FilterInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.form.instance.PropertyObjectInstance;
-import platform.server.form.instance.filter.CompareFilterInstance;
 
-import java.sql.SQLException;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.Set;
 
 public class CompareFilterEntity<P extends PropertyInterface> extends PropertyFilterEntity<P> {
@@ -28,7 +29,7 @@ public class CompareFilterEntity<P extends PropertyInterface> extends PropertyFi
     }
 
     public CompareFilterEntity(PropertyObjectEntity<P> iProperty, Compare iCompare, Object iValue) {
-        this(iProperty,iCompare,new DataObject(iValue,(DataClass)iProperty.property.getType()));
+        this(iProperty, iCompare, new DataObject(iValue, (DataClass) iProperty.property.getType()));
     }
 
     public FilterInstance getInstance(InstanceFactory instanceFactory) {
@@ -39,5 +40,15 @@ public class CompareFilterEntity<P extends PropertyInterface> extends PropertyFi
     protected void fillObjects(Set<ObjectEntity> objects) {
         super.fillObjects(objects);
         value.fillObjects(objects);
+    }
+
+    public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        super.customSerialize(pool, outStream, serializationType);
+        compare.serialize(outStream);
+        pool.serializeObject(outStream, value);
+    }
+
+    public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+        //todo:
     }
 }

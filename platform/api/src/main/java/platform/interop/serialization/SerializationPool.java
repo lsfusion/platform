@@ -12,7 +12,10 @@ public class SerializationPool {
 
     private Map<Integer, CustomSerializable> objects = new HashMap<Integer, CustomSerializable>();
 
-    public SerializationPool() {
+    public Object context;
+
+    public SerializationPool(Object context) {
+        this.context = context;
     }
 
     protected void addMapping(Class<? extends CustomSerializable> clazz) {
@@ -45,13 +48,20 @@ public class SerializationPool {
     }
 
     public List<CustomSerializable> deserializeList(DataInputStream inStream) throws IOException {
-        List<CustomSerializable> list = new ArrayList<CustomSerializable>();
+        return (List<CustomSerializable>) deserializeCollection(new ArrayList<CustomSerializable>(), inStream);
+    }
+
+    public Set<CustomSerializable> deserializeSet(DataInputStream inStream) throws IOException {
+        return (Set<CustomSerializable>) deserializeCollection(new HashSet<CustomSerializable>(), inStream);
+    }
+
+    public Collection<CustomSerializable> deserializeCollection(Collection<CustomSerializable> collection, DataInputStream inStream) throws IOException {
         int size = inStream.readInt();
         for (int i = 0; i < size; ++size) {
             CustomSerializable element = deserializeObject(inStream);
-            list.add(element);
+            collection.add(element);
         }
-        return list;
+        return collection;
     }
 
     public CustomSerializable deserializeObject(DataInputStream inStream) throws IOException {
@@ -106,11 +116,11 @@ public class SerializationPool {
         }
     }
 
-    public <T extends CustomSerializable> void serializeList(DataOutputStream outStream, Collection<T> list) throws IOException {
-        serializeList(outStream, null, list);
+    public <T extends CustomSerializable> void serializeCollection(DataOutputStream outStream, Collection<T> list) throws IOException {
+        serializeCollection(outStream, list, null);
     }
 
-    public <T extends CustomSerializable> void serializeList(DataOutputStream outStream, String type, Collection<T> list) throws IOException {
+    public <T extends CustomSerializable> void serializeCollection(DataOutputStream outStream, Collection<T> list, String type) throws IOException {
         outStream.writeInt(list.size());
         for (T element : list) {
             serializeObject(outStream, element, type);

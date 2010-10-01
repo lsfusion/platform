@@ -341,8 +341,9 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
     }
 
     public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        pool.serializeList(outStream, groups);
-        pool.serializeList(outStream, propertyDraws);
+        pool.serializeCollection(outStream, groups);
+        pool.serializeCollection(outStream, propertyDraws);
+        pool.serializeCollection(outStream, fixedFilters);
         //todo:
     }
 
