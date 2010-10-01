@@ -7,6 +7,10 @@ import platform.client.descriptor.PropertyDrawDescriptor;
 import platform.interop.serialization.SerializationPool;
 
 public class ClientSerializationPool extends SerializationPool {
+    public ClientSerializationPool() {
+        this(null);
+    }
+    
     public ClientSerializationPool(Object context) {
         super(context);
         //порядок добавления должен соответствовать порядку в ServerSerializationPool

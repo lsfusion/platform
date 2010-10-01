@@ -14,6 +14,10 @@ public class SerializationPool {
 
     public Object context;
 
+    public SerializationPool() {
+        this(null);
+    }
+    
     public SerializationPool(Object context) {
         this.context = context;
     }
