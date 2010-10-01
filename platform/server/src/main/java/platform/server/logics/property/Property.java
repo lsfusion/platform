@@ -2,6 +2,8 @@ package platform.server.logics.property;
 
 import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
+import platform.interop.serialization.IdentitySerializable;
+import platform.interop.serialization.SerializationPool;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.CustomClass;
@@ -35,10 +37,13 @@ import platform.server.form.view.DefaultFormView;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.FormEntity;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
-public abstract class Property<T extends PropertyInterface> extends AbstractNode implements MapKeysInterface<T> {
+public abstract class Property<T extends PropertyInterface> extends AbstractNode implements MapKeysInterface<T>, IdentitySerializable {
 
     public final String sID;
 
@@ -51,6 +56,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public int ID=0;
+
+    public int getID() {
+        return ID;
+    }
 
     public final Collection<T> interfaces;
 
@@ -414,5 +423,15 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             return Collections.singletonList((Property)this);
         else
             return new ArrayList<Property>();
+    }
+
+    public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        //todo:
+        outStream.writeUTF(sID);
+        outStream.writeUTF(caption);
+    }
+
+    public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+        //todo:
     }
 }

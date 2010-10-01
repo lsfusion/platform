@@ -7,23 +7,31 @@ import platform.interop.serialization.SerializationPool;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 
-public class GroupObjectDescriptor implements IdentitySerializable {
+public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implements IdentitySerializable {
+    private int ID;
+    private byte initClassView;
+    private byte banClassView;
+    private PropertyObjectDescriptor propertyHighlight;
+
+    public int getID() {
+        return ID;
+    }
+
 
     ClientGroupObject client;
 
-    public int getID() {
-        //todo:
-        return 0;
-    }
-
     public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         //todo:
-
     }
 
     public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
-        //todo:
+        this.ID = ID;
 
+        pool.deserializeCollection(this, inStream);
+        initClassView = inStream.readByte();
+        banClassView = inStream.readByte();
+        propertyHighlight = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
     }
 }

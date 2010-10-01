@@ -2,19 +2,18 @@ package platform.server.form.entity;
 
 import platform.base.IdentityObject;
 import platform.interop.serialization.IdentitySerializable;
+import platform.interop.serialization.SerializationPool;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.Instantiable;
 import platform.server.form.instance.PropertyDrawInstance;
 import platform.server.form.view.DefaultFormView;
 import platform.server.logics.property.PropertyInterface;
-import platform.interop.serialization.CustomSerializable;
-import platform.interop.serialization.SerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObject implements Instantiable<PropertyDrawInstance>, IdentitySerializable {
 
@@ -54,7 +53,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public void setPropertyCaption(PropertyObjectEntity propertyCaption) {
-        this.propertyCaption = propertyCaption; 
+        this.propertyCaption = propertyCaption;
     }
 
     public void proceedDefaultDesign(DefaultFormView defaultView) {
@@ -62,18 +61,16 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-//        pool.serializeObject(outStream, propertyObject);
+        pool.serializeObject(outStream, propertyObject);
         pool.serializeObject(outStream, toDraw);
         pool.serializeCollection(outStream, columnGroupObjects);
-//        pool.serializeObject(propertyCaption);
+        pool.serializeObject(outStream, propertyCaption);
 
         outStream.writeBoolean(shouldBeLast);
         outStream.writeBoolean(forceViewType != null);
         if (forceViewType != null) {
             outStream.writeByte(forceViewType);
         }
-
-        //todo:
     }
 
     public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {

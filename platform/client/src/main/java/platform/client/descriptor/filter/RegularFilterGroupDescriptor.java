@@ -1,4 +1,4 @@
-package platform.client.descriptor;
+package platform.client.descriptor.filter;
 
 import platform.client.logics.ClientRegularFilterGroup;
 

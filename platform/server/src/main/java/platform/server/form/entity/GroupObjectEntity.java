@@ -42,7 +42,10 @@ public class GroupObjectEntity extends ArrayList<ObjectEntity> implements Instan
     }
 
     public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        //todo:
+        pool.serializeCollection(outStream, this);
+        outStream.writeByte(initClassView);
+        outStream.writeByte(banClassView);
+        pool.serializeObject(outStream, propertyHighlight);
     }
 
     public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {

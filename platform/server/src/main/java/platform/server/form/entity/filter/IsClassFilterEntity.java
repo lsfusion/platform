@@ -4,9 +4,7 @@ import platform.server.classes.CustomClass;
 import platform.server.form.entity.PropertyObjectEntity;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.filter.FilterInstance;
-import platform.server.form.instance.filter.IsClassFilterInstance;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.form.instance.PropertyObjectInstance;
 
 public class IsClassFilterEntity<P extends PropertyInterface> extends PropertyFilterEntity<P> {
 

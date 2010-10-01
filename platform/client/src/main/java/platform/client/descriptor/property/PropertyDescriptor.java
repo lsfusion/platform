@@ -1,7 +1,6 @@
-package platform.client.descriptor;
+package platform.client.descriptor.property;
 
-import platform.client.logics.ClientObject;
-import platform.interop.serialization.CustomSerializable;
+import platform.client.descriptor.IdentityDescriptor;
 import platform.interop.serialization.IdentitySerializable;
 import platform.interop.serialization.SerializationPool;
 
@@ -9,11 +8,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ObjectDescriptor extends IdentityDescriptor implements IdentitySerializable {
-
-    ClientObject client;
-    private GroupObjectDescriptor groupTo;
+public class PropertyDescriptor extends IdentityDescriptor implements IdentitySerializable {
     private String caption;
+    private String sID;
 
     public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         //todo:
@@ -22,8 +19,7 @@ public class ObjectDescriptor extends IdentityDescriptor implements IdentitySeri
 
     public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
         //todo:
-
-        groupTo = (GroupObjectDescriptor) pool.deserializeObject(inStream);
+        sID = inStream.readUTF();
         caption = inStream.readUTF();
     }
 }

@@ -54,10 +54,9 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyI
     }
 
     public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-//        pool.serializeObject(property);
-        for (PropertyObjectInterfaceEntity mappedObject : mapping.values()) {
-//            pool.serializeObject(mappedObject);
-        }
+        pool.serializeObject(outStream, property);
+        //todo: proper mapping serialization
+//        pool.serializeCollection(outStream, mapping.values());
     }
 
     public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
