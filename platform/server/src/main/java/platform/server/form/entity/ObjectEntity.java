@@ -39,10 +39,6 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
 
     public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, groupTo);
-        outStream.writeUTF(caption);
-
-        //todo:
-//        pool.serializeObject(outStream, baseClass);
     }
 
     public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {

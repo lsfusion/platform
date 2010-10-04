@@ -2,7 +2,7 @@ package platform.base;
 
 public class IdentityObject {
 
-    private int ID;
+    public int ID;
     public int getID() {
         return ID;
     }

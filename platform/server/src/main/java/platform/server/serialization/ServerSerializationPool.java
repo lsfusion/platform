@@ -9,9 +9,9 @@ import platform.server.form.entity.filter.PropertyFilterEntity;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.ObjectValueProperty;
 import platform.server.logics.property.Property;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.SelectionProperty;
-import platform.server.logics.property.actions.AddObjectActionProperty;
-import platform.server.logics.property.actions.ImportFromExcelActionProperty;
+import platform.server.logics.property.actions.*;
 
 public class ServerSerializationPool extends SerializationPool {
     public ServerSerializationPool() {
@@ -26,15 +26,17 @@ public class ServerSerializationPool extends SerializationPool {
         addMapping(GroupObjectEntity.class);
         addMapping(PropertyDrawEntity.class);
         addMapping(Property.class);
-        addMapping(ObjectEntity.class);
-        addMapping(PropertyObjectEntity.class);
         addMapping(PropertyFilterEntity.class);
         addMapping(OrFilterEntity.class);
         addMapping(NotFilterEntity.class);
         addMapping(CompareFilterEntity.class);
 
-        addMapping(CurrentComputerEntity.class);
+        addMapping(PropertyInterface.class);
+
         addMapping(DataObject.class);
+        addMapping(CurrentComputerEntity.class);
+        addMapping(ObjectEntity.class);
+        addMapping(PropertyObjectEntity.class);
 
         addMapping(AddObjectActionProperty.class);
         addMapping(ImportFromExcelActionProperty.class);

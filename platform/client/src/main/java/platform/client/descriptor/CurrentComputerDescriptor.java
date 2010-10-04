@@ -7,7 +7,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class CurrentComputerDescriptor implements OrderDescriptor {
+public class CurrentComputerDescriptor implements PropertyObjectInterfaceDescriptor {
     public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         //todo:
 

@@ -1,5 +1,8 @@
 package platform.server.logics.property;
 
+import platform.base.IdentityObject;
+import platform.interop.serialization.IdentitySerializable;
+import platform.interop.serialization.SerializationPool;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.PullExpr;
@@ -12,13 +15,14 @@ import platform.server.session.DataSession;
 import platform.server.session.MapDataChanges;
 import platform.server.session.Modifier;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-public class PropertyInterface<P extends PropertyInterface<P>> implements PropertyInterfaceImplement<P>, Comparable<P> {
-
-    public int ID = 0;
+public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityObject implements PropertyInterfaceImplement<P>, Comparable<P>, IdentitySerializable {
 
     public PropertyInterface(int ID) {
         this.ID = ID;
@@ -58,5 +62,12 @@ public class PropertyInterface<P extends PropertyInterface<P>> implements Proper
 
     public <K extends PropertyInterface> PropertyInterfaceImplement<K> map(Map<P, K> remap) {
         return remap.get((P)this);
+    }
+
+    public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+    }
+
+    public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+        //todo:
     }
 }

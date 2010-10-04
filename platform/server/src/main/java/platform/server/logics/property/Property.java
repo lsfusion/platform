@@ -429,6 +429,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         //todo:
         outStream.writeUTF(sID);
         outStream.writeUTF(caption);
+
+        pool.serializeCollection(outStream, interfaces);
     }
 
     public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
