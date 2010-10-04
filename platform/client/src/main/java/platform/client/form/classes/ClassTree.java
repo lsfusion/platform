@@ -1,5 +1,6 @@
 package platform.client.form.classes;
 
+import platform.client.ClientTree;
 import platform.client.ExpandingTreeNode;
 import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientObjectClass;
@@ -13,13 +14,9 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
 
-public abstract class ClassTree extends JTree {
+public abstract class ClassTree extends ClientTree {
 
     // текущие выбранные узлы в дереве
     private DefaultMutableTreeNode currentNode;
@@ -48,6 +45,7 @@ public abstract class ClassTree extends JTree {
     }
 
     public ClassTree(int treeID, ClientClass rootClass) {
+        super();
     
         ID = treeID;
 
@@ -74,26 +72,6 @@ public abstract class ClassTree extends JTree {
 
         });
 
-        addMouseListener(new MouseAdapter() {
-
-            public void mouseReleased(MouseEvent me) {
-                if (me.getClickCount() == 2) {
-                    changeCurrentClass(getSelectedClass(), getSelectedNode());
-                    currentClassChanged();
-                }
-            }
-        });
-
-        addKeyListener(new KeyAdapter() {
-
-            public void keyPressed(KeyEvent ke) {
-                if (ke.getKeyCode() == KeyEvent.VK_ENTER) {
-                    changeCurrentClass(getSelectedClass(), getSelectedNode());
-                    currentClassChanged();
-                }
-            }
-        });
-
         if (rootClass.hasChildren()) {
             currentNode.add(new ExpandingTreeNode());
             expandPath(new TreePath(currentNode));
@@ -105,6 +83,12 @@ public abstract class ClassTree extends JTree {
 
         this.setSelectionRow(0);
 
+    }
+
+    @Override
+    protected void changeCurrentElement() {
+        changeCurrentClass(getSelectedClass(), getSelectedNode());
+        currentClassChanged();
     }
 
     private void changeCurrentClass(ClientObjectClass cls, DefaultMutableTreeNode clsNode) {

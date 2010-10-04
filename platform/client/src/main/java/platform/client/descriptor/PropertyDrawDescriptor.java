@@ -15,7 +15,7 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Identi
     ClientPropertyDraw client;
 
     private PropertyObjectDescriptor propertyObject;
-    private GroupObjectDescriptor toDraw;
+    public GroupObjectDescriptor toDraw;
     private List<GroupObjectDescriptor> columnGroupObjects;
     private PropertyObjectDescriptor propertyCaption;
 
@@ -40,5 +40,10 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Identi
 
         ClientForm clientForm = (ClientForm) pool.context;
         client = clientForm.getProperty(ID);
+    }
+
+    @Override
+    public String toString() {
+        return client.caption;
     }
 }

@@ -25,4 +25,9 @@ public class ObjectDescriptor extends IdentityDescriptor implements PropertyObje
 
         client = ((ClientForm) pool.context).getObject(ID);
     }
+
+    @Override
+    public String toString() {
+        return client.caption;
+    }
 }

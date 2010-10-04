@@ -33,4 +33,9 @@ public class FormDescriptor extends IdentityDescriptor implements IdentitySerial
 
         client = (ClientForm) pool.context;
     }
+
+    @Override
+    public String toString() {
+        return client.caption;
+    }
 }

@@ -36,6 +36,8 @@ public class NavigatorDescriptorView extends JPanel {
             }
         };
 
-        add(new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, navigatorView, formView), BorderLayout.CENTER);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, navigatorView, formView);
+        splitPane.setResizeWeight(0.1);
+        add(splitPane, BorderLayout.CENTER);
     }
 }

@@ -1,5 +1,6 @@
 package platform.client.navigator;
 
+import platform.client.ClientTree;
 import platform.client.ExpandingTreeNode;
 import platform.client.logics.DeSerializer;
 import platform.interop.navigator.RemoteNavigatorInterface;
@@ -44,12 +45,13 @@ public abstract class AbstractNavigator extends JPanel {
 
     public abstract void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException;
 
-    class NavigatorTree extends JTree {
+    class NavigatorTree extends ClientTree {
 
         DefaultMutableTreeNode rootNode;
         final DefaultTreeModel model;
 
         public NavigatorTree() {
+            super();
 
             setToggleClickCount(-1);
 
@@ -71,25 +73,6 @@ public abstract class AbstractNavigator extends JPanel {
 
             });
 
-            addMouseListener(new MouseAdapter() {
-
-                public void mouseReleased(MouseEvent e) {
-                    if (e.getClickCount() == 2) {
-                        changeCurrentElement();
-                    }
-                }
-
-            });
-
-            addKeyListener(new KeyAdapter() {
-
-                public void keyPressed(KeyEvent e) {
-                    if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                        changeCurrentElement();
-                    }
-                }
-            });
-
             createRootNode();
 
         }
@@ -103,7 +86,8 @@ public abstract class AbstractNavigator extends JPanel {
             expandPath(new TreePath(rootNode));
         }
 
-        private void changeCurrentElement() {
+        @Override
+        protected void changeCurrentElement() {
 
             TreePath path = getSelectionPath();
             if (path == null) return;

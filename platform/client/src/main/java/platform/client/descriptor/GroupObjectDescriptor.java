@@ -38,4 +38,17 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
         ClientForm clientForm = (ClientForm) pool.context;
         client = clientForm.getGroupObject(ID);
     }
+
+    @Override
+    public String toString() {
+
+        String result = "";
+        for (ObjectDescriptor object : this) {
+            if (!result.isEmpty()) {
+                result += ", ";
+            }
+            result += object.toString();
+        }
+        return result;
+    }
 }

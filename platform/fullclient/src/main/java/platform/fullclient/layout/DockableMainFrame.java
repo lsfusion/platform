@@ -247,7 +247,14 @@ public class DockableMainFrame extends MainFrame {
             public void actionPerformed(ActionEvent e) {
 
                 LogicsDescriptorView view = new LogicsDescriptorView(DockableMainFrame.this, mainNavigator.remoteNavigator);
-                view.setBounds(DockableMainFrame.this.getBounds());
+
+                Rectangle bounds = DockableMainFrame.this.getBounds();
+                bounds.x += 20;
+                bounds.y += 20;
+                bounds.width -= 40;
+                bounds.height -= 40;
+                view.setBounds(bounds);
+
                 view.setVisible(true);
             }
         });
