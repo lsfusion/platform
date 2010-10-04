@@ -1,10 +1,7 @@
 package platform.client.serialization;
 
 import platform.client.descriptor.*;
-import platform.client.descriptor.filter.CompareFilterDescriptor;
-import platform.client.descriptor.filter.NotFilterDescriptor;
-import platform.client.descriptor.filter.OrFilterDescriptor;
-import platform.client.descriptor.filter.PropertyFilterDescriptor;
+import platform.client.descriptor.filter.*;
 import platform.client.descriptor.property.*;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
 import platform.client.logics.ClientForm;
@@ -30,6 +27,8 @@ public class ClientSerializationPool extends SerializationPool {
         addMapping(OrFilterDescriptor.class);
         addMapping(NotFilterDescriptor.class);
         addMapping(CompareFilterDescriptor.class);
+        addMapping(RegularFilterDescriptor.class);
+        addMapping(RegularFilterGroupDescriptor.class);
 
         addMapping(PropertyInterfaceDescriptor.class);
 

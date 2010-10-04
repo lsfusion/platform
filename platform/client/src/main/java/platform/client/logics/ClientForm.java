@@ -70,6 +70,25 @@ public class ClientForm implements Serializable, LogicsSupplier {
         return null;
     }
 
+    public ClientRegularFilterGroup getRegularFilterGroup(int id) {
+        for (ClientRegularFilterGroup filterGroup : regularFilters) {
+            if (filterGroup.ID == id) {
+                return filterGroup;
+            }
+        }
+        return null;
+    }
+
+    public ClientRegularFilter getRegularFilter(int id) {
+        for (ClientRegularFilterGroup filterGroup : regularFilters) {
+            for (ClientRegularFilter filter : filterGroup.filters) {
+                if (filter.ID == id) return filter;
+            }
+        }
+
+        return null;
+    }
+
     private Map<Integer, ClientPropertyDraw> idProps;
     private Map<Integer, ClientPropertyDraw> getIDProps() {
         if(idProps==null) {

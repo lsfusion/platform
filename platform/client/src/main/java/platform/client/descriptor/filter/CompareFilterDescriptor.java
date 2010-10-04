@@ -1,7 +1,6 @@
 package platform.client.descriptor.filter;
 
 import platform.client.descriptor.OrderDescriptor;
-import platform.client.descriptor.PropertyObjectDescriptor;
 import platform.interop.Compare;
 import platform.interop.serialization.SerializationPool;
 

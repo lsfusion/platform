@@ -1,7 +1,6 @@
 package platform.client.descriptor.filter;
 
 import platform.client.descriptor.PropertyObjectDescriptor;
-import platform.interop.serialization.CustomSerializable;
 import platform.interop.serialization.SerializationPool;
 
 import java.io.DataInputStream;

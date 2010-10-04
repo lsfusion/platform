@@ -35,8 +35,7 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
         propertyHighlight = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
 
 
-        ClientForm clientForm = (ClientForm) pool.context;
-        client = clientForm.getGroupObject(ID);
+        client = ((ClientForm) pool.context).getGroupObject(ID);
     }
 
     @Override

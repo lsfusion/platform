@@ -2,10 +2,7 @@ package platform.server.serialization;
 
 import platform.interop.serialization.SerializationPool;
 import platform.server.form.entity.*;
-import platform.server.form.entity.filter.CompareFilterEntity;
-import platform.server.form.entity.filter.NotFilterEntity;
-import platform.server.form.entity.filter.OrFilterEntity;
-import platform.server.form.entity.filter.PropertyFilterEntity;
+import platform.server.form.entity.filter.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.ObjectValueProperty;
 import platform.server.logics.property.Property;
@@ -30,6 +27,8 @@ public class ServerSerializationPool extends SerializationPool {
         addMapping(OrFilterEntity.class);
         addMapping(NotFilterEntity.class);
         addMapping(CompareFilterEntity.class);
+        addMapping(RegularFilterEntity.class);
+        addMapping(RegularFilterGroupEntity.class);
 
         addMapping(PropertyInterface.class);
 

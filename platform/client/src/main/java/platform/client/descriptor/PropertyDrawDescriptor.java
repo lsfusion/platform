@@ -38,8 +38,7 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Identi
             forceViewType = inStream.readByte();
         }
 
-        ClientForm clientForm = (ClientForm) pool.context;
-        client = clientForm.getProperty(ID);
+        client = ((ClientForm) pool.context).getProperty(ID);
     }
 
     @Override
