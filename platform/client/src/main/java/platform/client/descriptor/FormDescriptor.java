@@ -30,5 +30,7 @@ public class FormDescriptor extends IdentityDescriptor implements IdentitySerial
         propertyDraws = pool.deserializeList(inStream);
         fixedFilters = pool.deserializeSet(inStream);
         //todo:
+
+        client = (ClientForm) pool.context;
     }
 }

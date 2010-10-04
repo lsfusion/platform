@@ -2,9 +2,11 @@ package platform.server.serialization;
 
 import platform.interop.serialization.SerializationPool;
 import platform.server.form.entity.*;
+import platform.server.form.entity.filter.CompareFilterEntity;
 import platform.server.form.entity.filter.NotFilterEntity;
 import platform.server.form.entity.filter.OrFilterEntity;
 import platform.server.form.entity.filter.PropertyFilterEntity;
+import platform.server.logics.DataObject;
 import platform.server.logics.property.ObjectValueProperty;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.SelectionProperty;
@@ -29,6 +31,10 @@ public class ServerSerializationPool extends SerializationPool {
         addMapping(PropertyFilterEntity.class);
         addMapping(OrFilterEntity.class);
         addMapping(NotFilterEntity.class);
+        addMapping(CompareFilterEntity.class);
+
+        addMapping(CurrentComputerEntity.class);
+        addMapping(DataObject.class);
 
         addMapping(AddObjectActionProperty.class);
         addMapping(ImportFromExcelActionProperty.class);

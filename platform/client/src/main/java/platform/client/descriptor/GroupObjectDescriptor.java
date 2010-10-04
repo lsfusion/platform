@@ -1,5 +1,6 @@
 package platform.client.descriptor;
 
+import platform.client.logics.ClientForm;
 import platform.client.logics.ClientGroupObject;
 import platform.interop.serialization.IdentitySerializable;
 import platform.interop.serialization.SerializationPool;
@@ -19,7 +20,6 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
         return ID;
     }
 
-
     ClientGroupObject client;
 
     public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
@@ -33,5 +33,9 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
         initClassView = inStream.readByte();
         banClassView = inStream.readByte();
         propertyHighlight = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
+
+
+        ClientForm clientForm = (ClientForm) pool.context;
+        client = clientForm.getGroupObject(ID);
     }
 }

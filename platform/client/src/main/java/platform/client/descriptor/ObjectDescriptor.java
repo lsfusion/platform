@@ -9,7 +9,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ObjectDescriptor extends IdentityDescriptor implements IdentitySerializable {
+public class ObjectDescriptor extends IdentityDescriptor implements OrderDescriptor, IdentitySerializable {
 
     ClientObject client;
     private GroupObjectDescriptor groupTo;

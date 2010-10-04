@@ -1,5 +1,6 @@
 package platform.client.descriptor;
 
+import platform.client.logics.ClientForm;
 import platform.client.logics.ClientPropertyDraw;
 import platform.interop.serialization.IdentitySerializable;
 import platform.interop.serialization.SerializationPool;
@@ -36,5 +37,8 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Identi
         if (inStream.readBoolean()) {
             forceViewType = inStream.readByte();
         }
+
+        ClientForm clientForm = (ClientForm) pool.context;
+        client = clientForm.getProperty(ID);
     }
 }

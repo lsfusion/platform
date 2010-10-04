@@ -12,6 +12,7 @@ public class SerializationPool {
 
     private Map<Long, CustomSerializable> objects = new HashMap<Long, CustomSerializable>();
 
+    //todo: переделать на генерики...
     public Object context;
     private static final int NULL_REF_CLASS = -1;
 
