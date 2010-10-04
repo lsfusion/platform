@@ -90,13 +90,11 @@ public class SerializationPool {
         CustomSerializable instance;
         if (IdentitySerializable.class.isAssignableFrom(clazz)) {
             int id = inStream.readInt();
-            System.out.println(" " + id);
             instance = get(classId, id);
             if (instance == null) {
                 instance = createNewInstance(inStream, clazz, id);
             }
         } else {
-            System.out.println("");
             instance = createNewInstance(inStream, clazz, -1);
         }
 
@@ -116,7 +114,6 @@ public class SerializationPool {
             IdentitySerializable identityObj = (IdentitySerializable) object;
             int id = identityObj.getID();
             outStream.writeInt(id);
-            System.out.println(" " + id);
 
             if (get(classId, id) == null) {
                 put(classId, id, object);
