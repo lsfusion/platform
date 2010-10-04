@@ -1,6 +1,7 @@
 package platform.client.descriptor;
 
 import platform.client.descriptor.property.PropertyDescriptor;
+import platform.client.descriptor.property.PropertyInterfaceDescriptor;
 import platform.interop.serialization.IdentitySerializable;
 import platform.interop.serialization.SerializationPool;
 
