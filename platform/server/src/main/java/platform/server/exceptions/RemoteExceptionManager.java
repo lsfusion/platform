@@ -6,6 +6,10 @@ import org.aspectj.lang.annotation.Aspect;
 import platform.interop.exceptions.InternalServerException;
 import platform.interop.exceptions.RemoteServerException;
 
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+
 @Aspect
 public class RemoteExceptionManager {
 
@@ -27,8 +31,9 @@ public class RemoteExceptionManager {
     }
 
     public static InternalServerException createInternalServerException(Throwable e) {
-
         e.printStackTrace();
-        return new InternalServerException(0, e.getLocalizedMessage());
+        OutputStream os = new ByteArrayOutputStream();
+        e.printStackTrace(new PrintStream(os));
+        return new InternalServerException(0, e.getLocalizedMessage(), os.toString());
     }
 }

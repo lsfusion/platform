@@ -2,6 +2,7 @@ package platform.client.exceptions;
 
 import platform.client.Log;
 import platform.client.rmi.ConnectionLostManager;
+import platform.interop.exceptions.InternalServerException;
 
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
@@ -9,6 +10,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.rmi.ConnectException;
 import java.rmi.ConnectIOException;
+import java.util.ConcurrentModificationException;
 
 public class ClientExceptionManager {
 
@@ -30,17 +32,26 @@ public class ClientExceptionManager {
         }
 
         String message = e.getLocalizedMessage();
-        while (e instanceof RuntimeException && e.getCause() != null) {
-            e = e.getCause();
-            message += " : \n" + e.getLocalizedMessage();
+        String trace = "";
+
+        if (e.getCause() instanceof InternalServerException) {
+            trace = ((InternalServerException) e.getCause()).trace;
+        } else {
+            while (e instanceof RuntimeException && e.getCause() != null) {
+                e = e.getCause();
+                message += " : \n" + e.getLocalizedMessage();
+            }
         }
 
-        message += "\n-----------\n";
+        //message += "\n-----------\n";
         OutputStream os = new ByteArrayOutputStream();
         e.printStackTrace(new PrintStream(os));
-        message += os.toString();
+        String erTrace = os.toString();
 
-        Log.printFailedMessage(message.substring(0, 2000), parentComponent);
+        if (!(e instanceof ConcurrentModificationException) ||
+                !(erTrace.indexOf("bibliothek.gui.dock.themes.basic.action.buttons.ButtonPanel.setForeground(Unknown Source)") >= 0)) {
+            Log.printFailedMessage(message, trace, parentComponent);
+        }
 
         e.printStackTrace();
     }

@@ -23,7 +23,8 @@ public final class LoginAction {
     final static int OK = 0;
     final static int HOST_NAME_ERROR = 1;
     final static int CONNECT_ERROR = 2;
-    final static int ERROR = 3;
+    final static int SERVER_ERROR = 3;
+    final static int ERROR = 4;
 
     private LoginAction() {
         this.serverHost = System.getProperty(PropertyConstants.PLATFORM_CLIENT_HOSTNAME);
@@ -65,8 +66,11 @@ public final class LoginAction {
                 case CONNECT_ERROR:
                     loginDialog.setWarningMsg("Ошибка подключения к серверу.");
                     break;
-                case ERROR:
+                case SERVER_ERROR:
                     loginDialog.setWarningMsg("Проверьте имя пользователя и пароль.");
+                    break;
+                case ERROR:
+                    loginDialog.setWarningMsg("Ошибка подключения.");
                     break;
             }
             loginDialog.setAutoLogin(false);
@@ -96,6 +100,9 @@ public final class LoginAction {
         } catch (ConnectException e) {
             System.out.println(e.getCause());
             return CONNECT_ERROR;
+        } catch (ServerException e) {
+            e.printStackTrace();
+            return SERVER_ERROR;
         } catch (Exception e) {
             e.printStackTrace();
             return ERROR;

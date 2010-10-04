@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.text.DateFormat;
 import java.util.Date;
 
@@ -59,10 +61,17 @@ public final class Log {
     }
 
     public static void printFailedMessage(String message) {
-        printFailedMessage(message, null);
+        printFailedMessage(message, "", null);
     }
 
-    public static void printFailedMessage(String message, Component parentComponent) {
+    static JTextArea errorText;
+    static JDialog dialog;
+    static JScrollPane sPane;
+    static JOptionPane optionPane;
+    static JPanel line;
+    static JPanel south;
+
+    public static void printFailedMessage(String message, String trace, Component parentComponent) {
 
         printmsg(message);
 
@@ -73,7 +82,57 @@ public final class Log {
         }
 
         // ошибки всегда идут на экран
-        JOptionPane.showMessageDialog(parentComponent, message, "LS Fusion", JOptionPane.ERROR_MESSAGE);
+        //JOptionPane.showMessageDialog(parentComponent, message, "LS Fusion", JOptionPane.ERROR_MESSAGE);
+        JPanel panel = new JPanel();
+        BorderLayout layout = new BorderLayout(10, 10);
+        panel.setLayout(layout);
+        
+        JLabel text = new JLabel(message);
+        panel.add(text, BorderLayout.CENTER);
+        //panel.add(new JLabel(" "));
+
+        south = new JPanel();
+        south.setLayout(new BoxLayout(south, BoxLayout.Y_AXIS));
+        south.setVisible(false);
+        
+        line = new JPanel();
+        south.add(line);
+        south.add(new JLabel(" "));
+        line.setPreferredSize(new Dimension(10, 2));
+        line.setBackground(Color.GRAY);
+        errorText = new JTextArea(trace, 7, 60);
+        errorText.setFont(new Font("Tahoma", Font.PLAIN, 12));
+        errorText.setForeground(Color.RED);
+        sPane = new JScrollPane(errorText);
+        south.add(sPane);
+        panel.add(south, BorderLayout.SOUTH);
+
+        optionPane = new JOptionPane(panel, JOptionPane.ERROR_MESSAGE,
+                JOptionPane.YES_NO_OPTION,
+                null,
+                new String[]{"OK", "Подробнее"},
+                "OK");
+
+        optionPane.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent e) {
+                Object value = optionPane.getValue();
+                if (dialog.isVisible() && value.equals("OK")) {
+                    dialog.dispose();
+                } else if (value.equals("Подробнее")) {
+                    south.setVisible(!south.isVisible());
+                    dialog.pack();
+                    optionPane.setValue(JOptionPane.UNINITIALIZED_VALUE);
+                }
+            }
+        });
+        dialog = new JDialog(Main.frame, "LS Fusion", true);
+        dialog.setContentPane(optionPane);
+        int WIDTH = 250;
+        int HEIGHT = 200;
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        dialog.setBounds((int) (screenSize.getWidth() - WIDTH) / 2, (int) (screenSize.getHeight() - HEIGHT) / 2, WIDTH, HEIGHT);
+        dialog.pack();
+        dialog.setVisible(true);
     }
 
     private static class LogView extends JPanel {
