@@ -3,6 +3,7 @@ package platform.client.form.cell;
 import platform.client.form.ClientFormController;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.ClientGroupObjectValue;
+import platform.base.BaseUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -114,7 +115,12 @@ public class TableCellView extends JPanel implements CellView {
     }
 
     public void setHighlight(Object highlight) {
+        if(BaseUtils.nullEquals(this.highlight,highlight)) return;
+
         this.highlight = highlight;
+
+        revalidate();
+        repaint();        
     }
 
     public void startEditing(KeyEvent e) {

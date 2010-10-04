@@ -1030,7 +1030,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 }
 
                 if(inInterface) {
-                    boolean added = isDrawed.add(drawProperty);
+                    boolean added = isDrawed.add(drawProperty); // читаем caption'ы
                     if(drawProperty.propertyCaption!=null && (added || refresh || (drawProperty.toDraw!=null && (drawProperty.toDraw.updated & GroupObjectInstance.UPDATED_CLASSVIEW)!=0) // чтобы на клиента updateCaptions пришли а то они не приходят
                             || dataUpdated(drawProperty.propertyCaption, changedProps) || objectUpdated(drawProperty.propertyCaption, columnGroupGrids))) // не было надо caption перечитать
                         readProperties.put(drawProperty.caption, columnGroupGrids);
@@ -1038,10 +1038,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                     result.dropProperties.add(drawProperty); // вкидываем удаление из интерфейса
             }
 
-            for(GroupObjectInstance group : groups)
+            for(GroupObjectInstance group : groups) // читаем highlight'ы
                 if(group.propertyHighlight!=null) {
                     Set<GroupObjectInstance> gridGroups = (group.curClassView == ClassViewType.GRID?Collections.singleton(group):new HashSet<GroupObjectInstance>());
-                    if(refresh || dataUpdated(group.propertyHighlight, changedProps) || objectUpdated(group.propertyHighlight, gridGroups))
+                    if(refresh || (group.updated & GroupObjectInstance.UPDATED_CLASSVIEW)!=0 || dataUpdated(group.propertyHighlight, changedProps) || objectUpdated(group.propertyHighlight, gridGroups))
                         readProperties.put(group, gridGroups);
                 }
 
