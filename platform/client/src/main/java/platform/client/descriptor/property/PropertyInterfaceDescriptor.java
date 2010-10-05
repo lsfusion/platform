@@ -1,19 +1,17 @@
 package platform.client.descriptor.property;
 
 import platform.client.descriptor.IdentityDescriptor;
-import platform.interop.serialization.IdentitySerializable;
-import platform.interop.serialization.SerializationPool;
+import platform.client.serialization.ClientIdentitySerializable;
+import platform.client.serialization.ClientSerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class PropertyInterfaceDescriptor extends IdentityDescriptor implements IdentitySerializable {
-    public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        //todo:
-
+public class PropertyInterfaceDescriptor extends IdentityDescriptor implements ClientIdentitySerializable {
+    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
     }
 
-    public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ClientSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
     }
 }

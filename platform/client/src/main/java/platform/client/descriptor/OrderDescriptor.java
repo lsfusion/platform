@@ -1,7 +1,7 @@
 package platform.client.descriptor;
 
-import platform.interop.serialization.CustomSerializable;
+import platform.client.serialization.ClientCustomSerializable;
 
-public interface OrderDescriptor extends CustomSerializable {
+public interface OrderDescriptor extends ClientCustomSerializable {
     
 }

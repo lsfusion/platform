@@ -1,6 +1,6 @@
 package platform.client.descriptor.filter;
 
-import platform.interop.serialization.CustomSerializable;
+import platform.client.serialization.ClientCustomSerializable;
 
-public abstract class FilterDescriptor implements CustomSerializable {
+public abstract class FilterDescriptor implements ClientCustomSerializable {
 }

@@ -1,15 +1,15 @@
 package platform.server.form.entity.filter;
 
 import platform.base.IdentityObject;
-import platform.interop.serialization.IdentitySerializable;
-import platform.interop.serialization.SerializationPool;
+import platform.server.serialization.ServerIdentitySerializable;
+import platform.server.serialization.ServerSerializationPool;
 
 import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class RegularFilterEntity extends IdentityObject implements IdentitySerializable {
+public class RegularFilterEntity extends IdentityObject implements ServerIdentitySerializable {
     public transient FilterEntity filter;
     public String name = "";
     public KeyStroke key;
@@ -22,10 +22,11 @@ public class RegularFilterEntity extends IdentityObject implements IdentitySeria
         key = ikey;
     }
 
-    public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        pool.serializeObject(outStream, filter);
     }
 
-    public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
-        //todo:
+    public void customDeserialize(ServerSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+        filter = (FilterEntity) pool.deserializeObject(inStream);
     }
 }

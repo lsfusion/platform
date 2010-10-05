@@ -1,16 +1,15 @@
 package platform.client.descriptor;
 
-import platform.client.logics.ClientForm;
 import platform.client.logics.ClientPropertyDraw;
-import platform.interop.serialization.IdentitySerializable;
-import platform.interop.serialization.SerializationPool;
+import platform.client.serialization.ClientIdentitySerializable;
+import platform.client.serialization.ClientSerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
 
-public class PropertyDrawDescriptor extends IdentityDescriptor implements IdentitySerializable {
+public class PropertyDrawDescriptor extends IdentityDescriptor implements ClientIdentitySerializable {
 
     ClientPropertyDraw client;
 
@@ -22,12 +21,20 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Identi
     private boolean shouldBeLast;
     private Byte forceViewType;
 
-    public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        //todo:
+    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        pool.serializeObject(outStream, propertyObject);
+        pool.serializeObject(outStream, toDraw);
+        pool.serializeCollection(outStream, columnGroupObjects);
+        pool.serializeObject(outStream, propertyCaption);
 
+        outStream.writeBoolean(shouldBeLast);
+        outStream.writeBoolean(forceViewType != null);
+        if (forceViewType != null) {
+            outStream.writeByte(forceViewType);
+        }
     }
 
-    public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ClientSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
         propertyObject = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
         toDraw = (GroupObjectDescriptor) pool.deserializeObject(inStream);
         columnGroupObjects = pool.deserializeList(inStream);
@@ -38,7 +45,7 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Identi
             forceViewType = inStream.readByte();
         }
 
-        client = ((ClientForm) pool.context).getProperty(ID);
+        client = pool.context.getProperty(ID);
     }
 
     @Override

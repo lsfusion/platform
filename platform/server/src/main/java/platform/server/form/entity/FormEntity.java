@@ -4,7 +4,6 @@ import platform.base.BaseUtils;
 import platform.base.ListPermutations;
 import platform.base.OrderedMap;
 import platform.interop.action.ClientAction;
-import platform.interop.serialization.IdentitySerializable;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.form.entity.filter.FilterEntity;
@@ -20,7 +19,7 @@ import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
-import platform.interop.serialization.SerializationPool;
+import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 
 import javax.swing.*;
@@ -31,7 +30,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
 
-public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> implements IdentitySerializable {
+public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> implements ServerIdentitySerializable {
     private final static Logger logger = Logger.getLogger(FormEntity.class.getName());
 
     public boolean isReadOnly() {
@@ -342,15 +341,16 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
         return 0;
     }
 
-    public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeCollection(outStream, groups);
         pool.serializeCollection(outStream, propertyDraws);
         pool.serializeCollection(outStream, fixedFilters);
-        //todo:
     }
 
-    public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
-        //todo:
+    public void customDeserialize(ServerSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+        groups = pool.deserializeList(inStream);
+        propertyDraws = pool.deserializeList(inStream);
+        fixedFilters = pool.deserializeSet(inStream);
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {

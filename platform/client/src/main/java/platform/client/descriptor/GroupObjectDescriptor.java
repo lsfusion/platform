@@ -1,16 +1,15 @@
 package platform.client.descriptor;
 
-import platform.client.logics.ClientForm;
 import platform.client.logics.ClientGroupObject;
-import platform.interop.serialization.IdentitySerializable;
-import platform.interop.serialization.SerializationPool;
+import platform.client.serialization.ClientIdentitySerializable;
+import platform.client.serialization.ClientSerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implements IdentitySerializable {
+public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implements ClientIdentitySerializable {
     private int ID;
     private byte initClassView;
     private byte banClassView;
@@ -22,11 +21,14 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
 
     ClientGroupObject client;
 
-    public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        //todo:
+    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        pool.serializeCollection(outStream, this);
+        outStream.writeByte(initClassView);
+        outStream.writeByte(banClassView);
+        pool.serializeObject(outStream, propertyHighlight);
     }
 
-    public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ClientSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
         this.ID = ID;
 
         pool.deserializeCollection(this, inStream);
@@ -34,8 +36,7 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
         banClassView = inStream.readByte();
         propertyHighlight = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
 
-
-        client = ((ClientForm) pool.context).getGroupObject(ID);
+        client = pool.context.getGroupObject(ID);
     }
 
     @Override

@@ -1,4 +1,4 @@
-package platform.interop.serialization;
+﻿package platform.interop.serialization;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -6,25 +6,26 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.*;
 
-public class SerializationPool {
-    private Map<Integer, Class<? extends CustomSerializable>> idToClass = new HashMap<Integer,Class<? extends CustomSerializable>>();
-    private Map<Class<? extends CustomSerializable>, Integer> classToId = new HashMap<Class<? extends CustomSerializable>, Integer>();
+public class SerializationPool<C> {
+    private Map<Integer, Class<? extends CustomSerializable<? extends SerializationPool<C>>>> idToClass
+            = new HashMap<Integer,Class<? extends CustomSerializable<? extends SerializationPool<C>>>>();
+    private Map<Class<? extends CustomSerializable<? extends SerializationPool<C>>>, Integer> classToId
+            = new HashMap<Class<? extends CustomSerializable<? extends SerializationPool<C>>>, Integer>();
 
     private Map<Long, CustomSerializable> objects = new HashMap<Long, CustomSerializable>();
 
-    //todo: переделать на генерики...
-    public Object context;
+    public C context;
     private static final int NULL_REF_CLASS = -1;
 
     public SerializationPool() {
         this(null);
     }
     
-    public SerializationPool(Object context) {
+    public SerializationPool(C context) {
         this.context = context;
     }
 
-    protected void addMapping(Class<? extends CustomSerializable> clazz) {
+    protected void addMapping(Class<? extends CustomSerializable<? extends SerializationPool<C>>> clazz) {
         int classId = idToClass.size();
         
         idToClass.put(classId, clazz);
@@ -56,22 +57,22 @@ public class SerializationPool {
         return classToId.get(clazz);
     }
 
-    public Class<? extends CustomSerializable> getClassById(int classId) {
+    public Class<? extends CustomSerializable<? extends SerializationPool<C>>> getClassById(int classId) {
         if (!idToClass.containsKey(classId)) {
             throw new IllegalArgumentException("Неизвестный идентификатор класса сериализации: " + classId);
         }
         return idToClass.get(classId);
     }
 
-    public <T extends CustomSerializable> List<T> deserializeList(DataInputStream inStream) throws IOException {
+    public <T extends CustomSerializable<? extends SerializationPool<C>>> List<T> deserializeList(DataInputStream inStream) throws IOException {
         return (List<T>) deserializeCollection(new ArrayList<T>(), inStream);
     }
 
-    public <T extends CustomSerializable> Set<T> deserializeSet(DataInputStream inStream) throws IOException {
+    public <T extends CustomSerializable<? extends SerializationPool<C>>> Set<T> deserializeSet(DataInputStream inStream) throws IOException {
         return (Set<T>) deserializeCollection(new HashSet<T>(), inStream);
     }
 
-    public <T extends CustomSerializable> Collection<T> deserializeCollection(Collection<T> collection, DataInputStream inStream) throws IOException {
+    public <T extends CustomSerializable<? extends SerializationPool<C>>> Collection<T> deserializeCollection(Collection<T> collection, DataInputStream inStream) throws IOException {
         int size = inStream.readInt();
         for (int i = 0; i < size; ++i) {
             T element = (T) deserializeObject(inStream);
@@ -80,7 +81,7 @@ public class SerializationPool {
         return collection;
     }
 
-    public CustomSerializable deserializeObject(DataInputStream inStream) throws IOException {
+    public CustomSerializable<? extends SerializationPool<C>> deserializeObject(DataInputStream inStream) throws IOException {
         int classId = inStream.readInt();
         if (classId == NULL_REF_CLASS) {
             return null;
@@ -125,7 +126,7 @@ public class SerializationPool {
         }
     }
 
-    private CustomSerializable createNewInstance(DataInputStream inStream, Class<? extends CustomSerializable> clazz, int id) {
+    private CustomSerializable<? extends SerializationPool<C>> createNewInstance(DataInputStream inStream, Class<? extends CustomSerializable> clazz, int id) {
         try {
             Constructor<? extends CustomSerializable> ctor = clazz.getConstructor();
             CustomSerializable instance = ctor.newInstance();
@@ -142,18 +143,18 @@ public class SerializationPool {
         }
     }
 
-    public <T extends CustomSerializable> void serializeCollection(DataOutputStream outStream, Collection<T> list) throws IOException {
+    public <T extends CustomSerializable<? extends SerializationPool<C>>> void serializeCollection(DataOutputStream outStream, Collection<T> list) throws IOException {
         serializeCollection(outStream, list, null);
     }
 
-    public <T extends CustomSerializable> void serializeCollection(DataOutputStream outStream, Collection<T> list, String type) throws IOException {
+    public <T extends CustomSerializable<? extends SerializationPool<C>>> void serializeCollection(DataOutputStream outStream, Collection<T> list, String type) throws IOException {
         outStream.writeInt(list.size());
         for (T element : list) {
             serializeObject(outStream, element, type);
         }
     }
 
-    public <T extends CustomSerializable> void serializeObject(DataOutputStream outStream, T object) throws IOException {
+    public <T extends CustomSerializable<? extends SerializationPool<C>>> void serializeObject(DataOutputStream outStream, T object) throws IOException {
         serializeObject(outStream, object, null);
     }
 }

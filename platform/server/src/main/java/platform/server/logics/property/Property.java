@@ -2,13 +2,11 @@ package platform.server.logics.property;
 
 import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
-import platform.interop.serialization.IdentitySerializable;
-import platform.interop.serialization.SerializationPool;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.ConcreteClass;
+import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
-import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.*;
 import platform.server.data.expr.*;
@@ -22,8 +20,12 @@ import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
+import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.instance.GroupObjectInstance;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
+import platform.server.form.view.DefaultFormView;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.SessionDataProperty;
@@ -31,11 +33,9 @@ import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.logics.table.MapKeysTable;
 import platform.server.logics.table.TableFactory;
+import platform.server.serialization.ServerIdentitySerializable;
+import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.*;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.view.DefaultFormView;
-import platform.server.form.entity.PropertyDrawEntity;
-import platform.server.form.entity.FormEntity;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -43,7 +43,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
-public abstract class Property<T extends PropertyInterface> extends AbstractNode implements MapKeysInterface<T>, IdentitySerializable {
+public abstract class Property<T extends PropertyInterface> extends AbstractNode implements MapKeysInterface<T>, ServerIdentitySerializable {
 
     public final String sID;
 
@@ -425,15 +425,14 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             return new ArrayList<Property>();
     }
 
-    public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        //todo:
+    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         outStream.writeUTF(sID);
         outStream.writeUTF(caption);
 
         pool.serializeCollection(outStream, interfaces);
     }
 
-    public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ServerSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
         //todo:
     }
 }

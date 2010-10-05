@@ -24,19 +24,25 @@ public class IOUtils {
         return out.toByteArray();
     }
 
-    //TODO : сделать нормальные close (перенести его в finally)
     public static byte[] getFileBytes(File file) throws IOException {
         InputStream in = new FileInputStream(file);
-        byte[] result = readBytesFromStream(in);
-        in.close();
-        return result;
+        try {
+            return readBytesFromStream(in);
+        } finally {
+            in.close();
+        }
     }
 
     public static void putFileBytes(File file, byte[] array) throws IOException {
-        if (file.getParentFile().exists())
+        if (!file.getParentFile().exists()) {
             file.getParentFile().mkdirs();
+        }
+
         OutputStream out = new FileOutputStream(file);
-        out.write(array);
-        out.close();
+        try {
+            out.write(array);
+        } finally {
+            out.close();
+        }
     }
 }

@@ -10,6 +10,8 @@ import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.serialization.ServerIdentitySerializable;
+import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.MapDataChanges;
@@ -22,7 +24,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityObject implements PropertyInterfaceImplement<P>, Comparable<P>, IdentitySerializable {
+public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityObject implements PropertyInterfaceImplement<P>, Comparable<P>, ServerIdentitySerializable {
 
     public PropertyInterface(int ID) {
         this.ID = ID;
@@ -64,10 +66,9 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return remap.get((P)this);
     }
 
-    public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
     }
 
-    public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
-        //todo:
+    public void customDeserialize(ServerSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
     }
 }

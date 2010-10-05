@@ -4,7 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public interface CustomSerializable {
-    public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException;
-    public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException;
+public interface CustomSerializable<P extends SerializationPool> {
+    public void customSerialize(P pool, DataOutputStream outStream, String serializationType) throws IOException;
+    public void customDeserialize(P pool, int ID, DataInputStream inStream) throws IOException;
 }

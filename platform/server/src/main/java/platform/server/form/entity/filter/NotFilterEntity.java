@@ -1,15 +1,13 @@
 package platform.server.form.entity.filter;
 
-import platform.interop.serialization.SerializationPool;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.filter.FilterInstance;
-import platform.server.form.instance.filter.NotFilterInstance;
+import platform.server.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Set;
 
 public class NotFilterEntity extends FilterEntity {
@@ -28,11 +26,11 @@ public class NotFilterEntity extends FilterEntity {
         filter.fillObjects(objects);
     }
 
-    public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, filter);
     }
 
-    public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
-        //todo:
+    public void customDeserialize(ServerSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+        filter = (FilterEntity) pool.deserializeObject(inStream);
     }
 }

@@ -1,7 +1,6 @@
 package platform.server.form.entity.filter;
 
 import platform.interop.Compare;
-import platform.interop.serialization.SerializationPool;
 import platform.server.classes.DataClass;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.OrderEntity;
@@ -10,6 +9,7 @@ import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.filter.FilterInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.PropertyInterface;
+import platform.server.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -42,13 +42,16 @@ public class CompareFilterEntity<P extends PropertyInterface> extends PropertyFi
         value.fillObjects(objects);
     }
 
-    public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);
         compare.serialize(outStream);
         pool.serializeObject(outStream, value);
     }
 
-    public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
-        //todo:
+    public void customDeserialize(ServerSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+        super.customDeserialize(pool, ID, inStream);
+
+        compare = Compare.deserialize(inStream);
+        value = (OrderEntity<?>) pool.deserializeObject(inStream);
     }
 }

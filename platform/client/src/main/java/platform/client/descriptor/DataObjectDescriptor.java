@@ -1,20 +1,20 @@
 package platform.client.descriptor;
 
-import platform.interop.serialization.CustomSerializable;
-import platform.interop.serialization.SerializationPool;
+import platform.base.BaseUtils;
+import platform.client.serialization.ClientSerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class DataObjectDescriptor implements PropertyObjectInterfaceDescriptor {
-    public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        //todo:
+    Object object;
 
+    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        BaseUtils.serializeObject(object);
     }
 
-    public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
-        //todo:
-
+    public void customDeserialize(ClientSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+        object = BaseUtils.deserializeObject(inStream);
     }
 }

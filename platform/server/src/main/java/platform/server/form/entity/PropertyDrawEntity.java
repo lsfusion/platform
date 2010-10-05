@@ -1,13 +1,13 @@
 package platform.server.form.entity;
 
 import platform.base.IdentityObject;
-import platform.interop.serialization.IdentitySerializable;
-import platform.interop.serialization.SerializationPool;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.Instantiable;
 import platform.server.form.instance.PropertyDrawInstance;
 import platform.server.form.view.DefaultFormView;
 import platform.server.logics.property.PropertyInterface;
+import platform.server.serialization.ServerIdentitySerializable;
+import platform.server.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObject implements Instantiable<PropertyDrawInstance>, IdentitySerializable {
+public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObject implements Instantiable<PropertyDrawInstance>, ServerIdentitySerializable {
 
     public PropertyObjectEntity<P> propertyObject;
 
@@ -60,7 +60,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         propertyObject.property.proceedDefaultDesign(defaultView, this);
     }
 
-    public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, propertyObject);
         pool.serializeObject(outStream, toDraw);
         pool.serializeCollection(outStream, columnGroupObjects);
@@ -73,7 +73,15 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
     }
 
-    public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
-        //todo:
+    public void customDeserialize(ServerSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+        propertyObject = (PropertyObjectEntity<P>) pool.deserializeObject(inStream);
+        toDraw = (GroupObjectEntity) pool.deserializeObject(inStream);
+        columnGroupObjects = pool.deserializeList(inStream);
+        propertyCaption = (PropertyObjectEntity<?>) pool.deserializeObject(inStream);
+
+        shouldBeLast = inStream.readBoolean();
+        if (inStream.readBoolean()) {
+            forceViewType = inStream.readByte();
+        }
     }
 }

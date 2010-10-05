@@ -1,7 +1,7 @@
 package platform.server.logics;
 
+import platform.base.BaseUtils;
 import platform.interop.Compare;
-import platform.interop.serialization.SerializationPool;
 import platform.server.caches.hash.HashValues;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.DoubleClass;
@@ -9,18 +9,19 @@ import platform.server.classes.LogicalClass;
 import platform.server.classes.StringClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.SystemValueExpr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
-import platform.server.form.instance.GroupObjectInstance;
-import platform.server.form.instance.InstanceFactory;
-import platform.server.session.ChangesSession;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
+import platform.server.form.instance.GroupObjectInstance;
+import platform.server.form.instance.InstanceFactory;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.serialization.ServerSerializationPool;
+import platform.server.session.ChangesSession;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -160,13 +161,14 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return false;
     }
 
-    public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        //todo:
+    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        BaseUtils.serializeObject(outStream, object);
 
+        //todo:
+//        pool.serializeObject(outStream, objectClass);
     }
 
-    public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
-        //todo:
-
+    public void customDeserialize(ServerSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+        object = BaseUtils.deserializeObject(inStream);
     }
 }

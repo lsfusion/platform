@@ -1,13 +1,13 @@
 package platform.server.form.entity;
 
-import platform.interop.serialization.IdentitySerializable;
-import platform.interop.serialization.SerializationPool;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.PropertyObjectInstance;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyImplement;
 import platform.server.logics.property.PropertyInterface;
+import platform.server.serialization.ServerIdentitySerializable;
+import platform.server.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -17,7 +17,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyImplement<PropertyObjectInterfaceEntity,P> implements OrderEntity<PropertyObjectInstance>, IdentitySerializable {
+public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyImplement<PropertyObjectInterfaceEntity,P> implements OrderEntity<PropertyObjectInstance>, ServerIdentitySerializable {
 
     public Collection<ObjectEntity> getObjectInstances() {
         Collection<ObjectEntity> result = new ArrayList<ObjectEntity>();
@@ -53,7 +53,7 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyI
         return ID;
     }
 
-    public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, property);
 
         outStream.writeInt(mapping.size());
@@ -63,7 +63,17 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyI
         }
     }
 
-    public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
-        //todo:
+    public void customDeserialize(ServerSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+        //todo: think about finals
+//        property = (Property<P>) pool.deserializeObject(inStream);
+
+//        mapping = new HashMap<P, PropertyObjectInterfaceEntity>();
+        int size = inStream.readInt();
+        for (int i = 0; i < size; ++i) {
+            P inter = (P) pool.deserializeObject(inStream);
+            PropertyObjectInterfaceEntity value = (PropertyObjectInterfaceEntity) pool.deserializeObject(inStream);
+
+            mapping.put(inter, value);
+        }
     }
 }

@@ -1,29 +1,26 @@
 package platform.client.descriptor;
 
-import platform.client.logics.ClientForm;
 import platform.client.logics.ClientObject;
-import platform.interop.serialization.CustomSerializable;
-import platform.interop.serialization.IdentitySerializable;
-import platform.interop.serialization.SerializationPool;
+import platform.client.serialization.ClientIdentitySerializable;
+import platform.client.serialization.ClientSerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ObjectDescriptor extends IdentityDescriptor implements PropertyObjectInterfaceDescriptor, IdentitySerializable {
+public class ObjectDescriptor extends IdentityDescriptor implements PropertyObjectInterfaceDescriptor, ClientIdentitySerializable {
 
     ClientObject client;
     private GroupObjectDescriptor groupTo;
 
-    public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        //todo:
-
+    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        pool.serializeObject(outStream, groupTo);
     }
 
-    public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ClientSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
         groupTo = (GroupObjectDescriptor) pool.deserializeObject(inStream);
 
-        client = ((ClientForm) pool.context).getObject(ID);
+        client = pool.context.getObject(ID);
     }
 
     @Override

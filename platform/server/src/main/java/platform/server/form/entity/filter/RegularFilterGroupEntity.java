@@ -1,8 +1,8 @@
 package platform.server.form.entity.filter;
 
 import platform.base.IdentityObject;
-import platform.interop.serialization.IdentitySerializable;
-import platform.interop.serialization.SerializationPool;
+import platform.server.serialization.ServerIdentitySerializable;
+import platform.server.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RegularFilterGroupEntity extends IdentityObject implements IdentitySerializable {
+public class RegularFilterGroupEntity extends IdentityObject implements ServerIdentitySerializable {
 
     public RegularFilterGroupEntity(int iID) {
         ID = iID;
@@ -31,13 +31,11 @@ public class RegularFilterGroupEntity extends IdentityObject implements Identity
         filters.add(filter);
     }
 
-    public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        //todo:
-
+    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        pool.serializeCollection(outStream, filters);
     }
 
-    public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
-        //todo:
-
+    public void customDeserialize(ServerSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+        filters = pool.deserializeList(inStream);
     }
 }

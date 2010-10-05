@@ -8,7 +8,7 @@ import platform.client.logics.ClientForm;
 import platform.interop.serialization.SerializationPool;
 
 
-public class ClientSerializationPool extends SerializationPool {
+public class ClientSerializationPool extends SerializationPool<ClientForm> {
 
 
     public ClientSerializationPool() {

@@ -1,26 +1,26 @@
 package platform.client.descriptor.filter;
 
-import platform.client.logics.ClientForm;
 import platform.client.logics.ClientRegularFilterGroup;
-import platform.interop.serialization.CustomSerializable;
-import platform.interop.serialization.SerializationPool;
+import platform.client.serialization.ClientCustomSerializable;
+import platform.client.serialization.ClientSerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.List;
 
-public class RegularFilterGroupDescriptor implements CustomSerializable {
+public class RegularFilterGroupDescriptor implements ClientCustomSerializable {
+
+    private List<RegularFilterDescriptor> filters;
 
     ClientRegularFilterGroup client;
 
-    public void customSerialize(SerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        //todo:
-
+    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        pool.serializeCollection(outStream, filters);
     }
 
-    public void customDeserialize(SerializationPool pool, int ID, DataInputStream inStream) throws IOException {
-        //todo:
-
-        client = ((ClientForm)pool.context).getRegularFilterGroup(ID);
+    public void customDeserialize(ClientSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+        filters = pool.deserializeList(inStream);
+        client = pool.context.getRegularFilterGroup(ID);
     }
 }
