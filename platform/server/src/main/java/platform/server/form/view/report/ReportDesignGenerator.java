@@ -32,9 +32,11 @@ public class ReportDesignGenerator {
     private Set<Integer> hiddenGroupsId;
     private boolean toExcel;
 
-    private int pageWidth = 842 - 40;   // todo : разобраться с этими константами
-    private int pageHeight = 595;
-    private int neighboursGap = 5;
+    private final static int defaultPageWidth = 842;   
+    private final static int defaultPageHeight = 595; // эти константы есть в JasperReports Ultimate Guide
+
+    private final static int pageWidth = defaultPageWidth - 40;
+    private final static int neighboursGap = 5;
 
     private Map<String, JasperDesign> designs = new HashMap<String, JasperDesign>();
 
@@ -238,8 +240,8 @@ public class ReportDesignGenerator {
             design.setName(name);
         }
 
-        design.setPageWidth(pageWidth + 40);
-        design.setPageHeight(pageHeight);
+        design.setPageWidth(defaultPageWidth);
+        design.setPageHeight(defaultPageHeight);
 
         if (!isMain) {
             design.setTopMargin(hasTopMargin ? neighboursGap : 0);
