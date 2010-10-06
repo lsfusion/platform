@@ -8,9 +8,7 @@ package platform.client.form;
 import platform.base.BaseUtils;
 import platform.base.DefaultIDGenerator;
 import platform.base.IDGenerator;
-import platform.client.Log;
-import platform.client.Main;
-import platform.client.SwingUtils;
+import platform.client.*;
 import platform.client.logics.*;
 import platform.client.logics.classes.ClientConcreteClass;
 import platform.client.logics.classes.ClientObjectClass;
@@ -52,6 +50,7 @@ public class ClientFormController {
 
     private static IDGenerator idGenerator = new DefaultIDGenerator();
     private int ID;
+
     public int getID() {
         return ID;
     }
@@ -61,11 +60,11 @@ public class ClientFormController {
     }
 
     public String getCaption() {
-        return  form.caption;
+        return form.caption;
     }
 
     public String getFullCaption() {
-        return  form.getFullCaption();
+        return form.getFullCaption();
     }
 
     public ClientFormController(RemoteFormInterface remoteForm, ClientNavigator clientNavigator) throws IOException, ClassNotFoundException {
@@ -116,6 +115,12 @@ public class ClientFormController {
                         clientNavigator.currentFormChanged();
                     }
 
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                           getFocusTraversalPolicy().getDefaultComponent(formLayout).requestFocusInWindow();
+                        }
+                    });
+
                     // если вдруг изменились данные в сессии
                     ClientExternalScreen.invalidate(getID());
                     ClientExternalScreen.repaintAll(getID());
@@ -141,6 +146,7 @@ public class ClientFormController {
 
     // здесь хранится список всех GroupObjects плюс при необходимости null
     private List<ClientGroupObject> groupObjects;
+
     public List<ClientGroupObject> getGroupObjects() {
         return groupObjects;
     }
@@ -179,7 +185,7 @@ public class ClientFormController {
 
                 final JCheckBox checkBox = new JCheckBox(singleFilter.toString());
 
-                if(filterGroup.defaultFilter >= 0) {
+                if (filterGroup.defaultFilter >= 0) {
                     checkBox.setSelected(true);
                     try {
                         setRemoteRegularFilter(filterGroup, singleFilter);
@@ -187,7 +193,7 @@ public class ClientFormController {
                         throw new RuntimeException("Ошибка при инициализации регулярного фильтра", e);
                     }
                 }
-                
+
                 checkBox.addItemListener(new ItemListener() {
 
                     public void itemStateChanged(ItemEvent ie) {
@@ -210,9 +216,9 @@ public class ClientFormController {
             } else {
 
                 final JComboBox comboBox = new JComboBox(
-                        BaseUtils.mergeList(Collections.singletonList("(Все)"),filterGroup.filters).toArray());
+                        BaseUtils.mergeList(Collections.singletonList("(Все)"), filterGroup.filters).toArray());
 
-                if(filterGroup.defaultFilter >= 0) {
+                if (filterGroup.defaultFilter >= 0) {
                     ClientRegularFilter defaultFilter = filterGroup.filters.get(filterGroup.defaultFilter);
                     comboBox.setSelectedItem(defaultFilter);
                     try {
@@ -228,7 +234,7 @@ public class ClientFormController {
                         try {
                             if (ie.getStateChange() == ItemEvent.SELECTED) {
                                 setRegularFilter(filterGroup,
-                                        ie.getItem() instanceof ClientRegularFilter ?(ClientRegularFilter)ie.getItem():null);
+                                        ie.getItem() instanceof ClientRegularFilter ? (ClientRegularFilter) ie.getItem() : null);
                             }
                         } catch (IOException e) {
                             throw new RuntimeException("Ошибка при изменении регулярного фильтра", e);
@@ -260,7 +266,7 @@ public class ClientFormController {
 
         // Добавляем стандартные кнопки
 
-        if(Main.module.isFull()) {
+        if (Main.module.isFull()) {
             AbstractAction printAction = new AbstractAction("Печать (" + SwingUtils.getKeyStrokeCaption(altP) + ")") {
 
                 public void actionPerformed(ActionEvent ae) {
@@ -286,7 +292,7 @@ public class ClientFormController {
             if (!isDialogMode()) {
                 formLayout.add(form.printFunction, buttonPrint);
                 formLayout.add(form.xlsFunction, buttonXls);
-            }            
+            }
         }
 
         AbstractAction nullAction = new AbstractAction("Сбросить (" + SwingUtils.getKeyStrokeCaption(altDel) + ")") {
@@ -345,7 +351,7 @@ public class ClientFormController {
 
         formLayout.addBinding(altR, "altRPressed", refreshAction);
         formLayout.add(form.refreshFunction, buttonRefresh);
-        
+
         if (!isDialogMode()) {
 
             formLayout.addBinding(altEnter, "enterPressed", applyAction);
@@ -380,7 +386,7 @@ public class ClientFormController {
     private void applyRemoteChanges() throws IOException {
         RemoteChanges remoteChanges = remoteForm.getRemoteChanges();
 
-        for(ClientAction action : remoteChanges.actions)
+        for (ClientAction action : remoteChanges.actions)
             action.dispatch(actionDispatcher);
 
         Log.incrementBytesReceived(remoteChanges.form.length);
@@ -394,11 +400,11 @@ public class ClientFormController {
     private Color defaultApplyBackground;
     public boolean dataChanged;
 
-    public final Map<ClientGroupObject,List<ClientGroupObjectValue>> currentGridObjects = new HashMap<ClientGroupObject, List<ClientGroupObjectValue>>();
+    public final Map<ClientGroupObject, List<ClientGroupObjectValue>> currentGridObjects = new HashMap<ClientGroupObject, List<ClientGroupObjectValue>>();
 
     private void applyFormChanges(ClientFormChanges formChanges) {
 
-        if(formChanges.dataChanged!=null && buttonApply!=null) {
+        if (formChanges.dataChanged != null && buttonApply != null) {
             if (defaultApplyBackground == null)
                 defaultApplyBackground = buttonApply.getBackground();
 
@@ -468,7 +474,7 @@ public class ClientFormController {
     }
 
     void addObject(ClientObject object, ClientConcreteClass cls) throws IOException {
-        
+
         remoteForm.addObject(object.getID(), cls.ID);
         applyRemoteChanges();
     }
@@ -492,7 +498,7 @@ public class ClientFormController {
         SwingUtils.stopSingleAction(groupObject.getActionID(), true);
 
         remoteForm.switchClassView(groupObject.getID());
-        
+
         applyRemoteChanges();
     }
 
@@ -515,7 +521,7 @@ public class ClientFormController {
     }
 
     private final Map<ClientGroupObject, List<ClientPropertyFilter>> currentFilters = new HashMap<ClientGroupObject, List<ClientPropertyFilter>>();
-    
+
     public void changeFilter(ClientGroupObject groupObject, List<ClientPropertyFilter> conditions) throws IOException {
 
         currentFilters.put(groupObject, conditions);
@@ -584,10 +590,10 @@ public class ClientFormController {
                     }
                 }
 
-                if(remoteForm.hasClientApply()) {
+                if (remoteForm.hasClientApply()) {
                     ClientApply clientApply = remoteForm.applyClientChanges();
-                    if(clientApply instanceof CheckFailed) // чтобы не делать лишний RMI вызов
-                        Log.printFailedMessage(((CheckFailed)clientApply).message);
+                    if (clientApply instanceof CheckFailed) // чтобы не делать лишний RMI вызов
+                        Log.printFailedMessage(((CheckFailed) clientApply).message);
                     else {
                         Object clientResult = null;
                         try {

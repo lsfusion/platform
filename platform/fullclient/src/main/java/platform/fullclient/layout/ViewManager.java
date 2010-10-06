@@ -46,8 +46,9 @@ public class ViewManager {
         page.addCDockableStateListener(new CDockableStateAdapter(page));
         page.setLocation(gridArea.getStationLocation());
         control.add(page);
-        page.setVisible(true);
         changeCloseAction(page);
+        page.setVisible(true);
+        page.comp.requestFocusInWindow();
     }
 
     public void openClient(int formID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException, JRException {

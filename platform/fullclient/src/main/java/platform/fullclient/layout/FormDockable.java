@@ -2,6 +2,8 @@ package platform.fullclient.layout;
 
 import bibliothek.gui.dock.common.DefaultMultipleCDockable;
 import bibliothek.gui.dock.common.MultipleCDockableFactory;
+import bibliothek.gui.dock.common.event.CFocusListener;
+import bibliothek.gui.dock.common.intern.CDockable;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.form.RemoteFormInterface;
 
@@ -13,8 +15,9 @@ import java.rmi.RemoteException;
 abstract class FormDockable extends DefaultMultipleCDockable {
 
     final int formID;
+    Component comp;
 
-    protected FormDockable(int formID, MultipleCDockableFactory<FormDockable,?> factory) {
+    protected FormDockable(int formID, MultipleCDockableFactory<FormDockable, ?> factory) {
         super(factory);
         this.formID = formID;
         setMinimizable(true);
@@ -23,20 +26,20 @@ abstract class FormDockable extends DefaultMultipleCDockable {
         setRemoveOnClose(true);
     }
 
-    protected FormDockable(int formID, MultipleCDockableFactory<FormDockable,?> factory, ClientNavigator navigator, RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException {
+    protected FormDockable(int formID, MultipleCDockableFactory<FormDockable, ?> factory, ClientNavigator navigator, RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException {
         this(formID, factory);
         createActiveComponent(navigator, remoteForm);
     }
 
-    protected FormDockable(int formID, ClientNavigator navigator, boolean currentSession, MultipleCDockableFactory<FormDockable,?> factory) throws IOException, ClassNotFoundException {
+    protected FormDockable(int formID, ClientNavigator navigator, boolean currentSession, MultipleCDockableFactory<FormDockable, ?> factory) throws IOException, ClassNotFoundException {
         this(formID, factory, navigator, navigator.remoteNavigator.createForm(formID, currentSession));
     }
 
-    protected FormDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, MultipleCDockableFactory<FormDockable,?> factory) throws IOException, ClassNotFoundException {
+    protected FormDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, MultipleCDockableFactory<FormDockable, ?> factory) throws IOException, ClassNotFoundException {
         this(remoteForm.getID(), factory, navigator, remoteForm);
     }
 
-    protected FormDockable(int formID, MultipleCDockableFactory<FormDockable,?> factory, ClientNavigator navigator) throws RemoteException, ClassNotFoundException, IOException{
+    protected FormDockable(int formID, MultipleCDockableFactory<FormDockable, ?> factory, ClientNavigator navigator) throws RemoteException, ClassNotFoundException, IOException {
         this(formID, factory, navigator, navigator.remoteNavigator.createForm(formID, true));
     }
 
@@ -46,14 +49,25 @@ abstract class FormDockable extends DefaultMultipleCDockable {
 
     void setActiveComponent(Component comp, String caption) {
         getContentPane().add(comp);
+        this.comp = comp;
         setTitleText(caption);
+
+        addFocusListener(new CFocusListener() {
+            public void focusGained(CDockable dockable) {
+                
+                ((FormDockable) dockable).comp.requestFocusInWindow();
+            }
+
+            public void focusLost(CDockable dockable) {
+            }
+        });
     }
 
     // закрываются пользователем
-    void closed(){
+    void closed() {
         getContentPane().removeAll();
     }
-    
+
     abstract Component getActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException;
 
     protected abstract String getCaption();
@@ -61,8 +75,8 @@ abstract class FormDockable extends DefaultMultipleCDockable {
     public int getFormID() {
         return formID;
     }
-    
-    public boolean pageChanged(){
+
+    public boolean pageChanged() {
         return false;
     }
 }
