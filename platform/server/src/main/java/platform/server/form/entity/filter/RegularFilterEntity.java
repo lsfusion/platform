@@ -26,7 +26,8 @@ public class RegularFilterEntity extends IdentityObject implements ServerIdentit
         pool.serializeObject(outStream, filter);
     }
 
-    public void customDeserialize(ServerSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+        ID = iID;
         filter = (FilterEntity) pool.deserializeObject(inStream);
     }
 }
