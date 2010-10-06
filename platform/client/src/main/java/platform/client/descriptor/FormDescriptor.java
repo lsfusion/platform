@@ -1,6 +1,7 @@
 package platform.client.descriptor;
 
 import platform.client.descriptor.filter.FilterDescriptor;
+import platform.client.descriptor.filter.RegularFilterGroupDescriptor;
 import platform.client.logics.ClientForm;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
@@ -17,11 +18,11 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
 
     public String caption;
     public boolean isPrintForm;
-    
+
     public List<GroupObjectDescriptor> groups;
     public List<PropertyDrawDescriptor> propertyDraws;
     public Set<FilterDescriptor> fixedFilters;
-    public List<FilterDescriptor> regularFilterGroups;
+    public List<RegularFilterGroupDescriptor> regularFilterGroups;
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         outStream.writeUTF(caption);

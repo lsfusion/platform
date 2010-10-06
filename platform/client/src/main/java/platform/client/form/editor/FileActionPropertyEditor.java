@@ -31,12 +31,11 @@ public class FileActionPropertyEditor extends JFileChooser
         return null;
     }
 
-    public Object getCellEditorValue() throws RemoteException {
+    public Object getCellEditorValue() {
         try {
             return returnValue == JFileChooser.APPROVE_OPTION ? IOUtils.getFileBytes(this.getSelectedFile()) : null;
         } catch (IOException e) {
-            //todo: error handling
-            return null;
+            throw new RuntimeException("Не могу прочитать файл: " + this.getSelectedFile());
         }
     }
 
