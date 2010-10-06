@@ -433,6 +433,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public void customDeserialize(ServerSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
-        //todo:
+        //десериализация не нужна, т.к. вместо создания объекта, происходит поиск в BL
     }
 }

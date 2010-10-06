@@ -16,8 +16,7 @@ public class PropertyDescriptor extends IdentityDescriptor implements ClientIden
     public Collection<PropertyInterfaceDescriptor> interfaces;
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        //todo:
-
+        //сериализация не нужна, т.к. вместо ссылки на свойства, нужно сериализовать ID
     }
 
     public void customDeserialize(ClientSerializationPool pool, int ID, DataInputStream inStream) throws IOException {

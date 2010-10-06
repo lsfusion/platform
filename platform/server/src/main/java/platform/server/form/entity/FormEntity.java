@@ -39,9 +39,8 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
 
     public List<GroupObjectEntity> groups = new ArrayList<GroupObjectEntity>();
     public List<PropertyDrawEntity> propertyDraws = new ArrayList<PropertyDrawEntity>();
-
     public Set<FilterEntity> fixedFilters = new HashSet<FilterEntity>();
-
+    public List<RegularFilterGroupEntity> regularFilterGroups = new ArrayList<RegularFilterGroupEntity>();
 
     public void addFixedFilter(FilterEntity filter) {
         fixedFilters.add(filter);
@@ -82,8 +81,6 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
     public void addFixedOrder(OrderEntity order, boolean descending) {
         fixedOrders.put(order, descending);
     }
-
-    public List<RegularFilterGroupEntity> regularFilterGroups = new ArrayList<RegularFilterGroupEntity>();
 
     public void addRegularFilterGroup(RegularFilterGroupEntity group) {
         regularFilterGroups.add(group);
@@ -390,6 +387,7 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
         pool.serializeCollection(outStream, groups);
         pool.serializeCollection(outStream, propertyDraws);
         pool.serializeCollection(outStream, fixedFilters);
+        pool.serializeCollection(outStream, regularFilterGroups);
     }
 
     public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
@@ -402,6 +400,7 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
         groups = pool.deserializeList(inStream);
         propertyDraws = pool.deserializeList(inStream);
         fixedFilters = pool.deserializeSet(inStream);
+        regularFilterGroups = pool.deserializeList(inStream);
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {

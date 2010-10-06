@@ -21,6 +21,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
     public List<GroupObjectDescriptor> groups;
     public List<PropertyDrawDescriptor> propertyDraws;
     public Set<FilterDescriptor> fixedFilters;
+    public List<FilterDescriptor> regularFilterGroups;
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         outStream.writeUTF(caption);
@@ -29,6 +30,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         pool.serializeCollection(outStream, groups);
         pool.serializeCollection(outStream, propertyDraws);
         pool.serializeCollection(outStream, fixedFilters);
+        pool.serializeCollection(outStream, regularFilterGroups);
     }
 
     public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
@@ -40,6 +42,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         groups = pool.deserializeList(inStream);
         propertyDraws = pool.deserializeList(inStream);
         fixedFilters = pool.deserializeSet(inStream);
+        regularFilterGroups = pool.deserializeList(inStream);
 
         client = pool.context;
     }
