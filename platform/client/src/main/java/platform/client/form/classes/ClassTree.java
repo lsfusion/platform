@@ -87,7 +87,7 @@ public abstract class ClassTree extends ClientTree {
 
     @Override
     protected void changeCurrentElement() {
-        changeCurrentClass(getSelectedClass(), getSelectedNode());
+        changeCurrentClass(getSelectionClass(), getSelectionNode());
         currentClassChanged();
     }
 
@@ -170,17 +170,9 @@ public abstract class ClassTree extends ClientTree {
         model.reload(parent);
     }
 
-    DefaultMutableTreeNode getSelectedNode() {
+    public ClientObjectClass getSelectionClass() {
 
-        TreePath path = getSelectionPath();
-        if (path == null) return null;
-
-        return (DefaultMutableTreeNode) path.getLastPathComponent();
-    }
-
-    public ClientObjectClass getSelectedClass() {
-
-        DefaultMutableTreeNode node = getSelectedNode();
+        DefaultMutableTreeNode node = getSelectionNode();
         if (node == null) return null;
 
         Object nodeObject = node.getUserObject();

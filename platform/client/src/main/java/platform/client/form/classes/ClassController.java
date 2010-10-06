@@ -35,7 +35,7 @@ public class ClassController {
 
             protected void currentClassChanged() {
                 try {
-                    form.changeGridClass(object, view.getSelectedClass());
+                    form.changeGridClass(object, view.getSelectionClass());
                 } catch (IOException e) {
                     throw new RuntimeException("Ошибка при изменении текущего класса", e);
                 }

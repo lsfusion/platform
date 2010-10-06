@@ -1,6 +1,8 @@
 package platform.client.descriptor.view;
 
+import platform.client.ClientTree;
 import platform.client.descriptor.FormDescriptor;
+import platform.client.descriptor.nodes.EditingTreeNode;
 import platform.client.descriptor.nodes.FormNode;
 
 import javax.swing.*;
@@ -24,7 +26,19 @@ public class FormDescriptorView extends JPanel {
 
         view = new JPanel();
 
-        tree = new JTree(new DefaultMutableTreeNode());
+        tree = new ClientTree() {
+
+            @Override
+            protected void changeCurrentElement() {
+
+                DefaultMutableTreeNode node = getSelectionNode();
+                if (node instanceof EditingTreeNode) {
+                    view.removeAll();
+                    view.add(((EditingTreeNode) node).createEditor());
+                    view.validate();
+                }
+            }
+        };
 
         JScrollPane pane = new JScrollPane(tree);
 

@@ -1,6 +1,8 @@
 package platform.client;
 
 import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -10,6 +12,7 @@ public abstract class ClientTree extends JTree {
 
     // не вызываем верхний конструктор, потому что у JTree по умолчанию он на редкость дебильный
     public ClientTree() {
+        super(new DefaultMutableTreeNode());
 
         addMouseListener(new MouseAdapter() {
 
@@ -33,4 +36,13 @@ public abstract class ClientTree extends JTree {
     }
 
     protected abstract void changeCurrentElement();
+
+    public DefaultMutableTreeNode getSelectionNode() {
+
+        TreePath path = getSelectionPath();
+        if (path == null) return null;
+
+        return (DefaultMutableTreeNode) path.getLastPathComponent();
+    }
+
 }

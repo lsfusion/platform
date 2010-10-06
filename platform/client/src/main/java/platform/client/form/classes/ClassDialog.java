@@ -69,9 +69,9 @@ public class ClassDialog extends JDialog {
 
     private void okPressed() {
         
-        ClientClass selectedClass = tree.getSelectedClass();
+        ClientClass selectedClass = tree.getSelectionClass();
         if (selectedClass instanceof ClientConcreteClass) {
-            chosenClass = (ClientConcreteClass)tree.getSelectedClass();
+            chosenClass = (ClientConcreteClass)tree.getSelectionClass();
             ClassDialog.this.setVisible(false);
         }
     }
