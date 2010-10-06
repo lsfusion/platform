@@ -5,6 +5,7 @@ import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.TextPropertyEditor;
 import platform.client.form.renderer.TextPropertyRenderer;
 import platform.interop.ComponentDesign;
+import platform.interop.Data;
 
 import java.awt.*;
 import java.io.DataInputStream;
@@ -16,6 +17,11 @@ public class ClientTextClass extends ClientDataClass {
 
     public ClientTextClass(DataInputStream inStream) throws IOException {
         super(inStream);
+    }
+
+    @Override
+    public byte getTypeId() {
+        return Data.TEXT;
     }
 
     public String getMinimumMask() {

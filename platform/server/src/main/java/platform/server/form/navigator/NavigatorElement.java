@@ -11,7 +11,7 @@ import java.util.List;
 
 public class NavigatorElement<T extends BusinessLogics<T>> {
 
-    private int ID;
+    protected int ID;
     public int getID() {
         return ID;
     }

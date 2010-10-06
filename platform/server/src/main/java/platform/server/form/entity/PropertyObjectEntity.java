@@ -12,10 +12,7 @@ import platform.server.serialization.ServerSerializationPool;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyImplement<PropertyObjectInterfaceEntity,P> implements OrderEntity<PropertyObjectInstance>, ServerIdentitySerializable {
 
@@ -33,6 +30,10 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyI
 
     private int ID = 0;
 
+    public PropertyObjectEntity() {
+        
+    }
+    
     public PropertyObjectEntity(int ID, LP<P> property, PropertyObjectInterfaceEntity... objects) {
         super(property.property);
         this.ID = ID;
@@ -64,10 +65,11 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyI
     }
 
     public void customDeserialize(ServerSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
-        //todo: think about finals
-//        property = (Property<P>) pool.deserializeObject(inStream);
+        int propertyId = inStream.readInt();
 
-//        mapping = new HashMap<P, PropertyObjectInterfaceEntity>();
+        property = pool.context.getProperty(propertyId);
+        mapping = new HashMap<P, PropertyObjectInterfaceEntity>();
+
         int size = inStream.readInt();
         for (int i = 0; i < size; ++i) {
             P inter = (P) pool.deserializeObject(inStream);

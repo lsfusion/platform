@@ -5,6 +5,7 @@ import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.DatePropertyEditor;
 import platform.client.form.renderer.DatePropertyRenderer;
 import platform.interop.ComponentDesign;
+import platform.interop.Data;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -17,6 +18,11 @@ public class ClientDateClass extends ClientDataClass {
 
     public ClientDateClass(DataInputStream inStream) throws IOException {
         super(inStream);
+    }
+
+    @Override
+    public byte getTypeId() {
+        return Data.DATE;
     }
 
     @Override

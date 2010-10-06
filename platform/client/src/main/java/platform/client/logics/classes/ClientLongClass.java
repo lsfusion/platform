@@ -1,5 +1,7 @@
 package platform.client.logics.classes;
 
+import platform.interop.Data;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.text.ParseException;
@@ -12,6 +14,11 @@ public class ClientLongClass extends ClientIntegralClass {
 
     public Class getJavaClass() {
         return Long.class;
+    }
+
+    @Override
+    public byte getTypeId() {
+        return Data.LONG;
     }
 
     public Object parseString(String s) throws ParseException {

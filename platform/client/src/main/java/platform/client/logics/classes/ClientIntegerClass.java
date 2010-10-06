@@ -3,6 +3,7 @@ package platform.client.logics.classes;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.editor.IntegerPropertyEditor;
 import platform.interop.ComponentDesign;
+import platform.interop.Data;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -18,6 +19,11 @@ public class ClientIntegerClass extends ClientIntegralClass {
 
     public Class getJavaClass() {
         return Integer.class;
+    }
+
+    @Override
+    public byte getTypeId() {
+        return Data.INTEGER;
     }
 
     public Object parseString(String s) throws ParseException {

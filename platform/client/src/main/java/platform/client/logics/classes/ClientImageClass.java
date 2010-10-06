@@ -5,6 +5,7 @@ import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.FilePropertyEditor;
 import platform.client.form.renderer.ImagePropertyRenderer;
 import platform.interop.ComponentDesign;
+import platform.interop.Data;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -14,6 +15,11 @@ public class ClientImageClass extends ClientFileClass {
 
     public ClientImageClass(DataInputStream inStream) throws IOException {
         super(inStream);
+    }
+
+    @Override
+    public byte getTypeId() {
+        return Data.IMAGE;
     }
 
     public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) {

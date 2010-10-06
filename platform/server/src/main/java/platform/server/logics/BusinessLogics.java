@@ -498,6 +498,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return property;
     }
 
+    public Property getProperty(int id) {
+        for (Property property : properties) {
+            if (property.getID() == id) {
+                return property;
+            }
+        }
+        return null;
+    }
+
     public class SelectionPropertySet extends PropertySet {
 
         protected Class<?> getPropertyClass() {
@@ -688,12 +697,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     @IdentityLazy
     private ActionProperty getAddObjectAction(ValueClass cls) {
-        return new AddObjectActionProperty(genSID(), (CustomClass) cls);
+        AddObjectActionProperty property = new AddObjectActionProperty(genSID(), (CustomClass) cls);
+        addProperty(null, new LP<ClassPropertyInterface>(property));
+        return property;
     }
 
     @IdentityLazy
     private ActionProperty getImportObjectAction(ValueClass cls) {
-        return new ImportFromExcelActionProperty(genSID(), (CustomClass) cls);
+        ImportFromExcelActionProperty property = new ImportFromExcelActionProperty(genSID(), (CustomClass) cls);
+        addProperty(null, new LP<ClassPropertyInterface>(property));
+        return property;
     }
 
     private static class ChangeUserActionProperty extends ActionProperty {
@@ -993,7 +1006,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     @IdentityLazy
-    Iterable<Property> getPropertyList() {
+    public Iterable<Property> getPropertyList() {
         LinkedHashSet<Property> linkedSet = new LinkedHashSet<Property>();
         for (Property property : properties)
             fillPropertyList(property, linkedSet);
@@ -1035,11 +1048,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public void fillIDs() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
-
-        int idPropertyNum = 0;
-        for (Property property : properties)
-            property.ID = idPropertyNum++;
-
         DataSession session = createSession();
 
         Map<Integer, CustomClass> usedSIds = new HashMap<Integer, CustomClass>();
@@ -1700,6 +1708,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private <T extends LP<?>> T addProperty(AbstractGroup group, boolean persistent, T lp) {
         lproperties.add(lp);
         properties.add(lp.property);
+        lp.property.ID = idGenerator.idShift();
         if (group != null) group.add(lp.property);
         if (persistent) {
             addPersistent(lp);

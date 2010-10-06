@@ -5,8 +5,10 @@ import platform.client.form.PropertyEditorComponent;
 import platform.client.form.editor.FileActionPropertyEditor;
 import platform.client.logics.ClientPropertyDraw;
 import platform.interop.ComponentDesign;
+import platform.interop.Data;
 
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.text.Format;
 
@@ -29,6 +31,18 @@ public class ClientFileActionClass extends ClientActionClass {
                 filterExtensions[i] = inStream.readUTF();
             }
         }
+    }
+
+    @Override
+    public byte getTypeId() {
+        return Data.FILEACTION;
+    }
+
+    @Override
+    public void serialize(DataOutputStream outStream) throws IOException {
+        super.serialize(outStream);
+
+        //todo:
     }
 
     @Override

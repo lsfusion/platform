@@ -15,6 +15,8 @@ public class ObjectDescriptor extends IdentityDescriptor implements PropertyObje
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, groupTo);
+        client.baseClass.serialize(outStream);
+        outStream.writeUTF(client.caption);
     }
 
     public void customDeserialize(ClientSerializationPool pool, int ID, DataInputStream inStream) throws IOException {

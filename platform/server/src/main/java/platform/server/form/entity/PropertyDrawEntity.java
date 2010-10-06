@@ -30,11 +30,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public boolean shouldBeLast = false;
     public Byte forceViewType = null;
 
-    @Override
-    public String toString() {
-        return propertyObject.toString();
-    }
-
     public PropertyDrawEntity() {
     }
 
@@ -83,5 +78,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         if (inStream.readBoolean()) {
             forceViewType = inStream.readByte();
         }
+    }
+
+    @Override
+    public String toString() {
+        return propertyObject.toString();
     }
 }

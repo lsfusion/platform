@@ -10,6 +10,7 @@ import platform.interop.ComponentDesign;
 
 import java.awt.*;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.text.Format;
 
@@ -17,6 +18,13 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
 
     ClientDataClass(DataInputStream inStream) throws IOException {
         super(inStream);
+    }
+
+    public abstract byte getTypeId();
+
+    @Override
+    public void serialize(DataOutputStream outStream) throws IOException {
+        outStream.writeByte(getTypeId());
     }
 
     public boolean hasChildren() {

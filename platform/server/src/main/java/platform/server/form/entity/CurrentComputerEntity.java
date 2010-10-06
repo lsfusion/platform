@@ -13,6 +13,7 @@ public class CurrentComputerEntity implements PropertyObjectInterfaceEntity {
 
     private CurrentComputerEntity() {
     }
+    
     public static final CurrentComputerEntity instance = new CurrentComputerEntity();
 
     public PropertyObjectInterfaceInstance getInstance(InstanceFactory instanceFactory) {

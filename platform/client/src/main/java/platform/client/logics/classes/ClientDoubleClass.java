@@ -3,6 +3,7 @@ package platform.client.logics.classes;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.editor.DoublePropertyEditor;
 import platform.interop.ComponentDesign;
+import platform.interop.Data;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -12,6 +13,11 @@ public class ClientDoubleClass extends ClientIntegralClass {
 
     public ClientDoubleClass(DataInputStream inStream) throws IOException {
         super(inStream);
+    }
+
+    @Override
+    public byte getTypeId() {
+        return Data.DOUBLE;
     }
 
     public Class getJavaClass() {

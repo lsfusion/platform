@@ -1,24 +1,19 @@
 package platform.server.serialization;
 
-import platform.interop.serialization.CustomSerializable;
 import platform.interop.serialization.SerializationPool;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
-import platform.server.logics.property.ObjectValueProperty;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.SelectionProperty;
-import platform.server.logics.property.actions.AddObjectActionProperty;
-import platform.server.logics.property.actions.ImportFromExcelActionProperty;
 
-public class ServerSerializationPool extends SerializationPool<Object> {
+public class ServerSerializationPool extends SerializationPool<BusinessLogics<? extends BusinessLogics<?>>> {
     public ServerSerializationPool() {
         this(null);
     }
 
-    public ServerSerializationPool(Object context) {
+    public ServerSerializationPool(BusinessLogics context) {
         super(context);
         //порядок добавления должен соответствовать порядку в ClientSerializationPool
 
@@ -39,11 +34,6 @@ public class ServerSerializationPool extends SerializationPool<Object> {
         addMapping2(CurrentComputerEntity.class);
         addMapping2(ObjectEntity.class);
         addMapping2(PropertyObjectEntity.class);
-
-        addMapping2(AddObjectActionProperty.class);
-        addMapping2(ImportFromExcelActionProperty.class);
-        addMapping2(ObjectValueProperty.class);
-        addMapping2(SelectionProperty.class);
     }
 
     // IDEA даёт ошибку при добавлении генериков,

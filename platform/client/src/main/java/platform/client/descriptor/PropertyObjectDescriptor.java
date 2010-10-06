@@ -16,7 +16,7 @@ public class PropertyObjectDescriptor extends IdentityDescriptor implements Orde
     private Map<PropertyInterfaceDescriptor, PropertyObjectInterfaceDescriptor> mapping;
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        pool.serializeObject(outStream, property);
+        outStream.writeInt(property.getID());
 
         outStream.writeInt(mapping.size());
         for (Map.Entry<PropertyInterfaceDescriptor, PropertyObjectInterfaceDescriptor> entry : mapping.entrySet()) {

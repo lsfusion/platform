@@ -36,10 +36,5 @@ public class ClientSerializationPool extends SerializationPool<ClientForm> {
         addMapping(CurrentComputerDescriptor.class);
         addMapping(ObjectDescriptor.class);
         addMapping(PropertyObjectDescriptor.class);
-
-        addMapping(AddObjectActionPropertyDescriptor.class);
-        addMapping(ImportFromExcelActionPropertyDescriptor.class);
-        addMapping(ObjectValuePropertyDescriptor.class);
-        addMapping(SelectionPropertyDescriptor.class);
     }
 }

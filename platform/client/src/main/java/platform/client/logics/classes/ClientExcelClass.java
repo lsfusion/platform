@@ -6,6 +6,7 @@ import platform.client.form.editor.DocumentPropertyEditor;
 import platform.client.form.editor.FilePropertyEditor;
 import platform.client.form.renderer.ExcelPropertyRenderer;
 import platform.interop.ComponentDesign;
+import platform.interop.Data;
 
 import java.awt.*;
 import java.io.DataInputStream;
@@ -20,6 +21,11 @@ public class ClientExcelClass extends ClientFileClass {
 
     public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) {
         return new ExcelPropertyRenderer(format, design);
+    }
+
+    @Override
+    public byte getTypeId() {
+        return Data.EXCEL;
     }
 
     @Override

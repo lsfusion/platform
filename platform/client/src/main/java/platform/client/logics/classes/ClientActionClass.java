@@ -10,6 +10,7 @@ import platform.client.form.renderer.ActionPropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.interop.ComponentDesign;
+import platform.interop.Data;
 
 import java.awt.*;
 import java.io.DataInputStream;
@@ -21,6 +22,11 @@ public class ClientActionClass extends ClientDataClass {
 
     public ClientActionClass(DataInputStream inStream) throws IOException {
         super(inStream);
+    }
+
+    @Override
+    public byte getTypeId() {
+        return Data.ACTION;
     }
 
     public String getPreferredMask() {

@@ -1,6 +1,9 @@
 package platform.client.logics.classes;
 
+import platform.interop.Data;
+
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.text.Format;
 import java.text.NumberFormat;
@@ -15,6 +18,19 @@ public class ClientNumericClass extends ClientDoubleClass {
 
         length = inStream.readInt();
         precision = inStream.readInt();
+    }
+
+    @Override
+    public byte getTypeId() {
+        return Data.NUMERIC;
+    }
+
+    @Override
+    public void serialize(DataOutputStream outStream) throws IOException {
+        super.serialize(outStream);
+
+        outStream.writeInt(length);
+        outStream.writeInt(precision);
     }
 
     public Format getDefaultFormat() {

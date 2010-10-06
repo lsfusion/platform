@@ -5,6 +5,7 @@ import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.DocumentPropertyEditor;
 import platform.client.form.renderer.WordPropertyRenderer;
 import platform.interop.ComponentDesign;
+import platform.interop.Data;
 
 import java.awt.*;
 import java.io.DataInputStream;
@@ -19,6 +20,11 @@ public class ClientWordClass extends ClientFileClass {
 
     public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) {
         return new WordPropertyRenderer(format, design);
+    }
+
+    @Override
+    public byte getTypeId() {
+        return Data.WORD;
     }
 
     @Override

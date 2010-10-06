@@ -49,7 +49,34 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
 
     public OrderedMap<OrderEntity<?>, Boolean> fixedOrders = new OrderedMap<OrderEntity<?>, Boolean>();
 
+    public String sID;
+    public boolean isPrintForm;
+
     public FormEntity() {
+    }
+
+    protected FormEntity(int ID, String caption) {
+        this(ID, caption, false);
+    }
+
+    FormEntity(int iID, String caption, boolean iisPrintForm) {
+        this(null, iID, caption, iisPrintForm);
+    }
+
+    protected FormEntity(NavigatorElement parent, int iID, String caption) {
+        this(parent, iID, caption, false);
+    }
+
+    protected FormEntity(NavigatorElement parent, int iID, String caption, boolean iisPrintForm) {
+        this(parent, iID, caption, genSID(iID), iisPrintForm);
+    }
+
+    protected FormEntity(NavigatorElement parent, int iID, String caption, String isID, boolean iisPrintForm) {
+        super(parent, iID, caption);
+        logger.info("Initializing form " + caption + "...");
+
+        sID = isID;
+        isPrintForm = iisPrintForm;
     }
 
     public void addFixedOrder(OrderEntity order, boolean descending) {
@@ -57,6 +84,7 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
     }
 
     public List<RegularFilterGroupEntity> regularFilterGroups = new ArrayList<RegularFilterGroupEntity>();
+
     public void addRegularFilterGroup(RegularFilterGroupEntity group) {
         regularFilterGroups.add(group);
     }
@@ -72,6 +100,7 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
 
     // счетчик идентификаторов
     private int IDCount = 0;
+
     public int genID() {
         return IDCount++;
     }
@@ -113,15 +142,17 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
         for (int i = 0; i < groups.length; i++) {
 
             Object group = groups[i];
-            if (group instanceof Boolean) continue;
-
-            if (group instanceof AbstractNode) {
+            if (group instanceof Boolean) {
+//                continue;
+            } else if (group instanceof AbstractNode) {
                 boolean upClasses = false;
-                if ((i+1)<groups.length && groups[i+1] instanceof Boolean) upClasses = (Boolean)groups[i+1];
-                addPropertyDraw((AbstractNode)group, upClasses, objects);
+                if ((i + 1) < groups.length && groups[i + 1] instanceof Boolean) {
+                    upClasses = (Boolean) groups[i + 1];
+                }
+                addPropertyDraw((AbstractNode) group, upClasses, objects);
+            } else if (group instanceof LP) {
+                this.addPropertyDraw((LP) group, objects);
             }
-            else if (group instanceof LP)
-                this.addPropertyDraw((LP)group, objects);
         }
     }
 
@@ -130,13 +161,17 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
     }
 
     protected void addPropertyDraw(AbstractNode group, boolean upClasses, GroupObjectEntity groupObject, ObjectEntity... objects) {
-        ValueClass[] valueClasses = new ValueClass[objects.length]; int ic = 0;
-        for(ObjectEntity object : objects)
+        ValueClass[] valueClasses = new ValueClass[objects.length];
+        int ic = 0;
+        for (ObjectEntity object : objects) {
             valueClasses[ic++] = object.baseClass;
+        }
 
-        for(Property property : group.getProperties(valueClasses))
-            if (property.interfaces.size() == objects.length)
+        for (Property property : group.getProperties(valueClasses)) {
+            if (property.interfaces.size() == objects.length) {
                 addPropertyDraw(property, upClasses, groupObject, objects);
+            }
+        }
     }
 
     <P extends PropertyInterface<P>> void addPropertyDraw(Property<P> property, boolean upClasses, GroupObjectEntity groupObject, ObjectEntity... objects) {
@@ -150,8 +185,9 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
                 propertyInterface.put(iface, propertyClass.getUpSet());
             }
 
-            if ((upClasses && property.anyInInterface(propertyInterface)) || (!upClasses && property.allInInterface(propertyInterface)))
+            if ((upClasses && property.anyInInterface(propertyInterface)) || (!upClasses && property.allInInterface(propertyInterface))) {
                 addPropertyDraw(new LP<P>(property, mapping), groupObject, objects);
+            }
         }
     }
 
@@ -166,12 +202,14 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
 
     public GroupObjectEntity getApplyObject(Collection<ObjectEntity> objects) {
         GroupObjectEntity result = null;
-        for(GroupObjectEntity group : groups)
-            for(ObjectEntity object : group)
-                if(objects.contains(object)) {
+        for (GroupObjectEntity group : groups) {
+            for (ObjectEntity object : group) {
+                if (objects.contains(object)) {
                     result = group;
                     break;
                 }
+            }
+        }
         return result;
     }
 
@@ -184,27 +222,29 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
 
             // придется поискать есть ли еще такие sID, чтобы добиться уникальности sID
             boolean foundSID = false;
-            for (PropertyDrawEntity property : propertyDraws)
+            for (PropertyDrawEntity property : propertyDraws) {
                 if (BaseUtils.nullEquals(property.getSID(), propertyImplement.property.sID)) {
                     foundSID = true;
                     break;
                 }
+            }
             propertyDraw.setSID(propertyImplement.property.sID + ((foundSID) ? propertyDraw.getID() : ""));
         }
 
 
         int count = 0;
-        for (PropertyDrawEntity property : propertyDraws){
-          if (property.shouldBeLast){
+        for (PropertyDrawEntity property : propertyDraws) {
+            if (property.shouldBeLast) {
                 propertyDraws.add(count, propertyDraw);
                 count = -1;
                 break;
-          }
-          count++;
+            }
+            count++;
         }
 
-        if (count >= 0)
+        if (count >= 0) {
             propertyDraws.add(propertyDraw);
+        }
 
 
         assert richDesign == null;
@@ -214,7 +254,7 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
 
     public PropertyObjectEntity addPropertyObject(LP property, PropertyObjectInterfaceEntity... objects) {
 
-        return new PropertyObjectEntity(genID(), property,objects);
+        return new PropertyObjectEntity(genID(), property, objects);
     }
 
 
@@ -245,9 +285,11 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
     protected PropertyDrawEntity getPropertyDraw(PropertyObjectEntity property) {
 
         PropertyDrawEntity resultPropertyDraw = null;
-        for (PropertyDrawEntity propertyDraw : propertyDraws)
-            if (propertyDraw.propertyObject.equals(property))
+        for (PropertyDrawEntity propertyDraw : propertyDraws) {
+            if (propertyDraw.propertyObject.equals(property)) {
                 resultPropertyDraw = propertyDraw;
+            }
+        }
 
         return resultPropertyDraw;
     }
@@ -259,9 +301,11 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
     protected PropertyDrawEntity getPropertyDraw(Property property) {
 
         PropertyDrawEntity resultPropertyDraw = null;
-        for (PropertyDrawEntity<?> propertyDraw : propertyDraws)
-            if (propertyDraw.propertyObject.property == property)
+        for (PropertyDrawEntity<?> propertyDraw : propertyDraws) {
+            if (propertyDraw.propertyObject.property == property) {
                 resultPropertyDraw = propertyDraw;
+            }
+        }
 
         return resultPropertyDraw;
     }
@@ -273,17 +317,20 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
     public PropertyDrawEntity getPropertyDraw(AbstractNode group, GroupObjectEntity groupObject) {
 
         PropertyDrawEntity resultPropertyDraw = null;
-        for (PropertyDrawEntity propertyDraw : propertyDraws)
-            if (group.hasChild(propertyDraw.propertyObject.property) && propertyDraw.toDraw.equals(groupObject))
+        for (PropertyDrawEntity propertyDraw : propertyDraws) {
+            if (group.hasChild(propertyDraw.propertyObject.property) && propertyDraw.toDraw.equals(groupObject)) {
                 resultPropertyDraw = propertyDraw;
+            }
+        }
 
         return resultPropertyDraw;
     }
 
     public void addHintsNoUpdate(AbstractGroup group) {
 
-        for (Property property : group.getProperties(null))
+        for (Property property : group.getProperties(null)) {
             addHintsNoUpdate(property);
+        }
     }
 
     public Collection<Property> hintsNoUpdate = new HashSet<Property>();
@@ -300,26 +347,21 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
         return "form" + iID;
     }
 
-    public String sID;
-    public boolean isPrintForm;
+    public Map<PropertyDrawEntity, GroupObjectEntity> forceDefaultDraw = new HashMap<PropertyDrawEntity, GroupObjectEntity>();
 
-    protected FormEntity(int ID, String caption) { this(ID, caption, false); }
-    FormEntity(int iID, String caption, boolean iisPrintForm) { this(null, iID, caption, iisPrintForm); }
-    protected FormEntity(NavigatorElement parent, int iID, String caption) { this(parent, iID, caption, false); }
-    protected FormEntity(NavigatorElement parent, int iID, String caption, boolean iisPrintForm) { this(parent, iID, caption, genSID(iID), iisPrintForm); }
-    protected FormEntity(NavigatorElement parent, int iID, String caption, String isID, boolean iisPrintForm) {
-        super(parent, iID, caption);
-        logger.info("Initializing form "+caption+"...");
-
-        sID = isID;
-        isPrintForm = iisPrintForm;
+    public DefaultFormView createDefaultRichDesign() {
+        return new DefaultFormView(this);
     }
 
-    public Map<PropertyDrawEntity, GroupObjectEntity> forceDefaultDraw = new HashMap<PropertyDrawEntity, GroupObjectEntity>();
-    public DefaultFormView createDefaultRichDesign() { return new DefaultFormView(this); }
-
     public FormView richDesign;
-    public FormView getRichDesign() { if (richDesign == null) return new DefaultFormView(this); else return richDesign; }
+
+    public FormView getRichDesign() {
+        if (richDesign == null) {
+            return new DefaultFormView(this);
+        } else {
+            return richDesign;
+        }
+    }
 
     protected GroupObjectHierarchy groupHierarchy;
 
@@ -342,12 +384,21 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        outStream.writeUTF(caption);
+        outStream.writeBoolean(isPrintForm);
+
         pool.serializeCollection(outStream, groups);
         pool.serializeCollection(outStream, propertyDraws);
         pool.serializeCollection(outStream, fixedFilters);
     }
 
-    public void customDeserialize(ServerSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+        ID = iID;
+        sID = genSID(ID);
+        
+        caption = inStream.readUTF();
+        isPrintForm = inStream.readBoolean();
+
         groups = pool.deserializeList(inStream);
         propertyDraws = pool.deserializeList(inStream);
         fixedFilters = pool.deserializeSet(inStream);
@@ -359,18 +410,19 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
     }
 
     public Map<ObjectEntity, List<PropertyObjectEntity>> autoActions = new HashMap<ObjectEntity, List<PropertyObjectEntity>>();
+
     public void addAutoAction(ObjectEntity object, PropertyObjectEntity... actions) {
         addAutoAction(object, false, actions);
     }
+
     public void addAutoAction(ObjectEntity object, boolean drop, PropertyObjectEntity... actions) {
         List<PropertyObjectEntity> propertyActions = autoActions.get(object);
-        if(propertyActions==null || drop) {
+        if (propertyActions == null || drop) {
             propertyActions = new ArrayList<PropertyObjectEntity>();
             autoActions.put(object, propertyActions);
         }
 
-        for(PropertyObjectEntity action : actions)
-            propertyActions.add(action);
+        propertyActions.addAll(Arrays.asList(actions));
     }
 
     public boolean hasClientApply() {
@@ -388,8 +440,8 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
     public static FormEntity<?> deserialize(byte[] formState) {
         DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(formState));
         try {
-            FormView richDesign = (FormView)new ServerSerializationPool().deserializeObject(inStream);
-            FormEntity formEntity = (FormEntity)new ServerSerializationPool().deserializeObject(inStream);
+            FormView richDesign = (FormView) new ServerSerializationPool().deserializeObject(inStream);
+            FormEntity formEntity = (FormEntity) new ServerSerializationPool().deserializeObject(inStream);
             formEntity.richDesign = richDesign;
             return formEntity;
         } catch (IOException e) {

@@ -5,6 +5,7 @@ import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.LogicalPropertyEditor;
 import platform.client.form.renderer.LogicalPropertyRenderer;
 import platform.interop.ComponentDesign;
+import platform.interop.Data;
 
 import java.awt.*;
 import java.io.DataInputStream;
@@ -16,6 +17,11 @@ public class ClientLogicalClass extends ClientDataClass {
 
     public ClientLogicalClass(DataInputStream inStream) throws IOException {
         super(inStream);
+    }
+
+    @Override
+    public byte getTypeId() {
+        return Data.LOGICAL;
     }
 
     @Override

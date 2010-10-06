@@ -15,18 +15,27 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
 
     ClientForm client;
 
+    public String caption;
+    public boolean isPrintForm;
+    
     public List<GroupObjectDescriptor> groups;
     public List<PropertyDrawDescriptor> propertyDraws;
     public Set<FilterDescriptor> fixedFilters;
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        outStream.writeUTF(caption);
+        outStream.writeBoolean(isPrintForm);
+
         pool.serializeCollection(outStream, groups);
         pool.serializeCollection(outStream, propertyDraws);
         pool.serializeCollection(outStream, fixedFilters);
     }
 
-    public void customDeserialize(ClientSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
-        this.ID = ID;
+    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+        ID = iID;
+
+        caption = inStream.readUTF();
+        isPrintForm = inStream.readBoolean();
 
         groups = pool.deserializeList(inStream);
         propertyDraws = pool.deserializeList(inStream);

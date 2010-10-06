@@ -1,6 +1,9 @@
 package platform.client.logics.classes;
 
+import platform.interop.Data;
+
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,5 +60,11 @@ public abstract class ClientObjectClass extends ClientClass {
 
     public boolean hasChildren() {
         return !children.isEmpty();
+    }
+
+    @Override
+    public void serialize(DataOutputStream outStream) throws IOException {
+        outStream.writeByte(Data.OBJECT);
+        outStream.writeInt(ID);
     }
 }

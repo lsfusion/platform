@@ -1,6 +1,7 @@
 package platform.server.form.entity;
 
 import platform.base.IdentityObject;
+import platform.server.classes.ClassSerializer;
 import platform.server.classes.ValueClass;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
@@ -21,8 +22,12 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
     public boolean addOnTransaction = false;
     public boolean resetOnApply = false;
 
-    public final ValueClass baseClass;
+    public ValueClass baseClass;
 
+    public ObjectEntity() {
+
+    }
+    
     public ObjectEntity(int ID, ValueClass baseClass, String caption) {
         super(ID);
         this.caption = caption;
@@ -43,5 +48,7 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
 
     public void customDeserialize(ServerSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
         groupTo = (GroupObjectEntity) pool.deserializeObject(inStream);
+        baseClass = ClassSerializer.deserialize(pool.context, inStream);
+        caption = inStream.readUTF();
     }
 }
