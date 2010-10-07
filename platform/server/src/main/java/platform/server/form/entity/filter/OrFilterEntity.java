@@ -15,6 +15,10 @@ public class OrFilterEntity extends FilterEntity {
     public FilterEntity op1;
     public FilterEntity op2;
 
+    public OrFilterEntity() {
+        
+    }
+    
     public OrFilterEntity(FilterEntity op1, FilterEntity op2) {
         this.op1 = op1;
         this.op2 = op2;

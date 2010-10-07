@@ -34,7 +34,9 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
         }
     }
 
-    public void customDeserialize(ClientSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+        ID = iID;
+        
         propertyObject = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
         toDraw = (GroupObjectDescriptor) pool.deserializeObject(inStream);
         columnGroupObjects = pool.deserializeList(inStream);

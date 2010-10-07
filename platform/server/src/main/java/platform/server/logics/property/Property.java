@@ -425,6 +425,16 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             return new ArrayList<Property>();
     }
 
+    public T getInterfaceById(int iID) {
+        for (T inter : interfaces) {
+            if (inter.getID() == iID) {
+                return inter;
+            }
+        }
+
+        return null;
+    }
+
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         outStream.writeUTF(sID);
         outStream.writeUTF(caption);

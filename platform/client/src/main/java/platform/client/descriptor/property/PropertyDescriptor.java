@@ -19,7 +19,8 @@ public class PropertyDescriptor extends IdentityDescriptor implements ClientIden
         //сериализация не нужна, т.к. вместо ссылки на свойства, нужно сериализовать ID
     }
 
-    public void customDeserialize(ClientSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+        ID = iID;
         sID = inStream.readUTF();
         caption = inStream.readUTF();
 

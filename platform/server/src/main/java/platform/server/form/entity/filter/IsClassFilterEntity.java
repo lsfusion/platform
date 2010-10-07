@@ -10,6 +10,10 @@ public class IsClassFilterEntity<P extends PropertyInterface> extends PropertyFi
 
     public CustomClass isClass;
 
+    public IsClassFilterEntity() {
+        
+    }
+    
     public IsClassFilterEntity(PropertyObjectEntity<P> iProperty, CustomClass isClass) {
         super(iProperty);
         this.isClass = isClass;

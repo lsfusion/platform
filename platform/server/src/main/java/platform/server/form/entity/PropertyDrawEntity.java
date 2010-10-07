@@ -68,7 +68,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
     }
 
-    public void customDeserialize(ServerSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+        ID = iID;
         propertyObject = (PropertyObjectEntity<P>) pool.deserializeObject(inStream);
         toDraw = (GroupObjectEntity) pool.deserializeObject(inStream);
         columnGroupObjects = pool.deserializeList(inStream);

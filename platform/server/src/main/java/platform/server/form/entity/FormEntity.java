@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
 
-public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> implements ServerIdentitySerializable {
+public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> implements ServerIdentitySerializable {
     private final static Logger logger = Logger.getLogger(FormEntity.class.getName());
 
     public boolean isReadOnly() {
@@ -388,6 +388,7 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
         pool.serializeCollection(outStream, propertyDraws);
         pool.serializeCollection(outStream, fixedFilters);
         pool.serializeCollection(outStream, regularFilterGroups);
+        pool.serializeMap(outStream, forceDefaultDraw);
     }
 
     public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
@@ -401,6 +402,7 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
         propertyDraws = pool.deserializeList(inStream);
         fixedFilters = pool.deserializeSet(inStream);
         regularFilterGroups = pool.deserializeList(inStream);
+        forceDefaultDraw = pool.deserializeMap(inStream);
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
@@ -436,12 +438,12 @@ public abstract class FormEntity<T extends BusinessLogics<T>> extends NavigatorE
         return null;
     }
 
-    public static FormEntity<?> deserialize(byte[] formState) {
+    public static FormEntity<?> deserialize(BusinessLogics BL, byte[] formState) {
         DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(formState));
         try {
-            FormView richDesign = (FormView) new ServerSerializationPool().deserializeObject(inStream);
-            FormEntity formEntity = (FormEntity) new ServerSerializationPool().deserializeObject(inStream);
-            formEntity.richDesign = richDesign;
+//            FormView richDesign = (FormView) new ServerSerializationPool(BL).deserializeObject(inStream);
+            FormEntity formEntity = (FormEntity) new ServerSerializationPool(BL).deserializeObject(inStream);
+//            formEntity.richDesign = richDesign;
             return formEntity;
         } catch (IOException e) {
             throw new RuntimeException("Ошибка при десериализации формы на сервере", e);

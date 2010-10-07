@@ -1,6 +1,7 @@
 package platform.server.serialization;
 
 import platform.interop.serialization.SerializationPool;
+import platform.interop.serialization.VerbosedSerializationPool;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.logics.BusinessLogics;
@@ -21,10 +22,15 @@ public class ServerSerializationPool extends SerializationPool<BusinessLogics<? 
         addMapping2(GroupObjectEntity.class);
         addMapping2(PropertyDrawEntity.class);
         addMapping2(Property.class);
+
         addMapping2(PropertyFilterEntity.class);
+        addMapping2(CompareFilterEntity.class);
+        addMapping2(IsClassFilterEntity.class);
+        addMapping2(NotNullFilterEntity.class);
+
         addMapping2(OrFilterEntity.class);
         addMapping2(NotFilterEntity.class);
-        addMapping2(CompareFilterEntity.class);
+
         addMapping2(RegularFilterEntity.class);
         addMapping2(RegularFilterGroupEntity.class);
 

@@ -14,6 +14,10 @@ public abstract class PropertyFilterEntity<P extends PropertyInterface> extends 
 
     public PropertyObjectEntity<P> property;
 
+    public PropertyFilterEntity() {
+        
+    }
+    
     public PropertyFilterEntity(PropertyObjectEntity<P> iProperty) {
         property = iProperty;
     }

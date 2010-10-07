@@ -81,6 +81,20 @@ public class SerializationPool<C> {
         return collection;
     }
 
+    public <K extends CustomSerializable<? extends SerializationPool<C>>,
+            V extends CustomSerializable<? extends SerializationPool<C>>> Map<K, V> deserializeMap(DataInputStream inStream) throws IOException {
+        HashMap<K, V> result = new HashMap<K, V>();
+        
+        int size = inStream.readInt();
+        for (int i = 0; i < size; ++i) {
+            K key = (K) deserializeObject(inStream);
+            V value = (V) deserializeObject(inStream);
+            result.put(key, value);
+        }
+        
+        return result;
+    }
+
     public CustomSerializable<? extends SerializationPool<C>> deserializeObject(DataInputStream inStream) throws IOException {
         int classId = inStream.readInt();
         if (classId == NULL_REF_CLASS) {
@@ -151,6 +165,20 @@ public class SerializationPool<C> {
         outStream.writeInt(list.size());
         for (T element : list) {
             serializeObject(outStream, element, type);
+        }
+    }
+
+    public <K extends CustomSerializable<? extends SerializationPool<C>>,
+            V extends CustomSerializable<? extends SerializationPool<C>>> void serializeMap(DataOutputStream outStream, Map<K, V> map) throws IOException {
+        serializeMap(outStream, map, null);
+    }
+
+    public <K extends CustomSerializable<? extends SerializationPool<C>>,
+            V extends CustomSerializable<? extends SerializationPool<C>>> void serializeMap(DataOutputStream outStream, Map<K, V> map, String type) throws IOException {
+        outStream.writeInt(map.size());
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            serializeObject(outStream, entry.getKey(), type);
+            serializeObject(outStream, entry.getValue(), type);
         }
     }
 

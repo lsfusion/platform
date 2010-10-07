@@ -20,12 +20,13 @@ public class PropertyObjectDescriptor extends IdentityDescriptor implements Orde
 
         outStream.writeInt(mapping.size());
         for (Map.Entry<PropertyInterfaceDescriptor, PropertyObjectInterfaceDescriptor> entry : mapping.entrySet()) {
-            pool.serializeObject(outStream, entry.getKey());
+            outStream.writeInt(entry.getKey().getID());
             pool.serializeObject(outStream, entry.getValue());
         }
     }
 
-    public void customDeserialize(ClientSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+        ID = iID;
         property = (PropertyDescriptor) pool.deserializeObject(inStream);
 
         mapping = new HashMap<PropertyInterfaceDescriptor, PropertyObjectInterfaceDescriptor>();

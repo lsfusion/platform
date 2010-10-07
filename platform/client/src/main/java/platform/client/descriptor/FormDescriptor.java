@@ -9,7 +9,9 @@ import platform.client.serialization.ClientSerializationPool;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class FormDescriptor extends IdentityDescriptor implements ClientIdentitySerializable {
@@ -23,6 +25,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
     public List<PropertyDrawDescriptor> propertyDraws;
     public Set<FilterDescriptor> fixedFilters;
     public List<RegularFilterGroupDescriptor> regularFilterGroups;
+    public Map<PropertyDrawDescriptor, GroupObjectDescriptor> forceDefaultDraw = new HashMap<PropertyDrawDescriptor, GroupObjectDescriptor>();
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         outStream.writeUTF(caption);
@@ -32,6 +35,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         pool.serializeCollection(outStream, propertyDraws);
         pool.serializeCollection(outStream, fixedFilters);
         pool.serializeCollection(outStream, regularFilterGroups);
+        pool.serializeMap(outStream, forceDefaultDraw);
     }
 
     public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
@@ -44,6 +48,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         propertyDraws = pool.deserializeList(inStream);
         fixedFilters = pool.deserializeSet(inStream);
         regularFilterGroups = pool.deserializeList(inStream);
+        forceDefaultDraw = pool.deserializeMap(inStream);
 
         client = pool.context;
     }

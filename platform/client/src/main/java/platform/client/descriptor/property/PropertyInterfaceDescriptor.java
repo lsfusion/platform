@@ -12,6 +12,7 @@ public class PropertyInterfaceDescriptor extends IdentityDescriptor implements C
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
     }
 
-    public void customDeserialize(ClientSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+        ID = iID;
     }
 }

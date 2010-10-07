@@ -23,10 +23,15 @@ public class ClientSerializationPool extends SerializationPool<ClientForm> {
         addMapping(GroupObjectDescriptor.class);
         addMapping(PropertyDrawDescriptor.class);
         addMapping(PropertyDescriptor.class);
+
         addMapping(PropertyFilterDescriptor.class);
+        addMapping(CompareFilterDescriptor.class);
+        addMapping(IsClassFilterDescriptor.class);
+        addMapping(NotNullFilterDescriptor.class);
+
         addMapping(OrFilterDescriptor.class);
         addMapping(NotFilterDescriptor.class);
-        addMapping(CompareFilterDescriptor.class);
+
         addMapping(RegularFilterDescriptor.class);
         addMapping(RegularFilterGroupDescriptor.class);
 

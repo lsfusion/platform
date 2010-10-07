@@ -46,7 +46,9 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
         pool.serializeObject(outStream, groupTo);
     }
 
-    public void customDeserialize(ServerSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+        ID = iID;
+
         groupTo = (GroupObjectEntity) pool.deserializeObject(inStream);
         baseClass = ClassSerializer.deserialize(pool.context, inStream);
         caption = inStream.readUTF();

@@ -5,9 +5,7 @@ import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 
 import javax.swing.*;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 
 public class RegularFilterEntity extends IdentityObject implements ServerIdentitySerializable {
     public transient FilterEntity filter;
@@ -15,6 +13,10 @@ public class RegularFilterEntity extends IdentityObject implements ServerIdentit
     public KeyStroke key;
     public boolean showKey = true;
 
+    public RegularFilterEntity() {
+        
+    }
+    
     public RegularFilterEntity(int iID, FilterEntity ifilter, String iname, KeyStroke ikey) {
         ID = iID;
         filter = ifilter;
@@ -29,5 +31,14 @@ public class RegularFilterEntity extends IdentityObject implements ServerIdentit
     public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
         ID = iID;
         filter = (FilterEntity) pool.deserializeObject(inStream);
+
+        name = inStream.readUTF();
+        try {
+            key = (KeyStroke) new ObjectInputStream(inStream).readObject();
+        } catch (ClassNotFoundException e) {
+            throw new IOException("Не могу десериализовать RegularFilterEntity");
+        }
+
+        showKey = inStream.readBoolean();
     }
 }

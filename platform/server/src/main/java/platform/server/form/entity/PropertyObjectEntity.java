@@ -64,7 +64,8 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyI
         }
     }
 
-    public void customDeserialize(ServerSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+        ID = iID;
         int propertyId = inStream.readInt();
 
         property = pool.context.getProperty(propertyId);
@@ -72,7 +73,8 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyI
 
         int size = inStream.readInt();
         for (int i = 0; i < size; ++i) {
-            P inter = (P) pool.deserializeObject(inStream);
+            int interId = inStream.readInt();
+            P inter = property.getInterfaceById(interId);
             PropertyObjectInterfaceEntity value = (PropertyObjectInterfaceEntity) pool.deserializeObject(inStream);
 
             mapping.put(inter, value);

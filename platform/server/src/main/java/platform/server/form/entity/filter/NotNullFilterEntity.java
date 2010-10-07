@@ -9,6 +9,10 @@ import platform.server.form.entity.PropertyObjectEntity;
 
 public class NotNullFilterEntity<P extends PropertyInterface> extends PropertyFilterEntity<P> {
 
+    public NotNullFilterEntity() {
+        
+    }
+    
     public NotNullFilterEntity(PropertyObjectEntity<P> iProperty) {
         super(iProperty);
     }

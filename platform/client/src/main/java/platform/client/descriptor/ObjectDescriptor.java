@@ -19,10 +19,12 @@ public class ObjectDescriptor extends IdentityDescriptor implements PropertyObje
         outStream.writeUTF(client.caption);
     }
 
-    public void customDeserialize(ClientSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+        ID = iID;
+        
         groupTo = (GroupObjectDescriptor) pool.deserializeObject(inStream);
 
-        client = pool.context.getObject(ID);
+        client = pool.context.getObject(iID);
     }
 
     @Override

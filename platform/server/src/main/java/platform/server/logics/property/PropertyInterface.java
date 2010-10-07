@@ -26,6 +26,11 @@ import java.util.Set;
 
 public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityObject implements PropertyInterfaceImplement<P>, Comparable<P>, ServerIdentitySerializable {
 
+    public PropertyInterface() {
+        this(-1);
+
+    }
+    
     public PropertyInterface(int ID) {
         this.ID = ID;
 
@@ -52,7 +57,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     }
 
     // для того чтобы "попробовать" изменения (на самом деле для кэша)
-    public final Expr changeExpr;
+    public Expr changeExpr;
 
     public MapDataChanges<P> mapJoinDataChanges(Map<P, KeyExpr> joinImplement, Expr expr, Where where, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
         return new MapDataChanges<P>();
@@ -69,6 +74,9 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
     }
 
-    public void customDeserialize(ServerSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+        ID = iID;
+
+        changeExpr = new PullExpr("interface " + ID);
     }
 }
