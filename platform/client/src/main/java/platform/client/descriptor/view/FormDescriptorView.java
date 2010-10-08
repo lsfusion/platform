@@ -28,7 +28,7 @@ public class FormDescriptorView extends JPanel {
 
         tree = new ClientTree() {
 
-            @Override
+            //@Override
             protected void changeCurrentElement() {
 
                 DefaultMutableTreeNode node = getSelectionNode();
@@ -55,6 +55,6 @@ public class FormDescriptorView extends JPanel {
 
     private void update() {
         model = new DefaultTreeModel(new FormNode(form)); 
-        tree.setModel(model);
+        tree.setModel(model);        
     }
 }

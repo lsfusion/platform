@@ -2,6 +2,7 @@ package platform.client.navigator;
 
 import platform.client.ClientTree;
 import platform.client.ExpandingTreeNode;
+import platform.client.descriptor.nodes.ClientTreeNode;
 import platform.client.logics.DeSerializer;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
@@ -13,10 +14,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.IOException;
 
 public abstract class AbstractNavigator extends JPanel {
@@ -47,7 +45,7 @@ public abstract class AbstractNavigator extends JPanel {
 
     class NavigatorTree extends ClientTree {
 
-        DefaultMutableTreeNode rootNode;
+        ClientTreeNode rootNode;
         final DefaultTreeModel model;
 
         public NavigatorTree() {
@@ -79,14 +77,20 @@ public abstract class AbstractNavigator extends JPanel {
 
         public void createRootNode() {
 
-            rootNode = new DefaultMutableTreeNode(null);
+            rootNode = new ClientTreeNode(null);
             model.setRoot(rootNode);
 
             rootNode.add(new ExpandingTreeNode());
             expandPath(new TreePath(rootNode));
+
+            rootNode.addSubTreeAction(new AbstractAction("Открыть"){
+                public void actionPerformed(ActionEvent e) {
+                    changeCurrentElement();
+                }
+            });
         }
 
-        @Override
+        //@Override
         protected void changeCurrentElement() {
 
             TreePath path = getSelectionPath();

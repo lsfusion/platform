@@ -1,8 +1,7 @@
 package platform.client.descriptor.nodes;
 
-import javax.swing.tree.DefaultMutableTreeNode;
 
-public class DescriptorNode<T> extends DefaultMutableTreeNode {
+public class DescriptorNode<T> extends ClientTreeNode {
 
     public DescriptorNode(Object userObject, boolean allowsChildren) {
         super(userObject, allowsChildren);
@@ -13,6 +12,6 @@ public class DescriptorNode<T> extends DefaultMutableTreeNode {
     }
 
     T getDescriptor() {
-        return (T)super.getUserObject();
+        return (T) super.getUserObject();
     }
 }

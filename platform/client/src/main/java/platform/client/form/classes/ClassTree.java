@@ -2,6 +2,7 @@ package platform.client.form.classes;
 
 import platform.client.ClientTree;
 import platform.client.ExpandingTreeNode;
+import platform.client.descriptor.nodes.ClientTreeNode;
 import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientObjectClass;
 
@@ -14,6 +15,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 
 public abstract class ClassTree extends ClientTree {
@@ -50,7 +52,12 @@ public abstract class ClassTree extends ClientTree {
         ID = treeID;
 
         currentClass = rootClass;
-        currentNode = new DefaultMutableTreeNode(rootClass);
+        currentNode = new ClientTreeNode(rootClass, true, ClientTreeNode.SUB_TREE,
+                new AbstractAction("Открыть"){
+                    public void actionPerformed(ActionEvent e){
+                        changeCurrentElement();
+                    }
+                });
 
         setToggleClickCount(-1);
         setBorder(new EtchedBorder(EtchedBorder.LOWERED));
@@ -85,7 +92,7 @@ public abstract class ClassTree extends ClientTree {
 
     }
 
-    @Override
+    //@Override
     protected void changeCurrentElement() {
         changeCurrentClass(getSelectionClass(), getSelectionNode());
         currentClassChanged();

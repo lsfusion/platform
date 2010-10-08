@@ -2,9 +2,8 @@ package platform.client.descriptor.nodes;
 
 import platform.client.descriptor.FormDescriptor;
 
-import javax.swing.tree.DefaultMutableTreeNode;
 
-public class FormNode extends DefaultMutableTreeNode {
+public class FormNode extends ClientTreeNode {
 
     public FormNode(FormDescriptor descriptor) {
         super(descriptor);
