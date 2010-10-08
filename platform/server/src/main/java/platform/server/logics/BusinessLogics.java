@@ -2856,7 +2856,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         // форма "перегружена"
         try {
             byte[] formState = IOUtils.getFileBytes(new File("conf/forms/form" + form.getID()));
-            FormEntity overridenForm = FormEntity.deserialize(formState);
+            FormEntity overridenForm = FormEntity.deserialize(this, formState);
             form.getParent().replaceChild(form, overridenForm);
             //TODO : здесь возвращать надо стопроцентов overridenForm, но будут проблемы с программным взаимодействием
             return form;

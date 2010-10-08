@@ -245,11 +245,13 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     }
 
     public RemoteFormInterface createForm(byte[] formState) throws RemoteException {
-        return createForm((FormEntity<T>)FormEntity.deserialize(formState), false);
+        FormEntity newFormEntity = FormEntity.deserialize(BL, formState);
+        newFormEntity.richDesign = newFormEntity.createDefaultRichDesign();
+        return createForm(newFormEntity, false);
     }
 
     public void saveForm(int formID, byte[] formState) throws RemoteException {
-        setFormEntity(formID, (FormEntity<T>)FormEntity.deserialize(formState));
+        setFormEntity(formID, (FormEntity<T>)FormEntity.deserialize(BL, formState));
 
         try {
             IOUtils.putFileBytes(new File("conf/forms/form" + formID), formState);

@@ -1,13 +1,13 @@
 package platform.server.serialization;
 
 import platform.interop.serialization.SerializationPool;
-import platform.interop.serialization.VerbosedSerializationPool;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
+
 
 public class ServerSerializationPool extends SerializationPool<BusinessLogics<? extends BusinessLogics<?>>> {
     public ServerSerializationPool() {

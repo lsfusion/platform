@@ -2,7 +2,7 @@ package platform.client.serialization;
 
 import platform.client.descriptor.*;
 import platform.client.descriptor.filter.*;
-import platform.client.descriptor.property.*;
+import platform.client.descriptor.property.PropertyDescriptor;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
 import platform.client.logics.ClientForm;
 import platform.interop.serialization.SerializationPool;
