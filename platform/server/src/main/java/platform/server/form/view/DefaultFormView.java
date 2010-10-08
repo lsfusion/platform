@@ -50,9 +50,10 @@ public class DefaultFormView extends FormView {
         readOnly = formEntity.isReadOnly();
 
         mainContainer = addContainer();
+        mainContainer.description = "Главный контейнер";
         mainContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
 
-        Map<ObjectView, ContainerView> buttonContainers = new HashMap<ObjectView, ContainerView>();
+        Map<ObjectView, ContainerView> filterContainers = new HashMap<ObjectView, ContainerView>();
         for (GroupObjectEntity group : formEntity.groups) {
 
             GroupObjectView clientGroup = new GroupObjectView(idGenerator, group);
@@ -61,6 +62,7 @@ public class DefaultFormView extends FormView {
             groupObjects.add(clientGroup);
 
             ContainerView groupContainer = addContainer(group.get(0).caption); // контейнер всей группы
+            groupContainer.description = "Группа объектов";
             groupContainer.constraints.order = formEntity.groups.indexOf(group);
             groupContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
             mainContainer.add(groupContainer);
@@ -68,17 +70,20 @@ public class DefaultFormView extends FormView {
             groupContainers.put(clientGroup, groupContainer);
 
             ContainerView gridContainer = addContainer(); // контейнер грида внутрь
+            gridContainer.description = "Таблица";
             gridContainer.constraints.order = 0;
             gridContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
             groupContainer.add(gridContainer);
 
             ContainerView panelContainer = addContainer(); // контейнер панели
+            panelContainer.description = "Панель";
             panelContainer.constraints.order = 1;
             groupContainer.add(panelContainer);
 
             panelContainers.put(clientGroup, panelContainer);
 
             ContainerView controlsContainer = addContainer(); // контейнер всех управляющих объектов
+            controlsContainer.description = "Управляющие объекты";
             controlsContainer.constraints.order = 10000;
             controlsContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
             controlsContainer.constraints.insetsInside = new Insets(0,0,0,0);
@@ -97,12 +102,13 @@ public class DefaultFormView extends FormView {
                 clientObject.classChooser.constraints.fillHorizontal = 0.2;
                 gridContainer.add(clientObject.classChooser);
 
-                ContainerView buttonContainer = addContainer(); // контейнер кнопок
-                buttonContainer.constraints.order = clientGroup.indexOf(clientObject);
-                buttonContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
-                controlsContainer.add(buttonContainer);
+                ContainerView filterContainer = addContainer(); // контейнер фильтров
+                filterContainer.description = "Контейнер фильтров";
+                filterContainer.constraints.order = clientGroup.indexOf(clientObject);
+                filterContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
+                controlsContainer.add(filterContainer);
 
-                buttonContainers.put(clientObject, buttonContainer);
+                filterContainers.put(clientObject, filterContainer);
 
                 mobjects.put(clientObject.entity, clientObject);
             }
@@ -146,12 +152,13 @@ public class DefaultFormView extends FormView {
             RegularFilterGroupView filterGroupView = new RegularFilterGroupView(idGenerator.idShift(), filterGroup);
             filterGroupView.constraints.order = 3 + formEntity.regularFilterGroups.indexOf(filterGroup);
             filterGroupView.constraints.insetsSibling = new Insets(0,4,2,4);
-            buttonContainers.get(mgroupObjects.get(formEntity.getApplyObject(groupObjects)).get(0)).add(filterGroupView);
+            filterContainers.get(mgroupObjects.get(formEntity.getApplyObject(groupObjects)).get(0)).add(filterGroupView);
 
             regularFilters.add(filterGroupView);
         }
 
         ContainerView formButtonContainer = addContainer();
+        formButtonContainer.description = "Служебные кнопки";
         formButtonContainer.constraints.order = 1000; // начинаем с очень большого числа, поскольку в mainContainer могут попадать и свойства, если toDraw == null
         formButtonContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
         mainContainer.add(formButtonContainer);

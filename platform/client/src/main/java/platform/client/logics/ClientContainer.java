@@ -13,12 +13,8 @@ public class ClientContainer extends ClientComponent {
         return ID;
     }
 
-    // заголовок контейнера
-    private String title;
-
-    public String getTitle() {
-        return title;
-    }
+    public String title;
+    public String description;
 
     public ClientContainer(DataInputStream inStream, Collection<ClientContainer> containers) throws IOException, ClassNotFoundException {
         super(inStream, containers);
@@ -26,5 +22,19 @@ public class ClientContainer extends ClientComponent {
         ID = inStream.readInt();
         if(!inStream.readBoolean())
             title = inStream.readUTF();
+        if (!inStream.readBoolean())
+            description = inStream.readUTF();
+    }
+
+    @Override
+    public String toString() {
+        String result = title == null ? "" : title;
+        if (description == null)
+            result += " (";
+        else
+            result += (result.isEmpty() ? "" : " ") + "(" + description + ",";
+        result += ID;
+        result += ")";
+        return result;
     }
 }

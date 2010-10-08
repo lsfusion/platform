@@ -10,5 +10,6 @@ public class FormNode extends ClientTreeNode {
 
         add(new GroupObjectFolder(descriptor.groups, descriptor.propertyDraws));
         add(new FixedFilterFolder(descriptor.fixedFilters));
+        add(new LayoutFolder(descriptor.client));
     }
 }

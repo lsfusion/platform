@@ -8,6 +8,7 @@ import java.util.List;
 public class ContainerView extends ComponentView {
 
     public String title;
+    public String description;
 
     public ContainerView(int ID) {
         super(ID);
@@ -39,6 +40,9 @@ public class ContainerView extends ComponentView {
         outStream.writeBoolean(title==null);
         if(title!=null)
             outStream.writeUTF(title);
+        outStream.writeBoolean(description==null);
+        if (description!=null)
+            outStream.writeUTF(description);
     }
 
     public void fillOrderList(List<ContainerView> containers) {

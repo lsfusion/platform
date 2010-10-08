@@ -25,6 +25,12 @@ public class ClientForm implements Serializable, LogicsSupplier {
     // нужен именно List, чтобы проще был обход по дереву
     // считается, что containers уже топологически отсортированы
     public final List<ClientContainer> containers;
+    public ClientContainer getMainContainer() {
+        for (ClientContainer container : containers)
+            if (container.container == null)
+                return container;
+        return null;
+    }
 
     public List<ClientGroupObject> groupObjects;
     private List<ClientPropertyDraw> properties;

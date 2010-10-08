@@ -16,7 +16,7 @@ import java.util.Set;
 
 public class FormDescriptor extends IdentityDescriptor implements ClientIdentitySerializable {
 
-    ClientForm client;
+    public ClientForm client;
 
     public String caption;
     public boolean isPrintForm;

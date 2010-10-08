@@ -18,7 +18,7 @@ class ClientFormContainer extends JPanel{
         
         this.key = key;
 
-        String title = this.key.getTitle();
+        String title = this.key.title;
         if (title != null) {
             TitledBorder border = BorderFactory.createTitledBorder(title);
             setBorder(border);
