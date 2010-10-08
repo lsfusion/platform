@@ -3,11 +3,11 @@ package platform.client.descriptor.nodes;
 
 public class DescriptorNode<T> extends ClientTreeNode {
 
-    public DescriptorNode(Object userObject, boolean allowsChildren) {
+    public DescriptorNode(T userObject, boolean allowsChildren) {
         super(userObject, allowsChildren);
     }
 
-    public DescriptorNode(Object userObject) {
+    public DescriptorNode(T userObject) {
         super(userObject);
     }
 

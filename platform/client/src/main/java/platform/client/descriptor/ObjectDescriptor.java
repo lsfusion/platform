@@ -7,11 +7,12 @@ import platform.client.serialization.ClientSerializationPool;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 public class ObjectDescriptor extends IdentityDescriptor implements PropertyObjectInterfaceDescriptor, ClientIdentitySerializable {
 
-    ClientObject client;
-    private GroupObjectDescriptor groupTo;
+    public ClientObject client;
+    public GroupObjectDescriptor groupTo;
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, groupTo);
@@ -30,5 +31,9 @@ public class ObjectDescriptor extends IdentityDescriptor implements PropertyObje
     @Override
     public String toString() {
         return client.caption;
+    }
+
+    public GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groups) {
+        return groupTo;
     }
 }

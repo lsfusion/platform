@@ -13,10 +13,17 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
 
     ClientPropertyDraw client;
 
-    private PropertyObjectDescriptor propertyObject;
+    public PropertyObjectDescriptor propertyObject;
     public GroupObjectDescriptor toDraw;
     private List<GroupObjectDescriptor> columnGroupObjects;
     private PropertyObjectDescriptor propertyCaption;
+
+    public GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groupList) {
+        if(toDraw!=null)
+            return toDraw;
+        else
+            return propertyObject.getGroupObject(groupList);
+    }
 
     private boolean shouldBeLast;
     private Byte forceViewType;

@@ -8,7 +8,7 @@ import javax.swing.tree.TreePath;
 import java.awt.event.*;
 import java.util.ArrayList;
 
-public abstract class ClientTree extends JTree {
+public class ClientTree extends JTree {
 
 
     // не вызываем верхний конструктор, потому что у JTree по умолчанию он на редкость дебильный
@@ -32,7 +32,8 @@ public abstract class ClientTree extends JTree {
 
     }
 
-    //protected abstract void changeCurrentElement();
+    protected void changeCurrentElement() {        
+    }
 
     public DefaultMutableTreeNode getSelectionNode() {
 

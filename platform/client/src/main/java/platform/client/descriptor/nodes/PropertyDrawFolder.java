@@ -2,18 +2,18 @@ package platform.client.descriptor.nodes;
 
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.PropertyDrawDescriptor;
+import platform.base.BaseUtils;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.List;
 
-public class PropertyDrawFolder extends DefaultMutableTreeNode {
+public class PropertyDrawFolder extends GroupElementFolder {
 
-    public PropertyDrawFolder(GroupObjectDescriptor group, List<PropertyDrawDescriptor> propertyDraws) {
-        super("Свойства");
+    public PropertyDrawFolder(List<GroupObjectDescriptor> groupList, GroupObjectDescriptor group, List<PropertyDrawDescriptor> propertyDraws) {
+        super(group, "Свойства");
 
         for (PropertyDrawDescriptor propertyDraw : propertyDraws)
-            if (group.equals(propertyDraw.toDraw)) {
-                add(new PropertyDrawNode(propertyDraw));
-            }
+            if (group==null || group.equals(propertyDraw.getGroupObject(groupList)))
+                add(new PropertyDrawNode(group, propertyDraw));
     }
 }

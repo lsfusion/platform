@@ -5,6 +5,7 @@ import platform.client.logics.ClientForm;
 import platform.client.navigator.AbstractNavigator;
 import platform.client.navigator.ClientNavigatorForm;
 import platform.client.serialization.ClientSerializationPool;
+import platform.client.Main;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
@@ -19,7 +20,7 @@ public class NavigatorDescriptorView extends JPanel {
 
         setLayout(new BorderLayout());
 
-        final FormDescriptorView formView = new FormDescriptorView();
+        final FormDescriptorView formView = new FormDescriptorView(Main.remoteLogics);
 
         final AbstractNavigator navigatorView = new AbstractNavigator(navigator) {
 

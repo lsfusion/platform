@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.*;
 
-public class SerializationPool<C> {
+public abstract class SerializationPool<C> {
     private Map<Integer, Class<? extends CustomSerializable<? extends SerializationPool<C>>>> idToClass
             = new HashMap<Integer,Class<? extends CustomSerializable<? extends SerializationPool<C>>>>();
     private Map<Class<? extends CustomSerializable<? extends SerializationPool<C>>>, Integer> classToId

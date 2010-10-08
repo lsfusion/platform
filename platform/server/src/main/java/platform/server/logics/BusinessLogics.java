@@ -6,6 +6,8 @@ import org.springframework.core.io.FileSystemResource;
 import platform.base.*;
 import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
+import platform.interop.serialization.RemoteDescriptorInterface;
+import platform.interop.serialization.SerializationPool;
 import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.interop.action.UserChangedClientAction;
@@ -54,6 +56,7 @@ import platform.server.logics.table.TableFactory;
 import platform.server.net.ServerInstanceLocator;
 import platform.server.net.ServerInstanceLocatorSettings;
 import platform.server.session.*;
+import platform.server.serialization.ServerSerializationPool;
 
 import java.io.*;
 import java.rmi.NotBoundException;
@@ -2962,6 +2965,48 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public void outputPropertyClasses() {
         for (LP lp : lproperties) {
             logger.info(lp.property.sID + " : " + lp.property.caption + " - " + lp.getClassWhere());
+        }
+    }
+
+    public byte[] getPropertyObjectsByteArray(byte[] byteClasses) {
+        try {
+            DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(byteClasses));
+
+            Set<Integer> atLeastOne = new HashSet<Integer>();
+            Map<Integer, ValueClass> classes = new HashMap<Integer, ValueClass>();
+            int size = inStream.readInt();
+            for(int i=0;i<size;i++) {
+                Integer ID = inStream.readInt();
+                classes.put(ID, ClassSerializer.deserialize(this, inStream));
+                if(inStream.readBoolean())
+                    atLeastOne.add(ID);
+            }
+
+            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+
+            DataOutputStream dataStream = new DataOutputStream(outStream);
+
+            ServerSerializationPool pool = new ServerSerializationPool();
+
+            int num = 0;
+            for(Property<?> property : properties)
+                if(property.interfaces.size() == atLeastOne.size())
+                    num++;
+            dataStream.writeInt(num);
+            for(Property<?> property : properties) {
+                if(property.interfaces.size() == atLeastOne.size()) {
+                    pool.serializeObject(dataStream, property);
+                    Iterator<Integer> it = atLeastOne.iterator();
+                    for(PropertyInterface propertyInterface : property.interfaces) {
+                        pool.serializeObject(dataStream, propertyInterface);
+                        dataStream.writeInt(it.next());
+                    }
+                }
+            }
+
+            return outStream.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

@@ -1,6 +1,7 @@
 package platform.client.descriptor.property;
 
 import platform.client.descriptor.IdentityDescriptor;
+import platform.client.descriptor.ServerIdentityDescriptor;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 
@@ -9,7 +10,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 
-public class PropertyDescriptor extends IdentityDescriptor implements ClientIdentitySerializable {
+public class PropertyDescriptor extends ServerIdentityDescriptor implements ClientIdentitySerializable {
     private String caption;
     private String sID;
 
@@ -25,5 +26,10 @@ public class PropertyDescriptor extends IdentityDescriptor implements ClientIden
         caption = inStream.readUTF();
 
         interfaces = pool.deserializeList(inStream);
+    }
+
+    @Override
+    public String toString() {
+        return caption;
     }
 }

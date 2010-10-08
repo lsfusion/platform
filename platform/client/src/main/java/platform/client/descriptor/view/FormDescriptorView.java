@@ -4,41 +4,35 @@ import platform.client.ClientTree;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.nodes.EditingTreeNode;
 import platform.client.descriptor.nodes.FormNode;
+import platform.interop.serialization.RemoteDescriptorInterface;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 
 public class FormDescriptorView extends JPanel {
 
     FormDescriptor form;
 
-    JTree tree;
+    ClientTree tree;
     TreeModel model;
 
     JPanel view;
 
-    public FormDescriptorView() {
+    final RemoteDescriptorInterface remote;
 
+    public FormDescriptorView(RemoteDescriptorInterface remote) {
+
+        this.remote = remote;
+        
         setLayout(new BorderLayout());
 
         view = new JPanel();
 
-        tree = new ClientTree() {
-
-            //@Override
-            protected void changeCurrentElement() {
-
-                DefaultMutableTreeNode node = getSelectionNode();
-                if (node instanceof EditingTreeNode) {
-                    view.removeAll();
-                    view.add(((EditingTreeNode) node).createEditor());
-                    view.validate();
-                }
-            }
-        };
+        tree = new ClientTree();
 
         JScrollPane pane = new JScrollPane(tree);
 
@@ -54,7 +48,19 @@ public class FormDescriptorView extends JPanel {
     }
 
     private void update() {
-        model = new DefaultTreeModel(new FormNode(form)); 
+        FormNode rootNode = new FormNode(form);
+        rootNode.addSubTreeAction(new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                DefaultMutableTreeNode node = tree.getSelectionNode();
+                if (node instanceof EditingTreeNode) {
+                    view.removeAll();
+                    view.add(((EditingTreeNode) node).createEditor(form, remote));
+                    view.validate();
+                }
+            }
+        });
+
+        model = new DefaultTreeModel(rootNode);
         tree.setModel(model);        
     }
 }

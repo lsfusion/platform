@@ -2,18 +2,53 @@ package platform.client.descriptor;
 
 import platform.client.descriptor.property.PropertyDescriptor;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
-import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
+import platform.client.serialization.ClientIdentitySerializable;
+import platform.interop.serialization.IdentitySerializable;
+import platform.interop.serialization.SerializationPool;
+import platform.base.BaseUtils;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
-public class PropertyObjectDescriptor extends IdentityDescriptor implements OrderDescriptor, ClientIdentitySerializable {
-    private PropertyDescriptor property;
-    private Map<PropertyInterfaceDescriptor, PropertyObjectInterfaceDescriptor> mapping;
+public class PropertyObjectDescriptor extends PropertyDescriptorImplement<PropertyObjectInterfaceDescriptor> implements OrderDescriptor, ClientIdentitySerializable {
+
+    public PropertyObjectDescriptor() {
+    }
+
+    protected int ID;
+
+    public int getID() {
+        return ID;
+    }
+
+    public PropertyObjectDescriptor(PropertyDescriptor property, Map<PropertyInterfaceDescriptor, ? extends PropertyObjectInterfaceDescriptor> mapping) {
+        super(property, (Map<PropertyInterfaceDescriptor,PropertyObjectInterfaceDescriptor>) mapping);
+    }
+
+    public PropertyObjectDescriptor(PropertyDescriptorImplement<PropertyObjectInterfaceDescriptor> implement) {
+        super(implement);
+    }
+
+    public Set<ObjectDescriptor> getObjects() {
+        Set<ObjectDescriptor> result = new HashSet<ObjectDescriptor>();
+        for(PropertyObjectInterfaceDescriptor implement : mapping.values())
+            if(implement instanceof ObjectDescriptor)
+                result.add((ObjectDescriptor)implement);
+        return result;
+    }
+
+    public GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groupList) {
+        int result = -1;
+        for(ObjectDescriptor object : getObjects()) {
+            int groupInd = groupList.indexOf(object.groupTo);
+            if(groupInd > result)
+                result = groupInd;
+        }
+        return result>=0?groupList.get(result):null;
+    }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         outStream.writeInt(property.getID());
@@ -37,5 +72,20 @@ public class PropertyObjectDescriptor extends IdentityDescriptor implements Orde
 
             mapping.put(inter, value);
         }
+    }
+
+    @Override
+    public String toString() {
+        return property + "[" + BaseUtils.toString(mapping.values(), ",") + "]";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o || o instanceof PropertyObjectDescriptor && property.equals(((PropertyObjectDescriptor) o).property) && mapping.equals(((PropertyObjectDescriptor) o).mapping);
+    }
+
+    @Override
+    public int hashCode() {
+        return property.hashCode() * 31 + mapping.hashCode();
     }
 }

@@ -5,6 +5,7 @@ import platform.client.logics.ClientRegularFilterGroup;
 import platform.client.serialization.ClientCustomSerializable;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
+import platform.client.descriptor.GroupObjectDescriptor;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -13,7 +14,14 @@ import java.util.List;
 
 public class RegularFilterGroupDescriptor extends IdentityDescriptor implements ClientIdentitySerializable {
 
-    private List<RegularFilterDescriptor> filters;
+    public List<RegularFilterDescriptor> filters;
+
+    public GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groupList) {
+        GroupObjectDescriptor result = null;
+        for(RegularFilterDescriptor filter : filters)
+            result = FilterDescriptor.getDownGroup(result, filter.getGroupObject(groupList), groupList);
+        return result;
+    }
 
     ClientRegularFilterGroup client;
 

@@ -5,10 +5,11 @@ import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.PendingRemote;
 import platform.interop.remote.PingRemote;
+import platform.interop.serialization.RemoteDescriptorInterface;
 
 import java.rmi.RemoteException;
 
-public interface RemoteLogicsInterface extends PendingRemote, PingRemote {
+public interface RemoteLogicsInterface extends PendingRemote, PingRemote, RemoteDescriptorInterface {
 
     String getName() throws RemoteException;
 
