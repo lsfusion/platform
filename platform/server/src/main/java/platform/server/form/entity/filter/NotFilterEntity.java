@@ -14,6 +14,10 @@ public class NotFilterEntity extends FilterEntity {
 
     public FilterEntity filter;
 
+    public NotFilterEntity() {
+        
+    }
+    
     public NotFilterEntity(FilterEntity filter) {
         this.filter = filter;
     }
@@ -30,7 +34,7 @@ public class NotFilterEntity extends FilterEntity {
         pool.serializeObject(outStream, filter);
     }
 
-    public void customDeserialize(ServerSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
         filter = (FilterEntity) pool.deserializeObject(inStream);
     }
 }

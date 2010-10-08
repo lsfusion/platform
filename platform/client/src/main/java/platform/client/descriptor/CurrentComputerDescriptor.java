@@ -11,7 +11,7 @@ public class CurrentComputerDescriptor implements PropertyObjectInterfaceDescrip
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
     }
 
-    public void customDeserialize(ClientSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
     }
 
     public GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groups) {

@@ -1,5 +1,8 @@
 package platform.server.form.view;
 
+import platform.server.serialization.ServerSerializationPool;
+
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,6 +22,7 @@ public class ContainerView extends ComponentView {
     }
 
     List<ComponentView> children = new ArrayList<ComponentView>();
+
     public void add(ComponentView comp) {
 
         if (comp.getContainer() != null)
@@ -36,10 +40,10 @@ public class ContainerView extends ComponentView {
     public void serialize(DataOutputStream outStream) throws IOException {
         super.serialize(outStream);
 
-        outStream.writeInt(ID);
-        outStream.writeBoolean(title==null);
-        if(title!=null)
+        outStream.writeBoolean(title != null);
+        if (title != null) {
             outStream.writeUTF(title);
+        }
         outStream.writeBoolean(description==null);
         if (description!=null)
             outStream.writeUTF(description);
@@ -48,5 +52,25 @@ public class ContainerView extends ComponentView {
     public void fillOrderList(List<ContainerView> containers) {
         if(container!=null) container.fillOrderList(containers);
         if(!containers.contains(this)) containers.add(this);
+    }
+
+    @Override
+    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        super.customSerialize(pool, outStream, serializationType);
+
+        pool.serializeCollection(outStream, children);
+
+        pool.writeString(outStream, title);
+        pool.writeString(outStream, description);
+    }
+
+    @Override
+    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+        super.customDeserialize(pool, iID, inStream);
+
+        children = pool.deserializeList(inStream);
+
+        title = pool.readString(inStream);
+        description = pool.readString(inStream);
     }
 }

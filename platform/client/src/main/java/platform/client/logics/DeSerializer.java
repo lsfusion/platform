@@ -1,6 +1,7 @@
 package platform.client.logics;
 
 import platform.client.logics.classes.ClientClass;
+import platform.client.logics.classes.ClientTypeSerializer;
 import platform.client.navigator.ClientNavigatorElement;
 
 import java.io.ByteArrayInputStream;
@@ -27,7 +28,7 @@ public class DeSerializer {
         List<ClientClass> classes = new ArrayList<ClientClass>();
         int count = dataStream.readInt();
         for (int i = 0; i < count; i++)
-            classes.add(ClientClass.deserialize(dataStream));
+            classes.add(ClientTypeSerializer.deserializeClientClass(dataStream));
         return classes;
     }
 

@@ -15,7 +15,7 @@ public class DataObjectDescriptor implements PropertyObjectInterfaceDescriptor {
         BaseUtils.serializeObject(object);
     }
 
-    public void customDeserialize(ClientSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
         object = BaseUtils.deserializeObject(inStream);
 
         //todo: think about baseClass serialization

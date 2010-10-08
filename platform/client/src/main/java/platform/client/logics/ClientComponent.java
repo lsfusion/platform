@@ -1,17 +1,18 @@
 package platform.client.logics;
 
+import platform.client.serialization.ClientCustomSerializable;
+import platform.client.serialization.ClientIdentitySerializable;
+import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ComponentDesign;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexConstraints;
 
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 
-public class ClientComponent implements Serializable {
+public class ClientComponent implements Serializable, ClientIdentitySerializable {
 
     public int compID; // ID есть и у свойст и у объектов, так что чтобы не путаться
 
@@ -24,15 +25,9 @@ public class ClientComponent implements Serializable {
 
     public boolean show;
 
-    //пришлось сделать "конструктор копирования" для ремаппинга
-    protected ClientComponent(ClientComponent original) {
-        this.design = original.design;
-        this.container = original.container;
-        this.constraints = original.constraints;
-        this.defaultComponent = original.defaultComponent = false;
-        this.show = original.show;
+    public ClientComponent() {
     }
-    
+
     ClientComponent(DataInputStream inStream, Collection<ClientContainer> containers) throws IOException, ClassNotFoundException {
 
         compID = inStream.readInt();
@@ -59,6 +54,45 @@ public class ClientComponent implements Serializable {
 
         defaultComponent = inStream.readBoolean();
 
+        show = inStream.readBoolean();
+    }
+
+    public int getID() {
+        return compID;
+    }
+
+
+    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        pool.writeObject(outStream, design);
+        pool.serializeObject(outStream, container);
+        pool.writeObject(outStream, constraints);
+
+        outStream.writeInt(constraints.intersects.size());
+        for (Map.Entry<Integer, DoNotIntersectSimplexConstraint> intersect : constraints.intersects.entrySet()) {
+            outStream.writeInt(intersect.getKey());
+            pool.writeObject(outStream, intersect.getValue());
+        }
+
+        outStream.writeBoolean(defaultComponent);
+        outStream.writeBoolean(show);
+    }
+
+    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+        compID = iID;
+        design = pool.readObject(inStream);
+
+        container = pool.deserializeObject(inStream);
+
+        constraints = pool.readObject(inStream);
+
+        constraints.intersects = new HashMap<Integer, DoNotIntersectSimplexConstraint>();
+        int count = inStream.readInt();
+        for (int i = 0; i < count; i++) {
+            constraints.intersects.put(inStream.readInt(), (DoNotIntersectSimplexConstraint) pool.readObject(inStream));
+        }
+        constraints.ID = compID;
+
+        defaultComponent = inStream.readBoolean();
         show = inStream.readBoolean();
     }
 }

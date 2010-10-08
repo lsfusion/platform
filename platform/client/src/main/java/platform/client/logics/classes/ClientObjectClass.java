@@ -46,7 +46,7 @@ public abstract class ClientObjectClass extends ClientClass {
 
         int count = inStream.readByte();
         for (int i = 0; i < count; i++) {
-            children.add(ClientClass.deserialize(inStream));
+            children.add(ClientTypeSerializer.deserializeClientClass(inStream));
         }
     }
 

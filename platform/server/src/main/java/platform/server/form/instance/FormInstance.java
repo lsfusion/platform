@@ -226,7 +226,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         PropertyObjectInstance<?> change = propertyDraw.propertyObject.getChangeInstance();
         if (securityPolicy.property.change.checkPermission(change.property) && change.getValueImplement().canBeChanged(this)) {
             outStream.writeBoolean(false);
-            TypeSerializer.serialize(outStream, change.getEditorType());
+            TypeSerializer.serializeType(outStream, change.getEditorType());
         } else
             outStream.writeBoolean(true);
     }

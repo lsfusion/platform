@@ -1,14 +1,12 @@
 package platform.interop.serialization;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Constructor;
 import java.util.*;
 
 public abstract class SerializationPool<C> {
     private Map<Integer, Class<? extends CustomSerializable<? extends SerializationPool<C>>>> idToClass
-            = new HashMap<Integer,Class<? extends CustomSerializable<? extends SerializationPool<C>>>>();
+            = new HashMap<Integer, Class<? extends CustomSerializable<? extends SerializationPool<C>>>>();
     private Map<Class<? extends CustomSerializable<? extends SerializationPool<C>>>, Integer> classToId
             = new HashMap<Class<? extends CustomSerializable<? extends SerializationPool<C>>>, Integer>();
 
@@ -20,14 +18,14 @@ public abstract class SerializationPool<C> {
     public SerializationPool() {
         this(null);
     }
-    
+
     public SerializationPool(C context) {
         this.context = context;
     }
 
     protected void addMapping(Class<? extends CustomSerializable<? extends SerializationPool<C>>> clazz) {
         int classId = idToClass.size();
-        
+
         idToClass.put(classId, clazz);
         classToId.put(clazz, classId);
     }
@@ -41,7 +39,7 @@ public abstract class SerializationPool<C> {
     }
 
     private long getLongId(int classId, int id) {
-        return (((long)classId) << 32L) | id;
+        return (((long) classId) << 32L) | id;
     }
 
     public int getClassId(Class clazz) {
@@ -84,18 +82,18 @@ public abstract class SerializationPool<C> {
     public <K extends CustomSerializable<? extends SerializationPool<C>>,
             V extends CustomSerializable<? extends SerializationPool<C>>> Map<K, V> deserializeMap(DataInputStream inStream) throws IOException {
         HashMap<K, V> result = new HashMap<K, V>();
-        
+
         int size = inStream.readInt();
         for (int i = 0; i < size; ++i) {
             K key = (K) deserializeObject(inStream);
             V value = (V) deserializeObject(inStream);
             result.put(key, value);
         }
-        
+
         return result;
     }
 
-    public CustomSerializable<? extends SerializationPool<C>> deserializeObject(DataInputStream inStream) throws IOException {
+    public <T extends CustomSerializable<? extends SerializationPool<C>>> T deserializeObject(DataInputStream inStream) throws IOException {
         int classId = inStream.readInt();
         if (classId == NULL_REF_CLASS) {
             return null;
@@ -114,7 +112,7 @@ public abstract class SerializationPool<C> {
             instance = createNewInstance(inStream, clazz, -1);
         }
 
-        return instance;
+        return (T) instance;
     }
 
     public <T extends CustomSerializable> void serializeObject(DataOutputStream outStream, T object, String type) throws IOException {
@@ -122,7 +120,7 @@ public abstract class SerializationPool<C> {
             outStream.writeInt(NULL_REF_CLASS);
             return;
         }
-        
+
         int classId = getClassId(object.getClass());
         outStream.writeInt(classId);
 
@@ -184,5 +182,40 @@ public abstract class SerializationPool<C> {
 
     public <T extends CustomSerializable<? extends SerializationPool<C>>> void serializeObject(DataOutputStream outStream, T object) throws IOException {
         serializeObject(outStream, object, null);
+    }
+
+    public void writeObject(DataOutputStream outStream, Object object) throws IOException {
+        outStream.writeBoolean(object != null);
+        if (object != null) {
+            new ObjectOutputStream(outStream).writeObject(object);
+        }
+    }
+
+    public <T> T readObject(DataInputStream inStream) throws IOException {
+        try {
+            if (inStream.readBoolean()) {
+                return (T)new ObjectInputStream(inStream).readObject();
+            } else {
+                return null;
+            }
+//            return inStream.readBoolean()
+//                   ? (T)new ObjectInputStream(inStream).readObject()
+//                   : null;
+        } catch (ClassNotFoundException e) {
+            throw new IOException("Не могу прочитать объект.", e);
+        }
+    }
+
+    public void writeString(DataOutputStream outStream, String str) throws IOException {
+        outStream.writeBoolean(str != null);
+        if (str != null) {
+            outStream.writeUTF(str);
+        }
+    }
+
+    public String readString(DataInputStream inStream) throws IOException {
+        return inStream.readBoolean()
+               ? inStream.readUTF()
+               : null;
     }
 }

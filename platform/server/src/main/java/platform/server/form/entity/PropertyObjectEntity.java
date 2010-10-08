@@ -15,19 +15,6 @@ import java.io.IOException;
 import java.util.*;
 
 public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyImplement<PropertyObjectInterfaceEntity,P> implements OrderEntity<PropertyObjectInstance>, ServerIdentitySerializable {
-
-    public Collection<ObjectEntity> getObjectInstances() {
-        Collection<ObjectEntity> result = new ArrayList<ObjectEntity>();
-        for(PropertyObjectInterfaceEntity object : mapping.values())
-            if(object instanceof ObjectEntity)
-                result.add((ObjectEntity) object);
-        return result;
-    }
-
-    public void fillObjects(Set<ObjectEntity> objects) {
-        objects.addAll(getObjectInstances());
-    }
-
     private int ID = 0;
 
     public PropertyObjectEntity() {
@@ -48,6 +35,18 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyI
 
     public PropertyObjectInstance getInstance(InstanceFactory instanceFactory) {
         return instanceFactory.getInstance(this);
+    }
+
+    public Collection<ObjectEntity> getObjectInstances() {
+        Collection<ObjectEntity> result = new ArrayList<ObjectEntity>();
+        for(PropertyObjectInterfaceEntity object : mapping.values())
+            if(object instanceof ObjectEntity)
+                result.add((ObjectEntity) object);
+        return result;
+    }
+
+    public void fillObjects(Set<ObjectEntity> objects) {
+        objects.addAll(getObjectInstances());
     }
 
     public int getID() {
@@ -75,7 +74,7 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyI
         for (int i = 0; i < size; ++i) {
             int interId = inStream.readInt();
             P inter = property.getInterfaceById(interId);
-            PropertyObjectInterfaceEntity value = (PropertyObjectInterfaceEntity) pool.deserializeObject(inStream);
+            PropertyObjectInterfaceEntity value = pool.deserializeObject(inStream);
 
             mapping.put(inter, value);
         }

@@ -20,7 +20,7 @@ public class NotFilterDescriptor extends FilterDescriptor {
         pool.serializeObject(outStream, filter);
     }
 
-    public void customDeserialize(ClientSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
         filter = (FilterDescriptor) pool.deserializeObject(inStream);
     }
 }

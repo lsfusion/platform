@@ -10,9 +10,12 @@ import platform.server.logics.property.Property;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.form.entity.ObjectEntity;
+import platform.server.serialization.ServerCustomSerializable;
+import platform.server.serialization.ServerSerializationPool;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -21,7 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class FormView implements ClientSerialize {
+public class FormView implements ClientSerialize, ServerCustomSerializable {
 
     // нужен для того, чтобы генерировать уникальный идентификаторы объектам рисования, для передачи их клиенту
     protected IDGenerator idGenerator = new DefaultIDGenerator();
@@ -115,6 +118,64 @@ public class FormView implements ClientSerialize {
         outStream.writeUTF(caption);
     }
 
+    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        outStream.writeBoolean(readOnly);
+        pool.serializeCollection(outStream, containers);
+        pool.serializeCollection(outStream, groupObjects);
+        pool.serializeCollection(outStream, properties);
+        pool.serializeCollection(outStream, regularFilters);
+
+        outStream.writeInt(defaultOrders.size());
+        for (Map.Entry<PropertyDrawView, Boolean> entry : defaultOrders.entrySet()) {
+            pool.serializeObject(outStream, entry.getKey());
+            outStream.writeBoolean(entry.getValue());
+        }
+
+        pool.serializeObject(outStream, printFunction);
+        pool.serializeObject(outStream, xlsFunction);
+        pool.serializeObject(outStream, nullFunction);
+        pool.serializeObject(outStream, refreshFunction);
+        pool.serializeObject(outStream, applyFunction);
+        pool.serializeObject(outStream, cancelFunction);
+        pool.serializeObject(outStream, okFunction);
+        pool.serializeObject(outStream, closeFunction);
+
+        pool.serializeCollection(outStream, order);
+
+        pool.writeObject(outStream, keyStroke);
+        pool.writeString(outStream, caption);
+    }
+
+    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+        readOnly = inStream.readBoolean();
+
+        containers = pool.deserializeList(inStream);
+        groupObjects = pool.deserializeList(inStream);
+        properties = pool.deserializeList(inStream);
+        regularFilters = pool.deserializeList(inStream);
+
+        int orderCount = inStream.readInt();
+        for(int i=0;i<orderCount;i++) {
+            PropertyDrawView order = pool.deserializeObject(inStream);
+            defaultOrders.put(order,inStream.readBoolean());
+        }
+
+        printFunction = pool.deserializeObject(inStream);
+        xlsFunction = pool.deserializeObject(inStream);
+        nullFunction = pool.deserializeObject(inStream);
+        refreshFunction = pool.deserializeObject(inStream);
+        applyFunction = pool.deserializeObject(inStream);
+        cancelFunction = pool.deserializeObject(inStream);
+        okFunction = pool.deserializeObject(inStream);
+        closeFunction = pool.deserializeObject(inStream);
+
+        order = pool.deserializeList(inStream);
+
+        keyStroke = pool.readObject(inStream);
+
+        caption = pool.readString(inStream);
+    }
+
     public void addIntersection(ComponentView comp1, ComponentView comp2, DoNotIntersectSimplexConstraint cons) {
 
         if (comp1.container != comp2.container)
@@ -123,6 +184,9 @@ public class FormView implements ClientSerialize {
     }
 
     public GroupObjectView getGroupObject(GroupObjectEntity entity) {
+        if (entity == null) {
+            return null;
+        }
         for (GroupObjectView groupObject : groupObjects)
             if (entity.equals(groupObject.entity))
                 return groupObject;

@@ -10,9 +10,7 @@ import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
+import java.io.*;
 
 public class NavigatorDescriptorView extends JPanel {
 
@@ -27,10 +25,11 @@ public class NavigatorDescriptorView extends JPanel {
             @Override
             public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
 
-                ClientForm richDesign = new ClientForm(new DataInputStream(new ByteArrayInputStream(navigator.getRichDesignByteArray(element.ID))));
+//                ClientForm richDesign = new ClientForm(new DataInputStream(new ByteArrayInputStream(navigator.getRichDesignByteArray(element.ID))));
+                ClientForm richDesign = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(navigator.getRichDesignByteArray(element.ID))));
 
                 ClientSerializationPool pool = new ClientSerializationPool(richDesign);
-                FormDescriptor formDescriptor = (FormDescriptor) pool.deserializeObject(
+                FormDescriptor formDescriptor = pool.deserializeObject(
                         new DataInputStream(new ByteArrayInputStream(navigator.getFormEntityByteArray(element.ID))));
 
                 formView.setModel(formDescriptor);

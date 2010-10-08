@@ -22,8 +22,8 @@ public class ClientClassActionClass extends ClientActionClass {
 
         // бредово конечно так делать, но приходится, поскольку Serialize CustomClass записывает в Stream также и свой тип
         // хотя известно, что придет именно ClientObjectClass
-        baseClass = (ClientObjectClass)ClientClass.deserialize(inStream);
-        defaultClass = (ClientObjectClass)ClientClass.deserialize(inStream);
+        baseClass = (ClientObjectClass) ClientTypeSerializer.deserializeClientClass(inStream);
+        defaultClass = (ClientObjectClass) ClientTypeSerializer.deserializeClientClass(inStream);
     }
 
     @Override

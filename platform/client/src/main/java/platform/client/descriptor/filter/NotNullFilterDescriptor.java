@@ -11,7 +11,7 @@ public class NotNullFilterDescriptor extends PropertyFilterDescriptor {
         super.customSerialize(pool, outStream, serializationType);
     }
 
-    public void customDeserialize(ClientSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
-        super.customDeserialize(pool, ID, inStream);
+    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+        super.customDeserialize(pool, iID, inStream);
     }
 }

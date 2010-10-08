@@ -11,7 +11,7 @@ import java.util.Set;
 
 public class CurrentComputerEntity implements PropertyObjectInterfaceEntity {
 
-    private CurrentComputerEntity() {
+    public CurrentComputerEntity() {
     }
     
     public static final CurrentComputerEntity instance = new CurrentComputerEntity();
@@ -26,6 +26,6 @@ public class CurrentComputerEntity implements PropertyObjectInterfaceEntity {
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
     }
 
-    public void customDeserialize(ServerSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
     }
 }

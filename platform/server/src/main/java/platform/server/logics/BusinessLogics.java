@@ -17,6 +17,7 @@ import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.RemoteObject;
+import platform.server.data.type.TypeSerializer;
 import platform.server.net.ServerSocketFactory;
 import platform.server.auth.PolicyManager;
 import platform.server.auth.SecurityPolicy;
@@ -2977,7 +2978,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             int size = inStream.readInt();
             for(int i=0;i<size;i++) {
                 Integer ID = inStream.readInt();
-                classes.put(ID, ClassSerializer.deserialize(this, inStream));
+                classes.put(ID, TypeSerializer.deserializeValueClass(this, inStream));
                 if(inStream.readBoolean())
                     atLeastOne.add(ID);
             }

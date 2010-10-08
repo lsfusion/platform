@@ -4,7 +4,7 @@ import platform.client.descriptor.*;
 import platform.client.descriptor.filter.*;
 import platform.client.descriptor.property.PropertyDescriptor;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
-import platform.client.logics.ClientForm;
+import platform.client.logics.*;
 import platform.interop.serialization.SerializationPool;
 
 
@@ -41,5 +41,18 @@ public class ClientSerializationPool extends SerializationPool<ClientForm> {
         addMapping(CurrentComputerDescriptor.class);
         addMapping(ObjectDescriptor.class);
         addMapping(PropertyObjectDescriptor.class);
+
+        addMapping(ClientForm.class);
+        addMapping(ClientComponent.class);
+        addMapping(ClientContainer.class);
+        addMapping(ClientGroupObject.class);
+        addMapping(ClientShowType.class);
+        addMapping(ClientGrid.class);
+        addMapping(ClientClassChooser.class);
+        addMapping(ClientObject.class);
+        addMapping(ClientPropertyDraw.class);
+        addMapping(ClientRegularFilter.class);
+        addMapping(ClientRegularFilterGroup.class);
+        addMapping(ClientFunction.class);
     }
 }

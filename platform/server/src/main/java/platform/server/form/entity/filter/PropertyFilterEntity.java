@@ -30,7 +30,7 @@ public abstract class PropertyFilterEntity<P extends PropertyInterface> extends 
         pool.serializeObject(outStream, property);
     }
 
-    public void customDeserialize(ServerSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
-        property = (PropertyObjectEntity<P>) pool.deserializeObject(inStream);
+    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+        property = pool.deserializeObject(inStream);
     }
 }

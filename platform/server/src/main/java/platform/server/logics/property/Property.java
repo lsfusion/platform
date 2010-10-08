@@ -442,7 +442,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         pool.serializeCollection(outStream, interfaces);
     }
 
-    public void customDeserialize(ServerSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
         //десериализация не нужна, т.к. вместо создания объекта, происходит поиск в BL
     }
 }

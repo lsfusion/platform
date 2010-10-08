@@ -3,22 +3,37 @@ package platform.client.logics;
 import platform.base.DefaultIDGenerator;
 import platform.base.IDGenerator;
 import platform.base.OrderedMap;
-import platform.client.form.GroupObjectController;
 import platform.client.form.ClientFormController;
+import platform.client.form.GroupObjectController;
+import platform.client.serialization.ClientIdentitySerializable;
+import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ClassViewType;
 
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
 public class ClientGroupObject extends ArrayList<ClientObject>
-                                 implements Serializable, ClientPropertyRead {
+                                 implements Serializable, ClientPropertyRead, ClientIdentitySerializable {
 
-    private Integer ID = 0;
+    private int ID;
 
-    public Integer getID() {
-        return ID;
+    public ClientGroupObject() {
+
+    }
+
+    public ClientGroupObject(DataInputStream inStream, Collection<ClientContainer> containers) throws IOException, ClassNotFoundException {
+        ID = inStream.readInt();
+        banClassView = inStream.readByte();
+
+        int count = inStream.readInt();
+        for(int i=0;i<count;i++)
+            add(new ClientObject(inStream,containers,this));
+
+        grid = new ClientGrid(inStream, containers);
+        showType = new ClientShowType(inStream, containers);
     }
 
     public List<ClientObject> getDeserializeList(Map<ClientGroupObject, Byte> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
@@ -58,20 +73,8 @@ public class ClientGroupObject extends ArrayList<ClientObject>
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 23 * hash + (this.ID != null ? this.ID.hashCode() : 0);
+        hash = 23 * hash + new Integer(ID).hashCode();
         return hash;
-    }
-
-    public ClientGroupObject(DataInputStream inStream, Collection<ClientContainer> containers) throws IOException, ClassNotFoundException {
-        ID = inStream.readInt();
-        banClassView = inStream.readByte();
-
-        int count = inStream.readInt();
-        for(int i=0;i<count;i++)
-            add(new ClientObject(inStream,containers,this));
-
-        grid = new ClientGrid(inStream, containers);
-        showType = new ClientShowType(inStream, containers);
     }
 
     private static IDGenerator idGenerator = new DefaultIDGenerator();
@@ -80,6 +83,27 @@ public class ClientGroupObject extends ArrayList<ClientObject>
         if(actionID==null)
             actionID = "changeGroupObject" + idGenerator.idShift();
         return actionID;
+    }
+
+    public int getID() {
+        return ID;
+    }
+
+    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        outStream.writeByte(banClassView);
+        pool.serializeCollection(outStream, this);
+        pool.serializeObject(outStream, grid);
+        pool.serializeObject(outStream, showType);
+    }
+
+    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+        ID = iID;
+        banClassView = inStream.readByte();
+
+        pool.deserializeCollection(this, inStream);
+
+        grid = pool.deserializeObject(inStream);
+        showType = pool.deserializeObject(inStream);
     }
 
     public static List<ClientGroupObjectValue> mergeGroupValues(OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>> groupColumnKeys) {

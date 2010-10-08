@@ -32,12 +32,12 @@ public abstract class Field {
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeByte(getType());
         outStream.writeUTF(name);
-        TypeSerializer.serialize(outStream,type);
+        TypeSerializer.serializeType(outStream,type);
     }
 
     protected Field(DataInputStream inStream) throws IOException {
         name = inStream.readUTF();
-        type = TypeSerializer.deserialize(inStream);
+        type = TypeSerializer.deserializeType(inStream);
     }
 
     public static Field deserialize(DataInputStream inStream) throws IOException {

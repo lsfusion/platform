@@ -31,8 +31,10 @@ public abstract class GridHeaderRenderer implements TableCellRenderer {
                                                    int row,
                                                    int column) {
 
-        if (Main.module.isFull() && value instanceof String) {
-            value = "<html>" + value + "</html>";
+        if (Main.module.isFull()) {
+            if (value instanceof String) {
+                value = "<html>" + value + "</html>";
+            }
         } else {
             return simplifiedRenderer.getTableCellRendererComponent(itable, value, isSelected, hasFocus, row, column);
         }

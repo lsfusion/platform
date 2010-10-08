@@ -21,7 +21,7 @@ public class PropertyFilterDescriptor extends FilterDescriptor {
         pool.serializeObject(outStream, property);
     }
 
-    public void customDeserialize(ClientSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
         property = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
     }
 }

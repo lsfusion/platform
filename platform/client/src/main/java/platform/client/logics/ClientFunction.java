@@ -6,6 +6,9 @@ import java.util.Collection;
 
 public class ClientFunction extends ClientComponent {
 
+    public ClientFunction() {
+    }
+
     public ClientFunction(DataInputStream inStream, Collection<ClientContainer> containers) throws IOException, ClassNotFoundException {
         super(inStream, containers);
     }

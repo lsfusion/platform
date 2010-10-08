@@ -28,15 +28,15 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
         pool.serializeObject(outStream, propertyHighlight);
     }
 
-    public void customDeserialize(ClientSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
-        this.ID = ID;
+    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+        this.ID = iID;
 
         pool.deserializeCollection(this, inStream);
         initClassView = inStream.readByte();
         banClassView = inStream.readByte();
         propertyHighlight = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
 
-        client = pool.context.getGroupObject(ID);
+        client = pool.context.getGroupObject(iID);
     }
 
     @Override

@@ -8,15 +8,9 @@ import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
-import platform.server.logics.linear.LP;
-import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
-import platform.base.BaseUtils;
 
-import javax.swing.*;
 import java.awt.*;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -120,7 +114,7 @@ public class DefaultFormView extends FormView {
 
         for (PropertyDrawEntity control : formEntity.propertyDraws) {
 
-            PropertyDrawView clientProperty = new PropertyDrawView(idGenerator.idShift(), control);
+            PropertyDrawView clientProperty = new PropertyDrawView(idGenerator.idShift(), this, control);
             clientProperty.constraints.order = formEntity.propertyDraws.indexOf(control);
             clientProperty.constraints.insetsSibling = new Insets(0,0,2,2);
 

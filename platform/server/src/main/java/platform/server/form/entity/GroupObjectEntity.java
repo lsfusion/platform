@@ -50,8 +50,8 @@ public class GroupObjectEntity extends ArrayList<ObjectEntity> implements Instan
         pool.serializeObject(outStream, propertyHighlight);
     }
 
-    public void customDeserialize(ServerSerializationPool pool, int ID, DataInputStream inStream) throws IOException {
-        this.ID = ID;
+    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+        this.ID = iID;
 
         pool.deserializeCollection(this, inStream);
         initClassView = inStream.readByte();

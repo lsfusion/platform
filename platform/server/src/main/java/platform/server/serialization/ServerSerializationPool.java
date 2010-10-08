@@ -3,6 +3,7 @@ package platform.server.serialization;
 import platform.interop.serialization.SerializationPool;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
+import platform.server.form.view.*;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.Property;
@@ -40,6 +41,19 @@ public class ServerSerializationPool extends SerializationPool<BusinessLogics<? 
         addMapping2(CurrentComputerEntity.class);
         addMapping2(ObjectEntity.class);
         addMapping2(PropertyObjectEntity.class);
+
+        addMapping2(FormView.class);
+        addMapping2(ComponentView.class);
+        addMapping2(ContainerView.class);
+        addMapping2(GroupObjectView.class);
+        addMapping2(ShowTypeView.class);
+        addMapping2(GridView.class);
+        addMapping2(ClassChooserView.class);
+        addMapping2(ObjectView.class);
+        addMapping2(PropertyDrawView.class);
+        addMapping2(RegularFilterView.class);
+        addMapping2(RegularFilterGroupView.class);
+        addMapping2(FunctionView.class);
     }
 
     // IDEA даёт ошибку при добавлении генериков,

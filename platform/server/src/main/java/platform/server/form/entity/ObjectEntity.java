@@ -1,8 +1,8 @@
 package platform.server.form.entity;
 
 import platform.base.IdentityObject;
-import platform.server.classes.ClassSerializer;
 import platform.server.classes.ValueClass;
+import platform.server.data.type.TypeSerializer;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.serialization.ServerIdentitySerializable;
@@ -50,7 +50,7 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
         ID = iID;
 
         groupTo = (GroupObjectEntity) pool.deserializeObject(inStream);
-        baseClass = ClassSerializer.deserialize(pool.context, inStream);
+        baseClass = TypeSerializer.deserializeValueClass(pool.context, inStream);
         caption = inStream.readUTF();
     }
 }

@@ -29,6 +29,7 @@ import platform.server.form.view.FormView;
 import platform.server.form.view.report.ReportDesignGenerator;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
+import platform.server.serialization.ServerSerializationPool;
 
 import java.io.*;
 import java.rmi.RemoteException;
@@ -171,7 +172,8 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
         //будем использовать стандартный OutputStream, чтобы кол-во передаваемых данных было бы как можно меньше
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
-            richDesign.serialize(new DataOutputStream(outStream));
+            new ServerSerializationPool().serializeObject(new DataOutputStream(outStream), richDesign);
+//            richDesign.serialize(new DataOutputStream(outStream));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

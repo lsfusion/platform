@@ -264,7 +264,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         try {
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
             DataOutputStream dataStream = new DataOutputStream(outStream);
-            getFormEntity(formID).richDesign.serialize(dataStream);
+            new ServerSerializationPool().serializeObject(dataStream, getFormEntity(formID).richDesign);
+
+//            getFormEntity(formID).richDesign.serialize(dataStream);
+            
             return outStream.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException(e);
