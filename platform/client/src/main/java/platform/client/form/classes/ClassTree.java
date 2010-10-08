@@ -59,7 +59,7 @@ public abstract class ClassTree extends ClientTree {
                     }
                 });
 
-        setToggleClickCount(-1);
+        
         setBorder(new EtchedBorder(EtchedBorder.LOWERED));
 
         model = new DefaultTreeModel(currentNode);

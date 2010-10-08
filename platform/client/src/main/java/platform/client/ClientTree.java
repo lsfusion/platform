@@ -6,20 +6,26 @@ import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.event.*;
+import java.util.ArrayList;
 
 public abstract class ClientTree extends JTree {
+
 
     // не вызываем верхний конструктор, потому что у JTree по умолчанию он на редкость дебильный
     public ClientTree() {
         super(new DefaultMutableTreeNode());
-
+        setToggleClickCount(-1);
         addMouseListener(new PopupTrigger());
 
         addKeyListener(new KeyAdapter() {
 
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                   // changeCurrentElement();
+                    TreePath path = getSelectionPath();
+                    ArrayList<Action> list = getActions(path);
+                    if (list.size() > 0) {
+                        list.get(0).actionPerformed(null);
+                    }
                 }
             }
         });
@@ -39,9 +45,6 @@ public abstract class ClientTree extends JTree {
     class PopupTrigger extends MouseAdapter {
         public void mouseReleased(MouseEvent e) {
 
-            if (e.getClickCount() == 2) {
-               // changeCurrentElement();
-            }
             if (e.isPopupTrigger() || e.getClickCount() == 2) {
                 int x = e.getX();
                 int y = e.getY();
@@ -49,44 +52,19 @@ public abstract class ClientTree extends JTree {
                 if (path != null) {
                     setSelectionPath(path);
                     JPopupMenu popup = new JPopupMenu();
+                    ArrayList<Action> list = getActions(path);
                     Action defaultAction = null;
-                    int cnt = path.getPathCount();
-                    for (int i = 0; i < cnt; i++) {
-                        Object oNode = path.getPathComponent(i);
-                        if (oNode instanceof ClientTreeNode) {
-                            ClientTreeNode node = (ClientTreeNode) oNode;
-
-                            for (Action act : node.subTreeActions) {
-                                popup.add(act);
-                                if (defaultAction == null) {
-                                    defaultAction = act;
-                                }
-                            }
-
-                            if (i == cnt - 2) {
-                                for (Action act : node.sonActions) {
-                                    popup.add(act);
-                                    if (defaultAction == null) {
-                                        defaultAction = act;
-                                    }
-                                }
-                            }
-
-                            if (i == cnt - 1) {
-                                for (Action act : node.nodeActions) {
-                                    popup.add(act);
-                                    if (defaultAction == null) {
-                                        defaultAction = act;
-                                    }
-                                }
-                            }
-                        }
+                    if (list.size() > 0) {
+                        defaultAction = list.get(0);
+                    }
+                    for (Action act : list) {
+                        popup.add(act);
                     }
 
                     if (e.isPopupTrigger() && popup.getComponentCount() > 0) {
                         popup.show(ClientTree.this, x, y);
                     } else if (e.getClickCount() == 2 && defaultAction != null) {
-                        defaultAction.actionPerformed((ActionEvent) null);
+                        defaultAction.actionPerformed(null);
                     }
                 }
             }
@@ -100,5 +78,35 @@ public abstract class ClientTree extends JTree {
         }
     }
 
+    private ArrayList<Action> getActions(TreePath path) {
+        if (path == null) {
+            return null;
+        }
+        ArrayList<Action> list = new ArrayList<Action>();
 
+        int cnt = path.getPathCount();
+        for (int i = 0; i < cnt; i++) {
+            Object oNode = path.getPathComponent(i);
+            if (oNode instanceof ClientTreeNode) {
+                ClientTreeNode node = (ClientTreeNode) oNode;
+
+                for (Action act : node.subTreeActions) {
+                    list.add(act);
+                }
+
+                if (i == cnt - 2) {
+                    for (Action act : node.sonActions) {
+                        list.add(act);
+                    }
+                }
+
+                if (i == cnt - 1) {
+                    for (Action act : node.nodeActions) {
+                        list.add(act);
+                    }
+                }
+            }
+        }
+        return list;
+    }
 }
