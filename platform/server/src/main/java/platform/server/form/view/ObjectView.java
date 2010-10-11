@@ -25,7 +25,7 @@ public class ObjectView implements ClientSerialize, ServerIdentitySerializable {
         this.entity = entity;
         this.groupObject = groupTo;
 
-        classChooser = new ClassChooserView(idGen.idShift(), this.entity);
+        classChooser = new ClassChooserView(idGen.idShift(), this.entity, this);
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {

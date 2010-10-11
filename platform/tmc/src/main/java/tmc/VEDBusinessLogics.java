@@ -1008,7 +1008,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             PropertyDrawView barcodeView = design.get(getPropertyDraw(objectValue, objBarcode));
             
-            design.get(getPropertyDraw(reverseBarcode)).setContainer(design.getPanelContainer(design.get(objBarcode.groupTo)));
+            design.getPanelContainer(design.get(objBarcode.groupTo)).add(design.get(getPropertyDraw(reverseBarcode)));
             design.addIntersection(barcodeView, design.get(getPropertyDraw(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             design.addIntersection(design.get(getPropertyDraw(reverseBarcode)), design.get(getPropertyDraw(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             if (getPropertyDraw(documentBarcodePriceOv) != null) {
@@ -1112,7 +1112,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 if (payView != null) {
                     // делаем, чтобы суммы были внизу и как можно правее
                     ContainerView docSumsContainer = design.get(payView).getContainer();
-                    docSumsContainer.setContainer(design.getMainContainer());
+                    design.getMainContainer().add(docSumsContainer);
 //                    docSumsContainer.constraints.directions = new SimplexComponentDirections(0.1,-0.1,0,0.1);
                     docSumsContainer.constraints.order = 6;
 
@@ -1124,18 +1124,18 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                     if (payCash != null || payCard != null || toDo != null || toDoSum != null) {
 
                         ContainerView payContainer = design.addContainer("Платежные средства");
-                        payContainer.setContainer(design.getMainContainer());
+                        design.getMainContainer().add(payContainer);
                         payContainer.constraints.directions = new SimplexComponentDirections(0.1, -0.1, 0, 0.1);
                         payContainer.constraints.order = 6;
 
-                        if (payCash != null) design.get(payCash).setContainer(payContainer);
-                        if (payCard != null) design.get(payCard).setContainer(payContainer);
+                        if (payCash != null) payContainer.add(design.get(payCash));
+                        if (payCard != null) payContainer.add(design.get(payCard));
                         if (toDo != null) {
-                            design.get(toDo).setContainer(payContainer);
+                            payContainer.add(design.get(toDo));
                             design.get(toDo).design.background = Color.yellow;
                         }
                         if (toDoSum != null) {
-                            design.get(toDoSum).setContainer(payContainer);
+                            payContainer.add(design.get(toDoSum));
                             design.get(toDoSum).design.background = Color.yellow;
                         }
 
@@ -1739,7 +1739,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             if (toAdd) {
 
                 // делаем, чтобы суммы были внизу и как можно правее
-                design.get(getPropertyDraw(returnSalePay)).getContainer().setContainer(design.getMainContainer());
+                design.getMainContainer().add(design.get(getPropertyDraw(returnSalePay)).getContainer());
 //                design.get(getPropertyDraw(returnSalePay)).getContainer().constraints.directions = new SimplexComponentDirections(0.1,-0.1,0,0.1);
                 design.get(getPropertyDraw(returnSalePay)).getContainer().constraints.order = 3;
             }

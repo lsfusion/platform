@@ -37,6 +37,7 @@ public class ClientRegularFilter implements ClientIdentitySerializable {
         return fullCaption;
     }
 
+    @Override
     public String toString() {
         return getFullCaption();
     }

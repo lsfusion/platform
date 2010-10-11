@@ -36,4 +36,9 @@ public class RegularFilterDescriptor extends IdentityDescriptor implements Clien
         filter = (FilterDescriptor) pool.deserializeObject(inStream);
         client = pool.context.getRegularFilter(ID);
     }
+
+    @Override
+    public String toString() {
+        return client.toString();
+    }
 }

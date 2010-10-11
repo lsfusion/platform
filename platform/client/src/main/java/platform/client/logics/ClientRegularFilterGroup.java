@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class ClientRegularFilterGroup extends ClientFunction {
+public class ClientRegularFilterGroup extends ClientComponent {
     
     public int ID;
     public List<ClientRegularFilter> filters = new ArrayList<ClientRegularFilter>();
@@ -50,5 +50,10 @@ public class ClientRegularFilterGroup extends ClientFunction {
         filters = pool.deserializeList(inStream);
 
         defaultFilter = inStream.readInt();
+    }
+
+    @Override
+    public String toString() {
+        return filters.toString();
     }
 }

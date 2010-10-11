@@ -41,14 +41,6 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
 
     @Override
     public String toString() {
-
-        String result = "";
-        for (ObjectDescriptor object : this) {
-            if (!result.isEmpty()) {
-                result += ", ";
-            }
-            result += object.toString();
-        }
-        return result;
+        return client.toString();
     }
 }

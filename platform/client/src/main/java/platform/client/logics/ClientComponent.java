@@ -1,5 +1,6 @@
 package platform.client.logics;
 
+import platform.client.descriptor.nodes.ComponentNode;
 import platform.client.serialization.ClientCustomSerializable;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
@@ -7,6 +8,7 @@ import platform.interop.ComponentDesign;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexConstraints;
 
+import javax.swing.tree.MutableTreeNode;
 import java.io.*;
 import java.util.Collection;
 import java.util.HashMap;
@@ -94,5 +96,9 @@ public class ClientComponent implements Serializable, ClientIdentitySerializable
 
         defaultComponent = inStream.readBoolean();
         show = inStream.readBoolean();
+    }
+
+    public ComponentNode getNode() {
+        return new ComponentNode(this);
     }
 }

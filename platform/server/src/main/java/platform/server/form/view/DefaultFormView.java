@@ -64,7 +64,7 @@ public class DefaultFormView extends FormView {
             groupContainers.put(clientGroup, groupContainer);
 
             ContainerView gridContainer = addContainer(); // контейнер грида внутрь
-            gridContainer.description = "Таблица";
+            gridContainer.description = "Табличная часть";
             gridContainer.constraints.order = 0;
             gridContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
             groupContainer.add(gridContainer);
@@ -220,7 +220,7 @@ public class DefaultFormView extends FormView {
                 groupPropertyContainers.get(groupObject).put(groupAbstract, groupPropertyContainer);
             }
 
-            childComponent.container = groupPropertyContainer;
+            groupPropertyContainer.add(childComponent);
             childComponent = groupPropertyContainer;
 
             groupAbstract = groupAbstract.getParent();
@@ -228,8 +228,7 @@ public class DefaultFormView extends FormView {
 
         // проверка на null нужна для глобальных свойств без groupObject'ов вообще
         ContainerView groupContainer = panelContainers.get(groupObject);
-        childComponent.container = (groupContainer == null) ? mainContainer : groupContainer;  
-
+        ((groupContainer == null) ? mainContainer : groupContainer).add(childComponent);
     }
 
 }

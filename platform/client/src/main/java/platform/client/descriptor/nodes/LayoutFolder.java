@@ -9,6 +9,6 @@ public class LayoutFolder extends DefaultMutableTreeNode {
     public LayoutFolder(ClientForm clientForm) {
         super("Расположение");
 
-        add(new ContainerNode(clientForm.getMainContainer(), clientForm.containers));
+        add(new ContainerNode(clientForm.getMainContainer()));
     }
 }

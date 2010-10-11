@@ -15,11 +15,15 @@ public class GridView extends ComponentView implements ClientSerialize {
     public boolean tabVertical = false;
     public boolean autoHide = false;
 
+    public GroupObjectView groupObject;
+
     public GridView() {
         
     }
-    public GridView(int ID) {
+    public GridView(int ID, GroupObjectView groupObject) {
         super(ID);
+
+        this.groupObject = groupObject;
     }
 
     @Override
@@ -44,6 +48,8 @@ public class GridView extends ComponentView implements ClientSerialize {
         outStream.writeByte(minRowCount);
         outStream.writeBoolean(tabVertical);
         outStream.writeBoolean(autoHide);
+
+        pool.serializeObject(outStream, groupObject);
     }
 
     @Override
@@ -56,6 +62,8 @@ public class GridView extends ComponentView implements ClientSerialize {
         minRowCount = inStream.readByte();
         tabVertical = inStream.readBoolean();
         autoHide = inStream.readBoolean();
+
+        groupObject = pool.deserializeObject(inStream);
     }
 
 }

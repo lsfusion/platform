@@ -30,7 +30,7 @@ public class ObjectDescriptor extends IdentityDescriptor implements PropertyObje
 
     @Override
     public String toString() {
-        return client.caption;
+        return client.toString();
     }
 
     public GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groups) {

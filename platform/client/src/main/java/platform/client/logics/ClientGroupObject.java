@@ -123,4 +123,17 @@ public class ClientGroupObject extends ArrayList<ClientObject>
         }
         return propColumnKeys;
     }
+
+    @Override
+    public String toString() {
+        
+        String result = "";
+        for (ClientObject object : this) {
+            if (!result.isEmpty()) {
+                result += ", ";
+            }
+            result += object.toString();
+        }
+        return result;
+    }
 }

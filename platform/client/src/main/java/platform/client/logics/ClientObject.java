@@ -46,9 +46,6 @@ public class ClientObject implements Serializable, ClientIdentitySerializable {
         classChooser = new ClientClassChooser(inStream,containers);
     }
 
-    public String toString() { return caption; }
-
-
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, groupObject);
         pool.writeString(outStream, caption);
@@ -71,4 +68,10 @@ public class ClientObject implements Serializable, ClientIdentitySerializable {
 
         classChooser = pool.deserializeObject(inStream);
     }
+
+    @Override
+    public String toString() {
+        return caption;
+    }
+
 }

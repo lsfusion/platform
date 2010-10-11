@@ -1,5 +1,7 @@
 package platform.client.logics;
 
+import platform.client.descriptor.nodes.ComponentNode;
+import platform.client.descriptor.nodes.ContainerNode;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 
@@ -14,7 +16,7 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
     public String title;
     public String description;
 
-    List<ClientComponent> children;
+    public List<ClientComponent> children;
 
     public ClientContainer() {
 
@@ -60,5 +62,10 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
 
         title = pool.readString(inStream);
         description = pool.readString(inStream);
+    }
+
+    @Override
+    public ComponentNode getNode() {
+        return new ContainerNode(this);
     }
 }

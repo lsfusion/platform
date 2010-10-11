@@ -9,7 +9,7 @@ public abstract class GroupElementNode<T> extends DescriptorNode<T> implements E
     protected GroupObjectDescriptor groupObject;
 
     public GroupElementNode(GroupObjectDescriptor groupObject, T userObject) {
-        super(userObject, false);
+        super(userObject, true);
         
         this.groupObject = groupObject;
     }

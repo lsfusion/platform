@@ -25,8 +25,8 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ClientSeri
         for(ObjectEntity object : this.entity)
             add(new ObjectView(idGen, object, this));
         
-        grid = new GridView(idGen.idShift());
-        showType = new ShowTypeView(idGen.idShift());
+        grid = new GridView(idGen.idShift(), this);
+        showType = new ShowTypeView(idGen.idShift(), this);
     }
 
     public GridView grid;

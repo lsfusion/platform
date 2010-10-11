@@ -269,7 +269,7 @@ public class ClientFormController {
         // Добавляем стандартные кнопки
 
         if (Main.module.isFull()) {
-            AbstractAction printAction = new AbstractAction("Печать (" + SwingUtils.getKeyStrokeCaption(altP) + ")") {
+            AbstractAction printAction = new AbstractAction(form.printFunction.caption + " (" + SwingUtils.getKeyStrokeCaption(altP) + ")") {
 
                 public void actionPerformed(ActionEvent ae) {
                     print();
@@ -280,7 +280,7 @@ public class ClientFormController {
             JButton buttonPrint = new JButton(printAction);
             buttonPrint.setFocusable(false);
 
-            AbstractAction xlsAction = new AbstractAction("Excel (" + SwingUtils.getKeyStrokeCaption(altX) + ")") {
+            AbstractAction xlsAction = new AbstractAction(form.xlsFunction.caption + " (" + SwingUtils.getKeyStrokeCaption(altX) + ")") {
 
                 public void actionPerformed(ActionEvent ae) {
                     Main.module.runExcel(remoteForm);
@@ -297,7 +297,7 @@ public class ClientFormController {
             }
         }
 
-        AbstractAction nullAction = new AbstractAction("Сбросить (" + SwingUtils.getKeyStrokeCaption(altDel) + ")") {
+        AbstractAction nullAction = new AbstractAction(form.nullFunction.caption + " (" + SwingUtils.getKeyStrokeCaption(altDel) + ")") {
 
             public void actionPerformed(ActionEvent ae) {
                 nullPressed();
@@ -306,7 +306,7 @@ public class ClientFormController {
         JButton buttonNull = new JButton(nullAction);
         buttonNull.setFocusable(false);
 
-        AbstractAction refreshAction = new AbstractAction("Обновить (" + SwingUtils.getKeyStrokeCaption(altR) + ")") {
+        AbstractAction refreshAction = new AbstractAction(form.refreshFunction.caption + " (" + SwingUtils.getKeyStrokeCaption(altR) + ")") {
 
             public void actionPerformed(ActionEvent ae) {
                 refreshData();
@@ -315,7 +315,7 @@ public class ClientFormController {
         JButton buttonRefresh = new JButton(refreshAction);
         buttonRefresh.setFocusable(false);
 
-        AbstractAction applyAction = new AbstractAction("Применить (" + SwingUtils.getKeyStrokeCaption(altEnter) + ")") {
+        AbstractAction applyAction = new AbstractAction(form.applyFunction.caption + " (" + SwingUtils.getKeyStrokeCaption(altEnter) + ")") {
 
             public void actionPerformed(ActionEvent ae) {
                 applyChanges();
@@ -324,7 +324,7 @@ public class ClientFormController {
         buttonApply = new JButton(applyAction);
         buttonApply.setFocusable(false);
 
-        AbstractAction cancelAction = new AbstractAction("Отменить (" + SwingUtils.getKeyStrokeCaption(escape) + ")") {
+        AbstractAction cancelAction = new AbstractAction(form.cancelFunction.caption + " (" + SwingUtils.getKeyStrokeCaption(escape) + ")") {
 
             public void actionPerformed(ActionEvent ae) {
                 cancelChanges();
@@ -333,7 +333,7 @@ public class ClientFormController {
         buttonCancel = new JButton(cancelAction);
         buttonCancel.setFocusable(false);
 
-        AbstractAction okAction = new AbstractAction("OK (" + SwingUtils.getKeyStrokeCaption(altEnter) + ")") {
+        AbstractAction okAction = new AbstractAction(form.okFunction.caption + " (" + SwingUtils.getKeyStrokeCaption(altEnter) + ")") {
 
             public void actionPerformed(ActionEvent ae) {
                 okPressed();
@@ -342,7 +342,7 @@ public class ClientFormController {
         JButton buttonOK = new JButton(okAction);
         buttonOK.setFocusable(false);
 
-        AbstractAction closeAction = new AbstractAction("Закрыть (" + SwingUtils.getKeyStrokeCaption(escape) + ")") {
+        AbstractAction closeAction = new AbstractAction(form.closeFunction.caption + " (" + SwingUtils.getKeyStrokeCaption(escape) + ")") {
 
             public void actionPerformed(ActionEvent ae) {
                 closePressed();

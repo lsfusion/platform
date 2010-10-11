@@ -61,7 +61,7 @@ public class ComponentView implements ClientSerialize, ServerIdentitySerializabl
         return container;
     }
 
-    public void setContainer(ContainerView container) {
+    void setContainer(ContainerView container) {
         this.container = container;
     }
 

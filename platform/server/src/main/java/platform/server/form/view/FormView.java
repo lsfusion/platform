@@ -55,14 +55,14 @@ public class FormView implements ClientSerialize, ServerCustomSerializable {
 
     public OrderedMap<PropertyDrawView,Boolean> defaultOrders = new OrderedMap<PropertyDrawView, Boolean>();
 
-    public FunctionView printFunction = new FunctionView(idGenerator.idShift());
-    public FunctionView xlsFunction = new FunctionView(idGenerator.idShift());
-    public FunctionView nullFunction = new FunctionView(idGenerator.idShift());
-    public FunctionView refreshFunction = new FunctionView(idGenerator.idShift());
-    public FunctionView applyFunction = new FunctionView(idGenerator.idShift());
-    public FunctionView cancelFunction = new FunctionView(idGenerator.idShift());
-    public FunctionView okFunction = new FunctionView(idGenerator.idShift());
-    public FunctionView closeFunction = new FunctionView(idGenerator.idShift());
+    public FunctionView printFunction = new FunctionView(idGenerator.idShift(), "Печать");
+    public FunctionView xlsFunction = new FunctionView(idGenerator.idShift(), "Excel");
+    public FunctionView nullFunction = new FunctionView(idGenerator.idShift(), "Сбросить");
+    public FunctionView refreshFunction = new FunctionView(idGenerator.idShift(), "Обновить");
+    public FunctionView applyFunction = new FunctionView(idGenerator.idShift(), "Применить");
+    public FunctionView cancelFunction = new FunctionView(idGenerator.idShift(), "Отменить");
+    public FunctionView okFunction = new FunctionView(idGenerator.idShift(), "ОК");
+    public FunctionView closeFunction = new FunctionView(idGenerator.idShift(), "Закрыть");
 
     public List<PropertyDrawView> order = new ArrayList<PropertyDrawView>();
 

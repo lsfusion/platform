@@ -12,7 +12,7 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RegularFilterGroupView extends FunctionView {
+public class RegularFilterGroupView extends ComponentView {
     
     public RegularFilterGroupEntity entity;
 

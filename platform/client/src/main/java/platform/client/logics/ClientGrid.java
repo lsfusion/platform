@@ -19,7 +19,9 @@ public class ClientGrid extends ClientComponent {
     public ClientGrid() {
         
     }
-    
+
+    public ClientGroupObject groupObject;
+
     public ClientGrid(DataInputStream inStream, Collection<ClientContainer> containers) throws IOException, ClassNotFoundException {
         super(inStream, containers);
 
@@ -40,6 +42,8 @@ public class ClientGrid extends ClientComponent {
         outStream.writeByte(minRowCount);
         outStream.writeBoolean(tabVertical);
         outStream.writeBoolean(autoHide);
+
+        pool.serializeObject(outStream, groupObject);
     }
 
     @Override
@@ -52,5 +56,12 @@ public class ClientGrid extends ClientComponent {
         minRowCount = inStream.readByte();
         tabVertical = inStream.readBoolean();
         autoHide = inStream.readBoolean();
+
+        groupObject = pool.deserializeObject(inStream);
+    }
+
+    @Override
+    public String toString() {
+        return "Таблица (" + groupObject.toString() + ")";
     }
 }

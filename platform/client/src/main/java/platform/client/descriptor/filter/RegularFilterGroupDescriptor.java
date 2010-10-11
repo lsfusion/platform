@@ -34,4 +34,9 @@ public class RegularFilterGroupDescriptor extends IdentityDescriptor implements 
         filters = pool.deserializeList(inStream);
         client = pool.context.getRegularFilterGroup(ID);
     }
+
+    @Override
+    public String toString() {
+        return client.toString();
+    }
 }
