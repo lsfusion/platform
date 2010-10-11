@@ -2946,6 +2946,34 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
+    protected LP addBAProp(ConcreteCustomClass customClass, LP add) {
+        return addProperty(null, new LP<ClassPropertyInterface>(new AddBarcodeActionProperty(customClass, add.property, genSID())));
+    }
+
+    private class AddBarcodeActionProperty extends ActionProperty {
+
+        ConcreteCustomClass customClass;
+        Property<?> addProperty;
+
+        private AddBarcodeActionProperty(ConcreteCustomClass customClass, Property addProperty, String sID) {
+            super(sID, "Добавить [" + customClass + "] по бар-коду", new ValueClass[]{StringClass.get(13)});
+            
+            this.customClass = customClass;
+            this.addProperty = addProperty;
+        }
+
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            //To change body of implemented methods use File | Settings | File Templates.
+            FormInstance<?> remoteForm = executeForm.form;
+            DataSession session = remoteForm.session;
+            if(addProperty.read(session, new HashMap(), remoteForm)!=null) {
+                addProperty.execute(new HashMap(), session, null, remoteForm, executeForm, new HashMap(), null);
+                barcode.execute(BaseUtils.singleValue(keys).object, session, remoteForm, session.addObject(customClass, remoteForm));
+            }
+        }
+    }
+
+
     private Map<String, String> formSets;
 
     public void setFormSets(Map<String, String> formSets) {

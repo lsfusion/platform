@@ -18,11 +18,16 @@ import platform.server.data.sql.DataAdapter;
 import platform.server.form.entity.*;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.view.*;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.group.AbstractGroup;
+import platform.server.logics.property.ActionProperty;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.session.DataSession;
 import platform.server.form.navigator.*;
 import platform.server.form.entity.filter.*;
@@ -39,9 +44,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
+import java.util.List;
 
 
 public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
@@ -564,12 +568,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addJProp(less2, addSUProp(Union.SUM, orderClientSum, addSGProp(orderArticleSaleSum, 1)), 1, articleActionClientSum, 2), 1, 3,
                 addJProp(less2, orderHour, 1, articleActionHourFrom, 2), 1, 3,
                 addJProp(greater2, orderHour, 1, articleActionHourTo, 2), 1, 3);
-        
-        orderArticleSaleDiscount = addDCProp(baseGroup, "orderArticleSaleDiscount", "Скидка", addJProp(andNot1,
+
+        orderNoDiscount = addDProp(baseGroup, "orderNoDiscount", "Без. скидок", LogicalClass.instance, orderSaleArticleRetail);
+        orderArticleSaleDiscount = addDCProp(baseGroup, "orderArticleSaleDiscount", "Скидка", addJProp(and(true, true),
                 addSUProp(Union.MAX,
                     addSGProp(addMGProp(addJProp(and1, actionDiscount, 3, articleActionActive, 1, 2, 3), 1, 2, articleActionToGroup, 3), 1, 2),
                     addJProp(and1, addJProp(customerCheckRetailDiscount, orderContragent, 1), 1, is(article), 2)), 1, 2,
-                addJProp(actionNoExtraDiscount, articleSaleAction, 1), 2),
+                addJProp(actionNoExtraDiscount, articleSaleAction, 1), 2, orderNoDiscount, 1),
                 true, 1, 2, is(orderSaleArticleRetail), 1);
 
         LP round1 = addSFProp("(ROUND(CAST((prm1) as NUMERIC(15,3)),-1))", IntegerClass.instance, 1);
@@ -633,6 +638,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP couponCanBeUsed = addJProp(greater2, addJProp(date, obligationIssued, 1), 2, date, 1);
 
+        barcodeAddClient = addSDProp("Доб. клиента", LogicalClass.instance);
+        
+        barcodeAddClientAction = addJProp(true, "", andNot1, addBAProp(customerCheckRetail, barcodeAddClient), 1, barcodeToObject, 1);
         barcodeAction2 = addJProp(true, "Ввод штрих-кода 2",
                 addCUProp(
                         addSCProp(addIfElseUProp(articleQuantity, articleOrderQuantity, is(commitInc), 1)),
@@ -647,7 +655,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         addSCProp(returnInnerQuantity)
                 ), 1, barcodeToObject, 3, 2);
         seekAction = addJProp(true, "Поиск штрих-кода", addSAProp(null), barcodeToObject, 1);
-
         barcodeNotFoundMessage = addJProp(true, "", and(false, true), addMAProp("Штрих-код не найден!", "Ошибка"), is(StringClass.get(13)), 1, barcodeToObject, 1);
 
         LP xorCouponArticleGroup = addDProp(couponGroup, "xorCouponArticleGroup", "Вкл.", LogicalClass.instance, articleGroup);
@@ -689,6 +696,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP obligationIssued;
     public LP obligationSum;
     LP orderSaleCoupon;
+    LP barcodeAddClient;
+    LP barcodeAddClientAction;
     LP barcodeAction2;
     LP barcodeAction3;
     LP seekAction;
@@ -748,6 +757,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     public LP returnArticleSalePay;
     LP returnSaleDiscount, returnSalePay;
     public LP orderArticleSaleDiscount;
+    LP orderNoDiscount;
     public LP shopPrice;
     LP priceStore, inDocumentPrice;
     LP isRevalued, isNewPrice, documentRevalued;
@@ -1015,7 +1025,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 design.addIntersection(design.get(getPropertyDraw(barcodeObjectName)), design.get(getPropertyDraw(documentBarcodePriceOv)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             }
 
-            design.setFont(barcodeView, FONT_SMALL_BOLD);
+            design.setFont(barcodeView, FONT_LARGE_BOLD);
             design.setFont(reverseBarcode, FONT_SMALL_BOLD);
             design.setFont(barcodeObjectName, FONT_LARGE_BOLD);
             design.setFont(documentBarcodePriceOv, FONT_LARGE_BOLD);
@@ -1388,7 +1398,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         @Override
         protected Object[] getDocumentProps() {
             return new Object[]{nameContragentImpl, phoneContragentImpl, bornContragentImpl, addressContragentImpl, initialSumContragentImpl, orderClientSum,
-                    orderSalePay, orderSaleDiscountSum, orderSalePayNoObligation, orderSalePayCash, orderSalePayCard, orderSaleToDo, orderSaleToDoSum, orderBirthDay};
+                    orderSalePay, orderSaleDiscountSum, orderSalePayNoObligation, orderSalePayCash, orderSalePayCard, orderSaleToDo, orderSaleToDoSum, orderBirthDay, orderNoDiscount};
         }
 
         @Override
@@ -1441,6 +1451,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(outStore, objDoc), Compare.EQUALS, shopImplement));
 
             addFixedOrder(addPropertyObject(changeQuantityTime, objDoc, objArt), false);
+
+            addPropertyDraw(barcodeAddClient);
+            addAutoAction(objBarcode, true,
+                    addPropertyObject(barcodeAddClientAction, objBarcode),
+                    addPropertyObject(barcodeAction2, objDoc, objBarcode),
+                    addPropertyObject(seekAction, objBarcode),
+                    addPropertyObject(barcodeNotFoundMessage, objBarcode));
         }
 
         @Override
@@ -1459,6 +1476,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             ObjectView objArtView = design.get(objArt);
             objArtView.classChooser.show = false;
+
+            design.get(getPropertyDraw(barcodeAddClient)).setContainer(design.getPanelContainer(design.get(objBarcode.groupTo)));
+            design.addIntersection(design.get(getPropertyDraw(barcodeAddClient)), design.get(getPropertyDraw(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            design.setEditKey(barcodeAddClient, KeyStroke.getKeyStroke(KeyEvent.VK_F5, InputEvent.SHIFT_DOWN_MASK | InputEvent.SHIFT_MASK));
 
             return design;
         }
@@ -2257,5 +2278,21 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         User admin = addUser("admin", "fusion");
         //админ игнорит настройки в базе, ему разрешено всё
         admin.addSecurityPolicy(permitAllPolicy);
+    }
+
+
+
+    private class AddClientBarcodeActionProperty extends ActionProperty {
+        
+        private AddClientBarcodeActionProperty(String sID) {
+            super(sID, "Добавить покупателя по бар-коду", new ValueClass[]{StringClass.get(13)});
+        }
+
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            //To change body of implemented methods use File | Settings | File Templates.
+            FormInstance<?> remoteForm = executeForm.form; 
+            DataSession session = remoteForm.session;
+            barcode.execute(BaseUtils.singleValue(keys).object, session, remoteForm, session.addObject(customerCheckRetail, remoteForm));
+        }
     }
 }

@@ -50,6 +50,13 @@ public class PropertyObjectDescriptor extends PropertyDescriptorImplement<Proper
         return result>=0?groupList.get(result):null;
     }
 
+    public List<GroupObjectDescriptor> getGroupObjects(List<GroupObjectDescriptor> groupList) {
+        Set<GroupObjectDescriptor> groupObjects = new HashSet<GroupObjectDescriptor>();
+        for(ObjectDescriptor object : getObjects())
+            groupObjects.add(object.groupTo);
+        return BaseUtils.filterList(groupList, groupObjects);
+    }
+
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         outStream.writeInt(property.getID());
 
@@ -70,7 +77,6 @@ public class PropertyObjectDescriptor extends PropertyDescriptorImplement<Proper
             PropertyInterfaceDescriptor inter = (PropertyInterfaceDescriptor) pool.deserializeObject(inStream);
             PropertyObjectInterfaceDescriptor value = (PropertyObjectInterfaceDescriptor) pool.deserializeObject(inStream);
 
-            mapping.put(inter, value);
         }
     }
 

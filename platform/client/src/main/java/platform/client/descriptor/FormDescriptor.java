@@ -66,17 +66,27 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         return null;
     }
 
-    public Collection<PropertyObjectDescriptor> getProperties(GroupObjectDescriptor groupObject, RemoteDescriptorInterface remote) {
+    public List<PropertyObjectDescriptor> getProperties(GroupObjectDescriptor groupObject, RemoteDescriptorInterface remote) {
+        return getProperties(groups.subList(0,groups.indexOf(groupObject)+1), groupObject, remote);
+    }
+
+    public static List<PropertyObjectDescriptor> getProperties(Collection<GroupObjectDescriptor> groupObjects, GroupObjectDescriptor toDraw, RemoteDescriptorInterface remote) {
+        Collection<ObjectDescriptor> objects = new ArrayList<ObjectDescriptor>();
+        for(GroupObjectDescriptor groupObject : groupObjects)
+            objects.addAll(groupObject);
+        return getProperties(objects, toDraw==null?new ArrayList<ObjectDescriptor>():toDraw, remote);
+    }
+
+    public static List<PropertyObjectDescriptor> getProperties(Collection<ObjectDescriptor> objects, Collection<ObjectDescriptor> atLeastOne, RemoteDescriptorInterface remote) {
         Map<Integer, ObjectDescriptor> idToObjects = new HashMap<Integer, ObjectDescriptor>();
         Map<Integer, ClientClass> classes = new HashMap<Integer, ClientClass>();
-        for(int i=0;i<=groups.indexOf(groupObject);i++)
-            for(ObjectDescriptor object : groups.get(i)) {
-                idToObjects.put(object.getID(), object);
-                classes.put(object.getID(), object.client.baseClass);
-            }
+        for(ObjectDescriptor object : objects) {
+            idToObjects.put(object.getID(), object);
+            classes.put(object.getID(), object.client.baseClass);
+        }
 
-        Collection<PropertyObjectDescriptor> result = new ArrayList<PropertyObjectDescriptor>();
-        for(PropertyDescriptorImplement<Integer> implement : getProperties(remote, classes, BaseUtils.filterValues(idToObjects,groupObject).keySet()))
+        List<PropertyObjectDescriptor> result = new ArrayList<PropertyObjectDescriptor>();
+        for(PropertyDescriptorImplement<Integer> implement : getProperties(remote, classes, BaseUtils.filterValues(idToObjects,atLeastOne).keySet()))
             result.add(new PropertyObjectDescriptor(implement.property, BaseUtils.join(implement.mapping,idToObjects)));
         return result;
     }

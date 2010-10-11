@@ -8,7 +8,7 @@ import java.util.Map;
 public class PropertyDescriptorImplement<T> {
 
     public PropertyDescriptor property;
-    protected Map<PropertyInterfaceDescriptor, T> mapping;
+    public Map<PropertyInterfaceDescriptor, T> mapping;
 
     public PropertyDescriptorImplement() {
     }

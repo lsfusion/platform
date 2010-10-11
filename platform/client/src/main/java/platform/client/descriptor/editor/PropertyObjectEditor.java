@@ -19,14 +19,6 @@ public class PropertyObjectEditor extends JComboBox {
         // и передаем
 
         Collection<PropertyObjectDescriptor> properties = form.getProperties(groupObject, remote);
-
-/*        // узнаем какие свойства по нескольку раз встречаются чтобы знать рисовать заголовки входных объектов или нет
-        Map<PropertyDescriptor, Collection<PropertyObjectDescriptor>> groupProp = BaseUtils.group(new BaseUtils.Group<PropertyDescriptor, PropertyObjectDescriptor>() {
-            public PropertyDescriptor group(PropertyObjectDescriptor key) {
-                return key.property;
-            }
-        }, properties);*/
-        
         for(PropertyObjectDescriptor availableProperty : properties)
             addItem(availableProperty);
         setSelectedItem(property);

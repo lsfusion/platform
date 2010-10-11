@@ -118,6 +118,14 @@ public class BaseUtils {
         return result;
     }
 
+    public static <K> List<K> filterList(List<K> list, Collection<K> filter) {
+        List<K> result = new ArrayList<K>();
+        for(K element : list)
+            if(filter.contains(element))
+                result.add(element);
+        return result;
+    }
+
     public static <BK,K extends BK,V> Map<K,V> splitKeys(Map<BK,V> map, Collection<K> keys, Map<BK,V> rest) {
         Map<K,V> result = new HashMap<K, V>();
         for(Map.Entry<BK,V> entry : map.entrySet())

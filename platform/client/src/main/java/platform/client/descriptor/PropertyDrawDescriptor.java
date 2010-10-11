@@ -15,8 +15,8 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
 
     public PropertyObjectDescriptor propertyObject;
     public GroupObjectDescriptor toDraw;
-    private List<GroupObjectDescriptor> columnGroupObjects;
-    private PropertyObjectDescriptor propertyCaption;
+    public List<GroupObjectDescriptor> columnGroupObjects;
+    public PropertyObjectDescriptor propertyCaption;
 
     public GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groupList) {
         if(toDraw!=null)
