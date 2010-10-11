@@ -117,12 +117,6 @@ public class ClientFormController {
                         clientNavigator.currentFormChanged();
                     }
 
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                           getFocusTraversalPolicy().getDefaultComponent(formLayout).requestFocusInWindow();
-                        }
-                    });
-
                     // если вдруг изменились данные в сессии
                     ClientExternalScreen.invalidate(getID());
                     ClientExternalScreen.repaintAll(getID());

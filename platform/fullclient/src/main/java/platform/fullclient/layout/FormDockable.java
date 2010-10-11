@@ -51,16 +51,16 @@ abstract class FormDockable extends DefaultMultipleCDockable {
         getContentPane().add(comp);
         this.comp = comp;
         setTitleText(caption);
-
+        /*
         addFocusListener(new CFocusListener() {
             public void focusGained(CDockable dockable) {
-                
                 ((FormDockable) dockable).comp.requestFocusInWindow();
             }
 
             public void focusLost(CDockable dockable) {
             }
         });
+        */
     }
 
     // закрываются пользователем
