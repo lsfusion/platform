@@ -1,7 +1,7 @@
 package platform.client.descriptor.nodes;
 
+import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.Action;
 import java.util.ArrayList;
 
 public class ClientTreeNode extends DefaultMutableTreeNode {
@@ -64,6 +64,17 @@ public class ClientTreeNode extends DefaultMutableTreeNode {
         for (Action act : actions) {
             subTreeActions.add(act);
         }
+    }
+
+    public boolean canImport(TransferHandler.TransferSupport info){
+        return false;
+    }
+
+    public boolean importData(TransferHandler.TransferSupport info){
+        return false;
+    }
+
+    public void exportDone(JComponent component, int mode){
     }
 
 }

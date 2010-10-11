@@ -5,7 +5,12 @@ import platform.client.descriptor.nodes.ClientTreeNode;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.*;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class ClientTree extends JTree {
@@ -30,6 +35,11 @@ public class ClientTree extends JTree {
             }
         });
 
+        getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
+
+        //setDropMode(DropMode.ON);
+        //setDragEnabled(true);
+        setTransferHandler(new ClientTransferHandler());
     }
 
     protected void changeCurrentElement() {        
@@ -72,13 +82,6 @@ public class ClientTree extends JTree {
         }
     }
 
-    class CloseAction extends AbstractAction {
-        public void actionPerformed(ActionEvent e) {
-            DefaultMutableTreeNode node = getSelectionNode();
-            node.removeFromParent();
-        }
-    }
-
     private ArrayList<Action> getActions(TreePath path) {
         if (path == null) {
             return null;
@@ -110,4 +113,99 @@ public class ClientTree extends JTree {
         }
         return list;
     }
+
+    /*
+        class CloseAction extends AbstractAction {
+            public void actionPerformed(ActionEvent e) {
+                DefaultMutableTreeNode node = getSelectionNode();
+                node.removeFromParent();
+            }
+        }
+    */
+    public class ClientTransferHandler extends TransferHandler {
+
+        @Override
+        public boolean canImport(TransferHandler.TransferSupport info) {
+            if (!info.isDrop()) {
+                return false;
+            }
+            info.setShowDropLocation(true);
+
+            JTree.DropLocation dl = (JTree.DropLocation) info.getDropLocation();
+            TreePath path = dl.getPath();
+            if (path == null) {
+                return false;
+            }
+
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
+            if (node instanceof ClientTreeNode) {
+                return ((ClientTreeNode) node).canImport(info);
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public boolean importData(TransferHandler.TransferSupport info) {
+            if (!canImport(info)) {
+                return false;
+            }
+
+            JTree.DropLocation dl = (JTree.DropLocation) info.getDropLocation();
+            TreePath path = dl.getPath();
+            if (path == null) {
+                return false;
+            }
+
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
+            if (node instanceof ClientTreeNode) {
+                return ((ClientTreeNode) node).importData(info);
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public int getSourceActions(JComponent c) {
+            return COPY_OR_MOVE;
+        }
+
+        @Override
+        public Transferable createTransferable(JComponent c) {
+            DefaultMutableTreeNode node = getSelectionNode();
+            if (node instanceof ClientTreeNode) {
+                return new NodeTransfer((ClientTreeNode) node);
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public void exportDone(JComponent component, Transferable trans, int mode) {
+            if (trans instanceof NodeTransfer) {
+                ((NodeTransfer) trans).node.exportDone(component, mode);
+            }
+        }
+    }
+
+    public class NodeTransfer implements Transferable {
+        public ClientTreeNode node;
+
+        public NodeTransfer(ClientTreeNode node) {
+            this.node = node;
+        }
+
+        public DataFlavor[] getTransferDataFlavors() {
+            return new DataFlavor[0];
+        }
+
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            return false;
+        }
+
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+            return node;
+        }
+    }
+
 }
