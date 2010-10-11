@@ -246,7 +246,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
 
     public RemoteFormInterface createForm(byte[] formState) throws RemoteException {
         FormEntity newFormEntity = FormEntity.deserialize(BL, formState);
-        newFormEntity.richDesign = newFormEntity.createDefaultRichDesign();
         return createForm(newFormEntity, false);
     }
 

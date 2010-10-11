@@ -16,11 +16,11 @@ public class ClientGrid extends ClientComponent {
     public boolean tabVertical = true;
     public boolean autoHide;
 
+    public ClientGroupObject groupObject;
+
     public ClientGrid() {
         
     }
-
-    public ClientGroupObject groupObject;
 
     @Override
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

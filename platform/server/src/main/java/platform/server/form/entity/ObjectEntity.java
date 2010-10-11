@@ -50,7 +50,7 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
         ID = iID;
 
         groupTo = (GroupObjectEntity) pool.deserializeObject(inStream);
-        baseClass = TypeSerializer.deserializeValueClass(pool.context, inStream);
+        baseClass = TypeSerializer.deserializeValueClass(pool.context.BL, inStream);
         caption = inStream.readUTF();
     }
 }

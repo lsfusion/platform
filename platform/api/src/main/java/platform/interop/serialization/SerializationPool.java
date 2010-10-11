@@ -193,14 +193,9 @@ public abstract class SerializationPool<C> {
 
     public <T> T readObject(DataInputStream inStream) throws IOException {
         try {
-            if (inStream.readBoolean()) {
-                return (T)new ObjectInputStream(inStream).readObject();
-            } else {
-                return null;
-            }
-//            return inStream.readBoolean()
-//                   ? (T)new ObjectInputStream(inStream).readObject()
-//                   : null;
+            return inStream.readBoolean()
+                   ? (T)new ObjectInputStream(inStream).readObject()
+                   : null;
         } catch (ClassNotFoundException e) {
             throw new IOException("Не могу прочитать объект.", e);
         }

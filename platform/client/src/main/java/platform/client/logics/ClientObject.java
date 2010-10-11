@@ -34,12 +34,7 @@ public class ClientObject implements Serializable, ClientIdentitySerializable {
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        pool.serializeObject(outStream, groupObject);
-        pool.writeString(outStream, caption);
-
-        outStream.writeBoolean(addOnTransaction);
-
-        baseClass.serialize(outStream);
+        pool.serializeObject(outStream, classChooser);
     }
 
     public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {

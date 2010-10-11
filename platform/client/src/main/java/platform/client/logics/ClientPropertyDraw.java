@@ -253,7 +253,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         super.customSerialize(pool, outStream, serializationType);
 
         pool.writeString(outStream, caption);
-        ClientTypeSerializer.serialize(outStream, baseType);
 
         pool.writeObject(outStream, minimumSize);
         pool.writeObject(outStream, maximumSize);
@@ -275,24 +274,19 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
         pool.writeObject(outStream, externalScreenConstraints);
 
-        outStream.writeInt(ID);
-        pool.writeString(outStream, sID);
-        pool.serializeObject(outStream, groupObject);
+        outStream.writeBoolean(autoHide);
+
+        pool.serializeObject(outStream, pool.context);
+
         pool.serializeObject(outStream, keyBindingGroup);
 
-        pool.serializeCollection(outStream, columnGroupObjects);
-
-        outStream.writeBoolean(autoHide);
-        outStream.writeBoolean(checkEquals);
-        outStream.writeBoolean(askConfirm);
+        outStream.writeInt(ID);
     }
 
     public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, iID, inStream);
 
         caption = pool.readString(inStream);
-
-        baseType = ClientTypeSerializer.deserialize(inStream);
 
         minimumSize = pool.readObject(inStream);
         maximumSize = pool.readObject(inStream);
@@ -317,15 +311,19 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         externalScreenConstraints = pool.readObject(inStream);
 
+        autoHide = inStream.readBoolean();
+
+        keyBindingGroup = pool.deserializeObject(inStream);
+
         ID = inStream.readInt();
+
+        baseType = ClientTypeSerializer.deserialize(inStream);
+
         sID = pool.readString(inStream);
 
         groupObject = pool.deserializeObject(inStream);
-        keyBindingGroup = pool.deserializeObject(inStream);
 
         columnGroupObjects = pool.deserializeList(inStream);
-
-        autoHide = inStream.readBoolean();
 
         checkEquals = inStream.readBoolean();
         askConfirm = inStream.readBoolean();

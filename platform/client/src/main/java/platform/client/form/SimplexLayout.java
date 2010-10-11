@@ -8,6 +8,8 @@ package platform.client.form;
 import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
 import platform.base.OSUtils;
+import platform.client.logics.ClientComponent;
+import platform.client.logics.ClientContainer;
 import platform.interop.form.layout.SimplexComponentInfo;
 import platform.interop.form.layout.SimplexConstraints;
 import platform.interop.form.layout.SimplexSolverDirections;
@@ -32,32 +34,29 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
     Map<List<Component>, Map<Component, Rectangle>> cache = new HashMap<List<Component>, Map<Component, Rectangle>>();
 
     List<Component> allComponents = new ArrayList<Component>();
-    Map<Component, SimplexConstraints<Integer>> constraints = new HashMap<Component, SimplexConstraints<Integer>>();
+    Map<Component, ClientComponent> constraints = new HashMap<Component, ClientComponent>();
 
     private Container mainContainer;
 
     public SimplexLayout(Container imainContainer) {
         mainContainer = imainContainer;
-        constraints.put(mainContainer, SimplexConstraints.DEFAULT_CONSTRAINT);
     }
 
-    public SimplexLayout(Container imainContainer, SimplexConstraints<Integer> c) {
+    public SimplexLayout(Container imainContainer, ClientContainer clientComponent) {
         mainContainer = imainContainer;
-        constraints.put(mainContainer, c);
+        constraints.put(mainContainer, clientComponent);
     }
 
     public void addLayoutComponent(String name, Component comp) {
         addLayoutComponent(comp);
-        constraints.put(comp, SimplexConstraints.DEFAULT_CONSTRAINT);
     }
 
-    public void addLayoutComponent(Component comp, Object constr) {
+    public void addLayoutComponent(Component comp, Object constraint) {
         addLayoutComponent(comp);
-        if (constr != null)
-            constraints.put(comp, (SimplexConstraints) constr);
-        else
-            constraints.put(comp, SimplexConstraints.DEFAULT_CONSTRAINT);
-//        System.out.println("addLayoutComp");
+        if (constraint != null) {
+            ClientComponent clientComponent = (ClientComponent) constraint;
+            constraints.put(comp, clientComponent);
+        }
     }
 
     private void addLayoutComponent(Component comp) {
@@ -299,14 +298,21 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
     private void fillInsideConstraint(LpSolve solver, Component comp) throws LpSolveException {
 
         if (components.indexOf(comp.getParent()) != -1)
-            SingleSimplexConstraint.IS_INSIDE.fillConstraint(solver, infos.get(comp), infos.get(comp.getParent()), constraints.get(comp), constraints.get(comp.getParent()), comp, comp.getParent());
+            SingleSimplexConstraint.IS_INSIDE.fillConstraint(solver, infos.get(comp), infos.get(comp.getParent()), getConstraint(comp), getConstraint(comp.getParent()), comp, comp.getParent());
         else
-            SingleSimplexConstraint.IS_INSIDE.fillConstraint(solver, infos.get(comp), targetInfo, constraints.get(comp), constraints.get(comp.getParent()), comp, comp.getParent());
+            SingleSimplexConstraint.IS_INSIDE.fillConstraint(solver, infos.get(comp), targetInfo, getConstraint(comp), getConstraint(comp.getParent()), comp, comp.getParent());
+    }
+
+    private SimplexConstraints<ClientComponent> getConstraint(Component comp) {
+        ClientComponent component = constraints.get(comp);
+        return component != null
+               ? component.constraints
+               : SimplexConstraints.DEFAULT_CONSTRAINT;
     }
 
     private void fillSiblingsConstraint(LpSolve solver, Component parent) throws LpSolveException {
 
-        SimplexConstraints parentConstraints = constraints.get(parent);
+        SimplexConstraints parentConstraints = getConstraint(parent);
 
         int maxVar = parentConstraints.maxVariables;
 
@@ -315,7 +321,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
         TreeMap<Integer, ArrayList<Component>> comporder = new TreeMap<Integer, ArrayList<Component>>();
         for (Component comp : components)
             if (comp.getParent() == parent) {
-                Integer order = constraints.get(comp).order;
+                Integer order = getConstraint(comp).order;
                 ArrayList<Component> alc = comporder.get(order);
                 if (alc == null) alc = new ArrayList<Component>();
                 alc.add(comp);
@@ -362,10 +368,10 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
         for (Component comp1 : components)
             if (comp1.getParent() == parent)
                 for (Component comp2 : components)
-                    if (comp2.getParent() == parent && comp1 != comp2 && !constraints.get(comp2).intersects.containsKey(constraints.get(comp1).ID)) {
+                    if (comp2.getParent() == parent && comp1 != comp2 && !getConstraint(comp2).intersects.containsKey(constraints.get(comp1))) {
 
-                        if (constraints.get(comp1).intersects.containsKey(constraints.get(comp2).ID)) {
-                            constraints.get(comp1).intersects.get(constraints.get(comp2).ID).fillConstraint(solver, infos.get(comp1), infos.get(comp2), constraints.get(comp1), constraints.get(comp2), null);
+                        if (getConstraint(comp1).intersects.containsKey(constraints.get(comp2))) {
+                            getConstraint(comp1).intersects.get(constraints.get(comp2)).fillConstraint(solver, infos.get(comp1), infos.get(comp2), getConstraint(comp1), getConstraint(comp2), null);
                         } else {
 
                             int order1 = order.indexOf(comp1);
@@ -380,7 +386,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
                             SimplexSolverDirections dir = globalDir;
                             if (vars.get(comp1) == vars.get(comp2) && vars.get(comp1) != null) dir = vars.get(comp1);
 
-                            parentConstraints.childConstraints.fillConstraint(solver, info1, info2, constraints.get(comp1), constraints.get(comp2), dir);
+                            parentConstraints.childConstraints.fillConstraint(solver, info1, info2, getConstraint(comp1), getConstraint(comp2), dir);
                         }
 
                     }
@@ -421,7 +427,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
 
             SimplexComponentInfo info = infos.get(component);
 
-            SimplexConstraints constraint = constraints.get(component);
+            SimplexConstraints constraint = getConstraint(component);
 
             // нужно проверять на максимальный размер, иначе кнопка раскрытия дерева сильно ограничит сверху colmaxw
             if (constraint.fillHorizontal > 0 && max.getWidth() >= mainContainer.getWidth()) {

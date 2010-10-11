@@ -77,10 +77,10 @@ public abstract class ClientFormLayout extends JPanel {
 
                     if (container.container == null) {
                         mainContainer = contview;
-                        layoutManager = new SimplexLayout(mainContainer, container.constraints);
+                        layoutManager = new SimplexLayout(mainContainer, container);
                         mainContainer.setLayout(layoutManager);
                     } else {
-                        contviews.get(container.container).add(contview, container.constraints);
+                        contviews.get(container.container).add(contview, container);
                     }
                     contviews.put(container, contview);
                     found = true;
@@ -131,7 +131,7 @@ public abstract class ClientFormLayout extends JPanel {
     // добавляем визуальный компонент
     public boolean add(ClientComponent key, Component view) {
         if (!contviews.get(key.container).isAncestorOf(view)) {
-            contviews.get(key.container).addComponent(view, key.constraints);
+            contviews.get(key.container).addComponent(view, key);
             contviews.get(key.container).repaint();
             if (key.defaultComponent){
                 policy.addDefault(view);

@@ -24,10 +24,6 @@ public class RegularFilterView extends IdentityObject implements ServerIdentityS
         this.entity = entity;
     }
 
-    public void serialize(DataOutputStream outStream) throws IOException {
-        //Not used
-    }
-
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.writeString(outStream, entity.name);
         pool.writeObject(outStream, entity.key);
@@ -36,5 +32,7 @@ public class RegularFilterView extends IdentityObject implements ServerIdentityS
 
     public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
         ID = iID;
+
+        entity = pool.context.form.getRegularFilter(iID);
     }
 }

@@ -39,9 +39,7 @@ public class ClientRegularFilter implements ClientIdentitySerializable {
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        pool.writeString(outStream, caption);
-        pool.writeObject(outStream, key);
-        outStream.writeBoolean(showKey);
+        //не надо, т.к. на сервер все данные - в entity
     }
 
     public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {

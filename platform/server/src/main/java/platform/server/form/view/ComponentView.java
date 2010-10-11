@@ -13,7 +13,7 @@ import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ComponentView implements ClientSerialize, ServerIdentitySerializable {
+public class ComponentView implements ServerIdentitySerializable {
 
     public ComponentDesign design = new ComponentDesign();
 
@@ -35,28 +35,6 @@ public class ComponentView implements ClientSerialize, ServerIdentitySerializabl
         this.ID = ID;
     }
 
-    public void serialize(DataOutputStream outStream) throws IOException {
-        outStream.writeInt(ID);
-
-        new ObjectOutputStream(outStream).writeObject(design);
-        
-        outStream.writeBoolean(container==null);
-        if(container!=null)
-            outStream.writeInt(container.ID);
-
-        new ObjectOutputStream(outStream).writeObject(constraints);
-
-        outStream.writeInt(constraints.intersects.size());
-        for (Map.Entry<ComponentView,DoNotIntersectSimplexConstraint> intersect : constraints.intersects.entrySet()) {
-            outStream.writeInt(intersect.getKey().ID);
-            new ObjectOutputStream(outStream).writeObject(intersect.getValue());
-        }
-
-        outStream.writeBoolean(defaultComponent);
-
-        outStream.writeBoolean(show);
-    }
-
     public ContainerView getContainer() {
         return container;
     }
@@ -76,7 +54,7 @@ public class ComponentView implements ClientSerialize, ServerIdentitySerializabl
 
         outStream.writeInt(constraints.intersects.size());
         for (Map.Entry<ComponentView, DoNotIntersectSimplexConstraint> intersect : constraints.intersects.entrySet()) {
-            outStream.writeInt(intersect.getKey().getID());
+            pool.serializeObject(outStream, intersect.getKey());
             pool.writeObject(outStream, intersect.getValue());
         }
 
@@ -95,8 +73,9 @@ public class ComponentView implements ClientSerialize, ServerIdentitySerializabl
         constraints.intersects = new HashMap<ComponentView, DoNotIntersectSimplexConstraint>();
         int count = inStream.readInt();
         for (int i = 0; i < count; i++) {
-            //todo:!!
-//            constraints.intersects.put(inStream.readInt(), (DoNotIntersectSimplexConstraint) pool.readObject(inStream));
+            ComponentView view = pool.deserializeObject(inStream);
+            DoNotIntersectSimplexConstraint constraint = pool.readObject(inStream);
+            constraints.intersects.put(view, constraint);
         }
         constraints.ID = ID;
 

@@ -2,6 +2,7 @@ package platform.server.form.view;
 
 import platform.base.DefaultIDGenerator;
 import platform.base.IDGenerator;
+import platform.base.IdentityObject;
 import platform.base.OrderedMap;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.form.entity.GroupObjectEntity;
@@ -10,7 +11,7 @@ import platform.server.logics.property.Property;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.form.entity.ObjectEntity;
-import platform.server.serialization.ServerCustomSerializable;
+import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 
 import javax.swing.*;
@@ -24,25 +25,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class FormView implements ClientSerialize, ServerCustomSerializable {
+public class FormView extends IdentityObject implements ServerIdentitySerializable {
 
     // нужен для того, чтобы генерировать уникальный идентификаторы объектам рисования, для передачи их клиенту
     protected IDGenerator idGenerator = new DefaultIDGenerator();
 
     public Collection<ContainerView> containers = new ArrayList<ContainerView>();
-
-    public ContainerView addContainer() {
-        return addContainer(null);
-    }
-
-    public ContainerView addContainer(String title) {
-
-        ContainerView container = new ContainerView(idGenerator.idShift());
-        container.title = title;
-
-        containers.add(container);
-        return container;
-    }
 
     // список групп
     public List<GroupObjectView> groupObjects = new ArrayList<GroupObjectView>();
@@ -75,47 +63,21 @@ public class FormView implements ClientSerialize, ServerCustomSerializable {
     public FormView() {
     }
 
-    static <T extends ClientSerialize> void serializeList(DataOutputStream outStream, Collection<T> list) throws IOException {
-        outStream.writeInt(list.size());
-        for(T element : list)
-            element.serialize(outStream);
+    public FormView(int iID) {
+        super(iID);
     }
 
-    public void serialize(DataOutputStream outStream) throws IOException {
+    public ContainerView addContainer() {
+        return addContainer(null);
+    }
 
-        outStream.writeBoolean(readOnly);
+    public ContainerView addContainer(String title) {
 
-        List<ContainerView> orderedContainers = new ArrayList<ContainerView>();
-        for(ContainerView container : containers)
-            container.fillOrderList(orderedContainers);
-        serializeList(outStream,orderedContainers);
+        ContainerView container = new ContainerView(idGenerator.idShift());
+        container.title = title;
 
-        serializeList(outStream,groupObjects);
-        serializeList(outStream, properties);
-        serializeList(outStream,regularFilters);
-
-        outStream.writeInt(defaultOrders.size());
-        for(Map.Entry<PropertyDrawView,Boolean> order : defaultOrders.entrySet()) {
-            outStream.writeInt(order.getKey().ID);
-            outStream.writeBoolean(order.getValue());
-        }
-
-        printFunction.serialize(outStream);
-        xlsFunction.serialize(outStream);
-        nullFunction.serialize(outStream);
-        refreshFunction.serialize(outStream);
-        applyFunction.serialize(outStream);
-        cancelFunction.serialize(outStream);
-        okFunction.serialize(outStream);
-        closeFunction.serialize(outStream);
-
-        outStream.writeInt(order.size());
-        for(PropertyDrawView orderCell : order)
-            outStream.writeInt(orderCell.getID());
-
-        new ObjectOutputStream(outStream).writeObject(keyStroke);
-
-        outStream.writeUTF(caption);
+        containers.add(container);
+        return container;
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

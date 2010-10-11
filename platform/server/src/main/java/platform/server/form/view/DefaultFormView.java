@@ -39,7 +39,12 @@ public class DefaultFormView extends FormView {
     public ContainerView getGroupObjectContainer(GroupObjectView groupObject) { return groupContainers.get(groupObject); }
     public ContainerView getGroupObjectContainer(GroupObjectEntity groupObject) { return getGroupObjectContainer(get(groupObject)); }
 
+    public DefaultFormView() {
+        
+    }
+    
     public DefaultFormView(FormEntity<?> formEntity) {
+        super(formEntity.getID());
 
         readOnly = formEntity.isReadOnly();
 

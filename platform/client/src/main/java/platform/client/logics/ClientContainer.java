@@ -22,6 +22,7 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
 
     }
 
+    @Override
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);
 
@@ -31,6 +32,7 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         pool.writeString(outStream, description);
     }
 
+    @Override
     public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, iID, inStream);
 

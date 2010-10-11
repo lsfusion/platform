@@ -26,7 +26,6 @@ public class ClientRegularFilterGroup extends ClientComponent {
 
         outStream.writeInt(ID);
         pool.serializeCollection(outStream, filters);
-        outStream.writeInt(defaultFilter);
     }
 
     @Override

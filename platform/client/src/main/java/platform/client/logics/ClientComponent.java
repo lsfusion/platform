@@ -21,7 +21,7 @@ public class ClientComponent implements Serializable, ClientIdentitySerializable
     public ComponentDesign design;
 
     public ClientContainer container;
-    public SimplexConstraints<Integer> constraints;
+    public SimplexConstraints<ClientComponent> constraints;
 
     public boolean defaultComponent = false;
 
@@ -40,8 +40,8 @@ public class ClientComponent implements Serializable, ClientIdentitySerializable
         pool.writeObject(outStream, constraints);
 
         outStream.writeInt(constraints.intersects.size());
-        for (Map.Entry<Integer, DoNotIntersectSimplexConstraint> intersect : constraints.intersects.entrySet()) {
-            outStream.writeInt(intersect.getKey());
+        for (Map.Entry<ClientComponent, DoNotIntersectSimplexConstraint> intersect : constraints.intersects.entrySet()) {
+            pool.serializeObject(outStream, intersect.getKey());
             pool.writeObject(outStream, intersect.getValue());
         }
 
@@ -57,10 +57,12 @@ public class ClientComponent implements Serializable, ClientIdentitySerializable
 
         constraints = pool.readObject(inStream);
 
-        constraints.intersects = new HashMap<Integer, DoNotIntersectSimplexConstraint>();
+        constraints.intersects = new HashMap<ClientComponent, DoNotIntersectSimplexConstraint>();
         int count = inStream.readInt();
         for (int i = 0; i < count; i++) {
-            constraints.intersects.put(inStream.readInt(), (DoNotIntersectSimplexConstraint) pool.readObject(inStream));
+            ClientComponent view = pool.deserializeObject(inStream);
+            DoNotIntersectSimplexConstraint constraint = pool.readObject(inStream);
+            constraints.intersects.put(view, constraint);
         }
         constraints.ID = compID;
 

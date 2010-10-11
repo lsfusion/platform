@@ -4,18 +4,17 @@ import platform.interop.serialization.SerializationPool;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.view.*;
-import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 
 
-public class ServerSerializationPool extends SerializationPool<BusinessLogics<? extends BusinessLogics<?>>> {
+public class ServerSerializationPool extends SerializationPool<ServerContext> {
     public ServerSerializationPool() {
         this(null);
     }
 
-    public ServerSerializationPool(BusinessLogics context) {
+    public ServerSerializationPool(ServerContext context) {
         super(context);
         //порядок добавления должен соответствовать порядку в ClientSerializationPool
 

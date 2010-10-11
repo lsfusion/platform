@@ -4,6 +4,7 @@ import platform.base.OrderedMap;
 import platform.client.SwingUtils;
 import platform.client.form.LogicsSupplier;
 import platform.client.serialization.ClientCustomSerializable;
+import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 
 import javax.swing.*;
@@ -13,7 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ClientForm implements LogicsSupplier, ClientCustomSerializable {
+public class ClientForm implements LogicsSupplier, ClientIdentitySerializable {
 
     public boolean readOnly = false;
 
@@ -24,6 +25,8 @@ public class ClientForm implements LogicsSupplier, ClientCustomSerializable {
     // нужен именно List, чтобы проще был обход по дереву
     // считается, что containers уже топологически отсортированы
     public List<ClientContainer> containers;
+    private int ID;
+
     public ClientContainer getMainContainer() {
         for (ClientContainer container : containers)
             if (container.container == null)
@@ -123,6 +126,10 @@ public class ClientForm implements LogicsSupplier, ClientCustomSerializable {
         return caption;
     }
 
+    public int getID() {
+        return ID;
+    }
+
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         outStream.writeBoolean(readOnly);
         pool.serializeCollection(outStream, containers);
@@ -152,6 +159,8 @@ public class ClientForm implements LogicsSupplier, ClientCustomSerializable {
     }
 
     public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+        ID = iID;
+        
         readOnly = inStream.readBoolean();
 
         containers = pool.deserializeList(inStream);

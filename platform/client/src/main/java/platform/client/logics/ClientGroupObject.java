@@ -78,7 +78,6 @@ public class ClientGroupObject extends ArrayList<ClientObject>
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        outStream.writeByte(banClassView);
         pool.serializeCollection(outStream, this);
         pool.serializeObject(outStream, grid);
         pool.serializeObject(outStream, showType);

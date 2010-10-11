@@ -6,7 +6,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class GridView extends ComponentView implements ClientSerialize {
+public class GridView extends ComponentView {
 
     public boolean showFind = false;
     public boolean showFilter = true;
@@ -24,19 +24,6 @@ public class GridView extends ComponentView implements ClientSerialize {
         super(ID);
 
         this.groupObject = groupObject;
-    }
-
-    @Override
-    public void serialize(DataOutputStream outStream) throws IOException {
-        super.serialize(outStream);
-
-        outStream.writeBoolean(showFind);
-        outStream.writeBoolean(showFilter);
-
-        outStream.writeByte(minRowCount);
-        outStream.writeBoolean(tabVertical);
-
-        outStream.writeBoolean(autoHide);
     }
 
     @Override

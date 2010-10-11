@@ -77,6 +77,7 @@ public class PropertyObjectDescriptor extends PropertyDescriptorImplement<Proper
             PropertyInterfaceDescriptor inter = (PropertyInterfaceDescriptor) pool.deserializeObject(inStream);
             PropertyObjectInterfaceDescriptor value = (PropertyObjectInterfaceDescriptor) pool.deserializeObject(inStream);
 
+            mapping.put(inter, value);
         }
     }
 

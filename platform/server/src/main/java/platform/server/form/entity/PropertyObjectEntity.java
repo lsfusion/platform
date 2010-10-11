@@ -67,7 +67,7 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyI
         ID = iID;
         int propertyId = inStream.readInt();
 
-        property = pool.context.getProperty(propertyId);
+        property = pool.context.BL.getProperty(propertyId);
         mapping = new HashMap<P, PropertyObjectInterfaceEntity>();
 
         int size = inStream.readInt();

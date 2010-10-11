@@ -13,6 +13,10 @@ public class ContainerView extends ComponentView {
     public String title;
     public String description;
 
+    public ContainerView() {
+
+    }
+    
     public ContainerView(int ID) {
         super(ID);
 
@@ -35,18 +39,6 @@ public class ContainerView extends ComponentView {
     private void remove(ComponentView comp) {
         comp.setContainer(null);
         children.remove(comp);
-    }
-
-    public void serialize(DataOutputStream outStream) throws IOException {
-        super.serialize(outStream);
-
-        outStream.writeBoolean(title != null);
-        if (title != null) {
-            outStream.writeUTF(title);
-        }
-        outStream.writeBoolean(description==null);
-        if (description!=null)
-            outStream.writeUTF(description);
     }
 
     public void fillOrderList(List<ContainerView> containers) {

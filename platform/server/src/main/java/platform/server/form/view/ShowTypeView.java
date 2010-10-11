@@ -6,7 +6,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ShowTypeView extends ComponentView implements ClientSerialize {
+public class ShowTypeView extends ComponentView {
     public ShowTypeView() {
         
     }

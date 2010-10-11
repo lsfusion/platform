@@ -11,7 +11,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class GroupObjectView extends ArrayList<ObjectView> implements ClientSerialize, ServerIdentitySerializable {
+public class GroupObjectView extends ArrayList<ObjectView> implements ServerIdentitySerializable {
 
     public GroupObjectEntity entity;
 
@@ -32,18 +32,6 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ClientSeri
     public GridView grid;
     public ShowTypeView showType;
 
-    public void serialize(DataOutputStream outStream) throws IOException {
-        outStream.writeInt(entity.getID());
-        outStream.writeByte(entity.banClassView);
-
-        outStream.writeInt(size());
-        for(ObjectView object : this)
-            object.serialize(outStream);
-
-        grid.serialize(outStream);
-        showType.serialize(outStream);
-    }
-
     public int getID() {
         return entity.getID();
     }
@@ -56,12 +44,11 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ClientSeri
     }
 
     public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
-//        ID = iID;
-//        banClassView = inStream.readByte();
-
         pool.deserializeCollection(this, inStream);
 
         grid = pool.deserializeObject(inStream);
         showType = pool.deserializeObject(inStream);
+
+        entity = pool.context.form.getGroupObject(iID);
     }
 }

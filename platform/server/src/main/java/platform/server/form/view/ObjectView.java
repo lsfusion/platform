@@ -9,7 +9,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ObjectView implements ClientSerialize, ServerIdentitySerializable {
+public class ObjectView implements ServerIdentitySerializable {
 
     public ObjectEntity entity;
     private GroupObjectView groupObject;
@@ -28,16 +28,6 @@ public class ObjectView implements ClientSerialize, ServerIdentitySerializable {
         classChooser = new ClassChooserView(idGen.idShift(), this.entity, this);
     }
 
-    public void serialize(DataOutputStream outStream) throws IOException {
-
-        outStream.writeInt(entity.getID());
-        outStream.writeUTF(entity.caption);
-        outStream.writeBoolean(entity.addOnTransaction);
-
-        entity.baseClass.serialize(outStream);
-        classChooser.serialize(outStream);
-    }
-
     public int getID() {
         return entity.ID;
     }
@@ -53,6 +43,8 @@ public class ObjectView implements ClientSerialize, ServerIdentitySerializable {
     }
 
     public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
-        //todo:
+        classChooser = pool.deserializeObject(inStream);
+
+        entity = pool.context.form.getObject(iID);
     }
 }

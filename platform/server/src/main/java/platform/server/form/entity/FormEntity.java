@@ -19,6 +19,7 @@ import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
+import platform.server.serialization.ServerContext;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 
@@ -41,10 +42,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public List<PropertyDrawEntity> propertyDraws = new ArrayList<PropertyDrawEntity>();
     public Set<FilterEntity> fixedFilters = new HashSet<FilterEntity>();
     public List<RegularFilterGroupEntity> regularFilterGroups = new ArrayList<RegularFilterGroupEntity>();
-
-    public void addFixedFilter(FilterEntity filter) {
-        fixedFilters.add(filter);
-    }
 
     public OrderedMap<OrderEntity<?>, Boolean> fixedOrders = new OrderedMap<OrderEntity<?>, Boolean>();
 
@@ -78,6 +75,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         isPrintForm = iisPrintForm;
     }
 
+    public void addFixedFilter(FilterEntity filter) {
+        fixedFilters.add(filter);
+    }
+
     public void addFixedOrder(OrderEntity order, boolean descending) {
         fixedOrders.put(order, descending);
     }
@@ -100,6 +101,49 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public int genID() {
         return IDCount++;
+    }
+
+    public GroupObjectEntity getGroupObject(int id) {
+        for (GroupObjectEntity group : groups) {
+            if (group.getID() == id) {
+                return group;
+            }
+        }
+
+        return null;
+    }
+
+    public ObjectEntity getObject(int id) {
+        for (GroupObjectEntity group : groups) {
+            for(ObjectEntity object : group) {
+                if (object.getID() == id) {
+                    return object;
+                }
+            }
+        }
+        return null;
+    }
+
+    public RegularFilterGroupEntity getRegularFilterGroup(int id) {
+        for (RegularFilterGroupEntity filterGroup : regularFilterGroups) {
+            if (filterGroup.getID() == id) {
+                return filterGroup;
+            }
+        }
+
+        return null;
+    }
+
+    public RegularFilterEntity getRegularFilter(int id) {
+        for (RegularFilterGroupEntity filterGroup : regularFilterGroups) {
+            for(RegularFilterEntity filter : filterGroup.filters) {
+                if (filter.getID() == id) {
+                    return filter;
+                }
+            }
+        }
+        
+        return null;
     }
 
     protected ObjectEntity addSingleGroupObject(ValueClass baseClass, String caption, Object... groups) {
@@ -254,6 +298,15 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return new PropertyObjectEntity(genID(), property, objects);
     }
 
+    public PropertyDrawEntity<?> getPropertyDraw(int iID) {
+        for (PropertyDrawEntity propertyDraw : propertyDraws) {
+            if (propertyDraw.getID() == iID) {
+                return propertyDraw;
+            }
+        }
+
+        return null;
+    }
 
     protected PropertyObjectEntity getPropertyObject(LP<?> lp) {
         return getPropertyDraw(lp).propertyObject;
@@ -441,10 +494,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public static FormEntity<?> deserialize(BusinessLogics BL, byte[] formState) {
         DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(formState));
         try {
-//            FormView richDesign = (FormView) new ServerSerializationPool(BL).deserializeObject(inStream);
-            FormEntity formEntity = (FormEntity) new ServerSerializationPool(BL).deserializeObject(inStream);
-//            formEntity.richDesign = richDesign;
-            return formEntity;
+            FormEntity form = new ServerSerializationPool(new ServerContext(BL, null)).deserializeObject(inStream);
+            form.richDesign = new ServerSerializationPool(new ServerContext(BL, form)).deserializeObject(inStream);
+
+            return form;
         } catch (IOException e) {
             throw new RuntimeException("Ошибка при десериализации формы на сервере", e);
         }
