@@ -16,24 +16,12 @@ import java.io.Serializable;
 import java.util.*;
 
 public class ClientGroupObject extends ArrayList<ClientObject>
-                                 implements Serializable, ClientPropertyRead, ClientIdentitySerializable {
+                                 implements ClientPropertyRead, ClientIdentitySerializable {
 
     private int ID;
 
     public ClientGroupObject() {
 
-    }
-
-    public ClientGroupObject(DataInputStream inStream, Collection<ClientContainer> containers) throws IOException, ClassNotFoundException {
-        ID = inStream.readInt();
-        banClassView = inStream.readByte();
-
-        int count = inStream.readInt();
-        for(int i=0;i<count;i++)
-            add(new ClientObject(inStream,containers,this));
-
-        grid = new ClientGrid(inStream, containers);
-        showType = new ClientShowType(inStream, containers);
     }
 
     public List<ClientObject> getDeserializeList(Map<ClientGroupObject, Byte> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {

@@ -22,17 +22,6 @@ public class ClientGrid extends ClientComponent {
 
     public ClientGroupObject groupObject;
 
-    public ClientGrid(DataInputStream inStream, Collection<ClientContainer> containers) throws IOException, ClassNotFoundException {
-        super(inStream, containers);
-
-        showFind = inStream.readBoolean();
-        showFilter = inStream.readBoolean();
-
-        minRowCount = inStream.readByte();
-        tabVertical = inStream.readBoolean();
-        autoHide = inStream.readBoolean();
-    }
-
     @Override
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);

@@ -20,18 +20,6 @@ public class ClientRegularFilterGroup extends ClientComponent {
 
     }
     
-    public ClientRegularFilterGroup(DataInputStream inStream, Collection<ClientContainer> containers) throws IOException, ClassNotFoundException {
-        super(inStream, containers);
-
-        ID = inStream.readInt();
-
-        int count = inStream.readInt();
-        for(int i=0;i<count;i++)
-            filters.add(new ClientRegularFilter(inStream));
-
-        defaultFilter = inStream.readInt();
-    }
-
     @Override
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);

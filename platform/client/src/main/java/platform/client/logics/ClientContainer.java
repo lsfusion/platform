@@ -22,30 +22,6 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
 
     }
 
-    public ClientContainer(DataInputStream inStream, Collection<ClientContainer> containers) throws IOException, ClassNotFoundException {
-        super(inStream, containers);
-
-        if (inStream.readBoolean()) {
-            title = inStream.readUTF();
-        }
-        
-        if (!inStream.readBoolean()) {
-            description = inStream.readUTF();
-        }
-    }
-
-    @Override
-    public String toString() {
-        String result = title == null ? "" : title;
-        if (description == null)
-            result += " (";
-        else
-            result += (result.isEmpty() ? "" : " ") + "(" + description + ",";
-        result += getID();
-        result += ")";
-        return result;
-    }
-
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);
 
@@ -62,6 +38,18 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
 
         title = pool.readString(inStream);
         description = pool.readString(inStream);
+    }
+
+    @Override
+    public String toString() {
+        String result = title == null ? "" : title;
+        if (description == null)
+            result += " (";
+        else
+            result += (result.isEmpty() ? "" : " ") + "(" + description + ",";
+        result += getID();
+        result += ")";
+        return result;
     }
 
     @Override

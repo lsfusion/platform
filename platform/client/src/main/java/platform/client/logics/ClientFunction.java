@@ -13,10 +13,6 @@ public class ClientFunction extends ClientComponent {
     public ClientFunction() {
     }
 
-    public ClientFunction(DataInputStream inStream, Collection<ClientContainer> containers) throws IOException, ClassNotFoundException {
-        super(inStream, containers);
-    }
-
     @Override
     public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, iID, inStream);

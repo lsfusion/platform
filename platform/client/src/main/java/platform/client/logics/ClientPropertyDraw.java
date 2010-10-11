@@ -69,62 +69,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     }
     
-    public ClientPropertyDraw(DataInputStream inStream, Collection<ClientContainer> containers, Collection<ClientGroupObject> groups) throws IOException, ClassNotFoundException {
-        super(inStream, containers);
-
-        caption = inStream.readUTF();
-
-        baseType = ClientTypeSerializer.deserialize(inStream);
-
-        minimumSize = (Dimension) new ObjectInputStream(inStream).readObject();
-        maximumSize = (Dimension) new ObjectInputStream(inStream).readObject();
-        preferredSize = (Dimension) new ObjectInputStream(inStream).readObject();
-
-        editKey = (KeyStroke) new ObjectInputStream(inStream).readObject();
-        showEditKey = inStream.readBoolean();
-
-        format = (Format) new ObjectInputStream(inStream).readObject();
-
-        focusable = (Boolean) new ObjectInputStream(inStream).readObject();
-        readOnly = (Boolean) new ObjectInputStream(inStream).readObject();
-        if (readOnly == null) {
-            readOnly = true;
-        }
-
-        panelLabelAbove = inStream.readBoolean();
-
-        if (inStream.readBoolean()) {
-            externalScreen = ClientExternalScreen.getScreen(inStream.readInt());
-        }
-
-        if (inStream.readBoolean()) {
-            externalScreenConstraints = (ExternalScreenConstraints) new ObjectInputStream(inStream).readObject();
-        }
-
-        ID = inStream.readInt();
-        sID = inStream.readUTF();
-        if (inStream.readBoolean()) {
-            int groupID = inStream.readInt();
-            groupObject = getClientGroupObject(groups, groupID);
-        }
-
-        if (inStream.readBoolean()) {
-            int groupID = inStream.readInt();
-            keyBindingGroup = getClientGroupObject(groups, groupID);
-        }
-
-        int length = inStream.readInt();
-        columnGroupObjects = new ArrayList<ClientGroupObject>();
-        for (int i = 0; i < length; ++i) {
-            columnGroupObjects.add(getClientGroupObject(groups, inStream.readInt()));
-        }
-
-        autoHide = inStream.readBoolean();
-
-        checkEquals = inStream.readBoolean();
-        askConfirm = inStream.readBoolean();
-    }
-
     private ClientGroupObject getClientGroupObject(Collection<ClientGroupObject> groups, int groupID) {
         for (ClientGroupObject group : groups) {
             if (group.getID() == groupID) {

@@ -33,19 +33,6 @@ public class ClientObject implements Serializable, ClientIdentitySerializable {
 
     }
 
-    public ClientObject(DataInputStream inStream, Collection<ClientContainer> containers, ClientGroupObject iGroupObject) throws ClassNotFoundException, IOException {
-
-        groupObject = iGroupObject;
-
-        ID = inStream.readInt();
-        caption = inStream.readUTF();
-        addOnTransaction = inStream.readBoolean();
-
-        baseClass = ClientTypeSerializer.deserializeClientClass(inStream);
-
-        classChooser = new ClientClassChooser(inStream,containers);
-    }
-
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, groupObject);
         pool.writeString(outStream, caption);

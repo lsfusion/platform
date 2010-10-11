@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ClientForm implements Serializable, LogicsSupplier, ClientCustomSerializable {
+public class ClientForm implements LogicsSupplier, ClientCustomSerializable {
 
     public boolean readOnly = false;
 
@@ -50,55 +50,6 @@ public class ClientForm implements Serializable, LogicsSupplier, ClientCustomSer
 
     public ClientForm() {
 
-    }
-
-    public ClientForm(DataInputStream inStream) throws IOException, ClassNotFoundException {
-
-        readOnly = inStream.readBoolean();
-        /// !!!! самому вернуть ссылку на groupObject после инстанцирования
-
-        containers = new ArrayList<ClientContainer>();
-        int count = inStream.readInt();
-        for(int i=0;i<count;i++)
-            containers.add(new ClientContainer(inStream,containers));
-
-        groupObjects = deserializeList(inStream,new DeSerializeInstancer<ClientGroupObject>() {
-            ClientGroupObject newObject(DataInputStream inStream) throws IOException, ClassNotFoundException {
-                return new ClientGroupObject(inStream,containers);
-            }});
-        properties = deserializeList(inStream,new DeSerializeInstancer<ClientPropertyDraw>() {
-            ClientPropertyDraw newObject(DataInputStream inStream) throws IOException, ClassNotFoundException {
-                return new ClientPropertyDraw(inStream,containers,groupObjects);
-            }});
-        regularFilters = deserializeList(inStream,new DeSerializeInstancer<ClientRegularFilterGroup>() {
-            ClientRegularFilterGroup newObject(DataInputStream inStream) throws IOException, ClassNotFoundException {
-                return new ClientRegularFilterGroup(inStream,containers);
-            }});
-
-        int orderCount = inStream.readInt();
-        for(int i=0;i<orderCount;i++) {
-            ClientPropertyDraw order = getProperty(inStream.readInt());
-            defaultOrders.put(order,inStream.readBoolean());
-        }
-
-        printFunction = new ClientFunction(inStream,containers);
-        xlsFunction = new ClientFunction(inStream,containers);
-        nullFunction = new ClientFunction(inStream,containers);
-        refreshFunction = new ClientFunction(inStream,containers);
-        applyFunction = new ClientFunction(inStream,containers);
-        cancelFunction = new ClientFunction(inStream,containers);
-        okFunction = new ClientFunction(inStream,containers);
-        closeFunction = new ClientFunction(inStream,containers);
-
-        int cellCount = inStream.readInt();
-        for(int i=0;i<cellCount;i++) {
-            int cellID = inStream.readInt();
-            order.add(getProperty(cellID));
-        }
-
-        keyStroke = (KeyStroke) new ObjectInputStream(inStream).readObject();
-
-        caption = inStream.readUTF();
     }
 
     public List<ClientObject> getObjects() {
@@ -170,18 +121,6 @@ public class ClientForm implements Serializable, LogicsSupplier, ClientCustomSer
             return fullCaption.toString();
         }
         return caption;
-    }
-
-    abstract class DeSerializeInstancer<T> {
-          abstract T newObject(DataInputStream inStream) throws IOException, ClassNotFoundException;
-    }
-
-    <T> List<T> deserializeList(DataInputStream inStream, DeSerializeInstancer<T> instancer) throws IOException, ClassNotFoundException {
-        List<T> list = new ArrayList<T>();
-        int count = inStream.readInt();
-        for(int i=0;i<count;i++)
-            list.add(instancer.newObject(inStream));
-        return list;
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

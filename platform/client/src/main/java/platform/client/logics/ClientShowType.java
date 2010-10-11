@@ -15,10 +15,6 @@ public class ClientShowType extends ClientComponent {
 
     public ClientGroupObject groupObject;
     
-    ClientShowType(DataInputStream inStream, Collection<ClientContainer> containers) throws IOException, ClassNotFoundException {
-        super(inStream, containers);
-    }
-
     @Override
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);

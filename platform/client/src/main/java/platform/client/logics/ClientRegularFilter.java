@@ -21,14 +21,6 @@ public class ClientRegularFilter implements ClientIdentitySerializable {
 
     }
     
-    public ClientRegularFilter(DataInputStream inStream) throws IOException, ClassNotFoundException {
-        ID = inStream.readInt();
-        caption = inStream.readUTF();
-
-        key = (KeyStroke) new ObjectInputStream(inStream).readObject();
-        showKey = inStream.readBoolean();
-    }
-
     public String getFullCaption() {
 
         String fullCaption = caption;
