@@ -855,6 +855,41 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         // запишем текущую дату
+        changeCurrentDate();
+
+        Thread thread = new Thread(new Runnable() {
+            long time;
+            boolean first = true;
+
+            public void run() {
+                try {
+                    Calendar calendar = Calendar.getInstance();
+                    int hour = calendar.get(Calendar.HOUR);
+                    if (calendar.get(Calendar.AM_PM) == Calendar.PM) {
+                        hour += 12;
+                    }
+                    if (hour == 0 && first) {
+                        changeCurrentDate();
+                        time = 12 * 60 * 60 * 1000;
+                        first = false;
+                    }
+                    if (hour == 23) {
+                        first = true;
+                    }
+                    Thread.sleep(time);
+                    time = time / 2;
+                    if (time < 1000) {
+                        time = 1000;
+                    }
+                } catch (Exception e) {
+                }
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private void changeCurrentDate() throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         DataSession session = createSession();
         currentDate.execute(DateConverter.dateToSql(new Date()), session, session.modifier);
         session.apply(this);
@@ -2957,7 +2992,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         private AddBarcodeActionProperty(ConcreteCustomClass customClass, Property addProperty, String sID) {
             super(sID, "Добавить [" + customClass + "] по бар-коду", new ValueClass[]{StringClass.get(13)});
-            
+
             this.customClass = customClass;
             this.addProperty = addProperty;
         }
@@ -2966,7 +3001,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             //To change body of implemented methods use File | Settings | File Templates.
             FormInstance<?> remoteForm = executeForm.form;
             DataSession session = remoteForm.session;
-            if(addProperty.read(session, new HashMap(), remoteForm)!=null) {
+            if (addProperty.read(session, new HashMap(), remoteForm) != null) {
                 addProperty.execute(new HashMap(), session, null, remoteForm, executeForm, new HashMap(), null);
                 barcode.execute(BaseUtils.singleValue(keys).object, session, remoteForm, session.addObject(customClass, remoteForm));
             }
@@ -3004,10 +3039,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             Set<Integer> atLeastOne = new HashSet<Integer>();
             Map<Integer, ValueClass> classes = new HashMap<Integer, ValueClass>();
             int size = inStream.readInt();
-            for(int i=0;i<size;i++) {
+            for (int i = 0; i < size; i++) {
                 Integer ID = inStream.readInt();
                 classes.put(ID, TypeSerializer.deserializeValueClass(this, inStream));
-                if(inStream.readBoolean())
+                if (inStream.readBoolean())
                     atLeastOne.add(ID);
             }
 
@@ -3018,15 +3053,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             ServerSerializationPool pool = new ServerSerializationPool();
 
             int num = 0;
-            for(Property<?> property : properties)
-                if(property.interfaces.size() == atLeastOne.size())
+            for (Property<?> property : properties)
+                if (property.interfaces.size() == atLeastOne.size())
                     num++;
             dataStream.writeInt(num);
-            for(Property<?> property : properties) {
-                if(property.interfaces.size() == atLeastOne.size()) {
+            for (Property<?> property : properties) {
+                if (property.interfaces.size() == atLeastOne.size()) {
                     pool.serializeObject(dataStream, property);
                     Iterator<Integer> it = atLeastOne.iterator();
-                    for(PropertyInterface propertyInterface : property.interfaces) {
+                    for (PropertyInterface propertyInterface : property.interfaces) {
                         pool.serializeObject(dataStream, propertyInterface);
                         dataStream.writeInt(it.next());
                     }
