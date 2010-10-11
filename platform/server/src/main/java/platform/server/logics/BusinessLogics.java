@@ -3002,7 +3002,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             FormInstance<?> remoteForm = executeForm.form;
             DataSession session = remoteForm.session;
             if (addProperty.read(session, new HashMap(), remoteForm) != null) {
-                addProperty.execute(new HashMap(), session, null, remoteForm, executeForm, new HashMap(), null);
+                addProperty.execute(new HashMap(), session, null, remoteForm);
                 barcode.execute(BaseUtils.singleValue(keys).object, session, remoteForm, session.addObject(customClass, remoteForm));
             }
         }

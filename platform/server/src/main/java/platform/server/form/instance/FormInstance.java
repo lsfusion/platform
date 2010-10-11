@@ -369,7 +369,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         if (securityPolicy.property.change.checkPermission(property.property)) {
             dataChanged = true;
             // изменяем св-во
-            return property.execute(session, value, this, executeForm, groupObject);
+            return property.getChangeInstance().execute(session, value, this, executeForm, groupObject);
         } else {
             return null;
         }
