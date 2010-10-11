@@ -48,9 +48,15 @@ public class ReportDesignGenerator {
     }
 
     public Map<String, JasperDesign> generate() throws JRException {
-        JasperDesign design = createJasperDesignObject(GroupObjectHierarchy.rootNodeName, true, false);
+        JasperDesign rootDesign = createJasperDesignObject(GroupObjectHierarchy.rootNodeName, true, false);
 
-        iterateChildReports(design, null, 0);
+        iterateChildReports(rootDesign, null, 0);
+
+        if (toExcel) {
+            for (JasperDesign design : designs.values()) {
+                design.setIgnorePagination(true);    
+            }
+        }
 
         return designs;
     }
@@ -98,18 +104,17 @@ public class ReportDesignGenerator {
 
             if (!hiddenGroup) {
                 boolean detail = hierarchy.isLeaf(node) && (group == groups.get(groups.size()-1));
-
-                int captionWidth = 0, preferredWidth = 0;
-                for (ReportDrawField reportField : drawFields) {
-                    captionWidth += reportField.getCaptionWidth();
-                    preferredWidth += reportField.getPreferredWidth();
-                }
-
                 ReportLayout reportLayout;
 
                 if (detail) {
                     reportLayout = new ReportDetailLayout(design);
                 } else {
+                    
+                    int captionWidth = 0, preferredWidth = 0;
+                    for (ReportDrawField reportField : drawFields) {
+                        captionWidth += reportField.getCaptionWidth();
+                        preferredWidth += reportField.getPreferredWidth();
+                    }
 
                     if (captionWidth + preferredWidth <= pageWidth) {
                         JRDesignGroup designGroup = addDesignGroup(design, groupView, "designGroup" + group.getID());
