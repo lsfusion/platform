@@ -1477,7 +1477,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             ObjectView objArtView = design.get(objArt);
             objArtView.classChooser.show = false;
 
-            design.get(getPropertyDraw(barcodeAddClient)).setContainer(design.getPanelContainer(design.get(objBarcode.groupTo)));
+            design.getPanelContainer(design.get(objBarcode.groupTo)).add(design.get(getPropertyDraw(barcodeAddClient)));
             design.addIntersection(design.get(getPropertyDraw(barcodeAddClient)), design.get(getPropertyDraw(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             design.setEditKey(barcodeAddClient, KeyStroke.getKeyStroke(KeyEvent.VK_F5, InputEvent.SHIFT_DOWN_MASK | InputEvent.SHIFT_MASK));
 
