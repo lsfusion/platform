@@ -12,6 +12,23 @@ public class DoNotIntersectSimplexConstraint extends SingleSimplexConstraint {
 
     public int forbDir;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DoNotIntersectSimplexConstraint that = (DoNotIntersectSimplexConstraint) o;
+
+        if (forbDir != that.forbDir) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return forbDir;
+    }
+
     public DoNotIntersectSimplexConstraint () {
         forbDir = 0;
     }
@@ -59,4 +76,7 @@ public class DoNotIntersectSimplexConstraint extends SingleSimplexConstraint {
 
     }
 
+    public boolean isStraight() {
+        return Integer.bitCount(forbDir) >= 3;
+    }
 }

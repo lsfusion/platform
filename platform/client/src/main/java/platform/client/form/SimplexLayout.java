@@ -10,10 +10,7 @@ import lpsolve.LpSolveException;
 import platform.base.OSUtils;
 import platform.client.logics.ClientComponent;
 import platform.client.logics.ClientContainer;
-import platform.interop.form.layout.SimplexComponentInfo;
-import platform.interop.form.layout.SimplexConstraints;
-import platform.interop.form.layout.SimplexSolverDirections;
-import platform.interop.form.layout.SingleSimplexConstraint;
+import platform.interop.form.layout.*;
 
 import java.awt.*;
 import java.awt.event.ComponentEvent;
@@ -312,22 +309,26 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
 
     private void fillSiblingsConstraint(LpSolve solver, Component parent) throws LpSolveException {
 
+        List<Component> contComponents = new ArrayList<Component>();
+        for (Component comp : components)
+            if (comp.getParent() == parent)
+                contComponents.add(comp);
+
         SimplexConstraints parentConstraints = getConstraint(parent);
 
         int maxVar = parentConstraints.maxVariables;
 
         int compCount = 0;
-        //упорядочиваем компоненты по их order'у
+        //упорядочиваем компоненты по их order'у и запихиваем в comporder
         TreeMap<Integer, ArrayList<Component>> comporder = new TreeMap<Integer, ArrayList<Component>>();
-        for (Component comp : components)
-            if (comp.getParent() == parent) {
-                Integer order = getConstraint(comp).order;
-                ArrayList<Component> alc = comporder.get(order);
-                if (alc == null) alc = new ArrayList<Component>();
-                alc.add(comp);
-                comporder.put(order, alc);
-                compCount++;
-            }
+        for (Component comp : contComponents) {
+            Integer order = getConstraint(comp).order;
+            ArrayList<Component> alc = comporder.get(order);
+            if (alc == null) alc = new ArrayList<Component>();
+            alc.add(comp);
+            comporder.put(order, alc);
+            compCount++;
+        }
 
         if (compCount < 2) return;
 
@@ -335,7 +336,8 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
 
         Map<Component, SimplexSolverDirections> vars = new HashMap<Component, SimplexSolverDirections>();
 
-        //бъем все компоненты на группы
+        //бъем все компоненты на группы (maxVar - 1)
+        //для каждой группы создаем одну переменную направлений curDir, и одна переменная направлений globalDir для всех групп
         int maxCol = (maxVar < 3) ? 1 : ((compCount - 1) / (maxVar - 1) + 1);
 
         SimplexSolverDirections curDir = null;
@@ -365,31 +367,59 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
 
         SimplexSolverDirections globalDir = new SimplexSolverDirections(solver, parentConstraints.childConstraints.forbDir);
 
-        for (Component comp1 : components)
-            if (comp1.getParent() == parent)
-                for (Component comp2 : components)
-                    if (comp2.getParent() == parent && comp1 != comp2 && !getConstraint(comp2).intersects.containsKey(constraints.get(comp1))) {
+        // замыкаем пересечения, чтобы посчитать заведомо верные условия
+        Map<Component, Map<Component, DoNotIntersectSimplexConstraint>> intersects = new HashMap<Component, Map<Component, DoNotIntersectSimplexConstraint>>();
+        for (Component comp1 : contComponents) {
+            intersects.put(comp1, new HashMap<Component, DoNotIntersectSimplexConstraint>());
+            for (Component comp2 : contComponents) {
+                DoNotIntersectSimplexConstraint cons = getConstraint(comp1).intersects.get(constraints.get(comp2));
+                if (comp1 != comp2 && cons != null && cons.isStraight()) {
+                    intersects.get(comp1).put(comp2, cons);
+                }
+            }
+        }
 
-                        if (getConstraint(comp1).intersects.containsKey(constraints.get(comp2))) {
-                            getConstraint(comp1).intersects.get(constraints.get(comp2)).fillConstraint(solver, infos.get(comp1), infos.get(comp2), getConstraint(comp1), getConstraint(comp2), null);
-                        } else {
+        for (Component comp3 : contComponents)
+            for (Component comp1 : contComponents) {
+                DoNotIntersectSimplexConstraint inter13 = intersects.get(comp1).get(comp3);
+                if (comp1 != comp3 && inter13 != null)
+                    for (Component comp2 : contComponents) {
+                        if (comp2 != comp1 && comp2 != comp3 && inter13.equals(intersects.get(comp3).get(comp2)))
+                            intersects.get(comp1).put(comp2, inter13);
+                }
+            }
 
-                            int order1 = order.indexOf(comp1);
-                            int order2 = order.indexOf(comp2);
 
-                            if (order1 > order2)
-                                continue;
 
-                            SimplexComponentInfo info1 = infos.get(comp1); //(order1 < order2) ? infos.get(comp1) : infos.get(comp2);
-                            SimplexComponentInfo info2 = infos.get(comp2); //(order1 < order2) ? infos.get(comp2) : infos.get(comp1);
+        for (Component comp1 : contComponents)
+            for (Component comp2 : contComponents)
+                if (comp1 != comp2 && !getConstraint(comp2).intersects.containsKey(constraints.get(comp1))) {
 
-                            SimplexSolverDirections dir = globalDir;
-                            if (vars.get(comp1) == vars.get(comp2) && vars.get(comp1) != null) dir = vars.get(comp1);
+                    if (getConstraint(comp1).intersects.containsKey(constraints.get(comp2))) {
+                        getConstraint(comp1).intersects.get(constraints.get(comp2)).fillConstraint(solver, infos.get(comp1), infos.get(comp2), getConstraint(comp1), getConstraint(comp2), null);
+                    } else {
 
-                            parentConstraints.childConstraints.fillConstraint(solver, info1, info2, getConstraint(comp1), getConstraint(comp2), dir);
-                        }
+                        // проверка на избыточные условия пересечения
+                        if (intersects.get(comp1).get(comp2) != null || intersects.get(comp2).get(comp1) != null)
+                            continue;
 
+                        int order1 = order.indexOf(comp1);
+                        int order2 = order.indexOf(comp2);
+
+                        if (order1 > order2)
+                            continue;
+
+                        SimplexComponentInfo info1 = infos.get(comp1); //(order1 < order2) ? infos.get(comp1) : infos.get(comp2);
+                        SimplexComponentInfo info2 = infos.get(comp2); //(order1 < order2) ? infos.get(comp2) : infos.get(comp1);
+
+                        SimplexSolverDirections dir = globalDir;
+                        // для компонент из одной "группы" используем одни и те же переменные, из разных - globalDir
+                        if (vars.get(comp1) == vars.get(comp2) && vars.get(comp1) != null) dir = vars.get(comp1);
+
+                        parentConstraints.childConstraints.fillConstraint(solver, info1, info2, getConstraint(comp1), getConstraint(comp2), (maxVar == 0 ? null : dir));
                     }
+
+                }
 
     }
 
