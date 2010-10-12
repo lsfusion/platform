@@ -127,4 +127,12 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         }
     }
 
+    public static byte[] serialize(FormDescriptor form) throws IOException {
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        DataOutputStream dataStream = new DataOutputStream(outStream);
+        new ClientSerializationPool(form.client).serializeObject(dataStream, form);
+        new ClientSerializationPool(form.client).serializeObject(dataStream, form.client);
+
+        return outStream.toByteArray();
+    }
 }
