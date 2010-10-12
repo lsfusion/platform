@@ -40,6 +40,8 @@ public class FormDescriptorView extends JPanel {
         view = new JPanel();
 
         tree = new ClientTree();
+        tree.setDropMode(DropMode.ON);
+        tree.setDragEnabled(true);
 
         previewBtn = new JButton("Предпросмотр формы");
         previewBtn.setEnabled(false);

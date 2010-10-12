@@ -208,4 +208,9 @@ public class ClientTree extends JTree {
         }
     }
 
+    public static ClientTreeNode getNode(TransferHandler.TransferSupport info) {
+        if (!(info.getTransferable() instanceof NodeTransfer)) return null;
+        return ((NodeTransfer)info.getTransferable()).node;
+    }
+
 }
