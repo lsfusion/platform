@@ -1,7 +1,6 @@
 package platform.fullclient.layout;
 
 import bibliothek.gui.dock.common.*;
-import bibliothek.gui.dock.common.intern.CDockable;
 import bibliothek.gui.dock.common.layout.ThemeMap;
 import bibliothek.gui.dock.common.menu.*;
 import bibliothek.gui.dock.facile.menu.RootMenuPiece;
@@ -23,7 +22,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.rmi.RemoteException;
-import java.util.*;
 
 public class DockableMainFrame extends MainFrame {
     private CControl control;
@@ -245,22 +243,26 @@ public class DockableMainFrame extends MainFrame {
         logicsConfigurator.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-
-                LogicsDescriptorView view = new LogicsDescriptorView(DockableMainFrame.this, mainNavigator.remoteNavigator);
-
-                Rectangle bounds = DockableMainFrame.this.getBounds();
-                bounds.x += 20;
-                bounds.y += 20;
-                bounds.width -= 40;
-                bounds.height -= 40;
-                view.setBounds(bounds);
-
-                view.setVisible(true);
+                openLogicSetupForm();
             }
         });
+
         menu.add(logicsConfigurator);
 
         return menu;
+    }
+
+    private void openLogicSetupForm() {
+        LogicsDescriptorView view = new LogicsDescriptorView(this, mainNavigator);
+
+        Rectangle bounds = this.getBounds();
+        bounds.x += 20;
+        bounds.y += 20;
+        bounds.width -= 40;
+        bounds.height -= 40;
+        view.setBounds(bounds);
+
+        view.setVisible(true);
     }
 
     JMenu createHelpMenu() {
