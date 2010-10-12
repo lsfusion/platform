@@ -858,30 +858,38 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         changeCurrentDate();
 
         Thread thread = new Thread(new Runnable() {
-            long time;
+            long time = 1000;
             boolean first = true;
 
             public void run() {
-                try {
-                    Calendar calendar = Calendar.getInstance();
-                    int hour = calendar.get(Calendar.HOUR);
-                    if (calendar.get(Calendar.AM_PM) == Calendar.PM) {
-                        hour += 12;
+                Calendar calendar = Calendar.getInstance();
+                int hour = calendar.get(Calendar.HOUR);
+                if (calendar.get(Calendar.AM_PM) == Calendar.PM) {
+                    hour += 12;
+                }
+                time = (23 - hour) * 500 * 60 * 60;
+                while (true) {
+                    try {
+                        calendar = Calendar.getInstance();
+                        hour = calendar.get(Calendar.HOUR);
+                        if (calendar.get(Calendar.AM_PM) == Calendar.PM) {
+                            hour += 12;
+                        }
+                        if (hour == 0 && first) {
+                            changeCurrentDate();
+                            time = 12 * 60 * 60 * 1000;
+                            first = false;
+                        }
+                        if (hour == 23) {
+                            first = true;
+                        }
+                        Thread.sleep(time);
+                        time = time / 2;
+                        if (time < 1000) {
+                            time = 1000;
+                        }
+                    } catch (Exception e) {
                     }
-                    if (hour == 0 && first) {
-                        changeCurrentDate();
-                        time = 12 * 60 * 60 * 1000;
-                        first = false;
-                    }
-                    if (hour == 23) {
-                        first = true;
-                    }
-                    Thread.sleep(time);
-                    time = time / 2;
-                    if (time < 1000) {
-                        time = 1000;
-                    }
-                } catch (Exception e) {
                 }
             }
         });
