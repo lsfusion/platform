@@ -188,6 +188,9 @@ public class ClientTree extends JTree {
         }
     }
 
+    private static DataFlavor CLIENTTREENODE_FLAVOR = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType +
+                  "; class=platform.client.descriptor.nodes.ClientTreeNode", "ClientTreeNode");
+
     public class NodeTransfer implements Transferable {
         public ClientTreeNode node;
 
@@ -196,11 +199,11 @@ public class ClientTree extends JTree {
         }
 
         public DataFlavor[] getTransferDataFlavors() {
-            return new DataFlavor[0];
+            return new DataFlavor[] {CLIENTTREENODE_FLAVOR};
         }
 
         public boolean isDataFlavorSupported(DataFlavor flavor) {
-            return false;
+            return CLIENTTREENODE_FLAVOR.equals(flavor);
         }
 
         public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
@@ -209,8 +212,21 @@ public class ClientTree extends JTree {
     }
 
     public static ClientTreeNode getNode(TransferHandler.TransferSupport info) {
-        if (!(info.getTransferable() instanceof NodeTransfer)) return null;
-        return ((NodeTransfer)info.getTransferable()).node;
+
+        try {
+
+            Object transferData = info.getTransferable().getTransferData(CLIENTTREENODE_FLAVOR);
+            if (!(transferData instanceof ClientTreeNode))
+                return null;
+
+            return (ClientTreeNode)transferData;
+            
+        } catch (UnsupportedFlavorException e) {
+            return null;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 }
