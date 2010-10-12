@@ -1139,16 +1139,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         return reportObjects;
     }
 
-    public FormData getFormData(boolean allProperties) throws SQLException {
-
-        // вызовем endApply, чтобы быть полностью уверенным в том, что мы работаем с последними данными
-        endApply();
-
-        return getFormData((allProperties) ? new HashSet<GroupObjectInstance>(groups) : getPropertyGroups(), getClassGroups());
-    }
-
     // считывает все данные с формы
-    public FormData getFormData(Set<GroupObjectInstance> propertyGroups, Set<GroupObjectInstance> classGroups) throws SQLException {
+    public FormData getFormData(Collection<PropertyDrawInstance> propertyDraws, Set<GroupObjectInstance> classGroups) throws SQLException {
 
         applyFilters();
         applyOrders();
@@ -1180,25 +1172,22 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
         FormData result = new FormData();
 
-        for (PropertyDrawInstance<?> property : properties)
-            if (propertyGroups.contains(property.propertyObject.getApplyObject()))
-                query.properties.put(property, property.propertyObject.getExpr(query.mapKeys, this));
+        for (PropertyDrawInstance<?> property : propertyDraws)
+            query.properties.put(property, property.propertyObject.getExpr(query.mapKeys, this));
 
         OrderedMap<Map<ObjectInstance, Object>, Map<Object, Object>> resultSelect = query.execute(session, queryOrders, 0);
         for (Entry<Map<ObjectInstance, Object>, Map<Object, Object>> row : resultSelect.entrySet()) {
             Map<ObjectInstance, Object> groupValue = new HashMap<ObjectInstance, Object>();
             for (GroupObjectInstance group : groups)
-                if (propertyGroups.contains(group))
-                    for (ObjectInstance object : group.objects)
-                        if (classGroups.contains(group))
-                            groupValue.put(object, row.getKey().get(object));
-                        else
-                            groupValue.put(object, object.getObjectValue().getValue());
+                for (ObjectInstance object : group.objects)
+                    if (classGroups.contains(group))
+                        groupValue.put(object, row.getKey().get(object));
+                    else
+                        groupValue.put(object, object.getObjectValue().getValue());
 
             Map<PropertyDrawInstance, Object> propertyValues = new HashMap<PropertyDrawInstance, Object>();
-            for (PropertyDrawInstance property : properties)
-                if (propertyGroups.contains(property.toDraw))
-                    propertyValues.put(property, row.getValue().get(property));
+            for (PropertyDrawInstance property : propertyDraws)
+                propertyValues.put(property, row.getValue().get(property));
 
             result.add(groupValue, propertyValues);
         }

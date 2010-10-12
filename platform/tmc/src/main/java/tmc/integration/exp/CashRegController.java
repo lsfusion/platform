@@ -15,6 +15,7 @@ import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;
+import platform.base.BaseUtils;
 import tmc.VEDBusinessLogics;
 
 import javax.swing.*;
@@ -38,7 +39,7 @@ public class CashRegController {
     }
 
     public ClientAction getCashRegApplyActions(FormInstance formInstance, int payType,
-                                                      Set<GroupObjectInstance> propertyGroups, Set<GroupObjectInstance> classGroups,
+                                                      Set<GroupObjectInstance> classGroups,
                                                       PropertyDrawEntity<?> priceProp, PropertyDrawEntity<?> quantityProp,
                                                       PropertyDrawEntity<?> nameProp, PropertyDrawEntity<?> sumProp,
                                                       PropertyDrawEntity<?> toPayProp,
@@ -46,7 +47,7 @@ public class CashRegController {
 
         List<ClientAction> actions = new ArrayList<ClientAction>();
         actions.add(new ExportFileClientAction("c:\\bill\\bill.txt", false, createBillTxt(formInstance, payType,
-                                                propertyGroups, classGroups, priceProp, quantityProp,
+                                                classGroups, priceProp, quantityProp,
                                                 nameProp, sumProp, toPayProp, sumCardProp, sumCashProp), CASHREGISTER_CHARSETNAME));
         actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, "/T", CASHREGISTER_CHARSETNAME));
         actions.add(new SleepClientAction(CASHREGISTER_DELAY));
@@ -55,7 +56,7 @@ public class CashRegController {
     }
 
     private String createBillTxt(FormInstance formInstance, int payType,
-                                 Set<GroupObjectInstance> propertyGroups, Set<GroupObjectInstance> classGroups,
+                                 Set<GroupObjectInstance> classGroups,
                                  PropertyDrawEntity<?> priceProp, PropertyDrawEntity<?> quantityProp,
                                  PropertyDrawEntity<?> nameProp, PropertyDrawEntity<?> sumProp,
                                  PropertyDrawEntity<?> toPayProp,
@@ -65,34 +66,41 @@ public class CashRegController {
 
         FormData data;
 
-        PropertyDrawInstance quantityView = formInstance.instanceFactory.getInstance((PropertyDrawEntity<?>)quantityProp);
-        quantityView.toDraw.addTempFilter(new NotNullFilterInstance(quantityView.propertyObject));
+        PropertyDrawInstance quantityDraw = formInstance.instanceFactory.getInstance(quantityProp);
+        PropertyDrawInstance priceDraw = formInstance.instanceFactory.getInstance(priceProp);
+        PropertyDrawInstance nameDraw = formInstance.instanceFactory.getInstance(nameProp);
+        PropertyDrawInstance sumDraw = formInstance.instanceFactory.getInstance(sumProp);
+        PropertyDrawInstance toPayDraw = formInstance.instanceFactory.getInstance(toPayProp);
+        PropertyDrawInstance sumCardDraw = formInstance.instanceFactory.getInstance(sumCardProp);
+        PropertyDrawInstance sumCashDraw = formInstance.instanceFactory.getInstance(sumCashProp);
+
+        quantityDraw.toDraw.addTempFilter(new NotNullFilterInstance(quantityDraw.propertyObject));
 
         try {
-            data = formInstance.getFormData(propertyGroups, classGroups);
+            data = formInstance.getFormData(BaseUtils.toSetElements(quantityDraw, priceDraw, nameDraw, sumDraw, toPayDraw, sumCardDraw, sumCashDraw), classGroups);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
-            quantityView.toDraw.clearTempFilters();
+            quantityDraw.toDraw.clearTempFilters();
         }
 
         Double sumDoc = 0.0;
 
         for (FormRow row : data.rows) {
 
-            Object quantityObject = row.values.get(formInstance.instanceFactory.getInstance(quantityProp));
+            Object quantityObject = row.values.get(quantityDraw);
 
             if (quantityObject != null) {
 
-                Object priceObject = row.values.get(formInstance.instanceFactory.getInstance(priceProp));
+                Object priceObject = row.values.get(priceDraw);
                 
                 Double quantity = (quantityObject instanceof Double) ? (Double)quantityObject : 1.0;
                 Double price = (priceObject instanceof Double) ? (Double)priceObject : 0.0;
-                String artName = ((String)row.values.get(formInstance.instanceFactory.getInstance(nameProp))).trim();
+                String artName = ((String)row.values.get(nameDraw)).trim();
                 artName = artName.replace(',', '.');
                 artName = artName.replace('"', ' ');
                 artName = artName.replace('\'', ' ');
-                Double sumPos = (Double) row.values.get(formInstance.instanceFactory.getInstance(sumProp));
+                Double sumPos = (Double) row.values.get(sumDraw);
 
                 result += price / 100;
                 result += ",0";
@@ -105,7 +113,7 @@ public class CashRegController {
             }
         }
 
-        Double toPay = (Double)data.rows.get(0).values.get(formInstance.instanceFactory.getInstance(toPayProp));
+        Double toPay = (Double)data.rows.get(0).values.get(toPayDraw);
         if (toPay == null) toPay = 0.0;
         Double sumDisc = sumDoc - toPay;
         if (sumDisc > 0) {
@@ -113,7 +121,7 @@ public class CashRegController {
         }
 
         if (sumCardProp != null) {
-            Double sumCard = (Double)data.rows.get(0).values.get(formInstance.instanceFactory.getInstance(sumCardProp));
+            Double sumCard = (Double)data.rows.get(0).values.get(sumCardDraw);
             if (sumCard != null && sumCard > 0) {
                 result += "~1," + sumCard / 100 + "\n";
             }
@@ -121,7 +129,7 @@ public class CashRegController {
 
         Double sumCash;
         if (sumCashProp != null) {
-            sumCash = (Double)data.rows.get(0).values.get(formInstance.instanceFactory.getInstance(sumCashProp));
+            sumCash = (Double)data.rows.get(0).values.get(sumCashDraw);
             if (sumCash == null) sumCash = toPay;
         } else
             sumCash = toPay;

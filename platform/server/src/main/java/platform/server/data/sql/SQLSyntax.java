@@ -61,7 +61,7 @@ public interface SQLSyntax {
     boolean nullUnionTrouble();
     String getUnionOrder(String union,String orderBy, String top);
 
-    String getOrderDirection(boolean order);
+    String getOrderDirection(boolean descending);
 
     String getHour();
     String getEpoch();

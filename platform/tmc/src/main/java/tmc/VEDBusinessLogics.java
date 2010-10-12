@@ -1558,7 +1558,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             ObjectView objObligationView = design.get(objObligation);
             objObligationView.classChooser.show = false;
-            
+
             return design;
         }
 
@@ -1575,7 +1575,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 ObjectInstance art = formInstance.instanceFactory.getInstance(objArt);
 
                 return cashRegController.getCashRegApplyActions(formInstance, 1,
-                        BaseUtils.toSetElements(doc.groupTo, art.groupTo), BaseUtils.toSetElements(art.groupTo),
+                        BaseUtils.toSetElements(art.groupTo),
                         getPropertyDraw(orderSalePrice, objArt), getPropertyDraw(articleQuantity, objArt),
                         getPropertyDraw(name, objArt), getPropertyDraw(orderArticleSaleSumWithDiscount, objArt),
                         getPropertyDraw(orderSalePayNoObligation, objDoc),
@@ -1885,7 +1885,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 ObjectInstance art = formInstance.instanceFactory.getInstance(objArt);
 
                 return cashRegController.getCashRegApplyActions(formInstance, 2,
-                        BaseUtils.toSetElements(doc.groupTo, inner.groupTo, art.groupTo), BaseUtils.toSetElements(inner.groupTo, art.groupTo),
+                        BaseUtils.toSetElements(inner.groupTo, art.groupTo),
                         getPropertyDraw(orderSalePrice, objArt), getPropertyDraw(returnInnerQuantity, objArt),
                         getPropertyDraw(name, objArt), getPropertyDraw(returnArticleSalePay, objArt),
                         getPropertyDraw(returnSalePay, objDoc),
@@ -2118,7 +2118,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addPropertyDraw(checkRetailExported, objDoc);
             }
 
-
+            addPropertyDraw(barcodeAddClient);
+            addAutoAction(objBarcode, true,
+                    addPropertyObject(barcodeAddClientAction, objBarcode),
+                    addPropertyObject(barcodeAction2, objDoc, objBarcode),
+                    addPropertyObject(seekAction, objBarcode),
+                    addPropertyObject(barcodeNotFoundMessage, objBarcode));
         }
 
         @Override
@@ -2133,6 +2138,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.get(objObligation.groupTo).grid.defaultComponent = true;
 
             design.setKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_DOWN_MASK | InputEvent.SHIFT_MASK));
+
+            design.getPanelContainer(design.get(objBarcode.groupTo)).add(design.get(getPropertyDraw(barcodeAddClient)));
+            design.addIntersection(design.get(getPropertyDraw(barcodeAddClient)), design.get(getPropertyDraw(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            design.setEditKey(barcodeAddClient, KeyStroke.getKeyStroke(KeyEvent.VK_F5, InputEvent.CTRL_DOWN_MASK));
 
             return design;
         }
@@ -2176,7 +2185,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 ObjectInstance obligation = formInstance.instanceFactory.getInstance(objObligation);
 
                 return cashRegController.getCashRegApplyActions(formInstance, 1,
-                        BaseUtils.toSetElements(doc.groupTo, obligation.groupTo), BaseUtils.toSetElements(obligation.groupTo),
+                        BaseUtils.toSetElements(obligation.groupTo),
                         getPropertyDraw(obligationSum, objObligation), getPropertyDraw(issueObligation, objObligation),
                         getPropertyDraw(name, objObligation), getPropertyDraw(obligationSum, objObligation),
                         getPropertyDraw(orderSalePay, objDoc),
