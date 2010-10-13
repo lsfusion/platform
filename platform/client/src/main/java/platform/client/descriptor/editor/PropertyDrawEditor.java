@@ -1,11 +1,14 @@
 package platform.client.descriptor.editor;
 
 import platform.client.descriptor.*;
+import platform.client.descriptor.increment.IncrementDependency;
+import platform.client.descriptor.editor.base.AbstractComboBoxModel;
+import platform.client.descriptor.editor.base.IncrementComboBoxModel;
+import platform.client.descriptor.editor.base.IncrementListModel;
 import platform.interop.serialization.RemoteDescriptorInterface;
 import platform.base.BaseUtils;
 
 import javax.swing.*;
-import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 import java.awt.event.ActionListener;
@@ -17,18 +20,12 @@ public class PropertyDrawEditor extends GroupElementEditor {
     public PropertyDrawEditor(final GroupObjectDescriptor groupObject, final PropertyDrawDescriptor descriptor, final FormDescriptor form, final RemoteDescriptorInterface remote) {
         super(groupObject);
 
-        final JComboBox objectEditor = new JComboBox(new AbstractComboBoxModel() {
-            public int getSize() {
-                return form.getProperties(groupObject, remote).size();
+        final JComboBox objectEditor = new JComboBox(new IncrementComboBoxModel(descriptor, "propertyObject") {
+            public List<?> getList() {
+                return form.getProperties(groupObject, remote);
             }
-            public Object getElementAt(int index) {
-                return form.getProperties(groupObject, remote).get(index);
-            }
-        });
-        objectEditor.setSelectedItem(descriptor.propertyObject);
-        objectEditor.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                descriptor.propertyObject = (PropertyObjectDescriptor)objectEditor.getSelectedItem();
+            public void fillListDependencies() {
+                IncrementDependency.add(form, "groups", this);
             }
         });
         add(objectEditor);
@@ -37,27 +34,32 @@ public class PropertyDrawEditor extends GroupElementEditor {
         if(groupObject!=null) {
             descriptor.toDraw = groupObject;
         } else {
-            final JComboBox toDrawEditor = new JComboBox(new AbstractComboBoxModel() {
-                public int getSize() {
-                    return descriptor.propertyObject.getGroupObjects(form.groups).size();
+            final JComboBox toDrawEditor = new JComboBox(new IncrementComboBoxModel(descriptor, "toDraw") {
+                public List<?> getList() {
+                    return descriptor.propertyObject.getGroupObjects(form.groups);
                 }
-                public Object getElementAt(int index) {
-                    return descriptor.propertyObject.getGroupObjects(form.groups).get(index);
+                public void fillListDependencies() {
+                    IncrementDependency.add(descriptor, "propertyObject", this);
+                    IncrementDependency.add(form, "groups", this);
                 }
             });
-            toDrawEditor.setSelectedItem(descriptor.toDraw);
+            add(toDrawEditor);
         }
 
         // columnGroupObjects из списка mapping'ов (полных) !!! без toDraw
-        final JList columnGroupList = new JList(new AbstractListModel(){
-            public int getSize() {
-                return BaseUtils.removeList(descriptor.propertyObject.getGroupObjects(form.groups), Collections.singleton(descriptor.toDraw)).size();
+        final JList columnGroupList = new JList(new IncrementListModel(){
+            public List<?> getList() {
+                return BaseUtils.removeList(descriptor.propertyObject.getGroupObjects(form.groups), Collections.singleton(descriptor.toDraw));
             }
 
-            public Object getElementAt(int index) {
-                return BaseUtils.removeList(descriptor.propertyObject.getGroupObjects(form.groups), Collections.singleton(descriptor.toDraw)).get(index);
+            public void fillListDependencies() {
+                IncrementDependency.add(descriptor, "propertyObject", this);
+                IncrementDependency.add(descriptor, "toDraw", this);
+                IncrementDependency.add(form, "groups", this);
             }
         });
+        for(GroupObjectDescriptor columnGroup : descriptor.columnGroupObjects)
+            columnGroupList.setSelectedValue(columnGroup, false);
         columnGroupList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 descriptor.columnGroupObjects = new ArrayList<GroupObjectDescriptor>();
@@ -84,18 +86,4 @@ public class PropertyDrawEditor extends GroupElementEditor {
         add(objectEditor);
     }
 
-    private abstract class AbstractComboBoxModel extends AbstractListModel implements ComboBoxModel {
-        Object selectedObject = null;
-
-        public void setSelectedItem(Object anItem) {
-            if (!BaseUtils.nullEquals(selectedObject, anItem)) {
-                selectedObject = anItem;
-                fireContentsChanged(this, -1, -1);
-            }
-        }
-
-        public Object getSelectedItem() {
-            return selectedObject;
-        }
-    }
 }
