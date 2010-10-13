@@ -58,4 +58,20 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
     public ComponentNode getNode() {
         return new ContainerNode(this);
     }
+
+    public void remveChild(ClientComponent component) {
+        children.remove(component);
+        //todo: fire event
+    }
+
+    public void addChild(int index, ClientComponent component) {
+        children.add(index, component);
+        component.container = this;
+
+        //todo: fire event
+    }
+
+    public void addChild(ClientComponent component) {
+        addChild(children.size(), component);
+    }
 }

@@ -1,8 +1,8 @@
 package platform.client.navigator;
 
 import platform.client.ClientTree;
+import platform.client.ClientTreeNode;
 import platform.client.ExpandingTreeNode;
-import platform.client.descriptor.nodes.ClientTreeNode;
 import platform.client.logics.DeSerializer;
 import platform.interop.navigator.RemoteNavigatorInterface;
 

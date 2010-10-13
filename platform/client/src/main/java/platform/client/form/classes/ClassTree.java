@@ -2,7 +2,7 @@ package platform.client.form.classes;
 
 import platform.client.ClientTree;
 import platform.client.ExpandingTreeNode;
-import platform.client.descriptor.nodes.ClientTreeNode;
+import platform.client.ClientTreeNode;
 import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientObjectClass;
 

@@ -13,7 +13,7 @@ public class PreviewDialog extends JDialog {
     private ClientNavigator navigator;
 
     public PreviewDialog(ClientNavigator iNavigator, FormDescriptor iForm) {
-        super(null, Dialog.ModalityType.APPLICATION_MODAL);
+        super(null, Dialog.ModalityType.MODELESS);
 
         form = iForm;
         navigator = iNavigator;

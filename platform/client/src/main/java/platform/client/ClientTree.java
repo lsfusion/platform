@@ -1,17 +1,16 @@
 package platform.client;
 
-import platform.client.descriptor.nodes.ClientTreeNode;
-
 import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
+import javax.swing.tree.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.*;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ClientTree extends JTree {
 
@@ -42,7 +41,52 @@ public class ClientTree extends JTree {
         setTransferHandler(new ClientTransferHandler());
     }
 
-    protected void changeCurrentElement() {        
+    @Override
+    public DefaultTreeModel getModel() {
+        return (DefaultTreeModel) super.getModel();
+    }
+
+    public void setModelPreservingExpansion(DefaultTreeModel newModel) {
+        if (treeModel == null || newModel == null) {
+            setModel(newModel);
+            return;
+        }
+
+        Enumeration<TreePath> paths = getExpandedDescendants(new TreePath(treeModel.getRoot()));
+
+        Set<Object> expanded = new HashSet<Object>();
+        if (paths != null) {
+            while (paths.hasMoreElements()) {
+                Object node = ((DefaultMutableTreeNode) paths.nextElement().getLastPathComponent()).getUserObject();
+                if (node != null) {
+                    expanded.add(node);
+                }
+            }
+        }
+
+        setModel(newModel);
+        expandNodes(new TreePath(treeModel.getRoot()), expanded);
+    }
+
+    private void expandNodes(TreePath parent, Set<Object> expanded) {
+        TreeNode node = (TreeNode) parent.getLastPathComponent();
+        if ( node.getChildCount() >= 0){
+            for (Enumeration e = node.children(); e.hasMoreElements();) {
+                TreeNode n = (TreeNode) e.nextElement();
+                TreePath path = parent.pathByAddingChild(n);
+                expandNodes(path, expanded);
+            }
+        }
+
+        if (expanded.contains(((DefaultMutableTreeNode)node).getUserObject())) {
+            expandPath(parent);
+        }
+    }
+
+    protected void changeCurrentElement() {
+    }
+
+    protected void refreshModel() {
     }
 
     public DefaultMutableTreeNode getSelectionNode() {
@@ -159,10 +203,12 @@ public class ClientTree extends JTree {
 
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
             if (node instanceof ClientTreeNode) {
-                return ((ClientTreeNode) node).importData(info);
-            } else {
-                return false;
+                if (((ClientTreeNode) node).importData(ClientTree.this, info)) {
+                    refreshModel();
+                    return true;
+                }
             }
+            return false;
         }
 
         @Override
@@ -189,7 +235,7 @@ public class ClientTree extends JTree {
     }
 
     private static DataFlavor CLIENTTREENODE_FLAVOR = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType +
-                  "; class=platform.client.descriptor.nodes.ClientTreeNode", "ClientTreeNode");
+                  "; class=platform.client.ClientTreeNode", "ClientTreeNode");
 
     public class NodeTransfer implements Transferable {
         public ClientTreeNode node;

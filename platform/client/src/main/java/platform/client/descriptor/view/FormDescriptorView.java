@@ -10,7 +10,6 @@ import platform.interop.serialization.RemoteDescriptorInterface;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -21,7 +20,7 @@ public class FormDescriptorView extends JPanel {
     FormDescriptor form;
 
     ClientTree tree;
-    TreeModel model;
+    DefaultTreeModel model;
 
     JPanel view;
 
@@ -39,7 +38,13 @@ public class FormDescriptorView extends JPanel {
 
         view = new JPanel();
 
-        tree = new ClientTree();
+        tree = new ClientTree() {
+            @Override
+            protected void refreshModel() {
+                updateTree();
+            }
+        };
+        
         tree.setDropMode(DropMode.ON);
         tree.setDragEnabled(true);
 
@@ -87,10 +92,10 @@ public class FormDescriptorView extends JPanel {
         previewBtn.setEnabled(form != null);
         saveBtn.setEnabled(form != null);
 
-        update();
+        updateTree();
     }
 
-    private void update() {
+    private void updateTree() {
         FormNode rootNode = new FormNode(form);
         rootNode.addSubTreeAction(new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
@@ -104,6 +109,6 @@ public class FormDescriptorView extends JPanel {
         });
 
         model = new DefaultTreeModel(rootNode);
-        tree.setModel(model);
+        tree.setModelPreservingExpansion(model);
     }
 }

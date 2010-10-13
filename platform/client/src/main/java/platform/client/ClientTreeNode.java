@@ -1,4 +1,4 @@
-package platform.client.descriptor.nodes;
+package platform.client;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -70,11 +70,28 @@ public class ClientTreeNode extends DefaultMutableTreeNode {
         return false;
     }
 
-    public boolean importData(TransferHandler.TransferSupport info){
+    public boolean importData(ClientTree tree, TransferHandler.TransferSupport info){
         return false;
     }
 
     public void exportDone(JComponent component, int mode){
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (!(obj instanceof ClientTreeNode)) {
+            return false;
+        }
+
+        ClientTreeNode otherNode = (ClientTreeNode) obj;
+
+        Object thisObj = getUserObject();
+        Object otherObj = otherNode.getUserObject();
+
+        return thisObj != null && otherObj != null && thisObj.equals(otherObj);
+    }
 }

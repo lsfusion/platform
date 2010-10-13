@@ -1,7 +1,7 @@
 package platform.client.descriptor.nodes;
 
+import platform.client.ClientTreeNode;
 import platform.client.descriptor.FormDescriptor;
-
 
 public class FormNode extends ClientTreeNode {
 
