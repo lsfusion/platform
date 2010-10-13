@@ -48,7 +48,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
     AbstractCustomClass operation, inAbsOperation, outAbsOperation, absOutPerson, absOutTime, departmentAbs, extraSection, payer, payerAbs;
 
-    ConcreteCustomClass currency, exOperation, section, inOperation, outOperation, extraCost, person, pay, absMonth, mission, misOperation, department, sectionOut, city, extraPersonSection, extraAdmSection, contractor, reimbursement;
+    ConcreteCustomClass currency, exOperation, section, inOperation, outOperation, extraCost, person, pay, absMonth, mission, misOperation, department, sectionOut, city, extraPersonSection, extraAdmSection, contractor, reimbursement, vacation, incomeCash, incomeNotCash, outcomeCost;
 
     protected void initClasses() {
         operation = addAbstractClass("Операции", transaction);
@@ -62,7 +62,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         extraCost = addConcreteClass(1, "Дополнительные затраты", absOutTime, departmentAbs, payerAbs);
         pay = addConcreteClass(2, "Выплата", absOutPerson, absOutTime, payerAbs);
         exOperation = addConcreteClass(3, "Опер. конверсия", inAbsOperation, outAbsOperation, departmentAbs);
-        inOperation = addConcreteClass(4, "Опер. приход", inAbsOperation, departmentAbs);
+        inOperation = addConcreteClass(25, "Опер. приход", inAbsOperation, departmentAbs);
         outOperation = addConcreteClass(5, "Опер. расход", outAbsOperation, departmentAbs, payerAbs);
         misOperation = addConcreteClass(13, "Опер. расход ком.", outAbsOperation, departmentAbs, payerAbs);
         payer = addAbstractClass("Плательщик", baseClass.named);
@@ -81,16 +81,21 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         extraAdmSection = addConcreteClass(18, "Статья затрат админ.", extraSection);
         contractor = addConcreteClass(19, "Контрагент", payer);
         reimbursement = addConcreteClass(20, "Возмещение", transaction);
+        vacation = addConcreteClass(21, "Отпуск", baseClass);
+
+        incomeCash = addConcreteClass(4, "Приход по налу", inAbsOperation, departmentAbs);
+        incomeNotCash = addConcreteClass(23, "Приход по безналу", inAbsOperation, departmentAbs);
+        outcomeCost = addConcreteClass(24, "Расходы на обороты", outAbsOperation, departmentAbs, payerAbs);
     }
 
-    LP inSum, outSum, inCur, outCur, outPerson, outYear, outMonth, operationDepartment, personDepartment, reimbursementCurrencyIn, reimbursementPayer;
+    LP inSum, outSum, inCur, outCur, outPerson, outYear, outMonth, operationDepartment, personDepartment, reimbursementCurrencyIn, reimbursementPayer, vacationPerson;
     LP balanceQuantity, salaryInMonth, missionOperation, roundSalary, dayInMonthOv, opDep, operationPayer, reimbursementDepartment, depBalanceQuantity;
 
     LP isWorkingMonthForPerson;
 
     LP personDepartSum, personDepartSumInBC, payMonthTotal, extraMonthTotal, totalOutOper, departmentOutOperInBC, totalMisOper, totalMisOperInBC, monthNum, exchangeRate, nearestPredDate, nearestExchangeRate, nearestExchangeRateOp;
     LP baseCurrency, baseCurrencyName;
-    LP rateDate, userRateDay, dateByMY, rateDay;
+    LP rateDate, userRateDay, dateByMY, rateDay, incomeOutcome;
 
     protected void initProperties() {
 
@@ -105,12 +110,16 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         userRateDay = addDProp("userRateDay", "День месяца для курса", IntegerClass.instance, absMonth, YearClass.instance);
         rateDay = addSUProp(Union.OVERRIDE, addCProp(IntegerClass.instance, 1, absMonth, YearClass.instance), userRateDay);
 
+        LP daysInMonth = addDProp(baseGroup, "daysInMonth", "Дней в месяце", IntegerClass.instance, absMonth);
+        
         LP personStartWorkYear = addDProp(baseGroup, "personStartWorkYear", "Год начала раб.", YearClass.instance, person);
         LP personStartWorkMonth = addDProp("personStartWorkMonth", "Месяц начала раб.", absMonth, person);
         addJProp(baseGroup, "Месяц начала раб.", name, personStartWorkMonth, 1);
+        LP personStartWorkDay = addDProp(baseGroup, "personStartWorkDay", "День начала раб.", IntegerClass.instance, person);
         LP personEndWorkYear = addDProp(baseGroup, "personEndWorkYear", "Год окончания раб.", YearClass.instance, person);
         LP personEndWorkMonth = addDProp("personEndWorkMonth", "Месяц окончания раб.", absMonth, person);
         addJProp(baseGroup, "Месяц окончания раб.", name, personEndWorkMonth, 1);
+        LP personEndWorkDay = addDProp(baseGroup, "personEndWorkDay", "День окончания раб.", IntegerClass.instance, person);
 
         addJProp(payerGroup, "Плательщик", name, operationPayer, 1);
         LP multiplyDouble2 = addMFProp(DoubleClass.instance, 2);
@@ -119,14 +128,31 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP calcExtraCoef = addSFProp("(round((0.0+(prm1)*(prm2))/(prm3)))", DoubleClass.instance, 3);
         LP roundMult = addSFProp("(round((prm1)*(prm2)))", IntegerClass.instance, 2);
         LP hourInDay = addSFProp("((prm1)*8)", IntegerClass.instance, 1);
+        LP dayInYear = addSFProp("(extract(day from prm1))", IntegerClass.instance, 1);
         LP yearInDate = addSFProp("(extract(year from prm1))", IntegerClass.instance, 1);
         LP extMonthInDate = addSFProp("(extract(month from prm1))", IntegerClass.instance, 1);
         LP dateBy = addSFProp("(to_date(cast(prm1 as varchar) || ' ' || cast(prm2 as varchar) || ' ' || cast(prm3 as varchar) || ' ', 'DD MM YYYY'))", DateClass.instance, 3);
+        LP daysBetweenDates = addSFProp("(prm1-prm2)", IntegerClass.instance, 2);
+        LP sumByRate = addSFProp("(prm1*prm2)", DoubleClass.instance, 2);
+        LP calcPerCent = addSFProp("(prm1*prm2/100)", DoubleClass.instance, 2);
 
         monthNum = addOProp("Номер месяца", addJProp(and1, addCProp(IntegerClass.instance, 1), is(absMonth), 1), false, true, true, 0, 1);
         LP internalNum = addCGProp(null, "extNumToIntNum", "Внутренний номер", object(absMonth), monthNum, monthNum, 1);
         LP monthInDate = addJProp("Реальный месяц", internalNum, extMonthInDate, 1);
         dateByMY = addJProp("Дата курса для года/месяца", dateBy, rateDay, 1, 2, monthNum, 1, 2);
+
+        LP totalDaysWorkedTillDate = addJProp(baseGroup, "daysWorkedTillDate", "Дней отработано", daysBetweenDates,
+                addSUProp(Union.OVERRIDE, addJProp(and1, currentDate, is(person), 1), addJProp(dateBy, personEndWorkDay, 1, addJProp(monthNum, personEndWorkMonth, 1), 1, personEndWorkYear, 1)), 1,
+                addJProp(dateBy, personStartWorkDay, 1, addJProp(monthNum, personStartWorkMonth, 1), 1, personStartWorkYear, 1), 1);
+
+        vacationPerson = addDProp("vacationPerson", "Сотрудник", person, vacation);
+        LP vacationPersonName = addJProp(baseGroup, "vacationPersonName", "Имя сотрудника", name, vacationPerson, 1);
+        LP vacationStartDate = addDProp(baseGroup, "vacationStartDate" ,"Начало отпуска", DateClass.instance, vacation);
+        LP vacationEndDate = addDProp(baseGroup, "vacationEndDate", "Окончание отпуска", DateClass.instance, vacation);
+        LP vacationDaysQuantity = addJProp(baseGroup, "vacationDaysQuantity", "Длина отпуска, дней", daysBetweenDates, vacationEndDate, 1, vacationStartDate, 1);
+        LP vacationWorkDays = addDProp(baseGroup, "vacationWorkDays", "Рабочих дней за период отпуска", IntegerClass.instance, vacation);
+        LP totalVacationDays = addSGProp(baseGroup, "totalVacationDays", "Отпуск, календарных дней", vacationDaysQuantity, vacationPerson, 1);
+        LP totalVacationWorkDays = addSGProp(baseGroup, "totalVacationWorkDays", "Отпуск, рабочих дней", vacationWorkDays, vacationPerson, 1);
 
         LP transactionMonth = addJProp("Месяц", monthInDate, date, 1);
         LP transactionYear = addJProp("Год", yearInDate, date, 1);
@@ -193,14 +219,22 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
         LP decVal = addJProp("Расход", and1, outSum, 1, is(outAbsOperation), 1);
 
-        LP outComment = addDProp(baseGroup, "comment", "Коментарий", StringClass.get(40), operation);
         //department
         opDep = addCUProp(operationDepartment, payOperationDepartment);
         LP incDepSum = addSGProp(baseGroup, "Приход по отделу", inSum, inCur, 1, opDep, 1);
         LP decDepSum = addSGProp(baseGroup, "Расход по отделу", decVal, outCur, 1, opDep, 1);
         depBalanceQuantity = addDUProp(baseGroup, "Ост. по отделу", incDepSum, decDepSum);
-        //
 
+        LP perCent = addDProp(baseGroup, "perCent", "Процент", DoubleClass.instance, department);
+
+        incomeOutcome = addDProp("incomeOutcome", "Расход по приходу", incomeNotCash, outcomeCost);
+        
+        LP inCost = addJProp(baseGroup, "inCost", "Стоимость оборотов", calcPerCent, addJProp(and1, inSum, 1, is(incomeNotCash), 1), 1, addJProp(perCent, operationDepartment,1), 1);
+        LP payRevenueRate = addDProp(baseGroup, "payRevenueRate", "Курс", DoubleClass.instance, outcomeCost);
+        LP paySumInCur = addJProp("paySumInCur", "Приведенная сумма расхода", sumByRate, outSum, 1, payRevenueRate, 1);
+        LP totalOutcome = addSGProp(baseGroup, "totalOutcome", "Всего выплачено", paySumInCur, incomeOutcome, 1);
+
+        LP outComment = addDProp(baseGroup, "comment", "Коментарий", StringClass.get(40), operation);
 
         LP incSum = addSGProp("Приход по валюте", inSum, inCur, 1);
         LP decSum = addSGProp("Расход по валюте", decVal, outCur, 1);
@@ -214,10 +248,30 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
                 addJProp(greater22, 3, 2, personEndWorkYear, 1, personEndWorkMonth, 1), 1, 2, 3
         );
 
-        addConstraint(addJProp("Время окончания работы меньше, чем время начала", greater22,
+        /*addConstraint(addJProp("Время окончания работы меньше, чем время начала", greater22,
                 personStartWorkYear, 1, personStartWorkMonth, 1,
-                personEndWorkYear, 1, personEndWorkMonth, 1), false);
+                personEndWorkYear, 1, personEndWorkMonth, 1), false);*/
 
+        addConstraint(addJProp("Неверный день окончания работы", greater2,
+                personEndWorkDay, 1,
+                addJProp(daysInMonth, personEndWorkMonth, 1), 1), false);
+        addConstraint(addJProp("Неверный день начала работы", greater2,
+                personStartWorkDay, 1,
+                addJProp(daysInMonth, personStartWorkMonth, 1), 1), false);
+
+        addConstraint(addJProp("Дата окончания работы меньше даты начала работы", greater2,
+                addJProp(dateBy, personStartWorkDay, 1, addJProp(monthNum, personStartWorkMonth, 1), 1, personStartWorkYear, 1), 1,
+                addJProp(dateBy, personEndWorkDay, 1, addJProp(monthNum, personEndWorkMonth, 1), 1, personEndWorkYear, 1), 1), false);
+
+        addConstraint(addJProp("Дата окончания отпуска меньше даты начала отпуска", greater2,
+                vzero, addJProp(daysBetweenDates, vacationEndDate, 1, vacationStartDate, 1), 1), false);
+
+        addConstraint(addJProp("Количество рабочих дней превышает длину отпуска", greater2,
+                vacationWorkDays, 1, vacationDaysQuantity, 1), false);
+
+        addConstraint(addJProp("Расходы превышают доходы", greater2, totalOutcome, 1, inCost, 1), false);
+
+        
         LP extraSum = addJProp(and1, addJProp(multiplyDouble2, outSum, 1, extraRate, 1), 1, is(extraCost), 1);
 
         salaryInMonth = addDProp(salaryGroup, "salaryInM", "Зарплата", DoubleClass.instance, person, absMonth, YearClass.instance);
@@ -338,11 +392,15 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
     protected void initNavigators() throws JRException, FileNotFoundException {
 
         NavigatorElement primaryData = new NavigatorElement(baseElement, 100, "Первичные данные");
+        FormEntity incomeForm = addFormEntity(new IncomeFormEntity(primaryData, 119, "Приход"));
         FormEntity specialRecordForm = addFormEntity(new SpecialRecordFormEntity(primaryData, 113, "Затраты по сотрудникам"));
-        FormEntity recordForm = new RecordFormEntity(primaryData, 114, "Прочие операции");
         FormEntity salaryForm = addFormEntity(new ExtraFormEntity(primaryData, 115, "Дополнительные затраты"));
+        FormEntity recordForm = addFormEntity(new RecordFormEntity(primaryData, 114, "Прочие операции"));
         FormEntity missionForm = new MissionFormEntity(primaryData, 116, "Командировка");
+        FormEntity vacationForm = addFormEntity(new VacationFormEntity(primaryData, 118, "Отпуск сотрудников"));
         FormEntity exchangeRatesForm = new ExchangeRatesFormEntity(primaryData, 117, "Курсы валют");
+
+
 
         NavigatorElement aggregateData = new NavigatorElement(baseElement, 200, "Сводная информация");
         FormEntity departmentBalance = new DepartmentBalanceFormEntity(aggregateData, 214, "Баланс по отделам");
@@ -359,24 +417,53 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
             objDepartment.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
-            ObjectEntity objInOp = addSingleGroupObject(inOperation, "Операция прихода", baseGroup);
             ObjectEntity objOutOp = addSingleGroupObject(outOperation, "Операция расхода", baseGroup);
             ObjectEntity objExOp = addSingleGroupObject(exOperation, "Операция конверсии", baseGroup);
 
             addPropertyDraw(objExOp, inOperationGroup);
             addPropertyDraw(objOutOp, payerGroup);
 
-            addObjectActions(this, objInOp);
             addObjectActions(this, objOutOp);
             addObjectActions(this, objExOp);
 
-
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(opDep, objInOp), Compare.EQUALS, objDepartment));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(opDep, objOutOp), Compare.EQUALS, objDepartment));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(opDep, objExOp), Compare.EQUALS, objDepartment));
-
         }
     }
+
+     private class IncomeFormEntity extends FormEntity {
+         private ObjectEntity objIncNotCash;
+         private ObjectEntity objOutcome;
+
+         public IncomeFormEntity(NavigatorElement parent, int ID, String caption) {
+            super(parent, ID, caption);
+
+            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", baseGroup);
+            objDepartment.groupTo.initClassView = ClassViewType.PANEL;
+            objDepartment.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
+            ObjectEntity objIncCash = addSingleGroupObject(incomeCash, "Приход по налу", baseGroup);
+            objIncNotCash = addSingleGroupObject(incomeNotCash, "Приход по безналу", baseGroup);
+            objOutcome = addSingleGroupObject(outcomeCost, "Расход", baseGroup);
+
+            addPropertyDraw(objIncCash, objIncNotCash, objOutcome, baseGroup);
+
+            addObjectActions(this, objIncCash);
+            addObjectActions(this, objIncNotCash);
+            addObjectActions(this, objOutcome);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(opDep, objIncCash), Compare.EQUALS, objDepartment));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(opDep, objIncNotCash), Compare.EQUALS, objDepartment));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(incomeOutcome, objOutcome), Compare.EQUALS, objIncNotCash));
+        }
+
+        @Override
+        public DefaultFormView createDefaultRichDesign() {
+            DefaultFormView design = super.createDefaultRichDesign();
+
+            design.addIntersection(design.getGroupObjectContainer(objIncNotCash.groupTo), design.getGroupObjectContainer(objOutcome.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            return design;
+        }
+     }
 
     private class ExtraFormEntity extends FormEntity {
         private ObjectEntity objMonthOp;
@@ -501,6 +588,26 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(missionOperation, objOutOp), Compare.EQUALS, objMission));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(operationDepartment, objOutOp), Compare.EQUALS, objDepartment));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(personDepartment, objPerson), Compare.EQUALS, objDepartment));
+        }
+    }
+
+    private class VacationFormEntity extends FormEntity {
+
+        public VacationFormEntity(NavigatorElement parent, int ID, String caption) {
+            super(parent, ID, caption);
+            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", baseGroup);
+            objDepartment.groupTo.initClassView = ClassViewType.PANEL;
+            objDepartment.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
+            
+            ObjectEntity objPerson = addSingleGroupObject(person, "Сотрудник", baseGroup);
+            ObjectEntity objVacation = addSingleGroupObject(vacation, "Отпуск", baseGroup);
+
+            addPropertyDraw(objVacation, objPerson, baseGroup);
+
+            addObjectActions(this, objVacation);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(personDepartment, objPerson), Compare.EQUALS, objDepartment));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(vacationPerson, objVacation), Compare.EQUALS, objPerson));
         }
     }
 
