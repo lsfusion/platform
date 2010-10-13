@@ -48,7 +48,7 @@ public class ViewManager {
         control.add(page);
         changeCloseAction(page);
         page.setVisible(true);
-        //page.comp.requestFocusInWindow();
+        page.comp.requestFocusInWindow();
     }
 
     public void openClient(int formID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException, JRException {

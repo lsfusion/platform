@@ -104,6 +104,7 @@ public class ClientFormController {
     void initializeForm() throws IOException {
 
         formLayout = new ClientFormLayout(form.containers) {
+            boolean firstGainedFocus = true;
 
             @Override
             protected void gainedFocus() {
@@ -115,6 +116,16 @@ public class ClientFormController {
                     remoteForm.gainedFocus();
                     if (clientNavigator != null) {
                         clientNavigator.currentFormChanged();
+                    }
+
+                    //при старте перемещаем фокус на стандартный (только в первый раз, из-за диалогов)
+                    if (firstGainedFocus) {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                getFocusTraversalPolicy().getDefaultComponent(formLayout).requestFocusInWindow();
+                            }
+                        });
+                        firstGainedFocus = false;
                     }
 
                     // если вдруг изменились данные в сессии
