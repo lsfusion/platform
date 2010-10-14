@@ -1,11 +1,10 @@
-package platform.client.descriptor.editor.base;
+package platform.client.descriptor.increment.editor;
 
 import platform.client.descriptor.increment.IncrementView;
 import platform.client.descriptor.increment.IncrementDependency;
 import platform.base.BaseUtils;
 
 import javax.swing.*;
-import java.lang.reflect.Method;
 
 public abstract class IncrementComboBoxModel extends IncrementListModel implements ComboBoxModel {
 

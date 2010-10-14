@@ -1,4 +1,4 @@
-package platform.client.descriptor.editor.base;
+package platform.client.descriptor.increment.editor;
 
 import platform.client.descriptor.increment.IncrementView;
 
