@@ -1,5 +1,7 @@
 package platform.client;
 
+import platform.base.BaseUtils;
+
 import javax.swing.*;
 import javax.swing.tree.*;
 import java.awt.datatransfer.DataFlavor;
@@ -7,10 +9,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class ClientTree extends JTree {
 
@@ -46,41 +45,70 @@ public class ClientTree extends JTree {
         return (DefaultTreeModel) super.getModel();
     }
 
-    public void setModelPreservingExpansion(DefaultTreeModel newModel) {
+    static abstract class NodeProcessor {
+        public abstract void process(TreePath path);
+    }
+
+    private void traverseNodes(TreePath parent, NodeProcessor nodeProcessor) {
+        TreeNode node = (TreeNode) parent.getLastPathComponent();
+        if ( node.getChildCount() >= 0){
+            for (Enumeration e = node.children(); e.hasMoreElements();) {
+                TreeNode n = (TreeNode) e.nextElement();
+                TreePath path = parent.pathByAddingChild(n);
+                traverseNodes(path, nodeProcessor);
+            }
+        }
+
+        nodeProcessor.process(parent);
+    }
+
+    public void setModelPreservingState(DefaultTreeModel newModel) {
         if (treeModel == null || newModel == null) {
             setModel(newModel);
             return;
         }
 
         Enumeration<TreePath> paths = getExpandedDescendants(new TreePath(treeModel.getRoot()));
-
-        Set<Object> expanded = new HashSet<Object>();
-        if (paths != null) {
-            while (paths.hasMoreElements()) {
-                Object node = ((DefaultMutableTreeNode) paths.nextElement().getLastPathComponent()).getUserObject();
-                if (node != null) {
-                    expanded.add(node);
-                }
-            }
-        }
+        final Set<TreePath> expanded = paths == null
+                                       ? new HashSet<TreePath>()
+                                       : new HashSet<TreePath>(Collections.list(paths));
+        final TreePath selectionPath = getSelectionPath();
 
         setModel(newModel);
-        expandNodes(new TreePath(treeModel.getRoot()), expanded);
+        traverseNodes(new TreePath(treeModel.getRoot()), new NodeProcessor() {
+            @Override
+            public void process(TreePath path) {
+                for (TreePath expandedPath : expanded) {
+                    if (comparePathesByUserObjects(expandedPath, path)) {
+                        expandPath(path);
+                    }
+                }
+
+                if (comparePathesByUserObjects(selectionPath, path)) {
+                    getSelectionModel().setSelectionPath(path);
+                }
+            }
+        });
     }
 
-    private void expandNodes(TreePath parent, Set<Object> expanded) {
-        TreeNode node = (TreeNode) parent.getLastPathComponent();
-        if ( node.getChildCount() >= 0){
-            for (Enumeration e = node.children(); e.hasMoreElements();) {
-                TreeNode n = (TreeNode) e.nextElement();
-                TreePath path = parent.pathByAddingChild(n);
-                expandNodes(path, expanded);
-            }
+    private boolean comparePathesByUserObjects(TreePath path1, TreePath path2) {
+        if (path1 == null || path2 == null || path1.getPathCount() != path2.getPathCount()) {
+            return false;
         }
 
-        if (expanded.contains(((DefaultMutableTreeNode)node).getUserObject())) {
-            expandPath(parent);
+        while (path1 != null && path2 != null) {
+            DefaultMutableTreeNode node1 = (DefaultMutableTreeNode) path1.getLastPathComponent();
+            DefaultMutableTreeNode node2 = (DefaultMutableTreeNode) path2.getLastPathComponent();
+
+            if (!BaseUtils.nullEquals(node1.getUserObject(), node2.getUserObject())) {
+                return false;
+            }
+
+            path1 = path1.getParentPath();
+            path2 = path2.getParentPath();
         }
+
+        return true;
     }
 
     protected void changeCurrentElement() {
@@ -266,7 +294,7 @@ public class ClientTree extends JTree {
                 return null;
 
             return (ClientTreeNode)transferData;
-            
+
         } catch (UnsupportedFlavorException e) {
             return null;
         } catch (IOException e) {

@@ -44,7 +44,7 @@ public class FormDescriptorView extends JPanel {
                 updateTree();
             }
         };
-        
+
         tree.setDropMode(DropMode.ON);
         tree.setDragEnabled(true);
 
@@ -97,18 +97,19 @@ public class FormDescriptorView extends JPanel {
 
     private void updateTree() {
         FormNode rootNode = new FormNode(form);
-        rootNode.addSubTreeAction(new AbstractAction() {
+        rootNode.addSubTreeAction(new AbstractAction("Редактировать") {
             public void actionPerformed(ActionEvent e) {
                 DefaultMutableTreeNode node = tree.getSelectionNode();
                 if (node instanceof EditingTreeNode) {
                     view.removeAll();
                     view.add(((EditingTreeNode) node).createEditor(form, remote));
                     view.validate();
+                    view.updateUI();
                 }
             }
         });
 
         model = new DefaultTreeModel(rootNode);
-        tree.setModelPreservingExpansion(model);
+        tree.setModelPreservingState(model);
     }
 }

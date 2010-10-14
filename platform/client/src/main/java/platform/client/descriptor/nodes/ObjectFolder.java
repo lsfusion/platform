@@ -3,19 +3,14 @@ package platform.client.descriptor.nodes;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.ObjectDescriptor;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-import java.util.List;
-
-public class ObjectFolder extends DefaultMutableTreeNode {
+public class ObjectFolder extends PlainTextNode<ObjectFolder> {
 
     private GroupObjectDescriptor group;
 
     public ObjectFolder(GroupObjectDescriptor group) {
-        super(null);
+        super("Oбъекты");
 
         this.group = group;
-
-        this.setUserObject(this);
 
         for (ObjectDescriptor object : group)
             add(new ObjectNode(object));
@@ -36,10 +31,5 @@ public class ObjectFolder extends DefaultMutableTreeNode {
     @Override
     public int hashCode() {
         return group != null ? group.hashCode() : 0;
-    }
-
-    @Override
-    public String toString() {
-        return "Объекты";
     }
 }

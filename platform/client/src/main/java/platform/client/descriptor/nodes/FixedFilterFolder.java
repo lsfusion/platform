@@ -1,12 +1,10 @@
 package platform.client.descriptor.nodes;
 
-import platform.client.descriptor.filter.FilterDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
-import platform.base.BaseUtils;
+import platform.client.descriptor.filter.FilterDescriptor;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-import java.util.Set;
 import java.util.List;
+import java.util.Set;
 
 public class FixedFilterFolder extends GroupElementFolder {
 

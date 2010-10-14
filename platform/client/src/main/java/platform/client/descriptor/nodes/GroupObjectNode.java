@@ -24,11 +24,11 @@ public class GroupObjectNode extends DescriptorNode<GroupObjectDescriptor, Group
 
     @Override
     public boolean canImport(TransferHandler.TransferSupport info) {
-        return super.canImport(info);    //To change body of overridden methods use File | Settings | File Templates.
+        return super.canImport(info);
     }
 
     @Override
     public boolean importData(ClientTree tree, TransferHandler.TransferSupport info) {
-        return super.importData(tree, info);    //To change body of overridden methods use File | Settings | File Templates.
+        return super.importData(tree, info);
     }
 }
