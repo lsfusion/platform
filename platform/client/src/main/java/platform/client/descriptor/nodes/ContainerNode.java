@@ -7,7 +7,7 @@ import platform.client.logics.ClientContainer;
 
 import javax.swing.*;
 
-public class ContainerNode extends ComponentNode {
+public class ContainerNode extends ComponentNode<ClientContainer, ContainerNode> {
 
     public ContainerNode(ClientContainer container) {
         super(container);

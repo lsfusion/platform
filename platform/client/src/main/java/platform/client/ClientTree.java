@@ -136,7 +136,7 @@ public class ClientTree extends JTree {
         for (int i = 0; i < cnt; i++) {
             Object oNode = path.getPathComponent(i);
             if (oNode instanceof ClientTreeNode) {
-                ClientTreeNode node = (ClientTreeNode) oNode;
+                ClientTreeNode<?,?> node = (ClientTreeNode) oNode;
 
                 for (Action act : node.subTreeActions) {
                     list.add(act);

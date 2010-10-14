@@ -2,7 +2,7 @@ package platform.client.descriptor.nodes;
 
 import platform.client.ClientTreeNode;
 
-public class DescriptorNode<T> extends ClientTreeNode {
+public class DescriptorNode<T, C extends DescriptorNode> extends ClientTreeNode<T, C> {
 
     public DescriptorNode(T userObject, boolean allowsChildren) {
         super(userObject, allowsChildren);
@@ -10,9 +10,5 @@ public class DescriptorNode<T> extends ClientTreeNode {
 
     public DescriptorNode(T userObject) {
         super(userObject);
-    }
-
-    T getDescriptor() {
-        return (T) super.getUserObject();
     }
 }

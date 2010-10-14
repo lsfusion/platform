@@ -4,7 +4,7 @@ import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.ArrayList;
 
-public class ClientTreeNode extends DefaultMutableTreeNode {
+public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableTreeNode {
 
     public final static int NOTHING = 0;
     public final static int ONLY_NODE = 1;
@@ -20,17 +20,30 @@ public class ClientTreeNode extends DefaultMutableTreeNode {
         super();
     }
 
-    public ClientTreeNode(Object userObject) {
+    public ClientTreeNode(T userObject) {
         super(userObject);
     }
 
-    public ClientTreeNode(Object userObject, boolean allowsChildren) {
+    public ClientTreeNode(T userObject, boolean allowsChildren) {
         super(userObject, allowsChildren);
     }
 
-    public ClientTreeNode(Object userObject, boolean allowsChildren, int mode, Action... actions) {
+    public ClientTreeNode(T userObject, boolean allowsChildren, int mode, Action... actions) {
         super(userObject, allowsChildren);
         setActions(mode, actions);
+    }
+
+    public T getTypedObject() {
+        return (T) super.getUserObject();
+    }
+
+    public C getSiblingNode(TransferHandler.TransferSupport info) {
+
+        ClientTreeNode treeNode = ClientTree.getNode(info);
+        if (treeNode == null || getClass() != treeNode.getClass()) return null;
+        if (getParent() != treeNode.getParent()) return null;
+
+        return (C)treeNode;
     }
 
     public void setActions(int mode, Action... actions) {

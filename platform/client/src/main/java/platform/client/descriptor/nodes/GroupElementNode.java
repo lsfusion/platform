@@ -4,7 +4,7 @@ import platform.client.descriptor.GroupObjectDescriptor;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
-public abstract class GroupElementNode<T> extends DescriptorNode<T> implements EditingTreeNode {
+public abstract class GroupElementNode<T, C extends GroupElementNode> extends DescriptorNode<T, C> implements EditingTreeNode {
 
     protected GroupObjectDescriptor groupObject;
 

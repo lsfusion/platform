@@ -8,13 +8,13 @@ import platform.interop.serialization.RemoteDescriptorInterface;
 
 import javax.swing.*;
 
-public class FixedFilterNode extends GroupElementNode<FilterDescriptor> {
+public class FixedFilterNode extends GroupElementNode<FilterDescriptor, FixedFilterNode> {
 
     public FixedFilterNode(GroupObjectDescriptor group, FilterDescriptor userObject) {
         super(group, userObject);
     }
 
     public JComponent createEditor(FormDescriptor form, RemoteDescriptorInterface remote) {
-        return new FixedFilterEditor(groupObject, getDescriptor());
+        return new FixedFilterEditor(groupObject, getTypedObject());
     }
 }

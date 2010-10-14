@@ -3,9 +3,9 @@ package platform.client.descriptor.nodes;
 import platform.client.ClientTreeNode;
 import platform.client.logics.ClientComponent;
 
-public class ComponentNode extends ClientTreeNode {
+public class ComponentNode<T extends ClientComponent, C extends ComponentNode> extends ClientTreeNode<T, C> {
 
-    public ComponentNode(ClientComponent component) {
+    public ComponentNode(T component) {
         super(component);
     }
 }

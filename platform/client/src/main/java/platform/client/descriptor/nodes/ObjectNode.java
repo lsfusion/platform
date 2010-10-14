@@ -7,13 +7,13 @@ import platform.interop.serialization.RemoteDescriptorInterface;
 
 import javax.swing.*;
 
-public class ObjectNode extends DescriptorNode<ObjectDescriptor> implements EditingTreeNode {
+public class ObjectNode extends DescriptorNode<ObjectDescriptor, ObjectNode> implements EditingTreeNode {
 
     public ObjectNode(ObjectDescriptor userObject) {
         super(userObject, false);
     }
 
     public JComponent createEditor(FormDescriptor form, RemoteDescriptorInterface remote) {
-        return new ObjectEditor(getDescriptor());
+        return new ObjectEditor(getTypedObject());
     }
 }

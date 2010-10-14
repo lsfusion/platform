@@ -8,13 +8,13 @@ import platform.interop.serialization.RemoteDescriptorInterface;
 
 import javax.swing.*;
 
-public class RegularFilterNode extends GroupElementNode<RegularFilterDescriptor> {
+public class RegularFilterNode extends GroupElementNode<RegularFilterDescriptor, RegularFilterNode> {
 
     public RegularFilterNode(GroupObjectDescriptor groupObject, RegularFilterDescriptor userObject) {
         super(groupObject, userObject);
     }
 
     public JComponent createEditor(FormDescriptor form, RemoteDescriptorInterface remote) {
-        return new RegularFilterEditor(groupObject, getDescriptor());
+        return new RegularFilterEditor(groupObject, getTypedObject());
     }
 }
