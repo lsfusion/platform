@@ -10,8 +10,6 @@ import platform.client.descriptor.increment.editor.IncrementTextEditor;
 import platform.interop.serialization.RemoteDescriptorInterface;
 
 import javax.swing.*;
-import javax.swing.text.JTextComponent;
-import java.util.*;
 import java.util.List;
 import java.awt.*;
 
@@ -27,7 +25,7 @@ public class PropertyDrawEditor extends GroupElementEditor {
                 return form.getProperties(groupObject, remote);
             }
             public void fillListDependencies() {
-                IncrementDependency.add(form, "groups", this);
+                IncrementDependency.add(form, "groupObjects", this);
             }
         })));
 
@@ -37,11 +35,11 @@ public class PropertyDrawEditor extends GroupElementEditor {
         if(groupObject==null) {
             add(new NamedContainer("Группа объектов", false, new JComboBox(new IncrementComboBoxModel(descriptor, "toDraw") {
                 public List<?> getList() {
-                    return descriptor.getPropertyObject().getGroupObjects(form.groups);
+                    return descriptor.getPropertyObject().getGroupObjects(form.groupObjects);
                 }
                 public void fillListDependencies() {
                     IncrementDependency.add(descriptor, "propertyObject", this);
-                    IncrementDependency.add(form, "groups", this);
+                    IncrementDependency.add(form, "groupObjects", this);
                 }
             })));
 
@@ -51,12 +49,12 @@ public class PropertyDrawEditor extends GroupElementEditor {
         // columnGroupObjects из списка mapping'ов (полных) !!! без toDraw
         add(new NamedContainer("Группы в колонки", true, new IncrementListEditor(descriptor, "columnGroupObjects", new IncrementListModel(){
             public List<?> getList() {
-                return descriptor.getUpGroupObjects(form.groups);
+                return descriptor.getUpGroupObjects(form.groupObjects);
             }
 
             public void fillListDependencies() {
                 IncrementDependency.add(descriptor, "propertyObject", this);
-                IncrementDependency.add(form, "groups", this);
+                IncrementDependency.add(form, "groupObjects", this);
                 IncrementDependency.add(descriptor, "toDraw", this);
             }
         })));

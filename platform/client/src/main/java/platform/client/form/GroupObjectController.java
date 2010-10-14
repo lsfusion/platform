@@ -317,8 +317,8 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         return logicsSupplier.getObjects();
     }
 
-    public List<ClientPropertyDraw> getProperties() {
-        return logicsSupplier.getProperties();
+    public List<ClientPropertyDraw> getPropertyDraws() {
+        return logicsSupplier.getPropertyDraws();
     }
 
     public ClientGroupObject getGroupObject() {
@@ -328,7 +328,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
     public List<ClientPropertyDraw> getGroupObjectProperties() {
 
         ArrayList<ClientPropertyDraw> properties = new ArrayList<ClientPropertyDraw>();
-        for (ClientPropertyDraw property : getProperties()) {
+        for (ClientPropertyDraw property : getPropertyDraws()) {
             if (groupObject.equals(property.groupObject))
                 properties.add(property);
         }

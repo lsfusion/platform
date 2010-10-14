@@ -8,7 +8,7 @@ public class GroupObjectFolder extends PlainTextNode<GroupObjectFolder> {
     public GroupObjectFolder(FormDescriptor form) {
         super("Группы объектов");
 
-        for (GroupObjectDescriptor descriptor : form.groups) {
+        for (GroupObjectDescriptor descriptor : form.groupObjects) {
             add(new GroupObjectNode(descriptor, form));
         }
     }

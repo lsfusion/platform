@@ -222,7 +222,7 @@ public class ClientTree extends JTree {
                 if (path != null) {
                     DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
                     if (node instanceof ClientTreeNode)
-                        ((ClientTreeNode) node).importData(ClientTree.this, info);
+                        return ((ClientTreeNode) node).importData(ClientTree.this, info);
                 }
             }
             return true;

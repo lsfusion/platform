@@ -170,7 +170,7 @@ public class ClientFormController {
             controllers.put(groupObject, controller);
         }
 
-        for (ClientPropertyDraw properties : form.getProperties()) {
+        for (ClientPropertyDraw properties : form.getPropertyDraws()) {
             if (properties.groupObject == null) {
                 groupObjects.add(null);
                 GroupObjectController controller = new GroupObjectController(null, form, this, formLayout);

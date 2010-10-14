@@ -11,21 +11,25 @@ import javax.swing.*;
 
 public class PropertyDrawNode extends GroupElementNode<PropertyDrawDescriptor, PropertyDrawNode> {
 
-    public PropertyDrawNode(GroupObjectDescriptor groupObject, PropertyDrawDescriptor userObject) {
+    private FormDescriptor form;
+
+    public PropertyDrawNode(GroupObjectDescriptor groupObject, PropertyDrawDescriptor userObject, FormDescriptor form) {
         super(groupObject, userObject);
+
+        this.form = form;
     }
 
     public JComponent createEditor(FormDescriptor form, RemoteDescriptorInterface remote) {
-        return new PropertyDrawEditor(groupObject, getTypedObject(), form, remote);
+        return new PropertyDrawEditor(groupObject, getTypedObject(), this.form, remote);
     }
 
     @Override
     public boolean canImport(TransferHandler.TransferSupport info) {
-        return (getSiblingNode(info) != null) && (getParent() instanceof PropertyDrawFolder);
+        return getSiblingNode(info) != null;
     }
 
     @Override
-    public void importData(ClientTree tree, TransferHandler.TransferSupport info) {
-        ((PropertyDrawFolder)getParent()).moveChild(getSiblingNode(info), this);
+    public boolean importData(ClientTree tree, TransferHandler.TransferSupport info) {
+        return form.movePropertyDraw(getSiblingNode(info).getTypedObject(), getTypedObject());
     }
 }

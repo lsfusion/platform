@@ -26,7 +26,7 @@ public abstract class PanelController {
 
     public void requestFocusInWindow() {
         // так делать конечно немного неправильно, так как теоретически objectID может вообще не быть в панели
-        for (ClientPropertyDraw property : logicsSupplier.getProperties()) {
+        for (ClientPropertyDraw property : logicsSupplier.getPropertyDraws()) {
             Map<ClientGroupObjectValue, PropertyController> propControllers = properties.get(property);
             if (propControllers!=null && !propControllers.isEmpty()) {
                 propControllers.values().iterator().next().getView().requestFocusInWindow();

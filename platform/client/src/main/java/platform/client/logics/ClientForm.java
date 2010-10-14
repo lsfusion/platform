@@ -3,7 +3,6 @@ package platform.client.logics;
 import platform.base.OrderedMap;
 import platform.client.SwingUtils;
 import platform.client.form.LogicsSupplier;
-import platform.client.serialization.ClientCustomSerializable;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 
@@ -35,7 +34,7 @@ public class ClientForm implements LogicsSupplier, ClientIdentitySerializable {
     }
 
     public List<ClientGroupObject> groupObjects;
-    public List<ClientPropertyDraw> properties;
+    public List<ClientPropertyDraw> propertyDraws;
 
     public final OrderedMap<ClientPropertyDraw,Boolean> defaultOrders = new OrderedMap<ClientPropertyDraw, Boolean>();
     public List<ClientRegularFilterGroup> regularFilters;
@@ -65,8 +64,8 @@ public class ClientForm implements LogicsSupplier, ClientIdentitySerializable {
          return objects;
      }
 
-     public List<ClientPropertyDraw> getProperties() {
-         return properties;
+     public List<ClientPropertyDraw> getPropertyDraws() {
+         return propertyDraws;
      }
 
     public ClientObject getObject(int id) {
@@ -105,7 +104,7 @@ public class ClientForm implements LogicsSupplier, ClientIdentitySerializable {
     private Map<Integer, ClientPropertyDraw> getIDProps() {
         if(idProps==null) {
             idProps = new HashMap<Integer, ClientPropertyDraw>();
-            for(ClientPropertyDraw property : properties)
+            for(ClientPropertyDraw property : propertyDraws)
                 idProps.put(property.getID(), property);
         }
         return idProps;
@@ -134,7 +133,7 @@ public class ClientForm implements LogicsSupplier, ClientIdentitySerializable {
         outStream.writeBoolean(readOnly);
         pool.serializeCollection(outStream, containers);
         pool.serializeCollection(outStream, groupObjects);
-        pool.serializeCollection(outStream, properties);
+        pool.serializeCollection(outStream, propertyDraws);
         pool.serializeCollection(outStream, regularFilters);
 
         outStream.writeInt(defaultOrders.size());
@@ -165,7 +164,7 @@ public class ClientForm implements LogicsSupplier, ClientIdentitySerializable {
 
         containers = pool.deserializeList(inStream);
         groupObjects = pool.deserializeList(inStream);
-        properties = pool.deserializeList(inStream);
+        propertyDraws = pool.deserializeList(inStream);
         regularFilters = pool.deserializeList(inStream);
 
         int orderCount = inStream.readInt();

@@ -10,8 +10,12 @@ import javax.swing.*;
 
 public class GroupObjectNode extends DescriptorNode<GroupObjectDescriptor, GroupObjectNode> implements EditingTreeNode {
 
+    private FormDescriptor form;
+
     public GroupObjectNode(GroupObjectDescriptor group, FormDescriptor form) {
         super(group);
+
+        this.form = form;
 
         add(new ObjectFolder(group));
 
@@ -24,6 +28,11 @@ public class GroupObjectNode extends DescriptorNode<GroupObjectDescriptor, Group
 
     @Override
     public boolean canImport(TransferHandler.TransferSupport info) {
-        return super.canImport(info);
+        return getSiblingNode(info) != null;
+    }
+
+    @Override
+    public boolean importData(ClientTree tree, TransferHandler.TransferSupport info) {
+        return form.moveGroupObject(getSiblingNode(info).getTypedObject(), getTypedObject());
     }
 }

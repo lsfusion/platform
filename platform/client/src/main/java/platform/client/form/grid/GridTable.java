@@ -487,7 +487,7 @@ public abstract class GridTable extends ClientFormTable
 
     public boolean addProperty(final ClientPropertyDraw property) {
         if (properties.indexOf(property) == -1) {
-            List<ClientPropertyDraw> cells = logicsSupplier.getProperties();
+            List<ClientPropertyDraw> cells = logicsSupplier.getPropertyDraws();
 
             // конечно кривовато определять порядок по номеру в листе, но потом надо будет сделать по другому
             int ind = cells.indexOf(property), ins = 0;

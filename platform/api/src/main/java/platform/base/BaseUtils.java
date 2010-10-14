@@ -398,6 +398,14 @@ public class BaseUtils {
         return removeList;
     }
 
+    public static <K> void moveElement(List<K> list, K elemFrom, K elemTo) {
+
+        boolean up = list.indexOf(elemFrom) > list.indexOf(elemTo);
+
+        list.remove(elemFrom);
+        list.add(list.indexOf(elemTo) + (up ? 0 : 1), elemFrom);
+    }
+
     public static int max(int a,int b) {
         return a>b?a:b;
     }

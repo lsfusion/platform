@@ -2,9 +2,9 @@ package platform.client.descriptor;
 
 import platform.client.descriptor.filter.FilterDescriptor;
 import platform.client.descriptor.filter.RegularFilterGroupDescriptor;
+import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.property.PropertyDescriptor;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
-import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.logics.ClientForm;
 import platform.client.logics.classes.ClientClass;
 import platform.client.serialization.ClientIdentitySerializable;
@@ -22,7 +22,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
     public String caption;
     public boolean isPrintForm;
 
-    public List<GroupObjectDescriptor> groups;
+    public List<GroupObjectDescriptor> groupObjects;
     public List<PropertyDrawDescriptor> propertyDraws;
     public Set<FilterDescriptor> fixedFilters;
     public List<RegularFilterGroupDescriptor> regularFilterGroups;
@@ -32,7 +32,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         outStream.writeUTF(caption);
         outStream.writeBoolean(isPrintForm);
 
-        pool.serializeCollection(outStream, groups);
+        pool.serializeCollection(outStream, groupObjects);
         pool.serializeCollection(outStream, propertyDraws);
         pool.serializeCollection(outStream, fixedFilters);
         pool.serializeCollection(outStream, regularFilterGroups);
@@ -45,7 +45,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         caption = inStream.readUTF();
         isPrintForm = inStream.readBoolean();
 
-        groups = pool.deserializeList(inStream);
+        groupObjects = pool.deserializeList(inStream);
         propertyDraws = pool.deserializeList(inStream);
         fixedFilters = pool.deserializeSet(inStream);
         regularFilterGroups = pool.deserializeList(inStream);
@@ -60,7 +60,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
     }
 
     public ObjectDescriptor getObject(int objectID) {
-        for(GroupObjectDescriptor group : groups)
+        for(GroupObjectDescriptor group : groupObjects)
             for(ObjectDescriptor object : group)
                 if(object.getID() == objectID)
                     return object;
@@ -68,7 +68,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
     }
 
     public List<PropertyObjectDescriptor> getProperties(GroupObjectDescriptor groupObject, RemoteDescriptorInterface remote) {
-        return getProperties(groups.subList(0,groups.indexOf(groupObject)+1), groupObject, remote);
+        return getProperties(groupObjects.subList(0, groupObjects.indexOf(groupObject)+1), groupObject, remote);
     }
 
     public static List<PropertyObjectDescriptor> getProperties(Collection<GroupObjectDescriptor> groupObjects, GroupObjectDescriptor toDraw, RemoteDescriptorInterface remote) {
@@ -137,17 +137,17 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         return outStream.toByteArray();
     }
 
-    public void movePropertyDraw(PropertyDrawDescriptor propFrom, PropertyDrawDescriptor propTo) {
+    public boolean moveGroupObject(GroupObjectDescriptor groupFrom, GroupObjectDescriptor groupTo) {
+        BaseUtils.moveElement(groupObjects, groupFrom, groupTo);
+        BaseUtils.moveElement(client.groupObjects, groupFrom.client, groupTo.client);
+        IncrementDependency.update(this, "groupObjects");
+        return true;
+    }
 
-        boolean up = propertyDraws.indexOf(propFrom) > propertyDraws.indexOf(propTo);
-
-        propertyDraws.remove(propFrom);
-        propertyDraws.add(propertyDraws.indexOf(propTo) + (up ? 0 : 1), propFrom);
-
+    public boolean movePropertyDraw(PropertyDrawDescriptor propFrom, PropertyDrawDescriptor propTo) {
+        BaseUtils.moveElement(propertyDraws, propFrom, propTo);
+        BaseUtils.moveElement(client.propertyDraws, propFrom.client, propTo.client);
         IncrementDependency.update(this, "propertyDraws");
-
-        // приходится также двигать ссылки и в client
-        client.properties.remove(propFrom.client);
-        client.properties.add(client.properties.indexOf(propTo.client) + (up ? 0 : 1), propFrom.client);
+        return true;
     }
 }

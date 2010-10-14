@@ -109,4 +109,16 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
                             value.getExpr(BaseUtils.filterKeys(mapObjects, object.groupTo.objects), modifier), changeWhere),
                             modifier, null, null);
     }
+
+    @Override
+    public GroupObjectInstance getApplyObject() {
+
+        GroupObjectInstance applyObject = super.getApplyObject();
+
+        for(ObjectInstance intObject : value.getObjectInstances())
+            if(applyObject == null || intObject.groupTo.order > applyObject.order)
+                applyObject = intObject.getApplyObject();
+
+        return applyObject;
+    }
 }

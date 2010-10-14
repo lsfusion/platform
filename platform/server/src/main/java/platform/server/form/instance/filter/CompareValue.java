@@ -8,6 +8,7 @@ import platform.server.session.Modifier;
 import platform.server.form.instance.ObjectInstance;
 
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,4 +17,6 @@ public interface CompareValue extends Updated {
 //    AndClassSet getValueClass(GroupObjectInstance ClassGroup) {return null;}
 
     Expr getExpr(Map<ObjectInstance, ? extends Expr> classSource, Modifier<? extends Changes> modifier) throws SQLException;
+
+    Collection<ObjectInstance> getObjectInstances();
 }

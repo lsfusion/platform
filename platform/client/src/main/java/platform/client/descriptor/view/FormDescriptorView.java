@@ -84,6 +84,7 @@ public class FormDescriptorView extends JPanel implements IncrementView {
 
         add(splitPane, BorderLayout.CENTER);
 
+        IncrementDependency.add("groupObjects", this);
         IncrementDependency.add("propertyDraws", this);
         IncrementDependency.add("children", this);
         IncrementDependency.add("caption", this);

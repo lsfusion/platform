@@ -19,6 +19,7 @@ import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.instance.GroupObjectInstance;
 import platform.server.form.instance.InstanceFactory;
+import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.ChangesSession;
@@ -27,10 +28,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class DataObject extends ObjectValue<DataObject> implements PropertyObjectInterfaceInstance, PropertyObjectInterfaceEntity {
 
@@ -174,5 +172,9 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
 
     public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
         object = BaseUtils.deserializeObject(inStream);
+    }
+
+    public Collection<ObjectInstance> getObjectInstances() {
+        return new ArrayList<ObjectInstance>();
     }
 }

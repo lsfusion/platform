@@ -6,8 +6,11 @@ import platform.server.data.expr.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
+import platform.server.form.instance.ObjectInstance;
 import platform.server.session.ChangesSession;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -62,5 +65,9 @@ public class NullValue extends ObjectValue<NullValue> {
 
     public ObjectValue refresh(ChangesSession session) {
         return this;
+    }
+
+    public Collection<ObjectInstance> getObjectInstances() {
+        return new ArrayList<ObjectInstance>();
     }
 }

@@ -18,7 +18,7 @@ class PropertyValueLinkView extends ValueLinkView {
 
         valueLink = ivalueLink;
 
-        JComboBox propertyView = new QueryConditionComboBox(new Vector<ClientPropertyDraw>(logicsSupplier.getProperties()));
+        JComboBox propertyView = new QueryConditionComboBox(new Vector<ClientPropertyDraw>(logicsSupplier.getPropertyDraws()));
 
         valueLink.property = (ClientPropertyDraw) propertyView.getSelectedItem();
 

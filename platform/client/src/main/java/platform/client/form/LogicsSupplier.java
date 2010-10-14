@@ -8,5 +8,5 @@ import java.util.List;
 public interface LogicsSupplier {
 
     List<ClientObject> getObjects();
-    List<ClientPropertyDraw> getProperties();
+    List<ClientPropertyDraw> getPropertyDraws();
 }
