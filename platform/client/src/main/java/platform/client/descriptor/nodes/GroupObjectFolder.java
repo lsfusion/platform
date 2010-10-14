@@ -10,11 +10,18 @@ import java.util.List;
 public class GroupObjectFolder extends DefaultMutableTreeNode {
 
     public GroupObjectFolder(FormDescriptor form) {
-        super("Группы объектов");
+        super(null);
+
+        setUserObject(this);
 
         for (GroupObjectDescriptor descriptor : form.groups) {
             add(new GroupObjectNode(descriptor, form));
         }
 
+    }
+
+    @Override
+    public String toString() {
+        return "Группы объектов";
     }
 }

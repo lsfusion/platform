@@ -38,7 +38,7 @@ public class ContainerNode extends ComponentNode {
 
         ContainerNode parent = (ContainerNode) node.getParent();
 
-        parent.getClientContainer().remveChild(component);
+        parent.getClientContainer().removeChild(component);
         this.getClientContainer().addChild(component);
 
         return true;

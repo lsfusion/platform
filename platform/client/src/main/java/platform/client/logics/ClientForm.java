@@ -35,7 +35,7 @@ public class ClientForm implements LogicsSupplier, ClientIdentitySerializable {
     }
 
     public List<ClientGroupObject> groupObjects;
-    private List<ClientPropertyDraw> properties;
+    public List<ClientPropertyDraw> properties;
 
     public final OrderedMap<ClientPropertyDraw,Boolean> defaultOrders = new OrderedMap<ClientPropertyDraw, Boolean>();
     public List<ClientRegularFilterGroup> regularFilters;

@@ -11,7 +11,7 @@ import java.util.List;
 
 public class PropertyDrawDescriptor extends IdentityDescriptor implements ClientIdentitySerializable {
 
-    ClientPropertyDraw client;
+    public ClientPropertyDraw client;
 
     public PropertyObjectDescriptor propertyObject;
     public GroupObjectDescriptor toDraw;

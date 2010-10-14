@@ -135,4 +135,16 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
 
         return outStream.toByteArray();
     }
+
+    public void movePropertyDraw(PropertyDrawDescriptor propFrom, PropertyDrawDescriptor propTo) {
+
+        boolean up = propertyDraws.indexOf(propFrom) > propertyDraws.indexOf(propTo);
+
+        propertyDraws.remove(propFrom);
+        propertyDraws.add(propertyDraws.indexOf(propTo) + (up ? 0 : 1), propFrom);
+
+        // приходится также двигать ссылки и в client
+        client.properties.remove(propFrom.client);
+        client.properties.add(client.properties.indexOf(propTo.client) + (up ? 0 : 1), propFrom.client);
+    }
 }

@@ -59,7 +59,7 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         return new ContainerNode(this);
     }
 
-    public void remveChild(ClientComponent component) {
+    public void removeChild(ClientComponent component) {
         children.remove(component);
         //todo: fire event
     }
