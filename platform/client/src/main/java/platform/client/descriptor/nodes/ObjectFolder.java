@@ -9,6 +9,6 @@ public class ObjectFolder extends PlainTextNode<ObjectFolder> {
         super("Oбъекты");
 
         for (ObjectDescriptor object : group)
-            add(new ObjectNode(object));
+            add(new ObjectNode(object, group));
     }
 }

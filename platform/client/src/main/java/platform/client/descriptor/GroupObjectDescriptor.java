@@ -1,5 +1,6 @@
 package platform.client.descriptor;
 
+import platform.base.BaseUtils;
 import platform.client.logics.ClientGroupObject;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
@@ -42,5 +43,11 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
     @Override
     public String toString() {
         return client.toString();
+    }
+
+    public boolean moveObject(ObjectDescriptor objectFrom, ObjectDescriptor objectTo) {
+        BaseUtils.moveElement(this, objectFrom, objectTo);
+        BaseUtils.moveElement(client, objectFrom.client, objectTo.client);
+        return true;
     }
 }
