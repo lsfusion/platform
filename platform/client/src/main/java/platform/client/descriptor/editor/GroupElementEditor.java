@@ -10,5 +10,7 @@ public class GroupElementEditor extends JPanel {
 
     public GroupElementEditor(GroupObjectDescriptor groupObject) {
         this.groupObject = groupObject;
+
+        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
     }
 }

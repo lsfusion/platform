@@ -2,6 +2,7 @@ package platform.base;
 
 import java.io.*;
 import java.util.*;
+import java.lang.reflect.Method;
 
 public class BaseUtils {
 
@@ -849,4 +850,34 @@ public class BaseUtils {
     public static String padLeft(String s, int n) {
         return String.format("%1$#" + n + "s", s);
     }
+
+    public static String capitalize(String s) {
+        return s.substring(0,1).toUpperCase() + s.substring(1);
+    }
+
+    public static Method getSingleMethod(Object object, String method) {
+        for(Method methodObject : object.getClass().getMethods())
+            if(methodObject.getName().equals(method))
+                return methodObject;
+        throw new RuntimeException("no single method");
+    }
+
+    public static void invokeSetter(Object object, String field, Object set) {
+        try {
+            getSingleMethod(object, "set"+BaseUtils.capitalize(field)).invoke(object, set);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Object invokeGetter(Object object, String field) {
+        try {
+            Method method = object.getClass().getMethod("get"+BaseUtils.capitalize(field));
+            return method.invoke(object);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
 }

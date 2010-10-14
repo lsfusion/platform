@@ -21,6 +21,8 @@ public class IncrementDependency {
             viewObjects.put(view, objects);
         }
         objects.add(object);
+
+        view.update(object, field);
     }
 
     private final static Map<String, WeakIdentityHashSet<IncrementView>> mapViews = new HashMap<String, WeakIdentityHashSet<IncrementView>>();
@@ -31,6 +33,8 @@ public class IncrementDependency {
             mapViews.put(field, views);
         }
         views.add(view);
+
+        view.update(null, field);
     }
 
     // метод который должен вызываться из setter'ов, add'

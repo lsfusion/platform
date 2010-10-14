@@ -15,14 +15,8 @@ public abstract class IncrementComboBoxModel extends IncrementListModel implemen
     public final String field;
 
     public void setSelectedItem(Object anItem) {
-        if(!BaseUtils.nullEquals(selected, anItem)) {
-            try {
-                Method method = object.getClass().getMethod("set"+field, anItem.getClass());
-                method.invoke(object, anItem);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
+        if(!BaseUtils.nullEquals(selected, anItem))
+            BaseUtils.invokeSetter(object, field, anItem);
     }
 
     public Object getSelectedItem() {
@@ -32,12 +26,7 @@ public abstract class IncrementComboBoxModel extends IncrementListModel implemen
     private class SelectIncrement implements IncrementView {
         
         public void update(Object updateObject, String updateField) {
-            try {
-                Method method = IncrementComboBoxModel.this.object.getClass().getMethod("get"+ updateField);
-                selected = method.invoke(updateObject);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            selected = BaseUtils.invokeGetter(object, field);
 
             fireContentsChanged(this, -1, -1);
         }
