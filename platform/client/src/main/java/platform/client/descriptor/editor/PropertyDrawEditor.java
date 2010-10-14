@@ -6,9 +6,11 @@ import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.increment.editor.IncrementComboBoxModel;
 import platform.client.descriptor.increment.editor.IncrementListEditor;
 import platform.client.descriptor.increment.editor.IncrementListModel;
+import platform.client.descriptor.increment.editor.IncrementTextEditor;
 import platform.interop.serialization.RemoteDescriptorInterface;
 
 import javax.swing.*;
+import javax.swing.text.JTextComponent;
 import java.util.*;
 import java.util.List;
 import java.awt.*;
@@ -17,6 +19,8 @@ public class PropertyDrawEditor extends GroupElementEditor {
 
     public PropertyDrawEditor(final GroupObjectDescriptor groupObject, final PropertyDrawDescriptor descriptor, final FormDescriptor form, final RemoteDescriptorInterface remote) {
         super(groupObject);
+
+        add(new NamedContainer("Стат. заголовок", false, new IncrementTextEditor(descriptor, "caption")));
 
         add(new NamedContainer("Реализация", false, new JComboBox(new IncrementComboBoxModel(descriptor, "propertyObject") {
             public List<?> getList() {
@@ -60,7 +64,7 @@ public class PropertyDrawEditor extends GroupElementEditor {
         add(Box.createRigidArea(new Dimension(5,5)));
         
         // propertyCaption из списка columnGroupObjects (+objects без toDraw)
-        add(new NamedContainer("Заголовок", false, new JComboBox(new IncrementComboBoxModel(descriptor, "propertyCaption") {
+        add(new NamedContainer("Динам. заголовок", false, new JComboBox(new IncrementComboBoxModel(descriptor, "propertyCaption") {
             public List<?> getList() {
                 return FormDescriptor.getProperties(descriptor.getColumnGroupObjects(), null, remote);
             }

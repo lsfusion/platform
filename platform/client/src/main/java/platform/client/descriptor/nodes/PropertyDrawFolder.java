@@ -24,9 +24,8 @@ public class PropertyDrawFolder extends GroupElementFolder {
                 add(new PropertyDrawNode(group, propertyDraw));
     }
 
-    public boolean moveChild(PropertyDrawNode nodeFrom, PropertyDrawNode nodeTo) {
+    public void moveChild(PropertyDrawNode nodeFrom, PropertyDrawNode nodeTo) {
         form.movePropertyDraw(nodeFrom.getTypedObject(), nodeTo.getTypedObject());
-        return true;
     }
 
     @Override

@@ -25,7 +25,7 @@ public class PropertyDrawNode extends GroupElementNode<PropertyDrawDescriptor, P
     }
 
     @Override
-    public boolean importData(ClientTree tree, TransferHandler.TransferSupport info) {
-        return ((PropertyDrawFolder)getParent()).moveChild(getSiblingNode(info), this);
+    public void importData(ClientTree tree, TransferHandler.TransferSupport info) {
+        ((PropertyDrawFolder)getParent()).moveChild(getSiblingNode(info), this);
     }
 }

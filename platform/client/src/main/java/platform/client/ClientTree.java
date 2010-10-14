@@ -114,9 +114,6 @@ public class ClientTree extends JTree {
     protected void changeCurrentElement() {
     }
 
-    protected void refreshModel() {
-    }
-
     public DefaultMutableTreeNode getSelectionNode() {
 
         TreePath path = getSelectionPath();
@@ -219,24 +216,16 @@ public class ClientTree extends JTree {
 
         @Override
         public boolean importData(TransferHandler.TransferSupport info) {
-            if (!canImport(info)) {
-                return false;
-            }
-
-            JTree.DropLocation dl = (JTree.DropLocation) info.getDropLocation();
-            TreePath path = dl.getPath();
-            if (path == null) {
-                return false;
-            }
-
-            DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
-            if (node instanceof ClientTreeNode) {
-                if (((ClientTreeNode) node).importData(ClientTree.this, info)) {
-                    refreshModel();
-                    return true;
+            if (canImport(info)) {
+                JTree.DropLocation dl = (JTree.DropLocation) info.getDropLocation();
+                TreePath path = dl.getPath();
+                if (path != null) {
+                    DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
+                    if (node instanceof ClientTreeNode)
+                        ((ClientTreeNode) node).importData(ClientTree.this, info);
                 }
             }
-            return false;
+            return true;
         }
 
         @Override

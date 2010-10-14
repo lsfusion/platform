@@ -2,20 +2,24 @@ package platform.client.descriptor.view;
 
 import platform.client.ClientTree;
 import platform.client.descriptor.FormDescriptor;
+import platform.client.descriptor.increment.IncrementDependency;
+import platform.client.descriptor.increment.IncrementView;
 import platform.client.descriptor.nodes.EditingTreeNode;
 import platform.client.descriptor.nodes.FormNode;
+import platform.client.descriptor.nodes.PlainTextNode;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.serialization.RemoteDescriptorInterface;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 
-public class FormDescriptorView extends JPanel {
+public class FormDescriptorView extends JPanel implements IncrementView {
 
     FormDescriptor form;
 
@@ -38,12 +42,7 @@ public class FormDescriptorView extends JPanel {
 
         view = new JPanel();
 
-        tree = new ClientTree() {
-            @Override
-            protected void refreshModel() {
-                updateTree();
-            }
-        };
+        tree = new ClientTree();
 
         tree.setDropMode(DropMode.ON);
         tree.setDragEnabled(true);
@@ -84,6 +83,13 @@ public class FormDescriptorView extends JPanel {
         splitPane.setResizeWeight(0.3);
 
         add(splitPane, BorderLayout.CENTER);
+
+        IncrementDependency.add("propertyDraws", this);
+        IncrementDependency.add("children", this);
+        IncrementDependency.add("caption", this);
+        IncrementDependency.add("propertyObject", this);
+        IncrementDependency.add("toDraw", this);
+        IncrementDependency.add(this, "form", this);
     }
 
     public void setModel(FormDescriptor form) {
@@ -92,24 +98,29 @@ public class FormDescriptorView extends JPanel {
         previewBtn.setEnabled(form != null);
         saveBtn.setEnabled(form != null);
 
-        updateTree();
+        IncrementDependency.update(this, "form");
     }
 
-    private void updateTree() {
-        FormNode rootNode = new FormNode(form);
-        rootNode.addSubTreeAction(new AbstractAction("Редактировать") {
-            public void actionPerformed(ActionEvent e) {
-                DefaultMutableTreeNode node = tree.getSelectionNode();
-                if (node instanceof EditingTreeNode) {
-                    view.removeAll();
-                    view.add(((EditingTreeNode) node).createEditor(form, remote));
-                    view.validate();
-                    view.updateUI();
-                }
-            }
-        });
+    public void update(Object updateObject, String updateField) {
 
-        model = new DefaultTreeModel(rootNode);
+        TreeNode refreshNode;
+        if(form!=null) {
+            FormNode rootNode = new FormNode(form);
+            rootNode.addSubTreeAction(new AbstractAction("Редактировать") {
+                public void actionPerformed(ActionEvent e) {
+                    DefaultMutableTreeNode node = tree.getSelectionNode();
+                    if (node instanceof EditingTreeNode) {
+                        view.removeAll();
+                        view.add(((EditingTreeNode) node).createEditor(form, remote));
+                        view.validate();
+                        view.updateUI();
+                    }
+                }});
+            refreshNode = rootNode;
+        } else
+            refreshNode = new PlainTextNode("Форма не выбрана");
+
+        model = new DefaultTreeModel(refreshNode);
         tree.setModelPreservingState(model);
     }
 }

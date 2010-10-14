@@ -14,6 +14,19 @@ import java.util.Collections;
 
 public class PropertyDrawDescriptor extends IdentityDescriptor implements ClientIdentitySerializable {
 
+    public void setCaption(String caption) { // usage через reflection
+        client.caption = caption;
+        IncrementDependency.update(this, "caption");
+    }
+    public String getCaption() {
+        return client.caption;
+    }
+
+    @Override
+    public String toString() {
+        return client.caption;
+    }
+
     public ClientPropertyDraw client;
 
     public PropertyObjectDescriptor propertyObject;
@@ -42,7 +55,7 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
     }
     public List<GroupObjectDescriptor> getUpGroupObjects(List<GroupObjectDescriptor> groupList) {
         List<GroupObjectDescriptor> groupObjects = getPropertyObject().getGroupObjects(groupList);
-        if(toDraw!=null)
+        if(toDraw==null)
             return groupObjects.subList(0, groupObjects.size()-1);
         else
             return BaseUtils.removeList(groupObjects, Collections.singleton(toDraw));
@@ -96,10 +109,5 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
         }
 
         client = pool.context.getProperty(ID);
-    }
-
-    @Override
-    public String toString() {
-        return client.caption;
     }
 }

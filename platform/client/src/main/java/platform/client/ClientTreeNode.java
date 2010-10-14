@@ -83,8 +83,7 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
         return false;
     }
 
-    public boolean importData(ClientTree tree, TransferHandler.TransferSupport info){
-        return false;
+    public void importData(ClientTree tree, TransferHandler.TransferSupport info){
     }
 
     public void exportDone(JComponent component, int mode){

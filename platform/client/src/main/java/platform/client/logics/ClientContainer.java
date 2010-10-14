@@ -2,6 +2,7 @@ package platform.client.logics;
 
 import platform.client.descriptor.nodes.ComponentNode;
 import platform.client.descriptor.nodes.ContainerNode;
+import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 
@@ -61,14 +62,15 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
 
     public void removeChild(ClientComponent component) {
         children.remove(component);
-        //todo: fire event
+
+        IncrementDependency.update(this, "children");
     }
 
     public void addChild(int index, ClientComponent component) {
         children.add(index, component);
         component.container = this;
 
-        //todo: fire event
+        IncrementDependency.update(this, "children");
     }
 
     public void addChild(ClientComponent component) {

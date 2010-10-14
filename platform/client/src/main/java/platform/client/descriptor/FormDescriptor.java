@@ -4,6 +4,7 @@ import platform.client.descriptor.filter.FilterDescriptor;
 import platform.client.descriptor.filter.RegularFilterGroupDescriptor;
 import platform.client.descriptor.property.PropertyDescriptor;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
+import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.logics.ClientForm;
 import platform.client.logics.classes.ClientClass;
 import platform.client.serialization.ClientIdentitySerializable;
@@ -142,6 +143,8 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
 
         propertyDraws.remove(propFrom);
         propertyDraws.add(propertyDraws.indexOf(propTo) + (up ? 0 : 1), propFrom);
+
+        IncrementDependency.update(this, "propertyDraws");
 
         // приходится также двигать ссылки и в client
         client.properties.remove(propFrom.client);

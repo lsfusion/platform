@@ -28,19 +28,15 @@ public class ContainerNode extends ComponentNode<ClientContainer, ContainerNode>
     }
 
     @Override
-    public boolean importData(ClientTree tree, TransferHandler.TransferSupport info) {
+    public void importData(ClientTree tree, TransferHandler.TransferSupport info) {
         ClientTreeNode node = ClientTree.getNode(info);
-        if (!(node instanceof ComponentNode) || node.isNodeDescendant(this)) {
-            return false;
+        if (node instanceof ComponentNode && !node.isNodeDescendant(this)) {
+            ClientComponent component = (ClientComponent) node.getUserObject();
+
+            ContainerNode parent = (ContainerNode) node.getParent();
+
+            parent.getClientContainer().removeChild(component);
+            this.getClientContainer().addChild(component);
         }
-
-        ClientComponent component = (ClientComponent) node.getUserObject();
-
-        ContainerNode parent = (ContainerNode) node.getParent();
-
-        parent.getClientContainer().removeChild(component);
-        this.getClientContainer().addChild(component);
-
-        return true;
     }
 }

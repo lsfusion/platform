@@ -26,9 +26,4 @@ public class GroupObjectNode extends DescriptorNode<GroupObjectDescriptor, Group
     public boolean canImport(TransferHandler.TransferSupport info) {
         return super.canImport(info);
     }
-
-    @Override
-    public boolean importData(ClientTree tree, TransferHandler.TransferSupport info) {
-        return super.importData(tree, info);
-    }
 }
