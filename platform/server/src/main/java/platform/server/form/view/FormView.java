@@ -84,7 +84,7 @@ public class FormView extends IdentityObject implements ServerIdentitySerializab
         outStream.writeBoolean(readOnly);
         pool.serializeCollection(outStream, containers);
         pool.serializeCollection(outStream, groupObjects);
-        pool.serializeCollection(outStream, properties);
+        pool.serializeCollection(outStream, properties, serializationType);
         pool.serializeCollection(outStream, regularFilters);
 
         outStream.writeInt(defaultOrders.size());

@@ -31,6 +31,7 @@ import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
+import platform.server.serialization.SerializationType;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.*;
 
@@ -263,10 +264,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         try {
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
             DataOutputStream dataStream = new DataOutputStream(outStream);
-            new ServerSerializationPool().serializeObject(dataStream, getFormEntity(formID).richDesign);
-
-//            getFormEntity(formID).richDesign.serialize(dataStream);
-            
+            new ServerSerializationPool().serializeObject(dataStream, getFormEntity(formID).richDesign, SerializationType.VISUAL_SETUP);
             return outStream.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException(e);
