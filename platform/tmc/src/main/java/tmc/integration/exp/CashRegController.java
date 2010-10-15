@@ -22,10 +22,7 @@ import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class CashRegController {
 
@@ -66,18 +63,30 @@ public class CashRegController {
 
         FormData data;
 
+        Set<PropertyDrawInstance> formProperties = new HashSet<PropertyDrawInstance>();
         PropertyDrawInstance quantityDraw = formInstance.instanceFactory.getInstance(quantityProp);
         PropertyDrawInstance priceDraw = formInstance.instanceFactory.getInstance(priceProp);
         PropertyDrawInstance nameDraw = formInstance.instanceFactory.getInstance(nameProp);
         PropertyDrawInstance sumDraw = formInstance.instanceFactory.getInstance(sumProp);
         PropertyDrawInstance toPayDraw = formInstance.instanceFactory.getInstance(toPayProp);
-        PropertyDrawInstance sumCardDraw = formInstance.instanceFactory.getInstance(sumCardProp);
-        PropertyDrawInstance sumCashDraw = formInstance.instanceFactory.getInstance(sumCashProp);
+        formProperties.addAll(BaseUtils.toSetElements(quantityDraw, priceDraw, nameDraw, sumDraw, toPayDraw));
+
+        PropertyDrawInstance sumCardDraw = null;
+        if(sumCardProp!=null) {
+            sumCardDraw = formInstance.instanceFactory.getInstance(sumCardProp);
+            formProperties.add(sumCardDraw);
+        }
+
+        PropertyDrawInstance sumCashDraw = null;
+        if(sumCashProp!=null) {
+            sumCashDraw = formInstance.instanceFactory.getInstance(sumCashProp);
+            formProperties.add(sumCashDraw);
+        }
 
         quantityDraw.toDraw.addTempFilter(new NotNullFilterInstance(quantityDraw.propertyObject));
 
         try {
-            data = formInstance.getFormData(BaseUtils.toSetElements(quantityDraw, priceDraw, nameDraw, sumDraw, toPayDraw, sumCardDraw, sumCashDraw), classGroups);
+            data = formInstance.getFormData(formProperties, classGroups);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {

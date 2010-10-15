@@ -17,15 +17,13 @@ import java.util.EventObject;
 public class ObjectPropertyEditor extends JDialog implements PropertyEditorComponent {
 
     private final Component owner;
-    private final RemoteNavigatorInterface navigator;
     private RemoteDialogInterface dialog;
 
     private ClientDialog clientDialog;
 
-    public ObjectPropertyEditor(Component owner, RemoteNavigatorInterface navigator, RemoteDialogInterface dialog) {
+    public ObjectPropertyEditor(Component owner, RemoteDialogInterface dialog) {
 
         this.owner = owner;
-        this.navigator = navigator;
         this.dialog = dialog;
     }
 
