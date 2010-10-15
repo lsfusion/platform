@@ -5,6 +5,7 @@ import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.editor.ObjectEditor;
+import platform.client.descriptor.nodes.actions.EditingTreeNode;
 import platform.interop.serialization.RemoteDescriptorInterface;
 
 import javax.swing.*;

@@ -10,6 +10,7 @@ import platform.client.descriptor.increment.editor.IncrementTextEditor;
 import platform.interop.serialization.RemoteDescriptorInterface;
 
 import javax.swing.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.awt.*;
 
@@ -35,7 +36,10 @@ public class PropertyDrawEditor extends GroupElementEditor {
         if(groupObject==null) {
             add(new NamedContainer("Группа объектов", false, new JComboBox(new IncrementComboBoxModel(descriptor, "toDraw") {
                 public List<?> getList() {
-                    return descriptor.getPropertyObject().getGroupObjects(form.groupObjects);
+                    PropertyObjectDescriptor propertyObject = descriptor.getPropertyObject();
+                    return propertyObject != null
+                           ? propertyObject.getGroupObjects(form.groupObjects)
+                           : new ArrayList();
                 }
                 public void fillListDependencies() {
                     IncrementDependency.add(descriptor, "propertyObject", this);

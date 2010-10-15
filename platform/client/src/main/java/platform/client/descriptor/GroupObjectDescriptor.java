@@ -15,12 +15,11 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
     private byte initClassView;
     private byte banClassView;
     private PropertyObjectDescriptor propertyHighlight;
+    public ClientGroupObject client;
 
     public int getID() {
         return ID;
     }
-
-    ClientGroupObject client;
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeCollection(outStream, this);

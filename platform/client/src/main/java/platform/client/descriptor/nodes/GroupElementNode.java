@@ -1,8 +1,7 @@
 package platform.client.descriptor.nodes;
 
 import platform.client.descriptor.GroupObjectDescriptor;
-
-import javax.swing.tree.DefaultMutableTreeNode;
+import platform.client.descriptor.nodes.actions.EditingTreeNode;
 
 public abstract class GroupElementNode<T, C extends GroupElementNode> extends DescriptorNode<T, C> implements EditingTreeNode {
 

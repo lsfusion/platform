@@ -9,6 +9,7 @@ import platform.base.BaseUtils;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
 
@@ -38,7 +39,8 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
         return propertyObject;
     }
 
-    private GroupObjectDescriptor toDraw;
+    //todo: временно public...
+    public GroupObjectDescriptor toDraw;
     public void setToDraw(GroupObjectDescriptor toDraw) { // usage через reflection
         this.toDraw = toDraw;
         IncrementDependency.update(this, "toDraw");
@@ -48,12 +50,20 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
     }
 
     public GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groupList) {
-        if(toDraw!=null)
+        if (toDraw != null) {
             return toDraw;
-        else
-            return propertyObject.getGroupObject(groupList);
+        } else {
+            return propertyObject != null
+                   ? propertyObject.getGroupObject(groupList)
+                   : null;
+        }
     }
+
     public List<GroupObjectDescriptor> getUpGroupObjects(List<GroupObjectDescriptor> groupList) {
+        if (getPropertyObject() == null) {
+            return new ArrayList<GroupObjectDescriptor>();
+        }
+        
         List<GroupObjectDescriptor> groupObjects = getPropertyObject().getGroupObjects(groupList);
         if(toDraw==null)
             return groupObjects.subList(0, groupObjects.size()-1);

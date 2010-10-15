@@ -1,4 +1,4 @@
-package platform.client.descriptor.nodes;
+package platform.client.descriptor.nodes.actions;
 
 import platform.client.descriptor.FormDescriptor;
 import platform.interop.serialization.RemoteDescriptorInterface;

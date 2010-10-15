@@ -1,6 +1,7 @@
 package platform.client;
 
 import platform.base.BaseUtils;
+import platform.client.descriptor.nodes.actions.FilterAction;
 
 import javax.swing.*;
 import javax.swing.tree.*;
@@ -79,19 +80,19 @@ public class ClientTree extends JTree {
             @Override
             public void process(TreePath path) {
                 for (TreePath expandedPath : expanded) {
-                    if (comparePathesByUserObjects(expandedPath, path)) {
+                    if (comparePathsByUserObjects(expandedPath, path)) {
                         expandPath(path);
                     }
                 }
 
-                if (comparePathesByUserObjects(selectionPath, path)) {
+                if (comparePathsByUserObjects(selectionPath, path)) {
                     getSelectionModel().setSelectionPath(path);
                 }
             }
         });
     }
 
-    private boolean comparePathesByUserObjects(TreePath path1, TreePath path2) {
+    private boolean comparePathsByUserObjects(TreePath path1, TreePath path2) {
         if (path1 == null || path2 == null || path1.getPathCount() != path2.getPathCount()) {
             return false;
         }
@@ -163,34 +164,31 @@ public class ClientTree extends JTree {
             if (oNode instanceof ClientTreeNode) {
                 ClientTreeNode<?,?> node = (ClientTreeNode) oNode;
 
-                for (Action act : node.subTreeActions) {
-                    list.add(act);
-                }
+                list.addAll(node.subTreeActions);
 
                 if (i == cnt - 2) {
-                    for (Action act : node.sonActions) {
-                        list.add(act);
-                    }
+                    list.addAll(node.sonActions);
                 }
 
                 if (i == cnt - 1) {
-                    for (Action act : node.nodeActions) {
-                        list.add(act);
-                    }
+                    list.addAll(node.nodeActions);
                 }
             }
         }
+
+        for (Iterator<Action> it = list.iterator(); it.hasNext(); ) {
+            Action act = it.next();
+            if (act instanceof FilterAction) {
+                FilterAction filterAction = (FilterAction) act;
+                if (!filterAction.isApplicable(path)) {
+                    it.remove();
+                }
+            }
+        }
+
         return list;
     }
 
-    /*
-        class CloseAction extends AbstractAction {
-            public void actionPerformed(ActionEvent e) {
-                DefaultMutableTreeNode node = getSelectionNode();
-                node.removeFromParent();
-            }
-        }
-    */
     public class ClientTransferHandler extends TransferHandler {
 
         @Override
@@ -207,11 +205,7 @@ public class ClientTree extends JTree {
             }
 
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
-            if (node instanceof ClientTreeNode) {
-                return ((ClientTreeNode) node).canImport(info);
-            } else {
-                return false;
-            }
+            return node instanceof ClientTreeNode && ((ClientTreeNode) node).canImport(info);
         }
 
         @Override
