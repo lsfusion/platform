@@ -15,10 +15,12 @@ public class ClientButton extends JButton {
     }
 
     public ClientButton() {
+        super();
         overrideModel();
     }
 
     public ClientButton(ImageIcon deleteIcon) {
+        super(deleteIcon);
         overrideModel();
     }
 
