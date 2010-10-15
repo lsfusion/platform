@@ -310,9 +310,15 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
     private void fillSiblingsConstraint(LpSolve solver, Component parent) throws LpSolveException {
 
         List<Component> contComponents = new ArrayList<Component>();
+
+        // если для этого объекта есть свой ClientContainer
+        if (constraints.containsKey(parent) && constraints.get(parent) instanceof ClientContainer) {
+        }
+
         for (Component comp : components)
-            if (comp.getParent() == parent)
+            if (comp.getParent() == parent) {
                 contComponents.add(comp);
+            }
 
         SimplexConstraints parentConstraints = getConstraint(parent);
 

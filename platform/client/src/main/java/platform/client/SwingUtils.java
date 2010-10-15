@@ -35,6 +35,31 @@ public class SwingUtils {
         return (Window)comp;
     }
 
+    public static JTable getJTable(Component comp) {
+
+        while (comp != null && !(comp instanceof JTable) ) comp = comp.getParent();
+
+        return (JTable)comp;
+    }
+
+    public static void commitEditing(JTable table) {
+
+        if (table.isEditing() && table.getCellEditor() != null) {
+            if (!table.getCellEditor().stopCellEditing()) {
+                table.getCellEditor().cancelCellEditing();
+            }
+        }
+    }
+
+    public static void commitCurrentEditing() {
+
+        Component comp = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        JTable table = getJTable(comp);
+        if (table != null) {
+            commitEditing(table);
+        }
+    }
+
     public static Point computeAbsoluteLocation(Component comp) {
 
         Point pt = new Point();

@@ -282,7 +282,7 @@ public class ClientFormController {
             };
             formLayout.addBinding(altP, "altPPressed", printAction);
 
-            JButton buttonPrint = new JButton(printAction);
+            JButton buttonPrint = new ClientButton(printAction);
             buttonPrint.setFocusable(false);
 
             AbstractAction xlsAction = new AbstractAction(form.xlsFunction.caption + " (" + SwingUtils.getKeyStrokeCaption(altX) + ")") {
@@ -293,7 +293,7 @@ public class ClientFormController {
             };
             formLayout.addBinding(altX, "altXPressed", xlsAction);
 
-            JButton buttonXls = new JButton(xlsAction);
+            JButton buttonXls = new ClientButton(xlsAction);
             buttonXls.setFocusable(false);
 
             if (!isDialogMode()) {
@@ -308,7 +308,7 @@ public class ClientFormController {
                 nullPressed();
             }
         };
-        JButton buttonNull = new JButton(nullAction);
+        JButton buttonNull = new ClientButton(nullAction);
         buttonNull.setFocusable(false);
 
         AbstractAction refreshAction = new AbstractAction(form.refreshFunction.caption + " (" + SwingUtils.getKeyStrokeCaption(altR) + ")") {
@@ -317,7 +317,7 @@ public class ClientFormController {
                 refreshData();
             }
         };
-        JButton buttonRefresh = new JButton(refreshAction);
+        JButton buttonRefresh = new ClientButton(refreshAction);
         buttonRefresh.setFocusable(false);
 
         AbstractAction applyAction = new AbstractAction(form.applyFunction.caption + " (" + SwingUtils.getKeyStrokeCaption(altEnter) + ")") {
@@ -326,7 +326,7 @@ public class ClientFormController {
                 applyChanges();
             }
         };
-        buttonApply = new JButton(applyAction);
+        buttonApply = new ClientButton(applyAction);
         buttonApply.setFocusable(false);
 
         AbstractAction cancelAction = new AbstractAction(form.cancelFunction.caption + " (" + SwingUtils.getKeyStrokeCaption(escape) + ")") {
@@ -335,7 +335,7 @@ public class ClientFormController {
                 cancelChanges();
             }
         };
-        buttonCancel = new JButton(cancelAction);
+        buttonCancel = new ClientButton(cancelAction);
         buttonCancel.setFocusable(false);
 
         AbstractAction okAction = new AbstractAction(form.okFunction.caption + " (" + SwingUtils.getKeyStrokeCaption(altEnter) + ")") {
@@ -344,7 +344,7 @@ public class ClientFormController {
                 okPressed();
             }
         };
-        JButton buttonOK = new JButton(okAction);
+        JButton buttonOK = new ClientButton(okAction);
         buttonOK.setFocusable(false);
 
         AbstractAction closeAction = new AbstractAction(form.closeFunction.caption + " (" + SwingUtils.getKeyStrokeCaption(escape) + ")") {
@@ -353,7 +353,7 @@ public class ClientFormController {
                 closePressed();
             }
         };
-        JButton buttonClose = new JButton(closeAction);
+        JButton buttonClose = new ClientButton(closeAction);
         buttonClose.setFocusable(false);
 
         formLayout.addBinding(altR, "altRPressed", refreshAction);

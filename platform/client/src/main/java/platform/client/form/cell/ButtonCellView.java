@@ -1,5 +1,6 @@
 package platform.client.form.cell;
 
+import platform.client.ClientButton;
 import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
@@ -11,7 +12,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
-public class ButtonCellView extends JButton implements CellView {
+public class ButtonCellView extends ClientButton implements CellView {
     private ClientPropertyDraw key;
     private ClientGroupObjectValue columnKey; // чисто для кэширования
 

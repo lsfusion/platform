@@ -1,6 +1,7 @@
 package platform.client.form.queries;
 
 import platform.base.Pair;
+import platform.client.ClientButton;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.logics.*;
 import platform.client.logics.filter.ClientPropertyFilter;
@@ -111,7 +112,7 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
             }
         });
 
-        delButton = new JButton(deleteIcon);
+        delButton = new ClientButton(deleteIcon);
         delButton.setFocusable(false);
         delButton.setPreferredSize(new Dimension(PREFERRED_HEIGHT, PREFERRED_HEIGHT));
         delButton.addActionListener(new ActionListener() {

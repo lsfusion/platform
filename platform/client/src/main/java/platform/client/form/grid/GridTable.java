@@ -422,11 +422,7 @@ public abstract class GridTable extends ClientFormTable
     }
 
     private void commitEditing() {
-        if (isEditing()) {
-            if (!getCellEditor().stopCellEditing()) {
-                getCellEditor().cancelCellEditing();
-            }
-        }
+        SwingUtils.commitEditing(this);
     }
 
     public ClientFormController getForm() {

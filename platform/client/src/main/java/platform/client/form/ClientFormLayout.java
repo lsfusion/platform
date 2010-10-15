@@ -1,5 +1,6 @@
 package platform.client.form;
 
+import platform.client.ClientActionProxy;
 import platform.client.ContainerFocusListener;
 import platform.client.FormFocusTraversalPolicy;
 import platform.client.logics.ClientComponent;
@@ -161,6 +162,6 @@ public abstract class ClientFormLayout extends JPanel {
 
     public void addBinding(KeyStroke key, String id, AbstractAction action) {
         getInputMap(JPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(key, id);
-        getActionMap().put(id, action);
+        getActionMap().put(id, new ClientActionProxy(action));
     }
 }
