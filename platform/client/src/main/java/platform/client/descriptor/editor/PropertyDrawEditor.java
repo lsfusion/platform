@@ -15,9 +15,12 @@ import java.util.List;
 import java.awt.*;
 
 public class PropertyDrawEditor extends GroupElementEditor {
+    private final PropertyDrawDescriptor descriptor;
 
     public PropertyDrawEditor(final GroupObjectDescriptor groupObject, final PropertyDrawDescriptor descriptor, final FormDescriptor form, final RemoteDescriptorInterface remote) {
         super(groupObject);
+
+        this.descriptor = descriptor;
 
         add(new NamedContainer("Стат. заголовок", false, new IncrementTextEditor(descriptor, "caption")));
 
@@ -76,4 +79,13 @@ public class PropertyDrawEditor extends GroupElementEditor {
         })));
     }
 
+    @Override
+    public boolean validateEditor() {
+        if (descriptor.getPropertyObject() == null) {
+            JOptionPane.showMessageDialog(this, "Выберите реализацию!", "Ошибка", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        return true;
+    }
 }

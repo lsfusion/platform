@@ -1,7 +1,6 @@
 package platform.client;
 
 import platform.base.BaseUtils;
-import platform.client.descriptor.nodes.actions.FilterAction;
 
 import javax.swing.*;
 import javax.swing.tree.*;
@@ -46,11 +45,15 @@ public class ClientTree extends JTree {
         return (DefaultTreeModel) super.getModel();
     }
 
-    static abstract class NodeProcessor {
+    public TreePath getPathToRoot(TreeNode treeNode) {
+        return new TreePath(getModel().getPathToRoot(treeNode));
+    }
+
+    public static abstract class NodeProcessor {
         public abstract void process(TreePath path);
     }
 
-    private void traverseNodes(TreePath parent, NodeProcessor nodeProcessor) {
+    public void traverseNodes(TreePath parent, NodeProcessor nodeProcessor) {
         TreeNode node = (TreeNode) parent.getLastPathComponent();
         if ( node.getChildCount() >= 0){
             for (Enumeration e = node.children(); e.hasMoreElements();) {
@@ -92,24 +95,29 @@ public class ClientTree extends JTree {
         });
     }
 
-    private boolean comparePathsByUserObjects(TreePath path1, TreePath path2) {
-        if (path1 == null || path2 == null || path1.getPathCount() != path2.getPathCount()) {
-            return false;
+    public TreePath findPathByUserObjects(Object[] path) {
+        if (treeModel == null) {
+            return null;
         }
 
-        while (path1 != null && path2 != null) {
-            DefaultMutableTreeNode node1 = (DefaultMutableTreeNode) path1.getLastPathComponent();
-            DefaultMutableTreeNode node2 = (DefaultMutableTreeNode) path2.getLastPathComponent();
-
-            if (!BaseUtils.nullEquals(node1.getUserObject(), node2.getUserObject())) {
-                return false;
+        DefaultMutableTreeNode lastNode = null;
+        List<DefaultMutableTreeNode> children = BaseUtils.toList((DefaultMutableTreeNode)treeModel.getRoot());
+        for (Object current : path) {
+            lastNode = null;
+            for (DefaultMutableTreeNode child : children) {
+                if (BaseUtils.nullEquals(child.getUserObject(), current)) {
+                    lastNode = child;
+                    children = Collections.list(child.children());
+                    break;
+                }
             }
 
-            path1 = path1.getParentPath();
-            path2 = path2.getParentPath();
+            if (lastNode == null) {
+                return null;
+            }
         }
 
-        return true;
+        return lastNode != null ? getPathToRoot(lastNode) : null;
     }
 
     protected void changeCurrentElement() {
@@ -178,8 +186,8 @@ public class ClientTree extends JTree {
 
         for (Iterator<Action> it = list.iterator(); it.hasNext(); ) {
             Action act = it.next();
-            if (act instanceof FilterAction) {
-                FilterAction filterAction = (FilterAction) act;
+            if (act instanceof PathFilteredAction) {
+                PathFilteredAction filterAction = (PathFilteredAction) act;
                 if (!filterAction.isApplicable(path)) {
                     it.remove();
                 }
@@ -286,4 +294,37 @@ public class ClientTree extends JTree {
         }
     }
 
+    public static Object[] convertTreePathToUserObjects(TreePath path) {
+        if (path == null) {
+            return null;
+        }
+
+        Object[] pathElements = path.getPath();
+        Object[] result = new Object[pathElements.length];
+        for (int i = 0; i < pathElements.length; ++i) {
+            result[i] = ((DefaultMutableTreeNode)pathElements[i]).getUserObject();
+        }
+
+        return result;
+    }
+
+    public static boolean comparePathsByUserObjects(TreePath path1, TreePath path2) {
+        if (path1 == null || path2 == null || path1.getPathCount() != path2.getPathCount()) {
+            return false;
+        }
+
+        while (path1 != null && path2 != null) {
+            DefaultMutableTreeNode node1 = (DefaultMutableTreeNode) path1.getLastPathComponent();
+            DefaultMutableTreeNode node2 = (DefaultMutableTreeNode) path2.getLastPathComponent();
+
+            if (!BaseUtils.nullEquals(node1.getUserObject(), node2.getUserObject())) {
+                return false;
+            }
+
+            path1 = path1.getParentPath();
+            path2 = path2.getParentPath();
+        }
+
+        return true;
+    }
 }

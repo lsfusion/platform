@@ -5,6 +5,7 @@ import platform.client.descriptor.PropertyDrawDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.editor.PropertyDrawEditor;
+import platform.client.descriptor.editor.base.NodeEditor;
 import platform.interop.serialization.RemoteDescriptorInterface;
 
 import javax.swing.*;
@@ -19,7 +20,7 @@ public class PropertyDrawNode extends GroupElementNode<PropertyDrawDescriptor, P
         this.form = form;
     }
 
-    public JComponent createEditor(FormDescriptor form, RemoteDescriptorInterface remote) {
+    public NodeEditor createEditor(FormDescriptor form, RemoteDescriptorInterface remote) {
         return new PropertyDrawEditor(groupObject, getTypedObject(), this.form, remote);
     }
 

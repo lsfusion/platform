@@ -728,6 +728,10 @@ public class BaseUtils {
         return result;
     }
 
+    public static Object[] add(Object[] array1, Object element) {
+        return add(array1, new Object[] { element });
+    }
+
     public static Object[] add(Object[] array1,Object[] array2) {
         return add(array1,array2,objectInstancer);
     }

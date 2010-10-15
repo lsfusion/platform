@@ -1,5 +1,7 @@
 package platform.client.descriptor.nodes;
 
+import platform.base.BaseUtils;
+import platform.client.ClientTree;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.PropertyDrawDescriptor;
@@ -26,7 +28,7 @@ public class PropertyDrawFolder extends GroupElementFolder<PropertyDrawFolder> i
         }
     }
 
-    public void addNewElement(TreePath selectionPath) {
+    public Object[] addNewElement(TreePath selectionPath) {
         ClientPropertyDraw clientPropertyDraw = new ClientPropertyDraw();
         clientPropertyDraw.caption = "Новое свойство";
         clientPropertyDraw.columnGroupObjects = new ArrayList<ClientGroupObject>();
@@ -41,5 +43,7 @@ public class PropertyDrawFolder extends GroupElementFolder<PropertyDrawFolder> i
         }
 
         form.addPropertyDraw(propertyDraw);
+
+        return BaseUtils.add( ClientTree.convertTreePathToUserObjects(selectionPath), propertyDraw );
     }
 }

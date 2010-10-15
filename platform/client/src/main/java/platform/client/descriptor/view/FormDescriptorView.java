@@ -8,15 +8,12 @@ import platform.client.descriptor.nodes.actions.AddingTreeNode;
 import platform.client.descriptor.nodes.actions.EditingTreeNode;
 import platform.client.descriptor.nodes.FormNode;
 import platform.client.descriptor.nodes.PlainTextNode;
-import platform.client.descriptor.nodes.actions.FilterAction;
+import platform.client.PathFilteredAction;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.serialization.RemoteDescriptorInterface;
 
 import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
+import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -24,17 +21,18 @@ import java.io.IOException;
 
 public class FormDescriptorView extends JPanel implements IncrementView {
 
-    FormDescriptor form;
+    private FormDescriptor form;
 
-    ClientTree tree;
-    DefaultTreeModel model;
+    private ClientTree tree;
+    private DefaultTreeModel model;
 
-    JPanel view;
+    private EditorView view;
 
-    final RemoteDescriptorInterface remote;
+    private RemoteDescriptorInterface remote;
     private JButton previewBtn;
     private JButton saveBtn;
     private ClientNavigator navigator;
+    private TreePath editPath;
 
     public FormDescriptorView(ClientNavigator iNavigator, RemoteDescriptorInterface remote) {
         this.navigator = iNavigator;
@@ -43,9 +41,10 @@ public class FormDescriptorView extends JPanel implements IncrementView {
 
         setLayout(new BorderLayout());
 
-        view = new JPanel();
+        view = new EditorView();
 
         tree = new ClientTree();
+        tree.setCellRenderer(new MyTreeCellRenderer());
 
         tree.setDropMode(DropMode.ON);
         tree.setDragEnabled(true);
@@ -111,33 +110,30 @@ public class FormDescriptorView extends JPanel implements IncrementView {
         if(form!=null) {
             FormNode rootNode = new FormNode(form);
             rootNode.addSubTreeAction(
-                    new FilterAction("Редактировать") {
+                    new PathFilteredAction("Редактировать") {
                         public boolean isApplicable(TreePath path) {
                             return path != null && path.getLastPathComponent() instanceof EditingTreeNode;
                         }
 
                         public void actionPerformed(ActionEvent e) {
-                            DefaultMutableTreeNode node = tree.getSelectionNode();
-                            if (node instanceof EditingTreeNode) {
-                                view.removeAll();
-                                view.add(((EditingTreeNode) node).createEditor(form, remote));
-                                view.validate();
-                                view.updateUI();
-                            }
+                            editPath(tree.getSelectionPath());
                         }
                     });
 
             rootNode.addSubTreeAction(
-                    new FilterAction("Добавить") {
+                    new PathFilteredAction("Добавить") {
                         public boolean isApplicable(TreePath path) {
                             return path != null && path.getLastPathComponent() instanceof AddingTreeNode;
                         }
 
                         public void actionPerformed(ActionEvent e) {
-                            DefaultMutableTreeNode node = tree.getSelectionNode();
-                            if (node instanceof AddingTreeNode) {
-                                AddingTreeNode addingNode = (AddingTreeNode) node;
-                                addingNode.addNewElement(tree.getSelectionPath());
+                            if (view.validateEditor()) {
+                                DefaultMutableTreeNode node = tree.getSelectionNode();
+                                if (node instanceof AddingTreeNode) {
+                                    Object[] addedObjectPath = ((AddingTreeNode) node).addNewElement(tree.getSelectionPath());
+
+                                    editPath(tree.findPathByUserObjects(addedObjectPath));
+                                }
                             }
                         }
                     });
@@ -148,5 +144,48 @@ public class FormDescriptorView extends JPanel implements IncrementView {
 
         model = new DefaultTreeModel(refreshNode);
         tree.setModelPreservingState(model);
+    }
+
+    public void editPath(TreePath path) {
+        if (path == null) {
+            return;
+        }
+        
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
+        if (node instanceof EditingTreeNode) {
+            EditingTreeNode editingNode = (EditingTreeNode) node;
+            if (view.setEditor(editingNode.createEditor(form, remote))) {
+                editPath = path;
+
+                update(null, null);
+            }
+        }
+    }
+
+    class MyTreeCellRenderer extends DefaultTreeCellRenderer {
+        private Color backgroundSelectionColor;
+        private Color backgroundNonSelectionColor;
+
+        public MyTreeCellRenderer() {
+            super();
+
+            backgroundSelectionColor = getBackgroundSelectionColor();
+            backgroundNonSelectionColor = getBackgroundNonSelectionColor();
+        }
+
+        @Override
+        public Component getTreeCellRendererComponent(JTree iTree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+            Component renderer = super.getTreeCellRendererComponent(iTree, value, sel, expanded, leaf, row, hasFocus);
+
+            if (ClientTree.comparePathsByUserObjects(editPath, tree.getPathToRoot((TreeNode) value))) {
+                setBackgroundSelectionColor(Color.YELLOW.darker().darker());
+                setBackgroundNonSelectionColor(Color.YELLOW);
+            } else {
+                setBackgroundSelectionColor(backgroundSelectionColor);
+                setBackgroundNonSelectionColor(backgroundNonSelectionColor);
+            }
+
+            return renderer;
+        }
     }
 }
