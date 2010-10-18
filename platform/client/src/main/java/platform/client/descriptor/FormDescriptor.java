@@ -144,6 +144,13 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         return true;
     }
 
+    public boolean moveGroupObject(GroupObjectDescriptor groupFrom, int index) {
+        BaseUtils.moveElement(groupObjects, groupFrom, index);
+        BaseUtils.moveElement(client.groupObjects, groupFrom.client, index);
+        IncrementDependency.update(this, "groupObjects");
+        return true;
+    }
+
     public boolean movePropertyDraw(PropertyDrawDescriptor propFrom, PropertyDrawDescriptor propTo) {
         BaseUtils.moveElement(propertyDraws, propFrom, propTo);
         BaseUtils.moveElement(client.propertyDraws, propFrom.client, propTo.client);

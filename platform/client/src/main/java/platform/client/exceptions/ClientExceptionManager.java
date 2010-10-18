@@ -56,12 +56,12 @@ public class ClientExceptionManager {
             try {
                 String info = "Клиент: " + OSUtils.getLocalHostName() + ",Ошибка: " + message;
                 if (!isServer) {
-                    info += trace;
+                    info += erTrace;
                 }
                 Main.frame.remoteNavigator.clientExceptionLog(info);
             } catch (RemoteException exc) {
             }
-            Log.printFailedMessage(message, trace, parentComponent);
+            Log.printFailedMessage("Произошла ошибка во время выполнения : " + message, erTrace, parentComponent);
         }
 
         e.printStackTrace();
