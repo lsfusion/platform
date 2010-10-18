@@ -36,7 +36,14 @@ public class ContainerNode extends ComponentNode<ClientContainer, ContainerNode>
             ContainerNode parent = (ContainerNode) node.getParent();
 
             parent.getClientContainer().removeChild(component);
-            this.getClientContainer().addChild(component);
+
+            int index = ClientTree.getChildIndex(info);
+            if (index == -1) {
+                this.getClientContainer().addChild(component);
+            } else {
+                this.getClientContainer().addChild(index, component);
+            }
+
             return true;
         } else
             return false;
