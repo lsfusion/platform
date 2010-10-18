@@ -1,6 +1,8 @@
 package platform.client.exceptions;
 
+import platform.base.OSUtils;
 import platform.client.Log;
+import platform.client.Main;
 import platform.client.rmi.ConnectionLostManager;
 import platform.interop.exceptions.InternalServerException;
 
@@ -10,6 +12,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.rmi.ConnectException;
 import java.rmi.ConnectIOException;
+import java.rmi.RemoteException;
 import java.util.ConcurrentModificationException;
 
 public class ClientExceptionManager {
@@ -51,6 +54,10 @@ public class ClientExceptionManager {
         if (!(e instanceof ConcurrentModificationException) ||
                 !(erTrace.indexOf("bibliothek.gui.dock.themes.basic.action.buttons.ButtonPanel.setForeground(Unknown Source)") >= 0)) {
             Log.printFailedMessage(message, trace, parentComponent);
+            try {
+                Main.frame.remoteNavigator.clientExceptionLog("Клиент: " + OSUtils.getLocalHostName() + ",Ошибка: " + message + trace);
+            } catch (RemoteException exc) {
+            }
         }
 
         e.printStackTrace();

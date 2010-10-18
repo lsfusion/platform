@@ -51,7 +51,7 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
     @NonPendingRemoteMethod
     public RemoteFormInterface createForm(byte[] formState) throws RemoteException {
         return createForm(getImmutableMethodInvocations(RemoteFormProxy.class),
-                          MethodInvocation.create(this.getClass(), "createForm", formState));
+                MethodInvocation.create(this.getClass(), "createForm", formState));
     }
 
     @NonFlushRemoteMethod
@@ -96,5 +96,9 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
 
     public void relogin(String login) throws RemoteException {
         target.relogin(login);
+    }
+
+    public void clientExceptionLog(String info) throws RemoteException {
+        target.clientExceptionLog(info);
     }
 }

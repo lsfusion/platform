@@ -88,7 +88,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         }
     }
 
-    
+    public void clientExceptionLog(String info){
+        System.err.println(info);
+    }
 
     PropertyObjectInterfaceInstance computer;
     // просто закэшируем, чтобы быстрее было
