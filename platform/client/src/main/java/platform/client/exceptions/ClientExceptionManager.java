@@ -37,7 +37,8 @@ public class ClientExceptionManager {
         String message = e.getLocalizedMessage();
         String trace = "";
 
-        if (e.getCause() instanceof InternalServerException) {
+        boolean isServer = e.getCause() instanceof InternalServerException;
+        if (isServer) {
             trace = ((InternalServerException) e.getCause()).trace;
         } else {
             while (e instanceof RuntimeException && e.getCause() != null) {
@@ -46,18 +47,21 @@ public class ClientExceptionManager {
             }
         }
 
-        //message += "\n-----------\n";
         OutputStream os = new ByteArrayOutputStream();
         e.printStackTrace(new PrintStream(os));
         String erTrace = os.toString();
 
         if (!(e instanceof ConcurrentModificationException) ||
                 !(erTrace.indexOf("bibliothek.gui.dock.themes.basic.action.buttons.ButtonPanel.setForeground(Unknown Source)") >= 0)) {
-            Log.printFailedMessage(message, trace, parentComponent);
             try {
-                Main.frame.remoteNavigator.clientExceptionLog("Клиент: " + OSUtils.getLocalHostName() + ",Ошибка: " + message + trace);
+                String info = "Клиент: " + OSUtils.getLocalHostName() + ",Ошибка: " + message;
+                if (!isServer) {
+                    info += trace;
+                }
+                Main.frame.remoteNavigator.clientExceptionLog(info);
             } catch (RemoteException exc) {
             }
+            Log.printFailedMessage(message, trace, parentComponent);
         }
 
         e.printStackTrace();

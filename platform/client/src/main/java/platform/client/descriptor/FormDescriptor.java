@@ -110,7 +110,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
                 dataStream.writeBoolean(atLeastOne.contains(intClass.getKey()));
             }
 
-            DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(remote.getPropertyObjectsByteArray(outStream.toByteArray())));
+            DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(remote.getPropertyObjectsByteArray(outStream.toByteArray(), false)));
             ClientSerializationPool pool = new ClientSerializationPool();
 
             List<PropertyDescriptorImplement<Integer>> result = new ArrayList<PropertyDescriptorImplement<Integer>>();

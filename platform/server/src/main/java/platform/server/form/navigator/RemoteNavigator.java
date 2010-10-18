@@ -37,6 +37,7 @@ import platform.server.session.*;
 
 import java.io.*;
 import java.rmi.RemoteException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
@@ -71,8 +72,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         this.user = user;
 
         Modifier<? extends Changes> userModifier = new PropertyChangesModifier(Property.defaultModifier, new PropertyChanges(
-                BL.currentUser.property,new PropertyChange<PropertyInterface>(new HashMap<PropertyInterface, KeyExpr>(), user.getExpr(), Where.TRUE)));
-        for(DataSession session : sessions.keySet())
+                BL.currentUser.property, new PropertyChange<PropertyInterface>(new HashMap<PropertyInterface, KeyExpr>(), user.getExpr(), Where.TRUE)));
+        for (DataSession session : sessions.keySet())
             session.updateProperties(userModifier);
     }
 
@@ -80,7 +81,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         try {
             DataSession session = BL.createSession(this);
             Integer userId = (Integer) BL.loginToUser.read(session, new DataObject(login, StringClass.get(30)));
-            DataObject user =  session.getDataObject(userId, ObjectType.instance);
+            DataObject user = session.getDataObject(userId, ObjectType.instance);
             changeCurrentUser(user);
             session.close();
         } catch (Exception e) {
@@ -88,8 +89,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         }
     }
 
-    public void clientExceptionLog(String info){
-        System.err.println(info);
+    public void clientExceptionLog(String info) {
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat();
+        System.err.println(info + " в " +sdf.format(cal.getTime()));
     }
 
     PropertyObjectInterfaceInstance computer;
@@ -105,9 +108,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
             DataSession session = BL.createSession(this);
 
             ObjectOutputStream objectStream = new ObjectOutputStream(outStream);
-            Query<Object,String> query = new Query<Object,String>(new HashMap<Object, KeyExpr>());
+            Query<Object, String> query = new Query<Object, String>(new HashMap<Object, KeyExpr>());
             query.properties.put("name", BL.currentUserName.getExpr(session.modifier));
-            objectStream.writeObject(BaseUtils.nvl((String)query.execute(session).singleValue().get("name"),"(без имени)").trim());
+            objectStream.writeObject(BaseUtils.nvl((String) query.execute(session).singleValue().get("name"), "(без имени)").trim());
 
             session.close();
         } catch (Exception e) {
@@ -121,19 +124,19 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
 
         List<NavigatorElement> navigatorElements;
         switch (elementID) {
-            case (RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTFORM) :
+            case (RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTFORM):
                 if (currentForm == null)
                     navigatorElements = new ArrayList();
                 else
                     navigatorElements = new ArrayList(currentForm.entity.relevantElements);
                 break;
-            case (RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTCLASS) :
+            case (RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTCLASS):
                 if (currentClass == null)
                     navigatorElements = new ArrayList();
                 else
                     return currentClass.getRelevantElements(BL, securityPolicy);
                 break;
-            default :
+            default:
                 navigatorElements = getElements(BL.baseElement.getNavigatorElement(elementID));
         }
 
@@ -175,8 +178,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
 
     //используется для RelevantClassNavigator
     CustomClass currentClass;
+
     public boolean changeCurrentClass(ConcreteCustomClass customClass) {
-        if (currentClass!=null && currentClass.equals(customClass)) return false;
+        if (currentClass != null && currentClass.equals(customClass)) return false;
 
         currentClass = customClass;
         return true;
@@ -192,16 +196,16 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
 
     private FormEntity<T> getFormEntity(int formID) {
         FormEntity<T> formEntity = (FormEntity) BL.baseElement.getNavigatorElement(formID);
-        if(formEntity ==null)
+        if (formEntity == null)
             throw new RuntimeException("Форма с заданным идентификатором не найдена");
 
-         if (!securityPolicy.navigator.checkPermission(formEntity)) return null;
-         return formEntity;
+        if (!securityPolicy.navigator.checkPermission(formEntity)) return null;
+        return formEntity;
     }
 
     private void setFormEntity(int formID, FormEntity<T> formEntity) {
         FormEntity<T> prevEntity = (FormEntity) BL.baseElement.getNavigatorElement(formID);
-        if(prevEntity ==null)
+        if (prevEntity == null)
             throw new RuntimeException("Форма с заданным идентификатором не найдена");
 
         prevEntity.getParent().replaceChild(prevEntity, formEntity);
@@ -217,7 +221,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
 
     public RemoteFormInterface createForm(FormEntity<T> formEntity, boolean currentSession) {
 
-       try {
+        try {
             DataSession session;
             if (currentSession && currentForm != null)
                 session = currentForm.session;
@@ -226,24 +230,24 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
                 sessions.put(session, true);
             }
 
-           FormInstance<T> formInstance = new FormInstance<T>(formEntity, BL, session, securityPolicy, this, this, computer);
+            FormInstance<T> formInstance = new FormInstance<T>(formEntity, BL, session, securityPolicy, this, this, computer);
 
             for (GroupObjectInstance groupObject : formInstance.groups) {
-                Map<OrderInstance,Object> userSeeks = new HashMap<OrderInstance, Object>();
+                Map<OrderInstance, Object> userSeeks = new HashMap<OrderInstance, Object>();
                 for (ObjectInstance object : groupObject.objects)
-                    if(object instanceof CustomObjectInstance) {
-                        Integer objectID = classCache.getObject(((CustomObjectInstance)object).baseClass);
+                    if (object instanceof CustomObjectInstance) {
+                        Integer objectID = classCache.getObject(((CustomObjectInstance) object).baseClass);
                         if (objectID != null)
                             userSeeks.put(object, objectID);
                     }
-                if(!userSeeks.isEmpty())
-                    formInstance.userGroupSeeks.put(groupObject,userSeeks);
+                if (!userSeeks.isEmpty())
+                    formInstance.userGroupSeeks.put(groupObject, userSeeks);
             }
 
-            return new RemoteForm<T, FormInstance<T>>(formInstance, formEntity.getRichDesign(), exportPort,this);
+            return new RemoteForm<T, FormInstance<T>>(formInstance, formEntity.getRichDesign(), exportPort, this);
 
         } catch (Exception e) {
-           throw new RuntimeException(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -253,7 +257,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     }
 
     public void saveForm(int formID, byte[] formState) throws RemoteException {
-        setFormEntity(formID, (FormEntity<T>)FormEntity.deserialize(BL, formState));
+        setFormEntity(formID, (FormEntity<T>) FormEntity.deserialize(BL, formState));
 
         try {
             IOUtils.putFileBytes(new File("conf/forms/form" + formID), formState);

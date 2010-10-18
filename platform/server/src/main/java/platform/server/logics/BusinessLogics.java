@@ -17,9 +17,7 @@ import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.RemoteObject;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.data.expr.VariableClassExpr;
 import platform.server.data.type.TypeSerializer;
-import platform.server.data.where.classes.AbstractClassWhere;
 import platform.server.net.ServerSocketFactory;
 import platform.server.auth.PolicyManager;
 import platform.server.auth.SecurityPolicy;
@@ -3041,7 +3039,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    public byte[] getPropertyObjectsByteArray(byte[] byteClasses) {
+    public byte[] getPropertyObjectsByteArray(byte[] byteClasses, boolean isCompulsory) {
         try {
             DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(byteClasses));
 
@@ -3070,7 +3068,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             ArrayList<ArrayList<Integer>> idResult = new ArrayList<ArrayList<Integer>>();
             for (Object key : propertiesMap.keySet()) {
                 List list = (List) propertiesMap.get(key);
-                addPropertiesFixedSize(classes, atLeastOne, list, result, idResult);
+                addPropertiesFixedSize(classes, atLeastOne, list, result, idResult, isCompulsory);
             }
 
             dataStream.writeInt(result.size());
@@ -3090,17 +3088,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    private void addPropertiesFixedSize(Map<Integer, ValueClass> classes, Set<Integer> atLeastOne, List list, ArrayList<Property> result, ArrayList<ArrayList<Integer>> idResult) {
+    private void addPropertiesFixedSize(Map<Integer, ValueClass> classes, Set<Integer> atLeastOne, List list, ArrayList<Property> result, ArrayList<ArrayList<Integer>> idResult, boolean isCompulsory) {
         int size = classes.size();
         int interfaceSize = ((Property) list.get(0)).interfaces.size();
         int perm[] = new int[size];
-        checkPerm(size, interfaceSize, 1, perm, classes, atLeastOne, list, result, idResult);
+        checkPerm(size, interfaceSize, 1, perm, classes, atLeastOne, list, result, idResult, isCompulsory);
     }
 
     //n - сколько всего
     //n - сколько надо поставить
     //k - какой по счету сейчас ставим
-    private void checkPerm(int n, int m, int k, int[] perm, Map<Integer, ValueClass> classes, Set<Integer> atLeastOne, List list, ArrayList<Property> result, ArrayList<ArrayList<Integer>> idResult) {
+    private void checkPerm(int n, int m, int k, int[] perm, Map<Integer, ValueClass> classes, Set<Integer> set, List list, ArrayList<Property> result, ArrayList<ArrayList<Integer>> idResult, boolean isCompulsory) {
         if (k == m + 1) {
             Integer id[] = (Integer[]) classes.keySet().toArray(new Integer[classes.keySet().size()]);
             ArrayList<ValueClass> values = new ArrayList<ValueClass>(m);
@@ -3118,13 +3116,23 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
 
             boolean found = false;
-            for (Integer i : ids) {
-                if (atLeastOne.contains(i)) {
-                    found = true;
-                    break;
+            if (isCompulsory) {
+                for (Integer i : set) {
+                    if (!ids.contains(i)) {
+                        found = true;
+                        break;
+                    }
+                }
+            } else {
+                for (Integer i : ids) {
+                    if (set.contains(i)) {
+                        found = true;
+                        break;
+                    }
                 }
             }
-            if (!found && !atLeastOne.isEmpty()) {
+
+            if (!found && !set.isEmpty()) {
                 return;
             }
 
@@ -3146,7 +3154,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             for (int i = 0; i < n; i++) {
                 if (perm[i] == 0) {
                     perm[i] = k;
-                    checkPerm(n, m, k + 1, perm, classes, atLeastOne, list, result, idResult);
+                    checkPerm(n, m, k + 1, perm, classes, set, list, result, idResult, isCompulsory);
                     perm[i] = 0;
                 }
             }

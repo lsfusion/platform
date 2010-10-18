@@ -82,7 +82,7 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         target.ping();
     }
 
-    public byte[] getPropertyObjectsByteArray(byte[] classes) throws RemoteException {
-        return target.getPropertyObjectsByteArray(classes);
+    public byte[] getPropertyObjectsByteArray(byte[] classes, boolean isCompulsory) throws RemoteException {
+        return target.getPropertyObjectsByteArray(classes, isCompulsory);
     }
 }
