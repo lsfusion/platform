@@ -118,7 +118,11 @@ public class FormDescriptorView extends JPanel implements IncrementView {
         }
 
         model = new DefaultTreeModel(refreshNode);
-        tree.setModelPreservingState(model);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                tree.setModelPreservingState(model);
+            }
+        });
     }
 
     private void addActions(FormNode formNode) {
