@@ -9,6 +9,7 @@ import platform.client.descriptor.nodes.actions.AddableTreeNode;
 import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientPropertyDraw;
 
+import javax.swing.*;
 import javax.swing.tree.TreePath;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,5 +46,15 @@ public class PropertyDrawFolder extends GroupElementFolder<PropertyDrawFolder> i
         form.addPropertyDraw(propertyDraw);
 
         return BaseUtils.add( ClientTree.convertTreePathToUserObjects(selectionPath), propertyDraw );
+    }
+
+    @Override
+    public boolean canImport(TransferHandler.TransferSupport info) {
+        return ClientTree.getNode(info) instanceof PropertyDrawNode;
+    }
+
+    @Override
+    public boolean importData(ClientTree tree, TransferHandler.TransferSupport info) {
+        return form.movePropertyDraw((PropertyDrawDescriptor)ClientTree.getNode(info).getTypedObject(), ClientTree.getChildIndex(info));
     }
 }

@@ -151,6 +151,13 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         return true;
     }
 
+    public boolean movePropertyDraw(PropertyDrawDescriptor propFrom, int index) {
+        BaseUtils.moveElement(propertyDraws, propFrom, index);
+        BaseUtils.moveElement(client.propertyDraws, propFrom.client, index);
+        IncrementDependency.update(this, "propertyDraws");
+        return true;
+    }
+
     public boolean addPropertyDraw(PropertyDrawDescriptor propertyDraw) {
         propertyDraws.add(propertyDraw);
         client.propertyDraws.add(propertyDraw.client);

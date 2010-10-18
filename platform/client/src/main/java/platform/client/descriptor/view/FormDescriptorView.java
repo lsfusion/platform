@@ -47,7 +47,7 @@ public class FormDescriptorView extends JPanel implements IncrementView {
         tree = new ClientTree();
         tree.setCellRenderer(new MyTreeCellRenderer());
 
-        tree.setDropMode(DropMode.ON);
+        tree.setDropMode(DropMode.ON_OR_INSERT);
         tree.setDragEnabled(true);
 
         previewBtn = new JButton("Предпросмотр формы");

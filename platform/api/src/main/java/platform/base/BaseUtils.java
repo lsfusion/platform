@@ -406,6 +406,19 @@ public class BaseUtils {
         list.add(list.indexOf(elemTo) + (up ? 0 : 1), elemFrom);
     }
 
+    public static <K> void moveElement(List<K> list, K elemFrom, int index) {
+
+        if (index == -1) {
+            list.remove(elemFrom);
+            list.add(elemFrom);
+        } else {
+            boolean up = list.indexOf(elemFrom) > index;
+
+            list.remove(elemFrom);
+            list.add(index + (up ? 0 : -1), elemFrom);
+        }
+    }
+
     public static int max(int a,int b) {
         return a>b?a:b;
     }

@@ -278,6 +278,10 @@ public class ClientTree extends JTree {
         }
     }
 
+    public static int getChildIndex(TransferHandler.TransferSupport info) {
+        return ((JTree.DropLocation)info.getDropLocation()).getChildIndex();
+    }
+
     public static Object[] convertTreePathToUserObjects(TreePath path) {
         if (path == null) {
             return null;
