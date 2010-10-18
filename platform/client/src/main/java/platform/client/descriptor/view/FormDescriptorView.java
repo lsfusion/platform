@@ -34,6 +34,7 @@ public class FormDescriptorView extends JPanel implements IncrementView {
     private JButton saveBtn;
     private ClientNavigator navigator;
     private TreePath editPath;
+    private Object[] addedObjectPath;
 
     public FormDescriptorView(ClientNavigator iNavigator, RemoteDescriptorInterface remote) {
         this.navigator = iNavigator;
@@ -106,21 +107,24 @@ public class FormDescriptorView extends JPanel implements IncrementView {
     }
 
     public void update(Object updateObject, String updateField) {
-
-        TreeNode refreshNode;
-        if (form != null) {
-            FormNode rootNode = new FormNode(form);
-            addActions(rootNode);
-
-            refreshNode = rootNode;
-        } else {
-            refreshNode = new PlainTextNode("Форма не выбрана");
-        }
-
-        model = new DefaultTreeModel(refreshNode);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                TreeNode refreshNode;
+                if (form != null) {
+                    FormNode rootNode = new FormNode(form);
+                    addActions(rootNode);
+
+                    refreshNode = rootNode;
+                } else {
+                    refreshNode = new PlainTextNode("Форма не выбрана");
+                }
+
+                model = new DefaultTreeModel(refreshNode);
                 tree.setModelPreservingState(model);
+                if (addedObjectPath != null) {
+                    editPath(tree.findPathByUserObjects(addedObjectPath));
+                    addedObjectPath = null;
+                }
             }
         });
     }
@@ -139,9 +143,7 @@ public class FormDescriptorView extends JPanel implements IncrementView {
                         if (view.validateEditor()) {
                             DefaultMutableTreeNode node = tree.getSelectionNode();
                             if (node instanceof AddableTreeNode) {
-                                Object[] addedObjectPath = ((AddableTreeNode) node).addNewElement(tree.getSelectionPath());
-
-                                editPath(tree.findPathByUserObjects(addedObjectPath));
+                                addedObjectPath = ((AddableTreeNode) node).addNewElement(tree.getSelectionPath());
                             }
                         }
                     }
@@ -153,7 +155,7 @@ public class FormDescriptorView extends JPanel implements IncrementView {
                         DefaultMutableTreeNode node = tree.getSelectionNode();
                         if (node instanceof DeletableTreeNode) {
                             if (editPath != null && editPath.equals(tree.getSelectionPath())) {
-                                view.removeEditor(); 
+                                view.removeEditor();
                             }
                             ((DeletableTreeNode) node).deleteNode(tree.getSelectionPath());
                         }
