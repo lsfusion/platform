@@ -309,36 +309,39 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
 
     private void fillSiblingsConstraint(LpSolve solver, Component parent) throws LpSolveException {
 
+        // здесь будут хранится Component в том же порядке, что и в ClientContainer children
         List<Component> contComponents = new ArrayList<Component>();
 
         // если для этого объекта есть свой ClientContainer
-        if (constraints.containsKey(parent) && constraints.get(parent) instanceof ClientContainer) {
+        if (constraints.get(parent) instanceof ClientContainer) {
+
+            ClientContainer parentContainer = (ClientContainer)constraints.get(parent);
+
+            Map<ClientComponent, Component> mapComp = new HashMap<ClientComponent, Component>();
+
+            for (Component comp : components) {
+                if (comp.getParent() == parent && constraints.containsKey(comp) && parentContainer.children.contains(constraints.get(comp))) {
+                    mapComp.put(constraints.get(comp), comp);
+                }
+            }
+
+            for (ClientComponent comp : parentContainer.children) {
+                if (mapComp.containsKey(comp))
+                    contComponents.add(mapComp.get(comp));
+            }
         }
 
         for (Component comp : components)
-            if (comp.getParent() == parent) {
+            if (comp.getParent() == parent && !contComponents.contains(comp)) {
                 contComponents.add(comp);
             }
+
+        int compCount = contComponents.size();
+        if (compCount < 2) return;
 
         SimplexConstraints parentConstraints = getConstraint(parent);
 
         int maxVar = parentConstraints.maxVariables;
-
-        int compCount = 0;
-        //упорядочиваем компоненты по их order'у и запихиваем в comporder
-        TreeMap<Integer, ArrayList<Component>> comporder = new TreeMap<Integer, ArrayList<Component>>();
-        for (Component comp : contComponents) {
-            Integer order = getConstraint(comp).order;
-            ArrayList<Component> alc = comporder.get(order);
-            if (alc == null) alc = new ArrayList<Component>();
-            alc.add(comp);
-            comporder.put(order, alc);
-            compCount++;
-        }
-
-        if (compCount < 2) return;
-
-        List<Component> order = new ArrayList<Component>();
 
         Map<Component, SimplexSolverDirections> vars = new HashMap<Component, SimplexSolverDirections>();
 
@@ -348,26 +351,18 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
 
         SimplexSolverDirections curDir = null;
         int curCol = 0;
-
-        Iterator<Integer> it = comporder.navigableKeySet().iterator();
         int curCount = 0;
-        while (it.hasNext()) {
+        for (Component comp : contComponents) {
 
-            ArrayList<Component> complist = comporder.get(it.next());
+            if (curCol == 0 && maxCol > 1 && compCount - curCount > 1)
+                curDir = new SimplexSolverDirections(solver, parentConstraints.childConstraints.forbDir);
 
-            for (Component comp : complist) {
+            vars.put(comp, curDir);
 
-                if (curCol == 0 && maxCol > 1 && compCount - curCount > 1)
-                    curDir = new SimplexSolverDirections(solver, parentConstraints.childConstraints.forbDir);
-
-                order.add(comp);
-                vars.put(comp, curDir);
-
-                curCount++;
-                curCol++;
-                if (curCol == maxCol) {
-                    curCol = 0;
-                }
+            curCount++;
+            curCol++;
+            if (curCol == maxCol) {
+                curCol = 0;
             }
         }
 
@@ -409,8 +404,8 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
                         if (intersects.get(comp1).get(comp2) != null || intersects.get(comp2).get(comp1) != null)
                             continue;
 
-                        int order1 = order.indexOf(comp1);
-                        int order2 = order.indexOf(comp2);
+                        int order1 = contComponents.indexOf(comp1);
+                        int order2 = contComponents.indexOf(comp2);
 
                         if (order1 > order2)
                             continue;

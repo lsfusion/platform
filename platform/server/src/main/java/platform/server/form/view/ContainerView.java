@@ -27,13 +27,44 @@ public class ContainerView extends ComponentView {
 
     List<ComponentView> children = new ArrayList<ComponentView>();
 
-    public void add(ComponentView comp) {
-
+    private void changeContainer(ComponentView comp) {
         if (comp.getContainer() != null)
             comp.getContainer().remove(comp);
 
         comp.setContainer(this);
+    }
+
+    public void add(ComponentView comp) {
+        changeContainer(comp);
         children.add(comp);
+    }
+
+    public void add(int index, ComponentView comp) {
+        changeContainer(comp);
+        children.add(index, comp);
+    }
+
+    public void addBack(int index, ComponentView comp) {
+        changeContainer(comp);
+        children.add(children.size() - index, comp);
+    }
+
+    public void addBefore(ComponentView comp, ComponentView compBefore) {
+        if (!children.contains(compBefore))
+            add(comp);
+        else {
+            changeContainer(comp);
+            children.add(children.indexOf(compBefore) + 1, comp);
+        }
+    }
+
+    public void addAfter(ComponentView comp, ComponentView compAfter) {
+        if (!children.contains(compAfter))
+            add(comp);
+        else {
+            changeContainer(comp);
+            children.add(children.indexOf(compAfter) + 1, comp);
+        }
     }
 
     private void remove(ComponentView comp) {

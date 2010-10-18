@@ -33,6 +33,8 @@ public class DefaultFormView extends FormView {
     private transient Map<GroupObjectView, ContainerView> panelContainers = new HashMap<GroupObjectView, ContainerView>();
     public ContainerView getPanelContainer(GroupObjectView groupObject) { return panelContainers.get(groupObject); }
 
+    private transient Map<GroupObjectView, ContainerView> controlsContainers = new HashMap<GroupObjectView, ContainerView>();
+
     private transient Map<GroupObjectView, Map<AbstractGroup, ContainerView>> groupPropertyContainers = new HashMap<GroupObjectView, Map<AbstractGroup, ContainerView>>();
 
     private transient Map<GroupObjectView, ContainerView> groupContainers = new HashMap<GroupObjectView, ContainerView>();
@@ -62,7 +64,6 @@ public class DefaultFormView extends FormView {
 
             ContainerView groupContainer = addContainer(group.get(0).caption); // контейнер всей группы
             groupContainer.description = "Группа объектов";
-            groupContainer.constraints.order = formEntity.groups.indexOf(group);
             groupContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
             mainContainer.add(groupContainer);
 
@@ -70,40 +71,31 @@ public class DefaultFormView extends FormView {
 
             ContainerView gridContainer = addContainer(); // контейнер грида внутрь
             gridContainer.description = "Табличная часть";
-            gridContainer.constraints.order = 0;
             gridContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
             groupContainer.add(gridContainer);
 
             ContainerView panelContainer = addContainer(); // контейнер панели
             panelContainer.description = "Панель";
-            panelContainer.constraints.order = 1;
             groupContainer.add(panelContainer);
 
             panelContainers.put(clientGroup, panelContainer);
 
             ContainerView controlsContainer = addContainer(); // контейнер всех управляющих объектов
             controlsContainer.description = "Управляющие объекты";
-            controlsContainer.constraints.order = 10000;
             controlsContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
             controlsContainer.constraints.insetsInside = new Insets(0,0,0,0);
             controlsContainer.constraints.insetsSibling = new Insets(0,0,0,0);
-            panelContainer.add(controlsContainer);
 
-            clientGroup.grid.constraints.order = 1;
-            clientGroup.grid.constraints.fillVertical = 1;
-            clientGroup.grid.constraints.fillHorizontal = 1;
-            gridContainer.add(clientGroup.grid);
+            controlsContainers.put(clientGroup, controlsContainer);
 
             for (ObjectView clientObject : clientGroup) {
 
-                clientObject.classChooser.constraints.order = 0;
                 clientObject.classChooser.constraints.fillVertical = 1;
                 clientObject.classChooser.constraints.fillHorizontal = 0.2;
                 gridContainer.add(clientObject.classChooser);
 
                 ContainerView filterContainer = addContainer(); // контейнер фильтров
                 filterContainer.description = "Контейнер фильтров";
-                filterContainer.constraints.order = clientGroup.indexOf(clientObject);
                 filterContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
                 controlsContainer.add(filterContainer);
 
@@ -112,7 +104,10 @@ public class DefaultFormView extends FormView {
                 mobjects.put(clientObject.entity, clientObject);
             }
 
-            clientGroup.showType.constraints.order = clientGroup.size();
+            clientGroup.grid.constraints.fillVertical = 1;
+            clientGroup.grid.constraints.fillHorizontal = 1;
+            gridContainer.add(clientGroup.grid);
+
             clientGroup.showType.constraints.directions = new SimplexComponentDirections(0.01,0,0,0.01);
             controlsContainer.add(clientGroup.showType);
         }
@@ -120,7 +115,6 @@ public class DefaultFormView extends FormView {
         for (PropertyDrawEntity control : formEntity.propertyDraws) {
 
             PropertyDrawView clientProperty = new PropertyDrawView(idGenerator.idShift(), this, control);
-            clientProperty.constraints.order = formEntity.propertyDraws.indexOf(control);
             clientProperty.constraints.insetsSibling = new Insets(0,0,2,2);
 
             GroupObjectEntity groupDraw = formEntity.forceDefaultDraw.get(control);
@@ -149,52 +143,46 @@ public class DefaultFormView extends FormView {
                 groupObjects.addAll(formEntity.getApplyObject(regFilter.filter.getObjects()));
 
             RegularFilterGroupView filterGroupView = new RegularFilterGroupView(idGenerator.idShift(), filterGroup);
-            filterGroupView.constraints.order = 3 + formEntity.regularFilterGroups.indexOf(filterGroup);
             filterGroupView.constraints.insetsSibling = new Insets(0,4,2,4);
             filterContainers.get(mgroupObjects.get(formEntity.getApplyObject(groupObjects)).get(0)).add(filterGroupView);
 
             regularFilters.add(filterGroupView);
         }
 
+        for (GroupObjectEntity group : formEntity.groups) {
+            panelContainers.get(mgroupObjects.get(group)).add(controlsContainers.get(mgroupObjects.get(group)));
+        }
+
         ContainerView formButtonContainer = addContainer();
         formButtonContainer.description = "Служебные кнопки";
-        formButtonContainer.constraints.order = 1000; // начинаем с очень большого числа, поскольку в mainContainer могут попадать и свойства, если toDraw == null
         formButtonContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
         mainContainer.add(formButtonContainer);
 
-        printFunction.constraints.order = 0;
         printFunction.constraints.directions = new SimplexComponentDirections(0,0.01,0.01,0);
         formButtonContainer.add(printFunction);
 
-        xlsFunction.constraints.order = 1;
         xlsFunction.constraints.directions = new SimplexComponentDirections(0,0.01,0.01,0);
         formButtonContainer.add(xlsFunction);
 
-        nullFunction.constraints.order = 2;
         nullFunction.constraints.directions = new SimplexComponentDirections(0,0.01,0.01,0);
         formButtonContainer.add(nullFunction);
 
-        refreshFunction.constraints.order = 3;
         refreshFunction.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
         formButtonContainer.add(refreshFunction);
 
-        applyFunction.constraints.order = 4;
         applyFunction.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
         formButtonContainer.add(applyFunction);
 
         applyFunction.constraints.insetsSibling = new Insets(0, 8, 0, 0);
 
-        cancelFunction.constraints.order = 5;
         cancelFunction.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
         formButtonContainer.add(cancelFunction);
 
         okFunction.constraints.insetsSibling = new Insets(0, 8, 0, 0);
 
-        okFunction.constraints.order = 6;
         okFunction.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
         formButtonContainer.add(okFunction);
 
-        closeFunction.constraints.order = 7;
         closeFunction.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
         formButtonContainer.add(closeFunction);
 
@@ -202,8 +190,6 @@ public class DefaultFormView extends FormView {
     }
 
     private void addComponent(GroupObjectView groupObject, ComponentView childComponent, AbstractGroup groupAbstract) {
-
-        int order = childComponent.constraints.order;
 
         while (groupAbstract != null) {
 
@@ -221,7 +207,6 @@ public class DefaultFormView extends FormView {
                 groupPropertyContainer = groupPropertyContainers.get(groupObject).get(groupAbstract);
             else {
                 groupPropertyContainer = addContainer(groupAbstract.caption);
-                groupPropertyContainer.constraints.order = order;
                 groupPropertyContainers.get(groupObject).put(groupAbstract, groupPropertyContainer);
             }
 

@@ -7,8 +7,6 @@ import java.util.Map;
 
 public class SimplexConstraints<T> implements Serializable {
 
-    public int order = 0;
-
     public static final SimplexConstraints DEFAULT_CONSTRAINT = new SimplexConstraints();
 
     public DoNotIntersectSimplexConstraint childConstraints = SingleSimplexConstraint.TOTHE_RIGHTBOTTOM;
