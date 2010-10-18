@@ -3008,7 +3008,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            //To change body of implemented methods use File | Settings | File Templates.
             FormInstance<?> remoteForm = executeForm.form;
             DataSession session = remoteForm.session;
             if (addProperty.read(session, new HashMap(), remoteForm) != null) {

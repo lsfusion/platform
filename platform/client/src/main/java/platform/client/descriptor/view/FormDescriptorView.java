@@ -1,14 +1,15 @@
 package platform.client.descriptor.view;
 
+import platform.client.ClassFilteredAction;
 import platform.client.ClientTree;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.increment.IncrementView;
-import platform.client.descriptor.nodes.actions.AddingTreeNode;
-import platform.client.descriptor.nodes.actions.EditingTreeNode;
 import platform.client.descriptor.nodes.FormNode;
 import platform.client.descriptor.nodes.PlainTextNode;
-import platform.client.PathFilteredAction;
+import platform.client.descriptor.nodes.actions.AddableTreeNode;
+import platform.client.descriptor.nodes.actions.DeletableTreeNode;
+import platform.client.descriptor.nodes.actions.EditableTreeNode;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.serialization.RemoteDescriptorInterface;
 
@@ -95,7 +96,7 @@ public class FormDescriptorView extends JPanel implements IncrementView {
         IncrementDependency.add(this, "form", this);
     }
 
-    public void setModel(FormDescriptor form) {
+    public void setForm(FormDescriptor form) {
         this.form = form;
 
         previewBtn.setEnabled(form != null);
@@ -107,53 +108,63 @@ public class FormDescriptorView extends JPanel implements IncrementView {
     public void update(Object updateObject, String updateField) {
 
         TreeNode refreshNode;
-        if(form!=null) {
+        if (form != null) {
             FormNode rootNode = new FormNode(form);
-            rootNode.addSubTreeAction(
-                    new PathFilteredAction("Редактировать") {
-                        public boolean isApplicable(TreePath path) {
-                            return path != null && path.getLastPathComponent() instanceof EditingTreeNode;
-                        }
-
-                        public void actionPerformed(ActionEvent e) {
-                            editPath(tree.getSelectionPath());
-                        }
-                    });
-
-            rootNode.addSubTreeAction(
-                    new PathFilteredAction("Добавить") {
-                        public boolean isApplicable(TreePath path) {
-                            return path != null && path.getLastPathComponent() instanceof AddingTreeNode;
-                        }
-
-                        public void actionPerformed(ActionEvent e) {
-                            if (view.validateEditor()) {
-                                DefaultMutableTreeNode node = tree.getSelectionNode();
-                                if (node instanceof AddingTreeNode) {
-                                    Object[] addedObjectPath = ((AddingTreeNode) node).addNewElement(tree.getSelectionPath());
-
-                                    editPath(tree.findPathByUserObjects(addedObjectPath));
-                                }
-                            }
-                        }
-                    });
+            addActions(rootNode);
 
             refreshNode = rootNode;
-        } else
+        } else {
             refreshNode = new PlainTextNode("Форма не выбрана");
+        }
 
         model = new DefaultTreeModel(refreshNode);
         tree.setModelPreservingState(model);
+    }
+
+    private void addActions(FormNode formNode) {
+        formNode.addSubTreeAction(
+                new ClassFilteredAction("Редактировать", EditableTreeNode.class) {
+                    public void actionPerformed(ActionEvent e) {
+                        editPath(tree.getSelectionPath());
+                    }
+                });
+
+        formNode.addSubTreeAction(
+                new ClassFilteredAction("Добавить", AddableTreeNode.class) {
+                    public void actionPerformed(ActionEvent e) {
+                        if (view.validateEditor()) {
+                            DefaultMutableTreeNode node = tree.getSelectionNode();
+                            if (node instanceof AddableTreeNode) {
+                                Object[] addedObjectPath = ((AddableTreeNode) node).addNewElement(tree.getSelectionPath());
+
+                                editPath(tree.findPathByUserObjects(addedObjectPath));
+                            }
+                        }
+                    }
+                });
+
+        formNode.addSubTreeAction(
+                new ClassFilteredAction("Удалить", DeletableTreeNode.class) {
+                    public void actionPerformed(ActionEvent e) {
+                        DefaultMutableTreeNode node = tree.getSelectionNode();
+                        if (node instanceof DeletableTreeNode) {
+                            if (editPath != null && editPath.equals(tree.getSelectionPath())) {
+                                view.removeEditor(); 
+                            }
+                            ((DeletableTreeNode) node).deleteNode(tree.getSelectionPath());
+                        }
+                    }
+                });
     }
 
     public void editPath(TreePath path) {
         if (path == null) {
             return;
         }
-        
+
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
-        if (node instanceof EditingTreeNode) {
-            EditingTreeNode editingNode = (EditingTreeNode) node;
+        if (node instanceof EditableTreeNode) {
+            EditableTreeNode editingNode = (EditableTreeNode) node;
             if (view.setEditor(editingNode.createEditor(form, remote))) {
                 editPath = path;
 

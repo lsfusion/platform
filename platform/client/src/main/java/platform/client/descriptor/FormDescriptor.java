@@ -158,4 +158,12 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         IncrementDependency.update(this, "propertyDraws");
         return true;
     }
+
+    public boolean removePropertyDraw(PropertyDrawDescriptor propertyDraw) {
+        propertyDraws.remove(propertyDraw);
+        client.removePropertyDraw(propertyDraw.client);
+
+        IncrementDependency.update(this, "propertyDraws");
+        return true;
+    }
 }

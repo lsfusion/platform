@@ -18,7 +18,9 @@ public class EditorView extends JPanel {
         editor = iEditor;
 
         removeAll();
-        add(iEditor.getComponent());
+        if (editor != null) {
+            add(editor.getComponent());
+        }
         validate();
         updateUI();
 
@@ -27,5 +29,12 @@ public class EditorView extends JPanel {
 
     public boolean validateEditor() {
         return editor == null || editor.validateEditor();
+    }
+
+    public void removeEditor() {
+        editor = null;
+        removeAll();
+        validate();
+        updateUI();
     }
 }

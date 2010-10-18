@@ -6,11 +6,13 @@ import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.editor.PropertyDrawEditor;
 import platform.client.descriptor.editor.base.NodeEditor;
+import platform.client.descriptor.nodes.actions.DeletableTreeNode;
 import platform.interop.serialization.RemoteDescriptorInterface;
 
 import javax.swing.*;
+import javax.swing.tree.TreePath;
 
-public class PropertyDrawNode extends GroupElementNode<PropertyDrawDescriptor, PropertyDrawNode> {
+public class PropertyDrawNode extends GroupElementNode<PropertyDrawDescriptor, PropertyDrawNode> implements DeletableTreeNode {
 
     private FormDescriptor form;
 
@@ -18,10 +20,6 @@ public class PropertyDrawNode extends GroupElementNode<PropertyDrawDescriptor, P
         super(groupObject, userObject);
 
         this.form = form;
-    }
-
-    public NodeEditor createEditor(FormDescriptor form, RemoteDescriptorInterface remote) {
-        return new PropertyDrawEditor(groupObject, getTypedObject(), this.form, remote);
     }
 
     @Override
@@ -32,5 +30,13 @@ public class PropertyDrawNode extends GroupElementNode<PropertyDrawDescriptor, P
     @Override
     public boolean importData(ClientTree tree, TransferHandler.TransferSupport info) {
         return form.movePropertyDraw(getSiblingNode(info).getTypedObject(), getTypedObject());
+    }
+
+    public NodeEditor createEditor(FormDescriptor form, RemoteDescriptorInterface remote) {
+        return new PropertyDrawEditor(groupObject, getTypedObject(), this.form, remote);
+    }
+
+    public boolean deleteNode(TreePath selectionPath) {
+        return form.removePropertyDraw(getTypedObject());
     }
 }

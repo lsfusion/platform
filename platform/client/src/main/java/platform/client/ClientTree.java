@@ -49,23 +49,6 @@ public class ClientTree extends JTree {
         return new TreePath(getModel().getPathToRoot(treeNode));
     }
 
-    public static abstract class NodeProcessor {
-        public abstract void process(TreePath path);
-    }
-
-    public void traverseNodes(TreePath parent, NodeProcessor nodeProcessor) {
-        TreeNode node = (TreeNode) parent.getLastPathComponent();
-        if ( node.getChildCount() >= 0){
-            for (Enumeration e = node.children(); e.hasMoreElements();) {
-                TreeNode n = (TreeNode) e.nextElement();
-                TreePath path = parent.pathByAddingChild(n);
-                traverseNodes(path, nodeProcessor);
-            }
-        }
-
-        nodeProcessor.process(parent);
-    }
-
     public void setModelPreservingState(DefaultTreeModel newModel) {
         if (treeModel == null || newModel == null) {
             setModel(newModel);
@@ -79,20 +62,21 @@ public class ClientTree extends JTree {
         final TreePath selectionPath = getSelectionPath();
 
         setModel(newModel);
-        traverseNodes(new TreePath(treeModel.getRoot()), new NodeProcessor() {
-            @Override
-            public void process(TreePath path) {
-                for (TreePath expandedPath : expanded) {
-                    if (comparePathsByUserObjects(expandedPath, path)) {
-                        expandPath(path);
-                    }
-                }
+        Enumeration<DefaultMutableTreeNode> nodes = ((DefaultMutableTreeNode)treeModel.getRoot()).depthFirstEnumeration();
+        while (nodes.hasMoreElements()) {
+            DefaultMutableTreeNode node = nodes.nextElement();
+            TreePath path = new TreePath(node.getPath());
 
-                if (comparePathsByUserObjects(selectionPath, path)) {
-                    getSelectionModel().setSelectionPath(path);
+            for (TreePath expandedPath : expanded) {
+                if (comparePathsByUserObjects(expandedPath, path)) {
+                    expandPath(path);
                 }
             }
-        });
+
+            if (comparePathsByUserObjects(selectionPath, path)) {
+                getSelectionModel().setSelectionPath(path);
+            }
+        }
     }
 
     public TreePath findPathByUserObjects(Object[] path) {

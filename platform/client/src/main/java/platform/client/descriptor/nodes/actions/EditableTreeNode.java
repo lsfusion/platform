@@ -4,6 +4,6 @@ import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.editor.base.NodeEditor;
 import platform.interop.serialization.RemoteDescriptorInterface;
 
-public interface EditingTreeNode {
+public interface EditableTreeNode {
     NodeEditor createEditor(FormDescriptor form, RemoteDescriptorInterface remote);
 }

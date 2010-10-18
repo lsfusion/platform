@@ -5,12 +5,12 @@ import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.editor.GroupObjectEditor;
 import platform.client.descriptor.editor.base.NodeEditor;
-import platform.client.descriptor.nodes.actions.EditingTreeNode;
+import platform.client.descriptor.nodes.actions.EditableTreeNode;
 import platform.interop.serialization.RemoteDescriptorInterface;
 
 import javax.swing.*;
 
-public class GroupObjectNode extends DescriptorNode<GroupObjectDescriptor, GroupObjectNode> implements EditingTreeNode {
+public class GroupObjectNode extends DescriptorNode<GroupObjectDescriptor, GroupObjectNode> implements EditableTreeNode {
 
     private FormDescriptor form;
 

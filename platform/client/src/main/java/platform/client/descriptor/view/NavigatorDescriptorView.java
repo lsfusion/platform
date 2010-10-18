@@ -37,7 +37,7 @@ public class NavigatorDescriptorView extends JPanel {
                                 new ByteArrayInputStream(
                                         navigator.remoteNavigator.getFormEntityByteArray(element.ID))));
 
-                formView.setModel(formDescriptor);
+                formView.setForm(formDescriptor);
             }
         };
 

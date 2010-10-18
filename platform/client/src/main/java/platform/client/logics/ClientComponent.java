@@ -25,9 +25,11 @@ public class ClientComponent implements Serializable, ClientIdentitySerializable
 
     public boolean defaultComponent = false;
 
-    public boolean show;
+    public boolean show = true;
 
     public ClientComponent() {
+        constraints = SimplexConstraints.DEFAULT_CONSTRAINT;
+        design = new ComponentDesign();
     }
 
     public int getID() {

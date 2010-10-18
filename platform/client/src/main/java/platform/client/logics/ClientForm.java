@@ -188,4 +188,18 @@ public class ClientForm implements LogicsSupplier, ClientIdentitySerializable {
 
         caption = pool.readString(inStream);
     }
+
+    public boolean removePropertyDraw(ClientPropertyDraw clientPropertyDraw) {
+        if (clientPropertyDraw.container != null) {
+            clientPropertyDraw.container.removeChild(clientPropertyDraw);
+        }
+        propertyDraws.remove(clientPropertyDraw);
+        order.remove(clientPropertyDraw);
+        defaultOrders.remove(clientPropertyDraw);
+
+        //drop caches
+        idProps = null;
+
+        return true;
+    }
 }

@@ -5,7 +5,7 @@ import platform.client.ClientTree;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.PropertyDrawDescriptor;
-import platform.client.descriptor.nodes.actions.AddingTreeNode;
+import platform.client.descriptor.nodes.actions.AddableTreeNode;
 import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientPropertyDraw;
 
@@ -13,7 +13,7 @@ import javax.swing.tree.TreePath;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PropertyDrawFolder extends GroupElementFolder<PropertyDrawFolder> implements AddingTreeNode {
+public class PropertyDrawFolder extends GroupElementFolder<PropertyDrawFolder> implements AddableTreeNode {
     private FormDescriptor form;
 
     public PropertyDrawFolder(List<GroupObjectDescriptor> groupList, GroupObjectDescriptor group, FormDescriptor form) {
