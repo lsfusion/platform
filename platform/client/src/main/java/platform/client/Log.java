@@ -107,10 +107,16 @@ public final class Log {
         south.add(sPane);
         panel.add(south, BorderLayout.SOUTH);
 
+        String opt[];
+        if (trace.length() > 0) {
+            opt = new String[]{"OK", "Подробнее"};
+        } else {
+           opt = new String[]{"OK"};
+        }
         optionPane = new JOptionPane(panel, JOptionPane.ERROR_MESSAGE,
                 JOptionPane.YES_NO_OPTION,
                 null,
-                new String[]{"OK", "Подробнее"},
+                opt,
                 "OK");
 
         optionPane.addPropertyChangeListener(new PropertyChangeListener() {

@@ -1,13 +1,12 @@
 package platform.server.logics;
 
 import net.sf.jasperreports.engine.JRException;
+import org.apache.commons.collections.MultiHashMap;
 import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.core.io.FileSystemResource;
 import platform.base.*;
 import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
-import platform.interop.serialization.RemoteDescriptorInterface;
-import platform.interop.serialization.SerializationPool;
 import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.interop.action.UserChangedClientAction;
@@ -17,7 +16,10 @@ import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.RemoteObject;
+import platform.server.classes.sets.AndClassSet;
+import platform.server.data.expr.VariableClassExpr;
 import platform.server.data.type.TypeSerializer;
+import platform.server.data.where.classes.AbstractClassWhere;
 import platform.server.net.ServerSocketFactory;
 import platform.server.auth.PolicyManager;
 import platform.server.auth.SecurityPolicy;
@@ -3054,31 +3056,101 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     atLeastOne.add(ID);
             }
 
+            MultiHashMap propertiesMap = new MultiHashMap();
+            for (Property<?> property : properties) {
+                propertiesMap.put(property.interfaces.size(), property);
+            }
+
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
             DataOutputStream dataStream = new DataOutputStream(outStream);
 
             ServerSerializationPool pool = new ServerSerializationPool();
 
+            ArrayList<Property> result = new ArrayList<Property>();
+            ArrayList<ArrayList<Integer>> idResult = new ArrayList<ArrayList<Integer>>();
+            for (Object key : propertiesMap.keySet()) {
+                List list = (List) propertiesMap.get(key);
+                addPropertiesFixedSize(classes, atLeastOne, list, result, idResult);
+            }
+
+            dataStream.writeInt(result.size());
             int num = 0;
-            for (Property<?> property : properties)
-                if (property.interfaces.size() == atLeastOne.size())
-                    num++;
-            dataStream.writeInt(num);
-            for (Property<?> property : properties) {
-                if (property.interfaces.size() == atLeastOne.size()) {
-                    pool.serializeObject(dataStream, property);
-                    Iterator<Integer> it = atLeastOne.iterator();
-                    for (PropertyInterface propertyInterface : property.interfaces) {
-                        pool.serializeObject(dataStream, propertyInterface);
-                        dataStream.writeInt(it.next());
-                    }
+            for (Property<?> property : result) {
+                pool.serializeObject(dataStream, property);
+                Iterator<Integer> it = idResult.get(num++).iterator();
+                for (PropertyInterface propertyInterface : property.interfaces) {
+                    pool.serializeObject(dataStream, propertyInterface);
+                    dataStream.writeInt(it.next());
                 }
             }
 
             return outStream.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void addPropertiesFixedSize(Map<Integer, ValueClass> classes, Set<Integer> atLeastOne, List list, ArrayList<Property> result, ArrayList<ArrayList<Integer>> idResult) {
+        int size = classes.size();
+        int interfaceSize = ((Property) list.get(0)).interfaces.size();
+        int perm[] = new int[size];
+        checkPerm(size, interfaceSize, 1, perm, classes, atLeastOne, list, result, idResult);
+    }
+
+    //n - сколько всего
+    //n - сколько надо поставить
+    //k - какой по счету сейчас ставим
+    private void checkPerm(int n, int m, int k, int[] perm, Map<Integer, ValueClass> classes, Set<Integer> atLeastOne, List list, ArrayList<Property> result, ArrayList<ArrayList<Integer>> idResult) {
+        if (k == m + 1) {
+            Integer id[] = (Integer[]) classes.keySet().toArray(new Integer[classes.keySet().size()]);
+            ArrayList<ValueClass> values = new ArrayList<ValueClass>(m);
+            ArrayList<Integer> ids = new ArrayList<Integer>(m);
+            for (int i = 0; i < m; i++) {
+                values.add(null);
+                ids.add(0);
+            }
+
+            for (int i = 0; i < n; i++) {
+                if (perm[i] != 0) {
+                    values.set(perm[i] - 1, classes.get(id[i]));
+                    ids.set(perm[i] - 1, id[i]);
+                }
+            }
+
+            boolean found = false;
+            for (Integer i : ids) {
+                if (atLeastOne.contains(i)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found && !atLeastOne.isEmpty()) {
+                return;
+            }
+
+            for (Object prop : list) {
+                Property p = (Property) prop;
+                Map<PropertyInterface, AndClassSet> propertyInterface = new HashMap<PropertyInterface, AndClassSet>();
+                int interfaceCount = 0;
+                for (Object iface : p.interfaces) {
+                    ValueClass propertyClass = values.get(interfaceCount++);
+                    propertyInterface.put((PropertyInterface) iface, propertyClass.getUpSet());
+                }
+                if (!(p instanceof StringFormulaProperty) && p.isFull() && p.anyInInterface(propertyInterface)) {
+                    result.add(p);
+                    idResult.add(ids);
+                }
+            }
+
+        } else {
+            for (int i = 0; i < n; i++) {
+                if (perm[i] == 0) {
+                    perm[i] = k;
+                    checkPerm(n, m, k + 1, perm, classes, atLeastOne, list, result, idResult);
+                    perm[i] = 0;
+                }
+            }
         }
     }
 }
