@@ -10,8 +10,10 @@ import javax.swing.event.ListSelectionEvent;
 
 public class IncrementMultipleListEditor extends JList implements ListSelectionListener, IncrementSelectionView {
 
+    private boolean updated = false;
     public void valueChanged(ListSelectionEvent ev) {
-        incrementModel.setSelectedItem(BaseUtils.toList(getSelectedValues()));
+        if(!updated)
+            incrementModel.setSelectedItem(BaseUtils.toList(getSelectedValues()));
     }
 
     IncrementMultipleListSelectionModel incrementModel;
@@ -25,9 +27,13 @@ public class IncrementMultipleListEditor extends JList implements ListSelectionL
     }
 
     public void updateSelection() {
+        updated = true;
+
         clearSelection();
 
         for(Object selectObject : incrementModel.selected)
             setSelectedValue(selectObject, false);
+
+        updated = false;
     }
 }
