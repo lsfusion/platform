@@ -17,10 +17,6 @@ public class ContainerNode extends ComponentNode<ClientContainer, ContainerNode>
         }
     }
 
-    public ClientContainer getClientContainer() {
-        return (ClientContainer) getUserObject();
-    }
-
     @Override
     public boolean canImport(TransferHandler.TransferSupport info) {
         ClientTreeNode node = ClientTree.getNode(info);
@@ -35,13 +31,18 @@ public class ContainerNode extends ComponentNode<ClientContainer, ContainerNode>
 
             ContainerNode parent = (ContainerNode) node.getParent();
 
-            parent.getClientContainer().removeChild(component);
-
             int index = ClientTree.getChildIndex(info);
+
+            if (index != -1 && getTypedObject().equals(parent.getTypedObject()) && getTypedObject().children.indexOf(component) < index) {
+                index--;
+            }
+
+            parent.getTypedObject().removeChild(component);
+
             if (index == -1) {
-                this.getClientContainer().addChild(component);
+                getTypedObject().addChild(component);
             } else {
-                this.getClientContainer().addChild(index, component);
+                getTypedObject().addChild(index, component);
             }
 
             return true;

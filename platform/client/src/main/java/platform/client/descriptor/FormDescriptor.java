@@ -5,6 +5,7 @@ import platform.client.descriptor.filter.RegularFilterGroupDescriptor;
 import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.property.PropertyDescriptor;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
+import platform.client.logics.ClientComponent;
 import platform.client.logics.ClientForm;
 import platform.client.logics.classes.ClientClass;
 import platform.client.serialization.ClientIdentitySerializable;
@@ -138,10 +139,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
     }
 
     public boolean moveGroupObject(GroupObjectDescriptor groupFrom, GroupObjectDescriptor groupTo) {
-        BaseUtils.moveElement(groupObjects, groupFrom, groupTo);
-        BaseUtils.moveElement(client.groupObjects, groupFrom.client, groupTo.client);
-        IncrementDependency.update(this, "groupObjects");
-        return true;
+        return moveGroupObject(groupFrom, groupObjects.indexOf(groupTo) + (groupObjects.indexOf(groupFrom) > groupObjects.indexOf(groupTo) ? 0 : 1));
     }
 
     public boolean moveGroupObject(GroupObjectDescriptor groupFrom, int index) {
@@ -152,17 +150,32 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
     }
 
     public boolean movePropertyDraw(PropertyDrawDescriptor propFrom, PropertyDrawDescriptor propTo) {
-        BaseUtils.moveElement(propertyDraws, propFrom, propTo);
-        BaseUtils.moveElement(client.propertyDraws, propFrom.client, propTo.client);
+        return movePropertyDraw(propFrom, propertyDraws.indexOf(propTo) + (propertyDraws.indexOf(propFrom) > propertyDraws.indexOf(propTo) ? 0 : 1));
+    }
+
+    public boolean movePropertyDraw(PropertyDrawDescriptor propFrom, int index) {
+
+        moveClientComponent(propFrom.client, getElementTo(propertyDraws, propFrom, index).client);
+
+        BaseUtils.moveElement(propertyDraws, propFrom, index);
+        BaseUtils.moveElement(client.propertyDraws, propFrom.client, index);
+
         IncrementDependency.update(this, "propertyDraws");
         return true;
     }
 
-    public boolean movePropertyDraw(PropertyDrawDescriptor propFrom, int index) {
-        BaseUtils.moveElement(propertyDraws, propFrom, index);
-        BaseUtils.moveElement(client.propertyDraws, propFrom.client, index);
-        IncrementDependency.update(this, "propertyDraws");
-        return true;
+    private static <T> T getElementTo(List<T> list, T elemFrom, int index) {
+        if (index == -1) {
+            return list.get(list.size()-1);
+        } else {
+            return list.get(index + (list.indexOf(elemFrom) >= index ? 0 : -1));
+        }
+    }
+
+    private static void moveClientComponent(ClientComponent compFrom, ClientComponent compTo) {
+        if (compFrom.container.equals(compTo.container)) {
+            compFrom.container.moveChild(compFrom, compTo);
+        }
     }
 
     public boolean addPropertyDraw(PropertyDrawDescriptor propertyDraw) {

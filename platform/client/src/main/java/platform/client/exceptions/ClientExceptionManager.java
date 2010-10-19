@@ -56,7 +56,7 @@ public class ClientExceptionManager {
             try {
                 String info = "Клиент: " + OSUtils.getLocalHostName() + ",Ошибка: " + message;
                 if (!isServer) {
-                    info += erTrace;
+                    info += "\n" + erTrace;
                 }
                 Main.frame.remoteNavigator.clientExceptionLog(info);
             } catch (RemoteException exc) {

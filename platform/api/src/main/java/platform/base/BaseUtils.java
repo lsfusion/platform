@@ -400,7 +400,12 @@ public class BaseUtils {
 
     public static <K> void moveElement(List<K> list, K elemFrom, K elemTo) {
 
-        boolean up = list.indexOf(elemFrom) > list.indexOf(elemTo);
+        int indFrom = list.indexOf(elemFrom);
+        int indTo = list.indexOf(elemTo);
+
+        if (indFrom == -1 || indTo == -1 || indFrom == indTo) return;
+        
+        boolean up = indFrom >= indTo;
 
         list.remove(elemFrom);
         list.add(list.indexOf(elemTo) + (up ? 0 : 1), elemFrom);
@@ -412,7 +417,7 @@ public class BaseUtils {
             list.remove(elemFrom);
             list.add(elemFrom);
         } else {
-            boolean up = list.indexOf(elemFrom) > index;
+            boolean up = list.indexOf(elemFrom) >= index;
 
             list.remove(elemFrom);
             list.add(index + (up ? 0 : -1), elemFrom);
