@@ -1573,7 +1573,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 ObjectInstance art = formInstance.instanceFactory.getInstance(objArt);
 
                 return cashRegController.getCashRegApplyActions(formInstance, 1,
-                        BaseUtils.toSetElements(art.groupTo),
+                        BaseUtils.toSet(art.groupTo),
                         getPropertyDraw(orderSalePrice, objArt), getPropertyDraw(articleQuantity, objArt),
                         getPropertyDraw(name, objArt), getPropertyDraw(orderArticleSaleSumWithDiscount, objArt),
                         getPropertyDraw(orderSalePayNoObligation, objDoc),
@@ -1881,7 +1881,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 ObjectInstance art = formInstance.instanceFactory.getInstance(objArt);
 
                 return cashRegController.getCashRegApplyActions(formInstance, 2,
-                        BaseUtils.toSetElements(inner.groupTo, art.groupTo),
+                        BaseUtils.toSet(inner.groupTo, art.groupTo),
                         getPropertyDraw(orderSalePrice, objArt), getPropertyDraw(returnInnerQuantity, objArt),
                         getPropertyDraw(name, objArt), getPropertyDraw(returnArticleSalePay, objArt),
                         getPropertyDraw(returnSalePay, objDoc),
@@ -2181,7 +2181,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 ObjectInstance obligation = formInstance.instanceFactory.getInstance(objObligation);
 
                 return cashRegController.getCashRegApplyActions(formInstance, 1,
-                        BaseUtils.toSetElements(obligation.groupTo),
+                        BaseUtils.toSet(obligation.groupTo),
                         getPropertyDraw(obligationSum, objObligation), getPropertyDraw(issueObligation, objObligation),
                         getPropertyDraw(name, objObligation), getPropertyDraw(obligationSum, objObligation),
                         getPropertyDraw(orderSalePay, objDoc),

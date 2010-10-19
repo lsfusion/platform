@@ -29,7 +29,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         @Override
         public AndClassSet get(K key) {
             AndClassSet result = super.get(key);
-            assert BusinessLogics.checkClasses || result!=null;
+//            assert BusinessLogics.checkClasses || result!=null; // для outputClasses и других элементов настройки БЛ, где могут быть висячие ключи
             return result;
         }
 

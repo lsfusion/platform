@@ -384,7 +384,7 @@ public class BaseUtils {
         return result;
     }
 
-    public static <K> Set<K> removeSet(Set<? extends K> set,Set<? extends K> remove) {
+    public static <K> Set<K> removeSet(Set<? extends K> set,Collection<? extends K> remove) {
         Set<K> result = new HashSet<K>(set);
         result.removeAll(remove);
         return result;
@@ -553,7 +553,7 @@ public class BaseUtils {
         return false;
     }
 
-    public static <T> Set<T> toSet(T[] array) {
+    public static <T> Set<T> toSet(T... array) {
         return new HashSet<T>(Arrays.asList(array));
     }
 
@@ -860,12 +860,6 @@ public class BaseUtils {
         return list;
     }
 
-    public static <K> Set<K> toSetElements(K... elements) {
-        Set<K> set = new HashSet<K>();
-        Collections.addAll(set,elements);
-        return set;
-    }
-    
     public static String replicate(char character, int length) {
 
         char[] chars = new char[length];

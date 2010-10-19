@@ -3,10 +3,10 @@ package platform.client.descriptor.editor;
 import platform.client.descriptor.*;
 import platform.client.descriptor.editor.base.NamedContainer;
 import platform.client.descriptor.increment.IncrementDependency;
-import platform.client.descriptor.increment.editor.IncrementComboBoxModel;
-import platform.client.descriptor.increment.editor.IncrementListEditor;
-import platform.client.descriptor.increment.editor.IncrementListModel;
+import platform.client.descriptor.increment.editor.IncrementSingleListSelectionModel;
+import platform.client.descriptor.increment.editor.IncrementMultipleListSelectionModel;
 import platform.client.descriptor.increment.editor.IncrementTextEditor;
+import platform.client.descriptor.increment.editor.IncrementMultipleListEditor;
 import platform.interop.serialization.RemoteDescriptorInterface;
 
 import javax.swing.*;
@@ -24,9 +24,9 @@ public class PropertyDrawEditor extends GroupElementEditor {
 
         add(new NamedContainer("Стат. заголовок", false, new IncrementTextEditor(descriptor, "caption")));
 
-        add(new NamedContainer("Реализация", false, new JComboBox(new IncrementComboBoxModel(descriptor, "propertyObject") {
+        add(new NamedContainer("Реализация", false, new JComboBox(new IncrementSingleListSelectionModel(descriptor, "propertyObject") {
             public List<?> getList() {
-                return form.getProperties(groupObject, remote);
+                return form.getProperties(groupObject);
             }
             public void fillListDependencies() {
                 IncrementDependency.add(form, "groupObjects", this);
@@ -37,7 +37,7 @@ public class PropertyDrawEditor extends GroupElementEditor {
 
         // все не обязательно но желательно
         if(groupObject==null) {
-            add(new NamedContainer("Группа объектов", false, new JComboBox(new IncrementComboBoxModel(descriptor, "toDraw") {
+            add(new NamedContainer("Группа объектов", false, new JComboBox(new IncrementSingleListSelectionModel(descriptor, "toDraw") {
                 public List<?> getList() {
                     PropertyObjectDescriptor propertyObject = descriptor.getPropertyObject();
                     return propertyObject != null
@@ -54,22 +54,22 @@ public class PropertyDrawEditor extends GroupElementEditor {
         }
 
         // columnGroupObjects из списка mapping'ов (полных) !!! без toDraw
-        add(new NamedContainer("Группы в колонки", true, new IncrementListEditor(descriptor, "columnGroupObjects", new IncrementListModel(){
+        add(new NamedContainer("Группы в колонки", true, new IncrementMultipleListEditor(new IncrementMultipleListSelectionModel(descriptor, "columnGroupObjects") {
             public List<?> getList() {
                 return descriptor.getUpGroupObjects(form.groupObjects);
             }
 
             public void fillListDependencies() {
                 IncrementDependency.add(descriptor, "propertyObject", this);
-                IncrementDependency.add(form, "groupObjects", this);
                 IncrementDependency.add(descriptor, "toDraw", this);
+                IncrementDependency.add(form, "groupObjects", this);
             }
         })));
 
         add(Box.createRigidArea(new Dimension(5,5)));
         
         // propertyCaption из списка columnGroupObjects (+objects без toDraw)
-        add(new NamedContainer("Динам. заголовок", false, new JComboBox(new IncrementComboBoxModel(descriptor, "propertyCaption") {
+        add(new NamedContainer("Динам. заголовок", false, new JComboBox(new IncrementSingleListSelectionModel(descriptor, "propertyCaption") {
             public List<?> getList() {
                 return FormDescriptor.getProperties(descriptor.getColumnGroupObjects(), null, remote);
             }

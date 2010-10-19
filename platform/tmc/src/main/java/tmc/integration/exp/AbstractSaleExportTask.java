@@ -123,7 +123,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
         map.put(summField, formInstance.getPropertyDraw(BL.orderArticleSaleSumCoeff));
         map.put(percentField, formInstance.getPropertyDraw(BL.orderArticleSaleDiscount));
 
-        FormData data = formInstance.getFormData(map.values(), BaseUtils.toSetElements(doc.groupTo, art.groupTo));
+        FormData data = formInstance.getFormData(map.values(), BaseUtils.toSet(doc.groupTo, art.groupTo));
 
         updateRemoteFormProperties(formInstance);
 
@@ -149,7 +149,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
         map.put(dateField, formInstance.getPropertyDraw(BL.date));
         map.put(summField, formInstance.getPropertyDraw(BL.obligationSum));
 
-        FormData data = formInstance.getFormData(map.values(), BaseUtils.toSetElements(doc.groupTo, obligation.groupTo));
+        FormData data = formInstance.getFormData(map.values(), BaseUtils.toSet(doc.groupTo, obligation.groupTo));
 
         updateRemoteFormProperties(formInstance);
 
@@ -178,7 +178,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
         map.put(summField, formInstance.getPropertyDraw(BL.returnArticleSalePay));
         map.put(percentField, formInstance.getPropertyDraw(BL.orderArticleSaleDiscount));
 
-        FormData result = formInstance.getFormData(map.values(), BaseUtils.toSetElements(doc.groupTo, inner.groupTo, article.groupTo));
+        FormData result = formInstance.getFormData(map.values(), BaseUtils.toSet(doc.groupTo, inner.groupTo, article.groupTo));
 
         updateRemoteFormProperties(formInstance);
 

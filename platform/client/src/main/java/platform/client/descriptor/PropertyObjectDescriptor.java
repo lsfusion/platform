@@ -50,11 +50,15 @@ public class PropertyObjectDescriptor extends PropertyDescriptorImplement<Proper
         return result>=0?groupList.get(result):null;
     }
 
-    public List<GroupObjectDescriptor> getGroupObjects(List<GroupObjectDescriptor> groupList) {
+    public Set<GroupObjectDescriptor> getGroupObjects() {
         Set<GroupObjectDescriptor> groupObjects = new HashSet<GroupObjectDescriptor>();
         for(ObjectDescriptor object : getObjects())
             groupObjects.add(object.groupTo);
-        return BaseUtils.filterList(groupList, groupObjects);
+        return groupObjects;
+    }
+
+    public List<GroupObjectDescriptor> getGroupObjects(List<GroupObjectDescriptor> groupList) {
+        return BaseUtils.filterList(groupList, getGroupObjects());
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

@@ -17,7 +17,6 @@ import platform.server.data.type.ObjectType;
 import platform.server.data.query.Query;
 import platform.server.data.query.Join;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.session.DataSession;
 import platform.server.session.MapDataChanges;
@@ -76,7 +75,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
 
             CustomSessionTable table = new CustomSessionTable("priceimp",
                     new ClassWhere(barcodeField, barcodeClass), classProperties,
-                    Collections.singleton(barcodeField), BaseUtils.toSetElements(nameField, priceField, noDiscField));
+                    Collections.singleton(barcodeField), BaseUtils.toSet(nameField, priceField, noDiscField));
 
             DataSession session = BL.createSession();
             session.createTemporaryTable(table);

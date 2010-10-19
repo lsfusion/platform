@@ -34,7 +34,7 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
 
     public ClientPropertyDraw client;
 
-    public PropertyObjectDescriptor propertyObject;
+    private PropertyObjectDescriptor propertyObject;
     public void setPropertyObject(PropertyObjectDescriptor propertyObject) { // usage через reflection
         this.propertyObject = propertyObject;
         IncrementDependency.update(this, "propertyObject");
@@ -69,9 +69,12 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
         }
 
         List<GroupObjectDescriptor> groupObjects = getPropertyObject().getGroupObjects(groupList);
-        if(toDraw==null)
-            return groupObjects.subList(0, groupObjects.size()-1);
-        else
+        if(toDraw==null) {
+            if(groupObjects.size()>0)
+                return groupObjects.subList(0, groupObjects.size()-1);
+            else
+                return groupObjects;
+        } else
             return BaseUtils.removeList(groupObjects, Collections.singleton(toDraw));
     }
 

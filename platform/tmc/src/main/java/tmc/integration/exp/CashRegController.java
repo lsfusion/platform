@@ -69,7 +69,7 @@ public class CashRegController {
         PropertyDrawInstance nameDraw = formInstance.instanceFactory.getInstance(nameProp);
         PropertyDrawInstance sumDraw = formInstance.instanceFactory.getInstance(sumProp);
         PropertyDrawInstance toPayDraw = formInstance.instanceFactory.getInstance(toPayProp);
-        formProperties.addAll(BaseUtils.toSetElements(quantityDraw, priceDraw, nameDraw, sumDraw, toPayDraw));
+        formProperties.addAll(BaseUtils.toSet(quantityDraw, priceDraw, nameDraw, sumDraw, toPayDraw));
 
         PropertyDrawInstance sumCardDraw = null;
         if(sumCardProp!=null) {
