@@ -3,11 +3,13 @@ package platform.client.descriptor.view;
 import platform.client.descriptor.editor.base.NodeEditor;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class EditorView extends JPanel {
     private NodeEditor editor;
 
     public EditorView() {
+        setLayout(new BorderLayout());
     }
 
     public boolean setEditor(NodeEditor iEditor) {
@@ -19,7 +21,10 @@ public class EditorView extends JPanel {
 
         removeAll();
         if (editor != null) {
-            add(editor.getComponent());
+            JPanel editorPanel = new JPanel();
+            editorPanel.add(editor.getComponent());
+
+            add(new JScrollPane(editorPanel));
         }
         validate();
         updateUI();
