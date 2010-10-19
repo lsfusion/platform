@@ -987,10 +987,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         ObjectEntity objBarcode;
 
-        protected boolean isBarcodeFocusable() {
-            return true;
-        }
-
         protected Font getDefaultFont() {
             return null;
         }
@@ -1037,11 +1033,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.setEditKey(barcodeView, KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0));
             design.setEditKey(reverseBarcode, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
 
-            if (!isBarcodeFocusable()) {
-                design.setFocusable(reverseBarcode, false);
-                design.setFocusable(false, objBarcode.groupTo);
-                design.setFocusable(barcodeView, false);
-            }
+            design.setFocusable(reverseBarcode, false);
+            design.setFocusable(false, objBarcode.groupTo);
 
             return design;
         }
@@ -1412,11 +1405,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
 
         @Override
-        protected boolean isBarcodeFocusable() {
-            return false;
-        }
-
-        @Override
         protected Font getDefaultFont() {
             return FONT_SMALL_PLAIN;
         }
@@ -1644,11 +1632,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         @Override
         protected Object[] getDocumentProps() {
             return new Object[]{returnSaleDiscount, returnSalePay};
-        }
-
-        @Override
-        protected boolean isBarcodeFocusable() {
-            return false;
         }
 
         @Override
@@ -2146,11 +2129,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     public class SaleCheckCertFormEntity extends SaleCertFormEntity {
-
-        @Override
-        protected boolean isBarcodeFocusable() {
-            return false;
-        }
 
         @Override
         public boolean isReadOnly() {
