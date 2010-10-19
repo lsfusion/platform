@@ -15,21 +15,17 @@ import java.util.Collections;
 
 public class PropertyDrawDescriptor extends IdentityDescriptor implements ClientIdentitySerializable {
 
-    public void setCaption(String caption) { // usage через reflection
-        client.caption = caption;
+    public void setOverridenCaption(String caption) { // usage через reflection
+        client.overridenCaption = caption;
         IncrementDependency.update(this, "caption");
     }
-    public String getCaption() {
-        return client.caption;
+    public String getOverridenCaption() {
+        return client.overridenCaption;
     }
 
     @Override
     public String toString() {
-        return client.caption != null && !client.caption.trim().equals("")
-               ? client.caption
-               : propertyObject != null
-                 ? propertyObject.property.caption
-                 : "Неопределённое свойство";
+        return client.getResultingCaption();
     }
 
     public ClientPropertyDraw client;
@@ -37,6 +33,9 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
     private PropertyObjectDescriptor propertyObject;
     public void setPropertyObject(PropertyObjectDescriptor propertyObject) { // usage через reflection
         this.propertyObject = propertyObject;
+        if (propertyObject != null) {
+            client.caption = propertyObject.property.caption;
+        }
         IncrementDependency.update(this, "propertyObject");
     }
     public PropertyObjectDescriptor getPropertyObject() {

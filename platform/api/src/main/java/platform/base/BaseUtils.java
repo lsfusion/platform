@@ -903,5 +903,7 @@ public class BaseUtils {
         }
     }
 
-
+    public static boolean isRedundantString(String s) {
+        return s == null || s.trim().length() == 0;
+    }
 }

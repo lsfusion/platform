@@ -98,7 +98,12 @@ public class FormDescriptorView extends JPanel implements IncrementView {
     }
 
     public void setForm(FormDescriptor form) {
-        this.form = form;
+        if (this.form != form) {
+            this.form = form;
+            view.removeEditor();
+            editPath = null;
+            addedObjectPath = null;
+        }
 
         previewBtn.setEnabled(form != null);
         saveBtn.setEnabled(form != null);

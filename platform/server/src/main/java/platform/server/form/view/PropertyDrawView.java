@@ -120,9 +120,8 @@ public class PropertyDrawView extends ComponentView {
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);
 
-        pool.writeString(outStream, SerializationType.VISUAL_SETUP.equals(serializationType)
-                                    ? caption
-                                    : getCaption());
+        pool.writeString(outStream, getCaption());
+        pool.writeString(outStream, caption);
 
         pool.writeObject(outStream, minimumSize);
         pool.writeObject(outStream, maximumSize);
