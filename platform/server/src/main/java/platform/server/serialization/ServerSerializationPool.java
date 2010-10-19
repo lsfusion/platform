@@ -7,6 +7,7 @@ import platform.server.form.view.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.group.AbstractGroup;
 
 
 public class ServerSerializationPool extends SerializationPool<ServerContext> {
@@ -22,6 +23,7 @@ public class ServerSerializationPool extends SerializationPool<ServerContext> {
         addMapping2(GroupObjectEntity.class);
         addMapping2(PropertyDrawEntity.class);
         addMapping2(Property.class);
+        addMapping2(AbstractGroup.class);
 
         addMapping2(PropertyFilterEntity.class);
         addMapping2(CompareFilterEntity.class);
