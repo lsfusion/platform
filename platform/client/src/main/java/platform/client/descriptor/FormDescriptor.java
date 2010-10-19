@@ -65,12 +65,18 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
     }
 
     // по сути IncrementLazy
+    IncrementView allPropertiesLazy;
     private List<PropertyObjectDescriptor> allProperties;    
     public List<PropertyObjectDescriptor> getAllProperties() {
         if(allProperties==null)
             allProperties = getProperties(groupObjects, null, Main.remoteLogics);
         return allProperties;
     }
+
+    IncrementView propertyObjectConstraint;
+    IncrementView toDrawConstraint;
+    IncrementView columnGroupConstraint;
+    IncrementView propertyCaptionConstraint;
 
     public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
         ID = iID;
@@ -86,7 +92,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
 
         client = pool.context;
 
-        IncrementView allPropertiesLazy = new IncrementView() {
+        allPropertiesLazy = new IncrementView() {
             public void update(Object updateObject, String updateField) {
                 allProperties = null;
             }
@@ -96,7 +102,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         IncrementDependency.add(this, "groupObjects", allPropertiesLazy);
 
         // propertyObject подходит по интерфейсу и т.п.
-        IncrementView propertyObjectConstraint = new IncrementPropertyConstraint() {
+        propertyObjectConstraint = new IncrementPropertyConstraint() {
             public boolean updateProperty(PropertyDrawDescriptor property) {
                 return getAllProperties().contains(property.getPropertyObject());
             }
@@ -107,7 +113,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         IncrementDependency.add(this, "groupObjects", propertyObjectConstraint);
 
         // toDraw должен быть из groupObjects (можно убрать)
-        IncrementView toDrawConstraint = new IncrementPropertyConstraint() {
+        toDrawConstraint = new IncrementPropertyConstraint() {
             public boolean updateProperty(PropertyDrawDescriptor property) {
                 GroupObjectDescriptor toDraw = property.getToDraw();
                 if(toDraw!=null && !property.getPropertyObject().getGroupObjects().contains(toDraw))
@@ -119,7 +125,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         IncrementDependency.add("propertyObject", toDrawConstraint);
 
         // toDraw должен быть из groupObjects (можно убрать)
-        IncrementView columnGroupConstraint = new IncrementPropertyConstraint() {
+        columnGroupConstraint = new IncrementPropertyConstraint() {
             public boolean updateProperty(PropertyDrawDescriptor property) {
                 List<GroupObjectDescriptor> upGroups = property.getUpGroupObjects(groupObjects);
                 List<GroupObjectDescriptor> columnGroups = property.getColumnGroupObjects();
@@ -137,7 +143,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
 
 
         // propertyObject подходит по интерфейсу и т.п.
-        IncrementView propertyCaptionConstraint = new IncrementPropertyConstraint() {
+        propertyCaptionConstraint = new IncrementPropertyConstraint() {
             public boolean updateProperty(PropertyDrawDescriptor property) {
                 PropertyObjectDescriptor propertyCaption = property.getPropertyCaption();
                 if(propertyCaption !=null && !getProperties(property.getColumnGroupObjects(), null, Main.remoteLogics).contains(propertyCaption))

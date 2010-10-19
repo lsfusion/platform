@@ -6,8 +6,9 @@ import platform.client.descriptor.increment.editor.IncrementListSelectionModel;
 import platform.base.WeakIdentityHashSet;
 
 import java.util.Set;
+import java.util.List;
 
-public abstract class IncrementMultipleListSelectionModel extends IncrementListSelectionModel<Set<?>> implements IncrementView {
+public abstract class IncrementMultipleListSelectionModel extends IncrementListSelectionModel<List<?>> implements IncrementView {
 
     public IncrementMultipleListSelectionModel(Object object, String field) {
         super(object, field);
@@ -17,6 +18,8 @@ public abstract class IncrementMultipleListSelectionModel extends IncrementListS
 
     public void addSelectionView(IncrementSelectionView selectionView) {
         selectionViews.add(selectionView);
+
+        selectionView.updateSelection();
     }
 
     protected void updateSelectionViews() {

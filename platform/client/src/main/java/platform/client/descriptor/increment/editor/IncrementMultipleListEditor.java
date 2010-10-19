@@ -11,7 +11,7 @@ import javax.swing.event.ListSelectionEvent;
 public class IncrementMultipleListEditor extends JList implements ListSelectionListener, IncrementSelectionView {
 
     public void valueChanged(ListSelectionEvent ev) {
-        incrementModel.setSelectedItem(BaseUtils.toSet(getSelectedValues()));
+        incrementModel.setSelectedItem(BaseUtils.toList(getSelectedValues()));
     }
 
     IncrementMultipleListSelectionModel incrementModel;
@@ -19,6 +19,7 @@ public class IncrementMultipleListEditor extends JList implements ListSelectionL
         super(incrementModel);
 
         this.incrementModel = incrementModel;
+        incrementModel.addSelectionView(this);
 
         addListSelectionListener(this);
     }
