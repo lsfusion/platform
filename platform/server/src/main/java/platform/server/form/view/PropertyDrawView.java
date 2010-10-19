@@ -1,34 +1,33 @@
 package platform.server.form.view;
 
+import platform.interop.form.screen.ExternalScreen;
+import platform.interop.form.screen.ExternalScreenConstraints;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.view.report.ReportDrawField;
 import platform.server.logics.property.ExecuteProperty;
-import platform.interop.form.screen.ExternalScreen;
-import platform.interop.form.screen.ExternalScreenConstraints;
+import platform.server.serialization.SerializationType;
 import platform.server.serialization.ServerSerializationPool;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.awt.*;
-import java.text.Format;
 import java.text.DecimalFormat;
+import java.text.Format;
 import java.text.SimpleDateFormat;
-import java.util.*;
 
 public class PropertyDrawView extends ComponentView {
 
     private FormView form;
     public PropertyDrawEntity<?> entity;
-    
+
     /**
      * Example of use:
-     *  <pre><code>
+     * <pre><code>
      *  LP someLP = ...;
      *  ...
      *  PropertyDrawEntity propertyDraw = getPropertyDraw(someLP);
@@ -60,9 +59,9 @@ public class PropertyDrawView extends ComponentView {
     public GroupObjectEntity keyBindingGroup = null;
 
     public PropertyDrawView() {
-        
+
     }
-    
+
     public PropertyDrawView(int ID, FormView form, PropertyDrawEntity entity) {
         super(ID);
         this.form = form;
@@ -86,10 +85,11 @@ public class PropertyDrawView extends ComponentView {
     }
 
     String getCaption() {
-        if (caption != null)
+        if (caption != null) {
             return caption;
-        else
+        } else {
             return getDefaultCaption();
+        }
     }
 
     public ReportDrawField getReportDrawField() {
@@ -103,14 +103,15 @@ public class PropertyDrawView extends ComponentView {
 
         Format format = type.getDefaultFormat();
         if (format instanceof DecimalFormat) {
-            reportField.pattern = ((DecimalFormat)format).toPattern();
+            reportField.pattern = ((DecimalFormat) format).toPattern();
         }
         if (format instanceof SimpleDateFormat) {
-            reportField.pattern = ((SimpleDateFormat)format).toPattern();
+            reportField.pattern = ((SimpleDateFormat) format).toPattern();
         }
 
-        if (!getType().fillReportDrawField(reportField))
+        if (!getType().fillReportDrawField(reportField)) {
             return null;
+        }
 
         return reportField;
     }
@@ -119,7 +120,9 @@ public class PropertyDrawView extends ComponentView {
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);
 
-        pool.writeString(outStream, getCaption());
+        pool.writeString(outStream, SerializationType.VISUAL_SETUP.equals(serializationType)
+                                    ? caption
+                                    : getCaption());
 
         pool.writeObject(outStream, minimumSize);
         pool.writeObject(outStream, maximumSize);

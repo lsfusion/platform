@@ -49,12 +49,12 @@ public class ComponentView implements ServerIdentitySerializable {
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.writeObject(outStream, design);
-        pool.serializeObject(outStream, container);
+        pool.serializeObject(outStream, container, serializationType);
         pool.writeObject(outStream, constraints);
 
         outStream.writeInt(constraints.intersects.size());
         for (Map.Entry<ComponentView, DoNotIntersectSimplexConstraint> intersect : constraints.intersects.entrySet()) {
-            pool.serializeObject(outStream, intersect.getKey());
+            pool.serializeObject(outStream, intersect.getKey(), serializationType);
             pool.writeObject(outStream, intersect.getValue());
         }
 

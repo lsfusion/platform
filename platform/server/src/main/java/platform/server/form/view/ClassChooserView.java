@@ -26,7 +26,7 @@ public class ClassChooserView extends ComponentView  {
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);
 
-        pool.serializeObject(outStream, object);
+        pool.serializeObject(outStream, object, serializationType);
     }
 
     @Override

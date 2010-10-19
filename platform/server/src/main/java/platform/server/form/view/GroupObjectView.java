@@ -38,9 +38,9 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         outStream.writeByte(entity.banClassView);
-        pool.serializeCollection(outStream, this);
-        pool.serializeObject(outStream, grid);
-        pool.serializeObject(outStream, showType);
+        pool.serializeCollection(outStream, this, serializationType);
+        pool.serializeObject(outStream, grid, serializationType);
+        pool.serializeObject(outStream, showType, serializationType);
     }
 
     public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {

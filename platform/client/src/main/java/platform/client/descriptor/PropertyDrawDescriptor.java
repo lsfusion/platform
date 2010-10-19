@@ -25,7 +25,11 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
 
     @Override
     public String toString() {
-        return client.caption;
+        return client.caption != null && !client.caption.trim().equals("")
+               ? client.caption
+               : propertyObject != null
+                 ? propertyObject.property.caption
+                 : "Неопределённое свойство";
     }
 
     public ClientPropertyDraw client;
@@ -33,7 +37,7 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
     public PropertyObjectDescriptor propertyObject;
     public void setPropertyObject(PropertyObjectDescriptor propertyObject) { // usage через reflection
         this.propertyObject = propertyObject;
-        IncrementDependency.update(this, "propertyObject");        
+        IncrementDependency.update(this, "propertyObject");
     }
     public PropertyObjectDescriptor getPropertyObject() {
         return propertyObject;
@@ -63,14 +67,14 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
         if (getPropertyObject() == null) {
             return new ArrayList<GroupObjectDescriptor>();
         }
-        
+
         List<GroupObjectDescriptor> groupObjects = getPropertyObject().getGroupObjects(groupList);
         if(toDraw==null)
             return groupObjects.subList(0, groupObjects.size()-1);
         else
             return BaseUtils.removeList(groupObjects, Collections.singleton(toDraw));
     }
-    
+
     private List<GroupObjectDescriptor> columnGroupObjects;
     public List<GroupObjectDescriptor> getColumnGroupObjects() { // usage через reflection
         return columnGroupObjects;
@@ -107,7 +111,7 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
 
     public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
         ID = iID;
-        
+
         propertyObject = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
         toDraw = (GroupObjectDescriptor) pool.deserializeObject(inStream);
         columnGroupObjects = pool.deserializeList(inStream);

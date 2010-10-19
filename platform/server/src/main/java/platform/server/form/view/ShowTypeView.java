@@ -23,7 +23,7 @@ public class ShowTypeView extends ComponentView {
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);
 
-        pool.serializeObject(outStream, groupObject);
+        pool.serializeObject(outStream, groupObject, serializationType);
     }
 
     @Override

@@ -81,7 +81,7 @@ public class ContainerView extends ComponentView {
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);
 
-        pool.serializeCollection(outStream, children);
+        pool.serializeCollection(outStream, children, serializationType);
 
         pool.writeString(outStream, title);
         pool.writeString(outStream, description);

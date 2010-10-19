@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.Collection;
 
 public class PropertyDescriptor extends AbstractNodeDescriptor implements ClientIdentitySerializable {
-    private String caption;
+    public String caption;
     private String sID;
 
     public Collection<PropertyInterfaceDescriptor> interfaces;

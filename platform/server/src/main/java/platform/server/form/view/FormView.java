@@ -82,14 +82,14 @@ public class FormView extends IdentityObject implements ServerIdentitySerializab
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         outStream.writeBoolean(readOnly);
-        pool.serializeCollection(outStream, containers);
-        pool.serializeCollection(outStream, groupObjects);
+        pool.serializeCollection(outStream, containers, serializationType);
+        pool.serializeCollection(outStream, groupObjects, serializationType);
         pool.serializeCollection(outStream, properties, serializationType);
         pool.serializeCollection(outStream, regularFilters);
 
         outStream.writeInt(defaultOrders.size());
         for (Map.Entry<PropertyDrawView, Boolean> entry : defaultOrders.entrySet()) {
-            pool.serializeObject(outStream, entry.getKey());
+            pool.serializeObject(outStream, entry.getKey(), serializationType);
             outStream.writeBoolean(entry.getValue());
         }
 
@@ -102,7 +102,7 @@ public class FormView extends IdentityObject implements ServerIdentitySerializab
         pool.serializeObject(outStream, okFunction);
         pool.serializeObject(outStream, closeFunction);
 
-        pool.serializeCollection(outStream, order);
+        pool.serializeCollection(outStream, order, serializationType);
 
         pool.writeObject(outStream, keyStroke);
         pool.writeString(outStream, caption);

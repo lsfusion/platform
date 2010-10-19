@@ -31,7 +31,6 @@ public class PropertyDrawFolder extends GroupElementFolder<PropertyDrawFolder> i
 
     public Object[] addNewElement(TreePath selectionPath) {
         ClientPropertyDraw clientPropertyDraw = new ClientPropertyDraw();
-        clientPropertyDraw.caption = "Новое свойство";
         clientPropertyDraw.columnGroupObjects = new ArrayList<ClientGroupObject>();
 
         PropertyDrawDescriptor propertyDraw = new PropertyDrawDescriptor();

@@ -33,13 +33,13 @@ public class ObjectView implements ServerIdentitySerializable {
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        pool.serializeObject(outStream, groupObject);
+        pool.serializeObject(outStream, groupObject, serializationType);
         pool.writeString(outStream, entity.caption);
 
         outStream.writeBoolean(entity.addOnTransaction);
 
         entity.baseClass.serialize(outStream);
-        pool.serializeObject(outStream, classChooser);
+        pool.serializeObject(outStream, classChooser, serializationType);
     }
 
     public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
