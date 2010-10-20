@@ -57,4 +57,9 @@ public class ClientTextClass extends ClientDataClass {
     public Object parseString(String s) throws ParseException {
         return s;
     }
+
+    @Override
+    public String toString() {
+        return "Текст";
+    }
 }

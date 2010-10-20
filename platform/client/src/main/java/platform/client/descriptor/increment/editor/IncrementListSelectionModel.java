@@ -41,8 +41,9 @@ public abstract class IncrementListSelectionModel<S> extends AbstractListModel i
 
     public abstract List<?> getList();
 
-    // для Dependencies
-    public abstract void fillListDependencies();
+    //этот метод, как правило, нужно переопределять
+    public void fillListDependencies() {
+    }
 
     public int getSize() {
         return list.size();

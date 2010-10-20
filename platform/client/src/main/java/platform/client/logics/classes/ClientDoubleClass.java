@@ -44,4 +44,9 @@ public class ClientDoubleClass extends ClientIntegralClass {
     public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) {
         return new DoublePropertyEditor(value, (NumberFormat) format, design, getJavaClass());
     }
+
+    @Override
+    public String toString() {
+        return "Вещественное число";
+    }
 }

@@ -52,4 +52,9 @@ public class ClientLogicalClass extends ClientDataClass {
             throw new ParseException(s + "не может быть конвертированно в Boolean.", 0);
         }
     }
+
+    @Override
+    public String toString() {
+        return "Логический класс";
+    }
 }

@@ -14,7 +14,7 @@ public class RegularFilterNode extends GroupElementNode<RegularFilterDescriptor,
     public RegularFilterNode(GroupObjectDescriptor group, RegularFilterDescriptor descriptor) {
         super(group, descriptor);
 
-        add(descriptor.filter.getNode(group));
+        add(descriptor.filter.createNode(group));
     }
 
     public NodeEditor createEditor(FormDescriptor form, RemoteDescriptorInterface remote) {

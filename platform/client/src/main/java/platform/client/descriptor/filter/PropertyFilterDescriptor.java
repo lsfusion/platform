@@ -5,7 +5,6 @@ import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.nodes.filters.FilterNode;
 import platform.client.descriptor.nodes.filters.PropertyFilterNode;
 import platform.client.serialization.ClientSerializationPool;
-import platform.interop.serialization.SerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -21,8 +20,8 @@ public abstract class PropertyFilterDescriptor extends FilterDescriptor {
     }
 
     @Override
-    public FilterNode getNode(GroupObjectDescriptor group) {
-        return new PropertyFilterNode(group, this);
+    public FilterNode createNode(Object group) {
+        return new PropertyFilterNode((GroupObjectDescriptor) group, this);
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

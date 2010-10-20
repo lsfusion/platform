@@ -49,4 +49,9 @@ public class ClientDateClass extends ClientDataClass {
             throw new ParseException(s + "не может быть конвертированно в Date.", 0);
         }
     }
+
+    @Override
+    public String toString() {
+        return "Дата";
+    }
 }

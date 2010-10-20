@@ -46,5 +46,10 @@ public class ClientExcelClass extends ClientFileClass {
     @Override
     public int getMinimumWidth(FontMetrics font) {
         return 15;
-    }    
+    }
+
+    @Override
+    public String toString() {
+        return "Файл Эксель";
+    }
 }

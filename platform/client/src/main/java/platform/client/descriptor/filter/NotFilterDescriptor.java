@@ -1,8 +1,8 @@
 package platform.client.descriptor.filter;
 
+import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.nodes.filters.FilterNode;
 import platform.client.descriptor.nodes.filters.NotFilterNode;
-import platform.interop.serialization.SerializationPool;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.serialization.ClientSerializationPool;
 
@@ -20,8 +20,8 @@ public class NotFilterDescriptor extends FilterDescriptor {
     }
 
     @Override
-    public FilterNode getNode(GroupObjectDescriptor group) {
-        return new NotFilterNode(group, this);
+    public FilterNode createNode(Object group) {
+        return new NotFilterNode((GroupObjectDescriptor) group, this);
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
@@ -39,5 +39,14 @@ public class NotFilterDescriptor extends FilterDescriptor {
             result += "( " + filter.toString() + " )";
         }
         return result;
+    }
+
+    public void setFilter(FilterDescriptor filter) {
+        this.filter = filter;
+        IncrementDependency.update(this, "filter");
+    }
+
+    public FilterDescriptor getFilter() {
+        return filter;
     }
 }

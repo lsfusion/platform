@@ -75,4 +75,9 @@ public class ClientActionClass extends ClientDataClass {
     public String getConformedMessage() {
         return "Вы действительно хотите выполнить действие";
     }
+
+    @Override
+    public String toString() {
+        return "Класс действия";
+    }
 }

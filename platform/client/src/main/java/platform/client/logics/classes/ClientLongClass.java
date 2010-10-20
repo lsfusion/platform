@@ -28,4 +28,9 @@ public class ClientLongClass extends ClientIntegralClass {
             throw new ParseException(s + "не может быть конвертированно в Long.", 0);
         }
     }
+
+    @Override
+    public String toString() {
+        return "Длинное целое число";
+    }
 }

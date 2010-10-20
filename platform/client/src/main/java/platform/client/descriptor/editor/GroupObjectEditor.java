@@ -26,9 +26,6 @@ public class GroupObjectEditor extends JPanel implements NodeEditor {
                         ClassViewType.GRID,
                         ClassViewType.HIDE);
             }
-
-            public void fillListDependencies() {
-            }
         })));
 
         add(new TitledPanel("Запрещённый вид", new IncrementMultipleListEditor(new IncrementMultipleListSelectionModel(descriptor, "banClassViewList") {
@@ -37,9 +34,6 @@ public class GroupObjectEditor extends JPanel implements NodeEditor {
                         ClassViewType.PANEL,
                         ClassViewType.GRID,
                         ClassViewType.HIDE);
-            }
-
-            public void fillListDependencies() {
             }
         })));
 

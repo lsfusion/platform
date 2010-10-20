@@ -55,4 +55,9 @@ public class ClientStringClass extends ClientDataClass {
     public Object parseString(String s) throws ParseException {
         return s;
     }
+
+    @Override
+    public String toString() {
+        return "Строка(" + length + ")";
+    }
 }

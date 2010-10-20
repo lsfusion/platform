@@ -46,4 +46,9 @@ public class ClientWordClass extends ClientFileClass {
     public int getMinimumWidth(FontMetrics font) {
         return 15;
     }
+
+    @Override
+    public String toString() {
+        return "Файл Ворд";
+    }
 }

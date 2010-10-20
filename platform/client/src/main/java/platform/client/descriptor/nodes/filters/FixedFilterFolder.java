@@ -2,14 +2,12 @@ package platform.client.descriptor.nodes.filters;
 
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.filter.FilterDescriptor;
-import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.nodes.GroupElementFolder;
-import platform.client.descriptor.nodes.actions.NewElementListener;
 
 import java.util.List;
 import java.util.Set;
 
-public class FixedFilterFolder extends GroupElementFolder<FixedFilterFolder> implements NewElementListener<FilterDescriptor> {
+public class FixedFilterFolder extends GroupElementFolder<FixedFilterFolder> {
 
     private Set<FilterDescriptor> fixedFilters;
 
@@ -17,15 +15,16 @@ public class FixedFilterFolder extends GroupElementFolder<FixedFilterFolder> imp
         super(group, "Постоянные фильтры");
 
         this.fixedFilters = fixedFilters;
-        for (FilterDescriptor filter : fixedFilters)
-            if(group==null || group.equals(filter.getGroupObject(groupList)))
-                add(filter.getNode(group));
+        for (FilterDescriptor filter : fixedFilters) {
+            if (group == null || group.equals(filter.getGroupObject(groupList))) {
+                add(filter.createNode(group));
+            }
+        }
 
-        FilterDescriptor.addNewElementActions(this, this);
+        addCollectionReferenceActions(this, "fixedFilters", FilterDescriptor.derivedNames, FilterDescriptor.derivedClasses);
     }
 
-    public void newElement(FilterDescriptor element) {
-        fixedFilters.add(element);
-        IncrementDependency.update(this, "fixedFilters");
+    public Set<FilterDescriptor> getFixedFilters() {
+        return fixedFilters;
     }
 }

@@ -30,4 +30,9 @@ public class ClientImageClass extends ClientFileClass {
     public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) {
         return new FilePropertyEditor("Изображения", "jpg", "jpeg", "bmp", "png");
     }
+
+    @Override
+    public String toString() {
+        return "Файл картинки";
+    }
 }

@@ -1,11 +1,15 @@
 package platform.client;
 
-import platform.client.descriptor.nodes.actions.NewElementListener;
+import platform.base.BaseUtils;
+import platform.client.descriptor.increment.IncrementDependency;
+import platform.client.descriptor.nodes.NodeCreator;
+import platform.client.descriptor.nodes.NullFieldNode;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Collection;
 
 public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableTreeNode {
 
@@ -43,10 +47,14 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
     public C getSiblingNode(TransferHandler.TransferSupport info) {
 
         ClientTreeNode treeNode = ClientTree.getNode(info);
-        if (treeNode == null || getClass() != treeNode.getClass()) return null;
-        if (getParent() != treeNode.getParent()) return null;
+        if (treeNode == null || getClass() != treeNode.getClass()) {
+            return null;
+        }
+        if (getParent() != treeNode.getParent()) {
+            return null;
+        }
 
-        return (C)treeNode;
+        return (C) treeNode;
     }
 
     public void setActions(int mode, Action... actions) {
@@ -82,13 +90,34 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
         }
     }
 
-    public void addNewElementActions(String[] captions, final Class[] classes, final NewElementListener listener) {
+    protected void addFieldReferenceNode(Object object, String field, String fieldCaption, Object context, String[] derivedNames, Class[] derivedClasses) {
+        Object value = BaseUtils.invokeGetter(object, field);
+        ClientTreeNode newNode;
+        if (value == null) {
+            newNode = new NullFieldNode(fieldCaption);
+        } else if (value instanceof NodeCreator) {
+            newNode = ((NodeCreator) value).createNode(context);
+        } else {
+            return;
+        }
+
+        newNode.addInitializeReferenceActions(object, field, derivedNames, derivedClasses);
+        add(newNode);
+    }
+
+    public void addInitializeReferenceActions(final Object object, final String field, String[] captions, final Class[] classes) {
+        addNodeAction(new AbstractAction("Обнулить") {
+            public void actionPerformed(ActionEvent e) {
+                BaseUtils.invokeSetter(object, field, null);
+            }
+        });
+
         for (int i = 0; i < captions.length; i++) {
             final int prm = i;
-            addNodeAction(new AbstractAction("Добавить " + captions[i]) {
+            addNodeAction(new AbstractAction("Инициализировать как " + captions[i]) {
                 public void actionPerformed(ActionEvent e) {
                     try {
-                        listener.newElement(classes[prm].newInstance());
+                        BaseUtils.invokeSetter(object, field, classes[prm].newInstance());
                     } catch (InstantiationException e1) {
                         throw new RuntimeException(e1);
                     } catch (IllegalAccessException e1) {
@@ -98,15 +127,38 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
             });
         }
     }
-    public boolean canImport(TransferHandler.TransferSupport info){
+
+    public void addCollectionReferenceActions(final Object object, final String collectionField, String[] captions, final Class[] classes) {
+        for (int i = 0; i < captions.length; i++) {
+            final int prm = i;
+            addNodeAction(new AbstractAction("Добавить " + captions[i]) {
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        Object val = BaseUtils.invokeGetter(object, collectionField);
+                        if (val instanceof Collection) {
+                            Collection collection = (Collection) val;
+                            collection.add(classes[prm].newInstance());
+                            IncrementDependency.update(object, collectionField);
+                        }
+                    } catch (InstantiationException e1) {
+                        throw new RuntimeException(e1);
+                    } catch (IllegalAccessException e1) {
+                        throw new RuntimeException(e1);
+                    }
+                }
+            });
+        }
+    }
+
+    public boolean canImport(TransferHandler.TransferSupport info) {
         return false;
     }
 
-    public boolean importData(ClientTree tree, TransferHandler.TransferSupport info){
+    public boolean importData(ClientTree tree, TransferHandler.TransferSupport info) {
         return false;
     }
 
-    public void exportDone(JComponent component, int mode){
+    public void exportDone(JComponent component, int mode) {
     }
 
     @Override

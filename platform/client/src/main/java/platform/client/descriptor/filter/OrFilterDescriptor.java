@@ -1,15 +1,14 @@
 package platform.client.descriptor.filter;
 
+import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.nodes.filters.FilterNode;
 import platform.client.descriptor.nodes.filters.OrFilterNode;
-import platform.interop.serialization.SerializationPool;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.serialization.ClientSerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.List;
 import java.util.List;
 
 public class OrFilterDescriptor extends FilterDescriptor {
@@ -22,8 +21,8 @@ public class OrFilterDescriptor extends FilterDescriptor {
     }
 
     @Override
-    public FilterNode getNode(GroupObjectDescriptor group) {
-        return new OrFilterNode(group, this);
+    public FilterNode createNode(Object group) {
+        return new OrFilterNode((GroupObjectDescriptor) group, this);
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
@@ -43,5 +42,23 @@ public class OrFilterDescriptor extends FilterDescriptor {
             result += "( " + op1.toString() + ", " + op2.toString() + " )";
         }
         return result;
+    }
+
+    public void setOp1(FilterDescriptor op1) {
+        this.op1 = op1;
+        IncrementDependency.update(this, "op1");
+    }
+
+    public FilterDescriptor getOp1() {
+        return op1;
+    }
+
+    public void setOp2(FilterDescriptor op2) {
+        this.op2 = op2;
+        IncrementDependency.update(this, "op2");
+    }
+
+    public FilterDescriptor getOp2() {
+        return op2;
     }
 }

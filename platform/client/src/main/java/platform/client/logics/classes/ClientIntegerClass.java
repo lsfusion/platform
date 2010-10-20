@@ -37,4 +37,9 @@ public class ClientIntegerClass extends ClientIntegralClass {
     public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) {
         return new IntegerPropertyEditor(value, (NumberFormat) format, design, getJavaClass());
     }
+
+    @Override
+    public String toString() {
+        return "Целое число";
+    }
 }
