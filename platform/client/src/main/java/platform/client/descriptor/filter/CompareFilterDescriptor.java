@@ -2,9 +2,9 @@ package platform.client.descriptor.filter;
 
 import platform.client.descriptor.OrderDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
+import platform.client.descriptor.nodes.filters.CompareFilterNode;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.Compare;
-import platform.interop.serialization.SerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -32,6 +32,11 @@ public class CompareFilterDescriptor extends PropertyFilterDescriptor {
 
         compare = Compare.deserialize(inStream);
         value = (OrderDescriptor) pool.deserializeObject(inStream);
+    }
+
+    @Override
+    public CompareFilterNode createNode(Object group) {
+        return new CompareFilterNode((GroupObjectDescriptor) group, this);
     }
 
     @Override

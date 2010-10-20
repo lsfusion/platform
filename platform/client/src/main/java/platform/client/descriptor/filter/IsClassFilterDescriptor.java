@@ -1,6 +1,9 @@
 package platform.client.descriptor.filter;
 
+import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
+import platform.client.descriptor.nodes.filters.FilterNode;
+import platform.client.descriptor.nodes.filters.IsClassFilterNode;
 import platform.client.serialization.ClientSerializationPool;
 
 import java.io.DataInputStream;
@@ -20,5 +23,10 @@ public class IsClassFilterDescriptor extends PropertyFilterDescriptor {
 
     public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, iID, inStream);
+    }
+
+    @Override
+    public FilterNode createNode(Object group) {
+        return new IsClassFilterNode((GroupObjectDescriptor) group, this);
     }
 }

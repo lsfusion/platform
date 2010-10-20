@@ -1,5 +1,9 @@
 package platform.client.descriptor.filter;
 
+import platform.client.descriptor.FormDescriptor;
+import platform.client.descriptor.GroupObjectDescriptor;
+import platform.client.descriptor.nodes.filters.FilterNode;
+import platform.client.descriptor.nodes.filters.NotNullFilterNode;
 import platform.client.serialization.ClientSerializationPool;
 
 import java.io.DataInputStream;
@@ -21,5 +25,10 @@ public class NotNullFilterDescriptor extends PropertyFilterDescriptor {
         if (property != null)
             result += "( " + property + " )";
         return result;
+    }
+
+    @Override
+    public FilterNode createNode(Object group) {
+        return new NotNullFilterNode((GroupObjectDescriptor) group, this);
     }
 }
