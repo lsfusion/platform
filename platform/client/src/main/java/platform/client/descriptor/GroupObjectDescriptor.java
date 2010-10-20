@@ -10,13 +10,59 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implements ClientIdentitySerializable {
     private int ID;
     private byte initClassView;
     private byte banClassView;
+    private List<Byte> banClassViewList = new ArrayList<Byte>();
     private PropertyObjectDescriptor propertyHighlight;
+
+
     public ClientGroupObject client;
+
+    public List<Byte> getBanClassViewList() {
+        return banClassViewList;
+    }
+
+    public void setBanClassViewList(List<Byte> banClassViewList) {
+        this.banClassViewList = banClassViewList;
+        IncrementDependency.update(this, "banClassViewList");
+
+        byte banViews = 0;
+        for (Byte bv : banClassViewList) {
+            banViews |= bv;
+        }
+        setBanClassView(banViews);
+    }
+
+    public byte getInitClassView() {
+        return initClassView;
+    }
+
+    public void setInitClassView(byte initClassView) {
+        this.initClassView = initClassView;
+        IncrementDependency.update(this, "initClassView");
+    }
+
+    public byte getBanClassView() {
+        return client.banClassView;
+    }
+
+    public void setBanClassView(byte banClassView) {
+        client.banClassView = banClassView;
+        IncrementDependency.update(this, "banClassView");
+    }
+
+    public PropertyObjectDescriptor getPropertyHighlight() {
+        return propertyHighlight;
+    }
+
+    public void setPropertyHighlight(PropertyObjectDescriptor propertyHighlight) {
+        this.propertyHighlight = propertyHighlight;
+        IncrementDependency.update(this, "propertyHighlight");
+    }
 
     public int getID() {
         return ID;
@@ -52,6 +98,18 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
     public boolean moveObject(ObjectDescriptor objectFrom, int index) {
         BaseUtils.moveElement(this, objectFrom, index);
         BaseUtils.moveElement(client, objectFrom.client, index);
+        IncrementDependency.update(this, "objects");
+
+        IncrementDependency.update(this, "objects");
+        return true;
+    }
+
+    public boolean addObject(ObjectDescriptor object) {
+        add(object);
+        object.groupTo = this;
+        client.add(object.client);
+        object.client.groupObject = client;
+
         IncrementDependency.update(this, "objects");
         return true;
     }

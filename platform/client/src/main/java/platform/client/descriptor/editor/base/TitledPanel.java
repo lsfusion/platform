@@ -1,17 +1,28 @@
 package platform.client.descriptor.editor.base;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
 
 public class TitledPanel extends JPanel {
-    public TitledPanel(String title, boolean vertical, Component component) {
-        if (title != null) {
-            TitledBorder border = BorderFactory.createTitledBorder(title);
-            setBorder(border);
-        }
+    public TitledPanel() {
+        this(null);
+    }
 
-        setLayout(new BorderLayout());
+    public TitledPanel(String title) {
+        this(title, new BorderLayout());
+    }
+
+    public TitledPanel(String title, LayoutManager layout) {
+        super(layout);
+        
+        if (title != null) {
+            setBorder( BorderFactory.createTitledBorder(title) );
+        }
+    }
+    
+    public TitledPanel(String title, Component component) {
+        this(title);
+
         add(BorderLayout.CENTER, component);
     }
 }

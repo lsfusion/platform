@@ -1,11 +1,12 @@
 package platform.client.logics;
 
+import platform.client.descriptor.editor.logics.ClientComponentEditor;
 import platform.client.serialization.ClientSerializationPool;
 
+import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Collection;
 
 public class ClientShowType extends ClientComponent {
 
@@ -14,7 +15,7 @@ public class ClientShowType extends ClientComponent {
     }
 
     public ClientGroupObject groupObject;
-    
+
     @Override
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);
@@ -31,6 +32,10 @@ public class ClientShowType extends ClientComponent {
 
     @Override
     public String toString() {
-        return "Вид (" + groupObject.toString() + ")"; 
+        return "Вид (" + groupObject.toString() + ")";
+    }
+
+    public JComponent getPropertiesEditor() {
+        return new ClientComponentEditor("Компонент изменения вида", this);
     }
 }

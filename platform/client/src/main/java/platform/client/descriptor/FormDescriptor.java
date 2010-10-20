@@ -188,8 +188,11 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         Map<Integer, ObjectDescriptor> idToObjects = new HashMap<Integer, ObjectDescriptor>();
         Map<Integer, ClientClass> classes = new HashMap<Integer, ClientClass>();
         for(ObjectDescriptor object : objects) {
-            idToObjects.put(object.getID(), object);
-            classes.put(object.getID(), object.getBaseClass());
+            ClientClass cls = object.getBaseClass();
+            if (cls != null) {
+                idToObjects.put(object.getID(), object);
+                classes.put(object.getID(), object.getBaseClass());
+            }
         }
 
         List<PropertyObjectDescriptor> result = new ArrayList<PropertyObjectDescriptor>();
@@ -296,6 +299,22 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         client.removePropertyDraw(propertyDraw.client);
 
         IncrementDependency.update(this, "propertyDraws");
+        return true;
+    }
+
+    public boolean addGroupObject(GroupObjectDescriptor groupObject) {
+        groupObjects.add(groupObject);
+        client.groupObjects.add(groupObject.client);
+
+        IncrementDependency.update(this, "groupObjects");
+        return true;
+    }
+
+    public boolean removeGroupObject(GroupObjectDescriptor groupObject) {
+        groupObjects.remove(groupObject);
+        client.groupObjects.add(groupObject.client);
+
+        IncrementDependency.update(this, "groupObjects");
         return true;
     }
 }

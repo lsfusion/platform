@@ -1,11 +1,12 @@
 package platform.client.logics;
 
+import platform.client.descriptor.editor.logics.ClientFunctionEditor;
 import platform.client.serialization.ClientSerializationPool;
 
+import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Collection;
 
 public class ClientFunction extends ClientComponent {
 
@@ -31,5 +32,10 @@ public class ClientFunction extends ClientComponent {
     @Override
     public String toString() {
         return caption;
+    }
+
+    @Override
+    public JComponent getPropertiesEditor() {
+        return new ClientFunctionEditor(this);
     }
 }

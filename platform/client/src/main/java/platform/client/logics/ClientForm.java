@@ -202,4 +202,11 @@ public class ClientForm implements LogicsSupplier, ClientIdentitySerializable {
 
         return true;
     }
+
+    public boolean removeGroupObject(ClientGroupObject groupObject) {
+        groupObjects.remove(groupObject);
+        //todo: what about properties
+
+        return true;
+    }
 }

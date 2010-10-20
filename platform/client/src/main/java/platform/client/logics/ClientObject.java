@@ -9,15 +9,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Collection;
 
 public class ClientObject implements Serializable, ClientIdentitySerializable {
 
     private int ID = 0;
-
-    public int getID() {
-        return ID;
-    }
 
     public String caption;
     public boolean addOnTransaction;
@@ -27,10 +22,14 @@ public class ClientObject implements Serializable, ClientIdentitySerializable {
 
     public ClientClass baseClass;
 
-    public ClientClassChooser classChooser;
+    public ClientClassChooser classChooser = new ClientClassChooser();
 
     public ClientObject() {
 
+    }
+
+    public int getID() {
+        return ID;
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
@@ -55,5 +54,4 @@ public class ClientObject implements Serializable, ClientIdentitySerializable {
     public String toString() {
         return caption;
     }
-
 }

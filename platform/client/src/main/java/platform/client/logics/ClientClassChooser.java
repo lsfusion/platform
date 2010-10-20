@@ -1,11 +1,12 @@
 package platform.client.logics;
 
+import platform.client.descriptor.editor.logics.ClientComponentEditor;
 import platform.client.serialization.ClientSerializationPool;
 
+import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Collection;
 
 public class ClientClassChooser extends ClientComponent {
 
@@ -32,5 +33,10 @@ public class ClientClassChooser extends ClientComponent {
     @Override
     public String toString() {
         return "Дерево классов (" + object.toString() + ")";
+    }
+
+    @Override
+    public JComponent getPropertiesEditor() {
+        return new ClientComponentEditor("Компонент выбора класса", this);
     }
 }

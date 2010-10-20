@@ -1,12 +1,14 @@
 package platform.client.logics;
 
 import platform.base.BaseUtils;
+import platform.client.descriptor.editor.logics.ClientComponentEditor;
 import platform.client.descriptor.nodes.ComponentNode;
 import platform.client.descriptor.nodes.ContainerNode;
 import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 
+import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -78,5 +80,9 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
 
     public void moveChild(ClientComponent compFrom, ClientComponent compTo) {
         BaseUtils.moveElement(children, compFrom, compTo);
+    }
+
+    public JComponent getPropertiesEditor() {
+        return new ClientComponentEditor("Контейнер", this);
     }
 }

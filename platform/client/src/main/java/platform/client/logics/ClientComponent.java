@@ -1,5 +1,7 @@
 package platform.client.logics;
 
+import platform.client.descriptor.editor.logics.ClientComponentEditor;
+import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.nodes.ComponentNode;
 import platform.client.serialization.ClientCustomSerializable;
 import platform.client.serialization.ClientIdentitySerializable;
@@ -8,28 +10,28 @@ import platform.interop.ComponentDesign;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexConstraints;
 
+import javax.swing.*;
 import javax.swing.tree.MutableTreeNode;
+import java.awt.*;
 import java.io.*;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ClientComponent implements Serializable, ClientIdentitySerializable {
+public abstract class ClientComponent implements Serializable, ClientIdentitySerializable {
 
     public int compID; // ID есть и у свойст и у объектов, так что чтобы не путаться
 
-    public ComponentDesign design;
+    public ComponentDesign design = new ComponentDesign();
 
     public ClientContainer container;
-    public SimplexConstraints<ClientComponent> constraints;
+    public SimplexConstraints<ClientComponent> constraints = SimplexConstraints.DEFAULT_CONSTRAINT;
 
     public boolean defaultComponent = false;
 
     public boolean show = true;
 
     public ClientComponent() {
-        constraints = SimplexConstraints.DEFAULT_CONSTRAINT;
-        design = new ComponentDesign();
     }
 
     public int getID() {
@@ -74,5 +76,55 @@ public class ClientComponent implements Serializable, ClientIdentitySerializable
 
     public ComponentNode getNode() {
         return new ComponentNode(this);
+    }
+
+    public JComponent getPropertiesEditor() {
+        return new ClientComponentEditor("Компонент", this);
+    }
+
+    public boolean getShow() {
+        return show;
+    }
+
+    public void setShow(boolean show) {
+        this.show = show;
+        IncrementDependency.update(this, "show");
+    }
+
+    public Color getBackground() {
+        return design.background;
+    }
+
+    public void setBackground(Color background) {
+        design.background = background;
+
+        IncrementDependency.update(this, "background");
+    }
+
+    public Color getForeground() {
+        return design.foreground;
+    }
+
+    public void setForeground(Color foreground) {
+        design.foreground = foreground;
+        IncrementDependency.update(this, "foreground");
+    }
+
+    public Font getFont() {
+        return design.font;
+    }
+
+    public void setFont(Font font) {
+        design.font = font;
+        IncrementDependency.update(this, "font");
+    }
+
+    public void setDefaultComponent(boolean defaultComponent) {
+        this.defaultComponent = defaultComponent;
+        IncrementDependency.update(this, "defaultComponent");
+    }
+
+    public boolean getDefaultComponent() {
+        return defaultComponent;
     }
 }

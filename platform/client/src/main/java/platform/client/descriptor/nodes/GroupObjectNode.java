@@ -25,7 +25,7 @@ public class GroupObjectNode extends DescriptorNode<GroupObjectDescriptor, Group
     }
 
     public NodeEditor createEditor(FormDescriptor form, RemoteDescriptorInterface remote) {
-        return new GroupObjectEditor(getTypedObject());
+        return new GroupObjectEditor(getTypedObject(), form);
     }
 
     @Override

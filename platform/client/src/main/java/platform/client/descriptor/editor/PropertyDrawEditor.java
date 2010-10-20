@@ -22,9 +22,9 @@ public class PropertyDrawEditor extends GroupElementEditor {
 
         this.descriptor = descriptor;
 
-        add(new TitledPanel("Стат. заголовок", false, new IncrementTextEditor(descriptor, "overridenCaption")));
+        add(new TitledPanel("Стат. заголовок", new IncrementTextEditor(descriptor, "overridenCaption")));
 
-        add(new TitledPanel("Реализация", false, new JComboBox(new IncrementSingleListSelectionModel(descriptor, "propertyObject") {
+        add(new TitledPanel("Реализация", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "propertyObject") {
             public List<?> getList() {
                 return form.getProperties(groupObject);
             }
@@ -37,7 +37,7 @@ public class PropertyDrawEditor extends GroupElementEditor {
 
         // все не обязательно но желательно
         if(groupObject==null) {
-            add(new TitledPanel("Группа объектов", false, new JComboBox(new IncrementSingleListSelectionModel(descriptor, "toDraw") {
+            add(new TitledPanel("Группа объектов", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "toDraw") {
                 public List<?> getList() {
                     PropertyObjectDescriptor propertyObject = descriptor.getPropertyObject();
                     return propertyObject != null
@@ -54,7 +54,7 @@ public class PropertyDrawEditor extends GroupElementEditor {
         }
 
         // columnGroupObjects из списка mapping'ов (полных) !!! без toDraw
-        add(new TitledPanel("Группы в колонки", true, new IncrementMultipleListEditor(new IncrementMultipleListSelectionModel(descriptor, "columnGroupObjects") {
+        add(new TitledPanel("Группы в колонки", new IncrementMultipleListEditor(new IncrementMultipleListSelectionModel(descriptor, "columnGroupObjects") {
             public List<?> getList() {
                 return descriptor.getUpGroupObjects(form.groupObjects);
             }
@@ -69,7 +69,7 @@ public class PropertyDrawEditor extends GroupElementEditor {
         add(Box.createRigidArea(new Dimension(5,5)));
         
         // propertyCaption из списка columnGroupObjects (+objects без toDraw)
-        add(new TitledPanel("Динам. заголовок", false, new JComboBox(new IncrementSingleListSelectionModel(descriptor, "propertyCaption") {
+        add(new TitledPanel("Динам. заголовок", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "propertyCaption") {
             public List<?> getList() {
                 return FormDescriptor.getProperties(descriptor.getColumnGroupObjects(), null, remote);
             }

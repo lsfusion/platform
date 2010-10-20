@@ -1,7 +1,11 @@
 package platform.client.logics;
 
+import platform.client.descriptor.editor.logics.ClientComponentEditor;
+import platform.client.descriptor.editor.logics.ClientGridEditor;
+import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.serialization.ClientSerializationPool;
 
+import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -52,5 +56,54 @@ public class ClientGrid extends ClientComponent {
     @Override
     public String toString() {
         return "Таблица (" + groupObject.toString() + ")";
+    }
+
+    public JComponent getPropertiesEditor() {
+        return new ClientGridEditor(this);
+    }
+
+    public void setShowFind(boolean showFind) {
+        this.showFind = showFind;
+        IncrementDependency.update(this, "showFind");
+    }
+
+    public boolean getShowFind() {
+        return showFind;
+    }
+
+    public void setShowFilter(boolean showFilter) {
+        this.showFilter = showFilter;
+        IncrementDependency.update(this, "showFilter");
+    }
+
+    public boolean getShowFilter() {
+        return showFilter;
+    }
+
+    public void setTabVertical(boolean tabVertical) {
+        this.tabVertical = tabVertical;
+        IncrementDependency.update(this, "tabVertical");
+    }
+
+    public boolean getTabVertical() {
+        return tabVertical;
+    }
+
+    public void setAutoHide(boolean autoHide) {
+        this.autoHide = autoHide;
+        IncrementDependency.update(this, "autoHide");
+    }
+
+    public boolean getAutoHide() {
+        return autoHide;
+    }
+
+    public void setMinRowCount(byte minRowCount) {
+        this.minRowCount = minRowCount;
+        IncrementDependency.update(this, "minRowCount");
+    }
+
+    public byte getMinRowCount() {
+        return minRowCount;
     }
 }

@@ -19,9 +19,12 @@ public class ClientGroupObject extends ArrayList<ClientObject>
                                  implements ClientPropertyRead, ClientIdentitySerializable {
 
     private int ID;
+    public byte banClassView = 0;
+
+    public ClientGrid grid = new ClientGrid();
+    public ClientShowType showType = new ClientShowType();
 
     public ClientGroupObject() {
-
     }
 
     public List<ClientObject> getDeserializeList(Map<ClientGroupObject, Byte> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
@@ -47,11 +50,6 @@ public class ClientGroupObject extends ArrayList<ClientObject>
     public boolean shouldBeDrawn(ClientFormController form) {
         return true;
     }
-
-    public byte banClassView = 0;
-
-    public ClientGrid grid;
-    public ClientShowType showType;
 
     @Override
     public boolean equals(Object o) {
@@ -113,6 +111,9 @@ public class ClientGroupObject extends ArrayList<ClientObject>
 
     @Override
     public String toString() {
+        if (size() == 0) {
+            return "Пустая группа";
+        }
         
         String result = "";
         for (ClientObject object : this) {

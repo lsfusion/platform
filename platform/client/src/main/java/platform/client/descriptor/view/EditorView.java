@@ -9,7 +9,7 @@ public class EditorView extends JPanel {
     private NodeEditor editor;
 
     public EditorView() {
-        setLayout(new BorderLayout());
+        super(new BorderLayout());
     }
 
     public boolean setEditor(NodeEditor iEditor) {
@@ -21,8 +21,8 @@ public class EditorView extends JPanel {
 
         removeAll();
         if (editor != null) {
-            JPanel editorPanel = new JPanel();
-            editorPanel.add(editor.getComponent());
+            JPanel editorPanel = new JPanel(new BorderLayout());
+            editorPanel.add(BorderLayout.NORTH, editor.getComponent());
 
             add(new JScrollPane(editorPanel));
         }

@@ -1,36 +1,32 @@
 package platform.client.descriptor;
 
+import platform.base.BaseUtils;
+import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
-import platform.client.descriptor.increment.IncrementDependency;
-import platform.base.BaseUtils;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Collections;
+import java.util.List;
 
 public class PropertyDrawDescriptor extends IdentityDescriptor implements ClientIdentitySerializable {
-
-    public void setOverridenCaption(String caption) { // usage через reflection
-        client.overridenCaption = caption;
-        IncrementDependency.update(this, "caption");
-    }
-    public String getOverridenCaption() {
-        return client.overridenCaption;
-    }
-
-    @Override
-    public String toString() {
-        return client.getResultingCaption();
-    }
-
     public ClientPropertyDraw client;
 
     private PropertyObjectDescriptor propertyObject;
+
+    //todo: временно public...
+    public GroupObjectDescriptor toDraw;
+    private boolean shouldBeLast;
+    private Byte forceViewType;
+
+    private PropertyObjectDescriptor propertyCaption;
+
+    private List<GroupObjectDescriptor> columnGroupObjects;
+
     public void setPropertyObject(PropertyObjectDescriptor propertyObject) { // usage через reflection
         this.propertyObject = propertyObject;
         if (propertyObject != null) {
@@ -38,16 +34,16 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
         }
         IncrementDependency.update(this, "propertyObject");
     }
+
     public PropertyObjectDescriptor getPropertyObject() {
         return propertyObject;
     }
 
-    //todo: временно public...
-    public GroupObjectDescriptor toDraw;
     public void setToDraw(GroupObjectDescriptor toDraw) { // usage через reflection
         this.toDraw = toDraw;
         IncrementDependency.update(this, "toDraw");
     }
+
     public GroupObjectDescriptor getToDraw() {
         return toDraw;
     }
@@ -68,35 +64,48 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
         }
 
         List<GroupObjectDescriptor> groupObjects = getPropertyObject().getGroupObjects(groupList);
-        if(toDraw==null) {
-            if(groupObjects.size()>0)
-                return groupObjects.subList(0, groupObjects.size()-1);
-            else
+        if (toDraw == null) {
+            if (groupObjects.size() > 0) {
+                return groupObjects.subList(0, groupObjects.size() - 1);
+            } else {
                 return groupObjects;
-        } else
+            }
+        } else {
             return BaseUtils.removeList(groupObjects, Collections.singleton(toDraw));
+        }
     }
 
-    private List<GroupObjectDescriptor> columnGroupObjects;
     public List<GroupObjectDescriptor> getColumnGroupObjects() { // usage через reflection
         return columnGroupObjects;
     }
+
     public void setColumnGroupObjects(List<GroupObjectDescriptor> columnGroupObjects) {
         this.columnGroupObjects = columnGroupObjects;
         IncrementDependency.update(this, "columnGroupObjects");
     }
 
-    private PropertyObjectDescriptor propertyCaption;
     public PropertyObjectDescriptor getPropertyCaption() { // usage через reflection
         return propertyCaption;
     }
+
     public void setPropertyCaption(PropertyObjectDescriptor propertyCaption) {
         this.propertyCaption = propertyCaption;
         IncrementDependency.update(this, "propertyCaption");
     }
 
-    private boolean shouldBeLast;
-    private Byte forceViewType;
+    public void setOverridenCaption(String caption) { // usage через reflection
+        client.overridenCaption = caption;
+        IncrementDependency.update(this, "overridenCaption");
+    }
+
+    public String getOverridenCaption() {
+        return client.overridenCaption;
+    }
+
+    @Override
+    public String toString() {
+        return client.getResultingCaption();
+    }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, propertyObject);

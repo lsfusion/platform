@@ -1,10 +1,10 @@
 package platform.client.descriptor;
 
+import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.logics.ClientObject;
 import platform.client.logics.classes.ClientClass;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
-import platform.client.descriptor.increment.IncrementDependency;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -16,15 +16,6 @@ public class ObjectDescriptor extends IdentityDescriptor implements PropertyObje
     public ClientObject client;
     public GroupObjectDescriptor groupTo;
 
-    public void setBaseClass(ClientClass baseClass) {
-        client.baseClass = baseClass;
-
-        IncrementDependency.update(this, "baseClass");
-    }
-    public ClientClass getBaseClass() {
-        return client.baseClass;
-    }
-
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, groupTo);
         getBaseClass().serialize(outStream);
@@ -33,7 +24,7 @@ public class ObjectDescriptor extends IdentityDescriptor implements PropertyObje
 
     public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
         ID = iID;
-        
+
         groupTo = (GroupObjectDescriptor) pool.deserializeObject(inStream);
 
         client = pool.context.getObject(iID);
@@ -46,5 +37,33 @@ public class ObjectDescriptor extends IdentityDescriptor implements PropertyObje
 
     public GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groups) {
         return groupTo;
+    }
+
+    public void setCaption(String caption) { // usage через reflection
+        client.caption = caption;
+        IncrementDependency.update(this, "caption");
+    }
+
+    public String getCaption() {
+        return client.caption;
+    }
+
+    public void setBaseClass(ClientClass baseClass) {
+        client.baseClass = baseClass;
+
+        IncrementDependency.update(this, "baseClass");
+    }
+
+    public ClientClass getBaseClass() {
+        return client.baseClass;
+    }
+
+    public void setAddOnTransaction(boolean addOnTransaction) {
+        client.addOnTransaction = addOnTransaction;
+        IncrementDependency.update(this, "addOnTransaction");
+    }
+
+    public boolean getAddOnTransaction() {
+        return client.addOnTransaction;
     }
 }
