@@ -48,4 +48,22 @@ public enum Compare {
         outStream.writeByte(serialize());
     }
 
+    @Override
+    public String toString() {
+        switch (this) {
+            case EQUALS :
+                return "=";
+            case GREATER :
+                return ">";
+            case LESS :
+                return "<";
+            case GREATER_EQUALS :
+                return ">=";
+            case LESS_EQUALS :
+                return "<=";
+            case NOT_EQUALS :
+                return "!=";
+        }
+        return "";
+    }
 }

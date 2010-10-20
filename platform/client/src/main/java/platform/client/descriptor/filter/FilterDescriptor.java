@@ -1,8 +1,10 @@
 package platform.client.descriptor.filter;
 
+import platform.client.descriptor.nodes.filters.FilterNode;
 import platform.client.serialization.ClientCustomSerializable;
 import platform.client.descriptor.GroupObjectDescriptor;
 
+import javax.swing.tree.MutableTreeNode;
 import java.util.List;
 
 public abstract class FilterDescriptor implements ClientCustomSerializable {
@@ -15,4 +17,6 @@ public abstract class FilterDescriptor implements ClientCustomSerializable {
         else
             return group2;
     }
+
+    public abstract FilterNode getNode(GroupObjectDescriptor group);
 }

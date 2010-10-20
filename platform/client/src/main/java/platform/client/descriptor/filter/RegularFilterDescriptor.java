@@ -15,7 +15,7 @@ import java.util.List;
 
 public class RegularFilterDescriptor extends IdentityDescriptor implements ClientIdentitySerializable {
 
-    private FilterDescriptor filter;
+    public FilterDescriptor filter;
 
     ClientRegularFilter client;
 

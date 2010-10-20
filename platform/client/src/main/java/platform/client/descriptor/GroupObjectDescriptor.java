@@ -1,6 +1,7 @@
 package platform.client.descriptor;
 
 import platform.base.BaseUtils;
+import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.logics.ClientGroupObject;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
@@ -45,8 +46,13 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
     }
 
     public boolean moveObject(ObjectDescriptor objectFrom, ObjectDescriptor objectTo) {
-        BaseUtils.moveElement(this, objectFrom, objectTo);
-        BaseUtils.moveElement(client, objectFrom.client, objectTo.client);
+        return moveObject(objectFrom, indexOf(objectTo) + (indexOf(objectFrom) > indexOf(objectTo) ? 0 : 1));
+    }
+
+    public boolean moveObject(ObjectDescriptor objectFrom, int index) {
+        BaseUtils.moveElement(this, objectFrom, index);
+        BaseUtils.moveElement(client, objectFrom.client, index);
+        IncrementDependency.update(this, "objects");
         return true;
     }
 }

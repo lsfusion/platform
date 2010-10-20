@@ -34,4 +34,9 @@ public class DataObjectDescriptor implements PropertyObjectInterfaceDescriptor {
     public int hashCode() {
         return object.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return object.toString();
+    }
 }

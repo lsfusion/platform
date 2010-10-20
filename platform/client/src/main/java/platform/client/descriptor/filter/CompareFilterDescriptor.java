@@ -32,4 +32,9 @@ public class CompareFilterDescriptor extends PropertyFilterDescriptor {
         compare = Compare.deserialize(inStream);
         value = (OrderDescriptor) pool.deserializeObject(inStream);
     }
+
+    @Override
+    public String toString() {
+        return property + " " + compare + " " + value;
+    }
 }

@@ -1,5 +1,7 @@
 package platform.client.descriptor.filter;
 
+import platform.client.descriptor.nodes.filters.FilterNode;
+import platform.client.descriptor.nodes.filters.OrFilterNode;
 import platform.interop.serialization.SerializationPool;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.serialization.ClientSerializationPool;
@@ -18,6 +20,11 @@ public class OrFilterDescriptor extends FilterDescriptor {
         return getDownGroup(op1.getGroupObject(groupList), op2.getGroupObject(groupList), groupList);
     }
 
+    @Override
+    public FilterNode getNode(GroupObjectDescriptor group) {
+        return new OrFilterNode(group, this);
+    }
+
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, op1);
         pool.serializeObject(outStream, op2);
@@ -26,5 +33,10 @@ public class OrFilterDescriptor extends FilterDescriptor {
     public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
         op1 = (FilterDescriptor) pool.deserializeObject(inStream);
         op2 = (FilterDescriptor) pool.deserializeObject(inStream);
+    }
+
+    @Override
+    public String toString() {
+        return "ИЛИ( " + op1.toString() + ", " + op2.toString() + " )";
     }
 }

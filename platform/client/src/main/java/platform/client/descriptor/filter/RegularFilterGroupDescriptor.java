@@ -1,8 +1,9 @@
 package platform.client.descriptor.filter;
 
+import platform.base.BaseUtils;
 import platform.client.descriptor.IdentityDescriptor;
+import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.logics.ClientRegularFilterGroup;
-import platform.client.serialization.ClientCustomSerializable;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.client.descriptor.GroupObjectDescriptor;
@@ -38,5 +39,12 @@ public class RegularFilterGroupDescriptor extends IdentityDescriptor implements 
     @Override
     public String toString() {
         return client.toString();
+    }
+
+    public boolean moveFilter(RegularFilterDescriptor filterFrom, int index) {
+        BaseUtils.moveElement(filters, filterFrom, index);
+        BaseUtils.moveElement(client.filters, filterFrom.client, index);
+        IncrementDependency.update(this, "filters");
+        return true;
     }
 }

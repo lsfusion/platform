@@ -1,7 +1,8 @@
-package platform.client.descriptor.nodes;
+package platform.client.descriptor.nodes.filters;
 
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.filter.RegularFilterGroupDescriptor;
+import platform.client.descriptor.nodes.GroupElementFolder;
 
 import java.util.List;
 

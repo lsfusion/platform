@@ -14,4 +14,9 @@ public class NotNullFilterDescriptor extends PropertyFilterDescriptor {
     public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, iID, inStream);
     }
+
+    @Override
+    public String toString() {
+        return "ОПРЕДЕЛЕНО( " + property + " )"; 
+    }
 }

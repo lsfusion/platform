@@ -7,12 +7,13 @@ import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.editor.PropertyDrawEditor;
 import platform.client.descriptor.editor.base.NodeEditor;
 import platform.client.descriptor.nodes.actions.DeletableTreeNode;
+import platform.client.descriptor.nodes.actions.EditableTreeNode;
 import platform.interop.serialization.RemoteDescriptorInterface;
 
 import javax.swing.*;
 import javax.swing.tree.TreePath;
 
-public class PropertyDrawNode extends GroupElementNode<PropertyDrawDescriptor, PropertyDrawNode> implements DeletableTreeNode {
+public class PropertyDrawNode extends GroupElementNode<PropertyDrawDescriptor, PropertyDrawNode> implements EditableTreeNode, DeletableTreeNode {
 
     private FormDescriptor form;
 

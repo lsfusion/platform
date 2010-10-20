@@ -1505,7 +1505,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(issueObligation, objDoc, objCoupon)));
 
             if (toAdd) {
-                objIssue = addSingleGroupObject(DoubleClass.instance, "Выдать купоны");
+                objIssue = addSingleGroupObject(DoubleClass.instance, "Выдать купоны", baseGroup, true);
                 addPropertyDraw(couponToIssueQuantity, objDoc, objIssue);
                 objIssue.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
                 addFixedFilter(new NotNullFilterEntity(addPropertyObject(couponToIssueConstraint, objDoc, objIssue)));

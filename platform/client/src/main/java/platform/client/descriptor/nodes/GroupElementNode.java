@@ -1,9 +1,8 @@
 package platform.client.descriptor.nodes;
 
 import platform.client.descriptor.GroupObjectDescriptor;
-import platform.client.descriptor.nodes.actions.EditableTreeNode;
 
-public abstract class GroupElementNode<T, C extends GroupElementNode> extends DescriptorNode<T, C> implements EditableTreeNode {
+public abstract class GroupElementNode<T, C extends GroupElementNode> extends DescriptorNode<T, C> {
 
     protected GroupObjectDescriptor groupObject;
 

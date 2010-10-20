@@ -2,6 +2,8 @@ package platform.client.descriptor.nodes;
 
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.FormDescriptor;
+import platform.client.descriptor.nodes.filters.FixedFilterFolder;
+import platform.client.descriptor.nodes.filters.RegularFilterGroupFolder;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
