@@ -2,7 +2,6 @@ package platform.client.descriptor.filter;
 
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.serialization.ClientSerializationPool;
-import platform.interop.serialization.SerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -11,6 +10,7 @@ import java.util.List;
 
 public class IsClassFilterDescriptor extends PropertyFilterDescriptor {
     public GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groupList) {
+        if (property == null) return null;
         return property.getGroupObject(groupList);
     }
 

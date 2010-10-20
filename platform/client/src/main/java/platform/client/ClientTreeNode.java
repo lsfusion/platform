@@ -1,7 +1,10 @@
 package platform.client;
 
+import platform.client.descriptor.nodes.actions.NewElementListener;
+
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 
 public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableTreeNode {
@@ -79,6 +82,22 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
         }
     }
 
+    public void addNewElementActions(String[] captions, final Class[] classes, final NewElementListener listener) {
+        for (int i = 0; i < captions.length; i++) {
+            final int prm = i;
+            addNodeAction(new AbstractAction("Добавить " + captions[i]) {
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        listener.newElement(classes[prm].newInstance());
+                    } catch (InstantiationException e1) {
+                        throw new RuntimeException(e1);
+                    } catch (IllegalAccessException e1) {
+                        throw new RuntimeException(e1);
+                    }
+                }
+            });
+        }
+    }
     public boolean canImport(TransferHandler.TransferSupport info){
         return false;
     }

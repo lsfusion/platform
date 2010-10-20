@@ -96,6 +96,7 @@ public class FormDescriptorView extends JPanel implements IncrementView {
         IncrementDependency.add("overridenCaption", this);
         IncrementDependency.add("propertyObject", this);
         IncrementDependency.add("toDraw", this);
+        IncrementDependency.add("fixedFilters", this);
         IncrementDependency.add("filters", this);
         IncrementDependency.add(this, "form", this);
     }

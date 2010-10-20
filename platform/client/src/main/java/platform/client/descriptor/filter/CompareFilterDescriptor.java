@@ -17,6 +17,7 @@ public class CompareFilterDescriptor extends PropertyFilterDescriptor {
 
     @Override
     public GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groupList) {
+        if (value == null) return null;
         return getDownGroup(super.getGroupObject(groupList), value.getGroupObject(groupList), groupList);
     }
 
@@ -35,6 +36,14 @@ public class CompareFilterDescriptor extends PropertyFilterDescriptor {
 
     @Override
     public String toString() {
-        return property + " " + compare + " " + value;
+        String result = "";
+        if (property != null)
+            result += property;
+        if (compare != null)
+            result += " " + compare;
+        if (value != null)
+            result += " " + value;
+        if (result.isEmpty()) result = "СРАВНЕНИЕ";
+        return result;
     }
 }

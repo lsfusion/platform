@@ -16,6 +16,7 @@ public abstract class PropertyFilterDescriptor extends FilterDescriptor {
     public PropertyObjectDescriptor property;
 
     public GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groupList) {
+        if (property == null) return null;
         return property.getGroupObject(groupList);
     }
 

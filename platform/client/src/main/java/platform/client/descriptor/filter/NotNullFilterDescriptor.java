@@ -17,6 +17,9 @@ public class NotNullFilterDescriptor extends PropertyFilterDescriptor {
 
     @Override
     public String toString() {
-        return "ОПРЕДЕЛЕНО( " + property + " )"; 
+        String result = "ОПРЕДЕЛЕНО";
+        if (property != null)
+            result += "( " + property + " )";
+        return result;
     }
 }

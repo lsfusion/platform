@@ -15,6 +15,7 @@ public class NotFilterDescriptor extends FilterDescriptor {
     public FilterDescriptor filter;
 
     public GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groupList) {
+        if (filter == null) return null;
         return filter.getGroupObject(groupList);
     }
 
@@ -33,6 +34,10 @@ public class NotFilterDescriptor extends FilterDescriptor {
 
     @Override
     public String toString() {
-        return "НЕ( " + filter.toString() + " )";
+        String result = "НЕ";
+        if (filter != null) {
+            result += "( " + filter.toString() + " )";
+        }
+        return result;
     }
 }

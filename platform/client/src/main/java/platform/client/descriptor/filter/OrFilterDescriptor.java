@@ -17,6 +17,7 @@ public class OrFilterDescriptor extends FilterDescriptor {
     public FilterDescriptor op2;
 
     public GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groupList) {
+        if (op1 == null || op2 == null) return null;
         return getDownGroup(op1.getGroupObject(groupList), op2.getGroupObject(groupList), groupList);
     }
 
@@ -37,6 +38,10 @@ public class OrFilterDescriptor extends FilterDescriptor {
 
     @Override
     public String toString() {
-        return "ИЛИ( " + op1.toString() + ", " + op2.toString() + " )";
+        String result = "ИЛИ";
+        if (op1 != null && op2 != null) {
+            result += "( " + op1.toString() + ", " + op2.toString() + " )";
+        }
+        return result;
     }
 }
