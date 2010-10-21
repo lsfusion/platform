@@ -1,8 +1,7 @@
 package platform.client.form.classes;
 
-import platform.client.ClientTree;
-import platform.client.ExpandingTreeNode;
-import platform.client.ClientTreeNode;
+import platform.client.tree.*;
+import platform.client.tree.ExpandingTreeNode;
 import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientObjectClass;
 
@@ -15,7 +14,6 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.io.IOException;
 
 public abstract class ClassTree extends ClientTree {
@@ -53,8 +51,8 @@ public abstract class ClassTree extends ClientTree {
 
         currentClass = rootClass;
         currentNode = new ClientTreeNode(rootClass, true, ClientTreeNode.SUB_TREE,
-                new AbstractAction("Открыть"){
-                    public void actionPerformed(ActionEvent e){
+                new ClientTreeAction("Открыть"){
+                    public void actionPerformed(ClientTreeActionEvent e){
                         changeCurrentElement();
                     }
                 });

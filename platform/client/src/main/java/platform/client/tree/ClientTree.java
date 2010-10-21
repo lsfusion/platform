@@ -1,4 +1,4 @@
-package platform.client;
+package platform.client.tree;
 
 import platform.base.BaseUtils;
 
@@ -25,9 +25,9 @@ public class ClientTree extends JTree {
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                     TreePath path = getSelectionPath();
-                    ArrayList<Action> list = getActions(path);
+                    ArrayList<ClientTreeAction> list = getActions(path);
                     if (list.size() > 0) {
-                        list.get(0).actionPerformed(null);
+                        list.get(0).actionPerformed(new ClientTreeActionEvent(getNode(path)));
                     }
                 }
             }
@@ -121,34 +121,39 @@ public class ClientTree extends JTree {
             if (e.isPopupTrigger() || e.getClickCount() == 2) {
                 int x = e.getX();
                 int y = e.getY();
-                TreePath path = getPathForLocation(x, y);
+                final TreePath path = getPathForLocation(x, y);
                 if (path != null) {
                     setSelectionPath(path);
                     JPopupMenu popup = new JPopupMenu();
-                    ArrayList<Action> list = getActions(path);
-                    Action defaultAction = null;
+                    ArrayList<ClientTreeAction> list = getActions(path);
+                    ClientTreeAction defaultAction = null;
                     if (list.size() > 0) {
                         defaultAction = list.get(0);
                     }
-                    for (Action act : list) {
-                        popup.add(act);
+                    for (ClientTreeAction act : list) {
+                        final ClientTreeAction treeAction = act;
+                        popup.add(new AbstractAction(act.caption) {
+                            public void actionPerformed(ActionEvent e) {
+                                treeAction.actionPerformed(new ClientTreeActionEvent(getNode(path), e));
+                            }
+                        });
                     }
 
                     if (e.isPopupTrigger() && popup.getComponentCount() > 0) {
                         popup.show(ClientTree.this, x, y);
                     } else if (e.getClickCount() == 2 && defaultAction != null) {
-                        defaultAction.actionPerformed(null);
+                        defaultAction.actionPerformed(new ClientTreeActionEvent(getNode(path)));
                     }
                 }
             }
         }
     }
 
-    private ArrayList<Action> getActions(TreePath path) {
+    private ArrayList<ClientTreeAction> getActions(TreePath path) {
         if (path == null) {
             return null;
         }
-        ArrayList<Action> list = new ArrayList<Action>();
+        ArrayList<ClientTreeAction> list = new ArrayList<ClientTreeAction>();
 
         int cnt = path.getPathCount();
         for (int i = 0; i < cnt; i++) {
@@ -168,13 +173,10 @@ public class ClientTree extends JTree {
             }
         }
 
-        for (Iterator<Action> it = list.iterator(); it.hasNext(); ) {
-            Action act = it.next();
-            if (act instanceof PathFilteredAction) {
-                PathFilteredAction filterAction = (PathFilteredAction) act;
-                if (!filterAction.isApplicable(path)) {
-                    it.remove();
-                }
+        for (Iterator<ClientTreeAction> it = list.iterator(); it.hasNext(); ) {
+            ClientTreeAction act = it.next();
+            if (!act.isApplicable(path)) {
+                it.remove();
             }
         }
 
@@ -238,7 +240,7 @@ public class ClientTree extends JTree {
     }
 
     private static DataFlavor CLIENTTREENODE_FLAVOR = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType +
-                  "; class=platform.client.ClientTreeNode", "ClientTreeNode");
+                  "; class=platform.client.tree.ClientTreeNode", "ClientTreeNode");
 
     public class NodeTransfer implements Transferable {
         public ClientTreeNode node;
@@ -258,6 +260,17 @@ public class ClientTree extends JTree {
         public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
             return node;
         }
+    }
+
+    public static ClientTreeNode getNode(TreePath path) {
+
+        int cnt = path.getPathCount();
+        for (int i = cnt-1; i >= 0; i--) {
+            Object node = path.getPathComponent(i);
+            if (node instanceof ClientTreeNode) return (ClientTreeNode)node;
+        }
+
+        return null;
     }
 
     public static ClientTreeNode getNode(TransferHandler.TransferSupport info) {

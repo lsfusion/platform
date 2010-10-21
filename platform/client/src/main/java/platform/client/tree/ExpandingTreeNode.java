@@ -1,4 +1,4 @@
-package platform.client;
+package platform.client.tree;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 

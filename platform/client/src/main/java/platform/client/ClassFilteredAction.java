@@ -1,9 +1,10 @@
 package platform.client;
 
-import javax.swing.*;
+import platform.client.tree.ClientTreeAction;
+
 import javax.swing.tree.TreePath;
 
-public abstract class ClassFilteredAction extends PathFilteredAction {
+public abstract class ClassFilteredAction extends ClientTreeAction {
     private final Class clazz;
 
     public ClassFilteredAction(String name, Class clazz) {

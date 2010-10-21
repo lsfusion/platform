@@ -317,4 +317,20 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         IncrementDependency.update(this, "groupObjects");
         return true;
     }
+
+    public List<RegularFilterGroupDescriptor> getRegularFilterGroups() {
+        return regularFilterGroups;
+    }
+
+    public void addToRegularFilterGroups(RegularFilterGroupDescriptor filterGroup) {
+        regularFilterGroups.add(filterGroup);
+        client.regularFilterGroups.add(filterGroup.client);
+        IncrementDependency.update(this, "regularFilterGroups");
+    }
+
+    public void removeFromRegularFilterGroups(RegularFilterGroupDescriptor filterGroup) {
+        regularFilterGroups.remove(filterGroup);
+        client.removeFromRegularFilterGroups(filterGroup.client);
+        IncrementDependency.update(this, "regularFilterGroups");
+    }
 }

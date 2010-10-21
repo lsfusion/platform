@@ -1,7 +1,7 @@
 package platform.client.descriptor.nodes;
 
-import platform.client.ClientTree;
-import platform.client.ClientTreeNode;
+import platform.client.tree.ClientTree;
+import platform.client.tree.ClientTreeNode;
 import platform.client.logics.ClientComponent;
 import platform.client.logics.ClientContainer;
 

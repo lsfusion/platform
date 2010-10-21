@@ -1,6 +1,7 @@
 package platform.client.descriptor.nodes.filters;
 
-import platform.client.ClientTree;
+import platform.client.descriptor.filter.FilterDescriptor;
+import platform.client.tree.ClientTree;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.editor.RegularFilterGroupEditor;
@@ -24,6 +25,8 @@ public class RegularFilterGroupNode extends GroupElementNode<RegularFilterGroupD
 
         for(RegularFilterDescriptor regularFilter : filterGroup.filters)
             add(new RegularFilterNode(groupObject, regularFilter));
+
+        addCollectionReferenceActions(filterGroup, "filters", new String[] {""}, new Class[] {RegularFilterDescriptor.class});
     }
 
     public NodeEditor createEditor(FormDescriptor form, RemoteDescriptorInterface remote) {
@@ -37,6 +40,6 @@ public class RegularFilterGroupNode extends GroupElementNode<RegularFilterGroupD
 
     @Override
     public boolean importData(ClientTree tree, TransferHandler.TransferSupport info) {
-        return filterGroup.moveFilter(((RegularFilterNode)ClientTree.getNode(info)).getTypedObject(), ClientTree.getChildIndex(info)); 
+        return filterGroup.moveFilter(((RegularFilterNode) ClientTree.getNode(info)).getTypedObject(), ClientTree.getChildIndex(info));
     }
 }

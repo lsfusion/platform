@@ -15,6 +15,8 @@ public class PropertyFilterEditor extends JPanel implements NodeEditor {
 
     public PropertyFilterEditor(PropertyFilterDescriptor descriptor, final FormDescriptor form, RemoteDescriptorInterface remote) {
 
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        
         add(new TitledPanel("Реализация", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "property") {
             public List<?> getList() {
                 return form.getAllProperties();

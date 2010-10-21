@@ -1,7 +1,7 @@
 package platform.client.descriptor.view;
 
 import platform.client.ClassFilteredAction;
-import platform.client.ClientTree;
+import platform.client.tree.ClientTree;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.increment.IncrementView;
@@ -11,6 +11,7 @@ import platform.client.descriptor.nodes.actions.AddableTreeNode;
 import platform.client.descriptor.nodes.actions.DeletableTreeNode;
 import platform.client.descriptor.nodes.actions.EditableTreeNode;
 import platform.client.navigator.ClientNavigator;
+import platform.client.tree.ClientTreeActionEvent;
 import platform.interop.serialization.RemoteDescriptorInterface;
 
 import javax.swing.*;
@@ -97,10 +98,12 @@ public class FormDescriptorView extends JPanel implements IncrementView {
         IncrementDependency.add("propertyObject", this);
         IncrementDependency.add("toDraw", this);
         IncrementDependency.add("fixedFilters", this);
+        IncrementDependency.add("regularFilterGroups", this);
         IncrementDependency.add("filters", this);
         IncrementDependency.add("filter", this);
         IncrementDependency.add("op1", this);
         IncrementDependency.add("op2", this);
+        IncrementDependency.add("property", this);
         IncrementDependency.add(this, "form", this);
     }
 
@@ -144,14 +147,14 @@ public class FormDescriptorView extends JPanel implements IncrementView {
     private void addActions(FormNode formNode) {
         formNode.addSubTreeAction(
                 new ClassFilteredAction("Редактировать", EditableTreeNode.class) {
-                    public void actionPerformed(ActionEvent e) {
+                    public void actionPerformed(ClientTreeActionEvent e) {
                         editPath(tree.getSelectionPath());
                     }
                 });
 
         formNode.addSubTreeAction(
                 new ClassFilteredAction("Добавить", AddableTreeNode.class) {
-                    public void actionPerformed(ActionEvent e) {
+                    public void actionPerformed(ClientTreeActionEvent e) {
                         if (view.validateEditor()) {
                             DefaultMutableTreeNode node = tree.getSelectionNode();
                             if (node instanceof AddableTreeNode) {
@@ -163,7 +166,7 @@ public class FormDescriptorView extends JPanel implements IncrementView {
 
         formNode.addSubTreeAction(
                 new ClassFilteredAction("Удалить", DeletableTreeNode.class) {
-                    public void actionPerformed(ActionEvent e) {
+                    public void actionPerformed(ClientTreeActionEvent e) {
                         DefaultMutableTreeNode node = tree.getSelectionNode();
                         if (node instanceof DeletableTreeNode) {
                             if (editPath != null && editPath.equals(tree.getSelectionPath())) {

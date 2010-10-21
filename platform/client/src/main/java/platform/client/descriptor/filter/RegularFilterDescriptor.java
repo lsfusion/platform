@@ -1,5 +1,6 @@
 package platform.client.descriptor.filter;
 
+import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.logics.ClientRegularFilter;
 import platform.client.serialization.ClientCustomSerializable;
 import platform.client.serialization.ClientSerializationPool;
@@ -15,11 +16,25 @@ import java.util.List;
 
 public class RegularFilterDescriptor extends IdentityDescriptor implements ClientIdentitySerializable {
 
-    public FilterDescriptor filter;
+    private FilterDescriptor filter;
+
+    public FilterDescriptor getFilter() {
+        return filter;
+    }
+
+    public void setFilter(FilterDescriptor filter) {
+        this.filter = filter;
+        IncrementDependency.update(this, "filter");
+    }
+
+    public RegularFilterDescriptor() {
+        client = new ClientRegularFilter();
+    }
 
     ClientRegularFilter client;
 
     public GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groupList) {
+        if (filter == null) return null;
         return filter.getGroupObject(groupList);
     }
 

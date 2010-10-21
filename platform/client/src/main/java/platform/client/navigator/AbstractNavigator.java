@@ -1,8 +1,10 @@
 package platform.client.navigator;
 
-import platform.client.ClientTree;
-import platform.client.ClientTreeNode;
-import platform.client.ExpandingTreeNode;
+import platform.client.tree.ClientTree;
+import platform.client.tree.ClientTreeAction;
+import platform.client.tree.ClientTreeActionEvent;
+import platform.client.tree.ClientTreeNode;
+import platform.client.tree.ExpandingTreeNode;
 import platform.client.logics.DeSerializer;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
@@ -14,7 +16,6 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.*;
 import java.io.IOException;
 
 public abstract class AbstractNavigator extends JPanel {
@@ -83,8 +84,8 @@ public abstract class AbstractNavigator extends JPanel {
             rootNode.add(new ExpandingTreeNode());
             expandPath(new TreePath(rootNode));
 
-            rootNode.addSubTreeAction(new AbstractAction("Открыть"){
-                public void actionPerformed(ActionEvent e) {
+            rootNode.addSubTreeAction(new ClientTreeAction("Открыть"){
+                public void actionPerformed(ClientTreeActionEvent e) {
                     changeCurrentElement();
                 }
             });

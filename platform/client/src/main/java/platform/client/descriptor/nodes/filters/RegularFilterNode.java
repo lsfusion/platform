@@ -1,6 +1,7 @@
 package platform.client.descriptor.nodes.filters;
 
 import platform.client.descriptor.editor.base.NodeEditor;
+import platform.client.descriptor.filter.FilterDescriptor;
 import platform.client.descriptor.filter.RegularFilterDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.FormDescriptor;
@@ -14,7 +15,7 @@ public class RegularFilterNode extends GroupElementNode<RegularFilterDescriptor,
     public RegularFilterNode(GroupObjectDescriptor group, RegularFilterDescriptor descriptor) {
         super(group, descriptor);
 
-        add(descriptor.filter.createNode(group));
+        addFieldReferenceNode(descriptor, "filter", "Фильтр", group, FilterDescriptor.derivedNames, FilterDescriptor.derivedClasses);
     }
 
     public NodeEditor createEditor(FormDescriptor form, RemoteDescriptorInterface remote) {

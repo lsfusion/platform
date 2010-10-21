@@ -37,7 +37,7 @@ public class ClientForm implements LogicsSupplier, ClientIdentitySerializable {
     public List<ClientPropertyDraw> propertyDraws;
 
     public final OrderedMap<ClientPropertyDraw,Boolean> defaultOrders = new OrderedMap<ClientPropertyDraw, Boolean>();
-    public List<ClientRegularFilterGroup> regularFilters;
+    public List<ClientRegularFilterGroup> regularFilterGroups;
 
     public ClientFunction printFunction;
     public ClientFunction xlsFunction;
@@ -82,7 +82,7 @@ public class ClientForm implements LogicsSupplier, ClientIdentitySerializable {
     }
 
     public ClientRegularFilterGroup getRegularFilterGroup(int id) {
-        for (ClientRegularFilterGroup filterGroup : regularFilters) {
+        for (ClientRegularFilterGroup filterGroup : regularFilterGroups) {
             if (filterGroup.ID == id) {
                 return filterGroup;
             }
@@ -91,7 +91,7 @@ public class ClientForm implements LogicsSupplier, ClientIdentitySerializable {
     }
 
     public ClientRegularFilter getRegularFilter(int id) {
-        for (ClientRegularFilterGroup filterGroup : regularFilters) {
+        for (ClientRegularFilterGroup filterGroup : regularFilterGroups) {
             for (ClientRegularFilter filter : filterGroup.filters) {
                 if (filter.ID == id) return filter;
             }
@@ -134,7 +134,7 @@ public class ClientForm implements LogicsSupplier, ClientIdentitySerializable {
         pool.serializeCollection(outStream, containers);
         pool.serializeCollection(outStream, groupObjects);
         pool.serializeCollection(outStream, propertyDraws);
-        pool.serializeCollection(outStream, regularFilters);
+        pool.serializeCollection(outStream, regularFilterGroups);
 
         outStream.writeInt(defaultOrders.size());
         for (Map.Entry<ClientPropertyDraw, Boolean> entry : defaultOrders.entrySet()) {
@@ -165,7 +165,7 @@ public class ClientForm implements LogicsSupplier, ClientIdentitySerializable {
         containers = pool.deserializeList(inStream);
         groupObjects = pool.deserializeList(inStream);
         propertyDraws = pool.deserializeList(inStream);
-        regularFilters = pool.deserializeList(inStream);
+        regularFilterGroups = pool.deserializeList(inStream);
 
         int orderCount = inStream.readInt();
         for(int i=0;i<orderCount;i++) {
@@ -208,5 +208,11 @@ public class ClientForm implements LogicsSupplier, ClientIdentitySerializable {
         //todo: what about properties
 
         return true;
+    }
+
+    public void removeFromRegularFilterGroups(ClientRegularFilterGroup client) {
+        if (client.container != null)
+            client.container.removeChild(client);
+        regularFilterGroups.remove(client);
     }
 }

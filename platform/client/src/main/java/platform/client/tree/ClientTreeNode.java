@@ -1,4 +1,4 @@
-package platform.client;
+package platform.client.tree;
 
 import platform.base.BaseUtils;
 import platform.client.descriptor.increment.IncrementDependency;
@@ -7,7 +7,6 @@ import platform.client.descriptor.nodes.NullFieldNode;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
-import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -19,9 +18,9 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
     public final static int NODE_SONS = 3;
     public final static int SUB_TREE = 4;
 
-    public ArrayList<Action> nodeActions = new ArrayList<Action>();
-    public ArrayList<Action> sonActions = new ArrayList<Action>();
-    public ArrayList<Action> subTreeActions = new ArrayList<Action>();
+    public ArrayList<ClientTreeAction> nodeActions = new ArrayList<ClientTreeAction>();
+    public ArrayList<ClientTreeAction> sonActions = new ArrayList<ClientTreeAction>();
+    public ArrayList<ClientTreeAction> subTreeActions = new ArrayList<ClientTreeAction>();
 
     public ClientTreeNode() {
         super();
@@ -35,7 +34,7 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
         super(userObject, allowsChildren);
     }
 
-    public ClientTreeNode(T userObject, boolean allowsChildren, int mode, Action... actions) {
+    public ClientTreeNode(T userObject, boolean allowsChildren, int mode, ClientTreeAction... actions) {
         super(userObject, allowsChildren);
         setActions(mode, actions);
     }
@@ -57,7 +56,7 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
         return (C) treeNode;
     }
 
-    public void setActions(int mode, Action... actions) {
+    public void setActions(int mode, ClientTreeAction... actions) {
         if (mode == ONLY_NODE || mode == NODE_SONS) {
             nodeActions.clear();
             addNodeAction(actions);
@@ -72,20 +71,20 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
         }
     }
 
-    public void addNodeAction(Action... actions) {
-        for (Action act : actions) {
+    public void addNodeAction(ClientTreeAction... actions) {
+        for (ClientTreeAction act : actions) {
             nodeActions.add(act);
         }
     }
 
-    public void addSonAction(Action... actions) {
-        for (Action act : actions) {
+    public void addSonAction(ClientTreeAction... actions) {
+        for (ClientTreeAction act : actions) {
             sonActions.add(act);
         }
     }
 
-    public void addSubTreeAction(Action... actions) {
-        for (Action act : actions) {
+    public void addSubTreeAction(ClientTreeAction... actions) {
+        for (ClientTreeAction act : actions) {
             subTreeActions.add(act);
         }
     }
@@ -106,16 +105,16 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
     }
 
     public void addInitializeReferenceActions(final Object object, final String field, String[] captions, final Class[] classes) {
-        addNodeAction(new AbstractAction("Обнулить") {
-            public void actionPerformed(ActionEvent e) {
+        addNodeAction(new ClientTreeAction("Обнулить") {
+            public void actionPerformed(ClientTreeActionEvent e) {
                 BaseUtils.invokeSetter(object, field, null);
             }
         });
 
         for (int i = 0; i < captions.length; i++) {
             final int prm = i;
-            addNodeAction(new AbstractAction("Инициализировать как " + captions[i]) {
-                public void actionPerformed(ActionEvent e) {
+            addNodeAction(new ClientTreeAction("Инициализировать как " + captions[i]) {
+                public void actionPerformed(ClientTreeActionEvent e) {
                     try {
                         BaseUtils.invokeSetter(object, field, classes[prm].newInstance());
                     } catch (InstantiationException e1) {
@@ -131,15 +130,10 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
     public void addCollectionReferenceActions(final Object object, final String collectionField, String[] captions, final Class[] classes) {
         for (int i = 0; i < captions.length; i++) {
             final int prm = i;
-            addNodeAction(new AbstractAction("Добавить " + captions[i]) {
-                public void actionPerformed(ActionEvent e) {
+            addNodeAction(new ClientTreeAction("Добавить" + (captions.length > 1 ? " " + captions[i] : "")) {
+                public void actionPerformed(ClientTreeActionEvent e) {
                     try {
-                        Object val = BaseUtils.invokeGetter(object, collectionField);
-                        if (val instanceof Collection) {
-                            Collection collection = (Collection) val;
-                            collection.add(classes[prm].newInstance());
-                            IncrementDependency.update(object, collectionField);
-                        }
+                        BaseUtils.invokeAdder(object, collectionField, classes[prm].newInstance());
                     } catch (InstantiationException e1) {
                         throw new RuntimeException(e1);
                     } catch (IllegalAccessException e1) {
@@ -148,6 +142,13 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
                 }
             });
         }
+
+        addSonAction(new ClientTreeAction("Удалить") {
+            @Override
+            public void actionPerformed(ClientTreeActionEvent e) {
+                BaseUtils.invokeRemover(object, collectionField, e.getNode().getTypedObject());
+            }
+        });
     }
 
     public boolean canImport(TransferHandler.TransferSupport info) {

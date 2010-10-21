@@ -184,7 +184,7 @@ public class ClientFormController {
 
         // Проинициализируем регулярные фильтры
 
-        for (final ClientRegularFilterGroup filterGroup : form.regularFilters) {
+        for (final ClientRegularFilterGroup filterGroup : form.regularFilterGroups) {
 
             if (filterGroup.filters.size() == 1) {
 

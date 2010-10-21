@@ -1,7 +1,7 @@
 package platform.client.descriptor.nodes;
 
 import platform.base.BaseUtils;
-import platform.client.ClientTree;
+import platform.client.tree.ClientTree;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.nodes.actions.AddableTreeNode;

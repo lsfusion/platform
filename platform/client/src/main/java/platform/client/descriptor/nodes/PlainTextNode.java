@@ -1,8 +1,6 @@
 package platform.client.descriptor.nodes;
 
-import platform.client.ClientTreeNode;
-
-import javax.swing.tree.DefaultMutableTreeNode;
+import platform.client.tree.ClientTreeNode;
 
 public class PlainTextNode<C extends PlainTextNode> extends ClientTreeNode<String, C> {
     public PlainTextNode(String caption) {
