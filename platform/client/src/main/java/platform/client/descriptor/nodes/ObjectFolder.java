@@ -1,16 +1,12 @@
 package platform.client.descriptor.nodes;
 
-import platform.base.BaseUtils;
-import platform.client.tree.ClientTree;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.ObjectDescriptor;
-import platform.client.descriptor.nodes.actions.AddableTreeNode;
-import platform.client.logics.ClientObject;
+import platform.client.tree.ClientTree;
 
 import javax.swing.*;
-import javax.swing.tree.TreePath;
 
-public class ObjectFolder extends PlainTextNode<ObjectFolder> implements AddableTreeNode {
+public class ObjectFolder extends PlainTextNode<ObjectFolder> {
     private final GroupObjectDescriptor group;
 
     public ObjectFolder(GroupObjectDescriptor group) {
@@ -20,18 +16,7 @@ public class ObjectFolder extends PlainTextNode<ObjectFolder> implements Addable
         for (ObjectDescriptor object : group) {
             add(new ObjectNode(object, group));
         }
-    }
-
-    public Object[] addNewElement(TreePath selectionPath) {
-        ClientObject clientObject = new ClientObject();
-        clientObject.groupObject = group.client;
-
-        ObjectDescriptor object = new ObjectDescriptor();
-        object.client = clientObject;
-
-        group.addObject(object);
-
-        return BaseUtils.add(ClientTree.convertTreePathToUserObjects(selectionPath), object);
+        addCollectionReferenceActions(group, "objects", new String[]{""}, new Class[]{ObjectDescriptor.class});
     }
 
     @Override

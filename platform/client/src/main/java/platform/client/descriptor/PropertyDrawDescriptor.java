@@ -14,7 +14,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class PropertyDrawDescriptor extends IdentityDescriptor implements ClientIdentitySerializable {
-    public ClientPropertyDraw client;
+    public ClientPropertyDraw client = new ClientPropertyDraw();
 
     private PropertyObjectDescriptor propertyObject;
 
@@ -25,7 +25,7 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
 
     private PropertyObjectDescriptor propertyCaption;
 
-    private List<GroupObjectDescriptor> columnGroupObjects;
+    private List<GroupObjectDescriptor> columnGroupObjects = new ArrayList<GroupObjectDescriptor>();
 
     public void setPropertyObject(PropertyObjectDescriptor propertyObject) { // usage через reflection
         this.propertyObject = propertyObject;

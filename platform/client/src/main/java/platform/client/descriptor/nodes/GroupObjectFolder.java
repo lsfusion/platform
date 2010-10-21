@@ -1,16 +1,12 @@
 package platform.client.descriptor.nodes;
 
-import platform.base.BaseUtils;
-import platform.client.tree.ClientTree;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
-import platform.client.descriptor.nodes.actions.AddableTreeNode;
-import platform.client.logics.ClientGroupObject;
+import platform.client.tree.ClientTree;
 
 import javax.swing.*;
-import javax.swing.tree.TreePath;
 
-public class GroupObjectFolder extends PlainTextNode<GroupObjectFolder> implements AddableTreeNode {
+public class GroupObjectFolder extends PlainTextNode<GroupObjectFolder> {
 
     private FormDescriptor form;
 
@@ -22,6 +18,8 @@ public class GroupObjectFolder extends PlainTextNode<GroupObjectFolder> implemen
         for (GroupObjectDescriptor descriptor : form.groupObjects) {
             add(new GroupObjectNode(descriptor, form));
         }
+
+        addCollectionReferenceActions(form, "groupObjects", new String[]{""}, new Class[]{GroupObjectDescriptor.class});
     }
 
     @Override
@@ -31,17 +29,6 @@ public class GroupObjectFolder extends PlainTextNode<GroupObjectFolder> implemen
 
     @Override
     public boolean importData(ClientTree tree, TransferHandler.TransferSupport info) {
-        return form.moveGroupObject((GroupObjectDescriptor)ClientTree.getNode(info).getTypedObject(), ClientTree.getChildIndex(info));
-    }
-
-    public Object[] addNewElement(TreePath selectionPath) {
-        ClientGroupObject clientGroup = new ClientGroupObject();
-
-        GroupObjectDescriptor group = new GroupObjectDescriptor();
-        group.client = clientGroup;
-
-        form.addGroupObject(group);
-
-        return BaseUtils.add( ClientTree.convertTreePathToUserObjects(selectionPath), group );
+        return form.moveGroupObject((GroupObjectDescriptor) ClientTree.getNode(info).getTypedObject(), ClientTree.getChildIndex(info));
     }
 }

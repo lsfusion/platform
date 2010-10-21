@@ -20,7 +20,7 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
     private PropertyObjectDescriptor propertyHighlight;
 
 
-    public ClientGroupObject client;
+    public ClientGroupObject client = new ClientGroupObject();
 
     public List<Byte> getBanClassViewList() {
         return banClassViewList;
@@ -104,11 +104,19 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
         return true;
     }
 
-    public boolean addObject(ObjectDescriptor object) {
+    public boolean addToObjects(ObjectDescriptor object) {
         add(object);
         object.groupTo = this;
         client.add(object.client);
         object.client.groupObject = client;
+
+        IncrementDependency.update(this, "objects");
+        return true;
+    }
+
+    public boolean removeFromObjects(ObjectDescriptor object) {
+        client.remove(object.client);
+        remove(object);
 
         IncrementDependency.update(this, "objects");
         return true;

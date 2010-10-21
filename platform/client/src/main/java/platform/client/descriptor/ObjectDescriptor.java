@@ -13,7 +13,7 @@ import java.util.List;
 
 public class ObjectDescriptor extends IdentityDescriptor implements PropertyObjectInterfaceDescriptor, ClientIdentitySerializable {
 
-    public ClientObject client;
+    public ClientObject client = new ClientObject();
     public GroupObjectDescriptor groupTo;
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

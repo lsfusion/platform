@@ -1,18 +1,19 @@
 package platform.client.descriptor.increment.editor;
 
-import platform.client.descriptor.increment.IncrementView;
-import platform.client.descriptor.increment.IncrementDependency;
 import platform.base.BaseUtils;
+import platform.client.descriptor.increment.IncrementDependency;
+import platform.client.descriptor.increment.IncrementView;
 
 import javax.swing.*;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
 public class IncrementTextEditor extends JTextField implements IncrementView {
     private final Object object;
     private final String field;
+
     public IncrementTextEditor(Object object, String field) {
         this.object = object;
         this.field = field;
@@ -38,6 +39,9 @@ public class IncrementTextEditor extends JTextField implements IncrementView {
     }
 
     public void update(Object updateObject, String updateField) {
-        setText((String) BaseUtils.invokeGetter(object, field));
+        String newText = (String) BaseUtils.invokeGetter(object, field);
+        if (!getText().equals(newText)) {
+            setText(newText);
+        }
     }
 }

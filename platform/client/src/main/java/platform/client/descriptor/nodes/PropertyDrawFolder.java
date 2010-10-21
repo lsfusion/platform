@@ -1,20 +1,15 @@
 package platform.client.descriptor.nodes;
 
-import platform.base.BaseUtils;
+import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.tree.ClientTree;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.PropertyDrawDescriptor;
-import platform.client.descriptor.nodes.actions.AddableTreeNode;
-import platform.client.logics.ClientGroupObject;
-import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
-import javax.swing.tree.TreePath;
-import java.util.ArrayList;
 import java.util.List;
 
-public class PropertyDrawFolder extends GroupElementFolder<PropertyDrawFolder> implements AddableTreeNode {
+public class PropertyDrawFolder extends GroupElementFolder<PropertyDrawFolder> {
     private FormDescriptor form;
 
     public PropertyDrawFolder(List<GroupObjectDescriptor> groupList, GroupObjectDescriptor group, FormDescriptor form) {
@@ -27,24 +22,27 @@ public class PropertyDrawFolder extends GroupElementFolder<PropertyDrawFolder> i
                 add(new PropertyDrawNode(group, propertyDraw, form));
             }
         }
+
+        addCollectionReferenceActions(this, "propertyDraws", new String[] {""}, new Class[] {PropertyDrawDescriptor.class});
     }
 
-    public Object[] addNewElement(TreePath selectionPath) {
-        ClientPropertyDraw clientPropertyDraw = new ClientPropertyDraw();
-        clientPropertyDraw.columnGroupObjects = new ArrayList<ClientGroupObject>();
-
-        PropertyDrawDescriptor propertyDraw = new PropertyDrawDescriptor();
-        propertyDraw.setColumnGroupObjects(new ArrayList<GroupObjectDescriptor>());
-        propertyDraw.client = clientPropertyDraw;
-
+    public boolean addToPropertyDraws(PropertyDrawDescriptor propertyDraw) {
         if (groupObject != null) {
-            clientPropertyDraw.groupObject = groupObject.client;
+            propertyDraw.client.groupObject = groupObject.client;
             propertyDraw.toDraw = groupObject;
         }
 
-        form.addPropertyDraw(propertyDraw);
+        form.addToPropertyDraws(propertyDraw);
 
-        return BaseUtils.add( ClientTree.convertTreePathToUserObjects(selectionPath), propertyDraw );
+        IncrementDependency.update(this, "propertyDraws");
+        return true;
+    }
+
+    public boolean removeFromPropertyDraws(PropertyDrawDescriptor propertyDraw) {
+        form.removeFromPropertyDraws(propertyDraw);
+
+        IncrementDependency.update(this, "propertyDraws");
+        return true;
     }
 
     @Override

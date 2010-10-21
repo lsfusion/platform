@@ -286,7 +286,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         }
     }
 
-    public boolean addPropertyDraw(PropertyDrawDescriptor propertyDraw) {
+    public boolean addToPropertyDraws(PropertyDrawDescriptor propertyDraw) {
         propertyDraws.add(propertyDraw);
         client.propertyDraws.add(propertyDraw.client);
 
@@ -294,7 +294,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         return true;
     }
 
-    public boolean removePropertyDraw(PropertyDrawDescriptor propertyDraw) {
+    public boolean removeFromPropertyDraws(PropertyDrawDescriptor propertyDraw) {
         propertyDraws.remove(propertyDraw);
         client.removePropertyDraw(propertyDraw.client);
 
@@ -302,7 +302,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         return true;
     }
 
-    public boolean addGroupObject(GroupObjectDescriptor groupObject) {
+    public boolean addToGroupObjects(GroupObjectDescriptor groupObject) {
         groupObjects.add(groupObject);
         client.groupObjects.add(groupObject.client);
 
@@ -310,7 +310,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         return true;
     }
 
-    public boolean removeGroupObject(GroupObjectDescriptor groupObject) {
+    public boolean removeFromGroupObjects(GroupObjectDescriptor groupObject) {
         groupObjects.remove(groupObject);
         client.groupObjects.add(groupObject.client);
 

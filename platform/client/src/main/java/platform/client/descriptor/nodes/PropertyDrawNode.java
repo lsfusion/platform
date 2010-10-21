@@ -38,6 +38,6 @@ public class PropertyDrawNode extends GroupElementNode<PropertyDrawDescriptor, P
     }
 
     public boolean deleteNode(TreePath selectionPath) {
-        return form.removePropertyDraw(getTypedObject());
+        return form.removeFromPropertyDraws(getTypedObject());
     }
 }
