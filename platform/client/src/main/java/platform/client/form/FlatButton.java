@@ -3,9 +3,9 @@ package platform.client.form;
 import javax.swing.*;
 import java.awt.*;
 
-public class PlaneButton extends JButton {
+public class FlatButton extends JButton {
 
-    public PlaneButton(String caption){
+    public FlatButton(String caption){
         super(caption);
         setFocusable(false);
         setBorder(BorderFactory.createLineBorder(Color.BLACK));
