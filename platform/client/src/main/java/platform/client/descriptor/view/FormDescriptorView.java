@@ -213,10 +213,6 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
             if (objectToEdit != null) {
                 editNewObject();
             }
-
-            for (int i = 0; i < tree.getRowCount(); ++i) {
-                tree.expandRow(i);
-            }
         }
 
         private void editNewObject() {
