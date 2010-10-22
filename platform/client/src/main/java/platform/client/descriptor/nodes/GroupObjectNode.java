@@ -6,7 +6,6 @@ import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.editor.GroupObjectEditor;
 import platform.client.descriptor.editor.base.NodeEditor;
 import platform.client.descriptor.nodes.actions.EditableTreeNode;
-import platform.interop.serialization.RemoteDescriptorInterface;
 
 import javax.swing.*;
 
@@ -24,7 +23,7 @@ public class GroupObjectNode extends DescriptorNode<GroupObjectDescriptor, Group
         GroupElementFolder.addFolders(this, group, form);
     }
 
-    public NodeEditor createEditor(FormDescriptor form, RemoteDescriptorInterface remote) {
+    public NodeEditor createEditor(FormDescriptor form) {
         return new GroupObjectEditor(getTypedObject(), form);
     }
 

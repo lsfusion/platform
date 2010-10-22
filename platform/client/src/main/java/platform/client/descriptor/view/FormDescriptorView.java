@@ -12,7 +12,6 @@ import platform.client.navigator.ClientNavigator;
 import platform.client.tree.ClientTree;
 import platform.client.tree.ClientTreeActionEvent;
 import platform.client.tree.ClientTreeNode;
-import platform.interop.serialization.RemoteDescriptorInterface;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -33,7 +32,6 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
 
     private EditorView view;
 
-    private RemoteDescriptorInterface remote;
     private JButton previewBtn;
     private JButton saveBtn;
     private ClientNavigator navigator;
@@ -42,12 +40,8 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
     private Object editingObject;
     private Lookup lookup = Lookup.getDefault();
 
-    public FormDescriptorView(ClientNavigator iNavigator, RemoteDescriptorInterface remote) {
-        globalInstance = this;
-
+    public FormDescriptorView(ClientNavigator iNavigator) {
         this.navigator = iNavigator;
-
-        this.remote = remote;
 
         setLayout(new BorderLayout());
 
@@ -195,8 +189,6 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
         }
     }
 
-    public static FormDescriptorView globalInstance;
-
     private class OnUpdate implements Runnable {
         public void run() {
             TreeNode refreshNode;
@@ -222,8 +214,8 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
             while (nodes.hasMoreElements()) {
                 ClientTreeNode node = nodes.nextElement();
                 if (node.getUserObject() == objectToEdit && node instanceof EditableTreeNode) {
-                    EditableTreeNode editableNode = (EditableTreeNode)node;
-                    view.setEditor(editableNode.createEditor(form, remote));
+                    EditableTreeNode editableNode = (EditableTreeNode) node;
+                    view.setEditor(editableNode.createEditor(form));
                     editingObject = objectToEdit;
                     objectToEdit = null;
                     updateNow();

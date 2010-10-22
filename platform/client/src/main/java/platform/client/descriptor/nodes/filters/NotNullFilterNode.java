@@ -6,7 +6,6 @@ import platform.client.descriptor.editor.base.NodeEditor;
 import platform.client.descriptor.editor.filters.NotNullFilterEditor;
 import platform.client.descriptor.filter.NotNullFilterDescriptor;
 import platform.client.descriptor.nodes.actions.EditableTreeNode;
-import platform.interop.serialization.RemoteDescriptorInterface;
 
 public class NotNullFilterNode extends PropertyFilterNode<NotNullFilterDescriptor, NotNullFilterNode> implements EditableTreeNode {
 
@@ -14,7 +13,7 @@ public class NotNullFilterNode extends PropertyFilterNode<NotNullFilterDescripto
         super(group, descriptor);
     }
 
-    public NodeEditor createEditor(FormDescriptor form, RemoteDescriptorInterface remote) {
-        return new NotNullFilterEditor(getTypedObject(), form, remote);
+    public NodeEditor createEditor(FormDescriptor form) {
+        return new NotNullFilterEditor(getTypedObject(), form);
     }
 }

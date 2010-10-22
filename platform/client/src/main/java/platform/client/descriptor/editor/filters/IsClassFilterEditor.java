@@ -6,7 +6,7 @@ import platform.interop.serialization.RemoteDescriptorInterface;
 
 public class IsClassFilterEditor extends PropertyFilterEditor {
 
-    public IsClassFilterEditor(IsClassFilterDescriptor descriptor, FormDescriptor form, RemoteDescriptorInterface remote) {
-        super(descriptor, form, remote);
+    public IsClassFilterEditor(IsClassFilterDescriptor descriptor, FormDescriptor form) {
+        super(descriptor, form);
     }
 }

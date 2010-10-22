@@ -69,7 +69,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
     private List<PropertyObjectDescriptor> allProperties;    
     public List<PropertyObjectDescriptor> getAllProperties() {
         if(allProperties==null)
-            allProperties = getProperties(groupObjects, null, Main.remoteLogics);
+            allProperties = getProperties(groupObjects, null);
         return allProperties;
     }
 
@@ -146,7 +146,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         propertyCaptionConstraint = new IncrementPropertyConstraint() {
             public boolean updateProperty(PropertyDrawDescriptor property) {
                 PropertyObjectDescriptor propertyCaption = property.getPropertyCaption();
-                if(propertyCaption !=null && !getProperties(property.getColumnGroupObjects(), null, Main.remoteLogics).contains(propertyCaption))
+                if(propertyCaption !=null && !getProperties(property.getColumnGroupObjects(), null).contains(propertyCaption))
                     property.setPropertyCaption(null);
                 return true;                
             }
@@ -174,14 +174,14 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
 
     public List<PropertyObjectDescriptor> getProperties(GroupObjectDescriptor groupObject) {
         if(groupObject==null) return getAllProperties();
-        return getProperties(groupObjects.subList(0, groupObjects.indexOf(groupObject)+1), groupObject, Main.remoteLogics);
+        return getProperties(groupObjects.subList(0, groupObjects.indexOf(groupObject)+1), groupObject);
     }
 
-    public static List<PropertyObjectDescriptor> getProperties(Collection<GroupObjectDescriptor> groupObjects, GroupObjectDescriptor toDraw, RemoteDescriptorInterface remote) {
+    public static List<PropertyObjectDescriptor> getProperties(Collection<GroupObjectDescriptor> groupObjects, GroupObjectDescriptor toDraw) {
         Collection<ObjectDescriptor> objects = new ArrayList<ObjectDescriptor>();
         for(GroupObjectDescriptor groupObject : groupObjects)
             objects.addAll(groupObject);
-        return getProperties(objects, toDraw==null?new ArrayList<ObjectDescriptor>():toDraw, remote);
+        return getProperties(objects, toDraw==null?new ArrayList<ObjectDescriptor>():toDraw, Main.remoteLogics);
     }
 
     public static List<PropertyObjectDescriptor> getProperties(Collection<ObjectDescriptor> objects, Collection<ObjectDescriptor> atLeastOne, RemoteDescriptorInterface remote) {

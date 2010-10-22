@@ -6,21 +6,21 @@ import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.descriptor.filter.PropertyFilterDescriptor;
 import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.increment.editor.IncrementSingleListSelectionModel;
-import platform.interop.serialization.RemoteDescriptorInterface;
 
 import javax.swing.*;
 import java.util.List;
 
 public class PropertyFilterEditor extends JPanel implements NodeEditor {
 
-    public PropertyFilterEditor(PropertyFilterDescriptor descriptor, final FormDescriptor form, RemoteDescriptorInterface remote) {
+    public PropertyFilterEditor(PropertyFilterDescriptor descriptor, final FormDescriptor form) {
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        
+
         add(new TitledPanel("Реализация", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "property") {
             public List<?> getList() {
                 return form.getAllProperties();
             }
+
             public void fillListDependencies() {
                 IncrementDependency.add(form, "groupObjects", this);
             }

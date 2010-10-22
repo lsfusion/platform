@@ -6,7 +6,6 @@ import platform.client.descriptor.editor.base.NodeEditor;
 import platform.client.descriptor.editor.filters.CompareFilterEditor;
 import platform.client.descriptor.filter.CompareFilterDescriptor;
 import platform.client.descriptor.nodes.actions.EditableTreeNode;
-import platform.interop.serialization.RemoteDescriptorInterface;
 
 public class CompareFilterNode extends PropertyFilterNode<CompareFilterDescriptor, CompareFilterNode> implements EditableTreeNode {
 
@@ -14,7 +13,7 @@ public class CompareFilterNode extends PropertyFilterNode<CompareFilterDescripto
         super(group, descriptor);
     }
 
-    public NodeEditor createEditor(FormDescriptor form, RemoteDescriptorInterface remote) {
-        return new CompareFilterEditor(getTypedObject(), form, remote);
+    public NodeEditor createEditor(FormDescriptor form) {
+        return new CompareFilterEditor(getTypedObject(), form);
     }
 }

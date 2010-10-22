@@ -1,23 +1,25 @@
 package platform.client.descriptor.editor;
 
-import platform.client.descriptor.*;
+import platform.client.descriptor.FormDescriptor;
+import platform.client.descriptor.GroupObjectDescriptor;
+import platform.client.descriptor.PropertyDrawDescriptor;
+import platform.client.descriptor.PropertyObjectDescriptor;
 import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.descriptor.increment.IncrementDependency;
-import platform.client.descriptor.increment.editor.IncrementSingleListSelectionModel;
-import platform.client.descriptor.increment.editor.IncrementMultipleListSelectionModel;
-import platform.client.descriptor.increment.editor.IncrementTextEditor;
 import platform.client.descriptor.increment.editor.IncrementMultipleListEditor;
-import platform.interop.serialization.RemoteDescriptorInterface;
+import platform.client.descriptor.increment.editor.IncrementMultipleListSelectionModel;
+import platform.client.descriptor.increment.editor.IncrementSingleListSelectionModel;
+import platform.client.descriptor.increment.editor.IncrementTextEditor;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.awt.*;
 
 public class PropertyDrawEditor extends GroupElementEditor {
     private final PropertyDrawDescriptor descriptor;
 
-    public PropertyDrawEditor(final GroupObjectDescriptor groupObject, final PropertyDrawDescriptor descriptor, final FormDescriptor form, final RemoteDescriptorInterface remote) {
+    public PropertyDrawEditor(final GroupObjectDescriptor groupObject, final PropertyDrawDescriptor descriptor, final FormDescriptor form) {
         super(groupObject);
 
         this.descriptor = descriptor;
@@ -28,12 +30,13 @@ public class PropertyDrawEditor extends GroupElementEditor {
             public List<?> getList() {
                 return form.getProperties(descriptor.toDraw);
             }
+
             public void fillListDependencies() {
                 IncrementDependency.add(form, "groupObjects", this);
             }
         })));
 
-        add(Box.createRigidArea(new Dimension(5,5)));
+        add(Box.createRigidArea(new Dimension(5, 5)));
 
         add(new TitledPanel("Группа объектов", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "toDraw") {
             public List<?> getList() {
@@ -42,13 +45,14 @@ public class PropertyDrawEditor extends GroupElementEditor {
                        ? propertyObject.getGroupObjects(form.groupObjects)
                        : new ArrayList();
             }
+
             public void fillListDependencies() {
                 IncrementDependency.add(descriptor, "propertyObject", this);
                 IncrementDependency.add(form, "groupObjects", this);
             }
         })));
 
-        add(Box.createRigidArea(new Dimension(5,5)));
+        add(Box.createRigidArea(new Dimension(5, 5)));
 
         // columnGroupObjects из списка mapping'ов (полных) !!! без toDraw
         add(new TitledPanel("Группы в колонки", new IncrementMultipleListEditor(new IncrementMultipleListSelectionModel(descriptor, "columnGroupObjects") {
@@ -63,13 +67,14 @@ public class PropertyDrawEditor extends GroupElementEditor {
             }
         })));
 
-        add(Box.createRigidArea(new Dimension(5,5)));
-        
+        add(Box.createRigidArea(new Dimension(5, 5)));
+
         // propertyCaption из списка columnGroupObjects (+objects без toDraw)
         add(new TitledPanel("Динам. заголовок", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "propertyCaption") {
             public List<?> getList() {
-                return FormDescriptor.getProperties(descriptor.getColumnGroupObjects(), null, remote);
+                return FormDescriptor.getProperties(descriptor.getColumnGroupObjects(), null);
             }
+
             public void fillListDependencies() {
                 IncrementDependency.add(descriptor, "columnGroupObjects", this);
             }

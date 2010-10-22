@@ -20,7 +20,7 @@ public class NavigatorDescriptorView extends JPanel {
 
         setLayout(new BorderLayout());
 
-        final FormDescriptorView formView = new FormDescriptorView(navigator, Main.remoteLogics);
+        final FormDescriptorView formView = new FormDescriptorView(navigator);
 
         final AbstractNavigator navigatorView = new AbstractNavigator(navigator.remoteNavigator) {
 

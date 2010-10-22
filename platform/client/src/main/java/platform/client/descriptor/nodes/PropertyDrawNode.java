@@ -7,7 +7,6 @@ import platform.client.descriptor.editor.PropertyDrawEditor;
 import platform.client.descriptor.editor.base.NodeEditor;
 import platform.client.descriptor.nodes.actions.EditableTreeNode;
 import platform.client.tree.ClientTree;
-import platform.interop.serialization.RemoteDescriptorInterface;
 
 import javax.swing.*;
 
@@ -31,7 +30,7 @@ public class PropertyDrawNode extends GroupElementNode<PropertyDrawDescriptor, P
         return form.movePropertyDraw(getSiblingNode(info).getTypedObject(), getTypedObject());
     }
 
-    public NodeEditor createEditor(FormDescriptor form, RemoteDescriptorInterface remote) {
-        return new PropertyDrawEditor(groupObject, getTypedObject(), this.form, remote);
+    public NodeEditor createEditor(FormDescriptor form) {
+        return new PropertyDrawEditor(groupObject, getTypedObject(), this.form);
     }
 }

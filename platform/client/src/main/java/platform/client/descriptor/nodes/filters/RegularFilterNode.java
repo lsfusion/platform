@@ -8,7 +8,6 @@ import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.editor.RegularFilterEditor;
 import platform.client.descriptor.nodes.GroupElementNode;
 import platform.client.descriptor.nodes.actions.EditableTreeNode;
-import platform.interop.serialization.RemoteDescriptorInterface;
 
 public class RegularFilterNode extends GroupElementNode<RegularFilterDescriptor, RegularFilterNode>  implements EditableTreeNode {
 
@@ -18,7 +17,7 @@ public class RegularFilterNode extends GroupElementNode<RegularFilterDescriptor,
         addFieldReferenceNode(descriptor, "filter", "Фильтр", group, FilterDescriptor.derivedNames, FilterDescriptor.derivedClasses);
     }
 
-    public NodeEditor createEditor(FormDescriptor form, RemoteDescriptorInterface remote) {
+    public NodeEditor createEditor(FormDescriptor form) {
         return new RegularFilterEditor(groupObject, getTypedObject());
     }
 }
