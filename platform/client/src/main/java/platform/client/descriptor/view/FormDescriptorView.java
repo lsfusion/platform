@@ -1,27 +1,30 @@
 package platform.client.descriptor.view;
 
 import platform.client.ClassFilteredAction;
-import platform.client.tree.ClientTree;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.increment.IncrementView;
 import platform.client.descriptor.nodes.FormNode;
 import platform.client.descriptor.nodes.PlainTextNode;
-import platform.client.descriptor.nodes.actions.AddableTreeNode;
-import platform.client.descriptor.nodes.actions.DeletableTreeNode;
 import platform.client.descriptor.nodes.actions.EditableTreeNode;
+import platform.client.lookup.Lookup;
 import platform.client.navigator.ClientNavigator;
+import platform.client.tree.ClientTree;
 import platform.client.tree.ClientTreeActionEvent;
+import platform.client.tree.ClientTreeNode;
 import platform.interop.serialization.RemoteDescriptorInterface;
 
 import javax.swing.*;
-import javax.swing.tree.*;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.Enumeration;
 
-public class FormDescriptorView extends JPanel implements IncrementView {
+public class FormDescriptorView extends JPanel implements IncrementView, Lookup.LookupResultChangeListener {
 
     private FormDescriptor form;
 
@@ -34,10 +37,14 @@ public class FormDescriptorView extends JPanel implements IncrementView {
     private JButton previewBtn;
     private JButton saveBtn;
     private ClientNavigator navigator;
-    private TreePath editPath;
-    private Object[] addedObjectPath;
+
+    private Object objectToEdit;
+    private Object editingObject;
+    private Lookup lookup = Lookup.getDefault();
 
     public FormDescriptorView(ClientNavigator iNavigator, RemoteDescriptorInterface remote) {
+        globalInstance = this;
+
         this.navigator = iNavigator;
 
         this.remote = remote;
@@ -105,14 +112,38 @@ public class FormDescriptorView extends JPanel implements IncrementView {
         IncrementDependency.add("op2", this);
         IncrementDependency.add("property", this);
         IncrementDependency.add(this, "form", this);
+
+        lookup.addLookupResultChangeListener(Lookup.NEW_EDITABLE_OBJECT_PROPERTY, this);
+        lookup.addLookupResultChangeListener(Lookup.DELETED_OBJECT_PROPERTY, this);
+    }
+
+    public void resultChanged(String name, Object oldValue, Object newValue) {
+        if (name.equals(Lookup.NEW_EDITABLE_OBJECT_PROPERTY)) {
+            if (newValue != null && newValue != editingObject && view.validateEditor()) {
+                objectToEdit = newValue;
+                removeEditor();
+            }
+        } else if (name.equals(Lookup.DELETED_OBJECT_PROPERTY)) {
+            if (newValue != null && newValue == editingObject) {
+                removeEditor();
+            }
+        }
+    }
+
+    private void updateNow() {
+        update(null, null);
+    }
+
+    private void removeEditor() {
+        editingObject = null;
+        view.removeEditor();
+        updateNow();
     }
 
     public void setForm(FormDescriptor form) {
         if (this.form != form) {
             this.form = form;
             view.removeEditor();
-            editPath = null;
-            addedObjectPath = null;
         }
 
         previewBtn.setEnabled(form != null);
@@ -122,76 +153,17 @@ public class FormDescriptorView extends JPanel implements IncrementView {
     }
 
     public void update(Object updateObject, String updateField) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                TreeNode refreshNode;
-                if (form != null) {
-                    FormNode rootNode = new FormNode(form);
-                    addActions(rootNode);
-
-                    refreshNode = rootNode;
-                } else {
-                    refreshNode = new PlainTextNode("Форма не выбрана");
-                }
-
-                model = new DefaultTreeModel(refreshNode);
-                tree.setModelPreservingState(model);
-                if (addedObjectPath != null) {
-                    editPath(tree.findPathByUserObjects(addedObjectPath));
-                    addedObjectPath = null;
-                }
-            }
-        });
+        SwingUtilities.invokeLater(new OnUpdate());
     }
 
     private void addActions(FormNode formNode) {
         formNode.addSubTreeAction(
                 new ClassFilteredAction("Редактировать", EditableTreeNode.class) {
                     public void actionPerformed(ClientTreeActionEvent e) {
-                        editPath(tree.getSelectionPath());
+                        Object editObject = ((ClientTreeNode) tree.getSelectionPath().getLastPathComponent()).getUserObject();
+                        lookup.setProperty(Lookup.NEW_EDITABLE_OBJECT_PROPERTY, editObject);
                     }
                 });
-
-        formNode.addSubTreeAction(
-                new ClassFilteredAction("Добавить", AddableTreeNode.class) {
-                    public void actionPerformed(ClientTreeActionEvent e) {
-                        if (view.validateEditor()) {
-                            DefaultMutableTreeNode node = tree.getSelectionNode();
-                            if (node instanceof AddableTreeNode) {
-                                addedObjectPath = ((AddableTreeNode) node).addNewElement(tree.getSelectionPath());
-                            }
-                        }
-                    }
-                });
-
-        formNode.addSubTreeAction(
-                new ClassFilteredAction("Удалить", DeletableTreeNode.class) {
-                    public void actionPerformed(ClientTreeActionEvent e) {
-                        DefaultMutableTreeNode node = tree.getSelectionNode();
-                        if (node instanceof DeletableTreeNode) {
-                            if (editPath != null && editPath.equals(tree.getSelectionPath())) {
-                                view.removeEditor();
-                            }
-                            ((DeletableTreeNode) node).deleteNode(tree.getSelectionPath());
-                        }
-                    }
-                });
-    }
-
-    public void editPath(TreePath path) {
-        if (path == null) {
-            return;
-        }
-
-        DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
-        if (node instanceof EditableTreeNode) {
-            EditableTreeNode editingNode = (EditableTreeNode) node;
-            if (view.setEditor(editingNode.createEditor(form, remote))) {
-                editPath = path;
-
-                update(null, null);
-            }
-        }
     }
 
     class MyTreeCellRenderer extends DefaultTreeCellRenderer {
@@ -209,7 +181,7 @@ public class FormDescriptorView extends JPanel implements IncrementView {
         public Component getTreeCellRendererComponent(JTree iTree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
             Component renderer = super.getTreeCellRendererComponent(iTree, value, sel, expanded, leaf, row, hasFocus);
 
-            if (ClientTree.comparePathsByUserObjects(editPath, tree.getPathToRoot((TreeNode) value))) {
+            if (editingObject != null && editingObject == ((ClientTreeNode) value).getUserObject()) {
                 setBackgroundSelectionColor(Color.YELLOW.darker().darker());
                 setBackgroundNonSelectionColor(Color.YELLOW);
             } else {
@@ -220,4 +192,47 @@ public class FormDescriptorView extends JPanel implements IncrementView {
             return renderer;
         }
     }
+
+    public static FormDescriptorView globalInstance;
+
+    private class OnUpdate implements Runnable {
+        public void run() {
+            TreeNode refreshNode;
+            if (form != null) {
+                FormNode rootNode = new FormNode(form);
+                addActions(rootNode);
+
+                refreshNode = rootNode;
+            } else {
+                refreshNode = new PlainTextNode("Форма не выбрана");
+            }
+
+            model = new DefaultTreeModel(refreshNode);
+            tree.setModelPreservingState(model);
+
+            if (objectToEdit != null) {
+                editNewObject();
+            }
+
+            for (int i = 0; i < tree.getRowCount(); ++i) {
+                tree.expandRow(i);
+            }
+        }
+
+        private void editNewObject() {
+            Enumeration<ClientTreeNode> nodes = ((ClientTreeNode) model.getRoot()).depthFirstEnumeration();
+            while (nodes.hasMoreElements()) {
+                ClientTreeNode node = nodes.nextElement();
+                if (node.getUserObject() == objectToEdit && node instanceof EditableTreeNode) {
+                    EditableTreeNode editableNode = (EditableTreeNode)node;
+                    view.setEditor(editableNode.createEditor(form, remote));
+                    editingObject = objectToEdit;
+                    objectToEdit = null;
+                    updateNow();
+                    break;
+                }
+            }
+        }
+    }
 }
+

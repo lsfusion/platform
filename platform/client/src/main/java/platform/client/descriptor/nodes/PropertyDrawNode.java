@@ -1,19 +1,17 @@
 package platform.client.descriptor.nodes;
 
-import platform.client.tree.ClientTree;
-import platform.client.descriptor.PropertyDrawDescriptor;
-import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.FormDescriptor;
+import platform.client.descriptor.GroupObjectDescriptor;
+import platform.client.descriptor.PropertyDrawDescriptor;
 import platform.client.descriptor.editor.PropertyDrawEditor;
 import platform.client.descriptor.editor.base.NodeEditor;
-import platform.client.descriptor.nodes.actions.DeletableTreeNode;
 import platform.client.descriptor.nodes.actions.EditableTreeNode;
+import platform.client.tree.ClientTree;
 import platform.interop.serialization.RemoteDescriptorInterface;
 
 import javax.swing.*;
-import javax.swing.tree.TreePath;
 
-public class PropertyDrawNode extends GroupElementNode<PropertyDrawDescriptor, PropertyDrawNode> implements EditableTreeNode, DeletableTreeNode {
+public class PropertyDrawNode extends GroupElementNode<PropertyDrawDescriptor, PropertyDrawNode> implements EditableTreeNode {
 
     private FormDescriptor form;
 
@@ -35,9 +33,5 @@ public class PropertyDrawNode extends GroupElementNode<PropertyDrawDescriptor, P
 
     public NodeEditor createEditor(FormDescriptor form, RemoteDescriptorInterface remote) {
         return new PropertyDrawEditor(groupObject, getTypedObject(), this.form, remote);
-    }
-
-    public boolean deleteNode(TreePath selectionPath) {
-        return form.removeFromPropertyDraws(getTypedObject());
     }
 }

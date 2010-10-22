@@ -1,14 +1,13 @@
 package platform.client.tree;
 
 import platform.base.BaseUtils;
-import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.nodes.NodeCreator;
 import platform.client.descriptor.nodes.NullFieldNode;
+import platform.client.lookup.Lookup;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.ArrayList;
-import java.util.Collection;
 
 public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableTreeNode {
 
@@ -116,7 +115,7 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
             addNodeAction(new ClientTreeAction("Инициализировать как " + captions[i]) {
                 public void actionPerformed(ClientTreeActionEvent e) {
                     try {
-                        BaseUtils.invokeSetter(object, field, classes[prm].newInstance());
+                        BaseUtils.invokeSetter(object, field, processCreatedObject(classes[prm].newInstance()));
                     } catch (InstantiationException e1) {
                         throw new RuntimeException(e1);
                     } catch (IllegalAccessException e1) {
@@ -133,7 +132,7 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
             addNodeAction(new ClientTreeAction("Добавить" + (captions.length > 1 ? " " + captions[i] : "")) {
                 public void actionPerformed(ClientTreeActionEvent e) {
                     try {
-                        BaseUtils.invokeAdder(object, collectionField, classes[prm].newInstance());
+                        BaseUtils.invokeAdder(object, collectionField, processCreatedObject(classes[prm].newInstance()));
                     } catch (InstantiationException e1) {
                         throw new RuntimeException(e1);
                     } catch (IllegalAccessException e1) {
@@ -146,9 +145,16 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
         addSonAction(new ClientTreeAction("Удалить") {
             @Override
             public void actionPerformed(ClientTreeActionEvent e) {
-                BaseUtils.invokeRemover(object, collectionField, e.getNode().getTypedObject());
+                Object deletedObject = e.getNode().getTypedObject();
+                BaseUtils.invokeRemover(object, collectionField, deletedObject);
+                Lookup.getDefault().setProperty(Lookup.DELETED_OBJECT_PROPERTY, deletedObject);
             }
         });
+    }
+
+    private Object processCreatedObject(Object object) {
+        Lookup.getDefault().setProperty(Lookup.NEW_EDITABLE_OBJECT_PROPERTY, object);
+        return object;
     }
 
     public boolean canImport(TransferHandler.TransferSupport info) {

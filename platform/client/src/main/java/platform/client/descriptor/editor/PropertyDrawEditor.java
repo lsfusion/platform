@@ -26,7 +26,7 @@ public class PropertyDrawEditor extends GroupElementEditor {
 
         add(new TitledPanel("Реализация", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "propertyObject") {
             public List<?> getList() {
-                return form.getProperties(groupObject);
+                return form.getProperties(descriptor.toDraw);
             }
             public void fillListDependencies() {
                 IncrementDependency.add(form, "groupObjects", this);
@@ -35,23 +35,20 @@ public class PropertyDrawEditor extends GroupElementEditor {
 
         add(Box.createRigidArea(new Dimension(5,5)));
 
-        // все не обязательно но желательно
-        if(groupObject==null) {
-            add(new TitledPanel("Группа объектов", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "toDraw") {
-                public List<?> getList() {
-                    PropertyObjectDescriptor propertyObject = descriptor.getPropertyObject();
-                    return propertyObject != null
-                           ? propertyObject.getGroupObjects(form.groupObjects)
-                           : new ArrayList();
-                }
-                public void fillListDependencies() {
-                    IncrementDependency.add(descriptor, "propertyObject", this);
-                    IncrementDependency.add(form, "groupObjects", this);
-                }
-            })));
+        add(new TitledPanel("Группа объектов", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "toDraw") {
+            public List<?> getList() {
+                PropertyObjectDescriptor propertyObject = descriptor.getPropertyObject();
+                return propertyObject != null
+                       ? propertyObject.getGroupObjects(form.groupObjects)
+                       : new ArrayList();
+            }
+            public void fillListDependencies() {
+                IncrementDependency.add(descriptor, "propertyObject", this);
+                IncrementDependency.add(form, "groupObjects", this);
+            }
+        })));
 
-            add(Box.createRigidArea(new Dimension(5,5)));
-        }
+        add(Box.createRigidArea(new Dimension(5,5)));
 
         // columnGroupObjects из списка mapping'ов (полных) !!! без toDraw
         add(new TitledPanel("Группы в колонки", new IncrementMultipleListEditor(new IncrementMultipleListSelectionModel(descriptor, "columnGroupObjects") {

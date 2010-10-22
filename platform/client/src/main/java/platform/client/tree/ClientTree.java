@@ -107,12 +107,12 @@ public class ClientTree extends JTree {
     protected void changeCurrentElement() {
     }
 
-    public DefaultMutableTreeNode getSelectionNode() {
+    public ClientTreeNode getSelectionNode() {
 
         TreePath path = getSelectionPath();
         if (path == null) return null;
 
-        return (DefaultMutableTreeNode) path.getLastPathComponent();
+        return (ClientTreeNode) path.getLastPathComponent();
     }
 
     class PopupTrigger extends MouseAdapter {
