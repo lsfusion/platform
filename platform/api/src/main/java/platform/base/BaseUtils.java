@@ -879,16 +879,20 @@ public class BaseUtils {
         return s.substring(0,1).toUpperCase() + s.substring(1);
     }
 
-    public static Method getSingleMethod(Object object, String method) {
+    public static Method getSingleMethod(Object object, String method, int paramCount) {
         for(Method methodObject : object.getClass().getMethods())
-            if(methodObject.getName().equals(method))
+            if(methodObject.getName().equals(method) && (paramCount == -1 || methodObject.getParameterTypes().length == paramCount))
                 return methodObject;
         throw new RuntimeException("no single method");
     }
 
+    public static Method getSingleMethod(Object object, String method) {
+        return getSingleMethod(object, method, -1);
+    }
+
     public static void invokeSetter(Object object, String field, Object set) {
         try {
-            getSingleMethod(object, "set"+BaseUtils.capitalize(field)).invoke(object, set);
+            getSingleMethod(object, "set"+BaseUtils.capitalize(field), 1).invoke(object, set);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -905,7 +909,7 @@ public class BaseUtils {
 
     public static void invokeAdder(Object object, String field, Object add) {
         try {
-            getSingleMethod(object, "addTo"+BaseUtils.capitalize(field)).invoke(object, add);
+            getSingleMethod(object, "addTo"+BaseUtils.capitalize(field), 1).invoke(object, add);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -913,7 +917,7 @@ public class BaseUtils {
 
     public static void invokeRemover(Object object, String field, Object add) {
         try {
-            getSingleMethod(object, "removeFrom"+BaseUtils.capitalize(field)).invoke(object, add);
+            getSingleMethod(object, "removeFrom"+BaseUtils.capitalize(field), 1).invoke(object, add);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -1,7 +1,6 @@
 package platform.client.logics;
 
-import platform.client.descriptor.editor.logics.ClientComponentEditor;
-import platform.client.descriptor.editor.logics.ClientGridEditor;
+import platform.client.descriptor.editor.GridEditor;
 import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.serialization.ClientSerializationPool;
 
@@ -9,7 +8,6 @@ import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Collection;
 
 public class ClientGrid extends ClientComponent {
 
@@ -59,7 +57,7 @@ public class ClientGrid extends ClientComponent {
     }
 
     public JComponent getPropertiesEditor() {
-        return new ClientGridEditor(this);
+        return new GridEditor(this);
     }
 
     public void setShowFind(boolean showFind) {

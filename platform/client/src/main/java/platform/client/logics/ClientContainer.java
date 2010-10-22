@@ -1,7 +1,7 @@
 package platform.client.logics;
 
 import platform.base.BaseUtils;
-import platform.client.descriptor.editor.logics.ClientComponentEditor;
+import platform.client.descriptor.editor.ComponentEditor;
 import platform.client.descriptor.nodes.ComponentNode;
 import platform.client.descriptor.nodes.ContainerNode;
 import platform.client.descriptor.increment.IncrementDependency;
@@ -12,16 +12,18 @@ import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ClientContainer extends ClientComponent implements ClientIdentitySerializable {
-    public String title;
-    public String description;
+
+    private String title;
+    private String description;
 
     public List<ClientComponent> children;
 
     public ClientContainer() {
-
+        children = new ArrayList<ClientComponent>();
     }
 
     @Override
@@ -61,21 +63,21 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         return new ContainerNode(this);
     }
 
-    public void removeChild(ClientComponent component) {
+    public void removeFromChildren(ClientComponent component) {
         children.remove(component);
 
         IncrementDependency.update(this, "children");
     }
 
-    public void addChild(int index, ClientComponent component) {
+    public void addToChildren(int index, ClientComponent component) {
         children.add(index, component);
         component.container = this;
 
         IncrementDependency.update(this, "children");
     }
 
-    public void addChild(ClientComponent component) {
-        addChild(children.size(), component);
+    public void addToChildren(ClientComponent component) {
+        addToChildren(children.size(), component);
     }
 
     public void moveChild(ClientComponent compFrom, ClientComponent compTo) {
@@ -83,6 +85,24 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
     }
 
     public JComponent getPropertiesEditor() {
-        return new ClientComponentEditor("Контейнер", this);
+        return new ComponentEditor("Контейнер", this);
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+        IncrementDependency.update(this, "title");
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+        IncrementDependency.update(this, "description");
     }
 }

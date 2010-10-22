@@ -1,6 +1,6 @@
 package platform.client.logics;
 
-import platform.client.descriptor.editor.logics.ClientFunctionEditor;
+import platform.client.descriptor.editor.FunctionEditor;
 import platform.client.serialization.ClientSerializationPool;
 
 import javax.swing.*;
@@ -36,6 +36,6 @@ public class ClientFunction extends ClientComponent {
 
     @Override
     public JComponent getPropertiesEditor() {
-        return new ClientFunctionEditor(this);
+        return new FunctionEditor(this);
     }
 }

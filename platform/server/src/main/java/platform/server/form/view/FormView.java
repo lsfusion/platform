@@ -30,7 +30,7 @@ public class FormView extends IdentityObject implements ServerIdentitySerializab
     // нужен для того, чтобы генерировать уникальный идентификаторы объектам рисования, для передачи их клиенту
     protected IDGenerator idGenerator = new DefaultIDGenerator();
 
-    public Collection<ContainerView> containers = new ArrayList<ContainerView>();
+    public ContainerView mainContainer;
 
     // список групп
     public List<GroupObjectView> groupObjects = new ArrayList<GroupObjectView>();
@@ -75,14 +75,12 @@ public class FormView extends IdentityObject implements ServerIdentitySerializab
 
         ContainerView container = new ContainerView(idGenerator.idShift());
         container.title = title;
-
-        containers.add(container);
         return container;
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         outStream.writeBoolean(readOnly);
-        pool.serializeCollection(outStream, containers, serializationType);
+        pool.serializeObject(outStream, mainContainer, serializationType);
         pool.serializeCollection(outStream, groupObjects, serializationType);
         pool.serializeCollection(outStream, properties, serializationType);
         pool.serializeCollection(outStream, regularFilters);
@@ -111,7 +109,7 @@ public class FormView extends IdentityObject implements ServerIdentitySerializab
     public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
         readOnly = inStream.readBoolean();
 
-        containers = pool.deserializeList(inStream);
+        mainContainer = pool.deserializeObject(inStream);
         groupObjects = pool.deserializeList(inStream);
         properties = pool.deserializeList(inStream);
         regularFilters = pool.deserializeList(inStream);

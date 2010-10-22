@@ -1,9 +1,8 @@
 package platform.client.logics;
 
-import platform.client.descriptor.editor.logics.ClientComponentEditor;
+import platform.client.descriptor.editor.ComponentEditor;
 import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.nodes.ComponentNode;
-import platform.client.serialization.ClientCustomSerializable;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ComponentDesign;
@@ -11,10 +10,8 @@ import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
-import javax.swing.tree.MutableTreeNode;
 import java.awt.*;
 import java.io.*;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -79,7 +76,7 @@ public abstract class ClientComponent implements Serializable, ClientIdentitySer
     }
 
     public JComponent getPropertiesEditor() {
-        return new ClientComponentEditor("Компонент", this);
+        return new ComponentEditor("Компонент", this);
     }
 
     public boolean getShow() {

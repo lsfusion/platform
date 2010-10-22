@@ -1,4 +1,4 @@
-package platform.client.descriptor.editor.logics;
+package platform.client.descriptor.editor;
 
 import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.descriptor.increment.editor.IncrementCheckBox;
@@ -7,8 +7,8 @@ import platform.client.logics.ClientGrid;
 import javax.swing.*;
 import java.awt.*;
 
-public class ClientGridEditor extends ClientComponentEditor {
-    public ClientGridEditor(ClientGrid component) {
+public class GridEditor extends ComponentEditor {
+    public GridEditor(ClientGrid component) {
         super("Таблица", component);
 
         add(new TitledPanel(null, new IncrementCheckBox("Показывать поиск", component, "showFind")));

@@ -27,7 +27,6 @@ public class DefaultFormView extends FormView {
     private transient Map<PropertyDrawEntity, PropertyDrawView> mproperties = new HashMap<PropertyDrawEntity, PropertyDrawView>();
     public PropertyDrawView get(PropertyDrawEntity property) { return mproperties.get(property); }
 
-    private transient ContainerView mainContainer;
     public ContainerView getMainContainer() { return mainContainer; }
 
     private transient Map<GroupObjectView, ContainerView> panelContainers = new HashMap<GroupObjectView, ContainerView>();

@@ -103,7 +103,7 @@ public class ClientFormController {
 
     void initializeForm() throws IOException {
 
-        formLayout = new ClientFormLayout(form.containers) {
+        formLayout = new ClientFormLayout(form.mainContainer) {
             boolean firstGainedFocus = true;
 
             @Override

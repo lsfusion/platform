@@ -29,15 +29,15 @@ public abstract class ClientFormLayout extends JPanel {
     private SimplexLayout layoutManager;
 
     // отображение объектов от сервера на контейнеры для рисования
-    private Map<ClientContainer, ClientFormContainer> contviews;
+    private Map<ClientContainer, ClientFormContainer> contviews = new HashMap<ClientContainer, ClientFormContainer>();
 
     protected abstract void gainedFocus();
 
     private FocusListener focusListener;
 
-    public ClientFormLayout(List<ClientContainer> containers) {
+    public ClientFormLayout(ClientContainer topContainer) {
 
-        createContainerViews(containers);
+        createContainerViews(topContainer);
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         add(mainContainer);
@@ -64,31 +64,24 @@ public abstract class ClientFormLayout extends JPanel {
         });
     }
 
-    private void createContainerViews(List<ClientContainer> containers) {
-        contviews = new HashMap<ClientContainer, ClientFormContainer>();
+    private void createContainerViews(ClientContainer container) {
 
-        // считываем все контейнеры от сервера и создаем контейнеры отображения с соответствующей древовидной структурой
-        while (true) {
+        ClientFormContainer formContainer = new ClientFormContainer(container);
 
-            boolean found = false;
-            for (ClientContainer container : containers) {
-                if ((container.container == null || contviews.containsKey(container.container)) && !contviews.containsKey(container)) {
-                    ClientFormContainer contview = new ClientFormContainer(container);
-                    contview.setLayout(layoutManager);
+        if (container.container == null) {
+            mainContainer = formContainer;
+            layoutManager = new SimplexLayout(mainContainer, container);
+        } else {
+            contviews.get(container.container).add(formContainer, container);
+        }
 
-                    if (container.container == null) {
-                        mainContainer = contview;
-                        layoutManager = new SimplexLayout(mainContainer, container);
-                        mainContainer.setLayout(layoutManager);
-                    } else {
-                        contviews.get(container.container).add(contview, container);
-                    }
-                    contviews.put(container, contview);
-                    found = true;
-                }
+        formContainer.setLayout(layoutManager);
+        contviews.put(container, formContainer);
+
+        for (ClientComponent child : container.children) {
+            if (child instanceof ClientContainer) {
+                createContainerViews((ClientContainer)child);
             }
-
-            if (!found) break;
         }
     }
 

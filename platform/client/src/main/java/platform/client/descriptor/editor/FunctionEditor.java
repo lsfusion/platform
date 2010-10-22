@@ -1,4 +1,4 @@
-package platform.client.descriptor.editor.logics;
+package platform.client.descriptor.editor;
 
 import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.descriptor.increment.editor.IncrementTextEditor;
@@ -7,8 +7,8 @@ import platform.client.logics.ClientFunction;
 import javax.swing.*;
 import java.awt.*;
 
-public class ClientFunctionEditor extends ClientComponentEditor {
-    public ClientFunctionEditor(ClientFunction function) {
+public class FunctionEditor extends ComponentEditor {
+    public FunctionEditor(ClientFunction function) {
         super("Функциональный компонент", function);
 
         add(new TitledPanel("Заголовок", new IncrementTextEditor(function, "caption")));

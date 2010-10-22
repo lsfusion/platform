@@ -1118,7 +1118,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 if (payView != null) {
                     // делаем, чтобы суммы были внизу и как можно правее
                     ContainerView docSumsContainer = design.get(payView).getContainer();
-                    design.getMainContainer().addBack(2, docSumsContainer);
+                    design.mainContainer.addBack(2, docSumsContainer);
 
                     PropertyDrawEntity payCash = getPropertyDraw(orderSalePayCash);
                     PropertyDrawEntity payCard = getPropertyDraw(orderSalePayCard);
@@ -1128,7 +1128,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                     if (payCash != null || payCard != null || toDo != null || toDoSum != null) {
 
                         ContainerView payContainer = design.addContainer("Платежные средства");
-                        design.getMainContainer().addBack(2, payContainer);
+                        design.mainContainer.addBack(2, payContainer);
                         payContainer.constraints.directions = new SimplexComponentDirections(0.1, -0.1, 0, 0.1);
 
                         if (payCash != null) payContainer.add(design.get(payCash));
@@ -1743,7 +1743,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             if (toAdd) {
 
                 // делаем, чтобы суммы были внизу и как можно правее
-                design.getMainContainer().addBack(2, design.get(getPropertyDraw(returnSalePay)).getContainer());
+                design.mainContainer.addBack(2, design.get(getPropertyDraw(returnSalePay)).getContainer());
             }
 
             if (!noOuters)

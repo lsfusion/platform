@@ -21,17 +21,8 @@ public class ClientForm implements LogicsSupplier, ClientIdentitySerializable {
 
     public String caption = "";
 
-    // нужен именно List, чтобы проще был обход по дереву
-    // считается, что containers уже топологически отсортированы
-    public List<ClientContainer> containers;
+    public ClientContainer mainContainer;
     private int ID;
-
-    public ClientContainer getMainContainer() {
-        for (ClientContainer container : containers)
-            if (container.container == null)
-                return container;
-        return null;
-    }
 
     public List<ClientGroupObject> groupObjects;
     public List<ClientPropertyDraw> propertyDraws;
@@ -131,7 +122,7 @@ public class ClientForm implements LogicsSupplier, ClientIdentitySerializable {
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         outStream.writeBoolean(readOnly);
-        pool.serializeCollection(outStream, containers);
+        pool.serializeObject(outStream, mainContainer);
         pool.serializeCollection(outStream, groupObjects);
         pool.serializeCollection(outStream, propertyDraws);
         pool.serializeCollection(outStream, regularFilterGroups);
@@ -162,7 +153,7 @@ public class ClientForm implements LogicsSupplier, ClientIdentitySerializable {
         
         readOnly = inStream.readBoolean();
 
-        containers = pool.deserializeList(inStream);
+        mainContainer = pool.deserializeObject(inStream);
         groupObjects = pool.deserializeList(inStream);
         propertyDraws = pool.deserializeList(inStream);
         regularFilterGroups = pool.deserializeList(inStream);
@@ -191,7 +182,7 @@ public class ClientForm implements LogicsSupplier, ClientIdentitySerializable {
 
     public boolean removePropertyDraw(ClientPropertyDraw clientPropertyDraw) {
         if (clientPropertyDraw.container != null) {
-            clientPropertyDraw.container.removeChild(clientPropertyDraw);
+            clientPropertyDraw.container.removeFromChildren(clientPropertyDraw);
         }
         propertyDraws.remove(clientPropertyDraw);
         order.remove(clientPropertyDraw);
@@ -212,7 +203,7 @@ public class ClientForm implements LogicsSupplier, ClientIdentitySerializable {
 
     public void removeFromRegularFilterGroups(ClientRegularFilterGroup client) {
         if (client.container != null)
-            client.container.removeChild(client);
+            client.container.removeFromChildren(client);
         regularFilterGroups.remove(client);
     }
 }

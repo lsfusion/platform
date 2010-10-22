@@ -7,6 +7,6 @@ public class LayoutFolder extends PlainTextNode<LayoutFolder> {
     public LayoutFolder(ClientForm clientForm) {
         super("Расположение");
 
-        add(new ContainerNode(clientForm.getMainContainer()));
+        add(new ContainerNode(clientForm.mainContainer));
     }
 }

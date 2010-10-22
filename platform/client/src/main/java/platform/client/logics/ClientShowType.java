@@ -1,6 +1,6 @@
 package platform.client.logics;
 
-import platform.client.descriptor.editor.logics.ClientComponentEditor;
+import platform.client.descriptor.editor.ComponentEditor;
 import platform.client.serialization.ClientSerializationPool;
 
 import javax.swing.*;
@@ -36,6 +36,6 @@ public class ClientShowType extends ClientComponent {
     }
 
     public JComponent getPropertiesEditor() {
-        return new ClientComponentEditor("Компонент изменения вида", this);
+        return new ComponentEditor("Компонент изменения вида", this);
     }
 }
