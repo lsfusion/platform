@@ -23,8 +23,8 @@ public class ClientFunction extends ClientComponent {
     }
 
     @Override
-    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
-        super.customDeserialize(pool, iID, inStream);
+    public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
+        super.customDeserialize(pool, inStream);
 
         caption = pool.readString(inStream);
     }

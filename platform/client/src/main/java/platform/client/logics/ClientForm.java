@@ -1,5 +1,6 @@
 package platform.client.logics;
 
+import platform.base.IdentityObject;
 import platform.base.OrderedMap;
 import platform.client.SwingUtils;
 import platform.client.form.LogicsSupplier;
@@ -13,7 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ClientForm implements LogicsSupplier, ClientIdentitySerializable {
+public class ClientForm extends IdentityObject implements LogicsSupplier, ClientIdentitySerializable {
 
     public boolean readOnly = false;
 
@@ -22,7 +23,6 @@ public class ClientForm implements LogicsSupplier, ClientIdentitySerializable {
     public String caption = "";
 
     public ClientContainer mainContainer;
-    private int ID;
 
     public List<ClientGroupObject> groupObjects;
     public List<ClientPropertyDraw> propertyDraws;
@@ -74,7 +74,7 @@ public class ClientForm implements LogicsSupplier, ClientIdentitySerializable {
 
     public ClientRegularFilterGroup getRegularFilterGroup(int id) {
         for (ClientRegularFilterGroup filterGroup : regularFilterGroups) {
-            if (filterGroup.ID == id) {
+            if (filterGroup.filterID == id) {
                 return filterGroup;
             }
         }
@@ -116,10 +116,6 @@ public class ClientForm implements LogicsSupplier, ClientIdentitySerializable {
         return caption;
     }
 
-    public int getID() {
-        return ID;
-    }
-
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         outStream.writeBoolean(readOnly);
         pool.serializeObject(outStream, mainContainer);
@@ -148,9 +144,7 @@ public class ClientForm implements LogicsSupplier, ClientIdentitySerializable {
         pool.writeString(outStream, caption);
     }
 
-    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
-        ID = iID;
-        
+    public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         readOnly = inStream.readBoolean();
 
         mainContainer = pool.deserializeObject(inStream);

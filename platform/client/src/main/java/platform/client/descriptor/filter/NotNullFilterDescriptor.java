@@ -1,6 +1,5 @@
 package platform.client.descriptor.filter;
 
-import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.nodes.filters.FilterNode;
 import platform.client.descriptor.nodes.filters.NotNullFilterNode;
@@ -15,8 +14,8 @@ public class NotNullFilterDescriptor extends PropertyFilterDescriptor {
         super.customSerialize(pool, outStream, serializationType);
     }
 
-    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
-        super.customDeserialize(pool, iID, inStream);
+    public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
+        super.customDeserialize(pool, inStream);
     }
 
     @Override

@@ -24,8 +24,8 @@ public class ClientShowType extends ClientComponent {
     }
 
     @Override
-    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
-        super.customDeserialize(pool, iID, inStream);
+    public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
+        super.customDeserialize(pool, inStream);
 
         groupObject = pool.deserializeObject(inStream);
     }

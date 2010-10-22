@@ -1,6 +1,7 @@
 package platform.server.form.navigator;
 
 import platform.base.BaseUtils;
+import platform.base.IdentityObject;
 import platform.server.logics.BusinessLogics;
 
 import java.io.DataOutputStream;
@@ -9,12 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class NavigatorElement<T extends BusinessLogics<T>> {
-
-    protected int ID;
-    public int getID() {
-        return ID;
-    }
+public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObject {
 
     public String caption = "";
 

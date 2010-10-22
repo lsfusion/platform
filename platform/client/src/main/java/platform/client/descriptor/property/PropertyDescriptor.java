@@ -18,8 +18,7 @@ public class PropertyDescriptor extends AbstractNodeDescriptor implements Client
         //сериализация не нужна, т.к. вместо ссылки на свойства, нужно сериализовать ID
     }
 
-    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
-        ID = iID;
+    public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         sID = inStream.readUTF();
         caption = inStream.readUTF();
 

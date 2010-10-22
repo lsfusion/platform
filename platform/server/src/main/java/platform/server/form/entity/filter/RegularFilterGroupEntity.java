@@ -39,8 +39,7 @@ public class RegularFilterGroupEntity extends IdentityObject implements ServerId
         pool.serializeCollection(outStream, filters);
     }
 
-    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
-        ID = iID;
+    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         filters = pool.deserializeList(inStream);
     }
 }

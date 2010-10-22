@@ -215,10 +215,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return fullCaption;
     }
 
-    public int getID() {
-        return ID;
-    }
-
     public String getSID() {
         return sID;
     }
@@ -284,8 +280,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         outStream.writeInt(ID);
     }
 
-    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
-        super.customDeserialize(pool, iID, inStream);
+    public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
+        super.customDeserialize(pool, inStream);
 
         caption = pool.readString(inStream);
         overridenCaption = pool.readString(inStream);
@@ -316,8 +312,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         autoHide = inStream.readBoolean();
 
         keyBindingGroup = pool.deserializeObject(inStream);
-
-        ID = inStream.readInt();
 
         baseType = ClientTypeSerializer.deserialize(inStream);
 

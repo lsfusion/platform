@@ -19,6 +19,10 @@ public class GroupObjectEntity extends ArrayList<ObjectEntity> implements Instan
         return ID;
     }
 
+    public void setID(int iID) {
+        ID = iID;
+    }
+
     public GroupObjectEntity() {
     }
     
@@ -50,9 +54,7 @@ public class GroupObjectEntity extends ArrayList<ObjectEntity> implements Instan
         pool.serializeObject(outStream, propertyHighlight);
     }
 
-    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
-        this.ID = iID;
-
+    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         pool.deserializeCollection(this, inStream);
         initClassView = inStream.readByte();
         banClassView = inStream.readByte();

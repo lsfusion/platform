@@ -1,8 +1,6 @@
 package platform.server.logics.property;
 
 import platform.base.IdentityObject;
-import platform.interop.serialization.IdentitySerializable;
-import platform.interop.serialization.SerializationPool;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.PullExpr;
@@ -74,9 +72,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
     }
 
-    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
-        ID = iID;
-
+    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         changeExpr = new PullExpr("interface " + ID);
     }
 }

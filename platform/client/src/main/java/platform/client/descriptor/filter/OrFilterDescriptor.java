@@ -30,7 +30,7 @@ public class OrFilterDescriptor extends FilterDescriptor {
         pool.serializeObject(outStream, op2);
     }
 
-    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         op1 = (FilterDescriptor) pool.deserializeObject(inStream);
         op2 = (FilterDescriptor) pool.deserializeObject(inStream);
     }

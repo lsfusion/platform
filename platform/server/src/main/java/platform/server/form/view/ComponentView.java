@@ -1,5 +1,6 @@
 package platform.server.form.view;
 
+import platform.base.IdentityObject;
 import platform.interop.ComponentDesign;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexConstraints;
@@ -9,17 +10,14 @@ import platform.server.serialization.ServerSerializationPool;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ComponentView implements ServerIdentitySerializable {
+public class ComponentView extends IdentityObject implements ServerIdentitySerializable {
 
     public ComponentDesign design = new ComponentDesign();
 
     protected ContainerView container;
-
-    int ID;
 
     public SimplexConstraints<ComponentView> constraints = new SimplexConstraints<ComponentView>();
 
@@ -43,10 +41,6 @@ public class ComponentView implements ServerIdentitySerializable {
         this.container = container;
     }
 
-    public int getID() {
-        return ID;
-    }
-
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.writeObject(outStream, design);
         pool.serializeObject(outStream, container, serializationType);
@@ -62,8 +56,7 @@ public class ComponentView implements ServerIdentitySerializable {
         outStream.writeBoolean(show);
     }
 
-    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
-        ID = iID;
+    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         design = pool.readObject(inStream);
 
         container = pool.deserializeObject(inStream);
@@ -77,7 +70,6 @@ public class ComponentView implements ServerIdentitySerializable {
             DoNotIntersectSimplexConstraint constraint = pool.readObject(inStream);
             constraints.intersects.put(view, constraint);
         }
-        constraints.ID = ID;
 
         defaultComponent = inStream.readBoolean();
         show = inStream.readBoolean();

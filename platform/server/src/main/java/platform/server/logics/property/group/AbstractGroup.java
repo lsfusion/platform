@@ -88,6 +88,10 @@ public class AbstractGroup extends AbstractNode implements ServerIdentitySeriali
         return ID;
     }
 
+    public void setID(int iID) {
+        ID = iID;
+    }
+
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, getParent());
 
@@ -101,8 +105,7 @@ public class AbstractGroup extends AbstractNode implements ServerIdentitySeriali
         pool.serializeCollection(outStream, serializableChildren);
     }
 
-    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         //todo:
-
     }
 }

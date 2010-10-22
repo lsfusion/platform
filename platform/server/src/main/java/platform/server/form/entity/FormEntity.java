@@ -444,8 +444,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         pool.serializeMap(outStream, forceDefaultDraw);
     }
 
-    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
-        ID = iID;
+    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         sID = genSID(ID);
         
         caption = inStream.readUTF();

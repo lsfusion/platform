@@ -53,6 +53,10 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyI
         return ID;
     }
 
+    public void setID(int iID) {
+        ID = iID;
+    }
+
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, property);
 
@@ -63,8 +67,7 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyI
         }
     }
 
-    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
-        ID = iID;
+    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         int propertyId = inStream.readInt();
 
         property = pool.context.BL.getProperty(propertyId);

@@ -1,5 +1,6 @@
 package platform.client.logics;
 
+import platform.base.IdentityObject;
 import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientTypeSerializer;
 import platform.client.serialization.ClientIdentitySerializable;
@@ -10,9 +11,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 
-public class ClientObject implements Serializable, ClientIdentitySerializable {
-
-    private int ID = 0;
+public class ClientObject extends IdentityObject implements Serializable, ClientIdentitySerializable {
 
     public String caption;
     public boolean addOnTransaction;
@@ -28,17 +27,11 @@ public class ClientObject implements Serializable, ClientIdentitySerializable {
 
     }
 
-    public int getID() {
-        return ID;
-    }
-
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, classChooser);
     }
 
-    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
-        ID = iID;
-
+    public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         groupObject = pool.deserializeObject(inStream);
 
         caption = pool.readString(inStream);

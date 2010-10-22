@@ -1,5 +1,6 @@
 package platform.client.logics;
 
+import platform.base.IdentityObject;
 import platform.client.descriptor.editor.ComponentEditor;
 import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.nodes.ComponentNode;
@@ -15,9 +16,9 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class ClientComponent implements Serializable, ClientIdentitySerializable {
+public abstract class ClientComponent extends IdentityObject implements Serializable, ClientIdentitySerializable {
 
-    public int compID; // ID есть и у свойст и у объектов, так что чтобы не путаться
+    public int ID; // ID есть и у свойст и у объектов, так что чтобы не путаться
 
     public ComponentDesign design = new ComponentDesign();
 
@@ -32,7 +33,11 @@ public abstract class ClientComponent implements Serializable, ClientIdentitySer
     }
 
     public int getID() {
-        return compID;
+        return ID;
+    }
+
+    public void setID(int ID) {
+        this.ID = ID;
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
@@ -50,8 +55,7 @@ public abstract class ClientComponent implements Serializable, ClientIdentitySer
         outStream.writeBoolean(show);
     }
 
-    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
-        compID = iID;
+    public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         design = pool.readObject(inStream);
 
         container = pool.deserializeObject(inStream);
@@ -65,7 +69,6 @@ public abstract class ClientComponent implements Serializable, ClientIdentitySer
             DoNotIntersectSimplexConstraint constraint = pool.readObject(inStream);
             constraints.intersects.put(view, constraint);
         }
-        constraints.ID = compID;
 
         defaultComponent = inStream.readBoolean();
         show = inStream.readBoolean();

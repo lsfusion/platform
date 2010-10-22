@@ -36,8 +36,7 @@ public class RegularFilterGroupDescriptor extends IdentityDescriptor implements 
         pool.serializeCollection(outStream, filters);
     }
 
-    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
-        ID = iID;
+    public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         filters = pool.deserializeList(inStream);
         client = pool.context.getRegularFilterGroup(ID);
     }

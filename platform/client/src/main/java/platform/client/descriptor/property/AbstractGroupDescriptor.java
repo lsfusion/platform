@@ -15,8 +15,7 @@ public class AbstractGroupDescriptor extends AbstractNodeDescriptor implements C
         //todo:
     }
 
-    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
-        ID = iID;
+    public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         parent = pool.deserializeObject(inStream);
         children = pool.deserializeList(inStream);
     }

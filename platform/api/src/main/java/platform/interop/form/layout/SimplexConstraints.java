@@ -27,7 +27,6 @@ public class SimplexConstraints<T> implements Serializable {
 
     // приходится делать сериализацию отдельно, посколько клиент будет работать не с исходным классом T, а с его ID
     transient public Map<T, DoNotIntersectSimplexConstraint> intersects = new HashMap<T, DoNotIntersectSimplexConstraint>();
-    transient public Integer ID = 0; // по нему будет идентифицироваться объект на который установлен intersects 
 
     public SimplexConstraints() {
     }

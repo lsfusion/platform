@@ -32,6 +32,11 @@ public class ObjectView implements ServerIdentitySerializable {
         return entity.ID;
     }
 
+    int ID;
+    public void setID(int iID) {
+        ID = iID;
+    }
+
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, groupObject, serializationType);
         pool.writeString(outStream, entity.caption);
@@ -42,9 +47,9 @@ public class ObjectView implements ServerIdentitySerializable {
         pool.serializeObject(outStream, classChooser, serializationType);
     }
 
-    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         classChooser = pool.deserializeObject(inStream);
 
-        entity = pool.context.form.getObject(iID);
+        entity = pool.context.form.getObject(ID);
     }
 }

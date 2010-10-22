@@ -38,7 +38,7 @@ public class OrFilterEntity extends FilterEntity {
         pool.serializeObject(outStream, op2);
     }
 
-    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         op1 = (FilterEntity) pool.deserializeObject(inStream);
         op2 = (FilterEntity) pool.deserializeObject(inStream);
     }

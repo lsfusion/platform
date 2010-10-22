@@ -12,7 +12,6 @@ import platform.interop.ClassViewType;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.*;
 
 public class ClientGroupObject extends ArrayList<ClientObject>
@@ -75,14 +74,17 @@ public class ClientGroupObject extends ArrayList<ClientObject>
         return ID;
     }
 
+    public void setID(int iID) {
+        ID = iID;
+    }
+
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeCollection(outStream, this);
         pool.serializeObject(outStream, grid);
         pool.serializeObject(outStream, showType);
     }
 
-    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
-        ID = iID;
+    public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         banClassView = inStream.readByte();
 
         pool.deserializeCollection(this, inStream);

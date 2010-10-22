@@ -68,6 +68,10 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
         return ID;
     }
 
+    public void setID(int ID) {
+        this.ID = ID;
+    }
+
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeCollection(outStream, this);
         outStream.writeByte(initClassView);
@@ -75,15 +79,13 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
         pool.serializeObject(outStream, propertyHighlight);
     }
 
-    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
-        this.ID = iID;
-
+    public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         pool.deserializeCollection(this, inStream);
         initClassView = inStream.readByte();
         banClassView = inStream.readByte();
         propertyHighlight = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
 
-        client = pool.context.getGroupObject(iID);
+        client = pool.context.getGroupObject(ID);
     }
 
     @Override

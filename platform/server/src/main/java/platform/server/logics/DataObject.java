@@ -170,7 +170,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
 //        pool.serializeObject(outStream, objectClass);
     }
 
-    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         object = BaseUtils.deserializeObject(inStream);
     }
 

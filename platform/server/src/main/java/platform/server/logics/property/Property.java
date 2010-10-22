@@ -23,10 +23,7 @@ import platform.server.data.where.classes.AbstractClassWhere;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
-import platform.server.form.instance.GroupObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.PropertyObjectInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.view.DefaultFormView;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -61,6 +58,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public int getID() {
         return ID;
+    }
+
+    public void setID(int iID) {
+        ID = iID;
     }
 
     public final Collection<T> interfaces;
@@ -474,7 +475,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         pool.serializeObject(outStream, getParent());
     }
 
-    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         //десериализация не нужна, т.к. вместо создания объекта, происходит поиск в BL
     }
 }

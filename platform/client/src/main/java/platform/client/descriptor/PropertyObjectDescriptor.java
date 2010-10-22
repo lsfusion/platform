@@ -4,8 +4,6 @@ import platform.client.descriptor.property.PropertyDescriptor;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
 import platform.client.serialization.ClientSerializationPool;
 import platform.client.serialization.ClientIdentitySerializable;
-import platform.interop.serialization.IdentitySerializable;
-import platform.interop.serialization.SerializationPool;
 import platform.base.BaseUtils;
 
 import java.io.DataInputStream;
@@ -22,6 +20,10 @@ public class PropertyObjectDescriptor extends PropertyDescriptorImplement<Proper
 
     public int getID() {
         return ID;
+    }
+
+    public void setID(int iID) {
+        ID = iID;
     }
 
     public PropertyObjectDescriptor(PropertyDescriptor property, Map<PropertyInterfaceDescriptor, ? extends PropertyObjectInterfaceDescriptor> mapping) {
@@ -71,8 +73,7 @@ public class PropertyObjectDescriptor extends PropertyDescriptorImplement<Proper
         }
     }
 
-    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
-        ID = iID;
+    public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         property = (PropertyDescriptor) pool.deserializeObject(inStream);
 
         mapping = new HashMap<PropertyInterfaceDescriptor, PropertyObjectInterfaceDescriptor>();

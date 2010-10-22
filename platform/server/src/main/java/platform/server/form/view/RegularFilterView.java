@@ -2,14 +2,12 @@ package platform.server.form.view;
 
 import platform.base.IdentityObject;
 import platform.server.form.entity.filter.RegularFilterEntity;
-import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 
 public class RegularFilterView extends IdentityObject implements ServerIdentitySerializable {
 
@@ -30,9 +28,7 @@ public class RegularFilterView extends IdentityObject implements ServerIdentityS
         outStream.writeBoolean(entity.showKey);
     }
 
-    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
-        ID = iID;
-
-        entity = pool.context.form.getRegularFilter(iID);
+    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
+        entity = pool.context.form.getRegularFilter(ID);
     }
 }

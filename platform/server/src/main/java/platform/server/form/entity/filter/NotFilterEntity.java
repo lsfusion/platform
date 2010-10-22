@@ -34,7 +34,7 @@ public class NotFilterEntity extends FilterEntity {
         pool.serializeObject(outStream, filter);
     }
 
-    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         filter = (FilterEntity) pool.deserializeObject(inStream);
     }
 }

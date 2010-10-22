@@ -215,7 +215,7 @@ public class ClientFormController {
                     }
                 });
                 formLayout.add(filterGroup, checkBox);
-                formLayout.addBinding(singleFilter.key, "regularFilter" + filterGroup.ID + singleFilter.ID, new AbstractAction() {
+                formLayout.addBinding(singleFilter.key, "regularFilter" + filterGroup.filterID + singleFilter.ID, new AbstractAction() {
                     public void actionPerformed(ActionEvent e) {
                         checkBox.setSelected(!checkBox.isSelected());
                     }
@@ -251,7 +251,7 @@ public class ClientFormController {
                 formLayout.add(filterGroup, comboBox);
 
                 for (final ClientRegularFilter singleFilter : filterGroup.filters) {
-                    formLayout.addBinding(singleFilter.key, "regularFilter" + filterGroup.ID + singleFilter.ID, new AbstractAction() {
+                    formLayout.addBinding(singleFilter.key, "regularFilter" + filterGroup.filterID + singleFilter.ID, new AbstractAction() {
                         public void actionPerformed(ActionEvent e) {
                             comboBox.setSelectedItem(singleFilter);
                         }
@@ -544,7 +544,7 @@ public class ClientFormController {
     }
 
     private void setRemoteRegularFilter(ClientRegularFilterGroup filterGroup, ClientRegularFilter filter) throws IOException {
-        remoteForm.setRegularFilter(filterGroup.ID, (filter == null) ? -1 : filter.ID);
+        remoteForm.setRegularFilter(filterGroup.filterID, (filter == null) ? -1 : filter.ID);
     }
 
     private void setRegularFilter(ClientRegularFilterGroup filterGroup, ClientRegularFilter filter) throws IOException {

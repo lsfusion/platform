@@ -36,6 +36,11 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         return entity.getID();
     }
 
+    int ID;
+    public void setID(int iID) {
+        ID = iID;
+    }
+
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         outStream.writeByte(entity.banClassView);
         pool.serializeCollection(outStream, this, serializationType);
@@ -43,12 +48,12 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         pool.serializeObject(outStream, showType, serializationType);
     }
 
-    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         pool.deserializeCollection(this, inStream);
 
         grid = pool.deserializeObject(inStream);
         showType = pool.deserializeObject(inStream);
 
-        entity = pool.context.form.getGroupObject(iID);
+        entity = pool.context.form.getGroupObject(ID);
     }
 }

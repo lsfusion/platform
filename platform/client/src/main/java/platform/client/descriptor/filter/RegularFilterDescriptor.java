@@ -2,7 +2,6 @@ package platform.client.descriptor.filter;
 
 import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.logics.ClientRegularFilter;
-import platform.client.serialization.ClientCustomSerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.descriptor.GroupObjectDescriptor;
@@ -46,8 +45,7 @@ public class RegularFilterDescriptor extends IdentityDescriptor implements Clien
         outStream.writeBoolean(client.showKey);
     }
 
-    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
-        ID = iID;
+    public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         filter = (FilterDescriptor) pool.deserializeObject(inStream);
         client = pool.context.getRegularFilter(ID);
     }

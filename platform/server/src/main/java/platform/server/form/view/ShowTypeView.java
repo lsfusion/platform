@@ -27,8 +27,8 @@ public class ShowTypeView extends ComponentView {
     }
 
     @Override
-    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
-        super.customDeserialize(pool, iID, inStream);
+    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
+        super.customDeserialize(pool, inStream);
 
         groupObject = pool.deserializeObject(inStream);
     }

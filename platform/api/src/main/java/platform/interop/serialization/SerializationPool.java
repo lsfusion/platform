@@ -146,9 +146,10 @@ public abstract class SerializationPool<C> {
             //ложим объект в пул, если надо
             if (IdentitySerializable.class.isAssignableFrom(clazz)) {
                 put(getClassId(clazz), id, instance);
+                ((IdentitySerializable)instance).setID(id);
             }
 
-            instance.customDeserialize(this, id, inStream);
+            instance.customDeserialize(this, inStream);
             return instance;
         } catch (Exception e) {
             throw new RuntimeException("Не могу создать объект класса: " + clazz.toString(), e);

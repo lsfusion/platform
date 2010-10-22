@@ -19,9 +19,7 @@ import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -106,7 +104,7 @@ public class FormView extends IdentityObject implements ServerIdentitySerializab
         pool.writeString(outStream, caption);
     }
 
-    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
+    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         readOnly = inStream.readBoolean();
 
         mainContainer = pool.deserializeObject(inStream);

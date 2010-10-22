@@ -27,8 +27,8 @@ public class CompareFilterDescriptor extends PropertyFilterDescriptor {
         pool.serializeObject(outStream, value);
     }
 
-    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
-        super.customDeserialize(pool, iID, inStream);
+    public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
+        super.customDeserialize(pool, inStream);
 
         compare = Compare.deserialize(inStream);
         value = (OrderDescriptor) pool.deserializeObject(inStream);

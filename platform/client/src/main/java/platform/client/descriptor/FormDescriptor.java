@@ -78,9 +78,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
     IncrementView columnGroupConstraint;
     IncrementView propertyCaptionConstraint;
 
-    public void customDeserialize(ClientSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
-        ID = iID;
-
+    public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         caption = inStream.readUTF();
         isPrintForm = inStream.readBoolean();
 

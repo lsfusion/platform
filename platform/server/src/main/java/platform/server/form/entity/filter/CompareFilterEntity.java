@@ -52,8 +52,8 @@ public class CompareFilterEntity<P extends PropertyInterface> extends PropertyFi
         pool.serializeObject(outStream, value);
     }
 
-    public void customDeserialize(ServerSerializationPool pool, int iID, DataInputStream inStream) throws IOException {
-        super.customDeserialize(pool, iID, inStream);
+    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
+        super.customDeserialize(pool, inStream);
 
         compare = Compare.deserialize(inStream);
         value = (OrderEntity<?>) pool.deserializeObject(inStream);
