@@ -18,7 +18,7 @@ public class ComponentNode<T extends ClientComponent, C extends ComponentNode> e
         super(userObject, allowsChildren);
     }
 
-    public NodeEditor createEditor(FormDescriptor form, RemoteDescriptorInterface remote) {
+    public NodeEditor createEditor(FormDescriptor form) {
         return new ComponentEditor("", getTypedObject());
     }
 }

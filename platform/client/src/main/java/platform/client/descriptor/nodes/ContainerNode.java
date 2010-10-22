@@ -4,11 +4,10 @@ import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.editor.ContainerEditor;
 import platform.client.descriptor.editor.base.NodeEditor;
 import platform.client.descriptor.nodes.actions.EditableTreeNode;
-import platform.client.tree.ClientTree;
-import platform.client.tree.ClientTreeNode;
 import platform.client.logics.ClientComponent;
 import platform.client.logics.ClientContainer;
-import platform.interop.serialization.RemoteDescriptorInterface;
+import platform.client.tree.ClientTree;
+import platform.client.tree.ClientTreeNode;
 
 import javax.swing.*;
 
@@ -21,8 +20,8 @@ public class ContainerNode extends ComponentNode<ClientContainer, ContainerNode>
             add(child.getNode());
         }
 
-        addCollectionReferenceActions(container, "children", new String[] {""}, new Class[] {ClientContainer.class});
-   }
+        addCollectionReferenceActions(container, "children", new String[]{""}, new Class[]{ClientContainer.class});
+    }
 
     @Override
     public boolean canImport(TransferHandler.TransferSupport info) {
@@ -53,11 +52,12 @@ public class ContainerNode extends ComponentNode<ClientContainer, ContainerNode>
             }
 
             return true;
-        } else
+        } else {
             return false;
+        }
     }
 
-    public NodeEditor createEditor(FormDescriptor form, RemoteDescriptorInterface remote) {
+    public NodeEditor createEditor(FormDescriptor form) {
         return new ContainerEditor(getTypedObject());
     }
 }
