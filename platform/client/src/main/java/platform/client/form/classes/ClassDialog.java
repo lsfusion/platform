@@ -15,10 +15,12 @@ import java.awt.event.KeyEvent;
 public class ClassDialog extends JDialog {
 
     ClassTree tree;
+    boolean concrete;
 
-    public ClassDialog(Component owner, ClientObjectClass baseClass, ClientObjectClass value) {
+    public ClassDialog(Component owner, ClientObjectClass baseClass, ClientObjectClass value, boolean concrete) {
         super(SwingUtils.getWindow(owner), Dialog.ModalityType.DOCUMENT_MODAL);
 
+        this.concrete = concrete;
         setLayout(new BorderLayout());
 
         // делаем, чтобы не выглядел как диалог
@@ -62,23 +64,23 @@ public class ClassDialog extends JDialog {
 
     }
 
-    private ClientConcreteClass chosenClass = null;
-    public ClientConcreteClass getChosenClass() {
+    private ClientObjectClass chosenClass = null;
+    public ClientObjectClass getChosenClass() {
         return chosenClass;
     }
 
     private void okPressed() {
         
         ClientClass selectedClass = tree.getSelectionClass();
-        if (selectedClass instanceof ClientConcreteClass) {
-            chosenClass = (ClientConcreteClass)tree.getSelectionClass();
+        if (!concrete || selectedClass instanceof ClientConcreteClass) {
+            chosenClass = tree.getSelectionClass();
             ClassDialog.this.setVisible(false);
         }
     }
 
-    public static ClientConcreteClass dialogConcreteClass(Component owner, ClientObject object, ClientObjectClass value) {
+    public static ClientObjectClass dialogObjectClass(Component owner, ClientObjectClass baseClass, ClientObjectClass value, boolean concrete) {
 
-        ClassDialog dialog = new ClassDialog(owner, (ClientObjectClass)object.baseClass, value);
+        ClassDialog dialog = new ClassDialog(owner, baseClass, value, concrete);
         SwingUtils.requestLocation(dialog, java.awt.MouseInfo.getPointerInfo().getLocation());
         dialog.setVisible(true);
         return dialog.getChosenClass();

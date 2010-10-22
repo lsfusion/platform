@@ -13,15 +13,21 @@ import java.io.IOException;
 import java.text.Format;
 import java.text.ParseException;
 
-public class ClientLogicalClass extends ClientDataClass {
+public class ClientLogicalClass extends ClientDataClass implements ClientTypeClass {
 
-    public ClientLogicalClass(DataInputStream inStream) throws IOException {
-        super(inStream);
-    }
+    public final static ClientLogicalClass instance = new ClientLogicalClass();
 
     @Override
     public byte getTypeId() {
         return Data.LOGICAL;
+    }
+    
+    public ClientTypeClass getTypeClass() {
+        return this;
+    }
+
+    public ClientClass getDefaultClass() {
+        return this;
     }
 
     @Override

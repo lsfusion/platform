@@ -38,4 +38,6 @@ public interface ClientType {
     boolean shouldBeDrawn(ClientFormController form);
     
     String getConformedMessage();
+
+    ClientTypeClass getTypeClass();
 }

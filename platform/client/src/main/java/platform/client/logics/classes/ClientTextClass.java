@@ -13,13 +13,18 @@ import java.io.IOException;
 import java.text.Format;
 import java.text.ParseException;
 
-public class ClientTextClass extends ClientDataClass {
+public class ClientTextClass extends ClientDataClass implements ClientTypeClass {
 
-    public ClientTextClass(DataInputStream inStream) throws IOException {
-        super(inStream);
+    public final static ClientTextClass instance = new ClientTextClass();
+
+    public ClientTypeClass getTypeClass() {
+        return this;
     }
 
-    @Override
+    public ClientClass getDefaultClass() {
+        return this;
+    }
+
     public byte getTypeId() {
         return Data.TEXT;
     }

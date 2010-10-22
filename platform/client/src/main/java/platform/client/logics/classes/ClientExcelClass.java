@@ -15,9 +15,7 @@ import java.text.Format;
 
 public class ClientExcelClass extends ClientFileClass {
 
-    public ClientExcelClass(DataInputStream inStream) throws IOException {
-        super(inStream);
-    }
+    public final static ClientExcelClass instance = new ClientExcelClass();
 
     public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) {
         return new ExcelPropertyRenderer(format, design);

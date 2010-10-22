@@ -13,9 +13,7 @@ import java.text.Format;
 
 public class ClientImageClass extends ClientFileClass {
 
-    public ClientImageClass(DataInputStream inStream) throws IOException {
-        super(inStream);
-    }
+    public final static ClientImageClass instance = new ClientImageClass();
 
     @Override
     public byte getTypeId() {

@@ -13,6 +13,9 @@ import java.text.NumberFormat;
 
 abstract public class ClientIntegralClass extends ClientDataClass {
 
+    protected ClientIntegralClass() {
+    }
+
     ClientIntegralClass(DataInputStream inStream) throws IOException {
         super(inStream);
     }

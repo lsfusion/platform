@@ -14,9 +14,7 @@ import java.text.Format;
 
 public class ClientWordClass extends ClientFileClass {
 
-    public ClientWordClass(DataInputStream inStream) throws IOException {
-        super(inStream);
-    }
+    public final static ClientWordClass instance = new ClientWordClass();
 
     public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) {
         return new WordPropertyRenderer(format, design);

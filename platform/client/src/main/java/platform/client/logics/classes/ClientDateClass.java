@@ -14,13 +14,18 @@ import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
-public class ClientDateClass extends ClientDataClass {
+public class ClientDateClass extends ClientDataClass implements ClientTypeClass {
 
-    public ClientDateClass(DataInputStream inStream) throws IOException {
-        super(inStream);
+    public final static ClientDateClass instance = new ClientDateClass();
+
+    public ClientTypeClass getTypeClass() {
+        return this;
     }
 
-    @Override
+    public ClientClass getDefaultClass() {
+        return this;
+    }
+
     public byte getTypeId() {
         return Data.DATE;
     }

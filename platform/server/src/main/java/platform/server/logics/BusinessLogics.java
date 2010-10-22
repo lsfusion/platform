@@ -3051,7 +3051,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 classes.put(ID, TypeSerializer.deserializeValueClass(this, inStream));
                 if (inStream.readBoolean())
                     atLeastOne.add(ID);
-            }
+            }                   
 
             MultiHashMap propertiesMap = new MultiHashMap();
             for (Property<?> property : properties) {
@@ -3083,6 +3083,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
 
             return outStream.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public byte[] getBaseClassByteArray() throws RemoteException {
+        try {
+            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+            DataOutputStream dataStream = new DataOutputStream(outStream);
+            baseClass.serialize(dataStream);
+            return outStream.toByteArray();        
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

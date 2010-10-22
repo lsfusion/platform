@@ -9,7 +9,9 @@ import platform.client.form.editor.ObjectPropertyEditor;
 import platform.client.form.renderer.IntegerPropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.ClientGroupObjectValue;
+import platform.client.Main;
 import platform.interop.ComponentDesign;
+import platform.interop.Data;
 
 import java.awt.*;
 import java.io.IOException;
@@ -17,7 +19,20 @@ import java.text.Format;
 import java.text.NumberFormat;
 import java.text.ParseException;
 
-public class ClientObjectType implements ClientType {
+public class ClientObjectType implements ClientType, ClientTypeClass {
+
+    public ClientTypeClass getTypeClass() {
+        return this;
+    }
+
+    public static ClientObjectClass baseClass;
+    public ClientClass getDefaultClass() {
+        return baseClass; // пока так подебильному
+    }
+
+    public byte getTypeId() {
+        return Data.OBJECT;
+    }
 
     public int getMinimumWidth(FontMetrics fontMetrics) {
         return fontMetrics.stringWidth("999 999") + 8;
@@ -65,5 +80,10 @@ public class ClientObjectType implements ClientType {
 
     public String getConformedMessage() {
         return "Вы действительно хотите редактировать свойство";
+    }
+
+    @Override
+    public String toString() {
+        return "Объект";
     }
 }

@@ -16,14 +16,7 @@ public abstract class ClientObjectClass extends ClientClass {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ClientObjectClass)) return false;
-
-        ClientObjectClass that = (ClientObjectClass) o;
-
-        if (ID != that.ID) return false;
-
-        return true;
+        return this == o || o instanceof ClientObjectClass && ID == ((ClientObjectClass) o).ID;
     }
 
     @Override
@@ -66,5 +59,9 @@ public abstract class ClientObjectClass extends ClientClass {
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeByte(Data.OBJECT);
         outStream.writeInt(ID);
+    }
+
+    public ClientType getType() {
+        return type;
     }
 }

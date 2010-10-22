@@ -94,28 +94,4 @@ public class ClassController {
 
         return (ClientObjectClass) selNode.getUserObject();
     }
-
-    public ClientObjectClass getSelectedClass() {
-
-        DefaultMutableTreeNode selNode = getSelectedNode();
-        if (selNode == null) return (ClientObjectClass) view.getCurrentClass();
-
-        return (ClientObjectClass) selNode.getUserObject();
-    }
-
-    public void changeClass() {
-
-        ClientObjectClass selectedClass = getSelectedClass();
-
-        if (!(selectedClass instanceof ClientConcreteClass)) {
-            selectedClass = ClassDialog.dialogConcreteClass(form.getComponent(), object, selectedClass);
-            if (selectedClass == null) return;
-        }
-
-        try {
-            form.changeClass(object, (ClientConcreteClass)selectedClass);
-        } catch (IOException e) {
-            throw new RuntimeException("Ошибка при изменении класса объекта", e);
-        }
-    }
 }

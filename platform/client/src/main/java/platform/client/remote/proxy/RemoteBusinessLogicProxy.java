@@ -85,4 +85,8 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
     public byte[] getPropertyObjectsByteArray(byte[] classes, boolean isCompulsory) throws RemoteException {
         return target.getPropertyObjectsByteArray(classes, isCompulsory);
     }
+
+    public byte[] getBaseClassByteArray() throws RemoteException {
+        return target.getBaseClassByteArray();
+    }
 }

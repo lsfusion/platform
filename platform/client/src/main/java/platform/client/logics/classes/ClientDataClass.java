@@ -16,15 +16,16 @@ import java.text.Format;
 
 public abstract class ClientDataClass extends ClientClass implements ClientType {
 
+    protected ClientDataClass() {
+    }
+
     ClientDataClass(DataInputStream inStream) throws IOException {
         super(inStream);
     }
 
-    public abstract byte getTypeId();
-
     @Override
     public void serialize(DataOutputStream outStream) throws IOException {
-        outStream.writeByte(getTypeId());
+        outStream.writeByte(getTypeClass().getTypeId());
     }
 
     public boolean hasChildren() {
@@ -73,5 +74,9 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
 
     public String getConformedMessage(){
         return "Вы действительно хотите редактировать свойство";
+    }
+
+    public ClientType getType() {
+        return this;
     }
 }

@@ -6,17 +6,22 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.text.ParseException;
 
-public class ClientLongClass extends ClientIntegralClass {
+public class ClientLongClass extends ClientIntegralClass implements ClientTypeClass {
 
-    public ClientLongClass(DataInputStream inStream) throws IOException {
-        super(inStream);
-    }
+    public final static ClientLongClass instance = new ClientLongClass();
 
     public Class getJavaClass() {
         return Long.class;
     }
 
-    @Override
+    public ClientTypeClass getTypeClass() {
+        return this;
+    }
+
+    public ClientClass getDefaultClass() {
+        return this;
+    }
+
     public byte getTypeId() {
         return Data.LONG;
     }

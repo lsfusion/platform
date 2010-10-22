@@ -5,13 +5,25 @@ import java.io.IOException;
 import java.text.Format;
 import java.text.ParseException;
 
-public abstract class ClientFileClass extends ClientDataClass {
+public abstract class ClientFileClass extends ClientDataClass implements ClientTypeClass {
+
+    protected ClientFileClass() {
+    }
+    
     public ClientFileClass(DataInputStream inStream) throws IOException {
         super(inStream);
     }
 
     public String getPreferredMask() {
         return "1234567";
+    }
+
+    public ClientTypeClass getTypeClass() {
+        return this;
+    }
+
+    public ClientClass getDefaultClass() {
+        return this;
     }
 
     public Format getDefaultFormat() {

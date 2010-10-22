@@ -6,6 +6,9 @@ import platform.client.exceptions.ExceptionThreadGroup;
 import platform.client.form.SimplexLayout;
 import platform.client.rmi.ConnectionLostManager;
 import platform.client.rmi.RMITimeoutSocketFactory;
+import platform.client.logics.classes.ClientTypeSerializer;
+import platform.client.logics.classes.ClientObjectType;
+import platform.client.logics.classes.ClientObjectClass;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.ServerInfo;
 import platform.interop.form.RemoteFormInterface;
@@ -16,6 +19,8 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.io.DataInputStream;
+import java.io.ByteArrayInputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.rmi.server.RMIClassLoader;
@@ -128,6 +133,8 @@ public class Main {
                     remoteLogics = loginAction.getRemoteLogics();
                     computerId = loginAction.getComputerId();
                     RemoteNavigatorInterface remoteNavigator = loginAction.getRemoteNavigator();
+
+                    ClientObjectType.baseClass = (ClientObjectClass) ClientTypeSerializer.deserializeClientClass(new DataInputStream(new ByteArrayInputStream(remoteLogics.getBaseClassByteArray())));
 
                     if (logLevel != null) {
                         LogManager.getLogManager().getLogger("").setLevel(Level.parse(logLevel));

@@ -16,7 +16,7 @@ import java.text.ParseException;
 
 public class ClientStringClass extends ClientDataClass {
 
-    private int length;
+    public final int length;
 
     public ClientStringClass(DataInputStream inStream) throws IOException {
         super(inStream);
@@ -24,9 +24,26 @@ public class ClientStringClass extends ClientDataClass {
         length = inStream.readInt();
     }
 
-    @Override
-    public byte getTypeId() {
-        return Data.STRING;
+    public ClientStringClass(int length) {
+        this.length = length;
+    }
+
+    public final static ClientTypeClass type = new ClientTypeClass() {
+        public byte getTypeId() {
+            return Data.STRING;
+        }
+
+        public ClientClass getDefaultClass() {
+            return new ClientStringClass(50);
+        }
+
+        @Override
+        public String toString() {
+            return "Строка";
+        }
+    };
+    public ClientTypeClass getTypeClass() {
+        return type;
     }
 
     @Override

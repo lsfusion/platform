@@ -11,17 +11,22 @@ import java.text.Format;
 import java.text.NumberFormat;
 import java.text.ParseException;
 
-public class ClientIntegerClass extends ClientIntegralClass {
+public class ClientIntegerClass extends ClientIntegralClass implements ClientTypeClass {
 
-    public ClientIntegerClass(DataInputStream inStream) throws IOException {
-        super(inStream);
-    }
+    public final static ClientIntegerClass instance = new ClientIntegerClass();
 
     public Class getJavaClass() {
         return Integer.class;
     }
 
-    @Override
+    public ClientTypeClass getTypeClass() {
+        return this;
+    }
+
+    public ClientClass getDefaultClass() {
+        return this;
+    }
+
     public byte getTypeId() {
         return Data.INTEGER;
     }

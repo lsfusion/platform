@@ -10,8 +10,8 @@ import java.text.NumberFormat;
 
 public class ClientNumericClass extends ClientDoubleClass {
 
-    private int length;
-    private int precision;
+    public final int length;
+    public final int precision;
 
     public ClientNumericClass(DataInputStream inStream) throws IOException {
         super(inStream);
@@ -20,9 +20,28 @@ public class ClientNumericClass extends ClientDoubleClass {
         precision = inStream.readInt();
     }
 
+    public ClientNumericClass(int length, int precision) {
+        this.length = length;
+        this.precision = precision;
+    }
+
+    public final static ClientTypeClass type = new ClientTypeClass() {
+        public byte getTypeId() {
+            return Data.NUMERIC;
+        }
+
+        public ClientClass getDefaultClass() {
+            return new ClientNumericClass(10,2);
+        }
+
+        @Override
+        public String toString() {
+            return "Число";
+        }
+    };
     @Override
-    public byte getTypeId() {
-        return Data.NUMERIC;
+    public ClientTypeClass getTypeClass() {
+        return type; 
     }
 
     @Override

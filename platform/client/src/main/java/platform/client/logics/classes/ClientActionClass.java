@@ -18,10 +18,18 @@ import java.io.IOException;
 import java.text.Format;
 import java.text.ParseException;
 
-public class ClientActionClass extends ClientDataClass {
+public class ClientActionClass extends ClientDataClass implements ClientTypeClass {
 
     public ClientActionClass(DataInputStream inStream) throws IOException {
         super(inStream);
+    }
+
+    public ClientTypeClass getTypeClass() {
+        return this;
+    }
+
+    public ClientClass getDefaultClass() {
+        return this;
     }
 
     @Override

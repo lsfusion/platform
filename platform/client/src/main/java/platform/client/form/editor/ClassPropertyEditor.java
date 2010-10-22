@@ -16,7 +16,7 @@ public class ClassPropertyEditor extends JComponent implements PropertyEditorCom
     ClassDialog dialog;
 
     public ClassPropertyEditor(Component owner, ClientObjectClass baseClass, ClientObjectClass value) {
-        dialog = new ClassDialog(owner, baseClass, value);
+        dialog = new ClassDialog(owner, baseClass, value, true);
     }
 
     public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) throws IOException, ClassNotFoundException {

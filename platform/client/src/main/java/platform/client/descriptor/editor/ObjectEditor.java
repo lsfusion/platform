@@ -22,13 +22,7 @@ public class ObjectEditor extends JPanel implements NodeEditor {
         add(new TitledPanel(null, new IncrementCheckBox("Добавлять новый объект при транзакции", object, "addOnTransaction")));
         add(Box.createRigidArea(new Dimension(5, 5)));
 
-        add(new TitledPanel("Класс", new JComboBox(new IncrementSingleListSelectionModel(object, "baseClass") {
-            public java.util.List<?> getList() {
-//                return form.getProperties(groupObject);
-                //todo: список классов
-                return Arrays.asList("");
-            }
-        })));
+        add(new TitledPanel("Класс", new ValueClassEditor(object, "baseClass")));
     }
 
     public JComponent getComponent() {

@@ -890,6 +890,11 @@ public class BaseUtils {
         return getSingleMethod(object, method, -1);
     }
 
+    public static void invokeCheckSetter(Object object, String field, Object set) {
+        if(!nullEquals(invokeGetter(object, field), set))
+            invokeSetter(object, field, set);
+    }
+
     public static void invokeSetter(Object object, String field, Object set) {
         try {
             getSingleMethod(object, "set"+BaseUtils.capitalize(field), 1).invoke(object, set);
@@ -909,7 +914,7 @@ public class BaseUtils {
 
     public static void invokeAdder(Object object, String field, Object add) {
         try {
-            getSingleMethod(object, "addTo"+BaseUtils.capitalize(field), 1).invoke(object, add);
+            getSingleMethod(object, "addTo"+BaseUtils.capitalize(field)).invoke(object, add);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -917,7 +922,7 @@ public class BaseUtils {
 
     public static void invokeRemover(Object object, String field, Object add) {
         try {
-            getSingleMethod(object, "removeFrom"+BaseUtils.capitalize(field), 1).invoke(object, add);
+            getSingleMethod(object, "removeFrom"+BaseUtils.capitalize(field)).invoke(object, add);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

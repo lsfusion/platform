@@ -9,13 +9,24 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.text.*;
 
-public class ClientDoubleClass extends ClientIntegralClass {
+public class ClientDoubleClass extends ClientIntegralClass implements ClientTypeClass {
 
-    public ClientDoubleClass(DataInputStream inStream) throws IOException {
+    public final static ClientDoubleClass instance = new ClientDoubleClass();
+    protected ClientDoubleClass() {
+    }
+
+    protected ClientDoubleClass(DataInputStream inStream) throws IOException {
         super(inStream);
     }
 
-    @Override
+    public ClientTypeClass getTypeClass() {
+        return this;
+    }
+
+    public ClientClass getDefaultClass() {
+        return this;
+    }
+
     public byte getTypeId() {
         return Data.DOUBLE;
     }
