@@ -11,11 +11,7 @@ import java.awt.event.MouseEvent;
 
 public abstract class FlatButton extends JTextField {
 
-    protected FlatButton() {
-    }
-
-    public FlatButton(String caption){
-        super(caption);
+    private void init() {
         setFocusable(false);
         setEditable(false);
 //        setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -31,6 +27,16 @@ public abstract class FlatButton extends JTextField {
                 onClick();
             }
         });*/
+    }
+
+    protected FlatButton() {
+        init();
+    }
+
+    public FlatButton(String caption){
+        super(caption);
+
+        init();
     }
 
     protected abstract void onClick();
