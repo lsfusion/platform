@@ -5,6 +5,12 @@ import platform.server.form.entity.PropertyObjectEntity;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.filter.FilterInstance;
 import platform.server.logics.property.PropertyInterface;
+import platform.server.serialization.ServerSerializationPool;
+import platform.server.data.type.TypeSerializer;
+
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.DataInputStream;
 
 public class IsClassFilterEntity<P extends PropertyInterface> extends PropertyFilterEntity<P> {
 
@@ -21,5 +27,19 @@ public class IsClassFilterEntity<P extends PropertyInterface> extends PropertyFi
 
     public FilterInstance getInstance(InstanceFactory instanceFactory) {
         return instanceFactory.getInstance(this);
+    }
+
+    @Override
+    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        super.customSerialize(pool, outStream, serializationType);
+        
+        isClass.serialize(outStream);
+    }
+
+    @Override
+    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
+        super.customDeserialize(pool, inStream);
+
+        isClass = pool.context.BL.baseClass.findClassID(inStream.readInt());
     }
 }

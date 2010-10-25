@@ -13,7 +13,9 @@ import java.awt.event.ActionListener;
 public abstract class IncrementDialogEditor extends FlatButton implements IncrementView {
 
     protected void onClick() {
-        BaseUtils.invokeSetter(object, field, dialogValue(BaseUtils.invokeGetter(object, field)));
+        Object dialogResult = dialogValue(BaseUtils.invokeGetter(object, field));
+        if(dialogResult!=null)
+            BaseUtils.invokeSetter(object, field, dialogResult);
     }
 
     protected abstract Object dialogValue(Object currentValue);
@@ -29,6 +31,7 @@ public abstract class IncrementDialogEditor extends FlatButton implements Increm
     }
 
     public void update(Object updateObject, String updateField) {
-        setText(BaseUtils.invokeGetter(object, field).toString());
+        Object value = BaseUtils.invokeGetter(object, field);
+        setText(value==null?"":value.toString());
     }
 }
