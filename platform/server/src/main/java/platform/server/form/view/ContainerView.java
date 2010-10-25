@@ -12,6 +12,7 @@ public class ContainerView extends ComponentView {
 
     public String title;
     public String description;
+    public String sID;
 
     public ContainerView() {
 
@@ -85,6 +86,7 @@ public class ContainerView extends ComponentView {
 
         pool.writeString(outStream, title);
         pool.writeString(outStream, description);
+        pool.writeString(outStream, sID);
     }
 
     @Override
@@ -95,5 +97,6 @@ public class ContainerView extends ComponentView {
 
         title = pool.readString(inStream);
         description = pool.readString(inStream);
+        sID = pool.readString(inStream);
     }
 }

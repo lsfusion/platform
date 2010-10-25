@@ -195,9 +195,17 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
         return true;
     }
 
+    public void addToRegularFilterGroups(ClientRegularFilterGroup client) {
+        regularFilterGroups.add(client);
+    }
+
     public void removeFromRegularFilterGroups(ClientRegularFilterGroup client) {
         if (client.container != null)
             client.container.removeFromChildren(client);
         regularFilterGroups.remove(client);
+    }
+
+    public ClientContainer findContainerBySID(String sID) {
+        return mainContainer.findContainerBySID(sID);
     }
 }

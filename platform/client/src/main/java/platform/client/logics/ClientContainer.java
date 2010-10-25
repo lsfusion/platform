@@ -19,6 +19,7 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
 
     private String title;
     private String description;
+    private String sID;
 
     public List<ClientComponent> children;
 
@@ -34,6 +35,7 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
 
         pool.writeString(outStream, title);
         pool.writeString(outStream, description);
+        pool.writeString(outStream, sID);
     }
 
     @Override
@@ -44,6 +46,7 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
 
         title = pool.readString(inStream);
         description = pool.readString(inStream);
+        sID = pool.readString(inStream);
     }
 
     @Override
@@ -70,6 +73,10 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
     }
 
     public void addToChildren(int index, ClientComponent component) {
+        if (component.container != null) {
+            component.container.removeFromChildren(component);
+        }
+
         children.add(index, component);
         component.container = this;
 
@@ -104,5 +111,28 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
     public void setDescription(String description) {
         this.description = description;
         IncrementDependency.update(this, "description");
+    }
+
+    public String getSID() {
+        return sID;
+    }
+
+    public void setSID(String sID) {
+        this.sID = sID;
+    }
+
+    public ClientContainer findContainerBySID(String sID) {
+        if (sID.equals(this.sID)) return this;
+        for (ClientComponent comp : children) {
+            if (comp instanceof ClientContainer) {
+                ClientContainer result = ((ClientContainer)comp).findContainerBySID(sID);
+                if (result != null) return result;
+            }
+        }
+        return null;
+    }
+
+    public boolean isAncestorOf(ClientContainer container) {
+        return container != null && (equals(container) || isAncestorOf(container.container));
     }
 }

@@ -1,12 +1,14 @@
 package platform.client.descriptor;
 
 import platform.client.descriptor.filter.FilterDescriptor;
+import platform.client.descriptor.filter.RegularFilterDescriptor;
 import platform.client.descriptor.filter.RegularFilterGroupDescriptor;
 import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.increment.IncrementView;
 import platform.client.descriptor.property.PropertyDescriptor;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
 import platform.client.logics.ClientComponent;
+import platform.client.logics.ClientContainer;
 import platform.client.logics.ClientForm;
 import platform.client.logics.classes.ClientClass;
 import platform.client.serialization.ClientIdentitySerializable;
@@ -73,6 +75,30 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
     IncrementView toDrawConstraint;
     IncrementView columnGroupConstraint;
     IncrementView propertyCaptionConstraint;
+
+    IncrementView containerController;
+
+    private class ContainerController implements IncrementView {
+        public void update(Object updateObject, String updateField) {
+
+            for (PropertyDrawDescriptor propertyDraw : propertyDraws) {
+                GroupObjectDescriptor groupObject = propertyDraw.getGroupObject(groupObjects);
+                if (groupObject != null) {
+                    ClientContainer newContainer = client.findContainerBySID("panelContainer" + propertyDraw.getGroupObject(groupObjects).getID());
+                    if (newContainer != null && !newContainer.isAncestorOf(propertyDraw.client.container)) {
+                        int insIndex = -1;
+                        for (int propIndex = propertyDraws.indexOf(propertyDraw) + 1; propIndex < propertyDraws.size(); propIndex++) {
+                            insIndex = newContainer.children.indexOf(propertyDraws.get(propIndex).client);
+                            if (insIndex != -1)
+                                break;
+                        }
+                        if (insIndex == -1) insIndex = newContainer.children.size();
+                        newContainer.addToChildren(insIndex, propertyDraw.client);
+                    }
+                }
+            }
+        }
+    }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         caption = inStream.readUTF();
@@ -151,6 +177,11 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         IncrementDependency.add("baseClass", propertyCaptionConstraint);
         IncrementDependency.add("objects", propertyCaptionConstraint);
         IncrementDependency.add(this, "groupObjects", propertyCaptionConstraint);
+
+        containerController = new ContainerController();
+        IncrementDependency.add("groupObjects", containerController);
+        IncrementDependency.add("toDraw", containerController);
+        IncrementDependency.add("propertyDraws", containerController);
     }
 
     @Override
@@ -318,7 +349,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
 
     public void addToRegularFilterGroups(RegularFilterGroupDescriptor filterGroup) {
         regularFilterGroups.add(filterGroup);
-        client.regularFilterGroups.add(filterGroup.client);
+        client.addToRegularFilterGroups(filterGroup.client);
         IncrementDependency.update(this, "regularFilterGroups");
     }
 

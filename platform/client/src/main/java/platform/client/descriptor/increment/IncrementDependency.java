@@ -26,9 +26,10 @@ public class IncrementDependency {
         if(objects==null) {
             objects = new WeakIdentityHashSet<Object>();
             viewObjects.put(view, objects);
-
-            registerViewOrder(view);
         }
+
+        registerViewOrder(view);
+
         objects.add(object);
 
         view.update(object, field);
@@ -40,9 +41,10 @@ public class IncrementDependency {
         if(views==null) {
             views = new WeakIdentityHashSet<IncrementView>();
             mapViews.put(field, views);
-
-            registerViewOrder(view);
         }
+
+        registerViewOrder(view);
+
         views.add(view);
 
         view.update(null, field);

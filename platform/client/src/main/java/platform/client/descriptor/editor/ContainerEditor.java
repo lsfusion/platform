@@ -15,6 +15,7 @@ public class ContainerEditor extends JPanel implements NodeEditor {
 
         add(new TitledPanel("Заголовок", new IncrementTextEditor(descriptor, "title")));
         add(new TitledPanel("Описание", new IncrementTextEditor(descriptor, "description")));
+        add(new TitledPanel("Идентификатор", new IncrementTextEditor(descriptor, "sID")));
     }
 
     public JComponent getComponent() {
