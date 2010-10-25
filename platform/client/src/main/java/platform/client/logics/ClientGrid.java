@@ -21,7 +21,7 @@ public class ClientGrid extends ClientComponent {
     public ClientGroupObject groupObject;
 
     public ClientGrid() {
-        
+
     }
 
     @Override

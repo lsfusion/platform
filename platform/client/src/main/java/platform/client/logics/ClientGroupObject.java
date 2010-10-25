@@ -3,6 +3,7 @@ package platform.client.logics;
 import platform.base.DefaultIDGenerator;
 import platform.base.IDGenerator;
 import platform.base.OrderedMap;
+import platform.client.Main;
 import platform.client.form.ClientFormController;
 import platform.client.form.GroupObjectController;
 import platform.client.serialization.ClientIdentitySerializable;
@@ -76,6 +77,8 @@ public class ClientGroupObject extends ArrayList<ClientObject>
 
     public void setID(int iID) {
         ID = iID;
+        grid.setID(Main.generateNewID());
+        showType.setID(Main.generateNewID());
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

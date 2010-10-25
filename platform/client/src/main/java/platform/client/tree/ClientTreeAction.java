@@ -15,4 +15,8 @@ public abstract class ClientTreeAction {
     public boolean isApplicable(TreePath path) {
         return true;
     }
+
+    public boolean canBeDefault(TreePath path) {
+        return true;
+    }
 }

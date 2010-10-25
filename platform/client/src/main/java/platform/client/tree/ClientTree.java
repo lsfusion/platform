@@ -124,25 +124,31 @@ public class ClientTree extends JTree {
                 final TreePath path = getPathForLocation(x, y);
                 if (path != null) {
                     setSelectionPath(path);
-                    JPopupMenu popup = new JPopupMenu();
-                    ArrayList<ClientTreeAction> list = getActions(path);
-                    ClientTreeAction defaultAction = null;
-                    if (list.size() > 0) {
-                        defaultAction = list.get(0);
-                    }
-                    for (ClientTreeAction act : list) {
-                        final ClientTreeAction treeAction = act;
-                        popup.add(new AbstractAction(act.caption) {
-                            public void actionPerformed(ActionEvent e) {
-                                treeAction.actionPerformed(new ClientTreeActionEvent(getNode(path), e));
-                            }
-                        });
-                    }
+                    final ArrayList<ClientTreeAction> actions = getActions(path);
+                    final ClientTreeNode node = getNode(path);
 
-                    if (e.isPopupTrigger() && popup.getComponentCount() > 0) {
-                        popup.show(ClientTree.this, x, y);
-                    } else if (e.getClickCount() == 2 && defaultAction != null) {
-                        defaultAction.actionPerformed(new ClientTreeActionEvent(getNode(path)));
+                    ClientTreeAction defaultAction = null;
+                    for (ClientTreeAction action : actions) {
+                        if (action.canBeDefault(path)) {
+                            defaultAction = action;
+                            break;
+                        }
+                    }
+                    if (e.isPopupTrigger() || defaultAction == null) {
+                        JPopupMenu popup = new JPopupMenu();
+                        for (ClientTreeAction act : actions) {
+                            final ClientTreeAction treeAction = act;
+                            popup.add(new AbstractAction(act.caption) {
+                                public void actionPerformed(ActionEvent e) {
+                                    treeAction.actionPerformed(new ClientTreeActionEvent(node, e));
+                                }
+                            });
+                        }
+                        if (popup.getComponentCount() > 0) {
+                            popup.show(ClientTree.this, x, y);
+                        }
+                    } else if (e.getClickCount() == 2) {
+                        defaultAction.actionPerformed(new ClientTreeActionEvent(node));
                     }
                 }
             }

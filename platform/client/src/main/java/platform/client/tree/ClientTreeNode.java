@@ -9,6 +9,7 @@ import platform.client.lookup.Lookup;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
 import java.util.ArrayList;
 
 public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableTreeNode {
@@ -128,7 +129,7 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
         }
     }
 
-    public void addCollectionReferenceActions(final Object object, final String collectionField, String[] captions, final Class[] classes) {
+    public void addCollectionReferenceActions(final Object object, final String collectionField, final String[] captions, final Class[] classes) {
         for (int i = 0; i < captions.length; i++) {
             final int prm = i;
             addNodeAction(new ClientTreeAction("Добавить" + (captions.length > 1 ? " " + captions[i] : "")) {
@@ -141,6 +142,11 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
                         throw new RuntimeException(e1);
                     }
                 }
+
+                @Override
+                public boolean canBeDefault(TreePath path) {
+                    return captions.length == 1;
+                }
             });
         }
 
@@ -150,6 +156,11 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
                 Object deletedObject = e.getNode().getTypedObject();
                 BaseUtils.invokeRemover(object, collectionField, deletedObject);
                 Lookup.getDefault().setProperty(Lookup.DELETED_OBJECT_PROPERTY, deletedObject);
+            }
+
+            @Override
+            public boolean canBeDefault(TreePath path) {
+                return false;
             }
         });
     }
