@@ -51,8 +51,8 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
 
         public void update(Object updateObject, String updateField) {
             List<PropertyDrawDescriptor> checkProperties;
-            if(updateObject instanceof PropertyDrawDescriptor)
-                checkProperties = Collections.singletonList((PropertyDrawDescriptor)updateObject);
+            if (updateObject instanceof PropertyDrawDescriptor)
+                checkProperties = Collections.singletonList((PropertyDrawDescriptor) updateObject);
             else
                 checkProperties = new ArrayList<PropertyDrawDescriptor>(propertyDraws);
 
@@ -64,9 +64,9 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
 
     // по сути IncrementLazy
     IncrementView allPropertiesLazy;
-    private List<PropertyObjectDescriptor> allProperties;    
+    private List<PropertyObjectDescriptor> allProperties;
     public List<PropertyObjectDescriptor> getAllProperties() {
-        if(allProperties==null)
+        if (allProperties == null)
             allProperties = getProperties(groupObjects, null);
         return allProperties;
     }
@@ -136,7 +136,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         toDrawConstraint = new IncrementPropertyConstraint() {
             public boolean updateProperty(PropertyDrawDescriptor property) {
                 GroupObjectDescriptor toDraw = property.getToDraw();
-                if(toDraw!=null && !property.getPropertyObject().getGroupObjects().contains(toDraw))
+                if (toDraw != null && !property.getPropertyObject().getGroupObjects().contains(toDraw))
                     property.setToDraw(null);
                 return true;
             }
@@ -151,7 +151,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
                 List<GroupObjectDescriptor> columnGroups = property.getColumnGroupObjects();
 
                 List<GroupObjectDescriptor> constrainedColumnGroups = BaseUtils.filterList(columnGroups, upGroups);
-                if(!constrainedColumnGroups.equals(columnGroups))
+                if (!constrainedColumnGroups.equals(columnGroups))
                     property.setColumnGroupObjects(constrainedColumnGroups);
                 return true;
             }
@@ -166,9 +166,9 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         propertyCaptionConstraint = new IncrementPropertyConstraint() {
             public boolean updateProperty(PropertyDrawDescriptor property) {
                 PropertyObjectDescriptor propertyCaption = property.getPropertyCaption();
-                if(propertyCaption !=null && !getProperties(property.getColumnGroupObjects(), null).contains(propertyCaption))
+                if (propertyCaption != null && !getProperties(property.getColumnGroupObjects(), null).contains(propertyCaption))
                     property.setPropertyCaption(null);
-                return true;                
+                return true;
             }
         };
         IncrementDependency.add("propertyObject", propertyCaptionConstraint);
@@ -190,29 +190,50 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
     }
 
     public ObjectDescriptor getObject(int objectID) {
-        for(GroupObjectDescriptor group : groupObjects)
-            for(ObjectDescriptor object : group)
-                if(object.getID() == objectID)
+        for (GroupObjectDescriptor group : groupObjects)
+            for (ObjectDescriptor object : group)
+                if (object.getID() == objectID)
                     return object;
         return null;
     }
 
     public List<PropertyObjectDescriptor> getProperties(GroupObjectDescriptor groupObject) {
-        if(groupObject==null) return getAllProperties();
-        return getProperties(groupObjects.subList(0, groupObjects.indexOf(groupObject)+1), groupObject);
+        if (groupObject == null) return getAllProperties();
+        return getProperties(groupObjects.subList(0, groupObjects.indexOf(groupObject) + 1), groupObject);
     }
 
     public static List<PropertyObjectDescriptor> getProperties(Collection<GroupObjectDescriptor> groupObjects, GroupObjectDescriptor toDraw) {
         Collection<ObjectDescriptor> objects = new ArrayList<ObjectDescriptor>();
-        for(GroupObjectDescriptor groupObject : groupObjects)
+        Map<Integer, Integer> objectMap = new HashMap<Integer, Integer>();
+        for (GroupObjectDescriptor groupObject : groupObjects) {
             objects.addAll(groupObject);
-        return getProperties(objects, toDraw==null?new ArrayList<ObjectDescriptor>():toDraw, Main.remoteLogics);
+            for (ObjectDescriptor object : groupObject) {
+                objectMap.put(object.getID(), groupObject.getID());
+            }
+        }
+        return getProperties(objects, toDraw == null ? new ArrayList<ObjectDescriptor>() : toDraw, Main.remoteLogics, objectMap, false);
     }
 
-    public static List<PropertyObjectDescriptor> getProperties(Collection<ObjectDescriptor> objects, Collection<ObjectDescriptor> atLeastOne, RemoteDescriptorInterface remote) {
+    public static List<PropertyObjectDescriptor> getProperties(Collection<GroupObjectDescriptor> groupObjects, RemoteDescriptorInterface remote, ArrayList<GroupObjectDescriptor> toDraw, boolean isCompulsory) {
+        Collection<ObjectDescriptor> objects = new ArrayList<ObjectDescriptor>();
+        Map<Integer, Integer> objectMap = new HashMap<Integer, Integer>();
+        for (GroupObjectDescriptor groupObject : groupObjects) {
+            objects.addAll(groupObject);
+            for (ObjectDescriptor object : groupObject) {
+                objectMap.put(object.getID(), groupObject.getID());
+            }
+        }
+        ArrayList<ObjectDescriptor> objList = new ArrayList<ObjectDescriptor>();
+        for (GroupObjectDescriptor groupObject : toDraw) {
+            objList.addAll(groupObject);
+        }
+        return getProperties(objects, objList, remote, objectMap, isCompulsory);
+    }
+
+    public static List<PropertyObjectDescriptor> getProperties(Collection<ObjectDescriptor> objects, Collection<ObjectDescriptor> atLeastOne, RemoteDescriptorInterface remote, Map<Integer, Integer> objectMap, boolean isCompulsory) {
         Map<Integer, ObjectDescriptor> idToObjects = new HashMap<Integer, ObjectDescriptor>();
         Map<Integer, ClientClass> classes = new HashMap<Integer, ClientClass>();
-        for(ObjectDescriptor object : objects) {
+        for (ObjectDescriptor object : objects) {
             ClientClass cls = object.getBaseClass();
             if (cls != null) {
                 idToObjects.put(object.getID(), object);
@@ -221,8 +242,8 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         }
 
         List<PropertyObjectDescriptor> result = new ArrayList<PropertyObjectDescriptor>();
-        for(PropertyDescriptorImplement<Integer> implement : getProperties(remote, classes, BaseUtils.filterValues(idToObjects,atLeastOne).keySet()))
-            result.add(new PropertyObjectDescriptor(implement.property, BaseUtils.join(implement.mapping,idToObjects)));
+        for (PropertyDescriptorImplement<Integer> implement : getProperties(remote, classes, BaseUtils.filterValues(idToObjects, atLeastOne).keySet(), objectMap, isCompulsory))
+            result.add(new PropertyObjectDescriptor(implement.property, BaseUtils.join(implement.mapping, idToObjects)));
         return result;
     }
 
@@ -231,29 +252,33 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         return new ArrayList<PropertyDescriptorImplement<K>>();
     }
 
-    public static Collection<PropertyDescriptorImplement<Integer>> getProperties(RemoteDescriptorInterface remote, Map<Integer, ClientClass> classes, Collection<Integer> atLeastOne) {
+    public static Collection<PropertyDescriptorImplement<Integer>> getProperties(RemoteDescriptorInterface remote, Map<Integer, ClientClass> classes, Collection<Integer> atLeastOne, Map<Integer, Integer> objectMap, boolean isCompulsory) {
         try {
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
             DataOutputStream dataStream = new DataOutputStream(outStream);
 
             dataStream.writeInt(classes.size());
-            for(Map.Entry<Integer,ClientClass> intClass : classes.entrySet()) {
+            for (Map.Entry<Integer, ClientClass> intClass : classes.entrySet()) {
                 dataStream.writeInt(intClass.getKey());
                 intClass.getValue().serialize(dataStream);
-                dataStream.writeBoolean(atLeastOne.contains(intClass.getKey()));
+                if (atLeastOne.contains(intClass.getKey())) {
+                    dataStream.writeInt(objectMap.get(intClass.getKey()));
+                } else {
+                    dataStream.writeInt(-1);
+                }
             }
 
-            DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(remote.getPropertyObjectsByteArray(outStream.toByteArray(), false)));
+            DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(remote.getPropertyObjectsByteArray(outStream.toByteArray(), isCompulsory)));
             ClientSerializationPool pool = new ClientSerializationPool();
 
             List<PropertyDescriptorImplement<Integer>> result = new ArrayList<PropertyDescriptorImplement<Integer>>();
             int size = inStream.readInt();
-            for(int i=0;i<size;i++) {
+            for (int i = 0; i < size; i++) {
                 PropertyDescriptor implementProperty = (PropertyDescriptor) pool.deserializeObject(inStream);
                 Map<PropertyInterfaceDescriptor, Integer> mapInterfaces = new HashMap<PropertyInterfaceDescriptor, Integer>();
-                for(int j=0;j<implementProperty.interfaces.size();j++)
-                    mapInterfaces.put((PropertyInterfaceDescriptor)pool.deserializeObject(inStream), inStream.readInt());
+                for (int j = 0; j < implementProperty.interfaces.size(); j++)
+                    mapInterfaces.put((PropertyInterfaceDescriptor) pool.deserializeObject(inStream), inStream.readInt());
                 result.add(new PropertyDescriptorImplement<Integer>(implementProperty, mapInterfaces));
             }
             return result;
@@ -299,7 +324,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
 
     private static <T> T getElementTo(List<T> list, T elemFrom, int index) {
         if (index == -1) {
-            return list.get(list.size()-1);
+            return list.get(list.size() - 1);
         } else {
             return list.get(index + (list.indexOf(elemFrom) >= index ? 0 : -1));
         }

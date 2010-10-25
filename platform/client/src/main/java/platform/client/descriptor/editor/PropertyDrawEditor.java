@@ -1,15 +1,13 @@
 package platform.client.descriptor.editor;
 
+import platform.client.SimplePropertyFilter;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.PropertyDrawDescriptor;
 import platform.client.descriptor.PropertyObjectDescriptor;
 import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.descriptor.increment.IncrementDependency;
-import platform.client.descriptor.increment.editor.IncrementMultipleListEditor;
-import platform.client.descriptor.increment.editor.IncrementMultipleListSelectionModel;
-import platform.client.descriptor.increment.editor.IncrementSingleListSelectionModel;
-import platform.client.descriptor.increment.editor.IncrementTextEditor;
+import platform.client.descriptor.increment.editor.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,15 +24,12 @@ public class PropertyDrawEditor extends GroupElementEditor {
 
         add(new TitledPanel("Стат. заголовок", new IncrementTextEditor(descriptor, "overridenCaption")));
 
-        add(new TitledPanel("Реализация", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "propertyObject") {
-            public List<?> getList() {
-                return form.getProperties(descriptor.toDraw);
+        add(new TitledPanel("Реализация", new IncrementDialogEditor(descriptor, "propertyObject") {
+            @Override
+            protected Object dialogValue(Object currentValue) {
+                return new SimplePropertyFilter(form, groupObject).getPropertyObject();
             }
-
-            public void fillListDependencies() {
-                IncrementDependency.add(form, "groupObjects", this);
-            }
-        })));
+        }));
 
         add(Box.createRigidArea(new Dimension(5, 5)));
 
@@ -42,8 +37,8 @@ public class PropertyDrawEditor extends GroupElementEditor {
             public List<?> getList() {
                 PropertyObjectDescriptor propertyObject = descriptor.getPropertyObject();
                 return propertyObject != null
-                       ? propertyObject.getGroupObjects(form.groupObjects)
-                       : new ArrayList();
+                        ? propertyObject.getGroupObjects(form.groupObjects)
+                        : new ArrayList();
             }
 
             public void fillListDependencies() {

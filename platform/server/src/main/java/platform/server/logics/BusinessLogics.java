@@ -3043,15 +3043,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         try {
             DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(byteClasses));
 
-            Set<Integer> atLeastOne = new HashSet<Integer>();
+            Map<Integer, Integer> atLeastOne = new HashMap<Integer, Integer>();
             Map<Integer, ValueClass> classes = new HashMap<Integer, ValueClass>();
             int size = inStream.readInt();
             for (int i = 0; i < size; i++) {
                 Integer ID = inStream.readInt();
                 classes.put(ID, TypeSerializer.deserializeValueClass(this, inStream));
-                if (inStream.readBoolean())
-                    atLeastOne.add(ID);
-            }                   
+                int groupId = inStream.readInt();
+                if (groupId > 0) {
+                    atLeastOne.put(ID, groupId);
+                }
+            }
 
             MultiHashMap propertiesMap = new MultiHashMap();
             for (Property<?> property : properties) {
@@ -3087,7 +3089,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             throw new RuntimeException(e);
         }
     }
-
+    
     public int generateNewID() throws RemoteException {
         return idGenerator.idShift();
     }
@@ -3103,7 +3105,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    private void addPropertiesFixedSize(Map<Integer, ValueClass> classes, Set<Integer> atLeastOne, List list, ArrayList<Property> result, ArrayList<ArrayList<Integer>> idResult, boolean isCompulsory) {
+    private void addPropertiesFixedSize(Map<Integer, ValueClass> classes, Map<Integer, Integer> atLeastOne, List list, ArrayList<Property> result, ArrayList<ArrayList<Integer>> idResult, boolean isCompulsory) {
         int size = classes.size();
         int interfaceSize = ((Property) list.get(0)).interfaces.size();
         int perm[] = new int[size];
@@ -3113,7 +3115,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     //n - сколько всего
     //n - сколько надо поставить
     //k - какой по счету сейчас ставим
-    private void checkPerm(int n, int m, int k, int[] perm, Map<Integer, ValueClass> classes, Set<Integer> set, List list, ArrayList<Property> result, ArrayList<ArrayList<Integer>> idResult, boolean isCompulsory) {
+    private void checkPerm(int n, int m, int k, int[] perm, Map<Integer, ValueClass> classes, Map<Integer, Integer> groupMap, List list, ArrayList<Property> result, ArrayList<ArrayList<Integer>> idResult, boolean isCompulsory) {
         if (k == m + 1) {
             Integer id[] = (Integer[]) classes.keySet().toArray(new Integer[classes.keySet().size()]);
             ArrayList<ValueClass> values = new ArrayList<ValueClass>(m);
@@ -3130,24 +3132,22 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 }
             }
 
-            boolean found = false;
-            if (isCompulsory) {
-                for (Integer i : set) {
-                    if (!ids.contains(i)) {
-                        found = true;
-                        break;
-                    }
+            Map<Integer, Boolean> isUsed = new HashMap<Integer, Boolean>();
+            for (Map.Entry<Integer, Integer> entry : groupMap.entrySet()) {
+                if (isUsed.get(entry.getValue()) == null) {
+                    isUsed.put(entry.getValue(), false);
                 }
-            } else {
-                for (Integer i : ids) {
-                    if (set.contains(i)) {
-                        found = true;
-                        break;
-                    }
+                if (ids.contains(entry.getKey())) {
+                    isUsed.put(entry.getValue(), true);
                 }
             }
+            boolean and = true, or = false;
+            for (Map.Entry<Integer, Boolean> entry : isUsed.entrySet()) {
+                and = and && entry.getValue();
+                or = or || entry.getValue();
+            }
 
-            if (!found && !set.isEmpty()) {
+            if ((isCompulsory && !and) || (!isCompulsory && !or && !groupMap.isEmpty())) {
                 return;
             }
 
@@ -3169,7 +3169,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             for (int i = 0; i < n; i++) {
                 if (perm[i] == 0) {
                     perm[i] = k;
-                    checkPerm(n, m, k + 1, perm, classes, set, list, result, idResult, isCompulsory);
+                    checkPerm(n, m, k + 1, perm, classes, groupMap, list, result, idResult, isCompulsory);
                     perm[i] = 0;
                 }
             }

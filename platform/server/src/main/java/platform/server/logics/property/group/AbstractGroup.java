@@ -103,6 +103,7 @@ public class AbstractGroup extends AbstractNode implements ServerIdentitySeriali
         }
 
         pool.serializeCollection(outStream, serializableChildren);
+        pool.writeString(outStream, caption);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {

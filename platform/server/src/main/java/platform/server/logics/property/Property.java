@@ -86,11 +86,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public boolean isFull() {
         boolean result = true;
-        for (Object where : getClassWhere().wheres) {
+        for (AbstractClassWhere.And where : getClassWhere().wheres) {
             for (T i : interfaces) {
-                result = result && (((AbstractClassWhere.And) where).get(i) != null);
+                result = result && (where.get(i) != null);
             }
-            result = result && !((AbstractClassWhere.And) where).containsNullValue();
+            result = result && !(where).containsNullValue();
         }
         return result;
     }
