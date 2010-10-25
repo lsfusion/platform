@@ -1,6 +1,7 @@
 package platform.client.descriptor.filter;
 
 import platform.client.descriptor.GroupObjectDescriptor;
+import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.nodes.filters.FilterNode;
 import platform.client.descriptor.nodes.filters.IsClassFilterNode;
 import platform.client.serialization.ClientSerializationPool;
@@ -17,6 +18,8 @@ public class IsClassFilterDescriptor extends PropertyFilterDescriptor {
     private ClientObjectClass objectClass;
     public void setObjectClass(ClientObjectClass objectClass) {
         this.objectClass = objectClass;
+
+        IncrementDependency.update(this, "objectClass");
     }
     public ClientObjectClass getObjectClass() {
         return objectClass;

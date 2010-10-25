@@ -36,7 +36,8 @@ public class ClassDialog extends JDialog {
         };
         add(new JScrollPane(tree));
 
-        tree.setSelectedClass(value);
+        if(value!=null)
+            tree.setSelectedClass(value);
 
         JPanel buttonContainer = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
