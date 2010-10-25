@@ -23,6 +23,7 @@ import java.io.DataInputStream;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.rmi.RemoteException;
 import java.rmi.server.RMIClassLoader;
 import java.rmi.server.RMIFailureHandler;
 import java.rmi.server.RMISocketFactory;
@@ -250,5 +251,13 @@ public class Main {
     private static void loadLibraries() throws IOException {
         SimplexLayout.loadLibraries();
         ComBridge.loadLibraries();
+    }
+
+    public static int generateNewID() {
+        try {
+            return remoteLogics.generateNewID();
+        } catch (RemoteException e) {
+            throw new RuntimeException("Ошибка при генерации ID");
+        }
     }
 }

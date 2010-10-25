@@ -1,8 +1,8 @@
 package platform.client.tree;
 
-import javax.swing.tree.DefaultMutableTreeNode;
+public class ExpandingTreeNode extends ClientTreeNode {
 
-public class ExpandingTreeNode extends DefaultMutableTreeNode {
-
-    public String toString() { return "Retrieving table..."; }
+    public String toString() {
+        return "Retrieving table...";
+    }
 }

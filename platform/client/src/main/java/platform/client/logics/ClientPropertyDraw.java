@@ -55,14 +55,12 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean checkEquals;
     public boolean askConfirm;
 
-    protected int ID = 0;
     protected String sID;
 
     ClientGroupObject keyBindingGroup = null;
 
     public ClientGroupObject groupObject;
     public List<ClientGroupObject> columnGroupObjects = new ArrayList<ClientGroupObject>();
-    public ClientPropertyDraw[] columnDisplayProperties;
 
     public boolean autoHide = false;
 

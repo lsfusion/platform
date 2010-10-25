@@ -2,6 +2,7 @@ package platform.client.descriptor;
 
 import platform.base.BaseUtils;
 import platform.client.descriptor.increment.IncrementDependency;
+import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
@@ -81,6 +82,12 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
 
     public void setColumnGroupObjects(List<GroupObjectDescriptor> columnGroupObjects) {
         this.columnGroupObjects = columnGroupObjects;
+
+        client.columnGroupObjects = new ArrayList<ClientGroupObject>();
+        for (GroupObjectDescriptor group : columnGroupObjects) {
+            client.columnGroupObjects.add(group.client);
+        }
+        
         IncrementDependency.update(this, "columnGroupObjects");
     }
 
@@ -105,6 +112,12 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
     @Override
     public String toString() {
         return client.getResultingCaption();
+    }
+
+    @Override
+    public void setID(int ID) {
+        super.setID(ID);
+        client.setID(ID);
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

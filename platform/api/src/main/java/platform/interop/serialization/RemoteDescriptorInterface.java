@@ -9,4 +9,6 @@ public interface RemoteDescriptorInterface extends Remote {
     byte[] getPropertyObjectsByteArray(byte[] classes, boolean isCompulsory) throws RemoteException;
 
     byte[] getBaseClassByteArray() throws RemoteException;
+
+    int generateNewID() throws RemoteException;
 }

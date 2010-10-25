@@ -164,7 +164,7 @@ public abstract class ClassTree extends ClientTree {
         for (ClientClass cls : classes) {
 
             DefaultMutableTreeNode node;
-            node = new DefaultMutableTreeNode(cls, cls.hasChildren());
+            node = new ClientTreeNode(cls, cls.hasChildren());
             parent.add(node);
 
             if (cls.hasChildren())

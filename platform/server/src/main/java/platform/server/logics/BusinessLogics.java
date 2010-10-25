@@ -3088,6 +3088,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
+    public int generateNewID() throws RemoteException {
+        return idGenerator.idShift();
+    }
+
     public byte[] getBaseClassByteArray() throws RemoteException {
         try {
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();

@@ -16,7 +16,7 @@ public class ClientTree extends JTree {
 
     // не вызываем верхний конструктор, потому что у JTree по умолчанию он на редкость дебильный
     public ClientTree() {
-        super(new DefaultMutableTreeNode());
+        super(new ClientTreeNode());
         setToggleClickCount(-1);
         addMouseListener(new PopupTrigger());
 

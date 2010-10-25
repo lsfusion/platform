@@ -89,4 +89,8 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
     public byte[] getBaseClassByteArray() throws RemoteException {
         return target.getBaseClassByteArray();
     }
+
+    public int generateNewID()  throws RemoteException {
+        return target.generateNewID();
+    }
 }

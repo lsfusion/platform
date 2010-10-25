@@ -131,7 +131,7 @@ public abstract class AbstractNavigator extends JPanel {
             for (ClientNavigatorElement child : elements) {
 
                 DefaultMutableTreeNode node;
-                node = new DefaultMutableTreeNode(child, child.allowChildren());
+                node = new ClientTreeNode(child, child.allowChildren());
                 parent.add(node);
 
                 if (child.allowChildren())

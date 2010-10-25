@@ -1,10 +1,11 @@
 package platform.client.descriptor;
 
+import platform.base.BaseUtils;
+import platform.client.Main;
 import platform.client.descriptor.property.PropertyDescriptor;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
-import platform.client.serialization.ClientSerializationPool;
 import platform.client.serialization.ClientIdentitySerializable;
-import platform.base.BaseUtils;
+import platform.client.serialization.ClientSerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -27,7 +28,8 @@ public class PropertyObjectDescriptor extends PropertyDescriptorImplement<Proper
     }
 
     public PropertyObjectDescriptor(PropertyDescriptor property, Map<PropertyInterfaceDescriptor, ? extends PropertyObjectInterfaceDescriptor> mapping) {
-        super(property, (Map<PropertyInterfaceDescriptor,PropertyObjectInterfaceDescriptor>) mapping);
+        super(property, (Map<PropertyInterfaceDescriptor, PropertyObjectInterfaceDescriptor>) mapping);
+        ID = Main.generateNewID();
     }
 
     public PropertyObjectDescriptor(PropertyDescriptorImplement<PropertyObjectInterfaceDescriptor> implement) {
@@ -36,26 +38,30 @@ public class PropertyObjectDescriptor extends PropertyDescriptorImplement<Proper
 
     public Set<ObjectDescriptor> getObjects() {
         Set<ObjectDescriptor> result = new HashSet<ObjectDescriptor>();
-        for(PropertyObjectInterfaceDescriptor implement : mapping.values())
-            if(implement instanceof ObjectDescriptor)
-                result.add((ObjectDescriptor)implement);
+        for (PropertyObjectInterfaceDescriptor implement : mapping.values()) {
+            if (implement instanceof ObjectDescriptor) {
+                result.add((ObjectDescriptor) implement);
+            }
+        }
         return result;
     }
 
     public GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groupList) {
         int result = -1;
-        for(ObjectDescriptor object : getObjects()) {
+        for (ObjectDescriptor object : getObjects()) {
             int groupInd = groupList.indexOf(object.groupTo);
-            if(groupInd > result)
+            if (groupInd > result) {
                 result = groupInd;
+            }
         }
-        return result>=0?groupList.get(result):null;
+        return result >= 0 ? groupList.get(result) : null;
     }
 
     public Set<GroupObjectDescriptor> getGroupObjects() {
         Set<GroupObjectDescriptor> groupObjects = new HashSet<GroupObjectDescriptor>();
-        for(ObjectDescriptor object : getObjects())
+        for (ObjectDescriptor object : getObjects()) {
             groupObjects.add(object.groupTo);
+        }
         return groupObjects;
     }
 
