@@ -54,13 +54,9 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
             else
                 checkProperties = new ArrayList<PropertyDrawDescriptor>(propertyDraws);
 
-            boolean removed = false;
             for(PropertyDrawDescriptor checkProperty : checkProperties)
                 if(!updateProperty(checkProperty)) // удаляем propertyDraw
-                    removed = propertyDraws.remove(checkProperty) || removed;
-
-            if(removed)
-                IncrementDependency.update(this, "propertyDraws");
+                    removeFromPropertyDraws(checkProperty);
         }
     }
 

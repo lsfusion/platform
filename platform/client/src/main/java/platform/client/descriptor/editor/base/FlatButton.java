@@ -1,10 +1,15 @@
 package platform.client.descriptor.editor.base;
 
+import platform.base.BaseUtils;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
-public abstract class FlatButton extends JButton implements ActionListener {
+public abstract class FlatButton extends JTextField {
 
     protected FlatButton() {
     }
@@ -12,8 +17,21 @@ public abstract class FlatButton extends JButton implements ActionListener {
     public FlatButton(String caption){
         super(caption);
         setFocusable(false);
-        setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        setEditable(false);
+//        setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
-        addActionListener(this);
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                onClick();
+            }
+        });
+/*        addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onClick();
+            }
+        });*/
     }
+
+    protected abstract void onClick();
 }

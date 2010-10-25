@@ -12,7 +12,7 @@ import java.awt.event.ActionListener;
 
 public abstract class IncrementDialogEditor extends FlatButton implements IncrementView {
 
-    public void actionPerformed(ActionEvent e) {
+    protected void onClick() {
         BaseUtils.invokeSetter(object, field, dialogValue(BaseUtils.invokeGetter(object, field)));
     }
 

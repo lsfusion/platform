@@ -25,4 +25,8 @@ public class WeakIdentityHashSet<E> implements Iterable<E> {
     public void addAll(WeakIdentityHashSet<E> set) {
         map.putAll(set.map);
     }
+
+    public boolean contains(E element) {
+        return map.get(element)!=null;
+    }
 }

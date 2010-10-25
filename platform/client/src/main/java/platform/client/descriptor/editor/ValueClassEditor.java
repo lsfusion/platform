@@ -40,6 +40,7 @@ public class ValueClassEditor extends JPanel {
     }
 
     JComponent currentComponent;
+    boolean updated;
 
     public ValueClassEditor(final Object object, final String property) {
         this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
@@ -52,7 +53,8 @@ public class ValueClassEditor extends JPanel {
         typeClasses.addActionListener(new ActionListener() {
             
             public void actionPerformed(ActionEvent e) {
-                BaseUtils.invokeCheckSetter(object, property, ((ClientTypeClass) typeClasses.getSelectedItem()).getDefaultClass());
+                if(!updated)
+                    BaseUtils.invokeCheckSetter(object, property, ((ClientTypeClass) typeClasses.getSelectedItem()).getDefaultClass());
             }
         });
 
@@ -65,7 +67,9 @@ public class ValueClassEditor extends JPanel {
                 final ClientClass clientClass = (ClientClass) BaseUtils.invokeGetter(object, property);
                 ClientTypeClass typeClass = clientClass.getType().getTypeClass();
 
+                updated = true;
                 typeClasses.setSelectedItem(typeClass);
+                updated = false;
 
                 // remove'аем старый компонент,
                 if(currentComponent !=null) {
@@ -93,7 +97,7 @@ public class ValueClassEditor extends JPanel {
                 } else
                 if(typeClass.equals(ClientObjectClass.type)) {
                     currentComponent = new NamedContainer("Класс", false, new FlatButton(clientClass.toString()) {
-                        public void actionPerformed(ActionEvent e) {
+                        protected void onClick() {
                             ClientObjectClass selectedClass = ClassDialog.dialogObjectClass(this, ClientObjectType.baseClass, (ClientObjectClass) clientClass, false);
                             if(selectedClass!=null)
                                 BaseUtils.invokeCheckSetter(object, property, selectedClass);
