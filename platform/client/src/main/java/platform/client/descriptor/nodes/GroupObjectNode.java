@@ -1,5 +1,6 @@
 package platform.client.descriptor.nodes;
 
+import platform.client.Main;
 import platform.client.tree.ClientTree;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.FormDescriptor;
@@ -10,6 +11,7 @@ import platform.client.descriptor.nodes.actions.EditableTreeNode;
 import javax.swing.*;
 
 public class GroupObjectNode extends DescriptorNode<GroupObjectDescriptor, GroupObjectNode> implements EditableTreeNode {
+    private static final ImageIcon groupObjectIcon = new ImageIcon(Main.class.getResource("/platform/navigator/images/groupObject.gif"));
 
     private FormDescriptor form;
 
@@ -35,5 +37,10 @@ public class GroupObjectNode extends DescriptorNode<GroupObjectDescriptor, Group
     @Override
     public boolean importData(ClientTree tree, TransferHandler.TransferSupport info) {
         return form.moveGroupObject(getSiblingNode(info).getTypedObject(), getTypedObject());
+    }
+
+    @Override
+    public Icon getIcon() {
+        return groupObjectIcon;
     }
 }

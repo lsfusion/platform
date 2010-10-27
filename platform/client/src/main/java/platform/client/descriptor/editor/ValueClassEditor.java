@@ -65,7 +65,9 @@ public class ValueClassEditor extends JPanel {
         IncrementView typeVisible = new IncrementView() {
             public void update(Object updateObject, String updateField) {
                 final ClientClass clientClass = (ClientClass) BaseUtils.invokeGetter(object, property);
-                ClientTypeClass typeClass = clientClass.getType().getTypeClass();
+                ClientTypeClass typeClass = clientClass == null
+                                            ? ClientIntegerClass.instance
+                                            : clientClass.getType().getTypeClass();
 
                 updated = true;
                 typeClasses.setSelectedItem(typeClass);

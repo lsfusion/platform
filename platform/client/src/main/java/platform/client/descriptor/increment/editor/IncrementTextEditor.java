@@ -7,6 +7,8 @@ import platform.client.descriptor.increment.IncrementView;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 
 public class IncrementTextEditor extends JTextField implements IncrementView {
     private final Object object;
@@ -18,6 +20,13 @@ public class IncrementTextEditor extends JTextField implements IncrementView {
 
         addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                updateField();
+            }
+        });
+
+        addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
                 updateField();
             }
         });

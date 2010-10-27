@@ -7,6 +7,10 @@ public class ClientNavigatorForm extends ClientNavigatorElement {
     
     public boolean isPrintForm;
 
+    public ClientNavigatorForm() {
+        
+    }
+    
     public ClientNavigatorForm(DataInputStream inStream) throws IOException {
         super(inStream);
         isPrintForm = inStream.readBoolean();

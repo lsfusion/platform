@@ -7,7 +7,6 @@ import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.increment.IncrementView;
 import platform.client.descriptor.property.PropertyDescriptor;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
-import platform.client.descriptor.nodes.PropertyDrawNode;
 import platform.client.logics.ClientComponent;
 import platform.client.logics.ClientContainer;
 import platform.client.logics.ClientForm;
@@ -24,13 +23,41 @@ import java.util.List;
 
 public class FormDescriptor extends IdentityDescriptor implements ClientIdentitySerializable {
 
-    public ClientForm client;
+    public ClientForm client = new ClientForm();
 
     public String caption;
     public boolean isPrintForm;
 
-    public List<GroupObjectDescriptor> groupObjects;
-    public List<PropertyDrawDescriptor> propertyDraws;
+    public List<GroupObjectDescriptor> groupObjects = new ArrayList<GroupObjectDescriptor>();
+    public List<PropertyDrawDescriptor> propertyDraws = new ArrayList<PropertyDrawDescriptor>();
+    public Set<FilterDescriptor> fixedFilters = new HashSet<FilterDescriptor>();
+    public List<RegularFilterGroupDescriptor> regularFilterGroups = new ArrayList<RegularFilterGroupDescriptor>();
+    public Map<PropertyDrawDescriptor, GroupObjectDescriptor> forceDefaultDraw = new HashMap<PropertyDrawDescriptor, GroupObjectDescriptor>();
+
+    // по сути IncrementLazy
+    IncrementView allPropertiesLazy;
+    private List<PropertyObjectDescriptor> allProperties;
+    public List<PropertyObjectDescriptor> getAllProperties() {
+        if (allProperties == null)
+            allProperties = getProperties(groupObjects, null);
+        return allProperties;
+    }
+
+    IncrementView propertyObjectConstraint;
+    IncrementView toDrawConstraint;
+    IncrementView columnGroupConstraint;
+    IncrementView propertyCaptionConstraint;
+
+    IncrementView containerController;
+
+    public FormDescriptor() {
+        
+    }
+
+    public FormDescriptor(int ID) {
+        setID(ID);
+        setCaption("Новая форма (" + ID + ")");
+    }
 
     public List<PropertyDrawDescriptor> getGroupPropertyDraws(GroupObjectDescriptor group) {
         List<PropertyDrawDescriptor> result = new ArrayList<PropertyDrawDescriptor>();
@@ -38,21 +65,6 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
             if (group == null || group.equals(propertyDraw.getGroupObject(groupObjects)))
                 result.add(propertyDraw);
         return result;
-    }
-
-    public Set<FilterDescriptor> fixedFilters;
-    public List<RegularFilterGroupDescriptor> regularFilterGroups;
-    public Map<PropertyDrawDescriptor, GroupObjectDescriptor> forceDefaultDraw = new HashMap<PropertyDrawDescriptor, GroupObjectDescriptor>();
-
-    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        outStream.writeUTF(caption);
-        outStream.writeBoolean(isPrintForm);
-
-        pool.serializeCollection(outStream, groupObjects);
-        pool.serializeCollection(outStream, propertyDraws);
-        pool.serializeCollection(outStream, fixedFilters);
-        pool.serializeCollection(outStream, regularFilterGroups);
-        pool.serializeMap(outStream, forceDefaultDraw);
     }
 
     private abstract class IncrementPropertyConstraint implements IncrementView {
@@ -71,22 +83,6 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
                     removeFromPropertyDraws(checkProperty);
         }
     }
-
-    // по сути IncrementLazy
-    IncrementView allPropertiesLazy;
-    private List<PropertyObjectDescriptor> allProperties;
-    public List<PropertyObjectDescriptor> getAllProperties() {
-        if (allProperties == null)
-            allProperties = getProperties(groupObjects, null);
-        return allProperties;
-    }
-
-    IncrementView propertyObjectConstraint;
-    IncrementView toDrawConstraint;
-    IncrementView columnGroupConstraint;
-    IncrementView propertyCaptionConstraint;
-
-    IncrementView containerController;
 
     private class ContainerController implements IncrementView {
         public void update(Object updateObject, String updateField) {
@@ -110,8 +106,19 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         }
     }
 
+    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        pool.writeString(outStream, caption);
+        outStream.writeBoolean(isPrintForm);
+
+        pool.serializeCollection(outStream, groupObjects);
+        pool.serializeCollection(outStream, propertyDraws);
+        pool.serializeCollection(outStream, fixedFilters);
+        pool.serializeCollection(outStream, regularFilterGroups);
+        pool.serializeMap(outStream, forceDefaultDraw);
+    }
+
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
-        caption = inStream.readUTF();
+        caption = pool.readString(inStream);
         isPrintForm = inStream.readBoolean();
 
         groupObjects = pool.deserializeList(inStream);
@@ -297,15 +304,6 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         }
     }
 
-    public static byte[] serialize(FormDescriptor form) throws IOException {
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        DataOutputStream dataStream = new DataOutputStream(outStream);
-        new ClientSerializationPool(form.client).serializeObject(dataStream, form);
-        new ClientSerializationPool(form.client).serializeObject(dataStream, form.client);
-
-        return outStream.toByteArray();
-    }
-
     public boolean moveGroupObject(GroupObjectDescriptor groupFrom, GroupObjectDescriptor groupTo) {
         return moveGroupObject(groupFrom, groupObjects.indexOf(groupTo) + (groupObjects.indexOf(groupFrom) > groupObjects.indexOf(groupTo) ? 0 : 1));
     }
@@ -338,6 +336,17 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         } else {
             return list.get(index + (list.indexOf(elemFrom) >= index ? 0 : -1));
         }
+    }
+
+    public void setCaption(String caption) {
+        this.caption = caption;
+        client.caption = caption;
+
+        IncrementDependency.update(this, "caption");
+    }
+
+    public String getCaption() {
+        return caption;
     }
 
     private static void moveClientComponent(ClientComponent compFrom, ClientComponent compTo) {
@@ -401,5 +410,35 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         regularFilterGroups.remove(filterGroup);
         client.removeFromRegularFilterGroups(filterGroup.client);
         IncrementDependency.update(this, "regularFilterGroups");
+    }
+
+
+    public static byte[] serialize(FormDescriptor form) throws IOException {
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        DataOutputStream dataStream = new DataOutputStream(outStream);
+        new ClientSerializationPool(form.client).serializeObject(dataStream, form);
+        new ClientSerializationPool(form.client).serializeObject(dataStream, form.client);
+
+        return outStream.toByteArray();
+}
+
+    public static FormDescriptor deserialize(byte[] formByteArray) throws IOException {
+        DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(formByteArray));
+
+        ClientForm richDesign = new ClientSerializationPool().deserializeObject(inStream);
+
+        return new ClientSerializationPool(richDesign).deserializeObject(inStream);
+    }
+
+    public static FormDescriptor deserialize(byte[] richDesignByteArray, byte[] formEntityByteArray) throws IOException {
+        ClientForm richDesign = new ClientSerializationPool()
+                .deserializeObject(
+                        new DataInputStream(
+                                new ByteArrayInputStream(richDesignByteArray)));
+
+        return new ClientSerializationPool(richDesign)
+                .deserializeObject(
+                        new DataInputStream(
+                                new ByteArrayInputStream(formEntityByteArray)));
     }
 }

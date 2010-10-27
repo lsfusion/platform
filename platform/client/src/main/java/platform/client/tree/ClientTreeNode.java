@@ -10,6 +10,7 @@ import platform.client.lookup.Lookup;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
+import java.awt.datatransfer.Transferable;
 import java.util.ArrayList;
 
 public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableTreeNode {
@@ -181,7 +182,11 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
         return false;
     }
 
-    public void exportDone(JComponent component, int mode) {
+    public void exportDone(ClientTree tree, JComponent component, Transferable trans, int action) {
+    }
+
+    public Icon getIcon() {
+        return null;
     }
 
     @Override

@@ -4,12 +4,14 @@ import platform.base.BaseUtils;
 
 import javax.swing.*;
 import javax.swing.tree.*;
+import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.*;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
 public class ClientTree extends JTree {
 
@@ -38,6 +40,9 @@ public class ClientTree extends JTree {
         //setDropMode(DropMode.ON);
         //setDragEnabled(true);
         setTransferHandler(new ClientTransferHandler());
+
+        //так делается, потому что оказывается, что все чтение UI у них в DefaultTreeCellRenderer написано в конструкторе !!!!
+        setCellRenderer(new ClientTreeCellRenderer());
     }
 
     @Override
@@ -62,7 +67,7 @@ public class ClientTree extends JTree {
         final TreePath selectionPath = getSelectionPath();
 
         setModel(newModel);
-        Enumeration<DefaultMutableTreeNode> nodes = ((DefaultMutableTreeNode)treeModel.getRoot()).depthFirstEnumeration();
+        Enumeration<DefaultMutableTreeNode> nodes = ((DefaultMutableTreeNode) treeModel.getRoot()).depthFirstEnumeration();
         while (nodes.hasMoreElements()) {
             DefaultMutableTreeNode node = nodes.nextElement();
             TreePath path = new TreePath(node.getPath());
@@ -85,7 +90,7 @@ public class ClientTree extends JTree {
         }
 
         DefaultMutableTreeNode lastNode = null;
-        List<DefaultMutableTreeNode> children = BaseUtils.toList((DefaultMutableTreeNode)treeModel.getRoot());
+        List<DefaultMutableTreeNode> children = BaseUtils.toList((DefaultMutableTreeNode) treeModel.getRoot());
         for (Object current : path) {
             lastNode = null;
             for (DefaultMutableTreeNode child : children) {
@@ -110,7 +115,9 @@ public class ClientTree extends JTree {
     public DefaultMutableTreeNode getSelectionNode() {
 
         TreePath path = getSelectionPath();
-        if (path == null) return null;
+        if (path == null) {
+            return null;
+        }
 
         return (DefaultMutableTreeNode) path.getLastPathComponent();
     }
@@ -165,7 +172,7 @@ public class ClientTree extends JTree {
         for (int i = 0; i < cnt; i++) {
             Object oNode = path.getPathComponent(i);
             if (oNode instanceof ClientTreeNode) {
-                ClientTreeNode<?,?> node = (ClientTreeNode) oNode;
+                ClientTreeNode<?, ?> node = (ClientTreeNode) oNode;
 
                 list.addAll(node.subTreeActions);
 
@@ -179,7 +186,7 @@ public class ClientTree extends JTree {
             }
         }
 
-        for (Iterator<ClientTreeAction> it = list.iterator(); it.hasNext(); ) {
+        for (Iterator<ClientTreeAction> it = list.iterator(); it.hasNext();) {
             ClientTreeAction act = it.next();
             if (!act.isApplicable(path)) {
                 it.remove();
@@ -215,8 +222,9 @@ public class ClientTree extends JTree {
                 TreePath path = dl.getPath();
                 if (path != null) {
                     DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
-                    if (node instanceof ClientTreeNode)
+                    if (node instanceof ClientTreeNode) {
                         return ((ClientTreeNode) node).importData(ClientTree.this, info);
+                    }
                 }
             }
             return true;
@@ -238,15 +246,15 @@ public class ClientTree extends JTree {
         }
 
         @Override
-        public void exportDone(JComponent component, Transferable trans, int mode) {
+        public void exportDone(JComponent component, Transferable trans, int action) {
             if (trans instanceof NodeTransfer) {
-                ((NodeTransfer) trans).node.exportDone(component, mode);
+                ((NodeTransfer) trans).node.exportDone(ClientTree.this, component, trans, action);
             }
         }
     }
 
     private static DataFlavor CLIENTTREENODE_FLAVOR = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType +
-                  "; class=platform.client.tree.ClientTreeNode", "ClientTreeNode");
+                                                                     "; class=platform.client.tree.ClientTreeNode", "ClientTreeNode");
 
     public class NodeTransfer implements Transferable {
         public ClientTreeNode node;
@@ -256,7 +264,7 @@ public class ClientTree extends JTree {
         }
 
         public DataFlavor[] getTransferDataFlavors() {
-            return new DataFlavor[] {CLIENTTREENODE_FLAVOR};
+            return new DataFlavor[]{CLIENTTREENODE_FLAVOR};
         }
 
         public boolean isDataFlavorSupported(DataFlavor flavor) {
@@ -271,9 +279,11 @@ public class ClientTree extends JTree {
     public static ClientTreeNode getNode(TreePath path) {
 
         int cnt = path.getPathCount();
-        for (int i = cnt-1; i >= 0; i--) {
+        for (int i = cnt - 1; i >= 0; i--) {
             Object node = path.getPathComponent(i);
-            if (node instanceof ClientTreeNode) return (ClientTreeNode)node;
+            if (node instanceof ClientTreeNode) {
+                return (ClientTreeNode) node;
+            }
         }
 
         return null;
@@ -284,10 +294,11 @@ public class ClientTree extends JTree {
         try {
 
             Object transferData = info.getTransferable().getTransferData(CLIENTTREENODE_FLAVOR);
-            if (!(transferData instanceof ClientTreeNode))
+            if (!(transferData instanceof ClientTreeNode)) {
                 return null;
+            }
 
-            return (ClientTreeNode)transferData;
+            return (ClientTreeNode) transferData;
 
         } catch (UnsupportedFlavorException e) {
             return null;
@@ -298,7 +309,7 @@ public class ClientTree extends JTree {
     }
 
     public static int getChildIndex(TransferHandler.TransferSupport info) {
-        return ((JTree.DropLocation)info.getDropLocation()).getChildIndex();
+        return ((JTree.DropLocation) info.getDropLocation()).getChildIndex();
     }
 
     public static Object[] convertTreePathToUserObjects(TreePath path) {
@@ -309,7 +320,7 @@ public class ClientTree extends JTree {
         Object[] pathElements = path.getPath();
         Object[] result = new Object[pathElements.length];
         for (int i = 0; i < pathElements.length; ++i) {
-            result[i] = ((DefaultMutableTreeNode)pathElements[i]).getUserObject();
+            result[i] = ((DefaultMutableTreeNode) pathElements[i]).getUserObject();
         }
 
         return result;
@@ -333,5 +344,21 @@ public class ClientTree extends JTree {
         }
 
         return true;
+    }
+
+    private class ClientTreeCellRenderer extends DefaultTreeCellRenderer {
+        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected,
+                                                      boolean expanded, boolean leaf, int row,
+                                                      boolean hasFocus) {
+
+            Component comp = super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+
+            ClientTreeNode node = (ClientTreeNode) value;
+            if (node != null && node.getIcon() != null) {
+                setIcon(node.getIcon());
+            }
+
+            return comp;
+        }
     }
 }

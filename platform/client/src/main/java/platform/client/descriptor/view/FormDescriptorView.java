@@ -16,6 +16,7 @@ import platform.client.tree.ClientTreeNode;
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -34,21 +35,24 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
 
     private JButton previewBtn;
     private JButton saveBtn;
-    private ClientNavigator navigator;
+    private JButton cancelBtn;
+    private ClientNavigator clientNavigator;
+    private final NavigatorDescriptorView parent;
 
     private Object objectToEdit;
     private Object editingObject;
     private Lookup lookup = Lookup.getDefault();
 
-    public FormDescriptorView(ClientNavigator iNavigator) {
-        this.navigator = iNavigator;
+    public FormDescriptorView(ClientNavigator iClientNavigator, NavigatorDescriptorView iParent) {
+        clientNavigator = iClientNavigator;
+        parent = iParent;
 
         setLayout(new BorderLayout());
 
         view = new EditorView();
 
         tree = new ClientTree();
-        tree.setCellRenderer(new MyTreeCellRenderer());
+        tree.setCellRenderer(new VisualSetupTreeCellRenderer(tree.getCellRenderer()));
 
         tree.setDropMode(DropMode.ON_OR_INSERT);
         tree.setDragEnabled(true);
@@ -57,7 +61,7 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
         previewBtn.setEnabled(false);
         previewBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                PreviewDialog dlg = new PreviewDialog(navigator, form);
+                PreviewDialog dlg = new PreviewDialog(clientNavigator, form);
                 dlg.setBounds(SwingUtilities.windowForComponent(FormDescriptorView.this).getBounds());
                 dlg.setVisible(true);
             }
@@ -68,9 +72,21 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
         saveBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    navigator.remoteNavigator.saveForm(form.getID(), FormDescriptor.serialize(form));
+                    clientNavigator.remoteNavigator.saveForm(form.getID(), FormDescriptor.serialize(form));
                 } catch (IOException ioe) {
                     throw new RuntimeException("Не могу сохранить форму.", ioe);
+                }
+            }
+        });
+
+        cancelBtn = new JButton("Отменить изменения");
+        cancelBtn.setEnabled(false);
+        cancelBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    parent.openForm(form.getID());
+                } catch (IOException ioe) {
+                    throw new RuntimeException("Не могу открыть форму.", ioe);
                 }
             }
         });
@@ -78,6 +94,8 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
         JPanel commandPanel = new JPanel();
         commandPanel.add(previewBtn);
         commandPanel.add(saveBtn);
+        commandPanel.add(Box.createRigidArea(new Dimension(20, 5)));
+        commandPanel.add(cancelBtn);
 
         JPanel formTreePanel = new JPanel();
         formTreePanel.setLayout(new BorderLayout());
@@ -122,6 +140,9 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
         } else if (name.equals(Lookup.DELETED_OBJECT_PROPERTY)) {
             if (newValue != null && newValue == editingObject) {
                 removeEditor();
+                if (newValue == form) {
+                    setForm(null);
+                }
             }
         }
     }
@@ -136,14 +157,16 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
         updateNow();
     }
 
-    public void setForm(FormDescriptor form) {
-        if (this.form != form) {
-            this.form = form;
+    public void setForm(FormDescriptor iForm) {
+        if (this.form != iForm) {
+            this.form = iForm;
             view.removeEditor();
+            objectToEdit = form;
         }
 
         previewBtn.setEnabled(form != null);
         saveBtn.setEnabled(form != null);
+        cancelBtn.setEnabled(form != null);
 
         IncrementDependency.update(this, "form");
     }
@@ -162,12 +185,14 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
                 });
     }
 
-    class MyTreeCellRenderer extends DefaultTreeCellRenderer {
+    class VisualSetupTreeCellRenderer extends DefaultTreeCellRenderer {
         private Color backgroundSelectionColor;
         private Color backgroundNonSelectionColor;
+        private final TreeCellRenderer originalCellRenderer;
 
-        public MyTreeCellRenderer() {
+        public VisualSetupTreeCellRenderer(TreeCellRenderer originalCellRenderer) {
             super();
+            this.originalCellRenderer = originalCellRenderer;
 
             backgroundSelectionColor = getBackgroundSelectionColor();
             backgroundNonSelectionColor = getBackgroundNonSelectionColor();
@@ -175,7 +200,7 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
 
         @Override
         public Component getTreeCellRendererComponent(JTree iTree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-            Component renderer = super.getTreeCellRendererComponent(iTree, value, sel, expanded, leaf, row, hasFocus);
+            Component renderer = originalCellRenderer.getTreeCellRendererComponent(iTree, value, sel, expanded, leaf, row, hasFocus);
 
             if (editingObject != null && editingObject == ((ClientTreeNode) value).getUserObject()) {
                 setBackgroundSelectionColor(Color.YELLOW.darker().darker());

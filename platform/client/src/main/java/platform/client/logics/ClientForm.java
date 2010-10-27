@@ -22,13 +22,13 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
 
     public String caption = "";
 
-    public ClientContainer mainContainer;
+    public ClientContainer mainContainer = new ClientContainer();
 
-    public List<ClientGroupObject> groupObjects;
-    public List<ClientPropertyDraw> propertyDraws;
+    public List<ClientGroupObject> groupObjects = new ArrayList<ClientGroupObject>();
+    public List<ClientPropertyDraw> propertyDraws = new ArrayList<ClientPropertyDraw>();
 
     public final OrderedMap<ClientPropertyDraw,Boolean> defaultOrders = new OrderedMap<ClientPropertyDraw, Boolean>();
-    public List<ClientRegularFilterGroup> regularFilterGroups;
+    public List<ClientRegularFilterGroup> regularFilterGroups = new ArrayList<ClientRegularFilterGroup>();
 
     public ClientFunction printFunction;
     public ClientFunction xlsFunction;

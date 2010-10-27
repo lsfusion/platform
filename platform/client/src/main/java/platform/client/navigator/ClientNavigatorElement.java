@@ -13,7 +13,10 @@ public class ClientNavigatorElement {
 
     public String toString() { return caption; }
 
-    ClientNavigatorElement(DataInputStream inStream) throws IOException {
+    public ClientNavigatorElement() {
+    }
+    
+    public ClientNavigatorElement(DataInputStream inStream) throws IOException {
         ID = inStream.readInt();
         caption = inStream.readUTF();
         hasChildren = inStream.readBoolean();
