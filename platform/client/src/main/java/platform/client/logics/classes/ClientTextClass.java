@@ -17,14 +17,6 @@ public class ClientTextClass extends ClientDataClass implements ClientTypeClass 
 
     public final static ClientTextClass instance = new ClientTextClass();
 
-    public ClientTypeClass getTypeClass() {
-        return this;
-    }
-
-    public ClientClass getDefaultClass() {
-        return this;
-    }
-
     public byte getTypeId() {
         return Data.TEXT;
     }

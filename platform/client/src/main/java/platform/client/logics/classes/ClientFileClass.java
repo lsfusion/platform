@@ -18,14 +18,6 @@ public abstract class ClientFileClass extends ClientDataClass implements ClientT
         return "1234567";
     }
 
-    public ClientTypeClass getTypeClass() {
-        return this;
-    }
-
-    public ClientClass getDefaultClass() {
-        return this;
-    }
-
     public Format getDefaultFormat() {
         return null;
     }

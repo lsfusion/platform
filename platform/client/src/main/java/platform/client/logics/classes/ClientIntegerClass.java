@@ -19,14 +19,6 @@ public class ClientIntegerClass extends ClientIntegralClass implements ClientTyp
         return Integer.class;
     }
 
-    public ClientTypeClass getTypeClass() {
-        return this;
-    }
-
-    public ClientClass getDefaultClass() {
-        return this;
-    }
-
     public byte getTypeId() {
         return Data.INTEGER;
     }

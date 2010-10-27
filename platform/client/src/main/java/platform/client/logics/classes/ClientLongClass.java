@@ -14,14 +14,6 @@ public class ClientLongClass extends ClientIntegralClass implements ClientTypeCl
         return Long.class;
     }
 
-    public ClientTypeClass getTypeClass() {
-        return this;
-    }
-
-    public ClientClass getDefaultClass() {
-        return this;
-    }
-
     public byte getTypeId() {
         return Data.LONG;
     }

@@ -4,10 +4,10 @@ import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.editor.base.NodeEditor;
 import platform.client.descriptor.editor.base.TitledPanel;
-import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.increment.editor.IncrementMultipleListEditor;
 import platform.client.descriptor.increment.editor.IncrementMultipleListSelectionModel;
 import platform.client.descriptor.increment.editor.IncrementSingleListSelectionModel;
+import platform.client.GroupPropertyObjectEditor;
 import platform.interop.ClassViewType;
 
 import javax.swing.*;
@@ -37,17 +37,13 @@ public class GroupObjectEditor extends JPanel implements NodeEditor {
             }
         })));
 
-        add(new TitledPanel("Свойство выделения", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "propertyHighlight") {
-            public List<?> getList() {
-                return form.getProperties(descriptor);
-            }
-            public void fillListDependencies() {
-                IncrementDependency.add(form, "groupObjects", this);
-            }
-        })));
+        add(new TitledPanel("Свойство выделения", new PropertyObjectEditor(descriptor, "propertyHighlight", form, descriptor)));
 
         add(descriptor.client.grid.getPropertiesEditor());
         add(descriptor.client.showType.getPropertiesEditor());
+
+        add(new GroupPropertyObjectEditor(form, descriptor));
+        
     }
 
     public JComponent getComponent() {

@@ -17,19 +17,10 @@ public class ClientLogicalClass extends ClientDataClass implements ClientTypeCla
 
     public final static ClientLogicalClass instance = new ClientLogicalClass();
 
-    @Override
     public byte getTypeId() {
         return Data.LOGICAL;
     }
     
-    public ClientTypeClass getTypeClass() {
-        return this;
-    }
-
-    public ClientClass getDefaultClass() {
-        return this;
-    }
-
     @Override
     public int getMinimumWidth(FontMetrics fontMetrics) {
         return getPreferredWidth(fontMetrics);

@@ -12,27 +12,19 @@ import java.util.List;
 public class PropertyDrawFolder extends GroupElementFolder<PropertyDrawFolder> {
     private FormDescriptor form;
 
-    public PropertyDrawFolder(List<GroupObjectDescriptor> groupList, GroupObjectDescriptor group, FormDescriptor form) {
+    public PropertyDrawFolder(GroupObjectDescriptor group, FormDescriptor form) {
         super(group, "Свойства");
 
         this.form = form;
 
-        for (PropertyDrawDescriptor propertyDraw : form.propertyDraws) {
-            if (group == null || group.equals(propertyDraw.getGroupObject(groupList))) {
-                add(new PropertyDrawNode(group, propertyDraw, form));
-            }
-        }
+        for (PropertyDrawDescriptor propertyDraw : form.getGroupPropertyDraws(group))
+            add(new PropertyDrawNode(group, propertyDraw, form));
 
         addCollectionReferenceActions(this, "propertyDraws", new String[] {""}, new Class[] {PropertyDrawDescriptor.class});
     }
 
     public boolean addToPropertyDraws(PropertyDrawDescriptor propertyDraw) {
-        if (groupObject != null) {
-            propertyDraw.client.groupObject = groupObject.client;
-            propertyDraw.toDraw = groupObject;
-        }
-
-        form.addToPropertyDraws(propertyDraw);
+        form.addToPropertyDraws(propertyDraw, groupObject);
 
         IncrementDependency.update(this, "propertyDraws");
         return true;

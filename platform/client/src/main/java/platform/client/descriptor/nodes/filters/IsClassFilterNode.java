@@ -14,6 +14,6 @@ public class IsClassFilterNode extends PropertyFilterNode<IsClassFilterDescripto
     }
 
     public NodeEditor createEditor(FormDescriptor form) {
-        return new IsClassFilterEditor(getTypedObject(), form);
+        return new IsClassFilterEditor(groupObject, getTypedObject(), form);
     }
 }

@@ -18,14 +18,6 @@ public class ClientDateClass extends ClientDataClass implements ClientTypeClass 
 
     public final static ClientDateClass instance = new ClientDateClass();
 
-    public ClientTypeClass getTypeClass() {
-        return this;
-    }
-
-    public ClientClass getDefaultClass() {
-        return this;
-    }
-
     public byte getTypeId() {
         return Data.DATE;
     }

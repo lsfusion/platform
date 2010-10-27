@@ -86,4 +86,8 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
     public String toString() {
         return "Объект";
     }
+
+    public ClientType getDefaultType() {
+        return this;
+    }
 }

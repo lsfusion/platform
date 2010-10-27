@@ -18,6 +18,7 @@ import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.RemoteObject;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.type.TypeSerializer;
+import platform.server.data.type.Type;
 import platform.server.net.ServerSocketFactory;
 import platform.server.auth.PolicyManager;
 import platform.server.auth.SecurityPolicy;
@@ -312,6 +313,18 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             session.close();
             logger.warning("Begin user session " + strHostName + " " + result);
+            return result;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public ConcreteClass getDataClass(Object object, Type type) {
+        try {
+            DataSession session = createSession();
+            ConcreteClass result = type.getDataClass(object, session, baseClass);
+            session.close();
+
             return result;
         } catch (Exception e) {
             throw new RuntimeException(e);

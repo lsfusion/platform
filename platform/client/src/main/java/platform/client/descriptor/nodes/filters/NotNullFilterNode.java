@@ -14,6 +14,6 @@ public class NotNullFilterNode extends PropertyFilterNode<NotNullFilterDescripto
     }
 
     public NodeEditor createEditor(FormDescriptor form) {
-        return new NotNullFilterEditor(getTypedObject(), form);
+        return new NotNullFilterEditor(groupObject, getTypedObject(), form);
     }
 }

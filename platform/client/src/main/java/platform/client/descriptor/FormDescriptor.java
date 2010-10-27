@@ -7,6 +7,7 @@ import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.increment.IncrementView;
 import platform.client.descriptor.property.PropertyDescriptor;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
+import platform.client.descriptor.nodes.PropertyDrawNode;
 import platform.client.logics.ClientComponent;
 import platform.client.logics.ClientContainer;
 import platform.client.logics.ClientForm;
@@ -30,6 +31,15 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
 
     public List<GroupObjectDescriptor> groupObjects;
     public List<PropertyDrawDescriptor> propertyDraws;
+
+    public List<PropertyDrawDescriptor> getGroupPropertyDraws(GroupObjectDescriptor group) {
+        List<PropertyDrawDescriptor> result = new ArrayList<PropertyDrawDescriptor>();
+        for (PropertyDrawDescriptor propertyDraw : propertyDraws)
+            if (group == null || group.equals(propertyDraw.getGroupObject(groupObjects)))
+                result.add(propertyDraw);
+        return result;
+    }
+
     public Set<FilterDescriptor> fixedFilters;
     public List<RegularFilterGroupDescriptor> regularFilterGroups;
     public Map<PropertyDrawDescriptor, GroupObjectDescriptor> forceDefaultDraw = new HashMap<PropertyDrawDescriptor, GroupObjectDescriptor>();
@@ -334,6 +344,15 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         if (compFrom.container.equals(compTo.container)) {
             compFrom.container.moveChild(compFrom, compTo);
         }
+    }
+
+    public boolean addToPropertyDraws(PropertyDrawDescriptor propertyDraw, GroupObjectDescriptor groupObject) {
+        if (groupObject != null) {
+            propertyDraw.client.groupObject = groupObject.client;
+            propertyDraw.toDraw = groupObject;
+        }
+
+        return addToPropertyDraws(propertyDraw);
     }
 
     public boolean addToPropertyDraws(PropertyDrawDescriptor propertyDraw) {

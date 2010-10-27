@@ -6,6 +6,7 @@ import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
+import platform.client.Main;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -18,6 +19,14 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
     public ClientPropertyDraw client = new ClientPropertyDraw();
 
     private PropertyObjectDescriptor propertyObject;
+
+    public PropertyDrawDescriptor() {
+    }
+
+    public PropertyDrawDescriptor(PropertyObjectDescriptor propertyObject) {
+        setID(Main.generateNewID());
+        setPropertyObject(propertyObject);
+    }
 
     //todo: временно public...
     public GroupObjectDescriptor toDraw;

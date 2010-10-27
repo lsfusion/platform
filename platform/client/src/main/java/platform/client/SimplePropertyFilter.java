@@ -21,7 +21,7 @@ import java.util.List;
 
 public class SimplePropertyFilter extends JPanel {
     JList list;
-    JTree tree;
+    final JTree tree;
     DefaultListModel listModel;
     DefaultTreeModel treeModel;
     FormDescriptor form;
@@ -110,8 +110,8 @@ public class SimplePropertyFilter extends JPanel {
         return new DefaultMutableTreeNode(info);
     }
 
-    public void addPropertyToTree(PropertyObjectDescriptor prop) {
-        Stack stack = new Stack();
+    private void addPropertyToTree(PropertyObjectDescriptor prop) {
+        Stack<Object> stack = new Stack<Object>();
 
         stack.push(prop);
         AbstractNodeDescriptor current = prop.property.parent;
@@ -124,11 +124,10 @@ public class SimplePropertyFilter extends JPanel {
         DefaultMutableTreeNode currentNode = (DefaultMutableTreeNode) treeModel.getRoot();
         while (!stack.isEmpty()) {
             boolean found = false;
-            int n = currentNode.getChildCount();
-            for (int i = 0; i < n; i++) {
-                Object userObj = ((DefaultMutableTreeNode) currentNode.getChildAt(i)).getUserObject();
+            for (DefaultMutableTreeNode child : Collections.list((Enumeration<DefaultMutableTreeNode>)currentNode.children())) {
+                Object userObj = child.getUserObject();
                 if (userObj.equals(stack.peek())) {
-                    currentNode = ((DefaultMutableTreeNode) currentNode.getChildAt(i));
+                    currentNode = child;
                     found = true;
                     break;
                 }

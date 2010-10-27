@@ -1,6 +1,7 @@
 package platform.client.descriptor.editor.filters;
 
 import platform.client.descriptor.FormDescriptor;
+import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.increment.editor.IncrementDialogEditor;
 import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.descriptor.editor.ValueClassEditor;
@@ -12,8 +13,8 @@ import platform.interop.serialization.RemoteDescriptorInterface;
 
 public class IsClassFilterEditor extends PropertyFilterEditor {
 
-    public IsClassFilterEditor(IsClassFilterDescriptor descriptor, FormDescriptor form) {
-        super(descriptor, form);
+    public IsClassFilterEditor(GroupObjectDescriptor group, IsClassFilterDescriptor descriptor, FormDescriptor form) {
+        super(group, descriptor, form);
 
         add(new TitledPanel("Класс", new IncrementDialogEditor(descriptor, "objectClass") {
             protected Object dialogValue(Object currentValue) {

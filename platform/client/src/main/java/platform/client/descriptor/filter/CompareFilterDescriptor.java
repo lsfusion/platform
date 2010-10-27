@@ -2,6 +2,7 @@ package platform.client.descriptor.filter;
 
 import platform.client.descriptor.OrderDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
+import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.nodes.filters.CompareFilterNode;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.Compare;
@@ -13,7 +14,27 @@ import java.util.List;
 
 public class CompareFilterDescriptor extends PropertyFilterDescriptor {
     private Compare compare;
+
+    public Compare getCompare() {
+        return compare;
+    }
+
+    public void setCompare(Compare compare) {
+        this.compare = compare;
+
+        IncrementDependency.update(this, "compare");
+    }
+
     private OrderDescriptor value;
+
+    public OrderDescriptor getValue() {
+        return value;
+    }
+    public void setValue(OrderDescriptor value) {
+        this.value = value;
+
+        IncrementDependency.update(this, "value");
+    }
 
     @Override
     public GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groupList) {

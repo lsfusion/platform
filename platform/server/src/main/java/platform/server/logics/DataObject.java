@@ -3,10 +3,7 @@ package platform.server.logics;
 import platform.base.BaseUtils;
 import platform.interop.Compare;
 import platform.server.caches.hash.HashValues;
-import platform.server.classes.ConcreteClass;
-import platform.server.classes.DoubleClass;
-import platform.server.classes.LogicalClass;
-import platform.server.classes.StringClass;
+import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.SystemValueExpr;
@@ -14,6 +11,7 @@ import platform.server.data.expr.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.type.Type;
+import platform.server.data.type.TypeSerializer;
 import platform.server.data.where.Where;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
@@ -166,12 +164,13 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         BaseUtils.serializeObject(outStream, object);
 
-        //todo:
-//        pool.serializeObject(outStream, objectClass);
+        TypeSerializer.serializeType(outStream, objectClass.getType());
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         object = BaseUtils.deserializeObject(inStream);
+
+        objectClass = pool.context.BL.getDataClass(object, TypeSerializer.deserializeType(inStream));
     }
 
     public Collection<ObjectInstance> getObjectInstances() {

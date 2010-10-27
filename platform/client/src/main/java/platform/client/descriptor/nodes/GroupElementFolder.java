@@ -17,7 +17,7 @@ public class GroupElementFolder<C extends GroupElementFolder> extends PlainTextN
     }
 
     public static void addFolders(DefaultMutableTreeNode treeNode, GroupObjectDescriptor group, FormDescriptor form) {
-        treeNode.add(new PropertyDrawFolder(form.groupObjects, group, form));
+        treeNode.add(new PropertyDrawFolder(group, form));
         treeNode.add(new FixedFilterFolder(form.groupObjects, group, form.fixedFilters));
         treeNode.add(new RegularFilterGroupFolder(form.groupObjects, group, form));
     }

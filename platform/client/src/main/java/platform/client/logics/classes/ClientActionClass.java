@@ -24,15 +24,6 @@ public class ClientActionClass extends ClientDataClass implements ClientTypeClas
         super(inStream);
     }
 
-    public ClientTypeClass getTypeClass() {
-        return this;
-    }
-
-    public ClientClass getDefaultClass() {
-        return this;
-    }
-
-    @Override
     public byte getTypeId() {
         return Data.ACTION;
     }

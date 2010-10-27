@@ -79,4 +79,17 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
     public ClientType getType() {
         return this;
     }
+
+    // за исключение классов динамической ширины - так как нету множественного наследования и не хочется каждому прописывать
+    public ClientType getDefaultType() {
+        return this;
+    }
+
+    public ClientClass getDefaultClass() {
+        return this;
+    }
+
+    public ClientTypeClass getTypeClass() {
+        return (ClientTypeClass) this;
+    }
 }

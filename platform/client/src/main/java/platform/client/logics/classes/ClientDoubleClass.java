@@ -19,14 +19,6 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
         super(inStream);
     }
 
-    public ClientTypeClass getTypeClass() {
-        return this;
-    }
-
-    public ClientClass getDefaultClass() {
-        return this;
-    }
-
     public byte getTypeId() {
         return Data.DOUBLE;
     }

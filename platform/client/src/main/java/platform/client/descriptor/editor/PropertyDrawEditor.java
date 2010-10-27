@@ -24,12 +24,9 @@ public class PropertyDrawEditor extends GroupElementEditor {
 
         add(new TitledPanel("Стат. заголовок", new IncrementTextEditor(descriptor, "overridenCaption")));
 
-        add(new TitledPanel("Реализация", new IncrementDialogEditor(descriptor, "propertyObject") {
-            @Override
-            protected Object dialogValue(Object currentValue) {
-                return new SimplePropertyFilter(form, groupObject).getPropertyObject();
-            }
-        }));
+        add(Box.createRigidArea(new Dimension(5, 5)));
+        
+        add(new TitledPanel("Реализация", new PropertyObjectEditor(descriptor, "propertyObject", form, groupObject)));
 
         add(Box.createRigidArea(new Dimension(5, 5)));
 

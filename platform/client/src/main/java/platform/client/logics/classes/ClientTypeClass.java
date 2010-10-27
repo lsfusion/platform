@@ -5,4 +5,6 @@ public interface ClientTypeClass {
     byte getTypeId();
 
     ClientClass getDefaultClass();
+
+    ClientType getDefaultType();
 }
