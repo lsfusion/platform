@@ -5,8 +5,10 @@ import platform.client.form.ClientFormLayout;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.logics.ClientShowType;
 import platform.interop.ClassViewType;
+import platform.interop.ClassViewTypeEnum;
 
 import java.io.IOException;
+import java.util.List;
 
 public abstract class ShowTypeController {
 
@@ -62,8 +64,8 @@ public abstract class ShowTypeController {
     public void showViews() {
     }
 
-    Byte banClassView;
-    public void setBanClassView(Byte banClassView) {
+    List<ClassViewTypeEnum> banClassView;
+    public void setBanClassView(List<ClassViewTypeEnum> banClassView) {
         this.banClassView = banClassView;
         view.changeClassView(classView, banClassView);
     }

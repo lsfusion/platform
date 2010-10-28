@@ -9,6 +9,7 @@ import platform.client.form.GroupObjectController;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ClassViewType;
+import platform.interop.ClassViewTypeEnum;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -19,7 +20,7 @@ public class ClientGroupObject extends ArrayList<ClientObject>
                                  implements ClientPropertyRead, ClientIdentitySerializable {
 
     private int ID;
-    public byte banClassView = 0;
+    public List<ClassViewTypeEnum> banClassView = new ArrayList<ClassViewTypeEnum>();
 
     public ClientGrid grid = new ClientGrid();
     public ClientShowType showType = new ClientShowType();
@@ -88,7 +89,17 @@ public class ClientGroupObject extends ArrayList<ClientObject>
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
-        banClassView = inStream.readByte();
+        Byte type = inStream.readByte();
+        banClassView.clear();
+        if((type & ClassViewType.PANEL) != 0){
+            banClassView.add(ClassViewTypeEnum.valueOf("Panel"));
+        }
+        if((type & ClassViewType.GRID) != 0){
+            banClassView.add(ClassViewTypeEnum.valueOf("Grid"));
+        }
+        if((type & ClassViewType.HIDE) != 0){
+            banClassView.add(ClassViewTypeEnum.valueOf("Hide"));
+        }
 
         pool.deserializeCollection(this, inStream);
 

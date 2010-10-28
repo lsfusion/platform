@@ -1,12 +1,14 @@
 package platform.client.descriptor;
 
 import platform.base.BaseUtils;
+import platform.client.Main;
 import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
-import platform.client.Main;
+import platform.interop.ClassViewType;
+import platform.interop.ClassViewTypeEnum;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -31,7 +33,7 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
     //todo: временно public...
     public GroupObjectDescriptor toDraw;
     private boolean shouldBeLast;
-    private Byte forceViewType;
+    private ClassViewTypeEnum forceViewType;
 
     private PropertyObjectDescriptor propertyCaption;
 
@@ -56,6 +58,23 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
 
     public GroupObjectDescriptor getToDraw() {
         return toDraw;
+    }
+
+    public void setShouldBeLast(boolean shouldBeLast) {
+        this.shouldBeLast = shouldBeLast;
+    }
+
+    public boolean getShouldBeLast() {
+        return shouldBeLast;
+    }
+
+    public void setForceViewType(String forceViewType) {
+        this.forceViewType = ClassViewTypeEnum.valueOf(forceViewType);
+        IncrementDependency.update(this, "forceViewType");
+    }
+
+    public ClassViewTypeEnum getForceViewType() {
+        return forceViewType;
     }
 
     public GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groupList) {
@@ -138,7 +157,15 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
         outStream.writeBoolean(shouldBeLast);
         outStream.writeBoolean(forceViewType != null);
         if (forceViewType != null) {
-            outStream.writeByte(forceViewType);
+            if(forceViewType == ClassViewTypeEnum.valueOf("Panel")){
+                outStream.writeByte(ClassViewType.PANEL);
+            }
+            else if(forceViewType == ClassViewTypeEnum.valueOf("Grid")){
+                outStream.writeByte(ClassViewType.GRID);
+            }
+            else if(forceViewType == ClassViewTypeEnum.valueOf("Hide")){
+                outStream.writeByte(ClassViewType.HIDE);
+            }                                                   
         }
     }
 
@@ -150,7 +177,16 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
 
         shouldBeLast = inStream.readBoolean();
         if (inStream.readBoolean()) {
-            forceViewType = inStream.readByte();
+            Byte type = inStream.readByte();
+            if(type == ClassViewType.PANEL){
+                forceViewType = ClassViewTypeEnum.valueOf("Panel");
+            }
+            if(type == ClassViewType.GRID){
+                forceViewType = ClassViewTypeEnum.valueOf("Grid");
+            }
+            if(type == ClassViewType.HIDE){
+                forceViewType = ClassViewTypeEnum.valueOf("Hide");
+            }
         }
 
         client = pool.context.getProperty(ID);

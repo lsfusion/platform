@@ -8,6 +8,7 @@ import platform.client.descriptor.PropertyObjectDescriptor;
 import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.increment.editor.*;
+import platform.interop.ClassViewTypeEnum;
 
 import javax.swing.*;
 import java.awt.*;
@@ -69,6 +70,18 @@ public class PropertyDrawEditor extends GroupElementEditor {
 
             public void fillListDependencies() {
                 IncrementDependency.add(descriptor, "columnGroupObjects", this);
+            }
+        })));
+
+        add(Box.createRigidArea(new Dimension(5, 5)));
+
+        add(new TitledPanel(null, new IncrementCheckBox("Должно быть последним", descriptor, "shouldBeLast")));
+
+        add(Box.createRigidArea(new Dimension(5, 5)));
+
+        add(new TitledPanel("Тип просмотра", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "forceViewType") {
+            public List<?>  getList(){
+                return ClassViewTypeEnum.typeNameList();
             }
         })));
     }

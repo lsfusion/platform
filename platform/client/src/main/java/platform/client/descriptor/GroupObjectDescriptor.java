@@ -5,6 +5,8 @@ import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.logics.ClientGroupObject;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
+import platform.interop.ClassViewType;
+import platform.interop.ClassViewTypeEnum;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -14,43 +16,42 @@ import java.util.List;
 
 public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implements ClientIdentitySerializable {
     private int ID;
-    private byte initClassView;
-    private byte banClassView;
-    private List<Byte> banClassViewList = new ArrayList<Byte>();
+    
+    private ClassViewTypeEnum initClassView;
+    private List<ClassViewTypeEnum> banClassViewList = new ArrayList<ClassViewTypeEnum>();
     private PropertyObjectDescriptor propertyHighlight;
 
 
     public ClientGroupObject client = new ClientGroupObject();
 
-    public List<Byte> getBanClassViewList() {
+    public List<ClassViewTypeEnum> getBanClassViewList() {
         return banClassViewList;
     }
 
-    public void setBanClassViewList(List<Byte> banClassViewList) {
-        this.banClassViewList = banClassViewList;
+    public void setBanClassViewList(List<String> banClassViewList) {
+        this.banClassViewList.clear();
+        for(String one : banClassViewList){
+            this.banClassViewList.add(ClassViewTypeEnum.valueOf(one));
+        }
         IncrementDependency.update(this, "banClassViewList");
 
-        byte banViews = 0;
-        for (Byte bv : banClassViewList) {
-            banViews |= bv;
-        }
-        setBanClassView(banViews);
+        setBanClassView(this.banClassViewList);
     }
 
-    public byte getInitClassView() {
+    public ClassViewTypeEnum getInitClassView() {
         return initClassView;
     }
 
-    public void setInitClassView(byte initClassView) {
-        this.initClassView = initClassView;
+    public void setInitClassView(String initClassView) {
+        this.initClassView = ClassViewTypeEnum.valueOf(initClassView);
         IncrementDependency.update(this, "initClassView");
     }
 
-    public byte getBanClassView() {
+    public List<ClassViewTypeEnum> getBanClassView() {
         return client.banClassView;
     }
 
-    public void setBanClassView(byte banClassView) {
+    public void setBanClassView(List<ClassViewTypeEnum> banClassView) {
         client.banClassView = banClassView;
         IncrementDependency.update(this, "banClassView");
     }
@@ -74,15 +75,58 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeCollection(outStream, this);
-        outStream.writeByte(initClassView);
-        outStream.writeByte(banClassView);
+        if (initClassView != null) {
+            if(initClassView.ordinal() == 0){
+                outStream.writeByte(ClassViewType.PANEL);
+            }
+            else if(initClassView.ordinal() == 1){
+                outStream.writeByte(ClassViewType.GRID);
+            }
+            else if(initClassView.ordinal() == 2){
+                outStream.writeByte(ClassViewType.HIDE);
+            }
+        }
+        byte banViews = 0;
+        if (banClassViewList != null) {
+            for (ClassViewTypeEnum one : banClassViewList) {
+                if(one == ClassViewTypeEnum.valueOf("Panel")){
+                    banViews |= ClassViewType.PANEL;
+                }
+                if(one == ClassViewTypeEnum.valueOf("Grid")){
+                    banViews |= ClassViewType.GRID;
+                }
+                if(one == ClassViewTypeEnum.valueOf("Hide")){
+                    banViews |= ClassViewType.HIDE;
+                }
+            }
+        }
+        outStream.writeByte(banViews);
         pool.serializeObject(outStream, propertyHighlight);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         pool.deserializeCollection(this, inStream);
-        initClassView = inStream.readByte();
-        banClassView = inStream.readByte();
+        byte type = inStream.readByte();
+        if(type == ClassViewType.PANEL){
+            initClassView = ClassViewTypeEnum.valueOf("Panel");
+        }
+        if(type == ClassViewType.GRID){
+            initClassView = ClassViewTypeEnum.valueOf("Grid");
+        }
+        if(type == ClassViewType.HIDE){
+            initClassView = ClassViewTypeEnum.valueOf("Hide");
+        }
+
+        type = inStream.readByte();
+        if((type & ClassViewType.PANEL) != 0){
+            banClassViewList.add(ClassViewTypeEnum.valueOf("Panel"));
+        }
+        if((type & ClassViewType.GRID) != 0){
+            banClassViewList.add(ClassViewTypeEnum.valueOf("Grid"));
+        }
+        if((type & ClassViewType.HIDE) != 0){
+            banClassViewList.add(ClassViewTypeEnum.valueOf("Hide"));
+        }
         propertyHighlight = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
 
         client = pool.context.getGroupObject(ID);

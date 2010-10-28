@@ -8,10 +8,9 @@ import platform.client.descriptor.increment.editor.IncrementMultipleListEditor;
 import platform.client.descriptor.increment.editor.IncrementMultipleListSelectionModel;
 import platform.client.descriptor.increment.editor.IncrementSingleListSelectionModel;
 import platform.client.GroupPropertyObjectEditor;
-import platform.interop.ClassViewType;
+import platform.interop.ClassViewTypeEnum;
 
 import javax.swing.*;
-import java.util.Arrays;
 import java.util.List;
 
 public class GroupObjectEditor extends JPanel implements NodeEditor {
@@ -21,19 +20,13 @@ public class GroupObjectEditor extends JPanel implements NodeEditor {
 
         add(new TitledPanel("Вид при инициализации", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "initClassView") {
             public List<?> getList() {
-                return Arrays.asList(
-                        ClassViewType.PANEL,
-                        ClassViewType.GRID,
-                        ClassViewType.HIDE);
+                return ClassViewTypeEnum.typeNameList();
             }
         })));
 
         add(new TitledPanel("Запрещённый вид", new IncrementMultipleListEditor(new IncrementMultipleListSelectionModel(descriptor, "banClassViewList") {
             public List<?> getList() {
-                return Arrays.asList(
-                        ClassViewType.PANEL,
-                        ClassViewType.GRID,
-                        ClassViewType.HIDE);
+                return ClassViewTypeEnum.typeNameList();
             }
         })));
 
