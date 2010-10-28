@@ -84,6 +84,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return !getClassWhere().andCompatible(new ClassWhere<T>(interfaceClasses)).isFalse();
     }
 
+    @IdentityLazy
     public boolean isFull() {
         boolean result = true;
         for (AbstractClassWhere.And where : getClassWhere().wheres) {

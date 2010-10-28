@@ -234,7 +234,7 @@ class CheckRenderer extends JPanel implements TreeCellRenderer {
                     g.fillRect(imageOffset, 0, d.width - 1 - imageOffset, d.height);
                     if (hasFocus) {
                         g.setColor(UIManager.getColor("Tree.selectionBorderColor"));
-                        g.drawRect(imageOffset, 0, d.width - 1 - imageOffset, d.height - 1);
+                        //g.drawRect(imageOffset, 0, d.width - 1 - imageOffset, d.height - 1);
                     }
                 }
             }

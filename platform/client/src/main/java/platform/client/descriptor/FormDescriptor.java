@@ -1,7 +1,6 @@
 package platform.client.descriptor;
 
 import platform.client.descriptor.filter.FilterDescriptor;
-import platform.client.descriptor.filter.RegularFilterDescriptor;
 import platform.client.descriptor.filter.RegularFilterGroupDescriptor;
 import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.increment.IncrementView;
@@ -228,10 +227,10 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
                 objectMap.put(object.getID(), groupObject.getID());
             }
         }
-        return getProperties(objects, toDraw == null ? new ArrayList<ObjectDescriptor>() : toDraw, Main.remoteLogics, objectMap, false);
+        return getProperties(objects, toDraw == null ? new ArrayList<ObjectDescriptor>() : toDraw, Main.remoteLogics, objectMap, false, false);
     }
 
-    public static List<PropertyObjectDescriptor> getProperties(Collection<GroupObjectDescriptor> groupObjects, RemoteDescriptorInterface remote, ArrayList<GroupObjectDescriptor> toDraw, boolean isCompulsory) {
+    public static List<PropertyObjectDescriptor> getProperties(Collection<GroupObjectDescriptor> groupObjects, RemoteDescriptorInterface remote, ArrayList<GroupObjectDescriptor> toDraw, boolean isCompulsory, boolean isAny) {
         Collection<ObjectDescriptor> objects = new ArrayList<ObjectDescriptor>();
         Map<Integer, Integer> objectMap = new HashMap<Integer, Integer>();
         for (GroupObjectDescriptor groupObject : groupObjects) {
@@ -244,10 +243,10 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         for (GroupObjectDescriptor groupObject : toDraw) {
             objList.addAll(groupObject);
         }
-        return getProperties(objects, objList, remote, objectMap, isCompulsory);
+        return getProperties(objects, objList, remote, objectMap, isCompulsory, isAny);
     }
 
-    public static List<PropertyObjectDescriptor> getProperties(Collection<ObjectDescriptor> objects, Collection<ObjectDescriptor> atLeastOne, RemoteDescriptorInterface remote, Map<Integer, Integer> objectMap, boolean isCompulsory) {
+    public static List<PropertyObjectDescriptor> getProperties(Collection<ObjectDescriptor> objects, Collection<ObjectDescriptor> atLeastOne, RemoteDescriptorInterface remote, Map<Integer, Integer> objectMap, boolean isCompulsory, boolean isAny) {
         Map<Integer, ObjectDescriptor> idToObjects = new HashMap<Integer, ObjectDescriptor>();
         Map<Integer, ClientClass> classes = new HashMap<Integer, ClientClass>();
         for (ObjectDescriptor object : objects) {
@@ -259,7 +258,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         }
 
         List<PropertyObjectDescriptor> result = new ArrayList<PropertyObjectDescriptor>();
-        for (PropertyDescriptorImplement<Integer> implement : getProperties(remote, classes, BaseUtils.filterValues(idToObjects, atLeastOne).keySet(), objectMap, isCompulsory))
+        for (PropertyDescriptorImplement<Integer> implement : getProperties(remote, classes, BaseUtils.filterValues(idToObjects, atLeastOne).keySet(), objectMap, isCompulsory, isAny))
             result.add(new PropertyObjectDescriptor(implement.property, BaseUtils.join(implement.mapping, idToObjects)));
         return result;
     }
@@ -269,7 +268,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         return new ArrayList<PropertyDescriptorImplement<K>>();
     }
 
-    public static Collection<PropertyDescriptorImplement<Integer>> getProperties(RemoteDescriptorInterface remote, Map<Integer, ClientClass> classes, Collection<Integer> atLeastOne, Map<Integer, Integer> objectMap, boolean isCompulsory) {
+    public static Collection<PropertyDescriptorImplement<Integer>> getProperties(RemoteDescriptorInterface remote, Map<Integer, ClientClass> classes, Collection<Integer> atLeastOne, Map<Integer, Integer> objectMap, boolean isCompulsory, boolean isAny) {
         try {
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
@@ -286,7 +285,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
                 }
             }
 
-            DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(remote.getPropertyObjectsByteArray(outStream.toByteArray(), isCompulsory)));
+            DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(remote.getPropertyObjectsByteArray(outStream.toByteArray(), isCompulsory, isAny)));
             ClientSerializationPool pool = new ClientSerializationPool();
 
             List<PropertyDescriptorImplement<Integer>> result = new ArrayList<PropertyDescriptorImplement<Integer>>();

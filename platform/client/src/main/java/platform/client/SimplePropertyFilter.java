@@ -32,7 +32,7 @@ public class SimplePropertyFilter extends JPanel {
     int currentElement;
     JCheckBox subSetCheckBox; //выбор Only/All
     JCheckBox emptyCheckBox; //отображение пустых свойств(от 0 параметров)
-    boolean all;    //логика сервера
+    JCheckBox isAnyCheckBox; //выбор логики all/any
     boolean and;    //and или or для GroupObject
 
     public SimplePropertyFilter(FormDescriptor form, GroupObjectDescriptor descriptor) {
@@ -49,9 +49,8 @@ public class SimplePropertyFilter extends JPanel {
 
         list.getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         leftPane.add(list, BorderLayout.CENTER);
-        JPanel radioPanel = new JPanel(new GridLayout(4, 1));
+        JPanel radioPanel = new JPanel(new GridLayout(3, 1));
         radioPanel.add(getDirectPanel());
-        radioPanel.add(getModifierPanel());
         radioPanel.add(getLogicPanel());
         radioPanel.add(getSetPanel());
         leftPane.add(radioPanel, BorderLayout.SOUTH);
@@ -94,7 +93,7 @@ public class SimplePropertyFilter extends JPanel {
             objectList = new ArrayList<GroupObjectDescriptor>(form.groupObjects);
         }
 
-        List<PropertyObjectDescriptor> properties = FormDescriptor.getProperties(objectList, Main.remoteLogics, dependList, and);
+        List<PropertyObjectDescriptor> properties = FormDescriptor.getProperties(objectList, Main.remoteLogics, dependList, and, isAnyCheckBox.isSelected());
         DefaultMutableTreeNode root = (DefaultMutableTreeNode) tree.getModel().getRoot();
         root.removeAllChildren();
         for (PropertyObjectDescriptor prop : properties) {
@@ -142,9 +141,10 @@ public class SimplePropertyFilter extends JPanel {
     }
 
     private JPanel getSetPanel() {
-        JPanel checkBoxPanel = new JPanel(new GridLayout(2, 1));
-        subSetCheckBox = new JCheckBox("Фильтровать группы объектов");
+        JPanel checkBoxPanel = new JPanel(new GridLayout(3, 1));
+        subSetCheckBox = new JCheckBox("Только указанные группы");
         emptyCheckBox = new JCheckBox("Отображать пустые");
+        isAnyCheckBox = new JCheckBox("Использовать any");
 
         ActionListener listener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -153,18 +153,20 @@ public class SimplePropertyFilter extends JPanel {
         };
         subSetCheckBox.addActionListener(listener);
         emptyCheckBox.addActionListener(listener);
+        isAnyCheckBox.addActionListener(listener);
         checkBoxPanel.add(subSetCheckBox);
         checkBoxPanel.add(emptyCheckBox);
+        checkBoxPanel.add(isAnyCheckBox);
 
         return new TitledPanel("Фильтр выбора", checkBoxPanel);
     }
 
     private JPanel getLogicPanel() {
         JPanel radioPanel = new JPanel(new GridLayout(1, 3));
-        JRadioButton anyButton = new JRadioButton("Or");
+        JRadioButton anyButton = new JRadioButton("Хотя бы одна");
         anyButton.setActionCommand("OR");
         anyButton.setSelected(true);
-        JRadioButton allButton = new JRadioButton("And");
+        JRadioButton allButton = new JRadioButton("Все группы");
         allButton.setActionCommand("AND");
 
         ButtonGroup group = new ButtonGroup();
@@ -188,37 +190,6 @@ public class SimplePropertyFilter extends JPanel {
         radioPanel.add(allButton);
 
         return new TitledPanel("Логика выбора", radioPanel);
-    }
-
-    private JPanel getModifierPanel() {
-        JPanel radioPanel = new JPanel(new GridLayout(1, 3));
-        JRadioButton anyButton = new JRadioButton("Any");
-        anyButton.setActionCommand("ANY");
-        anyButton.setSelected(true);
-        JRadioButton allButton = new JRadioButton("All");
-        allButton.setActionCommand("ALL");
-
-        ButtonGroup group = new ButtonGroup();
-        group.add(anyButton);
-        group.add(allButton);
-
-        ActionListener listener = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (e.getActionCommand().equals("ANY")) {
-                    all = false;
-                } else if (e.getActionCommand().equals("ALL")) {
-                    all = true;
-                }
-                updateTree();
-            }
-        };
-        anyButton.addActionListener(listener);
-        allButton.addActionListener(listener);
-
-        radioPanel.add(anyButton);
-        radioPanel.add(allButton);
-
-        return new TitledPanel("Тип интерфейса", radioPanel);
     }
 
     private JPanel getDirectPanel() {

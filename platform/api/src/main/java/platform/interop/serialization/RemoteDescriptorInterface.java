@@ -6,7 +6,7 @@ import java.rmi.RemoteException;
 public interface RemoteDescriptorInterface extends Remote {
 
     // получает имлементации подходящие хотя бы одному из классов или по всем
-    byte[] getPropertyObjectsByteArray(byte[] classes, boolean isCompulsory) throws RemoteException;
+    byte[] getPropertyObjectsByteArray(byte[] classes, boolean isCompulsory, boolean isAny) throws RemoteException;
 
     byte[] getBaseClassByteArray() throws RemoteException;
 

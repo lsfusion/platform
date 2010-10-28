@@ -3052,19 +3052,34 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    public byte[] getPropertyObjectsByteArray(byte[] byteClasses, boolean isCompulsory) {
+    public int generateNewID() throws RemoteException {
+        return idGenerator.idShift();
+    }
+
+    public byte[] getBaseClassByteArray() throws RemoteException {
+        try {
+            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+            DataOutputStream dataStream = new DataOutputStream(outStream);
+            baseClass.serialize(dataStream);
+            return outStream.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public byte[] getPropertyObjectsByteArray(byte[] byteClasses, boolean isCompulsory, boolean isAny) {
         try {
             DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(byteClasses));
 
-            Map<Integer, Integer> atLeastOne = new HashMap<Integer, Integer>();
+            Map<Integer, Integer> groupMap = new HashMap<Integer, Integer>();
             Map<Integer, ValueClass> classes = new HashMap<Integer, ValueClass>();
             int size = inStream.readInt();
             for (int i = 0; i < size; i++) {
                 Integer ID = inStream.readInt();
                 classes.put(ID, TypeSerializer.deserializeValueClass(this, inStream));
                 int groupId = inStream.readInt();
-                if (groupId > 0) {
-                    atLeastOne.put(ID, groupId);
+                if (groupId >= 0) {
+                    groupMap.put(ID, groupId);
                 }
             }
 
@@ -3083,7 +3098,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             ArrayList<ArrayList<Integer>> idResult = new ArrayList<ArrayList<Integer>>();
             for (Object key : propertiesMap.keySet()) {
                 List list = (List) propertiesMap.get(key);
-                addPropertiesFixedSize(classes, atLeastOne, list, result, idResult, isCompulsory);
+                addPropertiesFixedSize(classes, groupMap, list, result, idResult, isCompulsory, isAny);
             }
 
             dataStream.writeInt(result.size());
@@ -3102,33 +3117,18 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             throw new RuntimeException(e);
         }
     }
-    
-    public int generateNewID() throws RemoteException {
-        return idGenerator.idShift();
-    }
 
-    public byte[] getBaseClassByteArray() throws RemoteException {
-        try {
-            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-            DataOutputStream dataStream = new DataOutputStream(outStream);
-            baseClass.serialize(dataStream);
-            return outStream.toByteArray();        
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void addPropertiesFixedSize(Map<Integer, ValueClass> classes, Map<Integer, Integer> atLeastOne, List list, ArrayList<Property> result, ArrayList<ArrayList<Integer>> idResult, boolean isCompulsory) {
+    private void addPropertiesFixedSize(Map<Integer, ValueClass> classes, Map<Integer, Integer> atLeastOne, List list, ArrayList<Property> result, ArrayList<ArrayList<Integer>> idResult, boolean isCompulsory, boolean isAny) {
         int size = classes.size();
         int interfaceSize = ((Property) list.get(0)).interfaces.size();
         int perm[] = new int[size];
-        checkPerm(size, interfaceSize, 1, perm, classes, atLeastOne, list, result, idResult, isCompulsory);
+        checkPerm(size, interfaceSize, 1, perm, classes, atLeastOne, list, result, idResult, isCompulsory, isAny);
     }
 
     //n - сколько всего
     //n - сколько надо поставить
     //k - какой по счету сейчас ставим
-    private void checkPerm(int n, int m, int k, int[] perm, Map<Integer, ValueClass> classes, Map<Integer, Integer> groupMap, List list, ArrayList<Property> result, ArrayList<ArrayList<Integer>> idResult, boolean isCompulsory) {
+    private void checkPerm(int n, int m, int k, int[] perm, Map<Integer, ValueClass> classes, Map<Integer, Integer> groupMap, List list, ArrayList<Property> result, ArrayList<ArrayList<Integer>> idResult, boolean isCompulsory, boolean isAny) {
         if (k == m + 1) {
             Integer id[] = (Integer[]) classes.keySet().toArray(new Integer[classes.keySet().size()]);
             ArrayList<ValueClass> values = new ArrayList<ValueClass>(m);
@@ -3172,7 +3172,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     ValueClass propertyClass = values.get(interfaceCount++);
                     propertyInterface.put((PropertyInterface) iface, propertyClass.getUpSet());
                 }
-                if (!(p instanceof StringFormulaProperty) && p.isFull() && p.anyInInterface(propertyInterface)) {
+                if (!(p instanceof StringFormulaProperty) && p.isFull() && ((isAny && p.anyInInterface(propertyInterface)) || (!isAny && p.allInInterface(propertyInterface)))) {
                     result.add(p);
                     idResult.add(ids);
                 }
@@ -3182,7 +3182,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             for (int i = 0; i < n; i++) {
                 if (perm[i] == 0) {
                     perm[i] = k;
-                    checkPerm(n, m, k + 1, perm, classes, groupMap, list, result, idResult, isCompulsory);
+                    checkPerm(n, m, k + 1, perm, classes, groupMap, list, result, idResult, isCompulsory, isAny);
                     perm[i] = 0;
                 }
             }
