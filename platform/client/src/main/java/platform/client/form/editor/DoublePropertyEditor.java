@@ -17,23 +17,27 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
 
         NumberFormatter formatter = new NumberFormatter(format) {
             private final char separator = df.getDecimalFormatSymbols().getDecimalSeparator();
-            private final String separatorStr = String.valueOf(separator);
 
             public boolean lastTextEndsWithSeparator;
 
             @Override
             public String valueToString(Object value) throws ParseException {
                 String result = super.valueToString(value);
-                if (lastTextEndsWithSeparator && result != null && !result.endsWith(separatorStr)) {
-                    result += separatorStr;
+                if (lastTextEndsWithSeparator && result != null && result.indexOf(separator) == -1) {
+                    result += separator;
+                    lastTextEndsWithSeparator = false;
                 }
                 return result;
             }
 
             @Override
             public Object stringToValue(String text) throws ParseException {
-                text = text.replace(',', separator).replace('.', separator);
-                lastTextEndsWithSeparator = text != null && text.endsWith(separatorStr);
+                if (text != null && text.length() > 0) {
+                    text = text.replace(',', separator).replace('.', separator);
+                    lastTextEndsWithSeparator = text.indexOf(separator) == text.length() - 1;
+                } else {
+                    lastTextEndsWithSeparator = false;
+                }
                 return super.stringToValue(text);
             }
         };
