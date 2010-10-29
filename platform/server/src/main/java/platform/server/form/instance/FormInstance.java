@@ -5,6 +5,7 @@ import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Scroll;
 import platform.interop.action.ClientAction;
+import platform.interop.action.ResultClientAction;
 import platform.interop.exceptions.ComplexQueryException;
 import platform.interop.form.RemoteFormInterface;
 import platform.server.auth.SecurityPolicy;
@@ -408,6 +409,14 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
             commitApply();
 
         return null;
+    }
+
+    public void applyActionChanges(boolean noCommit,List<ClientAction> actions) throws SQLException {
+        String result = applyChanges(noCommit);
+        if(result!=null)
+            actions.add(new ResultClientAction(result, true));
+        else
+            actions.add(new ResultClientAction("Изменения были удачно записаны...", false));
     }
 
     public void rollbackApply() throws SQLException {

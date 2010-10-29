@@ -78,7 +78,7 @@ public class ClientFormController {
         // Навигатор нужен, чтобы уведомлять его об изменениях активных объектов, чтобы он мог себя переобновлять
         this.clientNavigator = clientNavigator;
 
-        actionDispatcher = new ClientFormActionDispatcher();
+        actionDispatcher = new ClientFormActionDispatcher(this);
 
         form = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
 //        form = new ClientForm(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
@@ -323,7 +323,7 @@ public class ClientFormController {
         AbstractAction applyAction = new AbstractAction(form.applyFunction.caption + " (" + SwingUtils.getKeyStrokeCaption(altEnter) + ")") {
 
             public void actionPerformed(ActionEvent ae) {
-                applyChanges();
+                applyChanges(false);
             }
         };
         buttonApply = new ClientButton(applyAction);
@@ -393,11 +393,11 @@ public class ClientFormController {
     private void applyRemoteChanges() throws IOException {
         RemoteChanges remoteChanges = remoteForm.getRemoteChanges();
 
-        for (ClientAction action : remoteChanges.actions)
-            action.dispatch(actionDispatcher);
-
         Log.incrementBytesReceived(remoteChanges.form.length);
         applyFormChanges(new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(remoteChanges.form)), form, controllers));
+
+        for (ClientAction action : remoteChanges.actions)
+            action.dispatch(actionDispatcher);
 
         if (clientNavigator != null) {
             clientNavigator.changeCurrentClass(remoteChanges.classID);
@@ -580,20 +580,22 @@ public class ClientFormController {
         }
     }
 
-    void applyChanges() {
+    void applyChanges(boolean sureApply) {
 
         try {
 
             if (dataChanged) {
 
-                String okMessage = "";
-                for (ClientGroupObject groupObject : form.groupObjects) {
-                    okMessage += controllers.get(groupObject).getSaveMessage();
-                }
+                if(!sureApply) {
+                    String okMessage = "";
+                    for (ClientGroupObject groupObject : form.groupObjects) {
+                        okMessage += controllers.get(groupObject).getSaveMessage();
+                    }
 
-                if (!okMessage.isEmpty()) {
-                    if (!(SwingUtils.showConfirmDialog(getComponent(), okMessage, null, JOptionPane.QUESTION_MESSAGE, SwingUtils.YES_BUTTON) == JOptionPane.YES_OPTION)) {
-                        return;
+                    if (!okMessage.isEmpty()) {
+                        if (!(SwingUtils.showConfirmDialog(getComponent(), okMessage, null, JOptionPane.QUESTION_MESSAGE, SwingUtils.YES_BUTTON) == JOptionPane.YES_OPTION)) {
+                            return;
+                        }
                     }
                 }
 
@@ -646,7 +648,7 @@ public class ClientFormController {
     }
 
     public void okPressed() {
-        applyChanges();
+        applyChanges(false);
     }
 
     boolean closePressed() {

@@ -951,4 +951,27 @@ public class BaseUtils {
     public static boolean isRedundantString(String s) {
         return s == null || s.trim().length() == 0;
     }
+
+    public static String spaces(int spaces) {
+        String result = "";
+        for(int i=0;i<spaces;i++)
+            result += ' ';
+        return result;
+    }
+
+    // в отличии от padright дает нуж
+    public static String padr(String string, int length) {
+        if(length>string.length())
+            return string + spaces(length-string.length());
+        else
+            return string.substring(0, length);
+    }
+
+    public static String padl(String string, int length) {
+        if(length>string.length())
+            return spaces(length-string.length()) + string;
+        else
+            return string.substring(string.length()-length, string.length());
+    }
+
 }

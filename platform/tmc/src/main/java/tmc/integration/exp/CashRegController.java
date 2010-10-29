@@ -148,6 +148,81 @@ public class CashRegController {
         return result;
     }
 
+    public ClientAction getPrintOrderAction(FormInstance formInstance, 
+                                                      Set<GroupObjectInstance> classGroups,
+                                                      PropertyDrawEntity<?> priceProp, PropertyDrawEntity<?> quantityProp,
+                                                      PropertyDrawEntity<?> nameProp, PropertyDrawEntity<?> sumProp,
+                                                      PropertyDrawEntity<?> toPayProp, PropertyDrawEntity<?> barcodeProp) {
+
+        List<ClientAction> actions = new ArrayList<ClientAction>();
+        actions.add(new ExportFileClientAction("c:\\bill\\remark.txt", false, createOrderTxt(formInstance,
+                                                classGroups, priceProp, quantityProp,
+                                                nameProp, sumProp, toPayProp, barcodeProp), CASHREGISTER_CHARSETNAME));
+        actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, "/R", CASHREGISTER_CHARSETNAME));
+        return new ListClientAction(actions);
+    }
+
+
+    private String createOrderTxt(FormInstance formInstance, Set<GroupObjectInstance> classGroups,
+                                 PropertyDrawEntity<?> priceProp, PropertyDrawEntity<?> quantityProp,
+                                 PropertyDrawEntity<?> nameProp, PropertyDrawEntity<?> sumProp,
+                                 PropertyDrawEntity<?> toPayProp, PropertyDrawEntity<?> barcodeProp) {
+
+        String result = "";
+        
+        FormData data;
+
+        Set<PropertyDrawInstance> formProperties = new HashSet<PropertyDrawInstance>();
+        PropertyDrawInstance quantityDraw = formInstance.instanceFactory.getInstance(quantityProp);
+        PropertyDrawInstance priceDraw = formInstance.instanceFactory.getInstance(priceProp);
+        PropertyDrawInstance nameDraw = formInstance.instanceFactory.getInstance(nameProp);
+        PropertyDrawInstance barcodeDraw = formInstance.instanceFactory.getInstance(barcodeProp);
+        PropertyDrawInstance sumDraw = formInstance.instanceFactory.getInstance(sumProp);
+        PropertyDrawInstance toPayDraw = formInstance.instanceFactory.getInstance(toPayProp);
+        formProperties.addAll(BaseUtils.toSet(quantityDraw, priceDraw, nameDraw, sumDraw, toPayDraw, barcodeDraw));
+
+        quantityDraw.toDraw.addTempFilter(new NotNullFilterInstance(quantityDraw.propertyObject));
+
+        try {
+            data = formInstance.getFormData(formProperties, classGroups);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            quantityDraw.toDraw.clearTempFilters();
+        }
+
+        int totalDiscount = 0;
+
+        final int lengthCheck = 40;
+        for (FormRow row : data.rows) {
+
+            Double quantity = (Double)row.values.get(quantityDraw);
+
+            if (quantity != null) {
+
+                Double price = BaseUtils.nvl((Double)row.values.get(priceDraw),0.0);
+                String barcode = (BaseUtils.nvl((String)row.values.get(barcodeDraw),"")).trim();
+                String artName = (BaseUtils.nvl((String)row.values.get(nameDraw),"")).trim();
+                artName = artName.replace(',', '.'); artName = artName.replace('"', ' '); artName = artName.replace('\'', ' ');
+                Double sumPos = (Double) row.values.get(sumDraw);
+                Double sumFull = price*quantity;
+
+                int discount = ((Double) (sumFull - sumPos)).intValue();
+                totalDiscount += discount;
+                String priceString = quantity.intValue() + "x" + price.intValue() + (sumFull.equals(sumPos) ? "" : " ск. " + discount) + '=' + sumPos.intValue();
+                result += BaseUtils.padr(barcode+" "+artName, lengthCheck) + '\n' + BaseUtils.padl(priceString, lengthCheck) + '\n';
+            }
+        }
+
+        Double toPay = BaseUtils.nvl((Double)data.rows.get(0).values.get(toPayDraw),0.0);
+
+        String discountResult = "ОБЩ. СКИДКА: " + totalDiscount;
+        String sumResult = "ИТОГО: " + toPay.intValue();
+        result += '\n' + BaseUtils.padl(discountResult,lengthCheck) + '\n' + BaseUtils.padl(sumResult,lengthCheck) + '\n';
+        
+        return result;
+    }
+
     public String checkCashRegApplyActions(Object result) {
 
         List<Object> listActions = (List<Object>) result;

@@ -24,4 +24,6 @@ public interface ClientActionDispatcher {
     public Object execute(ResultClientAction action);
 
     public Object execute(CustomClientAction action);
+
+    public Object execute(ApplyClientAction action);
 }

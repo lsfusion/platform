@@ -12,6 +12,11 @@ import java.io.*;
 
 public class ClientFormActionDispatcher implements ClientActionDispatcher {
 
+    private final ClientFormController form;
+    public ClientFormActionDispatcher(ClientFormController form) {
+        this.form = form;
+    }
+
     public Object execute(FormClientAction action) {
         try {
             if (action.isPrintForm)
@@ -217,5 +222,11 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
 
     public Object execute(CustomClientAction action) {
         return action.execute();
+    }
+
+    public Object execute(ApplyClientAction action) {
+        form.applyChanges(true);
+
+        return true;
     }
 }

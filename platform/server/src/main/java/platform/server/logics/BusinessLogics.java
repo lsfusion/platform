@@ -3002,8 +3002,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
+    protected LP addAProp(AbstractGroup group, ActionProperty property) {
+        return addProperty(null, new LP<ClassPropertyInterface>(property));
+    }
+
     protected LP addBAProp(ConcreteCustomClass customClass, LP add) {
-        return addProperty(null, new LP<ClassPropertyInterface>(new AddBarcodeActionProperty(customClass, add.property, genSID())));
+        return addAProp(null, new AddBarcodeActionProperty(customClass, add.property, genSID()));
     }
 
     private class AddBarcodeActionProperty extends ActionProperty {

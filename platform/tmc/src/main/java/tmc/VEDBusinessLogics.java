@@ -5,6 +5,7 @@ import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.action.ClientAction;
+import platform.interop.action.ApplyClientAction;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexComponentDirections;
 import platform.interop.form.screen.ExternalScreenParameters;
@@ -262,6 +263,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP documentBarcodePrice, documentBarcodePriceOv;
     LP invoiceNumber, invoiceSeries;
     LP orderBirthDay;
+    LP payWithCard;
+    LP printOrderCheck;
 
     protected void initProperties() {
 
@@ -271,6 +274,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP multiplyDouble2 = addMFProp(DoubleClass.instance, 2);
 
         LP positive = addJProp(greater2, 1, vzero);
+        LP negative = addJProp(less2, 1, vzero);
         LP onlyPositive = addJProp(and1, 1, positive, 1);
         LP min = addSFProp("(prm1+prm2-ABS(prm1-prm2))/2", DoubleClass.instance, 2);
         LP abs = addSFProp("ABS(prm1)", DoubleClass.instance, 1);
@@ -287,6 +291,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addDProp("outShop", "Магазин (расх.)", shop, orderShopOut),
                 addDProp("outWarehouse", "Распред. центр (расх.)", warehouse, orderWarehouseOut));
         addJProp(baseGroup, "Склад (расх.)", name, outStore, 1);
+
+        payWithCard = addAProp(null, new PayWithCardActionProperty());
+        printOrderCheck = addAProp(null, new PrintOrderCheckActionProperty());
 
         computerShop = addDProp("computerShop", "Магазин рабочего места", shop, computer);
         panelScreenComPort = addDProp(baseGroup, "panelComPort", "COM-порт табло", IntegerClass.instance, computer);
@@ -630,12 +637,15 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         orderSalePayCard = addDProp(documentPriceGroup, "orderSalePayCard", "Карточкой", DoubleClass.instance, orderSaleCheckRetail);
 
         // сдача/доплата
-        LP orderSaleDiffSum = addJProp(and1, addDUProp(orderSalePayNoObligation, addSUProp(Union.SUM, orderSalePayCard, orderSalePayCash)), 1, is(orderSaleCheckRetail), 1);
-//        orderSaleDiff = addIfElseUProp(documentAggrPriceGroup, "Необходимо", addJProp(string2, addCProp(StringClass.get(6), "Допл:"), orderSaleDiffSum, 1),
-//                addJProp(string2, addCProp(StringClass.get(6), "Сдача:"), addNUProp(orderSaleDiffSum), 1), addJProp(positive, orderSaleDiffSum, 1), 1);
+        LP orderSalePayAll = addSUProp(Union.SUM, orderSalePayCard, orderSalePayCash);
+        LP orderSaleDiffSum = addJProp(and1, addDUProp(orderSalePayAll,orderSalePayNoObligation), 1, is(orderSaleCheckRetail), 1);
+        LP notEnoughSum = addJProp(negative, orderSaleDiffSum, 1);
         orderSaleToDo = addJProp(documentAggrPriceGroup, "Необходимо", and1, addIfElseUProp(addCProp(StringClass.get(5), "Итого", orderSaleCheckRetail),
-                addCProp(StringClass.get(5), "Сдача", orderSaleCheckRetail), addJProp(positive, orderSaleDiffSum, 1), 1), 1, orderSaleDiffSum, 1);
+                addCProp(StringClass.get(5), "Сдача", orderSaleCheckRetail), notEnoughSum, 1), 1, orderSaleDiffSum, 1);
         orderSaleToDoSum = addJProp(documentAggrPriceGroup, "Сумма необх.", abs, orderSaleDiffSum, 1);
+
+        addConstraint(addJProp("Сумма наличными меньше сдачи", groeq2, orderSaleDiffSum, 1, addSUProp(Union.OVERRIDE, addCProp(DoubleClass.instance, 0, orderSaleArticleRetail), orderSalePayCash), 1), false);
+        addConstraint(addJProp("Введенной суммы не достаточно", and1, notEnoughSum, 1, orderSalePayAll, 1), false); // если ни карточки ни кэша не задали, значит заплатитли без сдачи
 
         LP couponCanBeUsed = addJProp(greater2, addJProp(date, obligationIssued, 1), 2, date, 1);
 
@@ -1393,7 +1403,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         @Override
         protected Object[] getDocumentProps() {
             return new Object[]{nameContragentImpl, phoneContragentImpl, bornContragentImpl, addressContragentImpl, initialSumContragentImpl, orderClientSum,
-                    orderSalePay, orderSaleDiscountSum, orderSalePayNoObligation, orderSalePayCash, orderSalePayCard, orderSaleToDo, orderSaleToDoSum, orderBirthDay, orderNoDiscount};
+                    orderSalePay, orderSaleDiscountSum, orderSalePayNoObligation, orderSalePayCash, orderSalePayCard, orderSaleToDo, orderSaleToDoSum, orderBirthDay, orderNoDiscount, payWithCard, printOrderCheck};
         }
 
         @Override
@@ -1567,7 +1577,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         public ClientAction getClientApply(FormInstance<VEDBusinessLogics> formInstance) {
             if (toAdd) {
 
-                ObjectInstance doc = formInstance.instanceFactory.getInstance(objDoc);
                 ObjectInstance art = formInstance.instanceFactory.getInstance(objArt);
 
                 return cashRegController.getCashRegApplyActions(formInstance, 1,
@@ -1576,6 +1585,20 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         getPropertyDraw(name, objArt), getPropertyDraw(orderArticleSaleSumWithDiscount, objArt),
                         getPropertyDraw(orderSalePayNoObligation, objDoc),
                         getPropertyDraw(orderSalePayCard, objDoc), getPropertyDraw(orderSalePayCash, objDoc));
+            } else
+                return super.getClientApply(formInstance);
+        }
+
+        public ClientAction getPrintOrderAction(FormInstance<VEDBusinessLogics> formInstance) {
+            if (toAdd) {
+
+                ObjectInstance art = formInstance.instanceFactory.getInstance(objArt);
+
+                return cashRegController.getPrintOrderAction(formInstance, 
+                        BaseUtils.toSet(art.groupTo),
+                        getPropertyDraw(orderSalePrice, objArt), getPropertyDraw(articleQuantity, objArt),
+                        getPropertyDraw(name, objArt), getPropertyDraw(orderArticleSaleSumWithDiscount, objArt),
+                        getPropertyDraw(orderSalePayNoObligation, objDoc), getPropertyDraw(barcode, objArt));
             } else
                 return super.getClientApply(formInstance);
         }
@@ -2288,19 +2311,38 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         admin.addSecurityPolicy(permitAllPolicy);
     }
 
+    private class PayWithCardActionProperty extends ActionProperty {
 
+        private PayWithCardActionProperty() {
+            super(genSID(), "Оплатить карточкой", new ValueClass[]{orderSaleCheckRetail});
 
-    private class AddClientBarcodeActionProperty extends ActionProperty {
-        
-        private AddClientBarcodeActionProperty(String sID) {
-            super(sID, "Добавить покупателя по бар-коду", new ValueClass[]{StringClass.get(13)});
+            askConfirm = true;
         }
 
         public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
             //To change body of implemented methods use File | Settings | File Templates.
-            FormInstance<?> remoteForm = executeForm.form; 
+            FormInstance<?> remoteForm = executeForm.form;
             DataSession session = remoteForm.session;
-            barcode.execute(BaseUtils.singleValue(keys).object, session, remoteForm, session.addObject(customerCheckRetail, remoteForm));
+
+            DataObject document = BaseUtils.singleValue(keys);
+            orderSalePayCash.execute(null, session, remoteForm, document);
+            orderSalePayCard.execute(orderSalePayNoObligation.read(session, remoteForm, document), session, remoteForm, document);
+
+            actions.add(new ApplyClientAction());
         }
     }
+
+    private class PrintOrderCheckActionProperty extends ActionProperty {
+
+        private PrintOrderCheckActionProperty() {
+            super(genSID(), "Распечатать", new ValueClass[]{orderSaleCheckRetail});
+        }
+
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            //To change body of implemented methods use File | Settings | File Templates.
+            FormInstance<VEDBusinessLogics> remoteForm = executeForm.form;
+            actions.add(((CommitSaleCheckRetailFormEntity)remoteForm.entity).getPrintOrderAction(remoteForm));
+        }
+    }
+
 }
