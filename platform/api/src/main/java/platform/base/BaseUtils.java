@@ -497,6 +497,26 @@ public class BaseUtils {
         return merged;
     }
 
+    // строит декартово произведение нескольких упорядоченных множеств
+    public static <T> List<List<T>> cartesianProduct(List<List<T>> data) {
+        LinkedList<List<T>> queue = new LinkedList<List<T>>();
+        queue.add(new ArrayList<T>());
+        final int tupleSize = data.size();
+        while (!queue.isEmpty()) {
+            if (queue.peekFirst().size() == tupleSize) {
+                break;
+            }
+            List<T> queueItem = queue.removeFirst();
+            final int currentTupleSize = queueItem.size();
+            for (T item : data.get(currentTupleSize)) {
+                List<T> newItem = new ArrayList<T>(queueItem);
+                newItem.add(item);
+                queue.addLast(newItem);
+            }
+        }
+        return queue;
+    }
+
     // ищет в Map рекурсивно тупик
     public static <K> K findDeadEnd(Map<K,K> map,K end) {
         K next = map.get(end);
