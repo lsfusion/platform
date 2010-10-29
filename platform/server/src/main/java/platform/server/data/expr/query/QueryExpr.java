@@ -1,5 +1,6 @@
 package platform.server.data.expr.query;
 
+import platform.base.BaseUtils;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.InnerHashContext;
 import platform.server.caches.OuterContext;
@@ -10,9 +11,11 @@ import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.ContextEnumerator;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
-import platform.base.BaseUtils;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public abstract class QueryExpr<K extends BaseExpr,I extends OuterContext<I>,J extends QueryJoin> extends InnerExpr {
 

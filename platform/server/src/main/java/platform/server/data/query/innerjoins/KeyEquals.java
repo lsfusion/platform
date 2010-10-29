@@ -1,16 +1,14 @@
 package platform.server.data.query.innerjoins;
 
-import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.Expr;
-import platform.server.data.expr.where.EqualsWhere;
-import platform.server.data.query.JoinSet;
-import platform.server.data.where.DNFWheres;
-import platform.server.data.where.Where;
-import platform.server.data.translator.PartialQueryTranslator;
-import platform.base.QuickMap;
 import platform.base.BaseUtils;
+import platform.base.QuickMap;
 import platform.interop.Compare;
+import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.query.JoinSet;
+import platform.server.data.translator.PartialQueryTranslator;
+import platform.server.data.where.Where;
 
 import java.util.*;
 

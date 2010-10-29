@@ -1,7 +1,5 @@
 package platform.server.classes;
 
-import platform.server.logics.BusinessLogics;
-
 public class CustomObjectClass extends ConcreteCustomClass {
 
     public CustomObjectClass(CustomClass parent) {

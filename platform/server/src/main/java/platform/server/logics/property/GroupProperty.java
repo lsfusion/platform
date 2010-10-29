@@ -1,12 +1,12 @@
 package platform.server.logics.property;
 
+import platform.server.Settings;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
-import platform.server.Settings;
 
 import java.util.*;
 

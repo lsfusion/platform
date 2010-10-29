@@ -1,8 +1,8 @@
 package platform.interop.action;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ListClientAction extends ClientAction {
 

@@ -4,6 +4,7 @@ import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.Result;
 import platform.interop.action.ClientAction;
+import platform.server.classes.ValueClass;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
@@ -14,7 +15,6 @@ import platform.server.logics.property.*;
 import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
-import platform.server.classes.ValueClass;
 
 import java.sql.SQLException;
 import java.util.*;

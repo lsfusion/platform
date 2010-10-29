@@ -1,5 +1,6 @@
 package platform.client.remote.proxy;
 
+import platform.interop.ClassViewType;
 import platform.interop.action.ClientApply;
 import platform.interop.form.RemoteChanges;
 import platform.interop.form.RemoteDialogInterface;
@@ -138,7 +139,7 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     }
 
     @PendingRemoteMethod
-    public void changeClassView(int groupID, byte classView) throws RemoteException {
+    public void changeClassView(int groupID, ClassViewType classView) throws RemoteException {
         logRemoteMethodStartVoidCall("changeClassView");
         target.changeClassView(groupID, classView);
         logRemoteMethodEndVoidCall("changeClassView");

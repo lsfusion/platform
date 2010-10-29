@@ -5,13 +5,13 @@ import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.ConcreteObjectClass;
 import platform.server.classes.CustomClass;
 import platform.server.data.type.Type;
+import platform.server.form.instance.FormInstance;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.DataProperty;
 import platform.server.logics.property.Property;
-import platform.server.form.instance.FormInstance;
 
 import java.sql.SQLException;
 import java.util.Collection;

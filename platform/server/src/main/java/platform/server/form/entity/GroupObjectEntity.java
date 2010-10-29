@@ -12,6 +12,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class GroupObjectEntity extends ArrayList<ObjectEntity> implements Instantiable<GroupObjectInstance>, ServerIdentitySerializable {
     private int ID;
@@ -37,8 +38,8 @@ public class GroupObjectEntity extends ArrayList<ObjectEntity> implements Instan
         return super.add(objectEntity);
     }
 
-    public byte initClassView = ClassViewType.GRID;
-    public byte banClassView = 0;
+    public ClassViewType initClassView = ClassViewType.GRID;
+    public List<ClassViewType> banClassView = new ArrayList<ClassViewType>();
     public int pageSize = 10;
 
     public PropertyObjectEntity propertyHighlight;
@@ -49,15 +50,15 @@ public class GroupObjectEntity extends ArrayList<ObjectEntity> implements Instan
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeCollection(outStream, this);
-        outStream.writeByte(initClassView);
-        outStream.writeByte(banClassView);
+        pool.writeString(outStream, initClassView.name());
+        pool.writeObject(outStream, banClassView);
         pool.serializeObject(outStream, propertyHighlight);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         pool.deserializeCollection(this, inStream);
-        initClassView = inStream.readByte();
-        banClassView = inStream.readByte();
+        initClassView = ClassViewType.valueOf(pool.readString(inStream));
+        banClassView = (List<ClassViewType>)pool.readObject(inStream);
         propertyHighlight = (PropertyObjectEntity) pool.deserializeObject(inStream);
     }
 }

@@ -7,9 +7,8 @@ import platform.client.form.cell.CellView;
 import platform.client.form.cell.TableCellView;
 import platform.client.form.editor.ObjectPropertyEditor;
 import platform.client.form.renderer.IntegerPropertyRenderer;
-import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.ClientGroupObjectValue;
-import platform.client.Main;
+import platform.client.logics.ClientPropertyDraw;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
 

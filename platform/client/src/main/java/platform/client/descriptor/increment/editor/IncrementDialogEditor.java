@@ -1,14 +1,9 @@
 package platform.client.descriptor.increment.editor;
 
+import platform.base.BaseUtils;
 import platform.client.descriptor.editor.base.FlatButton;
 import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.increment.IncrementView;
-import platform.base.BaseUtils;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.ActionListener;
 
 public abstract class IncrementDialogEditor extends FlatButton implements IncrementView {
 

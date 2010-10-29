@@ -2,6 +2,7 @@ package platform.server.form.instance.filter;
 
 import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
+import platform.server.form.instance.CustomObjectInstance;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.GroupObjectInstance;
 import platform.server.form.instance.ObjectInstance;
@@ -10,7 +11,6 @@ import platform.server.logics.property.Property;
 import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
-import platform.server.form.instance.CustomObjectInstance;
 
 import java.io.DataInputStream;
 import java.io.IOException;

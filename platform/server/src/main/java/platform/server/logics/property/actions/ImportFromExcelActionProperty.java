@@ -3,31 +3,31 @@ package platform.server.logics.property.actions;
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
-import platform.interop.action.ClientAction;
 import platform.interop.ClassViewType;
+import platform.interop.action.ClientAction;
 import platform.server.classes.*;
 import platform.server.data.type.ParseException;
 import platform.server.data.type.Type;
+import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.PropertyDrawInstance;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
+import platform.server.form.view.DefaultFormView;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.view.DefaultFormView;
-import platform.server.form.entity.PropertyDrawEntity;
-import platform.server.form.entity.FormEntity;
 
 import javax.swing.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.io.ByteArrayInputStream;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
 
 public class ImportFromExcelActionProperty extends ActionProperty {
     private static Logger LOGGER = Logger.getLogger(ImportFromExcelActionProperty.class.getName());

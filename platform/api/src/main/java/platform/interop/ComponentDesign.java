@@ -1,9 +1,8 @@
 package platform.interop;
 
 import javax.swing.*;
-import java.io.Serializable;
-import java.text.Format;
 import java.awt.*;
+import java.io.Serializable;
 
 public class ComponentDesign implements Serializable {
 

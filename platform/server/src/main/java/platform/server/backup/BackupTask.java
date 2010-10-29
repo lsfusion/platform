@@ -3,11 +3,11 @@ package platform.server.backup;
 import platform.server.data.sql.DataAdapter;
 import platform.server.logics.scheduler.SchedulerTask;
 
-import java.io.*;
+import java.io.File;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.text.ParseException;
 
 public class BackupTask implements SchedulerTask {
     private DataAdapter adapter;

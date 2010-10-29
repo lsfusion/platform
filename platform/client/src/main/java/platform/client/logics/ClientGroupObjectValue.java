@@ -1,16 +1,14 @@
 package platform.client.logics;
 
-import static platform.base.BaseUtils.*;
-
-import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.client.form.ClientFormController;
 import platform.client.form.GroupObjectController;
 import platform.interop.ClassViewType;
 
 import java.io.*;
 import java.util.Map;
 import java.util.Set;
+
+import static platform.base.BaseUtils.*;
 
 public class ClientGroupObjectValue extends OrderedMap<ClientObject,Object>
                              implements Serializable {
@@ -21,7 +19,7 @@ public class ClientGroupObjectValue extends OrderedMap<ClientObject,Object>
         }
     }
 
-    public ClientGroupObjectValue(DataInputStream inStream, ClientPropertyRead clientPropertyDraw, Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, Byte> classViews, Map<ClientGroupObject, GroupObjectController> controllers) throws IOException {
+    public ClientGroupObjectValue(DataInputStream inStream, ClientPropertyRead clientPropertyDraw, Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) throws IOException {
         for (ClientObject clientObject : clientPropertyDraw.getDeserializeList(panelProperties, classViews, controllers)) {
             put(clientObject, deserializeObject(inStream));
         }

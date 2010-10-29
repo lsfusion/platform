@@ -1,14 +1,14 @@
 package platform.client.descriptor.nodes.filters;
 
-import platform.client.tree.ClientTree;
-import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.FormDescriptor;
+import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.editor.RegularFilterGroupEditor;
 import platform.client.descriptor.editor.base.NodeEditor;
 import platform.client.descriptor.filter.RegularFilterDescriptor;
 import platform.client.descriptor.filter.RegularFilterGroupDescriptor;
 import platform.client.descriptor.nodes.GroupElementNode;
 import platform.client.descriptor.nodes.actions.EditableTreeNode;
+import platform.client.tree.ClientTree;
 
 import javax.swing.*;
 

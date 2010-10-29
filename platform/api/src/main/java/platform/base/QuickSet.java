@@ -1,9 +1,7 @@
 package platform.base;
 
-import java.util.Collection;
-import java.util.ArrayList;
-import java.util.Set;
 import java.util.HashSet;
+import java.util.Set;
 
 public class QuickSet<T> {
     public int size;

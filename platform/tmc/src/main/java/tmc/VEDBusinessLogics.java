@@ -17,21 +17,24 @@ import platform.server.data.Union;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
 import platform.server.form.entity.*;
+import platform.server.form.entity.filter.*;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
-import platform.server.form.view.*;
+import platform.server.form.navigator.NavigatorElement;
+import platform.server.form.view.ContainerView;
+import platform.server.form.view.DefaultFormView;
+import platform.server.form.view.ObjectView;
+import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.DataSession;
-import platform.server.form.navigator.*;
-import platform.server.form.entity.filter.*;
 import tmc.integration.PanelExternalScreen;
 import tmc.integration.PanelExternalScreenParameters;
 import tmc.integration.exp.CashRegController;
@@ -45,8 +48,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 
 public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
@@ -1007,7 +1012,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", baseGroup, true);
             objBarcode.groupTo.initClassView = ClassViewType.PANEL;
-            objBarcode.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
+            objBarcode.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
 
             objBarcode.resetOnApply = true;
 
@@ -1079,7 +1084,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             if (toAdd) {
                 objDoc.groupTo.initClassView = ClassViewType.PANEL;
-                objDoc.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
+                objDoc.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
                 objDoc.addOnTransaction = true;
             } else {
                 addPropertyDraw(orderUserName, objDoc);
@@ -1442,7 +1447,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             }
             //getPropertyDraw(documentBarcodePriceOv).setToDraw(objBarcode.groupTo);
 
-            objArt.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
+            objArt.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
 
 //            addFixedFilter(new OrFilterEntity(new CompareFilterEntity(addPropertyObject(outStore, objDoc), Compare.EQUALS, shopImplement),
 //                                                    new NotFilterEntity(new NotNullFilterEntity(shopImplement))));
@@ -1504,14 +1509,14 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             objObligation = addSingleGroupObject(obligation, "Оплачено купонами/ сертификатами", baseGroup, true);
             addPropertyDraw(objDoc, objObligation, baseGroup, true, orderSaleUseObligation);
-            objObligation.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
+            objObligation.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.HIDE, ClassViewType.PANEL));
 //            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(obligationDocument, objObligation))));
 //            addFixedFilter(new NotNullFilterEntity(addPropertyObject(orderSaleObligationCanNotBeUsed, objDoc, objObligation)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(orderSaleUseObligation, objDoc, objObligation)));
 
             objCoupon = addSingleGroupObject(coupon, "Выдано купонов", baseGroup, true);
             addPropertyDraw(objDoc, objCoupon, baseGroup, true, issueObligation);
-            objCoupon.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
+            objCoupon.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.HIDE, ClassViewType.PANEL));
 //            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(obligationDocument, objObligation))));
 //            addFixedFilter(new NotNullFilterEntity(addPropertyObject(orderSaleObligationCanNotBeUsed, objDoc, objObligation)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(issueObligation, objDoc, objCoupon)));
@@ -1519,7 +1524,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             if (toAdd) {
                 objIssue = addSingleGroupObject(DoubleClass.instance, "Выдать купоны", baseGroup, true);
                 addPropertyDraw(couponToIssueQuantity, objDoc, objIssue);
-                objIssue.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
+                objIssue.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.HIDE, ClassViewType.PANEL));
                 addFixedFilter(new NotNullFilterEntity(addPropertyObject(couponToIssueConstraint, objDoc, objIssue)));
 
                 addPropertyDraw(cashRegOperGroup, true);
@@ -2248,10 +2253,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             ObjectEntity objIntervalAdd = addSingleGroupObject(DoubleClass.instance, "Цена товара от", objectValue, couponGroup, true);
             objIntervalAdd.groupTo.initClassView = ClassViewType.PANEL;
-            objIntervalAdd.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
+            objIntervalAdd.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
 
             ObjectEntity objInterval = addSingleGroupObject(DoubleClass.instance, "Цена товара", objectValue, couponGroup, true);
-            objInterval.groupTo.banClassView = ClassViewType.PANEL | ClassViewType.HIDE;
+            objInterval.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(couponIssueSum, objInterval)));
         }
     }

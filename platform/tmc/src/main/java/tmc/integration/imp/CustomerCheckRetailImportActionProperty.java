@@ -1,25 +1,24 @@
 package tmc.integration.imp;
 
-import platform.server.form.instance.FormInstance;
-import platform.server.logics.property.ActionProperty;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
-import platform.server.form.entity.ClassFormEntity;
-import platform.server.classes.ValueClass;
-import platform.server.auth.PolicyManager;
+import org.xBaseJ.DBF;
 import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
-
-import java.util.Map;
-import java.util.List;
-import java.sql.SQLException;
-import java.io.IOException;
-
-import org.xBaseJ.DBF;
+import platform.server.auth.PolicyManager;
+import platform.server.classes.ValueClass;
+import platform.server.form.entity.ClassFormEntity;
+import platform.server.form.instance.FormInstance;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.form.instance.remote.RemoteForm;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
+import platform.server.logics.property.ActionProperty;
+import platform.server.logics.property.ClassPropertyInterface;
 import tmc.VEDBusinessLogics;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 
 public class CustomerCheckRetailImportActionProperty extends ActionProperty {
 

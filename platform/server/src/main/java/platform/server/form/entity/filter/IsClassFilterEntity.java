@@ -6,11 +6,10 @@ import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.filter.FilterInstance;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.serialization.ServerSerializationPool;
-import platform.server.data.type.TypeSerializer;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.DataInputStream;
 
 public class IsClassFilterEntity<P extends PropertyInterface> extends PropertyFilterEntity<P> {
 

@@ -1,19 +1,17 @@
 package platform.server.data.expr;
 
-import platform.server.data.where.DataWhere;
-import platform.server.data.where.DataWhereSet;
-import platform.server.data.where.Where;
+import platform.server.caches.hash.HashContext;
+import platform.server.data.expr.query.OrderExpr;
+import platform.server.data.expr.where.MapWhere;
+import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ContextEnumerator;
 import platform.server.data.query.JoinData;
-import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
-import platform.server.data.expr.where.MapWhere;
-import platform.server.data.expr.query.OrderExpr;
-import platform.server.caches.hash.HashContext;
-
-import java.util.Map;
+import platform.server.data.where.DataWhere;
+import platform.server.data.where.DataWhereSet;
+import platform.server.data.where.Where;
 
 public abstract class NotNullExpr extends VariableClassExpr {
 

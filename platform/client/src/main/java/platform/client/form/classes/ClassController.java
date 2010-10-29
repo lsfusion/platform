@@ -3,7 +3,6 @@ package platform.client.form.classes;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormLayout;
 import platform.client.logics.ClientObject;
-import platform.client.logics.classes.ClientConcreteClass;
 import platform.client.logics.classes.ClientObjectClass;
 
 import javax.swing.tree.DefaultMutableTreeNode;

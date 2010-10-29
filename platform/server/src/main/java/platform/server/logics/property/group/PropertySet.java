@@ -4,9 +4,9 @@ import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.logics.property.Property;
 
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 // set'ы свойств, нужен в общем то когда входы динамической длины
 public abstract class PropertySet extends AbstractNode {

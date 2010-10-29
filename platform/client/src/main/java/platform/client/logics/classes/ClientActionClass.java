@@ -7,8 +7,8 @@ import platform.client.form.cell.ButtonCellView;
 import platform.client.form.cell.CellView;
 import platform.client.form.editor.ActionPropertyEditor;
 import platform.client.form.renderer.ActionPropertyRenderer;
-import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.ClientGroupObjectValue;
+import platform.client.logics.ClientPropertyDraw;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
 

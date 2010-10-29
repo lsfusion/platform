@@ -2,8 +2,6 @@ package platform.client.logics.classes;
 
 import platform.interop.Data;
 
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.text.ParseException;
 
 public class ClientLongClass extends ClientIntegralClass implements ClientTypeClass {

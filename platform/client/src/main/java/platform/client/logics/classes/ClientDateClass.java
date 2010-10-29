@@ -7,8 +7,6 @@ import platform.client.form.renderer.DatePropertyRenderer;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;

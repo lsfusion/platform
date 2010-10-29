@@ -4,7 +4,6 @@ import platform.server.caches.ParamLazy;
 import platform.server.caches.TwinLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
-import platform.server.classes.SystemClass;
 import platform.server.classes.CustomObjectClass;
 import platform.server.data.Table;
 import platform.server.data.expr.where.MapWhere;

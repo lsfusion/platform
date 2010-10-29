@@ -1,8 +1,8 @@
 package platform.client.descriptor.increment.editor;
 
-import platform.client.descriptor.increment.IncrementView;
-import platform.client.descriptor.increment.IncrementDependency;
 import platform.base.BaseUtils;
+import platform.client.descriptor.increment.IncrementDependency;
+import platform.client.descriptor.increment.IncrementView;
 
 import javax.swing.*;
 import java.util.List;

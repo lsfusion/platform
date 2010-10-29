@@ -6,11 +6,11 @@ import platform.base.IdentityObject;
 import platform.base.OrderedMap;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.form.entity.GroupObjectEntity;
+import platform.server.form.entity.ObjectEntity;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
-import platform.server.form.entity.ObjectEntity;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 

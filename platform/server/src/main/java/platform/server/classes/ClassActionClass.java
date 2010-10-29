@@ -7,8 +7,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 
 // Action с выбором конкретного класса
 public class ClassActionClass extends ActionClass {

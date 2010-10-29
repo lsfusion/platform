@@ -5,7 +5,9 @@ import platform.client.form.ClientFormLayout;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.form.queries.FilterController;
 import platform.client.form.queries.FindController;
-import platform.client.logics.*;
+import platform.client.logics.ClientGrid;
+import platform.client.logics.ClientGroupObjectValue;
+import platform.client.logics.ClientPropertyDraw;
 import platform.interop.Order;
 import platform.interop.form.screen.ExternalScreenComponent;
 

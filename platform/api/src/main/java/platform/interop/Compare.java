@@ -1,8 +1,8 @@
 package platform.interop;
 
 import java.io.DataInputStream;
-import java.io.IOException;
 import java.io.DataOutputStream;
+import java.io.IOException;
 
 public enum Compare {
 

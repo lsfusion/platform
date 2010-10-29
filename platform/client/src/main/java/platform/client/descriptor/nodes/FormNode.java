@@ -1,10 +1,10 @@
 package platform.client.descriptor.nodes;
 
+import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.editor.FormEditor;
 import platform.client.descriptor.editor.base.NodeEditor;
 import platform.client.descriptor.nodes.actions.EditableTreeNode;
 import platform.client.tree.ClientTreeNode;
-import platform.client.descriptor.FormDescriptor;
 
 public class FormNode extends ClientTreeNode<FormDescriptor, FormNode> implements EditableTreeNode {
     private final FormDescriptor descriptor;

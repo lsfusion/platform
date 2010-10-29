@@ -1,8 +1,6 @@
 package platform.interop;
 
-import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.DataOutputStream;
 
 public enum Scroll {
     HOME,END;

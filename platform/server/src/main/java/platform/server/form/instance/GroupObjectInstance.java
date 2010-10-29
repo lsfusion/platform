@@ -4,8 +4,8 @@ import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Order;
-import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.PropertyRead;
+import platform.interop.form.RemoteFormInterface;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.MapKeysInterface;
@@ -36,7 +36,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public List<ObjectInstance> getSerializeList(Set<PropertyDrawInstance> panelProperties) {
-        return curClassView==ClassViewType.GRID?new ArrayList<ObjectInstance>(objects):new ArrayList<ObjectInstance>();
+        return curClassView == ClassViewType.GRID ? new ArrayList<ObjectInstance>(objects) : new ArrayList<ObjectInstance>();
     }
 
     GroupObjectEntity entity;
@@ -91,7 +91,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public Integer order = 0;
 
     // классовый вид включен или нет
-    public byte curClassView = ClassViewType.GRID;
+    public ClassViewType curClassView = ClassViewType.GRID;
 
     // закэшированные
 

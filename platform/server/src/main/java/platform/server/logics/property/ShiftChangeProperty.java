@@ -3,7 +3,6 @@ package platform.server.logics.property;
 import platform.base.BaseUtils;
 import platform.interop.Compare;
 import platform.server.classes.IntegralClass;
-import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;

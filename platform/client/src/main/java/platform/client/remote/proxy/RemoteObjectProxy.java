@@ -3,6 +3,9 @@ package platform.client.remote.proxy;
 import platform.interop.remote.MethodInvocation;
 import platform.interop.remote.PendingRemote;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -11,9 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
-import java.io.IOException;
 
 public abstract class RemoteObjectProxy<T extends PendingRemote> implements PendingRemote {
     private static Logger logger = Logger.getLogger(RemoteFormProxy.class.getName());

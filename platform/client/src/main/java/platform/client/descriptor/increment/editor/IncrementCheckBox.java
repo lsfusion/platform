@@ -5,7 +5,8 @@ import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.increment.IncrementView;
 
 import javax.swing.*;
-import java.awt.event.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 
 public class IncrementCheckBox extends JCheckBox implements IncrementView, ItemListener {
     private final Object object;

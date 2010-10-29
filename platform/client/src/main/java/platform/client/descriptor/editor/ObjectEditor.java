@@ -4,12 +4,10 @@ import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.editor.base.NodeEditor;
 import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.descriptor.increment.editor.IncrementCheckBox;
-import platform.client.descriptor.increment.editor.IncrementSingleListSelectionModel;
 import platform.client.descriptor.increment.editor.IncrementTextEditor;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.*;
 
 public class ObjectEditor extends JPanel implements NodeEditor {
 

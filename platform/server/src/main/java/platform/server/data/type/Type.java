@@ -5,8 +5,8 @@ import platform.server.classes.ConcreteClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.SQLSession;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.logics.DataObject;
 import platform.server.form.view.report.ReportDrawField;
+import platform.server.logics.DataObject;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;

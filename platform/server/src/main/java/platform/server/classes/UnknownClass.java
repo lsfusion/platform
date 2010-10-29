@@ -7,8 +7,8 @@ import platform.server.data.SQLSession;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.NullValue;
+import platform.server.logics.ObjectValue;
 
 import java.sql.SQLException;
 import java.util.Collection;

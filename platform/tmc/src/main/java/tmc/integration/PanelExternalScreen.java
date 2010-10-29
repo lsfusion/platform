@@ -2,13 +2,12 @@ package tmc.integration;
 
 import com.jacob.activeX.ActiveXComponent;
 import platform.base.BaseUtils;
-import platform.interop.form.layout.SimplexConstraints;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenComponent;
 import platform.interop.form.screen.ExternalScreenConstraints;
 import platform.interop.form.screen.ExternalScreenParameters;
 
-import java.util.*;
+import java.util.Map;
 import java.util.logging.Logger;
 
 public class PanelExternalScreen implements ExternalScreen {

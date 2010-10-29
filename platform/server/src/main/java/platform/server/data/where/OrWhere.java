@@ -4,6 +4,7 @@ import platform.base.ArrayInstancer;
 import platform.base.BaseUtils;
 import platform.base.QuickSet;
 import platform.base.SimpleMap;
+import platform.server.Settings;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.data.expr.where.*;
@@ -16,7 +17,6 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
 import platform.server.data.where.classes.PackClassWhere;
-import platform.server.Settings;
 
 
 public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhere<AndWhere> {

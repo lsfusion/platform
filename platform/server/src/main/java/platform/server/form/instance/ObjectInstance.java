@@ -14,7 +14,10 @@ import platform.server.session.ChangesSession;
 import platform.server.session.Modifier;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 
 // на самом деле нужен collection но при extend'е нужна конкретная реализация
 public abstract class ObjectInstance extends CellInstance<ObjectEntity> implements PropertyObjectInterfaceInstance {

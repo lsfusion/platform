@@ -5,13 +5,13 @@ import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.where.Where;
+import platform.server.form.instance.GroupObjectInstance;
 import platform.server.form.instance.ObjectInstance;
+import platform.server.form.instance.filter.CompareValue;
 import platform.server.logics.property.Property;
 import platform.server.session.Changes;
 import platform.server.session.ChangesSession;
 import platform.server.session.Modifier;
-import platform.server.form.instance.GroupObjectInstance;
-import platform.server.form.instance.filter.CompareValue;
 
 import java.sql.SQLException;
 import java.util.Collection;

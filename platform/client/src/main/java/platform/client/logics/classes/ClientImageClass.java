@@ -7,8 +7,6 @@ import platform.client.form.renderer.ImagePropertyRenderer;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.text.Format;
 
 public class ClientImageClass extends ClientFileClass {

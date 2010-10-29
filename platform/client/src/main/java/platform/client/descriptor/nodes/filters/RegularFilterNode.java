@@ -1,11 +1,11 @@
 package platform.client.descriptor.nodes.filters;
 
+import platform.client.descriptor.FormDescriptor;
+import platform.client.descriptor.GroupObjectDescriptor;
+import platform.client.descriptor.editor.RegularFilterEditor;
 import platform.client.descriptor.editor.base.NodeEditor;
 import platform.client.descriptor.filter.FilterDescriptor;
 import platform.client.descriptor.filter.RegularFilterDescriptor;
-import platform.client.descriptor.GroupObjectDescriptor;
-import platform.client.descriptor.FormDescriptor;
-import platform.client.descriptor.editor.RegularFilterEditor;
 import platform.client.descriptor.nodes.GroupElementNode;
 import platform.client.descriptor.nodes.actions.EditableTreeNode;
 

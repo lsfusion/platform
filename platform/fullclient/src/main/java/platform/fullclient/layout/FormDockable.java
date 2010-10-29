@@ -2,8 +2,6 @@ package platform.fullclient.layout;
 
 import bibliothek.gui.dock.common.DefaultMultipleCDockable;
 import bibliothek.gui.dock.common.MultipleCDockableFactory;
-import bibliothek.gui.dock.common.event.CFocusListener;
-import bibliothek.gui.dock.common.intern.CDockable;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.form.RemoteFormInterface;
 

@@ -4,8 +4,8 @@ import platform.client.ClientButton;
 import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
-import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.ClientGroupObjectValue;
+import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

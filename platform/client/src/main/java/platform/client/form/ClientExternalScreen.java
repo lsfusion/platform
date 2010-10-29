@@ -7,9 +7,7 @@ import platform.interop.form.screen.ExternalScreenConstraints;
 import platform.interop.form.screen.ExternalScreenParameters;
 
 import java.rmi.RemoteException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class ClientExternalScreen {

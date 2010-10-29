@@ -1,11 +1,11 @@
 package platform.base;
 
-import java.lang.ref.WeakReference;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
-import java.util.Map;
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 public class WeakIdentityHashMap<K, V> {
     public WeakIdentityHashMap() {}

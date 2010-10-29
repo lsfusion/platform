@@ -2,7 +2,6 @@ package platform.base;
 
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
-import java.util.*;
 
 /**
  * SoftHashMap

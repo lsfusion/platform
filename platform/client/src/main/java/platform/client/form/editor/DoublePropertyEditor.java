@@ -5,9 +5,7 @@ import platform.interop.ComponentDesign;
 import javax.swing.*;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.NumberFormatter;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.text.ParseException;
+import java.text.*;
 
 public class DoublePropertyEditor extends TextFieldPropertyEditor {
 

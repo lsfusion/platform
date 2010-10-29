@@ -5,8 +5,6 @@ import platform.client.form.editor.IntegerPropertyEditor;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.text.Format;
 import java.text.NumberFormat;
 import java.text.ParseException;

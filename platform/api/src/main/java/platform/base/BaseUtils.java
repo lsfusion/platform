@@ -1,8 +1,8 @@
 package platform.base;
 
 import java.io.*;
-import java.util.*;
 import java.lang.reflect.Method;
+import java.util.*;
 
 public class BaseUtils {
 

@@ -5,7 +5,10 @@ import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 
 import javax.swing.*;
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 
 public class RegularFilterEntity extends IdentityObject implements ServerIdentitySerializable {
     public transient FilterEntity filter;

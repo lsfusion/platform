@@ -1,37 +1,36 @@
 package tmc.integration.imp;
 
-import platform.server.logics.scheduler.FlagSemaphoreTask;
-import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
-import platform.server.logics.NullValue;
-import platform.server.logics.property.PropertyInterface;
-import platform.server.classes.DataClass;
-import platform.server.classes.StringClass;
-import platform.server.classes.DoubleClass;
-import platform.server.classes.LogicalClass;
-import platform.server.data.KeyField;
-import platform.server.data.PropertyField;
-import platform.server.data.Field;
-import platform.server.data.CustomSessionTable;
-import platform.server.data.type.ObjectType;
-import platform.server.data.query.Query;
-import platform.server.data.query.Join;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.where.classes.ClassWhere;
-import platform.server.session.DataSession;
-import platform.server.session.MapDataChanges;
-import platform.server.session.PropertyChange;
+import org.xBaseJ.DBF;
+import org.xBaseJ.fields.LogicalField;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.interop.Compare;
-import org.xBaseJ.DBF;
-import org.xBaseJ.fields.LogicalField;
-
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
-
+import platform.server.classes.DataClass;
+import platform.server.classes.DoubleClass;
+import platform.server.classes.LogicalClass;
+import platform.server.classes.StringClass;
+import platform.server.data.CustomSessionTable;
+import platform.server.data.Field;
+import platform.server.data.KeyField;
+import platform.server.data.PropertyField;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.query.Join;
+import platform.server.data.query.Query;
+import platform.server.data.type.ObjectType;
+import platform.server.data.where.classes.ClassWhere;
+import platform.server.logics.DataObject;
+import platform.server.logics.NullValue;
+import platform.server.logics.ObjectValue;
+import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.scheduler.FlagSemaphoreTask;
+import platform.server.session.DataSession;
+import platform.server.session.MapDataChanges;
+import platform.server.session.PropertyChange;
 import tmc.VEDBusinessLogics;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SinglePriceImportTask extends FlagSemaphoreTask {
 

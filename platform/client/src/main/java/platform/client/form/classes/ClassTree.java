@@ -1,9 +1,8 @@
 package platform.client.form.classes;
 
-import platform.client.tree.*;
-import platform.client.tree.ExpandingTreeNode;
 import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientObjectClass;
+import platform.client.tree.*;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;

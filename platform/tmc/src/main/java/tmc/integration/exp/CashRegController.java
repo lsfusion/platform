@@ -1,5 +1,6 @@
 package tmc.integration.exp;
 
+import platform.base.BaseUtils;
 import platform.interop.action.*;
 import platform.server.classes.DataClass;
 import platform.server.classes.DoubleClass;
@@ -8,14 +9,13 @@ import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.instance.*;
 import platform.server.form.instance.filter.NotNullFilterInstance;
+import platform.server.form.instance.remote.RemoteForm;
+import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.form.instance.remote.RemoteForm;
-import platform.server.form.navigator.NavigatorElement;
-import platform.base.BaseUtils;
 import tmc.VEDBusinessLogics;
 
 import javax.swing.*;

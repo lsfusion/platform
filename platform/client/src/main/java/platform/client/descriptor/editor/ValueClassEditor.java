@@ -1,19 +1,17 @@
 package platform.client.descriptor.editor;
 
-import platform.client.descriptor.increment.IncrementView;
-import platform.client.descriptor.increment.IncrementDependency;
+import platform.base.BaseUtils;
 import platform.client.descriptor.editor.base.FlatButton;
 import platform.client.descriptor.editor.base.NamedContainer;
-import platform.client.logics.classes.*;
+import platform.client.descriptor.increment.IncrementDependency;
+import platform.client.descriptor.increment.IncrementView;
 import platform.client.form.classes.ClassDialog;
-import platform.base.BaseUtils;
+import platform.client.logics.classes.*;
 
 import javax.swing.*;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class ValueClassEditor extends JPanel {
 

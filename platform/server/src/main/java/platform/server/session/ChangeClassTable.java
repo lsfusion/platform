@@ -4,7 +4,6 @@ import platform.server.data.Field;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
 import platform.server.data.SessionTable;
-import platform.server.data.query.Join;
 import platform.server.data.expr.Expr;
 import platform.server.data.type.ObjectType;
 import platform.server.data.where.Where;

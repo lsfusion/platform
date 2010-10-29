@@ -1,5 +1,7 @@
 package platform.server.data.query.innerjoins;
 
+import platform.base.ImmutableObject;
+import platform.server.caches.IdentityLazy;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.EqualsWhere;
@@ -7,8 +9,6 @@ import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DNFWheres;
 import platform.server.data.where.Where;
-import platform.server.caches.IdentityLazy;
-import platform.base.ImmutableObject;
 
 import java.util.Collections;
 import java.util.HashMap;

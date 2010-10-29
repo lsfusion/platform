@@ -9,18 +9,20 @@ import platform.client.form.GroupObjectController;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ClassViewType;
-import platform.interop.ClassViewTypeEnum;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class ClientGroupObject extends ArrayList<ClientObject>
                                  implements ClientPropertyRead, ClientIdentitySerializable {
 
     private int ID;
-    public List<ClassViewTypeEnum> banClassView = new ArrayList<ClassViewTypeEnum>();
+    public List<ClassViewType> banClassView = new ArrayList<ClassViewType>();
 
     public ClientGrid grid = new ClientGrid();
     public ClientShowType showType = new ClientShowType();
@@ -28,15 +30,15 @@ public class ClientGroupObject extends ArrayList<ClientObject>
     public ClientGroupObject() {
     }
 
-    public List<ClientObject> getDeserializeList(Map<ClientGroupObject, Byte> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
+    public List<ClientObject> getDeserializeList(Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
         List<ClientObject> result = new ArrayList<ClientObject>();
-        Byte newType = classViews.get(this);
+        ClassViewType newType = classViews.get(this);
         if((newType!=null?newType:controllers.get(this).classView) == ClassViewType.GRID)
             result.addAll(this);
         return result;
     }
 
-    public List<ClientObject> getDeserializeList(Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, Byte> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
+    public List<ClientObject> getDeserializeList(Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
         return getDeserializeList(classViews, controllers);
     }
 
@@ -89,17 +91,7 @@ public class ClientGroupObject extends ArrayList<ClientObject>
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
-        Byte type = inStream.readByte();
-        banClassView.clear();
-        if((type & ClassViewType.PANEL) != 0){
-            banClassView.add(ClassViewTypeEnum.valueOf("Panel"));
-        }
-        if((type & ClassViewType.GRID) != 0){
-            banClassView.add(ClassViewTypeEnum.valueOf("Grid"));
-        }
-        if((type & ClassViewType.HIDE) != 0){
-            banClassView.add(ClassViewTypeEnum.valueOf("Hide"));
-        }
+        banClassView = (List<ClassViewType>)pool.readObject(inStream);
 
         pool.deserializeCollection(this, inStream);
 

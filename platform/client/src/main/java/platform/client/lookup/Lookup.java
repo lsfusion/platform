@@ -3,7 +3,10 @@ package platform.client.lookup;
 import platform.base.WeakIdentityHashSet;
 
 import java.lang.ref.WeakReference;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class Lookup {
     public static final String NEW_EDITABLE_OBJECT_PROPERTY = "newEditableObjectProperty";

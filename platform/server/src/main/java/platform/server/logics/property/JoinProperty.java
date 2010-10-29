@@ -1,20 +1,20 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
-import platform.interop.Compare;
 import platform.interop.ClassViewType;
+import platform.interop.Compare;
+import platform.server.classes.CustomClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
+import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.ObjectEntity;
+import platform.server.form.entity.PropertyDrawEntity;
+import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.session.Changes;
 import platform.server.session.MapDataChanges;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
-import platform.server.form.entity.PropertyDrawEntity;
-import platform.server.form.entity.PropertyObjectInterfaceEntity;
-import platform.server.form.entity.ObjectEntity;
-import platform.server.form.entity.FormEntity;
-import platform.server.classes.CustomClass;
 
 import java.util.*;
 

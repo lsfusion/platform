@@ -1,12 +1,12 @@
 package platform.client.form.panel;
 
+import platform.base.BaseUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormLayout;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.form.cell.PropertyController;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
-import platform.base.BaseUtils;
 
 import javax.swing.*;
 import java.util.*;

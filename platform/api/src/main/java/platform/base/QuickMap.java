@@ -1,7 +1,7 @@
 package platform.base;
 
-import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Collection;
 
 // дублируем QuickSet
 public abstract class QuickMap<K, V> {

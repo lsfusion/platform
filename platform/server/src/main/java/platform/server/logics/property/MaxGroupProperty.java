@@ -1,10 +1,10 @@
 package platform.server.logics.property;
 
 import platform.interop.Compare;
+import platform.server.Settings;
 import platform.server.data.expr.Expr;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
-import platform.server.Settings;
 
 import java.util.Collection;
 import java.util.Map;

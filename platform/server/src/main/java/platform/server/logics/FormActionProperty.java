@@ -7,9 +7,9 @@ import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.form.instance.remote.RemoteForm;
 
 import java.util.HashMap;
 import java.util.List;

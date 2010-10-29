@@ -5,10 +5,10 @@ import net.sf.jasperreports.engine.JRElement;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRPen;
 import net.sf.jasperreports.engine.design.*;
-import platform.server.form.view.*;
+import platform.server.form.view.FormView;
+import platform.server.form.view.GroupObjectView;
 import platform.server.form.view.ObjectView;
 import platform.server.form.view.PropertyDrawView;
-import platform.server.form.view.GroupObjectView;
 
 import java.awt.*;
 import java.util.*;

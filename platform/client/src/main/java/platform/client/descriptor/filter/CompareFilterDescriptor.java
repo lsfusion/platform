@@ -1,7 +1,7 @@
 package platform.client.descriptor.filter;
 
-import platform.client.descriptor.OrderDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
+import platform.client.descriptor.OrderDescriptor;
 import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.nodes.filters.CompareFilterNode;
 import platform.client.serialization.ClientSerializationPool;

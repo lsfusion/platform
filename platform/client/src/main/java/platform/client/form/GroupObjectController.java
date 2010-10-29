@@ -1,7 +1,7 @@
 package platform.client.form;
 
-import platform.base.OrderedMap;
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 import platform.client.form.grid.GridController;
 import platform.client.form.panel.PanelController;
 import platform.client.form.showtype.ShowTypeController;
@@ -29,7 +29,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
     private ClientGroupObjectValue currentObject;
 
-    public byte classView = ClassViewType.HIDE;
+    public ClassViewType classView = ClassViewType.HIDE;
 
     public GroupObjectController(ClientGroupObject igroupObject, LogicsSupplier ilogicsSupplier, ClientFormController iform, ClientFormLayout formLayout) throws IOException {
 
@@ -46,7 +46,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
         if (groupObject != null) {
 
-            // Grid идет как единый неделимый JComponent, поэтому смысла передавать туда FormLayout нет
+            // GRID идет как единый неделимый JComponent, поэтому смысла передавать туда FormLayout нет
             grid = new GridController(groupObject.grid, this, form);
             addGroupObjectActions(grid.getView());
 
@@ -181,7 +181,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         }
     }
 
-    public void setClassView(byte classView) {
+    public void setClassView(ClassViewType classView) {
         if (this.classView != classView) {
             this.classView = classView;
 

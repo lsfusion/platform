@@ -4,9 +4,9 @@ import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.nodes.filters.FilterNode;
 import platform.client.descriptor.nodes.filters.IsClassFilterNode;
-import platform.client.serialization.ClientSerializationPool;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.classes.ClientTypeSerializer;
+import platform.client.serialization.ClientSerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

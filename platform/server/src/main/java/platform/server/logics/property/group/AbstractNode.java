@@ -1,9 +1,9 @@
 package platform.server.logics.property.group;
 
 import platform.base.ImmutableObject;
-import platform.server.logics.property.Property;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.ValueClass;
+import platform.server.logics.property.Property;
 
 import java.util.List;
 

@@ -1,6 +1,5 @@
 package platform.server.form.instance;
 
-import platform.server.form.instance.GroupObjectInstance;
 import platform.server.logics.property.Property;
 
 import java.util.Collection;

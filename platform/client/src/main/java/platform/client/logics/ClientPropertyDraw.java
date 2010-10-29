@@ -8,13 +8,17 @@ import platform.client.logics.classes.ClientType;
 import platform.client.logics.classes.ClientTypeSerializer;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
+import platform.interop.ClassViewType;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.screen.ExternalScreenConstraints;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.text.Format;
 import java.text.ParseException;
@@ -323,7 +327,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         askConfirm = inStream.readBoolean();
     }
 
-    public List<ClientObject> getDeserializeGroupList(Map<ClientGroupObject, Byte> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
+    public List<ClientObject> getDeserializeGroupList(Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
         List<ClientObject> result = new ArrayList<ClientObject>();
         for (ClientGroupObject columnGroupObject : columnGroupObjects) {
             result.addAll(columnGroupObject.getDeserializeList(classViews, controllers));
@@ -331,7 +335,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return result;
     }
 
-    public List<ClientObject> getDeserializeList(Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, Byte> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
+    public List<ClientObject> getDeserializeList(Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
         List<ClientObject> result = getDeserializeGroupList(classViews, controllers);
         if (!panelProperties.contains(this)) {
             result = BaseUtils.mergeList(groupObject, result);
@@ -352,7 +356,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public class Caption implements ClientPropertyRead {
-        public List<ClientObject> getDeserializeList(Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, Byte> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
+        public List<ClientObject> getDeserializeList(Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
             return getDeserializeGroupList(classViews, controllers);
         }
 

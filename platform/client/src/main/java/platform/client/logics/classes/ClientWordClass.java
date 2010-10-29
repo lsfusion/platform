@@ -8,8 +8,6 @@ import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
 import java.awt.*;
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.text.Format;
 
 public class ClientWordClass extends ClientFileClass {

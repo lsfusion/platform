@@ -2,16 +2,12 @@ package platform.client.descriptor.editor.filters;
 
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
+import platform.client.descriptor.editor.PropertyObjectEditor;
 import platform.client.descriptor.editor.base.NodeEditor;
 import platform.client.descriptor.editor.base.TitledPanel;
-import platform.client.descriptor.editor.PropertyObjectEditor;
-import platform.client.descriptor.editor.GroupObjectEditor;
 import platform.client.descriptor.filter.PropertyFilterDescriptor;
-import platform.client.descriptor.increment.IncrementDependency;
-import platform.client.descriptor.increment.editor.IncrementSingleListSelectionModel;
 
 import javax.swing.*;
-import java.util.List;
 
 public class PropertyFilterEditor extends JPanel implements NodeEditor {
 

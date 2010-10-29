@@ -1,6 +1,8 @@
 package platform.base;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Pairs<T,V> extends Permutations<Map<T,V>> {
 

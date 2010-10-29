@@ -1,5 +1,6 @@
 package platform.server.data.expr;
 
+import platform.base.BaseUtils;
 import platform.interop.Compare;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
@@ -10,15 +11,13 @@ import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.Query;
-import platform.server.data.query.innerjoins.KeyEqual;
-import platform.server.data.translator.QueryTranslator;
 import platform.server.data.translator.PartialQueryTranslator;
+import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Reader;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
-import platform.server.logics.DataObject;
 import platform.server.logics.BusinessLogics;
-import platform.base.BaseUtils;
+import platform.server.logics.DataObject;
 
 import java.util.*;
 

@@ -1,26 +1,23 @@
 package platform.interop;
 
-public class ClassViewType {
+import java.util.ArrayList;
+import java.util.List;
 
-    public static final byte PANEL = 1;
-    public static final byte GRID = 2;
-    public static final byte HIDE = 4;
+public enum ClassViewType {
+    PANEL, GRID, HIDE;
 
-    public static byte switchView(byte initClassView) {
+    public static List typeNameList(){
+        List list = new ArrayList();
+        for(int i=0; i < ClassViewType.values().length; i++){
+            list.add(ClassViewType.values()[i].toString());
+        }
+        return list;
+    }
 
+    public static ClassViewType switchView(ClassViewType initClassView) {
         if (initClassView == GRID)
             return PANEL;
         else
             return GRID;
-    }
-
-    public static byte getByte(String action) {
-
-        if (action.equals("grid"))
-            return GRID;
-        else if (action.equals("panel"))
-            return PANEL;
-        else
-            return HIDE;
     }
 }

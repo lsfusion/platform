@@ -1,8 +1,9 @@
 package platform.server.data.sql;
 
+import platform.server.data.type.Type;
+
 import java.sql.Connection;
 import java.sql.SQLException;
-import platform.server.data.type.Type;
 
 public interface SQLSyntax {
 

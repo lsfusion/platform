@@ -1,11 +1,10 @@
 package tmc.integration.imp;
 
-import java.util.List;
-
-import platform.server.logics.scheduler.SchedulerTask;
 import platform.server.logics.scheduler.FlagSemaphoreTask;
-import tmc.integration.imp.SinglePriceImportTask;
+import platform.server.logics.scheduler.SchedulerTask;
 import tmc.VEDBusinessLogics;
+
+import java.util.List;
 
 public class PriceImportTask implements SchedulerTask {
 

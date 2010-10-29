@@ -1,13 +1,12 @@
 package platform.client.descriptor.nodes;
 
-import platform.client.descriptor.increment.IncrementDependency;
-import platform.client.tree.ClientTree;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.PropertyDrawDescriptor;
+import platform.client.descriptor.increment.IncrementDependency;
+import platform.client.tree.ClientTree;
 
 import javax.swing.*;
-import java.util.List;
 
 public class PropertyDrawFolder extends GroupElementFolder<PropertyDrawFolder> {
     private FormDescriptor form;

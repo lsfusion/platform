@@ -1,12 +1,12 @@
 package platform.client.descriptor.filter;
 
 import platform.base.BaseUtils;
+import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.IdentityDescriptor;
 import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.logics.ClientRegularFilterGroup;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
-import platform.client.descriptor.GroupObjectDescriptor;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

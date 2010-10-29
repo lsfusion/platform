@@ -297,7 +297,7 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
         form.switchClassView(form.getGroupObjectInstance(groupID));
     }
 
-    public void changeClassView(int groupID, byte classView) {
+    public void changeClassView(int groupID, ClassViewType classView) {
         form.changeClassView(form.getGroupObjectInstance(groupID), classView);
     }
 

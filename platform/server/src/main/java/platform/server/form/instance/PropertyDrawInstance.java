@@ -1,15 +1,14 @@
 package platform.server.form.instance;
 
+import platform.base.BaseUtils;
+import platform.interop.ClassViewType;
+import platform.interop.form.PropertyRead;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.logics.property.PropertyInterface;
-import platform.interop.form.PropertyRead;
-import platform.interop.ClassViewType;
-import platform.base.BaseUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.Arrays;
-import java.util.ArrayList;
 
 // представление св-ва
 public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity> implements PropertyReadInstance {
@@ -64,7 +63,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
     public Caption caption = new Caption();
 
-    public Byte getForceViewType() {
+    public ClassViewType getForceViewType() {
         return entity.forceViewType;
     }
 

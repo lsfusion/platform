@@ -1,8 +1,8 @@
 package platform.client.logics;
 
 import platform.base.BaseUtils;
-import platform.client.form.ClientFormController;
 import platform.client.form.GroupObjectController;
+import platform.interop.ClassViewType;
 import platform.interop.form.PropertyRead;
 
 import java.io.DataInputStream;
@@ -15,7 +15,7 @@ public class ClientFormChanges {
 
     public String message;
 
-    public final Map<ClientGroupObject,Byte> classViews;
+    public final Map<ClientGroupObject, ClassViewType> classViews;
     public final Map<ClientGroupObject,ClientGroupObjectValue> objects;
     public final Map<ClientGroupObject,List<ClientGroupObjectValue>> gridObjects;
 
@@ -25,10 +25,10 @@ public class ClientFormChanges {
 
     public ClientFormChanges(DataInputStream inStream, ClientForm clientForm, Map<ClientGroupObject, GroupObjectController> controllers) throws IOException {
 
-        classViews = new HashMap<ClientGroupObject, Byte>();
+        classViews = new HashMap<ClientGroupObject, ClassViewType>();
         int count = inStream.readInt();
         for (int i = 0; i < count; i++)
-            classViews.put(clientForm.getGroupObject(inStream.readInt()),inStream.readByte());
+            classViews.put(clientForm.getGroupObject(inStream.readInt()), ClassViewType.values()[inStream.readInt()]);
 
         objects = new HashMap<ClientGroupObject, ClientGroupObjectValue>();
         count = inStream.readInt();

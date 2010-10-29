@@ -1,10 +1,10 @@
 package platform.server.logics.property.group;
 
+import platform.server.caches.IdentityLazy;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.ValueClass;
-import platform.server.logics.property.Property;
 import platform.server.logics.linear.LP;
-import platform.server.caches.IdentityLazy;
+import platform.server.logics.property.Property;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 

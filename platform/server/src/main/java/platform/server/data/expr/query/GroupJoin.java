@@ -1,6 +1,5 @@
 package platform.server.data.expr.query;
 
-import net.jcip.annotations.Immutable;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;

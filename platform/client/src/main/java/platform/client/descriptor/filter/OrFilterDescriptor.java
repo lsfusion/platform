@@ -1,9 +1,9 @@
 package platform.client.descriptor.filter;
 
+import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.nodes.filters.FilterNode;
 import platform.client.descriptor.nodes.filters.OrFilterNode;
-import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.serialization.ClientSerializationPool;
 
 import java.io.DataInputStream;

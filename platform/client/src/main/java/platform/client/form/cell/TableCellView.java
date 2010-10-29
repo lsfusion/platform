@@ -1,13 +1,15 @@
 package platform.client.form.cell;
 
-import platform.client.form.ClientFormController;
-import platform.client.logics.ClientPropertyDraw;
-import platform.client.logics.ClientGroupObjectValue;
 import platform.base.BaseUtils;
+import platform.client.form.ClientFormController;
+import platform.client.logics.ClientGroupObjectValue;
+import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class TableCellView extends JPanel implements CellView {
 

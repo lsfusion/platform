@@ -5,7 +5,6 @@ import platform.client.form.ClientDialog;
 import platform.client.form.ClientNavigatorDialog;
 import platform.client.form.PropertyEditorComponent;
 import platform.interop.form.RemoteDialogInterface;
-import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
 import java.awt.*;

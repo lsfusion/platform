@@ -7,7 +7,6 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.util.EventObject;
 
 public class FileActionPropertyEditor extends JFileChooser

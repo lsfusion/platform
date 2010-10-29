@@ -1,7 +1,7 @@
 package platform.server.form.view;
 
-import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
+import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;

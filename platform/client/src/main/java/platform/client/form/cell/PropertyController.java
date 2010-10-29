@@ -1,9 +1,9 @@
 package platform.client.form.cell;
 
-import platform.client.form.ClientFormLayout;
 import platform.client.form.ClientFormController;
-import platform.client.logics.ClientPropertyDraw;
+import platform.client.form.ClientFormLayout;
 import platform.client.logics.ClientGroupObjectValue;
+import platform.client.logics.ClientPropertyDraw;
 import platform.interop.form.screen.ExternalScreenComponent;
 
 import javax.swing.*;

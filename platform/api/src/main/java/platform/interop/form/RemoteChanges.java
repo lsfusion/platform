@@ -2,8 +2,8 @@ package platform.interop.form;
 
 import platform.interop.action.ClientAction;
 
-import java.util.List;
 import java.io.Serializable;
+import java.util.List;
 
 public class RemoteChanges implements Serializable {
 

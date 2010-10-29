@@ -1,19 +1,15 @@
 package platform.client.descriptor.editor;
 
-import platform.client.descriptor.GroupObjectDescriptor;
-import platform.client.descriptor.PropertyDrawDescriptor;
-import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.DataObjectDescriptor;
-import platform.client.descriptor.increment.editor.IncrementTextEditor;
-import platform.client.descriptor.increment.editor.IncrementSingleListSelectionModel;
-import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.editor.base.TitledPanel;
+import platform.client.descriptor.increment.editor.IncrementSingleListSelectionModel;
+import platform.client.descriptor.increment.editor.IncrementTextEditor;
 import platform.client.logics.classes.ClientClass;
 
 import javax.swing.*;
-import java.util.List;
-import java.util.Arrays;
 import java.awt.*;
+import java.util.Arrays;
+import java.util.List;
 
 public class DataObjectEditor extends JPanel {
 

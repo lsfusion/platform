@@ -1,19 +1,19 @@
 package platform.server.logics.property;
 
-import platform.server.logics.SessionDataProperty;
-import platform.server.classes.ValueClass;
 import platform.server.classes.LogicalClass;
-import platform.server.form.entity.PropertyDrawEntity;
+import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
-import platform.server.form.entity.filter.RegularFilterGroupEntity;
-import platform.server.form.entity.filter.RegularFilterEntity;
+import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.filter.NotNullFilterEntity;
+import platform.server.form.entity.filter.RegularFilterEntity;
+import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
+import platform.server.logics.SessionDataProperty;
 
 import javax.swing.*;
-import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 
 public class SelectionProperty extends SessionDataProperty {
 

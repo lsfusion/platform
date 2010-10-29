@@ -1,10 +1,10 @@
 package platform.server.session;
 
+import platform.base.ImmutableObject;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
-import platform.base.ImmutableObject;
 
 import java.util.Collection;
 import java.util.Map;

@@ -1,13 +1,7 @@
 package platform.server.form.instance;
 
-import platform.server.data.expr.Expr;
-import platform.server.session.Changes;
-import platform.server.session.Modifier;
-
-import java.util.Map;
 import java.util.List;
 import java.util.Set;
-import java.sql.SQLException;
 
 public interface PropertyReadInstance {
 

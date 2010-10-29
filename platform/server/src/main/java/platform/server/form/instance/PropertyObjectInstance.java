@@ -1,17 +1,18 @@
 package platform.server.form.instance;
 
-import platform.interop.action.ClientAction;
+import platform.base.BaseUtils;
 import platform.interop.Compare;
+import platform.interop.action.ClientAction;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.sets.AndClassSet;
+import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.where.CompareWhere;
 import platform.server.data.type.Type;
-import platform.server.data.SQLSession;
 import platform.server.data.where.Where;
+import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyImplement;
@@ -21,8 +22,6 @@ import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
-import platform.server.form.instance.remote.RemoteForm;
-import platform.base.BaseUtils;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -33,7 +32,7 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
         super(property, (Map<P, PropertyObjectInterfaceInstance>) mapping);
     }
 
-    // получает Grid в котором рисоваться
+    // получает GRID в котором рисоваться
     public GroupObjectInstance getApplyObject() {
         GroupObjectInstance applyObject=null;
         for(ObjectInstance intObject : getObjectInstances())

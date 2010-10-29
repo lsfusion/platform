@@ -1,10 +1,13 @@
 package platform.client.form.grid;
 
 import platform.base.BaseUtils;
-import platform.client.logics.*;
+import platform.client.logics.ClientGroupObjectValue;
+import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.table.AbstractTableModel;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class GridTableModel extends AbstractTableModel {
     private Object[][] data = new Object[0][0];

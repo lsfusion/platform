@@ -1,6 +1,7 @@
 package platform.server.form.entity;
 
 import platform.base.IdentityObject;
+import platform.interop.ClassViewType;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.Instantiable;
 import platform.server.form.instance.PropertyDrawInstance;
@@ -28,7 +29,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public PropertyObjectEntity<?> propertyCaption;
 
     public boolean shouldBeLast = false;
-    public Byte forceViewType = null;
+    public ClassViewType forceViewType = null;
 
     public PropertyDrawEntity() {
     }
@@ -64,7 +65,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         outStream.writeBoolean(shouldBeLast);
         outStream.writeBoolean(forceViewType != null);
         if (forceViewType != null) {
-            outStream.writeByte(forceViewType);
+            pool.writeString(outStream, forceViewType.name());
         }
     }
 
@@ -76,7 +77,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
         shouldBeLast = inStream.readBoolean();
         if (inStream.readBoolean()) {
-            forceViewType = inStream.readByte();
+            forceViewType = ClassViewType.valueOf(pool.readString(inStream));
         }
     }
 

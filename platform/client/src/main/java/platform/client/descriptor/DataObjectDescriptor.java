@@ -1,10 +1,9 @@
 package platform.client.descriptor;
 
 import platform.base.BaseUtils;
-import platform.client.serialization.ClientSerializationPool;
-import platform.client.logics.classes.ClientClass;
-import platform.client.logics.classes.ClientTypeSerializer;
 import platform.client.logics.classes.ClientTypeClass;
+import platform.client.logics.classes.ClientTypeSerializer;
+import platform.client.serialization.ClientSerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

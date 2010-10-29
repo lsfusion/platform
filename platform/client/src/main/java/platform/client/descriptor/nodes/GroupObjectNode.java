@@ -1,12 +1,12 @@
 package platform.client.descriptor.nodes;
 
 import platform.client.Main;
-import platform.client.tree.ClientTree;
-import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.FormDescriptor;
+import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.editor.GroupObjectEditor;
 import platform.client.descriptor.editor.base.NodeEditor;
 import platform.client.descriptor.nodes.actions.EditableTreeNode;
+import platform.client.tree.ClientTree;
 
 import javax.swing.*;
 

@@ -1,11 +1,8 @@
 package platform.client.descriptor.increment.editor;
 
-import platform.client.descriptor.increment.IncrementView;
-import platform.client.descriptor.increment.editor.IncrementSelectionView;
-import platform.client.descriptor.increment.editor.IncrementListSelectionModel;
 import platform.base.WeakIdentityHashSet;
+import platform.client.descriptor.increment.IncrementView;
 
-import java.util.Set;
 import java.util.List;
 
 public abstract class IncrementMultipleListSelectionModel extends IncrementListSelectionModel<List<?>> implements IncrementView {

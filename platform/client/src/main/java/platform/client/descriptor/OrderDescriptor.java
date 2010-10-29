@@ -1,8 +1,7 @@
 package platform.client.descriptor;
 
-import platform.interop.serialization.CustomSerializable;
-import platform.client.serialization.ClientCustomSerializable;
 import platform.client.descriptor.filter.*;
+import platform.client.serialization.ClientCustomSerializable;
 
 import java.util.List;
 

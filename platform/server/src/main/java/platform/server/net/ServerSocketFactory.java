@@ -4,13 +4,11 @@ import platform.interop.remote.CountZipServerSocket;
 import platform.interop.remote.CountZipSocket;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.rmi.server.RMISocketFactory;
-
-
-import java.io.Serializable;
 import java.rmi.server.RMIServerSocketFactory;
+import java.rmi.server.RMISocketFactory;
 
 public class ServerSocketFactory extends RMISocketFactory implements RMIServerSocketFactory, Serializable {
 

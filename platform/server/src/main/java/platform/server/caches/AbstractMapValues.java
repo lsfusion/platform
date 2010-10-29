@@ -1,7 +1,7 @@
 package platform.server.caches;
 
-import platform.server.caches.hash.HashCodeValues;
 import platform.base.ImmutableObject;
+import platform.server.caches.hash.HashCodeValues;
 
 public abstract class AbstractMapValues<U extends AbstractMapValues<U>> extends ImmutableObject implements MapValues<U>  {
 

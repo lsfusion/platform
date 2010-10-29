@@ -1,11 +1,12 @@
 package platform.client;
 
 import javax.swing.*;
-import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.WeakHashMap;
 
 public class SwingUtils {
 

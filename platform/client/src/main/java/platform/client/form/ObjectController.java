@@ -35,8 +35,8 @@ class ObjectController {
 
     }
 
-    Byte classView = ClassViewType.HIDE;
-    public void changeClassView(Byte classView) {
+    ClassViewType classView = ClassViewType.HIDE;
+    public void changeClassView(ClassViewType classView) {
 
         this.classView = classView;
 

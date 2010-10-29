@@ -9,7 +9,8 @@ import platform.client.form.cell.ClientAbstractCellEditor;
 import platform.client.form.cell.ClientAbstractCellRenderer;
 import platform.client.form.sort.GridHeaderMouseListener;
 import platform.client.form.sort.GridHeaderRenderer;
-import platform.client.logics.*;
+import platform.client.logics.ClientGroupObjectValue;
+import platform.client.logics.ClientPropertyDraw;
 import platform.interop.Order;
 import platform.interop.Scroll;
 

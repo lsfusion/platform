@@ -2,9 +2,9 @@ package platform.client.logics;
 
 import platform.base.BaseUtils;
 import platform.client.descriptor.editor.ComponentEditor;
+import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.nodes.ComponentNode;
 import platform.client.descriptor.nodes.ContainerNode;
-import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 

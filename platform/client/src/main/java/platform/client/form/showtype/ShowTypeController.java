@@ -5,7 +5,6 @@ import platform.client.form.ClientFormLayout;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.logics.ClientShowType;
 import platform.interop.ClassViewType;
-import platform.interop.ClassViewTypeEnum;
 
 import java.io.IOException;
 import java.util.List;
@@ -25,7 +24,7 @@ public abstract class ShowTypeController {
             protected void buttonPressed(String action) {
 
                 try {
-                    byte newClassView = ClassViewType.getByte(action);
+                    ClassViewType newClassView = ClassViewType.valueOf(action.toUpperCase());
                     if (!classView.equals(newClassView))
                         form.changeClassView(logicsSupplier.getGroupObject(), newClassView);
                 } catch (IOException el) {
@@ -39,9 +38,9 @@ public abstract class ShowTypeController {
         formLayout.add(key, view);
     }
 
-    Byte classView = ClassViewType.HIDE;
+    ClassViewType classView = ClassViewType.HIDE;
 
-    public void changeClassView(Byte classView) {
+    public void changeClassView(ClassViewType classView) {
         if (!classView.equals(this.classView)) {
 
             this.classView = classView;
@@ -64,8 +63,8 @@ public abstract class ShowTypeController {
     public void showViews() {
     }
 
-    List<ClassViewTypeEnum> banClassView;
-    public void setBanClassView(List<ClassViewTypeEnum> banClassView) {
+    List<ClassViewType> banClassView;
+    public void setBanClassView(List<ClassViewType> banClassView) {
         this.banClassView = banClassView;
         view.changeClassView(classView, banClassView);
     }

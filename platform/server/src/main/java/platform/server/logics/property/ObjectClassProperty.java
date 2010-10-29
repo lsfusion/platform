@@ -1,33 +1,33 @@
 package platform.server.logics.property;
 
-import platform.server.data.expr.Expr;
-import platform.server.data.where.WhereBuilder;
-import platform.server.data.type.Type;
-import platform.server.session.Changes;
-import platform.server.session.Modifier;
-import platform.server.session.SessionChanges;
-import platform.server.session.DataSession;
+import platform.base.BaseUtils;
+import platform.interop.ClassViewType;
+import platform.interop.action.ClientAction;
 import platform.server.classes.BaseClass;
-import platform.server.classes.ValueClass;
 import platform.server.classes.CustomClass;
-import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
-import platform.server.form.instance.remote.RemoteForm;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.FormInstance;
-import platform.server.form.instance.ObjectInstance;
-import platform.server.form.instance.CustomObjectInstance;
+import platform.server.classes.ValueClass;
+import platform.server.data.expr.Expr;
+import platform.server.data.type.Type;
+import platform.server.data.where.WhereBuilder;
+import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
-import platform.server.form.entity.ObjectEntity;
-import platform.server.form.entity.FormEntity;
-import platform.base.BaseUtils;
-import platform.interop.action.ClientAction;
-import platform.interop.ClassViewType;
+import platform.server.form.instance.CustomObjectInstance;
+import platform.server.form.instance.FormInstance;
+import platform.server.form.instance.ObjectInstance;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.form.instance.remote.RemoteForm;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
+import platform.server.session.Changes;
+import platform.server.session.DataSession;
+import platform.server.session.Modifier;
+import platform.server.session.SessionChanges;
 
-import java.util.Map;
-import java.util.List;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 
 public class ObjectClassProperty extends ExecuteProperty {
 

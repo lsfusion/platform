@@ -8,7 +8,10 @@ package platform.client.form;
 import platform.base.BaseUtils;
 import platform.base.DefaultIDGenerator;
 import platform.base.IDGenerator;
-import platform.client.*;
+import platform.client.ClientButton;
+import platform.client.Log;
+import platform.client.Main;
+import platform.client.SwingUtils;
 import platform.client.logics.*;
 import platform.client.logics.classes.ClientConcreteClass;
 import platform.client.logics.classes.ClientObjectClass;
@@ -427,8 +430,8 @@ public class ClientFormController {
             }
         }
 
-        for (Map.Entry<ClientGroupObject, Byte> entry : formChanges.classViews.entrySet()) {
-            byte classView = entry.getValue();
+        for (Map.Entry<ClientGroupObject, ClassViewType> entry : formChanges.classViews.entrySet()) {
+            ClassViewType classView = entry.getValue();
             if (classView != ClassViewType.GRID) {
                 currentGridObjects.remove(entry.getKey());
             }
@@ -509,7 +512,7 @@ public class ClientFormController {
         applyRemoteChanges();
     }
 
-    public void changeClassView(ClientGroupObject groupObject, byte show) throws IOException {
+    public void changeClassView(ClientGroupObject groupObject, ClassViewType show) throws IOException {
 
         SwingUtils.stopSingleAction(groupObject.getActionID(), true);
 

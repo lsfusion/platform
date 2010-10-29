@@ -2,6 +2,7 @@ package budget;
 
 
 import net.sf.jasperreports.engine.JRException;
+import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
@@ -11,13 +12,13 @@ import platform.server.data.Union;
 import platform.server.data.sql.DataAdapter;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
+import platform.server.form.entity.filter.CompareFilterEntity;
+import platform.server.form.entity.filter.NotNullFilterEntity;
+import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.group.AbstractGroup;
-import platform.server.form.navigator.NavigatorElement;
-import platform.server.form.entity.filter.CompareFilterEntity;
-import platform.server.form.entity.filter.NotNullFilterEntity;
 import sample.SampleBusinessLogics;
 
 import java.io.FileNotFoundException;
@@ -416,7 +417,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
             ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
-            objDepartment.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
+            objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
             ObjectEntity objOutOp = addSingleGroupObject(outOperation, "Операция расхода", baseGroup);
             ObjectEntity objExOp = addSingleGroupObject(exOperation, "Операция конверсии", baseGroup);
 
@@ -440,7 +441,8 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
             ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
-            objDepartment.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
+            objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
+
             ObjectEntity objIncCash = addSingleGroupObject(incomeCash, "Приход по налу", baseGroup);
             objIncNotCash = addSingleGroupObject(incomeNotCash, "Приход по безналу", baseGroup);
             objOutcome = addSingleGroupObject(outcomeCost, "Расход", baseGroup);
@@ -474,11 +476,11 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
             ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
-            objDepartment.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
+            objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
             ObjectEntity objExtraStateOp = addSingleGroupObject(extraSection, "Статья затрат", baseGroup);
             ObjectEntity objYearOp = addSingleGroupObject(YearClass.instance, "Год", baseGroup);
             objYearOp.groupTo.initClassView = ClassViewType.PANEL;
-            objYearOp.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
+            objYearOp.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
             objMonthOp = addSingleGroupObject(absMonth, "Месяц", baseGroup);
             objCur = addSingleGroupObject(currency, "Затраты", baseGroup);
             ObjectEntity objExtraOp = addSingleGroupObject(extraCost, "Доп. затраты", baseGroup);
@@ -521,11 +523,11 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             super(parent, ID, caption);
             ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
-            objDepartment.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
+            objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
             ObjectEntity objPersonOp = addSingleGroupObject(person, "Персонал", baseGroup);
             ObjectEntity objYearOp = addSingleGroupObject(YearClass.instance, "Год", baseGroup);
             objYearOp.groupTo.initClassView = ClassViewType.PANEL;
-            objYearOp.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
+            objYearOp.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
             objMonthOp = addSingleGroupObject(absMonth, "Месяц", baseGroup);
             objCur = addSingleGroupObject(currency, "Затраты", baseGroup);
             objExtraStateOp = addSingleGroupObject(extraPersonSection, "Статья затрат", baseGroup);
@@ -574,7 +576,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             super(parent, ID, caption);
             ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
-            objDepartment.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
+            objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
             ObjectEntity objMission = addSingleGroupObject(mission, "Командировка", baseGroup);
             ObjectEntity objPerson = addSingleGroupObject(person, "Сотрудник", baseGroup);
             ObjectEntity objOutOp = addSingleGroupObject(misOperation, "Расх. команд.", baseGroup);
@@ -597,7 +599,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             super(parent, ID, caption);
             ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
-            objDepartment.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
+            objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
             
             ObjectEntity objPerson = addSingleGroupObject(person, "Сотрудник", baseGroup);
             ObjectEntity objVacation = addSingleGroupObject(vacation, "Отпуск", baseGroup);
@@ -618,7 +620,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
             ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
-            objDepartment.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
+            objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
             ObjectEntity objCur = addSingleGroupObject(currency, "Валюта", baseGroup);
             ObjectEntity objInOp = addSingleGroupObject(inAbsOperation, "Операция пр.", baseGroup, true);
             ObjectEntity objOutOp = addSingleGroupObject(outAbsOperation, "Операция расх.", baseGroup, true);
@@ -684,12 +686,12 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             super(parent, ID, caption);
             ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
-            objDepartment.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
+            objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
             addPropertyDraw(baseCurrencyName);
 
             ObjectEntity objYearOp = addSingleGroupObject(YearClass.instance, "Год", baseGroup);
             objYearOp.groupTo.initClassView = ClassViewType.PANEL;
-            objYearOp.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
+            objYearOp.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
             ObjectEntity objMonthOp = addSingleGroupObject(absMonth, "Месяц", baseGroup);
 
             addPropertyDraw(baseCurGroup, true, objDepartment, objMonthOp, objYearOp);
@@ -721,7 +723,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
             ObjectEntity objDate = addSingleGroupObject(DateClass.instance, "Дата", baseGroup);
             objDate.groupTo.initClassView = ClassViewType.PANEL;
-            objDate.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
+            objDate.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
 
             addPropertyDraw(exchangeRate, objSrcCurrency, objDstCurrency, objDate);
             addPropertyDraw(nearestPredDate, objSrcCurrency, objDstCurrency, objDate);

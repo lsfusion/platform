@@ -2,8 +2,8 @@ package platform.server.classes;
 
 import platform.server.classes.sets.ConcreteCustomClassSet;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 public class AbstractCustomClass extends CustomClass {
 

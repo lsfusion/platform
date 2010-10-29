@@ -1,12 +1,10 @@
 package platform.client.descriptor.increment.editor;
 
 import platform.base.BaseUtils;
-import platform.client.descriptor.increment.editor.IncrementMultipleListSelectionModel;
-import platform.client.descriptor.increment.editor.IncrementSelectionView;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 public class IncrementMultipleListEditor extends JList implements ListSelectionListener, IncrementSelectionView {
 

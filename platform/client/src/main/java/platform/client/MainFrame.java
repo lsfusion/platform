@@ -4,10 +4,10 @@ import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
-import java.awt.*;
 import java.rmi.RemoteException;
 import java.util.Scanner;
 

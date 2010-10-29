@@ -3,7 +3,6 @@ package platform.server.classes;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.BaseExpr;
 import platform.server.form.entity.ObjectEntity;
-import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.logics.property.group.AbstractGroup;
 

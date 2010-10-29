@@ -1,5 +1,6 @@
 package platform.interop.form;
 
+import platform.interop.ClassViewType;
 import platform.interop.action.ClientApply;
 import platform.interop.remote.PendingRemote;
 
@@ -50,7 +51,7 @@ public interface RemoteFormInterface extends PendingRemote {
 
     void switchClassView(int groupID) throws RemoteException;
 
-    void changeClassView(int groupID, byte classView) throws RemoteException;
+    void changeClassView(int groupID, ClassViewType classView) throws RemoteException;
 
     void changeGridClass(int objectID,int idClass) throws RemoteException;
 

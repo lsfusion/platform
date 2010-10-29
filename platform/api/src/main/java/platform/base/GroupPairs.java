@@ -1,6 +1,8 @@
 package platform.base;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 public abstract class GroupPairs<G,O,I> implements Iterable<I>  {
 

@@ -1,7 +1,7 @@
 package platform.client.form;
 
-import platform.client.Main;
 import platform.client.Log;
+import platform.client.Main;
 import platform.interop.action.*;
 import platform.interop.exceptions.LoginException;
 

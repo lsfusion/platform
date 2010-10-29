@@ -1,24 +1,24 @@
 package sample;
 
 import net.sf.jasperreports.engine.JRException;
-import platform.interop.Compare;
+import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
+import platform.interop.Compare;
 import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
+import platform.server.classes.*;
 import platform.server.data.Union;
 import platform.server.data.sql.DataAdapter;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyObjectEntity;
+import platform.server.form.entity.filter.*;
+import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.group.AbstractGroup;
-import platform.server.form.navigator.*;
-import platform.server.form.entity.filter.*;
-import platform.server.classes.*;
-import platform.base.BaseUtils;
 
 import javax.swing.*;
 import java.awt.event.InputEvent;
@@ -901,7 +901,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
             objStore = addSingleGroupObject(store, "Склад", baseGroup);
             objStore.groupTo.initClassView = ClassViewType.PANEL;
-            objStore.groupTo.banClassView = ClassViewType.GRID;
+            objStore.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID));
 
             objArt = addSingleGroupObject(article, "Товар", baseGroup);
 
@@ -997,7 +997,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
             ObjectEntity objSupplier = addSingleGroupObject(supplier, "Поставщик", baseGroup);
             objSupplier.groupTo.initClassView = ClassViewType.PANEL;
-            objSupplier.groupTo.banClassView = ClassViewType.GRID;
+            objSupplier.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID));
 
             GroupObjectEntity gobjArtStore = new GroupObjectEntity(genID());
 
@@ -1044,7 +1044,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
             gobjInterval = new GroupObjectEntity(genID());
             gobjInterval.initClassView = ClassViewType.PANEL;
-            gobjInterval.banClassView = ClassViewType.GRID;
+            gobjInterval.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID));
 
             objDateFrom = new ObjectEntity(genID(), DateClass.instance, "С даты :");
             objDateTo = new ObjectEntity(genID(), DateClass.instance, "По дату :");
@@ -1206,7 +1206,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
             // указываем, что верхние три товара будут идти в панель
             objSupplier.groupTo.initClassView = ClassViewType.PANEL;
-            objSupplier.groupTo.banClassView = ClassViewType.GRID;
+            objSupplier.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID));
 
             objContract.groupTo.initClassView = ClassViewType.PANEL;
 

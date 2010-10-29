@@ -1,7 +1,7 @@
 package platform.server.caches;
 
-import platform.server.caches.hash.HashContext;
 import platform.base.ImmutableObject;
+import platform.server.caches.hash.HashContext;
 
 public abstract class AbstractOuterContext<This extends OuterContext> extends ImmutableObject implements OuterContext<This> {
 

@@ -259,7 +259,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         changeClassView(group, ClassViewType.switchView(group.curClassView));
     }
 
-    public void changeClassView(GroupObjectInstance group, byte show) {
+    public void changeClassView(GroupObjectInstance group, ClassViewType show) {
 
         group.curClassView = show;
         group.updated = group.updated | GroupObjectInstance.UPDATED_CLASSVIEW;
@@ -1011,8 +1011,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
                 if (drawProperty.toDraw != null && drawProperty.toDraw.curClassView == ClassViewType.HIDE) continue;
 
-                Byte forceViewType = drawProperty.getForceViewType();
-                if (forceViewType != null && forceViewType==ClassViewType.HIDE) continue;
+                ClassViewType forceViewType = drawProperty.getForceViewType();
+                if (forceViewType != null && forceViewType == ClassViewType.HIDE) continue;
 
                 boolean read = refresh || dataUpdated(drawProperty.propertyObject, changedProps);
                 
@@ -1025,7 +1025,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
                 boolean inInterface = false;
                 Set<GroupObjectInstance> keyGridObjects = null;
-                if (drawProperty.toDraw != null && drawProperty.toDraw.curClassView == ClassViewType.GRID && (forceViewType==null || forceViewType==ClassViewType.GRID) &&
+                if (drawProperty.toDraw != null && drawProperty.toDraw.curClassView == ClassViewType.GRID && (forceViewType==null || forceViewType== ClassViewType.valueOf("GRID")) &&
                         drawProperty.propertyObject.isInInterface(keyGridObjects=BaseUtils.add(columnGroupGrids, drawProperty.toDraw), forceViewType!=null)) { // в grid'е
                     inInterface = true;
                     if (read || objectUpdated(drawProperty.propertyObject, keyGridObjects))
@@ -1049,7 +1049,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
             for(GroupObjectInstance group : groups) // читаем highlight'ы
                 if(group.propertyHighlight!=null) {
-                    Set<GroupObjectInstance> gridGroups = (group.curClassView == ClassViewType.GRID?Collections.singleton(group):new HashSet<GroupObjectInstance>());
+                    Set<GroupObjectInstance> gridGroups = (group.curClassView == ClassViewType.GRID ? Collections.singleton(group) : new HashSet<GroupObjectInstance>());
                     if(refresh || (group.updated & GroupObjectInstance.UPDATED_CLASSVIEW)!=0 || dataUpdated(group.propertyHighlight, changedProps) || objectUpdated(group.propertyHighlight, gridGroups))
                         readProperties.put(group, gridGroups);
                 }

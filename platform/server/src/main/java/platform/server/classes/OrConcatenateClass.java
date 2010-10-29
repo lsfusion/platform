@@ -3,12 +3,8 @@ package platform.server.classes;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrClassSet;
 import platform.server.data.where.classes.AbstractClassWhere;
-import platform.base.BaseUtils;
 
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Collection;
-import java.util.ArrayList;
 
 // в общем случае вместо ConcatenateClassSet может быть просто AndClassSet, но так как Object'ы и DataClass'ы по другому обрабатываются то здесь так
 public class OrConcatenateClass extends AbstractClassWhere<Integer,OrConcatenateClass> implements OrClassSet {

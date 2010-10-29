@@ -10,7 +10,6 @@ import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ContextEnumerator;
 import platform.server.data.query.JoinData;
-import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;

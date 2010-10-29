@@ -2,7 +2,6 @@ package platform.client.form.showtype;
 
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.interop.ClassViewType;
-import platform.interop.ClassViewTypeEnum;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -52,19 +51,17 @@ public abstract class ShowTypeView extends JPanel implements ActionListener {
         buttonPressed(e.getActionCommand());
     }
 
-    public void changeClassView(Byte classView, List<ClassViewTypeEnum> banClassView) {
+    public void changeClassView(ClassViewType classView, List<ClassViewType> banClassView) {
 
-        switch (classView) {
-            case ClassViewType.PANEL : panelButton.setSelected(true); break;
-            case ClassViewType.GRID : gridButton.setSelected(true); break;
-            case ClassViewType.HIDE : hideButton.setSelected(true); break;
-        }
+        if(classView == ClassViewType.PANEL) panelButton.setSelected(true);
+        if(classView == ClassViewType.GRID) gridButton.setSelected(true);
+        if(classView == ClassViewType.HIDE) hideButton.setSelected(true);
 
         int visibleCount = 0;
 
-        panelButton.setVisible(!banClassView.contains(ClassViewTypeEnum.valueOf("Panel")));
-        gridButton.setVisible(!banClassView.contains(ClassViewTypeEnum.valueOf("Grid")));
-        hideButton.setVisible(!banClassView.contains(ClassViewTypeEnum.valueOf("Hide")));
+        panelButton.setVisible(!banClassView.contains(ClassViewType.PANEL));
+        gridButton.setVisible(!banClassView.contains(ClassViewType.GRID));
+        hideButton.setVisible(!banClassView.contains(ClassViewType.HIDE));
 
         if (panelButton.isVisible()) visibleCount++;
         if (gridButton.isVisible()) visibleCount++;

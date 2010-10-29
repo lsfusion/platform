@@ -1,9 +1,7 @@
 package platform.client.form;
 
 import platform.interop.form.RemoteDialogInterface;
-import platform.interop.navigator.RemoteNavigatorInterface;
 
-import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 

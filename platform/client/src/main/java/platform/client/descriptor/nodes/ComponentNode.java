@@ -4,9 +4,8 @@ import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.editor.ComponentEditor;
 import platform.client.descriptor.editor.base.NodeEditor;
 import platform.client.descriptor.nodes.actions.EditableTreeNode;
-import platform.client.tree.ClientTreeNode;
 import platform.client.logics.ClientComponent;
-import platform.interop.serialization.RemoteDescriptorInterface;
+import platform.client.tree.ClientTreeNode;
 
 public class ComponentNode<T extends ClientComponent, C extends ComponentNode> extends ClientTreeNode<T, C> implements EditableTreeNode {
 

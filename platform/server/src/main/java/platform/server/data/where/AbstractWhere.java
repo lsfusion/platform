@@ -11,7 +11,6 @@ import platform.server.data.expr.where.EqualsWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.Query;
 import platform.server.data.query.innerjoins.InnerSelectJoin;
-import platform.server.data.query.innerjoins.KeyEqual;
 import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.type.Type;

@@ -2,15 +2,14 @@ package platform.client;
 
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
-import platform.client.descriptor.PropertyObjectDescriptor;
 import platform.client.descriptor.PropertyDrawDescriptor;
-import platform.client.descriptor.increment.IncrementView;
-import platform.client.descriptor.increment.IncrementDependency;
+import platform.client.descriptor.PropertyObjectDescriptor;
 import platform.client.descriptor.editor.base.Tristate;
 import platform.client.descriptor.editor.base.TristateCheckBox;
+import platform.client.descriptor.increment.IncrementDependency;
+import platform.client.descriptor.increment.IncrementView;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.plaf.ColorUIResource;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -19,7 +18,7 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.*;
+import java.util.Enumeration;
 import java.util.List;
 
 public class GroupPropertyObjectEditor extends SimplePropertyFilter implements IncrementView {

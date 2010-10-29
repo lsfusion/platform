@@ -1,9 +1,9 @@
 package platform.server.form.instance;
 
 import platform.base.BaseUtils;
+import platform.interop.ClassViewType;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.interop.ClassViewType;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -16,7 +16,7 @@ public class FormChanges {
 
     public String message = "";
 
-    public Map<GroupObjectInstance, Byte> classViews = new HashMap<GroupObjectInstance, Byte>();
+    public Map<GroupObjectInstance, ClassViewType> classViews = new HashMap<GroupObjectInstance, ClassViewType>();
     public Map<GroupObjectInstance, Map<ObjectInstance, ? extends ObjectValue>> objects = new HashMap<GroupObjectInstance, Map<ObjectInstance, ? extends ObjectValue>>();
     public Map<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> gridObjects = new HashMap<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>>();
 
@@ -30,7 +30,7 @@ public class FormChanges {
         for (GroupObjectInstance group : bv.groups) {
             List<Map<ObjectInstance, DataObject>> groupGridObjects = gridObjects.get(group);
             if (groupGridObjects != null) {
-                System.out.println(group.getID() + " - Grid Changes");
+                System.out.println(group.getID() + " - GRID Changes");
                 for (Map<ObjectInstance, DataObject> value : groupGridObjects)
                     System.out.println(value);
             }
@@ -49,7 +49,7 @@ public class FormChanges {
                 System.out.println(gov + " - " + propertyValues.get(gov));
         }
 
-        System.out.println(" ------- Panel ---------------");
+        System.out.println(" ------- PANEL ---------------");
         for (PropertyDrawInstance property : panelProperties)
             System.out.println(property);
 
@@ -58,7 +58,7 @@ public class FormChanges {
             System.out.println(property);
 
         System.out.println(" ------- CLASSVIEWS ---------------");
-        for (Map.Entry<GroupObjectInstance, Byte> classView : classViews.entrySet()) {
+        for (Map.Entry<GroupObjectInstance, ClassViewType> classView : classViews.entrySet()) {
             System.out.println(classView.getKey() + " - " + classView.getValue());
         }
 
@@ -67,9 +67,9 @@ public class FormChanges {
     public void serialize(DataOutputStream outStream) throws IOException {
 
         outStream.writeInt(classViews.size());
-        for (Map.Entry<GroupObjectInstance, Byte> classView : classViews.entrySet()) {
+        for (Map.Entry<GroupObjectInstance, ClassViewType> classView : classViews.entrySet()) {
             outStream.writeInt(classView.getKey().getID());
-            outStream.writeByte(classView.getValue());
+            outStream.writeInt(classView.getValue().ordinal());
         }
 
         outStream.writeInt(objects.size());

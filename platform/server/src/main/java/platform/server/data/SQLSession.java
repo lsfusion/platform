@@ -8,10 +8,10 @@ import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.SQLExecute;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.type.Type;
 import platform.server.data.type.TypeObject;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.data.type.Type;
 
 import java.sql.*;
 import java.util.*;

@@ -4,8 +4,8 @@ import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.cell.CellView;
 import platform.client.form.cell.TableCellView;
-import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.ClientGroupObjectValue;
+import platform.client.logics.ClientPropertyDraw;
 import platform.interop.ComponentDesign;
 
 import java.awt.*;

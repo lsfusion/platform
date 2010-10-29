@@ -1,7 +1,7 @@
 package tmc.integration.exp;
 
-import platform.server.logics.scheduler.SchedulerTask;
 import platform.server.logics.scheduler.FlagSemaphoreTask;
+import platform.server.logics.scheduler.SchedulerTask;
 import tmc.VEDBusinessLogics;
 
 public class SaleExportTask implements SchedulerTask {

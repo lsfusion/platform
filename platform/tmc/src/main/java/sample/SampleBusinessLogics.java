@@ -1,33 +1,31 @@
 package sample;
 
-import platform.server.data.sql.DataAdapter;
-import platform.server.form.entity.FormEntity;
-import platform.server.form.entity.GroupObjectEntity;
-import platform.server.form.entity.ObjectEntity;
-import platform.server.form.entity.filter.RegularFilterEntity;
-import platform.server.form.entity.filter.RegularFilterGroupEntity;
-import platform.server.logics.property.group.AbstractGroup;
-import platform.server.logics.linear.LP;
-import platform.server.logics.BusinessLogics;
-import platform.server.form.navigator.*;
-import platform.server.form.entity.filter.CompareFilterEntity;
-import platform.server.form.entity.filter.NotNullFilterEntity;
+import net.sf.jasperreports.engine.JRException;
+import platform.interop.Compare;
 import platform.server.auth.User;
 import platform.server.classes.AbstractCustomClass;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.DoubleClass;
 import platform.server.classes.IntegerClass;
-import platform.interop.Compare;
-
-import java.io.IOException;
-import java.io.FileNotFoundException;
-import java.sql.SQLException;
-import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
-
-import net.sf.jasperreports.engine.JRException;
+import platform.server.data.sql.DataAdapter;
+import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.GroupObjectEntity;
+import platform.server.form.entity.ObjectEntity;
+import platform.server.form.entity.filter.CompareFilterEntity;
+import platform.server.form.entity.filter.NotNullFilterEntity;
+import platform.server.form.entity.filter.RegularFilterEntity;
+import platform.server.form.entity.filter.RegularFilterGroupEntity;
+import platform.server.form.navigator.NavigatorElement;
+import platform.server.logics.BusinessLogics;
+import platform.server.logics.linear.LP;
+import platform.server.logics.property.group.AbstractGroup;
 
 import javax.swing.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.sql.SQLException;
 
 public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 

@@ -1,29 +1,28 @@
 package tmc.integration.exp;
 
 import org.xBaseJ.DBF;
-import org.xBaseJ.xBaseJException;
 import org.xBaseJ.fields.CharField;
-import org.xBaseJ.fields.NumField;
 import org.xBaseJ.fields.DateField;
 import org.xBaseJ.fields.Field;
+import org.xBaseJ.fields.NumField;
+import org.xBaseJ.xBaseJException;
+import platform.base.BaseUtils;
+import platform.base.DateConverter;
 import platform.server.auth.PolicyManager;
 import platform.server.form.instance.*;
 import platform.server.form.instance.filter.NotNullFilterInstance;
-import platform.server.session.DataSession;
 import platform.server.logics.DataObject;
 import platform.server.logics.scheduler.FlagSemaphoreTask;
-import platform.base.BaseUtils;
-import platform.base.DateConverter;
+import platform.server.session.DataSession;
+import tmc.VEDBusinessLogics;
 
-import java.util.Map;
+import java.sql.SQLException;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.ParseException;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.text.DecimalFormatSymbols;
-import java.text.DecimalFormat;
-import java.text.ParseException;
-import java.sql.SQLException;
-
-import tmc.VEDBusinessLogics;
+import java.util.Map;
 
 public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
 

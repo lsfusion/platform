@@ -2,10 +2,8 @@ package platform.server.data.where.classes;
 
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.classes.sets.OrClassSet;
 import platform.server.data.expr.BaseExpr;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 

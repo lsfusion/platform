@@ -1,9 +1,9 @@
 package platform.server.data.query.innerjoins;
 
+import platform.base.BaseUtils;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.JoinSet;
 import platform.server.data.where.Where;
-import platform.server.data.expr.KeyExpr;
-import platform.base.BaseUtils;
 
 import java.util.Set;
 

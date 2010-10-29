@@ -1,6 +1,7 @@
 package sample;
 
 import net.sf.jasperreports.engine.JRException;
+import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.server.auth.SecurityPolicy;
@@ -1330,7 +1331,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             super(parent, ID, caption, true);
 
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
-            objDoc.groupTo.banClassView = ClassViewType.GRID;
+            objDoc.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID));
 
             addPropertyDraw(objDoc, outSumsGroup);
             addPropertyDraw(objDetail, outSumsGroup);
@@ -1407,7 +1408,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             ObjectEntity objDoc = addSingleGroupObject(cashSaleDocument, "Документ",
                     baseGroup, storeGroup, outSumsGroup, accountGroup);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
-            objDoc.groupTo.banClassView = ClassViewType.GRID;
+            objDoc.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID));
 
             ObjectEntity objReceipt = addSingleGroupObject(receipt, "Чек",
                     baseGroup, outSumsGroup);
@@ -1458,7 +1459,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
                 objStore = addSingleGroupObject(store, "Склад",
                         baseGroup, accountGroup);
                 objStore.groupTo.initClassView = ClassViewType.PANEL;
-                objStore.groupTo.banClassView = ClassViewType.GRID;
+                objStore.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID));
             }
 
             ObjectEntity objDoc = addSingleGroupObject(invDocument, "Документ",
@@ -1599,7 +1600,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
                 objStore = addSingleGroupObject(store, "Склад",
                         baseGroup, accountGroup);
                 objStore.groupTo.initClassView = ClassViewType.PANEL;
-                objStore.groupTo.banClassView = ClassViewType.GRID;
+                objStore.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID));
             }
 
             ObjectEntity objDoc = addSingleGroupObject(revalDocument, "Документ",
@@ -1630,7 +1631,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             objStore = addSingleGroupObject(store, "Склад",
                     baseGroup, accountGroup);
             objStore.groupTo.initClassView = ClassViewType.PANEL;
-            objStore.groupTo.banClassView = ClassViewType.GRID;
+            objStore.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID));
 
             objArt = addSingleGroupObject(article, "Товар",
                     baseGroup);
@@ -1736,7 +1737,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             ObjectEntity objSupplier = addSingleGroupObject(supplier, "Поставщик",
                     baseGroup);
             objSupplier.groupTo.initClassView = ClassViewType.PANEL;
-            objSupplier.groupTo.banClassView = ClassViewType.GRID;
+            objSupplier.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID));
 
             // создать блок "Склад"
             ObjectEntity objStore = addSingleGroupObject(store, "Склад",
@@ -1784,7 +1785,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             gobjInterval = new GroupObjectEntity(genID());
             gobjInterval.initClassView = ClassViewType.PANEL;
-            gobjInterval.banClassView = ClassViewType.GRID;
+            gobjInterval.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID));
 
             objDateFrom = new ObjectEntity(genID(), DateClass.instance, "С даты :");
             objDateTo = new ObjectEntity(genID(), DateClass.instance, "По дату :");

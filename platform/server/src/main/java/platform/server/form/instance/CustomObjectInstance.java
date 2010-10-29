@@ -1,6 +1,9 @@
 package platform.server.form.instance;
 
-import platform.server.classes.*;
+import platform.server.classes.ConcreteClass;
+import platform.server.classes.ConcreteCustomClass;
+import platform.server.classes.ConcreteObjectClass;
+import platform.server.classes.CustomClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.type.ObjectType;

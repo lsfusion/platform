@@ -1,5 +1,7 @@
 package platform.client.descriptor;
 
+import platform.base.BaseUtils;
+import platform.client.Main;
 import platform.client.descriptor.filter.FilterDescriptor;
 import platform.client.descriptor.filter.RegularFilterGroupDescriptor;
 import platform.client.descriptor.increment.IncrementDependency;
@@ -12,13 +14,10 @@ import platform.client.logics.ClientForm;
 import platform.client.logics.classes.ClientClass;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
-import platform.client.Main;
 import platform.interop.serialization.RemoteDescriptorInterface;
-import platform.base.BaseUtils;
 
 import java.io.*;
 import java.util.*;
-import java.util.List;
 
 public class FormDescriptor extends IdentityDescriptor implements ClientIdentitySerializable {
 

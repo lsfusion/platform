@@ -1,7 +1,5 @@
 package platform.client.logics.classes;
 
-import platform.interop.Data;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;

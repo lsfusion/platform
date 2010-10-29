@@ -1,6 +1,8 @@
 package platform.base;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 public class ListCombinations<V> implements Iterable<List<V>> {
 

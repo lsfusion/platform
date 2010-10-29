@@ -1,6 +1,7 @@
 package platform.server.logics.property.derived;
 
 import platform.interop.Compare;
+import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.LogicalClass;
 import platform.server.data.expr.Expr;
@@ -13,7 +14,6 @@ import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.property.*;
 import platform.server.session.*;
-import platform.server.Settings;
 
 import java.util.Collection;
 import java.util.HashMap;

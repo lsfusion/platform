@@ -1,9 +1,9 @@
 package platform.client.descriptor.editor;
 
+import platform.client.SimplePropertyFilter;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.increment.editor.IncrementDialogEditor;
-import platform.client.SimplePropertyFilter;
 
 public class PropertyObjectEditor extends IncrementDialogEditor {
 

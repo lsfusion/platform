@@ -1,12 +1,12 @@
 package platform.server.form.entity;
 
 import platform.server.classes.CustomClass;
+import platform.server.form.entity.filter.NotFilterEntity;
+import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.PropertyValueImplement;
 import platform.server.logics.property.derived.MaxChangeProperty;
-import platform.server.form.entity.filter.NotFilterEntity;
-import platform.server.form.entity.filter.NotNullFilterEntity;
 
 public class DataChangeFormEntity<T extends BusinessLogics<T>> extends ClassFormEntity<T> {
 
