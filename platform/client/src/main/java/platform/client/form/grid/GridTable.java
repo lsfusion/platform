@@ -82,6 +82,13 @@ public abstract class GridTable extends ClientFormTable
             protected Boolean getSortDirection(int column) {
                 return GridTable.this.getSortDirection(column);
             }
+
+            @Override
+            public Component getTableCellRendererComponent(JTable itable, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                Component comp = super.getTableCellRendererComponent(itable, value, isSelected, hasFocus, row, column);
+                model.getColumnProperty(column).design.designHeader(comp);
+                return comp;
+            }
         });
 
         header.addMouseListener(new GridHeaderMouseListener() {

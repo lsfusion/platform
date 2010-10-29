@@ -84,6 +84,13 @@ public abstract class GridHeaderRenderer implements TableCellRenderer {
             add(iconLabel, BorderLayout.WEST);
         }
 
+        @Override
+        public void setFont(Font font) {
+            super.setFont(font);
+            if (textArea != null)
+                textArea.setFont(font);
+        }
+
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component renderer = tableCellRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 

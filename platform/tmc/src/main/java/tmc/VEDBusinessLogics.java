@@ -973,6 +973,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     public static Font FONT_SMALL_BOLD = new Font("Tahoma", Font.BOLD, 12);
     public static Font FONT_SMALL_PLAIN = new Font("Tahoma", Font.PLAIN, 12);
     public static Font FONT_MEDIUM_BOLD = new Font("Tahoma", Font.BOLD, 14);
+    public static Font FONT_MEDIUM_PLAIN = new Font("Tahoma", Font.PLAIN, 14);
     public static Font FONT_LARGE_BOLD = new Font("Tahoma", Font.BOLD, 24);
     public static Font FONT_HUGE_BOLD = new Font("Tahoma", Font.BOLD, 28);
 
@@ -1026,6 +1027,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             design.setFont(barcodeView, FONT_LARGE_BOLD);
             design.setFont(reverseBarcode, FONT_SMALL_BOLD);
+            design.setFont(barcodeAddClient, FONT_SMALL_BOLD);
             design.setFont(barcodeObjectName, FONT_LARGE_BOLD);
             design.setFont(documentBarcodePriceOv, FONT_LARGE_BOLD);
             design.setBackground(barcodeObjectName, new Color(240, 240, 240));
@@ -1517,6 +1519,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
 
         @Override
+        protected Font getDefaultFont() {
+            return FONT_MEDIUM_BOLD;
+        }
+
+        @Override
         public DefaultFormView createDefaultRichDesign() {
 
             DefaultFormView design = super.createDefaultRichDesign();
@@ -1538,6 +1545,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.get(objObligation.groupTo).grid.showFilter = false;
             design.get(objCoupon.groupTo).grid.autoHide = true;
             design.addIntersection(design.getGroupObjectContainer(objCoupon.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            design.setHeaderFont(FONT_MEDIUM_PLAIN);
+            design.setFont(FONT_LARGE_BOLD, objArt.groupTo);
 
             ObjectView objCouponView = design.get(objCoupon);
             objCouponView.classChooser.show = false;
@@ -2152,6 +2162,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
 
         @Override
+        protected Font getDefaultFont() {
+            return FONT_MEDIUM_BOLD;
+        }
+
+        @Override
         public ClientAction getClientApply(FormInstance<VEDBusinessLogics> formInstance) {
             if (toAdd) {
 
@@ -2181,6 +2196,14 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         @Override
         protected boolean hasExternalScreen() {
             return true;
+        }
+
+        @Override
+        public DefaultFormView createDefaultRichDesign() {
+            DefaultFormView design = super.createDefaultRichDesign();
+            design.setHeaderFont(FONT_MEDIUM_PLAIN);
+            design.setFont(FONT_LARGE_BOLD, objObligation.groupTo);
+            return design;
         }
     }
 

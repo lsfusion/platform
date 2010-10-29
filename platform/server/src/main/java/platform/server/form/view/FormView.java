@@ -266,6 +266,23 @@ public class FormView extends IdentityObject implements ServerIdentitySerializab
         property.design.font = font;
     }
 
+
+    public void setHeaderFont(Font font) {
+        for (PropertyDrawView property : getProperties()) {
+            setHeaderFont(property, font);
+        }
+    }
+
+    public void setHeaderFont(Font font, GroupObjectEntity groupObject) {
+        for (PropertyDrawView property : getProperties(groupObject)) {
+            setHeaderFont(property, font);
+        }
+    }
+
+    public void setHeaderFont(PropertyDrawView property, Font font) {
+        property.design.headerFont = font;
+    }
+
     public void setBackground(AbstractGroup group, Color background, GroupObjectEntity groupObject) {
 
         for (PropertyDrawView property : getProperties(group, groupObject)) {

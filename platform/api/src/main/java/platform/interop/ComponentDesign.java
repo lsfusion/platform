@@ -12,6 +12,8 @@ public class ComponentDesign implements Serializable {
         return (font == null ? comp.getFont() : font);
     }
 
+    public Font headerFont;
+
     public Color background;
     public Color foreground;
 
@@ -38,5 +40,10 @@ public class ComponentDesign implements Serializable {
 
         if (foreground != null)
             comp.setForeground(foreground);
+    }
+
+    public void designHeader(Component comp) {
+        if (headerFont != null)
+            comp.setFont(headerFont);
     }
 }
