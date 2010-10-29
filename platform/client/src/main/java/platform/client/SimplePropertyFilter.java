@@ -34,40 +34,66 @@ public class SimplePropertyFilter extends JPanel {
     JCheckBox emptyCheckBox; //отображение пустых свойств(от 0 параметров)
     JCheckBox isAnyCheckBox; //выбор логики all/any
     boolean and;    //and или or для GroupObject
+    public List<GroupObjectDescriptor> groupObjects;
 
     public SimplePropertyFilter(FormDescriptor form, GroupObjectDescriptor descriptor) {
-        super(new BorderLayout());
+        super(new BorderLayout(5, 5));
         this.form = form;
-        dialog = new JDialog();
-        dialog.setModal(true);
-        leftPane = new JPanel(new BorderLayout());
-        rightPane = new JPanel(new BorderLayout());
-        listModel = new DefaultListModel();
-        list = new JList(listModel);
         treeModel = new DefaultTreeModel(getNode("Группы"));
         tree = new JTree(treeModel);
+        groupObjects = form.groupObjects;
+        currentElement = groupObjects.indexOf(descriptor);
+        if (currentElement < 0) {
+            currentElement = 0;
+        }
+        initUI();
+    }
+
+    public SimplePropertyFilter(List<GroupObjectDescriptor> groupObjects) {
+        super(new BorderLayout(5, 5));
+        this.groupObjects = groupObjects;
+        treeModel = new DefaultTreeModel(getNode("Группы"));
+        tree = new JTree(treeModel);
+        currentElement = -1;
+        initUI();
+    }
+
+    void initUI() {
+        dialog = new JDialog();
+        dialog.setModal(true);
+        leftPane = new JPanel(new BorderLayout(5, 5));
+        rightPane = new JPanel(new BorderLayout(5, 5));
+        listModel = new DefaultListModel();
+        list = new JList(listModel);
+
 
         list.getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        leftPane.add(list, BorderLayout.CENTER);
-        JPanel radioPanel = new JPanel(new GridLayout(3, 1));
-        radioPanel.add(getDirectPanel());
+        leftPane.add(new TitledPanel("Группы объектов", list), BorderLayout.CENTER);
+        JPanel radioPanel = new JPanel(new GridLayout(getPanelCount(), 1, 5, 5));
+        if (hasDirectPanel()) {
+            radioPanel.add(getDirectPanel());
+        }
         radioPanel.add(getLogicPanel());
         radioPanel.add(getSetPanel());
         leftPane.add(radioPanel, BorderLayout.SOUTH);
         rightPane.add(new JScrollPane(tree), BorderLayout.CENTER);
 
-        currentElement = form.groupObjects.indexOf(descriptor);
-        if (currentElement < 0) {
-            currentElement = 0;
-        }
         add(leftPane, BorderLayout.WEST);
         add(rightPane, BorderLayout.CENTER);
         updateList();
     }
 
+    int getPanelCount() {
+        return 3;
+    }
+
+    boolean hasDirectPanel() {
+        return true;
+    }
+
     public void updateList() {
         listModel.removeAllElements();
-        for (GroupObjectDescriptor groupObjectDescriptor : form.groupObjects) {
+        for (GroupObjectDescriptor groupObjectDescriptor : groupObjects) {
             listModel.addElement(groupObjectDescriptor.client.toString());
         }
         list.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -75,13 +101,17 @@ public class SimplePropertyFilter extends JPanel {
                 updateTree();
             }
         });
-        list.getSelectionModel().addSelectionInterval(currentElement, currentElement);
+        if (currentElement < 0) {
+            list.getSelectionModel().addSelectionInterval(0, groupObjects.size());
+        } else {
+            list.getSelectionModel().addSelectionInterval(currentElement, currentElement);
+        }
     }
 
     public void updateTree() {
         int num = 0;
         ArrayList<GroupObjectDescriptor> dependList = new ArrayList<GroupObjectDescriptor>();
-        for (GroupObjectDescriptor groupObjectDescriptor : form.groupObjects) {
+        for (GroupObjectDescriptor groupObjectDescriptor : groupObjects) {
             if (list.getSelectionModel().isSelectedIndex(num++)) {
                 dependList.add(groupObjectDescriptor);
             }
@@ -90,7 +120,7 @@ public class SimplePropertyFilter extends JPanel {
         if (subSetCheckBox.isSelected()) {
             objectList = new ArrayList<GroupObjectDescriptor>(dependList);
         } else {
-            objectList = new ArrayList<GroupObjectDescriptor>(form.groupObjects);
+            objectList = new ArrayList<GroupObjectDescriptor>(groupObjects);
         }
 
         List<PropertyObjectDescriptor> properties = FormDescriptor.getProperties(objectList, Main.remoteLogics, dependList, and, isAnyCheckBox.isSelected());
@@ -123,7 +153,7 @@ public class SimplePropertyFilter extends JPanel {
         DefaultMutableTreeNode currentNode = (DefaultMutableTreeNode) treeModel.getRoot();
         while (!stack.isEmpty()) {
             boolean found = false;
-            for (DefaultMutableTreeNode child : Collections.list((Enumeration<DefaultMutableTreeNode>)currentNode.children())) {
+            for (DefaultMutableTreeNode child : Collections.list((Enumeration<DefaultMutableTreeNode>) currentNode.children())) {
                 Object userObj = child.getUserObject();
                 if (userObj.equals(stack.peek())) {
                     currentNode = child;
@@ -193,7 +223,7 @@ public class SimplePropertyFilter extends JPanel {
     }
 
     private JPanel getDirectPanel() {
-        JPanel radioPanel = new JPanel(new GridLayout(1, 2));
+        JPanel radioPanel = new JPanel(new GridLayout(1, 2, 5, 5));
         JButton upButton = new JButton("Верхние");
         upButton.setActionCommand("UP");
         //upButton.setSelected(true);
@@ -207,9 +237,9 @@ public class SimplePropertyFilter extends JPanel {
                 if (e.getActionCommand().equals("UP")) {
                     changeSelection(0, currentElement);
                 } else if (e.getActionCommand().equals("DOWN")) {
-                    changeSelection(currentElement, form.groupObjects.size());
+                    changeSelection(currentElement, groupObjects.size());
                 } else if (e.getActionCommand().equals("ALL")) {
-                    changeSelection(0, form.groupObjects.size());
+                    changeSelection(0, groupObjects.size());
                 }
                 updateTree();
             }

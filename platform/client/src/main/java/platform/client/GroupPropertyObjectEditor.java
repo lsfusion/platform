@@ -20,6 +20,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.*;
+import java.util.List;
 
 public class GroupPropertyObjectEditor extends SimplePropertyFilter implements IncrementView {
 
@@ -38,13 +39,20 @@ public class GroupPropertyObjectEditor extends SimplePropertyFilter implements I
 
     public GroupPropertyObjectEditor(FormDescriptor form, GroupObjectDescriptor descriptor) {
         super(form, descriptor);
-
         groupObject = descriptor;
+        initTree();
+    }
 
-        tree.setCellRenderer(new CheckRenderer());
+    public GroupPropertyObjectEditor(List<GroupObjectDescriptor> groupObjects) {
+        super(groupObjects);
+        initTree();
+    }
+
+    void initTree(){
+                tree.setCellRenderer(new CheckRenderer());
         tree.putClientProperty("JTree.lineStyle", "Angled");
         tree.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
+            public void mousePressed(MouseEvent e) {
                 int x = e.getX();
                 int y = e.getY();
                 int row = tree.getRowForLocation(x, y);

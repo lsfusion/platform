@@ -1,6 +1,6 @@
 package platform.client.descriptor.editor;
 
-import platform.client.SimplePropertyFilter;
+import platform.client.ListGroupObjectEditor;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.PropertyDrawDescriptor;
@@ -63,15 +63,11 @@ public class PropertyDrawEditor extends GroupElementEditor {
         add(Box.createRigidArea(new Dimension(5, 5)));
 
         // propertyCaption из списка columnGroupObjects (+objects без toDraw)
-        add(new TitledPanel("Динам. заголовок", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "propertyCaption") {
-            public List<?> getList() {
-                return FormDescriptor.getProperties(descriptor.getColumnGroupObjects(), null);
+        add(new TitledPanel("Динам. заголовок", new IncrementDialogEditor(descriptor, "propertyCaption") {
+            protected Object dialogValue(Object currentValue) {
+                return new ListGroupObjectEditor(descriptor.getColumnGroupObjects()).getPropertyObject();
             }
-
-            public void fillListDependencies() {
-                IncrementDependency.add(descriptor, "columnGroupObjects", this);
-            }
-        })));
+        }));
 
         add(Box.createRigidArea(new Dimension(5, 5)));
 
