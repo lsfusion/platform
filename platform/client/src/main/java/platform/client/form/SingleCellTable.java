@@ -4,10 +4,7 @@ import platform.client.SwingUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 
 public abstract class SingleCellTable extends ClientFormTable {
 
@@ -38,7 +35,6 @@ public abstract class SingleCellTable extends ClientFormTable {
         SwingUtils.addFocusTraversalKey(this,
                 KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
                 KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.SHIFT_DOWN_MASK));
-
    }
 
     // приходится делать вот таким извращенным способом, поскольку ComponentListener срабатывает после перерисовки формы

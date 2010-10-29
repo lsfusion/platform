@@ -32,6 +32,10 @@ public class ClientFormDockable extends FormDockable {
         return clientForm;
     }
 
+    public ClientFormController getClientForm() {
+        return clientForm;
+    }
+
     @Override
     public boolean pageChanged() {
         return clientForm.dataChanged;

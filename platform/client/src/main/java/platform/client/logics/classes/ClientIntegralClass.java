@@ -22,15 +22,17 @@ abstract public class ClientIntegralClass extends ClientDataClass {
 
     @Override
     public String getMinimumMask() {
-        return "999 999";
-    }
-
-    public String getPreferredMask() {
         return "9 999 999";
     }
 
+    public String getPreferredMask() {
+        return "999 999 999";
+    }
+
     public Format getDefaultFormat() {
-        return NumberFormat.getInstance();
+        NumberFormat format = NumberFormat.getInstance();
+        format.setGroupingUsed(true);
+        return format;
     }
 
     protected abstract Class getJavaClass();

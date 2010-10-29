@@ -1,6 +1,8 @@
 package platform.fullclient.layout;
 
-import bibliothek.gui.dock.common.*;
+import bibliothek.gui.dock.common.CControl;
+import bibliothek.gui.dock.common.CGridArea;
+import bibliothek.gui.dock.common.MultipleCDockableFactory;
 import bibliothek.gui.dock.common.action.predefined.CCloseAction;
 import bibliothek.gui.dock.common.event.CDockableAdapter;
 import bibliothek.gui.dock.common.intern.CDockable;
@@ -106,12 +108,14 @@ public class ViewManager {
 
         public FormDockable read(FormLayout layout) {
             try {
-                FormDockable page = new ClientFormDockable(layout.getFormID(), this, mainNavigator);
+                ClientFormDockable page = new ClientFormDockable(layout.getFormID(), this, mainNavigator);
                 page.addCDockableStateListener(new CDockableStateAdapter(page));
                 changeCloseAction(page);
+
+                //эмулируем получение фокуса, чтобы не срабатывала переактивация при 1м клике по форме
+                page.getClientForm().getComponent().gainedFocus();
                 return page;
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 return null;
             }

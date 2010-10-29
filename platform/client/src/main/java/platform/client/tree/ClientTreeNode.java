@@ -146,7 +146,7 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
 
                 @Override
                 public boolean canBeDefault(TreePath path) {
-                    return captions.length == 1;
+                    return false;
                 }
             });
         }

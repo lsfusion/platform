@@ -14,11 +14,6 @@ public abstract class ClassFilteredAction extends ClientTreeAction {
 
     @Override
     public boolean isApplicable(TreePath path) {
-        if (path == null || clazz == null) {
-            return false;
-        }
-
-        Object node = path.getLastPathComponent();
-        return node != null && clazz.isAssignableFrom(node.getClass());
+        return path != null && clazz != null && clazz.isInstance(path.getLastPathComponent());
     }
 }

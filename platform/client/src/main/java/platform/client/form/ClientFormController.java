@@ -107,7 +107,7 @@ public class ClientFormController {
             boolean firstGainedFocus = true;
 
             @Override
-            protected void gainedFocus() {
+            public void gainedFocus() {
 
                 if (remoteForm == null) // типа если сработал closed, то ничего вызывать не надо
                     return;

@@ -54,7 +54,7 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
             MouseEvent event = (MouseEvent) e;
 
             //noinspection RedundantIfStatement
-            if (event.getClickCount() < 2) return false;
+//            if (event.getClickCount() < 2) return false;
 
             return true;
         }

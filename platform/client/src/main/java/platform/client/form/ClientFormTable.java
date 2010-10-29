@@ -8,6 +8,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.util.EventObject;
 
 public abstract class ClientFormTable extends JTable {
@@ -89,6 +90,15 @@ public abstract class ClientFormTable extends JTable {
     }
 
     public boolean editCellAt(int row, int column, EventObject e){
+        if (e instanceof MouseEvent) {
+            // чтобы не срабатывало редактирование при изменении ряда,
+            // потому что всё равно будет апдейт
+            int selRow = getSelectedRow();
+            if (selRow != -1 && selRow != row) {
+                return false;
+            }
+        }
+
         boolean result = super.editCellAt(row, column, e);
         if (result) {
             final Component editor = getEditorComponent();

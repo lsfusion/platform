@@ -31,7 +31,7 @@ public abstract class ClientFormLayout extends JPanel {
     // отображение объектов от сервера на контейнеры для рисования
     private Map<ClientContainer, ClientFormContainer> contviews = new HashMap<ClientContainer, ClientFormContainer>();
 
-    protected abstract void gainedFocus();
+    public abstract void gainedFocus();
 
     private FocusListener focusListener;
 
