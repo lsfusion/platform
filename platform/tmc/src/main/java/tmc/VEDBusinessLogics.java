@@ -1084,7 +1084,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             this.toAdd = toAdd;
 
-            objDoc = addSingleGroupObject(documentClass, "Документ", getDocumentProps());
+            objDoc = addSingleGroupObject(documentClass, getDocumentProps());
 
 
             if (toAdd) {
@@ -1219,7 +1219,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected ArticleFormEntity(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd, boolean filled) {
             super(parent, ID, documentClass, toAdd);
 
-            objArt = addSingleGroupObject(article, "Товар", getArticleProps());
+            objArt = addSingleGroupObject(article, getArticleProps());
             addPropertyDraw(objDoc, objArt, getDocumentArticleProps());
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
@@ -1354,7 +1354,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             super(parent, ID, documentClass, toAdd, filled);
 
             if (!noOuters) {
-                objOuter = addSingleGroupObject(commitClass, "Партия", baseGroup, true);
+                objOuter = addSingleGroupObject(commitClass, baseGroup, true);
                 addPropertyDraw(objOuter, objDoc, baseGroup, true, documentGroup, true);
                 addPropertyDraw(objOuter, objDoc, objArt, baseGroup, true, documentGroup, true);
                 addPropertyDraw(objOuter, objArt, baseGroup, true);
@@ -1738,7 +1738,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         KeyStroke.getKeyStroke(KeyEvent.VK_F9, InputEvent.SHIFT_DOWN_MASK)), toAdd);
             addRegularFilterGroup(filterGroup);
 
-            objArt = addSingleGroupObject(article, "Товар");
+            objArt = addSingleGroupObject(article);
 
             addPropertyDraw(changeQuantityOrder, objInner, objArt);
             addPropertyDraw(barcode, objArt);
@@ -1773,7 +1773,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(incStore, objDoc), Compare.EQUALS, shopImplement));
 
             if (!noOuters) {
-                objOuter = addSingleGroupObject(commitDelivery, "Партия", baseGroup, true);
+                objOuter = addSingleGroupObject(commitDelivery, baseGroup, true);
 
                 addPropertyDraw(objInner, objOuter, objDoc, baseGroup, true, documentGroup, true);
                 addPropertyDraw(objInner, objOuter, objDoc, objArt, baseGroup, true, documentGroup, true);
@@ -1955,10 +1955,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected SupplierArticleFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Ассортимент поставщиков");
 
-            ObjectEntity objSupplier = addSingleGroupObject(supplier, "Поставщик", allGroup, true);
+            ObjectEntity objSupplier = addSingleGroupObject(supplier, allGroup, true);
             addObjectActions(this, objSupplier);
 
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", allGroup, true);
+            ObjectEntity objArt = addSingleGroupObject(article, allGroup, true);
             addObjectActions(this, objArt);
 
             addPropertyDraw(objSupplier, objArt, allGroup, true);
@@ -1973,9 +1973,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected StoreArticleFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Остатки по складу");
 
-            ObjectEntity objStore = addSingleGroupObject(store, "Склад", allGroup, true);
-            objArt = addSingleGroupObject(article, "Товар", allGroup, true);
-            ObjectEntity objOuter = addSingleGroupObject(commitDelivery, "Партия", allGroup, true);
+            ObjectEntity objStore = addSingleGroupObject(store, allGroup, true);
+            objArt = addSingleGroupObject(article, allGroup, true);
+            ObjectEntity objOuter = addSingleGroupObject(commitDelivery, allGroup, true);
 
             addPropertyDraw(objStore, objArt, allGroup, true);
             addPropertyDraw(objStore, objOuter, allGroup, true);
@@ -1996,10 +1996,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected FormatArticleFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Остатки по форматам");
 
-            ObjectEntity objFormat = addSingleGroupObject(format, "Формат", allGroup, true);
+            ObjectEntity objFormat = addSingleGroupObject(format, allGroup, true);
             addObjectActions(this, objFormat);
 
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", allGroup, true);
+            ObjectEntity objArt = addSingleGroupObject(article, allGroup, true);
 
             addPropertyDraw(objFormat, objArt, allGroup, true);
 
@@ -2047,7 +2047,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             ObjectEntity objDoc = addSingleGroupObject(commitWholeShopInc, "Документ", baseGroup, true);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup, true);
+            ObjectEntity objArt = addSingleGroupObject(article, baseGroup, true);
 
             addPropertyDraw(objDoc, objArt, articleQuantity, shopPrice);
 
@@ -2064,7 +2064,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             ObjectEntity objDoc = addSingleGroupObject(documentShopPrice, "Документ", baseGroup, true);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup, true);
+            ObjectEntity objArt = addSingleGroupObject(article, baseGroup, true);
 
             addPropertyDraw(objDoc, objArt, articleQuantity, shopPrice, prevPrice, revalBalance);
 
@@ -2078,11 +2078,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected ActionFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Акции");
 
-            ObjectEntity objAction = addSingleGroupObject(action, "Акция", allGroup, true);
+            ObjectEntity objAction = addSingleGroupObject(action, allGroup, true);
             addObjectActions(this, objAction);
 
-            ObjectEntity objArtGroup = addSingleGroupObject(articleGroup, "Группа товаров", allGroup, true);
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", allGroup, true);
+            ObjectEntity objArtGroup = addSingleGroupObject(articleGroup, allGroup, true);
+            ObjectEntity objArt = addSingleGroupObject(article, allGroup, true);
 
             if (noArticleGroups)
                 objArtGroup.groupTo.initClassView = ClassViewType.HIDE;
@@ -2120,7 +2120,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             ObjectEntity objDoc = addSingleGroupObject(documentShopPrice, "Документ", baseGroup, true);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup, true);
+            ObjectEntity objArt = addSingleGroupObject(article, baseGroup, true);
 
             addPropertyDraw(objDoc, objArt, shopPrice);
 
@@ -2151,7 +2151,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             if (!toAdd)
                 addPropertyDraw(date, objDoc);
-            objObligation = addSingleGroupObject(giftObligation, "Подарочный сертификат");
+            objObligation = addSingleGroupObject(giftObligation);
             addPropertyDraw(barcode, objObligation);
             addPropertyDraw(name, objObligation);
             addPropertyDraw(obligationSum, objObligation);
@@ -2310,8 +2310,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected CouponArticleFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Товары по купонам");
 
-            ObjectEntity objArtGroup = addSingleGroupObject(articleGroup, "Группа товаров", baseGroup, true, couponGroup, true);
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup, true, couponGroup, true);
+            ObjectEntity objArtGroup = addSingleGroupObject(articleGroup, baseGroup, true, couponGroup, true);
+            ObjectEntity objArt = addSingleGroupObject(article, baseGroup, true, couponGroup, true);
 
             if (noArticleGroups)
                 objArtGroup.groupTo.initClassView = ClassViewType.HIDE;

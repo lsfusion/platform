@@ -159,6 +159,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return object;
     }
 
+    protected ObjectEntity addSingleGroupObject(ValueClass baseClass, Object... groups) {
+        return addSingleGroupObject(baseClass, null, groups);
+    }
+
     protected void addGroup(GroupObjectEntity group) {
         groups.add(group);
     }

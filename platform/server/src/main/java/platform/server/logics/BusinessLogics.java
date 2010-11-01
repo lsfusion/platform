@@ -698,8 +698,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         protected UserPolicyFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Политики пользователей");
 
-            ObjectEntity objUser = addSingleGroupObject(customUser, "Пользователь", selection, baseGroup, true);
-            ObjectEntity objPolicy = addSingleGroupObject(policy, "Политика", baseGroup, true);
+            ObjectEntity objUser = addSingleGroupObject(customUser, selection, baseGroup, true);
+            ObjectEntity objPolicy = addSingleGroupObject(policy, baseGroup, true);
 
             addObjectActions(this, objUser);
 

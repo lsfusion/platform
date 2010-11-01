@@ -415,11 +415,11 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         public RecordFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", baseGroup);
+            ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
             objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
-            ObjectEntity objOutOp = addSingleGroupObject(outOperation, "Операция расхода", baseGroup);
-            ObjectEntity objExOp = addSingleGroupObject(exOperation, "Операция конверсии", baseGroup);
+            ObjectEntity objOutOp = addSingleGroupObject(outOperation, baseGroup);
+            ObjectEntity objExOp = addSingleGroupObject(exOperation, baseGroup);
 
             addPropertyDraw(objExOp, inOperationGroup);
             addPropertyDraw(objOutOp, payerGroup);
@@ -439,13 +439,13 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
          public IncomeFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", baseGroup);
+            ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
             objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
 
-            ObjectEntity objIncCash = addSingleGroupObject(incomeCash, "Приход по налу", baseGroup);
-            objIncNotCash = addSingleGroupObject(incomeNotCash, "Приход по безналу", baseGroup);
-            objOutcome = addSingleGroupObject(outcomeCost, "Расход", baseGroup);
+            ObjectEntity objIncCash = addSingleGroupObject(incomeCash, baseGroup);
+            objIncNotCash = addSingleGroupObject(incomeNotCash, baseGroup);
+            objOutcome = addSingleGroupObject(outcomeCost, baseGroup);
 
             addPropertyDraw(objIncCash, objIncNotCash, objOutcome, baseGroup);
 
@@ -474,16 +474,16 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         public ExtraFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", baseGroup);
+            ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
             objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
-            ObjectEntity objExtraStateOp = addSingleGroupObject(extraSection, "Статья затрат", baseGroup);
+            ObjectEntity objExtraStateOp = addSingleGroupObject(extraSection, baseGroup);
             ObjectEntity objYearOp = addSingleGroupObject(YearClass.instance, "Год", baseGroup);
             objYearOp.groupTo.initClassView = ClassViewType.PANEL;
             objYearOp.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
-            objMonthOp = addSingleGroupObject(absMonth, "Месяц", baseGroup);
-            objCur = addSingleGroupObject(currency, "Затраты", baseGroup);
-            ObjectEntity objExtraOp = addSingleGroupObject(extraCost, "Доп. затраты", baseGroup);
+            objMonthOp = addSingleGroupObject(absMonth, baseGroup);
+            objCur = addSingleGroupObject(currency, baseGroup);
+            ObjectEntity objExtraOp = addSingleGroupObject(extraCost, baseGroup);
 
             addPropertyDraw(objExtraStateOp, objYearOp, objMonthOp, baseGroup);
             addPropertyDraw(objDepartment, objMonthOp, objYearOp, objExtraStateOp, baseGroup);
@@ -521,18 +521,18 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
         public SpecialRecordFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
-            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", baseGroup);
+            ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
             objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
-            ObjectEntity objPersonOp = addSingleGroupObject(person, "Персонал", baseGroup);
+            ObjectEntity objPersonOp = addSingleGroupObject(person, baseGroup);
             ObjectEntity objYearOp = addSingleGroupObject(YearClass.instance, "Год", baseGroup);
             objYearOp.groupTo.initClassView = ClassViewType.PANEL;
             objYearOp.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
-            objMonthOp = addSingleGroupObject(absMonth, "Месяц", baseGroup);
-            objCur = addSingleGroupObject(currency, "Затраты", baseGroup);
-            objExtraStateOp = addSingleGroupObject(extraPersonSection, "Статья затрат", baseGroup);
+            objMonthOp = addSingleGroupObject(absMonth, baseGroup);
+            objCur = addSingleGroupObject(currency, baseGroup);
+            objExtraStateOp = addSingleGroupObject(extraPersonSection, baseGroup);
 
-            objPayOp = addSingleGroupObject(pay, "Выплата", baseGroup);
+            objPayOp = addSingleGroupObject(pay, baseGroup);
 
             addPropertyDraw(objPersonOp, objYearOp, objMonthOp, salaryGroup);
             addPropertyDraw(objYearOp, objMonthOp, dateTimeGroup);
@@ -574,12 +574,12 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
         public MissionFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
-            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", baseGroup);
+            ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
             objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
-            ObjectEntity objMission = addSingleGroupObject(mission, "Командировка", baseGroup);
-            ObjectEntity objPerson = addSingleGroupObject(person, "Сотрудник", baseGroup);
-            ObjectEntity objOutOp = addSingleGroupObject(misOperation, "Расх. команд.", baseGroup);
+            ObjectEntity objMission = addSingleGroupObject(mission, baseGroup);
+            ObjectEntity objPerson = addSingleGroupObject(person, baseGroup);
+            ObjectEntity objOutOp = addSingleGroupObject(misOperation, baseGroup);
 
             addPropertyDraw(objMission, objPerson, baseGroup);
             addPropertyDraw(objOutOp, payerGroup);
@@ -597,12 +597,12 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
         public VacationFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
-            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", baseGroup);
+            ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
             objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
             
-            ObjectEntity objPerson = addSingleGroupObject(person, "Сотрудник", baseGroup);
-            ObjectEntity objVacation = addSingleGroupObject(vacation, "Отпуск", baseGroup);
+            ObjectEntity objPerson = addSingleGroupObject(person, baseGroup);
+            ObjectEntity objVacation = addSingleGroupObject(vacation, baseGroup);
 
             addPropertyDraw(objVacation, objPerson, baseGroup);
 
@@ -618,12 +618,12 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         public DepartmentBalanceFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", baseGroup);
+            ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
             objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
-            ObjectEntity objCur = addSingleGroupObject(currency, "Валюта", baseGroup);
-            ObjectEntity objInOp = addSingleGroupObject(inAbsOperation, "Операция пр.", baseGroup, true);
-            ObjectEntity objOutOp = addSingleGroupObject(outAbsOperation, "Операция расх.", baseGroup, true);
+            ObjectEntity objCur = addSingleGroupObject(currency, baseGroup);
+            ObjectEntity objInOp = addSingleGroupObject(inAbsOperation, baseGroup, true);
+            ObjectEntity objOutOp = addSingleGroupObject(outAbsOperation, baseGroup, true);
             addPropertyDraw(baseGroup, true, objCur, objInOp);
             addPropertyDraw(baseGroup, true, objCur, objOutOp);
             addPropertyDraw(baseGroup, false, objDepartment, objCur);
@@ -645,11 +645,11 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         public ReimbursementFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objPayer = addSingleGroupObject(payer, "Плательщик", baseGroup);
-            objCurrency = addSingleGroupObject(currency, "Валюта", baseGroup);
-            objDepartment = addSingleGroupObject(department, "Отдел", baseGroup);
-            objOutOp = addSingleGroupObject(payerAbs, "Оплаты", baseGroup);
-            objReimbursement = addSingleGroupObject(reimbursement, "Возмещение", baseGroup);
+            ObjectEntity objPayer = addSingleGroupObject(payer, baseGroup);
+            objCurrency = addSingleGroupObject(currency, baseGroup);
+            objDepartment = addSingleGroupObject(department, baseGroup);
+            objOutOp = addSingleGroupObject(payerAbs, baseGroup);
+            objReimbursement = addSingleGroupObject(reimbursement, baseGroup);
 
             addObjectActions(this, objReimbursement);
             addPropertyDraw(objPayer, objCurrency, baseGroup);
@@ -684,7 +684,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
         public DepartmentRevenueFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
-            ObjectEntity objDepartment = addSingleGroupObject(department, "Отдел", baseGroup);
+            ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
             objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
             addPropertyDraw(baseCurrencyName);
@@ -692,11 +692,11 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             ObjectEntity objYearOp = addSingleGroupObject(YearClass.instance, "Год", baseGroup);
             objYearOp.groupTo.initClassView = ClassViewType.PANEL;
             objYearOp.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
-            ObjectEntity objMonthOp = addSingleGroupObject(absMonth, "Месяц", baseGroup);
+            ObjectEntity objMonthOp = addSingleGroupObject(absMonth, baseGroup);
 
             addPropertyDraw(baseCurGroup, true, objDepartment, objMonthOp, objYearOp);
 
-            ObjectEntity objCurrency = addSingleGroupObject(currency, "Валюта", baseGroup);
+            ObjectEntity objCurrency = addSingleGroupObject(currency, baseGroup);
 
             addPropertyDraw(personGroup, true, objDepartment, objMonthOp, objYearOp, objCurrency);
             addPropertyDraw(extraGroup, true, objDepartment, objMonthOp, objYearOp, objCurrency);
