@@ -1552,7 +1552,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         protected Font getDefaultFont() {
-            return FONT_MEDIUM_BOLD;
+            if (toAdd)
+                return FONT_MEDIUM_BOLD;
+            else
+                return super.getDefaultFont();
         }
 
         @Override
@@ -1569,6 +1572,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 design.get(objIssue.groupTo).grid.autoHide = true;
                 design.addIntersection(design.getGroupObjectContainer(objIssue.groupTo), design.getGroupObjectContainer(objCoupon.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
                 design.addIntersection(design.getGroupObjectContainer(objIssue.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+                design.getGroupPropertyContainer(null, cashRegOperGroup).add(design.get(getPropertyDraw(payWithCard)));
+                design.getGroupPropertyContainer(null, cashRegOperGroup).add(design.get(getPropertyDraw(printOrderCheck)));
+
+                design.get(getPropertyDraw(payWithCard)).constraints.directions = new SimplexComponentDirections(0.1, -0.1, 0, 0.1);
+                design.get(getPropertyDraw(printOrderCheck)).constraints.directions = new SimplexComponentDirections(0.1, -0.1, 0, 0.1);
             }
 
             design.get(objCoupon.groupTo).grid.minRowCount = 2;
@@ -1578,8 +1587,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.get(objCoupon.groupTo).grid.autoHide = true;
             design.addIntersection(design.getGroupObjectContainer(objCoupon.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
-            design.setHeaderFont(FONT_MEDIUM_PLAIN);
-            design.setFont(FONT_LARGE_BOLD, objArt.groupTo);
+            if (toAdd) {
+                design.setHeaderFont(FONT_MEDIUM_PLAIN);
+                design.setFont(FONT_LARGE_BOLD, objArt.groupTo);
+            }
 
             ObjectView objCouponView = design.get(objCoupon);
             objCouponView.classChooser.show = false;
@@ -2215,7 +2226,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         protected Font getDefaultFont() {
-            return FONT_MEDIUM_BOLD;
+            if (toAdd)
+                return FONT_MEDIUM_BOLD;
+            else
+                return super.getDefaultFont();    
         }
 
         @Override
@@ -2253,8 +2267,15 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         @Override
         public DefaultFormView createDefaultRichDesign() {
             DefaultFormView design = super.createDefaultRichDesign();
-            design.setHeaderFont(FONT_MEDIUM_PLAIN);
-            design.setFont(FONT_LARGE_BOLD, objObligation.groupTo);
+
+            if (toAdd) {
+                design.getGroupPropertyContainer(null, cashRegOperGroup).add(design.get(getPropertyDraw(payWithCard)));
+                design.get(getPropertyDraw(payWithCard)).constraints.directions = new SimplexComponentDirections(0.1, -0.1, 0, 0.1);
+
+                design.setHeaderFont(FONT_MEDIUM_PLAIN);
+                design.setFont(FONT_LARGE_BOLD, objObligation.groupTo);
+            }
+            
             return design;
         }
     }
