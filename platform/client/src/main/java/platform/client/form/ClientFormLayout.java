@@ -92,31 +92,33 @@ public abstract class ClientFormLayout extends JPanel {
         bindings.get(ks).put(groupObject, run);
     }
 
-    // реализуем "обратную" обработку нажатий кнопок
+     // реализуем "обратную" обработку нажатий кнопок
     @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-
-        // делаем так, чтобы первым нажатия клавиш обрабатывал GroupObject, у которого стоит фокус
-        // хотя конечно идиотизм это делать таким образом
-        Component comp = e.getComponent(); //KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-        while (comp != null && !(comp instanceof Window) && comp != this) {
-            if (comp instanceof JComponent) {
-                ClientGroupObject groupObject = (ClientGroupObject)((JComponent)comp).getClientProperty("groupObject");
-                if (groupObject != null) {
-                    Map<ClientGroupObject, KeyListener> keyBinding = bindings.get(ks);
-                    if (keyBinding != null && keyBinding.containsKey(groupObject)) {
-                        keyBinding.get(groupObject).keyPressed(e);
-                        return true;
+        if (condition == JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT) {
+            // делаем так, чтобы первым нажатия клавиш обрабатывал GroupObject, у которого стоит фокус
+            // хотя конечно идиотизм это делать таким образом
+            Component comp = e.getComponent(); //KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+            while (comp != null && !(comp instanceof Window) && comp != this) {
+                if (comp instanceof JComponent) {
+                    ClientGroupObject groupObject = (ClientGroupObject) ((JComponent) comp).getClientProperty("groupObject");
+                    if (groupObject != null) {
+                        Map<ClientGroupObject, KeyListener> keyBinding = bindings.get(ks);
+                        if (keyBinding != null && keyBinding.containsKey(groupObject)) {
+                            keyBinding.get(groupObject).keyPressed(e);
+                            return true;
+                        }
+                        break;
                     }
-                    break;
                 }
+                comp = comp.getParent();
             }
-            comp = comp.getParent();
-        }
 
-        Map<ClientGroupObject, KeyListener> keyBinding = bindings.get(ks);
-        if (keyBinding != null && !keyBinding.isEmpty())
-            keyBinding.values().iterator().next().keyPressed(e);
+            Map<ClientGroupObject, KeyListener> keyBinding = bindings.get(ks);
+            if (keyBinding != null && !keyBinding.isEmpty()) {
+                keyBinding.values().iterator().next().keyPressed(e);
+            }
+        }
 
         return super.processKeyBinding(ks, e, condition, pressed);
     }
