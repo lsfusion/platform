@@ -29,6 +29,8 @@ public class FormView implements ServerIdentitySerializable {
     // нужен для того, чтобы генерировать уникальный идентификаторы объектам рисования, для передачи их клиенту
     protected IDGenerator idGenerator;
 
+    public Integer overridePageWidth;
+
     public ContainerView mainContainer;
 
     // список групп

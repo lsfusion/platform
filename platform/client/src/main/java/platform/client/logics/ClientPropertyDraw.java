@@ -113,11 +113,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public RemoteDialogInterface createEditorForm(RemoteFormInterface form) throws RemoteException {
-        return form.createEditorPropertyDialog(ID);
+        return form.createEditorPropertyDialog(getID());
     }
 
     public RemoteDialogInterface createClassForm(RemoteFormInterface form, Integer value) throws RemoteException {
-        return form.createClassPropertyDialog(ID, BaseUtils.objectToInt(value));
+        return form.createClassPropertyDialog(getID(), BaseUtils.objectToInt(value));
     }
 
     public int getMinimumWidth(JComponent comp) {
@@ -223,7 +223,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public ClientType getPropertyChangeType(ClientFormController form) throws IOException {
-        DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(form.remoteForm.getPropertyChangeType(this.ID)));
+        DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(form.remoteForm.getPropertyChangeType(getID())));
         if (inStream.readBoolean()) {
             return null;
         }

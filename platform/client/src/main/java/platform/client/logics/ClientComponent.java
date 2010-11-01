@@ -1,6 +1,7 @@
 package platform.client.logics;
 
 import platform.base.IdentityObject;
+import platform.client.descriptor.IdentityDescriptor;
 import platform.client.descriptor.editor.ComponentEditor;
 import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.nodes.ComponentNode;
@@ -19,9 +20,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class ClientComponent extends IdentityObject implements Serializable, ClientIdentitySerializable {
-
-    public int ID; // ID есть и у свойст и у объектов, так что чтобы не путаться
+public abstract class ClientComponent extends IdentityDescriptor implements Serializable, ClientIdentitySerializable {
 
     public ComponentDesign design = new ComponentDesign();
 
@@ -33,14 +32,6 @@ public abstract class ClientComponent extends IdentityObject implements Serializ
     public boolean show = true;
 
     public ClientComponent() {
-    }
-
-    public int getID() {
-        return ID;
-    }
-
-    public void setID(int ID) {
-        this.ID = ID;
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

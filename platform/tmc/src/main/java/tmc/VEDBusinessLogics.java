@@ -937,6 +937,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         saleRetailCashRegisterElement = new NavigatorElement(saleRetailElement, 1300, "Касса");
         commitSaleForm = addFormEntity(new CommitSaleCheckRetailFormEntity(saleRetailCashRegisterElement, 1310, true));
         commitSaleBrowseForm = addFormEntity(new CommitSaleCheckRetailFormEntity(commitSaleForm, 1320, false));
+        addFormEntity(new CommitSaleCheckRetailExcelFormEntity(commitSaleForm, 1323, "Выгрузка в Excel"));
         saleCheckCertForm = addFormEntity(new SaleCheckCertFormEntity(saleRetailCashRegisterElement, 1325, true));
         saleCheckCertBrowseForm = addFormEntity(new SaleCheckCertFormEntity(saleCheckCertForm, 1335, false));
         returnSaleCheckRetailArticleForm = addFormEntity(new ReturnSaleCheckRetailFormEntity(saleRetailCashRegisterElement, true, 1345));
@@ -1650,6 +1651,36 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         @Override
         protected boolean hasExternalScreen() {
             return true;
+        }
+    }
+
+    public class CommitSaleCheckRetailExcelFormEntity extends FormEntity {
+
+        public CommitSaleCheckRetailExcelFormEntity(NavigatorElement parent, int iID, String caption) {
+            super(parent, iID, caption);
+
+            GroupObjectEntity gobjDocArt = new GroupObjectEntity(genID());
+
+            ObjectEntity objDoc = new ObjectEntity(genID(), commitSaleCheckArticleRetail, "Чек");
+            ObjectEntity objArt = new ObjectEntity(genID(), article, "Товар");
+
+            gobjDocArt.add(objDoc);
+            gobjDocArt.add(objArt);
+            addGroup(gobjDocArt);
+
+            addPropertyDraw(objDoc, baseGroup, documentGroup);
+            addPropertyDraw(objArt, baseGroup, documentGroup);
+            addPropertyDraw(documentGroup, false, objDoc, objArt);
+            addPropertyDraw(baseGroup, false, objDoc, objArt);
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(articleQuantity, objDoc, objArt)));
+        }
+
+        @Override
+        public DefaultFormView createDefaultRichDesign() {
+            DefaultFormView design = super.createDefaultRichDesign();
+            design.overridePageWidth = 3000;
+            return design;
         }
     }
 
