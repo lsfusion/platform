@@ -651,9 +651,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addCProp(StringClass.get(5), "Сдача", orderSaleCheckRetail), notEnoughSum, 1), 1, orderSaleDiffSum, 1);
         orderSaleToDoSum = addJProp(documentAggrPriceGroup, "Сумма необх.", abs, orderSaleDiffSum, 1);
 
-        addConstraint(addJProp("Сумма наличными меньше сдачи", groeq2, orderSaleDiffSum, 1, addSUProp(Union.OVERRIDE, addCProp(DoubleClass.instance, 0, orderSaleArticleRetail), orderSalePayCash), 1), false);
+        addConstraint(addJProp("Сумма наличными меньше сдачи", greater2,  orderSalePayCard, 1, orderSalePayNoObligation, 1), false);
+        addConstraint(addJProp("Всё оплачено карточкой", and1, addJProp(equals2, orderSalePayCard, 1, orderSalePayNoObligation, 1), 1, orderSalePayCash, 1), false);
         addConstraint(addJProp("Введенной суммы не достаточно", and1, notEnoughSum, 1, orderSalePayAll, 1), false); // если ни карточки ни кэша не задали, значит заплатитли без сдачи
-
+        
         LP couponCanBeUsed = addJProp(greater2, addJProp(date, obligationIssued, 1), 2, date, 1);
 
         barcodeAddClient = addSDProp("Доб. клиента", LogicalClass.instance);
