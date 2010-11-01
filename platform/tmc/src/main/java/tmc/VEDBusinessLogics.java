@@ -596,7 +596,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP round1 = addSFProp("(ROUND(CAST((prm1) as NUMERIC(15,3)),-1))", IntegerClass.instance, 1);
         LP orderArticleSaleDiscountSum = addJProp(documentPriceGroup, "Сумма скидки", round1, addJProp(percent, orderArticleSaleSum, 1, 2, orderArticleSaleDiscount, 1, 2), 1, 2);
-        orderArticleSaleSumWithDiscount = addDUProp(documentPriceGroup, "Сумма к оплате", orderArticleSaleSum, orderArticleSaleDiscountSum);
+        orderArticleSaleSumWithDiscount = addDUProp(documentPriceGroup, "Сумма к опл.", orderArticleSaleSum, orderArticleSaleDiscountSum);
         orderSaleDiscountSum = addSGProp(documentAggrPriceGroup, "Сумма скидки", orderArticleSaleDiscountSum, 1);
         orderSalePay = addCUProp(documentAggrPriceGroup, "Сумма чека",
                 addSGProp(addJProp(and(false, false), obligationSum, 2, issueObligation, 1, 2, is(giftObligation), 2), 1),
@@ -634,7 +634,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP orderSalePayGiftObligation = addSGProp(addJProp(and1, obligationUseSum, 1, 2, is(giftObligation), 2), 1);
         LP orderSalePayCoupon = addJProp(min, addSGProp(addJProp(and1, obligationUseSum, 1, 2, is(coupon), 2), 1), 1, addJProp(percent, orderSalePay, 1, couponMaxPercent), 1);
 
-        orderSalePayNoObligation = addJProp(documentAggrPriceGroup, "Сумма к оплате", onlyPositive, addDUProp(orderSalePay, addSUProp(Union.SUM, orderSalePayGiftObligation, orderSalePayCoupon)), 1);
+        orderSalePayNoObligation = addJProp(documentAggrPriceGroup, "Сумма к опл.", onlyPositive, addDUProp(orderSalePay, addSUProp(Union.SUM, orderSalePayGiftObligation, orderSalePayCoupon)), 1);
         LP orderSalePayCoeff = addJProp("Коэфф. скидки", divideDouble, orderSalePayNoObligation, 1, orderSalePay, 1);
         orderArticleSaleSumCoeff = addJProp(documentPriceGroup, "Сумма со скидкой", addMFProp(DoubleClass.instance, 2), orderArticleSaleSumWithDiscount, 1, 2, orderSalePayCoeff, 1);
 
@@ -994,8 +994,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     public static Font FONT_SMALL_PLAIN = new Font("Tahoma", Font.PLAIN, 12);
     public static Font FONT_MEDIUM_BOLD = new Font("Tahoma", Font.BOLD, 14);
     public static Font FONT_MEDIUM_PLAIN = new Font("Tahoma", Font.PLAIN, 14);
-    public static Font FONT_LARGE_BOLD = new Font("Tahoma", Font.BOLD, 24);
-    public static Font FONT_HUGE_BOLD = new Font("Tahoma", Font.BOLD, 28);
+    public static Font FONT_LARGE_BOLD = new Font("Tahoma", Font.BOLD, 18);
+    public static Font FONT_HUGE_BOLD = new Font("Tahoma", Font.BOLD, 23);
 
     private class GlobalFormEntity extends FormEntity {
         protected GlobalFormEntity(NavigatorElement parent, int ID) {
@@ -2364,7 +2364,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private class PayWithCardActionProperty extends ActionProperty {
 
         private PayWithCardActionProperty() {
-            super(genSID(), "Оплатить карточкой", new ValueClass[]{orderSaleCheckRetail});
+            super(genSID(), "Опл. карт.", new ValueClass[]{orderSaleCheckRetail});
 
             askConfirm = true;
         }
@@ -2390,7 +2390,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private class PrintOrderCheckActionProperty extends ActionProperty {
 
         private PrintOrderCheckActionProperty() {
-            super(genSID(), "Распечатать", new ValueClass[]{orderSaleCheckRetail});
+            super(genSID(), "Печать", new ValueClass[]{orderSaleCheckRetail});
         }
 
         public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
