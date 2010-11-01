@@ -32,7 +32,7 @@ public class ReportDesignGenerator {
     private Set<Integer> hiddenGroupsId;
     private boolean toExcel;
 
-    private final static int defaultPageWidth = 842;   
+    private int defaultPageWidth = 842;   
     private final static int defaultPageHeight = 595; // эти константы есть в JasperReports Ultimate Guide
 
     private int pageWidth;
@@ -46,7 +46,10 @@ public class ReportDesignGenerator {
         this.hiddenGroupsId = hiddenGroupsId;
         this.toExcel = toExcel;
 
-        pageWidth = (formView.overridePageWidth != null) ? formView.overridePageWidth : (defaultPageWidth - 40);
+        if (formView.overridePageWidth != null) {
+            defaultPageWidth = formView.overridePageWidth;
+        }
+        pageWidth = defaultPageWidth - 40;
     }
 
     public Map<String, JasperDesign> generate() throws JRException {
