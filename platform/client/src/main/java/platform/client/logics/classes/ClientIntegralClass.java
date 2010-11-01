@@ -25,7 +25,7 @@ abstract public class ClientIntegralClass extends ClientDataClass {
     }
 
     public String getPreferredMask() {
-        return "999 999 999";
+        return "99 999 999";
     }
 
     public Format getDefaultFormat() {

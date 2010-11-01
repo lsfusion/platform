@@ -195,7 +195,7 @@ public class CashRegController {
 
         int totalDiscount = 0;
 
-        final int lengthCheck = 40;
+        final int lengthCheck = 28;
         for (FormRow row : data.rows) {
 
             Double quantity = (Double)row.values.get(quantityDraw);
@@ -216,9 +216,9 @@ public class CashRegController {
             }
         }
 
-        Double toPay = BaseUtils.nvl((Double)data.rows.get(0).values.get(toPayDraw),0.0);
-
         String discountResult = "ОБЩ. СКИДКА: " + totalDiscount;
+
+        Double toPay = data.rows.size()>0?BaseUtils.nvl((Double)data.rows.get(0).values.get(toPayDraw),0.0):0.0;
         String sumResult = "ИТОГО: " + toPay.intValue();
         result += '\n' + BaseUtils.padl(discountResult,lengthCheck) + '\n' + BaseUtils.padl(sumResult,lengthCheck) + '\n';
         

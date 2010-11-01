@@ -469,6 +469,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP articleActionClientSum = addDProp(baseGroup, "articleActionClientSum", "Нак. сумма от", DoubleClass.instance, articleAction);
         LP articleActionQuantity = addDProp(baseGroup, "articleActionQuantity", "Кол-во от", DoubleClass.instance, articleAction);
         LP articleActionBirthDay = addDProp(baseGroup, "articleActionBirthDay", "День рожд.", LogicalClass.instance, articleAction);
+        LP articleActionWithCheck = addDProp(baseGroup, "articleActionWithCheck", "Нак. с тек. чеком", LogicalClass.instance, articleAction);
 
         // продажа облигаций
         issueObligation = addCUProp(documentPriceGroup, "Выдать", saleCertGiftObligation, addDProp("orderSaleCoupon", "Выдать", LogicalClass.instance, commitSaleCheckArticleRetail, coupon));
@@ -576,11 +577,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         orderBirthDay = addDCProp("orderBirthDay", "День рожд.", addJProp(equals2, monthDay, 1, addJProp(monthDay, customerCheckRetailBorn, 1), 2), true, date, 1, orderContragent, 1);
 
         LP orderArticleSaleSum = addJProp(documentPriceGroup, "Сумма прод.", multiplyDouble2, articleQuantity, 1, 2, orderSaleDocPrice, 1, 2);
-        
+
+        LP orderActionClientSum = addSUProp(Union.SUM, addJProp(and1, orderClientSum, 1, is(articleAction), 2), addJProp(and1, addSGProp(orderArticleSaleSum, 1), 1, articleActionWithCheck, 2));
         LP articleActionActive = addJProp(and(false, false, false, false, true, true, true, true, true), articleQuantity, 1, 2, is(orderSaleArticleRetail), 1, is(articleAction), 3, inAction, 3, 2, isStarted, 3,
                 addJProp(less2, articleQuantity, 1, 2, articleActionQuantity, 3), 1, 2, 3,
                 addJProp(and(false, true), articleActionBirthDay, 2, is(orderSaleArticleRetail), 1, orderBirthDay, 1), 1, 3,
-                addJProp(less2, addSUProp(Union.SUM, orderClientSum, addSGProp(orderArticleSaleSum, 1)), 1, articleActionClientSum, 2), 1, 3,
+                addJProp(less2, orderActionClientSum, 1, 2, articleActionClientSum, 2), 1, 3,
                 addJProp(less2, orderHour, 1, articleActionHourFrom, 2), 1, 3,
                 addJProp(greater2, orderHour, 1, articleActionHourTo, 2), 1, 3);
 
