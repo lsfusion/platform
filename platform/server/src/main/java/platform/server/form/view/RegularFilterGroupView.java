@@ -20,8 +20,8 @@ public class RegularFilterGroupView extends ComponentView {
         
     }
     
-    public RegularFilterGroupView(int ID, RegularFilterGroupEntity entity) {
-        super(ID);
+    public RegularFilterGroupView(RegularFilterGroupEntity entity) {
+        super(entity.ID);
         this.entity = entity;
 
         for (RegularFilterEntity filterEntity : entity.filters) {
@@ -33,7 +33,6 @@ public class RegularFilterGroupView extends ComponentView {
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);
 
-        outStream.writeInt(entity.ID);
         pool.serializeCollection(outStream, filters);
         outStream.writeInt(entity.defaultFilter);
     }
@@ -42,7 +41,7 @@ public class RegularFilterGroupView extends ComponentView {
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
 
-        entity = pool.context.form.getRegularFilterGroup(inStream.readInt());
+        entity = pool.context.form.getRegularFilterGroup(ID);
         filters = pool.deserializeList(inStream);
     }
 }

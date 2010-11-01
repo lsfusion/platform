@@ -3,6 +3,7 @@ package platform.client.descriptor;
 import platform.base.BaseUtils;
 import platform.client.Main;
 import platform.client.descriptor.increment.IncrementDependency;
+import platform.client.logics.ClientComponent;
 import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.serialization.ClientIdentitySerializable;
@@ -16,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class PropertyDrawDescriptor extends IdentityDescriptor implements ClientIdentitySerializable {
+public class PropertyDrawDescriptor extends IdentityDescriptor implements ClientIdentitySerializable, ContainerMovable {
     public ClientPropertyDraw client = new ClientPropertyDraw();
 
     private PropertyObjectDescriptor propertyObject;
@@ -84,6 +85,10 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
                    ? propertyObject.getGroupObject(groupList)
                    : null;
         }
+    }
+
+    public ClientComponent getClientComponent() {
+        return client;
     }
 
     public List<GroupObjectDescriptor> getUpGroupObjects(List<GroupObjectDescriptor> groupList) {

@@ -5,6 +5,7 @@ import platform.base.IDGenerator;
 import platform.base.IdentityObject;
 import platform.base.OrderedMap;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
+import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.logics.linear.LP;
@@ -23,10 +24,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class FormView extends IdentityObject implements ServerIdentitySerializable {
+public class FormView implements ServerIdentitySerializable {
 
     // нужен для того, чтобы генерировать уникальный идентификаторы объектам рисования, для передачи их клиенту
-    protected IDGenerator idGenerator = new DefaultIDGenerator();
+    protected IDGenerator idGenerator;
 
     public ContainerView mainContainer;
 
@@ -41,14 +42,14 @@ public class FormView extends IdentityObject implements ServerIdentitySerializab
 
     public OrderedMap<PropertyDrawView,Boolean> defaultOrders = new OrderedMap<PropertyDrawView, Boolean>();
 
-    public FunctionView printFunction = new FunctionView(idGenerator.idShift(), "Печать");
-    public FunctionView xlsFunction = new FunctionView(idGenerator.idShift(), "Excel");
-    public FunctionView nullFunction = new FunctionView(idGenerator.idShift(), "Сбросить");
-    public FunctionView refreshFunction = new FunctionView(idGenerator.idShift(), "Обновить");
-    public FunctionView applyFunction = new FunctionView(idGenerator.idShift(), "Применить");
-    public FunctionView cancelFunction = new FunctionView(idGenerator.idShift(), "Отменить");
-    public FunctionView okFunction = new FunctionView(idGenerator.idShift(), "ОК");
-    public FunctionView closeFunction = new FunctionView(idGenerator.idShift(), "Закрыть");
+    public FunctionView printFunction;
+    public FunctionView xlsFunction;
+    public FunctionView nullFunction;
+    public FunctionView refreshFunction;
+    public FunctionView applyFunction;
+    public FunctionView cancelFunction;
+    public FunctionView okFunction;
+    public FunctionView closeFunction;
 
     public List<PropertyDrawView> order = new ArrayList<PropertyDrawView>();
 
@@ -61,8 +62,30 @@ public class FormView extends IdentityObject implements ServerIdentitySerializab
     public FormView() {
     }
 
-    public FormView(int iID) {
-        super(iID);
+    FormEntity<?> entity;
+
+    public FormView(FormEntity<?> entity) {
+
+        this.entity = entity;
+        this.idGenerator = entity.getIDGenerator();
+
+        printFunction = new FunctionView(idGenerator.idShift(), "Печать");
+        xlsFunction = new FunctionView(idGenerator.idShift(), "Excel");
+        nullFunction = new FunctionView(idGenerator.idShift(), "Сбросить");
+        refreshFunction = new FunctionView(idGenerator.idShift(), "Обновить");
+        applyFunction = new FunctionView(idGenerator.idShift(), "Применить");
+        cancelFunction = new FunctionView(idGenerator.idShift(), "Отменить");
+        okFunction = new FunctionView(idGenerator.idShift(), "ОК");
+        closeFunction = new FunctionView(idGenerator.idShift(), "Закрыть");
+    }
+
+    public int getID() {
+        return entity.getID();
+    }
+
+    int ID;
+    public void setID(int ID) {
+        this.ID = ID;
     }
 
     public ContainerView addContainer() {
@@ -132,6 +155,8 @@ public class FormView extends IdentityObject implements ServerIdentitySerializab
         keyStroke = pool.readObject(inStream);
 
         caption = pool.readString(inStream);
+
+        entity = pool.context.form;
     }
 
     public void addIntersection(ComponentView comp1, ComponentView comp2, DoNotIntersectSimplexConstraint cons) {

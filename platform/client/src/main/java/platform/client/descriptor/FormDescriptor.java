@@ -82,22 +82,30 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         }
     }
 
-    private class ContainerController implements IncrementView {
-        public void update(Object updateObject, String updateField) {
+    IncrementView containerMover;
 
-            for (PropertyDrawDescriptor propertyDraw : propertyDraws) {
-                GroupObjectDescriptor groupObject = propertyDraw.getGroupObject(groupObjects);
+    // класс, который отвечает за автоматическое перемещение компонент внутри контейнеров при каких-либо изменениях структуры groupObject
+    private class ContainerMover implements IncrementView {
+        public void update(Object updateObject, String updateField) {
+            moveContainer(propertyDraws, "panelContainer");
+            moveContainer(regularFilterGroups, "filterContainer");
+        }
+
+        private <T extends ContainerMovable> void moveContainer(List<T> objects, String containerID) {
+
+            for (T object : objects) {
+                GroupObjectDescriptor groupObject = object.getGroupObject(groupObjects);
                 if (groupObject != null) {
-                    ClientContainer newContainer = client.findContainerBySID("panelContainer" + propertyDraw.getGroupObject(groupObjects).getID());
-                    if (newContainer != null && !newContainer.isAncestorOf(propertyDraw.client.container)) {
+                    ClientContainer newContainer = client.findContainerBySID(containerID + groupObject.getID());
+                    if (newContainer != null && !newContainer.isAncestorOf(object.getClientComponent().container)) {
                         int insIndex = -1;
-                        for (int propIndex = propertyDraws.indexOf(propertyDraw) + 1; propIndex < propertyDraws.size(); propIndex++) {
-                            insIndex = newContainer.children.indexOf(propertyDraws.get(propIndex).client);
+                        for (int propIndex = objects.indexOf(object) + 1; propIndex < objects.size(); propIndex++) {
+                            insIndex = newContainer.children.indexOf(objects.get(propIndex).getClientComponent());
                             if (insIndex != -1)
                                 break;
                         }
                         if (insIndex == -1) insIndex = newContainer.children.size();
-                        newContainer.addToChildren(insIndex, propertyDraw.client);
+                        newContainer.addToChildren(insIndex, object.getClientComponent());
                     }
                 }
             }
@@ -193,10 +201,13 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         IncrementDependency.add("objects", propertyCaptionConstraint);
         IncrementDependency.add(this, "groupObjects", propertyCaptionConstraint);
 
-        containerController = new ContainerController();
-        IncrementDependency.add("groupObjects", containerController);
-        IncrementDependency.add("toDraw", containerController);
-        IncrementDependency.add("propertyDraws", containerController);
+        containerMover = new ContainerMover();
+        IncrementDependency.add("groupObjects", containerMover);
+        IncrementDependency.add("toDraw", containerMover);
+        IncrementDependency.add("filters", containerMover);
+        IncrementDependency.add("filter", containerMover);
+        IncrementDependency.add("propertyDraws", containerMover);
+        IncrementDependency.add("property", containerMover);
     }
 
     @Override

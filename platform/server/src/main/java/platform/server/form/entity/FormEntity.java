@@ -1,8 +1,6 @@
 package platform.server.form.entity;
 
-import platform.base.BaseUtils;
-import platform.base.ListPermutations;
-import platform.base.OrderedMap;
+import platform.base.*;
 import platform.interop.action.ClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
@@ -97,10 +95,13 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     // счетчик идентификаторов
-    private int IDCount = 0;
+    private IDGenerator idGenerator = new DefaultIDGenerator();
+    public IDGenerator getIDGenerator() {
+        return idGenerator;
+    }
 
     public int genID() {
-        return IDCount++;
+        return idGenerator.idShift();
     }
 
     public GroupObjectEntity getGroupObject(int id) {

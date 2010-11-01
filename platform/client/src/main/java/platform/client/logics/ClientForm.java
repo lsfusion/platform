@@ -77,7 +77,7 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
 
     public ClientRegularFilterGroup getRegularFilterGroup(int id) {
         for (ClientRegularFilterGroup filterGroup : regularFilterGroups) {
-            if (filterGroup.filterID == id) {
+            if (filterGroup.getID() == id) {
                 return filterGroup;
             }
         }

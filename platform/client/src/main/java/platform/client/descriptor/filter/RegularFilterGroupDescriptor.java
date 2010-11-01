@@ -1,9 +1,11 @@
 package platform.client.descriptor.filter;
 
 import platform.base.BaseUtils;
+import platform.client.descriptor.ContainerMovable;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.IdentityDescriptor;
 import platform.client.descriptor.increment.IncrementDependency;
+import platform.client.logics.ClientComponent;
 import platform.client.logics.ClientRegularFilterGroup;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
@@ -14,15 +16,25 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RegularFilterGroupDescriptor extends IdentityDescriptor implements ClientIdentitySerializable {
+public class RegularFilterGroupDescriptor extends IdentityDescriptor implements ClientIdentitySerializable, ContainerMovable {
 
     public List<RegularFilterDescriptor> filters;
+
+    @Override
+    public void setID(int ID) {
+        super.setID(ID);
+        client.setID(ID);
+    }
 
     public GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groupList) {
         GroupObjectDescriptor result = null;
         for(RegularFilterDescriptor filter : filters)
             result = FilterDescriptor.getDownGroup(result, filter.getGroupObject(groupList), groupList);
         return result;
+    }
+
+    public ClientComponent getClientComponent() {
+        return client;
     }
 
     public RegularFilterGroupDescriptor() {

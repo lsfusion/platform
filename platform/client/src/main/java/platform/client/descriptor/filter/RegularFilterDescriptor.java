@@ -17,6 +17,12 @@ public class RegularFilterDescriptor extends IdentityDescriptor implements Clien
 
     private FilterDescriptor filter;
 
+    @Override
+    public void setID(int ID) {
+        super.setID(ID);
+        client.setID(ID);
+    }
+
     public FilterDescriptor getFilter() {
         return filter;
     }
@@ -31,6 +37,15 @@ public class RegularFilterDescriptor extends IdentityDescriptor implements Clien
     }
 
     ClientRegularFilter client;
+
+    public void setCaption(String caption) { // usage через reflection
+        client.caption = caption;
+        IncrementDependency.update(this, "caption");
+    }
+
+    public String getCaption() {
+        return client.caption;
+    }
 
     public GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groupList) {
         if (filter == null) return null;

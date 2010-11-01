@@ -45,7 +45,7 @@ public class DefaultFormView extends FormView {
     }
     
     public DefaultFormView(FormEntity<?> formEntity) {
-        super(formEntity.getID());
+        super(formEntity);
 
         readOnly = formEntity.isReadOnly();
 
@@ -118,7 +118,7 @@ public class DefaultFormView extends FormView {
 
         for (PropertyDrawEntity control : formEntity.propertyDraws) {
 
-            PropertyDrawView clientProperty = new PropertyDrawView(idGenerator.idShift(), this, control);
+            PropertyDrawView clientProperty = new PropertyDrawView(this, control);
             clientProperty.constraints.insetsSibling = new Insets(0,0,2,2);
 
             GroupObjectEntity groupDraw = formEntity.forceDefaultDraw.get(control);
@@ -146,7 +146,7 @@ public class DefaultFormView extends FormView {
             for (RegularFilterEntity regFilter : filterGroup.filters)
                 groupObjects.addAll(formEntity.getApplyObject(regFilter.filter.getObjects()));
 
-            RegularFilterGroupView filterGroupView = new RegularFilterGroupView(idGenerator.idShift(), filterGroup);
+            RegularFilterGroupView filterGroupView = new RegularFilterGroupView(filterGroup);
             filterGroupView.constraints.insetsSibling = new Insets(0,4,2,4);
             filterContainers.get(mgroupObjects.get(formEntity.getApplyObject(groupObjects))).add(filterGroupView);
 

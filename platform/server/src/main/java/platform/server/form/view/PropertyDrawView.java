@@ -61,18 +61,14 @@ public class PropertyDrawView extends ComponentView {
 
     }
 
-    public PropertyDrawView(int ID, FormView form, PropertyDrawEntity entity) {
-        super(ID);
+    public PropertyDrawView(FormView form, PropertyDrawEntity entity) {
+        super(entity.ID);
         this.form = form;
         this.entity = entity;
     }
 
     public Type getType() {
         return entity.propertyObject.property.getType();
-    }
-
-    public int getID() {
-        return entity.getID();
     }
 
     public String getSID() {

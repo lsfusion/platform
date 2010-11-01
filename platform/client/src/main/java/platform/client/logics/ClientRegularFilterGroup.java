@@ -10,7 +10,6 @@ import java.util.List;
 
 public class ClientRegularFilterGroup extends ClientComponent {
     
-    public int filterID;
     public List<ClientRegularFilter> filters = new ArrayList<ClientRegularFilter>();
 
     public int defaultFilter = -1;
@@ -23,15 +22,12 @@ public class ClientRegularFilterGroup extends ClientComponent {
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);
 
-        outStream.writeInt(filterID);
         pool.serializeCollection(outStream, filters);
     }
 
     @Override
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
-
-        filterID = inStream.readInt();
 
         filters = pool.deserializeList(inStream);
 
