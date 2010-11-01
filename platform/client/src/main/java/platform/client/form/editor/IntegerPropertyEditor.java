@@ -13,7 +13,7 @@ public class IntegerPropertyEditor extends TextFieldPropertyEditor {
     public IntegerPropertyEditor(Object value, NumberFormat format, ComponentDesign design, Class<?> valueClass) {
         super(design);
 
-        NumberFormatter formatter = new NumberFormatter(format);
+        NumberFormatter formatter = new NullNumberFormatter(format);
         formatter.setValueClass(valueClass);
         formatter.setAllowsInvalid(false);
 

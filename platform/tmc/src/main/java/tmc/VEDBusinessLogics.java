@@ -264,7 +264,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     LP balanceSklFreeQuantity;
     LP articleFreeQuantity;
-    LP certToIssued, obligationSumFrom;
+    LP obligationSumFrom;
+    LP couponFromIssued;
+    LP obligationToIssued;
     LP documentBarcodePrice, documentBarcodePriceOv;
     LP invoiceNumber, invoiceSeries;
     LP orderBirthDay;
@@ -618,10 +620,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP certExpiry = addDProp(baseGroup, "certExpiry", "Срок действия серт.", IntegerClass.instance);
 
         LP dateIssued = addJProp("Дата выдачи", date, obligationIssued, 1);
-        LP couponFromIssued = addDCProp(baseGroup, "couponFromIssued", "Дата начала", couponStart, dateIssued, 1, coupon);
+        couponFromIssued = addDCProp(baseGroup, "couponFromIssued", "Дата начала", couponStart, dateIssued, 1, coupon);
         LP couponToIssued = addDCProp("couponToIssued", "Дата окончания", couponExpiry, obligationIssued, 1, coupon);
-        certToIssued = addDCProp("certToIssued", "Дата окончания", addJProp(addDays, 1, certExpiry), dateIssued, 1, giftObligation);
-        LP obligationToIssued = addCUProp(baseGroup, "obligationToIssued", "Дата окончания", couponToIssued, certToIssued);
+        LP certToIssued = addDCProp("certToIssued", "Дата окончания", addJProp(addDays, 1, certExpiry), dateIssued, 1, giftObligation);
+        obligationToIssued = addCUProp(baseGroup, "obligationToIssued", "Дата окончания", couponToIssued, certToIssued);
         orderSaleObligationCanBeUsed = addJProp(and(false, true, true, true), is(commitSaleCheckArticleRetail), 1, obligationIssued, 2,
                 addJProp(less2, orderSalePay, 1, obligationSumFrom, 2), 1, 2,
                 addJProp(greater2, date, 1, obligationToIssued, 2), 1, 2,
@@ -1486,6 +1488,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.addIntersection(design.get(getPropertyDraw(barcodeAddClient)), design.get(getPropertyDraw(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             design.setEditKey(barcodeAddClient, KeyStroke.getKeyStroke(KeyEvent.VK_F5, InputEvent.CTRL_DOWN_MASK));
 
+            design.get(getPropertyDraw(changeQuantityOrder, objArt)).minimumSize = new Dimension(20, 20);
+            design.get(getPropertyDraw(articleQuantity, objArt)).minimumSize = new Dimension(20, 20);
+            design.get(getPropertyDraw(documentFreeQuantity, objArt)).minimumSize = new Dimension(90, 20);
+            design.get(getPropertyDraw(orderArticleSaleDiscount, objArt)).minimumSize = new Dimension(20, 20);
+            design.get(getPropertyDraw(barcode, objArt)).minimumSize = new Dimension(200, 100);
+
             return design;
         }
     }
@@ -1507,8 +1515,14 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             objDoc.caption = "Чек";
 
-            objObligation = addSingleGroupObject(obligation, "Оплачено купонами/ сертификатами", baseGroup, true);
-            addPropertyDraw(objDoc, objObligation, baseGroup, true, orderSaleUseObligation);
+            objObligation = addSingleGroupObject(obligation, "Оплачено купонами/ сертификатами");
+            addPropertyDraw(barcode, objObligation);
+            addPropertyDraw(objectClassName, objObligation);
+            addPropertyDraw(obligationSum, objObligation);
+            addPropertyDraw(obligationSumFrom, objObligation);
+            addPropertyDraw(couponFromIssued, objObligation).forceViewType = ClassViewType.GRID;
+            addPropertyDraw(obligationToIssued, objObligation);
+            addPropertyDraw(orderSaleUseObligation, objDoc, objObligation);
             objObligation.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.HIDE, ClassViewType.PANEL));
 //            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(obligationDocument, objObligation))));
 //            addFixedFilter(new NotNullFilterEntity(addPropertyObject(orderSaleObligationCanNotBeUsed, objDoc, objObligation)));
@@ -1570,6 +1584,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             ObjectView objObligationView = design.get(objObligation);
             objObligationView.classChooser.show = false;
 
+            design.get(getPropertyDraw(objectClassName, objObligation)).maximumSize = new Dimension(50, 50);
+
             return design;
         }
 
@@ -1588,7 +1604,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         BaseUtils.toSet(art.groupTo),
                         getPropertyDraw(orderSalePrice, objArt), getPropertyDraw(articleQuantity, objArt),
                         getPropertyDraw(name, objArt), getPropertyDraw(orderArticleSaleSumWithDiscount, objArt),
-                        getPropertyDraw(orderSalePayNoObligation, objDoc),
+                        getPropertyDraw(orderSalePayNoObligation, objDoc), getPropertyDraw(barcode, objArt),
                         getPropertyDraw(orderSalePayCard, objDoc), getPropertyDraw(orderSalePayCash, objDoc));
             } else
                 return super.getClientApply(formInstance);
@@ -1905,7 +1921,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         BaseUtils.toSet(inner.groupTo, art.groupTo),
                         getPropertyDraw(orderSalePrice, objArt), getPropertyDraw(returnInnerQuantity, objArt),
                         getPropertyDraw(name, objArt), getPropertyDraw(returnArticleSalePay, objArt),
-                        getPropertyDraw(returnSalePay, objDoc),
+                        getPropertyDraw(returnSalePay, objDoc), getPropertyDraw(barcode, objArt), 
                         null, null);
             } else
                 return super.getClientApply(formInstance);
@@ -2108,7 +2124,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         @Override
         protected Object[] getDocumentProps() {
             return new Object[]{nameContragentImpl, phoneContragentImpl, bornContragentImpl, addressContragentImpl, initialSumContragentImpl,
-                    orderSalePay, orderSalePayCash, orderSalePayCard, orderSaleToDo, orderSaleToDoSum};
+                    orderSalePay, orderSalePayCash, orderSalePayCard, orderSaleToDo, orderSaleToDoSum, payWithCard};
         }
 
         @Override
@@ -2121,8 +2137,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             if (!toAdd)
                 addPropertyDraw(date, objDoc);
-            objObligation = addSingleGroupObject(giftObligation, "Подарочный сертификат", allGroup, true);
-            addPropertyDraw(objDoc, objObligation, allGroup, true);
+            objObligation = addSingleGroupObject(giftObligation, "Подарочный сертификат");
+            addPropertyDraw(barcode, objObligation);
+            addPropertyDraw(name, objObligation);
+            addPropertyDraw(obligationSum, objObligation);
+            addPropertyDraw(obligationSumFrom, objObligation);
+            addPropertyDraw(obligationToIssued, objObligation);
+            addPropertyDraw(issueObligation, objDoc, objObligation);
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(new RegularFilterEntity(genID(),
@@ -2205,7 +2226,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         BaseUtils.toSet(obligation.groupTo),
                         getPropertyDraw(obligationSum, objObligation), getPropertyDraw(issueObligation, objObligation),
                         getPropertyDraw(name, objObligation), getPropertyDraw(obligationSum, objObligation),
-                        getPropertyDraw(orderSalePay, objDoc),
+                        getPropertyDraw(orderSalePay, objDoc), getPropertyDraw(barcode, objObligation),
                         getPropertyDraw(orderSalePayCard, objDoc), getPropertyDraw(orderSalePayCash, objDoc));
 
             } else
@@ -2335,6 +2356,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             actions.add(new ApplyClientAction());
         }
+
+        @Override
+        public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
+            view.get(entity).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.ALT_DOWN_MASK);
+        }
     }
 
     private class PrintOrderCheckActionProperty extends ActionProperty {
@@ -2347,6 +2373,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             //To change body of implemented methods use File | Settings | File Templates.
             FormInstance<VEDBusinessLogics> remoteForm = executeForm.form;
             actions.add(((CommitSaleCheckRetailFormEntity)remoteForm.entity).getPrintOrderAction(remoteForm));
+        }
+
+        @Override
+        public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
+            view.get(entity).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.ALT_DOWN_MASK);
         }
     }
 

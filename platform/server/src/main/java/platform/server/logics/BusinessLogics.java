@@ -496,6 +496,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP delete;
 
     public LP objectClass;
+    public LP objectClassName;
     public LP classSID;
 
     public LP customID;
@@ -661,7 +662,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         classSID = addDProp(baseGroup, "classSID", "Стат. код", IntegerClass.instance, baseClass.objectClass);
         objectClass = addProperty(null, new LP<ClassPropertyInterface>(new ObjectClassProperty(genSID(), baseClass)));
-        addJProp(baseGroup, "Класс объекта", name, objectClass, 1);
+        objectClassName = addJProp(baseGroup, "Класс объекта", name, objectClass, 1);
 
         // заполним сессии
         LP sessionUser = addDProp("sessionUser", "Пользователь сессии", user, session);

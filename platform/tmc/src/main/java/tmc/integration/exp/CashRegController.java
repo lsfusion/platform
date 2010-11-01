@@ -39,13 +39,13 @@ public class CashRegController {
                                                       Set<GroupObjectInstance> classGroups,
                                                       PropertyDrawEntity<?> priceProp, PropertyDrawEntity<?> quantityProp,
                                                       PropertyDrawEntity<?> nameProp, PropertyDrawEntity<?> sumProp,
-                                                      PropertyDrawEntity<?> toPayProp,
+                                                      PropertyDrawEntity<?> toPayProp, PropertyDrawEntity<?> barcodeProp,
                                                       PropertyDrawEntity<?> sumCardProp, PropertyDrawEntity<?> sumCashProp) {
 
         List<ClientAction> actions = new ArrayList<ClientAction>();
         actions.add(new ExportFileClientAction("c:\\bill\\bill.txt", false, createBillTxt(formInstance, payType,
                                                 classGroups, priceProp, quantityProp,
-                                                nameProp, sumProp, toPayProp, sumCardProp, sumCashProp), CASHREGISTER_CHARSETNAME));
+                                                nameProp, sumProp, toPayProp, barcodeProp, sumCardProp, sumCashProp), CASHREGISTER_CHARSETNAME));
         actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, "/T", CASHREGISTER_CHARSETNAME));
         actions.add(new SleepClientAction(CASHREGISTER_DELAY));
         actions.add(new ImportFileClientAction("c:\\bill\\error.txt", CASHREGISTER_CHARSETNAME, true));
@@ -56,7 +56,7 @@ public class CashRegController {
                                  Set<GroupObjectInstance> classGroups,
                                  PropertyDrawEntity<?> priceProp, PropertyDrawEntity<?> quantityProp,
                                  PropertyDrawEntity<?> nameProp, PropertyDrawEntity<?> sumProp,
-                                 PropertyDrawEntity<?> toPayProp,
+                                 PropertyDrawEntity<?> toPayProp, PropertyDrawEntity<?> barcodeProp,
                                  PropertyDrawEntity<?> sumCardProp, PropertyDrawEntity<?> sumCashProp) {
 
         String result = payType + ",0000\n";
@@ -69,7 +69,8 @@ public class CashRegController {
         PropertyDrawInstance nameDraw = formInstance.instanceFactory.getInstance(nameProp);
         PropertyDrawInstance sumDraw = formInstance.instanceFactory.getInstance(sumProp);
         PropertyDrawInstance toPayDraw = formInstance.instanceFactory.getInstance(toPayProp);
-        formProperties.addAll(BaseUtils.toSet(quantityDraw, priceDraw, nameDraw, sumDraw, toPayDraw));
+        PropertyDrawInstance barcodeDraw = formInstance.instanceFactory.getInstance(barcodeProp);
+        formProperties.addAll(BaseUtils.toSet(quantityDraw, priceDraw, nameDraw, sumDraw, toPayDraw, barcodeDraw));
 
         PropertyDrawInstance sumCardDraw = null;
         if(sumCardProp!=null) {
@@ -105,6 +106,7 @@ public class CashRegController {
                 
                 Double quantity = (quantityObject instanceof Double) ? (Double)quantityObject : 1.0;
                 Double price = (priceObject instanceof Double) ? (Double)priceObject : 0.0;
+                String barcodeName = ((String)row.values.get(barcodeDraw)).trim();
                 String artName = ((String)row.values.get(nameDraw)).trim();
                 artName = artName.replace(',', '.');
                 artName = artName.replace('"', ' ');
@@ -114,7 +116,7 @@ public class CashRegController {
                 result += price / 100;
                 result += ",0";
                 result += "," + quantity;
-                result += "," + artName;
+                result += "," + barcodeName + " " + artName;
                 result += "," + sumPos / 100;
                 result += "\n";
 

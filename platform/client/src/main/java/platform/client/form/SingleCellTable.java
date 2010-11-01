@@ -60,9 +60,14 @@ public abstract class SingleCellTable extends ClientFormTable {
 
                 // приходится таким волшебным образом извращаться, поскольку в stopCellEditing в явную устанавливается фокус на JTable
                 // это не устраивает, если по нажатии кнопки из другого компонена вызывается редактирование, а потом необходимо вернуть фокус обратно
-                if (nextComp != null)
-                    nextComp.requestFocusInWindow();
-                
+                if (nextComp == null || !nextComp.requestFocusInWindow()) {
+                    nextComp = getNextFocusableComponent();
+                    if(nextComp!=null) {
+                        boolean requested = nextComp.requestFocusInWindow();
+                        assert requested;
+                    }
+                }
+
             } else
                 KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent();
 

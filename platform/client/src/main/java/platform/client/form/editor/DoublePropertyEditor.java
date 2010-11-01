@@ -13,7 +13,7 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
         super(design);
         final DecimalFormat df = (DecimalFormat) format;
 
-        NumberFormatter formatter = new NumberFormatter(format) {
+        NumberFormatter formatter = new NullNumberFormatter(format) {
             private final char separator = df.getDecimalFormatSymbols().getDecimalSeparator();
 
             public boolean lastTextEndsWithSeparator;

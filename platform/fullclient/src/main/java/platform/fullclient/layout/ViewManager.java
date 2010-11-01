@@ -113,7 +113,7 @@ public class ViewManager {
                 changeCloseAction(page);
 
                 //эмулируем получение фокуса, чтобы не срабатывала переактивация при 1м клике по форме
-                page.getClientForm().getComponent().gainedFocus();
+//                page.getClientForm().getComponent().gainedFocus();
                 return page;
             } catch (Exception e) {
                 e.printStackTrace();

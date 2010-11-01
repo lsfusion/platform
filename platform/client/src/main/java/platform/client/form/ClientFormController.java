@@ -121,7 +121,7 @@ public class ClientFormController {
                         clientNavigator.currentFormChanged();
                     }
 
-                    //при старте перемещаем фокус на стандартный (только в первый раз, из-за диалогов)
+/*                    //при старте перемещаем фокус на стандартный (только в первый раз, из-за диалогов)
                     if (firstGainedFocus) {
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
@@ -129,7 +129,7 @@ public class ClientFormController {
                             }
                         });
                         firstGainedFocus = false;
-                    }
+                    }*/
 
                     // если вдруг изменились данные в сессии
                     ClientExternalScreen.invalidate(getID());

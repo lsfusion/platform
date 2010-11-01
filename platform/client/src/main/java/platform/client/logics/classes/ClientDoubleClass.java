@@ -28,7 +28,7 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
     }
 
     public Format getDefaultFormat() {
-        DecimalFormat format = (DecimalFormat) NumberFormat.getInstance();
+        DecimalFormat format = (DecimalFormat) super.getDefaultFormat();
         format.setMaximumFractionDigits(10);
         DecimalFormatSymbols dfs = format.getDecimalFormatSymbols();
         dfs.setDecimalSeparator('.');
