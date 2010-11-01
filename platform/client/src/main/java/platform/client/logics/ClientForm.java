@@ -24,6 +24,9 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
 
     public String caption = "";
 
+    // пока используется только для сериализации туда-назад
+    public Integer overridePageWidth;
+
     public ClientContainer mainContainer = new ClientContainer();
 
     public List<ClientGroupObject> groupObjects = new ArrayList<ClientGroupObject>();
@@ -145,6 +148,7 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
 
         pool.writeObject(outStream, keyStroke);
         pool.writeString(outStream, caption);
+        pool.writeInt(outStream, overridePageWidth);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -173,8 +177,8 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
         order = pool.deserializeList(inStream);
 
         keyStroke = pool.readObject(inStream);
-
         caption = pool.readString(inStream);
+        overridePageWidth = pool.readInt(inStream);
     }
 
     public boolean removePropertyDraw(ClientPropertyDraw clientPropertyDraw) {

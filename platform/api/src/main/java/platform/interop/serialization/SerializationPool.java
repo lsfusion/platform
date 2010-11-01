@@ -214,4 +214,17 @@ public abstract class SerializationPool<C> {
                ? inStream.readUTF()
                : null;
     }
+
+    public void writeInt(DataOutputStream outStream, Integer integer) throws IOException {
+        outStream.writeBoolean(integer != null);
+        if (integer != null) {
+            outStream.writeInt(integer);
+        }
+    }
+
+    public Integer readInt(DataInputStream inStream) throws IOException {
+        return inStream.readBoolean()
+               ? inStream.readInt()
+               : null;
+    }
 }

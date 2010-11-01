@@ -1659,6 +1659,19 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         public CommitSaleCheckRetailExcelFormEntity(NavigatorElement parent, int iID, String caption) {
             super(parent, iID, caption);
 
+            GroupObjectEntity gobjDates = new GroupObjectEntity(genID());
+            ObjectEntity dateFrom = new ObjectEntity(genID(), DateClass.instance, "Дата (с)");
+            ObjectEntity dateTo = new ObjectEntity(genID(), DateClass.instance, "Дата (по)");
+            gobjDates.add(dateFrom);
+            gobjDates.add(dateTo);
+
+            addGroup(gobjDates);
+            gobjDates.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
+            gobjDates.initClassView = ClassViewType.PANEL;
+
+            addPropertyDraw(dateFrom, objectValue);
+            addPropertyDraw(dateTo, objectValue);
+
             GroupObjectEntity gobjDocArt = new GroupObjectEntity(genID());
 
             ObjectEntity objDoc = new ObjectEntity(genID(), commitSaleCheckArticleRetail, "Чек");
@@ -1674,6 +1687,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addPropertyDraw(baseGroup, false, objDoc, objArt);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(articleQuantity, objDoc, objArt)));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(date, objDoc), Compare.GREATER_EQUALS, dateFrom));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(date, objDoc), Compare.LESS_EQUALS, dateTo));
         }
 
         @Override

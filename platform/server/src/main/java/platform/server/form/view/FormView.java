@@ -127,6 +127,7 @@ public class FormView implements ServerIdentitySerializable {
 
         pool.writeObject(outStream, keyStroke);
         pool.writeString(outStream, caption);
+        pool.writeInt(outStream, overridePageWidth);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -155,8 +156,8 @@ public class FormView implements ServerIdentitySerializable {
         order = pool.deserializeList(inStream);
 
         keyStroke = pool.readObject(inStream);
-
         caption = pool.readString(inStream);
+        overridePageWidth = pool.readInt(inStream);
 
         entity = pool.context.form;
     }
