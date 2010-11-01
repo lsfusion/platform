@@ -32,7 +32,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ClientType baseType;
 
     public String caption;
-    public String overridenCaption;
 
     public KeyStroke editKey;
     public boolean showEditKey;
@@ -205,7 +204,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public String toString() {
-        return getResultingCaption();
+        return !BaseUtils.isRedundantString(caption)
+               ? caption
+               : "Неопределённое свойство";
     }
 
     public String getFullCaption() {
@@ -251,7 +252,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);
 
-        pool.writeString(outStream, overridenCaption);
+        pool.writeString(outStream, caption);
 
         pool.writeObject(outStream, minimumSize);
         pool.writeObject(outStream, maximumSize);
@@ -286,7 +287,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         super.customDeserialize(pool, inStream);
 
         caption = pool.readString(inStream);
-        overridenCaption = pool.readString(inStream);
 
         minimumSize = pool.readObject(inStream);
         maximumSize = pool.readObject(inStream);
@@ -345,14 +345,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectController controller) {
         controller.updateDrawPropertyValues(this, readKeys);
-    }
-
-    public String getResultingCaption() {
-        return !BaseUtils.isRedundantString(overridenCaption)
-        ? overridenCaption
-        : !BaseUtils.isRedundantString(caption)
-          ? caption
-          : "Неопределённое свойство";
     }
 
     public class Caption implements ClientPropertyRead {

@@ -52,7 +52,7 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
         view = new EditorView();
 
         tree = new ClientTree();
-        tree.setCellRenderer(new VisualSetupTreeCellRenderer(tree.getCellRenderer()));
+        tree.setCellRenderer(new VisualSetupTreeCellRenderer());
 
         tree.setDropMode(DropMode.ON_OR_INSERT);
         tree.setDragEnabled(true);
@@ -115,7 +115,6 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
         IncrementDependency.add("caption", this);
         IncrementDependency.add("title", this);
         IncrementDependency.add("description", this);
-        IncrementDependency.add("overridenCaption", this);
         IncrementDependency.add("propertyObject", this);
         IncrementDependency.add("toDraw", this);
         IncrementDependency.add("fixedFilters", this);
@@ -185,14 +184,12 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
                 });
     }
 
-    class VisualSetupTreeCellRenderer extends DefaultTreeCellRenderer {
+    class VisualSetupTreeCellRenderer extends ClientTree.ClientTreeCellRenderer {
         private Color backgroundSelectionColor;
         private Color backgroundNonSelectionColor;
-        private final TreeCellRenderer originalCellRenderer;
 
-        public VisualSetupTreeCellRenderer(TreeCellRenderer originalCellRenderer) {
+        public VisualSetupTreeCellRenderer() {
             super();
-            this.originalCellRenderer = originalCellRenderer;
 
             backgroundSelectionColor = getBackgroundSelectionColor();
             backgroundNonSelectionColor = getBackgroundNonSelectionColor();
@@ -200,7 +197,7 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
 
         @Override
         public Component getTreeCellRendererComponent(JTree iTree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-            Component renderer = originalCellRenderer.getTreeCellRendererComponent(iTree, value, sel, expanded, leaf, row, hasFocus);
+            Component renderer = super.getTreeCellRendererComponent(iTree, value, sel, expanded, leaf, row, hasFocus);
 
             if (editingObject != null && editingObject == ((ClientTreeNode) value).getUserObject()) {
                 setBackgroundSelectionColor(Color.YELLOW.darker().darker());

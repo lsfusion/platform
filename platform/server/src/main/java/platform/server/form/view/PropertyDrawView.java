@@ -9,6 +9,7 @@ import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.view.report.ReportDrawField;
 import platform.server.logics.property.ExecuteProperty;
+import platform.server.serialization.SerializationType;
 import platform.server.serialization.ServerSerializationPool;
 
 import javax.swing.*;
@@ -128,8 +129,9 @@ public class PropertyDrawView extends ComponentView {
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);
 
-        pool.writeString(outStream, getCaption());
-        pool.writeString(outStream, caption);
+        pool.writeString(outStream, SerializationType.VISUAL_SETUP.equals(serializationType)
+                                    ? caption
+                                    : getCaption());
 
         pool.writeObject(outStream, minimumSize);
         pool.writeObject(outStream, maximumSize);

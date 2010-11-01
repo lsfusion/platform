@@ -41,9 +41,6 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
 
     public void setPropertyObject(PropertyObjectDescriptor propertyObject) { // usage через reflection
         this.propertyObject = propertyObject;
-        if (propertyObject != null) {
-            client.caption = propertyObject.property.caption;
-        }
         IncrementDependency.update(this, "propertyObject");
     }
 
@@ -132,18 +129,22 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
         IncrementDependency.update(this, "propertyCaption");
     }
 
-    public void setOverridenCaption(String caption) { // usage через reflection
-        client.overridenCaption = caption;
-        IncrementDependency.update(this, "overridenCaption");
+    public void setCaption(String caption) { // usage через reflection
+        client.caption = caption;
+        IncrementDependency.update(this, "caption");
     }
 
-    public String getOverridenCaption() {
-        return client.overridenCaption;
+    public String getCaption() {
+        return client.caption;
     }
 
     @Override
     public String toString() {
-        return client.getResultingCaption();
+        return !BaseUtils.isRedundantString(client.caption)
+               ? client.caption
+               : propertyObject != null
+                 ? propertyObject.property.caption
+                 : "Неопределённое свойство";
     }
 
     @Override

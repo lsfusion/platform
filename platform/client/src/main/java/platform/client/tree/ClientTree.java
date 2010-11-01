@@ -346,7 +346,7 @@ public class ClientTree extends JTree {
         return true;
     }
 
-    private class ClientTreeCellRenderer extends DefaultTreeCellRenderer {
+    public static class ClientTreeCellRenderer extends DefaultTreeCellRenderer {
         public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected,
                                                       boolean expanded, boolean leaf, int row,
                                                       boolean hasFocus) {

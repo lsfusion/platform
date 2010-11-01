@@ -32,14 +32,15 @@ abstract public class ClientIntegralClass extends ClientDataClass {
         NumberFormat format = new DecimalFormat() {
             @Override
             public AttributedCharacterIterator formatToCharacterIterator(Object obj) {
-                if(obj==null)
+                if (obj == null) {
                     try {
                         return super.formatToCharacterIterator(parseString("0"));
                     } catch (ParseException e) {
                         throw new RuntimeException(e);
                     }
-                else
-                    return super.formatToCharacterIterator(obj);    //To change body of overridden methods use File | Settings | File Templates.
+                } else {
+                    return super.formatToCharacterIterator(obj);
+                }
             }
         }; // временно так чтобы устранить баг, но теряется locale, NumberFormat.getInstance()
         format.setGroupingUsed(true);

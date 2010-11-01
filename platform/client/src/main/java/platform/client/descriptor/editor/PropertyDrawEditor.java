@@ -23,7 +23,7 @@ public class PropertyDrawEditor extends GroupElementEditor {
 
         this.descriptor = descriptor;
 
-        add(new TitledPanel("Стат. заголовок", new IncrementTextEditor(descriptor, "overridenCaption")));
+        add(new TitledPanel("Стат. заголовок", new IncrementTextEditor(descriptor, "caption")));
 
         add(Box.createRigidArea(new Dimension(5, 5)));
         
