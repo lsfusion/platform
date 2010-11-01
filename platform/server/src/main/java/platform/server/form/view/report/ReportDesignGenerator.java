@@ -94,11 +94,18 @@ public class ReportDesignGenerator {
             GroupObjectView groupView = formView.getGroupObject(group);
             List<ReportDrawField> drawFields = new ArrayList<ReportDrawField>();
 
-            for(PropertyDrawView property : formView.properties) {
+            boolean hasColumnGroupProperty = false;
+            for (PropertyDrawView property : formView.properties) {
                 if (group == property.entity.toDraw) {
                     ReportDrawField reportField = property.getReportDrawField();
-                    if (reportField != null)
+                    if (reportField != null) {
                         drawFields.add(reportField);
+                        hasColumnGroupProperty = hasColumnGroupProperty || reportField.hasColumnGroupObjects;
+                        if (reportField.hasCaptionProperty) {
+                            String fieldId = reportField.sID + ReportConstants.captionSuffix;
+                            addDesignField(design, fieldId, reportField.captionClass.getName());
+                        }
+                    }
                 }
             }
 
@@ -116,7 +123,7 @@ public class ReportDesignGenerator {
                         preferredWidth += reportField.getPreferredWidth();
                     }
 
-                    if (captionWidth + preferredWidth <= pageWidth) {
+                    if (captionWidth + preferredWidth <= pageWidth && !hasColumnGroupProperty) {
                         JRDesignGroup designGroup = addDesignGroup(design, groupView, "designGroup" + group.getID());
                         reportLayout = new ReportGroupRowLayout(designGroup);
                     } else {
@@ -149,43 +156,35 @@ public class ReportDesignGenerator {
                 view.entity.baseClass.getType().fillReportDrawField(objField);
                 addDesignField(design, objField);
             }
-            for(ReportDrawField reportField : drawFields) {
-                // закидываем сначала Field
-                addDesignField(design, reportField);
+
+            for (ReportDrawField propertyField : drawFields) {
+                addDesignField(design, propertyField);
             }
         }
     }
 
     private void addReportFieldToLayout(ReportLayout layout, ReportDrawField reportField, JRDesignStyle style) {
-        JRDesignExpression captionExpr = new JRDesignExpression();
-        captionExpr.setValueClass(java.lang.String.class);
-        captionExpr.setText('"' + reportField.caption + '"');
+        String designCaptionText;
+        if (reportField.hasCaptionProperty) {
+            designCaptionText = ReportUtils.createFieldString(reportField.sID + ReportConstants.captionSuffix);
+        } else {
+            designCaptionText = '"' + reportField.caption + '"';
+        }
+        JRDesignExpression captionExpr = ReportUtils.createExpression(designCaptionText, reportField.captionClass);
+        JRDesignTextField captionField = ReportUtils.createTextField(style, captionExpr);
+        captionField.setHorizontalAlignment(HorizontalAlignEnum.CENTER);
 
-        JRDesignTextField drawCaption = new JRDesignTextField();
-        drawCaption.setStyle(style);
-        drawCaption.setExpression(captionExpr);
-        drawCaption.setHorizontalAlignment(HorizontalAlignEnum.CENTER);
-        drawCaption.setStretchWithOverflow(true);
-        drawCaption.setStretchType(StretchTypeEnum.RELATIVE_TO_BAND_HEIGHT);
-
-        JRDesignExpression textExpr = new JRDesignExpression();
-        textExpr.setValueClass(reportField.valueClass);
-        textExpr.setText("$F{"+reportField.sID +"}");
-
-        JRDesignTextField drawText = new JRDesignTextField();
-        drawText.setStyle(style);
-        drawText.setHorizontalAlignment(reportField.alignment);
-        drawText.setExpression(textExpr);
-        drawText.setPositionType(PositionTypeEnum.FLOAT);
-        drawText.setStretchWithOverflow(true);
-        drawText.setStretchType(StretchTypeEnum.RELATIVE_TO_BAND_HEIGHT);
-        drawText.setBlankWhenNull(true);
+        JRDesignExpression dataExpr = ReportUtils.createExpression(ReportUtils.createFieldString(reportField.sID), reportField.valueClass);
+        JRDesignTextField dataField = ReportUtils.createTextField(style, dataExpr);
+        dataField.setHorizontalAlignment(reportField.alignment);
+        dataField.setPositionType(PositionTypeEnum.FLOAT);
+        dataField.setBlankWhenNull(true);
 
         if (!toExcel) {
-            drawText.setPattern(reportField.pattern);
+            dataField.setPattern(reportField.pattern);
         }
 
-        layout.add(reportField, drawCaption, drawText);
+        layout.add(reportField, captionField, dataField);
     }
 
     private JRDesignGroup addDesignGroup(JasperDesign design, GroupObjectView group, String groupName) throws JRException {
@@ -193,13 +192,11 @@ public class ReportDesignGenerator {
         JRDesignGroup designGroup = new JRDesignGroup();
         designGroup.setName(groupName);
 
-        JRDesignExpression groupExpr = new JRDesignExpression();
-        groupExpr.setValueClass(java.lang.String.class);
         String groupString = "";
-        for(ObjectView object : group)
+        for (ObjectView object : group) {
             groupString = (groupString.length()==0?"":groupString+"+\" \"+")+"String.valueOf($F{"+object.entity.getSID()+"})";
-        groupExpr.setText(groupString);
-
+        }
+        JRDesignExpression groupExpr = ReportUtils.createExpression(groupString, java.lang.String.class);
         designGroup.setExpression(groupExpr);
 
         design.addGroup(designGroup);
@@ -208,11 +205,11 @@ public class ReportDesignGenerator {
     }
 
     private JRDesignField addDesignField(JasperDesign design, ReportDrawField reportField) throws JRException {
-        JRDesignField designField = new JRDesignField();
+        return addDesignField(design, reportField.sID, reportField.valueClass.getName());
+    }
 
-        designField.setName(reportField.sID);
-        designField.setValueClassName(reportField.valueClass.getName());
-
+    private JRDesignField addDesignField(JasperDesign design, String id, String className) throws JRException {
+        JRDesignField designField = ReportUtils.createField(id, className);
         design.addField(designField);
         return designField;
     }

@@ -28,19 +28,19 @@ public class ReportDependentDataSource implements JRDataSource {
     }
 
     public boolean next() throws JRException {
-        boolean ok = data.next();
-        if (ok) {
+        boolean hasNext = data.next();
+        if (hasNext) {
             if (values != null) {
                 for (int i = 0; i < values.size(); i++) {
                     if (!data.getKeyValueByIndex(i).equals(values.get(i))) {
-                        ok = false;
+                        hasNext = false;
                         data.revert();
                         break;
                     }
                 }
             }
 
-            if (ok && childSources != null) {
+            if (hasNext && childSources != null) {
                 List<Object> keyValues = new ArrayList<Object>();
                 for (int i = 0; i < data.objectNames.size(); i++) {
                     keyValues.add(data.getKeyValueByIndex(i));
@@ -51,7 +51,7 @@ public class ReportDependentDataSource implements JRDataSource {
                 }
             }
         }
-        return ok;
+        return hasNext;
     }
 
     private void setValues(List<Object> values) { this.values = values; }

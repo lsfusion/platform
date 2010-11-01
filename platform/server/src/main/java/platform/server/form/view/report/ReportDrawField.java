@@ -6,12 +6,16 @@ public class ReportDrawField implements AbstractRowLayoutElement {
     public String sID;
     public String caption;
     public Class valueClass;
+    public Class captionClass;
 
     public int minimumWidth;
     public int preferredWidth;
     public byte alignment;
 
     public String pattern;
+
+    public boolean hasColumnGroupObjects;
+    public boolean hasCaptionProperty;
 
     public ReportDrawField(String sID, String caption) {
         this.sID = sID;

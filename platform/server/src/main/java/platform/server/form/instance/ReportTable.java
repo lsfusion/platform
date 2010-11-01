@@ -1,6 +1,7 @@
 package platform.server.form.instance;
 
 import platform.base.OrderedMap;
+import platform.base.Pair;
 import platform.server.data.Field;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
@@ -20,33 +21,32 @@ import java.util.Map;
  */
 
 public class ReportTable extends SessionTable<ReportTable> {
-
+    public enum PropertyType {PLAIN, ORDER, CAPTION}
     public final Map<KeyField, ObjectInstance> mapKeys;
     public final OrderedMap<PropertyField, Object> orders;
-    public final Map<Object, PropertyField> objectsToFields;
-    public final Map<Object, PropertyField> ordersToFields;
+    public final Map<Pair<Object, PropertyType>, PropertyField> objectsToFields;
 
     public ReportTable(String name, List<GroupObjectInstance> groups, List<PropertyDrawInstance> props) {
         super("reportTable_" + name);
 
         mapKeys = new HashMap<KeyField, ObjectInstance>();
         orders = new OrderedMap<PropertyField, Object>();
-        objectsToFields = new HashMap<Object, PropertyField>();
-        ordersToFields = new HashMap<Object, PropertyField>();
+        objectsToFields = new HashMap<Pair<Object, PropertyType>, PropertyField>();
+
         int orderID = 0;
         for (GroupObjectInstance group : groups)
         {
             for(Map.Entry<OrderInstance, Boolean> order : group.orders.entrySet()) {
                 PropertyField orderProp = new PropertyField("order" + orderID, order.getKey().getType());
                 orderID++;
-                ordersToFields.put(order.getKey(), orderProp);
+                objectsToFields.put(new Pair<Object, PropertyType>(order.getKey(), PropertyType.ORDER), orderProp);
                 orders.put(orderProp, order.getKey());
                 properties.add(orderProp);
             }
 
             for(ObjectInstance object : group.objects) {
-                PropertyField objectProp = new PropertyField(object.getsID(), object.getType());
-                objectsToFields.put(object, objectProp);
+                PropertyField objectProp = new PropertyField("obj_order" + object.getsID(), object.getType());
+                objectsToFields.put(new Pair<Object, PropertyType>(object, PropertyType.PLAIN), objectProp);
                 orders.put(objectProp, object);
                 properties.add(objectProp);
 
@@ -58,9 +58,15 @@ public class ReportTable extends SessionTable<ReportTable> {
 
         for(PropertyDrawInstance property : props) {
             if (groups.contains(property.propertyObject.getApplyObject())) {
-                PropertyField propField = new PropertyField(property.getsID(), property.propertyObject.getType());
-                objectsToFields.put(property, propField);
+                PropertyField propField = new PropertyField("property" + property.getsID(), property.propertyObject.getType());
+                objectsToFields.put(new Pair<Object, PropertyType>(property, PropertyType.PLAIN), propField);
                 properties.add(propField);
+
+                if (property.propertyCaption != null) {
+                    PropertyField captionField = new PropertyField("caption" + property.getsID(), property.propertyCaption.getType());
+                    objectsToFields.put(new Pair<Object, PropertyType>(property, PropertyType.CAPTION), captionField);
+                    properties.add(captionField);
+                }
             }
         }
     }
@@ -72,7 +78,6 @@ public class ReportTable extends SessionTable<ReportTable> {
         keys.addAll(mapKeys.keySet());
         orders = from.orders;
         objectsToFields = from.objectsToFields;
-        ordersToFields = from.ordersToFields;
         properties.addAll(from.properties);
     }
 

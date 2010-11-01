@@ -1,5 +1,6 @@
 package platform.server.form.view;
 
+import platform.interop.form.ReportConstants;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenConstraints;
 import platform.server.data.type.Type;
@@ -102,6 +103,18 @@ public class PropertyDrawView extends ComponentView {
         }
         if (format instanceof SimpleDateFormat) {
             reportField.pattern = ((SimpleDateFormat) format).toPattern();
+        }
+        
+        reportField.hasColumnGroupObjects = !entity.columnGroupObjects.isEmpty();
+        reportField.hasCaptionProperty = (entity.propertyCaption != null);
+
+        // определяем класс заголовка
+        if (reportField.hasCaptionProperty) {
+            ReportDrawField captionField = new ReportDrawField(getSID() + ReportConstants.captionSuffix, "");
+            entity.propertyCaption.property.getType().fillReportDrawField(captionField);
+            reportField.captionClass = captionField.valueClass;        
+        }  else {
+            reportField.captionClass = java.lang.String.class;
         }
 
         if (!getType().fillReportDrawField(reportField)) {

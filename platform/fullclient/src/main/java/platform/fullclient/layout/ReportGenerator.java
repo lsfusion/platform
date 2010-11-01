@@ -1,7 +1,8 @@
 package platform.fullclient.layout;
 
 import net.sf.jasperreports.engine.*;
-import net.sf.jasperreports.engine.design.JasperDesign;
+import net.sf.jasperreports.engine.design.*;
+import platform.base.BaseUtils;
 import platform.base.Pair;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.ReportConstants;
@@ -10,10 +11,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * User: DAle
@@ -26,21 +24,32 @@ public class ReportGenerator {
     private final Map<String, List<String>> hierarchy;
     private final Map<String, JasperDesign> designs;
     private final Map<String, ClientReportData> data;
+    private final Map<String, List<List<Object>>> compositeData;
+    private final Map<String, List<Integer>> compositeFieldsObjects;
 
-    RemoteFormInterface remoteForm;
+    private static class sourcesGenerationOutput {
+        public Map<String, ClientReportData> data;
+        public Map<String, List<List<Object>>> compositeData;
+        public Map<String, List<Integer>> compositeFieldsObjects;
+    }
 
     public ReportGenerator(RemoteFormInterface remoteForm, boolean toExcel) throws IOException, ClassNotFoundException, JRException {
-        this.remoteForm = remoteForm;
         Pair<String, Map<String, List<String>>> hpair = retrieveReportHierarchy(remoteForm);
         rootID = hpair.first;
         hierarchy = hpair.second;
         designs = retrieveReportDesigns(remoteForm, toExcel);
-        data = retrieveReportSources(remoteForm);
+
+        sourcesGenerationOutput output = retrieveReportSources(remoteForm);
+        data = output.data;
+        compositeData = output.compositeData;
+        compositeFieldsObjects = output.compositeFieldsObjects;
+
+        transformDesigns();
     }
 
     public JasperPrint createReport() throws JRException {
-        Pair<Map<String, Object>, JRDataSource> compileParams =
-                prepareReportSources();
+        
+        Pair<Map<String, Object>, JRDataSource> compileParams = prepareReportSources();
 
         JasperReport report = JasperCompileManager.compileReport(designs.get(rootID));
         return JasperFillManager.fillReport(report, compileParams.first, compileParams.second);
@@ -51,6 +60,7 @@ public class ReportGenerator {
         for (String childID : hierarchy.get(rootID)) {
             iterateChildSubreports(childID, params);
         }
+
         ReportRootDataSource rootSource = new ReportRootDataSource();
         return new Pair<Map<String, Object>, JRDataSource>(params, rootSource);
     }
@@ -85,17 +95,168 @@ public class ReportGenerator {
         return (Map<String, JasperDesign>) objStream.readObject();
     }
 
-    private static Map<String, ClientReportData> retrieveReportSources(RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
+    private static sourcesGenerationOutput retrieveReportSources(RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
+        sourcesGenerationOutput output = new sourcesGenerationOutput();
         byte[] sourcesArray = remoteForm.getReportSourcesByteArray();
         DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(sourcesArray));
         int size = dataStream.readInt();
-        Map<String, ClientReportData> sources = new HashMap<String, ClientReportData>();
+        output.data = new HashMap<String, ClientReportData>();
         for (int i = 0; i < size; i++) {
             String sid = dataStream.readUTF();
             ClientReportData reportData = new ClientReportData(dataStream);
-            sources.put(sid, reportData);
+            output.data.put(sid, reportData);
         }
-        return sources;
+
+        output.compositeData = new HashMap<String, List<List<Object>>>();
+        int compositeCaptionsCnt = dataStream.readInt();
+        for (int i = 0; i < compositeCaptionsCnt; i++) {
+            String caption = dataStream.readUTF();
+            List<List<Object>> diffValues = new ArrayList<List<Object>>();
+            int valuesCnt = dataStream.readInt();
+            for (int j = 0; j < valuesCnt; j++) {
+                List<Object> values = new ArrayList<Object>();
+                int objCnt = dataStream.readInt();
+                for (int k = 0; k < objCnt; k++) {
+                    values.add(BaseUtils.deserializeObject(dataStream));
+                }
+                diffValues.add(values);
+            }
+            output.compositeData.put(caption, diffValues);
+        }
+
+        output.compositeFieldsObjects = new HashMap<String, List<Integer>>();
+        for (int i = 0; i < compositeCaptionsCnt; i++) {
+            String caption = dataStream.readUTF();
+            List<Integer> objectsId = new ArrayList<Integer>();
+            int objectCnt = dataStream.readInt();
+            for (int j = 0; j < objectCnt; j++) {
+                objectsId.add(dataStream.readInt());
+            }
+            output.compositeFieldsObjects.put(caption, objectsId);
+        }
+
+        for (ClientReportData data : output.data.values()) {
+            data.setCompositeData(output.compositeData, output.compositeFieldsObjects);
+        }
+        return output;
     }
 
+    // Пока что добавляет только свойства с группами в колонках
+    private void transformDesigns() {
+        for (JasperDesign design : designs.values()) {
+            transformDesign(design);
+//            try {
+//                JasperCompileManager.compileReportToFile(design, "D:/"+design.getName());
+//            } catch (Exception e) {}
+        }
+    }
+
+    private void transformDesign(JasperDesign design) {
+        transformBand(design, design.getPageHeader());
+        transformBand(design, design.getPageFooter());
+
+        transformSection(design, design.getDetailSection());
+        for (JRGroup group : design.getGroups()) {
+            transformSection(design, group.getGroupHeaderSection());
+            transformSection(design, group.getGroupFooterSection());
+        }
+    }
+
+    private void transformSection(JasperDesign design, JRSection section) {
+        if (section instanceof JRDesignSection) {
+            JRDesignSection designSection = (JRDesignSection) section;
+            List bands = designSection.getBandsList();
+            for (Object band : bands) {
+                if (band instanceof JRBand) {
+                    transformBand(design, (JRBand) band);
+                }
+            }
+        }
+    }
+
+    private void transformBand(JasperDesign design, JRBand band) {
+        if (band instanceof JRDesignBand) {
+            JRDesignBand designBand = (JRDesignBand) band;
+            List<JRDesignElement> toDelete = new ArrayList<JRDesignElement>();
+            List<JRDesignElement> toAdd = new ArrayList<JRDesignElement>();
+
+            for (JRElement element : band.getElements()) {
+                if (element instanceof JRDesignTextField) {
+                    JRDesignTextField textField = (JRDesignTextField) element;
+                    transformTextField(design, textField, toAdd, toDelete);
+                }
+            }
+            for (JRDesignElement element : toDelete) {
+                designBand.removeElement(element);
+            }
+            for (JRDesignElement element : toAdd) {
+                designBand.addElement(element);
+            }
+        }
+    }
+
+    private void transformTextField(JasperDesign design, JRDesignTextField textField,
+                                    List<JRDesignElement> toAdd, List<JRDesignElement> toDelete) {
+        String exprText = textField.getExpression().getText();
+        String id;
+        if (exprText.startsWith("$F{")) {
+            id = exprText.substring(3, exprText.length()-1);
+        } else {
+            assert exprText.startsWith("\"");
+            id = exprText.substring(1, exprText.length()-1);
+        }
+
+        String dataId = id;
+        if (id.endsWith(ReportConstants.captionSuffix)) {
+            dataId = id.substring(0, id.length() - ReportConstants.captionSuffix.length());
+        }
+        if (compositeData.containsKey(dataId)) {
+            toDelete.add(textField);
+            design.removeField(id);
+            int newFieldsCount= compositeData.get(dataId).size();
+            List<JRDesignTextField> subFields = makeFieldPartition(textField, newFieldsCount);
+
+            for (int i = 0; i < newFieldsCount; i++) {
+                JRDesignExpression subExpr = new JRDesignExpression();
+                subExpr.setValueClassName(textField.getExpression().getValueClassName());
+                if (exprText.startsWith("\"")) {  // caption без property
+                    subExpr.setText(exprText);
+                } else {
+                    String fieldName = id + ClientReportData.beginMarker + i + ClientReportData.endMarker;
+                    subExpr.setText("$F{" + fieldName + "}");
+                    JRDesignField designField = new JRDesignField();
+                    designField.setName(fieldName);
+                    designField.setValueClassName(subExpr.getValueClassName());
+                    try {
+                        design.addField(designField);
+                    } catch (JRException e) {}  // todo [dale]: обработать ошибку
+                }
+                subFields.get(i).setExpression(subExpr);
+            }
+            toAdd.addAll(subFields);
+        }
+    }
+
+    // Разбивает поле на cnt полей с примерно одинаковой шириной
+    private static List<JRDesignTextField> makeFieldPartition(JRDesignTextField textField, int cnt) {
+        List<JRDesignTextField> res = new ArrayList<JRDesignTextField>();
+        int widthLeft = textField.getWidth();
+        int x = textField.getX();
+        int fieldsLeft = cnt;
+
+        for (int i = 0; i < cnt; i++) {
+            JRDesignTextField subField = (JRDesignTextField) textField.clone();
+
+            int subWidth = widthLeft / fieldsLeft;
+            subField.setWidth(subWidth);
+            subField.setX(x);
+
+            x += subWidth;
+            widthLeft -= subWidth;
+            --fieldsLeft;
+
+            res.add(subField);
+        }
+        return res;
+    }
 }

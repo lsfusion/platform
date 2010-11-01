@@ -5,6 +5,9 @@ import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
 import platform.base.BaseUtils;
 import platform.base.DateConverter;
+import platform.base.Pair;
+import platform.interop.form.PropertyRead;
+import platform.interop.form.ReportConstants;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -12,37 +15,65 @@ import java.util.*;
 
 public class ClientReportData implements JRDataSource {
     final List<String> objectNames = new ArrayList<String>();
-    private final Map<String,Integer> objects = new HashMap<String,Integer>();
-    private final Map<String,Integer> properties = new HashMap<String,Integer>();
-    private final ListIterator<ClientRow> iterator;
+    private final List<String> propertyNames = new ArrayList<String>();  // todo [dale]: не обеспечивается уникальность имен
+    private final Map<String, Integer> objects = new HashMap<String,Integer>();
+    private final Map<String, Pair<Integer, Integer>> properties = new HashMap<String, Pair<Integer, Integer>>();
+
+    private final ListIterator<HashMap<Integer, Object>> iterator;
+    private final List<HashMap<Integer, Object>> keyRows = new ArrayList<HashMap<Integer, Object>>();
+    private HashMap<Integer, Object> currentKeyRow;
+    private final Map<Map<Integer, Object>, Map<Pair<Integer, Integer>, Object>> rows =
+            new HashMap<Map<Integer, Object>, Map<Pair<Integer, Integer>, Object>>();
+
+    private Map<String, List<List<Object>>> compositeData;
+    private Map<String, List<Integer>> compositeFieldsObjects;
+
+    public static final String beginMarker = "[";
+    public static final String endMarker = "]";
 
     public ClientReportData(DataInputStream inStream) throws IOException {
 
-        List<ClientRow> rows = new ArrayList<ClientRow>();
         if (!inStream.readBoolean()) {
-            int count = inStream.readInt();
-            for(int i=0;i<count;i++) {
+            int objectCnt = inStream.readInt();
+            for (int i = 0; i < objectCnt; i++) {
                 String name = inStream.readUTF();
                 objectNames.add(name);
                 objects.put(name, inStream.readInt());
             }
 
-            count = inStream.readInt();
-            for(int i=0;i<count;i++)
-                properties.put(inStream.readUTF(),inStream.readInt());
+            int propCnt = inStream.readInt();
+            for (int i = 0; i < propCnt; i++) {
+                String name = inStream.readUTF();
+                int type = inStream.readInt();
+                if (type == PropertyRead.CAPTION) {
+                    name += ReportConstants.captionSuffix;
+                }
+                propertyNames.add(name);
+                properties.put(name, new Pair<Integer, Integer>(type, inStream.readInt()));
+            }
 
-            count = inStream.readInt();
-            for(int i=0;i<count;i++)
-                rows.add(new ClientRow(inStream));
+            int rowCnt = inStream.readInt();
+            for (int i = 0; i < rowCnt; i++) {
+                HashMap<Integer, Object> objectValues = new HashMap<Integer, Object>();
+                for (String objName : objectNames) {
+                    Object objValue = BaseUtils.deserializeObject(inStream);
+                    objectValues.put(objects.get(objName), objValue);
+                }
+                Map<Pair<Integer, Integer>, Object> propValues = new HashMap<Pair<Integer, Integer>, Object>();
+                for (String propName : propertyNames) {
+                    Object propValue = BaseUtils.deserializeObject(inStream);
+                    propValues.put(properties.get(propName), propValue);
+                }
+                keyRows.add(objectValues);
+                rows.put(objectValues, propValues);
+            }
         }
-        iterator = rows.listIterator();
+        iterator = keyRows.listIterator();
     }
-
-    protected ClientRow currentRow;
 
     public boolean next() throws JRException {
         if(!iterator.hasNext()) return false;
-        currentRow = iterator.next();
+        currentKeyRow = iterator.next();
         return true;
     }
 
@@ -51,45 +82,63 @@ public class ClientReportData implements JRDataSource {
         iterator.previous();
     }
 
+    public void setCompositeData(Map<String, List<List<Object>>> data, Map<String, List<Integer>> fieldObjects) {
+        compositeData = data;
+        compositeFieldsObjects = fieldObjects;
+    }
+
     public Object getFieldValue(JRField jrField) throws JRException {
 
         String fieldName = jrField.getName();
-        Object value;
+        Object value = null;
         Integer objectID = objects.get(fieldName);
-        if(objectID!=null)
-            value = currentRow.keys.get(objectID);
-        else {
-            Integer propertyID = properties.get(fieldName);
-            if (propertyID == null) throw new RuntimeException("Поле " + fieldName + " отсутствует в переданных данных");
-            value = currentRow.values.get(propertyID);
+        if (objectID != null) {
+            value = currentKeyRow.get(objectID);
+        } else {
+            Pair<Integer, Integer>  propertyID = properties.get(fieldName);
+            if (propertyID != null) {
+                value = rows.get(currentKeyRow).get(propertyID);
+            } else if (fieldName.endsWith(endMarker)) { 
+                Pair<Integer, String> extractData = extractFieldData(fieldName);
+                int index = extractData.first;
+                String realFieldName = extractData.second;
+                if (index != -1) {
+                    String dataFieldName = realFieldName;
+                    if (realFieldName.endsWith(ReportConstants.captionSuffix)) {
+                        dataFieldName = realFieldName.substring(0, realFieldName.length() - ReportConstants.captionSuffix.length());
+                    }
+                    Map<Integer, Object> row = (HashMap<Integer, Object>)(currentKeyRow.clone());
+                    for (int i = 0; i < compositeFieldsObjects.size(); i++) {
+                        int objectId = compositeFieldsObjects.get(dataFieldName).get(i);
+                        row.put(objectId, compositeData.get(dataFieldName).get(index).get(i));
+                    }
+                    value = rows.get(row).get(properties.get(realFieldName));
+                }
+            }
         }
 
         if (Date.class.getName().equals(jrField.getValueClassName()) && value != null) {
             value = DateConverter.sqlToDate((java.sql.Date) value);
         }
 
-        if(value instanceof String)
+        if (value instanceof String) {
             value = ((String) value).trim();
+        }
 
         return value;
     }
 
     public Object getKeyValueByIndex(int index) {
-        return currentRow.keys.get(objects.get(objectNames.get(index)));
+        return currentKeyRow.get(objects.get(objectNames.get(index)));
     }
 
-    class ClientRow {
-        final Map<Integer,Object> keys = new HashMap<Integer, Object>();
-        final Map<Integer,Object> values = new HashMap<Integer, Object>();
-
-        ClientRow(DataInputStream inStream) throws IOException {
-            for(int i=0;i<objects.size();i++)
-                keys.put(inStream.readInt(),BaseUtils.deserializeObject(inStream));
-            for(int i=0;i<properties.size();i++)
-                values.put(inStream.readInt(),BaseUtils.deserializeObject(inStream));
-        }
+    private Pair<Integer, String> extractFieldData(String id) {
+        int markerPos = id.substring(0, id.length() - endMarker.length()).lastIndexOf(beginMarker);
+        if (markerPos == -1) return new Pair<Integer, String>(-1, "");
+        String indexString = id.substring(markerPos + beginMarker.length(), id.length() - endMarker.length());
+        String realFieldName = id.substring(0, markerPos);
+        return new Pair<Integer, String>(Integer.parseInt(indexString), realFieldName);
     }
-
 }
 
 

@@ -21,7 +21,7 @@ public class DesignStyles {
         style.setFontName("Tahoma");
         style.setFontSize(10);
         style.setVerticalAlignment(VerticalAlignEnum.MIDDLE);
-        style.setPdfFontName("c:/windows/fonts/tahoma.ttf"); // todo: разобраться с этим
+        style.setPdfFontName("c:/windows/fonts/tahoma.ttf"); // todo [dale]: таскать с собой шрифт?
         style.setPdfEncoding("Cp1251");
         style.setPdfEmbedded(false);
     }

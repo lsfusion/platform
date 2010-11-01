@@ -81,14 +81,38 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
     public byte[] getReportSourcesByteArray() {
         ReportSourceGenerator<T> sourceGenerator = new ReportSourceGenerator<T>(form, form.entity.getReportHierarchy());
         try {
-            Map<String, FormData> sources = sourceGenerator.generate();
+            Map<String, ReportData> sources = sourceGenerator.generate();
+            ReportSourceGenerator.ColumnGroupCaptionsData columnGroupCaptions = sourceGenerator.getColumnGroupCaptions();
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
             DataOutputStream dataStream = new DataOutputStream(outStream);
+
             dataStream.writeInt(sources.size());
-            for (Map.Entry<String, FormData> source : sources.entrySet()) {
+            for (Map.Entry<String, ReportData> source : sources.entrySet()) {
                 dataStream.writeUTF(source.getKey());
                 source.getValue().serialize(dataStream);
             }
+
+            dataStream.writeInt(columnGroupCaptions.differentValues.size());
+            for (Map.Entry<String, LinkedHashSet<List<Object>>> entry : columnGroupCaptions.differentValues.entrySet()) {
+                dataStream.writeUTF(entry.getKey());
+                LinkedHashSet<List<Object>> value = entry.getValue();
+                dataStream.writeInt(value.size());
+                for (List<Object> list : value) {
+                    dataStream.writeInt(list.size());
+                    for (Object obj : list) {
+                        BaseUtils.serializeObject(dataStream, obj);
+                    }
+                }
+            }
+            
+            for (Map.Entry<String, List<ObjectInstance>> entry : columnGroupCaptions.propertyObjects.entrySet()) {
+                dataStream.writeUTF(entry.getKey());
+                dataStream.writeInt(entry.getValue().size());
+                for (ObjectInstance object : entry.getValue()) {
+                    dataStream.writeInt(object.getID());
+                }
+            }
+
             return outStream.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException(e);

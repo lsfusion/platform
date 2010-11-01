@@ -56,7 +56,7 @@ class ReportDetailLayout extends ReportLayout {
     private JRDesignBand detailBand;
 
     public ReportDetailLayout(JasperDesign design) {
-        // todo : убрать из заголовка страницы заголовок detail?
+        // todo [dale]: убрать из заголовка страницы заголовок detail?
         pageHeadBand = new JRDesignBand();
         pageHeadBand.setHeight(ROW_HEIGHT);
         design.setPageHeader(pageHeadBand);
