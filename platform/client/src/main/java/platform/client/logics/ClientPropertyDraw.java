@@ -71,7 +71,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ClientPropertyDraw() {
 
     }
-    
+
     private ClientGroupObject getClientGroupObject(Collection<ClientGroupObject> groups, int groupID) {
         for (ClientGroupObject group : groups) {
             if (group.getID() == groupID) {

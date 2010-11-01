@@ -1,5 +1,6 @@
 package platform.client.logics;
 
+import platform.base.BaseUtils;
 import platform.base.IdentityObject;
 import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientTypeSerializer;
@@ -45,6 +46,10 @@ public class ClientObject extends IdentityObject implements Serializable, Client
 
     @Override
     public String toString() {
-        return caption;
+        return !BaseUtils.isRedundantString(caption)
+                ? caption
+                : !BaseUtils.isRedundantString(baseClass.toString())
+                ? baseClass.toString()
+                : "Неопределённое свойство";
     }
 }
