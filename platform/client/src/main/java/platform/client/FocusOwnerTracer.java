@@ -35,9 +35,9 @@ class FocusOwnerTracer implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent e) {
         Component oldOwner = (Component) e.getOldValue();
         Component newOwner = (Component) e.getNewValue();
-        System.out.print("focusOwner changed: ");
-        System.out.print(" old - " + oldOwner);
-        System.out.println(" new - " + newOwner);
+        System.out.println("focusOwner changed: ");
+        System.out.println(" o: " + oldOwner);
+        System.out.println(" n: " + newOwner);
     }
 
 }
