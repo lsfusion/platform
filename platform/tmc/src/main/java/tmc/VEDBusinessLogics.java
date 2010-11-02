@@ -795,7 +795,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     AbstractGroup documentGroup;
     AbstractGroup priceGroup;
     AbstractGroup moveGroup;
-    AbstractGroup allGroup;
     AbstractGroup logisticsGroup;
     AbstractGroup documentMoveGroup;
     AbstractGroup documentPriceGroup, documentAggrPriceGroup;
@@ -805,21 +804,17 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     AbstractGroup couponGroup;
 
     protected void initGroups() {
-        allGroup = new AbstractGroup("Все");
-        allGroup.createContainer = false;
-        allGroup.add(baseGroup);
-
         documentGroup = new AbstractGroup("Параметры документа");
-        allGroup.add(documentGroup);
+        publicGroup.add(documentGroup);
 
         moveGroup = new AbstractGroup("Движение товаров");
-        allGroup.add(moveGroup);
+        publicGroup.add(moveGroup);
 
         documentMoveGroup = new AbstractGroup("Текущие параметры документа");
         documentGroup.add(documentMoveGroup);
 
         priceGroup = new AbstractGroup("Ценовые параметры");
-        allGroup.add(priceGroup);
+        publicGroup.add(priceGroup);
 
         documentPriceGroup = new AbstractGroup("Ценовые параметры документа");
         documentPriceGroup.createContainer = false;
@@ -830,7 +825,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         documentPriceGroup.add(documentAggrPriceGroup);
 
         logisticsGroup = new AbstractGroup("Логистические параметры");
-        allGroup.add(logisticsGroup);
+        publicGroup.add(logisticsGroup);
 
         documentLogisticsGroup = new AbstractGroup("Логистические параметры документа");
         documentGroup.add(documentLogisticsGroup);
@@ -845,7 +840,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         cashRegAdminGroup = new AbstractGroup("Административные операции с ФР");
         cashRegGroup.add(cashRegAdminGroup);
 
-        couponGroup = new AbstractGroup("Параметры документа");
+        couponGroup = new AbstractGroup("Параметры купона");
+        publicGroup.add(couponGroup);
     }
 
     protected void initTables() {
@@ -998,7 +994,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private class GlobalFormEntity extends FormEntity {
         protected GlobalFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Глобальные параметры");
-            addPropertyDraw(allGroup, true);
+            addPropertyDraw(publicGroup, true);
         }
     }
 
@@ -1477,7 +1473,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.getGroupObjectContainer(objDoc.groupTo).title = "Клиент";
             design.getGroupObjectContainer(objDoc.groupTo).design.background = new Color(192, 192, 192);
 
-            design.setEnabled(allGroup, false, objArt.groupTo);
+            design.setEnabled(publicGroup, false, objArt.groupTo);
             design.setEnabled(articleQuantity, true, objArt.groupTo);
 
             design.get(objArt.groupTo).grid.defaultComponent = true;
@@ -1998,13 +1994,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected SupplierArticleFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Ассортимент поставщиков");
 
-            ObjectEntity objSupplier = addSingleGroupObject(supplier, allGroup, true);
+            ObjectEntity objSupplier = addSingleGroupObject(supplier, publicGroup, true);
             addObjectActions(this, objSupplier);
 
-            ObjectEntity objArt = addSingleGroupObject(article, allGroup, true);
+            ObjectEntity objArt = addSingleGroupObject(article, publicGroup, true);
             addObjectActions(this, objArt);
 
-            addPropertyDraw(objSupplier, objArt, allGroup, true);
+            addPropertyDraw(objSupplier, objArt, publicGroup, true);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(articleSupplier, objArt), Compare.EQUALS, objSupplier));
         }
@@ -2016,14 +2012,14 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected StoreArticleFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Остатки по складу");
 
-            ObjectEntity objStore = addSingleGroupObject(store, allGroup, true);
-            objArt = addSingleGroupObject(article, allGroup, true);
-            ObjectEntity objOuter = addSingleGroupObject(commitDelivery, allGroup, true);
+            ObjectEntity objStore = addSingleGroupObject(store, publicGroup, true);
+            objArt = addSingleGroupObject(article, publicGroup, true);
+            ObjectEntity objOuter = addSingleGroupObject(commitDelivery, publicGroup, true);
 
-            addPropertyDraw(objStore, objArt, allGroup, true);
-            addPropertyDraw(objStore, objOuter, allGroup, true);
+            addPropertyDraw(objStore, objArt, publicGroup, true);
+            addPropertyDraw(objStore, objOuter, publicGroup, true);
             addPropertyDraw(objOuter, objArt, baseGroup, true);
-            addPropertyDraw(objStore, objOuter, objArt, allGroup, true);
+            addPropertyDraw(objStore, objOuter, objArt, publicGroup, true);
         }
 
         @Override
@@ -2039,12 +2035,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected FormatArticleFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Остатки по форматам");
 
-            ObjectEntity objFormat = addSingleGroupObject(format, allGroup, true);
+            ObjectEntity objFormat = addSingleGroupObject(format, publicGroup, true);
             addObjectActions(this, objFormat);
 
-            ObjectEntity objArt = addSingleGroupObject(article, allGroup, true);
+            ObjectEntity objArt = addSingleGroupObject(article, publicGroup, true);
 
-            addPropertyDraw(objFormat, objArt, allGroup, true);
+            addPropertyDraw(objFormat, objArt, publicGroup, true);
 
             addAutoAction(objBarcode, addPropertyObject(barcodeAction2, objFormat, objBarcode));
         }
@@ -2121,17 +2117,17 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected ActionFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Акции");
 
-            ObjectEntity objAction = addSingleGroupObject(action, allGroup, true);
+            ObjectEntity objAction = addSingleGroupObject(action, publicGroup, true);
             addObjectActions(this, objAction);
 
-            ObjectEntity objArtGroup = addSingleGroupObject(articleGroup, allGroup, true);
-            ObjectEntity objArt = addSingleGroupObject(article, allGroup, true);
+            ObjectEntity objArtGroup = addSingleGroupObject(articleGroup, publicGroup, true);
+            ObjectEntity objArt = addSingleGroupObject(article, publicGroup, true);
 
             if (noArticleGroups)
                 objArtGroup.groupTo.initClassView = ClassViewType.HIDE;
 
-            addPropertyDraw(objAction, objArtGroup, allGroup, true);
-            addPropertyDraw(objAction, objArt, allGroup, true);
+            addPropertyDraw(objAction, objArtGroup, publicGroup, true);
+            addPropertyDraw(objAction, objArt, publicGroup, true);
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(new RegularFilterEntity(genID(),
@@ -2228,7 +2224,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             design.getGroupObjectContainer(objDoc.groupTo).title = "Клиент";
             design.getGroupObjectContainer(objDoc.groupTo).design.background = new Color(192, 192, 192);
-            design.setEnabled(allGroup, false, objObligation.groupTo);
+            design.setEnabled(publicGroup, false, objObligation.groupTo);
 
             design.get(objObligation.groupTo).grid.defaultComponent = true;
 

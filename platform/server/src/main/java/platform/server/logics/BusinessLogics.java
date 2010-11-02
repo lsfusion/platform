@@ -567,10 +567,20 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected ObjectValuePropertySet objectValue;
 
     void initBase() {
+        rootGroup= new AbstractGroup("Корневая группа");
+        rootGroup.createContainer = false;
+
+        publicGroup = new AbstractGroup("Пользовательские свойства");
+        publicGroup.createContainer = false;
+        rootGroup.add(publicGroup);
 
         baseGroup = new AbstractGroup("Атрибуты");
-        baseGroup.createContainer = false;
-
+        baseGroup.createContainer = false;        
+        privateGroup = new AbstractGroup("Внутренние свойства");
+        privateGroup.createContainer = false;
+        publicGroup.add(baseGroup);
+        rootGroup.add(privateGroup);
+        
         objectValue = new ObjectValuePropertySet();
         baseGroup.add(objectValue);
 
@@ -984,8 +994,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
           }
       }
     */
+    public AbstractGroup rootGroup;
     public AbstractGroup baseGroup;
+    public AbstractGroup publicGroup;
     public AbstractGroup aggrGroup;
+    public AbstractGroup privateGroup;
 
     protected abstract void initGroups();
 
@@ -1539,7 +1552,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected <P extends PropertyInterface> LP addSCProp(LP<P> lp) {
-        return addSCProp(null, "sys", lp);
+        return addSCProp(privateGroup, "sys", lp);
     }
 
     protected <P extends PropertyInterface> LP addSCProp(AbstractGroup group, String caption, LP<P> lp) {
@@ -1547,7 +1560,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addCProp(ConcreteValueClass valueClass, Object value, ValueClass... params) {
-        return addCProp("sys", valueClass, value, params);
+        return addCProp(privateGroup, genSID(), "sys", valueClass, value, params);
     }
 
     protected LP addCProp(String caption, ConcreteValueClass valueClass, Object value, ValueClass... params) {
@@ -1771,7 +1784,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         lproperties.add(lp);
         properties.add(lp.property);
         lp.property.ID = idGenerator.idShift();
-        if (group != null) group.add(lp.property);
+        if (group != null) {
+            group.add(lp.property);
+        } else {
+            privateGroup.add(lp.property);
+        }
         if (persistent) {
             addPersistent(lp);
         }
@@ -1779,7 +1796,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addJProp(LP mainProp, Object... params) {
-        return addJProp("sys", mainProp, params);
+        return addJProp(privateGroup, "sys", mainProp, params);
     }
 
     protected LP addJProp(String caption, LP mainProp, Object... params) {
@@ -1833,7 +1850,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addJProp(boolean implementChange, LP mainProp, Object... params) {
-        return addJProp(null, implementChange, genSID(), "sys", mainProp, params);
+        return addJProp(privateGroup, implementChange, genSID(), "sys", mainProp, params);
     }
 
     protected LP addJProp(AbstractGroup group, boolean implementChange, String sID, String caption, LP mainProp, Object... params) {
@@ -1990,7 +2007,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
       }
     */
     protected LP addSGProp(LP groupProp, Object... params) {
-        return addSGProp("sys", groupProp, params);
+        return addSGProp(privateGroup, "sys", groupProp, params);
     }
 
     protected LP addSGProp(String caption, LP groupProp, Object... params) {
@@ -2023,7 +2040,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addMGProp(LP groupProp, Object... params) {
-        return addMGProp(null, genSID(), "sys", groupProp, params);
+        return addMGProp(privateGroup, genSID(), "sys", groupProp, params);
     }
 
     protected LP addMGProp(AbstractGroup group, String sID, String caption, LP groupProp, Object... params) {
@@ -2091,7 +2108,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected <T extends PropertyInterface, P extends PropertyInterface> LP addDGProp(int orders, boolean ascending, LP<T> groupProp, Object... params) {
-        return addDGProp(null, "sys", orders, ascending, groupProp, params);
+        return addDGProp(privateGroup, "sys", orders, ascending, groupProp, params);
     }
 
     protected <T extends PropertyInterface, P extends PropertyInterface> LP addDGProp(AbstractGroup group, String caption, int orders, boolean ascending, LP<T> groupProp, Object... params) {
@@ -2172,7 +2189,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     // объединение классовое (непересекающихся) свойств
     protected LP addCUProp(LP... props) {
-        return addCUProp("sys", props);
+        return addCUProp(privateGroup, "sys", props);
     }
 
     protected LP addCUProp(String caption, LP... props) {
@@ -2205,7 +2222,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     // разница
     protected LP addDUProp(LP prop1, LP prop2) {
-        return addDUProp("sys", prop1, prop2);
+        return addDUProp(privateGroup, "sys", prop1, prop2);
     }
 
     protected LP addDUProp(String caption, LP prop1, LP prop2) {
@@ -2243,7 +2260,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addNUProp(LP prop) {
-        return addNUProp(null, genSID(), "sys", prop);
+        return addNUProp(privateGroup, genSID(), "sys", prop);
     }
 
     protected LP addNUProp(AbstractGroup group, String sID, String caption, LP prop) {
@@ -2266,7 +2283,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     // XOR
     protected LP addXorUProp(LP prop1, LP prop2) {
-        return addXorUProp(null, genSID(), "sys", prop1, prop2);
+        return addXorUProp(privateGroup, genSID(), "sys", prop1, prop2);
     }
 
     protected LP addXorUProp(AbstractGroup group, String sID, String caption, LP prop1, LP prop2) {
@@ -2287,7 +2304,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     // IF и IF ELSE
     protected LP addIfProp(LP prop, boolean not, LP ifProp, Object... params) {
-        return addIfProp(null, genSID(), "sys", prop, not, ifProp, params);
+        return addIfProp(privateGroup, genSID(), "sys", prop, not, ifProp, params);
     }
 
     protected LP addIfProp(AbstractGroup group, String sID, String caption, LP prop, boolean not, LP ifProp, Object... params) {
@@ -2299,7 +2316,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addIfElseUProp(LP prop1, LP prop2, LP ifProp, Object... params) {
-        return addIfElseUProp(null, "sys", prop1, prop2, ifProp, params);
+        return addIfElseUProp(privateGroup, "sys", prop1, prop2, ifProp, params);
     }
 
     protected LP addIfElseUProp(AbstractGroup group, String caption, LP prop1, LP prop2, LP ifProp, Object... params) {
@@ -2316,7 +2333,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     // объединение пересекающихся свойств
     protected LP addSUProp(Union unionType, LP... props) {
-        return addSUProp("sys", unionType, props);
+        return addSUProp(privateGroup, "sys", unionType, props);
     }
 
     protected LP addSUProp(String caption, Union unionType, LP... props) {
@@ -2942,7 +2959,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addSAProp(LP lp) {
-        return addSAProp(null, "sys", lp);
+        return addSAProp(privateGroup, "sys", lp);
     }
 
     protected LP addSAProp(AbstractGroup group, String caption, LP lp) {

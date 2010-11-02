@@ -19,7 +19,7 @@ public class ObjectDescriptor extends IdentityDescriptor implements PropertyObje
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, groupTo);
         getBaseClass().serialize(outStream);
-        outStream.writeUTF(client.caption);
+        pool.writeString(outStream, client.caption);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
