@@ -11,8 +11,12 @@ import java.awt.*;
 
 public class ObjectEditor extends JPanel implements NodeEditor {
 
+    private final ObjectDescriptor object;
+
     public ObjectEditor(ObjectDescriptor object) {
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+
+        this.object = object;
 
         add(new TitledPanel("Заголовок", new IncrementTextEditor(object, "caption")));
         add(Box.createRigidArea(new Dimension(5, 5)));
@@ -28,6 +32,11 @@ public class ObjectEditor extends JPanel implements NodeEditor {
     }
 
     public boolean validateEditor() {
+        if (object.getBaseClass() == null) {
+            JOptionPane.showMessageDialog(this, "Выберите класс объекта!", "Ошибка", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
         return true;
     }
 }

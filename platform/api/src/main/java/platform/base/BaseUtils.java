@@ -952,6 +952,10 @@ public class BaseUtils {
         return s == null || s.trim().length() == 0;
     }
 
+    public static boolean isRedundantString(Object o) {
+        return o == null || o.toString().trim().length() == 0;        
+    }
+
     public static String spaces(int spaces) {
         String result = "";
         for(int i=0;i<spaces;i++)

@@ -124,6 +124,7 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
         IncrementDependency.add("op1", this);
         IncrementDependency.add("op2", this);
         IncrementDependency.add("property", this);
+        IncrementDependency.add("baseClass", this);
         IncrementDependency.add(this, "form", this);
 
         lookup.addLookupResultChangeListener(Lookup.NEW_EDITABLE_OBJECT_PROPERTY, this);

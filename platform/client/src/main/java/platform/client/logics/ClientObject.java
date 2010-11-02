@@ -48,8 +48,8 @@ public class ClientObject extends IdentityObject implements Serializable, Client
     public String toString() {
         return !BaseUtils.isRedundantString(caption)
                 ? caption
-                : baseClass != null && !BaseUtils.isRedundantString(baseClass.toString())
+                : !BaseUtils.isRedundantString(baseClass)
                 ? baseClass.toString()
-                : "Неопределённое свойство";
+                : "Неопределённый объект";
     }
 }

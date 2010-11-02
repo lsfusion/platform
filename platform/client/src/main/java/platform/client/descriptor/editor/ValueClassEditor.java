@@ -40,13 +40,15 @@ public class ValueClassEditor extends JPanel {
     JComponent currentComponent;
     boolean updated;
 
+    private final IncrementView typeVisible;
+
     public ValueClassEditor(final Object object, final String property) {
         this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
         typeClasses = new JComboBox();
         for(ClientTypeClass typeClass : ClientClass.getEnumTypeClasses())
             typeClasses.addItem(typeClass);
-
+        typeClasses.setSelectedItem(null);
 
         typeClasses.addActionListener(new ActionListener() {
             
@@ -60,12 +62,16 @@ public class ValueClassEditor extends JPanel {
         
         add(Box.createRigidArea(new Dimension(5, 5)));
 
-        IncrementView typeVisible = new IncrementView() {
+        typeVisible = new IncrementView() {
             public void update(Object updateObject, String updateField) {
                 final ClientClass clientClass = (ClientClass) BaseUtils.invokeGetter(object, property);
-                ClientTypeClass typeClass = clientClass == null
-                                            ? ClientIntegerClass.instance
-                                            : clientClass.getType().getTypeClass();
+
+                if(clientClass == null) {
+//                    BaseUtils.invokeCheckSetter(object, property, ClientIntegerClass.instance);
+                    return;
+                }
+
+                ClientTypeClass typeClass = clientClass.getType().getTypeClass();
 
                 updated = true;
                 typeClasses.setSelectedItem(typeClass);

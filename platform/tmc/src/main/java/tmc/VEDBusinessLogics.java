@@ -473,7 +473,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         // продажа облигаций
         issueObligation = addCUProp(documentPriceGroup, "Выдать", saleCertGiftObligation, addDProp("orderSaleCoupon", "Выдать", LogicalClass.instance, commitSaleCheckArticleRetail, coupon));
-        obligationIssued = addCGProp(null, "obligationIssued", true, "Выд. документ", addJProp(and1, 1, issueObligation, 1, 2), issueObligation, 2);
+        LP obligationIssued = addCGProp(null, "obligationIssued", true, "Выд. документ", addJProp(and1, 1, issueObligation, 1, 2), issueObligation, 2);
 
         obligationSum = addDProp(baseGroup, "obligationSum", "Сумма", DoubleClass.instance, obligation);
         obligationSumFrom = addDProp(baseGroup, "obligationSumFrom", "Сумма покупки", DoubleClass.instance, obligation);
@@ -657,8 +657,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addConstraint(addJProp("Всё оплачено карточкой", and1, addJProp(equals2, orderSalePayCard, 1, orderSalePayNoObligation, 1), 1, orderSalePayCash, 1), false);
         addConstraint(addJProp("Введенной суммы не достаточно", and1, notEnoughSum, 1, orderSalePayAll, 1), false); // если ни карточки ни кэша не задали, значит заплатитли без сдачи
         
-        LP couponCanBeUsed = addJProp(greater2, addJProp(date, obligationIssued, 1), 2, date, 1);
-
         barcodeAddClient = addSDProp("Доб. клиента", LogicalClass.instance);
         
         barcodeAddClientAction = addJProp(true, "", andNot1, addBAProp(customerCheckRetail, barcodeAddClient), 1, barcodeToObject, 1);
@@ -714,7 +712,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP couponToIssueQuantity;
     LP inCoupon;
     public LP issueObligation;
-    LP obligationIssued;
     public LP obligationSum;
     LP orderSaleCoupon;
     LP barcodeAddClient;

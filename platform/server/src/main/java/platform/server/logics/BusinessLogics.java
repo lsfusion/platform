@@ -1142,12 +1142,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                         classObject = session.addObject(baseClass.objectClass, session.modifier);
                         concreteClass.ID = (Integer) classObject.object;
 
-                        // также для обратной совместимости в objects меняем старые ID на новые
-                        Query<KeyField, PropertyField> update = new Query<KeyField, PropertyField>(baseClass.table);
-                        Join<PropertyField> baseJoin = baseClass.table.join(update.mapKeys);
-                        update.and(baseJoin.getExpr(baseClass.table.objectClass).compare(new ValueExpr(concreteClass.sID, SystemClass.instance), Compare.EQUALS));
-                        update.properties.put(baseClass.table.objectClass, new ValueExpr(classObject.object, SystemClass.instance));
-                        session.modifyRecords(new ModifyQuery(baseClass.table, update));
+                        // также для обратной совместимости в objects меняем старые ID на новые, только если с таким sID нету ID
+//                        if(!session.isRecord(baseClass.table, Collections.singletonMap(baseClass.table.key, new DataObject(concreteClass.sID, SystemClass.instance)))) {
+//                        Query<KeyField, PropertyField> update = new Query<KeyField, PropertyField>(baseClass.table);
+//                        Join<PropertyField> baseJoin = baseClass.table.join(update.mapKeys);
+//                        update.and(baseJoin.getExpr(baseClass.table.objectClass).compare(new ValueExpr(concreteClass.sID, SystemClass.instance), Compare.EQUALS));
+//                        update.properties.put(baseClass.table.objectClass, new ValueExpr(classObject.object, SystemClass.instance));
+//                        session.modifyRecords(new ModifyQuery(baseClass.table, update));
+//                        }
                     }
 
                     name.execute(concreteClass.caption, session, session.modifier, classObject);
