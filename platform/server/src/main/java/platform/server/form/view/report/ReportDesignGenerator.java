@@ -16,7 +16,9 @@ import platform.server.form.view.GroupObjectView;
 import platform.server.form.view.ObjectView;
 import platform.server.form.view.PropertyDrawView;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 import static platform.server.form.entity.GroupObjectHierarchy.ReportNode;
 
@@ -100,10 +102,14 @@ public class ReportDesignGenerator {
             List<ReportDrawField> drawFields = new ArrayList<ReportDrawField>();
 
             boolean hasColumnGroupProperty = false;
+            String highlightPropertySID = null;
             for (PropertyDrawView property : formView.properties) {
                 if (group == property.entity.toDraw) {
                     ReportDrawField reportField = property.getReportDrawField();
-                    if (reportField != null) {
+                    if (group.propertyHighlight == property.entity.propertyObject) {
+                        addDesignField(design, reportField);
+                        highlightPropertySID = reportField.sID;
+                    } else if (reportField != null) {
                         drawFields.add(reportField);
                         hasColumnGroupProperty = hasColumnGroupProperty || reportField.hasColumnGroupObjects;
                         if (reportField.hasCaptionProperty) {
@@ -149,6 +155,16 @@ public class ReportDesignGenerator {
                     groupCellStyle = DesignStyles.getGroupStyle(groups.indexOf(group), groupsCnt, minGroupLevel, treeGroupLevel, treeGroupLevel);
                 }
                 design.addStyle(groupCellStyle);
+                if (group.propertyHighlight != null) {
+                    JRDesignConditionalStyle condStyle = new JRDesignConditionalStyle();
+                    condStyle.setParentStyle(groupCellStyle);
+                    Color oldColor = condStyle.getBackcolor();
+                    condStyle.setBackcolor(new Color(oldColor.getRed(), oldColor.getGreen(), 0));
+                    JRDesignExpression expr =
+                            ReportUtils.createExpression("new Boolean($F{" + highlightPropertySID + "})", java.lang.Boolean.class);
+                    condStyle.setConditionExpression(expr);
+                    groupCellStyle.addConditionalStyle(condStyle);
+                }
 
                 for(ReportDrawField reportField : drawFields) {
                     addReportFieldToLayout(reportLayout, reportField, groupCellStyle);
