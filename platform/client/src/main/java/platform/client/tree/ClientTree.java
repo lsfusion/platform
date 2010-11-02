@@ -14,26 +14,15 @@ import java.util.*;
 import java.util.List;
 
 public class ClientTree extends JTree {
-
+    private final PopupTrigger popupTrigger = new PopupTrigger();
 
     // не вызываем верхний конструктор, потому что у JTree по умолчанию он на редкость дебильный
     public ClientTree() {
         super(new ClientTreeNode());
         setToggleClickCount(-1);
-        addMouseListener(new PopupTrigger());
 
-        addKeyListener(new KeyAdapter() {
-
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    TreePath path = getSelectionPath();
-                    ArrayList<ClientTreeAction> list = getActions(path);
-                    if (list.size() > 0) {
-                        list.get(0).actionPerformed(new ClientTreeActionEvent(getNode(path)));
-                    }
-                }
-            }
-        });
+        addMouseListener(popupTrigger);
+        addKeyListener(popupTrigger.keyListener);
 
         getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
 
@@ -123,40 +112,58 @@ public class ClientTree extends JTree {
     }
 
     class PopupTrigger extends MouseAdapter {
-        public void mouseReleased(MouseEvent e) {
+        public KeyListener keyListener = new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    TreePath path = getSelectionPath();
+                    if (path != null) {
+                        Rectangle d = getPathBounds(path);
+                        executeAction(d.x + d.width, d.y + d.height, path, false);
+                    }
+                }
+            }
+        };
 
+        public void mouseReleased(MouseEvent e) {
             if (e.isPopupTrigger() || e.getClickCount() == 2) {
                 int x = e.getX();
                 int y = e.getY();
                 final TreePath path = getPathForLocation(x, y);
-                if (path != null) {
-                    setSelectionPath(path);
-                    final ArrayList<ClientTreeAction> actions = getActions(path);
-                    final ClientTreeNode node = getNode(path);
+                if (e.isPopupTrigger() || e.getClickCount() == 2) {
+                    executeAction(x, y, path, e.isPopupTrigger());
+                }
+            }
+        }
 
-                    ClientTreeAction defaultAction = null;
-                    for (ClientTreeAction action : actions) {
-                        if (action.canBeDefault(path)) {
-                            defaultAction = action;
-                            break;
-                        }
+        private void executeAction(int x, int y, TreePath path, boolean isPopupTrigger) {
+            if (path != null) {
+                setSelectionPath(path);
+                final ArrayList<ClientTreeAction> actions = getActions(path);
+                final ClientTreeNode node = getNode(path);
+
+                ClientTreeAction defaultAction = null;
+                for (ClientTreeAction action : actions) {
+                    if (action.canBeDefault(path)) {
+                        defaultAction = action;
+                        break;
                     }
-                    if (e.isPopupTrigger() || defaultAction == null) {
-                        JPopupMenu popup = new JPopupMenu();
-                        for (ClientTreeAction act : actions) {
-                            final ClientTreeAction treeAction = act;
-                            popup.add(new AbstractAction(act.caption) {
-                                public void actionPerformed(ActionEvent e) {
-                                    treeAction.actionPerformed(new ClientTreeActionEvent(node, e));
-                                }
-                            });
-                        }
-                        if (popup.getComponentCount() > 0) {
-                            popup.show(ClientTree.this, x, y);
-                        }
-                    } else if (e.getClickCount() == 2) {
-                        defaultAction.actionPerformed(new ClientTreeActionEvent(node));
+                }
+                if (isPopupTrigger || defaultAction == null) {
+                    JPopupMenu popup = new JPopupMenu();
+                    for (ClientTreeAction act : actions) {
+                        final ClientTreeAction treeAction = act;
+                        popup.add(new AbstractAction(act.caption) {
+                            public void actionPerformed(ActionEvent e) {
+                                treeAction.actionPerformed(new ClientTreeActionEvent(node, e));
+                            }
+                        });
                     }
+                    if (popup.getComponentCount() > 0) {
+                        popup.show(ClientTree.this, x, y);
+                    }
+                } else {
+                    defaultAction.actionPerformed(new ClientTreeActionEvent(node));
                 }
             }
         }
