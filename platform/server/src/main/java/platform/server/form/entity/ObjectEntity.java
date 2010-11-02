@@ -1,6 +1,7 @@
 package platform.server.form.entity;
 
 import platform.base.IdentityObject;
+import platform.base.BaseUtils;
 import platform.server.classes.ValueClass;
 import platform.server.data.type.TypeSerializer;
 import platform.server.form.instance.InstanceFactory;
@@ -18,6 +19,9 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
     public GroupObjectEntity groupTo;
 
     public String caption;
+    public String getCaption() {
+        return !BaseUtils.isRedundantString(caption)?caption:baseClass.toString();
+    }
 
     public boolean addOnTransaction = false;
     public boolean resetOnApply = false;

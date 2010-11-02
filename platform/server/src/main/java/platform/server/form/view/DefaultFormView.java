@@ -63,7 +63,7 @@ public class DefaultFormView extends FormView {
             mgroupObjects.put(group, clientGroup);
             groupObjects.add(clientGroup);
 
-            ContainerView groupContainer = addContainer(group.get(0).caption); // контейнер всей группы
+            ContainerView groupContainer = addContainer(group.get(0).getCaption()); // контейнер всей группы
             groupContainer.description = "Группа объектов";
             groupContainer.sID = "groupContainer" + group.getID();
             groupContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;

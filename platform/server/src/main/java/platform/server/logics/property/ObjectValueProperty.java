@@ -67,6 +67,6 @@ public class ObjectValueProperty extends ExecuteProperty {
         super.proceedDefaultDesign(view, entity);
         PropertyObjectInterfaceEntity mapObject = BaseUtils.singleValue(entity.propertyObject.mapping);
         if(mapObject instanceof ObjectEntity)
-            view.get(entity).caption = ((ObjectEntity)mapObject).caption; 
+            view.get(entity).caption = ((ObjectEntity)mapObject).getCaption(); 
     }
 }

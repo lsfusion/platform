@@ -32,7 +32,7 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
     public GroupObjectInstance groupTo;
 
     public String getCaption() {
-        return entity.caption;
+        return entity.getCaption();
     }
 
     public boolean isResetOnApply() {

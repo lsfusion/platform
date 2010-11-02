@@ -843,8 +843,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         baseElement.add(baseClass.getBaseClassForm(this));
 
-        synchronizeDB();
-
         initBaseAuthentication();
         initAuthentication();
 
