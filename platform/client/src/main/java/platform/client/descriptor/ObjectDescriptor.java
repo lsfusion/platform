@@ -16,6 +16,12 @@ public class ObjectDescriptor extends IdentityDescriptor implements PropertyObje
     public ClientObject client = new ClientObject();
     public GroupObjectDescriptor groupTo;
 
+    @Override
+    public void setID(int ID) {
+        super.setID(ID);
+        client.setID(ID);
+    }
+
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, groupTo);
         getBaseClass().serialize(outStream);

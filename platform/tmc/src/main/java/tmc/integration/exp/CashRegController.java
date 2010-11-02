@@ -48,6 +48,8 @@ public class CashRegController {
                                                 nameProp, sumProp, toPayProp, barcodeProp, sumCardProp, sumCashProp), CASHREGISTER_CHARSETNAME));
         actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, "/T", CASHREGISTER_CHARSETNAME));
         actions.add(new SleepClientAction(CASHREGISTER_DELAY));
+        actions.add(new ImportFileClientAction("c:\\bill\\key.txt", CASHREGISTER_CHARSETNAME, true));
+        actions.add(new ImportFileClientAction("c:\\bill\\key.tx~", CASHREGISTER_CHARSETNAME, true));
         actions.add(new ImportFileClientAction("c:\\bill\\error.txt", CASHREGISTER_CHARSETNAME, true));
         return new ListClientAction(actions);
     }
@@ -228,10 +230,19 @@ public class CashRegController {
     public String checkCashRegApplyActions(Object result) {
 
         List<Object> listActions = (List<Object>) result;
-        ImportFileClientActionResult impFileResult = ((ImportFileClientActionResult) listActions.get(listActions.size()-1));
 
-        if (impFileResult.fileExists) {
-            return (impFileResult.fileContent.isEmpty()) ? "Произошла ошибка нижнего уровня ФР" : ("Ошибка при записи на фискальный регистратор :" + impFileResult.fileContent);
+        ImportFileClientActionResult keyImpFileResult = ((ImportFileClientActionResult) listActions.get(listActions.size()-3));
+        ImportFileClientActionResult keyExImpFileResult = ((ImportFileClientActionResult) listActions.get(listActions.size()-2));
+
+        if (keyImpFileResult.fileExists && !keyExImpFileResult.fileExists) {
+            return "Произошла ошибка при записи в ФР : программа взаимодействия с регистратором не загружена.\n" +
+                   "Для ее загрузки нужно запустить на рабочем столе ярлык 'Гепард'.";
+        }
+
+        ImportFileClientActionResult errorImpFileResult = ((ImportFileClientActionResult) listActions.get(listActions.size()-1));
+
+        if (errorImpFileResult.fileExists) {
+            return (errorImpFileResult.fileContent.isEmpty()) ? "Произошла ошибка нижнего уровня ФР" : ("Ошибка при записи на фискальный регистратор :" + errorImpFileResult.fileContent);
         }
 
         return null;

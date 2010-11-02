@@ -131,13 +131,16 @@ public final class Log {
                 }
             }
         });
+
         dialog = new JDialog(Main.frame, "LS Fusion", true);
         dialog.setContentPane(optionPane);
-        int WIDTH = 250;
-        int HEIGHT = 200;
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        dialog.setBounds((int) (screenSize.getWidth() - WIDTH) / 2, (int) (screenSize.getHeight() - HEIGHT) / 2, WIDTH, HEIGHT);
         dialog.pack();
+
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int width = dialog.getWidth();
+        int height = dialog.getHeight();
+        dialog.setLocation((int) (screenSize.getWidth() - width) / 2, (int) (screenSize.getHeight() - height) / 2);
+
         dialog.setVisible(true);
     }
 
