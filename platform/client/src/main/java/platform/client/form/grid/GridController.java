@@ -105,9 +105,7 @@ public class GridController {
     }
 
     public void addProperty(ClientPropertyDraw property) {
-        if (property.show) {
             table.addProperty(property);
-        }
 
         if (property.externalScreen != null) {
             addExternalScreenComponent(property);
@@ -115,9 +113,7 @@ public class GridController {
     }
 
     public void removeProperty(ClientPropertyDraw property) {
-        if (property.show) {
             table.removeProperty(property);
-        }
     }
 
     public void setGridObjects(List<ClientGroupObjectValue> gridObjects) {

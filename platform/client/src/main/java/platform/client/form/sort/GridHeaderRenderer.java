@@ -51,7 +51,6 @@ public abstract class GridHeaderRenderer implements TableCellRenderer {
             } else {
                 label.setIcon(null);
             }
-
             label.setFont(label.getFont().deriveFont(Font.PLAIN, 10));
         }
         return comp;

@@ -23,8 +23,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     public boolean defaultComponent = false;
 
-    public boolean show = true;
-
     public ComponentView() {
 
     }
@@ -53,7 +51,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         }
 
         outStream.writeBoolean(defaultComponent);
-        outStream.writeBoolean(show);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -72,6 +69,5 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         }
 
         defaultComponent = inStream.readBoolean();
-        show = inStream.readBoolean();
     }
 }

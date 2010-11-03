@@ -29,8 +29,6 @@ public abstract class ClientComponent extends IdentityDescriptor implements Seri
 
     public boolean defaultComponent = false;
 
-    public boolean show = true;
-
     public ClientComponent() {
     }
 
@@ -46,7 +44,6 @@ public abstract class ClientComponent extends IdentityDescriptor implements Seri
         }
 
         outStream.writeBoolean(defaultComponent);
-        outStream.writeBoolean(show);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -65,7 +62,6 @@ public abstract class ClientComponent extends IdentityDescriptor implements Seri
         }
 
         defaultComponent = inStream.readBoolean();
-        show = inStream.readBoolean();
     }
 
     public ComponentNode getNode() {
@@ -74,15 +70,6 @@ public abstract class ClientComponent extends IdentityDescriptor implements Seri
 
     public JComponent getPropertiesEditor() {
         return new ComponentEditor("Компонент", this);
-    }
-
-    public boolean getShow() {
-        return show;
-    }
-
-    public void setShow(boolean show) {
-        this.show = show;
-        IncrementDependency.update(this, "show");
     }
 
     public Color getBackground() {
@@ -111,6 +98,15 @@ public abstract class ClientComponent extends IdentityDescriptor implements Seri
     public void setFont(Font font) {
         design.font = font;
         IncrementDependency.update(this, "font");
+    }
+
+    public Font getHeaderFont(){
+        return design.headerFont;
+    }
+
+    public void setHeaderFont(Font font){
+        design.headerFont = font;
+        IncrementDependency.update(this, "headerFont");
     }
 
     public void setDefaultComponent(boolean defaultComponent) {

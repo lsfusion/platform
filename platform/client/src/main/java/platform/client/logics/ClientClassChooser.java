@@ -1,6 +1,7 @@
 package platform.client.logics;
 
 import platform.client.descriptor.editor.ComponentEditor;
+import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.serialization.ClientSerializationPool;
 
 import javax.swing.*;
@@ -15,12 +16,14 @@ public class ClientClassChooser extends ClientComponent {
     }
 
     public ClientObject object;
+    public boolean show = true;
 
     @Override
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);
 
         pool.serializeObject(outStream, object);
+        outStream.writeBoolean(show);
     }
 
     @Override
@@ -28,6 +31,17 @@ public class ClientClassChooser extends ClientComponent {
         super.customDeserialize(pool, inStream);
 
         object = pool.deserializeObject(inStream);
+        show = inStream.readBoolean();
+
+    }
+
+    public boolean getShow() {
+        return show;
+    }
+
+    public void setShow(boolean show) {
+        this.show = show;
+        IncrementDependency.update(this, "show");
     }
 
     @Override
