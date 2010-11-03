@@ -273,6 +273,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP payWithCard;
     LP printOrderCheck;
 
+    public LP noBillTxt;
+
     protected void initProperties() {
 
         LP removePercent = addSFProp("((prm1*(100-prm2))/100)", DoubleClass.instance, 2);
@@ -328,6 +330,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         initialSumContragent = addJProp(baseGroup, "Начальная сумма", clientInitialSum, orderContragent, 1);
 
 //        logClientInitialSum = addLProp(clientInitialSum);
+
+        noBillTxt = addDProp(baseGroup, "noBillTxt", "Без фискальника", LogicalClass.instance, computer);
 
         nameContragentImpl = addJProp(true, "Контрагент", name, orderContragent, 1);
         phoneContragentImpl = addJProp(true, "Телефон", customerCheckRetailPhone, orderContragent, 1);
@@ -871,17 +875,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     private Integer getPanelComPort(int compId) {
         try {
-            Integer result = null;
             DataSession session = createSession();
 
-            Query<String, Object> q = new Query<String, Object>(Collections.singleton("key"));
-            q.properties.put("comport", panelScreenComPort.getExpr(session.modifier, q.mapKeys.get("key")));
-            q.and(q.mapKeys.get("key").compare(new DataObject(compId, computer), Compare.EQUALS));
-
-            Collection<Map<Object, Object>> values = q.execute(session).values();
-            if (values.size() != 0) {
-                result = (Integer) values.iterator().next().get("comport");
-            }
+            Integer result = (Integer) panelScreenComPort.read(session, new DataObject(compId, computer));
 
             session.close();
 

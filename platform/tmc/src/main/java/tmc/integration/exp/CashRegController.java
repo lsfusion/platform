@@ -35,6 +35,7 @@ public class CashRegController {
         this.BL = BL;
     }
 
+    private boolean noBillTxt = false;
     public ClientAction getCashRegApplyActions(FormInstance formInstance, int payType,
                                                       Set<GroupObjectInstance> classGroups,
                                                       PropertyDrawEntity<?> priceProp, PropertyDrawEntity<?> quantityProp,
@@ -43,14 +44,24 @@ public class CashRegController {
                                                       PropertyDrawEntity<?> sumCardProp, PropertyDrawEntity<?> sumCashProp) {
 
         List<ClientAction> actions = new ArrayList<ClientAction>();
-        actions.add(new ExportFileClientAction("c:\\bill\\bill.txt", false, createBillTxt(formInstance, payType,
-                                                classGroups, priceProp, quantityProp,
-                                                nameProp, sumProp, toPayProp, barcodeProp, sumCardProp, sumCashProp), CASHREGISTER_CHARSETNAME));
-        actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, "/T", CASHREGISTER_CHARSETNAME));
-        actions.add(new SleepClientAction(CASHREGISTER_DELAY));
-        actions.add(new ImportFileClientAction("c:\\bill\\key.txt", CASHREGISTER_CHARSETNAME, true));
-        actions.add(new ImportFileClientAction("c:\\bill\\key.tx~", CASHREGISTER_CHARSETNAME, true));
-        actions.add(new ImportFileClientAction("c:\\bill\\error.txt", CASHREGISTER_CHARSETNAME, true));
+        
+        try {
+            noBillTxt = (BL.noBillTxt.read(formInstance.session, formInstance, formInstance.instanceFactory.computer.getDataObject())!=null);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        if(!noBillTxt) {
+            actions.add(new ExportFileClientAction("c:\\bill\\bill.txt", false, createBillTxt(formInstance, payType,
+                                                    classGroups, priceProp, quantityProp,
+                                                    nameProp, sumProp, toPayProp, barcodeProp, sumCardProp, sumCashProp), CASHREGISTER_CHARSETNAME));
+            actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, "/T", CASHREGISTER_CHARSETNAME));
+            actions.add(new SleepClientAction(CASHREGISTER_DELAY));
+            actions.add(new ImportFileClientAction("c:\\bill\\key.txt", CASHREGISTER_CHARSETNAME, true));
+            actions.add(new ImportFileClientAction("c:\\bill\\key.tx~", CASHREGISTER_CHARSETNAME, true));
+            actions.add(new ImportFileClientAction("c:\\bill\\error.txt", CASHREGISTER_CHARSETNAME, true));
+        }
+
         return new ListClientAction(actions);
     }
 
@@ -231,18 +242,20 @@ public class CashRegController {
 
         List<Object> listActions = (List<Object>) result;
 
-        ImportFileClientActionResult keyImpFileResult = ((ImportFileClientActionResult) listActions.get(listActions.size()-3));
-        ImportFileClientActionResult keyExImpFileResult = ((ImportFileClientActionResult) listActions.get(listActions.size()-2));
+        if(!noBillTxt) {
+            ImportFileClientActionResult keyImpFileResult = ((ImportFileClientActionResult) listActions.get(listActions.size()-3));
+            ImportFileClientActionResult keyExImpFileResult = ((ImportFileClientActionResult) listActions.get(listActions.size()-2));
 
-        if (keyImpFileResult.fileExists && !keyExImpFileResult.fileExists) {
-            return "Произошла ошибка при записи в ФР : программа взаимодействия с регистратором не загружена.\n" +
-                   "Для ее загрузки нужно запустить на рабочем столе ярлык 'Гепард'.";
-        }
+            if (keyImpFileResult.fileExists && !keyExImpFileResult.fileExists) {
+                return "Произошла ошибка при записи в ФР : программа взаимодействия с регистратором не загружена.\n" +
+                       "Для ее загрузки нужно запустить на рабочем столе ярлык 'Гепард'.";
+            }
 
-        ImportFileClientActionResult errorImpFileResult = ((ImportFileClientActionResult) listActions.get(listActions.size()-1));
+            ImportFileClientActionResult errorImpFileResult = ((ImportFileClientActionResult) listActions.get(listActions.size()-1));
 
-        if (errorImpFileResult.fileExists) {
-            return (errorImpFileResult.fileContent.isEmpty()) ? "Произошла ошибка нижнего уровня ФР" : ("Ошибка при записи на фискальный регистратор :" + errorImpFileResult.fileContent);
+            if (errorImpFileResult.fileExists) {
+                return (errorImpFileResult.fileContent.isEmpty()) ? "Произошла ошибка нижнего уровня ФР" : ("Ошибка при записи на фискальный регистратор :" + errorImpFileResult.fileContent);
+            }
         }
 
         return null;
