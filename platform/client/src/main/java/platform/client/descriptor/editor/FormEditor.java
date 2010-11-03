@@ -6,6 +6,7 @@ import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.descriptor.increment.editor.IncrementTextEditor;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class FormEditor extends JPanel implements NodeEditor {
     private final FormDescriptor form;
@@ -16,8 +17,9 @@ public class FormEditor extends JPanel implements NodeEditor {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         add(new TitledPanel("Заголовок", new IncrementTextEditor(form, "caption")));
+        add(Box.createRigidArea(new Dimension(5, 5)));
+        add(new TitledPanel("Порядки по умолчанию", new DefaultOrdersEditor(form)));
     }
-
 
     public JComponent getComponent() {
         return this;

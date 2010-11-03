@@ -149,8 +149,6 @@ public class ClientFormController {
 
         initializeButtons();
 
-        initializeOrders();
-
         applyRemoteChanges();
     }
 
@@ -383,7 +381,9 @@ public class ClientFormController {
         }
     }
 
+    private boolean ordersInitialized = false;
     private void initializeOrders() throws IOException {
+        ordersInitialized = true;
         // Применяем порядки по умолчанию
         for (Map.Entry<ClientPropertyDraw, Boolean> entry : form.defaultOrders.entrySet()) {
             controllers.get(entry.getKey().getGroupObject()).changeGridOrder(entry.getKey(), Order.ADD);
@@ -440,6 +440,14 @@ public class ClientFormController {
 
         for (GroupObjectController controller : controllers.values()) {
             controller.processFormChanges(formChanges, currentGridObjects);
+        }
+
+        if (!ordersInitialized) {
+            try {
+                initializeOrders();
+            } catch (IOException e) {
+                throw new RuntimeException("Не могу проинициализировать порядки по умолчанию");
+            }
         }
 
         SwingUtilities.invokeLater(new Runnable() {

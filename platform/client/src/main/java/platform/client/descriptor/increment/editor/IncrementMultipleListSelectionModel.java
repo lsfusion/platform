@@ -20,8 +20,11 @@ public abstract class IncrementMultipleListSelectionModel extends IncrementListS
     }
 
     protected void updateSelectionViews() {
-        if(selectionViews!=null) // чисто из-за особенностей инициализации 
-            for(IncrementSelectionView selectionView : selectionViews)
+        // чисто из-за особенностей инициализации
+        if (selectionViews != null) {
+            for (IncrementSelectionView selectionView : selectionViews) {
                 selectionView.updateSelection();
+            }
+        }
     }
 }

@@ -3,6 +3,7 @@ package platform.client.logics;
 import platform.base.IdentityObject;
 import platform.base.OrderedMap;
 import platform.client.SwingUtils;
+import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.form.LogicsSupplier;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
@@ -32,7 +33,7 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
     public List<ClientGroupObject> groupObjects = new ArrayList<ClientGroupObject>();
     public List<ClientPropertyDraw> propertyDraws = new ArrayList<ClientPropertyDraw>();
 
-    public final OrderedMap<ClientPropertyDraw,Boolean> defaultOrders = new OrderedMap<ClientPropertyDraw, Boolean>();
+    public OrderedMap<ClientPropertyDraw, Boolean> defaultOrders = new OrderedMap<ClientPropertyDraw, Boolean>();
     public List<ClientRegularFilterGroup> regularFilterGroups = new ArrayList<ClientRegularFilterGroup>();
 
     public ClientFunction printFunction;
@@ -52,28 +53,36 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
 
     public List<ClientObject> getObjects() {
 
-         ArrayList<ClientObject> objects = new ArrayList<ClientObject> ();
-         for (ClientGroupObject groupObject : groupObjects)
-             for (ClientObject object : groupObject)
-                 objects.add(object);
+        ArrayList<ClientObject> objects = new ArrayList<ClientObject>();
+        for (ClientGroupObject groupObject : groupObjects) {
+            for (ClientObject object : groupObject) {
+                objects.add(object);
+            }
+        }
 
-         return objects;
-     }
+        return objects;
+    }
 
-     public List<ClientPropertyDraw> getPropertyDraws() {
-         return propertyDraws;
-     }
+    public List<ClientPropertyDraw> getPropertyDraws() {
+        return propertyDraws;
+    }
 
     public ClientObject getObject(int id) {
-        for (ClientGroupObject groupObject : groupObjects)
-            for(ClientObject object : groupObject)
-                if (object.getID() == id) return object;
+        for (ClientGroupObject groupObject : groupObjects) {
+            for (ClientObject object : groupObject) {
+                if (object.getID() == id) {
+                    return object;
+                }
+            }
+        }
         return null;
     }
 
     public ClientGroupObject getGroupObject(int id) {
         for (ClientGroupObject groupObject : groupObjects) {
-            if (groupObject.getID() == id) return groupObject;
+            if (groupObject.getID() == id) {
+                return groupObject;
+            }
         }
         return null;
     }
@@ -90,7 +99,9 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
     public ClientRegularFilter getRegularFilter(int id) {
         for (ClientRegularFilterGroup filterGroup : regularFilterGroups) {
             for (ClientRegularFilter filter : filterGroup.filters) {
-                if (filter.ID == id) return filter;
+                if (filter.ID == id) {
+                    return filter;
+                }
             }
         }
 
@@ -98,14 +109,17 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
     }
 
     private Map<Integer, ClientPropertyDraw> idProps;
+
     private Map<Integer, ClientPropertyDraw> getIDProps() {
-        if(idProps==null) {
+        if (idProps == null) {
             idProps = new HashMap<Integer, ClientPropertyDraw>();
-            for(ClientPropertyDraw property : propertyDraws)
+            for (ClientPropertyDraw property : propertyDraws) {
                 idProps.put(property.getID(), property);
+            }
         }
         return idProps;
     }
+
     public ClientPropertyDraw getProperty(int id) {
         return getIDProps().get(id);
     }
@@ -159,10 +173,11 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
         propertyDraws = pool.deserializeList(inStream);
         regularFilterGroups = pool.deserializeList(inStream);
 
+        defaultOrders = new OrderedMap<ClientPropertyDraw, Boolean>();
         int orderCount = inStream.readInt();
-        for(int i=0;i<orderCount;i++) {
+        for (int i = 0; i < orderCount; i++) {
             ClientPropertyDraw order = pool.deserializeObject(inStream);
-            defaultOrders.put(order,inStream.readBoolean());
+            defaultOrders.put(order, inStream.readBoolean());
         }
 
         printFunction = pool.deserializeObject(inStream);
@@ -207,12 +222,22 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
     }
 
     public void removeFromRegularFilterGroups(ClientRegularFilterGroup client) {
-        if (client.container != null)
+        if (client.container != null) {
             client.container.removeFromChildren(client);
+        }
         regularFilterGroups.remove(client);
     }
 
     public ClientContainer findContainerBySID(String sID) {
         return mainContainer.findContainerBySID(sID);
+    }
+
+    public void setDefaultOrders(OrderedMap<ClientPropertyDraw, Boolean> defaultOrders) {
+        this.defaultOrders = defaultOrders;
+        IncrementDependency.update(this, "defaultOrders");
+    }
+
+    public OrderedMap<ClientPropertyDraw, Boolean> getDefaultOrders() {
+        return defaultOrders;
     }
 }

@@ -5,6 +5,7 @@ import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.increment.IncrementView;
 
 import javax.swing.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class IncrementListSelectionModel<S> extends AbstractListModel implements IncrementView {
@@ -18,8 +19,9 @@ public abstract class IncrementListSelectionModel<S> extends AbstractListModel i
     public final String field;
 
     public void setSelectedItem(S anItem) {
-        if(!BaseUtils.nullEquals(selected, anItem))
+        if (!BaseUtils.nullEquals(selected, anItem)) {
             BaseUtils.invokeSetter(object, field, anItem);
+        }
     }
 
     public Object getSelectedItem() {
@@ -29,14 +31,11 @@ public abstract class IncrementListSelectionModel<S> extends AbstractListModel i
     private class SelectIncrement implements IncrementView {
 
         public void update(Object updateObject, String updateField) {
-            S updateSelected = (S) BaseUtils.invokeGetter(object, field);
-            if(!BaseUtils.nullEquals(updateSelected, selected)) {
-                selected = updateSelected;
-
-                updateSelectionViews();
-            }
+            selected = (S) BaseUtils.invokeGetter(object, field);
+            updateSelectionViews();
         }
     }
+
     public final SelectIncrement selectIncrement = new SelectIncrement();
 
     public abstract List<?> getList();
@@ -59,17 +58,16 @@ public abstract class IncrementListSelectionModel<S> extends AbstractListModel i
 
         IncrementDependency.add(object, field, this);
         fillListDependencies();
-        
+
         IncrementDependency.add(object, field, selectIncrement);
     }
 
     protected abstract void updateSelectionViews();
 
     public void update(Object updateObject, String updateField) {
-        List<?> updateList = getList();
+        List<?> updateList = new ArrayList(getList());
         if(!updateList.equals(list)) {
             list = updateList;
-
             fireContentsChanged(this, -1, -1);
         }
    }

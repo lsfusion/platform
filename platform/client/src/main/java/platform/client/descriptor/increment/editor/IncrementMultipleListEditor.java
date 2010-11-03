@@ -7,14 +7,10 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 public class IncrementMultipleListEditor extends JList implements ListSelectionListener, IncrementSelectionView {
-
     private boolean updated = false;
-    public void valueChanged(ListSelectionEvent ev) {
-        if(!updated)
-            incrementModel.setSelectedItem(BaseUtils.toList(getSelectedValues()));
-    }
 
     IncrementMultipleListSelectionModel incrementModel;
+
     public IncrementMultipleListEditor(IncrementMultipleListSelectionModel incrementModel) {
         super(incrementModel);
 
@@ -24,13 +20,30 @@ public class IncrementMultipleListEditor extends JList implements ListSelectionL
         addListSelectionListener(this);
     }
 
+    public void valueChanged(ListSelectionEvent ev) {
+        if (!updated) {
+            incrementModel.setSelectedItem(BaseUtils.toList(getSelectedValues()));
+        }
+    }
+
     public void updateSelection() {
         updated = true;
 
-        clearSelection();
+        ListModel dm = getModel();
 
-        for(Object selectObject : incrementModel.selected)
-            setSelectedValue(selectObject, false);
+        int n = 0;
+        int indices[] = new int[incrementModel.selected.size()];
+        for (int i = 0; i < dm.getSize(); ++i) {
+            Object element = dm.getElementAt(i);
+            for (Object selectObject : incrementModel.selected) {
+                if (selectObject != null && selectObject.equals(element)) {
+                    indices[n++] = i;
+                    break;
+                }
+            }
+        }
+
+        setSelectedIndices(indices);
 
         updated = false;
     }
