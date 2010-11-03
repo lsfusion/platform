@@ -86,23 +86,36 @@ public final class Log {
         JPanel panel = new JPanel();
         BorderLayout layout = new BorderLayout(10, 10);
         panel.setLayout(layout);
-        
-        JLabel text = new JLabel(message);
+
+        StringBuilder htmlMessage = new StringBuilder("<html>");
+        for (int i = 0; i < message.length(); i++) {
+            char ch = message.charAt(i);
+            if (ch == '\n') {
+                htmlMessage.append("<br>");
+            } else {
+                htmlMessage.append(ch);
+            }
+        }
+        htmlMessage.append("</html>");
+
+        JLabel text = new JLabel(htmlMessage.toString());
         panel.add(text, BorderLayout.CENTER);
         //panel.add(new JLabel(" "));
 
         south = new JPanel();
         south.setLayout(new BoxLayout(south, BoxLayout.Y_AXIS));
         south.setVisible(false);
-        
+
         line = new JPanel();
         south.add(line);
         south.add(new JLabel(" "));
         line.setPreferredSize(new Dimension(10, 2));
         line.setBackground(Color.GRAY);
+
         errorText = new JTextArea(trace, 7, 60);
         errorText.setFont(new Font("Tahoma", Font.PLAIN, 12));
         errorText.setForeground(Color.RED);
+
         sPane = new JScrollPane(errorText);
         south.add(sPane);
         panel.add(south, BorderLayout.SOUTH);
@@ -111,7 +124,7 @@ public final class Log {
         if (trace.length() > 0) {
             opt = new String[]{"OK", "Подробнее"};
         } else {
-           opt = new String[]{"OK"};
+            opt = new String[]{"OK"};
         }
         optionPane = new JOptionPane(panel, JOptionPane.ERROR_MESSAGE,
                 JOptionPane.YES_NO_OPTION,
