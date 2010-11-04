@@ -6,6 +6,14 @@ import java.rmi.RemoteException;
 import java.rmi.server.RMIClassLoaderSpi;
 
 // Класс нужен для того, чтобы передавать с сервера его классы не через codeBase, а через непосредственно RMI интерфейс
+
+// Выяснилось, что механизм десериализации в RMI работает очень интересно в паре со стандартным механизмом сериализации
+// Сначала из потока загружается кусок дескриптора класса (ObjectStreamClass), содержащий имя, SUID и т.д.
+// Затем по имени идет resolveClass для ObjectInputStream, который в конечном итоге приходит в RMIClassLoaderSpi
+// После этого из полученного Class составляется полный дескриптор класса localDesc, который сравнивается с сериализованным в потоке
+// При этом при загрузке полного дескриптора класса классы полей загружаются уже без использования resolveClass у ObjectInputStream
+// Таким образом тут же падает NoClassDefFoundException
+// Соответственно нужно или полностью делать свой ClassLoader либо с сервера сразу же загружать реализацию всех связанных по полям классов
 public class ClientRMIClassLoaderSpi extends RMIClassLoaderSpi {
 
     private static final Class[] parameters = new Class[]{String.class, byte[].class, int.class, int.class};

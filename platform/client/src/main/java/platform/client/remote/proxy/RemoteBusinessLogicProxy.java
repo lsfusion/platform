@@ -17,20 +17,6 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         super(target);
     }
 
-    public String getName() throws RemoteException {
-        logRemoteMethodStartCall("getName");
-        String result = target.getName();
-        logRemoteMethodEndCall("getName", result);
-        return result;
-    }
-
-    public byte[] findClass(String name) throws RemoteException {
-        logRemoteMethodStartCall("findClass");
-        byte[] result = target.findClass(name);
-        logRemoteMethodEndCall("findClass", result);
-        return result;
-    }
-
     @NonPendingRemoteMethod
     public RemoteNavigatorInterface createNavigator(String login, String password, int computer) throws RemoteException {
         List<MethodInvocation> invocations = getImmutableMethodInvocations(RemoteNavigatorProxy.class);
@@ -46,6 +32,13 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         }
 
         return proxy;
+    }
+
+    public String getName() throws RemoteException {
+        logRemoteMethodStartCall("getName");
+        String result = target.getName();
+        logRemoteMethodEndCall("getName", result);
+        return result;
     }
 
     public Integer getComputer(String hostname) throws RemoteException {
@@ -77,11 +70,6 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         return target.checkUser(login, password);
     }
 
-    @NonFlushRemoteMethod
-    public void ping() throws RemoteException {
-        target.ping();
-    }
-
     public byte[] getPropertyObjectsByteArray(byte[] classes, boolean isCompulsory, boolean isAny) throws RemoteException {
         return target.getPropertyObjectsByteArray(classes, isCompulsory, isAny);
     }
@@ -92,5 +80,18 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
 
     public int generateNewID()  throws RemoteException {
         return target.generateNewID();
+    }
+
+    @NonFlushRemoteMethod
+    public void ping() throws RemoteException {
+        target.ping();
+    }
+
+    @NonFlushRemoteMethod
+    public byte[] findClass(String name) throws RemoteException {
+        logRemoteMethodStartCall("findClass");
+        byte[] result = target.findClass(name);
+        logRemoteMethodEndCall("findClass", result);
+        return result;
     }
 }
