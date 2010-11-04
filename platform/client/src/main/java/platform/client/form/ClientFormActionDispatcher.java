@@ -9,6 +9,7 @@ import javax.swing.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.*;
+import java.text.DecimalFormat;
 
 public class ClientFormActionDispatcher implements ClientActionDispatcher {
 
@@ -142,6 +143,10 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
             String fileText = action.charsetName == null ? new String(fileContent) : new String(fileContent, action.charsetName);
             if (action.multiplier > 0) {
                 fileText = ((Double) (Double.parseDouble(fileText) * 100)).toString();
+            }
+
+            if (action.mask != null) {
+                fileText = new DecimalFormat(action.mask).format((Double) (Double.parseDouble(fileText))); 
             }
 
             JOptionPane.showMessageDialog(null, fileText,

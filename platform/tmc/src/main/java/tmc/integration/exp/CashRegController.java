@@ -269,7 +269,7 @@ public class CashRegController {
 //       пока не поддерживается
 //        BL.addProp(BL.cashRegOperGroup, new SimpleCashRegActionProperty(BL.genSID(), "Аннулировать чек", "/A")); 
         BL.addProp(BL.cashRegOperGroup, new SimpleCashRegActionProperty(BL.genSID(), "Продолжить печать", "/R"));
-        BL.addProp(BL.cashRegOperGroup, new SimpleCashRegActionProperty(BL.genSID(), "Запрос наличных в денежном ящике", "/C", "cash.txt", 100));
+        BL.addProp(BL.cashRegOperGroup, new SimpleCashRegActionProperty(BL.genSID(), "Запрос наличных в денежном ящике", "/C", "cash.txt", 100, "#,##0"));
         BL.addProp(BL.cashRegOperGroup, new SimpleCashRegActionProperty(BL.genSID(), "Открыть денежный ящик", "/O"));
         BL.addProp(BL.cashRegAdminGroup, new SimpleCashRegActionProperty(BL.genSID(), "Запрос номера последнего чека", "/N", "bill_no.txt"));
         BL.addProp(BL.cashRegAdminGroup, new IntegerCashRegActionProperty(BL.genSID(), "Внесение денег", "/P"));
@@ -283,6 +283,7 @@ public class CashRegController {
 
         String command, outputFile;
         int multiplier;
+        String mask;
 
         private SimpleCashRegActionProperty(String sID, String caption, String command) {
             this(sID, caption, command, null);
@@ -293,10 +294,15 @@ public class CashRegController {
         }
 
         private SimpleCashRegActionProperty(String sID, String caption, String command, String outputFile, int multiplier) {
+            this(sID, caption, command, outputFile, multiplier, null);
+        }
+
+        private SimpleCashRegActionProperty(String sID, String caption, String command, String outputFile, int multiplier, String mask) {
             super(sID, caption, new ValueClass[] {});
             this.command = command;
             this.outputFile = outputFile;
             this.multiplier = multiplier;
+            this.mask = mask;
         }
 
         public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
@@ -306,7 +312,7 @@ public class CashRegController {
             actions.add(new MessageFileClientAction("c:\\bill\\error.txt", CASHREGISTER_CHARSETNAME, false, true, caption));
 
             if (outputFile != null) {
-                actions.add(new MessageFileClientAction("c:\\bill\\" + outputFile, CASHREGISTER_CHARSETNAME, true, true, caption, multiplier));
+                actions.add(new MessageFileClientAction("c:\\bill\\" + outputFile, CASHREGISTER_CHARSETNAME, true, true, caption, multiplier, mask));
             }
         }
     }

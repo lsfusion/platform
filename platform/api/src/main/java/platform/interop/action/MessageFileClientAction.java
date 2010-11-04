@@ -14,17 +14,24 @@ public class MessageFileClientAction extends ClientAction {
 
     public int multiplier = 0;
 
+    public String mask;
+
     public MessageFileClientAction(String fileName, String charsetName, boolean mustExist, boolean erase, String caption) {
         this(fileName, charsetName, mustExist, erase, caption, 0);
     }
 
     public MessageFileClientAction(String fileName, String charsetName, boolean mustExist, boolean erase, String caption, int multiplier) {
+        this(fileName, charsetName, mustExist, erase, caption, multiplier, null);
+    }
+
+    public MessageFileClientAction(String fileName, String charsetName, boolean mustExist, boolean erase, String caption, int multiplier, String mask) {
         this.fileName = fileName;
         this.charsetName = charsetName;
         this.mustExist = mustExist;
         this.erase = erase;
         this.caption = caption;
         this.multiplier = multiplier;
+        this.mask = mask;
     }
 
     public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
