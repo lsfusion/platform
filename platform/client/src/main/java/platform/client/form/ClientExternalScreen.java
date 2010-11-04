@@ -19,9 +19,6 @@ public class ClientExternalScreen {
         ClientExternalScreen screen = screens.get(screenID);
         if (screen == null) {
             try {
-                // нужно оставить этот вызов здесь, чтобы класс параметров экрана подгрузился до создания самого объекта экрана
-                ExternalScreenParameters params = Main.remoteLogics.getExternalScreenParameters(screenID, Main.computerId);
-
                 screen = new ClientExternalScreen(Main.remoteLogics.getExternalScreen(screenID));
                 screen.initialize();
                 screens.put(screenID, screen);

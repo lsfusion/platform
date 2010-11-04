@@ -1,6 +1,5 @@
 package platform.client;
 
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClassLoaderSpi;
@@ -15,8 +14,23 @@ import java.rmi.server.RMIClassLoaderSpi;
 // Таким образом тут же падает NoClassDefFoundException
 // Соответственно нужно или полностью делать свой ClassLoader либо с сервера сразу же загружать реализацию всех связанных по полям классов
 public class ClientRMIClassLoaderSpi extends RMIClassLoaderSpi {
+    private static class RemoteClassLoader extends ClassLoader {
+        public RemoteClassLoader(ClassLoader original) {
+            super(original);
+        }
 
-    private static final Class[] parameters = new Class[]{String.class, byte[].class, int.class, int.class};
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            try {
+                byte[] classBytes = Main.remoteLogics.findClass(name);
+                return defineClass(name, classBytes, 0, classBytes.length);
+            } catch (RemoteException remote) {
+                throw new ClassNotFoundException("Ошибка при загрузке класса на клиенте", remote);
+            }
+        }
+    }
+    
+    private static ClassLoader remoteLoader = new RemoteClassLoader(ClientRMIClassLoaderSpi.class.getClassLoader());
 
     @Override
     public Class<?> loadClass(String codebase, String name, ClassLoader defaultLoader) throws MalformedURLException, ClassNotFoundException {
@@ -24,20 +38,7 @@ public class ClientRMIClassLoaderSpi extends RMIClassLoaderSpi {
             return sun.rmi.server.LoaderHandler.loadClass(codebase, name, defaultLoader);
         } catch (ClassNotFoundException ce) {
             if (Main.remoteLogics != null) {
-                try {
-                    // Необходимо, чтобы класс загружался именно с ClassLoader'ом JavaWS, иначе не будет находить классов в основном jar-файле
-                    byte[] classDef = Main.remoteLogics.findClass(name);
-                    ClassLoader loader = ClientRMIClassLoaderSpi.class.getClassLoader();
-                    try {
-                        Method defineClass = ClassLoader.class.getDeclaredMethod("defineClass", parameters);
-                        defineClass.setAccessible(true);
-                        return (Class<?>)defineClass.invoke(loader, name, classDef, 0, classDef.length);
-                    } catch (Exception se) {
-                        throw new ClassNotFoundException("Ошибка при загрузке класса на клиенте", se); 
-                    }
-                } catch (RemoteException re) {
-                    throw new ClassNotFoundException("Ошибка при получении класса с сервера", re);
-                }
+                return remoteLoader.loadClass(name);
             } else
                 throw ce;
         }
