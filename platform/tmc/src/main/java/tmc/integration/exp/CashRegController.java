@@ -144,19 +144,22 @@ public class CashRegController {
             result += "#," + sumDisc / 100 + "\n";
         }
 
+        Double sumCard = null;
         if (sumCardProp != null) {
-            Double sumCard = (Double)data.rows.get(0).values.get(sumCardDraw);
+            sumCard = (Double)data.rows.get(0).values.get(sumCardDraw);
             if (sumCard != null && sumCard > 0) {
                 result += "~1," + sumCard / 100 + "\n";
             }
         }
+        if (sumCard == null)
+            sumCard = 0.0;
 
         Double sumCash;
         if (sumCashProp != null) {
             sumCash = (Double)data.rows.get(0).values.get(sumCashDraw);
-            if (sumCash == null) sumCash = toPay;
+            if (sumCash == null) sumCash = toPay - sumCard;
         } else
-            sumCash = toPay;
+            sumCash = toPay - sumCard;
 
         result += sumCash / 100 + "\n";
 
