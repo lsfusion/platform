@@ -7,9 +7,12 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.EventObject;
 
 abstract class TextFieldPropertyEditor extends JFormattedTextField implements PropertyEditorComponent {
+    private boolean selected = false;
 
     TextFieldPropertyEditor(ComponentDesign design) {
         super();
@@ -20,9 +23,21 @@ abstract class TextFieldPropertyEditor extends JFormattedTextField implements Pr
         if (design != null) {
             design.designCell(this);
         }
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                //чтобы выделялся текст при активации компонента мышкой
+                if (!selected) {
+                    selectAll();
+                    selected = true;
+                }
+            }
+        });
     }
 
     public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) {
+        selected = false;
         //для очистки поля ввода перед записью новых данных
 //        if (editEvent instanceof KeyEvent) {
 //            KeyEvent event = (KeyEvent) editEvent;
