@@ -23,6 +23,7 @@ import platform.interop.Order;
 import platform.interop.Scroll;
 import platform.interop.action.CheckFailed;
 import platform.interop.action.ClientAction;
+import platform.interop.action.ClientResultAction;
 import platform.interop.action.ClientApply;
 import platform.interop.form.RemoteChanges;
 import platform.interop.form.RemoteFormInterface;
@@ -393,14 +394,21 @@ public class ClientFormController {
         }
     }
 
+    private void applyActions(List<ClientAction> actions, boolean before) throws IOException {
+        for(ClientAction action : actions)
+            if(action.isBeforeApply()==before)
+                action.dispatch(actionDispatcher);
+    }
+
     private void applyRemoteChanges() throws IOException {
         RemoteChanges remoteChanges = remoteForm.getRemoteChanges();
+
+        applyActions(remoteChanges.actions, true);
 
         Log.incrementBytesReceived(remoteChanges.form.length);
         applyFormChanges(new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(remoteChanges.form)), form, controllers));
 
-        for (ClientAction action : remoteChanges.actions)
-            action.dispatch(actionDispatcher);
+        applyActions(remoteChanges.actions, false);
 
         if (clientNavigator != null) {
             clientNavigator.changeCurrentClass(remoteChanges.classID);
@@ -617,7 +625,7 @@ public class ClientFormController {
                     else {
                         Object clientResult = null;
                         try {
-                            clientResult = ((ClientAction) clientApply).dispatch(actionDispatcher);
+                            clientResult = ((ClientResultAction) clientApply).dispatchResult(actionDispatcher);
                         } catch (Exception e) {
                             remoteForm.rollbackClientChanges();
                             throw new RuntimeException("Ошибка при применении изменений", e);

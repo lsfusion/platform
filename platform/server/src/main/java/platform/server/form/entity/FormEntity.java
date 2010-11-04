@@ -2,6 +2,7 @@ package platform.server.form.entity;
 
 import platform.base.*;
 import platform.interop.action.ClientAction;
+import platform.interop.action.ClientResultAction;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.form.entity.filter.FilterEntity;
@@ -487,7 +488,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return false;
     }
 
-    public ClientAction getClientApply(FormInstance<T> form) {
+    public ClientResultAction getClientApply(FormInstance<T> form) {
         return null; // будем возвращать именно null, чтобы меньше данных передавалось        
     }
 

@@ -2,7 +2,7 @@ package platform.interop.action;
 
 import java.io.IOException;
 
-public class ExportFileClientAction extends ClientAction {
+public class ExportFileClientAction extends AbstractClientAction {
 
     public String fileName;
     public boolean append = false;
@@ -17,7 +17,8 @@ public class ExportFileClientAction extends ClientAction {
         this.charsetName = charsetName;
     }
 
-    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
-        return dispatcher.execute(this);
+    @Override
+    public void dispatch(ClientActionDispatcher dispatcher) throws IOException {
+        dispatcher.execute(this);
     }
 }

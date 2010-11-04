@@ -2,7 +2,7 @@ package platform.interop.action;
 
 import java.io.IOException;
 
-public class ImportFileClientAction extends ClientAction {
+public class ImportFileClientAction extends AbstractClientAction {
 
     public String fileName;
     public String charsetName;
@@ -15,7 +15,8 @@ public class ImportFileClientAction extends ClientAction {
         this.erase = erase;
     }
 
-    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    @Override
+    public Object dispatchResult(ClientActionDispatcher dispatcher) throws IOException {
         return dispatcher.execute(this);
     }
 }

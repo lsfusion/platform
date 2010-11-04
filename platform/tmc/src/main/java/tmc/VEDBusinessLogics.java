@@ -6,6 +6,8 @@ import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.action.ClientAction;
 import platform.interop.action.ApplyClientAction;
+import platform.interop.action.ClientResultAction;
+import platform.interop.action.ListClientAction;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexComponentDirections;
 import platform.interop.form.screen.ExternalScreenParameters;
@@ -14,7 +16,6 @@ import platform.server.auth.User;
 import platform.server.classes.*;
 import platform.server.data.Time;
 import platform.server.data.Union;
-import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
@@ -48,10 +49,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
 
 public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
@@ -577,7 +577,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         documentBarcodePrice = addJProp("Цена", orderSalePrice, 1, barcodeToObject, 2);
         documentBarcodePriceOv = addSUProp("Цена", Union.OVERRIDE, documentBarcodePrice, addJProp(and1, addJProp(obligationSum, barcodeToObject, 1), 2, is(order), 1));
 
-        LP monthDay = addSFProp("EXTRACT(DOY FROM prm1)", IntegerClass.instance, 1);
+        LP monthDay = addSFProp("EXTRACT(MONTH FROM prm1) * 40 + EXTRACT(DAY FROM prm1)", IntegerClass.instance, 1);
         orderBirthDay = addDCProp("orderBirthDay", "День рожд.", addJProp(equals2, monthDay, 1, addJProp(monthDay, customerCheckRetailBorn, 1), 2), true, date, 1, orderContragent, 1);
 
         LP orderArticleSaleSum = addJProp(documentPriceGroup, "Сумма прод.", multiplyDouble2, articleQuantity, 1, 2, orderSaleDocPrice, 1, 2);
@@ -662,8 +662,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addConstraint(addJProp("Введенной суммы не достаточно", and1, notEnoughSum, 1, orderSalePayAll, 1), false); // если ни карточки ни кэша не задали, значит заплатитли без сдачи
         
         barcodeAddClient = addSDProp("Доб. клиента", LogicalClass.instance);
-        
         barcodeAddClientAction = addJProp(true, "", andNot1, addBAProp(customerCheckRetail, barcodeAddClient), 1, barcodeToObject, 1);
+
+        barcodeAddCert = addSDProp("Доб. серт.", LogicalClass.instance);
+        barcodeAddCertAction = addJProp(true, "", andNot1, addBAProp(giftObligation, barcodeAddCert), 1, barcodeToObject, 1);
+
         barcodeAction2 = addJProp(true, "Ввод штрих-кода 2",
                 addCUProp(
                         addSCProp(addIfElseUProp(articleQuantity, articleOrderQuantity, is(commitInc), 1)),
@@ -720,6 +723,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP orderSaleCoupon;
     LP barcodeAddClient;
     LP barcodeAddClientAction;
+    LP barcodeAddCert;
+    LP barcodeAddCertAction;
     LP barcodeAction2;
     LP barcodeAction3;
     LP seekAction;
@@ -1038,6 +1043,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.setFont(barcodeView, FONT_LARGE_BOLD);
             design.setFont(reverseBarcode, FONT_SMALL_BOLD);
             design.setFont(barcodeAddClient, FONT_SMALL_BOLD);
+            design.setFont(barcodeAddCert, FONT_SMALL_BOLD);
             design.setFont(barcodeObjectName, FONT_LARGE_BOLD);
             design.setFont(documentBarcodePriceOv, FONT_LARGE_BOLD);
             design.setBackground(barcodeObjectName, new Color(240, 240, 240));
@@ -1599,7 +1605,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
 
         @Override
-        public ClientAction getClientApply(FormInstance<VEDBusinessLogics> formInstance) {
+        public ClientResultAction getClientApply(FormInstance<VEDBusinessLogics> formInstance) {
             if (toAdd) {
 
                 ObjectInstance art = formInstance.instanceFactory.getInstance(objArt);
@@ -1625,7 +1631,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         getPropertyDraw(name, objArt), getPropertyDraw(orderArticleSaleSumWithDiscount, objArt),
                         getPropertyDraw(orderSalePayNoObligation, objDoc), getPropertyDraw(barcode, objArt));
             } else
-                return super.getClientApply(formInstance);
+                return new ListClientAction(new ArrayList<ClientAction>());
         }
 
         @Override
@@ -1959,7 +1965,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
 
         @Override
-        public ClientAction getClientApply(FormInstance formInstance) {
+        public ClientResultAction getClientApply(FormInstance formInstance) {
             if (toAdd) {
 
                 ObjectInstance doc = formInstance.instanceFactory.getInstance(objDoc);
@@ -2206,7 +2212,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             }
 
             addPropertyDraw(barcodeAddClient);
+            addPropertyDraw(barcodeAddCert);
             addAutoAction(objBarcode, true,
+                    addPropertyObject(barcodeAddCertAction, objBarcode),
                     addPropertyObject(barcodeAddClientAction, objBarcode),
                     addPropertyObject(barcodeAction2, objDoc, objBarcode),
                     addPropertyObject(seekAction, objBarcode),
@@ -2221,6 +2229,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.getGroupObjectContainer(objDoc.groupTo).title = "Клиент";
             design.getGroupObjectContainer(objDoc.groupTo).design.background = new Color(192, 192, 192);
             design.setEnabled(publicGroup, false, objObligation.groupTo);
+            design.setEnabled(obligationSum, true);
 
             design.get(objObligation.groupTo).grid.defaultComponent = true;
 
@@ -2229,6 +2238,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.getPanelContainer(design.get(objBarcode.groupTo)).add(design.get(getPropertyDraw(barcodeAddClient)));
             design.addIntersection(design.get(getPropertyDraw(barcodeAddClient)), design.get(getPropertyDraw(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             design.setEditKey(barcodeAddClient, KeyStroke.getKeyStroke(KeyEvent.VK_F5, InputEvent.CTRL_DOWN_MASK));
+
+            design.getPanelContainer(design.get(objBarcode.groupTo)).add(design.get(getPropertyDraw(barcodeAddCert)));
+            design.addIntersection(design.get(getPropertyDraw(barcodeAddCert)), design.get(getPropertyDraw(barcodeAddClient)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            design.setEditKey(barcodeAddCert, KeyStroke.getKeyStroke(KeyEvent.VK_F6, InputEvent.CTRL_DOWN_MASK));
 
             return design;
         }
@@ -2268,7 +2281,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
 
         @Override
-        public ClientAction getClientApply(FormInstance<VEDBusinessLogics> formInstance) {
+        public ClientResultAction getClientApply(FormInstance<VEDBusinessLogics> formInstance) {
             if (toAdd) {
 
                 ObjectInstance doc = formInstance.instanceFactory.getInstance(objDoc);
@@ -2436,7 +2449,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
-            view.get(entity).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.ALT_DOWN_MASK);
+            view.get(entity).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.ALT_DOWN_MASK);
         }
     }
 

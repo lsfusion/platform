@@ -10,6 +10,7 @@ import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.expr.where.EqualsWhere;
 import platform.server.data.expr.where.GreaterWhere;
 import platform.server.data.expr.where.MapWhere;
+import platform.server.data.expr.where.LikeWhere;
 import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.type.Reader;
@@ -89,6 +90,8 @@ public abstract class BaseExpr extends Expr {
                     return GreaterWhere.create((BaseExpr)expr,this).or(EqualsWhere.create(this,(BaseExpr)expr));
                 case NOT_EQUALS: // оба заданы и не равно
                     return getWhere().and(expr.getWhere()).and(EqualsWhere.create(this,(BaseExpr)expr).not());
+                case LIKE:
+                    return LikeWhere.create(this, (BaseExpr)expr); 
             }
             throw new RuntimeException("should not be");
         } else {

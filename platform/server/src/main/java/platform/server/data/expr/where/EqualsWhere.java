@@ -4,7 +4,6 @@ import platform.base.BaseUtils;
 import platform.interop.Compare;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
-import platform.server.classes.StringClass;
 import platform.server.data.expr.*;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
@@ -36,21 +35,10 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
         super(operator1, operator2);
     }
 
-    static boolean containsMask(String string) {
-        return string.contains("%") || string.contains("_");
-    }
-    static String getCompare(BaseExpr expr) {
-        if(expr instanceof ValueExpr && ((ValueExpr)expr).objectClass instanceof StringClass && containsMask((String)((ValueExpr)expr).object))
-            return " LIKE ";
-        else
-            return "=";
+    protected String getCompareSource(CompileSource compile) {
+        return "=";
     }
 
-    // а вот тут надо извратится и сделать Or проверив сначала null'ы
-    public String getSource(CompileSource compile) {
-        return operator1.getSource(compile) + getCompare(operator2) + operator2.getSource(compile);
-    }
-    
     @Override
     protected String getNotSource(CompileSource compile) {
         String op1Source = operator1.getSource(compile);
@@ -58,13 +46,14 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
         String op2Source = operator2.getSource(compile);
         if(!operator2.getWhere().isTrue())
             result = (result.length()==0?"":result+" OR ") + op2Source + " IS NULL";
-        String compare = "NOT " + op1Source + getCompare(operator2) + op2Source;
+        String compare = "NOT " + op1Source + "=" + op2Source;
         if(result.length()==0)
             return compare;
         else
             return "(" + result + " OR " + compare + ")";
     }
 
+    @Override
     public boolean twins(AbstractSourceJoin o) {
         return (BaseUtils.hashEquals(operator1,((EqualsWhere)o).operator1) && BaseUtils.hashEquals(operator2,((EqualsWhere)o).operator2) ||
                (BaseUtils.hashEquals(operator1,((EqualsWhere)o).operator2) && BaseUtils.hashEquals(operator2,((EqualsWhere)o).operator1)));
@@ -107,6 +96,7 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
         return new MeanClassWhere(classWhere, equals);
     }
     // повторяет FormulaWhere так как должен andEquals сделать
+    @Override
     public ClassExprWhere calculateClassWhere() {
         MeanClassWhere meanWhere = getMeanClassWhere(); // именно так а не как Formula потому как иначе бесконечный цикл getMeanClassWheres -> MeanClassWhere.getClassWhere -> means(isFalse) и т.д. пойдет
         if(operator1 instanceof VariableClassExpr && operator2 instanceof VariableClassExpr) {

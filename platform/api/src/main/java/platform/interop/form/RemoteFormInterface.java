@@ -1,6 +1,7 @@
 package platform.interop.form;
 
 import platform.interop.ClassViewType;
+import platform.interop.action.ClientResultAction;
 import platform.interop.action.ClientApply;
 import platform.interop.remote.PendingRemote;
 

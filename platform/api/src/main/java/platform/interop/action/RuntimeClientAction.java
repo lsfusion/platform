@@ -2,7 +2,7 @@ package platform.interop.action;
 
 import java.io.IOException;
 
-public class RuntimeClientAction extends ClientAction {
+public class RuntimeClientAction extends AbstractClientAction {
 
     public String command;
     public String[] environment;
@@ -19,7 +19,8 @@ public class RuntimeClientAction extends ClientAction {
         this.directory = directory;
     }
 
-    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    @Override
+    public Object dispatchResult(ClientActionDispatcher dispatcher) throws IOException {
         return dispatcher.execute(this);
     }
 }

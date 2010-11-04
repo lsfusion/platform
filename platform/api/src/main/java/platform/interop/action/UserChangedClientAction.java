@@ -2,9 +2,10 @@ package platform.interop.action;
 
 import java.io.IOException;
 
-public class UserChangedClientAction extends ClientAction {
+public class UserChangedClientAction extends AbstractClientAction {
 
-    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
-        return dispatcher.execute(this);
+    @Override
+    public void dispatch(ClientActionDispatcher dispatcher) throws IOException {
+        dispatcher.execute(this);
     }
 }

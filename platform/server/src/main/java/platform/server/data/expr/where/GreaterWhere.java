@@ -24,10 +24,6 @@ public class GreaterWhere extends CompareWhere {
         return create(new GreaterWhere(operator1, operator2));
     }
 
-    public boolean twins(AbstractSourceJoin o) {
-        return operator1.equals(((GreaterWhere)o).operator1) && operator2.equals(((GreaterWhere)o).operator2);
-    }
-
     @IdentityLazy
     public int hashOuter(HashContext hashContext) {
         return 1 + operator1.hashOuter(hashContext)*31 + operator2.hashOuter(hashContext)*31*31;
@@ -41,9 +37,8 @@ public class GreaterWhere extends CompareWhere {
         return Compare.GREATER;
     }
 
-    // а вот тут надо извратится и сделать Or проверив сначала null'ы
-    public String getSource(CompileSource compile) {
-        return operator1.getSource(compile) + ">" + operator2.getSource(compile);
+    protected String getCompareSource(CompileSource compile) {
+        return ">";
     }
 
     @Override
@@ -58,9 +53,5 @@ public class GreaterWhere extends CompareWhere {
             return compare;
         else
             return "(" + result + " OR " + compare + ")";
-    }
-
-    public ClassExprWhere calculateClassWhere() {
-        return getOperandWhere().getClassWhere();
     }
 }

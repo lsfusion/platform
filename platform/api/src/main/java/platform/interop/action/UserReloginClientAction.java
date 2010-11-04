@@ -2,11 +2,12 @@ package platform.interop.action;
 
 import java.io.IOException;
 
-public class UserReloginClientAction extends ClientAction {
+public class UserReloginClientAction extends AbstractClientAction {
     public String login;
 
-    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
-        return dispatcher.execute(this);
+    @Override
+    public void dispatch(ClientActionDispatcher dispatcher) throws IOException {
+        dispatcher.execute(this);
     }
 
     public UserReloginClientAction(String login){

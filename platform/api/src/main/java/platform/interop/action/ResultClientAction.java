@@ -2,7 +2,7 @@ package platform.interop.action;
 
 import java.io.IOException;
 
-public class ResultClientAction extends ClientAction {
+public class ResultClientAction extends AbstractClientAction {
 
     public String message;
 
@@ -13,7 +13,13 @@ public class ResultClientAction extends ClientAction {
         this.failed = failed;
     }
 
-    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    @Override
+    public Object dispatchResult(ClientActionDispatcher dispatcher) throws IOException {
         return dispatcher.execute(this);
+    }
+
+    @Override
+    public boolean isBeforeApply() {
+        return true;
     }
 }

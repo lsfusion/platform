@@ -1,6 +1,8 @@
 package platform.interop.action;
 
-public class CheckFailed extends ClientApply {
+import java.io.IOException;
+
+public class CheckFailed implements ClientApply {
 
     public String message;
 

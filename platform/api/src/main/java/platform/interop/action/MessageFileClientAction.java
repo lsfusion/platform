@@ -2,7 +2,7 @@ package platform.interop.action;
 
 import java.io.IOException;
 
-public class MessageFileClientAction extends ClientAction {
+public class MessageFileClientAction extends AbstractClientAction {
 
     public String fileName;
     public String charsetName;
@@ -34,7 +34,13 @@ public class MessageFileClientAction extends ClientAction {
         this.mask = mask;
     }
 
-    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    @Override
+    public Object dispatchResult(ClientActionDispatcher dispatcher) throws IOException {
         return dispatcher.execute(this);
+    }
+
+    @Override
+    public boolean isBeforeApply() {
+        return true;
     }
 }

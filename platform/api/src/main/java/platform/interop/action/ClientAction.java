@@ -1,11 +1,11 @@
 package platform.interop.action;
 
 import java.io.IOException;
+import java.io.Serializable;
 
-public abstract class ClientAction extends ClientApply {
+public interface ClientAction extends Serializable {
 
-    protected ClientAction() {
-    }
+    public void dispatch(ClientActionDispatcher dispatcher) throws IOException;
 
-    public abstract Object dispatch(ClientActionDispatcher dispatcher) throws IOException;
+    public boolean isBeforeApply();
 }

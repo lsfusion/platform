@@ -4,7 +4,7 @@ import platform.interop.form.RemoteFormInterface;
 
 import java.io.IOException;
 
-public class FormClientAction extends ClientAction {
+public class FormClientAction extends AbstractClientAction {
 
     public boolean isPrintForm;
     public RemoteFormInterface remoteForm;
@@ -14,7 +14,8 @@ public class FormClientAction extends ClientAction {
         this.remoteForm = remoteForm;
     }
 
-    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
-        return dispatcher.execute(this);
+    @Override
+    public void dispatch(ClientActionDispatcher dispatcher) throws IOException {
+        dispatcher.execute(this);
     }
 }

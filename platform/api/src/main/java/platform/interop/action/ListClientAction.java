@@ -1,21 +1,17 @@
 package platform.interop.action;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.io.IOException;
 
-public class ListClientAction extends ClientAction {
+public class ListClientAction extends AbstractClientAction {
 
-    private List<ClientAction> actions;
-
+    List<ClientAction> actions;
     public ListClientAction(List<ClientAction> actions) {
         this.actions = actions;
     }
 
-    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
-        List<Object> result = new ArrayList<Object>();
+    public void dispatch(ClientActionDispatcher dispatcher) throws IOException {
         for(ClientAction action : actions)
-            result.add(action.dispatch(dispatcher));
-        return result;
+            action.dispatch(dispatcher);
     }
 }

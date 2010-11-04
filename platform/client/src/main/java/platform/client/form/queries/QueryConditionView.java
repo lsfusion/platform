@@ -61,19 +61,15 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
             }
         });
 
-        @SuppressWarnings({"unchecked"})
-        Pair<String,Compare>[] comparisons = new Pair[] {new Pair("=", Compare.EQUALS), new Pair(">", Compare.GREATER), new Pair("<", Compare.LESS),
-                                                         new Pair(">=", Compare.GREATER_EQUALS), new Pair("<=", Compare.LESS_EQUALS), new Pair("<>", Compare.NOT_EQUALS)};
-
-        JComboBox compareView = new QueryConditionComboBox(comparisons);
+        JComboBox compareView = new QueryConditionComboBox(Compare.values());
         add(compareView);
 
-        filter.compare = ((Pair<String,Compare>) compareView.getSelectedItem()).second;
+        filter.compare = (Compare) compareView.getSelectedItem();
 
         compareView.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                    filter.compare = ((Pair<String,Compare>)e.getItem()).second;
+                    filter.compare = (Compare) e.getItem();
                     conditionChanged();
                 }
             }

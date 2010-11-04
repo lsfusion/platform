@@ -36,14 +36,14 @@ public class CashRegController {
     }
 
     private boolean noBillTxt = false;
-    public ClientAction getCashRegApplyActions(FormInstance formInstance, int payType,
+    public ClientResultAction getCashRegApplyActions(FormInstance formInstance, int payType,
                                                       Set<GroupObjectInstance> classGroups,
                                                       PropertyDrawEntity<?> priceProp, PropertyDrawEntity<?> quantityProp,
                                                       PropertyDrawEntity<?> nameProp, PropertyDrawEntity<?> sumProp,
                                                       PropertyDrawEntity<?> toPayProp, PropertyDrawEntity<?> barcodeProp,
                                                       PropertyDrawEntity<?> sumCardProp, PropertyDrawEntity<?> sumCashProp) {
 
-        List<ClientAction> actions = new ArrayList<ClientAction>();
+        List<ClientResultAction> actions = new ArrayList<ClientResultAction>();
         
         try {
             noBillTxt = (BL.noBillTxt.read(formInstance.session, formInstance, formInstance.instanceFactory.computer.getDataObject())!=null);
@@ -62,7 +62,7 @@ public class CashRegController {
             actions.add(new ImportFileClientAction("c:\\bill\\error.txt", CASHREGISTER_CHARSETNAME, true));
         }
 
-        return new ListClientAction(actions);
+        return new ListClientResultAction(actions);
     }
 
     private String createBillTxt(FormInstance formInstance, int payType,

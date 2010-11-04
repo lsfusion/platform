@@ -2,7 +2,7 @@ package platform.interop.action;
 
 import java.io.IOException;
 
-public class SleepClientAction extends ClientAction {
+public class SleepClientAction extends AbstractClientAction {
 
     public long millis;
 
@@ -10,7 +10,8 @@ public class SleepClientAction extends ClientAction {
         this.millis = millis;
     }
 
-    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
-        return dispatcher.execute(this);
+    @Override
+    public void dispatch(ClientActionDispatcher dispatcher) throws IOException {
+        dispatcher.execute(this);
     }
 }

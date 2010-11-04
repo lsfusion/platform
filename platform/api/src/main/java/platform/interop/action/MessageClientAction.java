@@ -2,7 +2,7 @@ package platform.interop.action;
 
 import java.io.IOException;
 
-public class MessageClientAction extends ClientAction {
+public class MessageClientAction extends AbstractClientAction {
 
     public String message;
     public String caption;
@@ -12,7 +12,12 @@ public class MessageClientAction extends ClientAction {
         this.caption = caption;
     }
 
-    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
-        return dispatcher.execute(this);
+    public void dispatch(ClientActionDispatcher dispatcher) throws IOException {
+        dispatcher.execute(this);
+    }
+
+    @Override
+    public boolean isBeforeApply() {
+        return true;
     }
 }

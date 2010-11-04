@@ -5,8 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public enum Compare {
-
-    EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS;
+    EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, LIKE;
 
     public static Compare deserialize(DataInputStream inStream) throws IOException {
         switch(inStream.readByte()) {
@@ -22,6 +21,8 @@ public enum Compare {
                 return LESS_EQUALS;
             case 5:
                 return NOT_EQUALS;
+            case 6:
+                return LIKE;
         }
         throw new RuntimeException("Deserialize Compare");
     }
@@ -40,6 +41,8 @@ public enum Compare {
                 return 4;
             case NOT_EQUALS:
                 return 5;
+            case LIKE:
+                return 6;
         }
         throw new RuntimeException("Serialize Compare");
     }
@@ -63,7 +66,9 @@ public enum Compare {
                 return "<=";
             case NOT_EQUALS :
                 return "!=";
+            case LIKE :
+                return "LIKE";
         }
-        return "";
+        throw new RuntimeException("Serialize Compare");
     }
 }

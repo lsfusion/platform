@@ -18,13 +18,12 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
         this.form = form;
     }
 
-    public Object execute(FormClientAction action) {
+    public void execute(FormClientAction action) {
         try {
             if (action.isPrintForm)
                 Main.frame.runReport(action.remoteForm);
             else
                 Main.frame.runForm(action.remoteForm);
-            return true;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -62,7 +61,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
         }
     }
 
-    public Object execute(ExportFileClientAction action) {
+    public void execute(ExportFileClientAction action) {
 
         try {
 
@@ -72,8 +71,6 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
             else
                 output.write(action.fileText.getBytes(action.charsetName));
             output.close();
-
-            return true;
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -108,11 +105,10 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
         }
     }
 
-    public Object execute(SleepClientAction action) {
+    public void execute(SleepClientAction action) {
 
         try {
             Thread.sleep(action.millis);
-            return true;
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -159,11 +155,9 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
         }
     }
 
-    public Object execute(UserChangedClientAction action) {
+    public void execute(UserChangedClientAction action) {
         try {
             Main.frame.updateUser();
-
-            return true;
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (ClassNotFoundException e) {
@@ -171,7 +165,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
         }
     }
 
-    public Object execute(UserReloginClientAction action) {
+    public void execute(UserReloginClientAction action) {
         try {
             final JPasswordField jpf = new JPasswordField();
             JOptionPane jop = new JOptionPane(jpf,
@@ -197,7 +191,6 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
                 } else
                     throw new RuntimeException();
             }
-            return true;
         } catch (LoginException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
@@ -207,12 +200,10 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
         }
     }
 
-    public Object execute(MessageClientAction action) {
+    public void execute(MessageClientAction action) {
 
         JOptionPane.showMessageDialog(null, action.message,
                 action.caption, JOptionPane.INFORMATION_MESSAGE);
-
-        return true;
     }
 
     public Object execute(ResultClientAction action) {
@@ -229,9 +220,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
         return action.execute();
     }
 
-    public Object execute(ApplyClientAction action) {
+    public void execute(ApplyClientAction action) {
         form.applyChanges(true);
-
-        return true;
     }
 }

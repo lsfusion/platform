@@ -16,28 +16,10 @@ import platform.server.logics.DataObject;
 
 import java.util.Map;
 
-public abstract class CompareWhere<This extends CompareWhere<This>> extends DataWhere {
+public abstract class CompareWhere<This extends CompareWhere<This>> extends BinaryWhere<This> {
     
-    public final BaseExpr operator1;
-    public final BaseExpr operator2;
-
     protected CompareWhere(BaseExpr operator1, BaseExpr operator2) {
-        this.operator1 = operator1;
-        this.operator2 = operator2;
-    }
-
-    public void enumerate(ContextEnumerator enumerator) {
-        operator1.enumerate(enumerator);
-        operator2.enumerate(enumerator);
-    }
-
-    public void fillDataJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
-        operator1.fillJoinWheres(joins,andWhere);
-        operator2.fillJoinWheres(joins,andWhere);
-    }
-
-    public DataWhereSet calculateFollows() {
-        return new DataWhereSet(new VariableExprSet(operator1, operator2));
+        super(operator1, operator2);
     }
 
     // такой же where но без прямых сравнений
@@ -77,34 +59,5 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Data
         for(Map.Entry<K,? extends Expr> entry : map.entrySet())
             where = where.and(entry.getValue().compare(mapValues.get(entry.getKey()), Compare.EQUALS));
         return where;
-    }
-
-    protected abstract This createThis(BaseExpr operator1, BaseExpr operator2);
-    protected abstract Compare getCompare();
-
-    @ParamLazy
-    public Where translateOuter(MapTranslate translator) {
-        return createThis(operator1.translateOuter(translator),operator2.translateOuter(translator));
-    }
-    @ParamLazy
-    public Where translateQuery(QueryTranslator translator) {
-        return operator1.translateQuery(translator).compare(operator2.translateQuery(translator),getCompare());
-    }
-
-    @Override
-    public Where packFollowFalse(Where falseWhere) {
-        return operator1.packFollowFalse(falseWhere).compare(operator2.packFollowFalse(falseWhere),getCompare());
-    }
-
-    public ObjectJoinSets groupObjectJoinSets() {
-        return getOperandWhere().groupObjectJoinSets().and(new ObjectJoinSets(this));
-    }
-
-    protected Where getOperandWhere() {
-        return operator1.getWhere().and(operator2.getWhere());
-    }
-
-    public long calculateComplexity() {
-        return operator1.getComplexity() + operator2.getComplexity() + 1;
     }
 }
