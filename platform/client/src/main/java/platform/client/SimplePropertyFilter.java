@@ -67,6 +67,7 @@ public class SimplePropertyFilter extends JPanel {
         list = new JList(listModel);
 
         tree.setRootVisible(false);
+        tree.setShowsRootHandles(true);
         list.getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         leftPane.add(new TitledPanel("Группы объектов", list), BorderLayout.CENTER);
         JPanel radioPanel = new JPanel(new GridLayout(getPanelCount(), 1, 5, 5));
