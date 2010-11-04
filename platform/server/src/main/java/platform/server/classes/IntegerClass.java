@@ -6,6 +6,8 @@ import platform.server.data.type.ParseException;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.text.Format;
+import java.text.NumberFormat;
 
 public class IntegerClass extends IntegralClass<Integer> {
 
@@ -50,6 +52,10 @@ public class IntegerClass extends IntegralClass<Integer> {
 
     public Object getDefaultValue() {
         return 0;
+    }
+
+    public Format getDefaultFormat() {
+        return NumberFormat.getIntegerInstance();
     }
 
     public Object parseString(String s) throws ParseException {

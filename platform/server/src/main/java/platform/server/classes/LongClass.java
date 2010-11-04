@@ -6,6 +6,8 @@ import platform.server.data.type.ParseException;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.text.Format;
+import java.text.NumberFormat;
 
 public class LongClass extends IntegralClass<Long> {
 
@@ -46,6 +48,10 @@ public class LongClass extends IntegralClass<Long> {
 
     public Object getDefaultValue() {
         return 0l;
+    }
+
+    public Format getDefaultFormat() {
+        return NumberFormat.getIntegerInstance();
     }
 
     public Object parseString(String s) throws ParseException {
