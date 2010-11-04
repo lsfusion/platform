@@ -11,6 +11,7 @@ import platform.client.descriptor.increment.editor.IncrementSingleListSelectionM
 import platform.interop.ClassViewType;
 
 import javax.swing.*;
+import java.util.Arrays;
 import java.util.List;
 
 public class GroupObjectEditor extends JPanel implements NodeEditor {
@@ -20,13 +21,13 @@ public class GroupObjectEditor extends JPanel implements NodeEditor {
 
         add(new TitledPanel("Вид при инициализации", new JComboBox(new IncrementSingleListSelectionModel(group, "initClassView") {
             public List<?> getList() {
-                return ClassViewType.typeNameList();
+                return Arrays.asList(ClassViewType.values());
             }
         })));
 
         add(new TitledPanel("Запрещённый вид", new IncrementMultipleListEditor(new IncrementMultipleListSelectionModel(group, "banClassViewList") {
             public List<?> getList() {
-                return ClassViewType.typeNameList();
+                return Arrays.asList(ClassViewType.values());
             }
         })));
 

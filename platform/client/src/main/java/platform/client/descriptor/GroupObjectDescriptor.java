@@ -27,11 +27,10 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
         return banClassViewList;
     }
 
-    public void setBanClassViewList(List<String> banClassViewList) {
+    public void setBanClassViewList(List<ClassViewType> banClassViewList) {
         this.banClassViewList.clear();
-        for(String one : banClassViewList){
-            this.banClassViewList.add(ClassViewType.valueOf(one));
-        }
+        this.banClassViewList.addAll(banClassViewList);
+
         IncrementDependency.update(this, "banClassViewList");
 
         setBanClassView(this.banClassViewList);
@@ -41,8 +40,8 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
         return initClassView;
     }
 
-    public void setInitClassView(String initClassView) {
-        this.initClassView = ClassViewType.valueOf(initClassView);
+    public void setInitClassView(ClassViewType initClassView) {
+        this.initClassView = initClassView;
         IncrementDependency.update(this, "initClassView");
     }
 
