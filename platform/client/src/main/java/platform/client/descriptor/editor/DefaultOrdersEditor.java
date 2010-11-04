@@ -29,23 +29,30 @@ public class DefaultOrdersEditor extends JPanel implements IncrementView {
     private DataHolder dataHolder;
     private IncrementDefaultOrdersTable table;
 
-    public DefaultOrdersEditor(FormDescriptor iForm) {
+    public DefaultOrdersEditor(FormDescriptor iForm, final GroupObjectDescriptor group) {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         this.form = iForm;
 
         dataHolder = new DataHolder(form);
+        if (group != null) {
+            dataHolder.setGroupObject(group);
+        }
 
         IncrementDependency.add(dataHolder, "defaultOrders", this);
 
-        add(new TitledPanel("Группа", new JComboBox(new IncrementSingleListSelectionModel(dataHolder, "groupObject") {
-            public List<?> getList() {
-                return form.groupObjects;
-            }
+        if (group == null) {
+            add(new TitledPanel("Группа", new JComboBox(new IncrementSingleListSelectionModel(dataHolder, "groupObject") {
+                public List<?> getList() {
+                    List<?> result = new ArrayList<Object>(form.groupObjects);
+                    result.add(0, null);
+                    return result;
+                }
 
-            public void fillListDependencies() {
-                IncrementDependency.add(form, "groupObjects", this);
-            }
-        })));
+                public void fillListDependencies() {
+                    IncrementDependency.add(form, "groupObjects", this);
+                }
+            })));
+        }
 
         JPanel propertiesPanel = new TitledPanel("Свойства для выбора", new JScrollPane(new IncrementMultipleListEditor(new IncrementMultipleListSelectionModel(dataHolder, "pendingProperties") {
             public List<?> getList() {

@@ -15,27 +15,29 @@ import java.util.List;
 
 public class GroupObjectEditor extends JPanel implements NodeEditor {
 
-    public GroupObjectEditor(final GroupObjectDescriptor descriptor, final FormDescriptor form) {
+    public GroupObjectEditor(final GroupObjectDescriptor group, final FormDescriptor form) {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        add(new TitledPanel("Вид при инициализации", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "initClassView") {
+        add(new TitledPanel("Вид при инициализации", new JComboBox(new IncrementSingleListSelectionModel(group, "initClassView") {
             public List<?> getList() {
                 return ClassViewType.typeNameList();
             }
         })));
 
-        add(new TitledPanel("Запрещённый вид", new IncrementMultipleListEditor(new IncrementMultipleListSelectionModel(descriptor, "banClassViewList") {
+        add(new TitledPanel("Запрещённый вид", new IncrementMultipleListEditor(new IncrementMultipleListSelectionModel(group, "banClassViewList") {
             public List<?> getList() {
                 return ClassViewType.typeNameList();
             }
         })));
 
-        add(new TitledPanel("Свойство выделения", new PropertyObjectEditor(descriptor, "propertyHighlight", form, descriptor)));
+        add(new TitledPanel("Свойство выделения", new PropertyObjectEditor(group, "propertyHighlight", form, group)));
 
-        add(new GroupPropertyObjectEditor(form, descriptor));
+        add(new GroupPropertyObjectEditor(form, group));
         
-        add(descriptor.client.grid.getPropertiesEditor());
-        add(descriptor.client.showType.getPropertiesEditor());
+        add(group.client.grid.getPropertiesEditor());
+        add(group.client.showType.getPropertiesEditor());
+
+        add(new TitledPanel("Порядки по умолчанию", new DefaultOrdersEditor(form, group)));
     }
 
     public JComponent getComponent() {

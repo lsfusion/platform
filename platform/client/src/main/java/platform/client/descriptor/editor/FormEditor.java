@@ -18,7 +18,7 @@ public class FormEditor extends JPanel implements NodeEditor {
 
         add(new TitledPanel("Заголовок", new IncrementTextEditor(form, "caption")));
         add(Box.createRigidArea(new Dimension(5, 5)));
-        add(new TitledPanel("Порядки по умолчанию", new DefaultOrdersEditor(form)));
+        add(new TitledPanel("Порядки по умолчанию", new DefaultOrdersEditor(form, null)));
     }
 
     public JComponent getComponent() {
