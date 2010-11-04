@@ -1,5 +1,7 @@
 package platform.server.form.view;
 
+import platform.interop.form.layout.ContainerFactory;
+import platform.interop.form.layout.GroupObjectContainerSet;
 import platform.interop.form.layout.SimplexComponentDirections;
 import platform.interop.form.layout.SingleSimplexConstraint;
 import platform.server.form.entity.FormEntity;
@@ -63,58 +65,28 @@ public class DefaultFormView extends FormView {
             mgroupObjects.put(group, clientGroup);
             groupObjects.add(clientGroup);
 
-            ContainerView groupContainer = addContainer(group.get(0).getCaption()); // контейнер всей группы
-            groupContainer.description = "Группа объектов";
-            groupContainer.sID = "groupContainer" + group.getID();
-            groupContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
-            mainContainer.add(groupContainer);
+            GroupObjectContainerSet<ContainerView, ComponentView> set = GroupObjectContainerSet.create(clientGroup,
+                    new ContainerFactory<ContainerView>() {
+                        public ContainerView createContainer() {
+                            return new ContainerView(idGenerator.idShift());
+                        }
+                    });
 
-            groupContainers.put(clientGroup, groupContainer);
+            mainContainer.add(set.getGroupContainer());
 
-            ContainerView gridContainer = addContainer(); // контейнер грида внутрь
-            gridContainer.description = "Табличная часть";
-            gridContainer.sID = "gridContainer" + group.getID();
-            gridContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
-            groupContainer.add(gridContainer);
-
-            ContainerView panelContainer = addContainer(); // контейнер панели
-            panelContainer.description = "Панель";
-            panelContainer.sID = "panelContainer" + group.getID();
-            groupContainer.add(panelContainer);
-
-            panelContainers.put(clientGroup, panelContainer);
-
-            ContainerView controlsContainer = addContainer(); // контейнер всех управляющих объектов
-            controlsContainer.description = "Управляющие объекты";
-            controlsContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
-            controlsContainer.constraints.insetsInside = new Insets(0,0,0,0);
-            controlsContainer.constraints.insetsSibling = new Insets(0,0,0,0);
-
-            controlsContainers.put(clientGroup, controlsContainer);
-
-            ContainerView filterContainer = addContainer(); // контейнер фильтров
-            filterContainer.description = "Контейнер фильтров";
-            filterContainer.sID = "filterContainer" + clientGroup.getID();
-            filterContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
-            controlsContainer.add(filterContainer);
-
-            filterContainers.put(clientGroup, filterContainer);
+            groupContainers.put(clientGroup, set.getGroupContainer());
+            panelContainers.put(clientGroup, set.getPanelContainer());
+            controlsContainers.put(clientGroup, set.getControlsContainer());
+            filterContainers.put(clientGroup, set.getFilterContainer());
 
             for (ObjectView clientObject : clientGroup) {
 
                 clientObject.classChooser.constraints.fillVertical = 1;
                 clientObject.classChooser.constraints.fillHorizontal = 0.2;
-                gridContainer.add(clientObject.classChooser);
+                set.getGridContainer().add(0, clientObject.classChooser);
 
                 mobjects.put(clientObject.entity, clientObject);
             }
-
-            clientGroup.grid.constraints.fillVertical = 1;
-            clientGroup.grid.constraints.fillHorizontal = 1;
-            gridContainer.add(clientGroup.grid);
-
-            clientGroup.showType.constraints.directions = new SimplexComponentDirections(0.01,0,0,0.01);
-            controlsContainer.add(clientGroup.showType);
         }
 
         for (PropertyDrawEntity control : formEntity.propertyDraws) {
@@ -154,6 +126,7 @@ public class DefaultFormView extends FormView {
             regularFilters.add(filterGroupView);
         }
 
+        // передобавляем еще раз, чтобы управляющие кнопки оказались в конце контейнера
         for (GroupObjectEntity group : formEntity.groups) {
             panelContainers.get(mgroupObjects.get(group)).add(controlsContainers.get(mgroupObjects.get(group)));
         }

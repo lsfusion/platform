@@ -1,8 +1,6 @@
 package platform.server.form.view;
 
-import platform.base.DefaultIDGenerator;
 import platform.base.IDGenerator;
-import platform.base.IdentityObject;
 import platform.base.OrderedMap;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.form.entity.FormEntity;

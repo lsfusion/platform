@@ -1039,9 +1039,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 }
 
                 if(inInterface) {
-                    boolean added = isDrawed.add(drawProperty); // читаем caption'ы
+                    boolean added = isDrawed.add(drawProperty); // читаем title'ы
                     if(drawProperty.propertyCaption!=null && (added || refresh || (drawProperty.toDraw!=null && (drawProperty.toDraw.updated & GroupObjectInstance.UPDATED_CLASSVIEW)!=0) // чтобы на клиента updateCaptions пришли а то они не приходят
-                            || dataUpdated(drawProperty.propertyCaption, changedProps) || objectUpdated(drawProperty.propertyCaption, columnGroupGrids))) // не было надо caption перечитать
+                            || dataUpdated(drawProperty.propertyCaption, changedProps) || objectUpdated(drawProperty.propertyCaption, columnGroupGrids))) // не было надо title перечитать
                         readProperties.put(drawProperty.caption, columnGroupGrids);
                 } else if (isDrawed.remove(drawProperty))
                     result.dropProperties.add(drawProperty); // вкидываем удаление из интерфейса

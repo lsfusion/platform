@@ -9,6 +9,7 @@ import platform.client.form.GroupObjectController;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ClassViewType;
+import platform.interop.form.layout.AbstractGroupObjectView;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -19,7 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class ClientGroupObject extends ArrayList<ClientObject>
-                                 implements ClientPropertyRead, ClientIdentitySerializable {
+                                 implements ClientPropertyRead, ClientIdentitySerializable, AbstractGroupObjectView<ClientComponent> {
 
     private int ID;
     public List<ClassViewType> banClassView = new ArrayList<ClassViewType>();
@@ -28,6 +29,8 @@ public class ClientGroupObject extends ArrayList<ClientObject>
     public ClientShowType showType = new ClientShowType();
 
     public ClientGroupObject() {
+        grid.groupObject = this;
+        showType.groupObject = this;
     }
 
     public List<ClientObject> getDeserializeList(Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
@@ -74,8 +77,20 @@ public class ClientGroupObject extends ArrayList<ClientObject>
         return actionID;
     }
 
+    public String getCaption() {
+        return toString();
+    }
+
     public int getID() {
         return ID;
+    }
+
+    public ClientComponent getGrid() {
+        return grid;
+    }
+
+    public ClientComponent getShowType() {
+        return showType;
     }
 
     public void setID(int iID) {

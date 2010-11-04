@@ -19,6 +19,8 @@ public class ComponentEditor extends TitledPanel implements NodeEditor {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         add(new TitledPanel(null, new IncrementCheckBox("Компонент по умолчанию", component, "defaultComponent")));
+
+        add(new ComponentDesignEditor("Дизайн компонента", component));
     }
 
     public JComponent getComponent() {

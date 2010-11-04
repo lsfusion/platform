@@ -84,8 +84,6 @@ public class PropertyDrawEditor extends GroupElementEditor {
         add(new ComponentEditor("Компонетные свойства", descriptor.client));
 
         add(Box.createRigidArea(new Dimension(5, 5)));
-
-        add(new ComponentDesignEditor("Дизайн компонента", descriptor.client));
     }
 
     @Override

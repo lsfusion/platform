@@ -36,6 +36,7 @@ public abstract class ClientFormLayout extends JPanel {
 
     public ClientFormLayout(ClientContainer topContainer) {
 
+        // создаем все контейнеры на форме
         createContainerViews(topContainer);
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -125,6 +126,7 @@ public abstract class ClientFormLayout extends JPanel {
 
     // добавляем визуальный компонент
     public boolean add(ClientComponent key, Component view) {
+        if (key == null || contviews.get(key.container) == null) return false;
         if (!contviews.get(key.container).isAncestorOf(view)) {
             contviews.get(key.container).addComponent(view, key);
             contviews.get(key.container).repaint();
@@ -138,14 +140,15 @@ public abstract class ClientFormLayout extends JPanel {
 
     // удаляем визуальный компонент
     public boolean remove(ClientComponent key, Component view) {
-       if (contviews.get(key.container).isAncestorOf(view)) {
+        if (key == null || contviews.get(key.container) == null) return false;
+        if (contviews.get(key.container).isAncestorOf(view)) {
             contviews.get(key.container).removeComponent(view);
             contviews.get(key.container).repaint();
             if (key.defaultComponent){
                 policy.removeDefault(view);
             }
             return true;
-       } else
+        } else
             return false;
     }
 

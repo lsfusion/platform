@@ -8,10 +8,12 @@ import platform.client.descriptor.nodes.ComponentNode;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ComponentDesign;
+import platform.interop.form.layout.AbstractComponent;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
+import javax.swing.text.ComponentView;
 import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -20,12 +22,12 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class ClientComponent extends IdentityDescriptor implements Serializable, ClientIdentitySerializable {
+public abstract class ClientComponent extends IdentityDescriptor implements Serializable, ClientIdentitySerializable, AbstractComponent<ClientContainer, ClientComponent> {
 
     public ComponentDesign design = new ComponentDesign();
 
     public ClientContainer container;
-    public SimplexConstraints<ClientComponent> constraints = SimplexConstraints.DEFAULT_CONSTRAINT;
+    public SimplexConstraints<ClientComponent> constraints = new SimplexConstraints<ClientComponent>();
 
     public boolean defaultComponent = false;
 
@@ -116,5 +118,9 @@ public abstract class ClientComponent extends IdentityDescriptor implements Seri
 
     public boolean getDefaultComponent() {
         return defaultComponent;
+    }
+
+    public SimplexConstraints<ClientComponent> getConstraints() {
+        return constraints;
     }
 }

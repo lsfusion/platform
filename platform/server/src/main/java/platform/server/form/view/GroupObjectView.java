@@ -1,6 +1,7 @@
 package platform.server.form.view;
 
 import platform.base.IDGenerator;
+import platform.interop.form.layout.AbstractGroupObjectView;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.serialization.ServerIdentitySerializable;
@@ -11,7 +12,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class GroupObjectView extends ArrayList<ObjectView> implements ServerIdentitySerializable {
+public class GroupObjectView extends ArrayList<ObjectView> implements ServerIdentitySerializable, AbstractGroupObjectView<ComponentView> {
 
     public GroupObjectEntity entity;
 
@@ -32,8 +33,20 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
     public GridView grid;
     public ShowTypeView showType;
 
+    public String getCaption() {
+        return get(0).getCaption();
+    }
+
     public int getID() {
         return entity.getID();
+    }
+
+    public ComponentView getGrid() {
+        return grid;
+    }
+
+    public ComponentView getShowType() {
+        return showType;
     }
 
     int ID;

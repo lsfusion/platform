@@ -11,9 +11,12 @@ import platform.client.descriptor.property.PropertyInterfaceDescriptor;
 import platform.client.logics.ClientComponent;
 import platform.client.logics.ClientContainer;
 import platform.client.logics.ClientForm;
+import platform.client.logics.ClientGroupObject;
 import platform.client.logics.classes.ClientClass;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
+import platform.interop.form.layout.ContainerFactory;
+import platform.interop.form.layout.GroupObjectContainerSet;
 import platform.interop.serialization.RemoteDescriptorInterface;
 
 import java.io.*;
@@ -393,8 +396,21 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         groupObjects.add(groupObject);
         client.groupObjects.add(groupObject.client);
 
+        addGroupObjectDefaultContainers(groupObject.client);
+
         IncrementDependency.update(this, "groupObjects");
         return true;
+    }
+
+    private void addGroupObjectDefaultContainers(ClientGroupObject group) {
+
+        GroupObjectContainerSet<ClientContainer, ClientComponent> set = GroupObjectContainerSet.create(group,
+                new ContainerFactory<ClientContainer>() {
+                    public ClientContainer createContainer() {
+                        return new ClientContainer(Main.generateNewID());
+                    }
+                });
+        client.mainContainer.add(set.getGroupContainer());
     }
 
     public boolean removeFromGroupObjects(GroupObjectDescriptor groupObject) {

@@ -16,7 +16,7 @@ import java.util.List;
 public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implements ClientIdentitySerializable {
     private int ID;
     
-    private ClassViewType initClassView;
+    private ClassViewType initClassView = ClassViewType.GRID;
     private List<ClassViewType> banClassViewList = new ArrayList<ClassViewType>();
     private PropertyObjectDescriptor propertyHighlight;
 
@@ -70,6 +70,7 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
 
     public void setID(int ID) {
         this.ID = ID;
+        client.setID(ID);
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

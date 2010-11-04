@@ -37,6 +37,10 @@ public class ObjectView implements ServerIdentitySerializable {
         ID = iID;
     }
 
+    public String getCaption() {
+        return entity.getCaption();
+    }
+
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, groupObject, serializationType);
         pool.writeString(outStream, entity.caption);

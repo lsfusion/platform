@@ -7,6 +7,7 @@ import platform.client.descriptor.nodes.ComponentNode;
 import platform.client.descriptor.nodes.ContainerNode;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
+import platform.interop.form.layout.AbstractContainer;
 
 import javax.swing.*;
 import java.io.DataInputStream;
@@ -15,16 +16,19 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClientContainer extends ClientComponent implements ClientIdentitySerializable {
+public class ClientContainer extends ClientComponent implements ClientIdentitySerializable, AbstractContainer<ClientContainer, ClientComponent> {
 
     private String title;
     private String description;
     private String sID;
 
-    public List<ClientComponent> children;
+    public List<ClientComponent> children = new ArrayList<ClientComponent>();
 
     public ClientContainer() {
-        children = new ArrayList<ClientComponent>();
+    }
+
+    public ClientContainer(int ID) {
+        this.ID = ID;
     }
 
     @Override
@@ -67,24 +71,31 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
     }
 
     public void removeFromChildren(ClientComponent component) {
+        component.container = null;
         children.remove(component);
 
         IncrementDependency.update(this, "children");
     }
 
     public void addToChildren(int index, ClientComponent component) {
-        if (component.container != null) {
-            component.container.removeFromChildren(component);
-        }
-
-        children.add(index, component);
-        component.container = this;
-
+        add(index, component);
         IncrementDependency.update(this, "children");
     }
 
     public void addToChildren(ClientComponent component) {
         addToChildren(children.size(), component);
+    }
+
+    public void add(ClientComponent component) {
+        add(children.size(), component);
+    }
+
+    public void add(int index, ClientComponent component) {
+        if (component.container != null) {
+            component.container.removeFromChildren(component);
+        }
+        children.add(index, component);
+        component.container = this;
     }
 
     public void moveChild(ClientComponent compFrom, ClientComponent compTo) {

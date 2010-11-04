@@ -621,8 +621,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 /*
     private class ExtIncPrintNavigatorForm extends ExtIncFormEntity {
 
-        public ExtIncPrintNavigatorForm(NavigatorElement parent, int ID, String caption) throws JRException, FileNotFoundException {
-            super(parent, ID, caption, true);
+        public ExtIncPrintNavigatorForm(NavigatorElement parent, int ID, String title) throws JRException, FileNotFoundException {
+            super(parent, ID, title, true);
 
             objDoc.groupTo.initClassView = false;
             objDoc.groupTo.singleViewType = true;

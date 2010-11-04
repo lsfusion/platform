@@ -25,7 +25,6 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
-import platform.server.data.query.Join;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.PostgreDataAdapter;
@@ -1144,7 +1143,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 Query<String, Object> findClass = new Query<String, Object>(Collections.singleton("key"));
                 findClass.and(classSID.getExpr(session.modifier, BaseUtils.singleValue(findClass.mapKeys)).compare(new ValueExpr(concreteClass.sID, IntegerClass.instance), Compare.EQUALS));
                 OrderedMap<Map<String, Object>, Map<Object, Object>> result = findClass.execute(session);
-                if (result.size() == 0) { // не найдено добавляем новый объект и заменяем ему classID и caption
+                if (result.size() == 0) { // не найдено добавляем новый объект и заменяем ему classID и title
                     DataObject classObject;
                     if (concreteClass.equals(baseClass.objectClass)) { // добавим с явным ID объект
                         classObject = new DataObject(baseClass.objectClass.sID, baseClass.unknown);
@@ -1184,7 +1183,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         /*session.startTransaction();
         for(CustomClass customClass : allClasses)
             if(customClass instanceof ConcreteCustomClass)
-                name.execute(customClass.caption.substring(0,BaseUtils.min(customClass.caption.length(),50)), session, session.modifier, new DataObject(customClass.ID, baseClass.objectClass));
+                name.execute(customClass.title.substring(0,BaseUtils.min(customClass.title.length(),50)), session, session.modifier, new DataObject(customClass.ID, baseClass.objectClass));
         session.apply(this);*/
     }
 
@@ -1386,8 +1385,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     boolean checkPersistent(SQLSession session) throws SQLException {
 //        System.out.println("checking persistent...");
         for (Property property : getStoredProperties()) {
-//            System.out.println(Property.caption);
-            if (property instanceof AggregateProperty && !((AggregateProperty) property).checkAggregation(session, property.caption)) // Property.caption.equals("Расх. со скл.")
+//            System.out.println(Property.title);
+            if (property instanceof AggregateProperty && !((AggregateProperty) property).checkAggregation(session, property.caption)) // Property.title.equals("Расх. со скл.")
                 return false;
 //            Property.Out(Adapter);
         }
@@ -1948,7 +1947,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     /*
       // свойство обратное группируещему - для этого задается ограничивающее свойство, результирующее св-во с группировочными, порядковое св-во
-      protected LF addUGProp(AbstractGroup group, String caption, LF maxGroupProp, LF unGroupProp, Object... params) {
+      protected LF addUGProp(AbstractGroup group, String title, LF maxGroupProp, LF unGroupProp, Object... params) {
           List<LI> lParams = readLI(params);
           List<LI> lUnGroupParams = lParams.subList(0,unGroupProp.listInterfaces.size());
           List<LI> orderParams = lParams.subList(unGroupProp.listInterfaces.size(),lParams.size());
@@ -2001,7 +2000,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
           LF calc = addSFProp("prm3+prm1-prm2-GREATEST(prm3,prm1-prm2)",DoubleClass.instance,3);
           LF maxRestRemain = addJProp(calc, BaseUtils.add(BaseUtils.add(unGroupProp.write(),directLI(zeroRemainPrev)),directLI(maxGroupProp)));
           LF exceed = addJProp(groeq2, BaseUtils.add(directLI(remainPrev),unGroupProp.write()));
-          return addJProp(group, caption, andNot1, BaseUtils.add(directLI(maxRestRemain),directLI(exceed)));
+          return addJProp(group, title, andNot1, BaseUtils.add(directLI(maxRestRemain),directLI(exceed)));
       }
     */
     protected LP addSGProp(LP groupProp, Object... params) {
@@ -2500,7 +2499,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
              // DataProperty
              DataProperty dataProp = new DataProperty("prop"+i,interfaceClasses,tableFactory,(i%4==0? RemoteClass.integer :classes.get(randomizer.nextInt(classes.size()))));
-             dataProp.caption = "Data Property " + i;
+             dataProp.title = "Data Property " + i;
              // генерируем классы
 
              randProps.add(dataProp);
@@ -2657,7 +2656,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
 
              if(genProp!=null && genProp.isInInterface(new HashMap()) && genProp.hasAllKeys()) {
-                 genProp.caption = resType + " " + i;
+                 genProp.title = resType + " " + i;
                  // проверим что есть в интерфейсе и покрыты все ключи
                  System.out.print(resType+"-");
                  randProps.add(genProp);
@@ -2705,7 +2704,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             persistents.add(aggrProperties.get(Randomizer.nextInt(aggrProperties.size())));
 
 //        for(AggregateProperty Property : AggrProperties)
-//            if(Property.caption.equals("R 1"))
+//            if(Property.title.equals("R 1"))
 //            Persistents.add(Property);
      }
 
@@ -2824,7 +2823,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         for(ConcreteCustomClass fillClass : concreteClasses)
             if(fillClass.children.size()==0) {
-                System.out.println("Класс : "+fillClass.caption);
+                System.out.println("Класс : "+fillClass.title);
 
                 Integer quantity = classQuantity.get(fillClass);
                 if(quantity==null) quantity = 1;
@@ -2833,7 +2832,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 for(int i=0;i<quantity;i++) {
                     DataObject idObject = session.addObject(fillClass,null);
                     listObjects.add(idObject);
-                    objectNames.put(idObject,fillClass.caption+" "+(i+1));
+                    objectNames.put(idObject,fillClass.title+" "+(i+1));
                 }
 
                 Set<CustomClass> parents = new HashSet<CustomClass>();
@@ -2850,7 +2849,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             if(abstractProperty instanceof StoredDataProperty) {
                 StoredDataProperty property = (StoredDataProperty)abstractProperty;
 
-                System.out.println("Свойство : "+property.caption);
+                System.out.println("Свойство : "+property.title);
 
                 Set<ClassPropertyInterface> interfaceNotNull = propNotNull.get(property);
                 if(interfaceNotNull==null) interfaceNotNull = new HashSet<ClassPropertyInterface>();

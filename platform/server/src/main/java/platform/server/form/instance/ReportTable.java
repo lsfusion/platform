@@ -63,7 +63,7 @@ public class ReportTable extends SessionTable<ReportTable> {
                 properties.add(propField);
 
                 if (property.propertyCaption != null) {
-                    PropertyField captionField = new PropertyField("caption" + property.getsID(), property.propertyCaption.getType());
+                    PropertyField captionField = new PropertyField("title" + property.getsID(), property.propertyCaption.getType());
                     objectsToFields.put(new Pair<Object, PropertyType>(property, PropertyType.CAPTION), captionField);
                     properties.add(captionField);
                 }

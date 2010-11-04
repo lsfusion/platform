@@ -1,5 +1,6 @@
 package platform.server.form.view;
 
+import platform.interop.form.layout.AbstractContainer;
 import platform.server.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;
@@ -8,11 +9,20 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ContainerView extends ComponentView {
+public class ContainerView extends ComponentView implements AbstractContainer<ContainerView, ComponentView> {
 
     public String title;
     public String description;
     public String sID;
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
 
     public ContainerView() {
 

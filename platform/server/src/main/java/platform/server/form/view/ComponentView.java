@@ -2,6 +2,7 @@ package platform.server.form.view;
 
 import platform.base.IdentityObject;
 import platform.interop.ComponentDesign;
+import platform.interop.form.layout.AbstractComponent;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexConstraints;
 import platform.server.serialization.ServerIdentitySerializable;
@@ -13,13 +14,17 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ComponentView extends IdentityObject implements ServerIdentitySerializable {
+public class ComponentView extends IdentityObject implements ServerIdentitySerializable, AbstractComponent<ContainerView, ComponentView> {
 
     public ComponentDesign design = new ComponentDesign();
 
     protected ContainerView container;
 
     public SimplexConstraints<ComponentView> constraints = new SimplexConstraints<ComponentView>();
+
+    public SimplexConstraints<ComponentView> getConstraints() {
+        return constraints;
+    }
 
     public boolean defaultComponent = false;
 

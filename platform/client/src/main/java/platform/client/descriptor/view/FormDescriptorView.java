@@ -104,7 +104,7 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
         formTreePanel.add(commandPanel, BorderLayout.SOUTH);
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, formTreePanel, view);
-        splitPane.setResizeWeight(0.3);
+        splitPane.setResizeWeight(0.01);
 
         add(splitPane, BorderLayout.CENTER);
 

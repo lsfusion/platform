@@ -32,11 +32,10 @@ public class GroupObjectEditor extends JPanel implements NodeEditor {
 
         add(new TitledPanel("Свойство выделения", new PropertyObjectEditor(descriptor, "propertyHighlight", form, descriptor)));
 
-        add(descriptor.client.grid.getPropertiesEditor());
-        add(descriptor.client.showType.getPropertiesEditor());
-
         add(new GroupPropertyObjectEditor(form, descriptor));
         
+        add(descriptor.client.grid.getPropertiesEditor());
+        add(descriptor.client.showType.getPropertiesEditor());
     }
 
     public JComponent getComponent() {

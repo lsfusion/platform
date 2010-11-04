@@ -176,7 +176,7 @@ public class FontChooser extends JDialog implements ActionListener {
 
     private void setProperties() {
         int style = 0;
-        Map fontAttributes = new HashMap();
+        Map<TextAttribute, Object> fontAttributes = new HashMap<TextAttribute, Object>();
         if(boldBox.isSelected())
             style += Font.BOLD;
         if(italicBox.isSelected())
