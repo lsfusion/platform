@@ -69,10 +69,6 @@ public class InstanceFactory {
     }
 
     public final PropertyObjectInterfaceInstance computer;
-    @SuppressWarnings({"UnusedDeclaration"})
-    public PropertyObjectInterfaceInstance getInstance(CurrentComputerEntity entity) {
-        return computer;
-    }
 
     public <P extends PropertyInterface> FilterInstance getInstance(CompareFilterEntity<P> entity) {
         return new CompareFilterInstance<P>(getInstance(entity.property), entity.compare, entity.value.getInstance(this));

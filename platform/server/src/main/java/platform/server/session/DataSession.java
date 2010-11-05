@@ -27,6 +27,7 @@ import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.UserController;
+import platform.server.form.navigator.ComputerController;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
@@ -148,13 +149,15 @@ public class DataSession extends SQLSession implements ChangesSession {
     private final List<DerivedChange<?,?>> notDeterministic;
 
     public final UserController user;
+    public final ComputerController computer;
 
     public DataObject applyObject = null;
 
-    public DataSession(DataAdapter adapter, final UserController user, BaseClass baseClass, CustomClass namedObject, ConcreteCustomClass sessionClass, LP<?> name, CustomClass transaction, LP<?> date, List<DerivedChange<?,?>> notDeterministic) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+    public DataSession(DataAdapter adapter, final UserController user, final ComputerController computer, BaseClass baseClass, CustomClass namedObject, ConcreteCustomClass sessionClass, LP<?> name, CustomClass transaction, LP<?> date, List<DerivedChange<?,?>> notDeterministic) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         super(adapter);
 
         this.user = user;
+        this.computer = computer; 
         this.baseClass = baseClass;
         this.namedObject = namedObject;
         this.name = name;
@@ -166,6 +169,10 @@ public class DataSession extends SQLSession implements ChangesSession {
 
     public TypeObject getSQLUser() {
         return new TypeObject(user.getCurrentUser().object, ObjectType.instance);
+    }
+
+    protected TypeObject getSQLComputer() {
+        return new TypeObject(computer.getCurrentComputer().object, ObjectType.instance);
     }
 
     protected TypeObject getID() {

@@ -26,9 +26,11 @@ public abstract class SQLSession {
 
     protected abstract TypeObject getSQLUser();
     protected abstract TypeObject getID();
+    protected abstract TypeObject getSQLComputer();
 
     public final static String userParam = "adsadaweewuser";
     public final static String sessionParam = "dsfreerewrewrsf";
+    public final static String computerParam = "fjruwidskldsor";
 
     public SQLSession(DataAdapter adapter) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         syntax = adapter;
@@ -358,7 +360,7 @@ public abstract class SQLSession {
 
     public PreparedStatement getStatement(String command, Map<String, TypeObject> paramObjects) throws SQLException {
 
-        char[][] params = new char[paramObjects.size() + 2][];
+        char[][] params = new char[paramObjects.size() + 3][];
         TypeObject[] values = new TypeObject[params.length];
         int paramNum = 0;
         for (Map.Entry<String, TypeObject> param : paramObjects.entrySet()) {
@@ -369,6 +371,8 @@ public abstract class SQLSession {
         values[paramNum++] = getSQLUser();
         params[paramNum] = sessionParam.toCharArray();
         values[paramNum++] = getID();
+        params[paramNum] = computerParam.toCharArray();
+        values[paramNum++] = getSQLComputer();
 
         // те которые isString сразу транслируем
         List<TypeObject> preparedParams = new ArrayList<TypeObject>();

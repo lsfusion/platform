@@ -15,9 +15,4 @@ public class MessageClientAction extends AbstractClientAction {
     public void dispatch(ClientActionDispatcher dispatcher) throws IOException {
         dispatcher.execute(this);
     }
-
-    @Override
-    public boolean isBeforeApply() {
-        return true;
-    }
 }

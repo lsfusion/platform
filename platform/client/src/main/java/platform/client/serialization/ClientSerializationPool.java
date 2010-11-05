@@ -40,7 +40,6 @@ public class ClientSerializationPool extends SerializationPool<ClientForm> {
         addMapping(PropertyInterfaceDescriptor.class);
 
         addMapping(DataObjectDescriptor.class);
-        addMapping(CurrentComputerDescriptor.class);
         addMapping(ObjectDescriptor.class);
         addMapping(PropertyObjectDescriptor.class);
 

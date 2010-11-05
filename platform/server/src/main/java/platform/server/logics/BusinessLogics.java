@@ -42,6 +42,7 @@ import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.navigator.RemoteNavigator;
 import platform.server.form.navigator.UserController;
+import platform.server.form.navigator.ComputerController;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.AddObjectActionProperty;
@@ -472,6 +473,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP currentEpoch;
     public LP currentUser;
     public LP currentSession;
+    public LP currentComputer;
     protected LP changeUser;
     public LP<PropertyInterface> barcode;
     public LP barcodeToObject;
@@ -645,6 +647,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         currentEpoch = addTProp(Time.EPOCH);
         currentUser = addProperty(null, new LP<PropertyInterface>(new CurrentUserFormulaProperty(genSID(), user)));
         currentSession = addProperty(null, new LP<PropertyInterface>(new CurrentSessionFormulaProperty(genSID(), session)));
+        currentComputer = addProperty(null, new LP<PropertyInterface>(new CurrentComputerFormulaProperty(genSID(), computer)));
         changeUser = addProperty(null, new LP<ClassPropertyInterface>(new ChangeUserActionProperty(genSID(), customUser)));
 
         userLogin = addDProp(baseGroup, "userLogin", "Логин", StringClass.get(30), customUser);
@@ -858,6 +861,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 public DataObject getCurrentUser() {
                     return new DataObject(0, systemUser);
                 }
+            }, new ComputerController() {
+                public DataObject getCurrentComputer() {
+                    return new DataObject(0, computer);
+                }
             });
 
             Query<String, Object> query = new Query<String, Object>(Collections.singleton("key"));
@@ -868,6 +875,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 session.apply(this);
             } else
                 systemUserObject = (Integer) BaseUtils.single(rows).get("key");
+
+            query = new Query<String, Object>(Collections.singleton("key"));
+            query.and(hostname.getExpr(session.modifier, BaseUtils.singleValue(query.mapKeys)).compare(new DataObject("systemhost"), Compare.EQUALS));
+            rows = query.execute(session, new OrderedMap<Object, Boolean>(), 1).keySet();
+            if (rows.size() == 0) { // если нету добавим
+                DataObject computerObject = session.addObject(computer, session.modifier);
+                systemComputer = (Integer) computerObject.object;
+                hostname.execute("systemhost", session, session.modifier, computerObject);
+                session.apply(this);
+            } else
+                systemComputer = (Integer) BaseUtils.single(rows).get("key");
 
             session.close();
         } catch (Exception e) {
@@ -936,6 +954,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public final int systemUserObject;
+    public final int systemComputer;
+
     /*
       final static Set<Integer> wereSuspicious = new HashSet<Integer>();
 
@@ -1051,11 +1071,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             public DataObject getCurrentUser() {
                 return new DataObject(systemUserObject, systemUser);
             }
+        }, new ComputerController() {
+
+            public DataObject getCurrentComputer() {
+                return new DataObject(systemComputer, computer);
+            }
         });
     }
 
-    public DataSession createSession(UserController userController) throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        return new DataSession(adapter, userController, baseClass, baseClass.named, session, name, transaction, date, notDeterministic);
+    public DataSession createSession(UserController userController, ComputerController computerController) throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+        return new DataSession(adapter, userController, computerController, baseClass, baseClass.named, session, name, transaction, date, notDeterministic);
     }
 
     public List<DerivedChange<?, ?>> notDeterministic = new ArrayList<DerivedChange<?, ?>>();

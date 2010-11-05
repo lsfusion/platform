@@ -39,7 +39,6 @@ public class ServerSerializationPool extends SerializationPool<ServerContext> {
         addMapping2(PropertyInterface.class);
 
         addMapping2(DataObject.class);
-        addMapping2(CurrentComputerEntity.class);
         addMapping2(ObjectEntity.class);
         addMapping2(PropertyObjectEntity.class);
 

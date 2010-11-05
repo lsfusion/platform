@@ -38,9 +38,4 @@ public class MessageFileClientAction extends AbstractClientAction {
     public Object dispatchResult(ClientActionDispatcher dispatcher) throws IOException {
         return dispatcher.execute(this);
     }
-
-    @Override
-    public boolean isBeforeApply() {
-        return true;
-    }
 }

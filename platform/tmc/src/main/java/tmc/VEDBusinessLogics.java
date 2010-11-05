@@ -305,6 +305,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         printOrderCheck = addAProp(null, new PrintOrderCheckActionProperty());
 
         computerShop = addDProp("computerShop", "Магазин рабочего места", shop, computer);
+        currentShop = addJProp("Текущий магазин", computerShop, currentComputer);
+
         panelScreenComPort = addDProp(baseGroup, "panelComPort", "COM-порт табло", IntegerClass.instance, computer);
         addJProp(baseGroup, "Магазин рабочего места", name, computerShop, 1);
 
@@ -699,6 +701,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP orderUser = addDCProp("orderUser", "Исп-ль заказа", currentUser, true, is(order), 1);
         orderUserName = addJProp("Исп-ль заказа", name, orderUser, 1);
 
+        LP orderComputer = addDCProp("orderComputer", "Компьютер заказа", currentComputer, true, is(order), 1);
+        orderComputerName = addJProp("Компьютер заказа", hostname, orderComputer, 1);
+
         checkRetailExported = addDProp("checkRetailExported", "Экспортирован", LogicalClass.instance, checkRetail);
 
         cashRegController = new CashRegController(this); // бред конечно создавать его здесь, но влом создавать getCashRegController()
@@ -713,6 +718,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     LP orderUserName;
+    LP orderComputerName;
     LP articleToGroup;
     LP couponToIssueConstraint;
     LP couponIssueSum;
@@ -735,6 +741,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     public LP orderSalePrice;
     LP changeQuantityOrder;
     LP computerShop;
+    LP currentShop;
     LP panelScreenComPort;
     LP orderSalePayCash;
     LP orderSalePayCard;
@@ -1435,7 +1442,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addPropertyDraw(objDoc, outStore, outStoreName);
                 caption = caption + " (все склады)";
             } else {
-                PropertyObjectEntity shopImplement = addPropertyObject(computerShop, CurrentComputerEntity.instance);
+                PropertyObjectEntity shopImplement = addPropertyObject(currentShop);
                 addFixedFilter(new CompareFilterEntity(addPropertyObject(outStore, objDoc), Compare.EQUALS, shopImplement));
             }
 
@@ -1811,7 +1818,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 //            addHintsNoUpdate(properties, moveGroup);
             addFixedOrder(addPropertyObject(changeQuantityTime, objInner, objArt), false);
 
-            PropertyObjectEntity shopImplement = addPropertyObject(computerShop, CurrentComputerEntity.instance);
+            PropertyObjectEntity shopImplement = addPropertyObject(currentShop);
             addFixedFilter(new CompareFilterEntity(addPropertyObject(incStore, objDoc), Compare.EQUALS, shopImplement));
 
             if (!noOuters) {

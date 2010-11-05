@@ -39,10 +39,11 @@ import java.io.*;
 import java.rmi.RemoteException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.sql.SQLException;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
-public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject implements RemoteNavigatorInterface, FocusListener<T>, CustomClassListener, UserController, CurrentClassListener {
+public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject implements RemoteNavigatorInterface, FocusListener<T>, CustomClassListener, UserController, CurrentClassListener, ComputerController {
 
     T BL;
 
@@ -66,6 +67,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         return user;
     }
 
+    public DataObject getCurrentComputer() {
+        return computer.getDataObject();
+    }
+
     WeakHashMap<DataSession, Object> sessions = new WeakHashMap<DataSession, Object>();
 
     public void changeCurrentUser(DataObject user) {
@@ -79,7 +84,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
 
     public void relogin(String login) throws RemoteException {
         try {
-            DataSession session = BL.createSession(this);
+            DataSession session = createSession();
             Integer userId = (Integer) BL.loginToUser.read(session, new DataObject(login, StringClass.get(30)));
             DataObject user = session.getDataObject(userId, ObjectType.instance);
             changeCurrentUser(user);
@@ -105,7 +110,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
         try {
-            DataSession session = BL.createSession(this);
+            DataSession session = createSession();
 
             ObjectOutputStream objectStream = new ObjectOutputStream(outStream);
             Query<Object, String> query = new Query<Object, String>(new HashMap<Object, KeyExpr>());
@@ -118,6 +123,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         }
 
         return outStream.toByteArray();
+    }
+
+    private DataSession createSession() throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+        return BL.createSession(this, this);
     }
 
     List<NavigatorElement> getElements(int elementID) {
@@ -226,7 +235,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
             if (currentSession && currentForm != null)
                 session = currentForm.session;
             else {
-                session = BL.createSession(this);
+                session = createSession();
                 sessions.put(session, true);
             }
 
