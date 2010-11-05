@@ -90,26 +90,42 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
     // класс, который отвечает за автоматическое перемещение компонент внутри контейнеров при каких-либо изменениях структуры groupObject
     private class ContainerMover implements IncrementView {
         public void update(Object updateObject, String updateField) {
-            moveContainer(propertyDraws, "panelContainer");
-            moveContainer(regularFilterGroups, "filterContainer");
+            moveContainer(propertyDraws);
+            moveContainer(regularFilterGroups);
         }
 
-        private <T extends ContainerMovable> void moveContainer(List<T> objects, String containerID) {
+        private <T extends ContainerMovable> void moveContainer(List<T> objects) {
+
+            ClientContainer mainContainer = client.mainContainer;
 
             for (T object : objects) {
-                GroupObjectDescriptor groupObject = object.getGroupObject(groupObjects);
-                if (groupObject != null) {
-                    ClientContainer newContainer = client.findContainerBySID(containerID + groupObject.getID());
-                    if (newContainer != null && !newContainer.isAncestorOf(object.getClientComponent().container)) {
-                        int insIndex = -1;
-                        for (int propIndex = objects.indexOf(object) + 1; propIndex < objects.size(); propIndex++) {
-                            insIndex = newContainer.children.indexOf(objects.get(propIndex).getClientComponent());
+                ClientContainer newContainer = object.getDestinationContainer(mainContainer, groupObjects);
+                if (newContainer != null && !newContainer.isAncestorOf(object.getClientComponent(mainContainer).container)) {
+                    int insIndex = -1;
+                    // сначала пробуем вставить перед объектом, который идет следующим в этом контейнере
+                    for (int propIndex = objects.indexOf(object) + 1; propIndex < objects.size(); propIndex++) {
+                        ClientComponent comp = objects.get(propIndex).getClientComponent(mainContainer);
+                        if (newContainer.equals(comp.container)) {
+                            insIndex = newContainer.children.indexOf(comp);
                             if (insIndex != -1)
                                 break;
                         }
-                        if (insIndex == -1) insIndex = newContainer.children.size();
-                        newContainer.addToChildren(insIndex, object.getClientComponent());
                     }
+                    if (insIndex == -1) {
+                        // затем пробуем вставить после объекта, который идет перед вставляемым в этом контейнере
+                        for (int propIndex = objects.indexOf(object) - 1; propIndex >= 0; propIndex--) {
+                            ClientComponent comp = objects.get(propIndex).getClientComponent(mainContainer);
+                            if (newContainer.equals(comp.container)) {
+                                insIndex = newContainer.children.indexOf(comp);
+                                if (insIndex != -1) {
+                                    insIndex++;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (insIndex == -1) insIndex = newContainer.children.size();  
+                    newContainer.addToChildren(insIndex, object.getClientComponent(mainContainer));
                 }
             }
         }
@@ -321,9 +337,14 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
     }
 
     public boolean moveGroupObject(GroupObjectDescriptor groupFrom, int index) {
+
+        moveClientComponent(groupFrom.getClientComponent(client.mainContainer), getElementTo(groupObjects, groupFrom, index).getClientComponent(client.mainContainer));
+
         BaseUtils.moveElement(groupObjects, groupFrom, index);
         BaseUtils.moveElement(client.groupObjects, groupFrom.client, index);
+
         IncrementDependency.update(this, "groupObjects");
+
         return true;
     }
 
@@ -396,21 +417,32 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         groupObjects.add(groupObject);
         client.groupObjects.add(groupObject.client);
 
-        addGroupObjectDefaultContainers(groupObject.client);
+        addGroupObjectDefaultContainers(groupObject, groupObjects);
 
         IncrementDependency.update(this, "groupObjects");
         return true;
     }
 
-    private void addGroupObjectDefaultContainers(ClientGroupObject group) {
+    private void addGroupObjectDefaultContainers(GroupObjectDescriptor group, List<GroupObjectDescriptor> groupObjects) {
 
-        GroupObjectContainerSet<ClientContainer, ClientComponent> set = GroupObjectContainerSet.create(group,
+        GroupObjectContainerSet<ClientContainer, ClientComponent> set = GroupObjectContainerSet.create(group.client,
                 new ContainerFactory<ClientContainer>() {
                     public ClientContainer createContainer() {
                         return new ClientContainer(Main.generateNewID());
                     }
                 });
-        client.mainContainer.add(set.getGroupContainer());
+
+        // вставляем контейнер после предыдущего
+        int groupIndex = groupObjects.indexOf(group);
+        int index = -1;
+        if (groupIndex > 0) {
+            index = client.mainContainer.children.indexOf(groupObjects.get(groupIndex-1).getClientComponent(client.mainContainer));
+            if (index != -1)
+                index++;
+        }
+        if (index == -1) index = client.mainContainer.children.size();
+
+        client.mainContainer.add(index, set.getGroupContainer());
     }
 
     public boolean removeFromGroupObjects(GroupObjectDescriptor groupObject) {

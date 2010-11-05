@@ -5,6 +5,11 @@ import java.awt.*;
 // в этот класс вынесено автоматическое создание контейнеров при создании GroupObject
 public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extends AbstractComponent<C, T>> {
 
+    public static final String GROUP_CONTAINER = "groupContainer";
+    public static final String GRID_CONTAINER = "gridContainer";
+    public static final String PANEL_CONTAINER = "panelContainer";
+    public static final String FILTER_CONTAINER = "filterContainer";
+
     private C groupContainer;
     private C gridContainer;
     private C panelContainer;
@@ -38,18 +43,18 @@ public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extend
         set.groupContainer = factory.createContainer(); // контейнер всей группы
         set.groupContainer.setTitle(group.getCaption());
         set.groupContainer.setDescription("Группа объектов");
-        set.groupContainer.setSID("groupContainer" + group.getID());
+        set.groupContainer.setSID(GROUP_CONTAINER + group.getID());
         set.groupContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
 
         set.gridContainer = factory.createContainer(); // контейнер грида внутрь
         set.gridContainer.setDescription("Табличная часть");
-        set.gridContainer.setSID("gridContainer" + group.getID());
+        set.gridContainer.setSID(GRID_CONTAINER + group.getID());
         set.gridContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
         set.groupContainer.add((T)set.gridContainer);
 
         set.panelContainer = factory.createContainer(); // контейнер панели
         set.panelContainer.setDescription("Панель");
-        set.panelContainer.setSID("panelContainer" + group.getID());
+        set.panelContainer.setSID(PANEL_CONTAINER + group.getID());
         set.groupContainer.add((T)set.panelContainer);
 
         set.controlsContainer = factory.createContainer(); // контейнер всех управляющих объектов
@@ -61,7 +66,7 @@ public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extend
 
         set.filterContainer = factory.createContainer(); // контейнер фильтров
         set.filterContainer.setDescription("Контейнер фильтров");
-        set.filterContainer.setSID("filterContainer" + group.getID());
+        set.filterContainer.setSID(FILTER_CONTAINER + group.getID());
         set.filterContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
         set.controlsContainer.add((T)set.filterContainer);
 

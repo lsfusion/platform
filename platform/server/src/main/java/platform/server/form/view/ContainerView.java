@@ -13,7 +13,6 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
     public String title;
     public String description;
-    public String sID;
 
     public void setTitle(String title) {
         this.title = title;

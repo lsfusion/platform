@@ -18,13 +18,16 @@ public class IdentityObject {
         this.ID = ID;
     }
 
-    private String SID;
-    
+    protected String sID;
+
     public String getSID() {
-        if (SID != null) return SID; else return "obj" + getID();
+        if (sID != null)
+            return sID;
+        else
+            return "obj" + getID();
     }
     
     public void setSID(String sID) {
-        this.SID = sID;
+        this.sID = sID;
     }
 }

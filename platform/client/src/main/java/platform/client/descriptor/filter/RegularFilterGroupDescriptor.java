@@ -6,9 +6,11 @@ import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.IdentityDescriptor;
 import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.logics.ClientComponent;
+import platform.client.logics.ClientContainer;
 import platform.client.logics.ClientRegularFilterGroup;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
+import platform.interop.form.layout.GroupObjectContainerSet;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -33,7 +35,15 @@ public class RegularFilterGroupDescriptor extends IdentityDescriptor implements 
         return result;
     }
 
-    public ClientComponent getClientComponent() {
+    public ClientContainer getDestinationContainer(ClientContainer parent, List<GroupObjectDescriptor> groupObjects) {
+        GroupObjectDescriptor groupObject = getGroupObject(groupObjects);
+        if (groupObject != null) {
+            return parent.findContainerBySID(GroupObjectContainerSet.FILTER_CONTAINER + groupObject.getID());
+        } else
+            return null;
+    }
+
+    public ClientComponent getClientComponent(ClientContainer parent) {
         return client;
     }
 

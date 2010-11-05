@@ -2,10 +2,13 @@ package platform.client.descriptor;
 
 import platform.base.BaseUtils;
 import platform.client.descriptor.increment.IncrementDependency;
+import platform.client.logics.ClientComponent;
+import platform.client.logics.ClientContainer;
 import platform.client.logics.ClientGroupObject;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ClassViewType;
+import platform.interop.form.layout.GroupObjectContainerSet;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -13,7 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implements ClientIdentitySerializable {
+public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implements ClientIdentitySerializable, ContainerMovable {
     private int ID;
     
     private ClassViewType initClassView = ClassViewType.GRID;
@@ -126,5 +129,13 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
 
         IncrementDependency.update(this, "objects");
         return true;
+    }
+
+    public ClientContainer getDestinationContainer(ClientContainer parent, List<GroupObjectDescriptor> groupObjects) {
+        return parent;
+    }
+
+    public ClientComponent getClientComponent(ClientContainer parent) {
+        return parent.findContainerBySID(GroupObjectContainerSet.GROUP_CONTAINER + getID());
     }
 }

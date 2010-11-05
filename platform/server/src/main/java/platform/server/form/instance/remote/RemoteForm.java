@@ -383,7 +383,7 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
     }
 
     public String getSID() {
-        return form.entity.sID;
+        return form.entity.getSID();
     }
 
     public void refreshData() {

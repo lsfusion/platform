@@ -4,11 +4,13 @@ import platform.base.BaseUtils;
 import platform.client.Main;
 import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.logics.ClientComponent;
+import platform.client.logics.ClientContainer;
 import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ClassViewType;
+import platform.interop.form.layout.GroupObjectContainerSet;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -84,7 +86,15 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
         }
     }
 
-    public ClientComponent getClientComponent() {
+    public ClientContainer getDestinationContainer(ClientContainer parent, List<GroupObjectDescriptor> groupObjects) {
+        GroupObjectDescriptor groupObject = getGroupObject(groupObjects);
+        if (groupObject != null) {
+            return parent.findContainerBySID(GroupObjectContainerSet.PANEL_CONTAINER + groupObject.getID());
+        } else
+            return null;
+    }
+
+    public ClientComponent getClientComponent(ClientContainer parent) {
         return client;
     }
 

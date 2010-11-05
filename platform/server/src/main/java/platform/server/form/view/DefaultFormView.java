@@ -54,7 +54,7 @@ public class DefaultFormView extends FormView {
 
         mainContainer = addContainer();
         mainContainer.description = "Главный контейнер";
-        mainContainer.sID = "mainContainer";
+        mainContainer.setSID("mainContainer");
         mainContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
 
         Map<GroupObjectView, ContainerView> filterContainers = new HashMap<GroupObjectView, ContainerView>();

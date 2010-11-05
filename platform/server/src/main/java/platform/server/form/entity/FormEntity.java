@@ -44,7 +44,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public OrderedMap<OrderEntity<?>, Boolean> fixedOrders = new OrderedMap<OrderEntity<?>, Boolean>();
 
-    public String sID;
     public boolean isPrintForm;
 
     public FormEntity() {
@@ -63,14 +62,9 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     protected FormEntity(NavigatorElement parent, int iID, String caption, boolean iisPrintForm) {
-        this(parent, iID, caption, genSID(iID), iisPrintForm);
-    }
-
-    protected FormEntity(NavigatorElement parent, int iID, String caption, String isID, boolean iisPrintForm) {
         super(parent, iID, caption);
         logger.info("Initializing form " + caption + "...");
 
-        sID = isID;
         isPrintForm = iisPrintForm;
     }
 
@@ -399,8 +393,9 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         hintsNoUpdate.add(prop);
     }
 
-    private static String genSID(int iID) {
-        return "form" + iID;
+    @Override
+    public String getSID() {
+        return "form" + ID;
     }
 
     public Map<PropertyDrawEntity, GroupObjectEntity> forceDefaultDraw = new HashMap<PropertyDrawEntity, GroupObjectEntity>();
@@ -451,8 +446,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        sID = genSID(ID);
-        
         caption = pool.readString(inStream);
         isPrintForm = inStream.readBoolean();
 
