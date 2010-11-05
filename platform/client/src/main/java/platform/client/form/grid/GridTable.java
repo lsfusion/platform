@@ -697,7 +697,6 @@ public abstract class GridTable extends ClientFormTable
                 changeSelection(0, 0, false, false);
             }
             do {
-                //oldMoveAction.actionPerformed(e);
                 int next = moveNext(row, column, isNext);
 
                 oRow = row;
@@ -712,13 +711,15 @@ public abstract class GridTable extends ClientFormTable
                 }
                 if (((row == 0 && column == 0 && isNext) || (row == getRowCount() - 1 && column == getColumnCount() - 1 && (!isNext)))
                     && isCellFocusable(initRow, initColumn)) {
-                    changeSelection(initRow, initColumn, false, false);
-                    isInternalNavigating = false;
-                    return;
+                    row = initRow;
+                    column = initColumn;
+                    break;
                 }
             } while ((oRow != row || oColumn != column) && !isCellFocusable(row, column));
-            isInternalNavigating = false;
+
+            commitEditing();
             changeSelection(row, column, false, false);
+            isInternalNavigating = false;
         }
     }
 
