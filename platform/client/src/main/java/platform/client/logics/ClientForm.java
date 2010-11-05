@@ -36,14 +36,14 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
     public OrderedMap<ClientPropertyDraw, Boolean> defaultOrders = new OrderedMap<ClientPropertyDraw, Boolean>();
     public List<ClientRegularFilterGroup> regularFilterGroups = new ArrayList<ClientRegularFilterGroup>();
 
-    public ClientFunction printFunction;
-    public ClientFunction xlsFunction;
-    public ClientFunction nullFunction;
-    public ClientFunction refreshFunction;
-    public ClientFunction applyFunction;
-    public ClientFunction cancelFunction;
-    public ClientFunction okFunction;
-    public ClientFunction closeFunction;
+    public ClientFunction printFunction = new ClientFunction();
+    public ClientFunction xlsFunction = new ClientFunction();
+    public ClientFunction nullFunction = new ClientFunction();
+    public ClientFunction refreshFunction = new ClientFunction();
+    public ClientFunction applyFunction = new ClientFunction();
+    public ClientFunction cancelFunction = new ClientFunction();
+    public ClientFunction okFunction = new ClientFunction();
+    public ClientFunction closeFunction = new ClientFunction();
 
     private List<ClientPropertyDraw> order = new ArrayList<ClientPropertyDraw>();
 
