@@ -1476,6 +1476,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.getGroupObjectContainer(objDoc.groupTo).design.background = new Color(192, 192, 192);
 
             design.setEnabled(publicGroup, false, objArt.groupTo);
+            design.setEnabled(orderArticleSaleDiscount, true, objArt.groupTo);
             design.setEnabled(articleQuantity, true, objArt.groupTo);
 
             design.get(objArt.groupTo).grid.defaultComponent = true;

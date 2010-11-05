@@ -268,9 +268,9 @@ public class CashRegController {
 //       пока не поддерживается
 //        BL.addProp(BL.cashRegOperGroup, new SimpleCashRegActionProperty(BL.genSID(), "Аннулировать чек", "/A")); 
         BL.addProp(BL.cashRegOperGroup, new SimpleCashRegActionProperty(BL.genSID(), "Продолжить печать", "/R"));
-        BL.addProp(BL.cashRegOperGroup, new SimpleCashRegActionProperty(BL.genSID(), "Запрос наличных в денежном ящике", "/C", "cash.txt", 100, "#,##0"));
-        BL.addProp(BL.cashRegOperGroup, new SimpleCashRegActionProperty(BL.genSID(), "Открыть денежный ящик", "/O"));
-        BL.addProp(BL.cashRegAdminGroup, new SimpleCashRegActionProperty(BL.genSID(), "Запрос номера последнего чека", "/N", "bill_no.txt"));
+        BL.addProp(BL.cashRegOperGroup, new SimpleCashRegActionProperty(BL.genSID(), "Запрос наличных", "/C", "cash.txt", 100, "#,##0"));
+        BL.addProp(BL.cashRegOperGroup, new SimpleCashRegActionProperty(BL.genSID(), "Открыть денеж. ящик", "/O"));
+        BL.addProp(BL.cashRegAdminGroup, new SimpleCashRegActionProperty(BL.genSID(), "Номера посл. чека", "/N", "bill_no.txt"));
         BL.addProp(BL.cashRegAdminGroup, new IntegerCashRegActionProperty(BL.genSID(), "Внесение денег", "/P"));
         BL.addProp(BL.cashRegAdminGroup, new IntegerCashRegActionProperty(BL.genSID(), "Изъятие денег", "/G"));
         BL.addProp(BL.cashRegAdminGroup, new SimpleCashRegActionProperty(BL.genSID(), "X-отчет (сменный отчет без гашения)", "/X"));
