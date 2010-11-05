@@ -68,9 +68,9 @@ public interface RemoteFormInterface extends PendingRemote {
 
     void cancelChanges() throws RemoteException;
 
-    ClientApply applyClientChanges() throws RemoteException;
-    void confirmClientChanges(Object clientResult) throws RemoteException;
-    void rollbackClientChanges() throws RemoteException;
+    ClientApply checkClientChanges() throws RemoteException;
+    void applyClientChanges(Object clientResult) throws RemoteException;
+
     void applyChanges() throws RemoteException;
     
     final static int GID_SHIFT = 1000;

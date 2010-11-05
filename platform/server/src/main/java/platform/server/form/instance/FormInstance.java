@@ -399,32 +399,24 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         }
     }
 
-    // Применение изменений
-    public String applyChanges(boolean noCommit) throws SQLException {
-        String applyString = session.apply(BL, true);
-        if(applyString!=null)
-            return applyString;
+    public void applyActionChanges(List<ClientAction> actions) throws SQLException {
 
-        if(!noCommit)
+        String check = checkApply();
+        if(check!=null)
+            actions.add(new ResultClientAction(check, true));
+        else {
             commitApply();
 
-        return null;
-    }
-
-    public void applyActionChanges(boolean noCommit,List<ClientAction> actions) throws SQLException {
-        String result = applyChanges(noCommit);
-        if(result!=null)
-            actions.add(new ResultClientAction(result, true));
-        else
             actions.add(new ResultClientAction("Изменения были удачно записаны...", false));
+        }
     }
 
-    public void rollbackApply() throws SQLException {
-        session.rollbackApply();
+    public String checkApply() throws SQLException {
+        return session.check(BL);
     }
 
     public void commitApply() throws SQLException {
-        session.commitApply();
+        session.write(BL);
 
         refreshData();
         addObjectOnTransaction();

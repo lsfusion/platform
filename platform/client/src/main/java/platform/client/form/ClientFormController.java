@@ -619,7 +619,7 @@ public class ClientFormController {
                 }
 
                 if (remoteForm.hasClientApply()) {
-                    ClientApply clientApply = remoteForm.applyClientChanges();
+                    ClientApply clientApply = remoteForm.checkClientChanges();
                     if (clientApply instanceof CheckFailed) // чтобы не делать лишний RMI вызов
                         Log.printFailedMessage(((CheckFailed) clientApply).message);
                     else {
@@ -627,10 +627,9 @@ public class ClientFormController {
                         try {
                             clientResult = ((ClientResultAction) clientApply).dispatchResult(actionDispatcher);
                         } catch (Exception e) {
-                            remoteForm.rollbackClientChanges();
                             throw new RuntimeException("Ошибка при применении изменений", e);
                         }
-                        remoteForm.confirmClientChanges(clientResult);
+                        remoteForm.applyClientChanges(clientResult);
 
                         applyRemoteChanges();
                     }

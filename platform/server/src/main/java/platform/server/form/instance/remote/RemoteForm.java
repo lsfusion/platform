@@ -398,9 +398,9 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
         return form.entity.hasClientApply();
     }
 
-    public ClientApply applyClientChanges() throws RemoteException {
+    public ClientApply checkClientChanges() throws RemoteException {
         try {
-            String result = form.applyChanges(true);
+            String result = form.checkApply();
             if(result!=null)
                 return new CheckFailed(result);
             else
@@ -410,11 +410,10 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
         }
     }
 
-    public void confirmClientChanges(Object clientResult) throws RemoteException {
+    public void applyClientChanges(Object clientResult) throws RemoteException {
         String checkClientApply = form.entity.checkClientApply(clientResult);
         try {
             if(checkClientApply!=null) {
-                form.rollbackApply();
                 actions.add(new ResultClientAction(checkClientApply, true));
             } else {
                 form.commitApply();
@@ -425,17 +424,9 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
         }
     }
 
-    public void rollbackClientChanges() throws RemoteException {
-        try {
-            form.rollbackApply();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public void applyChanges() throws RemoteException {
         try {
-            form.applyActionChanges(false, actions);
+            form.applyActionChanges(actions);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

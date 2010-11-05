@@ -21,7 +21,8 @@
 
     <bean id="saleExport" class="tmc.integration.exp.SaleExportTask">
         <constructor-arg><ref bean="businessLogics"/></constructor-arg>
-        <constructor-arg><value>exp</value></constructor-arg>
+        <constructor-arg><list><value>exp</value><value>exp2</value></list></constructor-arg>
+        <constructor-arg><list><value type="int">7</value><value type="int">2127</value></list></constructor-arg>
     </bean>
 
     <bean id="backup" class="platform.server.backup.BackupTask">

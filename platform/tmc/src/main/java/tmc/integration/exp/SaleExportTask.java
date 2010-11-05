@@ -4,15 +4,19 @@ import platform.server.logics.scheduler.FlagSemaphoreTask;
 import platform.server.logics.scheduler.SchedulerTask;
 import tmc.VEDBusinessLogics;
 
+import java.util.List;
+
 public class SaleExportTask implements SchedulerTask {
 
     private VEDBusinessLogics BL;
-    private String path;
+    private List<String> path;
+    private List<Integer> store;
 
-    public SaleExportTask(VEDBusinessLogics BL, String path) {
+    public SaleExportTask(VEDBusinessLogics BL, List<String> path, List<Integer> store) {
 
         this.BL = BL;
         this.path = path;
+        this.store = store;
     }
 
     public String getID() {
@@ -21,8 +25,13 @@ public class SaleExportTask implements SchedulerTask {
 
     public void execute() throws Exception {
 
-        FlagSemaphoreTask.run(path + "\\pos.cur", new NewSaleExportTask(BL, path));
-        FlagSemaphoreTask.run(path + "\\pos.dat", new DateSaleExportTask(BL, path));
+        for(int i=0;i<path.size();i++) {
+            String expPath = path.get(i);
+            Integer expStore = store.get(i);
+
+            FlagSemaphoreTask.run(expPath + "\\pos.cur", new NewSaleExportTask(BL, expPath, expStore));
+            FlagSemaphoreTask.run(expPath + "\\pos.dat", new DateSaleExportTask(BL, expPath, expStore));
+        }
     }
 
 }

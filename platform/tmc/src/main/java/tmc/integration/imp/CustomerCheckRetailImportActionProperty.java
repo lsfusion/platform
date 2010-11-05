@@ -11,6 +11,7 @@ import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import tmc.VEDBusinessLogics;
@@ -53,9 +54,7 @@ public class CustomerCheckRetailImportActionProperty extends ActionProperty {
                 formInstance.changeProperty(formInstance.getPropertyDraw(BL.clientInitialSum), Double.parseDouble(impFile.getField("clientsum").get()));
             }
 
-            String result = formInstance.applyChanges(false);
-            if (result != null)
-                actions.add(new MessageClientAction(result, "Не удалось импортировать данные"));
+            formInstance.applyActionChanges(actions);
 
         } catch (Exception e) {
             throw new RuntimeException(e);

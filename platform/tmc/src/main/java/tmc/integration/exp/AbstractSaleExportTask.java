@@ -11,9 +11,12 @@ import platform.base.DateConverter;
 import platform.server.auth.PolicyManager;
 import platform.server.form.instance.*;
 import platform.server.form.instance.filter.NotNullFilterInstance;
+import platform.server.form.instance.filter.CompareFilterInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.scheduler.FlagSemaphoreTask;
 import platform.server.session.DataSession;
+import platform.server.data.type.ObjectType;
+import platform.interop.Compare;
 import tmc.VEDBusinessLogics;
 
 import java.sql.SQLException;
@@ -28,10 +31,12 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
 
     VEDBusinessLogics BL;
     String path;
+    Integer store;
 
-    protected AbstractSaleExportTask(VEDBusinessLogics BL, String path) {
+    protected AbstractSaleExportTask(VEDBusinessLogics BL, String path, Integer store) {
         this.BL = BL;
         this.path = path;
+        this.store = store;
     }
 
     protected abstract String getDbfName();
@@ -107,6 +112,10 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
         FormInstance formInstance = new FormInstance(BL.commitSaleBrowseForm, BL, session, PolicyManager.defaultSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.computer)); // здесь надо переделать на нормальный компьютер
 
         setRemoteFormFilter(formInstance);
+
+        // записываем фильтр на этот склад
+        PropertyDrawInstance outStore = formInstance.getPropertyDraw(BL.outStore);
+        outStore.toDraw.addTempFilter(new CompareFilterInstance(outStore.propertyObject, Compare.EQUALS, session.getDataObject(store, ObjectType.instance)));        
 
         PropertyDrawInstance quantity = formInstance.getPropertyDraw(BL.articleQuantity);
         quantity.toDraw.addTempFilter(new NotNullFilterInstance(quantity.propertyObject));
@@ -202,7 +211,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
             calendar.setTime(DateConverter.sqlToDate((java.sql.Date)row.values.get(map.get(dateField))));
             dateField.put(calendar);
 
-            putDouble(summField, (Double)row.values.get(map.get(summField)) * (reverse ? -1 : 1));
+            putDouble(summField, BaseUtils.nvl((Double)row.values.get(map.get(summField)), 0.0) * (reverse ? -1 : 1));
 
             if (map.get(percentField) != null) {
                 Object percentValue = row.values.get(map.get(percentField));

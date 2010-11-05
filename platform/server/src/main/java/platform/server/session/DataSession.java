@@ -511,14 +511,35 @@ public class DataSession extends SQLSession implements ChangesSession {
     }
 
     public String apply(final BusinessLogics<?> BL) throws SQLException {
-        return apply(BL, false);
+        String check = check(BL);
+        if(check!=null)
+            return check;
+
+        write(BL);
+        return null;
     }
 
-    public String apply(final BusinessLogics<?> BL, boolean noCommit) throws SQLException {
-        // делается UpdateAggregations (для мн-ва persistent+constraints)
+    public String check(final BusinessLogics<?> BL) throws SQLException {
+        Increment increment = new Increment(this);
+
+        // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
+        for(Property<?> property : BL.getAppliedProperties())
+            if(property.hasChanges(increment)) {
+                String constraintResult = increment.check(property);
+                if(constraintResult!=null) {
+                    // не надо DROP'ать так как Rollback автоматически drop'ает все temporary таблицы
+                    rollbackTransaction();
+                    return constraintResult;
+                }
+            }
+        return null;
+    }
+
+    public void write(final BusinessLogics<?> BL) throws SQLException {
+        // до start transaction
         if(applyObject==null)
             applyObject = addObject(sessionClass, modifier);
-        
+
         startTransaction();
 
         Collection<IncrementChangeTable> temporary = new ArrayList<IncrementChangeTable>();
@@ -527,16 +548,8 @@ public class DataSession extends SQLSession implements ChangesSession {
 
         // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
         for(Property<?> property : BL.getAppliedProperties())
-            if(property.hasChanges(increment)) {
-                String constraintResult = increment.check(property);
-                if(constraintResult!=null) {
-                    // не надо DROP'ать так как Rollback автоматически drop'ает все temporary таблицы 
-                    rollbackTransaction();
-                    return constraintResult;
-                }
-                if(property.isStored()) // сохраним изменения в таблицы
-                    temporary.add(increment.read(Collections.<Property>singleton(property),baseClass));
-            }
+            if (property.hasChanges(increment) && property.isStored())
+                temporary.add(increment.read(Collections.<Property>singleton(property), baseClass));
 
         // записываем в базу
         for(Collection<Property> groupTable : BaseUtils.group(new BaseUtils.Group<ImplementTable,Property>(){public ImplementTable group(Property key) {return key.mapTable.table;}},
@@ -562,20 +575,7 @@ public class DataSession extends SQLSession implements ChangesSession {
 
         for(IncrementChangeTable addTable : temporary)
             dropTemporaryTable(addTable);
-        
-        if(!noCommit)
-            commitApply();
 
-        return null;
-    }
-
-    // для noCommit - распределенных транзакций
-    public void rollbackApply() throws SQLException {
-        rollbackTransaction();
-    }
-
-    // для noCommit - распределенных транзакций
-    public void commitApply() throws SQLException {
         commitTransaction();
 
         restart(false);

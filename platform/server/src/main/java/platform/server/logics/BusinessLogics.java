@@ -1130,8 +1130,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         baseClass.named.ID = 1;
         baseClass.objectClass.ID = baseClass.objectClass.sID;
 
-        session.startTransaction();
-
         CustomClass usedClass;
         for (CustomClass customClass : allClasses)
             if (customClass instanceof ConcreteCustomClass) {

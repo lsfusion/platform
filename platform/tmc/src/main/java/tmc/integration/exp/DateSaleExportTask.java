@@ -17,8 +17,8 @@ import java.util.Date;
 
 public class DateSaleExportTask extends AbstractSaleExportTask {
 
-    protected DateSaleExportTask(VEDBusinessLogics BL, String path) {
-        super(BL, path);
+    protected DateSaleExportTask(VEDBusinessLogics BL, String path, Integer store) {
+        super(BL, path, store);
     }
 
     protected String getDbfName() {

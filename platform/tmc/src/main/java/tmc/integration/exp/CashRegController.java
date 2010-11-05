@@ -137,8 +137,7 @@ public class CashRegController {
             }
         }
 
-        Double toPay = (Double)data.rows.get(0).values.get(toPayDraw);
-        if (toPay == null) toPay = 0.0;
+        Double toPay = BaseUtils.nvl((Double)data.rows.get(0).values.get(toPayDraw),0.0);
         Double sumDisc = sumDoc - toPay;
         if (sumDisc > 0) {
             result += "#," + sumDisc / 100 + "\n";

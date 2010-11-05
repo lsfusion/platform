@@ -10,8 +10,8 @@ import java.sql.SQLException;
 
 public class NewSaleExportTask extends AbstractSaleExportTask {
 
-    protected NewSaleExportTask(VEDBusinessLogics BL, String path) {
-        super(BL, path);
+    protected NewSaleExportTask(VEDBusinessLogics BL, String path, Integer store) {
+        super(BL, path, store);
     }
 
     protected String getDbfName() {

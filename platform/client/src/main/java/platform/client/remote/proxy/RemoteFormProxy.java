@@ -193,23 +193,16 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return target.hasClientApply();
     }
 
-    public ClientApply applyClientChanges() throws RemoteException {
+    public ClientApply checkClientChanges() throws RemoteException {
         logRemoteMethodStartCall("applyClientChanges");
-        return target.applyClientChanges();
+        return target.checkClientChanges();
     }
 
     @PendingRemoteMethod
-    public void confirmClientChanges(Object clientResult) throws RemoteException {
+    public void applyClientChanges(Object clientResult) throws RemoteException {
         logRemoteMethodStartVoidCall("confirmClientChanges");
-        target.confirmClientChanges(clientResult);
+        target.applyClientChanges(clientResult);
         logRemoteMethodEndVoidCall("confirmClientChanges");
-    }
-
-    @PendingRemoteMethod
-    public void rollbackClientChanges() throws RemoteException {
-        logRemoteMethodStartVoidCall("rollbackClientChanges");
-        target.rollbackClientChanges();
-        logRemoteMethodEndVoidCall("rollbackClientChanges");
     }
 
     @PendingRemoteMethod
