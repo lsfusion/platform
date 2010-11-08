@@ -12,17 +12,18 @@ public class CashRegPrintReceiptAction extends AbstractClientAction {
 
     ReceiptInstance receipt;
     int type;
+    int comPort;
 
-    public CashRegPrintReceiptAction(int type, ReceiptInstance receipt) {
+    public CashRegPrintReceiptAction(int type, int comPort, ReceiptInstance receipt) {
         this.receipt = receipt;
         this.type = type;
-
+        this.comPort = comPort;
     }
 
     @Override
     public void dispatch(ClientActionDispatcher dispatcher) throws IOException {
         RuntimeException exception = null;
-        Dispatch cashDispatch = FiscalReg.createDispatch(1);
+        Dispatch cashDispatch = FiscalReg.createDispatch(comPort);
         Dispatch.call(cashDispatch, "OpenFiscalDoc", type);
 
         try {

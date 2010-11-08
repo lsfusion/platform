@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 
 public class PanelExternalScreen implements ExternalScreen {
     private final static Logger logger = Logger.getLogger(PanelExternalScreen.class.getName());
-    private PanelExternalScreenParameters parameters = new PanelExternalScreenParameters(-1);
+    private PanelExternalScreenParameters parameters = new PanelExternalScreenParameters(-1, -1);
 
     public int getID() {
         return 0;
@@ -43,7 +43,7 @@ public class PanelExternalScreen implements ExternalScreen {
 
     // пока игнорируем все Exception'ы, чтобы лишний раз не травмировать пользователя
     public void repaint(Map<ExternalScreenComponent, ExternalScreenConstraints> components) {
-        int commPort = parameters.getComPort();
+        int commPort = parameters.getScreenComPort();
         if (commPort < 0) {
             return;
         }

@@ -308,6 +308,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         currentShop = addJProp("Текущий магазин", computerShop, currentComputer);
 
         panelScreenComPort = addDProp(baseGroup, "panelComPort", "COM-порт табло", IntegerClass.instance, computer);
+        cashRegComPort = addDProp(baseGroup, "cashRegComPort", "COM-порт фискального регистратора", IntegerClass.instance, computer);
         addJProp(baseGroup, "Магазин рабочего места", name, computerShop, 1);
 
         orderSupplier = addCUProp("orderSupplier", true, "Поставщик", addDProp("localSupplier", "Местный поставщик", localSupplier, orderLocal),
@@ -420,7 +421,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         documentFreeQuantity = addSGProp(documentMoveGroup, "Доступ. кол-во", documentInnerFreeQuantity, 1, 2);
 
         LP saleCertGiftObligation = addDProp("saleCertGiftObligation", "Выдать", LogicalClass.instance, saleCert, giftObligation);
-        
+
         articleQuantity = addCUProp("Кол-во", outerCommitedQuantity, articleInnerQuantity);
         articleOrderQuantity = addCUProp("Заяв. кол-во", outerOrderQuantity, articleInnerQuantity);
         LP articleDocQuantity = addCUProp("Кол-во док.", addSUProp(Union.OVERRIDE, outerCommitedQuantity, outerOrderQuantity), articleInnerQuantity);
@@ -504,8 +505,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP[] maxShopPriceProps = addMGProp((AbstractGroup) null, true, new String[]{"currentShopPriceDate", "currentShopPriceDoc"}, new String[]{"Дата посл. цены в маг.", "Посл. док. цены в маг."}, 1,
                 addJProp(and1, date, 1, inDocumentPrice, 1, 2), 1, priceStore, 1, 2);
-        currentShopPriceDate = maxShopPriceProps[0]; currentShopPriceDoc = maxShopPriceProps[1];
-        addPersistent(currentShopPriceDate); addPersistent(currentShopPriceDoc);
+        currentShopPriceDate = maxShopPriceProps[0];
+        currentShopPriceDoc = maxShopPriceProps[1];
+        addPersistent(currentShopPriceDate);
+        addPersistent(currentShopPriceDoc);
 
         shopPrice = addDCProp(documentPriceGroup, "shopPrice", "Цена (док.)", requiredStorePrice, priceStore, 1, 2, inDocumentPrice, 1, 2);
 
@@ -525,8 +528,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         NDS = addDProp(documentGroup, "NDS", "НДС", DoubleClass.instance, documentNDS, article);
         LP[] maxNDSProps = addMGProp((AbstractGroup) null, true, new String[]{"currentNDSDate", "currentNDSDoc"}, new String[]{"Дата посл. НДС", "Посл. док. НДС"}, 1,
                 addJProp(and1, date, 1, NDS, 1, 2), 1, 2);
-        currentNDSDate = maxNDSProps[0]; currentNDSDoc = maxNDSProps[1];
-        addPersistent(currentNDSDate); addPersistent(currentNDSDoc);
+        currentNDSDate = maxNDSProps[0];
+        currentNDSDoc = maxNDSProps[1];
+        addPersistent(currentNDSDate);
+        addPersistent(currentNDSDoc);
         currentNDS = addJProp(baseGroup, "Тек. НДС", NDS, currentNDSDoc, 1, 1);
 
         // блок с логистикой\управленческими характеристиками
@@ -595,8 +600,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         orderNoDiscount = addDProp(baseGroup, "orderNoDiscount", "Без. скидок", LogicalClass.instance, orderSaleArticleRetail);
         orderArticleSaleDiscount = addDCProp(baseGroup, "orderArticleSaleDiscount", "Скидка", addJProp(and(true, true),
                 addSUProp(Union.MAX,
-                    addSGProp(addMGProp(addJProp(and1, actionDiscount, 3, articleActionActive, 1, 2, 3), 1, 2, articleActionToGroup, 3), 1, 2),
-                    addJProp(and1, addJProp(customerCheckRetailDiscount, orderContragent, 1), 1, is(article), 2)), 1, 2,
+                        addSGProp(addMGProp(addJProp(and1, actionDiscount, 3, articleActionActive, 1, 2, 3), 1, 2, articleActionToGroup, 3), 1, 2),
+                        addJProp(and1, addJProp(customerCheckRetailDiscount, orderContragent, 1), 1, is(article), 2)), 1, 2,
                 addJProp(actionNoExtraDiscount, articleSaleAction, 1), 2, orderNoDiscount, 1),
                 true, 1, 2, is(orderSaleArticleRetail), 1);
 
@@ -609,7 +614,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addSGProp(orderArticleSaleSumWithDiscount, 1));
 
         LP returnArticleSaleSum = addJProp(documentPriceGroup, "Сумма возвр.", multiplyDouble2, returnInnerQuantity, 1, 2, 3, orderSaleDocPrice, 3, 2);
-        LP returnArticleSaleDiscount = addJProp(documentPriceGroup, "Сумма скидки возвр.",round1, addJProp(percent, returnArticleSaleSum, 1, 2, 3, orderArticleSaleDiscount, 3, 2), 1, 2, 3);
+        LP returnArticleSaleDiscount = addJProp(documentPriceGroup, "Сумма скидки возвр.", round1, addJProp(percent, returnArticleSaleSum, 1, 2, 3, orderArticleSaleDiscount, 3, 2), 1, 2, 3);
         returnArticleSalePay = addDUProp(documentPriceGroup, "Сумма к возвр.", returnArticleSaleSum, returnArticleSaleDiscount);
         returnSaleDiscount = addSGProp(documentAggrPriceGroup, "Сумма скидки возвр.", returnArticleSaleDiscount, 1);
         returnSalePay = addDUProp(documentAggrPriceGroup, "Сумма к возвр.", addSGProp("Сумма возвр.", returnArticleSaleSum, 1), returnSaleDiscount);
@@ -653,16 +658,16 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         // сдача/доплата
         LP orderSalePayAll = addSUProp(Union.SUM, orderSalePayCard, orderSalePayCash);
-        LP orderSaleDiffSum = addJProp(and1, addDUProp(orderSalePayAll,orderSalePayNoObligation), 1, is(orderSaleCheckRetail), 1);
+        LP orderSaleDiffSum = addJProp(and1, addDUProp(orderSalePayAll, orderSalePayNoObligation), 1, is(orderSaleCheckRetail), 1);
         LP notEnoughSum = addJProp(negative, orderSaleDiffSum, 1);
         orderSaleToDo = addJProp(documentAggrPriceGroup, "Необходимо", and1, addIfElseUProp(addCProp(StringClass.get(5), "Итого", orderSaleCheckRetail),
                 addCProp(StringClass.get(5), "Сдача", orderSaleCheckRetail), notEnoughSum, 1), 1, orderSaleDiffSum, 1);
         orderSaleToDoSum = addJProp(documentAggrPriceGroup, "Сумма необх.", abs, orderSaleDiffSum, 1);
 
-        addConstraint(addJProp("Сумма наличными меньше сдачи", greater2,  orderSalePayCard, 1, orderSalePayNoObligation, 1), false);
+        addConstraint(addJProp("Сумма наличными меньше сдачи", greater2, orderSalePayCard, 1, orderSalePayNoObligation, 1), false);
         addConstraint(addJProp("Всё оплачено карточкой", and1, addJProp(equals2, orderSalePayCard, 1, orderSalePayNoObligation, 1), 1, orderSalePayCash, 1), false);
         addConstraint(addJProp("Введенной суммы не достаточно", and1, notEnoughSum, 1, orderSalePayAll, 1), false); // если ни карточки ни кэша не задали, значит заплатитли без сдачи
-        
+
         barcodeAddClient = addSDProp("Доб. клиента", LogicalClass.instance);
         barcodeAddClientAction = addJProp(true, "", andNot1, addBAProp(customerCheckRetail, barcodeAddClient), 1, barcodeToObject, 1);
 
@@ -743,6 +748,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP computerShop;
     LP currentShop;
     LP panelScreenComPort;
+    public LP cashRegComPort;
     LP orderSalePayCash;
     LP orderSalePayCard;
     LP changeQuantityTime;
@@ -900,9 +906,23 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
     }
 
+    private Integer getCashRegComPort(int compId) {
+        try {
+            DataSession session = createSession();
+
+            Integer result = (Integer) cashRegComPort.read(session, new DataObject(compId, computer));
+
+            session.close();
+
+            return result == null ? -1 : result;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public ExternalScreenParameters getExternalScreenParameters(int screenID, int computerId) throws RemoteException {
         if (panelScreen.getID() == screenID) {
-            return new PanelExternalScreenParameters(getPanelComPort(computerId));
+            return new PanelExternalScreenParameters(getPanelComPort(computerId), getCashRegComPort(computerId));
         }
         return null;
     }
@@ -1039,7 +1059,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 design.setFont(getDefaultFont());
 
             PropertyDrawView barcodeView = design.get(getPropertyDraw(objectValue, objBarcode));
-            
+
             design.getPanelContainer(design.get(objBarcode.groupTo)).add(design.get(getPropertyDraw(reverseBarcode)));
             design.getPanelContainer(design.get(objBarcode.groupTo)).constraints.maxVariables = 0;
             design.addIntersection(barcodeView, design.get(getPropertyDraw(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
@@ -1438,7 +1458,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             if (!toAdd)
                 addPropertyDraw(date, objDoc);
 
-            if(allStores) {
+            if (allStores) {
                 addPropertyDraw(objDoc, outStore, outStoreName);
                 caption = caption + " (все склады)";
             } else {
@@ -1635,7 +1655,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
                 ObjectInstance art = formInstance.instanceFactory.getInstance(objArt);
 
-                return cashRegController.getPrintOrderAction(formInstance, 
+                return cashRegController.getPrintOrderAction(formInstance,
                         BaseUtils.toSet(art.groupTo),
                         getPropertyDraw(orderSalePrice, objArt), getPropertyDraw(articleQuantity, objArt),
                         getPropertyDraw(name, objArt), getPropertyDraw(orderArticleSaleSumWithDiscount, objArt),
@@ -1986,7 +2006,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         BaseUtils.toSet(inner.groupTo, art.groupTo),
                         getPropertyDraw(orderSalePrice, objArt), getPropertyDraw(returnInnerQuantity, objArt),
                         getPropertyDraw(name, objArt), getPropertyDraw(returnArticleSalePay, objArt),
-                        getPropertyDraw(returnSalePay, objDoc), getPropertyDraw(barcode, objArt), 
+                        getPropertyDraw(returnSalePay, objDoc), getPropertyDraw(barcode, objArt),
                         null, null);
             } else
                 return super.getClientApply(formInstance);
@@ -2287,7 +2307,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             if (toAdd)
                 return FONT_MEDIUM_BOLD;
             else
-                return super.getDefaultFont();    
+                return super.getDefaultFont();
         }
 
         @Override
@@ -2333,7 +2353,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 design.setHeaderFont(FONT_MEDIUM_PLAIN);
                 design.setFont(FONT_LARGE_BOLD, objObligation.groupTo);
             }
-            
+
             return design;
         }
     }
@@ -2454,7 +2474,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
             //To change body of implemented methods use File | Settings | File Templates.
             FormInstance<VEDBusinessLogics> remoteForm = executeForm.form;
-            actions.add(((CommitSaleCheckRetailFormEntity)remoteForm.entity).getPrintOrderAction(remoteForm));
+            actions.add(((CommitSaleCheckRetailFormEntity) remoteForm.entity).getPrintOrderAction(remoteForm));
         }
 
         @Override

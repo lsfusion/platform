@@ -13,16 +13,18 @@ public class MoneyOperationAction extends AbstractClientAction {
     private final static int FONT = 2;
     int type;
     double count;
+    int comPort;
 
-    public MoneyOperationAction(int type, double count) {
+    public MoneyOperationAction(int type, int comPort, double count) {
         this.type = type;
+        this.comPort = comPort;
         this.count = count;
     }
 
     @Override
     public void dispatch(ClientActionDispatcher dispatcher) throws IOException {
         RuntimeException exception = null;
-        Dispatch cashDispatch = FiscalReg.createDispatch(1);
+        Dispatch cashDispatch = FiscalReg.createDispatch(comPort);
         Dispatch.call(cashDispatch, "OpenFiscalDoc", type);
 
         try {

@@ -37,6 +37,19 @@ public class CashRegController {
     }
 
     private boolean noBillTxt = false;
+    private int cashRegComPort = 0;
+
+    public int getCashRegComPort(FormInstance formInstance) {
+        int result;
+        try {
+            result = (Integer) BL.cashRegComPort.read(formInstance.session, formInstance, formInstance.instanceFactory.computer.getDataObject());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } catch (NullPointerException e) {
+            result = 0;
+        }
+        return result;
+    }
 
     public ClientResultAction getCashRegApplyActions(FormInstance formInstance, int payType,
                                                      Set<GroupObjectInstance> classGroups,
@@ -47,31 +60,15 @@ public class CashRegController {
 
         List<ClientResultAction> actions = new ArrayList<ClientResultAction>();
 
-        try {
-            noBillTxt = (BL.noBillTxt.read(formInstance.session, formInstance, formInstance.instanceFactory.computer.getDataObject()) != null);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        cashRegComPort = getCashRegComPort(formInstance);
 
-        if (!noBillTxt) {
-            /*
-            actions.add(new ExportFileClientAction("c:\\bill\\bill.txt", false, createBillTxt(formInstance, payType,
-                    classGroups, priceProp, quantityProp,
-                    nameProp, sumProp, toPayProp, barcodeProp, sumCardProp, sumCashProp), CASHREGISTER_CHARSETNAME));
-            actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, "/T", CASHREGISTER_CHARSETNAME));
-            actions.add(new SleepClientAction(CASHREGISTER_DELAY));
-            actions.add(new ImportFileClientAction("c:\\bill\\key.txt", CASHREGISTER_CHARSETNAME, true));
-            actions.add(new ImportFileClientAction("c:\\bill\\key.tx~", CASHREGISTER_CHARSETNAME, true));
-            actions.add(new ImportFileClientAction("c:\\bill\\error.txt", CASHREGISTER_CHARSETNAME, true));
-            */
-            actions.add(new CashRegPrintReceiptAction(payType, createReceipt(formInstance, payType,
-                    classGroups, priceProp, quantityProp, nameProp,
-                    sumProp, toPayProp, barcodeProp, sumCardProp, sumCashProp)));
-
-        }
+        actions.add(new CashRegPrintReceiptAction(payType, cashRegComPort, createReceipt(formInstance, payType,
+                classGroups, priceProp, quantityProp, nameProp,
+                sumProp, toPayProp, barcodeProp, sumCardProp, sumCashProp)));
 
         return new ListClientResultAction(actions);
     }
+
 
     public ReceiptInstance createReceipt(FormInstance formInstance, int payType,
                                          Set<GroupObjectInstance> classGroups,
@@ -393,7 +390,7 @@ public class CashRegController {
 
         @Override
         public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            actions.add(new ReportAction(type, 1));
+            actions.add(new ReportAction(type, getCashRegComPort(executeForm.form)));
         }
     }
 
@@ -407,7 +404,7 @@ public class CashRegController {
 
         @Override
         public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            actions.add(new MessageAction(type, 1));
+            actions.add(new MessageAction(type, getCashRegComPort(executeForm.form)));
         }
     }
 
@@ -465,7 +462,7 @@ public class CashRegController {
                 actions.add(new SleepClientAction(CASHREGISTER_DELAY));
                 actions.add(new MessageFileClientAction("c:\\bill\\error.txt", CASHREGISTER_CHARSETNAME, false, true, caption));
                 */
-                actions.add(new MoneyOperationAction(type, (Double) value.getValue()));
+                actions.add(new MoneyOperationAction(type, getCashRegComPort(executeForm.form), (Double) value.getValue()));
             }
         }
 
