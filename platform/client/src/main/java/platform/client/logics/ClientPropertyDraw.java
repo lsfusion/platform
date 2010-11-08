@@ -3,6 +3,7 @@ package platform.client.logics;
 import platform.base.BaseUtils;
 import platform.client.SwingUtils;
 import platform.client.descriptor.PropertyDrawDescriptor;
+import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.form.*;
 import platform.client.form.cell.CellView;
 import platform.client.logics.classes.ClientType;
@@ -70,6 +71,23 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public ClientPropertyDraw() {
 
+    }
+
+    public KeyStroke getEditKey() {
+        return (editKey != null) ? editKey : null;
+    }
+
+    public void setEditKey(KeyStroke key) {
+        this.editKey = key;
+        IncrementDependency.update(this, "editKey");
+    }
+
+    public boolean getShowEditKey(){
+        return showEditKey;
+    }
+
+    public void setShowEditKey(boolean showKey){
+        showEditKey = showKey;
     }
 
     private ClientGroupObject getClientGroupObject(Collection<ClientGroupObject> groups, int groupID) {

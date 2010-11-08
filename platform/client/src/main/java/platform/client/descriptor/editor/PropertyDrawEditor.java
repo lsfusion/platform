@@ -86,9 +86,13 @@ public class PropertyDrawEditor extends GroupElementEditor {
             }
         })));
 
+        add(Box.createRigidArea(new Dimension(5, 5)));
+
         add(new ComponentEditor("Компонетные свойства", descriptor.client));
 
         add(Box.createRigidArea(new Dimension(5, 5)));
+
+        add(new TitledPanel("Ключ редактирования", new IncrementKeyStrokeEditor(descriptor.client, "editKey")));
     }
 
     @Override

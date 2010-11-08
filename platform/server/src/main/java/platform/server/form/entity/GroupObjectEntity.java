@@ -50,14 +50,14 @@ public class GroupObjectEntity extends ArrayList<ObjectEntity> implements Instan
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeCollection(outStream, this);
-        pool.writeString(outStream, initClassView.name());
+        pool.writeInt(outStream, initClassView.ordinal());
         pool.writeObject(outStream, banClassView);
         pool.serializeObject(outStream, propertyHighlight);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         pool.deserializeCollection(this, inStream);
-        initClassView = ClassViewType.valueOf(pool.readString(inStream));
+        initClassView = ClassViewType.values()[pool.readInt(inStream)];
         banClassView = (List<ClassViewType>)pool.readObject(inStream);
         propertyHighlight = (PropertyObjectEntity) pool.deserializeObject(inStream);
     }

@@ -77,18 +77,14 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeCollection(outStream, this);
-        if (initClassView != null) {
-            pool.writeString(outStream, initClassView.name());
-        }
-        if(banClassViewList != null){
-            pool.writeObject(outStream, banClassViewList);
-        }
+        pool.writeInt(outStream, initClassView.ordinal());
+        pool.writeObject(outStream, banClassViewList);
         pool.serializeObject(outStream, propertyHighlight);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         pool.deserializeCollection(this, inStream);
-        initClassView = ClassViewType.valueOf(pool.readString(inStream));
+        initClassView = ClassViewType.values()[pool.readInt(inStream)];
         banClassViewList = (List<ClassViewType>)pool.readObject(inStream);
         propertyHighlight = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
 
