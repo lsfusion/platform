@@ -15,6 +15,7 @@ public class InstanceFactory {
 
     private final Map<ObjectEntity, ObjectInstance> objectInstances = new HashMap<ObjectEntity, ObjectInstance>();
     private final Map<GroupObjectEntity, GroupObjectInstance> groupInstances = new HashMap<GroupObjectEntity, GroupObjectInstance>();
+    private final Map<TreeGroupEntity, TreeGroupInstance> treeInstances = new HashMap<TreeGroupEntity, TreeGroupInstance>();
     private final Map<PropertyObjectEntity, PropertyObjectInstance> propertyObjectInstances = new HashMap<PropertyObjectEntity, PropertyObjectInstance>();
     private final Map<PropertyDrawEntity, PropertyDrawInstance> propertyDrawInstances = new HashMap<PropertyDrawEntity, PropertyDrawInstance>();
 
@@ -28,26 +29,49 @@ public class InstanceFactory {
 
     public GroupObjectInstance getInstance(GroupObjectEntity entity) {
 
-        if (entity == null) return null;
+        if (entity == null) {
+            return null;
+        }
 
         if (!groupInstances.containsKey(entity)) {
 
             Collection<ObjectInstance> objects = new ArrayList<ObjectInstance>();
-            for (ObjectEntity object : entity)
+            for (ObjectEntity object : entity) {
                 objects.add(getInstance(object));
+            }
 
-            groupInstances.put(entity, new GroupObjectInstance(entity, objects, entity.propertyHighlight!=null?getInstance(entity.propertyHighlight):null));
+            groupInstances.put(entity, new GroupObjectInstance(entity, objects, entity.propertyHighlight != null ? getInstance(entity.propertyHighlight) : null));
         }
 
         return groupInstances.get(entity);
+    }
+
+    public TreeGroupInstance getInstance(TreeGroupEntity entity) {
+
+        if (entity == null) {
+            return null;
+        }
+
+        if (!treeInstances.containsKey(entity)) {
+
+            List<GroupObjectInstance> groups = new ArrayList<GroupObjectInstance>();
+            for (GroupObjectEntity group : entity.groups) {
+                groups.add(getInstance(group));
+            }
+
+            treeInstances.put(entity, new TreeGroupInstance(entity, groups));
+        }
+
+        return treeInstances.get(entity);
     }
 
     public <P extends PropertyInterface> PropertyObjectInstance getInstance(PropertyObjectEntity<P> entity) {
 
         if (!propertyObjectInstances.containsKey(entity)) {
             Map<P, PropertyObjectInterfaceInstance> propertyMap = new HashMap<P, PropertyObjectInterfaceInstance>();
-            for(Map.Entry<P, PropertyObjectInterfaceEntity> propertyImplement : entity.mapping.entrySet())
+            for (Map.Entry<P, PropertyObjectInterfaceEntity> propertyImplement : entity.mapping.entrySet()) {
                 propertyMap.put(propertyImplement.getKey(), propertyImplement.getValue().getInstance(this));
+            }
             propertyObjectInstances.put(entity, new PropertyObjectInstance<P>(entity.property, propertyMap));
         }
 
@@ -62,7 +86,7 @@ public class InstanceFactory {
                 columnGroupObjects.add(getInstance(columnGroupObject));
             }
 
-            propertyDrawInstances.put(entity, new PropertyDrawInstance<T>(entity, getInstance(entity.propertyObject), getInstance(entity.toDraw), columnGroupObjects, entity.propertyCaption==null?null:getInstance(entity.propertyCaption)));
+            propertyDrawInstances.put(entity, new PropertyDrawInstance<T>(entity, getInstance(entity.propertyObject), getInstance(entity.toDraw), columnGroupObjects, entity.propertyCaption == null ? null : getInstance(entity.propertyCaption)));
         }
 
         return propertyDrawInstances.get(entity);
@@ -87,7 +111,7 @@ public class InstanceFactory {
     }
 
     public OrFilterInstance getInstance(OrFilterEntity entity) {
-        return new OrFilterInstance(entity.op1.getInstance(this),entity.op2.getInstance(this));
+        return new OrFilterInstance(entity.op1.getInstance(this), entity.op2.getInstance(this));
     }
 
     public RegularFilterGroupInstance getInstance(RegularFilterGroupEntity entity) {

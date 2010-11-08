@@ -4,10 +4,7 @@ import platform.interop.form.layout.ContainerFactory;
 import platform.interop.form.layout.GroupObjectContainerSet;
 import platform.interop.form.layout.SimplexComponentDirections;
 import platform.interop.form.layout.SingleSimplexConstraint;
-import platform.server.form.entity.FormEntity;
-import platform.server.form.entity.GroupObjectEntity;
-import platform.server.form.entity.ObjectEntity;
-import platform.server.form.entity.PropertyDrawEntity;
+import platform.server.form.entity.*;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.logics.property.group.AbstractGroup;
@@ -87,6 +84,10 @@ public class DefaultFormView extends FormView {
 
                 mobjects.put(clientObject.entity, clientObject);
             }
+        }
+
+        for (TreeGroupEntity treeGroup : formEntity.treeGroups) {
+            treeGroups.add(new TreeGroupView(this, treeGroup));
         }
 
         for (PropertyDrawEntity control : formEntity.propertyDraws) {

@@ -132,6 +132,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
             groups.add(groupObject);
         }
 
+        for (TreeGroupEntity treeGroup : entity.treeGroups) {
+            treeGroups.add(instanceFactory.getInstance(treeGroup));
+        }
+
         for (PropertyDrawEntity<?> propertyDrawEntity : entity.propertyDraws)
             if (this.securityPolicy.property.view.checkPermission(propertyDrawEntity.propertyObject.property)) {
                 PropertyDrawInstance propertyDrawInstance = instanceFactory.getInstance(propertyDrawEntity);
@@ -168,6 +172,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     public List<GroupObjectInstance> groups = new ArrayList<GroupObjectInstance>();
+    public List<TreeGroupInstance> treeGroups = new ArrayList<TreeGroupInstance>();
     public Map<GroupObjectInstance, GroupObjectTable> groupTables = new HashMap<GroupObjectInstance, GroupObjectTable>();
     // собсно этот объект порядок колышет столько же сколько и дизайн представлений
     public List<PropertyDrawInstance> properties = new ArrayList<PropertyDrawInstance>();

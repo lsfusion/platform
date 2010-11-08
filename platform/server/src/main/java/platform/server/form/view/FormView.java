@@ -31,6 +31,9 @@ public class FormView implements ServerIdentitySerializable {
 
     public ContainerView mainContainer;
 
+    // список деревеьев
+    public List<TreeGroupView> treeGroups = new ArrayList<TreeGroupView>();
+
     // список групп
     public List<GroupObjectView> groupObjects = new ArrayList<GroupObjectView>();
 
@@ -102,6 +105,7 @@ public class FormView implements ServerIdentitySerializable {
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         outStream.writeBoolean(readOnly);
         pool.serializeObject(outStream, mainContainer, serializationType);
+        pool.serializeCollection(outStream, treeGroups, serializationType);
         pool.serializeCollection(outStream, groupObjects, serializationType);
         pool.serializeCollection(outStream, properties, serializationType);
         pool.serializeCollection(outStream, regularFilters);
@@ -132,6 +136,7 @@ public class FormView implements ServerIdentitySerializable {
         readOnly = inStream.readBoolean();
 
         mainContainer = pool.deserializeObject(inStream);
+        treeGroups = pool.deserializeList(inStream);
         groupObjects = pool.deserializeList(inStream);
         properties = pool.deserializeList(inStream);
         regularFilters = pool.deserializeList(inStream);

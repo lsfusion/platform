@@ -30,6 +30,7 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
 
     public ClientContainer mainContainer = new ClientContainer();
 
+    public List<ClientTreeGroup> treeGroups = new ArrayList<ClientTreeGroup>();
     public List<ClientGroupObject> groupObjects = new ArrayList<ClientGroupObject>();
     public List<ClientPropertyDraw> propertyDraws = new ArrayList<ClientPropertyDraw>();
 
@@ -139,6 +140,7 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         outStream.writeBoolean(readOnly);
         pool.serializeObject(outStream, mainContainer);
+        pool.serializeCollection(outStream, treeGroups, serializationType);
         pool.serializeCollection(outStream, groupObjects);
         pool.serializeCollection(outStream, propertyDraws);
         pool.serializeCollection(outStream, regularFilterGroups);
@@ -169,6 +171,7 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
         readOnly = inStream.readBoolean();
 
         mainContainer = pool.deserializeObject(inStream);
+        treeGroups = pool.deserializeList(inStream);
         groupObjects = pool.deserializeList(inStream);
         propertyDraws = pool.deserializeList(inStream);
         regularFilterGroups = pool.deserializeList(inStream);

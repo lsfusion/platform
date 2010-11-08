@@ -36,6 +36,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return false;
     }
 
+    //todo: Добавление в этот список
+    public List<TreeGroupEntity> treeGroups = new ArrayList<TreeGroupEntity>();
+
+
     public List<GroupObjectEntity> groups = new ArrayList<GroupObjectEntity>();
     public List<PropertyDrawEntity> propertyDraws = new ArrayList<PropertyDrawEntity>();
     public Set<FilterEntity> fixedFilters = new HashSet<FilterEntity>();
