@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implements ClientIdentitySerializable, ContainerMovable {
+public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implements ClientIdentitySerializable, ContainerMovable<ClientContainer> {
     private int ID;
     
     private ClassViewType initClassView = ClassViewType.GRID;
@@ -135,7 +135,7 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
         return parent;
     }
 
-    public ClientComponent getClientComponent(ClientContainer parent) {
+    public ClientContainer getClientComponent(ClientContainer parent) {
         return parent.findContainerBySID(GroupObjectContainerSet.GROUP_CONTAINER + getID());
     }
 }

@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RegularFilterGroupDescriptor extends IdentityDescriptor implements ClientIdentitySerializable, ContainerMovable {
+public class RegularFilterGroupDescriptor extends IdentityDescriptor implements ClientIdentitySerializable, ContainerMovable<ClientComponent> {
 
     public List<RegularFilterDescriptor> filters;
 

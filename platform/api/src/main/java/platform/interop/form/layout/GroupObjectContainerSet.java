@@ -41,6 +41,7 @@ public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extend
         GroupObjectContainerSet<C, T> set = new GroupObjectContainerSet<C, T>();
 
         set.groupContainer = factory.createContainer(); // контейнер всей группы
+        // та же логика с Title еще есть в ContainerRemover 
         set.groupContainer.setTitle(group.getCaption());
         set.groupContainer.setDescription("Группа объектов");
         set.groupContainer.setSID(GROUP_CONTAINER + group.getID());

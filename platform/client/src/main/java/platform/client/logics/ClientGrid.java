@@ -15,7 +15,7 @@ public class ClientGrid extends ClientComponent {
     public boolean showFilter;
 
     public byte minRowCount;
-    public boolean tabVertical = true;
+    public boolean tabVertical = false;
     public boolean autoHide;
 
     public ClientGroupObject groupObject;

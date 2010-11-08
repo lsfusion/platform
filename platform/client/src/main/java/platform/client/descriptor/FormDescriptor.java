@@ -140,6 +140,25 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         }
     }
 
+    IncrementView containerRenamer;
+
+    // класс, который отвечает за автоматическое перемещение компонент внутри контейнеров при каких-либо изменениях структуры groupObject
+    private class ContainerRenamer implements IncrementView {
+        public void update(Object updateObject, String updateField) {
+            renameGroupObjectContainer();
+        }
+
+        private void renameGroupObjectContainer() {
+
+            for (GroupObjectDescriptor group : groupObjects) {
+                // по сути дублирует логику из GroupObjectContainerSet в плане установки caption для контейнера
+                ClientContainer groupContainer = group.getClientComponent(client.mainContainer);
+                if (groupContainer != null)
+                    groupContainer.setTitle(group.client.getCaption());
+            }
+        }
+    }
+
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.writeString(outStream, caption);
         outStream.writeBoolean(isPrintForm);
@@ -236,6 +255,11 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         IncrementDependency.add("filter", containerMover);
         IncrementDependency.add("propertyDraws", containerMover);
         IncrementDependency.add("property", containerMover);
+
+        containerRenamer = new ContainerRenamer();
+        IncrementDependency.add("groupObjects", containerRenamer);
+        IncrementDependency.add("objects", containerRenamer);
+        IncrementDependency.add("baseClass", containerRenamer);
     }
 
     @Override

@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class PropertyDrawDescriptor extends IdentityDescriptor implements ClientIdentitySerializable, ContainerMovable {
+public class PropertyDrawDescriptor extends IdentityDescriptor implements ClientIdentitySerializable, ContainerMovable<ClientComponent> {
     public ClientPropertyDraw client;
 
     private PropertyObjectDescriptor propertyObject;
@@ -30,6 +30,7 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
     }
 
     public PropertyDrawDescriptor(PropertyObjectDescriptor propertyObject) {
+        this();
         setID(Main.generateNewID());
         setPropertyObject(propertyObject);
     }

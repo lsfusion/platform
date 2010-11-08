@@ -5,9 +5,9 @@ import platform.client.logics.ClientContainer;
 
 import java.util.List;
 
-public interface ContainerMovable {
+public interface ContainerMovable<C extends ClientComponent> {
 
     ClientContainer getDestinationContainer(ClientContainer parent, List<GroupObjectDescriptor> groupObjects);
-    ClientComponent getClientComponent(ClientContainer parent);
+    C getClientComponent(ClientContainer parent);
     
 }
