@@ -161,7 +161,8 @@ public class PropertyDrawView extends ComponentView {
         TypeSerializer.serializeType(outStream, getType());
 
         pool.writeString(outStream, entity.propertyObject.property.sID);
-        pool.serializeObject(outStream, form.getGroupObject(entity.toDraw));
+        pool.serializeObject(outStream, form.getGroupObject(
+                SerializationType.VISUAL_SETUP.equals(serializationType) ? entity.toDraw : entity.getToDraw(form.entity)));
 
         outStream.writeInt(entity.columnGroupObjects.size());
         for (GroupObjectEntity groupEntity : entity.columnGroupObjects) {

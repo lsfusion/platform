@@ -62,7 +62,7 @@ public class FormView implements ServerIdentitySerializable {
     public FormView() {
     }
 
-    FormEntity<?> entity;
+    public FormEntity<?> entity;
 
     public FormView(FormEntity<?> entity) {
 
@@ -191,7 +191,7 @@ public class FormView implements ServerIdentitySerializable {
         List<PropertyDrawView> result = new ArrayList<PropertyDrawView>();
 
         for (PropertyDrawView property : properties) {
-            if ((groupObject==null || groupObject.equals(property.entity.toDraw)) && group.hasChild(property.entity.propertyObject.property)) {
+            if ((groupObject==null || groupObject.equals(property.entity.getToDraw(entity))) && group.hasChild(property.entity.propertyObject.property)) {
                 result.add(property);
             }
         }
@@ -204,7 +204,7 @@ public class FormView implements ServerIdentitySerializable {
         List<PropertyDrawView> result = new ArrayList<PropertyDrawView>();
 
         for (PropertyDrawView property : properties) {
-            if (groupObject.equals(property.entity.toDraw) && prop.equals(property.entity.propertyObject.property)) {
+            if (groupObject.equals(property.entity.getToDraw(entity)) && prop.equals(property.entity.propertyObject.property)) {
                 result.add(property);
             }
         }
@@ -230,7 +230,7 @@ public class FormView implements ServerIdentitySerializable {
         List<PropertyDrawView> result = new ArrayList<PropertyDrawView>();
 
         for (PropertyDrawView property : properties) {
-            if (groupObject.equals(property.entity.toDraw)) {
+            if (groupObject.equals(property.entity.getToDraw(entity))) {
                 result.add(property);
             }
         }

@@ -1,7 +1,6 @@
 package platform.server.form.entity;
 
 import platform.base.*;
-import platform.interop.action.ClientAction;
 import platform.interop.action.ClientResultAction;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
@@ -256,7 +255,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(GroupObjectEntity groupObject, PropertyObjectEntity<P> propertyImplement) {
 
-        PropertyDrawEntity<P> propertyDraw = new PropertyDrawEntity<P>(genID(), propertyImplement, (groupObject == null) ? getApplyObject(propertyImplement.getObjectInstances()) : groupObject);
+        PropertyDrawEntity<P> propertyDraw = new PropertyDrawEntity<P>(genID(), propertyImplement, groupObject);
         propertyImplement.property.proceedDefaultDraw(propertyDraw, this);
 
         if (propertyImplement.property.sID != null) {
@@ -368,7 +367,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
         PropertyDrawEntity resultPropertyDraw = null;
         for (PropertyDrawEntity propertyDraw : propertyDraws) {
-            if (group.hasChild(propertyDraw.propertyObject.property) && propertyDraw.toDraw.equals(groupObject)) {
+            if (group.hasChild(propertyDraw.propertyObject.property) && groupObject.equals(propertyDraw.getToDraw(this))) {
                 resultPropertyDraw = propertyDraw;
             }
         }

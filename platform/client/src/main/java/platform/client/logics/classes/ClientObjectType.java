@@ -9,6 +9,7 @@ import platform.client.form.editor.ObjectPropertyEditor;
 import platform.client.form.renderer.IntegerPropertyRenderer;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
+import platform.client.Main;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
@@ -24,9 +25,8 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
         return this;
     }
 
-    public static ClientObjectClass baseClass;
-    public ClientClass getDefaultClass() {
-        return baseClass; // пока так подебильному
+    public ClientClass getDefaultClass(ClientObjectClass baseClass) {
+        return Main.getBaseClass(); // пока так подебильному
     }
 
     public byte getTypeId() {

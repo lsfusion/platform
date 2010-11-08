@@ -52,8 +52,12 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
         return propertyObject;
     }
 
+    public GroupObjectDescriptor addGroup = null;
+
     public void setToDraw(GroupObjectDescriptor toDraw) { // usage через reflection
         this.toDraw = toDraw;
+        client.groupObject = toDraw==null?null:toDraw.client;
+
         IncrementDependency.update(this, "toDraw");
     }
 
@@ -79,8 +83,8 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
     }
 
     public GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groupList) {
-        if (toDraw != null) {
-            return toDraw;
+        if (getToDraw() != null) {
+            return getToDraw();
         } else {
             return propertyObject != null
                    ? propertyObject.getGroupObject(groupList)
@@ -106,14 +110,14 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
         }
 
         List<GroupObjectDescriptor> groupObjects = getPropertyObject().getGroupObjects(groupList);
-        if (toDraw == null) {
+        if (getToDraw() == null) {
             if (groupObjects.size() > 0) {
                 return groupObjects.subList(0, groupObjects.size() - 1);
             } else {
                 return groupObjects;
             }
         } else {
-            return BaseUtils.removeList(groupObjects, Collections.singleton(toDraw));
+            return BaseUtils.removeList(groupObjects, Collections.singleton(getToDraw()));
         }
     }
 

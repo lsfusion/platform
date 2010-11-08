@@ -32,11 +32,16 @@ public class PropertyDrawEditor extends GroupElementEditor {
         add(Box.createRigidArea(new Dimension(5, 5)));
 
         add(new TitledPanel("Группа объектов", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "toDraw") {
-            public List<?> getList() {
+            public List<?> getSingleList() {
                 PropertyObjectDescriptor propertyObject = descriptor.getPropertyObject();
                 return propertyObject != null
                         ? propertyObject.getGroupObjects(form.groupObjects)
                         : new ArrayList();
+            }
+
+            @Override
+            public boolean allowNulls() {
+                return true;
             }
 
             public void fillListDependencies() {
@@ -76,7 +81,7 @@ public class PropertyDrawEditor extends GroupElementEditor {
         add(Box.createRigidArea(new Dimension(5, 5)));
 
         add(new TitledPanel("Тип просмотра", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "forceViewType") {
-            public List<?>  getList(){
+            public List<?> getSingleList(){
                 return ClassViewType.typeNameList();
             }
         })));

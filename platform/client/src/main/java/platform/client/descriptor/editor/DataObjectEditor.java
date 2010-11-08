@@ -20,7 +20,7 @@ public class DataObjectEditor extends JPanel {
         add(Box.createRigidArea(new Dimension(5, 5)));
 
         add(new TitledPanel("Тип", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "typeClass") {
-            public List<?> getList() {
+            public List<?> getSingleList() {
                 return Arrays.asList(ClientClass.getEnumTypeClasses());
             }
         })));

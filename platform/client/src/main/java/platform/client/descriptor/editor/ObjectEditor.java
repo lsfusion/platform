@@ -23,7 +23,7 @@ public class ObjectEditor extends JPanel implements NodeEditor {
 
         add(new TitledPanel(null, new IncrementCheckBox("Добавлять новый объект при транзакции", object, "addOnTransaction")));
         add(Box.createRigidArea(new Dimension(5, 5)));
-        add(new TitledPanel(null, new IncrementCheckBox("Показывать объект", object.client.classChooser, "show")));
+        add(new TitledPanel(null, new IncrementCheckBox("Показывать дерево классов", object.client.classChooser, "show")));
         add(Box.createRigidArea(new Dimension(5, 5)));
 
         add(new TitledPanel("Класс", new ValueClassEditor(object, "baseClass")));

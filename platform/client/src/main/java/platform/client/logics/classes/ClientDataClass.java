@@ -85,7 +85,7 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
         return this;
     }
 
-    public ClientClass getDefaultClass() {
+    public ClientClass getDefaultClass(ClientObjectClass baseClass) {
         return this;
     }
 

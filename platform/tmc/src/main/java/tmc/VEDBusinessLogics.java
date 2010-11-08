@@ -1107,7 +1107,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addAutoAction(objBarcode, addPropertyObject(barcodeNotFoundMessage, objBarcode));
 
             if (hasExternalScreen()) {
-                addPropertyDraw(documentBarcodePriceOv, objDoc, objBarcode).toDraw = objBarcode.groupTo;
+                addPropertyDraw(documentBarcodePriceOv, objDoc, objBarcode).setToDraw(objBarcode.groupTo);
                 //getPropertyDraw(documentBarcodePriceOv).setToDraw(objBarcode.groupTo);
             }
         }
@@ -1478,6 +1478,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             DefaultFormView design = super.createDefaultRichDesign();
             design.setEnabled(orderClientSum, false);
+
+            design.get(objDoc.groupTo).grid.constraints.fillVertical = 2;
 
             design.getGroupObjectContainer(objDoc.groupTo).title = "Клиент";
             design.getGroupObjectContainer(objDoc.groupTo).design.background = new Color(192, 192, 192);
@@ -1929,7 +1931,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addPropertyDraw(checkRetailExported, objDoc);
             }
 
-            addPropertyDraw(documentBarcodePriceOv, objInner, objBarcode).toDraw = objBarcode.groupTo;
+            addPropertyDraw(documentBarcodePriceOv, objInner, objBarcode).setToDraw(objBarcode.groupTo);
             //addPropertyDraw(returnArticleSalePay, objArt);
         }
 

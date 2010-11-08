@@ -98,7 +98,7 @@ public class DefaultFormView extends FormView {
             if(groupDraw!=null) {
                 clientProperty.keyBindingGroup = groupDraw;
             } else {
-                groupDraw = control.toDraw;
+                groupDraw = control.getToDraw(formEntity);
             }
             GroupObjectView groupObject = mgroupObjects.get(groupDraw);
 

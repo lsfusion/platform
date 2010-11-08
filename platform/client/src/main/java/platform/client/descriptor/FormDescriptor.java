@@ -8,6 +8,7 @@ import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.increment.IncrementView;
 import platform.client.descriptor.property.PropertyDescriptor;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
+import platform.client.descriptor.nodes.PropertyDrawNode;
 import platform.client.logics.ClientComponent;
 import platform.client.logics.ClientContainer;
 import platform.client.logics.ClientForm;
@@ -58,6 +59,14 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
     public FormDescriptor(int ID) {
         setID(ID);
         setCaption("Новая форма (" + ID + ")");
+    }
+
+    public List<PropertyDrawDescriptor> getAddPropertyDraws(GroupObjectDescriptor group) {
+        List<PropertyDrawDescriptor> result = new ArrayList<PropertyDrawDescriptor>();
+        for(PropertyDrawDescriptor propertyDraw : propertyDraws) // добавим новые свойства, предполагается что оно одно
+            if(propertyDraw.getPropertyObject()==null && (group==null || group.equals(propertyDraw.addGroup)))
+                result.add(propertyDraw);
+        return result;
     }
 
     public List<PropertyDrawDescriptor> getGroupPropertyDraws(GroupObjectDescriptor group) {
@@ -178,7 +187,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         toDrawConstraint = new IncrementPropertyConstraint() {
             public boolean updateProperty(PropertyDrawDescriptor property) {
                 GroupObjectDescriptor toDraw = property.getToDraw();
-                if (toDraw != null && !property.getPropertyObject().getGroupObjects().contains(toDraw))
+                if (toDraw != null && property.getPropertyObject() != null && !property.getPropertyObject().getGroupObjects().contains(toDraw))
                     property.setToDraw(null);
                 return true;
             }
@@ -386,15 +395,6 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         if (compFrom.container.equals(compTo.container)) {
             compFrom.container.moveChild(compFrom, compTo);
         }
-    }
-
-    public boolean addToPropertyDraws(PropertyDrawDescriptor propertyDraw, GroupObjectDescriptor groupObject) {
-        if (groupObject != null) {
-            propertyDraw.client.groupObject = groupObject.client;
-            propertyDraw.toDraw = groupObject;
-        }
-
-        return addToPropertyDraws(propertyDraw);
     }
 
     public boolean addToPropertyDraws(PropertyDrawDescriptor propertyDraw) {

@@ -7,6 +7,7 @@ import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.increment.IncrementView;
 import platform.client.form.classes.ClassDialog;
 import platform.client.logics.classes.*;
+import platform.client.Main;
 
 import javax.swing.*;
 import java.awt.*;
@@ -43,6 +44,10 @@ public class ValueClassEditor extends JPanel {
     private final IncrementView typeVisible;
 
     public ValueClassEditor(final Object object, final String property) {
+        this(object, property, Main.getBaseClass());
+    }
+
+    private ValueClassEditor(final Object object, final String property, final ClientObjectClass baseClass) {
         this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
         typeClasses = new JComboBox();
@@ -54,7 +59,7 @@ public class ValueClassEditor extends JPanel {
             
             public void actionPerformed(ActionEvent e) {
                 if(!updated)
-                    BaseUtils.invokeCheckSetter(object, property, ((ClientTypeClass) typeClasses.getSelectedItem()).getDefaultClass());
+                    BaseUtils.invokeCheckSetter(object, property, ((ClientTypeClass) typeClasses.getSelectedItem()).getDefaultClass(baseClass));
             }
         });
 
@@ -104,7 +109,7 @@ public class ValueClassEditor extends JPanel {
                 if(typeClass.equals(ClientObjectClass.type)) {
                     currentComponent = new NamedContainer("Класс", false, new FlatButton(clientClass.toString()) {
                         protected void onClick() {
-                            ClientObjectClass selectedClass = ClassDialog.dialogObjectClass(this, ClientObjectType.baseClass, (ClientObjectClass) clientClass, false);
+                            ClientObjectClass selectedClass = ClassDialog.dialogObjectClass(this, baseClass, (ClientObjectClass) clientClass, false);
                             if(selectedClass!=null)
                                 BaseUtils.invokeCheckSetter(object, property, selectedClass);
                         }

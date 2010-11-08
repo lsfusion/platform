@@ -133,8 +133,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         }
 
         for (PropertyDrawEntity<?> propertyDrawEntity : entity.propertyDraws)
-            if (this.securityPolicy.property.view.checkPermission(propertyDrawEntity.propertyObject.property))
-                properties.add(instanceFactory.getInstance(propertyDrawEntity));
+            if (this.securityPolicy.property.view.checkPermission(propertyDrawEntity.propertyObject.property)) {
+                PropertyDrawInstance propertyDrawInstance = instanceFactory.getInstance(propertyDrawEntity);
+                if(propertyDrawInstance.toDraw==null) // для Instance'ов проставляем не null, так как в runtime'е порядок меняться не будет
+                    propertyDrawInstance.toDraw = instanceFactory.getInstance(propertyDrawEntity.getToDraw(entity));
+                properties.add(propertyDrawInstance);
+            }
 
         for (FilterEntity filterEntity : entity.fixedFilters) {
             FilterInstance filter = filterEntity.getInstance(instanceFactory);

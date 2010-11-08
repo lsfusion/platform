@@ -104,7 +104,7 @@ public class ReportDesignGenerator {
             boolean hasColumnGroupProperty = false;
             String highlightPropertySID = null;
             for (PropertyDrawView property : formView.properties) {
-                if (group == property.entity.toDraw) {
+                if (group.equals(property.entity.getToDraw(formView.entity))) {
                     ReportDrawField reportField = property.getReportDrawField();
                     if (group.propertyHighlight == property.entity.propertyObject) {
                         addDesignField(design, reportField);

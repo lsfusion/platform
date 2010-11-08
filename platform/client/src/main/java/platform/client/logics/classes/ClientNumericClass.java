@@ -30,12 +30,12 @@ public class ClientNumericClass extends ClientDoubleClass {
             return Data.NUMERIC;
         }
 
-        public ClientNumericClass getDefaultClass() {
-            return new ClientNumericClass(10,2);
+        public ClientNumericClass getDefaultClass(ClientObjectClass baseClass) {
+            return getDefaultType();
         }
 
-        public ClientType getDefaultType() {
-            return getDefaultClass();
+        public ClientNumericClass getDefaultType() {
+            return new ClientNumericClass(10,2);
         }
 
         @Override

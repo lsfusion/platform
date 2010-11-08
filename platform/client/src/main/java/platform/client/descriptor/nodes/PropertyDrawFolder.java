@@ -5,6 +5,7 @@ import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.PropertyDrawDescriptor;
 import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.tree.ClientTree;
+import platform.base.BaseUtils;
 
 import javax.swing.*;
 
@@ -16,14 +17,16 @@ public class PropertyDrawFolder extends GroupElementFolder<PropertyDrawFolder> {
 
         this.form = form;
 
-        for (PropertyDrawDescriptor propertyDraw : form.getGroupPropertyDraws(group))
+        // добавим новые свойства, предполагается что оно одно, но пока не будем вешать assertion
+        for (PropertyDrawDescriptor propertyDraw : BaseUtils.mergeList(form.getGroupPropertyDraws(group), form.getAddPropertyDraws(group)))
             add(new PropertyDrawNode(group, propertyDraw, form));
 
         addCollectionReferenceActions(this, "propertyDraws", new String[] {""}, new Class[] {PropertyDrawDescriptor.class});
     }
 
-    public boolean addToPropertyDraws(PropertyDrawDescriptor propertyDraw) {
-        form.addToPropertyDraws(propertyDraw, groupObject);
+    public boolean addToPropertyDraws(PropertyDrawDescriptor propertyDraw) { // usage через reflection
+        propertyDraw.addGroup = groupObject;
+        form.addToPropertyDraws(propertyDraw);
 
         IncrementDependency.update(this, "propertyDraws");
         return true;

@@ -33,12 +33,12 @@ public class ClientStringClass extends ClientDataClass {
             return Data.STRING;
         }
 
-        public ClientStringClass getDefaultClass() {
-            return new ClientStringClass(50);
+        public ClientStringClass getDefaultClass(ClientObjectClass baseClass) {
+            return getDefaultType();
         }
 
-        public ClientType getDefaultType() {
-            return getDefaultClass();
+        public ClientStringClass getDefaultType() {
+            return new ClientStringClass(50);
         }
 
         @Override

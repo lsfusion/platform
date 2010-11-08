@@ -21,6 +21,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public PropertyObjectEntity<P> propertyObject;
 
     public GroupObjectEntity toDraw;
+    public void setToDraw(GroupObjectEntity toDraw) {
+        this.toDraw = toDraw;
+    }
 
     // предполагается что propertyObject ссылается на все (хотя и не обязательно)
     public List<GroupObjectEntity> columnGroupObjects = new ArrayList<GroupObjectEntity>();
@@ -84,5 +87,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     @Override
     public String toString() {
         return propertyObject.toString();
+    }
+
+    public GroupObjectEntity getToDraw(FormEntity form) {
+        return toDraw==null?form.getApplyObject(propertyObject.getObjectInstances()):toDraw;        
     }
 }

@@ -47,6 +47,17 @@ public class Main {
     }
 
     public static RemoteLogicsInterface remoteLogics;
+    private static ClientObjectClass baseClass = null;
+    public static ClientObjectClass getBaseClass() {
+        if(baseClass==null)
+            try {
+                baseClass = (ClientObjectClass) ClientTypeSerializer.deserializeClientClass(new DataInputStream(new ByteArrayInputStream(remoteLogics.getBaseClassByteArray())));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        return baseClass;
+    }
+
     public static int computerId;
 
     public static ModuleFactory module;
@@ -134,8 +145,6 @@ public class Main {
                     remoteLogics = loginAction.getRemoteLogics();
                     computerId = loginAction.getComputerId();
                     RemoteNavigatorInterface remoteNavigator = loginAction.getRemoteNavigator();
-
-                    ClientObjectType.baseClass = (ClientObjectClass) ClientTypeSerializer.deserializeClientClass(new DataInputStream(new ByteArrayInputStream(remoteLogics.getBaseClassByteArray())));
 
                     if (logLevel != null) {
                         LogManager.getLogManager().getLogger("").setLevel(Level.parse(logLevel));

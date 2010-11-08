@@ -21,7 +21,7 @@ public class CompareFilterEditor extends PropertyFilterEditor {
         add(Box.createRigidArea(new Dimension(5, 5)));
 
         add(new TitledPanel("Операция", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "compare") {
-            public List<?> getList() {
+            public List<?> getSingleList() {
                 return Arrays.asList(Compare.values());
             }
         })));

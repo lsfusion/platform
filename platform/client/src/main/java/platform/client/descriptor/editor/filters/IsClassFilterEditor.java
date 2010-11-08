@@ -8,6 +8,7 @@ import platform.client.descriptor.increment.editor.IncrementDialogEditor;
 import platform.client.form.classes.ClassDialog;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.classes.ClientObjectType;
+import platform.client.Main;
 
 public class IsClassFilterEditor extends PropertyFilterEditor {
 
@@ -16,7 +17,7 @@ public class IsClassFilterEditor extends PropertyFilterEditor {
 
         add(new TitledPanel("Класс", new IncrementDialogEditor(descriptor, "objectClass") {
             protected Object dialogValue(Object currentValue) {
-                return ClassDialog.dialogObjectClass(this, ClientObjectType.baseClass, (ClientObjectClass) currentValue, false);
+                return ClassDialog.dialogObjectClass(this, Main.getBaseClass(), (ClientObjectClass) currentValue, false);
             }
         }));
     }

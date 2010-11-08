@@ -30,7 +30,7 @@ public class SelectionProperty extends SessionDataProperty {
                                                       KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.ALT_DOWN_MASK)), false);
         form.addRegularFilterGroup(filterGroup);
 
-        entity.toDraw.propertyHighlight = entity.propertyObject;
+        entity.getToDraw(form).propertyHighlight = entity.propertyObject;
     }
 
     @Override

@@ -4,7 +4,7 @@ public interface ClientTypeClass {
 
     byte getTypeId();
 
-    ClientClass getDefaultClass();
+    ClientClass getDefaultClass(ClientObjectClass baseClass);
 
     ClientType getDefaultType();
 }

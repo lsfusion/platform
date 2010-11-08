@@ -20,7 +20,7 @@ public class GroupObjectEditor extends JPanel implements NodeEditor {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         add(new TitledPanel("Вид при инициализации", new JComboBox(new IncrementSingleListSelectionModel(group, "initClassView") {
-            public List<?> getList() {
+            public List<?> getSingleList() {
                 return Arrays.asList(ClassViewType.values());
             }
         })));
