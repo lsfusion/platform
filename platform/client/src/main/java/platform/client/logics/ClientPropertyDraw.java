@@ -2,6 +2,7 @@ package platform.client.logics;
 
 import platform.base.BaseUtils;
 import platform.client.SwingUtils;
+import platform.client.descriptor.PropertyDrawDescriptor;
 import platform.client.form.*;
 import platform.client.form.cell.CellView;
 import platform.client.logics.classes.ClientType;
@@ -203,12 +204,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return format;
     }
 
-    public String toString() {
-        return !BaseUtils.isRedundantString(caption)
-               ? caption
-               : "Неопределённое свойство";
-    }
-
     public String getFullCaption() {
 
         String fullCaption = caption;
@@ -363,5 +358,23 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectController controller) {
             controller.updateDrawPropertyCaptions(ClientPropertyDraw.this, readKeys);
         }
+    }
+
+    public String toString() {
+        if (!BaseUtils.isRedundantString(caption))
+            return caption;
+
+        if (descriptor != null && descriptor.getPropertyObject() != null &&
+                descriptor.getPropertyObject().property.caption != null) {
+            return descriptor.getPropertyObject().property.caption;
+        }
+
+        return "Неопределённое свойство";
+    }
+
+    // приходится держать ссылку на Descriptor, чтобы правильно отображать caption в Настройка бизнес-логики
+    private PropertyDrawDescriptor descriptor;
+    public void setDescriptor(PropertyDrawDescriptor descriptor) {
+        this.descriptor = descriptor;
     }
 }

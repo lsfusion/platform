@@ -1686,9 +1686,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             addPropertyDraw(objDoc, baseGroup, documentGroup);
             addPropertyDraw(objArt, baseGroup, documentGroup);
+            addPropertyDraw(objDoc, orderUserName);
             addPropertyDraw(documentGroup, false, objDoc, objArt);
             addPropertyDraw(baseGroup, false, objDoc, objArt);
-
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(articleQuantity, objDoc, objArt)));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(date, objDoc), Compare.GREATER_EQUALS, dateFrom));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(date, objDoc), Compare.LESS_EQUALS, dateTo));

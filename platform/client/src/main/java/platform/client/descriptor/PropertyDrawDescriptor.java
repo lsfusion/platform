@@ -20,11 +20,13 @@ import java.util.Collections;
 import java.util.List;
 
 public class PropertyDrawDescriptor extends IdentityDescriptor implements ClientIdentitySerializable, ContainerMovable {
-    public ClientPropertyDraw client = new ClientPropertyDraw();
+    public ClientPropertyDraw client;
 
     private PropertyObjectDescriptor propertyObject;
 
     public PropertyDrawDescriptor() {
+        client = new ClientPropertyDraw();
+        client.setDescriptor(this);
     }
 
     public PropertyDrawDescriptor(PropertyObjectDescriptor propertyObject) {
@@ -150,11 +152,7 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
 
     @Override
     public String toString() {
-        return !BaseUtils.isRedundantString(client.caption)
-               ? client.caption
-               : propertyObject != null
-                 ? propertyObject.property.caption
-                 : "Неопределённое свойство";
+        return client.toString();
     }
 
     @Override
@@ -188,5 +186,6 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
         }
 
         client = pool.context.getProperty(ID);
+        client.setDescriptor(this);
     }
 }
