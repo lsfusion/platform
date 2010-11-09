@@ -18,7 +18,13 @@ public class FormChanges {
 
     public Map<GroupObjectInstance, ClassViewType> classViews = new HashMap<GroupObjectInstance, ClassViewType>();
     public Map<GroupObjectInstance, Map<ObjectInstance, ? extends ObjectValue>> objects = new HashMap<GroupObjectInstance, Map<ObjectInstance, ? extends ObjectValue>>();
+
+    // assertion что ObjectInstance из того же GroupObjectInstance
     public Map<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> gridObjects = new HashMap<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>>();
+
+    // assertion для ключа GroupObjectInstance что в значении ObjectInstance из верхних GroupObjectInstance TreeGroupInstance'а этого ключа , так же может быть ObjectInstance из этого ключа если GroupObject - отображается рекурсивно (тогда надо цеплять к этому GroupObjectValue, иначе к верхнему) 
+    public Map<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> treeObjects = new HashMap<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>>();
+    public Set<GroupObjectInstance> treeRefresh = new HashSet<GroupObjectInstance>(); // для каких групп объектов collaps'ить пришедшие ключи     
 
     public Map<PropertyReadInstance, Map<Map<ObjectInstance, DataObject>, Object>> properties = new HashMap<PropertyReadInstance, Map<Map<ObjectInstance, DataObject>, Object>>();
 
