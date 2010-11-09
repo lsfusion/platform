@@ -1,9 +1,6 @@
 package platform.server.form.view;
 
-import platform.interop.form.layout.ContainerFactory;
-import platform.interop.form.layout.GroupObjectContainerSet;
-import platform.interop.form.layout.SimplexComponentDirections;
-import platform.interop.form.layout.SingleSimplexConstraint;
+import platform.interop.form.layout.*;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
@@ -49,10 +46,19 @@ public class DefaultFormView extends FormView {
 
         readOnly = formEntity.isReadOnly();
 
-        mainContainer = addContainer();
-        mainContainer.description = "Главный контейнер";
-        mainContainer.setSID("mainContainer");
-        mainContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
+        ContainerFactory<ContainerView> containerFactory = new ContainerFactory<ContainerView>() {
+            public ContainerView createContainer() {
+                return new ContainerView(idGenerator.idShift());
+            }
+        };
+
+        FunctionFactory<FunctionView> functionFactory = new FunctionFactory<FunctionView>() {
+            public FunctionView createFunction() {
+                return new FunctionView(idGenerator.idShift());
+            }
+        };
+
+        FormContainerSet<ContainerView, ComponentView> formSet = FormContainerSet.fillContainers(this, containerFactory, functionFactory);
 
         Map<GroupObjectView, ContainerView> filterContainers = new HashMap<GroupObjectView, ContainerView>();
         for (GroupObjectEntity group : formEntity.groups) {
@@ -62,25 +68,20 @@ public class DefaultFormView extends FormView {
             mgroupObjects.put(group, clientGroup);
             groupObjects.add(clientGroup);
 
-            GroupObjectContainerSet<ContainerView, ComponentView> set = GroupObjectContainerSet.create(clientGroup,
-                    new ContainerFactory<ContainerView>() {
-                        public ContainerView createContainer() {
-                            return new ContainerView(idGenerator.idShift());
-                        }
-                    });
+            GroupObjectContainerSet<ContainerView, ComponentView> groupSet = GroupObjectContainerSet.create(clientGroup, containerFactory);
 
-            mainContainer.add(set.getGroupContainer());
+            mainContainer.add(groupSet.getGroupContainer());
 
-            groupContainers.put(clientGroup, set.getGroupContainer());
-            panelContainers.put(clientGroup, set.getPanelContainer());
-            controlsContainers.put(clientGroup, set.getControlsContainer());
-            filterContainers.put(clientGroup, set.getFilterContainer());
+            groupContainers.put(clientGroup, groupSet.getGroupContainer());
+            panelContainers.put(clientGroup, groupSet.getPanelContainer());
+            controlsContainers.put(clientGroup, groupSet.getControlsContainer());
+            filterContainers.put(clientGroup, groupSet.getFilterContainer());
 
             for (ObjectView clientObject : clientGroup) {
 
                 clientObject.classChooser.constraints.fillVertical = 1;
                 clientObject.classChooser.constraints.fillHorizontal = 0.2;
-                set.getGridContainer().add(0, clientObject.classChooser);
+                groupSet.getGridContainer().add(0, clientObject.classChooser);
 
                 mobjects.put(clientObject.entity, clientObject);
             }
@@ -131,39 +132,7 @@ public class DefaultFormView extends FormView {
         for (GroupObjectEntity group : formEntity.groups) {
             panelContainers.get(mgroupObjects.get(group)).add(controlsContainers.get(mgroupObjects.get(group)));
         }
-
-        ContainerView formButtonContainer = addContainer();
-        formButtonContainer.description = "Служебные кнопки";
-        formButtonContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
-        mainContainer.add(formButtonContainer);
-
-        printFunction.constraints.directions = new SimplexComponentDirections(0,0.01,0.01,0);
-        formButtonContainer.add(printFunction);
-
-        xlsFunction.constraints.directions = new SimplexComponentDirections(0,0.01,0.01,0);
-        formButtonContainer.add(xlsFunction);
-
-        nullFunction.constraints.directions = new SimplexComponentDirections(0,0.01,0.01,0);
-        formButtonContainer.add(nullFunction);
-
-        refreshFunction.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
-        formButtonContainer.add(refreshFunction);
-
-        applyFunction.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
-        formButtonContainer.add(applyFunction);
-
-        applyFunction.constraints.insetsSibling = new Insets(0, 8, 0, 0);
-
-        cancelFunction.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
-        formButtonContainer.add(cancelFunction);
-
-        okFunction.constraints.insetsSibling = new Insets(0, 8, 0, 0);
-
-        okFunction.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
-        formButtonContainer.add(okFunction);
-
-        closeFunction.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
-        formButtonContainer.add(closeFunction);
+        mainContainer.add(formSet.getFormButtonContainer());
 
         caption = formEntity.caption;
     }

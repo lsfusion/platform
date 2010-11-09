@@ -9,14 +9,13 @@ import platform.client.descriptor.increment.IncrementView;
 import platform.client.descriptor.property.PropertyDescriptor;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
 import platform.client.descriptor.nodes.PropertyDrawNode;
-import platform.client.logics.ClientComponent;
-import platform.client.logics.ClientContainer;
-import platform.client.logics.ClientForm;
-import platform.client.logics.ClientGroupObject;
+import platform.client.logics.*;
 import platform.client.logics.classes.ClientClass;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.form.layout.ContainerFactory;
+import platform.interop.form.layout.FormContainerSet;
+import platform.interop.form.layout.FunctionFactory;
 import platform.interop.form.layout.GroupObjectContainerSet;
 import platform.interop.serialization.RemoteDescriptorInterface;
 
@@ -56,9 +55,14 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         
     }
 
+    // будем считать, что именно этот конструктор используется для создания новых форм
     public FormDescriptor(int ID) {
         setID(ID);
+
+        initialize();
+
         setCaption("Новая форма (" + ID + ")");
+        addFormDefaultContainers();
     }
 
     public List<PropertyDrawDescriptor> getAddPropertyDraws(GroupObjectDescriptor group) {
@@ -181,6 +185,14 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         forceDefaultDraw = pool.deserializeMap(inStream);
 
         client = pool.context;
+    }
+
+    @Override
+    public String toString() {
+        return client.caption;
+    }
+
+    private void initialize() {
 
         allPropertiesLazy = new IncrementView() {
             public void update(Object updateObject, String updateField) {
@@ -260,11 +272,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         IncrementDependency.add("groupObjects", containerRenamer);
         IncrementDependency.add("objects", containerRenamer);
         IncrementDependency.add("baseClass", containerRenamer);
-    }
 
-    @Override
-    public String toString() {
-        return client.caption;
     }
 
     public ObjectDescriptor getObject(int objectID) {
@@ -447,28 +455,6 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         return true;
     }
 
-    private void addGroupObjectDefaultContainers(GroupObjectDescriptor group, List<GroupObjectDescriptor> groupObjects) {
-
-        GroupObjectContainerSet<ClientContainer, ClientComponent> set = GroupObjectContainerSet.create(group.client,
-                new ContainerFactory<ClientContainer>() {
-                    public ClientContainer createContainer() {
-                        return new ClientContainer(Main.generateNewID());
-                    }
-                });
-
-        // вставляем контейнер после предыдущего
-        int groupIndex = groupObjects.indexOf(group);
-        int index = -1;
-        if (groupIndex > 0) {
-            index = client.mainContainer.children.indexOf(groupObjects.get(groupIndex-1).getClientComponent(client.mainContainer));
-            if (index != -1)
-                index++;
-        }
-        if (index == -1) index = client.mainContainer.children.size();
-
-        client.mainContainer.add(index, set.getGroupContainer());
-    }
-
     public boolean removeFromGroupObjects(GroupObjectDescriptor groupObject) {
         groupObjects.remove(groupObject);
         client.groupObjects.add(groupObject.client);
@@ -521,5 +507,40 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
                 .deserializeObject(
                         new DataInputStream(
                                 new ByteArrayInputStream(formEntityByteArray)));
+    }
+
+    private class FormContainerFactory implements ContainerFactory<ClientContainer> {
+        public ClientContainer createContainer() {
+            return new ClientContainer(Main.generateNewID());
+        }
+    }
+
+    private class FormFunctionFactory implements FunctionFactory<ClientFunction> {
+        public ClientFunction createFunction() {
+            return new ClientFunction(Main.generateNewID());
+        }
+    }
+
+    private void addFormDefaultContainers() {
+        FormContainerSet.fillContainers(client, new FormContainerFactory(), new FormFunctionFactory());
+    }
+
+    private void addGroupObjectDefaultContainers(GroupObjectDescriptor group, List<GroupObjectDescriptor> groupObjects) {
+
+        GroupObjectContainerSet<ClientContainer, ClientComponent> set = GroupObjectContainerSet.create(group.client, new FormContainerFactory());
+
+        // вставляем контейнер после предыдущего
+        int groupIndex = groupObjects.indexOf(group);
+        int index = -1;
+        if (groupIndex > 0) {
+            index = client.mainContainer.children.indexOf(groupObjects.get(groupIndex-1).getClientComponent(client.mainContainer));
+            if (index != -1)
+                index++;
+            else
+                index = client.mainContainer.children.size();
+        } else
+            index = 0;
+
+        client.mainContainer.add(index, set.getGroupContainer());
     }
 }

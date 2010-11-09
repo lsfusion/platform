@@ -2,6 +2,7 @@ package platform.server.form.view;
 
 import platform.base.IDGenerator;
 import platform.base.OrderedMap;
+import platform.interop.form.layout.AbstractForm;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectEntity;
@@ -22,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class FormView implements ServerIdentitySerializable {
+public class FormView implements ServerIdentitySerializable, AbstractForm<ContainerView, ComponentView, FunctionView> {
 
     // нужен для того, чтобы генерировать уникальный идентификаторы объектам рисования, для передачи их клиенту
     protected IDGenerator idGenerator;
@@ -30,6 +31,10 @@ public class FormView implements ServerIdentitySerializable {
     public Integer overridePageWidth;
 
     public ContainerView mainContainer;
+
+    public void setMainContainer(ContainerView mainContainer) {
+        this.mainContainer = mainContainer;
+    }
 
     // список деревеьев
     public List<TreeGroupView> treeGroups = new ArrayList<TreeGroupView>();
@@ -45,14 +50,78 @@ public class FormView implements ServerIdentitySerializable {
 
     public OrderedMap<PropertyDrawView,Boolean> defaultOrders = new OrderedMap<PropertyDrawView, Boolean>();
 
-    public FunctionView printFunction;
-    public FunctionView xlsFunction;
-    public FunctionView nullFunction;
-    public FunctionView refreshFunction;
-    public FunctionView applyFunction;
-    public FunctionView cancelFunction;
-    public FunctionView okFunction;
-    public FunctionView closeFunction;
+    private FunctionView printFunction;
+    private FunctionView xlsFunction;
+    private FunctionView nullFunction;
+    private FunctionView refreshFunction;
+    private FunctionView applyFunction;
+    private FunctionView cancelFunction;
+    private FunctionView okFunction;
+    private FunctionView closeFunction;
+
+    public FunctionView getPrintFunction() {
+        return printFunction;
+    }
+
+    public FunctionView getXlsFunction() {
+        return xlsFunction;
+    }
+
+    public FunctionView getNullFunction() {
+        return nullFunction;
+    }
+
+    public FunctionView getRefreshFunction() {
+        return refreshFunction;
+    }
+
+    public FunctionView getApplyFunction() {
+        return applyFunction;
+    }
+
+    public FunctionView getCancelFunction() {
+        return cancelFunction;
+    }
+
+    public FunctionView getOkFunction() {
+        return okFunction;
+    }
+
+    public FunctionView getCloseFunction() {
+        return closeFunction;
+    }
+
+    public void setPrintFunction(FunctionView printFunction) {
+        this.printFunction = printFunction;
+    }
+
+    public void setXlsFunction(FunctionView xlsFunction) {
+        this.xlsFunction = xlsFunction;
+    }
+
+    public void setNullFunction(FunctionView nullFunction) {
+        this.nullFunction = nullFunction;
+    }
+
+    public void setRefreshFunction(FunctionView refreshFunction) {
+        this.refreshFunction = refreshFunction;
+    }
+
+    public void setApplyFunction(FunctionView applyFunction) {
+        this.applyFunction = applyFunction;
+    }
+
+    public void setCancelFunction(FunctionView cancelFunction) {
+        this.cancelFunction = cancelFunction;
+    }
+
+    public void setOkFunction(FunctionView okFunction) {
+        this.okFunction = okFunction;
+    }
+
+    public void setCloseFunction(FunctionView closeFunction) {
+        this.closeFunction = closeFunction;
+    }
 
     public List<PropertyDrawView> order = new ArrayList<PropertyDrawView>();
 
@@ -71,15 +140,6 @@ public class FormView implements ServerIdentitySerializable {
 
         this.entity = entity;
         this.idGenerator = entity.getIDGenerator();
-
-        printFunction = new FunctionView(idGenerator.idShift(), "Печать");
-        xlsFunction = new FunctionView(idGenerator.idShift(), "Excel");
-        nullFunction = new FunctionView(idGenerator.idShift(), "Сбросить");
-        refreshFunction = new FunctionView(idGenerator.idShift(), "Обновить");
-        applyFunction = new FunctionView(idGenerator.idShift(), "Применить");
-        cancelFunction = new FunctionView(idGenerator.idShift(), "Отменить");
-        okFunction = new FunctionView(idGenerator.idShift(), "ОК");
-        closeFunction = new FunctionView(idGenerator.idShift(), "Закрыть");
     }
 
     public int getID() {

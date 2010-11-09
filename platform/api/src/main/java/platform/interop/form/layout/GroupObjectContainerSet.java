@@ -36,7 +36,7 @@ public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extend
         return filterContainer;
     }
 
-    public static <C extends AbstractContainer<C, T>, T extends AbstractComponent<C, T>> GroupObjectContainerSet<C, T> create(AbstractGroupObjectView<T> group, ContainerFactory<C> factory) {
+    public static <C extends AbstractContainer<C, T>, T extends AbstractComponent<C, T>> GroupObjectContainerSet<C, T> create(AbstractGroupObject<T> group, ContainerFactory<C> factory) {
 
         GroupObjectContainerSet<C, T> set = new GroupObjectContainerSet<C, T>();
 

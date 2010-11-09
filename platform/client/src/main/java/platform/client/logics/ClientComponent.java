@@ -34,6 +34,10 @@ public abstract class ClientComponent extends IdentityDescriptor implements Seri
     public ClientComponent() {
     }
 
+    public ClientComponent(int ID) {
+        super(ID);
+    }
+
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.writeObject(outStream, design);
         pool.serializeObject(outStream, container);

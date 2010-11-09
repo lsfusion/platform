@@ -7,6 +7,7 @@ import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.form.LogicsSupplier;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
+import platform.interop.form.layout.AbstractForm;
 
 import javax.swing.*;
 import java.io.DataInputStream;
@@ -17,7 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ClientForm extends IdentityObject implements LogicsSupplier, ClientIdentitySerializable {
+public class ClientForm extends IdentityObject implements LogicsSupplier, ClientIdentitySerializable, AbstractForm<ClientContainer, ClientComponent, ClientFunction> {
 
     public boolean readOnly = false;
 
@@ -30,6 +31,10 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
 
     public ClientContainer mainContainer = new ClientContainer();
 
+    public void setMainContainer(ClientContainer mainContainer) {
+        this.mainContainer = mainContainer;
+    }
+
     public List<ClientTreeGroup> treeGroups = new ArrayList<ClientTreeGroup>();
     public List<ClientGroupObject> groupObjects = new ArrayList<ClientGroupObject>();
     public List<ClientPropertyDraw> propertyDraws = new ArrayList<ClientPropertyDraw>();
@@ -37,14 +42,78 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
     public OrderedMap<ClientPropertyDraw, Boolean> defaultOrders = new OrderedMap<ClientPropertyDraw, Boolean>();
     public List<ClientRegularFilterGroup> regularFilterGroups = new ArrayList<ClientRegularFilterGroup>();
 
-    public ClientFunction printFunction = new ClientFunction();
-    public ClientFunction xlsFunction = new ClientFunction();
-    public ClientFunction nullFunction = new ClientFunction();
-    public ClientFunction refreshFunction = new ClientFunction();
-    public ClientFunction applyFunction = new ClientFunction();
-    public ClientFunction cancelFunction = new ClientFunction();
-    public ClientFunction okFunction = new ClientFunction();
-    public ClientFunction closeFunction = new ClientFunction();
+    private ClientFunction printFunction;
+    private ClientFunction xlsFunction;
+    private ClientFunction nullFunction;
+    private ClientFunction refreshFunction;
+    private ClientFunction applyFunction;
+    private ClientFunction cancelFunction;
+    private ClientFunction okFunction;
+    private ClientFunction closeFunction;
+
+    public ClientFunction getPrintFunction() {
+        return printFunction;
+    }
+
+    public ClientFunction getXlsFunction() {
+        return xlsFunction;
+    }
+
+    public ClientFunction getNullFunction() {
+        return nullFunction;
+    }
+
+    public ClientFunction getRefreshFunction() {
+        return refreshFunction;
+    }
+
+    public ClientFunction getApplyFunction() {
+        return applyFunction;
+    }
+
+    public ClientFunction getCancelFunction() {
+        return cancelFunction;
+    }
+
+    public ClientFunction getOkFunction() {
+        return okFunction;
+    }
+
+    public ClientFunction getCloseFunction() {
+        return closeFunction;
+    }
+
+    public void setPrintFunction(ClientFunction printFunction) {
+        this.printFunction = printFunction;
+    }
+
+    public void setXlsFunction(ClientFunction xlsFunction) {
+        this.xlsFunction = xlsFunction;
+    }
+
+    public void setNullFunction(ClientFunction nullFunction) {
+        this.nullFunction = nullFunction;
+    }
+
+    public void setRefreshFunction(ClientFunction refreshFunction) {
+        this.refreshFunction = refreshFunction;
+    }
+
+    public void setApplyFunction(ClientFunction applyFunction) {
+        this.applyFunction = applyFunction;
+    }
+
+    public void setCancelFunction(ClientFunction cancelFunction) {
+        this.cancelFunction = cancelFunction;
+    }
+
+    public void setOkFunction(ClientFunction okFunction) {
+        this.okFunction = okFunction;
+    }
+
+    public void setCloseFunction(ClientFunction closeFunction) {
+        this.closeFunction = closeFunction;
+    }
 
     private List<ClientPropertyDraw> order = new ArrayList<ClientPropertyDraw>();
 

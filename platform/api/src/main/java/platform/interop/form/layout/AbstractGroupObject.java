@@ -1,6 +1,6 @@
 package platform.interop.form.layout;
 
-public interface AbstractGroupObjectView<T extends AbstractComponent> {
+public interface AbstractGroupObject<T extends AbstractComponent> {
 
     String getCaption();
     int getID();

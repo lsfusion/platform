@@ -2,17 +2,26 @@ package platform.client.logics;
 
 import platform.client.descriptor.editor.FunctionEditor;
 import platform.client.serialization.ClientSerializationPool;
+import platform.interop.form.layout.AbstractFunction;
 
 import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ClientFunction extends ClientComponent {
+public class ClientFunction extends ClientComponent implements AbstractFunction<ClientContainer, ClientComponent> {
 
     public String caption;
 
+    public void setCaption(String caption) {
+        this.caption = caption;
+    }
+
     public ClientFunction() {
+    }
+
+    public ClientFunction(int ID) {
+        super(ID);
     }
 
     @Override

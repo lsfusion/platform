@@ -1,22 +1,26 @@
 package platform.server.form.view;
 
+import platform.interop.form.layout.AbstractFunction;
 import platform.server.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class FunctionView extends ComponentView {
+public class FunctionView extends ComponentView implements AbstractFunction<ContainerView, ComponentView> {
 
     String caption;
+
+    public void setCaption(String caption) {
+        this.caption = caption;
+    }
 
     public FunctionView() {
 
     }
     
-    public FunctionView(int ID, String caption) {
+    public FunctionView(int ID) {
         super(ID);
-        this.caption = caption;
     }
 
     @Override
@@ -30,6 +34,6 @@ public class FunctionView extends ComponentView {
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
 
-        caption = pool.readString(inStream);
+        setCaption(pool.readString(inStream));
     }
 }

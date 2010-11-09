@@ -9,7 +9,7 @@ import platform.client.form.GroupObjectController;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ClassViewType;
-import platform.interop.form.layout.AbstractGroupObjectView;
+import platform.interop.form.layout.AbstractGroupObject;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class ClientGroupObject extends ArrayList<ClientObject>
-                                 implements ClientPropertyRead, ClientIdentitySerializable, AbstractGroupObjectView<ClientComponent> {
+                                 implements ClientPropertyRead, ClientIdentitySerializable, AbstractGroupObject<ClientComponent> {
 
     private int ID;
     public List<ClassViewType> banClassView = new ArrayList<ClassViewType>();
