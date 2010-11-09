@@ -22,7 +22,8 @@ public class FormChanges {
     // assertion что ObjectInstance из того же GroupObjectInstance
     public Map<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> gridObjects = new HashMap<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>>();
 
-    // assertion для ключа GroupObjectInstance что в значении ObjectInstance из верхних GroupObjectInstance TreeGroupInstance'а этого ключа , так же может быть ObjectInstance из этого ключа если GroupObject - отображается рекурсивно (тогда надо цеплять к этому GroupObjectValue, иначе к верхнему) 
+    // assertion для ключа GroupObjectInstance что в значении ObjectInstance из верхних GroupObjectInstance TreeGroupInstance'а этого ключа,
+    // так же может быть ObjectInstance из этого ключа если GroupObject - отображается рекурсивно (тогда надо цеплять к этому GroupObjectValue, иначе к верхнему)
     public Map<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> treeObjects = new HashMap<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>>();
     public Set<GroupObjectInstance> treeRefresh = new HashSet<GroupObjectInstance>(); // для каких групп объектов collaps'ить пришедшие ключи     
 
@@ -87,18 +88,12 @@ public class FormChanges {
             }
         }
 
-        outStream.writeInt(gridObjects.size());
-        for (Map.Entry<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> gridObject : gridObjects.entrySet()) {
+        serializeKeyObjectsMap(outStream, gridObjects);
+        serializeKeyObjectsMap(outStream, treeObjects);
 
-            outStream.writeInt(gridObject.getKey().getID());
-
-            outStream.writeInt(gridObject.getValue().size());
-            for (Map<ObjectInstance, DataObject> groupObjectValue : gridObject.getValue()) {
-                // именно так чтобы гарантировано в том же порядке
-                for (ObjectInstance object : gridObject.getKey().objects) {
-                    BaseUtils.serializeObject(outStream, groupObjectValue.get(object).object);
-                }
-            }
+        outStream.writeInt(treeRefresh.size());
+        for (GroupObjectInstance group : treeRefresh) {
+            outStream.writeInt(group.getID());
         }
 
         outStream.writeInt(panelProperties.size());
@@ -135,5 +130,21 @@ public class FormChanges {
         outStream.writeUTF(message);
 
         BaseUtils.serializeObject(outStream, dataChanged);
+    }
+
+    private void serializeKeyObjectsMap(DataOutputStream outStream, Map<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> keyObjects) throws IOException {
+        outStream.writeInt(keyObjects.size());
+        for (Map.Entry<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> gridObject : keyObjects.entrySet()) {
+
+            outStream.writeInt(gridObject.getKey().getID());
+
+            outStream.writeInt(gridObject.getValue().size());
+            for (Map<ObjectInstance, DataObject> groupObjectValue : gridObject.getValue()) {
+                // именно так чтобы гарантировано в том же порядке
+                for (ObjectInstance object : gridObject.getKey().objects) {
+                    BaseUtils.serializeObject(outStream, groupObjectValue.get(object).object);
+                }
+            }
+        }
     }
 }
