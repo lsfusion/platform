@@ -41,8 +41,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     GroupObjectEntity entity;
 
-    public final static Collection<ObjectInstance> getObjects(Set<GroupObjectInstance> groups) {
-        Collection<ObjectInstance> result = new ArrayList<ObjectInstance>();
+    public static List<ObjectInstance> getObjects(Collection<GroupObjectInstance> groups) {
+        List<ObjectInstance> result = new ArrayList<ObjectInstance>();
         for(GroupObjectInstance group : groups)
             result.addAll(group.objects);
         return result;

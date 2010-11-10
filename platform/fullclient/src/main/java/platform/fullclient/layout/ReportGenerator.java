@@ -24,13 +24,17 @@ public class ReportGenerator {
     private final Map<String, List<String>> hierarchy;
     private final Map<String, JasperDesign> designs;
     private final Map<String, ClientReportData> data;
-    private final Map<String, List<List<Object>>> compositeData;
-    private final Map<String, List<Integer>> compositeFieldsObjects;
+    private final Map<String, List<List<Object>>> compositeColumnValues;
 
     private static class sourcesGenerationOutput {
         public Map<String, ClientReportData> data;
-        public Map<String, List<List<Object>>> compositeData;
+        // данные для свойств с группами в колонках
+        // объекты, от которых зависит свойство
         public Map<String, List<Integer>> compositeFieldsObjects;
+        public Map<String, Map<List<Object>, Object>> compositeObjectValues;
+        // объекты, идущие в колонки
+        public Map<String, List<Integer>> compositeColumnObjects;
+        public Map<String, List<List<Object>>> compositeColumnValues;
     }
 
     public ReportGenerator(RemoteFormInterface remoteForm, boolean toExcel) throws IOException, ClassNotFoundException, JRException {
@@ -41,8 +45,7 @@ public class ReportGenerator {
 
         sourcesGenerationOutput output = retrieveReportSources(remoteForm);
         data = output.data;
-        compositeData = output.compositeData;
-        compositeFieldsObjects = output.compositeFieldsObjects;
+        compositeColumnValues = output.compositeColumnValues;
 
         transformDesigns();
     }
@@ -107,38 +110,68 @@ public class ReportGenerator {
             output.data.put(sid, reportData);
         }
 
-        output.compositeData = new HashMap<String, List<List<Object>>>();
-        int compositeCaptionsCnt = dataStream.readInt();
-        for (int i = 0; i < compositeCaptionsCnt; i++) {
-            String caption = dataStream.readUTF();
-            List<List<Object>> diffValues = new ArrayList<List<Object>>();
+        int compositePropsCnt = dataStream.readInt();
+
+        output.compositeFieldsObjects = retrievePropertyObjects(dataStream, compositePropsCnt);
+
+        int compositeFieldsCnt = dataStream.readInt();
+        output.compositeObjectValues = new HashMap<String, Map<List<Object>, Object>>();
+        for (int i = 0; i < compositeFieldsCnt; i++) {
+            String fieldId = dataStream.readUTF();
+            Map<List<Object>, Object> data = new HashMap<List<Object>, Object>();
             int valuesCnt = dataStream.readInt();
             for (int j = 0; j < valuesCnt; j++) {
                 List<Object> values = new ArrayList<Object>();
-                int objCnt = dataStream.readInt();
+                String dataFieldId = fieldId;
+                if (fieldId.endsWith(ReportConstants.captionSuffix)) {
+                    dataFieldId = fieldId.substring(0, fieldId.length() - ReportConstants.captionSuffix.length());
+                }
+                int objCnt = output.compositeFieldsObjects.get(dataFieldId).size();
                 for (int k = 0; k < objCnt; k++) {
                     values.add(BaseUtils.deserializeObject(dataStream));
                 }
-                diffValues.add(values);
+                data.put(values, BaseUtils.deserializeObject(dataStream));
             }
-            output.compositeData.put(caption, diffValues);
+            output.compositeObjectValues.put(fieldId, data);
         }
 
-        output.compositeFieldsObjects = new HashMap<String, List<Integer>>();
-        for (int i = 0; i < compositeCaptionsCnt; i++) {
-            String caption = dataStream.readUTF();
-            List<Integer> objectsId = new ArrayList<Integer>();
-            int objectCnt = dataStream.readInt();
-            for (int j = 0; j < objectCnt; j++) {
-                objectsId.add(dataStream.readInt());
+        output.compositeColumnObjects = retrievePropertyObjects(dataStream, compositePropsCnt);
+
+        output.compositeColumnValues = new HashMap<String, List<List<Object>>>();
+        for (int i = 0; i < compositePropsCnt; i++) {
+            String fieldId = dataStream.readUTF();
+            List<List<Object>> data = new ArrayList<List<Object>>();
+            int valuesCnt = dataStream.readInt();
+            for (int j = 0; j < valuesCnt; j++) {
+                List<Object> values = new ArrayList<Object>();
+                int objCnt = output.compositeColumnObjects.get(fieldId).size();
+                for (int k = 0; k < objCnt; k++) {
+                    values.add(BaseUtils.deserializeObject(dataStream));
+                }
+                data.add(values);
             }
-            output.compositeFieldsObjects.put(caption, objectsId);
+            output.compositeColumnValues.put(fieldId, data);
         }
 
         for (ClientReportData data : output.data.values()) {
-            data.setCompositeData(output.compositeData, output.compositeFieldsObjects);
+            data.setCompositeData(output.compositeFieldsObjects, output.compositeObjectValues,
+                    output.compositeColumnObjects, output.compositeColumnValues);
         }
         return output;
+    }
+
+    private static Map<String, List<Integer>> retrievePropertyObjects(DataInputStream stream, int propCnt) throws IOException {
+        Map<String, List<Integer>> objects = new HashMap<String, List<Integer>>();
+        for (int i = 0; i < propCnt; i++) {
+            String fieldId = stream.readUTF();
+            List<Integer> objectsId = new ArrayList<Integer>();
+            int objectCnt = stream.readInt();
+            for (int j = 0; j < objectCnt; j++) {
+                objectsId.add(stream.readInt());
+            }
+            objects.put(fieldId, objectsId);
+        }
+        return objects;
     }
 
     // Пока что добавляет только свойства с группами в колонках
@@ -210,10 +243,10 @@ public class ReportGenerator {
         if (id.endsWith(ReportConstants.captionSuffix)) {
             dataId = id.substring(0, id.length() - ReportConstants.captionSuffix.length());
         }
-        if (compositeData.containsKey(dataId)) {
+        if (compositeColumnValues.containsKey(dataId)) {
             toDelete.add(textField);
             design.removeField(id);
-            int newFieldsCount= compositeData.get(dataId).size();
+            int newFieldsCount = compositeColumnValues.get(dataId).size();
             List<JRDesignTextField> subFields = makeFieldPartition(textField, newFieldsCount);
 
             for (int i = 0; i < newFieldsCount; i++) {

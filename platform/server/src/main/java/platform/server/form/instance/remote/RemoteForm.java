@@ -92,24 +92,34 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
                 source.getValue().serialize(dataStream);
             }
 
-            dataStream.writeInt(columnGroupCaptions.differentValues.size());
-            for (Map.Entry<String, LinkedHashSet<List<Object>>> entry : columnGroupCaptions.differentValues.entrySet()) {
+            int columnPropertiesCount = columnGroupCaptions.propertyObjects.size();
+            dataStream.writeInt(columnPropertiesCount);
+
+            serializePropertyObjects(dataStream, columnGroupCaptions.propertyObjects);
+
+            dataStream.writeInt(columnGroupCaptions.data.size());
+            for (Map.Entry<String, Map<List<Object>, Object>> entry : columnGroupCaptions.data.entrySet()) {
+                dataStream.writeUTF(entry.getKey());
+                Map<List<Object>, Object> value = entry.getValue();
+                dataStream.writeInt(value.size());
+                for (Map.Entry<List<Object>, Object> valueEntry : value.entrySet()) {
+                    for (Object obj : valueEntry.getKey()) {
+                        BaseUtils.serializeObject(dataStream, obj);
+                    }
+                    BaseUtils.serializeObject(dataStream, valueEntry.getValue());
+                }
+            }
+
+            serializePropertyObjects(dataStream, columnGroupCaptions.columnObjects);
+
+            for (Map.Entry<String, LinkedHashSet<List<Object>>> entry : columnGroupCaptions.columnData.entrySet()) {
                 dataStream.writeUTF(entry.getKey());
                 LinkedHashSet<List<Object>> value = entry.getValue();
                 dataStream.writeInt(value.size());
                 for (List<Object> list : value) {
-                    dataStream.writeInt(list.size());
                     for (Object obj : list) {
                         BaseUtils.serializeObject(dataStream, obj);
                     }
-                }
-            }
-            
-            for (Map.Entry<String, List<ObjectInstance>> entry : columnGroupCaptions.propertyObjects.entrySet()) {
-                dataStream.writeUTF(entry.getKey());
-                dataStream.writeInt(entry.getValue().size());
-                for (ObjectInstance object : entry.getValue()) {
-                    dataStream.writeInt(object.getID());
                 }
             }
 
@@ -118,6 +128,16 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
             throw new RuntimeException(e);
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void serializePropertyObjects(DataOutputStream stream, Map<String, List<ObjectInstance>> objects) throws IOException {
+        for (Map.Entry<String, List<ObjectInstance>> entry : objects.entrySet()) {
+            stream.writeUTF(entry.getKey());
+            stream.writeInt(entry.getValue().size());
+            for (ObjectInstance object : entry.getValue()) {
+                stream.writeInt(object.getID());
+            }
         }
     }
 

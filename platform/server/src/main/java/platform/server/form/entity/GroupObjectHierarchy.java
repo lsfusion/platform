@@ -241,6 +241,19 @@ public class GroupObjectHierarchy {
             return new ArrayList<ReportNode>(dependencies.get(parent));
         }
 
+        public ReportNode getParentNode(ReportNode node) {
+            for (Map.Entry<ReportNode, List<ReportNode>> entry : dependencies.entrySet()) {
+                if (entry.getValue().contains(node)) {
+                    return entry.getKey();
+                }
+            }
+            return null;
+        }
+
+        public ReportNode getReportNode(GroupObjectEntity group) {
+            return groupToReportNode.get(group);
+        }
+
         public boolean isLeaf(ReportNode node) {
             Collection<ReportNode> children = dependencies.get(node);
             assert(children != null);

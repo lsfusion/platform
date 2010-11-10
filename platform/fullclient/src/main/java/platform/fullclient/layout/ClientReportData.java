@@ -25,8 +25,10 @@ public class ClientReportData implements JRDataSource {
     private final Map<Map<Integer, Object>, Map<Pair<Integer, Integer>, Object>> rows =
             new HashMap<Map<Integer, Object>, Map<Pair<Integer, Integer>, Object>>();
 
-    private Map<String, List<List<Object>>> compositeData;
     private Map<String, List<Integer>> compositeFieldsObjects;
+    private Map<String, Map<List<Object>, Object>> compositeObjectValues;
+    private Map<String, List<Integer>> compositeColumnObjects;
+    private Map<String, List<List<Object>>> compositeColumnValues;
 
     public static final String beginMarker = "[";
     public static final String endMarker = "]";
@@ -82,9 +84,14 @@ public class ClientReportData implements JRDataSource {
         iterator.previous();
     }
 
-    public void setCompositeData(Map<String, List<List<Object>>> data, Map<String, List<Integer>> fieldObjects) {
-        compositeData = data;
+    public void setCompositeData(Map<String, List<Integer>> fieldObjects,
+                                 Map<String, Map<List<Object>, Object>> objectValues,
+                                 Map<String, List<Integer>> columnObjects,
+                                 Map<String, List<List<Object>>> columnValues) {
         compositeFieldsObjects = fieldObjects;
+        compositeObjectValues = objectValues;
+        compositeColumnObjects = columnObjects;
+        compositeColumnValues = columnValues; 
     }
 
     public Object getFieldValue(JRField jrField) throws JRException {
@@ -107,12 +114,7 @@ public class ClientReportData implements JRDataSource {
                     if (realFieldName.endsWith(ReportConstants.captionSuffix)) {
                         dataFieldName = realFieldName.substring(0, realFieldName.length() - ReportConstants.captionSuffix.length());
                     }
-                    Map<Integer, Object> row = (HashMap<Integer, Object>)(currentKeyRow.clone());
-                    for (int i = 0; i < compositeFieldsObjects.size(); i++) {
-                        int objectId = compositeFieldsObjects.get(dataFieldName).get(i);
-                        row.put(objectId, compositeData.get(dataFieldName).get(index).get(i));
-                    }
-                    value = rows.get(row).get(properties.get(realFieldName));
+                    value = getCompositeFieldValue(dataFieldName, realFieldName, index);
                 }
             }
         }
@@ -126,6 +128,30 @@ public class ClientReportData implements JRDataSource {
         }
 
         return value;
+    }
+
+    private Object getCompositeFieldValue(String dataFieldName, String realFieldName, int index) {
+        List<Object> row = new ArrayList<Object>(Collections.nCopies(compositeFieldsObjects.get(dataFieldName).size(), null));
+
+        Map<Integer, Integer> pos = new HashMap<Integer, Integer>();
+        int i = 0;
+        for (Integer id : compositeFieldsObjects.get(dataFieldName)) {
+            pos.put(id, i);
+            ++i;
+        }
+
+        for (Map.Entry<Integer, Object> entry : currentKeyRow.entrySet()) {
+            if (pos.containsKey(entry.getKey())) {
+                row.set(pos.get(entry.getKey()), entry.getValue());
+            }
+        }
+        List<Object> values = compositeColumnValues.get(dataFieldName).get(index);
+        int j = 0;
+        for (Integer id : compositeColumnObjects.get(dataFieldName)) {
+            row.set(pos.get(id), values.get(j));
+            ++j;
+        }
+        return compositeObjectValues.get(realFieldName).get(row);
     }
 
     public Object getKeyValueByIndex(int index) {

@@ -5,6 +5,7 @@ import platform.base.OrderedMap;
 import platform.base.Pair;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
+import platform.interop.form.ReportConstants;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
 import platform.server.data.expr.KeyExpr;
@@ -36,8 +37,14 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
     private Map<Object, Boolean> orders = new HashMap<Object, Boolean>();
 
     public static class ColumnGroupCaptionsData {
-        public final Map<String, LinkedHashSet<List<Object>>> differentValues = new HashMap<String, LinkedHashSet<List<Object>>>();
+        // объекты, от которых зависит свойство
         public final Map<String, List<ObjectInstance>> propertyObjects = new HashMap<String, List<ObjectInstance>>();
+        // объекты, идущие в колонки
+        public final Map<String, List<ObjectInstance>> columnObjects = new HashMap<String, List<ObjectInstance>>();
+        // таблицы значений свойств, ключ в таблице - набор значений объектов из propertyObjects
+        public final Map<String, Map<List<Object>, Object>> data = new HashMap<String, Map<List<Object>, Object>>();
+        // наборы различных значений объектов из columnObjects, идущих в колонки
+        public final Map<String, LinkedHashSet<List<Object>>> columnData = new HashMap<String, LinkedHashSet<List<Object>>>();
     }
     
     public ReportSourceGenerator(FormInstance<T> form, GroupObjectHierarchy.ReportHierarchy hierarchy) {
@@ -56,51 +63,6 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         createMaps();
         iterateChildReports(hierarchy.getRootNodes(), new ArrayList<GroupObjectInstance>(), null);
         return sources;
-    }
-
-    public ColumnGroupCaptionsData getColumnGroupCaptions() {
-        ColumnGroupCaptionsData resultData = new ColumnGroupCaptionsData();
-
-        List<PropertyDrawInstance<?>> props = new ArrayList<PropertyDrawInstance<?>>();
-        for (PropertyDrawInstance<?> property : form.properties) {
-            if (property.columnGroupObjects.size() > 0) {
-                props.add(property);
-            }
-        }
-
-        for (ReportNode node : hierarchy.getAllNodes()) {
-
-            Set<GroupObjectInstance> nodeGroups = new HashSet<GroupObjectInstance>();
-            for (GroupObjectEntity groupEntity : node.getGroupList()) {
-                GroupObjectInstance group = idToInstance.get(groupEntity.getID());
-                nodeGroups.add(group);
-            }
-
-            ReportData data = sources.get(node.getID());
-
-            for (PropertyDrawInstance<?> property : props) {
-                if (nodeGroups.contains(property.toDraw)) {
-                    List<ObjectInstance> propObjects = new ArrayList<ObjectInstance>();
-                    for (GroupObjectInstance group : property.columnGroupObjects) {
-                        propObjects.addAll(group.objects);
-                    }
-
-                    LinkedHashSet<List<Object>> differentValues = new LinkedHashSet<List<Object>>();
-                    for (int row = 0; row < data.getRowCount(); row++) {
-                        List<Object> values = new ArrayList<Object>();
-                        for (ObjectInstance object : propObjects) {
-                            values.add(data.getKeyValue(row, object));
-                        }
-                        differentValues.add(values);
-                    }
-
-                    resultData.propertyObjects.put(property.getsID(), propObjects);
-                    resultData.differentValues.put(property.getsID(), differentValues);
-                }
-            }
-
-        }
-        return resultData;
     }
 
     private void createMaps() {
@@ -135,8 +97,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         Query<KeyField, PropertyField> newQuery =
                 new Query<KeyField, PropertyField>(BaseUtils.join(table.mapKeys, instanceToExpr));
 
-        for (GroupObjectInstance group : groups)
-        {
+        for (GroupObjectInstance group : groups) {
             newQuery.and(group.getWhere(instanceToExpr, form));
 
             for(Map.Entry<OrderInstance, Boolean> order : group.orders.entrySet()) {
@@ -156,8 +117,8 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
             }
         }
 
-        for(PropertyDrawInstance<?> property : form.properties)
-            if (groups.contains(property.propertyObject.getApplyObject())) { // todo [dale]: getApplyObject???
+        for(PropertyDrawInstance<?> property : form.properties) {
+            if (groups.contains(property.propertyObject.getApplyObject()) && property.columnGroupObjects.isEmpty()) { // todo [dale]: getApplyObject???
                 PropertyField propField = table.objectsToFields.get(new Pair<Object, PropertyType>(property, PropertyType.PLAIN));
                 newQuery.properties.put(propField, property.propertyObject.getExpr(instanceToExpr, form));
 
@@ -166,6 +127,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                     newQuery.properties.put(captionField, property.propertyCaption.getExpr(instanceToExpr, form));
                 }
             }
+        }
 
         if (parentTable != null) {
             newQuery.and(parentTable.joinAnd(BaseUtils.join(parentTable.mapKeys, instanceToExpr)).getWhere());
@@ -199,12 +161,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
 
             Map<ObjectInstance, KeyField> keyFields = BaseUtils.reverse(resTable.mapKeys);
 
-            List<ObjectInstance> keyList = new ArrayList<ObjectInstance>();
-            for (GroupObjectInstance group : groups) {
-                for (ObjectInstance object : group.objects) {
-                    keyList.add(object);
-                }
-            }
+            List<ObjectInstance> keyList = GroupObjectInstance.getObjects(groups);
 
             List<Pair<String, PropertyReadInstance>> propertyList = new ArrayList<Pair<String, PropertyReadInstance>>();
             for(PropertyDrawInstance property : form.properties) {
@@ -241,5 +198,114 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
             iterateChildReports(hierarchy.getChildNodes(node), groups, resTable);
             form.session.dropTemporaryTable(table);
         }
+    }
+
+    public ColumnGroupCaptionsData getColumnGroupCaptions() throws SQLException {
+        ColumnGroupCaptionsData resultData = new ColumnGroupCaptionsData();
+
+        for (PropertyDrawInstance<?> property : form.properties) {
+            if (property.columnGroupObjects.size() > 0) {
+                List<GroupObjectInstance> groups = getNeededGroupsForColumnProp(property);
+                OrderedMap<Map<ObjectInstance, Object>, Map<Object, Object>> qResult = getColumnPropQueryResult(groups, property);
+
+                Collection<ObjectInstance> propObjects = property.propertyObject.getObjectInstances();
+
+                Map<List<Object>, Object> data = new HashMap<List<Object>, Object>();
+                Map<List<Object>, Object> captionData = new HashMap<List<Object>, Object>();
+                LinkedHashSet<List<Object>> columnData = new LinkedHashSet<List<Object>>();
+
+                for (Map.Entry<Map<ObjectInstance, Object>, Map<Object, Object>> entry : qResult.entrySet()) {
+                    List<Object> values = new ArrayList<Object>();
+                    for (ObjectInstance object : propObjects) {
+                        values.add(entry.getKey().get(object));
+                    }
+                    data.put(values, entry.getValue().get(property));
+                    if (property.propertyCaption != null) {
+                        captionData.put(values, entry.getValue().get(property.propertyCaption));
+                    }
+
+                    List<Object> columnValues = new ArrayList<Object>();
+                    for (ObjectInstance object : GroupObjectInstance.getObjects(property.columnGroupObjects)) {
+                        columnValues.add(entry.getKey().get(object));
+                    }
+                    columnData.add(columnValues);
+                }
+
+                resultData.propertyObjects.put(property.getsID(), new ArrayList<ObjectInstance>(propObjects));
+                resultData.columnObjects.put(property.getsID(), GroupObjectInstance.getObjects(property.columnGroupObjects));
+                resultData.data.put(property.getsID(), data);
+                if (property.propertyCaption != null) {
+                    resultData.data.put(property.getsID() + ReportConstants.captionSuffix, captionData);
+                }
+                resultData.columnData.put(property.getsID(), columnData);
+            }
+        }
+        return resultData;
+    }
+
+    private OrderedMap<Map<ObjectInstance, Object>, Map<Object, Object>> getColumnPropQueryResult(List<GroupObjectInstance> groups, PropertyDrawInstance<?> property) throws SQLException {
+        List<ObjectInstance> objects = GroupObjectInstance.getObjects(groups);
+        Query<ObjectInstance, Object> query = new Query<ObjectInstance, Object>(objects);
+        OrderedMap<Object, Boolean> queryOrders = new OrderedMap<Object, Boolean>();
+
+        for (GroupObjectInstance group : groups) {
+            query.and(group.getWhere(query.mapKeys, form));
+
+            for (Map.Entry<OrderInstance, Boolean> order : group.orders.entrySet()) {
+                query.properties.put(order.getKey(), order.getKey().getExpr(query.mapKeys, form));
+                queryOrders.put(order.getKey(), order.getValue());
+            }
+
+            for (ObjectInstance object : group.objects) {
+                query.properties.put(object, object.getExpr(query.mapKeys, form));
+                queryOrders.put(object, false);
+            }
+
+            if (group.curClassView != ClassViewType.GRID) {
+                for (ObjectInstance object : group.objects) {
+                    query.and(object.getExpr(query.mapKeys, form).compare(object.getObjectValue().getExpr(), Compare.EQUALS));
+                }
+            }
+        }
+
+        query.properties.put(property, property.propertyObject.getExpr(query.mapKeys, form));
+        if (property.propertyCaption != null) {
+            query.properties.put(property.propertyCaption, property.propertyCaption.getExpr(query.mapKeys, form));
+        }
+
+        return query.execute(form.session, queryOrders, 0);
+    }
+
+    private Set<GroupObjectInstance> getPropertyDependencies(PropertyDrawInstance<?> property) {
+        Set<GroupObjectInstance> groups = new HashSet<GroupObjectInstance>();
+        for (ObjectInstance object : property.propertyObject.getObjectInstances()) {
+            groups.add(object.groupTo);
+        }
+        return groups;
+    }
+
+    // получает все группы, от которых зависит (не только непосредственно) свойство
+    private List<GroupObjectInstance> getNeededGroupsForColumnProp(PropertyDrawInstance<?> property) {
+        Set<GroupObjectInstance> initialGroups = getPropertyDependencies(property);
+        Set<GroupObjectInstance> groups = new HashSet<GroupObjectInstance>();
+        
+        for (GroupObjectInstance group : initialGroups) {
+            ReportNode curNode = hierarchy.getReportNode(group.entity);
+            List<GroupObjectEntity> nodeGroups = curNode.getGroupList();
+            int groupIndex = nodeGroups.indexOf(group.entity);
+            for (int i = 0; i <= groupIndex; i++) {
+                groups.add(idToInstance.get(nodeGroups.get(i).getID()));
+            }
+
+            curNode = hierarchy.getParentNode(curNode);
+            while (curNode != null) {
+                for (GroupObjectEntity nodeGroup : curNode.getGroupList()) {
+                    groups.add(idToInstance.get(nodeGroup.getID()));
+                }
+                curNode = hierarchy.getParentNode(curNode);
+            }
+        }
+
+        return BaseUtils.filterList(form.groups, groups);
     }
 }
