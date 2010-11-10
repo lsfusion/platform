@@ -31,7 +31,7 @@ public class MessageAction implements ClientAction {
             caption = "Номер последнего чека";
         } else if (type == COUNTER) {
             msg = FiscalReg.getQuery(port, "QueryCounter");
-            caption = "Наличных в кассе";
+            caption = "Денег в кассе";
         }
         
         JOptionPane.showMessageDialog(null, msg, caption, JOptionPane.INFORMATION_MESSAGE);

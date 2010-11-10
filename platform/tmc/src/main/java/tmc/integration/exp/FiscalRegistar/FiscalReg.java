@@ -2,7 +2,8 @@ package tmc.integration.exp.FiscalRegistar;
 
 import com.jacob.activeX.ActiveXComponent;
 import com.jacob.com.Dispatch;
-import com.jacob.com.Variant;
+
+import java.text.NumberFormat;
 
 public class FiscalReg {
     final static int FONT = 2;
@@ -93,11 +94,9 @@ public class FiscalReg {
         if (cashDispatch == null) {
             init(comPort);
         }
-        Object arg[] = new Object[]{11, false};
-        //Variant result = Dispatch.invoke(cashDispatch, "QueryCounter", Dispatch.Get, arg, new int[1]);//Dispatch.call(cashDispatch, query, 11, false);
-        // Dispatch.call(cashDispatch, "Close", true);
-       // return result.getCurrency() + "";
-        return "";
+        long result = Dispatch.call(cashDispatch, "QueryCounter", 11, false).getCurrency().longValue();
+        result /= 10000;
+        return NumberFormat.getInstance().format(result);
     }
 
 }
