@@ -1,11 +1,13 @@
 package tmc.integration;
 
 import com.jacob.activeX.ActiveXComponent;
+import com.jacob.com.Dispatch;
 import platform.base.BaseUtils;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenComponent;
 import platform.interop.form.screen.ExternalScreenConstraints;
 import platform.interop.form.screen.ExternalScreenParameters;
+import tmc.integration.exp.FiscalRegistar.FiscalReg;
 
 import java.util.Map;
 import java.util.logging.Logger;
@@ -24,15 +26,15 @@ public class PanelExternalScreen implements ExternalScreen {
         }
     }
 
-    private String format(String a, String b) {
+    private String format(String a, String b, int size) {
         String result;
         if (b.contains(".")) {
             b = b.substring(0, b.indexOf('.'));
         }
-        if (a.length() + b.length() > 19) {
-            result = a.substring(0, 19 - b.length()) + "." + b;
+        if (a.length() + b.length() > size - 1) {
+            result = a.substring(0, size - 1 - b.length()) + "." + b;
         } else {
-            result = a + BaseUtils.padLeft(b, 20 - a.length());
+            result = a + BaseUtils.padLeft(b, size - a.length());
         }
         return result;
     }
@@ -43,9 +45,14 @@ public class PanelExternalScreen implements ExternalScreen {
 
     // пока игнорируем все Exception'ы, чтобы лишний раз не травмировать пользователя
     public void repaint(Map<ExternalScreenComponent, ExternalScreenConstraints> components) {
-        int commPort = parameters.getScreenComPort();
-        if (commPort < 0) {
-            return;
+        int comPort = parameters.getScreenComPort();
+        int fiscalCom = parameters.getFiscalComPort();
+        int size = 20;
+        if (comPort < 0) {
+            if (fiscalCom < 0) {
+                return;
+            }
+            size = 26;
         }
 
         String out[] = new String[5];
@@ -53,31 +60,36 @@ public class PanelExternalScreen implements ExternalScreen {
             out[entry.getValue().order] = entry.getKey().getValue();
         }
 
-        String output = format(check(out[1]), check(out[2])) + format(check(out[3]), check(out[4]));
+        String output = format(check(out[1]), check(out[2]), size) + format(check(out[3]), check(out[4]), size);
 //        System.out.println(output);
 
 
         ActiveXComponent commActive = null;
-
-        try {
-            logger.info("Before creating ActiveX");
-            commActive = new ActiveXComponent("MSCommLib.MSComm");
-            commActive.setProperty("CommPort", commPort);
-            commActive.setProperty("PortOpen", true);
-            commActive.setProperty("Output", new String(output.getBytes("Cp866"), "Cp1251"));
-            commActive.setProperty("PortOpen", false);
-            logger.info("After ActiveX work");
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (commActive != null) {
-                try {
-                    if (commActive.getPropertyAsBoolean("PortOpen"))
-                        commActive.setProperty("PortOpen", false);
-                } catch (Exception e) {
-                    e.printStackTrace();
+        if (comPort > 0) {
+            try {
+                logger.info("Before creating ActiveX");
+                commActive = new ActiveXComponent("MSCommLib.MSComm");
+                commActive.setProperty("CommPort", comPort);
+                commActive.setProperty("PortOpen", true);
+                commActive.setProperty("Output", new String(output.getBytes("Cp866"), "Cp1251"));
+                commActive.setProperty("PortOpen", false);
+                logger.info("After ActiveX work");
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if (commActive != null) {
+                    try {
+                        if (commActive.getPropertyAsBoolean("PortOpen"))
+                            commActive.setProperty("PortOpen", false);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
+        } else {
+            Dispatch cashDispatch = FiscalReg.getDispatch(fiscalCom);
+            Dispatch.call(cashDispatch, "ShowDisplay", output, true, true);
         }
+
     }
 }

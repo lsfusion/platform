@@ -125,9 +125,6 @@ public class CashRegController {
                 Double price = (priceObject instanceof Double) ? (Double) priceObject : 0.0;
                 String barcodeName = ((String) row.values.get(barcodeDraw)).trim();
                 String artName = ((String) row.values.get(nameDraw)).trim();
-                //artName = artName.replace(',', '.');
-                //artName = artName.replace('"', ' ');
-                //artName = artName.replace('\'', ' ');
                 Double sumPos = (Double) row.values.get(sumDraw);
 
                 result.add(new ReceiptItem(price, quantity, barcodeName, artName, sumPos));
@@ -165,106 +162,6 @@ public class CashRegController {
         return result;
     }
 
-    private String createBillTxt(FormInstance formInstance, int payType,
-                                 Set<GroupObjectInstance> classGroups,
-                                 PropertyDrawEntity<?> priceProp, PropertyDrawEntity<?> quantityProp,
-                                 PropertyDrawEntity<?> nameProp, PropertyDrawEntity<?> sumProp,
-                                 PropertyDrawEntity<?> toPayProp, PropertyDrawEntity<?> barcodeProp,
-                                 PropertyDrawEntity<?> sumCardProp, PropertyDrawEntity<?> sumCashProp) {
-
-        String result = payType + ",0000\n";
-
-        FormData data;
-
-        Set<PropertyDrawInstance> formProperties = new HashSet<PropertyDrawInstance>();
-        PropertyDrawInstance quantityDraw = formInstance.instanceFactory.getInstance(quantityProp);
-        PropertyDrawInstance priceDraw = formInstance.instanceFactory.getInstance(priceProp);
-        PropertyDrawInstance nameDraw = formInstance.instanceFactory.getInstance(nameProp);
-        PropertyDrawInstance sumDraw = formInstance.instanceFactory.getInstance(sumProp);
-        PropertyDrawInstance toPayDraw = formInstance.instanceFactory.getInstance(toPayProp);
-        PropertyDrawInstance barcodeDraw = formInstance.instanceFactory.getInstance(barcodeProp);
-        formProperties.addAll(BaseUtils.toSet(quantityDraw, priceDraw, nameDraw, sumDraw, toPayDraw, barcodeDraw));
-
-        PropertyDrawInstance sumCardDraw = null;
-        if (sumCardProp != null) {
-            sumCardDraw = formInstance.instanceFactory.getInstance(sumCardProp);
-            formProperties.add(sumCardDraw);
-        }
-
-        PropertyDrawInstance sumCashDraw = null;
-        if (sumCashProp != null) {
-            sumCashDraw = formInstance.instanceFactory.getInstance(sumCashProp);
-            formProperties.add(sumCashDraw);
-        }
-
-        quantityDraw.toDraw.addTempFilter(new NotNullFilterInstance(quantityDraw.propertyObject));
-
-        try {
-            data = formInstance.getFormData(formProperties, classGroups);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            quantityDraw.toDraw.clearTempFilters();
-        }
-
-        Double sumDoc = 0.0;
-
-        for (FormRow row : data.rows) {
-
-            Object quantityObject = row.values.get(quantityDraw);
-
-            if (quantityObject != null) {
-
-                Object priceObject = row.values.get(priceDraw);
-
-                Double quantity = (quantityObject instanceof Double) ? (Double) quantityObject : 1.0;
-                Double price = (priceObject instanceof Double) ? (Double) priceObject : 0.0;
-                String barcodeName = ((String) row.values.get(barcodeDraw)).trim();
-                String artName = ((String) row.values.get(nameDraw)).trim();
-                artName = artName.replace(',', '.');
-                artName = artName.replace('"', ' ');
-                artName = artName.replace('\'', ' ');
-                Double sumPos = (Double) row.values.get(sumDraw);
-
-                result += price / 100;
-                result += ",0";
-                result += "," + quantity;
-                result += "," + barcodeName + " " + artName;
-                result += "," + sumPos / 100;
-                result += "\n";
-
-                sumDoc += price * quantity;
-            }
-        }
-
-        Double toPay = BaseUtils.nvl((Double) data.rows.get(0).values.get(toPayDraw), 0.0);
-        Double sumDisc = sumDoc - toPay;
-        if (sumDisc > 0) {
-            result += "#," + sumDisc / 100 + "\n";
-        }
-
-        Double sumCard = null;
-        if (sumCardProp != null) {
-            sumCard = (Double) data.rows.get(0).values.get(sumCardDraw);
-            if (sumCard != null && sumCard > 0) {
-                result += "~1," + sumCard / 100 + "\n";
-            }
-        }
-        if (sumCard == null)
-            sumCard = 0.0;
-
-        Double sumCash;
-        if (sumCashProp != null) {
-            sumCash = (Double) data.rows.get(0).values.get(sumCashDraw);
-            if (sumCash == null) sumCash = toPay - sumCard;
-        } else
-            sumCash = toPay - sumCard;
-
-        result += sumCash / 100 + "\n";
-
-        return result;
-    }
-
     public ClientAction getPrintOrderAction(FormInstance formInstance,
                                             Set<GroupObjectInstance> classGroups,
                                             PropertyDrawEntity<?> priceProp, PropertyDrawEntity<?> quantityProp,
@@ -272,10 +169,10 @@ public class CashRegController {
                                             PropertyDrawEntity<?> toPayProp, PropertyDrawEntity<?> barcodeProp) {
 
         List<ClientAction> actions = new ArrayList<ClientAction>();
-        actions.add(new ExportFileClientAction("c:\\bill\\remark.txt", false, createOrderTxt(formInstance,
+        actions.add(new NonFiscalPrintAction(createOrderTxt(formInstance,
                 classGroups, priceProp, quantityProp,
-                nameProp, sumProp, toPayProp, barcodeProp), CASHREGISTER_CHARSETNAME));
-        actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, "/R", CASHREGISTER_CHARSETNAME));
+                nameProp, sumProp, toPayProp, barcodeProp), getCashRegComPort(formInstance)));
+        //actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, "/R", CASHREGISTER_CHARSETNAME));
         return new ListClientAction(actions);
     }
 
@@ -320,16 +217,17 @@ public class CashRegController {
                 Double price = BaseUtils.nvl((Double) row.values.get(priceDraw), 0.0);
                 String barcode = (BaseUtils.nvl((String) row.values.get(barcodeDraw), "")).trim();
                 String artName = (BaseUtils.nvl((String) row.values.get(nameDraw), "")).trim();
-                artName = artName.replace(',', '.');
-                artName = artName.replace('"', ' ');
-                artName = artName.replace('\'', ' ');
+                //artName = artName.replace(',', '.');
+                //artName = artName.replace('"', ' ');
+                //artName = artName.replace('\'', ' ');
                 Double sumPos = (Double) row.values.get(sumDraw);
                 Double sumFull = price * quantity;
 
                 int discount = ((Double) (sumFull - sumPos)).intValue();
                 totalDiscount += discount;
                 String priceString = quantity.intValue() + "x" + price.intValue() + (sumFull.equals(sumPos) ? "" : " ск. " + discount) + '=' + sumPos.intValue();
-                result += BaseUtils.padr(barcode + " " + artName, lengthCheck) + '\n' + BaseUtils.padl(priceString, lengthCheck) + '\n';
+                result += BaseUtils.padr(barcode, lengthCheck) + '\n' + BaseUtils.padr(artName, lengthCheck)
+                        + '\n' + BaseUtils.padl(priceString, lengthCheck) + '\n';
             }
         }
 
@@ -370,8 +268,8 @@ public class CashRegController {
 //       пока не поддерживается
 //        BL.addProp(BL.cashRegOperGroup, new SimpleCashRegActionProperty(BL.genSID(), "Аннулировать чек", "/A")); 
         BL.addProp(BL.cashRegOperGroup, new SimpleCashRegActionProperty(BL.genSID(), "Продолжить печать", "/R"));
-        BL.addProp(BL.cashRegOperGroup, new SimpleCashRegActionProperty(BL.genSID(), "Запрос наличных", "/C", "cash.txt", 100, "#,##0"));
-        BL.addProp(BL.cashRegOperGroup, new SimpleCashRegActionProperty(BL.genSID(), "Открыть денеж. ящик", "/O"));
+        BL.addProp(BL.cashRegOperGroup, new MessageActionProperty(BL.genSID(), "Запрос наличных", MessageAction.COUNTER));
+        BL.addProp(BL.cashRegOperGroup, new ReportActionProperty(BL.genSID(), "Открыть денеж. ящик",ReportAction.MONEY_BOX));
         BL.addProp(BL.cashRegAdminGroup, new MessageActionProperty(BL.genSID(), "Номера посл. чека", MessageAction.LAST_DOC_NUM));
         BL.addProp(BL.cashRegAdminGroup, new IntegerCashRegActionProperty(BL.genSID(), "Внесение денег", MoneyOperationAction.CASH_IN));
         BL.addProp(BL.cashRegAdminGroup, new IntegerCashRegActionProperty(BL.genSID(), "Изъятие денег", MoneyOperationAction.CASH_OUT));

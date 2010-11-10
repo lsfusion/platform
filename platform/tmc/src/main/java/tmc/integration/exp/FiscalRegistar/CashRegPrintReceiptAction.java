@@ -22,8 +22,7 @@ public class CashRegPrintReceiptAction extends AbstractClientAction {
 
     @Override
     public void dispatch(ClientActionDispatcher dispatcher) throws IOException {
-        RuntimeException exception = null;
-        Dispatch cashDispatch = FiscalReg.createDispatch(comPort);
+        Dispatch cashDispatch = FiscalReg.getDispatch(comPort);
         Dispatch.call(cashDispatch, "OpenFiscalDoc", type);
 
         try {
@@ -66,13 +65,7 @@ public class CashRegPrintReceiptAction extends AbstractClientAction {
 
         } catch (RuntimeException e) {
             Dispatch.call(cashDispatch, "CancelFiscalDoc", false);
-            exception = e;
-        } finally {
-            Dispatch.call(cashDispatch, "Close", true);
-        }
-
-        if (exception != null) {
-            throw exception;
+            throw e;
         }
     }
 }

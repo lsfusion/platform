@@ -9,6 +9,7 @@ import java.io.IOException;
 public class MessageAction implements ClientAction {
     public final static int SERIAL_NUM = 0;
     public final static int LAST_DOC_NUM = 1;
+    public final static int COUNTER = 2;
     int type;
     int port;
 
@@ -28,6 +29,9 @@ public class MessageAction implements ClientAction {
         } else if (type == LAST_DOC_NUM) {
             msg = FiscalReg.getInfo("LastRecNumber", port, "QueryLastDocInfo");
             caption = "Номер последнего чека";
+        } else if (type == COUNTER) {
+            msg = FiscalReg.getQuery(port, "QueryCounter");
+            caption = "Наличных в кассе";
         }
         
         JOptionPane.showMessageDialog(null, msg, caption, JOptionPane.INFORMATION_MESSAGE);

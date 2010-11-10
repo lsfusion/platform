@@ -2,6 +2,7 @@ package tmc.integration.exp.FiscalRegistar;
 
 import com.jacob.activeX.ActiveXComponent;
 import com.jacob.com.Dispatch;
+import com.jacob.com.Variant;
 
 public class FiscalReg {
     final static int FONT = 2;
@@ -14,16 +15,46 @@ public class FiscalReg {
         }
     }
 
+    static Dispatch cashDispatch;
+    static ActiveXComponent cashRegister;
 
-    public static Dispatch createDispatch(int comPort) {
-        ActiveXComponent cashRegister = new ActiveXComponent("Incotex.MercuryFPrtX");
-
+    static void init(int comPort) {
+        if (cashDispatch != null) {
+            try {
+                Dispatch.call(cashDispatch, "Close", true);
+            }
+            catch (Exception e) {
+            }
+        }
+        cashRegister = new ActiveXComponent("Incotex.MercuryFPrtX");
         cashRegister.setProperty("PortNum", comPort);
         cashRegister.setProperty("BaudRate", 115200);
         cashRegister.setProperty("Password", "0000");
 
-        Dispatch cashDispatch = cashRegister.getObject();
+        cashDispatch = cashRegister.getObject();
         Dispatch.call(cashDispatch, "Open");
+        Dispatch.call(cashDispatch, "SetDisplayBaudRate", 9600);
+        try {
+            Thread.sleep(100);
+        }
+        catch (Exception e) {
+        }
+    }
+
+
+    public static Dispatch getDispatch(int comPort) {
+        if (cashDispatch == null) {
+            init(comPort);
+        } else {
+            try {
+                Dispatch.call(cashDispatch, "TestConnection");
+                if (!cashRegister.getProperty("Active").getBoolean()) {
+                    init(comPort);
+                }
+            } catch (Exception e) {
+                init(comPort);
+            }
+        }
         return cashDispatch;
     }
 
@@ -47,20 +78,26 @@ public class FiscalReg {
     }
 
     public static String getInfo(String property, int comPort, String query) {
-        ActiveXComponent cashRegister = new ActiveXComponent("Incotex.MercuryFPrtX");
-
-        cashRegister.setProperty("PortNum", comPort);
-        cashRegister.setProperty("BaudRate", 115200);
-        cashRegister.setProperty("Password", "0000");
-
-        Dispatch cashDispatch = cashRegister.getObject();
-        Dispatch.call(cashDispatch, "Open");
+        if (cashDispatch == null) {
+            init(comPort);
+        }
         if (query != null) {
             Dispatch.call(cashDispatch, query);
         }
         Object result = cashRegister.getProperty(property);
-        Dispatch.call(cashDispatch, "Close", true);
+        //Dispatch.call(cashDispatch, "Close", true);
         return result.toString();
+    }
+
+    public static String getQuery(int comPort, String query) {
+        if (cashDispatch == null) {
+            init(comPort);
+        }
+        Object arg[] = new Object[]{11, false};
+        //Variant result = Dispatch.invoke(cashDispatch, "QueryCounter", Dispatch.Get, arg, new int[1]);//Dispatch.call(cashDispatch, query, 11, false);
+        // Dispatch.call(cashDispatch, "Close", true);
+       // return result.getCurrency() + "";
+        return "";
     }
 
 }

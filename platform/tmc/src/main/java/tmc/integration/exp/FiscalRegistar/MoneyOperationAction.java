@@ -2,9 +2,9 @@ package tmc.integration.exp.FiscalRegistar;
 
 import com.jacob.com.Dispatch;
 import platform.interop.action.AbstractClientAction;
-import platform.interop.action.ClientAction;
 import platform.interop.action.ClientActionDispatcher;
 
+import javax.swing.*;
 import java.io.IOException;
 
 public class MoneyOperationAction extends AbstractClientAction {
@@ -23,8 +23,16 @@ public class MoneyOperationAction extends AbstractClientAction {
 
     @Override
     public void dispatch(ClientActionDispatcher dispatcher) throws IOException {
-        RuntimeException exception = null;
-        Dispatch cashDispatch = FiscalReg.createDispatch(comPort);
+        int n = JOptionPane.showConfirmDialog(
+                null,
+                "Вы действительно хотите выполнить эту операцию?",
+                "Внесение/изъятие наличных",
+                JOptionPane.YES_NO_OPTION);
+        if (n != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        Dispatch cashDispatch = FiscalReg.getDispatch(comPort);
         Dispatch.call(cashDispatch, "OpenFiscalDoc", type);
 
         try {
@@ -39,13 +47,8 @@ public class MoneyOperationAction extends AbstractClientAction {
             Dispatch.call(cashDispatch, "CloseFiscalDoc");
         } catch (RuntimeException e) {
             Dispatch.call(cashDispatch, "CancelFiscalDoc", false);
-            exception = e;
-        } finally {
-            Dispatch.call(cashDispatch, "Close", true);
+            throw e;
         }
 
-        if (exception != null) {
-            throw exception;
-        }
     }
 }
