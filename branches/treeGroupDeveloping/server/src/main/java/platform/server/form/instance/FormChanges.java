@@ -19,13 +19,12 @@ public class FormChanges {
     public Map<GroupObjectInstance, ClassViewType> classViews = new HashMap<GroupObjectInstance, ClassViewType>();
     public Map<GroupObjectInstance, Map<ObjectInstance, ? extends ObjectValue>> objects = new HashMap<GroupObjectInstance, Map<ObjectInstance, ? extends ObjectValue>>();
 
-    // assertion что ObjectInstance из того же GroupObjectInstance
+    // assertion что ObjectInstance из того же GroupObjectInstance, в случае дерева даже не set
     public Map<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> gridObjects = new HashMap<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>>();
 
     // assertion для ключа GroupObjectInstance что в значении ObjectInstance из верхних GroupObjectInstance TreeGroupInstance'а этого ключа,
     // так же может быть ObjectInstance из этого ключа если GroupObject - отображается рекурсивно (тогда надо цеплять к этому GroupObjectValue, иначе к верхнему)
-    public Map<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> treeObjects = new HashMap<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>>();
-    public Set<GroupObjectInstance> treeRefresh = new HashSet<GroupObjectInstance>(); // для каких групп объектов collaps'ить пришедшие ключи     
+    public Map<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> parentObjects = new HashMap<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>>();
 
     public Map<PropertyReadInstance, Map<Map<ObjectInstance, DataObject>, Object>> properties = new HashMap<PropertyReadInstance, Map<Map<ObjectInstance, DataObject>, Object>>();
 
@@ -88,19 +87,25 @@ public class FormChanges {
             }
         }
 
-        serializeKeyObjectsMap(outStream, gridObjects);
-        serializeKeyObjectsMap(outStream, treeObjects);
+        outStream.writeInt(gridObjects.size());
+        for (Map.Entry<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> gridObject : gridObjects.entrySet()) {
 
-        outStream.writeInt(treeRefresh.size());
-        for (GroupObjectInstance group : treeRefresh) {
-            outStream.writeInt(group.getID());
+            outStream.writeInt(gridObject.getKey().getID());
+
+            outStream.writeInt(gridObject.getValue().size());
+            for (Map<ObjectInstance, DataObject> groupObjectValue : gridObject.getValue()) {
+                // именно так чтобы гарантировано в том же порядке
+                for (ObjectInstance object : gridObject.getKey().objects) {
+                    BaseUtils.serializeObject(outStream, groupObjectValue.get(object).object);
+                }
+            }
         }
 
         outStream.writeInt(panelProperties.size());
         for (PropertyDrawInstance propertyView : panelProperties) {
             outStream.writeInt(propertyView.getID());
         }
-        
+
         outStream.writeInt(properties.size());
         for (Map.Entry<PropertyReadInstance,Map<Map<ObjectInstance,DataObject>,Object>> gridProperty : properties.entrySet()) {
             PropertyReadInstance propertyReadInstance = gridProperty.getKey();
@@ -130,21 +135,5 @@ public class FormChanges {
         outStream.writeUTF(message);
 
         BaseUtils.serializeObject(outStream, dataChanged);
-    }
-
-    private void serializeKeyObjectsMap(DataOutputStream outStream, Map<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> keyObjects) throws IOException {
-        outStream.writeInt(keyObjects.size());
-        for (Map.Entry<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> gridObject : keyObjects.entrySet()) {
-
-            outStream.writeInt(gridObject.getKey().getID());
-
-            outStream.writeInt(gridObject.getValue().size());
-            for (Map<ObjectInstance, DataObject> groupObjectValue : gridObject.getValue()) {
-                // именно так чтобы гарантировано в том же порядке
-                for (ObjectInstance object : gridObject.getKey().objects) {
-                    BaseUtils.serializeObject(outStream, groupObjectValue.get(object).object);
-                }
-            }
-        }
     }
 }
