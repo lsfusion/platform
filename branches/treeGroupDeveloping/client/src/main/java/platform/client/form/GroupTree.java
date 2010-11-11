@@ -3,6 +3,7 @@ package platform.client.form;
 import platform.base.OrderedMap;
 import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientGroupObjectValue;
+import platform.client.logics.ClientObject;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.tree.ClientTree;
 import platform.client.tree.ClientTreeNode;
@@ -12,7 +13,6 @@ import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.ExpandVetoException;
-import javax.swing.tree.TreeNode;
 import java.io.IOException;
 import java.util.*;
 
@@ -70,21 +70,29 @@ public class GroupTree extends ClientTree {
         rootNode.add(new ExpandingTreeNode());
     }
 
-    public void updateKeys(ClientGroupObject group, List<ClientGroupObjectValue> keys, List<ClientGroupObjectValue> keysTreePathes, boolean refreshKeys) {
+    public void updateKeys(ClientGroupObject group, List<ClientGroupObjectValue> keys, List<ClientGroupObjectValue> parentPaths) {
         Map<TreeGroupNode, List<ClientGroupObjectValue>> updatingKeys = new OrderedMap<TreeGroupNode, List<ClientGroupObjectValue>>();
-        //depthFirstEnumeration, потому что важно, чтобы обновление происходило, начиная с нижних узлов 
-        Enumeration<TreeGroupNode> nodes = ((TreeGroupNode) treeModel.getRoot()).depthFirstEnumeration();
-        while (nodes.hasMoreElements()) {
-            TreeGroupNode node = nodes.nextElement();
-            if (node.group == null) {
-                continue;
-            }
 
-            for (int i = 0, keysTreePathesSize = keysTreePathes.size(); i < keysTreePathesSize; i++) {
+        NodeEnumerator enumerator = new NodeEnumerator();
+        while (enumerator.hasNext()) {
+            TreeGroupNode node = enumerator.nextNode();
+            for (int i = 0, keysTreePathesSize = parentPaths.size(); i < keysTreePathesSize; i++) {
                 ClientGroupObjectValue key = keys.get(i);
-                ClientGroupObjectValue keyTreePath = keysTreePathes.get(i);
+                ClientGroupObjectValue parentKey = parentPaths.get(i);
+
+                ClientGroupObjectValue keyTreePath = new ClientGroupObjectValue(key);
+                if (!parentKey.isEmpty()) {
+                    //рекурсивный случай - просто перезаписываем значения для ObjectInstance'ов
+                    keyTreePath.putAll(parentKey);
+                } else {
+                    //удаляем значение ключа самого groupObject, чтобы получить путь к нему из "родителей"
+                    for (ClientObject object : group) {
+                        keyTreePath.remove(object);
+                    }
+                }
 
                 //нужно просто проверить, что равны по содержимому
+                //todo: проверить, одинаковый ли здесь порядок и можно ли использовать equals
                 if (node.compositeKey.contentEquals(keyTreePath)) {
                     List<ClientGroupObjectValue> updatingNodesKeys = updatingKeys.get(node);
                     if (updatingNodesKeys == null) {
@@ -108,9 +116,6 @@ public class GroupTree extends ClientTree {
                 TreeGroupNode child = (TreeGroupNode) node.getChildAt(i);
                 //todo: нужно будет ещё поддержать порядок
                 if (nodeKeys.contains(child.key)) {
-                    if (refreshKeys) {
-                        collapsePath(getPathToRoot(node));
-                    }
                     ++i;
                     nodeKeys.remove(child.key);
                 } else {
@@ -167,7 +172,7 @@ public class GroupTree extends ClientTree {
         public ClientGroupObjectValue compositeKey;
 
         public TreeGroupNode() {
-
+            this(null, new ClientGroupObjectValue(), new ClientGroupObjectValue());
         }
 
         public TreeGroupNode(ClientGroupObject group, ClientGroupObjectValue key, ClientGroupObjectValue compositeKey) {
@@ -197,6 +202,40 @@ public class GroupTree extends ClientTree {
             }
 
             return caption;
+        }
+    }
+
+    public class NodeEnumerator {
+        //depthFirstEnumeration, потому что важно, чтобы обновление происходило, начиная с нижних узлов
+        private Enumeration<TreeGroupNode> nodes = ((TreeGroupNode) treeModel.getRoot()).depthFirstEnumeration();
+        private TreeGroupNode nextNode;
+        public NodeEnumerator() {
+            findNextNode();
+        }
+
+        public TreeGroupNode nextNode() {
+            TreeGroupNode result = nextNode;
+            findNextNode();
+            return result;
+        }
+
+        private void findNextNode() {
+            nextNode = null;
+            while (nodes.hasMoreElements()) {
+                TreeGroupNode node = nodes.nextElement();
+                if (accept(node)) {
+                    nextNode = node;
+                    break;
+                }
+            }
+        }
+
+        private boolean accept(TreeGroupNode node) {
+            return isExpanded(getPathToRoot(node));
+        }
+
+        public boolean hasNext() {
+            return nextNode != null;
         }
     }
 }

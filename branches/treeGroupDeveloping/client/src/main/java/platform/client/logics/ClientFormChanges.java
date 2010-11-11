@@ -23,8 +23,7 @@ public class ClientFormChanges {
 
     // assertion для ключа GroupObjectInstance что в значении ObjectInstance из верхних GroupObjectInstance TreeGroupInstance'а этого ключа,
     // так же может быть ObjectInstance из этого ключа если GroupObject - отображается рекурсивно (тогда надо цеплять к этому GroupObjectValue, иначе к верхнему)
-    public Map<ClientGroupObject, List<ClientGroupObjectValue>> treeObjects;
-    public Set<ClientGroupObject> treeRefresh; // для каких групп объектов collaps'ить пришедшие ключи
+    public Map<ClientGroupObject, List<ClientGroupObjectValue>> parentObjects;
 
     public final Map<ClientPropertyRead, Map<ClientGroupObjectValue, Object>> properties;
     public final Set<ClientPropertyDraw> panelProperties;
@@ -46,13 +45,7 @@ public class ClientFormChanges {
         }
 
         gridObjects = readGridObjectsMap(inStream, clientForm);
-        treeObjects = readGridObjectsMap(inStream, clientForm);
-
-        treeRefresh = new HashSet<ClientGroupObject>();
-        count = inStream.readInt();
-        for (int i = 0; i < count; ++i) {
-            treeRefresh.add(clientForm.getGroupObject(inStream.readInt()));
-        }
+        parentObjects = readGridObjectsMap(inStream, clientForm);
 
         //DropProperties
         panelProperties = new HashSet<ClientPropertyDraw>();

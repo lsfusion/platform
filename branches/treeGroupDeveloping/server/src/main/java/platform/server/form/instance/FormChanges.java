@@ -87,19 +87,23 @@ public class FormChanges {
             }
         }
 
-        outStream.writeInt(gridObjects.size());
-        for (Map.Entry<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> gridObject : gridObjects.entrySet()) {
+        serializeKeyObjectsMap(outStream, gridObjects);
+        serializeKeyObjectsMap(outStream, parentObjects);
 
-            outStream.writeInt(gridObject.getKey().getID());
-
-            outStream.writeInt(gridObject.getValue().size());
-            for (Map<ObjectInstance, DataObject> groupObjectValue : gridObject.getValue()) {
-                // именно так чтобы гарантировано в том же порядке
-                for (ObjectInstance object : gridObject.getKey().objects) {
-                    BaseUtils.serializeObject(outStream, groupObjectValue.get(object).object);
-                }
-            }
-        }
+        //todo: remove
+//        outStream.writeInt(gridObjects.size());
+//        for (Map.Entry<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> gridObject : gridObjects.entrySet()) {
+//
+//            outStream.writeInt(gridObject.getKey().getID());
+//
+//            outStream.writeInt(gridObject.getValue().size());
+//            for (Map<ObjectInstance, DataObject> groupObjectValue : gridObject.getValue()) {
+//                // именно так чтобы гарантировано в том же порядке
+//                for (ObjectInstance object : gridObject.getKey().objects) {
+//                    BaseUtils.serializeObject(outStream, groupObjectValue.get(object).object);
+//                }
+//            }
+//        }
 
         outStream.writeInt(panelProperties.size());
         for (PropertyDrawInstance propertyView : panelProperties) {
@@ -135,5 +139,21 @@ public class FormChanges {
         outStream.writeUTF(message);
 
         BaseUtils.serializeObject(outStream, dataChanged);
+    }
+
+    private void serializeKeyObjectsMap(DataOutputStream outStream, Map<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> keyObjects) throws IOException {
+        outStream.writeInt(keyObjects.size());
+        for (Map.Entry<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> gridObject : keyObjects.entrySet()) {
+
+            outStream.writeInt(gridObject.getKey().getID());
+
+            outStream.writeInt(gridObject.getValue().size());
+            for (Map<ObjectInstance, DataObject> groupObjectValue : gridObject.getValue()) {
+                // именно так чтобы гарантировано в том же порядке
+                for (ObjectInstance object : gridObject.getKey().objects) {
+                    BaseUtils.serializeObject(outStream, groupObjectValue.get(object).object);
+                }
+            }
+        }
     }
 }

@@ -30,8 +30,8 @@ public class TreeGroupController {
                                    Map<ClientGroupObject, List<ClientGroupObjectValue>> cachedGridObjects
     ) {
         for (ClientGroupObject groupObject : treeGroup.groups) {
-            if (fc.treeObjects.containsKey(groupObject)) {
-                view.updateKeys(groupObject, fc.gridObjects.get(groupObject), fc.treeObjects.get(groupObject), fc.treeRefresh.contains(groupObject));
+            if (fc.gridObjects.containsKey(groupObject)) {
+                view.updateKeys(groupObject, fc.gridObjects.get(groupObject), fc.parentObjects.get(groupObject));
             }
 
             // добавляем новые свойства

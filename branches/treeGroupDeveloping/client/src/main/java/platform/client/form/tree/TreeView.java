@@ -24,8 +24,8 @@ public class TreeView extends JPanel {
         return groupTree;
     }
 
-    public void updateKeys(ClientGroupObject group, List<ClientGroupObjectValue> keys, List<ClientGroupObjectValue> keysTreePathes, boolean refreshKeys) {
-        groupTree.updateKeys(group, keys, keysTreePathes, refreshKeys);
+    public void updateKeys(ClientGroupObject group, List<ClientGroupObjectValue> keys, List<ClientGroupObjectValue> keysTreePathes) {
+        groupTree.updateKeys(group, keys, keysTreePathes);
     }
 
     public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
