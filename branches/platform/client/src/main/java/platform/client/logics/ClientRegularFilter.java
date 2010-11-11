@@ -1,0 +1,47 @@
+package platform.client.logics;
+
+import platform.base.IdentityObject;
+import platform.client.SwingUtils;
+import platform.client.serialization.ClientIdentitySerializable;
+import platform.client.serialization.ClientSerializationPool;
+
+import javax.swing.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
+public class ClientRegularFilter extends IdentityObject implements ClientIdentitySerializable {
+
+    public String caption = "";
+    public KeyStroke key;
+    public boolean showKey;
+
+    public ClientRegularFilter() {
+
+    }
+
+    public String getFullCaption() {
+
+        String fullCaption = caption;
+        if (showKey && key != null) {
+            fullCaption += " (" + SwingUtils.getKeyStrokeCaption(key) + ")";
+        }
+        return fullCaption;
+    }
+
+    @Override
+    public String toString() {
+        return getFullCaption();
+    }
+
+    public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        //не надо, т.к. на сервер все данные - в entity
+    }
+
+    public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
+        caption = pool.readString(inStream);
+
+        key = pool.readObject(inStream);
+        showKey = inStream.readBoolean();
+    }
+}
