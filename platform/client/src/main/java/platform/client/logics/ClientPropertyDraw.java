@@ -39,7 +39,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean showEditKey;
 
     public Boolean focusable;
-    public Boolean readOnly;
+    public boolean readOnly;
 
     public boolean panelLabelAbove;
 
@@ -277,7 +277,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         pool.writeObject(outStream, format);
         pool.writeObject(outStream, focusable);
-        pool.writeObject(outStream, readOnly);
+        outStream.writeBoolean(readOnly);
 
         outStream.writeBoolean(panelLabelAbove);
 
@@ -311,10 +311,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         format = pool.readObject(inStream);
 
         focusable = pool.readObject(inStream);
-        readOnly = pool.readObject(inStream);
-        if (readOnly == null) {
-            readOnly = true;
-        }
+        readOnly = inStream.readBoolean();
 
         panelLabelAbove = inStream.readBoolean();
 

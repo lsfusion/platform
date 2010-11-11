@@ -511,7 +511,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     @IdentityLazy
     public SelectionProperty getSelectionProperty(ValueClass[] typeClasses) {
-        SelectionProperty property = new SelectionProperty(genSID(), typeClasses);
+        SelectionProperty property = new SelectionProperty(genSID(), typeClasses) {
+            @Override
+            public AbstractGroup getParent() {
+                return sessionGroup;
+            }
+        };
         addProperty(null, new LP<ClassPropertyInterface>(property));
         return property;
     }
@@ -531,6 +536,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             return SelectionProperty.class;
         }
 
+        @Override
+        protected boolean isInInterface(ValueClass[] classes) {
+            return classes.length >= 1;
+        }
+
         public boolean hasChild(Property prop) {
             return prop instanceof SelectionProperty;
         }
@@ -544,7 +554,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     @IdentityLazy
     public ObjectValueProperty getObjectValueProperty(ValueClass typeClass) {
-        ObjectValueProperty property = new ObjectValueProperty(genSID(), typeClass);
+        ObjectValueProperty property = new ObjectValueProperty(genSID(), typeClass) {
+            @Override
+            public AbstractGroup getParent() {
+                return baseGroup;
+            }
+        };
         addProperty(null, new LP<ClassPropertyInterface>(property));
         return property;
     }
@@ -568,27 +583,31 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected ObjectValuePropertySet objectValue;
 
     void initBase() {
-        rootGroup= new AbstractGroup("Корневая группа");
+
+        rootGroup = new AbstractGroup("Корневая группа");
         rootGroup.createContainer = false;
+
+        sessionGroup = new AbstractGroup("Сессионные свойства");
+        sessionGroup.createContainer = false;
+        rootGroup.add(sessionGroup);
 
         publicGroup = new AbstractGroup("Пользовательские свойства");
         publicGroup.createContainer = false;
         rootGroup.add(publicGroup);
 
-        baseGroup = new AbstractGroup("Атрибуты");
-        baseGroup.createContainer = false;        
         privateGroup = new AbstractGroup("Внутренние свойства");
         privateGroup.createContainer = false;
-        publicGroup.add(baseGroup);
         rootGroup.add(privateGroup);
-        
-        objectValue = new ObjectValuePropertySet();
-        baseGroup.add(objectValue);
+
+        baseGroup = new AbstractGroup("Атрибуты");
+        baseGroup.createContainer = false;
+        publicGroup.add(baseGroup);
 
         selection = new SelectionPropertySet();
+        sessionGroup.add(selection);
 
-        aggrGroup = new AbstractGroup("Аггрегированные атрибуты");
-        aggrGroup.createContainer = false;
+        objectValue = new ObjectValuePropertySet();
+        baseGroup.add(objectValue);
 
         baseClass = new BaseClass("Объект");
 
@@ -1012,10 +1031,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
       }
     */
     public AbstractGroup rootGroup;
-    public AbstractGroup baseGroup;
     public AbstractGroup publicGroup;
-    public AbstractGroup aggrGroup;
     public AbstractGroup privateGroup;
+    public AbstractGroup baseGroup;
+    public AbstractGroup sessionGroup;
 
     protected abstract void initGroups();
 

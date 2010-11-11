@@ -6,6 +6,7 @@ import platform.client.descriptor.IdentityDescriptor;
 import platform.client.descriptor.nodes.NodeCreator;
 import platform.client.descriptor.nodes.NullFieldNode;
 import platform.client.lookup.Lookup;
+import platform.interop.serialization.IdentitySerializable;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -167,8 +168,8 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
     }
 
     private Object processCreatedObject(Object object) {
-        if (object instanceof IdentityDescriptor) {
-            ((IdentityDescriptor)object).setID(Main.generateNewID());
+        if (object instanceof IdentitySerializable) {
+            ((IdentitySerializable)object).setID(Main.generateNewID());
         }
         Lookup.getDefault().setProperty(Lookup.NEW_EDITABLE_OBJECT_PROPERTY, object);
         return object;

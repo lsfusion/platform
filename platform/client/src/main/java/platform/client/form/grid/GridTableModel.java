@@ -110,8 +110,7 @@ public class GridTableModel extends AbstractTableModel {
             return false;
         }
 
-        Boolean readOnly = columnProps[col].readOnly;
-        return readOnly == null || readOnly;
+        return columnProps[col].readOnly;
     }
 
     public Object getValueAt(int row, int col) {

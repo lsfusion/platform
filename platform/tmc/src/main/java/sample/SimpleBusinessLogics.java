@@ -201,14 +201,14 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         LP contractPayTerms = addDProp(baseGroup, "contractPayTerms", "По реализации", LogicalClass.instance, contract);
         LP contractPayDelay = addDProp(baseGroup, "contractPayDelay", "Отсрочка", IntegerClass.instance, contract);
 
-        contractSupplier = addDProp(aggrGroup, "contractSupplier", "Поставщик", supplier, contract);
-        LP contractSupplierName = addJProp(aggrGroup, "contractSupplierName", "Название поставщика", name, contractSupplier, 1);
+        contractSupplier = addDProp(baseGroup, "contractSupplier", "Поставщик", supplier, contract);
+        LP contractSupplierName = addJProp(baseGroup, "contractSupplierName", "Название поставщика", name, contractSupplier, 1);
 
         LP specDateEnd = addDProp(baseGroup, "specDateEnd", "Действует до", DateClass.instance, specification);
         LP specPriceVolatility = addDProp(baseGroup, "specPriceVolatility", "Отклонение цены", DoubleClass.instance, specification);
 
-        specContract = addDProp(aggrGroup, "specContract", "Договор" , contract, specification);
-        LP specContractName = addJProp(aggrGroup, "specContractName", "Название договора", name, specContract, 1);
+        specContract = addDProp(baseGroup, "specContract", "Договор" , contract, specification);
+        LP specContractName = addJProp(baseGroup, "specContractName", "Название договора", name, specContract, 1);
         LP specSupplier = addJProp("Поставщик спец.", contractSupplier, specContract, 1);
 
         LP storeSuppSpec = addDProp(baseGroup, "storeSuppSpec", "Спец. скл. пост.", specification, store, supplier);

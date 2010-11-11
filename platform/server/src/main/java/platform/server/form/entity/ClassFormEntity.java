@@ -16,7 +16,6 @@ public class ClassFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> 
         addGroup(groupObject);
 
         addPropertyDraw(BL.baseGroup, true, object);
-        addPropertyDraw(BL.aggrGroup, true, object);
 
         BL.addObjectActions(this, object);
     }

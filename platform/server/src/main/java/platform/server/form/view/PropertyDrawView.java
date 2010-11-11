@@ -48,7 +48,7 @@ public class PropertyDrawView extends ComponentView {
 
     public Boolean focusable;
 
-    public Boolean readOnly = Boolean.FALSE;
+    public boolean readOnly;
 
     public boolean panelLabelAbove = false;
 
@@ -143,7 +143,7 @@ public class PropertyDrawView extends ComponentView {
 
         pool.writeObject(outStream, format);
         pool.writeObject(outStream, focusable);
-        pool.writeObject(outStream, readOnly);
+        outStream.writeBoolean(readOnly);
 
         outStream.writeBoolean(panelLabelAbove);
 
@@ -189,10 +189,7 @@ public class PropertyDrawView extends ComponentView {
         format = pool.readObject(inStream);
 
         focusable = pool.readObject(inStream);
-        readOnly = pool.readObject(inStream);
-        if (readOnly == null) {
-            readOnly = true;
-        }
+        readOnly = inStream.readBoolean();
 
         panelLabelAbove = inStream.readBoolean();
 

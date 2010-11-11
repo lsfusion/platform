@@ -14,7 +14,7 @@ public abstract class PropertySet extends AbstractNode {
     protected abstract Class<?> getPropertyClass();
 
     public boolean hasChild(Property prop) {
-        return prop.getClass() == getPropertyClass();
+        return getPropertyClass().isInstance(prop);
     }
 
     public List<ConcreteCustomClass> getClasses() {
