@@ -22,7 +22,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class ClientComponent extends IdentityDescriptor implements Serializable, ClientIdentitySerializable, AbstractComponent<ClientContainer, ClientComponent> {
+public abstract class ClientComponent extends IdentityObject implements Serializable, ClientIdentitySerializable, AbstractComponent<ClientContainer, ClientComponent> {
 
     public ComponentDesign design = new ComponentDesign();
 

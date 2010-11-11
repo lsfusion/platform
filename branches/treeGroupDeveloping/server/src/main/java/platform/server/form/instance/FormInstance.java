@@ -199,6 +199,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         return null;
     }
 
+    public TreeGroupInstance getTreeGroupInstance(int treeGroupID) {
+        for (TreeGroupInstance treeGroup : treeGroups)
+            if (treeGroup.getID() == treeGroupID)
+                return treeGroup;
+        return null;
+    }
+
     public ObjectInstance getObjectInstance(int objectID) {
         for (ObjectInstance object : getObjects())
             if (object.getID() == objectID)

@@ -366,6 +366,27 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
         return keys;
     }
 
+    private Map<ObjectInstance, DataObject> deserializeKeys(TreeGroupInstance treeGroup, byte[] treePathKeys) throws IOException {
+        DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(treePathKeys));
+        Map<ObjectInstance, DataObject> keys = new HashMap<ObjectInstance, DataObject>();
+        for (GroupObjectInstance groupInstance : treeGroup.groups) {
+            Map<ObjectInstance, Object> mapValues = new HashMap<ObjectInstance, Object>();
+            boolean found = false;
+            for (ObjectInstance objectInstance : groupInstance.objects) {
+                Object val = BaseUtils.deserializeObject(inStream);
+                if (val != null) {
+                    mapValues.put(objectInstance, val);
+                    found = true;
+                }
+            }
+
+            if (found) {
+                keys.putAll( groupInstance.findGroupObjectValue(mapValues) );
+            }
+        }
+        return keys;
+    }
+
     public void changePropertyOrder(int propertyID, byte modiType, byte[] columnKeys) throws RemoteException {
         PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
         try {
@@ -456,6 +477,16 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
         try {
             form.cancelChanges();
         } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void expandTreeNode(int treeGroupId, byte[] treePathKeys) throws RemoteException {
+        try {
+            TreeGroupInstance treeGroup = form.getTreeGroupInstance(treeGroupId);
+            Map<ObjectInstance, DataObject> keys = deserializeKeys(treeGroup, treePathKeys);
+            //todo: use this keys as path
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

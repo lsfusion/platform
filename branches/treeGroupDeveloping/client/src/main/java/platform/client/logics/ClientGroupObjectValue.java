@@ -10,8 +10,8 @@ import java.util.Set;
 
 import static platform.base.BaseUtils.*;
 
-public class ClientGroupObjectValue extends OrderedMap<ClientObject,Object>
-                             implements Serializable {
+public class ClientGroupObjectValue extends OrderedMap<ClientObject, Object>
+        implements Serializable {
     public ClientGroupObjectValue(ClientGroupObjectValue... clones) {
         super();
         for (ClientGroupObjectValue clone : clones) {
@@ -32,7 +32,7 @@ public class ClientGroupObjectValue extends OrderedMap<ClientObject,Object>
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
-        for (Map.Entry<ClientObject,Object> objectValue : entrySet()) {
+        for (Map.Entry<ClientObject, Object> objectValue : entrySet()) {
             serializeObject(outStream, objectValue.getValue());
         }
     }
@@ -48,7 +48,18 @@ public class ClientGroupObjectValue extends OrderedMap<ClientObject,Object>
     public byte[] serialize() throws IOException {
         return serialize((ClientPropertyDraw) null);
     }
-    
+
+    public byte[] serialize(ClientTreeGroup treeGroup) throws IOException {
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        DataOutputStream outStream = new DataOutputStream(byteStream);
+        for (ClientGroupObject group : treeGroup.groups) {
+            for (ClientObject clientObject : group) {
+                serializeObject(outStream, get(clientObject));
+            }
+        }
+        return byteStream.toByteArray();
+    }
+
     public byte[] serialize(ClientPropertyDraw propertyDraw) throws IOException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         if (propertyDraw != null) {
@@ -72,5 +83,9 @@ public class ClientGroupObjectValue extends OrderedMap<ClientObject,Object>
         }
 
         return true;
+    }
+
+    public boolean contentEquals(ClientGroupObjectValue other) {
+        return other != null && other.size() == size() && contains(other);
     }
 }

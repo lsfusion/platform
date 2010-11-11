@@ -87,20 +87,23 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
         // Сначала меняем виды объектов
         for (ClientPropertyRead read : fc.properties.keySet()) // интересуют только свойства
-            if(read instanceof ClientPropertyDraw) {
+        {
+            if (read instanceof ClientPropertyDraw) {
                 ClientPropertyDraw property = (ClientPropertyDraw) read;
                 if (property.groupObject == groupObject && property.shouldBeDrawn(form)) {
                     addDrawProperty(property, fc.panelProperties.contains(property));
 
                     OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>> groupColumnKeys = new OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>>();
-                    for (ClientGroupObject columnGroupObject : property.columnGroupObjects)
+                    for (ClientGroupObject columnGroupObject : property.columnGroupObjects) {
                         if (cachedGridObjects.containsKey(columnGroupObject)) {
                             groupColumnKeys.put(columnGroupObject, cachedGridObjects.get(columnGroupObject));
                         }
+                    }
 
                     updateDrawColumnKeys(property, ClientGroupObject.mergeGroupValues(groupColumnKeys));
                 }
             }
+        }
 
         for (ClientPropertyDraw property : fc.dropProperties) {
             if (property.groupObject == groupObject) {
@@ -125,7 +128,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         }
 
         // Затем их свойства
-        for (Map.Entry<ClientPropertyRead,Map<ClientGroupObjectValue,Object>> readProperty : fc.properties.entrySet()) {
+        for (Map.Entry<ClientPropertyRead, Map<ClientGroupObjectValue, Object>> readProperty : fc.properties.entrySet()) {
             ClientPropertyRead propertyRead = readProperty.getKey();
             if (propertyRead.getGroupObject() == groupObject && propertyRead.shouldBeDrawn(form)) {
                 propertyRead.update(readProperty.getValue(), this);
@@ -226,10 +229,11 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
     }
 
     public void addDrawProperty(ClientPropertyDraw property, boolean toPanel) {
-        if(toPanel)
+        if (toPanel) {
             addPanelProperty(property);
-        else
+        } else {
             addGridProperty(property);
+        }
     }
 
     public void dropProperty(ClientPropertyDraw property) {
@@ -261,31 +265,35 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
     }
 
     public void updateDrawColumnKeys(ClientPropertyDraw property, List<ClientGroupObjectValue> groupColumnKeys) {
-        if(panelProperties.contains(property))
+        if (panelProperties.contains(property)) {
             panel.updateColumnKeys(property, groupColumnKeys);
-        else
+        } else {
             grid.updateColumnKeys(property, groupColumnKeys);
+        }
     }
 
     public void updateDrawPropertyCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> captions) {
-        if(panelProperties.contains(property))
+        if (panelProperties.contains(property)) {
             panel.updatePropertyCaptions(property, captions);
-        else
+        } else {
             grid.updatePropertyCaptions(property, captions);
+        }
     }
 
     public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
-        if(panelProperties.contains(property))
+        if (panelProperties.contains(property)) {
             panel.updatePropertyValues(property, values);
-        else
+        } else {
             grid.updatePropertyValues(property, values);
+        }
     }
 
     public void updateDrawHighlightValues(Map<ClientGroupObjectValue, Object> highlights) {
-        if(classView == ClassViewType.GRID)
+        if (classView == ClassViewType.GRID) {
             grid.updateHighlightValues(highlights);
-        else
+        } else {
             panel.updateHighlightValue(BaseUtils.singleValue(highlights));
+        }
     }
 
 
@@ -329,8 +337,9 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
         ArrayList<ClientPropertyDraw> properties = new ArrayList<ClientPropertyDraw>();
         for (ClientPropertyDraw property : getPropertyDraws()) {
-            if (groupObject.equals(property.groupObject))
+            if (groupObject.equals(property.groupObject)) {
                 properties.add(property);
+            }
         }
 
         return properties;

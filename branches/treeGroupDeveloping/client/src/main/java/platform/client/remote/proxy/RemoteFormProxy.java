@@ -219,6 +219,13 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         logRemoteMethodEndVoidCall("cancelChanges");
     }
 
+    @PendingRemoteMethod
+    public void expandTreeNode(int treeGroupId, byte[] treePath) throws RemoteException {
+        logRemoteMethodStartVoidCall("expandTreeNode");
+        target.expandTreeNode(treeGroupId, treePath);
+        logRemoteMethodEndVoidCall("expandTreeNode");
+    }
+
     public byte[] getPropertyChangeType(int propertyID) throws RemoteException {
         logRemoteMethodStartCall("getPropertyChangeType");
         byte[] result = target.getPropertyChangeType(propertyID);

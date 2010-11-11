@@ -68,6 +68,8 @@ public interface RemoteFormInterface extends PendingRemote {
 
     void cancelChanges() throws RemoteException;
 
+    void expandTreeNode(int treeGroupId, byte[] bytes) throws RemoteException;
+
     ClientApply checkClientChanges() throws RemoteException;
     void applyClientChanges(Object clientResult) throws RemoteException;
 
@@ -77,4 +79,5 @@ public interface RemoteFormInterface extends PendingRemote {
 
     final static int CHANGEGROUPOBJECT_FIRSTROW = 0;
     final static int CHANGEGROUPOBJECT_LASTROW = 1;
+
 }
