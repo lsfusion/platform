@@ -15,15 +15,17 @@ import javax.swing.*;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class NavigatorDescriptorView extends JPanel {
     private FormDescriptorView formView;
     private VisualSetupNavigator visualNavigator;
 
+    private Map<Integer, FormDescriptor> forms = new HashMap<Integer, FormDescriptor>();
     //todo: в будущем формы надо создавать на сервере и это убрать...
-    private Set<Integer> newFormsIds = new HashSet<Integer>();
 
     public NavigatorDescriptorView(final ClientNavigator iNavigator) {
 
@@ -38,15 +40,17 @@ public class NavigatorDescriptorView extends JPanel {
         add(splitPane, BorderLayout.CENTER);
     }
 
-    public void openForm(int ID) throws IOException {
-        if (newFormsIds.contains(ID)) {
-            formView.setForm(new FormDescriptor(ID));
-        } else {
-            FormDescriptor formDescriptor = FormDescriptor.deserialize(visualNavigator.remoteNavigator.getRichDesignByteArray(ID),
-                                                                       visualNavigator.remoteNavigator.getFormEntityByteArray(ID));
+    public void reopenForm(int ID) throws IOException {
+        forms.remove(ID);
+        openForm(ID);
+    }
 
-            formView.setForm(formDescriptor);
+    public void openForm(int ID) throws IOException {
+        if (!forms.containsKey(ID)) {
+            forms.put(ID, FormDescriptor.deserialize(visualNavigator.remoteNavigator.getRichDesignByteArray(ID),
+                                                     visualNavigator.remoteNavigator.getFormEntityByteArray(ID)));
         }
+        formView.setForm(forms.get(ID));
     }
 
     private class VisualSetupNavigator extends AbstractNavigator {
@@ -63,7 +67,7 @@ public class NavigatorDescriptorView extends JPanel {
                             ClientTreeNode node = e.getNode();
 
                             FormDescriptor newForm = new FormDescriptor(Main.generateNewID());
-                            newFormsIds.add(newForm.getID());
+                            forms.put(newForm.getID(), newForm);
 
                             //раскрываем, чтобы загрузить узлы с сервера...
                             tree.expandPath(tree.getPathToRoot(node));
@@ -104,7 +108,7 @@ public class NavigatorDescriptorView extends JPanel {
                             Object userObject = child.getUserObject();
                             if (userObject instanceof NewNavigatorForm) {
                                 NewNavigatorForm formElement = (NewNavigatorForm) userObject;
-                                newFormsIds.remove(formElement.form.getID());
+                                forms.remove(formElement.form.getID());
                                 Lookup.getDefault().setProperty(Lookup.DELETED_OBJECT_PROPERTY, formElement.form);
                             }
                         }

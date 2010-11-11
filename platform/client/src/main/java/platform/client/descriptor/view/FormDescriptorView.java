@@ -84,7 +84,7 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
         cancelBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    parent.openForm(form.getID());
+                    parent.reopenForm(form.getID());
                 } catch (IOException ioe) {
                     throw new RuntimeException("Не могу открыть форму.", ioe);
                 }
