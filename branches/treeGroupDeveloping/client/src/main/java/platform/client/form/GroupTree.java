@@ -31,10 +31,6 @@ public class GroupTree extends ClientTree {
     public GroupTree(TreeGroupController itreeGroupController, ClientFormController iform) {
         super();
 
-//        setPreferredSize(new Dimension(50, 50));
-//        setMinimumSize(new Dimension(300, 100));
-//        setMaximumSize(new Dimension(500, 500));
-
         treeGroupController = itreeGroupController;
 
         form = iform;
@@ -74,8 +70,6 @@ public class GroupTree extends ClientTree {
         rootNode = new TreeGroupNode();
 
         model.setRoot(rootNode);
-
-//        rootNode.add(new ExpandingTreeNode());
     }
 
     public void updateKeys(ClientGroupObject group, List<ClientGroupObjectValue> keys, List<ClientGroupObjectValue> parentPaths) {
@@ -138,7 +132,7 @@ public class GroupTree extends ClientTree {
             }
 
             if (node.getChildCount() == 0) {
-                //todo: ?? что в этом случае делать и как вообще отображать листовые узлы
+                //todo: добавить ExpandingTreeNode, если узел не из последней группы
             }
         }
     }
