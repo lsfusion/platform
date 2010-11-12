@@ -506,20 +506,20 @@ public class ClientFormController {
         }
     }
 
-    public void changeGroupObject(ClientGroupObject groupObject, ClientGroupObjectValue objectValue) throws IOException {
-
-        ClientGroupObjectValue curObjectValue = controllers.get(groupObject).getCurrentObject();
-
-        if (!objectValue.equals(curObjectValue)) {
-            remoteForm.changeGroupObject(groupObject.getID(), objectValue.serialize());
+    public void changeGroupObject(ClientGroupObject group, ClientGroupObjectValue objectValue) throws IOException {
+        if (controllers.containsKey(group) && !objectValue.equals(controllers.get(group).getCurrentObject())) {
+            remoteForm.changeGroupObject(group.getID(), objectValue.serialize());
             applyRemoteChanges();
         }
     }
 
+    public void changeGroupObject(ClientTreeGroup treeGroup, ClientGroupObject group, ClientGroupObjectValue objectValue) throws IOException {
+        remoteForm.changeGroupObject(group.getID(), objectValue.serialize(treeGroup));
+        applyRemoteChanges();
+    }
+
     public void changeGroupObject(ClientGroupObject groupObject, Scroll changeType) throws IOException {
-
         remoteForm.changeGroupObject(groupObject.getID(), changeType.serialize());
-
         applyRemoteChanges();
     }
 

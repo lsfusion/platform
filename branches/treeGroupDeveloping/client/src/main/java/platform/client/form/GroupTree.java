@@ -10,14 +10,13 @@ import platform.client.tree.ClientTreeNode;
 import platform.client.tree.ExpandingTreeNode;
 
 import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.ExpandVetoException;
-import javax.swing.tree.TreePath;
-import java.awt.*;
 import java.io.IOException;
 import java.util.*;
-import java.util.List;
 
 public class GroupTree extends ClientTree {
     private TreeGroupNode rootNode;
@@ -54,6 +53,17 @@ public class GroupTree extends ClientTree {
             }
 
             public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
+            }
+        });
+
+        addTreeSelectionListener(new TreeSelectionListener() {
+            public void valueChanged(TreeSelectionEvent event) {
+                TreeGroupNode node = (TreeGroupNode) event.getPath().getLastPathComponent();
+                try {
+                    form.changeGroupObject(treeGroupController.treeGroup, node.group, node.compositeKey);
+                } catch (IOException e) {
+                    throw new RuntimeException("Ошибка при выборе узла.");
+                }
             }
         });
 
@@ -211,6 +221,7 @@ public class GroupTree extends ClientTree {
         //depthFirstEnumeration, потому что важно, чтобы обновление происходило, начиная с нижних узлов
         private Enumeration<ClientTreeNode> nodes = ((ClientTreeNode) treeModel.getRoot()).depthFirstEnumeration();
         private TreeGroupNode nextNode;
+
         public NodeEnumerator() {
             findNextNode();
         }
