@@ -8,9 +8,9 @@ import java.util.Set;
 public interface Updated {
 
     // изменилось что-то влияющее на isInInterface/getClassSet (класс верхних объектов или класс grid'а)
-    boolean classUpdated(GroupObjectInstance classGroup);
+    boolean classUpdated(Set<GroupObjectInstance> gridGroups);
     // изменилось что-то использующее в getExpr конкретные value (один из верхних объектов)
-    boolean objectUpdated(Set<GroupObjectInstance> skipGroups);
+    boolean objectUpdated(Set<GroupObjectInstance> gridGroups);
     boolean dataUpdated(Collection<Property> changedProps);
     
     void fillProperties(Set<Property> properties);

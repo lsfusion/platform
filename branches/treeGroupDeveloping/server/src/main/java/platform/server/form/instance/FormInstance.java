@@ -14,6 +14,7 @@ import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.DataClass;
 import platform.server.data.KeyField;
+import platform.server.data.PropertyField;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.EqualsWhere;
@@ -174,6 +175,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     public List<GroupObjectInstance> groups = new ArrayList<GroupObjectInstance>();
     public List<TreeGroupInstance> treeGroups = new ArrayList<TreeGroupInstance>();
     public Map<GroupObjectInstance, GroupObjectTable> groupTables = new HashMap<GroupObjectInstance, GroupObjectTable>();
+    public Map<GroupObjectInstance, GroupObjectTable> expandTables = new HashMap<GroupObjectInstance, GroupObjectTable>();
+
     // собсно этот объект порядок колышет столько же сколько и дизайн представлений
     public List<PropertyDrawInstance> properties = new ArrayList<PropertyDrawInstance>();
 
@@ -196,13 +199,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         for (GroupObjectInstance groupObject : groups)
             if (groupObject.getID() == groupID)
                 return groupObject;
-        return null;
-    }
-
-    public TreeGroupInstance getTreeGroupInstance(int treeGroupID) {
-        for (TreeGroupInstance treeGroup : treeGroups)
-            if (treeGroup.getID() == treeGroupID)
-                return treeGroup;
         return null;
     }
 
@@ -265,10 +261,18 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         }
     }
 
+    public void expandGroupObject(GroupObjectInstance group, Map<ObjectInstance, DataObject> value) throws SQLException {
+        GroupObjectTable expandTable = expandTables.get(group);
+        if(expandTable==null)
+            expandTable = new GroupObjectTable(group, "e", sessionID * RemoteFormInterface.GID_SHIFT + group.getID());
+        expandTables.put(group, expandTable.insertRecord(session, BaseUtils.join(expandTable.mapKeys, value), new HashMap<PropertyField, ObjectValue>(), true));
+        group.updated |= GroupObjectInstance.UPDATED_EXPANDS;
+    }
+
     public void changeGroupObject(GroupObjectInstance group, Map<ObjectInstance, ? extends ObjectValue> value) throws SQLException {
         // проставим все объектам метки изменений
-        for (ObjectInstance object : group.objects)
-            object.changeValue(session, value.get(object));
+        for (Entry<ObjectInstance, ? extends ObjectValue> objectValue : value.entrySet())
+            objectValue.getKey().changeValue(session, objectValue.getValue());
     }
 
     public void switchClassView(GroupObjectInstance group) {
@@ -671,7 +675,40 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         changeGroupObject(group, value);
     }
 
-    private OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> executeKeys(GroupObjectInstance group, Map<OrderInstance, ObjectValue> orderSeeks, int readSize, boolean down) throws SQLException {
+    private Where getExpandWhere(GroupObjectInstance group, Map<ObjectInstance, ? extends Expr> mapKeys) {
+        GroupObjectTable expandTable = expandTables.get(group);
+        if(expandTable==null)
+            return Where.FALSE;
+        else
+            return expandTable.join(BaseUtils.join(expandTable.mapKeys, mapKeys)).getWhere();
+    }
+
+    // возвращает OrderInstance из orderSeeks со значениями, а также если есть parent, то parent'ы
+    private OrderedMap<Map<ObjectInstance, DataObject>, Map<Object, ObjectValue>> executeKeys(GroupObjectInstance group, Map<OrderInstance, ObjectValue> orderSeeks, int readSize, boolean down) throws SQLException {
+
+        Map<ObjectInstance, KeyExpr> mapKeys = KeyExpr.getMapKeys(GroupObjectInstance.getObjects(group.getUpTreeGroups()));
+
+        // блок с expand'ом
+        Map<ObjectInstance,Expr> expandExprs = new HashMap<ObjectInstance, Expr>();
+
+        Where expandWhere;
+        if(group.getUpTreeGroup()!=null)
+            expandWhere = getExpandWhere(group.getUpTreeGroup(), mapKeys); // для верхней группы брать только из expandTable'а
+        else
+            expandWhere = Where.TRUE;
+
+        if(group.parent!=null) {
+            for(Entry<ObjectInstance, PropertyObjectInstance> parentEntry : group.parent.entrySet())
+                expandExprs.put(parentEntry.getKey(), parentEntry.getValue().getExpr(mapKeys, this));
+
+            Where nullWhere = Where.TRUE;
+            for(Expr expr : expandExprs.values())
+                nullWhere = nullWhere.or(expr.getWhere().not());
+            expandWhere = expandWhere.and(nullWhere).or(getExpandWhere(group,BaseUtils.override(mapKeys,expandExprs))); // если есть parent, то те чей parent равен null
+        }
+
+        // блок с orders
+
         // assertion что group.orders начинается с orderSeeks
         OrderedMap<OrderInstance, Boolean> orders;
         if (orderSeeks != null && readSize == 1) {
@@ -681,8 +718,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         }
 
         assert !(orderSeeks != null && !orders.starts(orderSeeks.keySet()));
-
-        Map<ObjectInstance, KeyExpr> mapKeys = group.getMapKeys();
 
         Map<OrderInstance, Expr> orderExprs = new HashMap<OrderInstance, Expr>();
         for (Map.Entry<OrderInstance, Boolean> toOrder : orders.entrySet()) {
@@ -724,12 +759,14 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
             orderWhere = Where.FALSE;
         }
 
-        return new Query<ObjectInstance, OrderInstance>(mapKeys, orderExprs, group.getWhere(mapKeys, this).and(down ? orderWhere : orderWhere.not())).executeClasses(session, down ? orders : Query.reverseOrder(orders), readSize, BL.baseClass);
+        return new Query<ObjectInstance, Object>(mapKeys, BaseUtils.<Object,OrderInstance,ObjectInstance,Expr>merge(orderExprs,expandExprs),
+                    group.getWhere(mapKeys, this).and(down ? orderWhere : orderWhere.not()).and(expandWhere)).
+                    executeClasses(session, down ? orders : Query.reverseOrder(orders), readSize, BL.baseClass);
     }
 
     // считывает одну запись
-    private Map.Entry<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> readObjects(GroupObjectInstance group, Map<OrderInstance, ObjectValue> orderSeeks) throws SQLException {
-        OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> result = executeKeys(group, orderSeeks, 1, true);
+    private Map.Entry<Map<ObjectInstance, DataObject>, Map<Object, ObjectValue>> readObjects(GroupObjectInstance group, Map<OrderInstance, ObjectValue> orderSeeks) throws SQLException {
+        OrderedMap<Map<ObjectInstance, DataObject>, Map<Object, ObjectValue>> result = executeKeys(group, orderSeeks, 1, true);
         if (result.size() == 0)
             result = executeKeys(group, orderSeeks, 1, false);
         if (result.size() > 0)
@@ -739,7 +776,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     private Map<ObjectInstance, ? extends ObjectValue> readKeys(GroupObjectInstance group, Map<OrderInstance, ObjectValue> orderSeeks) throws SQLException {
-        Map.Entry<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> objects = readObjects(group, orderSeeks);
+        Entry<Map<ObjectInstance, DataObject>, Map<Object, ObjectValue>> objects = readObjects(group, orderSeeks);
         if (objects != null)
             return objects.getKey();
         else
@@ -747,9 +784,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     private Map<OrderInstance, ObjectValue> readValues(GroupObjectInstance group, Map<OrderInstance, ObjectValue> orderSeeks) throws SQLException {
-        Map.Entry<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> objects = readObjects(group, orderSeeks);
+        Entry<Map<ObjectInstance, DataObject>, Map<Object, ObjectValue>> objects = readObjects(group, orderSeeks);
         if (objects != null)
-            return objects.getValue();
+            return BaseUtils.filterKeys(objects.getValue(), orderSeeks.keySet());
         else
             return new HashMap<OrderInstance, ObjectValue>();
     }
@@ -765,7 +802,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
     private boolean classUpdated(Updated updated, GroupObjectInstance groupObject) {
         assert !refresh; // refresh нужен для инициализации (например DataObjectInstance) больше чем для самого refresh
-        return updated.classUpdated(groupObject);
+        return updated.classUpdated(Collections.singleton(groupObject));
     }
 
     private boolean objectUpdated(Updated updated, GroupObjectInstance groupObject) {
@@ -912,8 +949,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
                 if (!updateKeys && group.curClassView == ClassViewType.GRID && (group.updated & GroupObjectInstance.UPDATED_OBJECT) != 0) { // скроллирование
                     int keyNum = group.keys.indexOf(dataKeys(currentObject));
-                    if (keyNum < group.getPageSize() && group.upKeys) { // если меньше PageSize осталось и сверху есть ключи
-                        updateKeys = true;
+                    if (group.upKeys && keyNum < group.getPageSize()) { // если меньше PageSize осталось и сверху есть ключи
+                        updateKeys = true; // assert что pageSize не 0
 
                         int lowestInd = group.getPageSize() * 2 - 1;
                         if (lowestInd >= group.keys.size()) // по сути END
@@ -923,7 +960,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                             orderSeeks = group.keys.getValue(lowestInd);
                         }
                     } else // наоборот вниз
-                        if (keyNum >= group.keys.size() - group.getPageSize() && group.downKeys) {
+                        if (group.downKeys && keyNum >= group.keys.size() - group.getPageSize()) { // assert что pageSize не null
                             updateKeys = true;
 
                             int highestInd = group.keys.size() - group.getPageSize() * 2;
@@ -936,8 +973,17 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                         }
                 }
 
+                if(updateKeys) {
+                    expandTables.remove(group);
+                    group.updated |= GroupObjectInstance.UPDATED_EXPANDS;
+                } else {
+                    if((group.getUpTreeGroup()!=null && ((group.getUpTreeGroup().updated & GroupObjectInstance.UPDATED_EXPANDS)!=0)) ||
+                        (group.parent!=null && (group.updated & GroupObjectInstance.UPDATED_EXPANDS)!=0))
+                        updateKeys = true; 
+                }
+
                 if (updateKeys) {
-                    OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> keyResult;
+                    OrderedMap<Map<ObjectInstance, DataObject>, Map<Object, ObjectValue>> keyResult;
                     if (group.curClassView != ClassViewType.GRID) {
                         // панель
                         updateGroupObject(group, result, readKeys(group, orderSeeks));
@@ -948,58 +994,67 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                         }
 
                         int activeRow = -1; // какой ряд выбранным будем считать
-                        keyResult = new OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>>();
+                        keyResult = new OrderedMap<Map<ObjectInstance, DataObject>, Map<Object, ObjectValue>>();
 
-                        if (direction == DIRECTION_CENTER) { // оптимизируем если HOME\END то читаем одним запросом
-                            if (orderSeeks == null) { // END
-                                direction = DIRECTION_UP;
-                                group.downKeys = false;
-                            } else if (orderSeeks.isEmpty()) { // HOME
-                                direction = DIRECTION_DOWN;
-                                group.upKeys = false;
-                            }
+                        int readSize;
+                        if(group.getPageSize()==0) { // если pageSize == 0
+                            direction = DIRECTION_DOWN;
+                            group.upKeys = false;
+                            group.downKeys = false;
+                            readSize = 0;
                         } else {
-                            group.downKeys = true;
-                            assert !(orderSeeks == null);
-                            group.upKeys = true;
-                            assert !(orderSeeks != null && orderSeeks.isEmpty());
+                            if (direction == DIRECTION_CENTER) { // оптимизируем если HOME\END, то читаем одним запросом
+                                if (orderSeeks == null) { // END
+                                    direction = DIRECTION_UP;
+                                    group.downKeys = false;
+                                } else if (orderSeeks.isEmpty()) { // HOME
+                                    direction = DIRECTION_DOWN;
+                                    group.upKeys = false;
+                                }
+                            } else {
+                                group.downKeys = true;
+                                assert !(orderSeeks == null);
+                                group.upKeys = true;
+                                assert !(orderSeeks != null && orderSeeks.isEmpty());
+                            }
+
+                            readSize = group.getPageSize() * 3 / (direction == DIRECTION_CENTER ? 2 : 1);
                         }
 
-                        int readSize = group.getPageSize() * 3 / (direction == DIRECTION_CENTER ? 2 : 1);
                         if (direction == DIRECTION_UP || direction == DIRECTION_CENTER) { // сначала Up
                             keyResult.putAll(executeKeys(group, orderSeeks, readSize, false).reverse());
                             group.upKeys = (keyResult.size() == readSize);
                             activeRow = keyResult.size() - 1;
                         }
                         if (direction == DIRECTION_DOWN || direction == DIRECTION_CENTER) { // затем Down
-                            OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> executeList = executeKeys(group, orderSeeks, readSize, true);
+                            OrderedMap<Map<ObjectInstance, DataObject>, Map<Object, ObjectValue>> executeList = executeKeys(group, orderSeeks, readSize, true);
                             if (executeList.size() > 0) activeRow = keyResult.size();
                             keyResult.putAll(executeList);
                             group.downKeys = (executeList.size() == readSize);
                         }
 
-                        group.keys = new OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>>();
-
                         // параллельно будем обновлять ключи чтобы JoinSelect'ить
                         GroupObjectTable insertTable = groupTables.get(group);
                         if (insertTable == null) {
-                            insertTable = new GroupObjectTable(group, sessionID * RemoteFormInterface.GID_SHIFT + group.getID());
+                            insertTable = new GroupObjectTable(group, "p", sessionID * RemoteFormInterface.GID_SHIFT + group.getID());
                             session.createTemporaryTable(insertTable);
                         }
 
+                        group.keys = new OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>>();
                         List<Map<KeyField, DataObject>> viewKeys = new ArrayList<Map<KeyField, DataObject>>();
-                        for (Entry<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> resultRow : keyResult.entrySet()) {
-                            viewKeys.add(BaseUtils.join(insertTable.mapKeys, resultRow.getKey()));
+                        List<Map<ObjectInstance, DataObject>> expandParents = new ArrayList<Map<ObjectInstance, DataObject>>();
+                        for (Entry<Map<ObjectInstance, DataObject>, Map<Object, ObjectValue>> resultRow : keyResult.entrySet()) {
+                            group.keys.put(resultRow.getKey(), BaseUtils.filterKeys(resultRow.getValue(), group.orders.keySet()));
 
-                            group.keys.put(new HashMap<ObjectInstance, DataObject>(resultRow.getKey()), BaseUtils.filterKeys(resultRow.getValue(), group.orders.keySet()));
+                            expandParents.add(BaseUtils.filterClass(BaseUtils.filterKeys(resultRow.getValue(), group.objects), DataObject.class));
+
+                            viewKeys.add(BaseUtils.join(insertTable.mapKeys, resultRow.getKey()));
                         }
 
                         groupTables.put(group, insertTable.writeKeys(session, viewKeys));
 
-                        List<Map<ObjectInstance, DataObject>> resultObjects = new ArrayList<Map<ObjectInstance, DataObject>>(group.keys.keySet());
-
-                        // заполняем классы полученных рядов
-                        result.gridObjects.put(group, resultObjects);
+                        result.gridObjects.put(group, group.keys.keyList());
+                        result.parentObjects.put(group, expandParents);
 
                         // если есть в новых ключах старый ключ, то делаем его активным
                         if (keepObject && group.keys.containsKey(dataKeys(currentObject)))
@@ -1066,14 +1121,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 Set<GroupObjectInstance> keyGroupObjects = entry.getKey();
                 Set<PropertyReadInstance> propertyList = entry.getValue();
 
-                Set<ObjectInstance> keyObjects = new HashSet<ObjectInstance>();
-                for (GroupObjectInstance keyGroupObject : keyGroupObjects) // неявный assertion что все groupObjects в таблице 
-                    keyObjects.addAll(keyGroupObject.objects);
-
-                Query<ObjectInstance, PropertyReadInstance> selectProps = new Query<ObjectInstance, PropertyReadInstance>(keyObjects);
+                Query<ObjectInstance, PropertyReadInstance> selectProps = new Query<ObjectInstance, PropertyReadInstance>(GroupObjectInstance.getObjects(GroupObjectInstance.getUpTreeGroups(keyGroupObjects)));
                 for (GroupObjectInstance keyGroup : keyGroupObjects) {
-                    GroupObjectTable columnKeyTable = groupTables.get(keyGroup);
-                    selectProps.and(columnKeyTable.joinAnd(BaseUtils.join(columnKeyTable.mapKeys, selectProps.mapKeys)).getWhere());
+                    GroupObjectTable groupTable = groupTables.get(keyGroup);
+                    selectProps.and(groupTable.joinAnd(BaseUtils.join(groupTable.mapKeys, selectProps.mapKeys)).getWhere());
                 }
 
                 for (PropertyReadInstance propertyDraw : propertyList) {

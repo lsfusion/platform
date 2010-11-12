@@ -112,6 +112,10 @@ public class OrderedMap<K,V> extends LinkedHashMap<K,V> {
         return i.next();
     }
 
+    public List<K> keyList() {
+        return new ArrayList<K>(keySet()); 
+    }
+
     public V getValue(int index) {
         Iterator<V> i = values().iterator();
         for(int j=0;j<index;j++)

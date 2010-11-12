@@ -29,12 +29,12 @@ public abstract class PropertyFilterInstance<P extends PropertyInterface> extend
         return property.getApplyObject();
     }
 
-    public boolean classUpdated(GroupObjectInstance classGroup) {
-        return property.classUpdated(classGroup);
+    public boolean classUpdated(Set<GroupObjectInstance> gridGroups) {
+        return property.classUpdated(gridGroups);
     }
 
-    public boolean objectUpdated(Set<GroupObjectInstance> skipGroups) {
-        return property.objectUpdated(skipGroups);
+    public boolean objectUpdated(Set<GroupObjectInstance> gridGroups) {
+        return property.objectUpdated(gridGroups);
     }
 
     public boolean dataUpdated(Collection<Property> changedProps) {

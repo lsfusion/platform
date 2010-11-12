@@ -67,16 +67,16 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
     }
 
     // проверяет на то что изменился верхний объект
-    public boolean objectUpdated(Set<GroupObjectInstance> skipGroups) {
+    public boolean objectUpdated(Set<GroupObjectInstance> gridGroups) {
         for(PropertyObjectInterfaceInstance intObject : mapping.values())
-            if(intObject.objectUpdated(skipGroups)) return true;
+            if(intObject.objectUpdated(gridGroups)) return true;
 
         return false;
     }
 
-    public boolean classUpdated(GroupObjectInstance classGroup) {
+    public boolean classUpdated(Set<GroupObjectInstance> gridGroups) {
         for(PropertyObjectInterfaceInstance intObject : mapping.values())
-            if(intObject.classUpdated(classGroup))
+            if(intObject.classUpdated(gridGroups))
                 return true;
 
         return false;

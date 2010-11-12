@@ -8,7 +8,7 @@ import java.util.Set;
 
 public interface PropertyObjectInterfaceInstance extends OrderInstance {
 
-    AndClassSet getClassSet(Set<GroupObjectInstance> classGroups);
+    AndClassSet getClassSet(Set<GroupObjectInstance> gridGroups);
 
     DataObject getDataObject();
 

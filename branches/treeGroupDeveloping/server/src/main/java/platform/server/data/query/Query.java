@@ -157,7 +157,7 @@ public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInter
         return executeClasses(session, new OrderedMap<V, Boolean>(), 0, baseClass);
     }
 
-    public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(SQLSession session,OrderedMap<V,Boolean> orders,int selectTop, BaseClass baseClass) throws SQLException {
+    public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(SQLSession session,OrderedMap<? extends V,Boolean> orders,int selectTop, BaseClass baseClass) throws SQLException {
         OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> result = new OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>>();
 
         if(where.isFalse()) return result; // иначе типы ключей не узнаем

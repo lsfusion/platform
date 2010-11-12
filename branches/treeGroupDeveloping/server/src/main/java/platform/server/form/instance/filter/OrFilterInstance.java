@@ -35,12 +35,12 @@ public class OrFilterInstance extends FilterInstance {
         op2 = deserialize(inStream, form);
     }
 
-    public boolean classUpdated(GroupObjectInstance classGroup) {
-        return op1.classUpdated(classGroup) || op2.classUpdated(classGroup);
+    public boolean classUpdated(Set<GroupObjectInstance> gridGroups) {
+        return op1.classUpdated(gridGroups) || op2.classUpdated(gridGroups);
     }
 
-    public boolean objectUpdated(Set<GroupObjectInstance> skipGroups) {
-        return op1.objectUpdated(skipGroups) || op2.objectUpdated(skipGroups);
+    public boolean objectUpdated(Set<GroupObjectInstance> gridGroups) {
+        return op1.objectUpdated(gridGroups) || op2.objectUpdated(gridGroups);
     }
 
     public boolean dataUpdated(Collection<Property> changedProps) {

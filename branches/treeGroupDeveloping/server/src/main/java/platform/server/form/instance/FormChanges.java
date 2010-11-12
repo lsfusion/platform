@@ -17,13 +17,14 @@ public class FormChanges {
     public String message = "";
 
     public Map<GroupObjectInstance, ClassViewType> classViews = new HashMap<GroupObjectInstance, ClassViewType>();
+
+    // value.keySet() из key.getUpTreeGroups
     public Map<GroupObjectInstance, Map<ObjectInstance, ? extends ObjectValue>> objects = new HashMap<GroupObjectInstance, Map<ObjectInstance, ? extends ObjectValue>>();
 
-    // assertion что ObjectInstance из того же GroupObjectInstance, в случае дерева даже не set
+    // value.keySet() из key.getUpTreeGroups
     public Map<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> gridObjects = new HashMap<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>>();
 
-    // assertion для ключа GroupObjectInstance что в значении ObjectInstance из верхних GroupObjectInstance TreeGroupInstance'а этого ключа,
-    // так же может быть ObjectInstance из этого ключа если GroupObject - отображается рекурсивно (тогда надо цеплять к этому GroupObjectValue, иначе к верхнему)
+    // value.keySet() из key, или пустой если root
     public Map<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> parentObjects = new HashMap<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>>();
 
     public Map<PropertyReadInstance, Map<Map<ObjectInstance, DataObject>, Object>> properties = new HashMap<PropertyReadInstance, Map<Map<ObjectInstance, DataObject>, Object>>();

@@ -3,6 +3,7 @@ package platform.server.form.instance;
 import platform.server.form.entity.TreeGroupEntity;
 
 import java.util.List;
+import java.util.Collection;
 
 public class TreeGroupInstance {
     public TreeGroupEntity entity;

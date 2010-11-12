@@ -57,7 +57,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     private int pageSize = 0;
     public int getPageSize() {
-        return pageSize;
+        if(getUpTreeGroups().size()>0)
+            return 0;
+        else
+            return pageSize;
     }
     public void setPageSize(int pageSize) {
         this.pageSize = pageSize;
@@ -205,6 +208,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public final static int UPDATED_CLASSVIEW = (1 << 4);
     public final static int UPDATED_ORDER = (1 << 5);
     public final static int UPDATED_FILTER = (1 << 6);
+    public final static int UPDATED_EXPANDS = (1 << 7);
 
     public int updated = UPDATED_GRIDCLASS | UPDATED_ORDER | UPDATED_FILTER;
 
@@ -271,4 +275,21 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             if (object instanceof CustomObjectInstance)
                 ((CustomObjectInstance)object).setClassListener(classListener);
     }
+
+    public GroupObjectInstance getUpTreeGroup() {
+        return BaseUtils.last(getUpTreeGroups());
+    }
+    public List<GroupObjectInstance> getUpTreeGroups() {
+        //todo: implement
+        return null;
+    }
+
+    public static Set<GroupObjectInstance> getUpTreeGroups(Set<GroupObjectInstance> groups) {
+        Set<GroupObjectInstance> result = new HashSet<GroupObjectInstance>();
+        for(GroupObjectInstance group : groups)
+            result.addAll(group.getUpTreeGroups());
+        return result;
+    }
+
+    public Map<ObjectInstance, PropertyObjectInstance> parent;
 }

@@ -110,6 +110,14 @@ public class BaseUtils {
         return result;
     }
 
+    // возвращает более конкретный класс если 
+    public static <K,V,CV extends V> Map<K,CV> filterClass(Map<K,V> map, Class<CV> cvClass) {
+        for(Map.Entry<K,V> entry : map.entrySet())
+            if(!cvClass.isInstance(entry.getValue()))
+                return new HashMap<K, CV>();
+        return (Map<K,CV>)(Map<K,? extends V>)map;
+    }
+
     public static <K,V> Map<K,V> filterNotKeys(Map<K,V> map, Collection<? extends K> keys) {
         Map<K,V> result = new HashMap<K, V>();
         for(Map.Entry<K,V> entry : map.entrySet()) {
@@ -442,6 +450,10 @@ public class BaseUtils {
         Map<B,V> result = new HashMap<B,V>(map1);
         result.putAll(map2);
         return result;
+    }
+
+    public static <B,K1 extends B,K2 extends B,V> Map<B,V> override(Map<K1,? extends V> map1,Map<K2,? extends V> map2) {
+        return BaseUtils.<B,K1,K2,V>merge(map1, map2);
     }
 
     public static <K,V> boolean isSubMap(Map<? extends K,? extends V> map1,Map<K,? extends V> map2) {
@@ -978,4 +990,10 @@ public class BaseUtils {
             return string.substring(string.length()-length, string.length());
     }
 
+    public static <K> K last(List<K> list) {
+        if(list.size() > 0)
+            return list.get(list.size()-1);
+        else
+            return null;
+    }
 }

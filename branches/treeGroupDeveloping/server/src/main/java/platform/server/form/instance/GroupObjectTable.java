@@ -16,11 +16,11 @@ public class GroupObjectTable extends SessionTable<GroupObjectTable> {
 
     public final Map<KeyField, ObjectInstance> mapKeys;
 
-    public GroupObjectTable(GroupObjectInstance group, int GID) {
-        super("viewtable_"+(GID>=0?GID:"n"+(-GID)));
+    public GroupObjectTable(GroupObjectInstance group, String prefix, int GID) {
+        super("viewtable"+prefix+"_"+(GID>=0?GID:"n"+(-GID)));
 
         mapKeys = new HashMap<KeyField, ObjectInstance>();
-        for(ObjectInstance object : group.objects) {
+        for(ObjectInstance object : GroupObjectInstance.getObjects(group.getUpTreeGroups())) {
             KeyField objKeyField = new KeyField("object"+ object.getsID(), object.getType());
             mapKeys.put(objKeyField,object);
             keys.add(objKeyField);
