@@ -277,11 +277,11 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public GroupObjectInstance getUpTreeGroup() {
-        return BaseUtils.last(getUpTreeGroups());
+        return BaseUtils.last(upTreeGroups);
     }
     public List<GroupObjectInstance> upTreeGroups = new ArrayList<GroupObjectInstance>(); // по аналогии с groupTo сделано
     public List<GroupObjectInstance> getUpTreeGroups() {
-        return upTreeGroups;
+        return BaseUtils.add(upTreeGroups,this);
     }
 
     public static Set<GroupObjectInstance> getUpTreeGroups(Set<GroupObjectInstance> groups) {

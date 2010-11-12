@@ -386,6 +386,12 @@ public class BaseUtils {
         return result;
     }
 
+    public static <K> List<K> add(List<K> col,K add) {
+        ArrayList<K> result = new ArrayList<K>(col);
+        result.add(add);
+        return result;
+    }
+
     public static <K> Collection<K> remove(Collection<? extends K> set,Collection<? extends K> remove) {
         Collection<K> result = new ArrayList<K>(set);
         result.removeAll(remove);
