@@ -13,6 +13,7 @@ import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.ExpandVetoException;
+import javax.swing.tree.TreePath;
 import java.io.IOException;
 import java.util.*;
 
@@ -68,6 +69,7 @@ public class GroupTree extends ClientTree {
         model.setRoot(rootNode);
 
         rootNode.add(new ExpandingTreeNode());
+        expandPath(new TreePath(rootNode));
     }
 
     public void updateKeys(ClientGroupObject group, List<ClientGroupObjectValue> keys, List<ClientGroupObjectValue> parentPaths) {

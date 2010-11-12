@@ -161,6 +161,18 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return addSingleGroupObject(baseClass, null, groups);
     }
 
+    protected void addTreeGroupObject(GroupObjectEntity... tGroups) {
+        TreeGroupEntity treeGroup = new TreeGroupEntity();
+        for (GroupObjectEntity group : tGroups) {
+            if (!groups.contains(group)) {
+                groups.add(group);
+            }
+            treeGroup.add(group);
+        }
+
+        treeGroups.add(treeGroup);
+    }
+
     protected void addGroup(GroupObjectEntity group) {
         groups.add(group);
     }
@@ -239,7 +251,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return addPropertyDraw(property, null, objects);
     }
 
-    <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LP<P> property, GroupObjectEntity groupObject, ObjectEntity... objects) {
+    protected <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LP<P> property, GroupObjectEntity groupObject, ObjectEntity... objects) {
 
         return addPropertyDraw(groupObject, new PropertyObjectEntity<P>(genID(), property, objects));
     }
