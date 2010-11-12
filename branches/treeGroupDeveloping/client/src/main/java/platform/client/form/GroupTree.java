@@ -32,8 +32,8 @@ public class GroupTree extends ClientTree {
         super();
 
 //        setPreferredSize(new Dimension(50, 50));
-        setMinimumSize(new Dimension(300, 100));
-        setMaximumSize(new Dimension(500, 500));
+//        setMinimumSize(new Dimension(300, 100));
+//        setMaximumSize(new Dimension(500, 500));
 
         treeGroupController = itreeGroupController;
 
@@ -75,8 +75,7 @@ public class GroupTree extends ClientTree {
 
         model.setRoot(rootNode);
 
-        rootNode.add(new ExpandingTreeNode());
-//        expandPath(new TreePath(rootNode));
+//        rootNode.add(new ExpandingTreeNode());
     }
 
     public void updateKeys(ClientGroupObject group, List<ClientGroupObjectValue> keys, List<ClientGroupObjectValue> parentPaths) {
@@ -188,6 +187,8 @@ public class GroupTree extends ClientTree {
             this.group = group;
             this.key = key;
             this.compositeKey = compositeKey;
+
+            add(new ExpandingTreeNode());
         }
 
         @Override
