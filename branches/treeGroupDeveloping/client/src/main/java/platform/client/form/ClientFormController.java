@@ -46,7 +46,7 @@ public class ClientFormController {
     public final ClientFormActionDispatcher actionDispatcher;
 
     // здесь хранится список всех GroupObjects плюс при необходимости null
-    private List<ClientGroupObject> groupObjects;
+//    private List<ClientGroupObject> groupObjects;
 
     private static IDGenerator idGenerator = new DefaultIDGenerator();
     private int ID;
@@ -153,9 +153,9 @@ public class ClientFormController {
 //        setContentPane(formLayout.getComponent());
 //        setComponent(formLayout.getComponent());
 
-        initializeGroupObjects();
+//        initializeGroupObjects();
 
-        initializeTreeGroups();
+        initializeControllers();
 
         initializeRegularFilters();
 
@@ -164,36 +164,53 @@ public class ClientFormController {
         applyRemoteChanges();
     }
 
-    private void initializeTreeGroups() throws IOException {
-        treeControllers = new HashMap<ClientTreeGroup, TreeGroupController>();
-        for (ClientTreeGroup treeGroup : form.treeGroups) {
-            TreeGroupController controller = new TreeGroupController(treeGroup, this, formLayout);
-            treeControllers.put(treeGroup, controller);
-        }
-    }
-
     public List<ClientPropertyDraw> getPropertyDraws() {
         return form.getPropertyDraws();
     }
 
-    public List<ClientGroupObject> getGroupObjects() {
-        return groupObjects;
+    private void initializeControllers() throws IOException {
+        List<ClientGroupObject> groupObjectsFromTrees = new ArrayList<ClientGroupObject>();
+        treeControllers = new HashMap<ClientTreeGroup, TreeGroupController>();
+        for (ClientTreeGroup treeGroup : form.treeGroups) {
+            TreeGroupController controller = new TreeGroupController(treeGroup, this, formLayout);
+            treeControllers.put(treeGroup, controller);
+
+            groupObjectsFromTrees.addAll(treeGroup.groups);
+        }
+
+        controllers = new HashMap<ClientGroupObject, GroupObjectController>();
+
+        for (ClientGroupObject group : form.groupObjects) {
+            if (!groupObjectsFromTrees.contains(group)) {
+                GroupObjectController controller = new GroupObjectController(group, form, this, formLayout);
+                controllers.put(group, controller);
+            }
+        }
+
+        for (ClientPropertyDraw properties : form.getPropertyDraws()) {
+            if (properties.groupObject == null) {
+                GroupObjectController controller = new GroupObjectController(null, form, this, formLayout);
+                controllers.put(null, controller);
+                break;
+            }
+        }
     }
 
+    //todo: unused, remove later
     private void initializeGroupObjects() throws IOException {
 
         controllers = new HashMap<ClientGroupObject, GroupObjectController>();
-        groupObjects = new ArrayList<ClientGroupObject>();
+//        groupObjects = new ArrayList<ClientGroupObject>();
 
         for (ClientGroupObject groupObject : form.groupObjects) {
-            groupObjects.add(groupObject);
+//            groupObjects.add(groupObject);
             GroupObjectController controller = new GroupObjectController(groupObject, form, this, formLayout);
             controllers.put(groupObject, controller);
         }
 
         for (ClientPropertyDraw properties : form.getPropertyDraws()) {
             if (properties.groupObject == null) {
-                groupObjects.add(null);
+//                groupObjects.add(null);
                 GroupObjectController controller = new GroupObjectController(null, form, this, formLayout);
                 controllers.put(null, controller);
                 break;
@@ -632,8 +649,10 @@ public class ClientFormController {
 
                 if(!sureApply) {
                     String okMessage = "";
-                    for (ClientGroupObject groupObject : form.groupObjects) {
-                        okMessage += controllers.get(groupObject).getSaveMessage();
+                    for (ClientGroupObject group : form.groupObjects) {
+                        if (controllers.containsKey(group)) {
+                            okMessage += controllers.get(group).getSaveMessage();
+                        }
                     }
 
                     if (!okMessage.isEmpty()) {
