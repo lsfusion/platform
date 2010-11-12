@@ -684,7 +684,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     // возвращает OrderInstance из orderSeeks со значениями, а также если есть parent, то parent'ы
-    private OrderedMap<Map<ObjectInstance, DataObject>, Map<Object, ObjectValue>> executeKeys(GroupObjectInstance group, Map<OrderInstance, ObjectValue> orderSeeks, int readSize, boolean down) throws SQLException {
+    private OrderedMap<Map<ObjectInstance, DataObject>, Map<Object, ObjectValue>> executeKeys(GroupObjectInstance group, Map<OrderInstance, ObjectValue> orderSeeks, Map<ObjectInstance, Object> parentMap, int readSize, boolean down) throws SQLException {
 
         Map<ObjectInstance, KeyExpr> mapKeys = KeyExpr.getMapKeys(GroupObjectInstance.getObjects(group.getUpTreeGroups()));
 
@@ -759,16 +759,16 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
             orderWhere = Where.FALSE;
         }
 
-        return new Query<ObjectInstance, Object>(mapKeys, BaseUtils.<Object,OrderInstance,ObjectInstance,Expr>merge(orderExprs,expandExprs),
+        return new Query<ObjectInstance, Object>(mapKeys, BaseUtils.merge(orderExprs, BaseUtils.crossJoin(parentMap, expandExprs)),
                     group.getWhere(mapKeys, this).and(down ? orderWhere : orderWhere.not()).and(expandWhere)).
                     executeClasses(session, down ? orders : Query.reverseOrder(orders), readSize, BL.baseClass);
     }
 
     // считывает одну запись
     private Map.Entry<Map<ObjectInstance, DataObject>, Map<Object, ObjectValue>> readObjects(GroupObjectInstance group, Map<OrderInstance, ObjectValue> orderSeeks) throws SQLException {
-        OrderedMap<Map<ObjectInstance, DataObject>, Map<Object, ObjectValue>> result = executeKeys(group, orderSeeks, 1, true);
+        OrderedMap<Map<ObjectInstance, DataObject>, Map<Object, ObjectValue>> result = executeKeys(group, orderSeeks, new HashMap<ObjectInstance, Object>(), 1, true);
         if (result.size() == 0)
-            result = executeKeys(group, orderSeeks, 1, false);
+            result = executeKeys(group, orderSeeks, new HashMap<ObjectInstance, Object>(), 1, false);
         if (result.size() > 0)
             return result.singleEntry();
         else
@@ -1021,13 +1021,18 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                             readSize = group.getPageSize() * 3 / (direction == DIRECTION_CENTER ? 2 : 1);
                         }
 
+                        Map<ObjectInstance, Object> parentMap = new HashMap<ObjectInstance, Object>();
+                        if(group.parent!=null)
+                            for(ObjectInstance object : group.objects)
+                                parentMap.put(object, new Object());
+
                         if (direction == DIRECTION_UP || direction == DIRECTION_CENTER) { // сначала Up
-                            keyResult.putAll(executeKeys(group, orderSeeks, readSize, false).reverse());
+                            keyResult.putAll(executeKeys(group, orderSeeks, parentMap, readSize, false).reverse());
                             group.upKeys = (keyResult.size() == readSize);
                             activeRow = keyResult.size() - 1;
                         }
                         if (direction == DIRECTION_DOWN || direction == DIRECTION_CENTER) { // затем Down
-                            OrderedMap<Map<ObjectInstance, DataObject>, Map<Object, ObjectValue>> executeList = executeKeys(group, orderSeeks, readSize, true);
+                            OrderedMap<Map<ObjectInstance, DataObject>, Map<Object, ObjectValue>> executeList = executeKeys(group, orderSeeks, parentMap, readSize, true);
                             if (executeList.size() > 0) activeRow = keyResult.size();
                             keyResult.putAll(executeList);
                             group.downKeys = (executeList.size() == readSize);
@@ -1046,7 +1051,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                         for (Entry<Map<ObjectInstance, DataObject>, Map<Object, ObjectValue>> resultRow : keyResult.entrySet()) {
                             group.keys.put(resultRow.getKey(), BaseUtils.filterKeys(resultRow.getValue(), group.orders.keySet()));
 
-                            expandParents.add(BaseUtils.filterClass(BaseUtils.filterKeys(resultRow.getValue(), group.objects), DataObject.class));
+                            expandParents.add(BaseUtils.filterClass(BaseUtils.join(parentMap, resultRow.getValue()), DataObject.class));
 
                             viewKeys.add(BaseUtils.join(insertTable.mapKeys, resultRow.getKey()));
                         }

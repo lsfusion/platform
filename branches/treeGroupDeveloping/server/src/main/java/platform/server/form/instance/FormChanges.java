@@ -88,8 +88,8 @@ public class FormChanges {
             }
         }
 
-        serializeKeyObjectsMap(outStream, gridObjects);
-        serializeKeyObjectsMap(outStream, parentObjects);
+        serializeKeyObjectsMap(outStream, gridObjects, false);
+        serializeKeyObjectsMap(outStream, parentObjects, true);
 
         //todo: remove
 //        outStream.writeInt(gridObjects.size());
@@ -142,7 +142,7 @@ public class FormChanges {
         BaseUtils.serializeObject(outStream, dataChanged);
     }
 
-    private void serializeKeyObjectsMap(DataOutputStream outStream, Map<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> keyObjects) throws IOException {
+    private void serializeKeyObjectsMap(DataOutputStream outStream, Map<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> keyObjects, boolean checkEmpty) throws IOException {
         outStream.writeInt(keyObjects.size());
         for (Map.Entry<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> gridObject : keyObjects.entrySet()) {
 
@@ -151,6 +151,14 @@ public class FormChanges {
             outStream.writeInt(gridObject.getValue().size());
             for (Map<ObjectInstance, DataObject> groupObjectValue : gridObject.getValue()) {
                 // именно так чтобы гарантировано в том же порядке
+                if(checkEmpty) {
+                    if(groupObjectValue.isEmpty()) {
+                        outStream.writeBoolean(true);
+                        continue;
+                    } else
+                        outStream.writeBoolean(false);                    
+                }
+
                 for (ObjectInstance object : gridObject.getKey().objects) {
                     BaseUtils.serializeObject(outStream, groupObjectValue.get(object).object);
                 }
