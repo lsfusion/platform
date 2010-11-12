@@ -18,6 +18,10 @@ public class TreeView extends JPanel {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         groupTree = new GroupTree(treeGroupController, form);
+
+        JScrollPane pane = new JScrollPane(groupTree); 
+
+        add(pane);
     }
 
     public GroupTree getTree() {

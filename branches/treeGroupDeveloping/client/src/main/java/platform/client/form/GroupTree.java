@@ -14,8 +14,10 @@ import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
+import java.awt.*;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
 public class GroupTree extends ClientTree {
     private TreeGroupNode rootNode;
@@ -28,6 +30,10 @@ public class GroupTree extends ClientTree {
 
     public GroupTree(TreeGroupController itreeGroupController, ClientFormController iform) {
         super();
+
+//        setPreferredSize(new Dimension(50, 50));
+        setMinimumSize(new Dimension(300, 100));
+        setMaximumSize(new Dimension(500, 500));
 
         treeGroupController = itreeGroupController;
 
@@ -45,7 +51,7 @@ public class GroupTree extends ClientTree {
                 cleanNode(node);
 
                 try {
-                    form.expandTreeNode(treeGroupController.treeGroup, node.compositeKey);
+                    form.expandTreeNode(treeGroupController.treeGroup, node.group, node.compositeKey);
                 } catch (IOException e) {
                     throw new RuntimeException("Ошибка при открытии узла дерева.");
                 }
@@ -66,10 +72,11 @@ public class GroupTree extends ClientTree {
 
     public void createRootNode() {
         rootNode = new TreeGroupNode();
+
         model.setRoot(rootNode);
 
         rootNode.add(new ExpandingTreeNode());
-        expandPath(new TreePath(rootNode));
+//        expandPath(new TreePath(rootNode));
     }
 
     public void updateKeys(ClientGroupObject group, List<ClientGroupObjectValue> keys, List<ClientGroupObjectValue> parentPaths) {
@@ -78,7 +85,7 @@ public class GroupTree extends ClientTree {
         NodeEnumerator enumerator = new NodeEnumerator();
         while (enumerator.hasNext()) {
             TreeGroupNode node = enumerator.nextNode();
-            for (int i = 0, keysTreePathesSize = parentPaths.size(); i < keysTreePathesSize; i++) {
+            for (int i = 0; i < parentPaths.size(); i++) {
                 ClientGroupObjectValue key = keys.get(i);
                 ClientGroupObjectValue parentKey = parentPaths.get(i);
 
@@ -181,17 +188,15 @@ public class GroupTree extends ClientTree {
             this.group = group;
             this.key = key;
             this.compositeKey = compositeKey;
-
-            add(new ExpandingTreeNode());
         }
 
         @Override
         public String toString() {
             if (group == null || key == null || compositeKey == null) {
-                return "";
+                return "RootNode: todo: delete";
             }
 
-            String caption = "";
+            String caption = "Values: ";
             for (ClientPropertyDraw property : properties) {
                 Map<ClientGroupObjectValue, Object> propValues = values.get(property);
                 if (propValues != null) {
@@ -233,7 +238,7 @@ public class GroupTree extends ClientTree {
         }
 
         private boolean accept(ClientTreeNode node) {
-            return (node instanceof TreeGroupNode) && isExpanded(getPathToRoot(node));
+            return node == rootNode || (node instanceof TreeGroupNode) && isExpanded(getPathToRoot(node));
         }
 
         public boolean hasNext() {

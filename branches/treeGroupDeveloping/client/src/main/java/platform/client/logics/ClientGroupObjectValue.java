@@ -54,7 +54,10 @@ public class ClientGroupObjectValue extends OrderedMap<ClientObject, Object>
         DataOutputStream outStream = new DataOutputStream(byteStream);
         for (ClientGroupObject group : treeGroup.groups) {
             for (ClientObject clientObject : group) {
-                serializeObject(outStream, get(clientObject));
+                //пока так
+                if (containsKey(clientObject)) {
+                    serializeObject(outStream, get(clientObject));
+                }
             }
         }
         return byteStream.toByteArray();

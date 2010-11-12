@@ -613,8 +613,10 @@ public class ClientFormController {
     }
 
 
-    public void expandTreeNode(ClientTreeGroup treeGroup, ClientGroupObjectValue keyTreePath) throws IOException {
-        remoteForm.expandTreeNode(treeGroup.getID(), keyTreePath.serialize(treeGroup));
+    public void expandTreeNode(ClientTreeGroup treeGroup, ClientGroupObject group, ClientGroupObjectValue keyTreePath) throws IOException {
+        if (group != null) {
+            remoteForm.expandTreeNode(group.getID(), keyTreePath.serialize(treeGroup));
+        }
 
         applyRemoteChanges();
     }

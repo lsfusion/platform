@@ -62,7 +62,6 @@ public class DefaultFormView extends FormView {
 
         Map<GroupObjectView, ContainerView> filterContainers = new HashMap<GroupObjectView, ContainerView>();
         for (GroupObjectEntity group : formEntity.groups) {
-
             GroupObjectView clientGroup = new GroupObjectView(idGenerator, group);
 
             mgroupObjects.put(group, clientGroup);
@@ -88,7 +87,17 @@ public class DefaultFormView extends FormView {
         }
 
         for (TreeGroupEntity treeGroup : formEntity.treeGroups) {
-            treeGroups.add(new TreeGroupView(this, treeGroup));
+            TreeGroupView treeGroupView = new TreeGroupView(this, treeGroup);
+            treeGroups.add(treeGroupView);
+
+            ContainerView treeContainer = containerFactory.createContainer();
+            treeContainer.setTitle("Дерево... (здесь нужно имя...)");
+            treeContainer.getConstraints().fillVertical = 1;
+            treeContainer.getConstraints().fillHorizontal = 1;
+
+            treeContainer.add(treeGroupView);
+
+            mainContainer.add(treeContainer);
         }
 
         for (PropertyDrawEntity control : formEntity.propertyDraws) {
