@@ -57,7 +57,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     private int pageSize = 0;
     public int getPageSize() {
-        if(getUpTreeGroups().size()>0)
+        if(upTreeGroups.size()>0)
             return 0;
         else
             return pageSize;
