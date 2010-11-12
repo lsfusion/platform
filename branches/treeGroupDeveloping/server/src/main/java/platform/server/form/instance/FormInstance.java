@@ -998,7 +998,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
                         int readSize;
                         if(group.getPageSize()==0) { // если pageSize == 0
-                            direction = DIRECTION_DOWN;
+                            direction = DIRECTION_UP;
                             group.upKeys = false;
                             group.downKeys = false;
                             readSize = 0;
