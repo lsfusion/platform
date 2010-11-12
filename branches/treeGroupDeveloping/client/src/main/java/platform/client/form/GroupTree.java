@@ -209,7 +209,7 @@ public class GroupTree extends ClientTree {
 
     public class NodeEnumerator {
         //depthFirstEnumeration, потому что важно, чтобы обновление происходило, начиная с нижних узлов
-        private Enumeration<TreeGroupNode> nodes = ((TreeGroupNode) treeModel.getRoot()).depthFirstEnumeration();
+        private Enumeration<ClientTreeNode> nodes = ((ClientTreeNode) treeModel.getRoot()).depthFirstEnumeration();
         private TreeGroupNode nextNode;
         public NodeEnumerator() {
             findNextNode();
@@ -224,16 +224,16 @@ public class GroupTree extends ClientTree {
         private void findNextNode() {
             nextNode = null;
             while (nodes.hasMoreElements()) {
-                TreeGroupNode node = nodes.nextElement();
+                ClientTreeNode node = nodes.nextElement();
                 if (accept(node)) {
-                    nextNode = node;
+                    nextNode = (TreeGroupNode) node;
                     break;
                 }
             }
         }
 
-        private boolean accept(TreeGroupNode node) {
-            return isExpanded(getPathToRoot(node));
+        private boolean accept(ClientTreeNode node) {
+            return (node instanceof TreeGroupNode) && isExpanded(getPathToRoot(node));
         }
 
         public boolean hasNext() {
