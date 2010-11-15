@@ -45,14 +45,15 @@ public class GroupTree extends ClientTree {
                 }
 
                 TreeGroupNode node = (TreeGroupNode) event.getPath().getLastPathComponent();
-                try {
-                    form.expandGroupObject(node.group, node.key);
-                } catch (IOException e) {
-                    throw new RuntimeException("Ошибка при открытии узла дерева.");
-                }
-
-                if (hasOnlyExpandningNodeAsChild(node)) {
-                    throw new ExpandVetoException(event);
+                if (node.group != null) {
+                    try {
+                        form.expandGroupObject(node.group, node.key);
+                    } catch (IOException e) {
+                        throw new RuntimeException("Ошибка при открытии узла дерева.");
+                    }
+                    if (hasOnlyExpandningNodeAsChild(node)) {
+                        throw new ExpandVetoException(event);
+                    }
                 }
             }
 
@@ -215,6 +216,8 @@ public class GroupTree extends ClientTree {
                     getGroupNodes(syncGroup).add(newNode);
                 }
             }
+
+//            removeAllChildren();
 
             for (TreeGroupNode child : allChildren) {
                 add(child);
