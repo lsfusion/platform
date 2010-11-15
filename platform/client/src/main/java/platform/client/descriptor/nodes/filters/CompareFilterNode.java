@@ -14,8 +14,6 @@ public class CompareFilterNode extends PropertyFilterNode<CompareFilterDescripto
 
     public CompareFilterNode(GroupObjectDescriptor group, CompareFilterDescriptor descriptor) {
         super(group, descriptor);
-
-        addCollectionReferenceActions(this, "fixedFilters", FilterDescriptor.derivedNames, FilterDescriptor.derivedClasses);
     }
 
     public NodeEditor createEditor(FormDescriptor form) {

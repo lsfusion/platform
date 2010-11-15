@@ -414,7 +414,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         sumReturnedQuantityFree = addSGProp(documentGroup, "Дост. кол-во к возврату", returnFreeQuantity, 1, 3);
 
         // добавляем свойства по товарам
-        articleInnerQuantity = addDGProp(documentGroup, "articleInnerQuantity", "Кол-во", 2, false, innerQuantity, 1, 2, documentInnerFreeQuantity, 1, 2, 3, date, 3, 3);
+        articleInnerQuantity = addDGProp(documentGroup, "articleInnerQuantity", true, "Кол-во", 2, false, innerQuantity, 1, 2, documentInnerFreeQuantity, 1, 2, 3, date, 3, 3);
+        addIndex(articleInnerQuantity);
         documentFreeQuantity = addSGProp(documentMoveGroup, "Доступ. кол-во", documentInnerFreeQuantity, 1, 2);
 
         LP saleCertGiftObligation = addDProp("saleCertGiftObligation", "Выдать", LogicalClass.instance, saleCert, giftObligation);
@@ -600,7 +601,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         addSGProp(addMGProp(addJProp(and1, actionDiscount, 3, articleActionActive, 1, 2, 3), 1, 2, articleActionToGroup, 3), 1, 2),
                         addJProp(and1, addJProp(customerCheckRetailDiscount, orderContragent, 1), 1, is(article), 2)), 1, 2,
                 addJProp(actionNoExtraDiscount, articleSaleAction, 1), 2, orderNoDiscount, 1),
-                true, 1, 2, is(orderSaleArticleRetail), 1);
+                true, 1, 2, articleQuantity, 1, 2);
 
         LP round1 = addSFProp("(ROUND(CAST((prm1) as NUMERIC(15,3)),-1))", IntegerClass.instance, 1);
         orderArticleSaleDiscountSum = addJProp(documentPriceGroup, "Сумма скидки", round1, addJProp(percent, orderArticleSaleSum, 1, 2, orderArticleSaleDiscount, 1, 2), 1, 2);
