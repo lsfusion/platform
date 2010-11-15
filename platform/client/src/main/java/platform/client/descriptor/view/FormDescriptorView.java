@@ -6,7 +6,7 @@ import platform.interop.context.IncrementView;
 import platform.client.descriptor.nodes.FormNode;
 import platform.client.descriptor.nodes.PlainTextNode;
 import platform.client.descriptor.nodes.actions.EditableTreeNode;
-import platform.client.lookup.Lookup;
+import platform.interop.context.Lookup;
 import platform.client.navigator.ClientNavigator;
 import platform.client.tree.ClientTree;
 import platform.client.tree.ClientTreeActionEvent;
@@ -39,7 +39,6 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
 
     private Object objectToEdit;
     private Object editingObject;
-    private Lookup lookup = Lookup.getDefault();
 
     public FormDescriptorView(ClientNavigator iClientNavigator, NavigatorDescriptorView iParent) {
         clientNavigator = iClientNavigator;
@@ -105,21 +104,18 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
         splitPane.setResizeWeight(0.01);
 
         add(splitPane, BorderLayout.CENTER);
-
-        lookup.addLookupResultChangeListener(Lookup.NEW_EDITABLE_OBJECT_PROPERTY, this);
-        lookup.addLookupResultChangeListener(Lookup.DELETED_OBJECT_PROPERTY, this);
     }
 
-    public void resultChanged(String name, Object oldValue, Object newValue) {
+    public void resultChanged(String name, Object oldValue, Object value) {
         if (name.equals(Lookup.NEW_EDITABLE_OBJECT_PROPERTY)) {
-            if (newValue != null && newValue != editingObject && view.validateEditor()) {
-                objectToEdit = newValue;
+            if (value != null && value != editingObject && view.validateEditor()) {
+                objectToEdit = value;
                 removeEditor();
             }
         } else if (name.equals(Lookup.DELETED_OBJECT_PROPERTY)) {
-            if (newValue != null && newValue == editingObject) {
+            if (value != null && value == editingObject) {
                 removeEditor();
-                if (newValue == form) {
+                if (value == form) {
                     setForm(null);
                 }
             }
@@ -138,8 +134,9 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
 
     public void setForm(FormDescriptor iform) {
         if (form != iform) {
-            if (form != null)
+            if (form != null) {
                 removeDependencies(this.form);
+            }
             this.form = iform;
             view.removeEditor();
             objectToEdit = form;
@@ -175,6 +172,9 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
         form.addDependency("property", this);
         form.addDependency("baseClass", this);
         form.addDependency(this, "form", this);
+
+        form.getContext().addLookupResultChangeListener(Lookup.NEW_EDITABLE_OBJECT_PROPERTY, this);
+        form.getContext().addLookupResultChangeListener(Lookup.DELETED_OBJECT_PROPERTY, this);
     }
 
     private void removeDependencies(FormDescriptor form) {
@@ -197,6 +197,9 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
         form.removeDependency("property", this);
         form.removeDependency("baseClass", this);
         form.removeDependency(this, "form", this);
+
+        form.getContext().removeLookupResultChangeListener(Lookup.NEW_EDITABLE_OBJECT_PROPERTY, this);
+        form.getContext().removeLookupResultChangeListener(Lookup.DELETED_OBJECT_PROPERTY, this);
     }
 
     public void update(Object updateObject, String updateField) {
@@ -208,7 +211,7 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
                 new ClassFilteredAction("Редактировать", EditableTreeNode.class) {
                     public void actionPerformed(ClientTreeActionEvent e) {
                         Object editObject = ((ClientTreeNode) tree.getSelectionPath().getLastPathComponent()).getUserObject();
-                        lookup.setProperty(Lookup.NEW_EDITABLE_OBJECT_PROPERTY, editObject);
+                        form.getContext().setProperty(Lookup.NEW_EDITABLE_OBJECT_PROPERTY, editObject);
                     }
                 });
     }
