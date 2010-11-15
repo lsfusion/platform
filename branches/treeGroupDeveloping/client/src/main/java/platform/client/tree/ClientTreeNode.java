@@ -2,7 +2,6 @@ package platform.client.tree;
 
 import platform.base.BaseUtils;
 import platform.client.Main;
-import platform.client.descriptor.IdentityDescriptor;
 import platform.client.descriptor.nodes.NodeCreator;
 import platform.client.descriptor.nodes.NullFieldNode;
 import platform.client.lookup.Lookup;
@@ -169,7 +168,7 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
 
     private Object processCreatedObject(Object object) {
         if (object instanceof IdentitySerializable) {
-            ((IdentitySerializable)object).setID(Main.generateNewID());
+            ((IdentitySerializable) object).setID(Main.generateNewID());
         }
         Lookup.getDefault().setProperty(Lookup.NEW_EDITABLE_OBJECT_PROPERTY, object);
         return object;

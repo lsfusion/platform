@@ -2,12 +2,12 @@ package platform.client.form.tree;
 
 import platform.client.form.ClientFormController;
 import platform.client.form.GroupTree;
-import platform.client.form.TreeGroupController;
 import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.List;
 import java.util.Map;
 
@@ -15,12 +15,11 @@ public class TreeView extends JPanel {
     private final GroupTree groupTree;
 
     public TreeView(ClientFormController form) {
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setLayout(new BorderLayout());
 
         groupTree = new GroupTree(form);
 
         JScrollPane pane = new JScrollPane(groupTree); 
-
         add(pane);
     }
 
@@ -42,5 +41,9 @@ public class TreeView extends JPanel {
 
     public void removeProperty(ClientPropertyDraw property) {
         groupTree.removeProperty(property);
+    }
+
+    public void setCurrentSelection(ClientGroupObjectValue selectionPath) {
+        groupTree.setCurrentSelection(selectionPath);
     }
 }

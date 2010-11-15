@@ -18,6 +18,8 @@ import java.util.HashMap;
 
 public class GroupObjectEntity extends ArrayList<ObjectEntity> implements Instantiable<GroupObjectInstance>, ServerIdentitySerializable {
     private int ID;
+    public boolean isLastTreeGroup = true;
+
     public int getID() {
         return ID;
     }

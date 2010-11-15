@@ -22,6 +22,10 @@ public class TreeGroupEntity extends IdentityObject implements ServerIdentitySer
     }
 
     public void add(GroupObjectEntity group) {
+        if (!groups.isEmpty()) {
+            groups.get(groups.size() - 1).isLastTreeGroup = false;
+        }
+        group.isLastTreeGroup = true;
         groups.add(group);
     }
 

@@ -1,7 +1,7 @@
 package platform.client.form;
 
-import platform.base.OrderedMap;
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
@@ -10,14 +10,13 @@ import platform.client.tree.ClientTreeNode;
 import platform.client.tree.ExpandingTreeNode;
 
 import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeWillExpandListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.ExpandVetoException;
 import java.io.IOException;
 import java.util.*;
-import java.util.List;
 
 public class GroupTree extends ClientTree {
     private final TreeGroupNode rootNode;
@@ -31,10 +30,6 @@ public class GroupTree extends ClientTree {
     public GroupTree(ClientFormController iform) {
         super();
 
-//        setPreferredSize(new Dimension(50, 50));
-//        setMinimumSize(new Dimension(300, 100));
-//        setMaximumSize(new Dimension(500, 500));
-
         form = iform;
 
         setToggleClickCount(-1);
@@ -45,14 +40,19 @@ public class GroupTree extends ClientTree {
 
         addTreeWillExpandListener(new TreeWillExpandListener() {
             public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException {
-                if(synchronize) return;
+                if (synchronize) {
+                    return;
+                }
 
                 TreeGroupNode node = (TreeGroupNode) event.getPath().getLastPathComponent();
-
                 try {
                     form.expandGroupObject(node.group, node.key);
                 } catch (IOException e) {
                     throw new RuntimeException("Ошибка при открытии узла дерева.");
+                }
+
+                if (hasOnlyExpandningNodeAsChild(node)) {
+                    throw new ExpandVetoException(event);
                 }
             }
 
@@ -62,6 +62,10 @@ public class GroupTree extends ClientTree {
 
         addTreeSelectionListener(new TreeSelectionListener() {
             public void valueChanged(TreeSelectionEvent event) {
+                if (synchronize) {
+                    return;
+                }
+
                 TreeGroupNode node = (TreeGroupNode) event.getPath().getLastPathComponent();
                 try {
                     form.changeGroupObject(node.group, node.key);
@@ -76,11 +80,14 @@ public class GroupTree extends ClientTree {
     }
 
     private Map<ClientGroupObject, Set<TreeGroupNode>> groupNodes = new HashMap<ClientGroupObject, Set<TreeGroupNode>>();
+
     private Set<TreeGroupNode> getGroupNodes(ClientGroupObject group) { // так как mutable надо аккуратно пользоваться а то можно на concurrent нарваться
-        if(group==null) return Collections.singleton(rootNode);
+        if (group == null) {
+            return Collections.singleton(rootNode);
+        }
 
         Set<TreeGroupNode> nodes = groupNodes.get(group);
-        if(nodes==null) {
+        if (nodes == null) {
             nodes = new HashSet<TreeGroupNode>();
             groupNodes.put(group, nodes);
         }
@@ -100,11 +107,12 @@ public class GroupTree extends ClientTree {
             parentTree.put(key, parentPath);
         }
 
-        synchronize = true; // никаких запросов к серверу идет синхронизация
+        synchronize = true; // никаких запросов к серверу - идет синхронизация
 
         Map<ClientGroupObjectValue, List<ClientGroupObjectValue>> childTree = BaseUtils.groupList(parentTree);
-        for(TreeGroupNode groupNode : getGroupNodes(group.getUpTreeGroup()))
+        for (TreeGroupNode groupNode : getGroupNodes(group.getUpTreeGroup())) {
             groupNode.synchronize(group, childTree);
+        }
 
         synchronize = false;
     }
@@ -136,8 +144,29 @@ public class GroupTree extends ClientTree {
         properties.remove(property);
     }
 
+    private boolean hasOnlyExpandningNodeAsChild(TreeGroupNode node) {
+        return node.getChildCount() == 1 && node.getFirstChild() instanceof ExpandingTreeNode;
+    }
+
+    public void setCurrentSelection(ClientGroupObjectValue selectionPath) {
+        Enumeration nodes = rootNode.depthFirstEnumeration();
+        while (nodes.hasMoreElements()) {
+            Object node = nodes.nextElement();
+            if (node instanceof TreeGroupNode) {
+                TreeGroupNode groupNode = (TreeGroupNode) node;
+                if (groupNode.key.equals(selectionPath)) {
+                    synchronize = true;
+                    setSelectionPath(getPathToRoot(groupNode));
+                    synchronize = false;
+                    break;
+                }
+            }
+        }
+    }
+
     private class TreeGroupNode extends ClientTreeNode {
         public ClientGroupObject group;
+
         public ClientGroupObjectValue key;
 
         public TreeGroupNode() {
@@ -150,33 +179,52 @@ public class GroupTree extends ClientTree {
         }
 
         void synchronize(ClientGroupObject syncGroup, Map<ClientGroupObjectValue, List<ClientGroupObjectValue>> tree) {
-            List<ClientGroupObjectValue> syncChilds = tree.get(key);
-            if(syncChilds==null) syncChilds = new ArrayList<ClientGroupObjectValue>();
+            final List<ClientGroupObjectValue> syncChilds = tree.containsKey(key)
+                                                            ? tree.get(key)
+                                                            : new ArrayList<ClientGroupObjectValue>();
 
-            if (getChildCount() == 1 && getFirstChild() instanceof ExpandingTreeNode) // убираем +
+            if (hasOnlyExpandningNodeAsChild(this)) {
+                // убираем +
                 remove(0);
-
-            Set<ClientGroupObjectValue> existChilds = new HashSet<ClientGroupObjectValue>();
-            for(TreeGroupNode child : BaseUtils.<TreeGroupNode>copyTreeChildren(children)) // бежим по node'ам
-                if(child.group.equals(syncGroup))
-                    if(!syncChilds.contains(child.key)) {
-                        remove(child); getGroupNodes(syncGroup).remove(child);
-                    } else { // помечаем что был, и рекурсивно синхронизируем child
-                        existChilds.add(child.key);
-                        child.synchronize(syncGroup, tree);
-                    }
-
-            for(ClientGroupObjectValue newChild : BaseUtils.filterNotList(syncChilds, existChilds)) { // добавляем те которых не было
-                TreeGroupNode addNode = new TreeGroupNode(syncGroup, newChild);
-                add(addNode); getGroupNodes(syncGroup).add(addNode);
-                addNode.synchronize(syncGroup, tree);
             }
 
-            if(getChildCount()==0) {// пока не знаем нету внизу child'ов или просто не expand'ут, добавляем '+'
-                add(new ExpandingTreeNode());
-                collapsePath(GroupTree.this.getPathToRoot(this));
-            } else
-                expandPath(GroupTree.this.getPathToRoot(this));
+            TreeGroupNode[] allChildren = new TreeGroupNode[syncChilds.size()];
+
+            for (TreeGroupNode child : BaseUtils.<TreeGroupNode>copyTreeChildren(children)) {
+                // бежим по node'ам
+                if (child.group.equals(syncGroup)) {
+                    int index = syncChilds.indexOf(child.key);
+                    if (index == -1) {
+                        remove(child);
+                        getGroupNodes(syncGroup).remove(child);
+                    } else { // помечаем что был, и рекурсивно синхронизируем child
+                        allChildren[index] = child;
+                        child.synchronize(syncGroup, tree);
+                    }
+                }
+            }
+
+            for (int i = 0; i < syncChilds.size(); ++i) {
+                if (allChildren[i] == null) {
+                    TreeGroupNode newNode = new TreeGroupNode(syncGroup, syncChilds.get(i));
+                    if (syncGroup.mayHaveChildren) {
+                        newNode.add(new ExpandingTreeNode());
+                    }
+                    
+                    allChildren[i] = newNode;
+                    getGroupNodes(syncGroup).add(newNode);
+                }
+            }
+
+            for (TreeGroupNode child : allChildren) {
+                add(child);
+            }
+
+            if (getChildCount() == 0) {
+                if (group.mayHaveChildren) {
+                    add(new ExpandingTreeNode());
+                }
+            }
         }
 
         @Override
@@ -184,8 +232,9 @@ public class GroupTree extends ClientTree {
             String caption = "";
             for (ClientPropertyDraw property : properties) {
                 Map<ClientGroupObjectValue, Object> propValues = values.get(property);
-                if (propValues != null)
-                    caption += BaseUtils.nullToString(propValues.get(key));
+                if (propValues != null) {
+                    caption += BaseUtils.nullToString(propValues.get(key)) + " ";
+                }
             }
 
             return caption;

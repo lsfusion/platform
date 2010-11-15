@@ -59,6 +59,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         pool.serializeCollection(outStream, this, serializationType);
         pool.serializeObject(outStream, grid, serializationType);
         pool.serializeObject(outStream, showType, serializationType);
+        outStream.writeBoolean(entity.parent != null || !entity.isLastTreeGroup);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {

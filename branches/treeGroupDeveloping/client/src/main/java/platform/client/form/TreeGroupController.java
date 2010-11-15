@@ -25,16 +25,16 @@ public class TreeGroupController {
     public void processFormChanges(ClientFormChanges fc,
                                    Map<ClientGroupObject, List<ClientGroupObjectValue>> cachedGridObjects
     ) {
-        for (ClientGroupObject groupObject : treeGroup.groups) {
-            if (fc.gridObjects.containsKey(groupObject)) {
-                view.updateKeys(groupObject, fc.gridObjects.get(groupObject), fc.parentObjects.get(groupObject));
+        for (ClientGroupObject group : treeGroup.groups) {
+            if (fc.gridObjects.containsKey(group)) {
+                view.updateKeys(group, fc.gridObjects.get(group), fc.parentObjects.get(group));
             }
 
             // добавляем новые свойства
             for (ClientPropertyRead read : fc.properties.keySet()) {
                 if (read instanceof ClientPropertyDraw) {
                     ClientPropertyDraw property = (ClientPropertyDraw) read;
-                    if (property.groupObject == groupObject && property.shouldBeDrawn(form)) {
+                    if (property.groupObject == group && property.shouldBeDrawn(form)) {
                         view.addDrawProperty(property);
                     }
                 }
@@ -42,7 +42,7 @@ public class TreeGroupController {
 
             // удаляем ненужные
             for (ClientPropertyDraw property : fc.dropProperties) {
-                if (property.groupObject == groupObject) {
+                if (property.groupObject == group) {
                     view.removeProperty(property);
                 }
             }
@@ -52,11 +52,13 @@ public class TreeGroupController {
                 ClientPropertyRead propertyRead = readProperty.getKey();
                 if (propertyRead instanceof ClientPropertyDraw) {
                     ClientPropertyDraw propertyDraw = (ClientPropertyDraw) propertyRead;
-                    if (propertyDraw.groupObject == groupObject) {
+                    if (propertyDraw.groupObject == group) {
                         view.updateDrawPropertyValues(propertyDraw, readProperty.getValue());
                     }
                 }
             }
+
+            view.setCurrentSelection(fc.objects.get(group));
         }
 
         SwingUtilities.invokeLater(new Runnable() {

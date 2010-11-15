@@ -88,12 +88,14 @@ public class DefaultFormView extends FormView {
 
         for (TreeGroupEntity treeGroup : formEntity.treeGroups) {
             TreeGroupView treeGroupView = new TreeGroupView(this, treeGroup);
+            treeGroupView.constraints.fillVertical = 1;
+            treeGroupView.constraints.fillHorizontal = 1;
             treeGroups.add(treeGroupView);
 
             ContainerView treeContainer = containerFactory.createContainer();
-            treeContainer.setTitle("Дерево... (здесь нужно имя...)");
-            treeContainer.getConstraints().fillVertical = 1;
-            treeContainer.getConstraints().fillHorizontal = 1;
+            treeContainer.setTitle("Дерево");
+            treeContainer.constraints.fillVertical = 1;
+            treeContainer.constraints.fillHorizontal = 1;
 
             treeContainer.add(treeGroupView);
 
