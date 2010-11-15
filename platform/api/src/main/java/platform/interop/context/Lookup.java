@@ -9,14 +9,9 @@ import java.util.Iterator;
 import java.util.Map;
 
 public class Lookup {
+
     public static final String NEW_EDITABLE_OBJECT_PROPERTY = "newEditableObjectProperty";
     public static final String DELETED_OBJECT_PROPERTY = "deletedObjectProperty";
-
-    private static Lookup instance = new Lookup();
-
-    public static Lookup getDefault() {
-        return instance;
-    }
 
     Lookup(){}
 
