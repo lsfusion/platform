@@ -2,9 +2,8 @@ package platform.client.descriptor.view;
 
 import platform.client.Main;
 import platform.client.descriptor.FormDescriptor;
-import platform.interop.context.IncrementDependency;
 import platform.interop.context.IncrementView;
-import platform.client.lookup.Lookup;
+import platform.interop.context.Lookup;
 import platform.client.navigator.*;
 import platform.client.tree.ClientTreeAction;
 import platform.client.tree.ClientTreeActionEvent;
@@ -107,7 +106,7 @@ public class NavigatorDescriptorView extends JPanel {
                             if (userObject instanceof NewNavigatorForm) {
                                 NewNavigatorForm formElement = (NewNavigatorForm) userObject;
                                 forms.remove(formElement.form.getID());
-                                Lookup.getDefault().setProperty(Lookup.DELETED_OBJECT_PROPERTY, formElement.form);
+                                formElement.form.getContext().setProperty(Lookup.DELETED_OBJECT_PROPERTY, formElement.form);
                             }
                         }
                     });

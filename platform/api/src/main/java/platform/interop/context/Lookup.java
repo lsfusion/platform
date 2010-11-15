@@ -1,4 +1,4 @@
-package platform.client.lookup;
+package platform.interop.context;
 
 import platform.base.WeakIdentityHashSet;
 
@@ -14,11 +14,11 @@ public class Lookup {
 
     private static Lookup instance = new Lookup();
 
-    private Lookup(){}
-
     public static Lookup getDefault() {
         return instance;
     }
+
+    Lookup(){}
 
     private Map<String, WeakReference<Object>> properties = Collections.synchronizedMap(new HashMap<String, WeakReference<Object>>());
 
@@ -74,6 +74,10 @@ public class Lookup {
 
     public void addLookupResultChangeListener(String name, LookupResultChangeListener listener) {
         getPropertyListeners(name).add(listener);
+    }
+
+    public void removeLookupResultChangeListener(String name, LookupResultChangeListener listener) {
+        getPropertyListeners(name).remove(listener);
     }
 
     public static interface LookupResultChangeListener {

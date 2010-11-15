@@ -5,7 +5,7 @@ import platform.client.Main;
 import platform.client.descriptor.CustomConstructible;
 import platform.client.descriptor.nodes.NodeCreator;
 import platform.client.descriptor.nodes.NullFieldNode;
-import platform.client.lookup.Lookup;
+import platform.interop.context.Lookup;
 import platform.interop.context.ApplicationContextHolder;
 import platform.interop.context.ApplicationContextProvider;
 import platform.interop.serialization.IdentitySerializable;
@@ -159,7 +159,10 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
             public void actionPerformed(ClientTreeActionEvent e) {
                 Object deletedObject = e.getNode().getTypedObject();
                 BaseUtils.invokeRemover(object, collectionField, deletedObject);
-                Lookup.getDefault().setProperty(Lookup.DELETED_OBJECT_PROPERTY, deletedObject);
+                if (object instanceof ApplicationContextProvider) {
+                    ApplicationContextProvider provider = (ApplicationContextProvider) object;
+                    provider.getContext().setProperty(Lookup.DELETED_OBJECT_PROPERTY, deletedObject);
+                }
             }
 
             @Override
@@ -184,7 +187,10 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
         if (object instanceof CustomConstructible) {
             ((CustomConstructible)object).customConstructor();
         }
-        Lookup.getDefault().setProperty(Lookup.NEW_EDITABLE_OBJECT_PROPERTY, object);
+        if (object instanceof ApplicationContextProvider) {
+            ApplicationContextProvider provider = (ApplicationContextProvider) object;
+            provider.getContext().setProperty(Lookup.NEW_EDITABLE_OBJECT_PROPERTY, object);
+        }
         return object;
     }
 
