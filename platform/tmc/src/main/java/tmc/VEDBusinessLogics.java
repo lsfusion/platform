@@ -273,7 +273,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP payWithCard;
     LP printOrderCheck;
 
-    public LP noBillTxt;
 
     protected void initProperties() {
 
@@ -333,8 +332,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         initialSumContragent = addJProp(baseGroup, "Начальная сумма", clientInitialSum, orderContragent, 1);
 
 //        logClientInitialSum = addLProp(clientInitialSum);
-
-        noBillTxt = addDProp(baseGroup, "noBillTxt", "Без фискальника", LogicalClass.instance, computer);
 
         nameContragentImpl = addJProp(true, "Контрагент", name, orderContragent, 1);
         phoneContragentImpl = addJProp(true, "Телефон", customerCheckRetailPhone, orderContragent, 1);
@@ -606,7 +603,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 true, 1, 2, is(orderSaleArticleRetail), 1);
 
         LP round1 = addSFProp("(ROUND(CAST((prm1) as NUMERIC(15,3)),-1))", IntegerClass.instance, 1);
-        LP orderArticleSaleDiscountSum = addJProp(documentPriceGroup, "Сумма скидки", round1, addJProp(percent, orderArticleSaleSum, 1, 2, orderArticleSaleDiscount, 1, 2), 1, 2);
+        orderArticleSaleDiscountSum = addJProp(documentPriceGroup, "Сумма скидки", round1, addJProp(percent, orderArticleSaleSum, 1, 2, orderArticleSaleDiscount, 1, 2), 1, 2);
         orderArticleSaleSumWithDiscount = addDUProp(documentPriceGroup, "Сумма к опл.", orderArticleSaleSum, orderArticleSaleDiscountSum);
         orderSaleDiscountSum = addSGProp(documentAggrPriceGroup, "Сумма скидки", orderArticleSaleDiscountSum, 1);
         orderSalePay = addCUProp(documentAggrPriceGroup, "Сумма чека",
@@ -614,7 +611,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addSGProp(orderArticleSaleSumWithDiscount, 1));
 
         LP returnArticleSaleSum = addJProp(documentPriceGroup, "Сумма возвр.", multiplyDouble2, returnInnerQuantity, 1, 2, 3, orderSaleDocPrice, 3, 2);
-        LP returnArticleSaleDiscount = addJProp(documentPriceGroup, "Сумма скидки возвр.", round1, addJProp(percent, returnArticleSaleSum, 1, 2, 3, orderArticleSaleDiscount, 3, 2), 1, 2, 3);
+        returnArticleSaleDiscount = addJProp(documentPriceGroup, "Сумма скидки возвр.", round1, addJProp(percent, returnArticleSaleSum, 1, 2, 3, orderArticleSaleDiscount, 3, 2), 1, 2, 3);
         returnArticleSalePay = addDUProp(documentPriceGroup, "Сумма к возвр.", returnArticleSaleSum, returnArticleSaleDiscount);
         returnSaleDiscount = addSGProp(documentAggrPriceGroup, "Сумма скидки возвр.", returnArticleSaleDiscount, 1);
         returnSalePay = addDUProp(documentAggrPriceGroup, "Сумма к возвр.", addSGProp("Сумма возвр.", returnArticleSaleSum, 1), returnSaleDiscount);
@@ -798,6 +795,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     public LP returnArticleSalePay;
     LP returnSaleDiscount, returnSalePay;
     public LP orderArticleSaleDiscount;
+    public LP orderArticleSaleDiscountSum;
+    LP returnArticleSaleDiscount; 
     LP orderNoDiscount;
     public LP shopPrice;
     LP priceStore, inDocumentPrice;
@@ -1474,6 +1473,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addPropertyDraw(documentFreeQuantity, objDoc, objArt);
             addPropertyDraw(orderSalePrice, objDoc, objArt);
             addPropertyDraw(orderArticleSaleDiscount, objDoc, objArt);
+            addPropertyDraw(orderArticleSaleDiscountSum, objDoc, objArt);
             addPropertyDraw(orderArticleSaleSumWithDiscount, objDoc, objArt);
             //addPropertyDraw(documentBarcodePriceOv, objDoc, objBarcode);
             if (!toAdd) {
@@ -1521,6 +1521,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.get(getPropertyDraw(articleQuantity, objArt)).minimumSize = new Dimension(20, 20);
             design.get(getPropertyDraw(documentFreeQuantity, objArt)).minimumSize = new Dimension(90, 20);
             design.get(getPropertyDraw(orderArticleSaleDiscount, objArt)).minimumSize = new Dimension(20, 20);
+            getPropertyDraw(orderArticleSaleDiscountSum, objArt).isHide = true;
             design.get(getPropertyDraw(barcode, objArt)).minimumSize = new Dimension(200, 100);
 
             return design;
@@ -1645,7 +1646,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         getPropertyDraw(orderSalePrice, objArt), getPropertyDraw(articleQuantity, objArt),
                         getPropertyDraw(name, objArt), getPropertyDraw(orderArticleSaleSumWithDiscount, objArt),
                         getPropertyDraw(orderSalePayNoObligation, objDoc), getPropertyDraw(barcode, objArt),
-                        getPropertyDraw(orderSalePayCard, objDoc), getPropertyDraw(orderSalePayCash, objDoc));
+                        getPropertyDraw(orderSalePayCard, objDoc), getPropertyDraw(orderSalePayCash, objDoc),
+                        getPropertyDraw(orderArticleSaleDiscount), getPropertyDraw(orderArticleSaleDiscountSum));
             } else
                 return super.getClientApply(formInstance);
         }
@@ -2006,8 +2008,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         BaseUtils.toSet(inner.groupTo, art.groupTo),
                         getPropertyDraw(orderSalePrice, objArt), getPropertyDraw(returnInnerQuantity, objArt),
                         getPropertyDraw(name, objArt), getPropertyDraw(returnArticleSalePay, objArt),
-                        getPropertyDraw(returnSalePay, objDoc), getPropertyDraw(barcode, objArt),
-                        null, null);
+                        getPropertyDraw(returnSalePay, objDoc), getPropertyDraw(barcode, objArt), null, null,
+                        getPropertyDraw(orderArticleSaleDiscount), getPropertyDraw(returnArticleSaleDiscount));
             } else
                 return super.getClientApply(formInstance);
         }
@@ -2322,7 +2324,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         getPropertyDraw(obligationSum, objObligation), getPropertyDraw(issueObligation, objObligation),
                         getPropertyDraw(name, objObligation), getPropertyDraw(obligationSum, objObligation),
                         getPropertyDraw(orderSalePay, objDoc), getPropertyDraw(barcode, objObligation),
-                        getPropertyDraw(orderSalePayCard, objDoc), getPropertyDraw(orderSalePayCash, objDoc));
+                        getPropertyDraw(orderSalePayCard, objDoc), getPropertyDraw(orderSalePayCash, objDoc), null, null);
 
             } else
                 return super.getClientApply(formInstance);

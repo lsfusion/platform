@@ -87,8 +87,18 @@ public class PanelExternalScreen implements ExternalScreen {
                 }
             }
         } else {
-            Dispatch cashDispatch = FiscalReg.getDispatch(fiscalCom);
-            Dispatch.call(cashDispatch, "ShowDisplay", output, true, true);
+            if (fiscalCom <= 0) {
+                return;
+            }
+            if (comPort == 0) {
+                return;
+            }
+            try {
+                Dispatch cashDispatch = FiscalReg.getDispatch(fiscalCom);
+                Dispatch.call(cashDispatch, "ShowDisplay", output, true, true);
+            } catch (Exception e) {
+                // пока игнорируем
+            }
         }
 
     }

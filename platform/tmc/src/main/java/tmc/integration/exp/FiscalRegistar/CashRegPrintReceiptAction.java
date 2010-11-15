@@ -34,8 +34,14 @@ public class CashRegPrintReceiptAction extends AbstractClientAction {
                 Dispatch.call(cashDispatch, "AddCustom", item.barCode, FONT, 0, k++);
                 String name = item.name.substring(0, Math.min(item.name.length(), FiscalReg.WIDTH));
                 Dispatch.call(cashDispatch, "AddCustom", name, FONT, 0, k++);
+
                 Dispatch.invoke(cashDispatch, "AddItem", Dispatch.Method, new Object[]{0, item.price, false,
                         0, 1, 0, item.quantity * 1000, 3, 0, "шт.", 0, 0, k++, 0}, new int[1]);
+
+                if (item.articleDiscSum > 0) {
+                    String msg = "Скидка " + item.articleDisc + "%, всего " + item.articleDiscSum;
+                    Dispatch.call(cashDispatch, "AddCustom", msg, FONT, 0, k++);
+                }
             }
 
             //Общая информация
@@ -67,5 +73,6 @@ public class CashRegPrintReceiptAction extends AbstractClientAction {
             Dispatch.call(cashDispatch, "CancelFiscalDoc", false);
             throw e;
         }
+        Dispatch.call(cashDispatch, "ExternalPulse", 1, 60, 10, 1);
     }
 }

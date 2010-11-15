@@ -49,6 +49,6 @@ public class MoneyOperationAction extends AbstractClientAction {
             Dispatch.call(cashDispatch, "CancelFiscalDoc", false);
             throw e;
         }
-
+        Dispatch.call(cashDispatch, "ExternalPulse", 1, 60, 10, 1);
     }
 }

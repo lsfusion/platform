@@ -19,7 +19,8 @@ import java.util.List;
 public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObject implements Instantiable<PropertyDrawInstance>, ServerIdentitySerializable {
 
     public PropertyObjectEntity<P> propertyObject;
-
+    public boolean isHide = false;
+    
     public GroupObjectEntity toDraw;
     public void setToDraw(GroupObjectEntity toDraw) {
         this.toDraw = toDraw;
