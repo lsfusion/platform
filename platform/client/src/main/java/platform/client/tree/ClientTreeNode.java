@@ -14,6 +14,7 @@ import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.datatransfer.Transferable;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
 public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableTreeNode {
@@ -154,7 +155,7 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
             });
         }
 
-        addSonAction(new ClientTreeAction("Удалить") {
+        addSonAction(new ClientTreeAction("Удалить", KeyEvent.VK_DELETE) {
             @Override
             public void actionPerformed(ClientTreeActionEvent e) {
                 Object deletedObject = e.getNode().getTypedObject();
@@ -179,13 +180,13 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
     // 4. У него вызывается customConstructor в котором должны создаваться все агрегированные объекты
     private Object processCreatedObject(Object object, Object parent) {
         if (object instanceof IdentitySerializable) {
-            ((IdentitySerializable)object).setID(Main.generateNewID());
+            ((IdentitySerializable) object).setID(Main.generateNewID());
         }
         if (object instanceof ApplicationContextHolder && parent instanceof ApplicationContextProvider) {
-            ((ApplicationContextHolder)object).setContext(((ApplicationContextProvider) parent).getContext());
+            ((ApplicationContextHolder) object).setContext(((ApplicationContextProvider) parent).getContext());
         }
         if (object instanceof CustomConstructible) {
-            ((CustomConstructible)object).customConstructor();
+            ((CustomConstructible) object).customConstructor();
         }
         if (object instanceof ApplicationContextProvider) {
             ApplicationContextProvider provider = (ApplicationContextProvider) object;
