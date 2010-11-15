@@ -3,6 +3,7 @@ package platform.client.logics;
 import platform.base.DefaultIDGenerator;
 import platform.base.IDGenerator;
 import platform.base.OrderedMap;
+import platform.base.BaseUtils;
 import platform.client.Main;
 import platform.client.form.ClientFormController;
 import platform.client.form.GroupObjectController;
@@ -14,10 +15,7 @@ import platform.interop.form.layout.AbstractGroupObject;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ClientGroupObject extends ArrayList<ClientObject>
                                  implements ClientPropertyRead, ClientIdentitySerializable, AbstractGroupObject<ClientComponent> {
@@ -33,16 +31,23 @@ public class ClientGroupObject extends ArrayList<ClientObject>
         showType.groupObject = this;
     }
 
-    public List<ClientObject> getDeserializeList(Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
+    public static List<ClientObject> getObjects(List<ClientGroupObject> groups) {
         List<ClientObject> result = new ArrayList<ClientObject>();
+        for(ClientGroupObject group : groups)
+            result.addAll(group);
+        return result;        
+    }
+
+    public List<ClientGroupObject> getDeserializeList(Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
+        List<ClientGroupObject> result = new ArrayList<ClientGroupObject>();
         ClassViewType newType = classViews.get(this);
         if((newType!=null?newType:controllers.get(this).classView) == ClassViewType.GRID)
-            result.addAll(this);
+            result.add(this);
         return result;
     }
 
     public List<ClientObject> getDeserializeList(Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
-        return getDeserializeList(classViews, controllers);
+        return ClientGroupObject.getObjects(getDeserializeList(classViews, controllers));
     }
 
     public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectController controller) {
@@ -147,4 +152,14 @@ public class ClientGroupObject extends ArrayList<ClientObject>
         }
         return result;
     }
+
+    // по аналогии с сервером
+    public ClientGroupObject getUpTreeGroup() {
+        return BaseUtils.last(upTreeGroups);
+    }
+    public List<ClientGroupObject> upTreeGroups = new ArrayList<ClientGroupObject>();
+    public List<ClientGroupObject> getUpTreeGroups() {
+        return BaseUtils.add(upTreeGroups,this);
+    }
+
 }

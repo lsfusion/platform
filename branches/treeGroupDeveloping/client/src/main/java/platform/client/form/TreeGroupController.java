@@ -3,6 +3,7 @@ package platform.client.form;
 import platform.client.form.tree.TreeView;
 import platform.client.logics.*;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -13,16 +14,11 @@ public class TreeGroupController {
     private final ClientFormController form;
     private final TreeView view;
 
-    public TreeGroupController(ClientTreeGroup iTreeGroup, ClientFormController iform, ClientFormLayout formLayout) throws IOException {
-        treeGroup = iTreeGroup;
-        this.form = iform;
+    public TreeGroupController(ClientTreeGroup treeGroup, ClientFormController form, ClientFormLayout formLayout) throws IOException {
+        this.treeGroup = treeGroup;
+        this.form = form;
 
-        view = new TreeView(this, form);
-
-        addView(formLayout);
-    }
-
-    private void addView(ClientFormLayout formLayout) {
+        view = new TreeView(form);
         formLayout.add(treeGroup, view);
     }
 
@@ -62,5 +58,12 @@ public class TreeGroupController {
                 }
             }
         }
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                view.getTree().updateUI();
+           }
+        });
+
     }
 }

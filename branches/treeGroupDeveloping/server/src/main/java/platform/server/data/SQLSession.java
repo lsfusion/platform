@@ -302,12 +302,14 @@ public abstract class SQLSession {
     public void updateInsertRecord(Table table, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields) throws SQLException {
 
         if (isRecord(table, keyFields)) {
-            Query<KeyField, PropertyField> updateQuery = new Query<KeyField, PropertyField>(table);
-            updateQuery.putKeyWhere(keyFields);
-            updateQuery.properties.putAll(ObjectValue.getMapExprs(propFields));
+            if(!propFields.isEmpty()) {
+                Query<KeyField, PropertyField> updateQuery = new Query<KeyField, PropertyField>(table);
+                updateQuery.putKeyWhere(keyFields);
+                updateQuery.properties.putAll(ObjectValue.getMapExprs(propFields));
 
-            // есть запись нужно Update лупить
-            updateRecords(new ModifyQuery(table, updateQuery));
+                // есть запись нужно Update лупить
+                updateRecords(new ModifyQuery(table, updateQuery));
+            }
         } else
             // делаем Insert
             insertRecord(table, keyFields, propFields);

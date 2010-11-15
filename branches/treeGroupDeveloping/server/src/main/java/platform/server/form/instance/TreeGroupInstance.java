@@ -1,6 +1,7 @@
 package platform.server.form.instance;
 
 import platform.server.form.entity.TreeGroupEntity;
+import platform.base.BaseUtils;
 
 import java.util.List;
 import java.util.Collection;
@@ -17,8 +18,10 @@ public class TreeGroupInstance {
         List<GroupObjectInstance> upGroups = new ArrayList<GroupObjectInstance>();
         for(GroupObjectInstance group : groups) {
             group.upTreeGroups.addAll(upGroups);
+            group.downGroups = true;
             upGroups.add(group);
         }
+        BaseUtils.last(upGroups).downGroups = false;
     }
 
     public int getID() {

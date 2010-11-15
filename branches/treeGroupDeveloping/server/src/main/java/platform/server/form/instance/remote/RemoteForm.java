@@ -288,7 +288,7 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
         }
     }
 
-    public void expandTreeNode(int groupId, byte[] groupValues) throws RemoteException {
+    public void expandGroupObject(int groupId, byte[] groupValues) throws RemoteException {
         try {
             GroupObjectInstance group = form.getGroupObjectInstance(groupId);
             form.expandGroupObject(group, deserializeKeys(group, groupValues));

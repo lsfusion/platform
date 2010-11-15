@@ -40,7 +40,14 @@ public class InstanceFactory {
                 objects.add(getInstance(object));
             }
 
-            groupInstances.put(entity, new GroupObjectInstance(entity, objects, entity.propertyHighlight != null ? getInstance(entity.propertyHighlight) : null));
+            Map<ObjectInstance, PropertyObjectInstance> parentInstances = null;
+            if(entity.parent!=null) {
+                parentInstances = new HashMap<ObjectInstance, PropertyObjectInstance>();
+                for(Map.Entry<ObjectEntity,PropertyObjectEntity> parentObject : entity.parent.entrySet())
+                    parentInstances.put(getInstance(parentObject.getKey()), getInstance(parentObject.getValue()));
+            }
+
+            groupInstances.put(entity, new GroupObjectInstance(entity, objects, entity.propertyHighlight != null ? getInstance(entity.propertyHighlight) : null, parentInstances));
         }
 
         return groupInstances.get(entity);

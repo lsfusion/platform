@@ -42,6 +42,7 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
     AbstractCustomClass document;
 
     ConcreteCustomClass article, store, incomeDocument, outcomeDocument;
+    ConcreteCustomClass articleGroup;
 
     protected void initClasses() {
 
@@ -50,6 +51,8 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         document = addAbstractClass("Документ", baseClass.named, transaction);
         incomeDocument = addConcreteClass("Приход", document);
         outcomeDocument = addConcreteClass("Расход", document);
+
+        articleGroup = addConcreteClass("Группа товаров", baseClass.named);        
     }
 
     LP quantity, documentStore;
@@ -77,7 +80,14 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP oneProp = addJProp(baseGroup, "Единица", and1, vone, is(document), 1);
         documentsCount = addSGProp(baseGroup, "Количество документов по складу", oneProp, documentStore, 1);
         itemsCount = addSGProp(baseGroup, "Количество единиц товара в документах", quantity, documentStore, 1, 2);
+
+        inStore = addDProp(baseGroup, "inStore", "В ассорт.", LogicalClass.instance, store, article);
+
+        parentGroup = addDProp(baseGroup, "parentGroup", "Родитель", articleGroup, articleGroup);
+        articleToGroup = addDProp(baseGroup, "articleToGroup", "Группа товаров", articleGroup, article);
     }
+
+    LP inStore, parentGroup, articleToGroup;
 
     protected void initTables() {
     }
@@ -149,31 +159,24 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         public TreeStoreArticleFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectEntity objArt = addSingleGroupObjectWithProperties(article, "Товар", name);
-            ObjectEntity objStore = addSingleGroupObjectWithProperties(store, "Склад", name);
-            ObjectEntity objDoc = addSingleGroupObject(document, "Документ", baseGroup);
+            ObjectEntity objStore = addSingleGroupObject(store, name);
+            ObjectEntity objArtGroup = addSingleGroupObject(articleGroup, name);
+            ObjectEntity objArt = addSingleGroupObject(article, name);
+            ObjectEntity objDoc = addSingleGroupObject(document, baseGroup);
 
-            addTreeGroupObject(objArt.groupTo, objStore.groupTo);
+            objArtGroup.groupTo.setParents(addPropertyObject(parentGroup, objArtGroup));
+
+            addTreeGroupObject(objStore.groupTo, objArtGroup.groupTo, objArt.groupTo);
 //
             addPropertyDraw(objStore, objArt, baseGroup);
             addPropertyDraw(objDoc, objArt, baseGroup);
 
 //            addFixedFilter(new NotNullFilterEntity(getPropertyObject(quantity)));
 //            addFixedFilter(new NotNullFilterEntity(getPropertyObject(balanceQuantity)));
+
+            addFixedFilter(new NotNullFilterEntity(getPropertyObject(inStore)));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(articleToGroup, objArt), Compare.EQUALS, objArtGroup));
             addFixedFilter(new CompareFilterEntity(getPropertyObject(documentStore), Compare.EQUALS, objStore));
-        }
-
-        private ObjectEntity addSingleGroupObjectWithProperties(ValueClass baseClass, String caption, LP... properties) {
-            GroupObjectEntity groupObject = new GroupObjectEntity(genID());
-            ObjectEntity object = new ObjectEntity(genID(), baseClass, caption);
-            groupObject.add(object);
-            addGroup(groupObject);
-
-            for (LP property : properties) {
-                addPropertyDraw(property, groupObject, object);
-            }
-
-            return object;
         }
 
         @Override

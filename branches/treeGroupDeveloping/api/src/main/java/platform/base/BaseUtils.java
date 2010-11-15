@@ -51,6 +51,13 @@ public class BaseUtils {
         return result;
     }
 
+    public static <K,E,V> List<Map<K,V>> joinList(Map<K,? extends E> map, List<Map<E,V>> list) {
+        List<Map<K,V>> result = new ArrayList<Map<K, V>>();
+        for(Map<E, V> joinMap : list)
+            result.add(BaseUtils.join(map, joinMap));
+        return result;
+    }
+
     public static <K,V> List<V> mapList(List<? extends K> list, Map<K,V> map) {
         List<V> result = new ArrayList<V>();
         for(K element : list)
@@ -131,6 +138,14 @@ public class BaseUtils {
         List<K> result = new ArrayList<K>();
         for(K element : list)
             if(filter.contains(element))
+                result.add(element);
+        return result;
+    }
+
+    public static <K> List<K> filterNotList(List<K> list, Collection<K> filter) {
+        List<K> result = new ArrayList<K>();
+        for(K element : list)
+            if(!filter.contains(element))
                 result.add(element);
         return result;
     }
@@ -646,6 +661,20 @@ public class BaseUtils {
         return result;
     }
 
+    public static <G,K> Map<G,List<K>> groupList(Group<G, K> getter, List<K> keys) {
+        Map<G,List<K>> result = new HashMap<G, List<K>>();
+        for(K key : keys) {
+            G group = getter.group(key);
+            List<K> groupList = result.get(group);
+            if(groupList==null) {
+                groupList = new ArrayList<K>();
+                result.put(group,groupList);
+            }
+            groupList.add(key);
+        }
+        return result;
+    }
+
     public static <G,K> Map<G,Set<K>> groupSet(Group<G, K> getter, Set<K> keys) {
         Map<G,Set<K>> result = new HashMap<G, Set<K>>();        
         for(K key : keys) {
@@ -668,8 +697,20 @@ public class BaseUtils {
         },keys);
     }
 
+    public static <G,K> Map<G,List<K>> groupList(final Map<K, G> getter, List<K> keys) {
+        return groupList(new Group<G,K>() {
+            public G group(K key) {
+                return getter.get(key);
+            }
+        },keys);
+    }
+
     public static <G,K> Map<G,Set<K>> groupSet(final Map<K, G> getter) {
         return groupSet(getter, getter.keySet());
+    }
+
+    public static <G,K> Map<G,List<K>> groupList(final OrderedMap<K, G> getter) {
+        return groupList(getter, getter.keyList());
     }
 
     public static <K> Map<K,Integer> multiSet(Collection<K> col) {
@@ -827,6 +868,10 @@ public class BaseUtils {
 
     public static <K,I,E extends I> Map<K,E> immutableCast(Map<K,I> map) {
         return (Map<K,E>)(Map<K,? extends I>)map;        
+    }
+
+    public static <K,I> I immutableCast(K object) {
+        return (I)(Object)object;        
     }
 
     public static <I> I single(Collection<I> col) {
@@ -1001,5 +1046,13 @@ public class BaseUtils {
             return list.get(list.size()-1);
         else
             return null;
+    }
+
+    public static <K> List<K> copyTreeChildren(Vector children) {
+        List<K> result = new ArrayList<K>();
+        if(children!=null)
+            for(Object child : children)
+                result.add((K) child);
+        return result;
     }
 }

@@ -14,10 +14,10 @@ import java.util.Map;
 public class TreeView extends JPanel {
     private final GroupTree groupTree;
 
-    public TreeView(TreeGroupController treeGroupController, ClientFormController form) {
+    public TreeView(ClientFormController form) {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        groupTree = new GroupTree(treeGroupController, form);
+        groupTree = new GroupTree(form);
 
         JScrollPane pane = new JScrollPane(groupTree); 
 

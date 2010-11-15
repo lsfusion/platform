@@ -71,6 +71,13 @@ public class FormChanges {
 
     }
 
+    private void serializeGroupObjectValue(DataOutputStream outStream, GroupObjectInstance groupObject, Map<ObjectInstance,? extends ObjectValue> values) throws IOException {
+        // именно так чтобы гарантировано в том же порядке
+        for (ObjectInstance object : GroupObjectInstance.getObjects(groupObject.getUpTreeGroups())) {
+            BaseUtils.serializeObject(outStream, values.get(object).getValue());
+        }
+    }
+
     public void serialize(DataOutputStream outStream) throws IOException {
 
         outStream.writeInt(classViews.size());
@@ -82,10 +89,7 @@ public class FormChanges {
         outStream.writeInt(objects.size());
         for (Map.Entry<GroupObjectInstance, Map<ObjectInstance, ? extends ObjectValue>> objectValue : objects.entrySet()) {
             outStream.writeInt(objectValue.getKey().getID());
-            // именно так чтобы гарантировано в том же порядке
-            for (ObjectInstance object : objectValue.getKey().objects) {
-                BaseUtils.serializeObject(outStream, objectValue.getValue().get(object).getValue());
-            }
+            serializeGroupObjectValue(outStream, objectValue.getKey(), objectValue.getValue());
         }
 
         serializeKeyObjectsMap(outStream, gridObjects, false);
@@ -142,7 +146,7 @@ public class FormChanges {
         BaseUtils.serializeObject(outStream, dataChanged);
     }
 
-    private void serializeKeyObjectsMap(DataOutputStream outStream, Map<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> keyObjects, boolean checkEmpty) throws IOException {
+    private void serializeKeyObjectsMap(DataOutputStream outStream, Map<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> keyObjects, boolean parents) throws IOException {
         outStream.writeInt(keyObjects.size());
         for (Map.Entry<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> gridObject : keyObjects.entrySet()) {
 
@@ -151,17 +155,17 @@ public class FormChanges {
             outStream.writeInt(gridObject.getValue().size());
             for (Map<ObjectInstance, DataObject> groupObjectValue : gridObject.getValue()) {
                 // именно так чтобы гарантировано в том же порядке
-                if(checkEmpty) {
-                    if(groupObjectValue.isEmpty()) {
+                if(parents) {
+                    if(groupObjectValue.isEmpty())
                         outStream.writeBoolean(true);
-                        continue;
-                    } else
-                        outStream.writeBoolean(false);                    
-                }
-
-                for (ObjectInstance object : gridObject.getKey().objects) {
-                    BaseUtils.serializeObject(outStream, groupObjectValue.get(object).object);
-                }
+                    else {
+                        outStream.writeBoolean(false);
+                        for (ObjectInstance object : gridObject.getKey().objects) {
+                            BaseUtils.serializeObject(outStream, groupObjectValue.get(object).getValue());
+                        }
+                    }
+                } else
+                    serializeGroupObjectValue(outStream, gridObject.getKey(), groupObjectValue);
             }
         }
     }

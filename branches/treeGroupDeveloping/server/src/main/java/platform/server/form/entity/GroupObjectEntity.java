@@ -13,6 +13,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 public class GroupObjectEntity extends ArrayList<ObjectEntity> implements Instantiable<GroupObjectInstance>, ServerIdentitySerializable {
     private int ID;
@@ -60,5 +62,12 @@ public class GroupObjectEntity extends ArrayList<ObjectEntity> implements Instan
         initClassView = ClassViewType.values()[pool.readInt(inStream)];
         banClassView = (List<ClassViewType>)pool.readObject(inStream);
         propertyHighlight = (PropertyObjectEntity) pool.deserializeObject(inStream);
+    }
+
+    public Map<ObjectEntity, PropertyObjectEntity> parent = null;
+    public void setParents(PropertyObjectEntity... properties) {
+        parent = new HashMap<ObjectEntity, PropertyObjectEntity>();
+        for(int i=0;i<size();i++)
+            parent.put(get(i), properties[i]);
     }
 }

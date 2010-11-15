@@ -178,6 +178,10 @@ public abstract class SessionTable<This extends SessionTable<This>> extends Tabl
         return createThis(writeClasses, new HashMap<PropertyField, ClassWhere<Field>>(), newRows);
     }
 
+    public This deleteAll(SQLSession session) throws SQLException {
+        return writeKeys(session, new ArrayList<Map<KeyField, DataObject>>()); 
+    }
+
     public This writeRows(SQLSession session, Query<KeyField,PropertyField> query, BaseClass baseClass) throws SQLException {
         if(rows==null)
             session.deleteKeyRecords(this, new HashMap<KeyField, Object>());

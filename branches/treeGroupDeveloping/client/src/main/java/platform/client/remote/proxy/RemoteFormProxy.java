@@ -220,9 +220,9 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     }
 
     @PendingRemoteMethod
-    public void expandTreeNode(int groupId, byte[] treePath) throws RemoteException {
+    public void expandGroupObject(int groupId, byte[] treePath) throws RemoteException {
         logRemoteMethodStartVoidCall("expandTreeNode");
-        target.expandTreeNode(groupId, treePath);
+        target.expandGroupObject(groupId, treePath);
         logRemoteMethodEndVoidCall("expandTreeNode");
     }
 

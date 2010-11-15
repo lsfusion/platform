@@ -508,13 +508,15 @@ public class ClientFormController {
 
     public void changeGroupObject(ClientGroupObject group, ClientGroupObjectValue objectValue) throws IOException {
         if (controllers.containsKey(group) && !objectValue.equals(controllers.get(group).getCurrentObject())) {
-            remoteForm.changeGroupObject(group.getID(), objectValue.serialize());
+            remoteForm.changeGroupObject(group.getID(), objectValue.serialize(group));
+
             applyRemoteChanges();
         }
     }
 
-    public void changeGroupObject(ClientTreeGroup treeGroup, ClientGroupObject group, ClientGroupObjectValue objectValue) throws IOException {
-        remoteForm.changeGroupObject(group.getID(), objectValue.serialize(treeGroup));
+    public void expandGroupObject(ClientGroupObject group, ClientGroupObjectValue objectValue) throws IOException {
+        remoteForm.expandGroupObject(group.getID(), objectValue.serialize(group));
+
         applyRemoteChanges();
     }
 
@@ -612,14 +614,6 @@ public class ClientFormController {
         remoteForm.changePageSize(groupObject.getID(), pageSize);
     }
 
-
-    public void expandTreeNode(ClientTreeGroup treeGroup, ClientGroupObject group, ClientGroupObjectValue keyTreePath) throws IOException {
-        if (group != null) {
-            remoteForm.expandTreeNode(group.getID(), keyTreePath.serialize(treeGroup));
-        }
-
-        applyRemoteChanges();
-    }
 
     void print() {
 

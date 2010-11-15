@@ -36,7 +36,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public List<ObjectInstance> getSerializeList(Set<PropertyDrawInstance> panelProperties) {
-        return curClassView == ClassViewType.GRID ? new ArrayList<ObjectInstance>(objects) : new ArrayList<ObjectInstance>();
+        return curClassView == ClassViewType.GRID ? GroupObjectInstance.getObjects(getUpTreeGroups()) : new ArrayList<ObjectInstance>();
     }
 
     GroupObjectEntity entity;
@@ -57,16 +57,13 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     private int pageSize = 0;
     public int getPageSize() {
-        if(upTreeGroups.size()>0)
-            return 0;
-        else
-            return pageSize;
+        return pageSize;
     }
     public void setPageSize(int pageSize) {
         this.pageSize = pageSize;
     }
 
-    public GroupObjectInstance(GroupObjectEntity entity, Collection<ObjectInstance> objects, PropertyObjectInstance propertyHighlight) {
+    public GroupObjectInstance(GroupObjectEntity entity, Collection<ObjectInstance> objects, PropertyObjectInstance propertyHighlight, Map<ObjectInstance, PropertyObjectInstance> parent) {
 
         this.entity = entity;
 
@@ -85,6 +82,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             this.updated |= UPDATED_CLASSVIEW;
         }
         this.pageSize = entity.pageSize;
+
+        this.parent = parent;
     }
 
     public Map<ObjectInstance, KeyExpr> getMapKeys() {
@@ -254,11 +253,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return getFilterWhere(mapKeys, modifier).and(getClassWhere(mapKeys, modifier));
     }
 
-    Map<ObjectInstance,ObjectValue> getNulls() {
-        Map<ObjectInstance,ObjectValue> result = new HashMap<ObjectInstance, ObjectValue>();
-        for(ObjectInstance object : objects)
-            result.put(object, NullValue.instance);
-        return result;
+    public Map<ObjectInstance,ObjectValue> getNulls() {
+        return NullValue.getMap(getObjects(getUpTreeGroups()));
     }
 
     boolean isSolid() {
@@ -276,6 +272,11 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 ((CustomObjectInstance)object).setClassListener(classListener);
     }
 
+    public boolean readAll() {
+        return getUpTreeGroup()!=null || parent!=null || downGroups || getPageSize()==0;
+    }
+    boolean downGroups = false;
+
     public GroupObjectInstance getUpTreeGroup() {
         return BaseUtils.last(upTreeGroups);
     }
@@ -291,5 +292,5 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return result;
     }
 
-    public Map<ObjectInstance, PropertyObjectInstance> parent;
+    public final Map<ObjectInstance, PropertyObjectInstance> parent;
 }

@@ -122,4 +122,9 @@ public class OrderedMap<K,V> extends LinkedHashMap<K,V> {
             i.next();
         return i.next();
     }
+
+    public void removeAll(Collection<K> keys) {
+        for(K key : keys)
+            remove(key);
+    }
 }

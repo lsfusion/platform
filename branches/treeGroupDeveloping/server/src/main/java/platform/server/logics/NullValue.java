@@ -9,10 +9,7 @@ import platform.server.data.where.Where;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.session.ChangesSession;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class NullValue extends ObjectValue<NullValue> {
 
@@ -70,4 +67,12 @@ public class NullValue extends ObjectValue<NullValue> {
     public Collection<ObjectInstance> getObjectInstances() {
         return new ArrayList<ObjectInstance>();
     }
+
+    public static <K> Map<K,ObjectValue> getMap(Collection<K> keys) {
+        Map<K,ObjectValue> result = new HashMap<K, ObjectValue>();
+        for(K object : keys)
+            result.put(object, NullValue.instance);
+        return result;
+    }
+
 }

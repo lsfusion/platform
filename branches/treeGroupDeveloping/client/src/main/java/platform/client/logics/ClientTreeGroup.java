@@ -20,5 +20,11 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
         groups = pool.deserializeList(inStream);
+
+        List<ClientGroupObject> upGroups = new ArrayList<ClientGroupObject>();
+        for(ClientGroupObject group : groups) {
+            group.upTreeGroups.addAll(upGroups);
+            upGroups.add(group);
+        }
     }
 }

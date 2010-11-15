@@ -5,13 +5,13 @@
            http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
 	<bean id="dataAdapter" class="platform.server.data.sql.PostgreDataAdapter">
-		<constructor-arg><value>ved</value></constructor-arg>
+		<constructor-arg><value>smpl</value></constructor-arg>
 		<constructor-arg><value>localhost</value></constructor-arg>
 		<constructor-arg><value>postgres</value></constructor-arg>
 		<constructor-arg><value>11111</value></constructor-arg>
 	</bean>
 
-	<bean id="priceImport" class="tmc.integration.imp.PriceImportTask">
+	<!--bean id="priceImport" class="tmc.integration.imp.PriceImportTask">
 		<constructor-arg><ref bean="businessLogics"/></constructor-arg>
 		<constructor-arg><list><value>imp</value><value>imp2</value></list></constructor-arg>
 		<constructor-arg><list><value type="int">9</value><value type="int">2129</value></list></constructor-arg>
@@ -43,16 +43,16 @@
                 <ref bean="backup"/>
             </list>
         </constructor-arg>
-    </bean>
+    </bean!-->
 
-	<bean id="businessLogics" class="tmc.VEDBusinessLogics">
+	<bean id="businessLogics" class="sample.SampleBusinessLogics">
 		<constructor-arg><ref bean="dataAdapter"/></constructor-arg>
 		<constructor-arg type="int"><value>7652</value></constructor-arg>
-        <property name="scheduler"><ref bean="scheduler"/></property>
+        <!--property name="scheduler"><ref bean="scheduler"/></property>
 		<property name="formSets"><map>
     	    <entry><key><value>cashregister</value></key><value>1310,1325,1345,1365</value></entry>
 		</map></property>
-        <property name="requiredPassword" value="false"/>
+        <property name="requiredPassword" value="false"/-->
 	</bean>
 
 <!-- default ports: 6666, 6667, 6668 -->

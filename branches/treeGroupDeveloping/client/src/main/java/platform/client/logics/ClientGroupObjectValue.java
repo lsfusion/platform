@@ -26,6 +26,12 @@ public class ClientGroupObjectValue extends OrderedMap<ClientObject, Object>
     }
 
     public ClientGroupObjectValue(DataInputStream inStream, ClientGroupObject clientGroupObject) throws IOException {
+        for (ClientObject clientObject : ClientGroupObject.getObjects(clientGroupObject.getUpTreeGroups())) {
+            put(clientObject, deserializeObject(inStream));
+        }
+    }
+
+    public ClientGroupObjectValue(ClientGroupObject clientGroupObject, DataInputStream inStream) throws IOException {
         for (ClientObject clientObject : clientGroupObject) {
             put(clientObject, deserializeObject(inStream));
         }
@@ -49,17 +55,11 @@ public class ClientGroupObjectValue extends OrderedMap<ClientObject, Object>
         return serialize((ClientPropertyDraw) null);
     }
 
-    public byte[] serialize(ClientTreeGroup treeGroup) throws IOException {
+    public byte[] serialize(ClientGroupObject group) throws IOException {
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
         DataOutputStream outStream = new DataOutputStream(byteStream);
-        for (ClientGroupObject group : treeGroup.groups) {
-            for (ClientObject clientObject : group) {
-                //пока так
-                if (containsKey(clientObject)) {
-                    serializeObject(outStream, get(clientObject));
-                }
-            }
-        }
+        for (ClientObject clientObject : ClientGroupObject.getObjects(group.getUpTreeGroups()))
+            serializeObject(outStream, get(clientObject));
         return byteStream.toByteArray();
     }
 

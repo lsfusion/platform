@@ -105,7 +105,7 @@ public class GridController {
     }
 
     public void addProperty(ClientPropertyDraw property) {
-            table.addProperty(property);
+        table.addProperty(property);
 
         if (property.externalScreen != null) {
             addExternalScreenComponent(property);

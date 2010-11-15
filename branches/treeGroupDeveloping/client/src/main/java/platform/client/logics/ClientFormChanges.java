@@ -94,7 +94,7 @@ public class ClientFormChanges {
         dataChanged = (Boolean) BaseUtils.deserializeObject(inStream);
     }
 
-    private Map<ClientGroupObject, List<ClientGroupObjectValue>> readGridObjectsMap(DataInputStream inStream, ClientForm clientForm, boolean checkEmpty) throws IOException {
+    private Map<ClientGroupObject, List<ClientGroupObjectValue>> readGridObjectsMap(DataInputStream inStream, ClientForm clientForm, boolean parents) throws IOException {
         Map<ClientGroupObject, List<ClientGroupObjectValue>> gridObjects = new HashMap<ClientGroupObject, List<ClientGroupObjectValue>>();
         int count = inStream.readInt();
         for (int i = 0; i < count; i++) {
@@ -103,7 +103,8 @@ public class ClientFormChanges {
             List<ClientGroupObjectValue> clientGridObjects = new ArrayList<ClientGroupObjectValue>();
             int listCount = inStream.readInt();
             for (int j = 0; j < listCount; j++) {
-                clientGridObjects.add(checkEmpty && inStream.readBoolean() ? new ClientGroupObjectValue() : new ClientGroupObjectValue(new ClientGroupObjectValue(inStream, clientGroupObject)));
+                clientGridObjects.add(parents ? inStream.readBoolean() ? new ClientGroupObjectValue() :
+                        new ClientGroupObjectValue(clientGroupObject, inStream) : new ClientGroupObjectValue(inStream, clientGroupObject));
             }
 
             gridObjects.put(clientGroupObject, clientGridObjects);
