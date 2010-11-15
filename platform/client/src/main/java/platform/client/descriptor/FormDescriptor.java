@@ -145,7 +145,10 @@ public class FormDescriptor extends ContextIdentityDescriptor implements ClientI
                             }
                         }
                     }
-                    if (insIndex == -1) insIndex = newContainer.children.size();  
+
+                    // если объект свойство не нашлось куда добавить, то его надо добавлять самым первым в контейнер
+                    // иначе свойства будут идти после управляющих объектов
+                    if (insIndex == -1) insIndex = 0;
                     newContainer.addToChildren(insIndex, object.getClientComponent(mainContainer));
                 }
             }

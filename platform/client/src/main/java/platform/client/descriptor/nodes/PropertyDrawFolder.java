@@ -50,6 +50,15 @@ public class PropertyDrawFolder extends GroupElementFolder<PropertyDrawFolder> i
 
     @Override
     public boolean importData(ClientTree tree, TransferHandler.TransferSupport info) {
-        return form.movePropertyDraw((PropertyDrawDescriptor)ClientTree.getNode(info).getTypedObject(), ClientTree.getChildIndex(info));
+        // приходится так извращаться, поскольку indexTo scoped относительно groupObject у FormDescriptor'а в propertyDraws у него абсолютно другой индекс
+        PropertyDrawNode nodeFrom = (PropertyDrawNode)ClientTree.getNode(info);
+        int indexTo = ClientTree.getChildIndex(info);
+        if (indexTo == -1) {
+            // кинули на сам Folder
+            return form.movePropertyDraw(nodeFrom.getTypedObject(), -1);
+        } else {
+            if (getIndex(nodeFrom) < indexTo) indexTo--;
+            return form.movePropertyDraw(nodeFrom.getTypedObject(), ((PropertyDrawNode)getChildAt(indexTo)).getTypedObject());
+        }
     }
 }
