@@ -15,7 +15,7 @@ public class DataChangeFormEntity<T extends BusinessLogics<T>> extends ClassForm
 
         for(MaxChangeProperty<?, P> constrainedProperty : BL.getChangeConstrainedProperties(implement.property)) // добавляем все констрейнты
             addFixedFilter(new NotFilterEntity(new NotNullFilterEntity<MaxChangeProperty.Interface<P>>(
-                    constrainedProperty.getPropertyObjectEntity(genID(), implement.mapping, object))));
+                    constrainedProperty.getPropertyObjectEntity(implement.mapping, object))));
     }
 }
 
