@@ -1,5 +1,8 @@
 package platform.interop.serialization;
 
+import platform.interop.context.ApplicationContext;
+import platform.interop.context.ApplicationContextHolder;
+
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.util.*;
@@ -13,6 +16,7 @@ public abstract class SerializationPool<C> {
     private Map<Long, CustomSerializable> objects = new HashMap<Long, CustomSerializable>();
 
     public C context;
+    public ApplicationContext appContext;
     private static final int NULL_REF_CLASS = -1;
 
     public SerializationPool() {
@@ -20,7 +24,12 @@ public abstract class SerializationPool<C> {
     }
 
     public SerializationPool(C context) {
+        this(context, null);
+    }
+    
+    public SerializationPool(C context, ApplicationContext appContext) {
         this.context = context;
+        this.appContext = appContext;
     }
 
     protected void addMapping(Class<? extends CustomSerializable<? extends SerializationPool<C>>> clazz) {
@@ -147,6 +156,9 @@ public abstract class SerializationPool<C> {
             if (IdentitySerializable.class.isAssignableFrom(clazz)) {
                 put(getClassId(clazz), id, instance);
                 ((IdentitySerializable)instance).setID(id);
+            }
+            if (ApplicationContextHolder.class.isAssignableFrom(clazz)) {
+                ((ApplicationContextHolder)instance).setContext(appContext);
             }
 
             instance.customDeserialize(this, inStream);

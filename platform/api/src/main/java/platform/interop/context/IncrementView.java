@@ -1,4 +1,4 @@
-package platform.client.descriptor.increment;
+package platform.interop.context;
 
 public interface IncrementView {
 

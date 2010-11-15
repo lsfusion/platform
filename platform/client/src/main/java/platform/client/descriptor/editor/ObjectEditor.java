@@ -1,5 +1,6 @@
 package platform.client.descriptor.editor;
 
+import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.editor.base.NodeEditor;
 import platform.client.descriptor.editor.base.TitledPanel;
@@ -13,7 +14,7 @@ public class ObjectEditor extends JPanel implements NodeEditor {
 
     private final ObjectDescriptor object;
 
-    public ObjectEditor(ObjectDescriptor object) {
+    public ObjectEditor(ObjectDescriptor object, FormDescriptor form) {
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         this.object = object;
@@ -26,7 +27,7 @@ public class ObjectEditor extends JPanel implements NodeEditor {
         add(new TitledPanel(null, new IncrementCheckBox("Показывать дерево классов", object.client.classChooser, "show")));
         add(Box.createRigidArea(new Dimension(5, 5)));
 
-        add(new TitledPanel("Класс", new ValueClassEditor(object, "baseClass")));
+        add(new TitledPanel("Класс", new ValueClassEditor(object, "baseClass", form)));
     }
 
     public JComponent getComponent() {

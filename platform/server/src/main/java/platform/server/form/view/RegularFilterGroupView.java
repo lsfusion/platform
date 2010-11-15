@@ -41,7 +41,7 @@ public class RegularFilterGroupView extends ComponentView {
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
 
-        entity = pool.context.form.getRegularFilterGroup(ID);
+        entity = pool.context.entity.getRegularFilterGroup(ID);
         filters = pool.deserializeList(inStream);
     }
 }

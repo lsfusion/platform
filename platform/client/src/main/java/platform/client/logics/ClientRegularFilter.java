@@ -17,7 +17,10 @@ public class ClientRegularFilter extends IdentityObject implements ClientIdentit
     public boolean showKey;
 
     public ClientRegularFilter() {
+    }
 
+    public ClientRegularFilter(int ID) {
+        super(ID);
     }
 
     public String getFullCaption() {

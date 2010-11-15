@@ -18,6 +18,6 @@ public class RegularFilterNode extends GroupElementNode<RegularFilterDescriptor,
     }
 
     public NodeEditor createEditor(FormDescriptor form) {
-        return new RegularFilterEditor(groupObject, getTypedObject());
+        return new RegularFilterEditor(groupObject, getTypedObject(), form);
     }
 }

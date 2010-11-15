@@ -27,11 +27,13 @@ import platform.server.form.instance.listener.CurrentClassListener;
 import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.listener.FocusListener;
 import platform.server.form.instance.remote.RemoteForm;
+import platform.server.form.view.FormView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.serialization.SerializationType;
+import platform.server.serialization.ServerContext;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.*;
 
@@ -279,7 +281,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         try {
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
             DataOutputStream dataStream = new DataOutputStream(outStream);
-            new ServerSerializationPool().serializeObject(dataStream, getFormEntity(formID).getRichDesign(), SerializationType.VISUAL_SETUP);
+            FormView view = getFormEntity(formID).getRichDesign();
+            new ServerSerializationPool(new ServerContext(view)).serializeObject(dataStream, view, SerializationType.VISUAL_SETUP);
             return outStream.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException(e);

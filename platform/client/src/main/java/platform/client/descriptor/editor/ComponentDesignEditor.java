@@ -1,11 +1,9 @@
 package platform.client.descriptor.editor;
 
 import platform.client.descriptor.editor.base.TitledPanel;
-import platform.client.descriptor.increment.editor.IncrementCheckBox;
 import platform.client.descriptor.increment.editor.IncrementColorEditor;
 import platform.client.descriptor.increment.editor.IncrementFontEditor;
 import platform.client.logics.ClientComponent;
-import platform.interop.ComponentDesign;
 
 import javax.swing.*;
 import java.awt.*;

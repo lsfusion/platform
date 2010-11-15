@@ -2,8 +2,8 @@ package platform.client.descriptor.view;
 
 import platform.client.Main;
 import platform.client.descriptor.FormDescriptor;
-import platform.client.descriptor.increment.IncrementDependency;
-import platform.client.descriptor.increment.IncrementView;
+import platform.interop.context.IncrementDependency;
+import platform.interop.context.IncrementView;
 import platform.client.lookup.Lookup;
 import platform.client.navigator.*;
 import platform.client.tree.ClientTreeAction;
@@ -16,9 +16,7 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 public class NavigatorDescriptorView extends JPanel {
     private FormDescriptorView formView;
@@ -128,7 +126,7 @@ public class NavigatorDescriptorView extends JPanel {
                 this.form = form;
                 ID = form.getID();
 
-                IncrementDependency.add(form, "caption", this);
+                form.addDependency(form, "caption", this);
             }
 
             public void update(Object updateObject, String updateField) {

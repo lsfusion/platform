@@ -3,7 +3,8 @@ package platform.client.logics;
 import platform.base.BaseUtils;
 import platform.client.SwingUtils;
 import platform.client.descriptor.PropertyDrawDescriptor;
-import platform.client.descriptor.increment.IncrementDependency;
+import platform.interop.context.ApplicationContext;
+import platform.interop.context.IncrementDependency;
 import platform.client.form.*;
 import platform.client.form.cell.CellView;
 import platform.client.logics.classes.ClientType;
@@ -70,7 +71,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean autoHide = false;
 
     public ClientPropertyDraw() {
+    }
 
+    public ClientPropertyDraw(int ID, ApplicationContext context) {
+        super(ID, context);
     }
 
     public KeyStroke getEditKey() {
@@ -79,7 +83,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public void setEditKey(KeyStroke key) {
         this.editKey = key;
-        IncrementDependency.update(this, "editKey");
+        updateDependency(this, "editKey");
     }
 
     public boolean getShowEditKey(){
@@ -288,8 +292,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         pool.writeObject(outStream, externalScreenConstraints);
 
         outStream.writeBoolean(autoHide);
-
-        pool.serializeObject(outStream, pool.context);
 
         pool.serializeObject(outStream, keyBindingGroup);
 

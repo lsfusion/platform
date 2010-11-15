@@ -2,10 +2,12 @@ package platform.client.logics;
 
 import platform.base.BaseUtils;
 import platform.base.IdentityObject;
+import platform.client.descriptor.CustomConstructible;
 import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientTypeSerializer;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
+import platform.interop.context.ApplicationContext;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -22,10 +24,15 @@ public class ClientObject extends IdentityObject implements Serializable, Client
 
     public ClientClass baseClass;
 
-    public ClientClassChooser classChooser = new ClientClassChooser();
+    public ClientClassChooser classChooser;
 
     public ClientObject() {
 
+    }
+
+    public ClientObject(int ID, ApplicationContext context) {
+        super(ID);
+        classChooser = new ClientClassChooser(ID, context);
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

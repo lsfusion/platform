@@ -222,7 +222,7 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         caption = pool.readString(inStream);
         overridePageWidth = pool.readInt(inStream);
 
-        entity = pool.context.form;
+        entity = pool.context.entity;
     }
 
     public void addIntersection(ComponentView comp1, ComponentView comp2, DoNotIntersectSimplexConstraint cons) {

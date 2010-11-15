@@ -1,10 +1,11 @@
 package platform.client.descriptor.editor;
 
 import platform.base.BaseUtils;
+import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.editor.base.FlatButton;
 import platform.client.descriptor.editor.base.NamedContainer;
-import platform.client.descriptor.increment.IncrementDependency;
-import platform.client.descriptor.increment.IncrementView;
+import platform.interop.context.IncrementDependency;
+import platform.interop.context.IncrementView;
 import platform.client.form.classes.ClassDialog;
 import platform.client.logics.classes.*;
 import platform.client.Main;
@@ -43,11 +44,11 @@ public class ValueClassEditor extends JPanel {
 
     private final IncrementView typeVisible;
 
-    public ValueClassEditor(final Object object, final String property) {
-        this(object, property, Main.getBaseClass());
+    public ValueClassEditor(final Object object, final String property, FormDescriptor form) {
+        this(object, property, Main.getBaseClass(), form);
     }
 
-    private ValueClassEditor(final Object object, final String property, final ClientObjectClass baseClass) {
+    private ValueClassEditor(final Object object, final String property, final ClientObjectClass baseClass, FormDescriptor form) {
         this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
         typeClasses = new JComboBox();
@@ -122,6 +123,6 @@ public class ValueClassEditor extends JPanel {
                 validate();
             }
         };
-        IncrementDependency.add(object, property, typeVisible);
+        form.addDependency(object, property, typeVisible);
     }
 }

@@ -1,6 +1,7 @@
 package platform.client.logics;
 
 import platform.client.serialization.ClientSerializationPool;
+import platform.interop.context.ApplicationContext;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -17,7 +18,11 @@ public class ClientRegularFilterGroup extends ClientComponent {
     public ClientRegularFilterGroup() {
 
     }
-    
+
+    public ClientRegularFilterGroup(int ID, ApplicationContext context) {
+        super(ID, context);
+    }
+
     @Override
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);

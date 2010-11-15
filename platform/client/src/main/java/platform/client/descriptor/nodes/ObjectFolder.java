@@ -3,11 +3,18 @@ package platform.client.descriptor.nodes;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.ObjectDescriptor;
 import platform.client.tree.ClientTree;
+import platform.interop.context.ApplicationContext;
+import platform.interop.context.ApplicationContextProvider;
 
 import javax.swing.*;
 
-public class ObjectFolder extends PlainTextNode<ObjectFolder> {
+public class ObjectFolder extends PlainTextNode<ObjectFolder> implements ApplicationContextProvider {
+
     private final GroupObjectDescriptor group;
+
+    public ApplicationContext getContext() {
+        return group.getContext();
+    }
 
     public ObjectFolder(GroupObjectDescriptor group) {
         super("Oбъекты");

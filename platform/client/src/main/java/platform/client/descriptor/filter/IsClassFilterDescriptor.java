@@ -1,7 +1,7 @@
 package platform.client.descriptor.filter;
 
 import platform.client.descriptor.GroupObjectDescriptor;
-import platform.client.descriptor.increment.IncrementDependency;
+import platform.interop.context.IncrementDependency;
 import platform.client.descriptor.nodes.filters.FilterNode;
 import platform.client.descriptor.nodes.filters.IsClassFilterNode;
 import platform.client.logics.classes.ClientObjectClass;
@@ -19,7 +19,7 @@ public class IsClassFilterDescriptor extends PropertyFilterDescriptor {
     public void setObjectClass(ClientObjectClass objectClass) {
         this.objectClass = objectClass;
 
-        IncrementDependency.update(this, "objectClass");
+        updateDependency(this, "objectClass");
     }
     public ClientObjectClass getObjectClass() {
         return objectClass;

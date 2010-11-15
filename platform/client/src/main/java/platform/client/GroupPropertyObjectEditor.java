@@ -6,8 +6,7 @@ import platform.client.descriptor.PropertyDrawDescriptor;
 import platform.client.descriptor.PropertyObjectDescriptor;
 import platform.client.descriptor.editor.base.Tristate;
 import platform.client.descriptor.editor.base.TristateCheckBox;
-import platform.client.descriptor.increment.IncrementDependency;
-import platform.client.descriptor.increment.IncrementView;
+import platform.interop.context.IncrementView;
 
 import javax.swing.*;
 import javax.swing.plaf.ColorUIResource;
@@ -42,11 +41,6 @@ public class GroupPropertyObjectEditor extends SimplePropertyFilter implements I
         initTree();
     }
 
-    public GroupPropertyObjectEditor(List<GroupObjectDescriptor> groupObjects) {
-        super(groupObjects);
-        initTree();
-    }
-
     void initTree(){
                 tree.setCellRenderer(new CheckRenderer());
         tree.putClientProperty("JTree.lineStyle", "Angled");
@@ -70,9 +64,9 @@ public class GroupPropertyObjectEditor extends SimplePropertyFilter implements I
         list.getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         treeModel.reload();
 
-        IncrementDependency.add("propertyDraws", this);
-        IncrementDependency.add("toDraw", this);
-        IncrementDependency.add("propertyObject", this);
+        form.addDependency("propertyDraws", this);
+        form.addDependency("toDraw", this);
+        form.addDependency("propertyObject", this);
     }
 
     @Override
@@ -112,7 +106,7 @@ public class GroupPropertyObjectEditor extends SimplePropertyFilter implements I
                 if(userObject instanceof PropertyObjectDescriptor) {
                     if(select) { // добавляем propertyDraw
                         if(!isSelectedPropertyObject((PropertyObjectDescriptor) userObject)) {
-                            PropertyDrawDescriptor propertyDraw = new PropertyDrawDescriptor((PropertyObjectDescriptor) userObject);
+                            PropertyDrawDescriptor propertyDraw = new PropertyDrawDescriptor(form.getContext(), (PropertyObjectDescriptor) userObject);
                             if(!propertyDraw.getGroupObject(form.groupObjects).equals(groupObject))
                                 propertyDraw.setToDraw(groupObject);
                             form.addToPropertyDraws(propertyDraw);

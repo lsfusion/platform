@@ -495,7 +495,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public static FormEntity<?> deserialize(BusinessLogics BL, byte[] formState) {
         DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(formState));
         try {
-            FormEntity form = new ServerSerializationPool(new ServerContext(BL, null)).deserializeObject(inStream);
+            FormEntity form = new ServerSerializationPool(new ServerContext(BL)).deserializeObject(inStream);
             form.richDesign = new ServerSerializationPool(new ServerContext(BL, form)).deserializeObject(inStream);
 
             return form;

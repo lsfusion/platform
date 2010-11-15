@@ -2,7 +2,8 @@ package platform.client.logics;
 
 import platform.base.BaseUtils;
 import platform.client.descriptor.editor.ComponentEditor;
-import platform.client.descriptor.increment.IncrementDependency;
+import platform.interop.context.ApplicationContext;
+import platform.interop.context.IncrementDependency;
 import platform.client.descriptor.nodes.ComponentNode;
 import platform.client.descriptor.nodes.ContainerNode;
 import platform.client.serialization.ClientIdentitySerializable;
@@ -27,8 +28,8 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
     public ClientContainer() {
     }
 
-    public ClientContainer(int ID) {
-        this.ID = ID;
+    public ClientContainer(int ID, ApplicationContext context) {
+        super(ID, context);
     }
 
     @Override
@@ -74,12 +75,12 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         component.container = null;
         children.remove(component);
 
-        IncrementDependency.update(this, "children");
+        updateDependency(this, "children");
     }
 
     public void addToChildren(int index, ClientComponent component) {
         add(index, component);
-        IncrementDependency.update(this, "children");
+        updateDependency(this, "children");
     }
 
     public void addToChildren(ClientComponent component) {
@@ -102,6 +103,7 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         BaseUtils.moveElement(children, compFrom, compTo);
     }
 
+    @Override
     public JComponent getPropertiesEditor() {
         return new ComponentEditor("Контейнер", this);
     }
@@ -112,7 +114,7 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
 
     public void setTitle(String title) {
         this.title = title;
-        IncrementDependency.update(this, "title");
+        updateDependency(this, "title");
     }
 
     public String getDescription() {
@@ -121,7 +123,7 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
 
     public void setDescription(String description) {
         this.description = description;
-        IncrementDependency.update(this, "description");
+        updateDependency(this, "description");
     }
 
     public String getSID() {

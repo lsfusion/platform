@@ -1,8 +1,8 @@
 package platform.client.descriptor;
 
 import platform.base.BaseUtils;
-import platform.client.descriptor.increment.IncrementDependency;
-import platform.client.logics.ClientComponent;
+import platform.interop.context.ApplicationContext;
+import platform.interop.context.ApplicationContextHolder;
 import platform.client.logics.ClientContainer;
 import platform.client.logics.ClientGroupObject;
 import platform.client.serialization.ClientIdentitySerializable;
@@ -16,15 +16,28 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implements ClientIdentitySerializable, ContainerMovable<ClientContainer> {
+public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implements ClientIdentitySerializable,
+                                                                          ContainerMovable<ClientContainer>,
+                                                                          ApplicationContextHolder, CustomConstructible {
     private int ID;
     
     private ClassViewType initClassView = ClassViewType.GRID;
     private List<ClassViewType> banClassViewList = new ArrayList<ClassViewType>();
     private PropertyObjectDescriptor propertyHighlight;
 
+    private ApplicationContext context;
+    public ApplicationContext getContext() {
+        return context;
+    }
+    public void setContext(ApplicationContext context) {
+        this.context = context;
+    }
 
-    public ClientGroupObject client = new ClientGroupObject();
+    public void updateDependency(Object object, String field) {
+        context.updateDependency(object, field);
+    }
+
+    public ClientGroupObject client;
 
     public List<ClassViewType> getBanClassViewList() {
         return banClassViewList;
@@ -34,7 +47,7 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
         this.banClassViewList.clear();
         this.banClassViewList.addAll(banClassViewList);
 
-        IncrementDependency.update(this, "banClassViewList");
+        updateDependency(this, "banClassViewList");
 
         setBanClassView(this.banClassViewList);
     }
@@ -45,7 +58,7 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
 
     public void setInitClassView(ClassViewType initClassView) {
         this.initClassView = initClassView;
-        IncrementDependency.update(this, "initClassView");
+        updateDependency(this, "initClassView");
     }
 
     public List<ClassViewType> getBanClassView() {
@@ -54,7 +67,7 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
 
     public void setBanClassView(List<ClassViewType> banClassView) {
         client.banClassView = banClassView;
-        IncrementDependency.update(this, "banClassView");
+        updateDependency(this, "banClassView");
     }
 
     public PropertyObjectDescriptor getPropertyHighlight() {
@@ -63,7 +76,7 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
 
     public void setPropertyHighlight(PropertyObjectDescriptor propertyHighlight) {
         this.propertyHighlight = propertyHighlight;
-        IncrementDependency.update(this, "propertyHighlight");
+        updateDependency(this, "propertyHighlight");
     }
 
     public int getID() {
@@ -72,7 +85,6 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
 
     public void setID(int ID) {
         this.ID = ID;
-        client.setID(ID);
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
@@ -91,6 +103,10 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
         client = pool.context.getGroupObject(ID);
     }
 
+    public void customConstructor() {
+        client = new ClientGroupObject(getID(), getContext());
+    }
+
     @Override
     public String toString() {
         return client.toString();
@@ -103,9 +119,8 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
     public boolean moveObject(ObjectDescriptor objectFrom, int index) {
         BaseUtils.moveElement(this, objectFrom, index);
         BaseUtils.moveElement(client, objectFrom.client, index);
-        IncrementDependency.update(this, "objects");
 
-        IncrementDependency.update(this, "objects");
+        updateDependency(this, "objects");
         return true;
     }
 
@@ -115,7 +130,7 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
         client.add(object.client);
         object.client.groupObject = client;
 
-        IncrementDependency.update(this, "objects");
+        updateDependency(this, "objects");
         return true;
     }
 
@@ -123,7 +138,7 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
         client.remove(object.client);
         remove(object);
 
-        IncrementDependency.update(this, "objects");
+        updateDependency(this, "objects");
         return true;
     }
 

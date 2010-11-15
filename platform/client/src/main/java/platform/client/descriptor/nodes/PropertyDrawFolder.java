@@ -3,14 +3,22 @@ package platform.client.descriptor.nodes;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.PropertyDrawDescriptor;
-import platform.client.descriptor.increment.IncrementDependency;
+import platform.interop.context.ApplicationContext;
+import platform.interop.context.ApplicationContextHolder;
+import platform.interop.context.ApplicationContextProvider;
+import platform.interop.context.IncrementDependency;
 import platform.client.tree.ClientTree;
 import platform.base.BaseUtils;
 
 import javax.swing.*;
 
-public class PropertyDrawFolder extends GroupElementFolder<PropertyDrawFolder> {
+public class PropertyDrawFolder extends GroupElementFolder<PropertyDrawFolder> implements ApplicationContextProvider {
+
     private FormDescriptor form;
+
+    public ApplicationContext getContext() {
+        return form.getContext();
+    }
 
     public PropertyDrawFolder(GroupObjectDescriptor group, FormDescriptor form) {
         super(group, "Свойства");
@@ -27,15 +35,11 @@ public class PropertyDrawFolder extends GroupElementFolder<PropertyDrawFolder> {
     public boolean addToPropertyDraws(PropertyDrawDescriptor propertyDraw) { // usage через reflection
         propertyDraw.addGroup = groupObject;
         form.addToPropertyDraws(propertyDraw);
-
-        IncrementDependency.update(this, "propertyDraws");
         return true;
     }
 
     public boolean removeFromPropertyDraws(PropertyDrawDescriptor propertyDraw) {
         form.removeFromPropertyDraws(propertyDraw);
-
-        IncrementDependency.update(this, "propertyDraws");
         return true;
     }
 

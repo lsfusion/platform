@@ -29,6 +29,6 @@ public class RegularFilterView extends IdentityObject implements ServerIdentityS
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        entity = pool.context.form.getRegularFilter(ID);
+        entity = pool.context.entity.getRegularFilter(ID);
     }
 }

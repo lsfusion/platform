@@ -2,7 +2,9 @@ package platform.client.descriptor;
 
 import platform.base.BaseUtils;
 import platform.client.Main;
-import platform.client.descriptor.increment.IncrementDependency;
+import platform.client.descriptor.context.ContextIdentityDescriptor;
+import platform.interop.context.ApplicationContext;
+import platform.interop.context.IncrementDependency;
 import platform.client.logics.ClientComponent;
 import platform.client.logics.ClientContainer;
 import platform.client.logics.ClientGroupObject;
@@ -19,19 +21,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class PropertyDrawDescriptor extends IdentityDescriptor implements ClientIdentitySerializable, ContainerMovable<ClientComponent> {
+public class PropertyDrawDescriptor extends ContextIdentityDescriptor implements ClientIdentitySerializable, ContainerMovable<ClientComponent>, CustomConstructible {
     public ClientPropertyDraw client;
 
     private PropertyObjectDescriptor propertyObject;
 
     public PropertyDrawDescriptor() {
-        client = new ClientPropertyDraw();
-        client.setDescriptor(this);
     }
 
-    public PropertyDrawDescriptor(PropertyObjectDescriptor propertyObject) {
-        this();
-        setID(Main.generateNewID());
+    public PropertyDrawDescriptor(ApplicationContext context, PropertyObjectDescriptor propertyObject) {
+        super(Main.generateNewID(), context);
+
+        customConstructor();
         setPropertyObject(propertyObject);
     }
 
@@ -46,7 +47,7 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
 
     public void setPropertyObject(PropertyObjectDescriptor propertyObject) { // usage через reflection
         this.propertyObject = propertyObject;
-        IncrementDependency.update(this, "propertyObject");
+        updateDependency(this, "propertyObject");
     }
 
     public PropertyObjectDescriptor getPropertyObject() {
@@ -59,7 +60,7 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
         this.toDraw = toDraw;
         client.groupObject = toDraw==null?null:toDraw.client;
 
-        IncrementDependency.update(this, "toDraw");
+        updateDependency(this, "toDraw");
     }
 
     public GroupObjectDescriptor getToDraw() {
@@ -76,7 +77,7 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
 
     public void setForceViewType(String forceViewType) {
         this.forceViewType = ClassViewType.valueOf(forceViewType);
-        IncrementDependency.update(this, "forceViewType");
+        updateDependency(this, "forceViewType");
     }
 
     public ClassViewType getForceViewType() {
@@ -134,7 +135,7 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
             client.columnGroupObjects.add(group.client);
         }
         
-        IncrementDependency.update(this, "columnGroupObjects");
+        updateDependency(this, "columnGroupObjects");
     }
 
     public PropertyObjectDescriptor getPropertyCaption() { // usage через reflection
@@ -143,12 +144,12 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
 
     public void setPropertyCaption(PropertyObjectDescriptor propertyCaption) {
         this.propertyCaption = propertyCaption;
-        IncrementDependency.update(this, "propertyCaption");
+        updateDependency(this, "propertyCaption");
     }
 
     public void setCaption(String caption) { // usage через reflection
         client.caption = caption;
-        IncrementDependency.update(this, "caption");
+        updateDependency(this, "caption");
     }
 
     public String getCaption() {
@@ -158,12 +159,6 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
     @Override
     public String toString() {
         return client.toString();
-    }
-
-    @Override
-    public void setID(int ID) {
-        super.setID(ID);
-        client.setID(ID);
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
@@ -191,6 +186,11 @@ public class PropertyDrawDescriptor extends IdentityDescriptor implements Client
         }
 
         client = pool.context.getProperty(ID);
+        client.setDescriptor(this);
+    }
+
+    public void customConstructor() {
+        client = new ClientPropertyDraw(getID(), getContext());
         client.setDescriptor(this);
     }
 }

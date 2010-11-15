@@ -2,8 +2,7 @@ package platform.client.descriptor.view;
 
 import platform.client.ClassFilteredAction;
 import platform.client.descriptor.FormDescriptor;
-import platform.client.descriptor.increment.IncrementDependency;
-import platform.client.descriptor.increment.IncrementView;
+import platform.interop.context.IncrementView;
 import platform.client.descriptor.nodes.FormNode;
 import platform.client.descriptor.nodes.PlainTextNode;
 import platform.client.descriptor.nodes.actions.EditableTreeNode;
@@ -14,9 +13,7 @@ import platform.client.tree.ClientTreeActionEvent;
 import platform.client.tree.ClientTreeNode;
 
 import javax.swing.*;
-import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -24,6 +21,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Enumeration;
 
+// предполагается, что будет ровно один FormDescriptorView, которому будут говорить сверху, чтобы он отображал разные FormDescriptor'ы
 public class FormDescriptorView extends JPanel implements IncrementView, Lookup.LookupResultChangeListener {
 
     private FormDescriptor form;
@@ -108,25 +106,6 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
 
         add(splitPane, BorderLayout.CENTER);
 
-        IncrementDependency.add("groupObjects", this);
-        IncrementDependency.add("propertyDraws", this);
-        IncrementDependency.add("children", this);
-        IncrementDependency.add("objects", this);
-        IncrementDependency.add("caption", this);
-        IncrementDependency.add("title", this);
-        IncrementDependency.add("description", this);
-        IncrementDependency.add("propertyObject", this);
-        IncrementDependency.add("toDraw", this);
-        IncrementDependency.add("fixedFilters", this);
-        IncrementDependency.add("regularFilterGroups", this);
-        IncrementDependency.add("filters", this);
-        IncrementDependency.add("filter", this);
-        IncrementDependency.add("op1", this);
-        IncrementDependency.add("op2", this);
-        IncrementDependency.add("property", this);
-        IncrementDependency.add("baseClass", this);
-        IncrementDependency.add(this, "form", this);
-
         lookup.addLookupResultChangeListener(Lookup.NEW_EDITABLE_OBJECT_PROPERTY, this);
         lookup.addLookupResultChangeListener(Lookup.DELETED_OBJECT_PROPERTY, this);
     }
@@ -157,9 +136,11 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
         updateNow();
     }
 
-    public void setForm(FormDescriptor iForm) {
-        if (this.form != iForm) {
-            this.form = iForm;
+    public void setForm(FormDescriptor iform) {
+        if (form != iform) {
+            if (form != null)
+                removeDependencies(this.form);
+            this.form = iform;
             view.removeEditor();
             objectToEdit = form;
         }
@@ -168,7 +149,54 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
         saveBtn.setEnabled(form != null);
         cancelBtn.setEnabled(form != null);
 
-        IncrementDependency.update(this, "form");
+        if (form != null) {
+            addDependencies(form);
+            form.updateDependency(this, "form");
+        }
+    }
+
+    private void addDependencies(FormDescriptor form) {
+        form.addDependency("groupObjects", this);
+        form.addDependency("propertyDraws", this);
+        form.addDependency("children", this);
+        form.addDependency("objects", this);
+        form.addDependency("caption", this);
+        form.addDependency("title", this);
+        form.addDependency("description", this);
+        form.addDependency("propertyObject", this);
+        form.addDependency("toDraw", this);
+        form.addDependency("fixedFilters", this);
+        form.addDependency("regularFilterGroups", this);
+        form.addDependency("filters", this);
+        form.addDependency("filter", this);
+        form.addDependency("op1", this);
+        form.addDependency("op2", this);
+        form.addDependency("value", this);
+        form.addDependency("property", this);
+        form.addDependency("baseClass", this);
+        form.addDependency(this, "form", this);
+    }
+
+    private void removeDependencies(FormDescriptor form) {
+        form.removeDependency("groupObjects", this);
+        form.removeDependency("propertyDraws", this);
+        form.removeDependency("children", this);
+        form.removeDependency("objects", this);
+        form.removeDependency("caption", this);
+        form.removeDependency("title", this);
+        form.removeDependency("description", this);
+        form.removeDependency("propertyObject", this);
+        form.removeDependency("toDraw", this);
+        form.removeDependency("fixedFilters", this);
+        form.removeDependency("regularFilterGroups", this);
+        form.removeDependency("filters", this);
+        form.removeDependency("filter", this);
+        form.removeDependency("op1", this);
+        form.removeDependency("op2", this);
+        form.removeDependency("value", this);
+        form.removeDependency("property", this);
+        form.removeDependency("baseClass", this);
+        form.removeDependency(this, "form", this);
     }
 
     public void update(Object updateObject, String updateField) {

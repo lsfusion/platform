@@ -37,6 +37,11 @@ public class WeakIdentityHashMap<K, V> {
         return map.size();
     }
 
+    public boolean isEmpty() {
+        expunge();
+        return map.isEmpty();
+    }
+
     private void expunge() {
         Reference<? extends K> ref;
         while ((ref = refQueue.poll()) != null)

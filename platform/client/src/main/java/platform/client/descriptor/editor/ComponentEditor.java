@@ -6,7 +6,6 @@ import platform.client.descriptor.increment.editor.IncrementCheckBox;
 import platform.client.logics.ClientComponent;
 
 import javax.swing.*;
-import java.awt.*;
 
 public class ComponentEditor extends TitledPanel implements NodeEditor {
     protected final ClientComponent component;

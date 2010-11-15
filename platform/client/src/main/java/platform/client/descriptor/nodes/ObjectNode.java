@@ -21,7 +21,7 @@ public class ObjectNode extends DescriptorNode<ObjectDescriptor, ObjectNode> imp
     }
 
     public NodeEditor createEditor(FormDescriptor form) {
-        return new ObjectEditor(getTypedObject());
+        return new ObjectEditor(getTypedObject(), form);
     }
 
     @Override

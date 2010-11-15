@@ -3,12 +3,18 @@ package platform.client.descriptor.nodes;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.tree.ClientTree;
+import platform.interop.context.ApplicationContext;
+import platform.interop.context.ApplicationContextProvider;
 
 import javax.swing.*;
 
-public class GroupObjectFolder extends PlainTextNode<GroupObjectFolder> {
+public class GroupObjectFolder extends PlainTextNode<GroupObjectFolder> implements ApplicationContextProvider {
 
     private FormDescriptor form;
+
+    public ApplicationContext getContext() {
+        return form.getContext();
+    }
 
     public GroupObjectFolder(FormDescriptor form) {
         super("Группы объектов");

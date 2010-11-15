@@ -2,8 +2,7 @@ package platform.client.descriptor.increment.editor;
 
 import platform.base.BaseUtils;
 import platform.client.descriptor.editor.base.FlatButton;
-import platform.client.descriptor.increment.IncrementDependency;
-import platform.client.descriptor.increment.IncrementView;
+import platform.interop.context.*;
 
 public abstract class IncrementDialogEditor extends FlatButton implements IncrementView {
 
@@ -18,11 +17,11 @@ public abstract class IncrementDialogEditor extends FlatButton implements Increm
     private final Object object;
     private final String field;
 
-    public IncrementDialogEditor(Object object, String field) {
+    public IncrementDialogEditor(ApplicationContextProvider object, String field) {
         this.object = object;
         this.field = field;
 
-        IncrementDependency.add(object, field, this);
+        object.getContext().addDependency(object, field, this);
     }
 
     public void update(Object updateObject, String updateField) {

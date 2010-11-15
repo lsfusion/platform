@@ -1,8 +1,8 @@
 package platform.client.descriptor.filter;
 
+import platform.client.descriptor.CustomConstructible;
 import platform.client.descriptor.GroupObjectDescriptor;
-import platform.client.descriptor.IdentityDescriptor;
-import platform.client.descriptor.increment.IncrementDependency;
+import platform.client.descriptor.context.ContextIdentityDescriptor;
 import platform.client.logics.ClientRegularFilter;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
@@ -13,15 +13,9 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.List;
 
-public class RegularFilterDescriptor extends IdentityDescriptor implements ClientIdentitySerializable {
+public class RegularFilterDescriptor extends ContextIdentityDescriptor implements ClientIdentitySerializable, CustomConstructible {
 
     private FilterDescriptor filter;
-
-    @Override
-    public void setID(int ID) {
-        super.setID(ID);
-        client.setID(ID);
-    }
 
     public FilterDescriptor getFilter() {
         return filter;
@@ -29,18 +23,17 @@ public class RegularFilterDescriptor extends IdentityDescriptor implements Clien
 
     public void setFilter(FilterDescriptor filter) {
         this.filter = filter;
-        IncrementDependency.update(this, "filter");
+        updateDependency(this, "filter");
     }
 
     public RegularFilterDescriptor() {
-        client = new ClientRegularFilter();
     }
 
     ClientRegularFilter client;
 
     public void setCaption(String caption) { // usage через reflection
         client.caption = caption;
-        IncrementDependency.update(this, "caption");
+        updateDependency(this, "caption");
     }
 
     public String getCaption() {
@@ -63,6 +56,10 @@ public class RegularFilterDescriptor extends IdentityDescriptor implements Clien
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         filter = (FilterDescriptor) pool.deserializeObject(inStream);
         client = pool.context.getRegularFilter(ID);
+    }
+
+    public void customConstructor() {
+        client = new ClientRegularFilter(getID());
     }
 
     @Override

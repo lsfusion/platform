@@ -3,7 +3,8 @@ package platform.client.logics;
 import platform.base.IdentityObject;
 import platform.base.OrderedMap;
 import platform.client.SwingUtils;
-import platform.client.descriptor.increment.IncrementDependency;
+import platform.interop.context.ApplicationContext;
+import platform.interop.context.ApplicationContextHolder;
 import platform.client.form.LogicsSupplier;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
@@ -18,7 +19,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ClientForm extends IdentityObject implements LogicsSupplier, ClientIdentitySerializable, AbstractForm<ClientContainer, ClientComponent, ClientFunction> {
+public class ClientForm extends IdentityObject implements LogicsSupplier, ClientIdentitySerializable,
+                                                          AbstractForm<ClientContainer, ClientComponent, ClientFunction>,
+                                                          ApplicationContextHolder {
 
     public boolean readOnly = false;
 
@@ -29,7 +32,7 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
     // пока используется только для сериализации туда-назад
     public Integer overridePageWidth;
 
-    public ClientContainer mainContainer = new ClientContainer();
+    public ClientContainer mainContainer;
 
     public void setMainContainer(ClientContainer mainContainer) {
         this.mainContainer = mainContainer;
@@ -117,8 +120,22 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
 
     private List<ClientPropertyDraw> order = new ArrayList<ClientPropertyDraw>();
 
-    public ClientForm() {
+    private ApplicationContext context;
+    public ApplicationContext getContext() {
+        return context;
+    }
+    public void setContext(ApplicationContext context) {
+        this.context = context;
+    }
 
+    public ClientForm() {
+    }
+
+    // этот конструктор используется при создании нового объекта в настройке бизнес-логики
+    public ClientForm(int ID, ApplicationContext context) {
+        super(ID);
+        
+        this.context = context;
     }
 
     public List<ClientObject> getObjects() {
@@ -306,7 +323,7 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
 
     public void setDefaultOrders(OrderedMap<ClientPropertyDraw, Boolean> defaultOrders) {
         this.defaultOrders = defaultOrders;
-        IncrementDependency.update(this, "defaultOrders");
+        context.updateDependency(this, "defaultOrders");
     }
 
     public OrderedMap<ClientPropertyDraw, Boolean> getDefaultOrders() {

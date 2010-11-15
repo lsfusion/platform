@@ -1,7 +1,7 @@
 package platform.client.descriptor.filter;
 
 import platform.client.descriptor.GroupObjectDescriptor;
-import platform.client.descriptor.increment.IncrementDependency;
+import platform.interop.context.IncrementDependency;
 import platform.client.descriptor.nodes.filters.FilterNode;
 import platform.client.descriptor.nodes.filters.NotFilterNode;
 import platform.client.serialization.ClientSerializationPool;
@@ -43,7 +43,7 @@ public class NotFilterDescriptor extends FilterDescriptor {
 
     public void setFilter(FilterDescriptor filter) {
         this.filter = filter;
-        IncrementDependency.update(this, "filter");
+        updateDependency(this, "filter");
     }
 
     public FilterDescriptor getFilter() {

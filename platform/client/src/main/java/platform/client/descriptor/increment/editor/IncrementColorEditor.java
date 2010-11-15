@@ -1,8 +1,7 @@
 package platform.client.descriptor.increment.editor;
 
 import platform.base.BaseUtils;
-import platform.client.descriptor.increment.IncrementDependency;
-import platform.client.descriptor.increment.IncrementView;
+import platform.interop.context.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,11 +15,11 @@ public class IncrementColorEditor extends JPanel implements IncrementView{
     public ColorLabel chosenColorLabel;
     public JLabel title = new JLabel();
 
-    public IncrementColorEditor(String title, Object object, String field){
+    public IncrementColorEditor(String title, ApplicationContextProvider object, String field){
         this.title.setText(title);
         this.object = object;
         this.field = field;
-        IncrementDependency.add(object, field, this);
+        object.getContext().addDependency(object, field, this);
         fill();
     }
 

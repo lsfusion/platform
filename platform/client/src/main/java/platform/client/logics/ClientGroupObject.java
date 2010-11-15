@@ -9,6 +9,7 @@ import platform.client.form.GroupObjectController;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ClassViewType;
+import platform.interop.context.ApplicationContext;
 import platform.interop.form.layout.AbstractGroupObject;
 
 import java.io.DataInputStream;
@@ -25,10 +26,19 @@ public class ClientGroupObject extends ArrayList<ClientObject>
     private int ID;
     public List<ClassViewType> banClassView = new ArrayList<ClassViewType>();
 
-    public ClientGrid grid = new ClientGrid();
-    public ClientShowType showType = new ClientShowType();
+    public ClientGrid grid;
+    public ClientShowType showType;
 
     public ClientGroupObject() {
+    }
+
+    // конструктор при создании нового объекта
+    public ClientGroupObject(int ID, ApplicationContext context) {
+        this.ID = ID;
+
+        grid = new ClientGrid(Main.generateNewID(), context);
+        showType = new ClientShowType(Main.generateNewID(), context);
+
         grid.groupObject = this;
         showType.groupObject = this;
     }
@@ -95,8 +105,6 @@ public class ClientGroupObject extends ArrayList<ClientObject>
 
     public void setID(int iID) {
         ID = iID;
-        grid.setID(Main.generateNewID());
-        showType.setID(Main.generateNewID());
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
