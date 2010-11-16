@@ -25,7 +25,13 @@ public class ClientGroupObject extends ArrayList<ClientObject>
 
     public ClientGrid grid = new ClientGrid();
     public ClientShowType showType = new ClientShowType();
-    public boolean mayHaveChildren;
+
+    public boolean isRecursive;
+    private boolean isLastTreeGroup;
+
+    public boolean mayHaveChildren() {
+        return isRecursive || !isLastTreeGroup;
+    }
 
     public ClientGroupObject() {
         grid.groupObject = this;
@@ -118,7 +124,8 @@ public class ClientGroupObject extends ArrayList<ClientObject>
 
         grid = pool.deserializeObject(inStream);
         showType = pool.deserializeObject(inStream);
-        mayHaveChildren = inStream.readBoolean();
+        isLastTreeGroup = inStream.readBoolean();
+        isRecursive = inStream.readBoolean();
     }
 
     public static List<ClientGroupObjectValue> mergeGroupValues(OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>> groupColumnKeys) {

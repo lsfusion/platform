@@ -9,6 +9,7 @@ import platform.client.tree.ClientTree;
 import platform.client.tree.ClientTreeNode;
 import platform.client.tree.ExpandingTreeNode;
 
+import javax.swing.*;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultTreeModel;
@@ -34,6 +35,8 @@ public class GroupTree extends ClientTree {
         form = iform;
 
         setToggleClickCount(-1);
+        setDropMode(DropMode.ON_OR_INSERT);
+        setDragEnabled(true);
 
         DefaultTreeModel model = new DefaultTreeModel(null);
 
@@ -222,7 +225,7 @@ public class GroupTree extends ClientTree {
             for (int i = 0; i < syncChilds.size(); ++i) {
                 if (thisGroupChildren[i] == null) {
                     TreeGroupNode newNode = new TreeGroupNode(syncGroup, syncChilds.get(i));
-                    if (syncGroup.mayHaveChildren) {
+                    if (syncGroup.mayHaveChildren()) {
                         newNode.add(new ExpandingTreeNode());
                     }
 
@@ -244,7 +247,7 @@ public class GroupTree extends ClientTree {
             }
 
             if (getChildCount() == 0) {
-                if (group.mayHaveChildren) {
+                if (group.mayHaveChildren()) {
                     add(new ExpandingTreeNode());
                 }
             }
@@ -265,6 +268,40 @@ public class GroupTree extends ClientTree {
             }
 
             return caption;
+        }
+
+        @Override
+        public boolean canImport(TransferHandler.TransferSupport info) {
+            ClientTreeNode node = ClientTree.getNode(info);
+            if (node instanceof TreeGroupNode && !node.isNodeDescendant(this)) {
+                TreeGroupNode treeGroupNode = (TreeGroupNode) node;
+                return treeGroupNode.group.getUpTreeGroup() == group
+                        || (group == treeGroupNode.group && group.isRecursive);
+            }
+            return false;
+        }
+
+        @Override
+        public boolean importData(ClientTree tree, TransferHandler.TransferSupport info) {
+            ClientTreeNode node = ClientTree.getNode(info);
+            if (node instanceof TreeGroupNode && !node.isNodeDescendant(this)) {
+                TreeGroupNode treeGroupNode = (TreeGroupNode) node;
+
+                int index = ClientTree.getChildIndex(info);
+                if (index == -1) {
+                    index = getChildCount();
+                }
+
+                try {
+                    form.moveGroupObject(group, key, treeGroupNode.group, treeGroupNode.key, index);
+                } catch (IOException e) {
+                    throw new RuntimeException("Ошибка при перемещении узла в дереве.");
+                }
+
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 }
