@@ -877,6 +877,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         tableFactory.include("customerretail", customerCheckRetail);
         tableFactory.include("articlestore", article, store);
         tableFactory.include("articleorder", article, order);
+        tableFactory.include("articleaction", article, action);
         tableFactory.include("rates", DateClass.instance);
         tableFactory.include("intervals", DoubleClass.instance);
     }
@@ -1165,6 +1166,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 if (payView != null) {
                     // делаем, чтобы суммы были внизу и как можно правее
                     ContainerView docSumsContainer = design.get(payView).getContainer();
+                    docSumsContainer.getContainer().setSID(null); // сделано, чтобы при визуальной настройке она сразу не перетаскивала все свойства в другой контейнер при помощи ContainerMover
                     design.mainContainer.addBack(2, docSumsContainer);
 
                     PropertyDrawEntity payCash = getPropertyDraw(orderSalePayCash);
