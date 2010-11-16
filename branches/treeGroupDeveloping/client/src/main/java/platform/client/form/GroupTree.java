@@ -10,11 +10,12 @@ import platform.client.tree.ClientTreeNode;
 import platform.client.tree.ExpandingTreeNode;
 
 import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.ExpandVetoException;
+import javax.swing.tree.TreePath;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.*;
 
@@ -61,17 +62,27 @@ public class GroupTree extends ClientTree {
             }
         });
 
-        addTreeSelectionListener(new TreeSelectionListener() {
-            public void valueChanged(TreeSelectionEvent event) {
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent event) {
                 if (synchronize) {
                     return;
                 }
 
-                TreeGroupNode node = (TreeGroupNode) event.getPath().getLastPathComponent();
-                try {
-                    form.changeGroupObject(node.group, node.key);
-                } catch (IOException e) {
-                    throw new RuntimeException("Ошибка при выборе узла.");
+                if (event.getClickCount() == 2) {
+                    int x = event.getX();
+                    int y = event.getY();
+                    final TreePath path = getPathForLocation(x, y);
+                    if (path != null) {
+                        TreeGroupNode node = (TreeGroupNode) path.getLastPathComponent();
+                        if (node.group != null) {
+                            try {
+                                form.changeGroupObject(node.group, node.key);
+                            } catch (IOException e) {
+                                throw new RuntimeException("Ошибка при выборе узла.");
+                            }
+                        }
+                    }
                 }
             }
         });
@@ -189,7 +200,8 @@ public class GroupTree extends ClientTree {
                 remove(0);
             }
 
-            TreeGroupNode[] allChildren = new TreeGroupNode[syncChilds.size()];
+            List<TreeGroupNode> allChildren = new ArrayList<TreeGroupNode>();
+            TreeGroupNode[] thisGroupChildren = new TreeGroupNode[syncChilds.size()];
 
             for (TreeGroupNode child : BaseUtils.<TreeGroupNode>copyTreeChildren(children)) {
                 // бежим по node'ам
@@ -199,25 +211,33 @@ public class GroupTree extends ClientTree {
                         remove(child);
                         getGroupNodes(syncGroup).remove(child);
                     } else { // помечаем что был, и рекурсивно синхронизируем child
-                        allChildren[index] = child;
+                        thisGroupChildren[index] = child;
                         child.synchronize(syncGroup, tree);
                     }
+                } else {
+                    allChildren.add(child);
                 }
             }
 
             for (int i = 0; i < syncChilds.size(); ++i) {
-                if (allChildren[i] == null) {
+                if (thisGroupChildren[i] == null) {
                     TreeGroupNode newNode = new TreeGroupNode(syncGroup, syncChilds.get(i));
                     if (syncGroup.mayHaveChildren) {
                         newNode.add(new ExpandingTreeNode());
                     }
 
-                    allChildren[i] = newNode;
+                    thisGroupChildren[i] = newNode;
                     getGroupNodes(syncGroup).add(newNode);
                 }
             }
 
-//            removeAllChildren();
+            if (group == syncGroup) {
+                allChildren.addAll(0, Arrays.asList(thisGroupChildren));
+            } else {
+                allChildren.addAll(Arrays.asList(thisGroupChildren));
+            }
+
+            removeAllChildren();
 
             for (TreeGroupNode child : allChildren) {
                 add(child);
@@ -236,7 +256,11 @@ public class GroupTree extends ClientTree {
             for (ClientPropertyDraw property : properties) {
                 Map<ClientGroupObjectValue, Object> propValues = values.get(property);
                 if (propValues != null) {
-                    caption += BaseUtils.nullToString(propValues.get(key)) + " ";
+                    String value = BaseUtils.nullToString(propValues.get(key)).trim();
+                    if (value.length() != 0 && caption.length() != 0) {
+                        value = " " + value;
+                    }
+                    caption += value;
                 }
             }
 
