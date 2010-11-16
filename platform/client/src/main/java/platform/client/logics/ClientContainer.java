@@ -148,4 +148,8 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
     public boolean isAncestorOf(ClientContainer container) {
         return container != null && (equals(container) || isAncestorOf(container.container));
     }
+
+    public List<ClientComponent> getChildren(){
+        return children;
+    }
 }

@@ -124,4 +124,18 @@ public abstract class ClientComponent extends ContextIdentityDescriptor implemen
     public SimplexConstraints<ClientComponent> getConstraints() {
         return constraints;
     }
+
+    public void setConstraints(SimplexConstraints<ClientComponent> constraints) {
+        this.constraints = constraints;
+        updateDependency(this, "constraints");
+    }
+
+    public Map<ClientComponent, DoNotIntersectSimplexConstraint> getIntersects(){
+        return constraints.intersects;
+    }
+
+    public void setIntersects(Map<ClientComponent, DoNotIntersectSimplexConstraint> intersects){
+        constraints.intersects = intersects;
+        updateDependency(constraints, "intersects");
+    }
 }

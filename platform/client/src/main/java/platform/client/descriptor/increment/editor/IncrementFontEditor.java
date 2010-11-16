@@ -68,7 +68,6 @@ public class IncrementFontEditor extends JPanel implements IncrementView {
     }
 
     public void update(Object updateObject, String updateField) {
-        Font newFont = (Font) BaseUtils.invokeGetter(object, field);
-            font = newFont;
+        font = (Font) BaseUtils.invokeGetter(object, field);
     }
 }

@@ -92,7 +92,6 @@ public class IncrementColorEditor extends JPanel implements IncrementView{
     }
 
     public void update(Object updateObject, String updateField) {
-        Color newColor = (Color) BaseUtils.invokeGetter(object, field);
-            selected = newColor;
+        selected = (Color) BaseUtils.invokeGetter(object, field);
     }
 }

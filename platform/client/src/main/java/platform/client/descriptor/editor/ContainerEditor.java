@@ -17,6 +17,13 @@ public class ContainerEditor extends JPanel implements NodeEditor {
         add(new TitledPanel("Описание", new IncrementTextEditor(descriptor, "description")));
         add(new TitledPanel("Идентификатор", new IncrementTextEditor(descriptor, "sID")));
 
+        TitledPanel arrangement = new TitledPanel("Настройка расположения");
+        arrangement.setLayout(new BoxLayout(arrangement, BoxLayout.Y_AXIS));
+        arrangement.add(new ComponentIntersectsEditor("Взаимное расположение компонентов", descriptor, "intersects"));
+        arrangement.add(new ContainerConstraintsEditor(descriptor, "constraints"));
+
+        add(arrangement);
+
         add(new ComponentEditor("Компонентные свойства", descriptor));
     }
 

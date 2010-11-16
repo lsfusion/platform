@@ -92,6 +92,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public void setShowEditKey(boolean showKey){
         showEditKey = showKey;
+        updateDependency(this, "showEditKey");
     }
 
     private ClientGroupObject getClientGroupObject(Collection<ClientGroupObject> groups, int groupID) {

@@ -18,7 +18,7 @@ public class ComponentDesignEditor extends TitledPanel {
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        add(new IncrementColorEditor("Цет фона: ", component, "background"));
+        add(new IncrementColorEditor("Цвет фона: ", component, "background"));
         add(Box.createRigidArea(new Dimension(5, 5)));
         add(new IncrementColorEditor("Цвет текста: ", component, "foreground"));
         add(Box.createRigidArea(new Dimension(5, 5)));
