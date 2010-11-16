@@ -211,7 +211,7 @@ public class GroupTree extends ClientTree {
                     if (syncGroup.mayHaveChildren) {
                         newNode.add(new ExpandingTreeNode());
                     }
-                    
+
                     allChildren[i] = newNode;
                     getGroupNodes(syncGroup).add(newNode);
                 }

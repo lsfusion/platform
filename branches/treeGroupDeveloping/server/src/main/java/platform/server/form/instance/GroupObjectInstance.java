@@ -57,6 +57,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     private int pageSize = 0;
     public int getPageSize() {
+        assert !isInTree();
         return pageSize;
     }
     public void setPageSize(int pageSize) {
@@ -213,7 +214,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     Map<ObjectInstance,ObjectValue> getGroupObjectValue() {
         Map<ObjectInstance,ObjectValue> result = new HashMap<ObjectInstance, ObjectValue>();
-        for(ObjectInstance object : objects)
+        for(ObjectInstance object : GroupObjectInstance.getObjects(getUpTreeGroups()))
             result.put(object,object.getObjectValue());
         return result;
     }
@@ -272,8 +273,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 ((CustomObjectInstance)object).setClassListener(classListener);
     }
 
-    public boolean readAll() {
-        return getUpTreeGroup()!=null || parent!=null || downGroups || getPageSize()==0;
+    public boolean isInTree() {
+        return getUpTreeGroup()!=null || parent!=null || downGroups;
     }
     boolean downGroups = false;
 
