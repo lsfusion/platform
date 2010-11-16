@@ -18,10 +18,10 @@ public class ContextIdentityDescriptor extends IdentityDescriptor implements App
     }
 
     public ContextIdentityDescriptor() {
-        this(null);
     }
 
     public ContextIdentityDescriptor(ApplicationContext context) {
+        super(context.idShift());
         this.context = context;
     }
 

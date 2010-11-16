@@ -3,7 +3,6 @@ package platform.client.logics;
 import platform.base.DefaultIDGenerator;
 import platform.base.IDGenerator;
 import platform.base.OrderedMap;
-import platform.client.Main;
 import platform.client.form.ClientFormController;
 import platform.client.form.GroupObjectController;
 import platform.client.serialization.ClientIdentitySerializable;
@@ -36,8 +35,8 @@ public class ClientGroupObject extends ArrayList<ClientObject>
     public ClientGroupObject(int ID, ApplicationContext context) {
         this.ID = ID;
 
-        grid = new ClientGrid(Main.generateNewID(), context);
-        showType = new ClientShowType(Main.generateNewID(), context);
+        grid = new ClientGrid(context);
+        showType = new ClientShowType(context);
 
         grid.groupObject = this;
         showType.groupObject = this;

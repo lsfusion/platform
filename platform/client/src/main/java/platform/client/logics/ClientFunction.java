@@ -21,8 +21,8 @@ public class ClientFunction extends ClientComponent implements AbstractFunction<
     public ClientFunction() {
     }
 
-    public ClientFunction(int ID, ApplicationContext context) {
-        super(ID, context);
+    public ClientFunction(ApplicationContext context) {
+        super(context);
     }
 
     @Override

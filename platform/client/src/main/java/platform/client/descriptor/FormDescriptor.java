@@ -474,7 +474,7 @@ public class FormDescriptor extends ContextIdentityDescriptor implements ClientI
 
     public boolean removeFromGroupObjects(GroupObjectDescriptor groupObject) {
         groupObjects.remove(groupObject);
-        client.groupObjects.add(groupObject.client);
+        client.removeGroupObject(groupObject.client);
 
         updateDependency(this, "groupObjects");
         return true;
@@ -521,13 +521,13 @@ public class FormDescriptor extends ContextIdentityDescriptor implements ClientI
 
     private class FormContainerFactory implements ContainerFactory<ClientContainer> {
         public ClientContainer createContainer() {
-            return new ClientContainer(Main.generateNewID(), getContext());
+            return new ClientContainer(getContext());
         }
     }
 
     private class FormFunctionFactory implements FunctionFactory<ClientFunction> {
         public ClientFunction createFunction() {
-            return new ClientFunction(Main.generateNewID(), getContext());
+            return new ClientFunction(getContext());
         }
     }
 

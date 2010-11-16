@@ -22,11 +22,10 @@ public class ClientGrid extends ClientComponent {
     public ClientGroupObject groupObject;
 
     public ClientGrid() {
-
     }
 
-    public ClientGrid(int ID, ApplicationContext context) {
-        super(ID, context);
+    public ClientGrid(ApplicationContext context) {
+        super(context);
     }
 
     @Override

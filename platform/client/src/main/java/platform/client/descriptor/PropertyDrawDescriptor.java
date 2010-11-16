@@ -30,7 +30,7 @@ public class PropertyDrawDescriptor extends ContextIdentityDescriptor implements
     }
 
     public PropertyDrawDescriptor(ApplicationContext context, PropertyObjectDescriptor propertyObject) {
-        super(Main.generateNewID(), context);
+        super(context);
 
         customConstructor();
         setPropertyObject(propertyObject);

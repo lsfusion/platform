@@ -28,8 +28,8 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
     public ClientContainer() {
     }
 
-    public ClientContainer(int ID, ApplicationContext context) {
-        super(ID, context);
+    public ClientContainer(ApplicationContext context) {
+        super(context);
     }
 
     @Override

@@ -32,6 +32,10 @@ public abstract class ClientComponent extends ContextIdentityDescriptor implemen
     public ClientComponent() {
     }
 
+    public ClientComponent(ApplicationContext context) {
+        super(context);
+    }
+
     public ClientComponent(int ID, ApplicationContext context) {
         super(ID, context);
     }

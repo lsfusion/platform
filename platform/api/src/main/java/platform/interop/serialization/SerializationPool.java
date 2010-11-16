@@ -157,8 +157,9 @@ public abstract class SerializationPool<C> {
                 put(getClassId(clazz), id, instance);
                 ((IdentitySerializable)instance).setID(id);
             }
-            if (ApplicationContextHolder.class.isAssignableFrom(clazz)) {
+            if (ApplicationContextHolder.class.isAssignableFrom(clazz) && appContext != null) {
                 ((ApplicationContextHolder)instance).setContext(appContext);
+                appContext.idRegister(id);
             }
 
             instance.customDeserialize(this, inStream);

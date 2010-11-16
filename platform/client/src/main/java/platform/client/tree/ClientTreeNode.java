@@ -179,11 +179,12 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
     // 3. Ему выставляется ApplicationContext
     // 4. У него вызывается customConstructor в котором должны создаваться все агрегированные объекты
     private Object processCreatedObject(Object object, Object parent) {
-        if (object instanceof IdentitySerializable) {
-            ((IdentitySerializable) object).setID(Main.generateNewID());
-        }
         if (object instanceof ApplicationContextHolder && parent instanceof ApplicationContextProvider) {
             ((ApplicationContextHolder) object).setContext(((ApplicationContextProvider) parent).getContext());
+        }
+        if (object instanceof IdentitySerializable) {
+            assert object instanceof ApplicationContextHolder; // пока делаем так - значит объект с Identity, но без контекста
+            ((IdentitySerializable) object).setID(((ApplicationContextHolder) object).getContext().idShift());
         }
         if (object instanceof CustomConstructible) {
             ((CustomConstructible) object).customConstructor();

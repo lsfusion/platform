@@ -1,9 +1,13 @@
 package platform.interop.context;
 
+import platform.base.DefaultIDGenerator;
+import platform.base.IDGenerator;
+
 public class ApplicationContext {
 
     private IncrementDependency incrementDependency = new IncrementDependency();
     private Lookup lookup = new Lookup();
+    private IDGenerator idGenerator = new DefaultIDGenerator();
 
     public void addDependency(String field, IncrementView view) {
         incrementDependency.add(field, view);
@@ -41,5 +45,16 @@ public class ApplicationContext {
         lookup.removeLookupResultChangeListener(name, listener);
     }
 
+    public void idRegister(int ID) {
+        idGenerator.idRegister(ID);
+    }
+
+    public int idShift(int ID) {
+        return idGenerator.idShift(ID);
+    }
+
+    public int idShift() {
+        return idGenerator.idShift();
+    }
 }
 

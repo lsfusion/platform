@@ -16,8 +16,8 @@ public class ClientShowType extends ClientComponent {
 
     public ClientGroupObject groupObject;
 
-    public ClientShowType(int ID, ApplicationContext context) {
-        super(ID, context);
+    public ClientShowType(ApplicationContext context) {
+        super(context);
     }
 
     @Override
