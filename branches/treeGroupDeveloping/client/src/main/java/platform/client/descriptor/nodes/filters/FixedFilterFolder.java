@@ -1,20 +1,30 @@
 package platform.client.descriptor.nodes.filters;
 
+import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.filter.FilterDescriptor;
-import platform.client.descriptor.increment.IncrementDependency;
+import platform.interop.context.ApplicationContext;
+import platform.interop.context.ApplicationContextProvider;
+import platform.interop.context.IncrementDependency;
 import platform.client.descriptor.nodes.GroupElementFolder;
 
 import java.util.List;
 import java.util.Set;
 
-public class FixedFilterFolder extends GroupElementFolder<FixedFilterFolder> {
+public class FixedFilterFolder extends GroupElementFolder<FixedFilterFolder> implements ApplicationContextProvider {
 
     private Set<FilterDescriptor> fixedFilters;
 
-    public FixedFilterFolder(List<GroupObjectDescriptor> groupList, GroupObjectDescriptor group, final Set<FilterDescriptor> fixedFilters) {
+    private FormDescriptor form;
+
+    public ApplicationContext getContext() {
+        return form.getContext();
+    }
+
+    public FixedFilterFolder(List<GroupObjectDescriptor> groupList, GroupObjectDescriptor group, final FormDescriptor form, final Set<FilterDescriptor> fixedFilters) {
         super(group, "Постоянные фильтры");
 
+        this.form = form;
         this.fixedFilters = fixedFilters;
 
         for (FilterDescriptor filter : fixedFilters) {
@@ -32,11 +42,11 @@ public class FixedFilterFolder extends GroupElementFolder<FixedFilterFolder> {
 
     public void addToFixedFilters(FilterDescriptor filter) {
         fixedFilters.add(filter);
-        IncrementDependency.update(this, "fixedFilters");
+        form.updateDependency(this, "fixedFilters");
     }
 
     public void removeFromFixedFilters(FilterDescriptor filter) {
         fixedFilters.remove(filter);
-        IncrementDependency.update(this, "fixedFilters");
+        form.updateDependency(this, "fixedFilters");
     }
 }

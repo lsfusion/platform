@@ -54,6 +54,6 @@ public class ObjectView implements ServerIdentitySerializable {
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         classChooser = pool.deserializeObject(inStream);
 
-        entity = pool.context.form.getObject(ID);
+        entity = pool.context.entity.getObject(ID);
     }
 }

@@ -5,9 +5,16 @@ import javax.swing.tree.TreePath;
 public abstract class ClientTreeAction {
 
     public String caption;
+    public int keyCode = -1;
+
 
     public ClientTreeAction(String caption) {
         this.caption = caption;
+    }
+
+    public ClientTreeAction(String caption, int keyCode) {
+        this.caption = caption;
+        this.keyCode = keyCode;
     }
 
     public abstract void actionPerformed(ClientTreeActionEvent e);

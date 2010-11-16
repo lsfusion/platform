@@ -4,6 +4,7 @@ import platform.base.BaseUtils;
 import platform.client.Main;
 import platform.client.descriptor.property.PropertyDescriptor;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
+import platform.client.serialization.ClientCustomSerializable;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 
@@ -12,24 +13,13 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
 
-public class PropertyObjectDescriptor extends PropertyDescriptorImplement<PropertyObjectInterfaceDescriptor> implements OrderDescriptor, ClientIdentitySerializable {
+public class PropertyObjectDescriptor extends PropertyDescriptorImplement<PropertyObjectInterfaceDescriptor> implements OrderDescriptor, ClientCustomSerializable {
 
     public PropertyObjectDescriptor() {
     }
 
-    protected int ID;
-
-    public int getID() {
-        return ID;
-    }
-
-    public void setID(int iID) {
-        ID = iID;
-    }
-
     public PropertyObjectDescriptor(PropertyDescriptor property, Map<PropertyInterfaceDescriptor, ? extends PropertyObjectInterfaceDescriptor> mapping) {
         super(property, (Map<PropertyInterfaceDescriptor, PropertyObjectInterfaceDescriptor>) mapping);
-        ID = Main.generateNewID();
     }
 
     public PropertyObjectDescriptor(PropertyDescriptorImplement<PropertyObjectInterfaceDescriptor> implement) {

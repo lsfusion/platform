@@ -1,4 +1,4 @@
-package platform.client.descriptor.increment;
+package platform.interop.context;
 
 import platform.base.WeakIdentityHashSet;
 
@@ -6,14 +6,18 @@ import java.util.*;
 
 public class IncrementDependency {
 
-    private static int maxIndex = 0;
-    private static WeakHashMap<IncrementView, Integer> viewOrders = new WeakHashMap<IncrementView, Integer>();
-    private static void registerViewOrder(IncrementView viewOrder) {
+    private int maxIndex = 0;
+    private WeakHashMap<IncrementView, Integer> viewOrders = new WeakHashMap<IncrementView, Integer>();
+    private void registerViewOrder(IncrementView viewOrder) {
         viewOrders.put(viewOrder, maxIndex++);
     }
+    private void unregisterViewOrder(IncrementView viewOrder) {
+        viewOrders.remove(viewOrder);
+    }
 
-    private final static Map<String, WeakHashMap<IncrementView, WeakIdentityHashSet<Object>>> mapViewObjects = new HashMap<String, WeakHashMap<IncrementView, WeakIdentityHashSet<Object>>>();
-    public static void add(Object object, String field, IncrementView view) {
+    private final Map<String, WeakHashMap<IncrementView, WeakIdentityHashSet<Object>>> mapViewObjects = new HashMap<String, WeakHashMap<IncrementView, WeakIdentityHashSet<Object>>>();
+
+    public void add(Object object, String field, IncrementView view) {
         WeakHashMap<IncrementView, WeakIdentityHashSet<Object>> viewObjects = mapViewObjects.get(field);
         if(viewObjects==null) {
             viewObjects = new WeakHashMap<IncrementView, WeakIdentityHashSet<Object>>();
@@ -33,8 +37,21 @@ public class IncrementDependency {
         view.update(object, field);
     }
 
-    private final static Map<String, WeakIdentityHashSet<IncrementView>> mapViews = new HashMap<String, WeakIdentityHashSet<IncrementView>>();
-    public static void add(String field, IncrementView view) {
+    public void remove(Object object, String field, IncrementView view) {
+        WeakHashMap<IncrementView, WeakIdentityHashSet<Object>> viewObjects = mapViewObjects.get(field);
+        if (viewObjects != null) {
+            WeakIdentityHashSet<Object> objects = viewObjects.get(view);
+            if (objects != null) {
+                objects.remove(object);
+                if (objects.isEmpty())
+                    viewObjects.remove(view);
+            }
+        }
+        unregisterViewOrder(view);
+    }
+
+    private final Map<String, WeakIdentityHashSet<IncrementView>> mapViews = new HashMap<String, WeakIdentityHashSet<IncrementView>>();
+    public void add(String field, IncrementView view) {
         WeakIdentityHashSet<IncrementView> views = mapViews.get(field);
         if(views==null) {
             views = new WeakIdentityHashSet<IncrementView>();
@@ -48,8 +65,16 @@ public class IncrementDependency {
         view.update(null, field);
     }
 
+    public void remove(String field, IncrementView view) {
+        WeakIdentityHashSet<IncrementView> views = mapViews.get(field);
+        if (views != null) {
+            views.remove(view);
+        }
+        unregisterViewOrder(view);
+    }
+
     // метод который должен вызываться из setter'ов, add'
-    public static void update(Object object, String field) {
+    public void update(Object object, String field) {
         SortedMap<Integer, IncrementView> views = new TreeMap<Integer, IncrementView>();
         
         // обновляем прямые подписки

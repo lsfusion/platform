@@ -2,8 +2,7 @@ package platform.client.descriptor.increment.editor;
 
 import platform.base.BaseUtils;
 import platform.client.descriptor.editor.FontChooser;
-import platform.client.descriptor.increment.IncrementDependency;
-import platform.client.descriptor.increment.IncrementView;
+import platform.interop.context.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,11 +19,11 @@ public class IncrementFontEditor extends JPanel implements IncrementView {
     private JTextField textField = new JTextField();
     private JButton chooseFont = new JButton();
 
-    public IncrementFontEditor(String title, Object object, String field){
+    public IncrementFontEditor(String title, ApplicationContextProvider object, String field){
         this.title.setText(title);
         this.object = object;
         this.field = field;
-        IncrementDependency.add(object, field, this);
+        object.getContext().addDependency(object, field, this);
         fill();
     }
 
@@ -69,7 +68,6 @@ public class IncrementFontEditor extends JPanel implements IncrementView {
     }
 
     public void update(Object updateObject, String updateField) {
-        Font newFont = (Font) BaseUtils.invokeGetter(object, field);
-            font = newFont;
+        font = (Font) BaseUtils.invokeGetter(object, field);
     }
 }

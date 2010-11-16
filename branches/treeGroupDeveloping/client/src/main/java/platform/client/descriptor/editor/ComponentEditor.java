@@ -11,7 +11,7 @@ import java.awt.*;
 public class ComponentEditor extends TitledPanel implements NodeEditor {
     protected final ClientComponent component;
 
-    public ComponentEditor(String title, ClientComponent component) {
+    public ComponentEditor(String title, final ClientComponent component) {
         super(title);
 
         this.component = component;
@@ -19,6 +19,12 @@ public class ComponentEditor extends TitledPanel implements NodeEditor {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         add(new TitledPanel(null, new IncrementCheckBox("Компонент по умолчанию", component, "defaultComponent")));
+
+        add(Box.createRigidArea(new Dimension(5, 5)));
+
+        add(new ComponentConstraintsEditor(component, "constraints"));
+
+        add(Box.createRigidArea(new Dimension(5, 5)));
 
         add(new ComponentDesignEditor("Дизайн компонента", component));
     }

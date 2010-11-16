@@ -1,8 +1,7 @@
 package platform.client.descriptor.increment.editor;
 
 import platform.base.BaseUtils;
-import platform.client.descriptor.increment.IncrementDependency;
-import platform.client.descriptor.increment.IncrementView;
+import platform.interop.context.*;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -52,14 +51,14 @@ public abstract class IncrementListSelectionModel<S> extends AbstractListModel i
         return list.get(index);
     }
 
-    protected IncrementListSelectionModel(Object object, String field) {
+    protected IncrementListSelectionModel(ApplicationContextProvider object, String field) {
         this.object = object;
         this.field = field;
 
-        IncrementDependency.add(object, field, this);
+        object.getContext().addDependency(object, field, this);
         fillListDependencies();
 
-        IncrementDependency.add(object, field, selectIncrement);
+        object.getContext().addDependency(object, field, selectIncrement);
     }
 
     protected abstract void updateSelectionViews();

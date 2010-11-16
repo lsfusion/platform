@@ -6,6 +6,7 @@ import platform.client.descriptor.property.AbstractGroupDescriptor;
 import platform.client.descriptor.property.PropertyDescriptor;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
 import platform.client.logics.*;
+import platform.interop.context.ApplicationContext;
 import platform.interop.serialization.SerializationPool;
 
 
@@ -13,11 +14,15 @@ public class ClientSerializationPool extends SerializationPool<ClientForm> {
 
 
     public ClientSerializationPool() {
-        this(null);
+        this(null, null);
     }
 
-    public ClientSerializationPool(ClientForm context) {
-        super(context);
+    public ClientSerializationPool(ApplicationContext appContext) {
+        this(null, appContext);
+    }
+
+    public ClientSerializationPool(ClientForm context, ApplicationContext appContext) {
+        super(context, appContext);
         //порядок добавления должен соответствовать порядку в ServerSerializationPool
 
         addMapping(FormDescriptor.class);

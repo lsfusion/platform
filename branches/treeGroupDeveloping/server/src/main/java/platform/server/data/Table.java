@@ -8,6 +8,8 @@ import platform.server.caches.ParamLazy;
 import platform.server.caches.TwinLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
+import platform.server.classes.ValueClass;
+import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.*;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.MapCase;
@@ -99,7 +101,7 @@ public class Table extends ImmutableObject implements MapKeysInterface<KeyField>
     }
 
 
-    public Table(DataInputStream inStream) throws IOException {
+    public Table(DataInputStream inStream, BaseClass baseClass) throws IOException {
         name = inStream.readUTF();
         int keysNum = inStream.readInt();
         for(int i=0;i<keysNum;i++)
@@ -108,8 +110,14 @@ public class Table extends ImmutableObject implements MapKeysInterface<KeyField>
         for(int i=0;i<propNum;i++)
             properties.add((PropertyField) Field.deserialize(inStream));
 
-        classes = new ClassWhere<KeyField>();
+        Map<KeyField, AndClassSet> baseClasses = new HashMap<KeyField, AndClassSet>();
+        for(KeyField key : keys)
+            baseClasses.put(key,key.type.getBaseClassSet(baseClass));
+        classes = new ClassWhere<KeyField>(baseClasses);
+
         propertyClasses = new HashMap<PropertyField, ClassWhere<Field>>();
+        for(PropertyField property : properties)
+            propertyClasses.put(property, new ClassWhere<Field>(BaseUtils.merge(baseClasses, Collections.singletonMap(property, property.type.getBaseClassSet(baseClass)))));
     }
 
     public OrderedMap<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> read(SQLSession session, BaseClass baseClass) throws SQLException {

@@ -139,10 +139,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         for (PropertyDrawEntity<?> propertyDrawEntity : entity.propertyDraws)
             if (this.securityPolicy.property.view.checkPermission(propertyDrawEntity.propertyObject.property)) {
                 PropertyDrawInstance propertyDrawInstance = instanceFactory.getInstance(propertyDrawEntity);
-                if(propertyDrawInstance.toDraw==null) // для Instance'ов проставляем не null, так как в runtime'е порядок меняться не будет
+                if (propertyDrawInstance.toDraw == null) // для Instance'ов проставляем не null, так как в runtime'е порядок меняться не будет
                     propertyDrawInstance.toDraw = instanceFactory.getInstance(propertyDrawEntity.getToDraw(entity));
                 properties.add(propertyDrawInstance);
             }
+
 
         for (FilterEntity filterEntity : entity.fixedFilters) {
             FilterInstance filter = filterEntity.getInstance(instanceFactory);
@@ -423,7 +424,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     public void applyActionChanges(List<ClientAction> actions) throws SQLException {
 
         String check = checkApply();
-        if(check!=null)
+        if (check != null)
             actions.add(new ResultClientAction(check, true));
         else {
             commitApply();
@@ -496,11 +497,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         Set<Property> result = new HashSet<Property>();
         for (PropertyDrawInstance<?> propView : properties) {
             result.add(propView.propertyObject.property);
-            if(propView.propertyCaption!=null)
+            if (propView.propertyCaption != null)
                 result.add(propView.propertyCaption.property);
         }
         for (GroupObjectInstance group : groups) {
-            if(group.propertyHighlight!=null)
+            if (group.propertyHighlight != null)
                 result.add(group.propertyHighlight.property);
             group.fillUpdateProperties(result);
         }
@@ -754,11 +755,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 if (toSeek != null) {
                     Expr expr = orderExprs.get(toOrder.getKey());
                     if (readSize == 1
-                        && down
-                        && expr instanceof KeyExpr
-                        && toSeek instanceof DataObject
-                        && ((DataObject) toSeek).getType() instanceof DataClass
-                        && !usedContext.contains((KeyExpr) expr)) {
+                            && down
+                            && expr instanceof KeyExpr
+                            && toSeek instanceof DataObject
+                            && ((DataObject) toSeek).getType() instanceof DataClass
+                            && !usedContext.contains((KeyExpr) expr)) {
 
                         orderWhere = orderWhere.and(new EqualsWhere((KeyExpr) expr, ((DataObject) toSeek).getExpr()));
                     } else {
@@ -821,8 +822,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     private boolean objectUpdated(Updated updated, Set<GroupObjectInstance> groupObjects) {
-        for(GroupObjectInstance groupObject : groupObjects)
-            if((groupObject.updated & GroupObjectInstance.UPDATED_KEYS) != 0)
+        for (GroupObjectInstance groupObject : groupObjects)
+            if ((groupObject.updated & GroupObjectInstance.UPDATED_KEYS) != 0)
                 return true;
         return updated.objectUpdated(groupObjects);
     }
@@ -1061,52 +1062,54 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                         result.objects.put(group, currentObject);
             }
 
-            final Map<PropertyReadInstance,Set<GroupObjectInstance>> readProperties = new HashMap<PropertyReadInstance, Set<GroupObjectInstance>>();
+            final Map<PropertyReadInstance, Set<GroupObjectInstance>> readProperties = new HashMap<PropertyReadInstance, Set<GroupObjectInstance>>();
 
             for (PropertyDrawInstance<?> drawProperty : properties) {
-
+                if (drawProperty.isAlwaysHide()){
+                    continue;
+                }
                 if (drawProperty.toDraw != null && drawProperty.toDraw.curClassView == ClassViewType.HIDE) continue;
 
                 ClassViewType forceViewType = drawProperty.getForceViewType();
                 if (forceViewType != null && forceViewType == ClassViewType.HIDE) continue;
 
                 boolean read = refresh || dataUpdated(drawProperty.propertyObject, changedProps);
-                
+
                 Set<GroupObjectInstance> columnGroupGrids = new HashSet<GroupObjectInstance>();
-                for(GroupObjectInstance columnGroup : drawProperty.columnGroupObjects)
-                    if(columnGroup.curClassView == ClassViewType.GRID)
+                for (GroupObjectInstance columnGroup : drawProperty.columnGroupObjects)
+                    if (columnGroup.curClassView == ClassViewType.GRID)
                         columnGroupGrids.add(columnGroup);
                     else
-                        read = read || (columnGroup.updated & GroupObjectInstance.UPDATED_CLASSVIEW)!=0;
+                        read = read || (columnGroup.updated & GroupObjectInstance.UPDATED_CLASSVIEW) != 0;
 
                 boolean inInterface = false;
                 Set<GroupObjectInstance> keyGridObjects = null;
-                if (drawProperty.toDraw != null && drawProperty.toDraw.curClassView == ClassViewType.GRID && (forceViewType==null || forceViewType== ClassViewType.valueOf("GRID")) &&
-                        drawProperty.propertyObject.isInInterface(keyGridObjects=BaseUtils.add(columnGroupGrids, drawProperty.toDraw), forceViewType!=null)) { // в grid'е
+                if (drawProperty.toDraw != null && drawProperty.toDraw.curClassView == ClassViewType.GRID && (forceViewType == null || forceViewType == ClassViewType.valueOf("GRID")) &&
+                        drawProperty.propertyObject.isInInterface(keyGridObjects = BaseUtils.add(columnGroupGrids, drawProperty.toDraw), forceViewType != null)) { // в grid'е
                     inInterface = true;
                     if (read || objectUpdated(drawProperty.propertyObject, keyGridObjects))
                         readProperties.put(drawProperty, keyGridObjects);
                 } else if (drawProperty.propertyObject.isInInterface(columnGroupGrids, false)) { // в панели
                     inInterface = true;
-                    if (read || (drawProperty.toDraw!=null && (drawProperty.toDraw.updated & (GroupObjectInstance.UPDATED_CLASSVIEW | GroupObjectInstance.UPDATED_GRIDCLASS))!=0) || objectUpdated(drawProperty.propertyObject, columnGroupGrids)) {
+                    if (read || (drawProperty.toDraw != null && (drawProperty.toDraw.updated & (GroupObjectInstance.UPDATED_CLASSVIEW | GroupObjectInstance.UPDATED_GRIDCLASS)) != 0) || objectUpdated(drawProperty.propertyObject, columnGroupGrids)) {
                         readProperties.put(drawProperty, columnGroupGrids);
                         result.panelProperties.add(drawProperty);
                     }
                 }
 
-                if(inInterface) {
+                if (inInterface) {
                     boolean added = isDrawed.add(drawProperty); // читаем title'ы
-                    if(drawProperty.propertyCaption!=null && (added || refresh || (drawProperty.toDraw!=null && (drawProperty.toDraw.updated & GroupObjectInstance.UPDATED_CLASSVIEW)!=0) // чтобы на клиента updateCaptions пришли а то они не приходят
+                    if (drawProperty.propertyCaption != null && (added || refresh || (drawProperty.toDraw != null && (drawProperty.toDraw.updated & GroupObjectInstance.UPDATED_CLASSVIEW) != 0) // чтобы на клиента updateCaptions пришли а то они не приходят
                             || dataUpdated(drawProperty.propertyCaption, changedProps) || objectUpdated(drawProperty.propertyCaption, columnGroupGrids))) // не было надо title перечитать
                         readProperties.put(drawProperty.caption, columnGroupGrids);
                 } else if (isDrawed.remove(drawProperty))
                     result.dropProperties.add(drawProperty); // вкидываем удаление из интерфейса
             }
 
-            for(GroupObjectInstance group : groups) // читаем highlight'ы
-                if(group.propertyHighlight!=null) {
+            for (GroupObjectInstance group : groups) // читаем highlight'ы
+                if (group.propertyHighlight != null) {
                     Set<GroupObjectInstance> gridGroups = (group.curClassView == ClassViewType.GRID ? Collections.singleton(group) : new HashSet<GroupObjectInstance>());
-                    if(refresh || (group.updated & GroupObjectInstance.UPDATED_CLASSVIEW)!=0 || dataUpdated(group.propertyHighlight, changedProps) || objectUpdated(group.propertyHighlight, gridGroups))
+                    if (refresh || (group.updated & GroupObjectInstance.UPDATED_CLASSVIEW) != 0 || dataUpdated(group.propertyHighlight, changedProps) || objectUpdated(group.propertyHighlight, gridGroups))
                         readProperties.put(group, gridGroups);
                 }
 

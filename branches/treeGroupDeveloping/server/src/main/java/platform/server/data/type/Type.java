@@ -2,6 +2,7 @@ package platform.server.data.type;
 
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteClass;
+import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.SQLSession;
 import platform.server.data.sql.SQLSyntax;
@@ -41,4 +42,6 @@ public interface Type<T> extends Reader<T> {
     ConcreteClass getBinaryClass(byte[] value, SQLSession session, BaseClass baseClass) throws SQLException;
 
     Object parseString(String s) throws ParseException;
+    
+    AndClassSet getBaseClassSet(BaseClass baseClass);
 }

@@ -14,6 +14,11 @@ import java.util.Set;
 public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity> implements PropertyReadInstance {
 
     public PropertyObjectInstance<P> propertyObject;
+
+    public boolean isAlwaysHide(){
+        return entity.isHide;
+    }
+
     public PropertyObjectInstance getPropertyObject() {
         return propertyObject;
     }
@@ -29,7 +34,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public List<ObjectInstance> getSerializeGroupList() {
         List<GroupObjectInstance> result = new ArrayList<GroupObjectInstance>();
         for (GroupObjectInstance columnGroupObject : columnGroupObjects)
-            if(columnGroupObject.curClassView == ClassViewType.GRID)
+            if (columnGroupObject.curClassView == ClassViewType.GRID)
                 result.add(columnGroupObject);
         return GroupObjectInstance.getObjects(result);
     }
@@ -43,6 +48,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
     // предполагается что propertyCaption ссылается на все из propertyObject но без toDraw (хотя опять таки не обязательно)
     public final PropertyObjectInstance<?> propertyCaption;
+
     // извращенное множественное наследование
     public class Caption implements PropertyReadInstance {
         public PropertyObjectInstance getPropertyObject() {
@@ -61,6 +67,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             return getSerializeGroupList();
         }
     }
+
     public Caption caption = new Caption();
 
     public ClassViewType getForceViewType() {

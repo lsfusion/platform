@@ -1,7 +1,7 @@
 package platform.client.descriptor.filter;
 
 import platform.client.descriptor.GroupObjectDescriptor;
-import platform.client.descriptor.increment.IncrementDependency;
+import platform.interop.context.IncrementDependency;
 import platform.client.descriptor.nodes.filters.FilterNode;
 import platform.client.descriptor.nodes.filters.OrFilterNode;
 import platform.client.serialization.ClientSerializationPool;
@@ -46,7 +46,7 @@ public class OrFilterDescriptor extends FilterDescriptor {
 
     public void setOp1(FilterDescriptor op1) {
         this.op1 = op1;
-        IncrementDependency.update(this, "op1");
+        updateDependency(this, "op1");
     }
 
     public FilterDescriptor getOp1() {
@@ -55,7 +55,7 @@ public class OrFilterDescriptor extends FilterDescriptor {
 
     public void setOp2(FilterDescriptor op2) {
         this.op2 = op2;
-        IncrementDependency.update(this, "op2");
+        updateDependency(this, "op2");
     }
 
     public FilterDescriptor getOp2() {

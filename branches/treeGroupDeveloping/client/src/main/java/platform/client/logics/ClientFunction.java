@@ -2,6 +2,7 @@ package platform.client.logics;
 
 import platform.client.descriptor.editor.FunctionEditor;
 import platform.client.serialization.ClientSerializationPool;
+import platform.interop.context.ApplicationContext;
 import platform.interop.form.layout.AbstractFunction;
 
 import javax.swing.*;
@@ -20,8 +21,8 @@ public class ClientFunction extends ClientComponent implements AbstractFunction<
     public ClientFunction() {
     }
 
-    public ClientFunction(int ID) {
-        super(ID);
+    public ClientFunction(ApplicationContext context) {
+        super(context);
     }
 
     @Override

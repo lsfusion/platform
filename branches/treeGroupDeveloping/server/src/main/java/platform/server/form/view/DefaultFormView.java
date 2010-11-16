@@ -104,7 +104,7 @@ public class DefaultFormView extends FormView {
 
         for (PropertyDrawEntity control : formEntity.propertyDraws) {
 
-            PropertyDrawView clientProperty = new PropertyDrawView(this, control);
+            PropertyDrawView clientProperty = new PropertyDrawView(control);
             clientProperty.constraints.insetsSibling = new Insets(0,0,2,2);
 
             GroupObjectEntity groupDraw = formEntity.forceDefaultDraw.get(control);

@@ -6,7 +6,6 @@ import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.PropertyDrawDescriptor;
 import platform.client.descriptor.PropertyObjectDescriptor;
 import platform.client.descriptor.editor.base.TitledPanel;
-import platform.client.descriptor.increment.IncrementDependency;
 import platform.client.descriptor.increment.editor.*;
 import platform.interop.ClassViewType;
 
@@ -45,23 +44,24 @@ public class PropertyDrawEditor extends GroupElementEditor {
             }
 
             public void fillListDependencies() {
-                IncrementDependency.add(descriptor, "propertyObject", this);
-                IncrementDependency.add(form, "groupObjects", this);
+                form.addDependency(descriptor, "propertyObject", this);
+                form.addDependency(form, "groupObjects", this);
             }
         })));
 
         add(Box.createRigidArea(new Dimension(5, 5)));
 
         // columnGroupObjects из списка mapping'ов (полных) !!! без toDraw
-        add(new TitledPanel("Группы в колонки", new IncrementMultipleListEditor(new IncrementMultipleListSelectionModel(descriptor, "columnGroupObjects") {
+        add(new TitledPanel("Группы в колонки", new IncrementMultipleListEditor(
+                new IncrementMultipleListSelectionModel(descriptor, "columnGroupObjects") {
             public List<?> getList() {
                 return descriptor.getUpGroupObjects(form.groupObjects);
             }
 
             public void fillListDependencies() {
-                IncrementDependency.add(descriptor, "propertyObject", this);
-                IncrementDependency.add(descriptor, "toDraw", this);
-                IncrementDependency.add(form, "groupObjects", this);
+                form.addDependency(descriptor, "propertyObject", this);
+                form.addDependency(descriptor, "toDraw", this);
+                form.addDependency(form, "groupObjects", this);
             }
         })));
 

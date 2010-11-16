@@ -2,13 +2,13 @@ package platform.client.descriptor;
 
 import platform.base.BaseUtils;
 import platform.client.Main;
+import platform.client.descriptor.context.ContextIdentityDescriptor;
 import platform.client.descriptor.filter.FilterDescriptor;
 import platform.client.descriptor.filter.RegularFilterGroupDescriptor;
-import platform.client.descriptor.increment.IncrementDependency;
-import platform.client.descriptor.increment.IncrementView;
+import platform.interop.context.ApplicationContext;
+import platform.interop.context.IncrementView;
 import platform.client.descriptor.property.PropertyDescriptor;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
-import platform.client.descriptor.nodes.PropertyDrawNode;
 import platform.client.logics.*;
 import platform.client.logics.classes.ClientClass;
 import platform.client.serialization.ClientIdentitySerializable;
@@ -22,9 +22,9 @@ import platform.interop.serialization.RemoteDescriptorInterface;
 import java.io.*;
 import java.util.*;
 
-public class FormDescriptor extends IdentityDescriptor implements ClientIdentitySerializable {
+public class FormDescriptor extends ContextIdentityDescriptor implements ClientIdentitySerializable {
 
-    public ClientForm client = new ClientForm();
+    public ClientForm client;
 
     public String caption;
     public boolean isPrintForm;
@@ -52,12 +52,15 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
     IncrementView containerController;
 
     public FormDescriptor() {
-        
+        super();
     }
 
     // будем считать, что именно этот конструктор используется для создания новых форм
     public FormDescriptor(int ID) {
-        setID(ID);
+        super(ID);
+
+        context = new ApplicationContext();
+        client = new ClientForm(ID, context);
 
         initialize();
 
@@ -67,8 +70,9 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
 
     public List<PropertyDrawDescriptor> getAddPropertyDraws(GroupObjectDescriptor group) {
         List<PropertyDrawDescriptor> result = new ArrayList<PropertyDrawDescriptor>();
+        if (group == null) return result; // предполагается, что для всей папки свойства, любое добавленное свойство будет в getGroupPropertyDraws
         for(PropertyDrawDescriptor propertyDraw : propertyDraws) // добавим новые свойства, предполагается что оно одно
-            if(propertyDraw.getPropertyObject()==null && (group==null || group.equals(propertyDraw.addGroup)))
+            if(propertyDraw.getPropertyObject()==null && group.equals(propertyDraw.addGroup))
                 result.add(propertyDraw);
         return result;
     }
@@ -79,6 +83,10 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
             if (group == null || group.equals(propertyDraw.getGroupObject(groupObjects)))
                 result.add(propertyDraw);
         return result;
+    }
+
+    public ApplicationContext getContext() {
+        return context;
     }
 
     private abstract class IncrementPropertyConstraint implements IncrementView {
@@ -137,7 +145,10 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
                             }
                         }
                     }
-                    if (insIndex == -1) insIndex = newContainer.children.size();  
+
+                    // если объект свойство не нашлось куда добавить, то его надо добавлять самым первым в контейнер
+                    // иначе свойства будут идти после управляющих объектов
+                    if (insIndex == -1) insIndex = 0;
                     newContainer.addToChildren(insIndex, object.getClientComponent(mainContainer));
                 }
             }
@@ -185,6 +196,8 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         forceDefaultDraw = pool.deserializeMap(inStream);
 
         client = pool.context;
+
+        initialize();
     }
 
     @Override
@@ -199,9 +212,10 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
                 allProperties = null;
             }
         };
-        IncrementDependency.add("baseClass", allPropertiesLazy);
-        IncrementDependency.add("objects", allPropertiesLazy);
-        IncrementDependency.add(this, "groupObjects", allPropertiesLazy);
+
+        addDependency("baseClass", allPropertiesLazy);
+        addDependency("objects", allPropertiesLazy);
+        addDependency(this, "groupObjects", allPropertiesLazy);
 
         // propertyObject подходит по интерфейсу и т.п.
         propertyObjectConstraint = new IncrementPropertyConstraint() {
@@ -209,10 +223,10 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
                 return getAllProperties().contains(property.getPropertyObject());
             }
         };
-        IncrementDependency.add("propertyObject", propertyObjectConstraint);
-        IncrementDependency.add("baseClass", propertyObjectConstraint);
-        IncrementDependency.add("objects", propertyObjectConstraint);
-        IncrementDependency.add(this, "groupObjects", propertyObjectConstraint);
+        addDependency("propertyObject", propertyObjectConstraint);
+        addDependency("baseClass", propertyObjectConstraint);
+        addDependency("objects", propertyObjectConstraint);
+        addDependency(this, "groupObjects", propertyObjectConstraint);
 
         // toDraw должен быть из groupObjects (можно убрать)
         toDrawConstraint = new IncrementPropertyConstraint() {
@@ -223,8 +237,8 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
                 return true;
             }
         };
-        IncrementDependency.add("toDraw", toDrawConstraint);
-        IncrementDependency.add("propertyObject", toDrawConstraint);
+        addDependency("toDraw", toDrawConstraint);
+        addDependency("propertyObject", toDrawConstraint);
 
         // toDraw должен быть из groupObjects (можно убрать)
         columnGroupConstraint = new IncrementPropertyConstraint() {
@@ -238,10 +252,10 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
                 return true;
             }
         };
-        IncrementDependency.add("propertyObject", columnGroupConstraint);
-        IncrementDependency.add("toDraw", columnGroupConstraint);
-        IncrementDependency.add("objects", columnGroupConstraint);
-        IncrementDependency.add(this, "groupObjects", columnGroupConstraint); // порядок тоже важен
+        addDependency("propertyObject", columnGroupConstraint);
+        addDependency("toDraw", columnGroupConstraint);
+        addDependency("objects", columnGroupConstraint);
+        addDependency(this, "groupObjects", columnGroupConstraint); // порядок тоже важен
 
 
         // propertyObject подходит по интерфейсу и т.п.
@@ -253,25 +267,27 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
                 return true;
             }
         };
-        IncrementDependency.add("propertyObject", propertyCaptionConstraint);
-        IncrementDependency.add("propertyCaption", propertyCaptionConstraint);
-        IncrementDependency.add("columnGroupObjects", propertyCaptionConstraint);
-        IncrementDependency.add("baseClass", propertyCaptionConstraint);
-        IncrementDependency.add("objects", propertyCaptionConstraint);
-        IncrementDependency.add(this, "groupObjects", propertyCaptionConstraint);
+        addDependency("propertyObject", propertyCaptionConstraint);
+        addDependency("propertyCaption", propertyCaptionConstraint);
+        addDependency("columnGroupObjects", propertyCaptionConstraint);
+        addDependency("baseClass", propertyCaptionConstraint);
+        addDependency("objects", propertyCaptionConstraint);
+        addDependency(this, "groupObjects", propertyCaptionConstraint);
 
         containerMover = new ContainerMover();
-        IncrementDependency.add("groupObjects", containerMover);
-        IncrementDependency.add("toDraw", containerMover);
-        IncrementDependency.add("filters", containerMover);
-        IncrementDependency.add("filter", containerMover);
-        IncrementDependency.add("propertyDraws", containerMover);
-        IncrementDependency.add("property", containerMover);
+        addDependency("groupObjects", containerMover);
+        addDependency("toDraw", containerMover);
+        addDependency("filters", containerMover);
+        addDependency("filter", containerMover);
+        addDependency("propertyDraws", containerMover);
+        addDependency("property", containerMover);
+        addDependency("propertyObject", containerMover);
+        addDependency("value", containerMover); // нужно, чтобы перемещать regularFilterGroup, при использовании фильтра Сравнение
 
         containerRenamer = new ContainerRenamer();
-        IncrementDependency.add("groupObjects", containerRenamer);
-        IncrementDependency.add("objects", containerRenamer);
-        IncrementDependency.add("baseClass", containerRenamer);
+        addDependency("groupObjects", containerRenamer);
+        addDependency("objects", containerRenamer);
+        addDependency("baseClass", containerRenamer);
 
     }
 
@@ -384,7 +400,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         BaseUtils.moveElement(groupObjects, groupFrom, index);
         BaseUtils.moveElement(client.groupObjects, groupFrom.client, index);
 
-        IncrementDependency.update(this, "groupObjects");
+        updateDependency(this, "groupObjects");
 
         return true;
     }
@@ -400,7 +416,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         BaseUtils.moveElement(propertyDraws, propFrom, index);
         BaseUtils.moveElement(client.propertyDraws, propFrom.client, index);
 
-        IncrementDependency.update(this, "propertyDraws");
+        updateDependency(this, "propertyDraws");
         return true;
     }
 
@@ -416,7 +432,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         this.caption = caption;
         client.caption = caption;
 
-        IncrementDependency.update(this, "caption");
+        updateDependency(this, "caption");
     }
 
     public String getCaption() {
@@ -433,7 +449,7 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         propertyDraws.add(propertyDraw);
         client.propertyDraws.add(propertyDraw.client);
 
-        IncrementDependency.update(this, "propertyDraws");
+        updateDependency(this, "propertyDraws");
         return true;
     }
 
@@ -441,25 +457,26 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
         propertyDraws.remove(propertyDraw);
         client.removePropertyDraw(propertyDraw.client);
 
-        IncrementDependency.update(this, "propertyDraws");
+        updateDependency(this, "propertyDraws");
         return true;
     }
 
     public boolean addToGroupObjects(GroupObjectDescriptor groupObject) {
+
         groupObjects.add(groupObject);
         client.groupObjects.add(groupObject.client);
 
         addGroupObjectDefaultContainers(groupObject, groupObjects);
 
-        IncrementDependency.update(this, "groupObjects");
+        updateDependency(this, "groupObjects");
         return true;
     }
 
     public boolean removeFromGroupObjects(GroupObjectDescriptor groupObject) {
         groupObjects.remove(groupObject);
-        client.groupObjects.add(groupObject.client);
+        client.removeGroupObject(groupObject.client);
 
-        IncrementDependency.update(this, "groupObjects");
+        updateDependency(this, "groupObjects");
         return true;
     }
 
@@ -470,40 +487,33 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
     public void addToRegularFilterGroups(RegularFilterGroupDescriptor filterGroup) {
         regularFilterGroups.add(filterGroup);
         client.addToRegularFilterGroups(filterGroup.client);
-        IncrementDependency.update(this, "regularFilterGroups");
+        updateDependency(this, "regularFilterGroups");
     }
 
     public void removeFromRegularFilterGroups(RegularFilterGroupDescriptor filterGroup) {
         regularFilterGroups.remove(filterGroup);
         client.removeFromRegularFilterGroups(filterGroup.client);
-        IncrementDependency.update(this, "regularFilterGroups");
+        updateDependency(this, "regularFilterGroups");
     }
 
 
     public static byte[] serialize(FormDescriptor form) throws IOException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         DataOutputStream dataStream = new DataOutputStream(outStream);
-        new ClientSerializationPool(form.client).serializeObject(dataStream, form);
-        new ClientSerializationPool(form.client).serializeObject(dataStream, form.client);
+        new ClientSerializationPool().serializeObject(dataStream, form);
+        new ClientSerializationPool().serializeObject(dataStream, form.client);
 
         return outStream.toByteArray();
 }
 
-    public static FormDescriptor deserialize(byte[] formByteArray) throws IOException {
-        DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(formByteArray));
-
-        ClientForm richDesign = new ClientSerializationPool().deserializeObject(inStream);
-
-        return new ClientSerializationPool(richDesign).deserializeObject(inStream);
-    }
-
     public static FormDescriptor deserialize(byte[] richDesignByteArray, byte[] formEntityByteArray) throws IOException {
-        ClientForm richDesign = new ClientSerializationPool()
+        ApplicationContext context = new ApplicationContext();
+        ClientForm richDesign = new ClientSerializationPool(context)
                 .deserializeObject(
                         new DataInputStream(
                                 new ByteArrayInputStream(richDesignByteArray)));
 
-        return new ClientSerializationPool(richDesign)
+        return new ClientSerializationPool(richDesign, context)
                 .deserializeObject(
                         new DataInputStream(
                                 new ByteArrayInputStream(formEntityByteArray)));
@@ -511,13 +521,13 @@ public class FormDescriptor extends IdentityDescriptor implements ClientIdentity
 
     private class FormContainerFactory implements ContainerFactory<ClientContainer> {
         public ClientContainer createContainer() {
-            return new ClientContainer(Main.generateNewID());
+            return new ClientContainer(getContext());
         }
     }
 
     private class FormFunctionFactory implements FunctionFactory<ClientFunction> {
         public ClientFunction createFunction() {
-            return new ClientFunction(Main.generateNewID());
+            return new ClientFunction(getContext());
         }
     }
 

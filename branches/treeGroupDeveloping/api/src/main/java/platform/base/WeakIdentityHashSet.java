@@ -18,6 +18,10 @@ public class WeakIdentityHashSet<E> implements Iterable<E> {
         map.put(element, inSet);        
     }
 
+    public void remove(E element) {
+        map.remove(element);
+    }
+
     public Iterator<E> iterator() {
         return map.keysIterator();
     }
@@ -28,5 +32,9 @@ public class WeakIdentityHashSet<E> implements Iterable<E> {
 
     public boolean contains(E element) {
         return map.get(element)!=null;
+    }
+
+    public boolean isEmpty() {
+        return map.isEmpty();
     }
 }

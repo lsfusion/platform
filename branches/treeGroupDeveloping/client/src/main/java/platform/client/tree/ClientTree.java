@@ -51,8 +51,8 @@ public class ClientTree extends JTree {
 
         Enumeration<TreePath> paths = getExpandedDescendants(new TreePath(treeModel.getRoot()));
         final Set<TreePath> expanded = paths == null
-                                       ? new HashSet<TreePath>()
-                                       : new HashSet<TreePath>(Collections.list(paths));
+                ? new HashSet<TreePath>()
+                : new HashSet<TreePath>(Collections.list(paths));
         final TreePath selectionPath = getSelectionPath();
 
         setModel(newModel);
@@ -115,11 +115,22 @@ public class ClientTree extends JTree {
         public KeyListener keyListener = new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
+                TreePath path = getSelectionPath();
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    TreePath path = getSelectionPath();
                     if (path != null) {
                         Rectangle d = getPathBounds(path);
                         executeAction(d.x + d.width, d.y + d.height, path, false);
+                    }
+                }
+                List<ClientTreeAction> actions = getActions(path);
+                if (actions != null) {
+                    int[] rows = getSelectionRows();
+                    for (ClientTreeAction action : actions) {
+                        if (action.keyCode == e.getKeyCode()) {
+                            action.actionPerformed(new ClientTreeActionEvent((ClientTreeNode) getSelectionNode(), null));
+                            int row = Math.min(rows[0] + 1, getRowCount() - 2);
+                            setSelectionRow(row);
+                        }
                     }
                 }
             }
@@ -139,6 +150,7 @@ public class ClientTree extends JTree {
         private void executeAction(int x, int y, TreePath path, boolean isPopupTrigger) {
             if (path != null) {
                 setSelectionPath(path);
+
                 final ArrayList<ClientTreeAction> actions = getActions(path);
                 final ClientTreeNode node = getNode(path);
 
@@ -261,7 +273,7 @@ public class ClientTree extends JTree {
     }
 
     private static DataFlavor CLIENTTREENODE_FLAVOR = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType +
-                                                                     "; class=platform.client.tree.ClientTreeNode", "ClientTreeNode");
+            "; class=platform.client.tree.ClientTreeNode", "ClientTreeNode");
 
     public class NodeTransfer implements Transferable {
         public ClientTreeNode node;

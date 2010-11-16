@@ -1,7 +1,8 @@
 package platform.client.logics;
 
 import platform.client.descriptor.editor.GridEditor;
-import platform.client.descriptor.increment.IncrementDependency;
+import platform.interop.context.ApplicationContext;
+import platform.interop.context.IncrementDependency;
 import platform.client.serialization.ClientSerializationPool;
 
 import javax.swing.*;
@@ -21,7 +22,10 @@ public class ClientGrid extends ClientComponent {
     public ClientGroupObject groupObject;
 
     public ClientGrid() {
+    }
 
+    public ClientGrid(ApplicationContext context) {
+        super(context);
     }
 
     @Override
@@ -56,13 +60,14 @@ public class ClientGrid extends ClientComponent {
         return "Таблица (" + groupObject.toString() + ")";
     }
 
+    @Override
     public JComponent getPropertiesEditor() {
         return new GridEditor(this);
     }
 
     public void setShowFind(boolean showFind) {
         this.showFind = showFind;
-        IncrementDependency.update(this, "showFind");
+        updateDependency(this, "showFind");
     }
 
     public boolean getShowFind() {
@@ -71,7 +76,7 @@ public class ClientGrid extends ClientComponent {
 
     public void setShowFilter(boolean showFilter) {
         this.showFilter = showFilter;
-        IncrementDependency.update(this, "showFilter");
+        updateDependency(this, "showFilter");
     }
 
     public boolean getShowFilter() {
@@ -80,7 +85,7 @@ public class ClientGrid extends ClientComponent {
 
     public void setTabVertical(boolean tabVertical) {
         this.tabVertical = tabVertical;
-        IncrementDependency.update(this, "tabVertical");
+        updateDependency(this, "tabVertical");
     }
 
     public boolean getTabVertical() {
@@ -89,7 +94,7 @@ public class ClientGrid extends ClientComponent {
 
     public void setAutoHide(boolean autoHide) {
         this.autoHide = autoHide;
-        IncrementDependency.update(this, "autoHide");
+        updateDependency(this, "autoHide");
     }
 
     public boolean getAutoHide() {
@@ -98,7 +103,7 @@ public class ClientGrid extends ClientComponent {
 
     public void setMinRowCount(byte minRowCount) {
         this.minRowCount = minRowCount;
-        IncrementDependency.update(this, "minRowCount");
+        updateDependency(this, "minRowCount");
     }
 
     public byte getMinRowCount() {

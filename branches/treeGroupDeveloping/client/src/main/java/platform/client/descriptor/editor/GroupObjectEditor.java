@@ -25,7 +25,8 @@ public class GroupObjectEditor extends JPanel implements NodeEditor {
             }
         })));
 
-        add(new TitledPanel("Запрещённый вид", new IncrementMultipleListEditor(new IncrementMultipleListSelectionModel(group, "banClassViewList") {
+        add(new TitledPanel("Запрещённый вид", new IncrementMultipleListEditor(
+                new IncrementMultipleListSelectionModel(group, "banClassViewList") {
             public List<?> getList() {
                 return Arrays.asList(ClassViewType.values());
             }

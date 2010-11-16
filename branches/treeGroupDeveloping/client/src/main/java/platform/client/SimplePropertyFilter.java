@@ -134,6 +134,7 @@ public class SimplePropertyFilter extends JPanel {
             addPropertyToTree(prop);
         }
         treeModel.reload();
+        tree.expandRow(0);
     }
 
     DefaultMutableTreeNode getNode(Object info) {

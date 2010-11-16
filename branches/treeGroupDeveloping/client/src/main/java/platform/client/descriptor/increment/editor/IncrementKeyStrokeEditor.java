@@ -2,17 +2,14 @@ package platform.client.descriptor.increment.editor;
 
 import platform.base.BaseUtils;
 import platform.client.descriptor.editor.KeyInputDialog;
-import platform.client.descriptor.editor.base.TitledPanel;
-import platform.client.descriptor.increment.IncrementDependency;
-import platform.client.descriptor.increment.IncrementView;
+import platform.interop.context.*;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.*;
 
 public class IncrementKeyStrokeEditor extends JPanel implements IncrementView {
-    private final Object object;
+    private final ApplicationContextProvider object;
     private final String field;
     private KeyStroke key;
     private String keyStrokeText, keyString;
@@ -20,10 +17,10 @@ public class IncrementKeyStrokeEditor extends JPanel implements IncrementView {
     private JLabel keyAct = new JLabel();
     private JButton putKey = new JButton();
 
-    public IncrementKeyStrokeEditor(Object object, String field){
+    public IncrementKeyStrokeEditor(ApplicationContextProvider object, String field){
         this.object = object;
         this.field = field;
-        IncrementDependency.add(object, field, this);
+        object.getContext().addDependency(object, field, this);
         fill();
     }
 

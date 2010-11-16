@@ -56,16 +56,19 @@ public class CashRegController {
                                                      PropertyDrawEntity<?> priceProp, PropertyDrawEntity<?> quantityProp,
                                                      PropertyDrawEntity<?> nameProp, PropertyDrawEntity<?> sumProp,
                                                      PropertyDrawEntity<?> toPayProp, PropertyDrawEntity<?> barcodeProp,
-                                                     PropertyDrawEntity<?> sumCardProp, PropertyDrawEntity<?> sumCashProp) {
+                                                     PropertyDrawEntity<?> sumCardProp, PropertyDrawEntity<?> sumCashProp,
+                                                     PropertyDrawEntity<?> orderArticleSaleDiscount, PropertyDrawEntity<?> orderArticleSaleDiscountSum) {
 
         List<ClientResultAction> actions = new ArrayList<ClientResultAction>();
 
         cashRegComPort = getCashRegComPort(formInstance);
+        if (cashRegComPort > 0) {
+            actions.add(new CashRegPrintReceiptAction(payType, cashRegComPort, createReceipt(formInstance, payType,
+                    classGroups, priceProp, quantityProp, nameProp,
+                    sumProp, toPayProp, barcodeProp, sumCardProp, sumCashProp,
+                    orderArticleSaleDiscount, orderArticleSaleDiscountSum)));
 
-        actions.add(new CashRegPrintReceiptAction(payType, cashRegComPort, createReceipt(formInstance, payType,
-                classGroups, priceProp, quantityProp, nameProp,
-                sumProp, toPayProp, barcodeProp, sumCardProp, sumCashProp)));
-
+        }
         return new ListClientResultAction(actions);
     }
 
@@ -75,7 +78,9 @@ public class CashRegController {
                                          PropertyDrawEntity<?> priceProp, PropertyDrawEntity<?> quantityProp,
                                          PropertyDrawEntity<?> nameProp, PropertyDrawEntity<?> sumProp,
                                          PropertyDrawEntity<?> toPayProp, PropertyDrawEntity<?> barcodeProp,
-                                         PropertyDrawEntity<?> sumCardProp, PropertyDrawEntity<?> sumCashProp) {
+                                         PropertyDrawEntity<?> sumCardProp, PropertyDrawEntity<?> sumCashProp,
+                                         PropertyDrawEntity<?> orderArticleSaleDiscountProp,
+                                         PropertyDrawEntity<?> orderArticleSaleDiscountSumProp) {
 
         ReceiptInstance result = new ReceiptInstance(payType);
         FormData data;
@@ -99,6 +104,18 @@ public class CashRegController {
         if (sumCashProp != null) {
             sumCashDraw = formInstance.instanceFactory.getInstance(sumCashProp);
             formProperties.add(sumCashDraw);
+        }
+
+        PropertyDrawInstance orderArticleDiscountDraw = null;
+        if (orderArticleSaleDiscountProp != null) {
+            orderArticleDiscountDraw = formInstance.instanceFactory.getInstance(orderArticleSaleDiscountProp);
+            formProperties.add(orderArticleDiscountDraw);
+        }
+
+        PropertyDrawInstance orderArticleDiscountSumDraw = null;
+        if (orderArticleSaleDiscountSumProp != null) {
+            orderArticleDiscountSumDraw = formInstance.instanceFactory.getInstance(orderArticleSaleDiscountSumProp);
+            formProperties.add(orderArticleDiscountSumDraw);
         }
 
         quantityDraw.toDraw.addTempFilter(new NotNullFilterInstance(quantityDraw.propertyObject));
@@ -126,8 +143,11 @@ public class CashRegController {
                 String barcodeName = ((String) row.values.get(barcodeDraw)).trim();
                 String artName = ((String) row.values.get(nameDraw)).trim();
                 Double sumPos = (Double) row.values.get(sumDraw);
+                Double articleDisc = (Double) row.values.get(orderArticleDiscountDraw);
+                Integer articleDiscSum = (Integer) row.values.get(orderArticleDiscountSumDraw);
 
-                result.add(new ReceiptItem(price, quantity, barcodeName, artName, sumPos));
+                result.add(new ReceiptItem(price, quantity, barcodeName, artName, sumPos,
+                        articleDisc == null ? 0.0 : articleDisc, articleDiscSum == null ? 0 : articleDiscSum));
 
                 sumDoc += price * quantity;
             }
@@ -169,10 +189,12 @@ public class CashRegController {
                                             PropertyDrawEntity<?> toPayProp, PropertyDrawEntity<?> barcodeProp) {
 
         List<ClientAction> actions = new ArrayList<ClientAction>();
-        actions.add(new NonFiscalPrintAction(createOrderTxt(formInstance,
-                classGroups, priceProp, quantityProp,
-                nameProp, sumProp, toPayProp, barcodeProp), getCashRegComPort(formInstance)));
-        //actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, "/R", CASHREGISTER_CHARSETNAME));
+        int comPort = getCashRegComPort(formInstance);
+        if (comPort > 0) {
+            actions.add(new NonFiscalPrintAction(createOrderTxt(formInstance,
+                    classGroups, priceProp, quantityProp,
+                    nameProp, sumProp, toPayProp, barcodeProp), comPort));
+        }
         return new ListClientAction(actions);
     }
 
@@ -269,7 +291,7 @@ public class CashRegController {
 //        BL.addProp(BL.cashRegOperGroup, new SimpleCashRegActionProperty(BL.genSID(), "Аннулировать чек", "/A")); 
         BL.addProp(BL.cashRegOperGroup, new SimpleCashRegActionProperty(BL.genSID(), "Продолжить печать", "/R"));
         BL.addProp(BL.cashRegOperGroup, new MessageActionProperty(BL.genSID(), "Запрос наличных", MessageAction.COUNTER));
-        BL.addProp(BL.cashRegOperGroup, new ReportActionProperty(BL.genSID(), "Открыть денеж. ящик",ReportAction.MONEY_BOX));
+        BL.addProp(BL.cashRegOperGroup, new ReportActionProperty(BL.genSID(), "Открыть денеж. ящик", ReportAction.MONEY_BOX));
         BL.addProp(BL.cashRegAdminGroup, new MessageActionProperty(BL.genSID(), "Номера посл. чека", MessageAction.LAST_DOC_NUM));
         BL.addProp(BL.cashRegAdminGroup, new IntegerCashRegActionProperty(BL.genSID(), "Внесение денег", MoneyOperationAction.CASH_IN));
         BL.addProp(BL.cashRegAdminGroup, new IntegerCashRegActionProperty(BL.genSID(), "Изъятие денег", MoneyOperationAction.CASH_OUT));
@@ -288,7 +310,11 @@ public class CashRegController {
 
         @Override
         public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            actions.add(new ReportAction(type, getCashRegComPort(executeForm.form)));
+            int comPort = getCashRegComPort(executeForm.form);
+            if (comPort == 0) {
+                return;
+            }
+            actions.add(new ReportAction(type, comPort));
         }
     }
 
@@ -302,7 +328,11 @@ public class CashRegController {
 
         @Override
         public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            actions.add(new MessageAction(type, getCashRegComPort(executeForm.form)));
+            int comPort = getCashRegComPort(executeForm.form);
+            if (comPort == 0) {
+                return;
+            }
+            actions.add(new MessageAction(type, comPort));
         }
     }
 
@@ -355,12 +385,11 @@ public class CashRegController {
 
         public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
             if (value.getValue() != null && value.getValue() instanceof Double) {
-                /*
-                actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, type + ":" + (Double)value.getValue()/100, CASHREGISTER_CHARSETNAME));
-                actions.add(new SleepClientAction(CASHREGISTER_DELAY));
-                actions.add(new MessageFileClientAction("c:\\bill\\error.txt", CASHREGISTER_CHARSETNAME, false, true, caption));
-                */
-                actions.add(new MoneyOperationAction(type, getCashRegComPort(executeForm.form), (Double) value.getValue()));
+                int comPort = getCashRegComPort(executeForm.form);
+                if (comPort == 0) {
+                    return;
+                }
+                actions.add(new MoneyOperationAction(type, comPort, (Double) value.getValue()));
             }
         }
 

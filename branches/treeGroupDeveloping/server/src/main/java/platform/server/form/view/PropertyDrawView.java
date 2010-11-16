@@ -23,7 +23,6 @@ import java.text.SimpleDateFormat;
 
 public class PropertyDrawView extends ComponentView {
 
-    private FormView form;
     public PropertyDrawEntity<?> entity;
 
     /**
@@ -63,9 +62,8 @@ public class PropertyDrawView extends ComponentView {
 
     }
 
-    public PropertyDrawView(FormView form, PropertyDrawEntity entity) {
+    public PropertyDrawView(PropertyDrawEntity entity) {
         super(entity.ID);
-        this.form = form;
         this.entity = entity;
     }
 
@@ -155,18 +153,18 @@ public class PropertyDrawView extends ComponentView {
 
         outStream.writeBoolean(autoHide);
 
-        pool.serializeObject(outStream, form.getGroupObject(keyBindingGroup));
+        pool.serializeObject(outStream, pool.context.view.getGroupObject(keyBindingGroup));
 
         //entity часть
         TypeSerializer.serializeType(outStream, getType());
 
         pool.writeString(outStream, entity.propertyObject.property.sID);
-        pool.serializeObject(outStream, form.getGroupObject(
-                SerializationType.VISUAL_SETUP.equals(serializationType) ? entity.toDraw : entity.getToDraw(form.entity)));
+        pool.serializeObject(outStream, pool.context.view.getGroupObject(
+                SerializationType.VISUAL_SETUP.equals(serializationType) ? entity.toDraw : entity.getToDraw(pool.context.view.entity)));
 
         outStream.writeInt(entity.columnGroupObjects.size());
         for (GroupObjectEntity groupEntity : entity.columnGroupObjects) {
-            pool.serializeObject(outStream, form.getGroupObject(groupEntity));
+            pool.serializeObject(outStream, pool.context.view.getGroupObject(groupEntity));
         }
 
         outStream.writeBoolean(!(entity.propertyObject.property instanceof ExecuteProperty)); //checkEquals
@@ -201,13 +199,11 @@ public class PropertyDrawView extends ComponentView {
 
         autoHide = inStream.readBoolean();
 
-        form = pool.deserializeObject(inStream);
-
         GroupObjectView keyBindingGroupView = pool.deserializeObject(inStream);
         if (keyBindingGroupView != null) {
             keyBindingGroup = keyBindingGroupView.entity;
         }
 
-        entity = pool.context.form.getPropertyDraw(inStream.readInt());
+        entity = pool.context.entity.getPropertyDraw(inStream.readInt());
     }
 }

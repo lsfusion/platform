@@ -1,9 +1,8 @@
 package platform.client.logics;
 
-import platform.base.IdentityObject;
-import platform.client.descriptor.IdentityDescriptor;
+import platform.client.descriptor.context.ContextIdentityDescriptor;
 import platform.client.descriptor.editor.ComponentEditor;
-import platform.client.descriptor.increment.IncrementDependency;
+import platform.interop.context.ApplicationContext;
 import platform.client.descriptor.nodes.ComponentNode;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
@@ -13,7 +12,6 @@ import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
-import javax.swing.text.ComponentView;
 import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -22,7 +20,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class ClientComponent extends IdentityObject implements Serializable, ClientIdentitySerializable, AbstractComponent<ClientContainer, ClientComponent> {
+public abstract class ClientComponent extends ContextIdentityDescriptor implements Serializable, ClientIdentitySerializable, AbstractComponent<ClientContainer, ClientComponent> {
 
     public ComponentDesign design = new ComponentDesign();
 
@@ -34,8 +32,12 @@ public abstract class ClientComponent extends IdentityObject implements Serializ
     public ClientComponent() {
     }
 
-    public ClientComponent(int ID) {
-        super(ID);
+    public ClientComponent(ApplicationContext context) {
+        super(context);
+    }
+
+    public ClientComponent(int ID, ApplicationContext context) {
+        super(ID, context);
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
@@ -84,8 +86,7 @@ public abstract class ClientComponent extends IdentityObject implements Serializ
 
     public void setBackground(Color background) {
         design.background = background;
-
-        IncrementDependency.update(this, "background");
+        updateDependency(this, "background");
     }
 
     public Color getForeground() {
@@ -94,7 +95,7 @@ public abstract class ClientComponent extends IdentityObject implements Serializ
 
     public void setForeground(Color foreground) {
         design.foreground = foreground;
-        IncrementDependency.update(this, "foreground");
+        updateDependency(this, "foreground");
     }
 
     public Font getFont() {
@@ -103,7 +104,7 @@ public abstract class ClientComponent extends IdentityObject implements Serializ
 
     public void setFont(Font font) {
         design.font = font;
-        IncrementDependency.update(this, "font");
+        updateDependency(this, "font");
     }
 
     public Font getHeaderFont(){
@@ -112,12 +113,12 @@ public abstract class ClientComponent extends IdentityObject implements Serializ
 
     public void setHeaderFont(Font font){
         design.headerFont = font;
-        IncrementDependency.update(this, "headerFont");
+        updateDependency(this, "headerFont");
     }
 
     public void setDefaultComponent(boolean defaultComponent) {
         this.defaultComponent = defaultComponent;
-        IncrementDependency.update(this, "defaultComponent");
+        updateDependency(this, "defaultComponent");
     }
 
     public boolean getDefaultComponent() {
@@ -126,5 +127,19 @@ public abstract class ClientComponent extends IdentityObject implements Serializ
 
     public SimplexConstraints<ClientComponent> getConstraints() {
         return constraints;
+    }
+
+    public void setConstraints(SimplexConstraints<ClientComponent> constraints) {
+        this.constraints = constraints;
+        updateDependency(this, "constraints");
+    }
+
+    public Map<ClientComponent, DoNotIntersectSimplexConstraint> getIntersects(){
+        return constraints.intersects;
+    }
+
+    public void setIntersects(Map<ClientComponent, DoNotIntersectSimplexConstraint> intersects){
+        constraints.intersects = intersects;
+        updateDependency(constraints, "intersects");
     }
 }

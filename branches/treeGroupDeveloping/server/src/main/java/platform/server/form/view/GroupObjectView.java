@@ -69,6 +69,6 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         grid = pool.deserializeObject(inStream);
         showType = pool.deserializeObject(inStream);
 
-        entity = pool.context.form.getGroupObject(ID);
+        entity = pool.context.entity.getGroupObject(ID);
     }
 }

@@ -2,15 +2,19 @@ package platform.client.tree;
 
 import platform.base.BaseUtils;
 import platform.client.Main;
+import platform.client.descriptor.CustomConstructible;
 import platform.client.descriptor.nodes.NodeCreator;
 import platform.client.descriptor.nodes.NullFieldNode;
-import platform.client.lookup.Lookup;
+import platform.interop.context.Lookup;
+import platform.interop.context.ApplicationContextHolder;
+import platform.interop.context.ApplicationContextProvider;
 import platform.interop.serialization.IdentitySerializable;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.datatransfer.Transferable;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
 public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableTreeNode {
@@ -119,7 +123,7 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
             addNodeAction(new ClientTreeAction("Инициализировать как " + captions[i]) {
                 public void actionPerformed(ClientTreeActionEvent e) {
                     try {
-                        BaseUtils.invokeSetter(object, field, processCreatedObject(classes[prm].newInstance()));
+                        BaseUtils.invokeSetter(object, field, processCreatedObject(classes[prm].newInstance(), object));
                     } catch (InstantiationException e1) {
                         throw new RuntimeException(e1);
                     } catch (IllegalAccessException e1) {
@@ -136,7 +140,7 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
             addNodeAction(new ClientTreeAction("Добавить" + (captions.length > 1 ? " " + captions[i] : "")) {
                 public void actionPerformed(ClientTreeActionEvent e) {
                     try {
-                        BaseUtils.invokeAdder(object, collectionField, processCreatedObject(classes[prm].newInstance()));
+                        BaseUtils.invokeAdder(object, collectionField, processCreatedObject(classes[prm].newInstance(), object));
                     } catch (InstantiationException e1) {
                         throw new RuntimeException(e1);
                     } catch (IllegalAccessException e1) {
@@ -151,12 +155,15 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
             });
         }
 
-        addSonAction(new ClientTreeAction("Удалить") {
+        addSonAction(new ClientTreeAction("Удалить", KeyEvent.VK_DELETE) {
             @Override
             public void actionPerformed(ClientTreeActionEvent e) {
                 Object deletedObject = e.getNode().getTypedObject();
                 BaseUtils.invokeRemover(object, collectionField, deletedObject);
-                Lookup.getDefault().setProperty(Lookup.DELETED_OBJECT_PROPERTY, deletedObject);
+                if (object instanceof ApplicationContextProvider) {
+                    ApplicationContextProvider provider = (ApplicationContextProvider) object;
+                    provider.getContext().setProperty(Lookup.DELETED_OBJECT_PROPERTY, deletedObject);
+                }
             }
 
             @Override
@@ -166,11 +173,26 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
         });
     }
 
-    private Object processCreatedObject(Object object) {
-        if (object instanceof IdentitySerializable) {
-            ((IdentitySerializable) object).setID(Main.generateNewID());
+    // логика создания объекта идентична логике сериализации :
+    // 1. Создается объект с пустым конструктором
+    // 2. У него вызывается setID
+    // 3. Ему выставляется ApplicationContext
+    // 4. У него вызывается customConstructor в котором должны создаваться все агрегированные объекты
+    private Object processCreatedObject(Object object, Object parent) {
+        if (object instanceof ApplicationContextHolder && parent instanceof ApplicationContextProvider) {
+            ((ApplicationContextHolder) object).setContext(((ApplicationContextProvider) parent).getContext());
         }
-        Lookup.getDefault().setProperty(Lookup.NEW_EDITABLE_OBJECT_PROPERTY, object);
+        if (object instanceof IdentitySerializable) {
+            assert object instanceof ApplicationContextHolder; // пока делаем так - значит объект с Identity, но без контекста
+            ((IdentitySerializable) object).setID(((ApplicationContextHolder) object).getContext().idShift());
+        }
+        if (object instanceof CustomConstructible) {
+            ((CustomConstructible) object).customConstructor();
+        }
+        if (object instanceof ApplicationContextProvider) {
+            ApplicationContextProvider provider = (ApplicationContextProvider) object;
+            provider.getContext().setProperty(Lookup.NEW_EDITABLE_OBJECT_PROPERTY, object);
+        }
         return object;
     }
 

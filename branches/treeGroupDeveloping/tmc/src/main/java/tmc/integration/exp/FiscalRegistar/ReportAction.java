@@ -11,7 +11,7 @@ public class ReportAction implements ClientAction {
     public final static int ZREPORT = 1;
     public final static int MONEY_BOX = 2;
 
-    private final static int FONT = 2;
+    private final static int FONT = 0;
     int type;
     int comPort;
 

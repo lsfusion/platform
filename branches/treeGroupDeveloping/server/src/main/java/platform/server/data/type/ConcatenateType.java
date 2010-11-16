@@ -161,6 +161,13 @@ public class ConcatenateType implements Type<byte[]> {
         throw new RuntimeException("not supported yet");
     }
 
+    public AndClassSet getBaseClassSet(BaseClass baseClass) {
+        AndClassSet[] classSets = new AndClassSet[types.length];
+        for(int i=0;i<types.length;i++)
+            classSets[i] = types[i].getBaseClassSet(baseClass);
+        return new ConcatenateClassSet(classSets);
+    }
+
     public Iterable<List<AndClassSet>> getUniversal(BaseClass baseClass, int part, AndClassSet fix) {
         List<List<AndClassSet>> classSets = new ArrayList<List<AndClassSet>>();
         for(int i=0;i<types.length;i++)

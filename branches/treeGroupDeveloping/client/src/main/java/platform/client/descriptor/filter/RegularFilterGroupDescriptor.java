@@ -2,9 +2,11 @@ package platform.client.descriptor.filter;
 
 import platform.base.BaseUtils;
 import platform.client.descriptor.ContainerMovable;
+import platform.client.descriptor.CustomConstructible;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.IdentityDescriptor;
-import platform.client.descriptor.increment.IncrementDependency;
+import platform.client.descriptor.context.ContextIdentityDescriptor;
+import platform.interop.context.IncrementDependency;
 import platform.client.logics.ClientComponent;
 import platform.client.logics.ClientContainer;
 import platform.client.logics.ClientRegularFilterGroup;
@@ -18,15 +20,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RegularFilterGroupDescriptor extends IdentityDescriptor implements ClientIdentitySerializable, ContainerMovable<ClientComponent> {
+public class RegularFilterGroupDescriptor extends ContextIdentityDescriptor implements ClientIdentitySerializable, ContainerMovable<ClientComponent>, CustomConstructible {
 
-    public List<RegularFilterDescriptor> filters;
-
-    @Override
-    public void setID(int ID) {
-        super.setID(ID);
-        client.setID(ID);
-    }
+    public List<RegularFilterDescriptor> filters = new ArrayList<RegularFilterDescriptor>();
 
     public GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groupList) {
         GroupObjectDescriptor result = null;
@@ -48,8 +44,6 @@ public class RegularFilterGroupDescriptor extends IdentityDescriptor implements 
     }
 
     public RegularFilterGroupDescriptor() {
-        filters = new ArrayList<RegularFilterDescriptor>();
-        client = new ClientRegularFilterGroup();
     }
 
     public ClientRegularFilterGroup client;
@@ -63,6 +57,10 @@ public class RegularFilterGroupDescriptor extends IdentityDescriptor implements 
         client = pool.context.getRegularFilterGroup(ID);
     }
 
+    public void customConstructor() {
+        client = new ClientRegularFilterGroup(getID(), getContext());
+    }
+
     @Override
     public String toString() {
         return client.toString();
@@ -71,7 +69,7 @@ public class RegularFilterGroupDescriptor extends IdentityDescriptor implements 
     public boolean moveFilter(RegularFilterDescriptor filterFrom, int index) {
         BaseUtils.moveElement(filters, filterFrom, index);
         BaseUtils.moveElement(client.filters, filterFrom.client, index);
-        IncrementDependency.update(this, "filters");
+        updateDependency(this, "filters");
         return true;
     }
 
@@ -82,12 +80,12 @@ public class RegularFilterGroupDescriptor extends IdentityDescriptor implements 
     public void addToFilters(RegularFilterDescriptor filter) {
         client.filters.add(filter.client);
         filters.add(filter);
-        IncrementDependency.update(this, "filters");
+        updateDependency(this, "filters");
     }
 
     public void removeFromFilters(RegularFilterDescriptor filter) {
         client.filters.remove(filter.client);
         filters.remove(filter);
-        IncrementDependency.update(this, "filters");
+        updateDependency(this, "filters");
     }
 }
