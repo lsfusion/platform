@@ -26,7 +26,7 @@ public class ClassDialog extends JDialog {
         setUndecorated(true);
         getRootPane().setBorder(BorderFactory.createLineBorder(Color.gray, 1));
 
-        setSize(300, 200);
+        setSize(500, 400);
 
         tree = new ClassTree(0, baseClass) {
             protected void currentClassChanged() {
