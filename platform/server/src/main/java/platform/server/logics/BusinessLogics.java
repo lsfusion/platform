@@ -1317,7 +1317,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         // если не совпали sID или идентификаторы из базы удаляем сразу
         Map<String, Table> prevTables = new HashMap<String, Table>();
         for (int i = inputDB == null ? 0 : inputDB.readInt(); i > 0; i--) {
-            Table prevTable = new Table(inputDB);
+            Table prevTable = new Table(inputDB, baseClass);
             prevTables.put(prevTable.name, prevTable);
 
             for (int j = inputDB.readInt(); j > 0; j--) {
