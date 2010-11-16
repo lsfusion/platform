@@ -296,6 +296,28 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return propertyDraw;
     }
 
+    protected <P extends PropertyInterface> void removePropertyDraw(LP<P> property) {
+        removePropertyDraw(property.property);
+    }
+
+    protected <P extends PropertyInterface> void removePropertyDraw(Property<P> property) {
+        Iterator<PropertyDrawEntity> it = propertyDraws.iterator();
+        while (it.hasNext()) {
+            if (property.equals(it.next().propertyObject.property)) {
+                it.remove();
+            }
+        }
+    }
+
+    protected void removePropertyDraw(AbstractGroup group) {
+        Iterator<PropertyDrawEntity> it = propertyDraws.iterator();
+        while (it.hasNext()) {
+            if (group.hasChild(it.next().propertyObject.property)) {
+                it.remove();
+            }
+        }
+    }
+
     public PropertyObjectEntity addPropertyObject(LP property, PropertyObjectInterfaceEntity... objects) {
 
         return new PropertyObjectEntity(property, objects);
