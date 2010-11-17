@@ -59,7 +59,11 @@ public class FiscalReg {
         return cashDispatch;
     }
 
-    public static int printHeaderAndNumbers(Dispatch cashDispatch) {
+    public static String getFiscalString(String str) {
+        return str.substring(0, Math.min(str.length(), WIDTH));
+    }
+
+    public static int printHeaderAndNumbers(Dispatch cashDispatch, ReceiptInstance receipt) {
         int k = 0;
         //печать заголовка
         Dispatch.call(cashDispatch, "AddHeaderLine", 1, FONT, 0, k++);
@@ -74,6 +78,19 @@ public class FiscalReg {
         Dispatch.call(cashDispatch, "AddDocNumber", FONT, 0, k++);
         Dispatch.call(cashDispatch, "AddReceiptNumber", FONT, 0, k++);
         Dispatch.call(cashDispatch, "AddOperInfo", 0, FONT, 0, k++);
+        if (receipt != null) {
+            if (receipt.cashierName != null) {
+                Dispatch.call(cashDispatch, "AddCustom", getFiscalString("Продавец: " + receipt.cashierName), FONT, 0, k++);
+            }
+
+            if (receipt.clientName != null) {
+                Dispatch.call(cashDispatch, "AddCustom", getFiscalString("Покупатель: " + receipt.clientName), FONT, 0, k++);
+
+                if (receipt.clientSum != null) {
+                    Dispatch.call(cashDispatch, "AddCustom", getFiscalString("Накопленная сумма: " + receipt.clientSum.intValue()), FONT, 0, k++);
+                }
+            }
+        }
         Dispatch.call(cashDispatch, "AddCustom", delimetr, FONT, 0, k++);
         return k;
     }

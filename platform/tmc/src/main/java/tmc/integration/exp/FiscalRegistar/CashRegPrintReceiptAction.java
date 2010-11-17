@@ -27,7 +27,7 @@ public class CashRegPrintReceiptAction extends AbstractClientAction {
 
         try {
             //печать заголовка
-            int k = FiscalReg.printHeaderAndNumbers(cashDispatch);
+            int k = FiscalReg.printHeaderAndNumbers(cashDispatch, receipt);
 
             //печать товаров
             for (ReceiptItem item : receipt.list) {

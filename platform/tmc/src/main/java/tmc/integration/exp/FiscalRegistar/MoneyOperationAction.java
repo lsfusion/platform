@@ -37,7 +37,7 @@ public class MoneyOperationAction extends AbstractClientAction {
 
         try {
 
-            int k = FiscalReg.printHeaderAndNumbers(cashDispatch);
+            int k = FiscalReg.printHeaderAndNumbers(cashDispatch, null);
 
             Dispatch.invoke(cashDispatch, "AddItem", Dispatch.Method, new Object[]{0, count, false,
                     0, 1, 0, 1, 1, 0, "шт.", FONT, 0, k++, 0}, new int[1]);

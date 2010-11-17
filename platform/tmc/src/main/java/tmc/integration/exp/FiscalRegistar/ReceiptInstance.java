@@ -9,6 +9,9 @@ public class ReceiptInstance implements Serializable {
     public Double sumDisc;
     public Double sumCard;
     public Double sumCash;
+    public String cashierName;
+    public String clientName;
+    public Double clientSum;
     public List<ReceiptItem> list;
 
     public ReceiptInstance(int payType) {
