@@ -454,6 +454,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         outStream.writeBoolean(isPrintForm);
 
         pool.serializeCollection(outStream, groups);
+        pool.serializeCollection(outStream, treeGroups);
         pool.serializeCollection(outStream, propertyDraws);
         pool.serializeCollection(outStream, fixedFilters);
         pool.serializeCollection(outStream, regularFilterGroups);
@@ -465,6 +466,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         isPrintForm = inStream.readBoolean();
 
         groups = pool.deserializeList(inStream);
+        treeGroups = pool.deserializeList(inStream);
         propertyDraws = pool.deserializeList(inStream);
         fixedFilters = pool.deserializeSet(inStream);
         regularFilterGroups = pool.deserializeList(inStream);

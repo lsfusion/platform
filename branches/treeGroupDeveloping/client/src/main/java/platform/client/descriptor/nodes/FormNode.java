@@ -15,6 +15,8 @@ public class FormNode extends ClientTreeNode<FormDescriptor, FormNode> implement
 
         add(new GroupObjectFolder(descriptor));
 
+        add(new TreeGroupFolder(descriptor));
+
         GroupElementFolder.addFolders(this, null, descriptor);
         add(new LayoutFolder(descriptor.client));
     }

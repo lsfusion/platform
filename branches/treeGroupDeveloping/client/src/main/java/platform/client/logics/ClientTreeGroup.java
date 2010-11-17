@@ -2,6 +2,7 @@ package platform.client.logics;
 
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
+import platform.interop.context.ApplicationContext;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -11,6 +12,14 @@ import java.util.List;
 
 public class ClientTreeGroup extends ClientComponent implements ClientIdentitySerializable {
     public List<ClientGroupObject> groups = new ArrayList<ClientGroupObject>();
+
+    public ClientTreeGroup() {
+
+    }
+    
+    public ClientTreeGroup(int ID, ApplicationContext context) {
+        super(ID, context);
+    }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);
@@ -26,5 +35,17 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
             group.upTreeGroups.addAll(upGroups);
             upGroups.add(group);
         }
+    }
+
+    @Override
+    public String toString() {
+        String result = "";
+        for (ClientGroupObject group : groups) {
+            if (!result.isEmpty()) {
+                result += ",";
+            }
+            result += group.toString();
+        }
+        return result;
     }
 }
