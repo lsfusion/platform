@@ -247,7 +247,7 @@ public class GroupTree extends ClientTree {
             }
 
             if (getChildCount() == 0) {
-                if (group.mayHaveChildren()) {
+                if (group != null && group.mayHaveChildren()) {
                     add(new ExpandingTreeNode());
                 }
             }

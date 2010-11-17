@@ -586,6 +586,9 @@ public class FormDescriptor extends ContextIdentityDescriptor implements ClientI
         treeContainer.constraints.fillVertical = 1;
         treeContainer.add(treeGroup.client);
 
+        treeGroup.client.constraints.fillHorizontal = 1;
+        treeGroup.client.constraints.fillVertical = 1;
+
         moveContainerInGroup(treeGroup, treeContainer, treeGroups);
     }
 
