@@ -303,9 +303,10 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
         groupObjects.remove(groupObject);
         //todo: what about properties
 
-        // нужно удалять агрегированные объекты, иначе по ним пойдет сериализация через mainContainer
-        groupObject.grid.container.removeFromChildren(groupObject.grid);
-        groupObject.showType.container.removeFromChildren(groupObject.showType);
+        ClientContainer groupContainer = groupObject.getClientComponent(mainContainer);
+        if (groupContainer != null) {
+            groupContainer.container.removeFromChildren(groupContainer);
+        }
 
         return true;
     }

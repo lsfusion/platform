@@ -39,6 +39,18 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
 
     public ClientGroupObject client;
 
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + ID;
+        return result;
+    }
+
     public List<ClassViewType> getBanClassViewList() {
         return banClassViewList;
     }
@@ -147,6 +159,6 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
     }
 
     public ClientContainer getClientComponent(ClientContainer parent) {
-        return parent.findContainerBySID(GroupObjectContainerSet.GROUP_CONTAINER + getID());
+        return client.getClientComponent(parent);
     }
 }

@@ -10,6 +10,7 @@ import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ClassViewType;
 import platform.interop.context.ApplicationContext;
 import platform.interop.form.layout.AbstractGroupObject;
+import platform.interop.form.layout.GroupObjectContainerSet;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -153,5 +154,9 @@ public class ClientGroupObject extends ArrayList<ClientObject>
             result += object.toString();
         }
         return result;
+    }
+
+    public ClientContainer getClientComponent(ClientContainer parent) {
+        return parent.findContainerBySID(GroupObjectContainerSet.GROUP_CONTAINER + getID());
     }
 }
