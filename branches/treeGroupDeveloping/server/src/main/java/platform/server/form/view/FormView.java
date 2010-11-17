@@ -7,6 +7,7 @@ import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.ObjectEntity;
+import platform.server.form.entity.TreeGroupEntity;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.group.AbstractGroup;
@@ -239,6 +240,16 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         for (GroupObjectView groupObject : groupObjects)
             if (entity.equals(groupObject.entity))
                 return groupObject;
+        return null;
+    }
+
+    public TreeGroupView getTreeGroup(TreeGroupEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+        for (TreeGroupView treeGroup : treeGroups)
+            if (entity.equals(treeGroup.entity))
+                return treeGroup;
         return null;
     }
 

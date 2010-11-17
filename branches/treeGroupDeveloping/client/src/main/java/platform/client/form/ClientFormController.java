@@ -169,19 +169,16 @@ public class ClientFormController {
     }
 
     private void initializeControllers() throws IOException {
-        List<ClientGroupObject> groupObjectsFromTrees = new ArrayList<ClientGroupObject>();
         treeControllers = new HashMap<ClientTreeGroup, TreeGroupController>();
         for (ClientTreeGroup treeGroup : form.treeGroups) {
             TreeGroupController controller = new TreeGroupController(treeGroup, this, formLayout);
             treeControllers.put(treeGroup, controller);
-
-            groupObjectsFromTrees.addAll(treeGroup.groups);
         }
 
         controllers = new HashMap<ClientGroupObject, GroupObjectController>();
 
         for (ClientGroupObject group : form.groupObjects) {
-            if (!groupObjectsFromTrees.contains(group)) {
+            if (group.parent == null) {
                 GroupObjectController controller = new GroupObjectController(group, form, this, formLayout);
                 controllers.put(group, controller);
             }
@@ -189,28 +186,6 @@ public class ClientFormController {
 
         for (ClientPropertyDraw properties : form.getPropertyDraws()) {
             if (properties.groupObject == null) {
-                GroupObjectController controller = new GroupObjectController(null, form, this, formLayout);
-                controllers.put(null, controller);
-                break;
-            }
-        }
-    }
-
-    //todo: unused, remove later
-    private void initializeGroupObjects() throws IOException {
-
-        controllers = new HashMap<ClientGroupObject, GroupObjectController>();
-//        groupObjects = new ArrayList<ClientGroupObject>();
-
-        for (ClientGroupObject groupObject : form.groupObjects) {
-//            groupObjects.add(groupObject);
-            GroupObjectController controller = new GroupObjectController(groupObject, form, this, formLayout);
-            controllers.put(groupObject, controller);
-        }
-
-        for (ClientPropertyDraw properties : form.getPropertyDraws()) {
-            if (properties.groupObject == null) {
-//                groupObjects.add(null);
                 GroupObjectController controller = new GroupObjectController(null, form, this, formLayout);
                 controllers.put(null, controller);
                 break;
@@ -507,7 +482,7 @@ public class ClientFormController {
     }
 
     public void changeGroupObject(ClientGroupObject group, ClientGroupObjectValue objectValue) throws IOException {
-        if (!controllers.containsKey(group) || !objectValue.equals(controllers.get(group).getCurrentObject())) {
+        if (group.parent != null || !objectValue.equals(controllers.get(group).getCurrentObject())) {
             remoteForm.changeGroupObject(group.getID(), objectValue.serialize(group));
 
             applyRemoteChanges();

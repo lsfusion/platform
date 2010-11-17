@@ -112,6 +112,16 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return null;
     }
 
+    public TreeGroupEntity getTreeGroup(int id) {
+        for (TreeGroupEntity treeGroup : treeGroups) {
+            if (treeGroup.getID() == id) {
+                return treeGroup;
+            }
+        }
+
+        return null;
+    }
+
     public ObjectEntity getObject(int id) {
         for (GroupObjectEntity group : groups) {
             for(ObjectEntity object : group) {

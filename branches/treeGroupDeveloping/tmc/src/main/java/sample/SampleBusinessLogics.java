@@ -16,7 +16,6 @@ import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
 
 import javax.swing.*;
@@ -164,7 +163,7 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             ObjectEntity objArt = addSingleGroupObject(article, name);
             ObjectEntity objDoc = addSingleGroupObject(document, baseGroup);
 
-            objArtGroup.groupTo.setParents(addPropertyObject(parentGroup, objArtGroup));
+            objArtGroup.groupTo.setIsParents(addPropertyObject(parentGroup, objArtGroup));
 
             addTreeGroupObject(objStore.groupTo, objArtGroup.groupTo, objArt.groupTo);
 //

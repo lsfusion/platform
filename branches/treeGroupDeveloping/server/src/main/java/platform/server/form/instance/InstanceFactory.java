@@ -41,9 +41,9 @@ public class InstanceFactory {
             }
 
             Map<ObjectInstance, PropertyObjectInstance> parentInstances = null;
-            if(entity.parent!=null) {
+            if(entity.isParent !=null) {
                 parentInstances = new HashMap<ObjectInstance, PropertyObjectInstance>();
-                for(Map.Entry<ObjectEntity,PropertyObjectEntity> parentObject : entity.parent.entrySet())
+                for(Map.Entry<ObjectEntity,PropertyObjectEntity> parentObject : entity.isParent.entrySet())
                     parentInstances.put(getInstance(parentObject.getKey()), getInstance(parentObject.getValue()));
             }
 

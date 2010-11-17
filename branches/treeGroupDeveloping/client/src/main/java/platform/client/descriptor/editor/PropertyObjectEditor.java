@@ -4,7 +4,7 @@ import platform.client.SimplePropertyFilter;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.increment.editor.IncrementDialogEditor;
-import platform.interop.context.ApplicationContextHolder;
+import platform.interop.context.ApplicationContextProvider;
 
 public class PropertyObjectEditor extends IncrementDialogEditor {
 
@@ -15,7 +15,7 @@ public class PropertyObjectEditor extends IncrementDialogEditor {
     private final FormDescriptor form;
     private final GroupObjectDescriptor groupObject;
 
-    public PropertyObjectEditor(ApplicationContextHolder object, String field, FormDescriptor form, GroupObjectDescriptor groupObject) {
+    public PropertyObjectEditor(ApplicationContextProvider object, String field, FormDescriptor form, GroupObjectDescriptor groupObject) {
         super(object, field);
 
         this.form = form;

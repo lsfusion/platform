@@ -1,31 +1,55 @@
 package platform.client.descriptor;
 
 import platform.base.BaseUtils;
-import platform.interop.context.ApplicationContext;
-import platform.interop.context.ApplicationContextHolder;
 import platform.client.logics.ClientContainer;
 import platform.client.logics.ClientGroupObject;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ClassViewType;
+import platform.interop.context.ApplicationContext;
+import platform.interop.context.ApplicationContextHolder;
 import platform.interop.form.layout.GroupObjectContainerSet;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implements ClientIdentitySerializable,
                                                                           ContainerMovable<ClientContainer>,
                                                                           ApplicationContextHolder, CustomConstructible {
     private int ID;
     
+    public ClientGroupObject client;
+
     private ClassViewType initClassView = ClassViewType.GRID;
     private List<ClassViewType> banClassViewList = new ArrayList<ClassViewType>();
     private PropertyObjectDescriptor propertyHighlight;
 
     private ApplicationContext context;
+    private Map<ObjectDescriptor, PropertyObjectDescriptor> isParent = new HashMap<ObjectDescriptor, PropertyObjectDescriptor>();
+    private TreeGroupDescriptor parent;
+
+    public void setIsParent(Map<ObjectDescriptor, PropertyObjectDescriptor> isParent) {
+        this.isParent = isParent;
+        getContext().updateDependency(this, "isParent");
+    }
+
+    public Map<ObjectDescriptor, PropertyObjectDescriptor> getIsParent() {
+        return isParent;
+    }
+
+    public TreeGroupDescriptor getParent() {
+        return parent;
+    }
+
+    public void setParent(TreeGroupDescriptor parent) {
+        this.parent = parent;
+    }
+
     public ApplicationContext getContext() {
         return context;
     }
@@ -36,8 +60,6 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
     public void updateDependency(Object object, String field) {
         context.updateDependency(object, field);
     }
-
-    public ClientGroupObject client;
 
     public List<ClassViewType> getBanClassViewList() {
         return banClassViewList;
@@ -91,14 +113,23 @@ public class GroupObjectDescriptor extends ArrayList<ObjectDescriptor> implement
         pool.serializeCollection(outStream, this);
         pool.writeInt(outStream, initClassView.ordinal());
         pool.writeObject(outStream, banClassViewList);
+        pool.serializeObject(outStream, parent);
         pool.serializeObject(outStream, propertyHighlight);
+        outStream.writeBoolean(!isParent.isEmpty());
+        if (!isParent.isEmpty()) {
+            pool.serializeMap(outStream, isParent);
+        }
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         pool.deserializeCollection(this, inStream);
         initClassView = ClassViewType.values()[pool.readInt(inStream)];
-        banClassViewList = (List<ClassViewType>)pool.readObject(inStream);
-        propertyHighlight = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
+        banClassViewList = pool.readObject(inStream);
+        parent = pool.deserializeObject(inStream);
+        propertyHighlight = pool.deserializeObject(inStream);
+        if (inStream.readBoolean()) {
+            isParent = pool.deserializeMap(inStream);
+        }
 
         client = pool.context.getGroupObject(ID);
     }

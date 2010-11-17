@@ -23,7 +23,7 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
 
     public TreeGroupView(FormView form, TreeGroupEntity entity) {
         super(entity.getID());
-        
+
         this.entity = entity;
 
         for (GroupObjectEntity group : entity.groups) {
@@ -45,5 +45,7 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
         super.customDeserialize(pool, inStream);
         
         groups = pool.deserializeList(inStream);
+
+        entity = pool.context.entity.getTreeGroup(ID);
     }
 }

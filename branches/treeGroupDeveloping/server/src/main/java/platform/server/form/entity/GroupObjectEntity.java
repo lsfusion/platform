@@ -18,7 +18,15 @@ import java.util.HashMap;
 
 public class GroupObjectEntity extends ArrayList<ObjectEntity> implements Instantiable<GroupObjectInstance>, ServerIdentitySerializable {
     private int ID;
-    public boolean isLastTreeGroup = true;
+    public TreeGroupEntity parent;
+
+    public GroupObjectEntity() {
+    }
+
+    public GroupObjectEntity(int iID) {
+        ID = iID;
+        assert (ID < RemoteFormInterface.GID_SHIFT);
+    }
 
     public int getID() {
         return ID;
@@ -26,14 +34,6 @@ public class GroupObjectEntity extends ArrayList<ObjectEntity> implements Instan
 
     public void setID(int iID) {
         ID = iID;
-    }
-
-    public GroupObjectEntity() {
-    }
-    
-    public GroupObjectEntity(int iID) {
-        ID = iID;
-        assert (ID < RemoteFormInterface.GID_SHIFT);
     }
 
     @Override
@@ -56,20 +56,29 @@ public class GroupObjectEntity extends ArrayList<ObjectEntity> implements Instan
         pool.serializeCollection(outStream, this);
         pool.writeInt(outStream, initClassView.ordinal());
         pool.writeObject(outStream, banClassView);
+        pool.serializeObject(outStream, parent);
         pool.serializeObject(outStream, propertyHighlight);
+        outStream.writeBoolean(isParent != null);
+        if (isParent != null) {
+            pool.serializeMap(outStream, isParent);
+        }
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         pool.deserializeCollection(this, inStream);
         initClassView = ClassViewType.values()[pool.readInt(inStream)];
-        banClassView = (List<ClassViewType>)pool.readObject(inStream);
-        propertyHighlight = (PropertyObjectEntity) pool.deserializeObject(inStream);
+        banClassView = pool.readObject(inStream);
+        parent = pool.deserializeObject(inStream);
+        propertyHighlight = pool.deserializeObject(inStream);
+        if (inStream.readBoolean()) {
+            isParent = pool.deserializeMap(inStream);
+        }
     }
 
-    public Map<ObjectEntity, PropertyObjectEntity> parent = null;
-    public void setParents(PropertyObjectEntity... properties) {
-        parent = new HashMap<ObjectEntity, PropertyObjectEntity>();
+    public Map<ObjectEntity, PropertyObjectEntity> isParent = null;
+    public void setIsParents(PropertyObjectEntity... properties) {
+        isParent = new HashMap<ObjectEntity, PropertyObjectEntity>();
         for(int i=0;i<size();i++)
-            parent.put(get(i), properties[i]);
+            isParent.put(get(i), properties[i]);
     }
 }

@@ -21,17 +21,17 @@ import java.util.*;
 public class ClientGroupObject extends ArrayList<ClientObject>
                                  implements ClientPropertyRead, ClientIdentitySerializable, AbstractGroupObject<ClientComponent> {
 
+    public ClientTreeGroup parent;
+    public boolean isRecursive;
+
     private int ID;
     public List<ClassViewType> banClassView = new ArrayList<ClassViewType>();
 
     public ClientGrid grid;
     public ClientShowType showType;
 
-    public boolean isRecursive;
-    private boolean isLastTreeGroup;
-
     public boolean mayHaveChildren() {
-        return isRecursive || !isLastTreeGroup;
+        return isRecursive || (parent!= null && parent.groups.indexOf(this) != parent.groups.size() - 1);
     }
 
     public ClientGroupObject() {
@@ -130,9 +130,11 @@ public class ClientGroupObject extends ArrayList<ClientObject>
 
         pool.deserializeCollection(this, inStream);
 
+        parent = pool.deserializeObject(inStream);
+
         grid = pool.deserializeObject(inStream);
         showType = pool.deserializeObject(inStream);
-        isLastTreeGroup = inStream.readBoolean();
+
         isRecursive = inStream.readBoolean();
     }
 
