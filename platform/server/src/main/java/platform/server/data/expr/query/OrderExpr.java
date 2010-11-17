@@ -19,6 +19,7 @@ import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
+import platform.server.Settings;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -129,11 +130,9 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
         return "ORDER(" + query + "," + group + ")";
     }
 
-    public final static boolean pushWhere = false; 
-
     @Override
     public OrderJoin getGroupJoin() {
-        return new OrderJoin(innerContext.getKeys(), innerContext.getValues(),query.getWhere(),pushWhere?query.partitions:new HashSet<Expr>(),group);
+        return new OrderJoin(innerContext.getKeys(), innerContext.getValues(),query.getWhere(), Settings.PUSH_ORDER_WHERE ?query.partitions:new HashSet<Expr>(),group);
     }
 
     private Map<KeyExpr, BaseExpr> pushValues(Where falseWhere) {

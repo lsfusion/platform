@@ -20,6 +20,7 @@ import platform.server.data.type.Type;
 import platform.server.data.type.TypeObject;
 import platform.server.data.where.CheckWhere;
 import platform.server.data.where.Where;
+import platform.server.Settings;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -499,10 +500,13 @@ public class CompiledQuery<K,V> {
         private class GroupSelect extends QuerySelect<BaseExpr,Expr,GroupJoin,GroupExpr> {
 
             final Set<KeyExpr> keys;
+            final Map<BaseExpr, BaseExpr> groupExprs; // для push'а внутрь
 
             GroupSelect(GroupJoin groupJoin) {
                 super(groupJoin);
                 keys = groupJoin.getKeys();
+
+                groupExprs = groupJoin.group;
             }
 
             public String getSource() {
@@ -514,6 +518,10 @@ public class CompiledQuery<K,V> {
                     exprWhere = exprWhere.or(query.getWhere());
                 }
                 Where fullWhere = exprWhere.and(platform.server.data.expr.Expr.getWhere(group));
+
+                // если pushWhere, то берем
+                if(!inner && Settings.PUSH_GROUP_WHERE)
+                    fullWhere = fullWhere.and(GroupExpr.create(groupExprs, ValueExpr.TRUE, getInnerWhere(), true, BaseUtils.toMap(groupExprs.keySet())).getWhere());
 
                 Map<Expr,String> fromPropertySelect = new HashMap<Expr, String>();
                 Collection<String> whereSelect = new ArrayList<String>(); // проверить crossJoin
@@ -559,7 +567,7 @@ public class CompiledQuery<K,V> {
 
                     // кэшируем так как не самая быстрая операция
                     Where partitionWhere;
-                    if(OrderExpr.pushWhere) {
+                    if(Settings.PUSH_ORDER_WHERE) {
                         partitionWhere = cachedPartitions.get(query.partitions);
                         if(partitionWhere==null) {
                             partitionWhere = getPartitionWhere(query.partitions);

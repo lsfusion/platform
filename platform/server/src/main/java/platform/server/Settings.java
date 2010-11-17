@@ -2,6 +2,12 @@ package platform.server;
 
 public class Settings {
 
+    // обозначает что компилятор будет проталкивать внутрь группирующих подзапросов, общее условие (если оно маленькое и сам группирующий подзапрос в нем не учавствует) 
+    public final static boolean PUSH_GROUP_WHERE = false;
+
+    // обозначает что компилятор будет проталкивать внутрь order подзапросов, общее условие
+    public final static boolean PUSH_ORDER_WHERE = false;
+
     // обозначает что при проверке условия на TRUE не будет преобразовывать A cmp B в 3 противоположных NOT'а как правильно, а будет использовать эвристику
     public final static boolean SIMPLE_CHECK_COMPARE = true;
 
