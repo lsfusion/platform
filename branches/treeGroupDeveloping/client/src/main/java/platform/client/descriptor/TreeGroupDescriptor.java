@@ -37,6 +37,9 @@ public class TreeGroupDescriptor extends ContextIdentityDescriptor implements Cl
         List<ClientGroupObject> clientGroups = new ArrayList<ClientGroupObject>();
         for (GroupObjectDescriptor group : groups) {
             clientGroups.add(group.client);
+
+            group.setParent(this);
+            group.client.parent = client;
         }
 
         this.groups = groups;
