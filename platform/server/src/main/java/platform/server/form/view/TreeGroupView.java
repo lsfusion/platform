@@ -1,6 +1,6 @@
 package platform.server.form.view;
 
-import platform.base.IdentityObject;
+import platform.base.identity.IdentityObject;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.TreeGroupEntity;
 import platform.server.serialization.ServerIdentitySerializable;

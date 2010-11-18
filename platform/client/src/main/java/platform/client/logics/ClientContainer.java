@@ -2,8 +2,7 @@ package platform.client.logics;
 
 import platform.base.BaseUtils;
 import platform.client.descriptor.editor.ComponentEditor;
-import platform.interop.context.ApplicationContext;
-import platform.interop.context.IncrementDependency;
+import platform.base.context.ApplicationContext;
 import platform.client.descriptor.nodes.ComponentNode;
 import platform.client.descriptor.nodes.ContainerNode;
 import platform.client.serialization.ClientIdentitySerializable;

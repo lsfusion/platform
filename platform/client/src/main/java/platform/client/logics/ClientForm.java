@@ -1,10 +1,10 @@
 package platform.client.logics;
 
-import platform.base.IdentityObject;
+import platform.base.identity.IdentityObject;
 import platform.base.OrderedMap;
 import platform.client.SwingUtils;
-import platform.interop.context.ApplicationContext;
-import platform.interop.context.ApplicationContextHolder;
+import platform.base.context.ApplicationContext;
+import platform.base.context.ApplicationContextHolder;
 import platform.client.form.LogicsSupplier;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;

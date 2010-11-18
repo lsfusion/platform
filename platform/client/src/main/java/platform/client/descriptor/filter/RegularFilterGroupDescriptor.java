@@ -4,9 +4,7 @@ import platform.base.BaseUtils;
 import platform.client.descriptor.ContainerMovable;
 import platform.client.descriptor.CustomConstructible;
 import platform.client.descriptor.GroupObjectDescriptor;
-import platform.client.descriptor.IdentityDescriptor;
-import platform.client.descriptor.context.ContextIdentityDescriptor;
-import platform.interop.context.IncrementDependency;
+import platform.base.context.ContextIdentityObject;
 import platform.client.logics.ClientComponent;
 import platform.client.logics.ClientContainer;
 import platform.client.logics.ClientRegularFilterGroup;
@@ -20,7 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RegularFilterGroupDescriptor extends ContextIdentityDescriptor implements ClientIdentitySerializable, ContainerMovable<ClientComponent>, CustomConstructible {
+public class RegularFilterGroupDescriptor extends ContextIdentityObject implements ClientIdentitySerializable, ContainerMovable<ClientComponent>, CustomConstructible {
 
     public List<RegularFilterDescriptor> filters = new ArrayList<RegularFilterDescriptor>();
 

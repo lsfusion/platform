@@ -1,14 +1,14 @@
 package platform.client.tree;
 
 import platform.base.BaseUtils;
-import platform.client.Main;
+import platform.base.identity.IdentityInterface;
 import platform.client.descriptor.CustomConstructible;
 import platform.client.descriptor.nodes.NodeCreator;
 import platform.client.descriptor.nodes.NullFieldNode;
-import platform.interop.context.Lookup;
-import platform.interop.context.ApplicationContextHolder;
-import platform.interop.context.ApplicationContextProvider;
-import platform.interop.serialization.IdentitySerializable;
+import platform.base.context.Lookup;
+import platform.base.context.ApplicationContextHolder;
+import platform.base.context.ApplicationContextProvider;
+import platform.base.serialization.IdentitySerializable;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -182,9 +182,9 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
         if (object instanceof ApplicationContextHolder && parent instanceof ApplicationContextProvider) {
             ((ApplicationContextHolder) object).setContext(((ApplicationContextProvider) parent).getContext());
         }
-        if (object instanceof IdentitySerializable) {
+        if (object instanceof IdentityInterface) {
             assert object instanceof ApplicationContextHolder; // пока делаем так - значит объект с Identity, но без контекста
-            ((IdentitySerializable) object).setID(((ApplicationContextHolder) object).getContext().idShift());
+            ((IdentityInterface) object).setID(((ApplicationContextHolder) object).getContext().idShift());
         }
         if (object instanceof CustomConstructible) {
             ((CustomConstructible) object).customConstructor();

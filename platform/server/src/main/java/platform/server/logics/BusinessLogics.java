@@ -5,6 +5,8 @@ import org.apache.commons.collections.MultiHashMap;
 import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.core.io.FileSystemResource;
 import platform.base.*;
+import platform.base.identity.DefaultIDGenerator;
+import platform.base.identity.IDGenerator;
 import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.action.ClientAction;

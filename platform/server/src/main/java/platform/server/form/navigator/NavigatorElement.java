@@ -1,7 +1,7 @@
 package platform.server.form.navigator;
 
 import platform.base.BaseUtils;
-import platform.base.IdentityObject;
+import platform.base.identity.IdentityObject;
 import platform.server.logics.BusinessLogics;
 
 import java.io.DataOutputStream;

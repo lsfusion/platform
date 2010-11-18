@@ -1,4 +1,4 @@
-package platform.interop.serialization;
+package platform.base.serialization;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;

@@ -1,7 +1,7 @@
 package platform.client.descriptor.property;
 
-import platform.client.descriptor.ClientIdentityDescriptor;
+import platform.base.identity.EqualsIdentityObject;
 
-public class AbstractNodeDescriptor extends ClientIdentityDescriptor {
+public class AbstractNodeDescriptor extends EqualsIdentityObject {
     public AbstractGroupDescriptor parent;
 }

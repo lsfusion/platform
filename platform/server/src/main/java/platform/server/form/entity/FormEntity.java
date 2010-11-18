@@ -1,6 +1,8 @@
 package platform.server.form.entity;
 
 import platform.base.*;
+import platform.base.identity.DefaultIDGenerator;
+import platform.base.identity.IDGenerator;
 import platform.interop.action.ClientResultAction;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;

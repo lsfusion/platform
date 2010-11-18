@@ -1,4 +1,4 @@
-package platform.interop.serialization;
+package platform.base.serialization;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

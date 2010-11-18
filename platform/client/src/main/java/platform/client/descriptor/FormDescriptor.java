@@ -2,11 +2,11 @@ package platform.client.descriptor;
 
 import platform.base.BaseUtils;
 import platform.client.Main;
-import platform.client.descriptor.context.ContextIdentityDescriptor;
+import platform.base.context.ContextIdentityObject;
 import platform.client.descriptor.filter.FilterDescriptor;
 import platform.client.descriptor.filter.RegularFilterGroupDescriptor;
-import platform.interop.context.ApplicationContext;
-import platform.interop.context.IncrementView;
+import platform.base.context.ApplicationContext;
+import platform.base.context.IncrementView;
 import platform.client.descriptor.property.PropertyDescriptor;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
 import platform.client.logics.*;
@@ -17,12 +17,12 @@ import platform.interop.form.layout.ContainerFactory;
 import platform.interop.form.layout.FormContainerSet;
 import platform.interop.form.layout.FunctionFactory;
 import platform.interop.form.layout.GroupObjectContainerSet;
-import platform.interop.serialization.RemoteDescriptorInterface;
+import platform.base.serialization.RemoteDescriptorInterface;
 
 import java.io.*;
 import java.util.*;
 
-public class FormDescriptor extends ContextIdentityDescriptor implements ClientIdentitySerializable {
+public class FormDescriptor extends ContextIdentityObject implements ClientIdentitySerializable {
 
     public ClientForm client;
 

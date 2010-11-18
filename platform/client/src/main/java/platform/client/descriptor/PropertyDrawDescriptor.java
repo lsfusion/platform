@@ -1,10 +1,8 @@
 package platform.client.descriptor;
 
 import platform.base.BaseUtils;
-import platform.client.Main;
-import platform.client.descriptor.context.ContextIdentityDescriptor;
-import platform.interop.context.ApplicationContext;
-import platform.interop.context.IncrementDependency;
+import platform.base.context.ContextIdentityObject;
+import platform.base.context.ApplicationContext;
 import platform.client.logics.ClientComponent;
 import platform.client.logics.ClientContainer;
 import platform.client.logics.ClientGroupObject;
@@ -21,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class PropertyDrawDescriptor extends ContextIdentityDescriptor implements ClientIdentitySerializable, ContainerMovable<ClientComponent>, CustomConstructible {
+public class PropertyDrawDescriptor extends ContextIdentityObject implements ClientIdentitySerializable, ContainerMovable<ClientComponent>, CustomConstructible {
     public ClientPropertyDraw client;
 
     private PropertyObjectDescriptor propertyObject;

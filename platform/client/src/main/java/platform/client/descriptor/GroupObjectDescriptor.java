@@ -1,8 +1,8 @@
 package platform.client.descriptor;
 
 import platform.base.BaseUtils;
-import platform.client.descriptor.context.ContextIdentityDescriptor;
-import platform.interop.context.ApplicationContextHolder;
+import platform.base.context.ContextIdentityObject;
+import platform.base.context.ApplicationContextHolder;
 import platform.client.logics.ClientContainer;
 import platform.client.logics.ClientGroupObject;
 import platform.client.serialization.ClientIdentitySerializable;
@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GroupObjectDescriptor extends ContextIdentityDescriptor implements ClientIdentitySerializable,
+public class GroupObjectDescriptor extends ContextIdentityObject implements ClientIdentitySerializable,
                                                                           ContainerMovable<ClientContainer>,
                                                                           ApplicationContextHolder, CustomConstructible {
 

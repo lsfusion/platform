@@ -2,7 +2,7 @@ package platform.client.logics;
 
 import platform.client.descriptor.editor.FunctionEditor;
 import platform.client.serialization.ClientSerializationPool;
-import platform.interop.context.ApplicationContext;
+import platform.base.context.ApplicationContext;
 import platform.interop.form.layout.AbstractFunction;
 
 import javax.swing.*;

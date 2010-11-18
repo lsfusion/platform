@@ -1,6 +1,6 @@
 package platform.server.form.entity;
 
-import platform.base.IdentityObject;
+import platform.base.identity.IdentityObject;
 import platform.base.BaseUtils;
 import platform.server.classes.ValueClass;
 import platform.server.data.type.TypeSerializer;

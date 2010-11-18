@@ -2,7 +2,7 @@ package platform.client.logics;
 
 import platform.client.descriptor.editor.ComponentEditor;
 import platform.client.serialization.ClientSerializationPool;
-import platform.interop.context.ApplicationContext;
+import platform.base.context.ApplicationContext;
 
 import javax.swing.*;
 import java.io.DataInputStream;

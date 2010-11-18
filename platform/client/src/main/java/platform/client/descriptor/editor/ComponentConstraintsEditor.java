@@ -3,7 +3,7 @@ package platform.client.descriptor.editor;
 import platform.base.BaseUtils;
 import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.logics.ClientComponent;
-import platform.interop.context.IncrementView;
+import platform.base.context.IncrementView;
 import platform.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;

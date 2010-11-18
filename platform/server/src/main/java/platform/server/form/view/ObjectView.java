@@ -1,6 +1,6 @@
 package platform.server.form.view;
 
-import platform.base.IDGenerator;
+import platform.base.identity.IDGenerator;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;

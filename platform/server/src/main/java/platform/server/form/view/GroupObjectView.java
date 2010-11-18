@@ -1,6 +1,6 @@
 package platform.server.form.view;
 
-import platform.base.IDGenerator;
+import platform.base.identity.IDGenerator;
 import platform.interop.form.layout.AbstractGroupObject;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.ObjectEntity;

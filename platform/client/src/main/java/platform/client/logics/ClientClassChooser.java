@@ -1,8 +1,7 @@
 package platform.client.logics;
 
 import platform.client.descriptor.editor.ComponentEditor;
-import platform.interop.context.ApplicationContext;
-import platform.interop.context.IncrementDependency;
+import platform.base.context.ApplicationContext;
 import platform.client.serialization.ClientSerializationPool;
 
 import javax.swing.*;

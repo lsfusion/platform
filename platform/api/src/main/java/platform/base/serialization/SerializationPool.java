@@ -1,7 +1,7 @@
-package platform.interop.serialization;
+package platform.base.serialization;
 
-import platform.interop.context.ApplicationContext;
-import platform.interop.context.ApplicationContextHolder;
+import platform.base.context.ApplicationContext;
+import platform.base.context.ApplicationContextHolder;
 
 import java.io.*;
 import java.lang.reflect.Constructor;

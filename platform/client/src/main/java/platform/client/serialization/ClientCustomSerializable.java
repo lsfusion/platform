@@ -1,6 +1,6 @@
 package platform.client.serialization;
 
-import platform.interop.serialization.CustomSerializable;
+import platform.base.serialization.CustomSerializable;
 
 public interface ClientCustomSerializable extends CustomSerializable<ClientSerializationPool> {
 }

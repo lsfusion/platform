@@ -1,6 +1,6 @@
 package platform.server.form.entity;
 
-import platform.base.IdentityObject;
+import platform.base.identity.IdentityObject;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 

@@ -1,7 +1,6 @@
 package platform.client.descriptor.filter;
 
 import platform.client.descriptor.GroupObjectDescriptor;
-import platform.interop.context.IncrementDependency;
 import platform.client.descriptor.nodes.filters.FilterNode;
 import platform.client.descriptor.nodes.filters.NotFilterNode;
 import platform.client.serialization.ClientSerializationPool;

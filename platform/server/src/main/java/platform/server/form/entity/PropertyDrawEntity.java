@@ -1,6 +1,6 @@
 package platform.server.form.entity;
 
-import platform.base.IdentityObject;
+import platform.base.identity.IdentityObject;
 import platform.interop.ClassViewType;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.Instantiable;

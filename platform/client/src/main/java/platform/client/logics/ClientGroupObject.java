@@ -1,14 +1,14 @@
 package platform.client.logics;
 
-import platform.base.DefaultIDGenerator;
-import platform.base.IDGenerator;
+import platform.base.identity.DefaultIDGenerator;
+import platform.base.identity.IDGenerator;
 import platform.base.OrderedMap;
 import platform.client.form.ClientFormController;
 import platform.client.form.GroupObjectController;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ClassViewType;
-import platform.interop.context.ApplicationContext;
+import platform.base.context.ApplicationContext;
 import platform.interop.form.layout.AbstractGroupObject;
 import platform.interop.form.layout.GroupObjectContainerSet;
 

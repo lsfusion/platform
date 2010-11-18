@@ -3,9 +3,8 @@ package platform.client.descriptor.nodes.filters;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.filter.FilterDescriptor;
-import platform.interop.context.ApplicationContext;
-import platform.interop.context.ApplicationContextProvider;
-import platform.interop.context.IncrementDependency;
+import platform.base.context.ApplicationContext;
+import platform.base.context.ApplicationContextProvider;
 import platform.client.descriptor.nodes.GroupElementFolder;
 
 import java.util.List;

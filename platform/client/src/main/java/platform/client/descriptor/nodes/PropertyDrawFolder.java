@@ -3,10 +3,8 @@ package platform.client.descriptor.nodes;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.PropertyDrawDescriptor;
-import platform.interop.context.ApplicationContext;
-import platform.interop.context.ApplicationContextHolder;
-import platform.interop.context.ApplicationContextProvider;
-import platform.interop.context.IncrementDependency;
+import platform.base.context.ApplicationContext;
+import platform.base.context.ApplicationContextProvider;
 import platform.client.tree.ClientTree;
 import platform.base.BaseUtils;
 
