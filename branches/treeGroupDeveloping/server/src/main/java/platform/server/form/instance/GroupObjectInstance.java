@@ -212,10 +212,27 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     public int updated = UPDATED_GRIDCLASS | UPDATED_ORDER | UPDATED_FILTER;
 
-    Map<ObjectInstance,ObjectValue> getGroupObjectValue() {
-        Map<ObjectInstance,ObjectValue> result = new HashMap<ObjectInstance, ObjectValue>();
+    private boolean assertNull() {
+        Iterator<ObjectInstance> it = objects.iterator();
+        boolean isNull = it.next().getObjectValue() instanceof NullValue; 
+        for(ObjectInstance object : objects)
+            if((object.getObjectValue() instanceof NullValue)!=isNull)
+                return false;
+        return true;
+    }
+
+    public boolean isNull() {
+        assert assertNull();
+        return objects.iterator().next().getObjectValue() instanceof NullValue;
+    }
+
+    public Map<ObjectInstance,DataObject> getGroupObjectValue() {
+        if(isNull())
+            return new HashMap<ObjectInstance, DataObject>();
+        
+        Map<ObjectInstance,DataObject> result = new HashMap<ObjectInstance, DataObject>();
         for(ObjectInstance object : GroupObjectInstance.getObjects(getUpTreeGroups()))
-            result.put(object,object.getObjectValue());
+            result.put(object,object.getDataObject());
         return result;
     }
 
@@ -274,10 +291,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public boolean isInTree() {
-        return getUpTreeGroup()!=null || parent!=null || downGroups;
+        return getUpTreeGroup()!=null || parent!=null || downTreeGroups.size()>0;
     }
-    boolean downGroups = false;
 
+    List<GroupObjectInstance> downTreeGroups = new ArrayList<GroupObjectInstance>();
     public GroupObjectInstance getUpTreeGroup() {
         return BaseUtils.last(upTreeGroups);
     }

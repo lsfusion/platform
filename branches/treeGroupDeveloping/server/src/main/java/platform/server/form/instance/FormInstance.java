@@ -2,6 +2,7 @@ package platform.server.form.instance;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.base.Pair;
 import platform.interop.ClassViewType;
 import platform.interop.Scroll;
 import platform.interop.action.ClientAction;
@@ -32,6 +33,7 @@ import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.NullValue;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
 import platform.server.session.*;
@@ -273,8 +275,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
     public void changeGroupObject(GroupObjectInstance group, Map<ObjectInstance, ? extends ObjectValue> value) throws SQLException {
         // проставим все объектам метки изменений
+        assert value.keySet().equals(new HashSet<ObjectInstance>(GroupObjectInstance.getObjects(group.getUpTreeGroups())));
         for (Entry<ObjectInstance, ? extends ObjectValue> objectValue : value.entrySet())
             objectValue.getKey().changeValue(session, objectValue.getValue());
+        for(ObjectInstance object : GroupObjectInstance.getObjects(group.downTreeGroups))
+            object.changeValue(session, NullValue.instance);
     }
 
     public void switchClassView(GroupObjectInstance group) {
@@ -843,6 +848,16 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
             group.orders = group.getSetOrders();
     }
 
+    private class GroupObjectValue {
+        private GroupObjectInstance group;
+        private Map<ObjectInstance, ? extends ObjectValue> value;
+
+        private GroupObjectValue(GroupObjectInstance group, Map<ObjectInstance, ? extends ObjectValue> value) {
+            this.group = group;
+            this.value = value;
+        }
+    }
+
     public FormChanges endApply() throws SQLException {
 
         ApplyTransaction transaction = new ApplyTransaction();
@@ -859,6 +874,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 changedProps = new ArrayList<Property>();
             }
 
+            GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group
             for (GroupObjectInstance group : groups) {
 
                 if ((group.updated & GroupObjectInstance.UPDATED_CLASSVIEW) != 0) {
@@ -939,9 +955,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                             break;
                         }
 
-                Map<ObjectInstance, ObjectValue> currentObject = group.getGroupObjectValue();
+                Map<ObjectInstance, DataObject> currentObject = group.getGroupObjectValue();
                 Map<OrderInstance, ObjectValue> orderSeeks = null;
-                boolean keepObject = true;
                 int direction = DIRECTION_CENTER;
 
                 if(group.isInTree()) {
@@ -958,12 +973,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                         } else
                             orderSeeks = null;
                         updateKeys = true;
-                        keepObject = false;
+                        currentObject = new HashMap<ObjectInstance, DataObject>();
                     } else if (updateKeys) // изменились фильтры, порядки, вид, ищем текущий объект
                         orderSeeks = new HashMap<OrderInstance, ObjectValue>(currentObject);
 
-                    if (!updateKeys && group.curClassView == ClassViewType.GRID && (group.updated & GroupObjectInstance.UPDATED_OBJECT) != 0) { // скроллирование
-                        int keyNum = group.keys.indexOf(dataKeys(currentObject));
+                    if (!updateKeys && group.curClassView == ClassViewType.GRID && !currentObject.isEmpty() && (group.updated & GroupObjectInstance.UPDATED_OBJECT) != 0) { // скроллирование
+                        int keyNum = group.keys.indexOf(currentObject);
                         if (group.upKeys && keyNum < group.getPageSize()) { // если меньше PageSize осталось и сверху есть ключи
                             updateKeys = true;
 
@@ -1050,16 +1065,30 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                         groupTables.put(group, insertTable.writeKeys(session, BaseUtils.joinList(insertTable.mapKeys,group.keys.keyList())));
                         result.gridObjects.put(group, group.keys.keyList());
 
-                        // если есть в новых ключах старый ключ, то делаем его активным
-                        if (keepObject && group.keys.containsKey(dataKeys(currentObject)))
-                            activeRow = group.keys.indexOf(dataKeys(currentObject));
-
-                        updateGroupObject(group, result, group.keys.isEmpty() ? group.getNulls() : group.keys.getKey(activeRow));
+                        if (!group.keys.containsKey(currentObject)) { // если нету currentObject'а, его нужно изменить
+                            if(group.keys.isEmpty()) { // если ключей нету и верхняя группа, заменяем на null
+                                if(group.getUpTreeGroup()==null)
+                                    updateGroupObject = new GroupObjectValue(group, group.getNulls());
+                            } else { // если верхняя группа или был объект заменяем на ряд по умолчанию
+                                if(group.getUpTreeGroup()==null || !currentObject.isEmpty())
+                                    updateGroupObject = new GroupObjectValue(group, group.keys.getKey(activeRow));
+                            }
+                        }
                     }
                     group.updated = (group.updated | GroupObjectInstance.UPDATED_KEYS);
                 } else
-                    if((group.updated & GroupObjectInstance.UPDATED_OBJECT)!=0) // так как объект может меняться скажем в результате ActionProperty и нужно об этом сказать клиенту
-                        result.objects.put(group, currentObject);
+                    if((group.updated & GroupObjectInstance.UPDATED_OBJECT)!=0) { // так как объект может меняться скажем в результате ActionProperty и нужно об этом сказать клиенту
+                        if(currentObject.isEmpty()) { // если null был выбран
+                            if(group.getUpTreeGroup()==null) // если не внутренняя группа
+                                updateGroupObject = new GroupObjectValue(group, group.getNulls());
+                        } else // иначе выбираем этот объект
+                            updateGroupObject = new GroupObjectValue(group, currentObject);
+                    }
+
+                if(group.downTreeGroups.size()==0 && updateGroupObject !=null) { // так как в tree группе currentObject друг на друга никак не влияют, то можно и нужно делать updateGroupObject в конце
+                    updateGroupObject(updateGroupObject.group, result, updateGroupObject.value);
+                    updateGroupObject = null;
+                }
             }
 
             final Map<PropertyReadInstance, Set<GroupObjectInstance>> readProperties = new HashMap<PropertyReadInstance, Set<GroupObjectInstance>>();

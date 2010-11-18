@@ -18,10 +18,14 @@ public class TreeGroupInstance {
         List<GroupObjectInstance> upGroups = new ArrayList<GroupObjectInstance>();
         for(GroupObjectInstance group : groups) {
             group.upTreeGroups.addAll(upGroups);
-            group.downGroups = true;
             upGroups.add(group);
         }
-        BaseUtils.last(upGroups).downGroups = false;
+
+        List<GroupObjectInstance> downGroups = new ArrayList<GroupObjectInstance>();
+        for(GroupObjectInstance group : BaseUtils.reverse(groups)) {
+            group.downTreeGroups.addAll(downGroups);
+            downGroups.add(group);
+        }
     }
 
     public int getID() {

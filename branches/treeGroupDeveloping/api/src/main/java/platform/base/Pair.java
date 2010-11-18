@@ -17,6 +17,11 @@ public class Pair<Class1, Class2> {
         this.second = second;
     }
 
+    // чтобы короче ситнаксис был
+    public static <Class1,Class2> Pair<Class1,Class2> create(Class1 first, Class2 second) {
+        return new Pair<Class1, Class2>(first, second);
+    }
+
     public String toString() { return first.toString(); }
 
     @Override
