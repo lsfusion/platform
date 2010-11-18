@@ -1,12 +1,12 @@
 package platform.client.descriptor.view;
 
-import platform.client.ClassFilteredAction;
+import platform.client.tree.ClassFilteredAction;
 import platform.client.descriptor.FormDescriptor;
-import platform.interop.context.IncrementView;
+import platform.base.context.IncrementView;
 import platform.client.descriptor.nodes.FormNode;
 import platform.client.descriptor.nodes.PlainTextNode;
 import platform.client.descriptor.nodes.actions.EditableTreeNode;
-import platform.interop.context.Lookup;
+import platform.base.context.Lookup;
 import platform.client.navigator.ClientNavigator;
 import platform.client.tree.ClientTree;
 import platform.client.tree.ClientTreeActionEvent;
