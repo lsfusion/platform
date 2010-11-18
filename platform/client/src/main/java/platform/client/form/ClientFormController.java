@@ -688,4 +688,8 @@ public class ClientFormController {
             remoteForm = null;
         }
     }
+
+    public Dimension calculatePreferredSize() {
+        return formLayout.calculatePreferredSize();
+    }
 }

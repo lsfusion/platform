@@ -96,7 +96,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
             componentsChanged = true;
             mainContainer.invalidate();
         }
-   }
+    }
 
     public Dimension preferredLayoutSize(Container parent) {
         return new Dimension(500, 500);
@@ -151,7 +151,6 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
 
         if (parent != mainContainer) return;
 
-
         Dimension dimension = parent.getSize();
         boolean dimensionChanged = true;
         if (oldDimension != null) {
@@ -172,14 +171,52 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
                 return;
             }
         } else {
-            //System.out.println("Old " + oldDimension);
-            //System.out.println("New " + dimension);
-            //System.out.println("Parent " + parent);
             oldDimension = dimension;
             cache.clear();
         }
 
         logger.info("Begin layoutContainer " + dimension);
+
+        double[] coords = runSimplexLayout(parent);
+
+        if (coords != null) {
+
+            setComponentsBounds(coords);
+
+            Map<Component, Rectangle> cachedCoords = new HashMap<Component, Rectangle>();
+            for (Component comp : components)
+                cachedCoords.put(comp, comp.getBounds());
+
+            cache.put(components, cachedCoords);
+        }
+
+        logger.info("End layoutContainer");
+//        System.out.println("Layout complete : " + (System.currentTimeMillis()-stl));
+    }
+
+    public Dimension calculatePreferredSize() {
+
+        logger.info("Begin calculatePreferredSize");
+
+        if (fillVisibleComponents()) return new Dimension(1, 1);
+
+        double[] coords = runSimplexLayout(null);
+
+        int maxw = 1, maxh = 1;
+        if (coords != null) {
+            for (Component comp : components) {
+                SimplexComponentInfo info = infos.get(comp);
+                maxw = Math.max(maxw, (int) coords[info.R - 1]);
+                maxh = Math.max(maxh, (int) coords[info.B - 1]);
+            }
+        }
+
+        logger.info("End calculatePreferredSize");
+
+        return new Dimension(maxw, maxh);
+    }
+    // передача container null обозначает, что мы ищем preferredSize
+    private double[] runSimplexLayout(Container container) {
 
         LpSolve solver = null;
 
@@ -188,10 +225,10 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
             solver = LpSolve.makeLp(0, 0);
 
             fillComponentVariables(solver);
-            fillComponentConstraints(solver, parent);
+            fillComponentConstraints(solver, container);
             fillConstraints(solver);
 
-            fillObjFunction(solver);
+            fillObjFunction(solver, container == null);
 
             solver.setTimeout(5);
 
@@ -200,15 +237,9 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
 
             int res = solver.solve();
             if (res < 2) {
-
-                setComponentsBounds(solver.getPtrVariables());
-
-                Map<Component, Rectangle> cachedCoords = new HashMap<Component, Rectangle>();
-                for (Component comp : components)
-                    cachedCoords.put(comp, comp.getBounds());
-
-                cache.put(components, cachedCoords);
-            }
+                return solver.getPtrVariables();
+            } else
+                return null;
 
         } catch (LpSolveException ex) {
 //            Logger.getLogger(SimplexLayout.class.getName()).log(Level.SEVERE, null, ex);
@@ -217,8 +248,8 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
             if (solver != null)
                 solver.deleteLp();
         }
-        logger.info("End layoutContainer");
-//        System.out.println("Layout complete : " + (System.currentTimeMillis()-stl));
+
+        return null;
     }
 
     private Map<Component, SimplexComponentInfo> infos;
@@ -257,8 +288,10 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
         solver.addConstraintex(1, new double[]{1}, new int[]{targetInfo.L}, LpSolve.EQ, 0);
         solver.addConstraintex(1, new double[]{1}, new int[]{targetInfo.T}, LpSolve.EQ, 0);
 
-        solver.addConstraintex(1, new double[]{1}, new int[]{targetInfo.R}, LpSolve.EQ, parent.getWidth());
-        solver.addConstraintex(1, new double[]{1}, new int[]{targetInfo.B}, LpSolve.EQ, parent.getHeight());
+        if (parent != null) { // когда parent null - ищем preferredSize
+            solver.addConstraintex(1, new double[]{1}, new int[]{targetInfo.R}, LpSolve.EQ, parent.getWidth());
+            solver.addConstraintex(1, new double[]{1}, new int[]{targetInfo.B}, LpSolve.EQ, parent.getHeight());
+        }
 
         for (Component component : components) {
 
@@ -433,7 +466,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
     // Сделать как можно больше те, у кого установлен fillVertical или fillHorizontal с коэффициентом 1
     // Сделать как можно выше, левее с коэффициентом 0.01
 
-    private void fillObjFunction(LpSolve solver) throws LpSolveException {
+    private void fillObjFunction(LpSolve solver, boolean preferred) throws LpSolveException {
 
         solver.addColumn(new double[0]);
 
@@ -463,7 +496,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
             SimplexConstraints constraint = getConstraint(component);
 
             // нужно проверять на максимальный размер, иначе кнопка раскрытия дерева сильно ограничит сверху colmaxw
-            if (constraint.fillHorizontal > 0 && max.getWidth() >= mainContainer.getWidth()) {
+            if (constraint.fillHorizontal > 0 && max.getWidth() >= mainContainer.getWidth() && !preferred) {
                 solver.addConstraintex(3, new double[]{1, -1, -1 * constraint.fillHorizontal}, new int[]{info.R, info.L, colmaxw}, LpSolve.GE, 0);
                 fillmaxw = true;
             } else {
@@ -485,7 +518,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
                 }
             }
 
-            if (constraint.fillVertical > 0 && max.getHeight() >= mainContainer.getHeight()) {
+            if (constraint.fillVertical > 0 && max.getHeight() >= mainContainer.getHeight() && !preferred) {
                 solver.addConstraintex(3, new double[]{1, -1, -1 * constraint.fillVertical}, new int[]{info.B, info.T, colmaxh}, LpSolve.GE, 0);
                 fillmaxh = true;
             } else {
@@ -508,16 +541,18 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
             }
 
             // направления и расширения до максимума
-            objFnc.set(info.T, -constraint.directions.T + ((constraint.fillVertical > 0) ? -1 : 0.0));
-            objFnc.set(info.L, -constraint.directions.L + ((constraint.fillHorizontal > 0) ? -1 : 0.0));
-            objFnc.set(info.B, constraint.directions.B + ((constraint.fillVertical > 0) ? 1 : 0.0));
-            objFnc.set(info.R, constraint.directions.R + ((constraint.fillHorizontal > 0) ? 1 : 0.0));
+            objFnc.set(info.T, (preferred ? -1.0 : -constraint.directions.T + ((constraint.fillVertical > 0) ? -1 : 0.0)));
+            objFnc.set(info.L, (preferred ? -1.0 : -constraint.directions.L + ((constraint.fillHorizontal > 0) ? -1 : 0.0)));
+            objFnc.set(info.B, (preferred ? -1.0 : constraint.directions.B + ((constraint.fillVertical > 0) ? 1 : 0.0)));
+            objFnc.set(info.R, (preferred ? -1.0 : constraint.directions.R + ((constraint.fillHorizontal > 0) ? 1 : 0.0)));
 
         }
 
-        // самое важное условие - ему выдается самый большой коэффициент
-        objFnc.set(colmaxw, (fillmaxw) ? 1000.0 : 0.0);
-        objFnc.set(colmaxh, (fillmaxh) ? 1000.0 : 0.0);
+        if (!preferred) {
+            // самое важное условие - ему выдается самый большой коэффициент
+            objFnc.set(colmaxw, (fillmaxw) ? 1000.0 : 0.0);
+            objFnc.set(colmaxh, (fillmaxh) ? 1000.0 : 0.0);
+        }
 
         double[] objArr = new double[objFnc.size()];
         for (int i = 0; i < objFnc.size(); i++)
