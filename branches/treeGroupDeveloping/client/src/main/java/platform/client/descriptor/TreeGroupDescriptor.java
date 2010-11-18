@@ -1,7 +1,6 @@
 package platform.client.descriptor;
 
-import platform.client.descriptor.context.ContextIdentityDescriptor;
-import platform.client.logics.ClientComponent;
+import platform.base.context.ContextIdentityObject;
 import platform.client.logics.ClientContainer;
 import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientTreeGroup;
@@ -15,7 +14,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TreeGroupDescriptor extends ContextIdentityDescriptor implements ClientIdentitySerializable, CustomConstructible, ContainerMovable<ClientContainer> {
+public class TreeGroupDescriptor extends ContextIdentityObject implements ClientIdentitySerializable, CustomConstructible, ContainerMovable<ClientContainer> {
     public ClientTreeGroup client;
     public List<GroupObjectDescriptor> groups = new ArrayList<GroupObjectDescriptor>();
 

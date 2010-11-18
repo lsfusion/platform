@@ -13,13 +13,15 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 public class GroupObjectEntity extends IdentityObject implements Instantiable<GroupObjectInstance>, ServerIdentitySerializable {
     private int ID;
     public TreeGroupEntity parent;
+
+    public List<ObjectEntity> objects = new ArrayList<ObjectEntity>();
 
     public GroupObjectEntity() {
     }
@@ -76,9 +78,11 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     }
 
     public Map<ObjectEntity, PropertyObjectEntity> isParent = null;
+
     public void setIsParents(PropertyObjectEntity... properties) {
         isParent = new HashMap<ObjectEntity, PropertyObjectEntity>();
-        for(int i=0;i<size();i++)
-            isParent.put(get(i), properties[i]);
+        for (int i = 0; i < objects.size(); i++) {
+            isParent.put(objects.get(i), properties[i]);
+        }
     }
 }

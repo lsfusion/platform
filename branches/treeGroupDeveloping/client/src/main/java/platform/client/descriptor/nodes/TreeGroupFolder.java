@@ -1,11 +1,10 @@
 package platform.client.descriptor.nodes;
 
+import platform.base.context.ApplicationContext;
+import platform.base.context.ApplicationContextProvider;
 import platform.client.descriptor.FormDescriptor;
-import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.TreeGroupDescriptor;
 import platform.client.tree.ClientTree;
-import platform.interop.context.ApplicationContext;
-import platform.interop.context.ApplicationContextProvider;
 
 import javax.swing.*;
 

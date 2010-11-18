@@ -1,8 +1,8 @@
 package platform.client.logics;
 
+import platform.base.context.ApplicationContext;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
-import platform.interop.context.ApplicationContext;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

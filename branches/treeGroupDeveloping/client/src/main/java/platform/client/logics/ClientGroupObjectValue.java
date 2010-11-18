@@ -32,7 +32,7 @@ public class ClientGroupObjectValue extends OrderedMap<ClientObject, Object>
     }
 
     public ClientGroupObjectValue(ClientGroupObject clientGroupObject, DataInputStream inStream) throws IOException {
-        for (ClientObject clientObject : clientGroupObject) {
+        for (ClientObject clientObject : clientGroupObject.objects) {
             put(clientObject, deserializeObject(inStream));
         }
     }

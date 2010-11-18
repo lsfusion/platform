@@ -117,7 +117,7 @@ public class GroupTree extends ClientTree {
             ClientGroupObjectValue key = keys.get(i);
 
             ClientGroupObjectValue parentPath = new ClientGroupObjectValue(key); // значение для непосредственного родителя
-            parentPath.removeAll(group); // удаляем значение ключа самого groupObject, чтобы получить путь к нему из "родителей"
+            parentPath.removeAll(group.objects); // удаляем значение ключа самого groupObject, чтобы получить путь к нему из "родителей"
             parentPath.putAll(parents.get(i)); //рекурсивный случай - просто перезаписываем значения для ObjectInstance'ов
             parentTree.put(key, parentPath);
         }

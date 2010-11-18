@@ -1,5 +1,8 @@
 package platform.client.descriptor.editor;
 
+import platform.base.context.ApplicationContext;
+import platform.base.context.ApplicationContextProvider;
+import platform.base.context.IncrementView;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.ObjectDescriptor;
@@ -11,9 +14,6 @@ import platform.client.descriptor.increment.editor.IncrementMultipleListEditor;
 import platform.client.descriptor.increment.editor.IncrementMultipleListSelectionModel;
 import platform.client.descriptor.increment.editor.IncrementSingleListSelectionModel;
 import platform.interop.ClassViewType;
-import platform.interop.context.ApplicationContext;
-import platform.interop.context.ApplicationContextProvider;
-import platform.interop.context.IncrementView;
 
 import javax.swing.*;
 import java.awt.*;
@@ -38,15 +38,15 @@ public class GroupObjectEditor extends JPanel implements NodeEditor {
 
         add(new TitledPanel("Запрещённый вид", new IncrementMultipleListEditor(
                 new IncrementMultipleListSelectionModel(group, "banClassViewList") {
-            public List<?> getList() {
-                return Arrays.asList(ClassViewType.values());
-            }
-        })));
+                    public List<?> getList() {
+                        return Arrays.asList(ClassViewType.values());
+                    }
+                })));
 
         add(new TitledPanel("Свойство выделения", new PropertyObjectEditor(group, "propertyHighlight", form, group)));
 
         add(new GroupPropertyObjectEditor(form, group));
-        
+
         add(group.client.grid.getPropertiesEditor());
         add(group.client.showType.getPropertiesEditor());
 
@@ -61,13 +61,13 @@ public class GroupObjectEditor extends JPanel implements NodeEditor {
         public IsParentEditor() {
             super("Свойства задания родительского узла");
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-            
+
             form.addDependency(group, "objects", this);
         }
 
         public void update(Object updateObject, String updateField) {
             removeAll();
-            for (ObjectDescriptor object : group) {
+            for (ObjectDescriptor object : group.objects) {
                 IsParentElementEditor editor = new IsParentElementEditor(object, group.getIsParent());
                 add(editor);
             }

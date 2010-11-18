@@ -1,9 +1,9 @@
 package platform.client.descriptor.editor;
 
+import platform.base.context.ApplicationContextProvider;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.increment.editor.IncrementDialogEditor;
-import platform.interop.context.ApplicationContextProvider;
 
 public class PropertyObjectEditor extends IncrementDialogEditor {
 

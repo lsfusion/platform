@@ -1,16 +1,14 @@
 package platform.client.descriptor;
 
 import platform.base.BaseUtils;
-import platform.base.context.ContextIdentityObject;
+import platform.base.context.ApplicationContext;
 import platform.base.context.ApplicationContextHolder;
+import platform.base.context.ContextIdentityObject;
 import platform.client.logics.ClientContainer;
 import platform.client.logics.ClientGroupObject;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ClassViewType;
-import platform.interop.context.ApplicationContext;
-import platform.interop.context.ApplicationContextHolder;
-import platform.interop.form.layout.GroupObjectContainerSet;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -21,8 +19,8 @@ import java.util.List;
 import java.util.Map;
 
 public class GroupObjectDescriptor extends ContextIdentityObject implements ClientIdentitySerializable,
-                                                                          ContainerMovable<ClientContainer>,
-                                                                          ApplicationContextHolder, CustomConstructible {
+                                                                            ContainerMovable<ClientContainer>,
+                                                                            ApplicationContextHolder, CustomConstructible {
 
     public ClientGroupObject client;
 
@@ -56,6 +54,7 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
     public ApplicationContext getContext() {
         return context;
     }
+
     public void setContext(ApplicationContext context) {
         this.context = context;
     }

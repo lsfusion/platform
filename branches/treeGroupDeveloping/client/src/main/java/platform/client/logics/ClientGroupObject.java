@@ -53,7 +53,7 @@ public class ClientGroupObject implements ClientPropertyRead, ClientIdentitySeri
     public static List<ClientObject> getObjects(List<ClientGroupObject> groups) {
         List<ClientObject> result = new ArrayList<ClientObject>();
         for(ClientGroupObject group : groups)
-            result.addAll(group);
+            result.addAll(group.objects);
         return result;        
     }
 
