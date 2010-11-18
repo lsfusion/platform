@@ -43,7 +43,7 @@ public class TreeView extends JPanel {
         groupTree.removeProperty(property);
     }
 
-    public void setCurrentSelection(ClientGroupObjectValue selectionPath) {
-        groupTree.setCurrentSelection(selectionPath);
+    public void setCurrentObjects(ClientGroupObjectValue objects) {
+        groupTree.setCurrentObjects(objects);
     }
 }

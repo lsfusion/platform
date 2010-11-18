@@ -58,7 +58,7 @@ public class TreeGroupController {
                 }
             }
 
-            view.setCurrentSelection(fc.objects.get(group));
+            view.setCurrentObjects(fc.objects.get(group));
         }
 
         SwingUtilities.invokeLater(new Runnable() {

@@ -15,10 +15,12 @@ import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
 public class GroupTree extends ClientTree {
     private final TreeGroupNode rootNode;
@@ -28,6 +30,7 @@ public class GroupTree extends ClientTree {
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
 
     boolean synchronize = false;
+    private ClientGroupObjectValue currentPath;
 
     public GroupTree(ClientFormController iform) {
         super();
@@ -37,6 +40,7 @@ public class GroupTree extends ClientTree {
         setToggleClickCount(-1);
         setDropMode(DropMode.ON_OR_INSERT);
         setDragEnabled(true);
+        setCellRenderer(new GroupTreeCellRenderer());
 
         DefaultTreeModel model = new DefaultTreeModel(null);
 
@@ -163,15 +167,15 @@ public class GroupTree extends ClientTree {
         return node.getChildCount() == 1 && node.getFirstChild() instanceof ExpandingTreeNode;
     }
 
-    public void setCurrentSelection(ClientGroupObjectValue selectionPath) {
+    public void setCurrentObjects(ClientGroupObjectValue objects) {
         Enumeration nodes = rootNode.depthFirstEnumeration();
         while (nodes.hasMoreElements()) {
             Object node = nodes.nextElement();
             if (node instanceof TreeGroupNode) {
                 TreeGroupNode groupNode = (TreeGroupNode) node;
-                if (groupNode.key.equals(selectionPath)) {
+                if (groupNode.key.equals(objects)) {
                     synchronize = true;
-                    setSelectionPath(getPathToRoot(groupNode));
+                    currentPath = objects;
                     synchronize = false;
                     break;
                 }
@@ -302,6 +306,36 @@ public class GroupTree extends ClientTree {
             } else {
                 return false;
             }
+        }
+    }
+
+    class GroupTreeCellRenderer extends ClientTree.ClientTreeCellRenderer {
+        private Color backgroundSelectionColor;
+        private Color backgroundNonSelectionColor;
+
+        public GroupTreeCellRenderer() {
+            super();
+
+            backgroundSelectionColor = getBackgroundSelectionColor();
+            backgroundNonSelectionColor = getBackgroundNonSelectionColor();
+        }
+
+        @Override
+        public Component getTreeCellRendererComponent(JTree iTree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+            Component renderer = super.getTreeCellRendererComponent(iTree, value, sel, expanded, leaf, row, hasFocus);
+
+            setBackgroundSelectionColor(backgroundSelectionColor);
+            setBackgroundNonSelectionColor(backgroundNonSelectionColor);
+
+            if (value instanceof TreeGroupNode) {
+                TreeGroupNode groupNode = (TreeGroupNode) value;
+                if (currentPath != null && currentPath.contains(groupNode.key)) {
+                    setBackgroundSelectionColor(Color.YELLOW.darker().darker());
+                    setBackgroundNonSelectionColor(Color.YELLOW);
+                }
+            }
+
+            return renderer;
         }
     }
 }
