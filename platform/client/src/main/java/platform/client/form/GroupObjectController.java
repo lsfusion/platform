@@ -353,7 +353,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         String message = "";
         for (ClientObject object : groupObject.objects) {
             if (object.addOnTransaction) {
-                message += "Создать новый " + object.caption + " ?";
+                message += "Создать новый " + object.getFullCaption() + " ?";
             }
         }
 
