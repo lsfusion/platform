@@ -52,7 +52,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
             grid.addView(formLayout);
 
-            for (ClientObject object : groupObject) {
+            for (ClientObject object : groupObject.objects) {
 
                 objects.put(object, new ObjectController(object, form));
                 objects.get(object).addView(formLayout);
@@ -151,7 +151,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         }
 
         if (groupObject != null) {
-            for (ClientObject object : groupObject) {
+            for (ClientObject object : groupObject.objects) {
                 objects.get(object).hideViews();
             }
         }
@@ -171,7 +171,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         }
 
         if (groupObject != null) {
-            for (ClientObject object : groupObject) {
+            for (ClientObject object : groupObject.objects) {
                 objects.get(object).showViews();
             }
         }
@@ -185,7 +185,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         if (this.classView != classView) {
             this.classView = classView;
 
-            for (ClientObject object : groupObject) {
+            for (ClientObject object : groupObject.objects) {
                 objects.get(object).changeClassView(classView);
             }
 
@@ -351,7 +351,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
     public String getSaveMessage() {
 
         String message = "";
-        for (ClientObject object : groupObject) {
+        for (ClientObject object : groupObject.objects) {
             if (object.addOnTransaction) {
                 message += "Создать новый " + object.caption + " ?";
             }

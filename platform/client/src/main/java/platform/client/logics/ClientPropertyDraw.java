@@ -351,7 +351,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public List<ClientObject> getDeserializeList(Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
         List<ClientObject> result = getDeserializeGroupList(classViews, controllers);
         if (!panelProperties.contains(this)) {
-            result = BaseUtils.mergeList(groupObject, result);
+            result = BaseUtils.mergeList(groupObject.objects, result);
         }
         return result;
     }

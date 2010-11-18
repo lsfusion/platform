@@ -142,7 +142,7 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
 
         ArrayList<ClientObject> objects = new ArrayList<ClientObject>();
         for (ClientGroupObject groupObject : groupObjects) {
-            for (ClientObject object : groupObject) {
+            for (ClientObject object : groupObject.objects) {
                 objects.add(object);
             }
         }
@@ -156,7 +156,7 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
 
     public ClientObject getObject(int id) {
         for (ClientGroupObject groupObject : groupObjects) {
-            for (ClientObject object : groupObject) {
+            for (ClientObject object : groupObject.objects) {
                 if (object.getID() == id) {
                     return object;
                 }

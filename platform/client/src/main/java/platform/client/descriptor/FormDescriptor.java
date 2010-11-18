@@ -293,7 +293,7 @@ public class FormDescriptor extends ContextIdentityDescriptor implements ClientI
 
     public ObjectDescriptor getObject(int objectID) {
         for (GroupObjectDescriptor group : groupObjects)
-            for (ObjectDescriptor object : group)
+            for (ObjectDescriptor object : group.objects)
                 if (object.getID() == objectID)
                     return object;
         return null;
@@ -308,26 +308,26 @@ public class FormDescriptor extends ContextIdentityDescriptor implements ClientI
         Collection<ObjectDescriptor> objects = new ArrayList<ObjectDescriptor>();
         Map<Integer, Integer> objectMap = new HashMap<Integer, Integer>();
         for (GroupObjectDescriptor groupObject : groupObjects) {
-            objects.addAll(groupObject);
-            for (ObjectDescriptor object : groupObject) {
+            objects.addAll(groupObject.objects);
+            for (ObjectDescriptor object : groupObject.objects) {
                 objectMap.put(object.getID(), groupObject.getID());
             }
         }
-        return getProperties(objects, toDraw == null ? new ArrayList<ObjectDescriptor>() : toDraw, Main.remoteLogics, objectMap, false, false);
+        return getProperties(objects, toDraw == null ? new ArrayList<ObjectDescriptor>() : toDraw.objects, Main.remoteLogics, objectMap, false, false);
     }
 
     public static List<PropertyObjectDescriptor> getProperties(Collection<GroupObjectDescriptor> groupObjects, RemoteDescriptorInterface remote, ArrayList<GroupObjectDescriptor> toDraw, boolean isCompulsory, boolean isAny) {
         Collection<ObjectDescriptor> objects = new ArrayList<ObjectDescriptor>();
         Map<Integer, Integer> objectMap = new HashMap<Integer, Integer>();
         for (GroupObjectDescriptor groupObject : groupObjects) {
-            objects.addAll(groupObject);
-            for (ObjectDescriptor object : groupObject) {
+            objects.addAll(groupObject.objects);
+            for (ObjectDescriptor object : groupObject.objects) {
                 objectMap.put(object.getID(), groupObject.getID());
             }
         }
         ArrayList<ObjectDescriptor> objList = new ArrayList<ObjectDescriptor>();
         for (GroupObjectDescriptor groupObject : toDraw) {
-            objList.addAll(groupObject);
+            objList.addAll(groupObject.objects);
         }
         return getProperties(objects, objList, remote, objectMap, isCompulsory, isAny);
     }

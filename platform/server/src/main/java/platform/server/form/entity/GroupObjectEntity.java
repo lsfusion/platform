@@ -1,5 +1,6 @@
 package platform.server.form.entity;
 
+import platform.base.IdentityObject;
 import platform.interop.ClassViewType;
 import platform.interop.form.RemoteFormInterface;
 import platform.server.form.instance.GroupObjectInstance;
@@ -14,28 +15,21 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GroupObjectEntity extends ArrayList<ObjectEntity> implements Instantiable<GroupObjectInstance>, ServerIdentitySerializable {
-    private int ID;
-    public int getID() {
-        return ID;
-    }
+public class GroupObjectEntity extends IdentityObject implements Instantiable<GroupObjectInstance>, ServerIdentitySerializable {
 
-    public void setID(int iID) {
-        ID = iID;
-    }
+    public List<ObjectEntity> objects = new ArrayList<ObjectEntity>();
 
     public GroupObjectEntity() {
     }
     
-    public GroupObjectEntity(int iID) {
-        ID = iID;
+    public GroupObjectEntity(int ID) {
+        super(ID);
         assert (ID < RemoteFormInterface.GID_SHIFT);
     }
 
-    @Override
     public boolean add(ObjectEntity objectEntity) {
         objectEntity.groupTo = this;
-        return super.add(objectEntity);
+        return objects.add(objectEntity);
     }
 
     public ClassViewType initClassView = ClassViewType.GRID;
@@ -49,14 +43,14 @@ public class GroupObjectEntity extends ArrayList<ObjectEntity> implements Instan
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        pool.serializeCollection(outStream, this);
+        pool.serializeCollection(outStream, objects);
         pool.writeInt(outStream, initClassView.ordinal());
         pool.writeObject(outStream, banClassView);
         pool.serializeObject(outStream, propertyHighlight);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        pool.deserializeCollection(this, inStream);
+        pool.deserializeCollection(objects, inStream);
         initClassView = ClassViewType.values()[pool.readInt(inStream)];
         banClassView = (List<ClassViewType>)pool.readObject(inStream);
         propertyHighlight = (PropertyObjectEntity) pool.deserializeObject(inStream);

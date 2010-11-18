@@ -20,7 +20,7 @@ public class ObjectFolder extends PlainTextNode<ObjectFolder> implements Applica
         super("Oбъекты");
         this.group = group;
 
-        for (ObjectDescriptor object : group) {
+        for (ObjectDescriptor object : group.objects) {
             add(new ObjectNode(object, group));
         }
         addCollectionReferenceActions(group, "objects", new String[]{""}, new Class[]{ObjectDescriptor.class});

@@ -12,7 +12,7 @@ public class ClientGroupObjectClass extends OrderedMap<ClientObject,ClientClass>
                              implements Serializable {
 
     public ClientGroupObjectClass(DataInputStream inStream, ClientGroupObject clientGroupObject, boolean nulls) throws IOException {
-        for (ClientObject clientObject : clientGroupObject) {
+        for (ClientObject clientObject : clientGroupObject.objects) {
             put(clientObject, (nulls && inStream.readBoolean()) ? null : ClientTypeSerializer.deserializeClientClass(inStream));
         }
     }

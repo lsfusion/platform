@@ -26,7 +26,7 @@ public class ClientGroupObjectValue extends OrderedMap<ClientObject,Object>
     }
 
     public ClientGroupObjectValue(DataInputStream inStream, ClientGroupObject clientGroupObject) throws IOException {
-        for (ClientObject clientObject : clientGroupObject) {
+        for (ClientObject clientObject : clientGroupObject.objects) {
             put(clientObject, deserializeObject(inStream));
         }
     }
@@ -39,7 +39,7 @@ public class ClientGroupObjectValue extends OrderedMap<ClientObject,Object>
 
     public void serialize(ClientPropertyDraw propertyDraw, DataOutputStream outStream) throws IOException {
         for (ClientGroupObject group : propertyDraw.columnGroupObjects) {
-            for (ClientObject clientObject : group) {
+            for (ClientObject clientObject : group.objects) {
                 serializeObject(outStream, get(clientObject));
             }
         }

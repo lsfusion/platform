@@ -15,19 +15,17 @@ import platform.interop.form.layout.GroupObjectContainerSet;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-public class ClientGroupObject extends ArrayList<ClientObject>
-                                 implements ClientPropertyRead, ClientIdentitySerializable, AbstractGroupObject<ClientComponent> {
+public class ClientGroupObject implements ClientPropertyRead, ClientIdentitySerializable, AbstractGroupObject<ClientComponent> {
 
     private int ID;
     public List<ClassViewType> banClassView = new ArrayList<ClassViewType>();
 
     public ClientGrid grid;
     public ClientShowType showType;
+
+    public List<ClientObject> objects = new ArrayList<ClientObject>();
 
     public ClientGroupObject() {
     }
@@ -47,7 +45,7 @@ public class ClientGroupObject extends ArrayList<ClientObject>
         List<ClientObject> result = new ArrayList<ClientObject>();
         ClassViewType newType = classViews.get(this);
         if((newType!=null?newType:controllers.get(this).classView) == ClassViewType.GRID)
-            result.addAll(this);
+            result.addAll(objects);
         return result;
     }
 
@@ -65,18 +63,6 @@ public class ClientGroupObject extends ArrayList<ClientObject>
 
     public boolean shouldBeDrawn(ClientFormController form) {
         return true;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return this == o;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 23 * hash + new Integer(ID).hashCode();
-        return hash;
     }
 
     private static IDGenerator idGenerator = new DefaultIDGenerator();
@@ -108,7 +94,7 @@ public class ClientGroupObject extends ArrayList<ClientObject>
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        pool.serializeCollection(outStream, this);
+        pool.serializeCollection(outStream, objects);
         pool.serializeObject(outStream, grid);
         pool.serializeObject(outStream, showType);
     }
@@ -116,7 +102,7 @@ public class ClientGroupObject extends ArrayList<ClientObject>
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         banClassView = (List<ClassViewType>)pool.readObject(inStream);
 
-        pool.deserializeCollection(this, inStream);
+        pool.deserializeCollection(objects, inStream);
 
         grid = pool.deserializeObject(inStream);
         showType = pool.deserializeObject(inStream);
@@ -142,12 +128,12 @@ public class ClientGroupObject extends ArrayList<ClientObject>
 
     @Override
     public String toString() {
-        if (size() == 0) {
+        if (objects.isEmpty()) {
             return "Пустая группа";
         }
         
         String result = "";
-        for (ClientObject object : this) {
+        for (ClientObject object : objects) {
             if (!result.isEmpty()) {
                 result += ", ";
             }

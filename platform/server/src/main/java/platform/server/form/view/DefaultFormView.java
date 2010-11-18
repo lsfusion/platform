@@ -119,7 +119,7 @@ public class DefaultFormView extends FormView {
 
             // ищем самый нижний GroupObjectInstance, к которому применяется фильтр
             for (RegularFilterEntity regFilter : filterGroup.filters)
-                groupObjects.addAll(formEntity.getApplyObject(regFilter.filter.getObjects()));
+                groupObjects.addAll(formEntity.getApplyObject(regFilter.filter.getObjects()).objects);
 
             RegularFilterGroupView filterGroupView = new RegularFilterGroupView(filterGroup);
             filterGroupView.constraints.insetsSibling = new Insets(0,4,2,4);

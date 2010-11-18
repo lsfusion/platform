@@ -153,7 +153,7 @@ public class GroupObjectHierarchy {
 
         public String getID() {
             assert groups.size() > 0;
-            return groups.iterator().next().get(0).getSID();
+            return groups.iterator().next().objects.get(0).getSID();
         }
 
         public List<GroupObjectEntity> getGroupList() {

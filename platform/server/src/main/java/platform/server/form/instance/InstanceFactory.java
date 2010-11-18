@@ -36,7 +36,7 @@ public class InstanceFactory {
         if (!groupInstances.containsKey(entity)) {
 
             Collection<ObjectInstance> objects = new ArrayList<ObjectInstance>();
-            for (ObjectEntity object : entity) {
+            for (ObjectEntity object : entity.objects) {
                 objects.add(getInstance(object));
             }
 
