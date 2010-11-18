@@ -1,11 +1,11 @@
-package platform.client.descriptor.context;
+package platform.base.context;
 
-import platform.client.descriptor.IdentityDescriptor;
-import platform.interop.context.ApplicationContext;
-import platform.interop.context.ApplicationContextHolder;
-import platform.interop.context.IncrementView;
+import platform.base.identity.IdentityObject;
+import platform.base.context.ApplicationContext;
+import platform.base.context.ApplicationContextHolder;
+import platform.base.context.IncrementView;
 
-public class ContextIdentityDescriptor extends IdentityDescriptor implements ApplicationContextHolder {
+public class ContextIdentityObject extends IdentityObject implements ApplicationContextHolder {
 
     protected ApplicationContext context;
 
@@ -17,19 +17,19 @@ public class ContextIdentityDescriptor extends IdentityDescriptor implements App
         this.context = context;
     }
 
-    public ContextIdentityDescriptor() {
+    public ContextIdentityObject() {
     }
 
-    public ContextIdentityDescriptor(ApplicationContext context) {
+    public ContextIdentityObject(ApplicationContext context) {
         super(context.idShift());
         this.context = context;
     }
 
-    public ContextIdentityDescriptor(int ID) {
+    public ContextIdentityObject(int ID) {
         this(ID, null);
     }
 
-    public ContextIdentityDescriptor(int ID, ApplicationContext context) {
+    public ContextIdentityObject(int ID, ApplicationContext context) {
         super(ID);
         this.context = context;
     }

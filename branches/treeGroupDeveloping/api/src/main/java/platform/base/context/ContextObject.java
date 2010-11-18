@@ -1,9 +1,9 @@
-package platform.client.descriptor.context;
+package platform.base.context;
 
-import platform.interop.context.ApplicationContext;
-import platform.interop.context.ApplicationContextHolder;
+import platform.base.context.ApplicationContext;
+import platform.base.context.ApplicationContextHolder;
 
-public class ContextDescriptor implements ApplicationContextHolder {
+public class ContextObject implements ApplicationContextHolder {
 
     protected ApplicationContext context;
 

@@ -6,8 +6,8 @@ import platform.client.descriptor.property.AbstractGroupDescriptor;
 import platform.client.descriptor.property.PropertyDescriptor;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
 import platform.client.logics.*;
-import platform.interop.context.ApplicationContext;
-import platform.interop.serialization.SerializationPool;
+import platform.base.context.ApplicationContext;
+import platform.base.serialization.SerializationPool;
 
 
 public class ClientSerializationPool extends SerializationPool<ClientForm> {

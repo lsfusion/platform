@@ -1,14 +1,14 @@
 package platform.client.descriptor.filter;
 
+import platform.base.context.ContextObject;
 import platform.client.descriptor.GroupObjectDescriptor;
-import platform.client.descriptor.context.ContextDescriptor;
 import platform.client.descriptor.nodes.NodeCreator;
 import platform.client.descriptor.nodes.filters.FilterNode;
 import platform.client.serialization.ClientCustomSerializable;
 
 import java.util.List;
 
-public abstract class FilterDescriptor extends ContextDescriptor implements ClientCustomSerializable, NodeCreator {
+public abstract class FilterDescriptor extends ContextObject implements ClientCustomSerializable, NodeCreator {
 
     public abstract GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groupList);
 

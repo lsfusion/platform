@@ -1,6 +1,6 @@
 package platform.server.serialization;
 
-import platform.interop.serialization.SerializationPool;
+import platform.base.serialization.SerializationPool;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.view.*;

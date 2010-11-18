@@ -1,6 +1,8 @@
 package platform.server.form.entity;
 
 import platform.base.*;
+import platform.base.identity.DefaultIDGenerator;
+import platform.base.identity.IDGenerator;
 import platform.interop.action.ClientResultAction;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
@@ -124,7 +126,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public ObjectEntity getObject(int id) {
         for (GroupObjectEntity group : groups) {
-            for(ObjectEntity object : group) {
+            for(ObjectEntity object : group.objects) {
                 if (object.getID() == id) {
                     return object;
                 }
@@ -269,7 +271,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public GroupObjectEntity getApplyObject(Collection<ObjectEntity> objects) {
         GroupObjectEntity result = null;
         for (GroupObjectEntity group : groups) {
-            for (ObjectEntity object : group) {
+            for (ObjectEntity object : group.objects) {
                 if (objects.contains(object)) {
                     result = group;
                     break;
@@ -316,6 +318,28 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         assert richDesign == null;
 
         return propertyDraw;
+    }
+
+    protected <P extends PropertyInterface> void removePropertyDraw(LP<P> property) {
+        removePropertyDraw(property.property);
+    }
+
+    protected <P extends PropertyInterface> void removePropertyDraw(Property<P> property) {
+        Iterator<PropertyDrawEntity> it = propertyDraws.iterator();
+        while (it.hasNext()) {
+            if (property.equals(it.next().propertyObject.property)) {
+                it.remove();
+            }
+        }
+    }
+
+    protected void removePropertyDraw(AbstractGroup group) {
+        Iterator<PropertyDrawEntity> it = propertyDraws.iterator();
+        while (it.hasNext()) {
+            if (group.hasChild(it.next().propertyObject.property)) {
+                it.remove();
+            }
+        }
     }
 
     public PropertyObjectEntity addPropertyObject(LP property, PropertyObjectInterfaceEntity... objects) {

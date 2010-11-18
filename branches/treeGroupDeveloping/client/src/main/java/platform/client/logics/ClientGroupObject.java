@@ -1,7 +1,7 @@
 package platform.client.logics;
 
-import platform.base.DefaultIDGenerator;
-import platform.base.IDGenerator;
+import platform.base.identity.DefaultIDGenerator;
+import platform.base.identity.IDGenerator;
 import platform.base.OrderedMap;
 import platform.base.BaseUtils;
 import platform.client.Main;
@@ -10,16 +10,16 @@ import platform.client.form.GroupObjectController;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ClassViewType;
-import platform.interop.context.ApplicationContext;
+import platform.base.context.ApplicationContext;
 import platform.interop.form.layout.AbstractGroupObject;
+import platform.interop.form.layout.GroupObjectContainerSet;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
 
-public class ClientGroupObject extends ArrayList<ClientObject>
-                                 implements ClientPropertyRead, ClientIdentitySerializable, AbstractGroupObject<ClientComponent> {
+public class ClientGroupObject implements ClientPropertyRead, ClientIdentitySerializable, AbstractGroupObject<ClientComponent> {
 
     public ClientTreeGroup parent;
     public boolean isRecursive;
@@ -29,6 +29,8 @@ public class ClientGroupObject extends ArrayList<ClientObject>
 
     public ClientGrid grid;
     public ClientShowType showType;
+
+    public List<ClientObject> objects = new ArrayList<ClientObject>();
 
     public boolean mayHaveChildren() {
         return isRecursive || (parent!= null && parent.groups.indexOf(this) != parent.groups.size() - 1);
@@ -79,18 +81,6 @@ public class ClientGroupObject extends ArrayList<ClientObject>
         return true;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        return this == o;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 23 * hash + new Integer(ID).hashCode();
-        return hash;
-    }
-
     private static IDGenerator idGenerator = new DefaultIDGenerator();
     private String actionID = null;
     public String getActionID() {
@@ -120,7 +110,7 @@ public class ClientGroupObject extends ArrayList<ClientObject>
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        pool.serializeCollection(outStream, this);
+        pool.serializeCollection(outStream, objects);
         pool.serializeObject(outStream, grid);
         pool.serializeObject(outStream, showType);
     }
@@ -128,7 +118,7 @@ public class ClientGroupObject extends ArrayList<ClientObject>
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         banClassView = (List<ClassViewType>)pool.readObject(inStream);
 
-        pool.deserializeCollection(this, inStream);
+        pool.deserializeCollection(objects, inStream);
 
         parent = pool.deserializeObject(inStream);
 
@@ -158,18 +148,22 @@ public class ClientGroupObject extends ArrayList<ClientObject>
 
     @Override
     public String toString() {
-        if (size() == 0) {
+        if (objects.isEmpty()) {
             return "Пустая группа";
         }
         
         String result = "";
-        for (ClientObject object : this) {
+        for (ClientObject object : objects) {
             if (!result.isEmpty()) {
                 result += ", ";
             }
             result += object.toString();
         }
         return result;
+    }
+
+    public ClientContainer getClientComponent(ClientContainer parent) {
+        return parent.findContainerBySID(GroupObjectContainerSet.GROUP_CONTAINER + getID());
     }
 
     // по аналогии с сервером
@@ -180,5 +174,4 @@ public class ClientGroupObject extends ArrayList<ClientObject>
     public List<ClientGroupObject> getUpTreeGroups() {
         return BaseUtils.add(upTreeGroups,this);
     }
-
 }

@@ -1,4 +1,4 @@
-package platform.base;
+package platform.base.identity;
 
 public interface IDGenerator {
 

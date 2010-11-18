@@ -1,6 +1,6 @@
 package platform.server.form.view;
 
-import platform.base.IdentityObject;
+import platform.base.identity.IdentityObject;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;

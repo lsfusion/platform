@@ -1,7 +1,7 @@
 package platform.client.logics;
 
 import platform.client.serialization.ClientSerializationPool;
-import platform.interop.context.ApplicationContext;
+import platform.base.context.ApplicationContext;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

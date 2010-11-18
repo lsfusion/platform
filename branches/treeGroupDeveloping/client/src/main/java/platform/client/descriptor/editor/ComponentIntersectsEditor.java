@@ -4,7 +4,7 @@ import platform.base.BaseUtils;
 import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.logics.ClientComponent;
 import platform.client.logics.ClientContainer;
-import platform.interop.context.IncrementView;
+import platform.base.context.IncrementView;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 
 import javax.swing.*;

@@ -1,6 +1,6 @@
 package platform.server.form.view;
 
-import platform.base.IdentityObject;
+import platform.base.identity.IdentityObject;
 import platform.interop.ComponentDesign;
 import platform.interop.form.layout.AbstractComponent;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;

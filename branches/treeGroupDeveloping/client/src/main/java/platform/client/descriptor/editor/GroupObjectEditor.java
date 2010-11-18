@@ -1,6 +1,5 @@
 package platform.client.descriptor.editor;
 
-import platform.client.GroupPropertyObjectEditor;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.ObjectDescriptor;

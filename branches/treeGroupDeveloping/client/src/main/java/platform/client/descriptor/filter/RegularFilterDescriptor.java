@@ -1,8 +1,8 @@
 package platform.client.descriptor.filter;
 
+import platform.base.context.ContextIdentityObject;
 import platform.client.descriptor.CustomConstructible;
 import platform.client.descriptor.GroupObjectDescriptor;
-import platform.client.descriptor.context.ContextIdentityDescriptor;
 import platform.client.logics.ClientRegularFilter;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.List;
 
-public class RegularFilterDescriptor extends ContextIdentityDescriptor implements ClientIdentitySerializable, CustomConstructible {
+public class RegularFilterDescriptor extends ContextIdentityObject implements ClientIdentitySerializable, CustomConstructible {
 
     private FilterDescriptor filter;
 

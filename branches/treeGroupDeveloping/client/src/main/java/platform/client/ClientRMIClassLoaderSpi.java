@@ -12,7 +12,9 @@ import java.rmi.server.RMIClassLoaderSpi;
 // После этого из полученного Class составляется полный дескриптор класса localDesc, который сравнивается с сериализованным в потоке
 // При этом при загрузке полного дескриптора класса классы полей загружаются уже без использования resolveClass у ObjectInputStream
 // Таким образом тут же падает NoClassDefFoundException
-// Соответственно нужно или полностью делать свой ClassLoader либо с сервера сразу же загружать реализацию всех связанных по полям классов
+
+// Сейчас проблема решена таким образом, что всем загруженным классам сервера выставляется в качестве ClassLoader - ClientRMIClassLoaderSpi.RemoteClassLoader
+// Таким образом все классы полей загруженных с сервера проходят через него и спрашивают свою реализацию у сервера
 public class ClientRMIClassLoaderSpi extends RMIClassLoaderSpi {
     private static class RemoteClassLoader extends ClassLoader {
         public RemoteClassLoader(ClassLoader original) {

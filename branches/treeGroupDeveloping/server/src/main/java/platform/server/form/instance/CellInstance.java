@@ -1,6 +1,6 @@
 package platform.server.form.instance;
 
-import platform.base.IdentityObject;
+import platform.base.identity.IdentityObject;
 
 public abstract class CellInstance<E extends IdentityObject> {
 

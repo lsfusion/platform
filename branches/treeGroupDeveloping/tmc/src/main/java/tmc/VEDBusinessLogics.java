@@ -650,6 +650,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP clientSaleSum = addSGProp(orderSalePayNoObligation, orderContragent, 1);
         orderClientSaleSum.setDerivedChange(clientSaleSum, orderContragent, 1);
         clientSum = addSUProp(baseGroup, "clientSum", true, "Нак. сумма", Union.SUM, clientSaleSum, clientInitialSum);
+        accumulatedClientSum = addJProp("Накопленная сумма", clientSum, orderContragent, 1);
 
         orderSalePayCash = addDProp(documentPriceGroup, "orderSalePayCash", "Наличными", DoubleClass.instance, orderSaleCheckRetail);
         orderSalePayCard = addDProp(documentPriceGroup, "orderSalePayCard", "Карточкой", DoubleClass.instance, orderSaleCheckRetail);
@@ -762,6 +763,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     public LP orderArticleSaleSumCoeff;
     public LP clientInitialSum;
     LP clientSum;
+    LP accumulatedClientSum;
     LP incStore;
     LP incStoreName;
     public LP outStore;
@@ -797,7 +799,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP returnSaleDiscount, returnSalePay;
     public LP orderArticleSaleDiscount;
     public LP orderArticleSaleDiscountSum;
-    LP returnArticleSaleDiscount; 
+    LP returnArticleSaleDiscount;
     LP orderNoDiscount;
     public LP shopPrice;
     LP priceStore, inDocumentPrice;
@@ -877,6 +879,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         tableFactory.include("customerretail", customerCheckRetail);
         tableFactory.include("articlestore", article, store);
         tableFactory.include("articleorder", article, order);
+        tableFactory.include("articleaction", article, action);
         tableFactory.include("rates", DateClass.instance);
         tableFactory.include("intervals", DoubleClass.instance);
     }
@@ -1165,6 +1168,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 if (payView != null) {
                     // делаем, чтобы суммы были внизу и как можно правее
                     ContainerView docSumsContainer = design.get(payView).getContainer();
+                    docSumsContainer.getContainer().setSID(null); // сделано, чтобы при визуальной настройке она сразу не перетаскивала все свойства в другой контейнер при помощи ContainerMover
                     design.mainContainer.addBack(2, docSumsContainer);
 
                     PropertyDrawEntity payCash = getPropertyDraw(orderSalePayCash);
@@ -1575,6 +1579,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             } else {
                 addPropertyDraw(checkRetailExported, objDoc);
             }
+            addPropertyDraw(orderUserName, objDoc);
+            getPropertyDraw(orderUserName).isHide = true;
+            addPropertyDraw(accumulatedClientSum, objDoc);
+            getPropertyDraw(accumulatedClientSum).isHide = true;
         }
 
         @Override
@@ -1647,7 +1655,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         getPropertyDraw(name, objArt), getPropertyDraw(orderArticleSaleSumWithDiscount, objArt),
                         getPropertyDraw(orderSalePayNoObligation, objDoc), getPropertyDraw(barcode, objArt),
                         getPropertyDraw(orderSalePayCard, objDoc), getPropertyDraw(orderSalePayCash, objDoc),
-                        getPropertyDraw(orderArticleSaleDiscount), getPropertyDraw(orderArticleSaleDiscountSum));
+                        getPropertyDraw(orderArticleSaleDiscount), getPropertyDraw(orderArticleSaleDiscountSum), getPropertyDraw(orderUserName),
+                        getPropertyDraw(nameContragentImpl), getPropertyDraw(accumulatedClientSum));
             } else
                 return super.getClientApply(formInstance);
         }
@@ -1713,6 +1722,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addPropertyDraw(objDoc, orderUserName);
             addPropertyDraw(documentGroup, false, objDoc, objArt);
             addPropertyDraw(baseGroup, false, objDoc, objArt);
+
+            removePropertyDraw(documentMoveGroup); // нужно, чтобы убрать Доступ. кол-во, которое не может нормально выполнить PostgreSQL
+
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(articleQuantity, objDoc, objArt)));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(date, objDoc), Compare.GREATER_EQUALS, dateFrom));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(date, objDoc), Compare.LESS_EQUALS, dateTo));
@@ -1954,6 +1966,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             }
 
             addPropertyDraw(documentBarcodePriceOv, objInner, objBarcode).setToDraw(objBarcode.groupTo);
+            addPropertyDraw(orderUserName, objDoc);
+            getPropertyDraw(orderUserName).isHide = true;
             //addPropertyDraw(returnArticleSalePay, objArt);
         }
 
@@ -2009,7 +2023,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         getPropertyDraw(orderSalePrice, objArt), getPropertyDraw(returnInnerQuantity, objArt),
                         getPropertyDraw(name, objArt), getPropertyDraw(returnArticleSalePay, objArt),
                         getPropertyDraw(returnSalePay, objDoc), getPropertyDraw(barcode, objArt), null, null,
-                        getPropertyDraw(orderArticleSaleDiscount), getPropertyDraw(returnArticleSaleDiscount));
+                        getPropertyDraw(orderArticleSaleDiscount), getPropertyDraw(returnArticleSaleDiscount),
+                        getPropertyDraw(orderUserName), null, null);
             } else
                 return super.getClientApply(formInstance);
         }
@@ -2297,6 +2312,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             if (toAdd) {
                 addPropertyDraw(cashRegOperGroup, true);
             }
+            addPropertyDraw(orderUserName, objDoc);
+            getPropertyDraw(orderUserName).isHide = true;
+            addPropertyDraw(accumulatedClientSum, objDoc);
         }
 
         @Override
@@ -2324,7 +2342,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         getPropertyDraw(obligationSum, objObligation), getPropertyDraw(issueObligation, objObligation),
                         getPropertyDraw(name, objObligation), getPropertyDraw(obligationSum, objObligation),
                         getPropertyDraw(orderSalePay, objDoc), getPropertyDraw(barcode, objObligation),
-                        getPropertyDraw(orderSalePayCard, objDoc), getPropertyDraw(orderSalePayCash, objDoc), null, null);
+                        getPropertyDraw(orderSalePayCard, objDoc), getPropertyDraw(orderSalePayCash, objDoc), null, null,
+                        getPropertyDraw(orderUserName), getPropertyDraw(nameContragentImpl), getPropertyDraw(accumulatedClientSum));
 
             } else
                 return super.getClientApply(formInstance);

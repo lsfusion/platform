@@ -1,13 +1,12 @@
 package platform.client.logics;
 
 import platform.base.BaseUtils;
-import platform.base.IdentityObject;
-import platform.client.descriptor.CustomConstructible;
+import platform.base.identity.IdentityObject;
 import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientTypeSerializer;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
-import platform.interop.context.ApplicationContext;
+import platform.base.context.ApplicationContext;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

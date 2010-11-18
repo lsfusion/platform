@@ -2,7 +2,7 @@ package platform.client.descriptor.increment.editor;
 
 import platform.base.BaseUtils;
 import platform.client.descriptor.editor.base.FlatButton;
-import platform.interop.context.*;
+import platform.base.context.*;
 
 public abstract class IncrementDialogEditor extends FlatButton implements IncrementView {
 

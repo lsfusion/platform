@@ -3,8 +3,8 @@ package platform.client.descriptor.nodes;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.ObjectDescriptor;
 import platform.client.tree.ClientTree;
-import platform.interop.context.ApplicationContext;
-import platform.interop.context.ApplicationContextProvider;
+import platform.base.context.ApplicationContext;
+import platform.base.context.ApplicationContextProvider;
 
 import javax.swing.*;
 
@@ -20,7 +20,7 @@ public class ObjectFolder extends PlainTextNode<ObjectFolder> implements Applica
         super("Oбъекты");
         this.group = group;
 
-        for (ObjectDescriptor object : group) {
+        for (ObjectDescriptor object : group.objects) {
             add(new ObjectNode(object, group));
         }
         addCollectionReferenceActions(group, "objects", new String[]{""}, new Class[]{ObjectDescriptor.class});

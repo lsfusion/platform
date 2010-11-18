@@ -1,7 +1,7 @@
 package platform.client.descriptor;
 
 import platform.base.BaseUtils;
-import platform.client.descriptor.context.ContextDescriptor;
+import platform.base.context.ContextObject;
 import platform.client.logics.classes.ClientTypeClass;
 import platform.client.logics.classes.ClientTypeSerializer;
 import platform.client.serialization.ClientSerializationPool;
@@ -11,7 +11,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
 
-public class DataObjectDescriptor extends ContextDescriptor implements PropertyObjectInterfaceDescriptor {
+public class DataObjectDescriptor extends ContextObject implements PropertyObjectInterfaceDescriptor {
     Object object;
     ClientTypeClass typeClass;
 

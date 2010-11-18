@@ -1,6 +1,6 @@
-package platform.base;
+package platform.base.identity;
 
-public class IdentityObject {
+public class IdentityObject implements IdentityInterface {
 
     public int ID;
     public int getID() {

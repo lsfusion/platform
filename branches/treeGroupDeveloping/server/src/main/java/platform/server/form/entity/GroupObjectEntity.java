@@ -1,5 +1,6 @@
 package platform.server.form.entity;
 
+import platform.base.identity.IdentityObject;
 import platform.interop.ClassViewType;
 import platform.interop.form.RemoteFormInterface;
 import platform.server.form.instance.GroupObjectInstance;
@@ -16,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
-public class GroupObjectEntity extends ArrayList<ObjectEntity> implements Instantiable<GroupObjectInstance>, ServerIdentitySerializable {
+public class GroupObjectEntity extends IdentityObject implements Instantiable<GroupObjectInstance>, ServerIdentitySerializable {
     private int ID;
     public TreeGroupEntity parent;
 
@@ -36,10 +37,9 @@ public class GroupObjectEntity extends ArrayList<ObjectEntity> implements Instan
         ID = iID;
     }
 
-    @Override
     public boolean add(ObjectEntity objectEntity) {
         objectEntity.groupTo = this;
-        return super.add(objectEntity);
+        return objects.add(objectEntity);
     }
 
     public ClassViewType initClassView = ClassViewType.GRID;
@@ -53,7 +53,7 @@ public class GroupObjectEntity extends ArrayList<ObjectEntity> implements Instan
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        pool.serializeCollection(outStream, this);
+        pool.serializeCollection(outStream, objects);
         pool.writeInt(outStream, initClassView.ordinal());
         pool.writeObject(outStream, banClassView);
         pool.serializeObject(outStream, parent);
@@ -65,7 +65,7 @@ public class GroupObjectEntity extends ArrayList<ObjectEntity> implements Instan
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        pool.deserializeCollection(this, inStream);
+        pool.deserializeCollection(objects, inStream);
         initClassView = ClassViewType.values()[pool.readInt(inStream)];
         banClassView = pool.readObject(inStream);
         parent = pool.deserializeObject(inStream);

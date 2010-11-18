@@ -1,18 +1,17 @@
 package platform.client.descriptor;
 
-import platform.client.descriptor.context.ContextIdentityDescriptor;
+import platform.base.context.ContextIdentityObject;
 import platform.client.logics.ClientObject;
 import platform.client.logics.classes.ClientClass;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
-import platform.interop.context.ApplicationContext;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
 
-public class ObjectDescriptor extends ContextIdentityDescriptor implements PropertyObjectInterfaceDescriptor, ClientIdentitySerializable, CustomConstructible {
+public class ObjectDescriptor extends ContextIdentityObject implements PropertyObjectInterfaceDescriptor, ClientIdentitySerializable, CustomConstructible {
 
     public ClientObject client;
     public GroupObjectDescriptor groupTo;

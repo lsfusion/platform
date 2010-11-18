@@ -6,8 +6,8 @@
 package platform.client.form;
 
 import platform.base.BaseUtils;
-import platform.base.DefaultIDGenerator;
-import platform.base.IDGenerator;
+import platform.base.identity.DefaultIDGenerator;
+import platform.base.identity.IDGenerator;
 import platform.client.ClientButton;
 import platform.client.Log;
 import platform.client.Main;

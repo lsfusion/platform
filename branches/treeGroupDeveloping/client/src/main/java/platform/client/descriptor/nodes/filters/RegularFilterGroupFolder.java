@@ -4,8 +4,8 @@ import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.filter.RegularFilterGroupDescriptor;
 import platform.client.descriptor.nodes.GroupElementFolder;
-import platform.interop.context.ApplicationContext;
-import platform.interop.context.ApplicationContextProvider;
+import platform.base.context.ApplicationContext;
+import platform.base.context.ApplicationContextProvider;
 
 import java.util.List;
 

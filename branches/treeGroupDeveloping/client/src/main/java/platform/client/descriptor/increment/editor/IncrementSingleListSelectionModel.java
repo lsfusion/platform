@@ -1,9 +1,7 @@
 package platform.client.descriptor.increment.editor;
 
 import platform.base.BaseUtils;
-import platform.interop.context.ApplicationContext;
-import platform.interop.context.ApplicationContextHolder;
-import platform.interop.context.ApplicationContextProvider;
+import platform.base.context.ApplicationContextProvider;
 
 import javax.swing.*;
 import java.util.List;

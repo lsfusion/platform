@@ -2,7 +2,7 @@ package platform.client.descriptor.increment.editor;
 
 import platform.base.BaseUtils;
 import platform.client.descriptor.editor.FontChooser;
-import platform.interop.context.*;
+import platform.base.context.*;
 
 import javax.swing.*;
 import java.awt.*;

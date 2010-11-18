@@ -57,7 +57,9 @@ public class CashRegController {
                                                      PropertyDrawEntity<?> nameProp, PropertyDrawEntity<?> sumProp,
                                                      PropertyDrawEntity<?> toPayProp, PropertyDrawEntity<?> barcodeProp,
                                                      PropertyDrawEntity<?> sumCardProp, PropertyDrawEntity<?> sumCashProp,
-                                                     PropertyDrawEntity<?> orderArticleSaleDiscount, PropertyDrawEntity<?> orderArticleSaleDiscountSum) {
+                                                     PropertyDrawEntity<?> orderArticleSaleDiscount, PropertyDrawEntity<?> orderArticleSaleDiscountSum,
+                                                     PropertyDrawEntity<?> cashierProp, PropertyDrawEntity<?> clientNameProp,
+                                                     PropertyDrawEntity<?> clientSumProp) {
 
         List<ClientResultAction> actions = new ArrayList<ClientResultAction>();
 
@@ -66,7 +68,7 @@ public class CashRegController {
             actions.add(new CashRegPrintReceiptAction(payType, cashRegComPort, createReceipt(formInstance, payType,
                     classGroups, priceProp, quantityProp, nameProp,
                     sumProp, toPayProp, barcodeProp, sumCardProp, sumCashProp,
-                    orderArticleSaleDiscount, orderArticleSaleDiscountSum)));
+                    orderArticleSaleDiscount, orderArticleSaleDiscountSum, cashierProp, clientNameProp, clientSumProp)));
 
         }
         return new ListClientResultAction(actions);
@@ -80,7 +82,8 @@ public class CashRegController {
                                          PropertyDrawEntity<?> toPayProp, PropertyDrawEntity<?> barcodeProp,
                                          PropertyDrawEntity<?> sumCardProp, PropertyDrawEntity<?> sumCashProp,
                                          PropertyDrawEntity<?> orderArticleSaleDiscountProp,
-                                         PropertyDrawEntity<?> orderArticleSaleDiscountSumProp) {
+                                         PropertyDrawEntity<?> orderArticleSaleDiscountSumProp, PropertyDrawEntity<?> cashierProp,
+                                         PropertyDrawEntity<?> clientNameProp, PropertyDrawEntity<?> clientSumProp) {
 
         ReceiptInstance result = new ReceiptInstance(payType);
         FormData data;
@@ -92,7 +95,22 @@ public class CashRegController {
         PropertyDrawInstance sumDraw = formInstance.instanceFactory.getInstance(sumProp);
         PropertyDrawInstance toPayDraw = formInstance.instanceFactory.getInstance(toPayProp);
         PropertyDrawInstance barcodeDraw = formInstance.instanceFactory.getInstance(barcodeProp);
-        formProperties.addAll(BaseUtils.toSet(quantityDraw, priceDraw, nameDraw, sumDraw, toPayDraw, barcodeDraw));
+        PropertyDrawInstance cashierNameDraw = formInstance.instanceFactory.getInstance(cashierProp);
+
+        formProperties.addAll(BaseUtils.toSet(quantityDraw, priceDraw, nameDraw, sumDraw, toPayDraw,
+                barcodeDraw, cashierNameDraw));
+
+        PropertyDrawInstance clientNameDraw = null;
+        if (clientNameProp != null) {
+            clientNameDraw = formInstance.instanceFactory.getInstance(clientNameProp);
+            formProperties.add(clientNameDraw);
+        }
+
+        PropertyDrawInstance clientSumDraw = null;
+        if (clientSumProp != null) {
+            clientSumDraw = formInstance.instanceFactory.getInstance(clientSumProp);
+            formProperties.add(clientSumDraw);
+        }
 
         PropertyDrawInstance sumCardDraw = null;
         if (sumCardProp != null) {
@@ -179,6 +197,11 @@ public class CashRegController {
             sumCash = toPay - sumCard;
         //result += sumCash / 100 + "\n";
         result.sumCash = sumCash;
+
+        result.cashierName = (String) data.rows.get(0).values.get(cashierNameDraw);
+        result.clientName = (String) data.rows.get(0).values.get(clientNameDraw);
+        result.clientSum = (Double) data.rows.get(0).values.get(clientSumDraw);
+
         return result;
     }
 

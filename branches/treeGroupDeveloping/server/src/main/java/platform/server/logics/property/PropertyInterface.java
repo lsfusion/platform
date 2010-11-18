@@ -1,6 +1,6 @@
 package platform.server.logics.property;
 
-import platform.base.IdentityObject;
+import platform.base.identity.IdentityObject;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.PullExpr;

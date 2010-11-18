@@ -3,7 +3,6 @@ package platform.client.descriptor.nodes.filters;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.filter.FilterDescriptor;
 import platform.client.descriptor.filter.NotFilterDescriptor;
-import platform.interop.context.IncrementDependency;
 import platform.client.descriptor.nodes.actions.NewElementListener;
 
 public class NotFilterNode extends FilterNode<NotFilterDescriptor, NotFilterNode> implements NewElementListener<FilterDescriptor> {

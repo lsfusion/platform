@@ -1,6 +1,6 @@
 package platform.server.form.view;
 
-import platform.base.IDGenerator;
+import platform.base.identity.IDGenerator;
 import platform.interop.form.layout.AbstractGroupObject;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.ObjectEntity;
@@ -23,7 +23,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
     public GroupObjectView(IDGenerator idGen, GroupObjectEntity entity) {
         this.entity = entity;
 
-        for(ObjectEntity object : this.entity)
+        for(ObjectEntity object : this.entity.objects)
             add(new ObjectView(idGen, object, this));
         
         grid = new GridView(idGen.idShift(), this);

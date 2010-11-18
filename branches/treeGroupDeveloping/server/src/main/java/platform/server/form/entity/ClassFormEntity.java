@@ -10,13 +10,7 @@ public class ClassFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> 
     protected ClassFormEntity(T BL, CustomClass cls, int ID, String caption) {
         super(ID, caption);
 
-        GroupObjectEntity groupObject = new GroupObjectEntity(genID());
-        object = new ObjectEntity(genID(),cls,cls.caption);
-        groupObject.add(object);
-        addGroup(groupObject);
-
-        addPropertyDraw(BL.baseGroup, true, object);
-
+        object = addSingleGroupObject(cls, BL.baseGroup);
         BL.addObjectActions(this, object);
     }
 

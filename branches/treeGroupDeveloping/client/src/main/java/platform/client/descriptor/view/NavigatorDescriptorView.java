@@ -2,8 +2,8 @@ package platform.client.descriptor.view;
 
 import platform.client.Main;
 import platform.client.descriptor.FormDescriptor;
-import platform.interop.context.IncrementView;
-import platform.interop.context.Lookup;
+import platform.base.context.IncrementView;
+import platform.base.context.Lookup;
 import platform.client.navigator.*;
 import platform.client.tree.ClientTreeAction;
 import platform.client.tree.ClientTreeActionEvent;

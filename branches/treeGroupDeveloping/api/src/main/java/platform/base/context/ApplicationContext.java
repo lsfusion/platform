@@ -1,7 +1,7 @@
-package platform.interop.context;
+package platform.base.context;
 
-import platform.base.DefaultIDGenerator;
-import platform.base.IDGenerator;
+import platform.base.identity.DefaultIDGenerator;
+import platform.base.identity.IDGenerator;
 
 public class ApplicationContext {
 

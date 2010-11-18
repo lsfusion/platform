@@ -1,6 +1,6 @@
 package platform.server.serialization;
 
-import platform.interop.serialization.IdentitySerializable;
+import platform.base.serialization.IdentitySerializable;
 
 public interface ServerIdentitySerializable extends ServerCustomSerializable, IdentitySerializable<ServerSerializationPool> {
 }

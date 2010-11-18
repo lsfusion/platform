@@ -1,6 +1,6 @@
 package platform.client.logics;
 
-import platform.base.IdentityObject;
+import platform.base.identity.IdentityObject;
 import platform.client.SwingUtils;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;

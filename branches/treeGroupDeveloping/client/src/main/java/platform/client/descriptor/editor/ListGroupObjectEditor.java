@@ -1,6 +1,7 @@
-package platform.client;
+package platform.client.descriptor.editor;
 
 import platform.client.descriptor.GroupObjectDescriptor;
+import platform.client.descriptor.editor.SimplePropertyFilter;
 
 import java.util.List;
 

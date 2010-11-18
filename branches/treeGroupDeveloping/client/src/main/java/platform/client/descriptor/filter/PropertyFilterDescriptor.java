@@ -2,7 +2,6 @@ package platform.client.descriptor.filter;
 
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.PropertyObjectDescriptor;
-import platform.interop.context.IncrementDependency;
 import platform.client.serialization.ClientSerializationPool;
 
 import java.io.DataInputStream;

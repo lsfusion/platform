@@ -1,10 +1,10 @@
 package platform.client.logics;
 
-import platform.base.IdentityObject;
+import platform.base.identity.IdentityObject;
 import platform.base.OrderedMap;
 import platform.client.SwingUtils;
-import platform.interop.context.ApplicationContext;
-import platform.interop.context.ApplicationContextHolder;
+import platform.base.context.ApplicationContext;
+import platform.base.context.ApplicationContextHolder;
 import platform.client.form.LogicsSupplier;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
@@ -142,7 +142,7 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
 
         ArrayList<ClientObject> objects = new ArrayList<ClientObject>();
         for (ClientGroupObject groupObject : groupObjects) {
-            for (ClientObject object : groupObject) {
+            for (ClientObject object : groupObject.objects) {
                 objects.add(object);
             }
         }
@@ -156,7 +156,7 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
 
     public ClientObject getObject(int id) {
         for (ClientGroupObject groupObject : groupObjects) {
-            for (ClientObject object : groupObject) {
+            for (ClientObject object : groupObject.objects) {
                 if (object.getID() == id) {
                     return object;
                 }
@@ -312,9 +312,10 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
         groupObjects.remove(groupObject);
         //todo: what about properties
 
-        // нужно удалять агрегированные объекты, иначе по ним пойдет сериализация через mainContainer
-        groupObject.grid.container.removeFromChildren(groupObject.grid);
-        groupObject.showType.container.removeFromChildren(groupObject.showType);
+        ClientContainer groupContainer = groupObject.getClientComponent(mainContainer);
+        if (groupContainer != null) {
+            groupContainer.container.removeFromChildren(groupContainer);
+        }
 
         return true;
     }

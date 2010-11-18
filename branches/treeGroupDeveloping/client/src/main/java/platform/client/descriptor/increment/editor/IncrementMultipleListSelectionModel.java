@@ -1,10 +1,8 @@
 package platform.client.descriptor.increment.editor;
 
 import platform.base.WeakIdentityHashSet;
-import platform.interop.context.ApplicationContext;
-import platform.interop.context.ApplicationContextHolder;
-import platform.interop.context.ApplicationContextProvider;
-import platform.interop.context.IncrementView;
+import platform.base.context.ApplicationContextProvider;
+import platform.base.context.IncrementView;
 
 import java.util.List;
 
