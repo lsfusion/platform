@@ -44,11 +44,9 @@ public class SimpleMainFrame extends MainFrame {
                 });
             }
         }
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.add(statusComponent, BorderLayout.WEST);
-        cont.setLayout(new BoxLayout(cont, BoxLayout.Y_AXIS));
-        cont.add(mainPane);
-        cont.add(panel);
+        cont.setLayout(new BorderLayout());
+        cont.add(mainPane, BorderLayout.CENTER);
+        cont.add(statusComponent, BorderLayout.SOUTH);
         mainPane.setFocusable(false);
     }
 

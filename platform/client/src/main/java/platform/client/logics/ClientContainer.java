@@ -1,6 +1,7 @@
 package platform.client.logics;
 
 import platform.base.BaseUtils;
+import platform.client.descriptor.CustomConstructible;
 import platform.client.descriptor.editor.ComponentEditor;
 import platform.base.context.ApplicationContext;
 import platform.client.descriptor.nodes.ComponentNode;
@@ -16,7 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClientContainer extends ClientComponent implements ClientIdentitySerializable, AbstractContainer<ClientContainer, ClientComponent> {
+public class ClientContainer extends ClientComponent implements ClientIdentitySerializable, AbstractContainer<ClientContainer, ClientComponent>, CustomConstructible {
 
     private String title;
     private String description;
@@ -29,6 +30,8 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
 
     public ClientContainer(ApplicationContext context) {
         super(context);
+
+        customConstructor();
     }
 
     @Override
@@ -51,6 +54,13 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         title = pool.readString(inStream);
         description = pool.readString(inStream);
         sID = pool.readString(inStream);
+    }
+
+    public void customConstructor() {
+        // по умолчанию, контейнеры не должны resize'ится вообще, то есть не стремится ни к максимальному размеру, ни к предпочитаемому
+        // то же самое пока дублируется в ClientContainer
+        constraints.fillVertical = -1;
+        constraints.fillHorizontal = -1;
     }
 
     @Override

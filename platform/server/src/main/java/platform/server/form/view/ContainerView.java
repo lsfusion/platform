@@ -31,6 +31,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         super(ID);
 
         // по умолчанию, контейнеры не должны resize'ится вообще, то есть не стремится ни к максимальному размеру, ни к предпочитаемому
+        // то же самое пока дублируется в ClientContainer
         constraints.fillVertical = -1;
         constraints.fillHorizontal = -1;
     }

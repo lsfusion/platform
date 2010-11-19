@@ -15,6 +15,9 @@ public class SimplexConstraints<T> implements Serializable {
 //    public static int MAXIMUM = 1;
 //    public static int PREFERRED = 0;
 
+    // значение > 0 значит, что надо растягивать с определенным коэффициентом
+    // значение == 0 значит, что нужно стремиться к preferredSize
+    // значение < 0 значит, что нужно быть как можно меньше
     public double fillVertical = 0; //PREFERRED;
     public double fillHorizontal = 0; //PREFERRED;
 
