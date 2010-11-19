@@ -541,10 +541,10 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
             }
 
             // направления и расширения до максимума
-            objFnc.set(info.T, (preferred ? -1.0 : -constraint.directions.T + ((constraint.fillVertical > 0) ? -1 : 0.0)));
-            objFnc.set(info.L, (preferred ? -1.0 : -constraint.directions.L + ((constraint.fillHorizontal > 0) ? -1 : 0.0)));
-            objFnc.set(info.B, (preferred ? -1.0 : constraint.directions.B + ((constraint.fillVertical > 0) ? 1 : 0.0)));
-            objFnc.set(info.R, (preferred ? -1.0 : constraint.directions.R + ((constraint.fillHorizontal > 0) ? 1 : 0.0)));
+            objFnc.set(info.T, (preferred ? -1.0 : (-constraint.directions.T + ((constraint.fillVertical > 0) ? -1 : 0.0))));
+            objFnc.set(info.L, (preferred ? -1.0 : (-constraint.directions.L + ((constraint.fillHorizontal > 0) ? -1 : 0.0))));
+            objFnc.set(info.B, (preferred ? -1.0 : (constraint.directions.B + ((constraint.fillVertical > 0) ? 1 : 0.0))));
+            objFnc.set(info.R, (preferred ? -1.0 : (constraint.directions.R + ((constraint.fillHorizontal > 0) ? 1 : 0.0))));
 
         }
 
