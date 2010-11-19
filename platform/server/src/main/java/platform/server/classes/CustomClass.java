@@ -30,6 +30,8 @@ import platform.server.form.instance.ObjectInstance;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.Property;
+import platform.server.logics.property.PropertyClassImplement;
+import platform.server.logics.property.ValueClassWrapper;
 import platform.server.logics.property.group.AbstractNode;
 
 import java.io.DataOutputStream;
@@ -387,7 +389,11 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
         return false;
     }
 
-    public List<Property> getProperties(ValueClass[] classes) {
+    public List<Property> getProperties() {
         return new ArrayList<Property>();
+    }
+
+    public List<PropertyClassImplement> getProperties(Collection<List<ValueClassWrapper>> classLists, boolean anyInInterface) {
+        return new ArrayList<PropertyClassImplement>();
     }
 }

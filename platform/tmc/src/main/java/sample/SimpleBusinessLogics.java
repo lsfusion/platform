@@ -1219,7 +1219,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
         SecurityPolicy securityPolicy = addPolicy("Базовая политка", "Запрещает использование чего-то тут...");
 
-        securityPolicy.property.view.deny(currentGroup.getProperties(new ValueClass[0]));
+        securityPolicy.property.view.deny(currentGroup.getProperties());
 //        securityPolicy.property.change.deny(extIncDetailArticle.property);
 //        securityPolicy.property.change.deny(extIncDetailQuantity.property);
 

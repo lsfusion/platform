@@ -60,10 +60,7 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
         Map<P, AndClassSet> classImplement = new HashMap<P, AndClassSet>();
         for(P propertyInterface : property.interfaces)
             classImplement.put(propertyInterface, mapping.get(propertyInterface).getClassSet(classGroups));
-        if(any)
-            return property.anyInInterface(classImplement);
-        else
-            return property.allInInterface(classImplement); 
+        return property.isInInterface(classImplement, any);
     }
 
     // проверяет на то что изменился верхний объект

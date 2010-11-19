@@ -1,6 +1,7 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
+import platform.base.ListPermutations;
 import platform.interop.action.ClientAction;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.ConcreteClass;
@@ -72,6 +73,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public <P extends PropertyInterface> boolean intersect(Property<P> property, Map<P, T> map) {
         return !getClassWhere().and(new ClassWhere<T>(property.getClassWhere(), map)).isFalse();
+    }
+
+    public boolean isInInterface(Map<T, ? extends AndClassSet> interfaceClasses, boolean isAny) {
+        return isAny ? anyInInterface(interfaceClasses) : allInInterface(interfaceClasses);        
     }
 
     @IdentityLazy
@@ -451,11 +456,32 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return new ArrayList<ConcreteCustomClass>();
     }
 
-    public List<Property> getProperties(ValueClass[] classes) {
-        if (interfaces.size() == classes.length)
-            return Collections.singletonList((Property) this);
-        else
-            return new ArrayList<Property>();
+    public List<Property> getProperties() {
+        return Collections.singletonList((Property)this);
+    }
+
+    @Override
+    public List<PropertyClassImplement> getProperties(Collection<List<ValueClassWrapper>> classLists, boolean anyInInterface) {
+        List<PropertyClassImplement> resultList = new ArrayList<PropertyClassImplement>();
+        if (isFull()) {
+            for (List<ValueClassWrapper> classes : classLists) {
+                if (interfaces.size() == classes.size()) {
+                    for (List<T> mapping : new ListPermutations<T>(interfaces)) {
+                        Map<T, AndClassSet> propertyInterface = new HashMap<T, AndClassSet>();
+                        int interfaceCount = 0;
+                        for (T iface : mapping) {
+                            ValueClass propertyClass = classes.get(interfaceCount++).valueClass;
+                            propertyInterface.put(iface, propertyClass.getUpSet());
+                        }
+
+                        if (isInInterface(propertyInterface, anyInInterface)) {
+                            resultList.add(new PropertyClassImplement<T>(this, classes, mapping));
+                        }
+                    }
+                }
+            }
+        }
+        return resultList;
     }
 
     public T getInterfaceById(int iID) {

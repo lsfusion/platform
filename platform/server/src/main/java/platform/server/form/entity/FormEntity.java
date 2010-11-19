@@ -1,11 +1,11 @@
 package platform.server.form.entity;
 
-import platform.base.*;
+import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
 import platform.interop.action.ClientResultAction;
 import platform.server.classes.ValueClass;
-import platform.server.classes.sets.AndClassSet;
 import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
@@ -16,7 +16,9 @@ import platform.server.form.view.FormView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
+import platform.server.logics.property.PropertyClassImplement;
 import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.ValueClassWrapper;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.serialization.ServerContext;
@@ -229,33 +231,22 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     protected void addPropertyDraw(AbstractNode group, boolean upClasses, GroupObjectEntity groupObject, ObjectEntity... objects) {
-        ValueClass[] valueClasses = new ValueClass[objects.length];
-        int ic = 0;
+        List<ValueClassWrapper> valueClasses = new ArrayList<ValueClassWrapper>();
+        Map<ObjectEntity, ValueClassWrapper> objectToClass = new HashMap<ObjectEntity, ValueClassWrapper>();
         for (ObjectEntity object : objects) {
-            valueClasses[ic++] = object.baseClass;
+            ValueClassWrapper wrapper = new ValueClassWrapper(object.baseClass);
+            valueClasses.add(wrapper);
+            objectToClass.put(object, wrapper);
         }
 
-        for (Property property : group.getProperties(valueClasses)) {
-            if (property.interfaces.size() == objects.length) {
-                addPropertyDraw(property, upClasses, groupObject, objects);
+        for (PropertyClassImplement implement : group.getProperties(Collections.singletonList(valueClasses), upClasses)) {
+            List<PropertyInterface> interfaces = new ArrayList<PropertyInterface>();
+            Map<ObjectEntity, PropertyInterface> objectToInterface =
+                    BaseUtils.<ObjectEntity, ValueClassWrapper, PropertyInterface>join(objectToClass, BaseUtils.reverse(implement.mapping));
+            for (ObjectEntity object : objects) {
+                interfaces.add(objectToInterface.get(object));
             }
-        }
-    }
-
-    <P extends PropertyInterface<P>> void addPropertyDraw(Property<P> property, boolean upClasses, GroupObjectEntity groupObject, ObjectEntity... objects) {
-
-        for (List<P> mapping : new ListPermutations<P>(property.interfaces)) {
-
-            Map<P, AndClassSet> propertyInterface = new HashMap<P, AndClassSet>();
-            int interfaceCount = 0;
-            for (P iface : mapping) {
-                ValueClass propertyClass = objects[interfaceCount++].baseClass;
-                propertyInterface.put(iface, propertyClass.getUpSet());
-            }
-
-            if ((upClasses && property.anyInInterface(propertyInterface)) || (!upClasses && property.allInInterface(propertyInterface))) {
-                addPropertyDraw(new LP<P>(property, mapping), groupObject, objects);
-            }
+            addPropertyDraw(new LP(implement.property, interfaces), groupObject, objects);
         }
     }
 
@@ -426,8 +417,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public void addHintsNoUpdate(AbstractGroup group) {
-
-        for (Property property : group.getProperties(null)) {
+        for (Property property : group.getProperties()) {
             addHintsNoUpdate(property);
         }
     }

@@ -1,10 +1,10 @@
 package platform.server.logics.property.group;
 
-import platform.server.caches.IdentityLazy;
 import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.ValueClass;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
+import platform.server.logics.property.PropertyClassImplement;
+import platform.server.logics.property.ValueClassWrapper;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 
@@ -12,6 +12,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class AbstractGroup extends AbstractNode implements ServerIdentitySerializable {
@@ -61,7 +62,6 @@ public class AbstractGroup extends AbstractNode implements ServerIdentitySeriali
     }
 
 
-    @IdentityLazy
     public List<ConcreteCustomClass> getClasses() {
         List<ConcreteCustomClass> result = new ArrayList<ConcreteCustomClass>();
         for (AbstractNode child : children)
@@ -76,11 +76,17 @@ public class AbstractGroup extends AbstractNode implements ServerIdentitySeriali
         return false;
     }
 
-    @IdentityLazy
-    public List<Property> getProperties(ValueClass[] classes) {
+    public List<Property> getProperties() {
         List<Property> result = new ArrayList<Property>();
         for (AbstractNode child : children)
-            result.addAll(child.getProperties(classes));
+            result.addAll(child.getProperties());
+        return result;
+    }
+
+    public List<PropertyClassImplement> getProperties(Collection<List<ValueClassWrapper>> classLists, boolean anyInInterface) {
+        List<PropertyClassImplement> result = new ArrayList<PropertyClassImplement>();
+        for (AbstractNode child : children)
+            result.addAll(child.getProperties(classLists, anyInInterface));
         return result;
     }
 

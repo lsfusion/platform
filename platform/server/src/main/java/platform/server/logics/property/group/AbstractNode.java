@@ -2,9 +2,11 @@ package platform.server.logics.property.group;
 
 import platform.base.ImmutableObject;
 import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.ValueClass;
 import platform.server.logics.property.Property;
+import platform.server.logics.property.PropertyClassImplement;
+import platform.server.logics.property.ValueClassWrapper;
 
+import java.util.Collection;
 import java.util.List;
 
 public abstract class AbstractNode extends ImmutableObject {
@@ -16,5 +18,7 @@ public abstract class AbstractNode extends ImmutableObject {
 
     public abstract List<ConcreteCustomClass> getClasses();
 
-    public abstract List<Property> getProperties(ValueClass[] classes);
+    public abstract List<Property> getProperties();
+
+    public abstract List<PropertyClassImplement> getProperties(Collection<List<ValueClassWrapper>> classLists, boolean anyInInterface);
 }

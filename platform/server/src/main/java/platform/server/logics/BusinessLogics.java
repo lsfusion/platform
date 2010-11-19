@@ -1,7 +1,6 @@
 package platform.server.logics;
 
 import net.sf.jasperreports.engine.JRException;
-import org.apache.commons.collections.MultiHashMap;
 import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.core.io.FileSystemResource;
 import platform.base.*;
@@ -24,7 +23,6 @@ import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
-import platform.server.classes.sets.AndClassSet;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
@@ -42,10 +40,10 @@ import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.OrderInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
+import platform.server.form.navigator.ComputerController;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.navigator.RemoteNavigator;
 import platform.server.form.navigator.UserController;
-import platform.server.form.navigator.ComputerController;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.AddObjectActionProperty;
@@ -518,20 +516,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return 9999976 - id;
     }
 
-    @IdentityLazy
-    public SelectionProperty getSelectionProperty(ValueClass[] typeClasses) {
-        SelectionProperty property = new SelectionProperty(genSID(), typeClasses) {
-            @Override
-            public AbstractGroup getParent() {
-                return sessionGroup;
-            }
-        };
-        addProperty(null, new LP<ClassPropertyInterface>(property));
-        return property;
-    }
-
     public Property getProperty(int id) {
-        for (Property property : properties) {
+        for (Property property : getProperties()) {
             if (property.getID() == id) {
                 return property;
             }
@@ -540,52 +526,108 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public class SelectionPropertySet extends PropertySet {
+        private LinkedHashMap<Map<ValueClass, Integer>, SelectionProperty> properties =
+                new LinkedHashMap<Map<ValueClass, Integer>, SelectionProperty>();
 
         protected Class<?> getPropertyClass() {
             return SelectionProperty.class;
         }
+        
+        @Override
+        protected boolean isInInterface(List<ValueClassWrapper> classes) {
+            return classes.size() >= 1;
+        }
 
         @Override
-        protected boolean isInInterface(ValueClass[] classes) {
-            return classes.length >= 1;
+        public List<Property> getProperties() {
+            return new ArrayList<Property>(properties.values());
         }
 
-        public boolean hasChild(Property prop) {
-            return prop instanceof SelectionProperty;
+        @Override
+        protected List<PropertyClassImplement> getProperties(List<ValueClassWrapper> classes) {
+            Map<ValueClass, Integer> key = createKey(classes);
+            SelectionProperty property;
+            if (!properties.containsKey(key)) {
+                property = createProperty(classes);
+                properties.put(key, property);
+            } else {
+                property = properties.get(key);
+            }
+            PropertyInterface[] interfaces = new PropertyInterface[classes.size()];
+            boolean[] was = new boolean[classes.size()];
+            for (ClassPropertyInterface iface : property.interfaces) {
+                for (int i = 0; i < classes.size(); i++) {
+                    if (!was[i] && iface.interfaceClass == classes.get(i).valueClass) {
+                        interfaces[i] = iface;
+                        was[i] = true;
+                        break;
+                    }
+                }
+            }
+            return Collections.singletonList(new PropertyClassImplement(property, classes, Arrays.asList(interfaces)));
         }
 
-        protected Property getProperty(ValueClass[] classes) {
-            return getSelectionProperty(classes);
+        protected SelectionProperty createProperty(List<ValueClassWrapper> classes) {
+            ValueClass[] classArray = new ValueClass[classes.size()];
+            for (int i = 0; i < classes.size(); i++) {
+                classArray[i] = classes.get(i).valueClass;
+            }
+            SelectionProperty property = new SelectionProperty(genSID(), classArray);
+            registerProperty(new LP<ClassPropertyInterface>(property));
+            setParent(property);
+            return property;
+        }
+
+        private Map<ValueClass, Integer> createKey(List<ValueClassWrapper> classes) {
+            Map<ValueClass, Integer> key = new HashMap<ValueClass, Integer>();
+            for (ValueClassWrapper wrapper : classes) {
+                if (key.containsKey(wrapper.valueClass)) {
+                    key.put(wrapper.valueClass, key.get(wrapper.valueClass) + 1);
+                } else {
+                    key.put(wrapper.valueClass, 1);
+                }
+            }
+            return key;
         }
     }
 
     protected SelectionPropertySet selection;
 
-    @IdentityLazy
-    public ObjectValueProperty getObjectValueProperty(ValueClass typeClass) {
-        ObjectValueProperty property = new ObjectValueProperty(genSID(), typeClass) {
-            @Override
-            public AbstractGroup getParent() {
-                return baseGroup;
-            }
-        };
-        addProperty(null, new LP<ClassPropertyInterface>(property));
-        return property;
-    }
-
     public class ObjectValuePropertySet extends PropertySet {
+        LinkedHashMap<ValueClass, ObjectValueProperty> properties = new LinkedHashMap<ValueClass, ObjectValueProperty>();
 
         protected Class<?> getPropertyClass() {
             return ObjectValueProperty.class;
         }
 
         @Override
-        protected boolean isInInterface(ValueClass[] classes) {
-            return classes.length == 1;
+        public List<Property> getProperties() {
+            return new ArrayList<Property>(properties.values());
         }
 
-        protected Property getProperty(ValueClass[] classes) {
-            return getObjectValueProperty(classes[0].getBaseClass());
+        @Override
+        protected List<PropertyClassImplement> getProperties(List<ValueClassWrapper> classes) {
+            assert classes.size() == 1;
+            ValueClassWrapper wrapper = classes.get(0);
+            ValueClass valueClass = wrapper.valueClass.getBaseClass();
+            if (!properties.containsKey(valueClass)) {
+                createProperty(valueClass);
+            }
+            ObjectValueProperty property = properties.get(valueClass);
+            PropertyInterface soleInterface = property.interfaces.iterator().next();
+            return Collections.singletonList(new PropertyClassImplement(property, wrapper, soleInterface));
+        }
+
+        @Override
+        protected boolean isInInterface(List<ValueClassWrapper> classes) {
+            return classes.size() == 1;
+        }
+
+        private void createProperty(ValueClass valueClass) {
+            ObjectValueProperty property = new ObjectValueProperty(genSID(), valueClass);
+            registerProperty(new LP<ClassPropertyInterface>(property));
+            setParent(property);
+            properties.put(valueClass, property);
         }
     }
 
@@ -855,7 +897,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         initProperties();
 
         Set idSet = new HashSet<String>();
-        for (Property property : properties) {
+        for (Property property : getProperties()) {
             assert idSet.add(property.sID) : "Same sid " + property.sID;
         }
 
@@ -1117,7 +1159,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public TableFactory tableFactory;
     public List<LP> lproperties = new ArrayList<LP>();
-    public Set<Property> properties = new HashSet<Property>();
     protected Set<AggregateProperty> persistents = new HashSet<AggregateProperty>();
     protected Set<List<? extends Property>> indexes = new HashSet<List<? extends Property>>();
 
@@ -1128,10 +1169,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         set.add(property);
     }
 
+    public List<Property> getProperties() {
+        return rootGroup.getProperties();
+    }
+
     @IdentityLazy
     public Iterable<Property> getPropertyList() {
         LinkedHashSet<Property> linkedSet = new LinkedHashSet<Property>();
-        for (Property property : properties)
+        for (Property property : getProperties())
             fillPropertyList(property, linkedSet);
         return linkedSet;
     }
@@ -1829,9 +1874,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     private <T extends LP<?>> T addProperty(AbstractGroup group, boolean persistent, T lp) {
-        lproperties.add(lp);
-        properties.add(lp.property);
-        lp.property.ID = idGenerator.idShift();
+        registerProperty(lp);
         if (group != null) {
             group.add(lp.property);
         } else {
@@ -1841,6 +1884,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             addPersistent(lp);
         }
         return lp;
+    }
+
+    private <T extends LP<?>> void registerProperty(T lp) {
+        lproperties.add(lp);
+        lp.property.ID = idGenerator.idShift();
     }
 
     protected LP addJProp(LP mainProp, Object... params) {
@@ -2493,7 +2541,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     private boolean checkProps() {
         if (checkClasses)
-            for (Property prop : properties) {
+            for (Property prop : getProperties()) {
                 logger.info("Checking property : " + prop + "...");
                 assert prop.check();
             }
@@ -3143,38 +3191,35 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(byteClasses));
 
             Map<Integer, Integer> groupMap = new HashMap<Integer, Integer>();
-            Map<Integer, ValueClass> classes = new HashMap<Integer, ValueClass>();
+            Map<ValueClassWrapper, Integer> classes = new HashMap<ValueClassWrapper, Integer>();
             int size = inStream.readInt();
             for (int i = 0; i < size; i++) {
                 Integer ID = inStream.readInt();
-                classes.put(ID, TypeSerializer.deserializeValueClass(this, inStream));
+                ValueClass valueClass = TypeSerializer.deserializeValueClass(this, inStream);
+                classes.put(new ValueClassWrapper(valueClass), ID);
+
                 int groupId = inStream.readInt();
                 if (groupId >= 0) {
                     groupMap.put(ID, groupId);
                 }
             }
 
-            MultiHashMap propertiesMap = new MultiHashMap();
-            for (Property<?> property : properties) {
-                propertiesMap.put(property.interfaces.size(), property);
-            }
+            ArrayList<Property> result = new ArrayList<Property>();
+            ArrayList<ArrayList<Integer>> idResult = new ArrayList<ArrayList<Integer>>();
 
+            addProperties(classes, groupMap, result, idResult, isCompulsory, isAny);
+
+            List<Property> newResult = BaseUtils.filterList(result, getProperties());
+            
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
             DataOutputStream dataStream = new DataOutputStream(outStream);
 
             ServerSerializationPool pool = new ServerSerializationPool();
 
-            ArrayList<Property> result = new ArrayList<Property>();
-            ArrayList<ArrayList<Integer>> idResult = new ArrayList<ArrayList<Integer>>();
-            for (Object key : propertiesMap.keySet()) {
-                List list = (List) propertiesMap.get(key);
-                addPropertiesFixedSize(classes, groupMap, list, result, idResult, isCompulsory, isAny);
-            }
-
             dataStream.writeInt(result.size());
             int num = 0;
-            for (Property<?> property : result) {
+            for (Property<?> property : newResult) {
                 pool.serializeObject(dataStream, property);
                 Iterator<Integer> it = idResult.get(num++).iterator();
                 for (PropertyInterface propertyInterface : property.interfaces) {
@@ -3189,74 +3234,32 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    private void addPropertiesFixedSize(Map<Integer, ValueClass> classes, Map<Integer, Integer> atLeastOne, List list, ArrayList<Property> result, ArrayList<ArrayList<Integer>> idResult, boolean isCompulsory, boolean isAny) {
-        int size = classes.size();
-        int interfaceSize = ((Property) list.get(0)).interfaces.size();
-        int perm[] = new int[size];
-        checkPerm(size, interfaceSize, 1, perm, classes, atLeastOne, list, result, idResult, isCompulsory, isAny);
-    }
+    private void addProperties(Map<ValueClassWrapper, Integer> classes, Map<Integer, Integer> groupMap, ArrayList<Property> result, ArrayList<ArrayList<Integer>> idResult, boolean isCompulsory, boolean isAny) {
+        Set<Integer> allGroups = new HashSet<Integer>(groupMap.values());
+        List<List<ValueClassWrapper>> classLists = new ArrayList<List<ValueClassWrapper>>();
 
-    //n - сколько всего
-    //n - сколько надо поставить
-    //k - какой по счету сейчас ставим
-    private void checkPerm(int n, int m, int k, int[] perm, Map<Integer, ValueClass> classes, Map<Integer, Integer> groupMap, List list, ArrayList<Property> result, ArrayList<ArrayList<Integer>> idResult, boolean isCompulsory, boolean isAny) {
-        if (k == m + 1) {
-            Integer id[] = (Integer[]) classes.keySet().toArray(new Integer[classes.keySet().size()]);
-            ArrayList<ValueClass> values = new ArrayList<ValueClass>(m);
-            ArrayList<Integer> ids = new ArrayList<Integer>(m);
-            for (int i = 0; i < m; i++) {
-                values.add(null);
-                ids.add(0);
-            }
-
-            for (int i = 0; i < n; i++) {
-                if (perm[i] != 0) {
-                    values.set(perm[i] - 1, classes.get(id[i]));
-                    ids.set(perm[i] - 1, id[i]);
+        for (Set<ValueClassWrapper> classSet : new Subsets<ValueClassWrapper>(classes.keySet())) {
+            List<ValueClassWrapper> classList = new ArrayList<ValueClassWrapper>(classSet);
+            Set<Integer> classesGroups = new HashSet<Integer>();
+            for (ValueClassWrapper wrapper : classList) {
+                int id = classes.get(wrapper);
+                if (groupMap.containsKey(id)) {
+                    classesGroups.add(groupMap.get(id));
                 }
             }
+            if ((isCompulsory && classesGroups.size() == allGroups.size()) ||
+                (!isCompulsory && classesGroups.size() > 0 || groupMap.isEmpty()) || classList.isEmpty()) {
+                classLists.add(classList);
+            }
+        }
 
-            Map<Integer, Boolean> isUsed = new HashMap<Integer, Boolean>();
-            for (Map.Entry<Integer, Integer> entry : groupMap.entrySet()) {
-                if (isUsed.get(entry.getValue()) == null) {
-                    isUsed.put(entry.getValue(), false);
-                }
-                if (ids.contains(entry.getKey())) {
-                    isUsed.put(entry.getValue(), true);
-                }
+        for (PropertyClassImplement implement : rootGroup.getProperties(classLists, isAny)) {
+            result.add(implement.property);
+            ArrayList<Integer> ids = new ArrayList<Integer>();
+            for (Object iface : implement.property.interfaces) {
+                ids.add(classes.get(implement.mapping.get(iface)));
             }
-            boolean and = true, or = false;
-            for (Map.Entry<Integer, Boolean> entry : isUsed.entrySet()) {
-                and = and && entry.getValue();
-                or = or || entry.getValue();
-            }
-
-            if ((isCompulsory && !and) || (!isCompulsory && !or && !groupMap.isEmpty())) {
-                return;
-            }
-
-            for (Object prop : list) {
-                Property p = (Property) prop;
-                Map<PropertyInterface, AndClassSet> propertyInterface = new HashMap<PropertyInterface, AndClassSet>();
-                int interfaceCount = 0;
-                for (Object iface : p.interfaces) {
-                    ValueClass propertyClass = values.get(interfaceCount++);
-                    propertyInterface.put((PropertyInterface) iface, propertyClass.getUpSet());
-                }
-                if (!(p instanceof StringFormulaProperty) && p.isFull() && ((isAny && p.anyInInterface(propertyInterface)) || (!isAny && p.allInInterface(propertyInterface)))) {
-                    result.add(p);
-                    idResult.add(ids);
-                }
-            }
-
-        } else {
-            for (int i = 0; i < n; i++) {
-                if (perm[i] == 0) {
-                    perm[i] = k;
-                    checkPerm(n, m, k + 1, perm, classes, groupMap, list, result, idResult, isCompulsory, isAny);
-                    perm[i] = 0;
-                }
-            }
+            idResult.add(ids);
         }
     }
 }

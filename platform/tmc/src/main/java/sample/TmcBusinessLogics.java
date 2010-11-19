@@ -1847,7 +1847,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         SecurityPolicy securityPolicy = addPolicy("Базовая полтика", "Запрещает редактирование некоторых свойств.");
 
         securityPolicy.property.view.deny(extIncDocumentSumPay);
-        securityPolicy.property.view.deny(incSumsGroup.getProperties(null));
+        securityPolicy.property.view.deny(incSumsGroup.getProperties());
         securityPolicy.property.change.deny(extIncDetailArticle);
         securityPolicy.property.change.deny(extIncDetailQuantity);
 
