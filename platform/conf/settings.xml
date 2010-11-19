@@ -59,6 +59,11 @@
     <bean id="serverInstanceLocatorSettings" class="platform.server.net.ServerInstanceLocatorSettings">
         <constructor-arg type="int"><value>6666</value></constructor-arg>
     </bean>
+
+	<bean id="settings" class="platform.server.Settings">
+        <property name="pushGroupWhere" value="true"/>
+	</bean>
+
 <!-- -->
     <!--bean id="dataAdapter" class="platform.server.data.sql.PostgreDataAdapter">
         <constructor-arg><value>bdg</value></constructor-arg>

@@ -53,7 +53,7 @@ public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyIn
 //        return toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere()),changedWhere,modifier);
         DataChanges dataChanges = toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere().or(getNullWhere(change, modifier, toChangeKeys))),null, modifier).changes;
         if(changedWhere!=null) {
-            if (Settings.CALCULATE_GROUP_DATA_CHANGED)
+            if (Settings.instance.isCalculateGroupDataChanged())
                 getExpr(change.mapKeys, new DataChangesModifier(modifier, dataChanges), changedWhere);
             else
                 changedWhere.add(change.where);

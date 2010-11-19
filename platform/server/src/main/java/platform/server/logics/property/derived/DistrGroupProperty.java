@@ -89,7 +89,7 @@ public class DistrGroupProperty<T extends PropertyInterface, L extends PropertyI
         Expr distributeExpr = distribute.mapExpr(mapKeys, new PropertyChangesModifier(modifier, propertyChanges), null);
         DataChanges dataChanges = groupProperty.getDataChanges(new PropertyChange<T>(mapKeys, distributeExpr, distributeExpr.getWhere().or(nullWhere)), null, modifier).changes;
         if(changedWhere!=null) {
-            if (Settings.CALCULATE_GROUP_DATA_CHANGED)
+            if (Settings.instance.isCalculateGroupDataChanged())
                 getExpr(propertyChange.mapKeys, new DataChangesModifier(modifier, dataChanges), changedWhere);
             else
                 changedWhere.add(propertyChange.where);

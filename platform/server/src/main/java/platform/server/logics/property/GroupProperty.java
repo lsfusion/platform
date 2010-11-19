@@ -53,7 +53,7 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
 
     public Expr calculateExpr(Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
 
-        if(!hasChanges(modifier) || (changedWhere==null && (!isStored() || (Settings.NO_INCREMENT_MAX_GROUP_PROPERTY && this instanceof MaxGroupProperty)))) return calculateNewExpr(joinImplement, modifier);
+        if(!hasChanges(modifier) || (changedWhere==null && (!isStored() || (Settings.instance.isNoIncrementMaxGroupProperty() && this instanceof MaxGroupProperty)))) return calculateNewExpr(joinImplement, modifier);
 
         // если нужна инкрементность
         Map<T, KeyExpr> mapKeys = groupProperty.getMapKeys(); // изначально чтобы новые и старые группировочные записи в одном контексте были

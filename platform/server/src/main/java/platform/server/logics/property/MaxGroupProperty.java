@@ -16,7 +16,7 @@ public class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty
     }
 
     Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Map<Interface<T>,? extends Expr> joinImplement, Modifier<? extends Changes> modifier) {
-        if(Settings.NO_INCREMENT_MAX_GROUP_PROPERTY)
+        if(Settings.instance.isNoIncrementMaxGroupProperty())
             return calculateNewExpr(joinImplement, modifier); 
         Expr prevExpr = getExpr(joinImplement);
         return changedExpr.ifElse(changedExpr.compare(prevExpr,Compare.GREATER).or(prevExpr.getWhere().not()),
