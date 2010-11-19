@@ -1,8 +1,9 @@
 package platform.client.descriptor;
 
 import platform.base.BaseUtils;
-import platform.base.context.ContextIdentityObject;
+import platform.base.context.ApplicationContext;
 import platform.base.context.ApplicationContextHolder;
+import platform.base.context.ContextIdentityObject;
 import platform.client.logics.ClientContainer;
 import platform.client.logics.ClientGroupObject;
 import platform.client.serialization.ClientIdentitySerializable;
@@ -13,11 +14,15 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class GroupObjectDescriptor extends ContextIdentityObject implements ClientIdentitySerializable,
-                                                                          ContainerMovable<ClientContainer>,
-                                                                          ApplicationContextHolder, CustomConstructible {
+                                                                            ContainerMovable<ClientContainer>,
+                                                                            ApplicationContextHolder, CustomConstructible {
+
+    public ClientGroupObject client;
 
     private ClassViewType initClassView = ClassViewType.GRID;
     private List<ClassViewType> banClassViewList = new ArrayList<ClassViewType>();
@@ -25,7 +30,34 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
 
     public List<ObjectDescriptor> objects = new ArrayList<ObjectDescriptor>();
 
-    public ClientGroupObject client;
+    private ApplicationContext context;
+    private Map<ObjectDescriptor, PropertyObjectDescriptor> isParent = new HashMap<ObjectDescriptor, PropertyObjectDescriptor>();
+    private TreeGroupDescriptor parent;
+
+    public void setIsParent(Map<ObjectDescriptor, PropertyObjectDescriptor> isParent) {
+        this.isParent = isParent;
+        getContext().updateDependency(this, "isParent");
+    }
+
+    public Map<ObjectDescriptor, PropertyObjectDescriptor> getIsParent() {
+        return isParent;
+    }
+
+    public TreeGroupDescriptor getParent() {
+        return parent;
+    }
+
+    public void setParent(TreeGroupDescriptor parent) {
+        this.parent = parent;
+    }
+
+    public ApplicationContext getContext() {
+        return context;
+    }
+
+    public void setContext(ApplicationContext context) {
+        this.context = context;
+    }
 
     public List<ClassViewType> getBanClassViewList() {
         return banClassViewList;
@@ -71,14 +103,23 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
         pool.serializeCollection(outStream, objects);
         pool.writeInt(outStream, initClassView.ordinal());
         pool.writeObject(outStream, banClassViewList);
+        pool.serializeObject(outStream, parent);
         pool.serializeObject(outStream, propertyHighlight);
+        outStream.writeBoolean(!isParent.isEmpty());
+        if (!isParent.isEmpty()) {
+            pool.serializeMap(outStream, isParent);
+        }
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         pool.deserializeCollection(objects, inStream);
         initClassView = ClassViewType.values()[pool.readInt(inStream)];
-        banClassViewList = (List<ClassViewType>)pool.readObject(inStream);
-        propertyHighlight = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
+        banClassViewList = pool.readObject(inStream);
+        parent = pool.deserializeObject(inStream);
+        propertyHighlight = pool.deserializeObject(inStream);
+        if (inStream.readBoolean()) {
+            isParent = pool.deserializeMap(inStream);
+        }
 
         client = pool.context.getGroupObject(ID);
     }

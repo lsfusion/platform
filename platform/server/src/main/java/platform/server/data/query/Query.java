@@ -157,7 +157,22 @@ public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInter
         return executeClasses(session, new OrderedMap<V, Boolean>(), 0, baseClass);
     }
 
-    public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(SQLSession session,OrderedMap<V,Boolean> orders,int selectTop, BaseClass baseClass) throws SQLException {
+    public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(SQLSession session, BaseClass baseClass, OrderedMap<? extends Expr, Boolean> orders) throws SQLException {
+        OrderedMap<Object, Boolean> orderProperties = new OrderedMap<Object, Boolean>();
+        Query<K,Object> orderQuery = new Query<K,Object>((Query<K,Object>) this);
+        for(Map.Entry<? extends Expr,Boolean> order : orders.entrySet()) {
+            Object orderProperty = new Object();
+            orderQuery.properties.put(orderProperty, order.getKey());
+            orderProperties.put(orderProperty, order.getValue());
+        }
+
+        OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> result = new OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>>();
+        for(Map.Entry<Map<K, DataObject>,Map<Object, ObjectValue>> orderRow : orderQuery.executeClasses(session, orderProperties, 0, baseClass).entrySet())
+            result.put(orderRow.getKey(), BaseUtils.filterKeys(orderRow.getValue(), properties.keySet()));
+        return result;
+    }
+
+    public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(SQLSession session,OrderedMap<? extends V,Boolean> orders,int selectTop, BaseClass baseClass) throws SQLException {
         OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> result = new OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>>();
 
         if(where.isFalse()) return result; // иначе типы ключей не узнаем

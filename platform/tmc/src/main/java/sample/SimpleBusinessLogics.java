@@ -1219,7 +1219,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
         SecurityPolicy securityPolicy = addPolicy("Базовая политка", "Запрещает использование чего-то тут...");
 
-        securityPolicy.property.view.deny(currentGroup.getProperties(null));
+        securityPolicy.property.view.deny(currentGroup.getProperties(new ValueClass[0]));
 //        securityPolicy.property.change.deny(extIncDetailArticle.property);
 //        securityPolicy.property.change.deny(extIncDetailQuantity.property);
 
@@ -1229,8 +1229,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         securityPolicy.cls.edit.add.deny(document.getConcreteChildren());
         securityPolicy.cls.edit.remove.deny(baseGroup.getClasses());
 
-        User user1 = addUser("user1", "");
-        User user2 = addUser("user2", "");
+        User admin = addUser("admin", "fusion");
+        User user = addUser("user", "");
     }
 
     // ------------------------------------- Временные методы --------------------------- //

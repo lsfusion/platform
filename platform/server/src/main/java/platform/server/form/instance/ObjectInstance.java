@@ -14,10 +14,7 @@ import platform.server.session.ChangesSession;
 import platform.server.session.Modifier;
 
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 // на самом деле нужен collection но при extend'е нужна конкретная реализация
 public abstract class ObjectInstance extends CellInstance<ObjectEntity> implements PropertyObjectInterfaceInstance {
@@ -56,6 +53,14 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
         return (DataObject)getObjectValue();
     }
 
+    public static <K> Map<ObjectInstance, Expr> getObjectValueExprs(Collection<ObjectInstance> objects) {
+        Map<ObjectInstance, Expr> result = new HashMap<ObjectInstance, Expr>();
+        for(ObjectInstance object : objects)
+            result.put(object, object.getExpr());
+        return result;
+    }
+
+
     public boolean isNull() {
         return getObjectValue() instanceof NullValue;
     }
@@ -70,7 +75,11 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
 
     public abstract Type getType();
 
-    public boolean objectUpdated(Set<GroupObjectInstance> skipGroups) { return !skipGroups.contains(groupTo) && (updated & UPDATED_OBJECT)!=0; }
+    protected boolean objectInGrid(Set<GroupObjectInstance> gridGroups) {
+        return GroupObjectInstance.getUpTreeGroups(gridGroups).contains(groupTo);
+    }
+
+    public boolean objectUpdated(Set<GroupObjectInstance> gridGroups) { return !objectInGrid(gridGroups) && (updated & UPDATED_OBJECT)!=0; }
     public boolean dataUpdated(Collection<Property> changedProps) { return false; }
     public void fillProperties(Set<Property> properties) { }
 

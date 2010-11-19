@@ -45,6 +45,25 @@ public class ClientFormController {
     public final ClientNavigator clientNavigator;
     public final ClientFormActionDispatcher actionDispatcher;
 
+    // здесь хранится список всех GroupObjects плюс при необходимости null
+//    private List<ClientGroupObject> groupObjects;
+
+    private static IDGenerator idGenerator = new DefaultIDGenerator();
+    private int ID;
+
+    private ClientFormLayout formLayout;
+
+    private Map<ClientGroupObject, GroupObjectController> controllers;
+    private Map<ClientTreeGroup, TreeGroupController> treeControllers;
+
+    private JButton buttonApply;
+    private JButton buttonCancel;
+
+    private Color defaultApplyBackground;
+    public boolean dataChanged;
+
+    public final Map<ClientGroupObject, List<ClientGroupObjectValue>> currentGridObjects = new HashMap<ClientGroupObject, List<ClientGroupObjectValue>>();
+
     public boolean isDialogMode() {
         return false;
     }
@@ -52,9 +71,6 @@ public class ClientFormController {
     public boolean isReadOnlyMode() {
         return form.readOnly;
     }
-
-    private static IDGenerator idGenerator = new DefaultIDGenerator();
-    private int ID;
 
     public int getID() {
         return ID;
@@ -93,13 +109,6 @@ public class ClientFormController {
     // ------------------------------------------------------------------------------------ //
     // ----------------------------------- Инициализация ---------------------------------- //
     // ------------------------------------------------------------------------------------ //
-
-    private ClientFormLayout formLayout;
-
-    private Map<ClientGroupObject, GroupObjectController> controllers;
-
-    private JButton buttonApply;
-    private JButton buttonCancel;
 
     public ClientFormLayout getComponent() {
         return formLayout;
@@ -144,7 +153,9 @@ public class ClientFormController {
 //        setContentPane(formLayout.getComponent());
 //        setComponent(formLayout.getComponent());
 
-        initializeGroupObjects();
+//        initializeGroupObjects();
+
+        initializeControllers();
 
         initializeRegularFilters();
 
@@ -153,28 +164,28 @@ public class ClientFormController {
         applyRemoteChanges();
     }
 
-    // здесь хранится список всех GroupObjects плюс при необходимости null
-    private List<ClientGroupObject> groupObjects;
-
-    public List<ClientGroupObject> getGroupObjects() {
-        return groupObjects;
+    public List<ClientPropertyDraw> getPropertyDraws() {
+        return form.getPropertyDraws();
     }
 
-
-    private void initializeGroupObjects() throws IOException {
+    private void initializeControllers() throws IOException {
+        treeControllers = new HashMap<ClientTreeGroup, TreeGroupController>();
+        for (ClientTreeGroup treeGroup : form.treeGroups) {
+            TreeGroupController controller = new TreeGroupController(treeGroup, this, formLayout);
+            treeControllers.put(treeGroup, controller);
+        }
 
         controllers = new HashMap<ClientGroupObject, GroupObjectController>();
-        groupObjects = new ArrayList<ClientGroupObject>();
 
-        for (ClientGroupObject groupObject : form.groupObjects) {
-            groupObjects.add(groupObject);
-            GroupObjectController controller = new GroupObjectController(groupObject, form, this, formLayout);
-            controllers.put(groupObject, controller);
+        for (ClientGroupObject group : form.groupObjects) {
+            if (group.parent == null) {
+                GroupObjectController controller = new GroupObjectController(group, form, this, formLayout);
+                controllers.put(group, controller);
+            }
         }
 
         for (ClientPropertyDraw properties : form.getPropertyDraws()) {
             if (properties.groupObject == null) {
-                groupObjects.add(null);
                 GroupObjectController controller = new GroupObjectController(null, form, this, formLayout);
                 controllers.put(null, controller);
                 break;
@@ -415,11 +426,6 @@ public class ClientFormController {
         }
     }
 
-    private Color defaultApplyBackground;
-    public boolean dataChanged;
-
-    public final Map<ClientGroupObject, List<ClientGroupObjectValue>> currentGridObjects = new HashMap<ClientGroupObject, List<ClientGroupObjectValue>>();
-
     private void applyFormChanges(ClientFormChanges formChanges) {
 
         if (formChanges.dataChanged != null && buttonApply != null) {
@@ -450,6 +456,10 @@ public class ClientFormController {
             controller.processFormChanges(formChanges, currentGridObjects);
         }
 
+        for (TreeGroupController treeController : treeControllers.values()) {
+            treeController.processFormChanges(formChanges, currentGridObjects);
+        }
+
         if (!ordersInitialized) {
             try {
                 initializeOrders();
@@ -471,20 +481,22 @@ public class ClientFormController {
         }
     }
 
-    public void changeGroupObject(ClientGroupObject groupObject, ClientGroupObjectValue objectValue) throws IOException {
+    public void changeGroupObject(ClientGroupObject group, ClientGroupObjectValue objectValue) throws IOException {
+        if (group.parent != null || !objectValue.equals(controllers.get(group).getCurrentObject())) {
+            remoteForm.changeGroupObject(group.getID(), objectValue.serialize(group));
 
-        ClientGroupObjectValue curObjectValue = controllers.get(groupObject).getCurrentObject();
-
-        if (!objectValue.equals(curObjectValue)) {
-            remoteForm.changeGroupObject(groupObject.getID(), objectValue.serialize());
             applyRemoteChanges();
         }
     }
 
+    public void expandGroupObject(ClientGroupObject group, ClientGroupObjectValue objectValue) throws IOException {
+        remoteForm.expandGroupObject(group.getID(), objectValue.serialize(group));
+
+        applyRemoteChanges();
+    }
+
     public void changeGroupObject(ClientGroupObject groupObject, Scroll changeType) throws IOException {
-
         remoteForm.changeGroupObject(groupObject.getID(), changeType.serialize());
-
         applyRemoteChanges();
     }
 
@@ -577,6 +589,7 @@ public class ClientFormController {
         remoteForm.changePageSize(groupObject.getID(), pageSize);
     }
 
+
     void print() {
 
         try {
@@ -607,8 +620,10 @@ public class ClientFormController {
 
                 if(!sureApply) {
                     String okMessage = "";
-                    for (ClientGroupObject groupObject : form.groupObjects) {
-                        okMessage += controllers.get(groupObject).getSaveMessage();
+                    for (ClientGroupObject group : form.groupObjects) {
+                        if (controllers.containsKey(group)) {
+                            okMessage += controllers.get(group).getSaveMessage();
+                        }
                     }
 
                     if (!okMessage.isEmpty()) {
@@ -688,8 +703,13 @@ public class ClientFormController {
             remoteForm = null;
         }
     }
-
     public Dimension calculatePreferredSize() {
         return formLayout.calculatePreferredSize();
+    }
+
+    public void moveGroupObject(ClientGroupObject parentGroup, ClientGroupObjectValue parentKey, ClientGroupObject childGroup, ClientGroupObjectValue childKey, int index) throws IOException {
+        remoteForm.moveGroupObject(parentGroup.getID(), parentKey.serialize(parentGroup), childGroup.getID(), childKey.serialize(childGroup), index);
+
+        applyRemoteChanges();
     }
 }

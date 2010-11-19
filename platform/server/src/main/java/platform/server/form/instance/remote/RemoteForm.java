@@ -266,19 +266,44 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
         return new RemoteChanges(formChanges, remoteActions, objectClassID);
     }
 
+    private Map<ObjectInstance, DataObject> deserializeKeys(GroupObjectInstance group, byte[] treePathKeys) throws IOException {
+        DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(treePathKeys));
+
+        Map<ObjectInstance, Object> mapValues = new HashMap<ObjectInstance, Object>();
+        for(GroupObjectInstance treeGroup : group.getUpTreeGroups())
+            for(ObjectInstance objectInstance : treeGroup.objects)
+                mapValues.put(objectInstance, BaseUtils.deserializeObject(inStream));
+
+        return group.findGroupObjectValue(mapValues);
+    }
+    
     public void changeGroupObject(int groupID, byte[] value) {
         
-        GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
         try {
-
-            DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(value));
-            // считаем ключи и найдем groupObjectValue
-            Map<ObjectInstance,Object> mapValues = new HashMap<ObjectInstance, Object>();
-            for(ObjectInstance object : groupObject.objects)
-                mapValues.put(object, BaseUtils.deserializeObject(inStream));
-            form.changeGroupObject(groupObject, groupObject.findGroupObjectValue(mapValues));
+            GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
+            form.changeGroupObject(groupObject, deserializeKeys(groupObject, value));
 
             updateCurrentClass = groupObject.objects.iterator().next();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void expandGroupObject(int groupId, byte[] groupValues) throws RemoteException {
+        try {
+            GroupObjectInstance group = form.getGroupObjectInstance(groupId);
+            form.expandGroupObject(group, deserializeKeys(group, groupValues));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void moveGroupObject(int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException {
+        try {
+            GroupObjectInstance parentGroup = form.getGroupObjectInstance(parentGroupId);
+            GroupObjectInstance childGroup = form.getGroupObjectInstance(childGroupId);
+            //todo:
+//            form.moveGroupObject(parentGroup, deserializeKeys(parentGroup, parentKey));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

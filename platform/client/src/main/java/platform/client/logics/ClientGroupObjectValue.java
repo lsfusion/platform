@@ -10,8 +10,8 @@ import java.util.Set;
 
 import static platform.base.BaseUtils.*;
 
-public class ClientGroupObjectValue extends OrderedMap<ClientObject,Object>
-                             implements Serializable {
+public class ClientGroupObjectValue extends OrderedMap<ClientObject, Object>
+        implements Serializable {
     public ClientGroupObjectValue(ClientGroupObjectValue... clones) {
         super();
         for (ClientGroupObjectValue clone : clones) {
@@ -26,13 +26,19 @@ public class ClientGroupObjectValue extends OrderedMap<ClientObject,Object>
     }
 
     public ClientGroupObjectValue(DataInputStream inStream, ClientGroupObject clientGroupObject) throws IOException {
+        for (ClientObject clientObject : ClientGroupObject.getObjects(clientGroupObject.getUpTreeGroups())) {
+            put(clientObject, deserializeObject(inStream));
+        }
+    }
+
+    public ClientGroupObjectValue(ClientGroupObject clientGroupObject, DataInputStream inStream) throws IOException {
         for (ClientObject clientObject : clientGroupObject.objects) {
             put(clientObject, deserializeObject(inStream));
         }
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
-        for (Map.Entry<ClientObject,Object> objectValue : entrySet()) {
+        for (Map.Entry<ClientObject, Object> objectValue : entrySet()) {
             serializeObject(outStream, objectValue.getValue());
         }
     }
@@ -48,7 +54,15 @@ public class ClientGroupObjectValue extends OrderedMap<ClientObject,Object>
     public byte[] serialize() throws IOException {
         return serialize((ClientPropertyDraw) null);
     }
-    
+
+    public byte[] serialize(ClientGroupObject group) throws IOException {
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        DataOutputStream outStream = new DataOutputStream(byteStream);
+        for (ClientObject clientObject : ClientGroupObject.getObjects(group.getUpTreeGroups()))
+            serializeObject(outStream, get(clientObject));
+        return byteStream.toByteArray();
+    }
+
     public byte[] serialize(ClientPropertyDraw propertyDraw) throws IOException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         if (propertyDraw != null) {
@@ -72,5 +86,9 @@ public class ClientGroupObjectValue extends OrderedMap<ClientObject,Object>
         }
 
         return true;
+    }
+
+    public boolean contentEquals(ClientGroupObjectValue other) {
+        return other != null && other.size() == size() && contains(other);
     }
 }

@@ -3,10 +3,7 @@ package sample;
 import net.sf.jasperreports.engine.JRException;
 import platform.interop.Compare;
 import platform.server.auth.User;
-import platform.server.classes.AbstractCustomClass;
-import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.DoubleClass;
-import platform.server.classes.IntegerClass;
+import platform.server.classes.*;
 import platform.server.data.sql.DataAdapter;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectEntity;
@@ -16,6 +13,7 @@ import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.form.navigator.NavigatorElement;
+import platform.server.form.view.DefaultFormView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.group.AbstractGroup;
@@ -28,6 +26,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
+    private LP documentsCount;
+    private LP itemsCount;
 
     public SampleBusinessLogics(DataAdapter iAdapter,int port) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, JRException, FileNotFoundException {
         super(iAdapter,port);
@@ -41,6 +41,7 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
     AbstractCustomClass document;
 
     ConcreteCustomClass article, store, incomeDocument, outcomeDocument;
+    ConcreteCustomClass articleGroup;
 
     protected void initClasses() {
 
@@ -49,6 +50,8 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         document = addAbstractClass("Документ", baseClass.named, transaction);
         incomeDocument = addConcreteClass("Приход", document);
         outcomeDocument = addConcreteClass("Расход", document);
+
+        articleGroup = addConcreteClass("Группа товаров", baseClass.named);        
     }
 
     LP quantity, documentStore;
@@ -74,9 +77,16 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         addJProp(baseGroup, "Ост. по скл. (док.)", balanceQuantity, documentStore, 1, 2);
         LP vone = addCProp("1", IntegerClass.instance, 1);
         LP oneProp = addJProp(baseGroup, "Единица", and1, vone, is(document), 1);
-        LP documentsCount = addSGProp(baseGroup, "Количество документов по складу", oneProp, documentStore, 1);
-        LP itemsCount = addSGProp(baseGroup, "Количество единиц товара в документах", quantity, documentStore, 1, 2);
+        documentsCount = addSGProp(baseGroup, "Количество документов по складу", oneProp, documentStore, 1);
+        itemsCount = addSGProp(baseGroup, "Количество единиц товара в документах", quantity, documentStore, 1, 2);
+
+        inStore = addDProp(baseGroup, "inStore", "В ассорт.", LogicalClass.instance, store, article);
+
+        parentGroup = addDProp(baseGroup, "parentGroup", "Родитель", articleGroup, articleGroup);
+        articleToGroup = addDProp(baseGroup, "articleToGroup", "Группа товаров", articleGroup, article);
     }
+
+    LP inStore, parentGroup, articleToGroup;
 
     protected void initTables() {
     }
@@ -98,6 +108,7 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         NavigatorElement aggregateData = new NavigatorElement(baseElement, 200, "Сводная информация");
             FormEntity storeArticleForm = new StoreArticleFormEntity(aggregateData, 211, "Товары по складам");
             FormEntity systemForm = new SystemFormEntity(aggregateData, 212, "Движение (документ*товар)");
+            FormEntity treeStoreArticleForm = new TreeStoreArticleFormEntity(aggregateData, 213, "Товары по складам (дерево)");
 
 //        extIncomeDocument.relevantElements.set(0, extIncDetailForm);
     }
@@ -137,7 +148,42 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             addPropertyDraw(objDoc, objArt, baseGroup);
 
             addFixedFilter(new NotNullFilterEntity(getPropertyObject(quantity)));
+            addFixedFilter(new NotNullFilterEntity(getPropertyObject(balanceQuantity)));
             addFixedFilter(new CompareFilterEntity(getPropertyObject(documentStore), Compare.EQUALS, objStore));
+        }
+    }
+
+    private class TreeStoreArticleFormEntity extends FormEntity {
+
+        public TreeStoreArticleFormEntity(NavigatorElement parent, int ID, String caption) {
+            super(parent, ID, caption);
+
+            ObjectEntity objStore = addSingleGroupObject(store, name);
+            ObjectEntity objArtGroup = addSingleGroupObject(articleGroup, name);
+            ObjectEntity objArt = addSingleGroupObject(article, name);
+            ObjectEntity objDoc = addSingleGroupObject(document, baseGroup);
+
+            objArtGroup.groupTo.setIsParents(addPropertyObject(parentGroup, objArtGroup));
+
+            addTreeGroupObject(objStore.groupTo, objArtGroup.groupTo, objArt.groupTo);
+//
+            addPropertyDraw(objStore, objArt, baseGroup);
+            addPropertyDraw(objDoc, objArt, baseGroup);
+
+//            addFixedFilter(new NotNullFilterEntity(getPropertyObject(quantity)));
+//            addFixedFilter(new NotNullFilterEntity(getPropertyObject(balanceQuantity)));
+
+            addFixedFilter(new NotNullFilterEntity(getPropertyObject(inStore)));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(articleToGroup, objArt), Compare.EQUALS, objArtGroup));
+            addFixedFilter(new CompareFilterEntity(getPropertyObject(documentStore), Compare.EQUALS, objStore));
+        }
+
+        @Override
+        public DefaultFormView createDefaultRichDesign() {
+            DefaultFormView design = super.createDefaultRichDesign();
+//            design.get(getPropertyDraw(documentStore)).autoHide = true;
+
+            return design;
         }
     }
 

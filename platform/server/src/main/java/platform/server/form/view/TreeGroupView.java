@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TreeGroupView extends IdentityObject implements ServerIdentitySerializable {
+public class TreeGroupView extends ComponentView implements ServerIdentitySerializable {
     public List<GroupObjectView> groups = new ArrayList<GroupObjectView>();
 
     public TreeGroupEntity entity;
@@ -22,6 +22,8 @@ public class TreeGroupView extends IdentityObject implements ServerIdentitySeria
     }
 
     public TreeGroupView(FormView form, TreeGroupEntity entity) {
+        super(entity.getID());
+
         this.entity = entity;
 
         for (GroupObjectEntity group : entity.groups) {
@@ -34,10 +36,16 @@ public class TreeGroupView extends IdentityObject implements ServerIdentitySeria
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        super.customSerialize(pool, outStream, serializationType);
+
         pool.serializeCollection(outStream, groups, serializationType);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
+        super.customDeserialize(pool, inStream);
+        
         groups = pool.deserializeList(inStream);
+
+        entity = pool.context.entity.getTreeGroup(ID);
     }
 }

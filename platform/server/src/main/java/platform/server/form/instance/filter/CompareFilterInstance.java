@@ -61,13 +61,13 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
     }
 
     @Override
-    public boolean classUpdated(GroupObjectInstance classGroup) {
-        return super.classUpdated(classGroup) || value.classUpdated(classGroup);
+    public boolean classUpdated(Set<GroupObjectInstance> gridGroups) {
+        return super.classUpdated(gridGroups) || value.classUpdated(gridGroups);
     }
 
     @Override
-    public boolean objectUpdated(Set<GroupObjectInstance> skipGroups) {
-        return super.objectUpdated(skipGroups) || value.objectUpdated(skipGroups);
+    public boolean objectUpdated(Set<GroupObjectInstance> gridGroups) {
+        return super.objectUpdated(gridGroups) || value.objectUpdated(gridGroups);
     }
 
     public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) throws SQLException {

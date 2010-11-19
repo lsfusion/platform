@@ -28,6 +28,9 @@ public class DefaultFormView extends FormView {
     private transient Map<GroupObjectView, ContainerView> panelContainers = new HashMap<GroupObjectView, ContainerView>();
     public ContainerView getPanelContainer(GroupObjectView groupObject) { return panelContainers.get(groupObject); }
 
+    private transient Map<TreeGroupView, ContainerView> treeContainers = new HashMap<TreeGroupView, ContainerView>();
+    public ContainerView getTreeContainer(TreeGroupView treeGroup) { return treeContainers.get(treeGroup); }
+
     private transient Map<GroupObjectView, ContainerView> controlsContainers = new HashMap<GroupObjectView, ContainerView>();
 
     private transient Map<GroupObjectView, Map<AbstractGroup, ContainerView>> groupPropertyContainers = new HashMap<GroupObjectView, Map<AbstractGroup, ContainerView>>();
@@ -62,7 +65,6 @@ public class DefaultFormView extends FormView {
 
         Map<GroupObjectView, ContainerView> filterContainers = new HashMap<GroupObjectView, ContainerView>();
         for (GroupObjectEntity group : formEntity.groups) {
-
             GroupObjectView clientGroup = new GroupObjectView(idGenerator, group);
 
             mgroupObjects.put(group, clientGroup);
@@ -88,7 +90,23 @@ public class DefaultFormView extends FormView {
         }
 
         for (TreeGroupEntity treeGroup : formEntity.treeGroups) {
-            treeGroups.add(new TreeGroupView(this, treeGroup));
+            TreeGroupView treeGroupView = new TreeGroupView(this, treeGroup);
+            treeGroupView.constraints.fillVertical = 1;
+            treeGroupView.constraints.fillHorizontal = 1;
+            treeGroups.add(treeGroupView);
+
+            ContainerView treeContainer = containerFactory.createContainer();
+            treeContainer.setTitle("Дерево");
+            treeContainer.setDescription("Дерево");
+            treeContainer.setSID(GroupObjectContainerSet.TREE_GROUP_CONTAINER + treeGroupView.getID());
+            treeContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
+            treeContainer.constraints.fillVertical = 1;
+            treeContainer.constraints.fillHorizontal = 1;
+            treeContainer.add(treeGroupView);
+
+            mainContainer.add(treeContainer);
+
+            treeContainers.put(treeGroupView, treeContainer);  
         }
 
         for (PropertyDrawEntity control : formEntity.propertyDraws) {

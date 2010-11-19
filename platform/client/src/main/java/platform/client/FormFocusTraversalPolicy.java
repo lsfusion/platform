@@ -39,7 +39,7 @@ public class FormFocusTraversalPolicy extends LayoutFocusTraversalPolicy {
     public Component getComponentAfter(Container aContainer, Component aComponent) {
         do {
             aComponent = super.getComponentAfter(aContainer, aComponent);
-        } while (aComponent instanceof PropertyEditorComponent || !aComponent.isFocusable());
+        } while (aComponent != null && (aComponent instanceof PropertyEditorComponent || !aComponent.isFocusable()));
 
         return aComponent;
     }

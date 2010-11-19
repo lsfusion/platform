@@ -22,6 +22,7 @@ public class TreeGroupEntity extends IdentityObject implements ServerIdentitySer
     }
 
     public void add(GroupObjectEntity group) {
+        group.parent = this;
         groups.add(group);
     }
 

@@ -36,7 +36,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public List<ObjectInstance> getSerializeList(Set<PropertyDrawInstance> panelProperties) {
-        return curClassView == ClassViewType.GRID ? new ArrayList<ObjectInstance>(objects) : new ArrayList<ObjectInstance>();
+        return curClassView == ClassViewType.GRID ? GroupObjectInstance.getObjects(getUpTreeGroups()) : new ArrayList<ObjectInstance>();
     }
 
     GroupObjectEntity entity;
@@ -57,13 +57,14 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     private int pageSize = 0;
     public int getPageSize() {
+        assert !isInTree();
         return pageSize;
     }
     public void setPageSize(int pageSize) {
         this.pageSize = pageSize;
     }
 
-    public GroupObjectInstance(GroupObjectEntity entity, Collection<ObjectInstance> objects, PropertyObjectInstance propertyHighlight) {
+    public GroupObjectInstance(GroupObjectEntity entity, Collection<ObjectInstance> objects, PropertyObjectInstance propertyHighlight, Map<ObjectInstance, PropertyObjectInstance> parent) {
 
         this.entity = entity;
 
@@ -82,6 +83,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             this.updated |= UPDATED_CLASSVIEW;
         }
         this.pageSize = entity.pageSize;
+
+        this.parent = parent;
     }
 
     public Map<ObjectInstance, KeyExpr> getMapKeys() {
@@ -205,13 +208,31 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public final static int UPDATED_CLASSVIEW = (1 << 4);
     public final static int UPDATED_ORDER = (1 << 5);
     public final static int UPDATED_FILTER = (1 << 6);
+    public final static int UPDATED_EXPANDS = (1 << 7);
 
     public int updated = UPDATED_GRIDCLASS | UPDATED_ORDER | UPDATED_FILTER;
 
-    Map<ObjectInstance,ObjectValue> getGroupObjectValue() {
-        Map<ObjectInstance,ObjectValue> result = new HashMap<ObjectInstance, ObjectValue>();
+    private boolean assertNull() {
+        Iterator<ObjectInstance> it = objects.iterator();
+        boolean isNull = it.next().getObjectValue() instanceof NullValue; 
         for(ObjectInstance object : objects)
-            result.put(object,object.getObjectValue());
+            if((object.getObjectValue() instanceof NullValue)!=isNull)
+                return false;
+        return true;
+    }
+
+    public boolean isNull() {
+        assert assertNull();
+        return objects.iterator().next().getObjectValue() instanceof NullValue;
+    }
+
+    public Map<ObjectInstance,DataObject> getGroupObjectValue() {
+        if(isNull())
+            return new HashMap<ObjectInstance, DataObject>();
+        
+        Map<ObjectInstance,DataObject> result = new HashMap<ObjectInstance, DataObject>();
+        for(ObjectInstance object : GroupObjectInstance.getObjects(getUpTreeGroups()))
+            result.put(object,object.getDataObject());
         return result;
     }
 
@@ -250,11 +271,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return getFilterWhere(mapKeys, modifier).and(getClassWhere(mapKeys, modifier));
     }
 
-    Map<ObjectInstance,ObjectValue> getNulls() {
-        Map<ObjectInstance,ObjectValue> result = new HashMap<ObjectInstance, ObjectValue>();
-        for(ObjectInstance object : objects)
-            result.put(object, NullValue.instance);
-        return result;
+    public Map<ObjectInstance,ObjectValue> getNulls() {
+        return NullValue.getMap(getObjects(getUpTreeGroups()));
     }
 
     boolean isSolid() {
@@ -271,4 +289,26 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             if (object instanceof CustomObjectInstance)
                 ((CustomObjectInstance)object).setClassListener(classListener);
     }
+
+    public boolean isInTree() {
+        return getUpTreeGroup()!=null || parent!=null || downTreeGroups.size()>0;
+    }
+
+    List<GroupObjectInstance> downTreeGroups = new ArrayList<GroupObjectInstance>();
+    public GroupObjectInstance getUpTreeGroup() {
+        return BaseUtils.last(upTreeGroups);
+    }
+    public List<GroupObjectInstance> upTreeGroups = new ArrayList<GroupObjectInstance>(); // по аналогии с groupTo сделано
+    public List<GroupObjectInstance> getUpTreeGroups() {
+        return BaseUtils.add(upTreeGroups,this);
+    }
+
+    public static Set<GroupObjectInstance> getUpTreeGroups(Set<GroupObjectInstance> groups) {
+        Set<GroupObjectInstance> result = new HashSet<GroupObjectInstance>();
+        for(GroupObjectInstance group : groups)
+            result.addAll(group.getUpTreeGroups());
+        return result;
+    }
+
+    public final Map<ObjectInstance, PropertyObjectInstance> parent;
 }

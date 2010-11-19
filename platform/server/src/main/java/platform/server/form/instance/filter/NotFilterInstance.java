@@ -29,12 +29,12 @@ public class NotFilterInstance extends FilterInstance {
         filter = deserialize(inStream, form);
     }
 
-    public boolean classUpdated(GroupObjectInstance classGroup) {
-        return filter.classUpdated(classGroup);
+    public boolean classUpdated(Set<GroupObjectInstance> gridGroups) {
+        return filter.classUpdated(gridGroups);
     }
 
-    public boolean objectUpdated(Set<GroupObjectInstance> skipGroups) {
-        return filter.objectUpdated(skipGroups);
+    public boolean objectUpdated(Set<GroupObjectInstance> gridGroups) {
+        return filter.objectUpdated(gridGroups);
     }
 
     public boolean dataUpdated(Collection<Property> changedProps) {

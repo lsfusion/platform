@@ -50,8 +50,8 @@ public class CustomObjectInstance extends ObjectInstance {
         groupTo.updated = groupTo.updated | GroupObjectInstance.UPDATED_GRIDCLASS;
     }
 
-    public AndClassSet getClassSet(Set<GroupObjectInstance> classGroups) {
-        if(classGroups.contains(groupTo))
+    public AndClassSet getClassSet(Set<GroupObjectInstance> gridGroups) {
+        if(objectInGrid(gridGroups))
             return getGridClass().getUpSet();
         else
             return getCurrentClass();
@@ -124,8 +124,8 @@ public class CustomObjectInstance extends ObjectInstance {
         return (updated & ObjectInstance.UPDATED_CLASS)!=0;
     }
 
-    public boolean classUpdated(GroupObjectInstance classGroup) {
-        if(groupTo!=classGroup)
+    public boolean classUpdated(Set<GroupObjectInstance> gridGroups) {
+        if(objectInGrid(gridGroups))
             return (updated & ObjectInstance.UPDATED_CLASS)!=0;
         else
             return (updated & ObjectInstance.UPDATED_GRIDCLASS)!=0;

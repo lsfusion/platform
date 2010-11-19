@@ -48,9 +48,16 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractMapV
         return mapExprs;
     }
 
+    public static <K> boolean containsNull(Collection<ObjectValue> col) {
+        for(ObjectValue value : col)
+            if(value instanceof NullValue)
+                return true;
+        return false;
+    }
+
     
-    public boolean classUpdated(GroupObjectInstance classGroup) {return false;}
-    public boolean objectUpdated(Set<GroupObjectInstance> skipGroups) {return false;}
+    public boolean classUpdated(Set<GroupObjectInstance> gridGroups) {return false;}
+    public boolean objectUpdated(Set<GroupObjectInstance> gridGroups) {return false;}
     public boolean dataUpdated(Collection<Property> changedProps) {return false;}
     public void fillProperties(Set<Property> properties) {}
     public boolean isInInterface(GroupObjectInstance classGroup) {return true;}

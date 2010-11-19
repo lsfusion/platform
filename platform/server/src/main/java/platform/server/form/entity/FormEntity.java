@@ -114,6 +114,16 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return null;
     }
 
+    public TreeGroupEntity getTreeGroup(int id) {
+        for (TreeGroupEntity treeGroup : treeGroups) {
+            if (treeGroup.getID() == id) {
+                return treeGroup;
+            }
+        }
+
+        return null;
+    }
+
     public ObjectEntity getObject(int id) {
         for (GroupObjectEntity group : groups) {
             for(ObjectEntity object : group.objects) {
@@ -161,6 +171,18 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     protected ObjectEntity addSingleGroupObject(ValueClass baseClass, Object... groups) {
         return addSingleGroupObject(baseClass, null, groups);
+    }
+
+    protected void addTreeGroupObject(GroupObjectEntity... tGroups) {
+        TreeGroupEntity treeGroup = new TreeGroupEntity();
+        for (GroupObjectEntity group : tGroups) {
+            if (!groups.contains(group)) {
+                groups.add(group);
+            }
+            treeGroup.add(group);
+        }
+
+        treeGroups.add(treeGroup);
     }
 
     protected void addGroup(GroupObjectEntity group) {
@@ -241,7 +263,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return addPropertyDraw(property, null, objects);
     }
 
-    <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LP<P> property, GroupObjectEntity groupObject, ObjectEntity... objects) {
+    protected <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LP<P> property, GroupObjectEntity groupObject, ObjectEntity... objects) {
 
         return addPropertyDraw(groupObject, new PropertyObjectEntity<P>(property, objects));
     }
@@ -466,6 +488,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         outStream.writeBoolean(isPrintForm);
 
         pool.serializeCollection(outStream, groups);
+        pool.serializeCollection(outStream, treeGroups);
         pool.serializeCollection(outStream, propertyDraws);
         pool.serializeCollection(outStream, fixedFilters);
         pool.serializeCollection(outStream, regularFilterGroups);
@@ -477,6 +500,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         isPrintForm = inStream.readBoolean();
 
         groups = pool.deserializeList(inStream);
+        treeGroups = pool.deserializeList(inStream);
         propertyDraws = pool.deserializeList(inStream);
         fixedFilters = pool.deserializeSet(inStream);
         regularFilterGroups = pool.deserializeList(inStream);

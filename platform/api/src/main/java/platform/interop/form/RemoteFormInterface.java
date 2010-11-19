@@ -68,6 +68,10 @@ public interface RemoteFormInterface extends PendingRemote {
 
     void cancelChanges() throws RemoteException;
 
+    void expandGroupObject(int groupId, byte[] bytes) throws RemoteException;
+
+    void moveGroupObject(int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException;
+
     ClientApply checkClientChanges() throws RemoteException;
     void applyClientChanges(Object clientResult) throws RemoteException;
 

@@ -29,7 +29,7 @@ public class DataObjectInstance extends ObjectInstance {
         value = this.dataClass.getDefaultValue();
     }
 
-    public AndClassSet getClassSet(Set<GroupObjectInstance> classGroups) {
+    public AndClassSet getClassSet(Set<GroupObjectInstance> gridGroups) {
         return dataClass;
     }
 
@@ -63,7 +63,7 @@ public class DataObjectInstance extends ObjectInstance {
         return false;
     }
 
-    public boolean classUpdated(GroupObjectInstance classGroup) {
+    public boolean classUpdated(Set<GroupObjectInstance> gridGroups) {
         return false;
     }
 

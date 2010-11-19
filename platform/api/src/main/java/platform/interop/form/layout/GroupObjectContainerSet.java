@@ -6,6 +6,7 @@ import java.awt.*;
 public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extends AbstractComponent<C, T>> {
 
     public static final String GROUP_CONTAINER = "groupContainer";
+    public static final String TREE_GROUP_CONTAINER = "treeGroupContainer";
     public static final String GRID_CONTAINER = "gridContainer";
     public static final String PANEL_CONTAINER = "panelContainer";
     public static final String FILTER_CONTAINER = "filterContainer";

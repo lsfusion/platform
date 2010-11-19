@@ -24,6 +24,8 @@ public class ModifyQuery {
 
     public SQLExecute getUpdate(SQLSyntax syntax) {
 
+        assert !change.properties.isEmpty();
+        
         int updateModel = syntax.updateModel();
         CompiledQuery<KeyField, PropertyField> changeCompile;
         String update;

@@ -13,10 +13,7 @@ import platform.client.logics.*;
 import platform.client.logics.classes.ClientClass;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
-import platform.interop.form.layout.ContainerFactory;
-import platform.interop.form.layout.FormContainerSet;
-import platform.interop.form.layout.FunctionFactory;
-import platform.interop.form.layout.GroupObjectContainerSet;
+import platform.interop.form.layout.*;
 import platform.base.serialization.RemoteDescriptorInterface;
 
 import java.io.*;
@@ -30,6 +27,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
     public boolean isPrintForm;
 
     public List<GroupObjectDescriptor> groupObjects = new ArrayList<GroupObjectDescriptor>();
+    public List<TreeGroupDescriptor> treeGroups = new ArrayList<TreeGroupDescriptor>();
     public List<PropertyDrawDescriptor> propertyDraws = new ArrayList<PropertyDrawDescriptor>();
     public Set<FilterDescriptor> fixedFilters = new HashSet<FilterDescriptor>();
     public List<RegularFilterGroupDescriptor> regularFilterGroups = new ArrayList<RegularFilterGroupDescriptor>();
@@ -166,7 +164,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
 
     IncrementView containerRenamer;
 
-    // класс, который отвечает за автоматическое перемещение компонент внутри контейнеров при каких-либо изменениях структуры groupObject
+    // класс, который отвечает за автоматическое переименование компонент внутри контейнеров при каких-либо изменениях структуры groupObject
     private class ContainerRenamer implements IncrementView {
         public void update(Object updateObject, String updateField) {
             renameGroupObjectContainer();
@@ -188,6 +186,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         outStream.writeBoolean(isPrintForm);
 
         pool.serializeCollection(outStream, groupObjects);
+        pool.serializeCollection(outStream, treeGroups);
         pool.serializeCollection(outStream, propertyDraws);
         pool.serializeCollection(outStream, fixedFilters);
         pool.serializeCollection(outStream, regularFilterGroups);
@@ -199,6 +198,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         isPrintForm = inStream.readBoolean();
 
         groupObjects = pool.deserializeList(inStream);
+        treeGroups = pool.deserializeList(inStream);
         propertyDraws = pool.deserializeList(inStream);
         fixedFilters = pool.deserializeSet(inStream);
         regularFilterGroups = pool.deserializeList(inStream);
@@ -414,6 +414,22 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         return true;
     }
 
+    public boolean moveTreeGroup(TreeGroupDescriptor treeGroupFrom, TreeGroupDescriptor treeGroupTo) {
+        return moveTreeGroup(treeGroupFrom, treeGroups.indexOf(treeGroupTo) + (treeGroups.indexOf(treeGroupFrom) > treeGroups.indexOf(treeGroupTo) ? 0 : 1));
+    }
+
+    public boolean moveTreeGroup(TreeGroupDescriptor treeGroupFrom, int index) {
+
+        moveClientComponent(treeGroupFrom.getClientComponent(client.mainContainer), getElementTo(treeGroups, treeGroupFrom, index).getClientComponent(client.mainContainer));
+
+        BaseUtils.moveElement(treeGroups, treeGroupFrom, index);
+        BaseUtils.moveElement(client.treeGroups, treeGroupFrom.client, index);
+
+        updateDependency(this, "treeGroups");
+
+        return true;
+    }
+
     public boolean movePropertyDraw(PropertyDrawDescriptor propFrom, PropertyDrawDescriptor propTo) {
         return movePropertyDraw(propFrom, propertyDraws.indexOf(propTo) + (propertyDraws.indexOf(propFrom) > propertyDraws.indexOf(propTo) ? 0 : 1));
     }
@@ -475,7 +491,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         groupObjects.add(groupObject);
         client.groupObjects.add(groupObject.client);
 
-        addGroupObjectDefaultContainers(groupObject, groupObjects);
+        addGroupObjectDefaultContainers(groupObject);
 
         updateDependency(this, "groupObjects");
         return true;
@@ -486,6 +502,25 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         client.removeGroupObject(groupObject.client);
 
         updateDependency(this, "groupObjects");
+        return true;
+    }
+
+    public boolean addToTreeGroups(TreeGroupDescriptor treeGroup) {
+
+        treeGroups.add(treeGroup);
+        client.treeGroups.add(treeGroup.client);
+
+        addTreeGroupDefaultContainers(treeGroup);
+
+        updateDependency(this, "treeGroups");
+        return true;
+    }
+
+    public boolean removeFromTreeGroups(TreeGroupDescriptor treeGroup) {
+        treeGroups.remove(treeGroup);
+        client.removeTreeGroup(treeGroup.client);
+
+        updateDependency(this, "treeGroups");
         return true;
     }
 
@@ -544,15 +579,34 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         FormContainerSet.fillContainers(client, new FormContainerFactory(), new FormFunctionFactory());
     }
 
-    private void addGroupObjectDefaultContainers(GroupObjectDescriptor group, List<GroupObjectDescriptor> groupObjects) {
-
+    private void addGroupObjectDefaultContainers(GroupObjectDescriptor group) {
         GroupObjectContainerSet<ClientContainer, ClientComponent> set = GroupObjectContainerSet.create(group.client, new FormContainerFactory());
 
+        moveContainerInGroup(group, set.getGroupContainer(), groupObjects);
+    }
+
+    private void addTreeGroupDefaultContainers(TreeGroupDescriptor treeGroup) {
+        ClientContainer treeContainer = new ClientContainer(getContext());
+        treeContainer.setTitle("Дерево");
+        treeContainer.setDescription("Дерево");
+        treeContainer.setSID(GroupObjectContainerSet.TREE_GROUP_CONTAINER + treeGroup.getID());
+        treeContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
+        treeContainer.constraints.fillHorizontal = 1;
+        treeContainer.constraints.fillVertical = 1;
+        treeContainer.add(treeGroup.client);
+
+        treeGroup.client.constraints.fillHorizontal = 1;
+        treeGroup.client.constraints.fillVertical = 1;
+
+        moveContainerInGroup(treeGroup, treeContainer, treeGroups);
+    }
+
+    private void moveContainerInGroup(ContainerMovable<ClientContainer> concreateObject, ClientContainer parent, List<? extends ContainerMovable<ClientContainer>> objects) {
         // вставляем контейнер после предыдущего
-        int groupIndex = groupObjects.indexOf(group);
+        int groupIndex = objects.indexOf(concreateObject);
         int index = -1;
         if (groupIndex > 0) {
-            index = client.mainContainer.children.indexOf(groupObjects.get(groupIndex-1).getClientComponent(client.mainContainer));
+            index = client.mainContainer.children.indexOf(objects.get(groupIndex-1).getClientComponent(client.mainContainer));
             if (index != -1)
                 index++;
             else
@@ -560,6 +614,6 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         } else
             index = 0;
 
-        client.mainContainer.add(index, set.getGroupContainer());
+        client.mainContainer.add(index, parent);
     }
 }

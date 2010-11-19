@@ -104,7 +104,7 @@ public class DefaultOrdersEditor extends JPanel implements IncrementView {
         downBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JPanel tablePanel = new TitledPanel("Выбранные свойства", new JScrollPane(table = new IncrementDefaultOrdersTable()));
-        tablePanel.setPreferredSize(new Dimension(300, 400));
+        tablePanel.setPreferredSize(new Dimension(300, 200));
 
         JPanel selectPanel = new JPanel();
         selectPanel.setLayout(new BoxLayout(selectPanel, BoxLayout.PAGE_AXIS));

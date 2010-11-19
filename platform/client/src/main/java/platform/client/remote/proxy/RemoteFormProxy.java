@@ -219,6 +219,20 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         logRemoteMethodEndVoidCall("cancelChanges");
     }
 
+    @PendingRemoteMethod
+    public void expandGroupObject(int groupId, byte[] treePath) throws RemoteException {
+        logRemoteMethodStartVoidCall("expandTreeNode");
+        target.expandGroupObject(groupId, treePath);
+        logRemoteMethodEndVoidCall("expandTreeNode");
+    }
+
+    @PendingRemoteMethod
+    public void moveGroupObject(int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException {
+        logRemoteMethodStartVoidCall("moveGroupObject");
+        target.moveGroupObject(parentGroupId, parentKey, childGroupId, childKey, index);
+        logRemoteMethodEndVoidCall("moveGroupObject");
+    }
+
     public byte[] getPropertyChangeType(int propertyID) throws RemoteException {
         logRemoteMethodStartCall("getPropertyChangeType");
         byte[] result = target.getPropertyChangeType(propertyID);

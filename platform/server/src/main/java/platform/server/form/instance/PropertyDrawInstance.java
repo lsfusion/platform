@@ -32,17 +32,17 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     public List<ObjectInstance> getSerializeGroupList() {
-        List<ObjectInstance> result = new ArrayList<ObjectInstance>();
+        List<GroupObjectInstance> result = new ArrayList<GroupObjectInstance>();
         for (GroupObjectInstance columnGroupObject : columnGroupObjects)
             if (columnGroupObject.curClassView == ClassViewType.GRID)
-                result.addAll(columnGroupObject.objects);
-        return result;
+                result.add(columnGroupObject);
+        return GroupObjectInstance.getObjects(result);
     }
 
     public List<ObjectInstance> getSerializeList(Set<PropertyDrawInstance> panelProperties) {
         List<ObjectInstance> result = getSerializeGroupList();
         if (!panelProperties.contains(this))
-            result = BaseUtils.mergeList((List<ObjectInstance>) toDraw.objects, result);
+             result = BaseUtils.mergeList(GroupObjectInstance.getObjects(toDraw.getUpTreeGroups()), result);
         return result;
     }
 

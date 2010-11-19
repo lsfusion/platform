@@ -21,6 +21,7 @@ public class ServerSerializationPool extends SerializationPool<ServerContext> {
 
         addMapping2(FormEntity.class);
         addMapping2(GroupObjectEntity.class);
+        addMapping2(TreeGroupEntity.class);
         addMapping2(PropertyDrawEntity.class);
         addMapping2(Property.class);
         addMapping2(AbstractGroup.class);
@@ -46,6 +47,7 @@ public class ServerSerializationPool extends SerializationPool<ServerContext> {
         addMapping2(ComponentView.class);
         addMapping2(ContainerView.class);
         addMapping2(GroupObjectView.class);
+        addMapping2(TreeGroupView.class);
         addMapping2(ShowTypeView.class);
         addMapping2(GridView.class);
         addMapping2(ClassChooserView.class);

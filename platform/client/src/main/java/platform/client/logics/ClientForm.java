@@ -174,6 +174,15 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
         return null;
     }
 
+    public ClientTreeGroup getTreeGroup(int id) {
+        for (ClientTreeGroup treeGroup : treeGroups) {
+            if (treeGroup.getID() == id) {
+                return treeGroup;
+            }
+        }
+        return null;
+    }
+
     public ClientRegularFilterGroup getRegularFilterGroup(int id) {
         for (ClientRegularFilterGroup filterGroup : regularFilterGroups) {
             if (filterGroup.getID() == id) {
@@ -308,6 +317,11 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
             groupContainer.container.removeFromChildren(groupContainer);
         }
 
+        return true;
+    }
+
+    public boolean removeTreeGroup(ClientTreeGroup treeGroup) {
+        treeGroups.remove(treeGroup);
         return true;
     }
 

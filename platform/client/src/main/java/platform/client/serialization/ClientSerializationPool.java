@@ -27,6 +27,7 @@ public class ClientSerializationPool extends SerializationPool<ClientForm> {
 
         addMapping(FormDescriptor.class);
         addMapping(GroupObjectDescriptor.class);
+        addMapping(TreeGroupDescriptor.class);
         addMapping(PropertyDrawDescriptor.class);
         addMapping(PropertyDescriptor.class);
         addMapping(AbstractGroupDescriptor.class);
@@ -52,6 +53,7 @@ public class ClientSerializationPool extends SerializationPool<ClientForm> {
         addMapping(ClientComponent.class);
         addMapping(ClientContainer.class);
         addMapping(ClientGroupObject.class);
+        addMapping(ClientTreeGroup.class);
         addMapping(ClientShowType.class);
         addMapping(ClientGrid.class);
         addMapping(ClientClassChooser.class);

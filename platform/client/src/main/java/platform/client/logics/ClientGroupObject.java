@@ -4,6 +4,8 @@ import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
 import platform.base.OrderedMap;
 import platform.base.identity.IdentityObject;
+import platform.base.BaseUtils;
+import platform.client.Main;
 import platform.client.form.ClientFormController;
 import platform.client.form.GroupObjectController;
 import platform.client.serialization.ClientIdentitySerializable;
@@ -20,12 +22,19 @@ import java.util.*;
 
 public class ClientGroupObject extends IdentityObject implements ClientPropertyRead, ClientIdentitySerializable, AbstractGroupObject<ClientComponent> {
 
+    public ClientTreeGroup parent;
+    public boolean isRecursive;
+
     public List<ClassViewType> banClassView = new ArrayList<ClassViewType>();
 
     public ClientGrid grid;
     public ClientShowType showType;
 
     public List<ClientObject> objects = new ArrayList<ClientObject>();
+
+    public boolean mayHaveChildren() {
+        return isRecursive || (parent!= null && parent.groups.indexOf(this) != parent.groups.size() - 1);
+    }
 
     public ClientGroupObject() {
     }
@@ -41,16 +50,23 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
         showType.groupObject = this;
     }
 
-    public List<ClientObject> getDeserializeList(Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
+    public static List<ClientObject> getObjects(List<ClientGroupObject> groups) {
         List<ClientObject> result = new ArrayList<ClientObject>();
+        for(ClientGroupObject group : groups)
+            result.addAll(group.objects);
+        return result;        
+    }
+
+    public List<ClientGroupObject> getDeserializeList(Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
+        List<ClientGroupObject> result = new ArrayList<ClientGroupObject>();
         ClassViewType newType = classViews.get(this);
         if((newType!=null?newType:controllers.get(this).classView) == ClassViewType.GRID)
-            result.addAll(objects);
+            result.add(this);
         return result;
     }
 
     public List<ClientObject> getDeserializeList(Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
-        return getDeserializeList(classViews, controllers);
+        return ClientGroupObject.getObjects(getDeserializeList(classViews, controllers));
     }
 
     public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectController controller) {
@@ -96,8 +112,12 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
 
         pool.deserializeCollection(objects, inStream);
 
+        parent = pool.deserializeObject(inStream);
+
         grid = pool.deserializeObject(inStream);
         showType = pool.deserializeObject(inStream);
+
+        isRecursive = inStream.readBoolean();
     }
 
     public static List<ClientGroupObjectValue> mergeGroupValues(OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>> groupColumnKeys) {
@@ -136,5 +156,14 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
 
     public ClientContainer getClientComponent(ClientContainer parent) {
         return parent.findContainerBySID(GroupObjectContainerSet.GROUP_CONTAINER + getID());
+    }
+
+    // по аналогии с сервером
+    public ClientGroupObject getUpTreeGroup() {
+        return BaseUtils.last(upTreeGroups);
+    }
+    public List<ClientGroupObject> upTreeGroups = new ArrayList<ClientGroupObject>();
+    public List<ClientGroupObject> getUpTreeGroups() {
+        return BaseUtils.add(upTreeGroups,this);
     }
 }
