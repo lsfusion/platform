@@ -9,10 +9,12 @@ import platform.interop.exceptions.RemoteServerException;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.logging.Logger;
 
 @Aspect
 public class RemoteExceptionManager {
-
+    private final static Logger logger = Logger.getLogger(RemoteExceptionManager.class.getName());
+    
     // аспектами ловим все RuntimeException которые доходят до внешней границы сервера и оборачиваем их
     @Around("execution(public * platform.interop.RemoteLogicsInterface.*(..)) ||" +
             "execution(public * platform.interop.navigator.RemoteNavigatorInterface.*(..)) ||" +
@@ -32,6 +34,7 @@ public class RemoteExceptionManager {
 
     public static InternalServerException createInternalServerException(Throwable e) {
         e.printStackTrace();
+        logger.severe("Error: " + e.getLocalizedMessage());
         OutputStream os = new ByteArrayOutputStream();
         e.printStackTrace(new PrintStream(os));
         return new InternalServerException(0, e.getLocalizedMessage(), os.toString());

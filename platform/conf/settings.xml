@@ -61,7 +61,7 @@
     </bean>
 
 	<bean id="settings" class="platform.server.Settings">
-        <property name="pushGroupWhere" value="true"/>
+        <property name="pushGroupWhere" value="false"/>
 	</bean>
 
 <!-- -->

@@ -138,7 +138,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         logger.severe("Server is starting...");
 
         XmlBeanFactory factory = new XmlBeanFactory(new FileSystemResource("conf/settings.xml"));
-        Settings.instance = (Settings)factory.getBean("settings");
+
+        if (factory.containsBean("settings")) {
+            Settings.instance = (Settings)factory.getBean("settings");
+        } else {
+            Settings.instance = new Settings();
+        }
 
         BL = (BusinessLogics) factory.getBean("businessLogics");
         registry = LocateRegistry.createRegistry(BL.getExportPort());
