@@ -132,7 +132,7 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
 
     @Override
     public OrderJoin getGroupJoin() {
-        return new OrderJoin(innerContext.getKeys(), innerContext.getValues(),query.getWhere(), Settings.PUSH_ORDER_WHERE ?query.partitions:new HashSet<Expr>(),group);
+        return new OrderJoin(innerContext.getKeys(), innerContext.getValues(),query.getWhere(), Settings.instance.isPushOrderWhere() ?query.partitions:new HashSet<Expr>(),group);
     }
 
     private Map<KeyExpr, BaseExpr> pushValues(Where falseWhere) {

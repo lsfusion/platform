@@ -30,12 +30,15 @@ public class ObjectPropertyEditor extends JDialog implements PropertyEditorCompo
 
         if (editEvent instanceof KeyEvent && ((KeyEvent)editEvent).getKeyCode() == KeyEvent.VK_SPACE) {
             clientDialog = new ClientNavigatorDialog(owner, dialog);
-            clientDialog.setBounds(owner.getBounds());
         } else {
             clientDialog = new ClientDialog(owner, dialog);
-            clientDialog.setSize(500, 300);
-            SwingUtils.requestLocation(clientDialog, new Point((int)(tableLocation.getX() + cellRectangle.getX()), (int)(tableLocation.getY() + cellRectangle.getMaxY())));
         }
+
+        clientDialog.setSize(SwingUtils.clipDimension(clientDialog.calculatePreferredSize(),
+                                                      new Dimension(400, 300),
+                                                      new Dimension(1000, 700)));
+        SwingUtils.requestLocation(clientDialog, new Point((int)(tableLocation.getX() + cellRectangle.getX()), (int)(tableLocation.getY() + cellRectangle.getMaxY())));
+
         dialog = null; // лучше сбрасывать ссылку, чтобы раньше начал отрабатывать сборщик мусора
 
         clientDialog.setVisible(true);

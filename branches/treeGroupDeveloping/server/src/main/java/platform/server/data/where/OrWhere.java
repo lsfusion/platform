@@ -77,7 +77,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
                 if(rawWheres2[i]!=null) {
                     Where pairedWhere = rawWheres2[i].pairs(rawWheres1[j]);
 
-                    if(Settings.RESTRUCT_WHERE_ON_MEANS && pairedWhere==null) {
+                    if(Settings.instance.isRestructWhereOnMeans() && pairedWhere==null) {
                         // нужно считать sibling'и
                         AndObjectWhere[] unpairedWheres = new AndObjectWhere[wheres2.length+wheres1.length-2*pairs-2]; int numu = 0;
                         for(int k=0;k<rawWheres1.length;k++)
@@ -92,7 +92,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
                     }
 
                     if(pairedWhere!=null) {
-                        pairedWheres[pairs++] = pairedWhere; if(Settings.RESTRUCT_WHERE_ON_MEANS) checkPaired = checkPaired.orCheck(pairedWhere);
+                        pairedWheres[pairs++] = pairedWhere; if(Settings.instance.isRestructWhereOnMeans()) checkPaired = checkPaired.orCheck(pairedWhere);
                         rawWheres2[i] = null;
                         rawWheres1[j] = null;
                         break;
@@ -239,8 +239,8 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
     // выполняет основные проверки на directMeansFrom
     public static CheckWhere orCheck(CheckWhere where1,CheckWhere where2) {
 
-        CheckWhere followWhere1 = Settings.CHECK_FOLLOWS_WHEN_OBJECTS?where1:checkff(where1, where2);
-        CheckWhere followWhere2 = Settings.CHECK_FOLLOWS_WHEN_OBJECTS?where2:checkff(where2, followWhere1);
+        CheckWhere followWhere1 = Settings.instance.isCheckFollowsWhenObjects() ?where1:checkff(where1, where2);
+        CheckWhere followWhere2 = Settings.instance.isCheckFollowsWhenObjects() ?where2:checkff(where2, followWhere1);
 
         if(followWhere1.isFalse() || followWhere2.isTrue()) return followWhere2;
         if(followWhere2.isFalse() || followWhere1.isTrue()) return followWhere1;
@@ -308,7 +308,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
 
     // на самом деле wheres чисто из object where состоит
     static boolean checkObjectTrue(AndObjectWhere[] wheres, int numWheres) {
-        if(Settings.CHECK_FOLLOWS_WHEN_OBJECTS) {
+        if(Settings.instance.isCheckFollowsWhenObjects()) {
             AndObjectWhere[] noFollowWheres = wheres.clone(); int nf = 0;
             for(int i=0;i<numWheres;i++)
                 if(noFollowWheres[i]!=null) {
@@ -336,7 +336,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
             }
         }
 
-        if(!Settings.SIMPLE_CHECK_COMPARE)
+        if(!Settings.instance.isSimpleCheckCompare())
             for(int i=0;i<numWheres;i++)
                 if(wheres[i] instanceof CompareWhere) // если есть хоть один Compare, запускаем дальше чтобы избавится от них
                     return ((CompareWhere)wheres[i]).checkTrue(toWhere(siblings(wheres,i,numWheres),true));
@@ -371,7 +371,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
                     return true;
             }
 
-        if(!Settings.SIMPLE_CHECK_COMPARE) { // эвристика - для CompareWhere проверяем "единичные" следствия - частный случай самой верхней проверки (CompareWhere.checkTrue)
+        if(!Settings.instance.isSimpleCheckCompare()) { // эвристика - для CompareWhere проверяем "единичные" следствия - частный случай самой верхней проверки (CompareWhere.checkTrue)
             for(int i=0;i<numWheres;i++) // вообще говоря исключая логику транзитивности такой подход практически эквивалентен верхней проверке (если только не будет скажем A=B, A>B, B>A)
                 if(wheres[i] instanceof CompareWhere) {
                     Equal equal1, equal2; Compare compare1, compare2;

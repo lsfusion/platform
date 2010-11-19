@@ -28,7 +28,7 @@ class ClientFormContainer extends JPanel{
 
 //        this.setBackground(new Color((int)(Math.random()*255), (int)(Math.random()*255), (int)(Math.random()*255)));
 
-        setPreferredSize(new Dimension(10000, 10000));
+//        setPreferredSize(new Dimension(10000, 10000));
 
         setVisible(false);
 

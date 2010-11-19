@@ -18,6 +18,7 @@ import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.RemoteObject;
+import platform.server.Settings;
 import platform.server.auth.PolicyManager;
 import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
@@ -137,6 +138,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         logger.severe("Server is starting...");
 
         XmlBeanFactory factory = new XmlBeanFactory(new FileSystemResource("conf/settings.xml"));
+        Settings.instance = (Settings)factory.getBean("settings");
 
         BL = (BusinessLogics) factory.getBean("businessLogics");
         registry = LocateRegistry.createRegistry(BL.getExportPort());

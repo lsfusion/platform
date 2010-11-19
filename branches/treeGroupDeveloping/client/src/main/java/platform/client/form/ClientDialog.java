@@ -108,4 +108,8 @@ public class ClientDialog extends JDialog {
         if (currentForm != null)
             currentForm.closed();
     }
+
+    public Dimension calculatePreferredSize() {
+        return currentForm.calculatePreferredSize();
+    }
 }

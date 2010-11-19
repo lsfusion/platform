@@ -520,7 +520,7 @@ public class CompiledQuery<K,V> {
                 Where fullWhere = exprWhere.and(platform.server.data.expr.Expr.getWhere(group));
 
                 // если pushWhere, то берем
-                if(!inner && Settings.PUSH_GROUP_WHERE)
+                if(!inner && Settings.instance.isPushGroupWhere())
                     fullWhere = fullWhere.and(GroupExpr.create(groupExprs, ValueExpr.TRUE, getInnerWhere(), true, BaseUtils.toMap(groupExprs.keySet())).getWhere());
 
                 Map<Expr,String> fromPropertySelect = new HashMap<Expr, String>();
@@ -567,7 +567,7 @@ public class CompiledQuery<K,V> {
 
                     // кэшируем так как не самая быстрая операция
                     Where partitionWhere;
-                    if(Settings.PUSH_ORDER_WHERE) {
+                    if(Settings.instance.isPushOrderWhere()) {
                         partitionWhere = cachedPartitions.get(query.partitions);
                         if(partitionWhere==null) {
                             partitionWhere = getPartitionWhere(query.partitions);

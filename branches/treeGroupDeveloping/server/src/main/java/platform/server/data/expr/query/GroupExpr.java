@@ -207,7 +207,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
 
     // "определяет" вытаскивать case'ы или нет
     private static Collection<? extends Case<? extends Expr>> getExprCases(Expr expr,boolean max) {
-        return max && Settings.SPLIT_GROUP_MAX_EXPRCASES?expr.getCases():Collections.singleton(new Case<Expr>(Where.TRUE,expr));
+        return max && Settings.instance.isSplitGroupMaxExprcases() ?expr.getCases():Collections.singleton(new Case<Expr>(Where.TRUE,expr));
     }
 
     private Collection<ClassExprWhere> packNoChange = new ArrayList<ClassExprWhere>();

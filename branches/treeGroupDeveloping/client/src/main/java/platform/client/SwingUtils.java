@@ -143,8 +143,15 @@ public class SwingUtils {
 
     // запрашивает положение объекта, чтобы он не вылезал за экран
     public static void requestLocation(Component comp, Point point) {
-        point.x = Math.min(point.x, comp.getParent().getWidth() - comp.getWidth());
-        point.y = Math.min(point.y, comp.getParent().getHeight() - comp.getHeight());
+        point.x = Math.min(point.x, comp.getParent().getWidth() - comp.getWidth() - 20);
+        point.y = Math.min(point.y, comp.getParent().getHeight() - comp.getHeight() - 20);
         comp.setLocation(point);
+    }
+
+    public static Dimension clipDimension(Dimension toClip, Dimension min, Dimension max) {
+
+        return new Dimension(Math.max(min.width, Math.min(max.width, toClip.width)),
+                             Math.max(min.height, Math.min(max.height, toClip.height))
+                            );
     }
 }

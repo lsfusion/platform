@@ -703,6 +703,9 @@ public class ClientFormController {
             remoteForm = null;
         }
     }
+    public Dimension calculatePreferredSize() {
+        return formLayout.calculatePreferredSize();
+    }
 
     public void moveGroupObject(ClientGroupObject parentGroup, ClientGroupObjectValue parentKey, ClientGroupObject childGroup, ClientGroupObjectValue childKey, int index) throws IOException {
         remoteForm.moveGroupObject(parentGroup.getID(), parentKey.serialize(parentGroup), childGroup.getID(), childKey.serialize(childGroup), index);

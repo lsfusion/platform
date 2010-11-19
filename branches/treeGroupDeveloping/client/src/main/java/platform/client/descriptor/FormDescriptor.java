@@ -118,7 +118,16 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
             ClientContainer mainContainer = client.mainContainer;
 
             for (T object : objects) {
+
                 ClientContainer newContainer = object.getDestinationContainer(mainContainer, groupObjects);
+                ClientContainer oldContainer = object.getClientComponent(mainContainer).container;
+
+                boolean last = false;
+                if (oldContainer == null && newContainer == null) {
+                    newContainer = client.mainContainer;
+                    last = true;
+                }
+
                 if (newContainer != null && !newContainer.isAncestorOf(object.getClientComponent(mainContainer).container)) {
                     int insIndex = -1;
                     // сначала пробуем вставить перед объектом, который идет следующим в этом контейнере
@@ -146,7 +155,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
 
                     // если объект свойство не нашлось куда добавить, то его надо добавлять самым первым в контейнер
                     // иначе свойства будут идти после управляющих объектов
-                    if (insIndex == -1) insIndex = 0;
+                    if (insIndex == -1) insIndex = (last ? newContainer.children.size(): 0);
                     newContainer.addToChildren(insIndex, object.getClientComponent(mainContainer));
                 }
             }

@@ -3,6 +3,7 @@ package platform.client.logics;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
 import platform.base.OrderedMap;
+import platform.base.identity.IdentityObject;
 import platform.base.BaseUtils;
 import platform.client.Main;
 import platform.client.form.ClientFormController;
@@ -19,12 +20,11 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
 
-public class ClientGroupObject implements ClientPropertyRead, ClientIdentitySerializable, AbstractGroupObject<ClientComponent> {
+public class ClientGroupObject extends IdentityObject implements ClientPropertyRead, ClientIdentitySerializable, AbstractGroupObject<ClientComponent> {
 
     public ClientTreeGroup parent;
     public boolean isRecursive;
 
-    private int ID;
     public List<ClassViewType> banClassView = new ArrayList<ClassViewType>();
 
     public ClientGrid grid;
@@ -41,7 +41,7 @@ public class ClientGroupObject implements ClientPropertyRead, ClientIdentitySeri
 
     // конструктор при создании нового объекта
     public ClientGroupObject(int ID, ApplicationContext context) {
-        this.ID = ID;
+        super(ID);
 
         grid = new ClientGrid(context);
         showType = new ClientShowType(context);
@@ -93,20 +93,12 @@ public class ClientGroupObject implements ClientPropertyRead, ClientIdentitySeri
         return toString();
     }
 
-    public int getID() {
-        return ID;
-    }
-
     public ClientComponent getGrid() {
         return grid;
     }
 
     public ClientComponent getShowType() {
         return showType;
-    }
-
-    public void setID(int iID) {
-        ID = iID;
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

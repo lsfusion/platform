@@ -24,6 +24,10 @@ public abstract class ClientFormLayout extends JPanel {
         return mainContainer;
     }
 
+    public Dimension calculatePreferredSize() {
+        return layoutManager.calculatePreferredSize();
+    }
+
     // объект, которому делегируется ответственность за расположение объектов на форме
     private SimplexLayout layoutManager;
 
@@ -39,8 +43,8 @@ public abstract class ClientFormLayout extends JPanel {
         // создаем все контейнеры на форме
         createContainerViews(topContainer);
 
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        add(mainContainer);
+        setLayout(new BorderLayout());
+        add(mainContainer, BorderLayout.CENTER);
 
         // приходится делать StrongRef, иначе он тут же соберется сборщиком мусора так как ContainerFocusListener держит его как WeakReference
         focusListener = new FocusAdapter() {
