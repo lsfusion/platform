@@ -51,17 +51,17 @@
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
-            <version>1.6.8</version>
+            <version>1.6.10</version>
         </dependency>
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
-            <version>1.6.7</version>
+            <version>1.6.10</version>
         </dependency>
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjtools</artifactId>
-            <version>1.6.8</version>
+            <version>1.6.10</version>
         </dependency>
         <dependency>
             <groupId>ar.com.fdvs</groupId>

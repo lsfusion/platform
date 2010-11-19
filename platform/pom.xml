@@ -22,7 +22,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.2</version>
+                <version>1.3</version>
                 <configuration>
                     <encoding>UTF-8</encoding>
                     <source>6</source>
