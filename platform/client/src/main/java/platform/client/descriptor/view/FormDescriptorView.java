@@ -181,6 +181,8 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
 
     private void removeDependencies(FormDescriptor form) {
         form.removeDependency("groupObjects", this);
+        form.removeDependency("treeGroups", this);
+        form.removeDependency("groups", this);
         form.removeDependency("propertyDraws", this);
         form.removeDependency("children", this);
         form.removeDependency("objects", this);

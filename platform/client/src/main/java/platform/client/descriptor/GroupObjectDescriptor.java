@@ -30,7 +30,6 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
 
     public List<ObjectDescriptor> objects = new ArrayList<ObjectDescriptor>();
 
-    private ApplicationContext context;
     private Map<ObjectDescriptor, PropertyObjectDescriptor> isParent = new HashMap<ObjectDescriptor, PropertyObjectDescriptor>();
     private TreeGroupDescriptor parent;
 
@@ -49,14 +48,6 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
 
     public void setParent(TreeGroupDescriptor parent) {
         this.parent = parent;
-    }
-
-    public ApplicationContext getContext() {
-        return context;
-    }
-
-    public void setContext(ApplicationContext context) {
-        this.context = context;
     }
 
     public List<ClassViewType> getBanClassViewList() {
