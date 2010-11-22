@@ -12,7 +12,6 @@ import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -34,21 +33,16 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
 
     public ClientComponent(ApplicationContext context) {
         super(context);
-        initDesign(context);
-        initConstraints(context);
+        initAggregateObjects(context);
     }
 
     public ClientComponent(int ID, ApplicationContext context) {
         super(ID, context);
-        initDesign(context);
-        initConstraints(context);
+        initAggregateObjects(context);
     }
 
-    protected void initConstraints(ApplicationContext context) {
+    protected void initAggregateObjects(ApplicationContext context) {
         constraints = new SimplexConstraints<ClientComponent>(context);
-    }
-
-    private void initDesign(ApplicationContext context){
         design = new ComponentDesign(context);
     }
 

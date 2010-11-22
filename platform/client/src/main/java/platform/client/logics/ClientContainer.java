@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClientContainer extends ClientComponent implements ClientIdentitySerializable, AbstractContainer<ClientContainer, ClientComponent> {
+public class ClientContainer extends ClientComponent implements ClientIdentitySerializable, AbstractContainer<ClientContainer, ClientComponent>, CustomConstructible {
 
     private String title;
     private String description;
@@ -57,11 +57,11 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
     }
 
     public void customConstructor() {
+        initAggregateObjects(getContext());
         // по умолчанию, контейнеры не должны resize'ится вообще, то есть не стремится ни к максимальному размеру, ни к предпочитаемому
         // то же самое пока дублируется в ClientContainer
         constraints.fillVertical = -1;
         constraints.fillHorizontal = -1;
-        initConstraints(getContext());
     }
 
     @Override
