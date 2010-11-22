@@ -278,7 +278,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         assert value.keySet().equals(new HashSet<ObjectInstance>(GroupObjectInstance.getObjects(group.getUpTreeGroups())));
         for (Entry<ObjectInstance, ? extends ObjectValue> objectValue : value.entrySet())
             objectValue.getKey().changeValue(session, objectValue.getValue());
-        for(ObjectInstance object : GroupObjectInstance.getObjects(group.downTreeGroups))
+        for(ObjectInstance object : GroupObjectInstance.getObjects(group.getDownTreeGroups()))
             object.changeValue(session, NullValue.instance);
     }
 
@@ -1085,7 +1085,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                             updateGroupObject = new GroupObjectValue(group, currentObject);
                     }
 
-                if(group.downTreeGroups.size()==0 && updateGroupObject !=null) { // так как в tree группе currentObject друг на друга никак не влияют, то можно и нужно делать updateGroupObject в конце
+                if(group.getDownTreeGroups().size()==0 && updateGroupObject !=null) { // так как в tree группе currentObject друг на друга никак не влияют, то можно и нужно делать updateGroupObject в конце
                     updateGroupObject(updateGroupObject.group, result, updateGroupObject.value);
                     updateGroupObject = null;
                 }

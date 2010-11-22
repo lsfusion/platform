@@ -291,16 +291,18 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public boolean isInTree() {
-        return getUpTreeGroup()!=null || parent!=null || downTreeGroups.size()>0;
+        return treeGroup!=null || parent!=null;
     }
 
-    List<GroupObjectInstance> downTreeGroups = new ArrayList<GroupObjectInstance>();
-    public GroupObjectInstance getUpTreeGroup() {
-        return BaseUtils.last(upTreeGroups);
+    public TreeGroupInstance treeGroup = null;
+    public List<GroupObjectInstance> getDownTreeGroups() {
+        return treeGroup!=null?treeGroup.getDownTreeGroups(this):new ArrayList<GroupObjectInstance>();
     }
-    public List<GroupObjectInstance> upTreeGroups = new ArrayList<GroupObjectInstance>(); // по аналогии с groupTo сделано
+    public GroupObjectInstance getUpTreeGroup() {
+        return treeGroup!=null?treeGroup.getUpTreeGroup(this):null;
+    }
     public List<GroupObjectInstance> getUpTreeGroups() {
-        return BaseUtils.add(upTreeGroups,this);
+        return treeGroup!=null?treeGroup.getUpTreeGroups(this):Collections.singletonList(this);
     }
 
     public static Set<GroupObjectInstance> getUpTreeGroups(Set<GroupObjectInstance> groups) {
