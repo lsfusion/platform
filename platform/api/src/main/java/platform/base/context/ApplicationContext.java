@@ -21,6 +21,10 @@ public class ApplicationContext {
         incrementDependency.remove(field, view);
     }
 
+    public void removeDependency(IncrementView view) {
+        incrementDependency.remove(view);
+    }
+
     public void removeDependency(Object object, String field, IncrementView view) {
         incrementDependency.remove(object, field, view);
     }

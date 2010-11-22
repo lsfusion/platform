@@ -45,9 +45,9 @@ public class IncrementDependency {
                 objects.remove(object);
                 if (objects.isEmpty())
                     viewObjects.remove(view);
+                unregisterViewOrder(view);
             }
         }
-        unregisterViewOrder(view);
     }
 
     private final Map<String, WeakIdentityHashSet<IncrementView>> mapViews = new HashMap<String, WeakIdentityHashSet<IncrementView>>();
@@ -69,8 +69,25 @@ public class IncrementDependency {
         WeakIdentityHashSet<IncrementView> views = mapViews.get(field);
         if (views != null) {
             views.remove(view);
+            unregisterViewOrder(view);
         }
-        unregisterViewOrder(view);
+    }
+
+    public void remove(IncrementView view) {
+
+        for (WeakHashMap<IncrementView, WeakIdentityHashSet<Object>> views : mapViewObjects.values()) {
+            if (views.containsKey(view)) {
+                views.remove(view);
+                unregisterViewOrder(view);
+            }
+        }
+
+        for (WeakIdentityHashSet<IncrementView> views : mapViews.values()) {
+            if (views.contains(view)) {
+                views.remove(view);
+                unregisterViewOrder(view);
+            }
+        }
     }
 
     // метод который должен вызываться из setter'ов, add'

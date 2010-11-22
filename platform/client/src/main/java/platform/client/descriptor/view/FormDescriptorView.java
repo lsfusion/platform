@@ -180,27 +180,7 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
     }
 
     private void removeDependencies(FormDescriptor form) {
-        form.removeDependency("groupObjects", this);
-        form.removeDependency("treeGroups", this);
-        form.removeDependency("groups", this);
-        form.removeDependency("propertyDraws", this);
-        form.removeDependency("children", this);
-        form.removeDependency("objects", this);
-        form.removeDependency("caption", this);
-        form.removeDependency("title", this);
-        form.removeDependency("description", this);
-        form.removeDependency("propertyObject", this);
-        form.removeDependency("toDraw", this);
-        form.removeDependency("fixedFilters", this);
-        form.removeDependency("regularFilterGroups", this);
-        form.removeDependency("filters", this);
-        form.removeDependency("filter", this);
-        form.removeDependency("op1", this);
-        form.removeDependency("op2", this);
-        form.removeDependency("value", this);
-        form.removeDependency("property", this);
-        form.removeDependency("baseClass", this);
-        form.removeDependency(this, "form", this);
+        form.removeDependency(this);
 
         form.getContext().removeLookupResultChangeListener(Lookup.NEW_EDITABLE_OBJECT_PROPERTY, this);
         form.getContext().removeLookupResultChangeListener(Lookup.DELETED_OBJECT_PROPERTY, this);

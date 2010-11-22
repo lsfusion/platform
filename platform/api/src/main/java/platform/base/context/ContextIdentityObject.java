@@ -46,6 +46,10 @@ public class ContextIdentityObject extends IdentityObject implements Application
         context.removeDependency(field, view);
     }
 
+    public void removeDependency(IncrementView view) {
+        context.removeDependency(view);
+    }
+
     public void removeDependency(Object object, String field, IncrementView view) {
         context.removeDependency(object, field, view);
     }
