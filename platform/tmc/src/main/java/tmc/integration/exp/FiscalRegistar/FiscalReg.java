@@ -19,12 +19,12 @@ public class FiscalReg {
     static Dispatch cashDispatch;
     static ActiveXComponent cashRegister;
 
-    static void init(int comPort) {
+    static void init(int comPort, String reason) {
         if (cashDispatch != null) {
             try {
-                Dispatch.call(cashDispatch, "Close", true);
-            }
-            catch (Exception e) {
+                Dispatch.call(cashDispatch, "Close", false);
+            } catch (Exception e) {
+                throw new RuntimeException("Ошибка при закрытии соединения с фискальным регистратором\n" + reason, e);
             }
         }
         cashRegister = new ActiveXComponent("Incotex.MercuryFPrtX");
@@ -45,15 +45,15 @@ public class FiscalReg {
 
     public static Dispatch getDispatch(int comPort) {
         if (cashDispatch == null) {
-            init(comPort);
+            init(comPort, "Init");
         } else {
             try {
                 Dispatch.call(cashDispatch, "TestConnection");
                 if (!cashRegister.getProperty("Active").getBoolean()) {
-                    init(comPort);
+                    init(comPort, "not Active");
                 }
             } catch (Exception e) {
-                init(comPort);
+                init(comPort, "TestConnection " + e.toString());
             }
         }
         return cashDispatch;
@@ -97,7 +97,7 @@ public class FiscalReg {
 
     public static String getInfo(String property, int comPort, String query) {
         if (cashDispatch == null) {
-            init(comPort);
+            init(comPort, "InitInfo");
         }
         if (query != null) {
             Dispatch.call(cashDispatch, query);
@@ -109,7 +109,7 @@ public class FiscalReg {
 
     public static String getQuery(int comPort, String query) {
         if (cashDispatch == null) {
-            init(comPort);
+            init(comPort, "InitGetQuery");
         }
         long result = Dispatch.call(cashDispatch, "QueryCounter", 11, false).getCurrency().longValue();
         result /= 10000;
