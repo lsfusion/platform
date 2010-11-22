@@ -1,4 +1,4 @@
-package tmc.integration.exp.FiscalRegistar;
+package tmc.integration.exp.FiscalRegister;
 
 import java.io.Serializable;
 import java.util.ArrayList;

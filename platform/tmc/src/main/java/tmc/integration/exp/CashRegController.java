@@ -17,7 +17,7 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import tmc.VEDBusinessLogics;
-import tmc.integration.exp.FiscalRegistar.*;
+import tmc.integration.exp.FiscalRegister.*;
 
 import javax.swing.*;
 import java.awt.event.InputEvent;

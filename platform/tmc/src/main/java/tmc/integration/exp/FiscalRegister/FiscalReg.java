@@ -1,4 +1,4 @@
-package tmc.integration.exp.FiscalRegistar;
+package tmc.integration.exp.FiscalRegister;
 
 import com.jacob.activeX.ActiveXComponent;
 import com.jacob.com.Dispatch;
@@ -20,13 +20,8 @@ public class FiscalReg {
     static ActiveXComponent cashRegister;
 
     static void init(int comPort, String reason) {
-        if (cashDispatch != null) {
-            try {
-                Dispatch.call(cashDispatch, "Close", false);
-            } catch (Exception e) {
-                throw new RuntimeException("Ошибка при закрытии соединения с фискальным регистратором\n" + reason, e);
-            }
-        }
+        dispose(reason);
+
         cashRegister = new ActiveXComponent("Incotex.MercuryFPrtX");
         cashRegister.setProperty("PortNum", comPort);
         cashRegister.setProperty("BaudRate", 115200);
@@ -42,21 +37,36 @@ public class FiscalReg {
         }
     }
 
+    public static void dispose(String reason) {
+        if (cashDispatch != null) {
+            try {
+                Dispatch.call(cashDispatch, "Close", false);
+            } catch (Exception e) {
+                throw new RuntimeException("Ошибка при закрытии соединения с фискальным регистратором\n" + reason, e);
+            }
+            cashDispatch = null;
+            System.gc();
+        }
+    }
 
     public static Dispatch getDispatch(int comPort) {
+        initDispatch(comPort, "Dispatch");
+        return cashDispatch;
+    }
+
+    public static void initDispatch(int comPort, String type) {
         if (cashDispatch == null) {
-            init(comPort, "Init");
+            init(comPort, "Init : " + type);
         } else {
             try {
                 Dispatch.call(cashDispatch, "TestConnection");
                 if (!cashRegister.getProperty("Active").getBoolean()) {
-                    init(comPort, "not Active");
+                    init(comPort, "not Active : " + type);
                 }
             } catch (Exception e) {
-                init(comPort, "TestConnection " + e.toString());
+                init(comPort, "TestConnection : " + type + "\n" + e.toString());
             }
         }
-        return cashDispatch;
     }
 
     public static String getFiscalString(String str) {
@@ -96,9 +106,7 @@ public class FiscalReg {
     }
 
     public static String getInfo(String property, int comPort, String query) {
-        if (cashDispatch == null) {
-            init(comPort, "InitInfo");
-        }
+        initDispatch(comPort, "Info");
         if (query != null) {
             Dispatch.call(cashDispatch, query);
         }
@@ -108,9 +116,7 @@ public class FiscalReg {
     }
 
     public static String getQuery(int comPort, String query) {
-        if (cashDispatch == null) {
-            init(comPort, "InitGetQuery");
-        }
+        initDispatch(comPort, "Query");
         long result = Dispatch.call(cashDispatch, "QueryCounter", 11, false).getCurrency().longValue();
         result /= 10000;
         return NumberFormat.getInstance().format(result);

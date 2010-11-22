@@ -1,4 +1,4 @@
-package tmc.integration.exp.FiscalRegistar;
+package tmc.integration.exp.FiscalRegister;
 
 import java.io.IOException;
 
@@ -14,14 +14,24 @@ public class CashRegPrintReceiptAction extends AbstractClientAction {
     int type;
     int comPort;
 
+    boolean dispose;
+
     public CashRegPrintReceiptAction(int type, int comPort, ReceiptInstance receipt) {
         this.receipt = receipt;
         this.type = type;
         this.comPort = comPort;
+
+        String disposeProperty = System.getProperty("tmc.integration.exp.FiscalRegister.dispose"); 
+        dispose = disposeProperty != null && disposeProperty.equals("true");
     }
 
     @Override
     public void dispatch(ClientActionDispatcher dispatcher) throws IOException {
+
+        if (dispose) {
+            FiscalReg.dispose("Before PrintReceipt");
+        }
+
         Dispatch cashDispatch = FiscalReg.getDispatch(comPort);
         Dispatch.call(cashDispatch, "OpenFiscalDoc", type);
 
@@ -74,5 +84,9 @@ public class CashRegPrintReceiptAction extends AbstractClientAction {
             throw e;
         }
         Dispatch.call(cashDispatch, "ExternalPulse", 1, 60, 10, 1);
+
+        if (dispose) {
+            FiscalReg.dispose("After PrintReceipt");
+        }
     }
 }

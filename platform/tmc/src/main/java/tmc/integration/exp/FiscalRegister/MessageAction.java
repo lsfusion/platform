@@ -1,4 +1,4 @@
-package tmc.integration.exp.FiscalRegistar;
+package tmc.integration.exp.FiscalRegister;
 
 import platform.interop.action.ClientAction;
 import platform.interop.action.ClientActionDispatcher;

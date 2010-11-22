@@ -1,4 +1,4 @@
-package tmc.integration.exp.FiscalRegistar;
+package tmc.integration.exp.FiscalRegister;
 
 import com.jacob.com.Dispatch;
 import platform.interop.action.AbstractClientAction;

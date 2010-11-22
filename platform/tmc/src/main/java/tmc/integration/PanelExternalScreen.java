@@ -7,7 +7,7 @@ import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenComponent;
 import platform.interop.form.screen.ExternalScreenConstraints;
 import platform.interop.form.screen.ExternalScreenParameters;
-import tmc.integration.exp.FiscalRegistar.FiscalReg;
+import tmc.integration.exp.FiscalRegister.FiscalReg;
 
 import java.util.Map;
 import java.util.logging.Logger;
@@ -96,6 +96,9 @@ public class PanelExternalScreen implements ExternalScreen {
             try {
                 Dispatch cashDispatch = FiscalReg.getDispatch(fiscalCom);
                 Dispatch.call(cashDispatch, "ShowDisplay", output, true, true);
+                if (parameters.dispose) {
+                    FiscalReg.dispose("ShowDisplay");
+                }
             } catch (Exception e) {
                 // пока игнорируем
             }
