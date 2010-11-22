@@ -496,6 +496,8 @@ public class ClientFormController {
     }
 
     public void changeGroupObject(ClientGroupObject groupObject, Scroll changeType) throws IOException {
+        SwingUtils.stopSingleAction(groupObject.getActionID(), false);
+        
         remoteForm.changeGroupObject(groupObject.getID(), changeType.serialize());
         applyRemoteChanges();
     }
