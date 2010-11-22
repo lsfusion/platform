@@ -157,8 +157,7 @@ public abstract class SerializationPool<C> {
                 put(getClassId(clazz), id, instance);
                 ((IdentitySerializable)instance).setID(id);
             }
-            if (ApplicationContextHolder.class.isAssignableFrom(clazz) && appContext != null) {
-                ((ApplicationContextHolder)instance).setContext(appContext);
+            if(setInstanceContext(instance)){
                 appContext.idRegister(id);
             }
 
@@ -207,9 +206,13 @@ public abstract class SerializationPool<C> {
 
     public <T> T readObject(DataInputStream inStream) throws IOException {
         try {
-            return inStream.readBoolean()
-                   ? (T)new ObjectInputStream(inStream).readObject()
-                   : null;
+            if (inStream.readBoolean()) {
+                T object = (T) new ObjectInputStream(inStream).readObject();
+                setInstanceContext(object);
+                return object;
+            } else {
+                return null;
+            }
         } catch (ClassNotFoundException e) {
             throw new IOException("Не могу прочитать объект.", e);
         }
@@ -239,5 +242,13 @@ public abstract class SerializationPool<C> {
         return inStream.readBoolean()
                ? inStream.readInt()
                : null;
+    }
+
+    private boolean setInstanceContext(Object instance){
+        if (instance instanceof ApplicationContextHolder && appContext != null) {
+            ((ApplicationContextHolder)instance).setContext(appContext);
+            return true;
+        }
+        return false;
     }
 }

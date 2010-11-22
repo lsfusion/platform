@@ -41,6 +41,6 @@ public class ClientShowType extends ClientComponent {
 
     @Override
     public JComponent getPropertiesEditor() {
-        return new ComponentEditor("Компонент изменения вида", this);
+        return new ComponentEditor(this);
     }
 }

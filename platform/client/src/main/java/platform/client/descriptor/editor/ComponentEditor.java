@@ -1,32 +1,29 @@
 package platform.client.descriptor.editor;
 
 import platform.client.descriptor.editor.base.NodeEditor;
-import platform.client.descriptor.editor.base.TitledPanel;
+import platform.client.descriptor.editor.base.NorthBoxPanel;
 import platform.client.descriptor.increment.editor.IncrementCheckBox;
 import platform.client.logics.ClientComponent;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class ComponentEditor extends TitledPanel implements NodeEditor {
-    protected final ClientComponent component;
+public class ComponentEditor extends JTabbedPane implements NodeEditor {
 
-    public ComponentEditor(String title, final ClientComponent component) {
-        super(title);
+    protected JPanel defaultComponentEditor;
+    protected ComponentConstraintsEditor constraintsEditor;
+    protected ComponentDesignEditor designEditor;
 
-        this.component = component;
+    public ComponentEditor(final ClientComponent component) {
 
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        defaultComponentEditor = new JPanel();
+        defaultComponentEditor.setLayout(new FlowLayout(FlowLayout.LEFT));
+        defaultComponentEditor.add(new IncrementCheckBox("Компонент по умолчанию", component, "defaultComponent"));
+        constraintsEditor = new ComponentConstraintsEditor(component.constraints);
+        designEditor = new ComponentDesignEditor("Дизайн компонента", component.design);
 
-        add(new TitledPanel(null, new IncrementCheckBox("Компонент по умолчанию", component, "defaultComponent")));
-
-        add(Box.createRigidArea(new Dimension(5, 5)));
-
-        add(new ComponentConstraintsEditor(component, "constraints"));
-
-        add(Box.createRigidArea(new Dimension(5, 5)));
-
-        add(new ComponentDesignEditor("Дизайн компонента", component));
+        addTab("Отображение", new NorthBoxPanel(defaultComponentEditor, designEditor));
+        addTab("Расположение", new NorthBoxPanel(constraintsEditor));
     }
 
     public JComponent getComponent() {

@@ -54,6 +54,6 @@ public class ClientClassChooser extends ClientComponent {
 
     @Override
     public JComponent getPropertiesEditor() {
-        return new ComponentEditor("Компонент выбора класса", this);
+        return new ComponentEditor(this);
     }
 }

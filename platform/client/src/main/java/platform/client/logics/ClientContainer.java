@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClientContainer extends ClientComponent implements ClientIdentitySerializable, AbstractContainer<ClientContainer, ClientComponent>, CustomConstructible {
+public class ClientContainer extends ClientComponent implements ClientIdentitySerializable, AbstractContainer<ClientContainer, ClientComponent> {
 
     private String title;
     private String description;
@@ -61,6 +61,7 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         // то же самое пока дублируется в ClientContainer
         constraints.fillVertical = -1;
         constraints.fillHorizontal = -1;
+        initConstraints(getContext());
     }
 
     @Override
@@ -114,7 +115,7 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
 
     @Override
     public JComponent getPropertiesEditor() {
-        return new ComponentEditor("Контейнер", this);
+        return new ComponentEditor(this);
     }
 
     public String getTitle() {

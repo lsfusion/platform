@@ -9,6 +9,7 @@ import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.PropertyObjectDescriptor;
 import platform.client.descriptor.editor.base.NamedContainer;
 import platform.client.descriptor.editor.base.NodeEditor;
+import platform.client.descriptor.editor.base.NorthBoxPanel;
 import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.descriptor.increment.editor.IncrementMultipleListEditor;
 import platform.client.descriptor.increment.editor.IncrementMultipleListSelectionModel;
@@ -21,41 +22,47 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-public class GroupObjectEditor extends JPanel implements NodeEditor {
+public class GroupObjectEditor extends JTabbedPane implements NodeEditor {
     private final GroupObjectDescriptor group;
     private final FormDescriptor form;
-
+    
     public GroupObjectEditor(final GroupObjectDescriptor group, final FormDescriptor form) {
         this.group = group;
         this.form = form;
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        add(new TitledPanel("Вид при инициализации", new JComboBox(new IncrementSingleListSelectionModel(group, "initClassView") {
+        TitledPanel initClassViewPanel = new TitledPanel("Вид при инициализации", new JComboBox(new IncrementSingleListSelectionModel(group, "initClassView") {
             public List<?> getSingleList() {
                 return Arrays.asList(ClassViewType.values());
             }
-        })));
+        }));
 
-        add(new TitledPanel("Запрещённый вид", new IncrementMultipleListEditor(
+        TitledPanel banClassViewPanel =new TitledPanel("Запрещённый вид", new IncrementMultipleListEditor(
                 new IncrementMultipleListSelectionModel(group, "banClassViewList") {
                     public List<?> getList() {
                         return Arrays.asList(ClassViewType.values());
                     }
-                })));
+                }));
 
-        add(new TitledPanel("Свойство выделения", new PropertyObjectEditor(group, "propertyHighlight", form, group)));
+        TitledPanel propertyHighlightPanel = new TitledPanel("Свойство выделения", new PropertyObjectEditor(group, "propertyHighlight", form, group));
 
-        add(new GroupPropertyObjectEditor(form, group));
+        GroupPropertyObjectEditor groupPropertyObjectPanel = new GroupPropertyObjectEditor(form, group);
 
-        add(group.client.grid.getPropertiesEditor());
-        add(group.client.showType.getPropertiesEditor());
+        JTabbedPane propertiesPanel = new JTabbedPane();
+        propertiesPanel.addTab("Таблица", new NorthBoxPanel(group.client.grid.getPropertiesEditor()));
+        propertiesPanel.addTab("Выбор вида", new NorthBoxPanel(group.client.showType.getPropertiesEditor()));
 
-        add(new TitledPanel("Порядки по умолчанию", new DefaultOrdersEditor(form, group)));
-
-        if (group.getParent() != null) {
-            add(new IsParentEditor());
+        DefaultOrdersEditor defaultOrdersPanel = new DefaultOrdersEditor(form, group);
+        if (group.getParent() != null){
+            addTab("Общее", new NorthBoxPanel(initClassViewPanel, banClassViewPanel, propertyHighlightPanel, new IsParentEditor()));
         }
-    }
+        else{
+            addTab("Общее", new NorthBoxPanel(initClassViewPanel, banClassViewPanel, propertyHighlightPanel));
+        }
+        addTab("Свойства", new NorthBoxPanel(groupPropertyObjectPanel));
+        addTab("Отображение", new NorthBoxPanel(propertiesPanel));
+        addTab("Порядки по умолчанию", new NorthBoxPanel(defaultOrdersPanel));
+
+    }                                        
 
     public class IsParentEditor extends TitledPanel implements IncrementView {
         public IsParentEditor() {

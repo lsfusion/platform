@@ -1,24 +1,21 @@
 package platform.client.descriptor.editor;
 
+import platform.client.descriptor.editor.base.NorthBoxPanel;
 import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.descriptor.increment.editor.IncrementCheckBox;
 import platform.client.logics.ClientGrid;
 
-import javax.swing.*;
-import java.awt.*;
-
 public class GridEditor extends ComponentEditor {
     public GridEditor(ClientGrid component) {
-        super("Таблица", component);
+        super(component);
 
-        add(new TitledPanel(null, new IncrementCheckBox("Показывать поиск", component, "showFind")));
-        add(Box.createRigidArea(new Dimension(5, 5)));
-        add(new TitledPanel(null, new IncrementCheckBox("Показывать фильтр", component, "showFilter")));
-        add(Box.createRigidArea(new Dimension(5, 5)));
-        add(new TitledPanel(null, new IncrementCheckBox("Вертикальная табуляция", component, "tabVertical")));
-        add(Box.createRigidArea(new Dimension(5, 5)));
-        add(new TitledPanel(null, new IncrementCheckBox("Автоскрытие", component, "autoHide")));
-        add(Box.createRigidArea(new Dimension(5, 5)));
+        int index = indexOfTab("Отображение");
+
+        setComponentAt(index, new NorthBoxPanel(defaultComponentEditor, designEditor,
+                new TitledPanel(null, new IncrementCheckBox("Показывать поиск", component, "showFind")),
+                new TitledPanel(null, new IncrementCheckBox("Показывать фильтр", component, "showFilter")),
+                new TitledPanel(null, new IncrementCheckBox("Вертикальная табуляция", component, "tabVertical")),
+                new TitledPanel(null, new IncrementCheckBox("Автоскрытие", component, "autoHide"))));
 
         //todo: minRowCount
     }

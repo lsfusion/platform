@@ -16,15 +16,12 @@ public class EditorView extends JPanel {
         if (!validateEditor()) {
             return false;
         }
-        
+
         editor = iEditor;
 
         removeAll();
         if (editor != null) {
-            JPanel editorPanel = new JPanel(new BorderLayout());
-            editorPanel.add(BorderLayout.NORTH, editor.getComponent());
-
-            add(new JScrollPane(editorPanel));
+            add(editor.getComponent(), BorderLayout.NORTH);
         }
         validate();
         updateUI();

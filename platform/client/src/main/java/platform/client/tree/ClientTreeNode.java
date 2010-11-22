@@ -8,7 +8,6 @@ import platform.client.descriptor.nodes.NullFieldNode;
 import platform.base.context.Lookup;
 import platform.base.context.ApplicationContextHolder;
 import platform.base.context.ApplicationContextProvider;
-import platform.base.serialization.IdentitySerializable;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;

@@ -21,15 +21,14 @@ public class DoNotIntersectConstraintEditor extends JPanel {
 
     public DoNotIntersectConstraintEditor(DoNotIntersectSimplexConstraint constraint) {
         this.constraint = constraint;
+
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+
         add(topBox);
         add(leftBox);
         add(bottomBox);
         add(rightBox);
-        initialize();
-    }
 
-    private void initialize() {
         topBox.addActionListener(actionListener);
         leftBox.addActionListener(actionListener);
         bottomBox.addActionListener(actionListener);
@@ -46,13 +45,6 @@ public class DoNotIntersectConstraintEditor extends JPanel {
             bottomBox.setSelected(false);
             rightBox.setSelected(false);
         }
-    }
-
-    public void setEnabled(boolean enable) {
-        topBox.setEnabled(enable);
-        leftBox.setEnabled(enable);
-        bottomBox.setEnabled(enable);
-        rightBox.setEnabled(enable);
     }
 
     public DoNotIntersectSimplexConstraint getConstraint() {

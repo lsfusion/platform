@@ -1,11 +1,14 @@
 package platform.interop.form.layout;
 
+import platform.base.context.ApplicationContext;
+import platform.base.context.ContextObject;
+
 import java.awt.*;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SimplexConstraints<T> implements Serializable {
+public class SimplexConstraints<T> extends ContextObject implements Serializable {
 
     public static final SimplexConstraints DEFAULT_CONSTRAINT = new SimplexConstraints();
 
@@ -34,4 +37,153 @@ public class SimplexConstraints<T> implements Serializable {
     public SimplexConstraints() {
     }
 
+    public SimplexConstraints(ApplicationContext context) {
+        super(context);
+    }
+
+    public String getFillVertical(){
+        return String.valueOf(fillVertical);
+    }
+
+    public void setFillVertical(String fillVertical){
+        this.fillVertical = Double.parseDouble(fillVertical);
+        updateDependency(this, "fillVertical");
+    }
+
+    public String getFillHorizontal(){
+        return String.valueOf(fillHorizontal);
+    }
+
+    public void setFillHorizontal(String fillHorizontal){
+        this.fillHorizontal = Double.parseDouble(fillHorizontal);
+        updateDependency(this, "fillHorizontal");
+    }
+
+    public String getMaxVariables(){
+        return String.valueOf(maxVariables);
+    }
+
+    public void setMaxVariables(String maxVariables){
+        this.maxVariables = Integer.parseInt(maxVariables);
+        updateDependency(this, "maxVariables");
+    }
+
+    public String getDirectionsTop(){
+        return String.valueOf(directions.T);
+    }
+
+    public void setDirectionsTop(String directionTop){
+        this.directions.T = Double.parseDouble(directionTop);
+        updateDependency(this, "directionsTop");
+    }
+
+    public String getDirectionsLeft(){
+        return String.valueOf(directions.L);
+    }
+
+    public void setDirectionsLeft(String directionLeft){
+        this.directions.L = Double.parseDouble(directionLeft);
+        updateDependency(this, "directionsLeft");
+    }
+
+    public String getDirectionsBottom(){
+        return String.valueOf(directions.B);
+    }
+
+    public void setDirectionsBottom(String directionBottom){
+        this.directions.B = Double.parseDouble(directionBottom);
+        updateDependency(this, "directionsBottom");
+    }
+
+    public String getDirectionsRight(){
+        return String.valueOf(directions.R);
+    }
+
+    public void setDirectionsRight(String directionRight){
+        this.directions.R = Double.parseDouble(directionRight);
+        updateDependency(this, "directionsRight");
+    }
+
+    //insetsSibling
+    public String getInsetsSiblingTop(){
+        return String.valueOf(insetsSibling.top);
+    }
+
+    public void setInsetsSiblingTop(String insetsSiblingTop){
+        this.insetsSibling.top = Integer.parseInt(insetsSiblingTop);
+        updateDependency(this, "insetsSiblingTop");
+    }
+
+    public String getInsetsSiblingLeft(){
+        return String.valueOf(insetsSibling.left);
+    }
+
+    public void setInsetsSiblingLeft(String insetsSiblingLeft){
+        this.insetsSibling.left = Integer.parseInt(insetsSiblingLeft);
+        updateDependency(this, "insetsSiblingLeft");
+    }
+
+    public String getInsetsSiblingBottom(){
+        return String.valueOf(insetsSibling.bottom);
+    }
+
+    public void setInsetsSiblingBottom(String insetsSiblingBottom){
+        this.insetsSibling.bottom = Integer.parseInt(insetsSiblingBottom);
+        updateDependency(this, "insetsSiblingBottom");
+    }
+
+    public String getInsetsSiblingRight(){
+        return String.valueOf(insetsSibling.right);
+    }
+
+    public void setInsetsSiblingRight(String insetsSiblingRight){
+        this.insetsSibling.right = Integer.parseInt(insetsSiblingRight);
+        updateDependency(this, "insetsSiblingRight");
+    }
+
+    //insetsInside
+    public String getInsetsInsideTop(){
+        return String.valueOf(insetsInside.top);
+    }
+
+    public void setInsetsInsideTop(String insetsInsideTop){
+        this.insetsInside.top = Integer.parseInt(insetsInsideTop);
+        updateDependency(this, "insetsInsideTop");
+    }
+
+    public String getInsetsInsideLeft(){
+        return String.valueOf(insetsInside.left);
+    }
+
+    public void setInsetsInsideLeft(String insetsInsideLeft){
+        this.insetsInside.left = Integer.parseInt(insetsInsideLeft);
+        updateDependency(this, "insetsInsideLeft");
+    }
+
+    public String getInsetsInsideBottom(){
+        return String.valueOf(insetsInside.bottom);
+    }
+
+    public void setInsetsInsideBottom(String insetsInsideBottom){
+        this.insetsInside.bottom = Integer.parseInt(insetsInsideBottom);
+        updateDependency(this, "insetsInsideBottom");
+    }
+
+    public String getInsetsInsideRight(){
+        return String.valueOf(insetsInside.right);
+    }
+
+    public void setInsetsInsideRight(String insetsInsideRight){
+        this.insetsInside.right = Integer.parseInt(insetsInsideRight);
+        updateDependency(this, "insetsInsideRight");
+    }
+
+    public Map<T, DoNotIntersectSimplexConstraint> getIntersects(){
+        return this.intersects;
+    }
+
+    public void setIntersects(Map<T, DoNotIntersectSimplexConstraint> intersects){
+        this.intersects = intersects;
+        updateDependency(this, "intersects");
+    }
 }

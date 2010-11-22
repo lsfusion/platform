@@ -18,6 +18,6 @@ public class ComponentNode<T extends ClientComponent, C extends ComponentNode> e
     }
 
     public NodeEditor createEditor(FormDescriptor form) {
-        return new ComponentEditor("", getTypedObject());
+        return new ComponentEditor(getTypedObject());
     }
 }

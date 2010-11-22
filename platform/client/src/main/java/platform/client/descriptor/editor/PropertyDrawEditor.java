@@ -4,6 +4,7 @@ import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.PropertyDrawDescriptor;
 import platform.client.descriptor.PropertyObjectDescriptor;
+import platform.client.descriptor.editor.base.NorthBoxPanel;
 import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.descriptor.increment.editor.*;
 import platform.interop.ClassViewType;
@@ -18,18 +19,13 @@ public class PropertyDrawEditor extends GroupElementEditor {
 
     public PropertyDrawEditor(final GroupObjectDescriptor groupObject, final PropertyDrawDescriptor descriptor, final FormDescriptor form) {
         super(groupObject);
-
         this.descriptor = descriptor;
 
-        add(new TitledPanel("Стат. заголовок", new IncrementTextEditor(descriptor, "caption")));
+        TitledPanel captionPanel = new TitledPanel("Стат. заголовок", new IncrementTextEditor(descriptor, "caption"));
 
-        add(Box.createRigidArea(new Dimension(5, 5)));
-        
-        add(new TitledPanel("Реализация", new PropertyObjectEditor(descriptor, "propertyObject", form, groupObject)));
+        TitledPanel propertyObjectPanel = new TitledPanel("Реализация", new PropertyObjectEditor(descriptor, "propertyObject", form, groupObject));
 
-        add(Box.createRigidArea(new Dimension(5, 5)));
-
-        add(new TitledPanel("Группа объектов", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "toDraw") {
+        TitledPanel groupObjectPanel = new TitledPanel("Группа объектов", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "toDraw") {
             public List<?> getSingleList() {
                 PropertyObjectDescriptor propertyObject = descriptor.getPropertyObject();
                 return propertyObject != null
@@ -46,12 +42,10 @@ public class PropertyDrawEditor extends GroupElementEditor {
                 form.addDependency(descriptor, "propertyObject", this);
                 form.addDependency(form, "groupObjects", this);
             }
-        })));
-
-        add(Box.createRigidArea(new Dimension(5, 5)));
+        }));
 
         // columnGroupObjects из списка mapping'ов (полных) !!! без toDraw
-        add(new TitledPanel("Группы в колонки", new IncrementMultipleListEditor(
+        TitledPanel columnGroupObjectsPanel = new TitledPanel("Группы в колонки", new IncrementMultipleListEditor(
                 new IncrementMultipleListSelectionModel(descriptor, "columnGroupObjects") {
             public List<?> getList() {
                 return descriptor.getUpGroupObjects(form.groupObjects);
@@ -62,36 +56,42 @@ public class PropertyDrawEditor extends GroupElementEditor {
                 form.addDependency(descriptor, "toDraw", this);
                 form.addDependency(form, "groupObjects", this);
             }
-        })));
-
-        add(Box.createRigidArea(new Dimension(5, 5)));
+        }));
 
         // propertyCaption из списка columnGroupObjects (+objects без toDraw)
-        add(new TitledPanel("Динам. заголовок", new IncrementDialogEditor(descriptor, "propertyCaption") {
+        TitledPanel propertyCaptionPanel = new TitledPanel("Динам. заголовок", new IncrementDialogEditor(descriptor, "propertyCaption") {
             protected Object dialogValue(Object currentValue) {
                 return new ListGroupObjectEditor(descriptor.getColumnGroupObjects()).getPropertyObject();
             }
-        }));
+        });
 
-        add(Box.createRigidArea(new Dimension(5, 5)));
+        TitledPanel shouldBeLastPanel = new TitledPanel(null, new IncrementCheckBox("Должно быть последним", descriptor, "shouldBeLast"));
 
-        add(new TitledPanel(null, new IncrementCheckBox("Должно быть последним", descriptor, "shouldBeLast")));
-
-        add(Box.createRigidArea(new Dimension(5, 5)));
-
-        add(new TitledPanel("Тип просмотра", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "forceViewType") {
+        TitledPanel forceTypePanel = new TitledPanel("Тип просмотра", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "forceViewType") {
             public List<?> getSingleList(){
                 return ClassViewType.typeNameList();
             }
-        })));
+        }));
 
-        add(Box.createRigidArea(new Dimension(5, 5)));
+        TitledPanel editKeyPanel = new TitledPanel("Клавиши редактирования", new IncrementKeyStrokeEditor(descriptor.client, "editKey"));
 
-        add(new ComponentEditor("Компонетные свойства", descriptor.client));
+        JPanel defaultComponent = new JPanel();
+        defaultComponent.setLayout(new FlowLayout(FlowLayout.LEFT));
+        defaultComponent.add(new IncrementCheckBox("Компонент по умолчанию", descriptor.client, "defaultComponent"));
 
-        add(Box.createRigidArea(new Dimension(5, 5)));
+        addTab("Общее", new NorthBoxPanel(captionPanel,
+                propertyObjectPanel,
+                groupObjectPanel,
+                columnGroupObjectsPanel,
+                propertyCaptionPanel,
+                shouldBeLastPanel,
+                forceTypePanel,
+                editKeyPanel));
 
-        add(new TitledPanel("Ключ редактирования", new IncrementKeyStrokeEditor(descriptor.client, "editKey")));
+        addTab("Отображение", new NorthBoxPanel(defaultComponent,
+                new ComponentDesignEditor("Дизайн", descriptor.client.design)));
+
+        addTab("Расположение", new NorthBoxPanel(new ComponentConstraintsEditor(descriptor.client.constraints)));
     }
 
     @Override

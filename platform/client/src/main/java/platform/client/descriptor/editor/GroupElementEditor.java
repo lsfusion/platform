@@ -5,14 +5,12 @@ import platform.client.descriptor.editor.base.NodeEditor;
 
 import javax.swing.*;
 
-public class GroupElementEditor extends JPanel implements NodeEditor {
+public class GroupElementEditor extends JTabbedPane implements NodeEditor {
 
     GroupObjectDescriptor groupObject;
 
     public GroupElementEditor(GroupObjectDescriptor groupObject) {
         this.groupObject = groupObject;
-
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
     }
 
     public JComponent getComponent() {

@@ -8,6 +8,7 @@ import platform.base.context.IncrementView;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -19,7 +20,7 @@ import java.util.Map;
 
 
 public class ComponentIntersectsEditor extends TitledPanel implements IncrementView {
-    String title, field;
+    String field;
     private ClientContainer container;
     private List<SingleIntersectEditor> editors = new ArrayList<SingleIntersectEditor>();
 
@@ -34,7 +35,6 @@ public class ComponentIntersectsEditor extends TitledPanel implements IncrementV
 
     public ComponentIntersectsEditor(String title, ClientContainer container, String field) {
         super(title);
-        this.title = title;
         this.container = container;
         this.field = field;
         this.container.getContext().addDependency(this.container, "children", this);
@@ -46,7 +46,7 @@ public class ComponentIntersectsEditor extends TitledPanel implements IncrementV
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         addBut.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                SingleIntersectEditor editor = new SingleIntersectEditor(container, null, null, null);
+                SingleIntersectEditor editor = new SingleIntersectEditor(container.children, null, null, null);
                 editor.addPropertyChangeListener(propListener);
                 editors.add(editor);
                 refreshEditors();
@@ -78,7 +78,7 @@ public class ComponentIntersectsEditor extends TitledPanel implements IncrementV
         editors.clear();
         for (ClientComponent rightComponent : componentList) {
             for (ClientComponent leftComponent : rightComponent.constraints.intersects.keySet()) {
-                SingleIntersectEditor editor = new SingleIntersectEditor(container, leftComponent, rightComponent.constraints.intersects.get(leftComponent), rightComponent);
+                SingleIntersectEditor editor = new SingleIntersectEditor(container.children, leftComponent, rightComponent.constraints.intersects.get(leftComponent), rightComponent);
                 editor.addPropertyChangeListener(propListener);
                 editors.add(editor);
             }
@@ -102,7 +102,7 @@ public class ComponentIntersectsEditor extends TitledPanel implements IncrementV
                     currMap.put(editor.getLeftComponent(), editor.getConstraint());
                 }
             }
-            BaseUtils.invokeSetter(component, field, currMap);
+            BaseUtils.invokeSetter(component.constraints, field, currMap);
         }
     }
 
@@ -121,34 +121,30 @@ public class ComponentIntersectsEditor extends TitledPanel implements IncrementV
 
 
     public class SingleIntersectEditor extends JPanel {
-        private ClientContainer container;
+        private List<ClientComponent> children;
         private ClientComponent leftComponent, rightComponent;
 
         private JCheckBox check = new JCheckBox();
         private JComboBox leftBox = new JComboBox();
         private DoNotIntersectConstraintEditor editor;
         private JComboBox rightBox = new JComboBox();
+
         private ActionListener actionListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 firePropertyChange("singleEditorChanged", true, false);
             }
         };
 
-        public SingleIntersectEditor(ClientContainer container, ClientComponent leftComponent, DoNotIntersectSimplexConstraint constraint, ClientComponent rightComponent) {
-            this.container = container;
+        public SingleIntersectEditor(List<ClientComponent> children, ClientComponent leftComponent, DoNotIntersectSimplexConstraint constraint, ClientComponent rightComponent) {
+            this.children = children;
             this.leftComponent = leftComponent;
             this.rightComponent = rightComponent;
+
             if (constraint != null) {
                 editor = new DoNotIntersectConstraintEditor(constraint);
             } else {
                 editor = new DoNotIntersectConstraintEditor(new DoNotIntersectSimplexConstraint(15));
             }
-            initialize();
-            fill();
-        }
-
-        private void initialize() {
-            setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
             editor.addPropertyChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent e) {
@@ -159,14 +155,22 @@ public class ComponentIntersectsEditor extends TitledPanel implements IncrementV
             leftBox.addActionListener(actionListener);
             rightBox.addActionListener(actionListener);
 
+            //чтобы комбобоксы не препятствовали изменению размеров панели
+            leftBox.setMinimumSize(new Dimension(0, 0));
+            rightBox.setMinimumSize(new Dimension(0, 0));
+
+            setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+
             add(check);
             add(leftBox);
             add(editor);
             add(rightBox);
+
+            fill();
         }
 
         private void fill() {
-            for (ClientComponent component : container.children) {
+            for (ClientComponent component : children) {
                 leftBox.addItem(component);
                 rightBox.addItem(component);
             }

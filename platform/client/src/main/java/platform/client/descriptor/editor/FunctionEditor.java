@@ -9,7 +9,7 @@ import java.awt.*;
 
 public class FunctionEditor extends ComponentEditor {
     public FunctionEditor(ClientFunction function) {
-        super("Функциональный компонент", function);
+        super(function);
 
         add(new TitledPanel("Заголовок", new IncrementTextEditor(function, "caption")));
         add(Box.createRigidArea(new Dimension(5, 5)));

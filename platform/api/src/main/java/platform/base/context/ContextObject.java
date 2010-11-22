@@ -1,11 +1,15 @@
 package platform.base.context;
 
-import platform.base.context.ApplicationContext;
-import platform.base.context.ApplicationContextHolder;
-
 public class ContextObject implements ApplicationContextHolder {
 
     protected ApplicationContext context;
+
+    public ContextObject(){
+    }
+
+    public ContextObject(ApplicationContext context){
+        this.context = context;  
+    }
 
     public ApplicationContext getContext() {
         return context;

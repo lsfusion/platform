@@ -22,10 +22,10 @@ import java.util.Map;
 
 public abstract class ClientComponent extends ContextIdentityObject implements Serializable, ClientIdentitySerializable, AbstractComponent<ClientContainer, ClientComponent> {
 
-    public ComponentDesign design = new ComponentDesign();
+    public ComponentDesign design;
 
     public ClientContainer container;
-    public SimplexConstraints<ClientComponent> constraints = new SimplexConstraints<ClientComponent>();
+    public SimplexConstraints<ClientComponent> constraints;
 
     public boolean defaultComponent = false;
 
@@ -34,10 +34,22 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
 
     public ClientComponent(ApplicationContext context) {
         super(context);
+        initDesign(context);
+        initConstraints(context);
     }
 
     public ClientComponent(int ID, ApplicationContext context) {
         super(ID, context);
+        initDesign(context);
+        initConstraints(context);
+    }
+
+    protected void initConstraints(ApplicationContext context) {
+        constraints = new SimplexConstraints<ClientComponent>(context);
+    }
+
+    private void initDesign(ApplicationContext context){
+        design = new ComponentDesign(context);
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
@@ -77,52 +89,7 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
     }
 
     public JComponent getPropertiesEditor() {
-        return new ComponentEditor("Компонент", this);
-    }
-
-    public Color getBackground() {
-        return design.background;
-    }
-
-    public void setBackground(Color background) {
-        design.background = background;
-        updateDependency(this, "background");
-    }
-
-    public Color getForeground() {
-        return design.foreground;
-    }
-
-    public void setForeground(Color foreground) {
-        design.foreground = foreground;
-        updateDependency(this, "foreground");
-    }
-
-    public Font getFont() {
-        return design.font;
-    }
-
-    public void setFont(Font font) {
-        design.font = font;
-        updateDependency(this, "font");
-    }
-
-    public Font getHeaderFont(){
-        return design.headerFont;
-    }
-
-    public void setHeaderFont(Font font){
-        design.headerFont = font;
-        updateDependency(this, "headerFont");
-    }
-
-    public void setDefaultComponent(boolean defaultComponent) {
-        this.defaultComponent = defaultComponent;
-        updateDependency(this, "defaultComponent");
-    }
-
-    public boolean getDefaultComponent() {
-        return defaultComponent;
+        return new ComponentEditor(this);
     }
 
     public SimplexConstraints<ClientComponent> getConstraints() {
@@ -133,13 +100,14 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         this.constraints = constraints;
         updateDependency(this, "constraints");
     }
-
-    public Map<ClientComponent, DoNotIntersectSimplexConstraint> getIntersects(){
-        return constraints.intersects;
+  
+    public void setDefaultComponent(boolean defaultComponent) {
+        this.defaultComponent = defaultComponent;
+        updateDependency(this, "defaultComponent");
     }
 
-    public void setIntersects(Map<ClientComponent, DoNotIntersectSimplexConstraint> intersects){
-        constraints.intersects = intersects;
-        updateDependency(constraints, "intersects");
+    public boolean getDefaultComponent() {
+        return defaultComponent;
     }
+
 }
