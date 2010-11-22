@@ -2,6 +2,7 @@ package platform.server.form.entity;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.base.Subsets;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
 import platform.interop.action.ClientResultAction;
@@ -166,7 +167,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         groupObject.add(object);
         addGroup(groupObject);
 
-        addPropertyDraw(groups, object);
+        addPropertyDraw(groups, false, object);
 
         return object;
     }
@@ -192,22 +193,38 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     protected void addPropertyDraw(ObjectEntity object, Object... groups) {
-        addPropertyDraw(groups, object);
+        addPropertyDraw(groups, false, object);
     }
 
     protected void addPropertyDraw(ObjectEntity object1, ObjectEntity object2, Object... groups) {
-        addPropertyDraw(groups, object1, object2);
+        addPropertyDraw(groups, false, object1, object2);
     }
 
     protected void addPropertyDraw(ObjectEntity object1, ObjectEntity object2, ObjectEntity object3, Object... groups) {
-        addPropertyDraw(groups, object1, object2, object3);
+        addPropertyDraw(groups, false, object1, object2, object3);
     }
 
     protected void addPropertyDraw(ObjectEntity object1, ObjectEntity object2, ObjectEntity object3, ObjectEntity object4, Object... groups) {
-        addPropertyDraw(groups, object1, object2, object3, object4);
+        addPropertyDraw(groups, false, object1, object2, object3, object4);
     }
 
-    private void addPropertyDraw(Object[] groups, ObjectEntity... objects) {
+    protected void addPropertyDraw(ObjectEntity object, boolean useObjSubsets, Object... groups) {
+        addPropertyDraw(groups, useObjSubsets, object);
+    }
+
+    protected void addPropertyDraw(ObjectEntity object1, ObjectEntity object2, boolean useObjSubsets, Object... groups) {
+        addPropertyDraw(groups, useObjSubsets, object1, object2);
+    }
+
+    protected void addPropertyDraw(ObjectEntity object1, ObjectEntity object2, ObjectEntity object3, boolean useObjSubsets, Object... groups) {
+        addPropertyDraw(groups, useObjSubsets, object1, object2, object3);
+    }
+
+    protected void addPropertyDraw(ObjectEntity object1, ObjectEntity object2, ObjectEntity object3, ObjectEntity object4, boolean useObjSubsets, Object... groups) {
+        addPropertyDraw(groups, useObjSubsets, object1, object2, object3, object4);
+    }
+
+    private void addPropertyDraw(Object[] groups, boolean useObjSubsets, ObjectEntity... objects) {
 
         for (int i = 0; i < groups.length; i++) {
 
@@ -219,7 +236,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
                 if ((i + 1) < groups.length && groups[i + 1] instanceof Boolean) {
                     upClasses = (Boolean) groups[i + 1];
                 }
-                addPropertyDraw((AbstractNode) group, upClasses, objects);
+                addPropertyDraw((AbstractNode) group, upClasses, useObjSubsets, objects);
             } else if (group instanceof LP) {
                 this.addPropertyDraw((LP) group, objects);
             }
@@ -227,10 +244,14 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     protected void addPropertyDraw(AbstractNode group, boolean upClasses, ObjectEntity... objects) {
-        addPropertyDraw(group, upClasses, null, objects);
+        addPropertyDraw(group, upClasses, null, false, objects);
     }
 
-    protected void addPropertyDraw(AbstractNode group, boolean upClasses, GroupObjectEntity groupObject, ObjectEntity... objects) {
+    protected void addPropertyDraw(AbstractNode group, boolean upClasses, boolean useObjSubsets, ObjectEntity... objects) {
+        addPropertyDraw(group, upClasses, null, useObjSubsets, objects);
+    }
+
+    protected void addPropertyDraw(AbstractNode group, boolean upClasses, GroupObjectEntity groupObject, boolean useObjSubsets, ObjectEntity... objects) {
         List<ValueClassWrapper> valueClasses = new ArrayList<ValueClassWrapper>();
         Map<ObjectEntity, ValueClassWrapper> objectToClass = new HashMap<ObjectEntity, ValueClassWrapper>();
         for (ObjectEntity object : objects) {
@@ -239,7 +260,20 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
             objectToClass.put(object, wrapper);
         }
 
-        for (PropertyClassImplement implement : group.getProperties(Collections.singletonList(valueClasses), upClasses)) {
+        List<List<ValueClassWrapper>> classSubsets;
+        if (useObjSubsets) {
+            classSubsets = new ArrayList<List<ValueClassWrapper>>();
+            for (Set<ValueClassWrapper> set : new Subsets<ValueClassWrapper>(valueClasses)) {
+                List<ValueClassWrapper> objectList = new ArrayList<ValueClassWrapper>(set);
+                if (!objectList.isEmpty()) {
+                    classSubsets.add(objectList);
+                }
+            }
+        } else {
+            classSubsets = Collections.singletonList(valueClasses);
+        }
+
+        for (PropertyClassImplement implement : group.getProperties(classSubsets, upClasses)) {
             List<PropertyInterface> interfaces = new ArrayList<PropertyInterface>();
             Map<ObjectEntity, PropertyInterface> objectToInterface =
                     BaseUtils.<ObjectEntity, ValueClassWrapper, PropertyInterface>join(objectToClass, BaseUtils.reverse(implement.mapping));

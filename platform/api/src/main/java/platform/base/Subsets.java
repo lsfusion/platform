@@ -1,5 +1,6 @@
 package platform.base;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -17,6 +18,9 @@ public class Subsets<E> implements Iterable<Set<E>> {
         this.objects = objects;
     }
 
+    public Subsets(Collection<E> objects) {
+        this.objects = new HashSet<E>(objects);
+    }
 
     public Iterator<Set<E>> iterator() {
         return new SubsetsIterator();
