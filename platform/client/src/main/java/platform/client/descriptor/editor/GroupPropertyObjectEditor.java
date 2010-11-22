@@ -52,7 +52,7 @@ public class GroupPropertyObjectEditor extends SimplePropertyFilter implements I
                 TreePath path = tree.getPathForRow(row);
                 if (path != null) {
                     GroupPropertyObjectEditor.CheckNode node = (GroupPropertyObjectEditor.CheckNode) path.getLastPathComponent();
-                    node.setSelection(node.selectedState!= Tristate.SELECTED);
+                    node.setSelection(node.selectedState== Tristate.NOT_SELECTED);
                     ((DefaultTreeModel) tree.getModel()).nodeChanged(node);
                     if (row == 0) {
                         tree.revalidate();

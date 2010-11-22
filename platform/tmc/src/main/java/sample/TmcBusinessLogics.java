@@ -1695,10 +1695,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             addPropertyDraw(objStore, objArt,
                     baseGroup, balanceGroup, incPrmsGroup, outPrmsGroup);
 
-            addPropertyDraw(baseGroup, false, objArt.groupTo, objStore, objArt);
-            addPropertyDraw(balanceGroup, false, objArt.groupTo, objStore, objArt);
-            addPropertyDraw(incPrmsGroup, false, objArt.groupTo, objStore, objArt);
-            addPropertyDraw(outPrmsGroup, false, objArt.groupTo, objStore, objArt);
+            addPropertyDraw(baseGroup, false, objArt.groupTo, false, objStore, objArt);
+            addPropertyDraw(balanceGroup, false, objArt.groupTo, false, objStore, objArt);
+            addPropertyDraw(incPrmsGroup, false, objArt.groupTo, false, objStore, objArt);
+            addPropertyDraw(outPrmsGroup, false, objArt.groupTo, false, objStore, objArt);
         }
 
     }

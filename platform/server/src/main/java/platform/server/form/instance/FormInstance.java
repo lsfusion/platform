@@ -483,6 +483,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         session.incrementChanges.remove(this);
         for (GroupObjectTable groupObjectTable : groupTables.values())
             session.dropTemporaryTable(groupObjectTable);
+        for (GroupObjectTable groupObjectTable : expandTables.values())
+            session.dropTemporaryTable(groupObjectTable);
     }
 
     // --------------------------------------------------------------------------------------- //
@@ -589,6 +591,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
             Collection<Object> objects = new ArrayList<Object>();
 
             GroupObjectTable groupObjectTable;
+            GroupObjectTable expandObjectTable;
 
             private Group(GroupObjectInstance iGroup) {
                 group = iGroup;
@@ -604,6 +607,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                     objects.add(object instanceof CustomObjectInstance ? new Custom((CustomObjectInstance) object) : new Data((DataObjectInstance) object));
 
                 groupObjectTable = groupTables.get(group);
+                expandObjectTable = expandTables.get(group);
             }
 
             void rollback() throws SQLException {
@@ -627,6 +631,16 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 } else {
                     groupObjectTable.rewrite(session, group.keys.keySet());
                     groupTables.put(group, groupObjectTable);
+                }
+                if (expandObjectTable == null) {
+                    GroupObjectTable newTable = expandTables.get(group);
+                    if (newTable != null) {
+                        session.dropTemporaryTable(newTable);
+                        expandTables.remove(group);
+                    }
+                } else {
+                    expandObjectTable.rewrite(session, group.keys.keySet());
+                    expandTables.put(group, expandObjectTable);
                 }
             }
         }
