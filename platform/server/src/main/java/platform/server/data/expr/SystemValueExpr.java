@@ -3,7 +3,7 @@ package platform.server.data.expr;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.ConcreteClass;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.ContextEnumerator;
+import platform.server.data.query.ExprEnumerator;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 
@@ -32,6 +32,6 @@ public class SystemValueExpr extends AbstractValueExpr {
         return objectClass.getType().getString(object, compile.syntax);
     }
 
-    public void enumerate(ContextEnumerator enumerator) {
+    public void enumDepends(ExprEnumerator enumerator) {
     }
 }

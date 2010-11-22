@@ -11,7 +11,7 @@ import platform.server.data.expr.cases.MapCase;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.ContextEnumerator;
+import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
@@ -50,6 +50,8 @@ public class StringConcatenateExpr extends StaticClassExpr {
     }
 
     public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+        for(BaseExpr param : exprs)
+            param.fillJoinWheres(joins, andWhere);
     }
 
     public StringClass getType(KeyType keyType) {
@@ -90,7 +92,7 @@ public class StringConcatenateExpr extends StaticClassExpr {
         return "(" + source + ")";
     }
 
-    public void enumerate(ContextEnumerator enumerator) {
+    public void enumDepends(ExprEnumerator enumerator) {
         enumerator.fill(exprs);
     }
 

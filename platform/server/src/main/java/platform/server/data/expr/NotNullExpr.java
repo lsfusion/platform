@@ -5,7 +5,7 @@ import platform.server.data.expr.query.OrderExpr;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.ContextEnumerator;
+import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
@@ -37,7 +37,7 @@ public abstract class NotNullExpr extends VariableClassExpr {
             return NotNullExpr.this.translateQuery(translator).getWhere();
         }
 
-        public void enumerate(ContextEnumerator enumerator) {
+        public void enumDepends(ExprEnumerator enumerator) {
             NotNullExpr.this.enumerate(enumerator);
         }
 

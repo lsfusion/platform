@@ -8,7 +8,6 @@ import platform.server.caches.ParamLazy;
 import platform.server.caches.TwinLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
-import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.*;
 import platform.server.data.expr.cases.CaseExpr;
@@ -36,7 +35,7 @@ import java.util.*;
 
 public class Table extends ImmutableObject implements MapKeysInterface<KeyField> {
     public final String name;
-    public final Collection<KeyField> keys = new ArrayList<KeyField>();
+    public final List<KeyField> keys = new ArrayList<KeyField>(); // List потому как в таком порядке индексы будут строиться
     public final Collection<PropertyField> properties = new ArrayList<PropertyField>();
 
     public boolean isSingle() {
@@ -266,7 +265,7 @@ public class Table extends ImmutableObject implements MapKeysInterface<KeyField>
                 return keys.iterator().next().toString();
             }
 
-            public void enumerate(ContextEnumerator enumerator) {
+            public void enumDepends(ExprEnumerator enumerator) {
                 enumerator.fill(joins);
             }
 
@@ -355,7 +354,7 @@ public class Table extends ImmutableObject implements MapKeysInterface<KeyField>
                 return Join.this.translateOuter(translator).getDirectExpr(property);
             }
 
-            public void enumerate(ContextEnumerator enumerator) {
+            public void enumDepends(ExprEnumerator enumerator) {
                 enumerator.fill(joins);
             }
 

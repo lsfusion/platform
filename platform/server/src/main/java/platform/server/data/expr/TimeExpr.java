@@ -7,7 +7,7 @@ import platform.server.data.Time;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.ContextEnumerator;
+import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
@@ -67,7 +67,7 @@ public class TimeExpr extends StaticClassExpr {
         throw new RuntimeException("Unknown time");
     }
 
-    public void enumerate(ContextEnumerator enumerator) {
+    public void enumDepends(ExprEnumerator enumerator) {
     }
 
     public long calculateComplexity() {

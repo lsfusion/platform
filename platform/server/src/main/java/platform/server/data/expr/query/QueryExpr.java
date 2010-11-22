@@ -8,7 +8,7 @@ import platform.server.caches.TwinsInnerContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.*;
 import platform.server.data.query.AbstractSourceJoin;
-import platform.server.data.query.ContextEnumerator;
+import platform.server.data.query.ExprEnumerator;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 
@@ -126,10 +126,12 @@ public abstract class QueryExpr<K extends BaseExpr,I extends OuterContext<I>,J e
         }.hashInner(hashContext.values);
     }
 
-    public void enumerate(ContextEnumerator enumerator) {
+    public void enumDepends(ExprEnumerator enumerator) {
         enumerator.fill(group);
-        for(ValueExpr value : innerContext.getValues())
-            enumerator.add(value);
+    }
+
+    public Set<ValueExpr> getInnerValues() {
+        return innerContext.getValues();
     }
 
     public VariableExprSet getJoinFollows() {

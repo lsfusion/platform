@@ -7,6 +7,15 @@ public class Settings {
     // обозначает что компилятор будет проталкивать внутрь группирующих подзапросов, общее условие (если оно маленькое и сам группирующий подзапрос в нем не учавствует)
     private boolean pushGroupWhere = false;
 
+    private int innerGroupExprs = 0;
+    public int getInnerGroupExprs() {
+        return innerGroupExprs;
+    }
+
+    public void setInnerGroupExprs(int innerGroupExprs) {
+        this.innerGroupExprs = innerGroupExprs;
+    }
+
     // обозначает что компилятор будет проталкивать внутрь order подзапросов, общее условие
     private boolean pushOrderWhere = false;
 

@@ -11,7 +11,7 @@ import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.ContextEnumerator;
+import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
@@ -90,7 +90,7 @@ public class DeconcatenateExpr extends SingleClassExpr {
         return expr.hashOuter(hashContext) * 31 + part;
     }
 
-    public void enumerate(ContextEnumerator enumerator) {
+    public void enumDepends(ExprEnumerator enumerator) {
         expr.enumerate(enumerator);
     }
 

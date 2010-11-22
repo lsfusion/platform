@@ -18,6 +18,7 @@ import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.expr.cases.MapCase;
 import platform.server.data.expr.where.EqualsWhere;
 import platform.server.data.query.CompileSource;
+import platform.server.data.query.Query;
 import platform.server.data.query.innerjoins.InnerSelectJoin;
 import platform.server.data.query.innerjoins.KeyEqual;
 import platform.server.data.query.innerjoins.ObjectJoinSets;
@@ -530,6 +531,21 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
 
         // не было keyEqual, не добавились inner'ы keyEquals, просто pack'уем
         return createFollowExpr(outerInner.reverse(), expr, max, Where.TRUE);
+    }
+
+    public String getExprSource(CompileSource source, String prefix) {
+
+        Set<Expr> queryExprs = BaseUtils.addSet(group.keySet(), query); // так как может одновременно и SUM и MAX нужен
+
+        Map<Expr,String> fromPropertySelect = new HashMap<Expr, String>();
+        Collection<String> whereSelect = new ArrayList<String>(); // проверить crossJoin
+        String fromSelect = new Query<KeyExpr,Expr>(BaseUtils.toMap(getKeys()),BaseUtils.toMap(queryExprs), Expr.getWhere(queryExprs))
+            .compile(source.syntax, prefix).fillSelect(new HashMap<KeyExpr, String>(), fromPropertySelect, whereSelect, source.params);
+        for(Map.Entry<BaseExpr,BaseExpr> groupEntry : group.entrySet())
+            whereSelect.add(fromPropertySelect.get(groupEntry.getKey())+"="+groupEntry.getValue().getSource(source));
+
+        return "(" + source.syntax.getSelect(fromSelect, (isMax()?"MAX":"SUM") + "(" + fromPropertySelect.get(query) + ")",
+                BaseUtils.toString(whereSelect," AND "),"","","") + ")";
     }
 }
 

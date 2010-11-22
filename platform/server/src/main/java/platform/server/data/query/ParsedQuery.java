@@ -13,7 +13,7 @@ import java.util.Set;
 
 public interface ParsedQuery<K,V> {
 
-    CompiledQuery<K,V> compileSelect(SQLSyntax syntax, OrderedMap<V,Boolean> orders,int top);    
+    CompiledQuery<K,V> compileSelect(SQLSyntax syntax, OrderedMap<V, Boolean> orders, int top, String prefix);    
     <B> ClassWhere<B> getClassWhere(Collection<? extends V> classProps);
     Join<V> join(Map<K, ? extends Expr> joinImplement);
     Join<V> join(Map<K, ? extends Expr> joinImplement, MapValuesTranslate joinValues); // последний параметр = какой есть\какой нужно, joinImplement не translate'ся

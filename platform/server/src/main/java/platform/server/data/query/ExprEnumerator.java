@@ -6,12 +6,9 @@ import platform.server.data.expr.ValueExpr;
 import java.util.Collection;
 import java.util.Map;
 
-public abstract class ContextEnumerator {
+public abstract class ExprEnumerator {
 
-    public void add(KeyExpr keyExpr) {
-    }
-    public void add(ValueExpr valueExpr) {        
-    }
+    public abstract boolean enumerate(SourceJoin join);
 
     public <U> void fill(Map<U, ? extends SourceJoin> exprs) {
         fill(exprs.values());

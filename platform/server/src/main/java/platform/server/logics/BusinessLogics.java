@@ -1385,9 +1385,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         // добавим таблицы которых не было
-        for (ImplementTable table : implementTables.values())
+        for (ImplementTable table : implementTables.values()) {
             if (!prevTables.containsKey(table.name))
                 session.createTable(table.name, table.keys);
+        }
 
         Set<ImplementTable> packTables = new HashSet<ImplementTable>();
 
@@ -1474,6 +1475,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         outFileStruct.write(outBytes.length/255);
         outFileStruct.write(outBytes.length%255);
         outFileStruct.write(outBytes);*/
+
+        // backward compatibility
+        for (ImplementTable table : implementTables.values()) {
+            if (prevTables.containsKey(table.name)) {
+                try {
+                    session.addExtraIndices(table.name, table.keys);
+                } catch (SQLException e) {
+                }
+            }
+        }
 
         session.close();
     }

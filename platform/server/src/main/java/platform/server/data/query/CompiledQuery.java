@@ -2,6 +2,7 @@ package platform.server.data.query;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.base.Counter;
 import platform.server.caches.OuterContext;
 import platform.server.data.KeyField;
 import platform.server.data.SQLSession;
@@ -116,7 +117,7 @@ public class CompiledQuery<K,V> {
         }
     }
 
-    CompiledQuery(ParsedJoinQuery<K,V> query, SQLSyntax syntax, OrderedMap<V,Boolean> orders, int top) {
+    CompiledQuery(ParsedJoinQuery<K,V> query, SQLSyntax syntax, OrderedMap<V,Boolean> orders, int top, String prefix) {
 
         keySelect = new HashMap<K, String>();
         propertySelect = new HashMap<V, String>();
@@ -159,7 +160,7 @@ public class CompiledQuery<K,V> {
 
             String fromString = "";
             for(InnerSelectJoin queryJoin : queryJoins) {
-                fromString = (fromString.length()==0?"":fromString+" UNION ALL ") + getInnerSelect(query.mapKeys, queryJoin, queryJoin.fullWhere.followTrue(query.properties), params, new OrderedMap<V, Boolean>(), 0, syntax, keyNames, propertyNames, keyOrder, propertyOrder, castTypes);
+                fromString = (fromString.length()==0?"":fromString+" UNION ALL ") + getInnerSelect(query.mapKeys, queryJoin, queryJoin.fullWhere.followTrue(query.properties), params, new OrderedMap<V, Boolean>(), 0, syntax, keyNames, propertyNames, keyOrder, propertyOrder, castTypes, prefix, false);
                 castTypes = null;
             }
 
@@ -182,113 +183,12 @@ public class CompiledQuery<K,V> {
             } else {
                 if(queryJoins.size()==1) { // "простой" запрос
                     InnerSelectJoin innerJoin = queryJoins.iterator().next();
-                    from = fillInnerSelect(query.mapKeys, innerJoin, query.properties, keySelect, propertySelect, whereSelect, params, syntax);
-                } else {
-                    FullSelect FJSelect = new FullSelect(query.where,params,syntax);
-                    
-                    // создаем And подзапросыs
-                    Collection<AndJoinQuery> andProps = new ArrayList<AndJoinQuery>();
-                    for(InnerSelectJoin andWhere : queryJoins)
-                        andProps.add(new AndJoinQuery(andWhere,"f"+andProps.size()));
-
-                    MapWhere<JoinData> joinDataWheres = new MapWhere<JoinData>();
-                    for(Map.Entry<V, Expr> joinProp : query.properties.entrySet())
-                        if(!orders.containsKey(joinProp.getKey()))
-                            joinProp.getValue().fillJoinWheres(joinDataWheres, Where.TRUE);
-
-                    // для JoinSelect'ов узнаем при каких условиях они нужны
-                    MapWhere<Object> joinWheres = new MapWhere<Object>();
-                    for(int i=0;i<joinDataWheres.size;i++)
-                        joinWheres.add(joinDataWheres.getKey(i).getFJGroup(),joinDataWheres.getValue(i));
-
-                    // сначала распихиваем JoinSelect по And'ам
-                    Map<Object,Collection<AndJoinQuery>> joinAnds = new HashMap<Object, Collection<AndJoinQuery>>();
-                    for(int i=0;i<joinWheres.size;i++)
-                        joinAnds.put(joinWheres.getKey(i),getWhereSubSet(andProps,joinWheres.getValue(i)));
-
-                    // затем все данные по JoinSelect'ам по вариантам
-                    int joinNum = 0;
-                    for(int i=0;i<joinDataWheres.size;i++) {
-                        JoinData joinData = joinDataWheres.getKey(i);
-                        String joinName = "join_" + (joinNum++);
-                        Collection<AndJoinQuery> dataAnds = new ArrayList<AndJoinQuery>();
-                        for(AndJoinQuery and : getWhereSubSet(joinAnds.get(joinData.getFJGroup()), joinDataWheres.getValue(i))) {
-                            Expr joinExpr = joinData.getFJExpr();
-                            if(!and.innerSelect.fullWhere.means(joinExpr.getWhere().not())) { // проверим что не всегда null
-                                and.properties.put(joinName, joinExpr);
-                                dataAnds.add(and);
-                            }
-                        }
-                        String joinSource = ""; // заполняем Source
-                        if(dataAnds.size()==0)
-                            throw new RuntimeException("Не должно быть");
-                        else
-                        if(dataAnds.size()==1)
-                            joinSource = dataAnds.iterator().next().alias +'.'+joinName;
-                        else {
-                            for(AndJoinQuery and : dataAnds)
-                                joinSource = (joinSource.length()==0?"":joinSource+",") + and.alias + '.' + joinName;
-                            joinSource = "COALESCE(" + joinSource + ")";
-                        }
-                        FJSelect.joinData.put(joinData,joinData.getFJString(joinSource));
-                    }
-
-                    // order'ы отдельно обрабатываем, они нужны в каждом запросе генерируем имена для Order'ов
-                    int io = 0;
-                    OrderedMap<String,Boolean> orderAnds = new OrderedMap<String, Boolean>();
-                    for(Map.Entry<V, Boolean> order : orders.entrySet()) {
-                        String orderName = "order_" + (io++);
-                        String orderFJ = "";
-                        for(AndJoinQuery and : andProps) {
-                            and.properties.put(orderName, query.properties.get(order.getKey()));
-                            orderFJ = (orderFJ.length()==0?"":orderFJ+",") + and.alias + "." + orderName;
-                        }
-                        if(!(top==0)) // если все то не надо упорядочивать, потому как в частности MS SQL не поддерживает
-                            orderAnds.put(orderName,order.getValue());
-                        propertySelect.put(order.getKey(),"COALESCE("+orderFJ+")");
-                    }
-
-                    // бежим по всем And'ам делаем JoinSelect запросы, потом объединяем их FULL'ами
-                    String compileFrom = "";
-                    boolean second = true; // для COALESCE'ов
-                    for(AndJoinQuery and : andProps) {
-                        // закинем в And.Properties OrderBy, все равно какие порядки ключей и выражений
-                        String andSelect = "(" + getInnerSelect(query.mapKeys, and.innerSelect, and.properties, params, orderAnds, top, syntax, keyNames, BaseUtils.toMap(and.properties.keySet()), new ArrayList<K>(), new ArrayList<String>(), null) + ") " + and.alias;
-
-                        if(compileFrom.length()==0) {
-                            compileFrom = andSelect;
-                            for(K Key : query.mapKeys.keySet())
-                                keySelect.put(Key, and.alias +"."+ keyNames.get(Key));
-                        } else {
-                            String andJoin = "";
-                            for(Map.Entry<K,String> mapKey : keySelect.entrySet()) {
-                                String andKey = and.alias + "." + keyNames.get(mapKey.getKey());
-                                andJoin = (andJoin.length()==0?"":andJoin + " AND ") + andKey + "=" + (second?mapKey.getValue():"COALESCE("+mapKey.getValue()+")");
-                                mapKey.setValue(mapKey.getValue()+","+andKey);
-                            }
-                            compileFrom = compileFrom + " FULL JOIN " + andSelect + " ON " + (andJoin.length()==0? Where.TRUE_STRING :andJoin);
-                            second = false;
-                        }
-                    }
-                    from = compileFrom;
-
-                    // полученные KeySelect'ы в Data
-                    for(Map.Entry<K,String> mapKey : keySelect.entrySet()) {
-                        mapKey.setValue("COALESCE("+mapKey.getValue()+")"); // обернем в COALESCE
-                        FJSelect.keySelect.put(query.mapKeys.get(mapKey.getKey()),mapKey.getValue());
-                    }
-
-                    // закидываем PropertySelect'ы
-                    for(Map.Entry<V, Expr> mapProp : query.properties.entrySet())
-                        if(!orders.containsKey(mapProp.getKey())) // orders'ы уже обработаны
-                            propertySelect.put(mapProp.getKey(), mapProp.getValue().getSource(FJSelect));
-                }
+                    from = fillInnerSelect(query.mapKeys, innerJoin, query.properties, keySelect, propertySelect, whereSelect, params, syntax, prefix);
+                } else // "сложный" запрос с full join'ами
+                    from = fillFullSelect(query.mapKeys, queryJoins, query.properties, orders, top, keySelect, propertySelect, params, syntax, prefix);
             }
 
-            select = syntax.getSelect(from, SQLSession.stringExpr(
-                    SQLSession.mapNames(keySelect, keyNames, keyOrder),
-                    SQLSession.mapNames(propertySelect, propertyNames, propertyOrder)),
-                    BaseUtils.toString(whereSelect, " AND "), Query.stringOrder(propertyOrder,query.mapKeys.size(),orders,syntax),"",top==0?"":String.valueOf(top));
+            select = getSelect(from, keySelect, keyNames, keyOrder, propertySelect, propertyNames, propertyOrder, whereSelect, syntax, orders, top, false);
         }
 
         assert checkQuery();
@@ -323,9 +223,12 @@ public class CompiledQuery<K,V> {
 
         final JoinSet innerJoins;
 
-        public InnerSelect(KeyType keyType, JoinSet innerJoins, SQLSyntax syntax, Map<ValueExpr, String> params) {
+        final String prefix;
+
+        public InnerSelect(KeyType keyType, JoinSet innerJoins, SQLSyntax syntax, Map<ValueExpr, String> params, String prefix) {
             super(keyType, params, syntax);
 
+            this.prefix = prefix;
             this.innerJoins = innerJoins;
 
             // обработаем inner'ы
@@ -353,9 +256,9 @@ public class CompiledQuery<K,V> {
             protected abstract Map<String, BaseExpr> initJoins(I innerJoin);
 
             protected JoinSelect(I innerJoin) {
-                alias = "t" + (aliasNum++);
+                alias = prefix + "t" + (aliasNum++);
 
-                inner = innerJoin instanceof InnerJoin && innerJoins.means((InnerJoin) innerJoin); // вообще множественным наследованием надо было бы делать
+                inner = (Object) innerJoin instanceof InnerJoin && innerJoins.means((InnerJoin) innerJoin); // вообще множественным наследованием надо было бы делать
 
                 // здесь проблема что keySelect может рекурсивно использоваться 2 раза, поэтому сначала пробежим не по ключам
                 String joinString = "";
@@ -526,7 +429,7 @@ public class CompiledQuery<K,V> {
                 Map<Expr,String> fromPropertySelect = new HashMap<Expr, String>();
                 Collection<String> whereSelect = new ArrayList<String>(); // проверить crossJoin
                 String fromSelect = new Query<KeyExpr,Expr>(BaseUtils.toMap(keys),BaseUtils.toMap(queryExprs), fullWhere)
-                    .compile(syntax).fillSelect(new HashMap<KeyExpr, String>(), fromPropertySelect, whereSelect, params);
+                    .compile(syntax, prefix).fillSelect(new HashMap<KeyExpr, String>(), fromPropertySelect, whereSelect, params);
 
                 Map<String, String> keySelect = BaseUtils.join(group,fromPropertySelect);
                 Map<String,String> propertySelect = new HashMap<String, String>();
@@ -583,7 +486,7 @@ public class CompiledQuery<K,V> {
                 Map<Expr,String> fromPropertySelect = new HashMap<Expr, String>();
                 Collection<String> whereSelect = new ArrayList<String>(); // проверить crossJoin
                 String fromSelect = new Query<String,Expr>(group,BaseUtils.toMap(queryExprs),fullWhere)
-                    .compile(syntax).fillSelect(keySelect, fromPropertySelect, whereSelect, params);
+                    .compile(syntax, prefix).fillSelect(keySelect, fromPropertySelect, whereSelect, params);
 
                 Map<String,String> propertySelect = new HashMap<String, String>();
                 for(Map.Entry<OrderExpr.Query,String> expr : queries.entrySet()) // ORDER BY не проверяем на Clause потому как всегда должна быть
@@ -615,8 +518,17 @@ public class CompiledQuery<K,V> {
         }
 
         final Map<GroupJoin, GroupSelect> groups = new HashMap<GroupJoin, GroupSelect>();
+        final Map<GroupExpr, String> groupExprSources = new HashMap<GroupExpr, String>();
         public String getSource(GroupExpr groupExpr) {
-            return getSource(groups,groupExpr);
+            if(Settings.instance.getInnerGroupExprs() >0 && !innerJoins.means(groupExpr.getGroupJoin())) { // если left join
+                String groupExprSource = groupExprSources.get(groupExpr);
+                if(groupExprSource==null) {
+                    groupExprSource = groupExpr.getExprSource(this, prefix+"ge"+groupExprSources.size()+"_");
+                    groupExprSources.put(groupExpr, groupExprSource);
+                }
+                return groupExprSource;
+            } else
+                return getSource(groups,groupExpr);
         }
 
         private final Map<OrderJoin,OrderSelect> orders = new HashMap<OrderJoin, OrderSelect>();
@@ -625,33 +537,86 @@ public class CompiledQuery<K,V> {
         }
     }
 
-    // последний параметр чисто для бага Postgre и может остальных
-    private static <K,V> String getInnerSelect(Map<K, KeyExpr> mapKeys, InnerSelectJoin innerSelect, Map<V, Expr> compiledProps, Map<ValueExpr, String> params, OrderedMap<V, Boolean> orders, int top, SQLSyntax syntax, Map<K,String> keyNames, Map<V,String> propertyNames, List<K> keyOrder, List<V> propertyOrder, Map<V,Type> castTypes) {
-        Map<K,String> andKeySelect = new HashMap<K, String>();
-        Collection<String> andWhereSelect = new ArrayList<String>();
-        Map<V,String> andPropertySelect = new HashMap<V, String>();
-        String andFrom = fillInnerSelect(mapKeys, innerSelect, compiledProps, andKeySelect, andPropertySelect, andWhereSelect, params, syntax);
-
-        if(castTypes!=null) { // проставим Cast'ы для null'ов
-            Map<V,String> castPropertySelect = new HashMap<V, String>();
+    private static <V> Map<V, String> castProperties(Map<V,String> propertySelect, Map<V,Type> castTypes, SQLSyntax syntax) { // проставим Cast'ы для null'ов
+        Map<V,String> castPropertySelect = new HashMap<V, String>();
+        for(Map.Entry<V,String> property : propertySelect.entrySet()) {
+            String propertyString = property.getValue();
             Type castType;
-            for(Map.Entry<V,String> property : andPropertySelect.entrySet()) {
-                String propertyString = property.getValue();
-                if(propertyString.equals(SQLSyntax.NULL) && (castType = castTypes.get(property.getKey()))!=null) // кривовато с проверкой на null, но собсно и надо чтобы обойти баг
-                    propertyString = "CAST(" + propertyString + " AS " + castType.getDB(syntax) + ")";
-                castPropertySelect.put(property.getKey(), propertyString);
-            }
-            andPropertySelect = castPropertySelect;
+            if(propertyString.equals(SQLSyntax.NULL) && (castType = castTypes.get(property.getKey()))!=null) // кривовато с проверкой на null, но собсно и надо чтобы обойти баг
+                propertyString = "CAST(" + propertyString + " AS " + castType.getDB(syntax) + ")";
+            castPropertySelect.put(property.getKey(), propertyString);
         }
-
-        return syntax.getSelect(andFrom, SQLSession.stringExpr(SQLSession.mapNames(andKeySelect, keyNames, keyOrder),
-                SQLSession.mapNames(andPropertySelect, propertyNames, propertyOrder)),
-                BaseUtils.toString(andWhereSelect, " AND "), Query.stringOrder(propertyOrder,mapKeys.size(), orders,syntax),"",top==0?"":String.valueOf(top));
+        return castPropertySelect;        
     }
 
-    private static <K,AV> String fillInnerSelect(Map<K, KeyExpr> mapKeys, InnerSelectJoin innerSelect, Map<AV, Expr> compiledProps, Map<K, String> keySelect, Map<AV, String> propertySelect, Collection<String> whereSelect, Map<ValueExpr,String> params, SQLSyntax syntax) {
+    // castTypes параметр чисто для бага Postgre и может остальных
+    private static <K,V> String getInnerSelect(Map<K, KeyExpr> mapKeys, InnerSelectJoin innerSelect, Map<V, Expr> compiledProps, Map<ValueExpr, String> params, OrderedMap<V, Boolean> orders, int top, SQLSyntax syntax, Map<K, String> keyNames, Map<V, String> propertyNames, List<K> keyOrder, List<V> propertyOrder, Map<V, Type> castTypes, String prefix, boolean noInline) {
+        Map<K,String> andKeySelect = new HashMap<K, String>(); Collection<String> andWhereSelect = new ArrayList<String>(); Map<V,String> andPropertySelect = new HashMap<V, String>();
+        String andFrom = fillInnerSelect(mapKeys, innerSelect, compiledProps, andKeySelect, andPropertySelect, andWhereSelect, params, syntax, prefix);
 
-        InnerSelect compile = new InnerSelect(innerSelect.where,innerSelect.joins,syntax,params);
+        if(castTypes!=null)
+            andPropertySelect = castProperties(andPropertySelect, castTypes, syntax);
+
+        return getSelect(andFrom, andKeySelect, keyNames, keyOrder, andPropertySelect, propertyNames, propertyOrder, andWhereSelect, syntax, orders, top, noInline);
+    }
+
+    private static <K,V> String getSelect(String from, Map<K, String> keySelect, Map<K, String> keyNames, List<K> keyOrder, Map<V, String> propertySelect, Map<V, String> propertyNames, List<V> propertyOrder, Collection<String> whereSelect, SQLSyntax syntax, OrderedMap<V, Boolean> orders, int top, boolean noInline) {
+        return syntax.getSelect(from, SQLSession.stringExpr(SQLSession.mapNames(keySelect, keyNames, keyOrder),
+                SQLSession.mapNames(propertySelect, propertyNames, propertyOrder)) + (noInline && syntax.inlineTrouble()?",random()":""),
+                BaseUtils.toString(whereSelect, " AND "), Query.stringOrder(propertyOrder,keySelect.size(), orders,syntax),"",top==0?"":String.valueOf(top));
+    }
+
+    private static <K,AV> String fillSingleSelect(Map<K, KeyExpr> mapKeys, InnerSelectJoin innerSelect, Map<AV, Expr> compiledProps, Map<K, String> keySelect, Map<AV, String> propertySelect, Map<ValueExpr,String> params, SQLSyntax syntax, String prefix) {
+        return fillFullSelect(mapKeys, Collections.singleton(innerSelect), compiledProps, new OrderedMap<AV, Boolean>(), 0, keySelect, propertySelect, params, syntax, prefix);
+
+/*        FullSelect FJSelect = new FullSelect(innerSelect.where, params,syntax); // для keyType'а берем первый where
+
+        MapWhere<JoinData> joinDatas = new MapWhere<JoinData>();
+        for(Map.Entry<AV, Expr> joinProp : compiledProps.entrySet())
+            joinProp.getValue().fillJoinWheres(joinDatas, Where.TRUE);
+
+        String innerAlias = prefix+"inalias";
+        Map<String, Expr> joinProps = new HashMap<String, Expr>();
+        // затем все данные по JoinSelect'ам по вариантам
+        for(JoinData joinData : joinDatas.keys()) {
+            String joinName = "join_" + joinProps.size();
+            joinProps.put(joinName, joinData.getFJExpr());
+            FJSelect.joinData.put(joinData,joinData.getFJString(innerAlias +'.'+joinName));
+        }
+
+        Map<K, String> keyNames = new HashMap<K, String>();
+        for(K key : mapKeys.keySet()) {
+            String keyName = "jkey" + keyNames.size();
+            keyNames.put(key, keyName);
+            keySelect.put(key, innerAlias +"."+ keyName);
+            FJSelect.keySelect.put(mapKeys.get(key),innerAlias +"."+ keyName);
+        }
+
+        for(Map.Entry<AV, Expr> mapProp : compiledProps.entrySet())
+            propertySelect.put(mapProp.getKey(), mapProp.getValue().getSource(FJSelect));
+
+        return "(" + getInnerSelect(mapKeys, innerSelect, joinProps, params, new OrderedMap<String, Boolean>(),0 , syntax, keyNames, BaseUtils.toMap(joinProps.keySet()), new ArrayList<K>(), new ArrayList<String>(), null, prefix, true) + ") " + innerAlias;*/
+    }
+
+    private static <K,AV> String fillInnerSelect(Map<K, KeyExpr> mapKeys, final InnerSelectJoin innerSelect, Map<AV, Expr> compiledProps, Map<K, String> keySelect, Map<AV, String> propertySelect, Collection<String> whereSelect, Map<ValueExpr, String> params, SQLSyntax syntax, String prefix) {
+        if(Settings.instance.getInnerGroupExprs() > 0) { // если не одни joinData
+            final Set<GroupExpr> groupExprs = new HashSet<GroupExpr>(); final Counter repeats = new Counter();
+            for(Expr property : compiledProps.values())
+                property.enumerate(new ExprEnumerator() {
+                    public boolean enumerate(SourceJoin join) {
+                        if(join instanceof JoinData) { // если JoinData то что внутри не интересует
+                            if(join instanceof GroupExpr && !innerSelect.joins.means(((GroupExpr)join).getGroupJoin()) && !groupExprs.add((GroupExpr)join))
+                                repeats.add();
+                            return false;
+                        }
+                        return true;
+                    }
+                });
+            if(repeats.getValue() > Settings.instance.getInnerGroupExprs())
+                return fillSingleSelect(mapKeys, innerSelect, compiledProps, keySelect, propertySelect, params, syntax, prefix);
+        }
+
+        InnerSelect compile = new InnerSelect(innerSelect.where,innerSelect.joins,syntax,params, prefix);
         // первым так как должны keySelect'ы и inner'ы заполнится
         QueryTranslator keyEqualTranslator = innerSelect.keyEqual.getTranslator();
         for(Map.Entry<AV, Expr> joinProp : keyEqualTranslator.translate(compiledProps).entrySet()) // свойства
@@ -666,6 +631,114 @@ public class CompiledQuery<K,V> {
         assert !whereSelect.contains(null);
 
         return compile.getFrom(innerSelect.where,whereSelect);
+    }
+
+    private static <K,AV> String fillFullSelect(Map<K, KeyExpr> mapKeys, Collection<InnerSelectJoin> innerSelects, Map<AV, Expr> compiledProps, OrderedMap<AV,Boolean> orders, int top, Map<K, String> keySelect, Map<AV, String> propertySelect, Map<ValueExpr,String> params, SQLSyntax syntax, String prefix) {
+        FullSelect FJSelect = new FullSelect(innerSelects.iterator().next().where, params,syntax); // для keyType'а берем первый where
+
+        // создаем And подзапросыs
+        Collection<AndJoinQuery> andProps = new ArrayList<AndJoinQuery>();
+        for(InnerSelectJoin andWhere : innerSelects)
+            andProps.add(new AndJoinQuery(andWhere,prefix+"f"+andProps.size()));
+
+        MapWhere<JoinData> joinDataWheres = new MapWhere<JoinData>();
+        for(Map.Entry<AV, Expr> joinProp : compiledProps.entrySet())
+            if(!orders.containsKey(joinProp.getKey()))
+                joinProp.getValue().fillJoinWheres(joinDataWheres, Where.TRUE);
+
+        // для JoinSelect'ов узнаем при каких условиях они нужны
+        MapWhere<Object> joinWheres = new MapWhere<Object>();
+        for(int i=0;i<joinDataWheres.size;i++)
+            joinWheres.add(joinDataWheres.getKey(i).getFJGroup(),joinDataWheres.getValue(i));
+
+        // сначала распихиваем JoinSelect по And'ам
+        Map<Object,Collection<AndJoinQuery>> joinAnds = new HashMap<Object, Collection<AndJoinQuery>>();
+        for(int i=0;i<joinWheres.size;i++)
+            joinAnds.put(joinWheres.getKey(i),getWhereSubSet(andProps,joinWheres.getValue(i)));
+
+        // затем все данные по JoinSelect'ам по вариантам
+        int joinNum = 0;
+        for(int i=0;i<joinDataWheres.size;i++) {
+            JoinData joinData = joinDataWheres.getKey(i);
+            String joinName = "join_" + (joinNum++);
+            Collection<AndJoinQuery> dataAnds = new ArrayList<AndJoinQuery>();
+            for(AndJoinQuery and : getWhereSubSet(joinAnds.get(joinData.getFJGroup()), joinDataWheres.getValue(i))) {
+                Expr joinExpr = joinData.getFJExpr();
+                if(!and.innerSelect.fullWhere.means(joinExpr.getWhere().not())) { // проверим что не всегда null
+                    and.properties.put(joinName, joinExpr);
+                    dataAnds.add(and);
+                }
+            }
+            String joinSource = ""; // заполняем Source
+            if(dataAnds.size()==0)
+                throw new RuntimeException("Не должно быть");
+            else
+            if(dataAnds.size()==1)
+                joinSource = dataAnds.iterator().next().alias +'.'+joinName;
+            else {
+                for(AndJoinQuery and : dataAnds)
+                    joinSource = (joinSource.length()==0?"":joinSource+",") + and.alias + '.' + joinName;
+                joinSource = "COALESCE(" + joinSource + ")";
+            }
+            FJSelect.joinData.put(joinData,joinData.getFJString(joinSource));
+        }
+
+        // order'ы отдельно обрабатываем, они нужны в каждом запросе генерируем имена для Order'ов
+        int io = 0;
+        OrderedMap<String,Boolean> orderAnds = new OrderedMap<String, Boolean>();
+        for(Map.Entry<AV, Boolean> order : orders.entrySet()) {
+            String orderName = "order_" + (io++);
+            String orderFJ = "";
+            for(AndJoinQuery and : andProps) {
+                and.properties.put(orderName, compiledProps.get(order.getKey()));
+                orderFJ = (orderFJ.length()==0?"":orderFJ+",") + and.alias + "." + orderName;
+            }
+            if(!(top==0)) // если все то не надо упорядочивать, потому как в частности MS SQL не поддерживает
+                orderAnds.put(orderName,order.getValue());
+            propertySelect.put(order.getKey(),"COALESCE("+orderFJ+")");
+        }
+
+        int keyCount = 0;
+        Map<K, String> keyNames = new HashMap<K, String>();
+        for(K Key : mapKeys.keySet())
+            keyNames.put(Key,"jkey"+(keyCount++));
+
+        // бежим по всем And'ам делаем JoinSelect запросы, потом объединяем их FULL'ами
+        String compileFrom = "";
+        boolean first = true; // для COALESCE'ов
+        for(AndJoinQuery and : andProps) {
+            // закинем в And.Properties OrderBy, все равно какие порядки ключей и выражений
+            String andSelect = "(" + getInnerSelect(mapKeys, and.innerSelect, and.properties, params, orderAnds, top, syntax, keyNames, BaseUtils.toMap(and.properties.keySet()), new ArrayList<K>(), new ArrayList<String>(), null, prefix, innerSelects.size()==1) + ") " + and.alias;
+
+            if(compileFrom.length()==0) {
+                compileFrom = andSelect;
+                for(K Key : mapKeys.keySet())
+                    keySelect.put(Key, and.alias +"."+ keyNames.get(Key));
+            } else {
+                String andJoin = "";
+                for(Map.Entry<K,String> mapKey : keySelect.entrySet()) {
+                    String andKey = and.alias + "." + keyNames.get(mapKey.getKey());
+                    andJoin = (andJoin.length()==0?"":andJoin + " AND ") + andKey + "=" + (first?mapKey.getValue():"COALESCE("+mapKey.getValue()+")");
+                    mapKey.setValue(mapKey.getValue()+","+andKey);
+                }
+                compileFrom = compileFrom + " FULL JOIN " + andSelect + " ON " + (andJoin.length()==0? Where.TRUE_STRING :andJoin);
+                first = false;
+            }
+        }
+
+        // полученные KeySelect'ы в Data
+        for(Map.Entry<K,String> mapKey : keySelect.entrySet()) {
+            if(innerSelects.size()>1)
+                mapKey.setValue("COALESCE("+mapKey.getValue()+")"); // обернем в COALESCE
+            FJSelect.keySelect.put(mapKeys.get(mapKey.getKey()),mapKey.getValue());
+        }
+
+        // закидываем PropertySelect'ы
+        for(Map.Entry<AV, Expr> mapProp : compiledProps.entrySet())
+            if(!orders.containsKey(mapProp.getKey())) // orders'ы уже обработаны
+                propertySelect.put(mapProp.getKey(), mapProp.getValue().getSource(FJSelect));
+
+        return compileFrom;
     }
 
     String translateParam(String query,Map<String,String> paramValues) {
@@ -698,7 +771,7 @@ public class CompiledQuery<K,V> {
     }
 
     // для GroupQuery
-    String fillSelect(Map<K, String> fillKeySelect, Map<V, String> fillPropertySelect, Collection<String> fillWhereSelect, Map<ValueExpr,String> mapValues) {
+    public String fillSelect(Map<K, String> fillKeySelect, Map<V, String> fillPropertySelect, Collection<String> fillWhereSelect, Map<ValueExpr,String> mapValues) {
         return fillSelect(BaseUtils.join(BaseUtils.reverse(params), mapValues), fillKeySelect, fillPropertySelect, fillWhereSelect);
     }
 

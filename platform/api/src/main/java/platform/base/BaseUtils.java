@@ -395,7 +395,7 @@ public class BaseUtils {
         return result;
     }
 
-    public static <K> Set<K> add(Set<K> col,K add) {
+    public static <K> Set<K> addSet(Set<? extends K> col,K add) {
         Set<K> result = new HashSet<K>(col);
         result.add(add);
         return result;

@@ -8,7 +8,7 @@ import platform.server.data.expr.query.OrderExpr;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.ContextEnumerator;
+import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.where.Where;
@@ -95,7 +95,7 @@ public class LinearOperandMap extends HashMap<BaseExpr,Integer> {
         return "L(" + result + ")";
     }
 
-    public void enumerate(ContextEnumerator enumerator) {
+    public void enumerate(ExprEnumerator enumerator) {
         enumerator.fill(keySet());
     }
 

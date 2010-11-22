@@ -135,8 +135,14 @@ public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInter
     public CompiledQuery<K,V> compile(SQLSyntax syntax) {
         return compile(syntax, new OrderedMap<V, Boolean>(), 0);
     }
-    CompiledQuery<K,V> compile(SQLSyntax syntax,OrderedMap<V,Boolean> orders,int selectTop) {
-        return parse().compileSelect(syntax,orders,selectTop);
+    public CompiledQuery<K,V> compile(SQLSyntax syntax,OrderedMap<V,Boolean> orders,int selectTop) {
+        return compile(syntax, orders, selectTop, "");
+    }
+    public CompiledQuery<K,V> compile(SQLSyntax syntax, String prefix) {
+        return compile(syntax, new OrderedMap<V, Boolean>(), 0, prefix);
+    }
+    public CompiledQuery<K,V> compile(SQLSyntax syntax, OrderedMap<V, Boolean> orders, int selectTop, String prefix) {
+        return parse().compileSelect(syntax,orders,selectTop,prefix);
     }
 
     public static <V> OrderedMap<V,Boolean> reverseOrder(OrderedMap<V,Boolean> orders) {

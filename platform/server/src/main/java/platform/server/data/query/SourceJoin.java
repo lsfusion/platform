@@ -14,8 +14,9 @@ public interface SourceJoin {
     //    void fillJoins(List<? extends JoinSelect> Joins);
     void fillJoinWheres(MapWhere<JoinData> joins, Where andWhere);
 
-    void enumerate(ContextEnumerator enumerator);
+    void enumDepends(ExprEnumerator enumerator);
 
+    void enumerate(ExprEnumerator enumerator);
     void enumKeys(Set<KeyExpr> keys);
     void enumValues(Set<ValueExpr> values);
 

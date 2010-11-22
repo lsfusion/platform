@@ -43,12 +43,9 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
         properties = where.followTrue(query.properties);
     }
 
-    public CompiledQuery<K,V> compileSelect(SQLSyntax syntax) {
-        return compileSelect(syntax,new OrderedMap<V, Boolean>(),0);
-    }
     @SynchronizedLazy
-    public CompiledQuery<K,V> compileSelect(SQLSyntax syntax, OrderedMap<V,Boolean> orders,int top) {
-        return new CompiledQuery<K,V>(this, syntax, orders, top);
+    public CompiledQuery<K,V> compileSelect(SQLSyntax syntax, OrderedMap<V, Boolean> orders, int top, String prefix) {
+        return new CompiledQuery<K,V>(this, syntax, orders, top, prefix);
     }
 
     public Join<V> join(Map<K, ? extends Expr> joinImplement) {

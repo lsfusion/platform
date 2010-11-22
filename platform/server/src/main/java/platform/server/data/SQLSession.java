@@ -66,7 +66,15 @@ public abstract class SQLSession {
         }
     }
 
-    public void createTable(String table, Collection<KeyField> keys) throws SQLException {
+    public void addExtraIndices(String table, List<KeyField> keys) throws SQLException {
+        List<String> keyStrings = new ArrayList<String>();
+        for(KeyField key : keys)
+            keyStrings.add(key.name);
+        for(int i=1;i<keys.size();i++)
+            addIndex(table, keyStrings.subList(i, keys.size()));
+    }
+
+    public void createTable(String table, List<KeyField> keys) throws SQLException {
         logger.info("Идет создание таблицы " + table + "... ");
         String createString = "";
         String keyString = "";
@@ -81,6 +89,7 @@ public abstract class SQLSession {
 
 //        System.out.println("CREATE TABLE "+Table.Name+" ("+CreateString+")");
         execute("CREATE TABLE " + table + " (" + createString + ")");
+        addExtraIndices(table, keys);                
         logger.info(" Done");
     }
 
@@ -97,7 +106,7 @@ public abstract class SQLSession {
         return name;
     }
 
-    public void addIndex(String table, Collection<String> fields) throws SQLException {
+    public void addIndex(String table, List<String> fields) throws SQLException {
         logger.info("Идет создание индекса " + getIndexName(table, fields) + "... ");
         String columns = "";
         for (String indexField : fields)

@@ -12,7 +12,7 @@ import platform.server.data.expr.KeyType;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.ContextEnumerator;
+import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapTranslate;
@@ -132,7 +132,7 @@ public class CaseExpr extends Expr {
         return result;
     }
 
-    public void enumerate(ContextEnumerator enumerator) {
+    public void enumDepends(ExprEnumerator enumerator) {
         for(ExprCase exprCase : cases) {
             exprCase.where.enumerate(enumerator);
             exprCase.data.enumerate(enumerator);

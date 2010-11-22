@@ -8,7 +8,7 @@ import platform.server.classes.LogicalClass;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.ContextEnumerator;
+import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
@@ -39,8 +39,7 @@ public class ValueExpr extends AbstractValueExpr {
         return compile.params.get(this);
     }
 
-    public void enumerate(ContextEnumerator enumerator) {
-        enumerator.add(this);
+    public void enumDepends(ExprEnumerator enumerator) {
     }
 
     public Type getType(KeyType keyType) {

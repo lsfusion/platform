@@ -62,6 +62,9 @@ public interface SQLSyntax {
     boolean nullUnionTrouble();
     String getUnionOrder(String union,String orderBy, String top);
 
+    // проблема что inline'ся query и идут duplicate subplan'ы
+    boolean inlineTrouble();
+
     String getOrderDirection(boolean descending);
 
     String getHour();

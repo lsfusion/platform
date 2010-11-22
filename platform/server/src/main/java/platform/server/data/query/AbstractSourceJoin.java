@@ -11,6 +11,7 @@ import platform.server.data.expr.KeyType;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.OrderExpr;
+import platform.server.data.expr.query.QueryExpr;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.logics.BusinessLogics;
@@ -69,19 +70,23 @@ abstract public class AbstractSourceJoin<T extends OuterContext<T>> extends Abst
     }
 
     public void enumKeys(final Set<KeyExpr> keys) {
-        enumerate(new ContextEnumerator() {
-            @Override
-            public void add(KeyExpr keyExpr) {
-                keys.add(keyExpr);
+        enumerate(new ExprEnumerator() {
+            public boolean enumerate(SourceJoin join) {
+                if(join instanceof KeyExpr)
+                    keys.add((KeyExpr) join);
+                return true;
             }
         });
     }
 
     public void enumValues(final Set<ValueExpr> values) {
-        enumerate(new ContextEnumerator() {
-            @Override
-            public void add(ValueExpr keyExpr) {
-                values.add(keyExpr);
+        enumerate(new ExprEnumerator() {
+            public boolean enumerate(SourceJoin join) {
+                if(join instanceof ValueExpr)
+                    values.add((ValueExpr)join);
+                if(join instanceof QueryExpr)
+                    values.addAll(((QueryExpr<?,?,?>)join).getInnerValues());
+                return true;
             }
         });
     }
@@ -123,6 +128,11 @@ abstract public class AbstractSourceJoin<T extends OuterContext<T>> extends Abst
         for(SourceJoin element : elements)
             complexity += element.getComplexity();
         return complexity;
+    }
+
+    public void enumerate(ExprEnumerator enumerator) {
+        if(enumerator.enumerate(this))
+            enumDepends(enumerator);
     }
 
     protected abstract long calculateComplexity();

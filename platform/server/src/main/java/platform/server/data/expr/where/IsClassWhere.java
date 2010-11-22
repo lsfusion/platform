@@ -12,7 +12,7 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.SingleClassExpr;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.ContextEnumerator;
+import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.innerjoins.ObjectJoinSets;
 import platform.server.data.translator.MapTranslate;
@@ -63,7 +63,7 @@ public class IsClassWhere extends DataWhere {
         return expr.translateQuery(translator).isClass(classes);
     }
 
-    public void enumerate(ContextEnumerator enumerator) {
+    public void enumDepends(ExprEnumerator enumerator) {
         expr.enumerate(enumerator);
     }
 

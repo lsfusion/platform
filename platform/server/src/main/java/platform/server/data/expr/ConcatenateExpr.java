@@ -13,7 +13,7 @@ import platform.server.data.expr.cases.MapCase;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.ContextEnumerator;
+import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
@@ -123,7 +123,7 @@ public class ConcatenateExpr extends BaseExpr {
         return ((ConcatenateType)getType(compile.keyType)).getConcatenateSource(sources,compile.syntax);
     }
 
-    public void enumerate(ContextEnumerator enumerator) {
+    public void enumDepends(ExprEnumerator enumerator) {
         enumerator.fill(exprs);
     }
 

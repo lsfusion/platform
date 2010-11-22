@@ -6,7 +6,7 @@ import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.ContextEnumerator;
+import platform.server.data.query.ExprEnumerator;
 import platform.server.data.where.classes.ClassExprWhere;
 
 import java.util.Arrays;
@@ -34,7 +34,7 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
         return "("+result+")";
     }
 
-    public void enumerate(ContextEnumerator enumerator) {
+    public void enumDepends(ExprEnumerator enumerator) {
         for(Where where : wheres)
             where.enumerate(enumerator);
     }

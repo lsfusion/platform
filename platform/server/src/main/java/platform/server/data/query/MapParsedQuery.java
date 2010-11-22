@@ -29,8 +29,8 @@ public class MapParsedQuery<K,V,MK,MV> implements ParsedQuery<K,V> {
         this.mapValues = mapValues;
     }
 
-    public CompiledQuery<K, V> compileSelect(SQLSyntax syntax, OrderedMap<V,Boolean> orders, int top) {
-        return new CompiledQuery<K,V>(query.compileSelect(syntax,orders.map(mapProps),top),mapKeys,mapProps,mapValues);
+    public CompiledQuery<K, V> compileSelect(SQLSyntax syntax, OrderedMap<V, Boolean> orders, int top, String prefix) {
+        return new CompiledQuery<K,V>(query.compileSelect(syntax,orders.map(mapProps),top,prefix),mapKeys,mapProps,mapValues);
     }
 
     public <B> ClassWhere<B> getClassWhere(Collection<? extends V> classProps) {

@@ -108,7 +108,13 @@ public class PostgreDataAdapter extends DataAdapter {
         return false;
     }
 
+    @Override
     public boolean nullUnionTrouble() {
+        return true;
+    }
+
+    @Override
+    public boolean inlineTrouble() {
         return true;
     }
 

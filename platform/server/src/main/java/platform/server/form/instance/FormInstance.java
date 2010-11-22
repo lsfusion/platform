@@ -1114,7 +1114,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 boolean inInterface = false;
                 Set<GroupObjectInstance> keyGridObjects = null;
                 if (drawProperty.toDraw != null && drawProperty.toDraw.curClassView == ClassViewType.GRID && (forceViewType == null || forceViewType == ClassViewType.valueOf("GRID")) &&
-                        drawProperty.propertyObject.isInInterface(keyGridObjects = BaseUtils.add(columnGroupGrids, drawProperty.toDraw), forceViewType != null)) { // в grid'е
+                        drawProperty.propertyObject.isInInterface(keyGridObjects = BaseUtils.addSet(columnGroupGrids, drawProperty.toDraw), forceViewType != null)) { // в grid'е
                     inInterface = true;
                     if (read || objectUpdated(drawProperty.propertyObject, keyGridObjects))
                         readProperties.put(drawProperty, keyGridObjects);
