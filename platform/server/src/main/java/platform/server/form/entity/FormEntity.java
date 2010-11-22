@@ -251,6 +251,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         addPropertyDraw(group, upClasses, null, useObjSubsets, objects);
     }
 
+    protected void addPropertyDraw(AbstractNode group, boolean upClasses, GroupObjectEntity groupObject, ObjectEntity... objects) {
+        addPropertyDraw(group, upClasses, groupObject, false, objects);
+    }
+    
     protected void addPropertyDraw(AbstractNode group, boolean upClasses, GroupObjectEntity groupObject, boolean useObjSubsets, ObjectEntity... objects) {
         List<ValueClassWrapper> valueClasses = new ArrayList<ValueClassWrapper>();
         Map<ObjectEntity, ValueClassWrapper> objectToClass = new HashMap<ObjectEntity, ValueClassWrapper>();
