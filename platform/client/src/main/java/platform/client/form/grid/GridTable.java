@@ -477,6 +477,7 @@ public abstract class GridTable extends ClientFormTable
             isInternalNavigating = true;
             changeSelection(row, column, false, false);
             isInternalNavigating = false;
+            SwingUtils.stopSingleAction(logicsSupplier.getGroupObject().getActionID(), false);
             return true;
         }
         return false;
