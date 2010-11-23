@@ -24,6 +24,6 @@ public abstract class ClientTreeAction {
     }
 
     public boolean canBeDefault(TreePath path) {
-        return true;
+        return false;
     }
 }

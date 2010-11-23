@@ -1,20 +1,23 @@
 package platform.client.descriptor;
 
 import platform.base.BaseUtils;
-import platform.client.Main;
+import platform.base.context.ApplicationContext;
 import platform.base.context.ContextIdentityObject;
+import platform.base.context.IncrementView;
+import platform.base.serialization.RemoteDescriptorInterface;
+import platform.client.Main;
 import platform.client.descriptor.filter.FilterDescriptor;
 import platform.client.descriptor.filter.RegularFilterGroupDescriptor;
-import platform.base.context.ApplicationContext;
-import platform.base.context.IncrementView;
 import platform.client.descriptor.property.PropertyDescriptor;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
-import platform.client.logics.*;
+import platform.client.logics.ClientComponent;
+import platform.client.logics.ClientContainer;
+import platform.client.logics.ClientForm;
+import platform.client.logics.ClientFunction;
 import platform.client.logics.classes.ClientClass;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.form.layout.*;
-import platform.base.serialization.RemoteDescriptorInterface;
 
 import java.io.*;
 import java.util.*;
@@ -36,9 +39,11 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
     // по сути IncrementLazy
     IncrementView allPropertiesLazy;
     private List<PropertyObjectDescriptor> allProperties;
+
     public List<PropertyObjectDescriptor> getAllProperties() {
-        if (allProperties == null)
+        if (allProperties == null) {
             allProperties = getProperties(groupObjects, null);
+        }
         return allProperties;
     }
 
@@ -68,18 +73,25 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
 
     public List<PropertyDrawDescriptor> getAddPropertyDraws(GroupObjectDescriptor group) {
         List<PropertyDrawDescriptor> result = new ArrayList<PropertyDrawDescriptor>();
-        if (group == null) return result; // предполагается, что для всей папки свойства, любое добавленное свойство будет в getGroupPropertyDraws
-        for(PropertyDrawDescriptor propertyDraw : propertyDraws) // добавим новые свойства, предполагается что оно одно
-            if(propertyDraw.getPropertyObject()==null && group.equals(propertyDraw.addGroup))
+        if (group == null) {
+            return result;
+        } // предполагается, что для всей папки свойства, любое добавленное свойство будет в getGroupPropertyDraws
+        for (PropertyDrawDescriptor propertyDraw : propertyDraws) // добавим новые свойства, предполагается что оно одно
+        {
+            if (propertyDraw.getPropertyObject() == null && group.equals(propertyDraw.addGroup)) {
                 result.add(propertyDraw);
+            }
+        }
         return result;
     }
 
     public List<PropertyDrawDescriptor> getGroupPropertyDraws(GroupObjectDescriptor group) {
         List<PropertyDrawDescriptor> result = new ArrayList<PropertyDrawDescriptor>();
-        for (PropertyDrawDescriptor propertyDraw : propertyDraws)
-            if (group == null || group.equals(propertyDraw.getGroupObject(groupObjects)))
+        for (PropertyDrawDescriptor propertyDraw : propertyDraws) {
+            if (group == null || group.equals(propertyDraw.getGroupObject(groupObjects))) {
                 result.add(propertyDraw);
+            }
+        }
         return result;
     }
 
@@ -93,14 +105,18 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
 
         public void update(Object updateObject, String updateField) {
             List<PropertyDrawDescriptor> checkProperties;
-            if (updateObject instanceof PropertyDrawDescriptor)
+            if (updateObject instanceof PropertyDrawDescriptor) {
                 checkProperties = Collections.singletonList((PropertyDrawDescriptor) updateObject);
-            else
+            } else {
                 checkProperties = new ArrayList<PropertyDrawDescriptor>(propertyDraws);
+            }
 
-            for(PropertyDrawDescriptor checkProperty : checkProperties)
-                if(!updateProperty(checkProperty)) // удаляем propertyDraw
+            for (PropertyDrawDescriptor checkProperty : checkProperties) {
+                if (!updateProperty(checkProperty)) // удаляем propertyDraw
+                {
                     removeFromPropertyDraws(checkProperty);
+                }
+            }
         }
     }
 
@@ -135,8 +151,9 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
                         ClientComponent comp = objects.get(propIndex).getClientComponent(mainContainer);
                         if (newContainer.equals(comp.container)) {
                             insIndex = newContainer.children.indexOf(comp);
-                            if (insIndex != -1)
+                            if (insIndex != -1) {
                                 break;
+                            }
                         }
                     }
                     if (insIndex == -1) {
@@ -155,7 +172,9 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
 
                     // если объект свойство не нашлось куда добавить, то его надо добавлять самым первым в контейнер
                     // иначе свойства будут идти после управляющих объектов
-                    if (insIndex == -1) insIndex = (last ? newContainer.children.size(): 0);
+                    if (insIndex == -1) {
+                        insIndex = (last ? newContainer.children.size() : 0);
+                    }
                     newContainer.addToChildren(insIndex, object.getClientComponent(mainContainer));
                 }
             }
@@ -175,8 +194,9 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
             for (GroupObjectDescriptor group : groupObjects) {
                 // по сути дублирует логику из GroupObjectContainerSet в плане установки caption для контейнера
                 ClientContainer groupContainer = group.getClientComponent(client.mainContainer);
-                if (groupContainer != null)
+                if (groupContainer != null) {
                     groupContainer.setTitle(group.client.getCaption());
+                }
             }
         }
     }
@@ -241,8 +261,9 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         toDrawConstraint = new IncrementPropertyConstraint() {
             public boolean updateProperty(PropertyDrawDescriptor property) {
                 GroupObjectDescriptor toDraw = property.getToDraw();
-                if (toDraw != null && property.getPropertyObject() != null && !property.getPropertyObject().getGroupObjects().contains(toDraw))
+                if (toDraw != null && property.getPropertyObject() != null && !property.getPropertyObject().getGroupObjects().contains(toDraw)) {
                     property.setToDraw(null);
+                }
                 return true;
             }
         };
@@ -256,8 +277,9 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
                 List<GroupObjectDescriptor> columnGroups = property.getColumnGroupObjects();
 
                 List<GroupObjectDescriptor> constrainedColumnGroups = BaseUtils.filterList(columnGroups, upGroups);
-                if (!constrainedColumnGroups.equals(columnGroups))
+                if (!constrainedColumnGroups.equals(columnGroups)) {
                     property.setColumnGroupObjects(constrainedColumnGroups);
+                }
                 return true;
             }
         };
@@ -271,8 +293,9 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         propertyCaptionConstraint = new IncrementPropertyConstraint() {
             public boolean updateProperty(PropertyDrawDescriptor property) {
                 PropertyObjectDescriptor propertyCaption = property.getPropertyCaption();
-                if (propertyCaption != null && !getProperties(property.getColumnGroupObjects(), null).contains(propertyCaption))
+                if (propertyCaption != null && !getProperties(property.getColumnGroupObjects(), null).contains(propertyCaption)) {
                     property.setPropertyCaption(null);
+                }
                 return true;
             }
         };
@@ -301,15 +324,20 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
     }
 
     public ObjectDescriptor getObject(int objectID) {
-        for (GroupObjectDescriptor group : groupObjects)
-            for (ObjectDescriptor object : group.objects)
-                if (object.getID() == objectID)
+        for (GroupObjectDescriptor group : groupObjects) {
+            for (ObjectDescriptor object : group.objects) {
+                if (object.getID() == objectID) {
                     return object;
+                }
+            }
+        }
         return null;
     }
 
     public List<PropertyObjectDescriptor> getProperties(GroupObjectDescriptor groupObject) {
-        if (groupObject == null) return getAllProperties();
+        if (groupObject == null) {
+            return getAllProperties();
+        }
         return getProperties(groupObjects.subList(0, groupObjects.indexOf(groupObject) + 1), groupObject);
     }
 
@@ -353,8 +381,9 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         }
 
         List<PropertyObjectDescriptor> result = new ArrayList<PropertyObjectDescriptor>();
-        for (PropertyDescriptorImplement<Integer> implement : getProperties(remote, classes, BaseUtils.filterValues(idToObjects, atLeastOne).keySet(), objectMap, isCompulsory, isAny))
+        for (PropertyDescriptorImplement<Integer> implement : getProperties(remote, classes, BaseUtils.filterValues(idToObjects, atLeastOne).keySet(), objectMap, isCompulsory, isAny)) {
             result.add(new PropertyObjectDescriptor(implement.property, BaseUtils.join(implement.mapping, idToObjects)));
+        }
         return result;
     }
 
@@ -388,8 +417,9 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
             for (int i = 0; i < size; i++) {
                 PropertyDescriptor implementProperty = (PropertyDescriptor) pool.deserializeObject(inStream);
                 Map<PropertyInterfaceDescriptor, Integer> mapInterfaces = new HashMap<PropertyInterfaceDescriptor, Integer>();
-                for (int j = 0; j < implementProperty.interfaces.size(); j++)
+                for (int j = 0; j < implementProperty.interfaces.size(); j++) {
                     mapInterfaces.put((PropertyInterfaceDescriptor) pool.deserializeObject(inStream), inStream.readInt());
+                }
                 result.add(new PropertyDescriptorImplement<Integer>(implementProperty, mapInterfaces));
             }
             return result;
@@ -541,14 +571,19 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
     }
 
 
-    public static byte[] serialize(FormDescriptor form) throws IOException {
+    public byte[] serialize() throws IOException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         DataOutputStream dataStream = new DataOutputStream(outStream);
-        new ClientSerializationPool().serializeObject(dataStream, form);
-        new ClientSerializationPool().serializeObject(dataStream, form.client);
+        new ClientSerializationPool().serializeObject(dataStream, this);
+        new ClientSerializationPool().serializeObject(dataStream, client);
 
         return outStream.toByteArray();
-}
+    }
+
+    public void serialize(DataOutputStream outStream) throws IOException {
+        new ClientSerializationPool().serializeObject(outStream, this);
+        new ClientSerializationPool().serializeObject(outStream, client);
+    }
 
     public static FormDescriptor deserialize(byte[] richDesignByteArray, byte[] formEntityByteArray) throws IOException {
         ApplicationContext context = new ApplicationContext();
@@ -606,13 +641,15 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         int groupIndex = objects.indexOf(concreateObject);
         int index = -1;
         if (groupIndex > 0) {
-            index = client.mainContainer.children.indexOf(objects.get(groupIndex-1).getClientComponent(client.mainContainer));
-            if (index != -1)
+            index = client.mainContainer.children.indexOf(objects.get(groupIndex - 1).getClientComponent(client.mainContainer));
+            if (index != -1) {
                 index++;
-            else
+            } else {
                 index = client.mainContainer.children.size();
-        } else
+            }
+        } else {
             index = 0;
+        }
 
         client.mainContainer.add(index, parent);
     }

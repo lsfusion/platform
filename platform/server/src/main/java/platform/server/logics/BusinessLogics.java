@@ -3039,16 +3039,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public <T extends FormEntity> T addFormEntity(T form) {
-        // форма "перегружена"
-        try {
-            byte[] formState = IOUtils.getFileBytes(new File("conf/forms/form" + form.getID()));
-            FormEntity overridenForm = FormEntity.deserialize(this, formState);
-            form.getParent().replaceChild(form, overridenForm);
-            //TODO : здесь возвращать надо стопроцентов overridenForm, но будут проблемы с программным взаимодействием
-            return form;
-        } catch (IOException e) {
-            form.richDesign = form.createDefaultRichDesign();
-        }
+        form.richDesign = form.createDefaultRichDesign();
         return form;
     }
 

@@ -12,6 +12,7 @@ public interface RemoteNavigatorInterface extends PendingRemote {
     RemoteFormInterface createForm(int formID, boolean currentSession) throws RemoteException;
     RemoteFormInterface createForm(byte[] formState) throws RemoteException;
     void saveForm(int formID, byte[] formState) throws RemoteException;
+    void saveForms(byte[] data) throws RemoteException;
 
     byte[] getRichDesignByteArray(int formID) throws RemoteException;
     byte[] getFormEntityByteArray(int formID) throws RemoteException;

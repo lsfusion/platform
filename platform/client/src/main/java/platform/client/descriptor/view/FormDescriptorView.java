@@ -1,13 +1,12 @@
 package platform.client.descriptor.view;
 
-import platform.client.tree.ClassFilteredAction;
-import platform.client.descriptor.FormDescriptor;
 import platform.base.context.IncrementView;
+import platform.base.context.Lookup;
+import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.nodes.FormNode;
 import platform.client.descriptor.nodes.PlainTextNode;
 import platform.client.descriptor.nodes.actions.EditableTreeNode;
-import platform.base.context.Lookup;
-import platform.client.navigator.ClientNavigator;
+import platform.client.tree.ClassFilteredAction;
 import platform.client.tree.ClientTree;
 import platform.client.tree.ClientTreeActionEvent;
 import platform.client.tree.ClientTreeNode;
@@ -15,10 +14,8 @@ import platform.client.tree.ClientTreeNode;
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.util.Enumeration;
 
 // предполагается, что будет ровно один FormDescriptorView, которому будут говорить сверху, чтобы он отображал разные FormDescriptor'ы
@@ -31,19 +28,10 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
 
     private EditorView view;
 
-    private JButton previewBtn;
-    private JButton saveBtn;
-    private JButton cancelBtn;
-    private ClientNavigator clientNavigator;
-    private final NavigatorDescriptorView parent;
-
     private Object objectToEdit;
     private Object editingObject;
 
-    public FormDescriptorView(ClientNavigator iClientNavigator, NavigatorDescriptorView iParent) {
-        clientNavigator = iClientNavigator;
-        parent = iParent;
-
+    public FormDescriptorView() {
         setLayout(new BorderLayout());
 
         view = new EditorView();
@@ -54,54 +42,13 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
         tree.setDropMode(DropMode.ON_OR_INSERT);
         tree.setDragEnabled(true);
 
-        previewBtn = new JButton("Предпросмотр формы");
-        previewBtn.setEnabled(false);
-        previewBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                PreviewDialog dlg = new PreviewDialog(clientNavigator, form);
-                dlg.setBounds(SwingUtilities.windowForComponent(FormDescriptorView.this).getBounds());
-                dlg.setVisible(true);
-            }
-        });
-
-        saveBtn = new JButton("Сохранить форму");
-        saveBtn.setEnabled(false);
-        saveBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    clientNavigator.remoteNavigator.saveForm(form.getID(), FormDescriptor.serialize(form));
-                } catch (IOException ioe) {
-                    throw new RuntimeException("Не могу сохранить форму.", ioe);
-                }
-            }
-        });
-
-        cancelBtn = new JButton("Отменить изменения");
-        cancelBtn.setEnabled(false);
-        cancelBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    parent.reopenForm(form.getID());
-                } catch (IOException ioe) {
-                    throw new RuntimeException("Не могу открыть форму.", ioe);
-                }
-            }
-        });
-
-        JPanel commandPanel = new JPanel();
-        commandPanel.add(previewBtn);
-        commandPanel.add(saveBtn);
-        commandPanel.add(Box.createRigidArea(new Dimension(20, 5)));
-        commandPanel.add(cancelBtn);
-
         JPanel formTreePanel = new JPanel();
         formTreePanel.setLayout(new BorderLayout());
 
         formTreePanel.add(new JScrollPane(tree), BorderLayout.CENTER);
-        formTreePanel.add(commandPanel, BorderLayout.SOUTH);
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, formTreePanel, view);
-        splitPane.setResizeWeight(0.01);
+        splitPane.setResizeWeight(0.3);
 
         add(splitPane, BorderLayout.CENTER);
     }
@@ -132,6 +79,10 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
         updateNow();
     }
 
+    public FormDescriptor getForm() {
+        return form;
+    }
+
     public void setForm(FormDescriptor iform) {
         if (form != iform) {
             if (form != null) {
@@ -141,10 +92,6 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
             view.removeEditor();
             objectToEdit = form;
         }
-
-        previewBtn.setEnabled(form != null);
-        saveBtn.setEnabled(form != null);
-        cancelBtn.setEnabled(form != null);
 
         if (form != null) {
             addDependencies(form);
@@ -196,6 +143,11 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
                     public void actionPerformed(ClientTreeActionEvent e) {
                         Object editObject = ((ClientTreeNode) tree.getSelectionPath().getLastPathComponent()).getUserObject();
                         form.getContext().setProperty(Lookup.NEW_EDITABLE_OBJECT_PROPERTY, editObject);
+                    }
+
+                    @Override
+                    public boolean canBeDefault(TreePath path) {
+                        return true;
                     }
                 });
     }

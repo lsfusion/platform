@@ -56,6 +56,8 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
 
     public void replaceChild(NavigatorElement<T> from, NavigatorElement<T> to) {
         BaseUtils.replaceListElements(children, from, to);
+        to.parent = this;
+        from.parent = null;
     }
 
     public void add(NavigatorElement<T> child) {

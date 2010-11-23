@@ -206,12 +206,28 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     }
 
     private FormEntity<T> getFormEntity(int formID) {
-        FormEntity<T> formEntity = (FormEntity) BL.baseElement.getNavigatorElement(formID);
-        if (formEntity == null)
-            throw new RuntimeException("Форма с заданным идентификатором не найдена");
+        FormEntity<T> formEntity = (FormEntity<T>) BL.baseElement.getNavigatorElement(formID);
+        FormEntity<T> overridenForm = getOverridenForm(formID);
 
-        if (!securityPolicy.navigator.checkPermission(formEntity)) return null;
-        return formEntity;
+        if (overridenForm == null && formEntity == null) {
+            throw new RuntimeException("Форма с заданным идентификатором не найдена");
+        }
+
+        if (formEntity != null && !securityPolicy.navigator.checkPermission(formEntity)) {
+            return null;
+        }
+
+        return overridenForm != null ? overridenForm : formEntity;
+    }
+
+    private FormEntity<T> getOverridenForm(int formID) {
+        //todo: caching
+        try {
+            byte[] formState = IOUtils.getFileBytes(new File("conf/forms/form" + formID));
+            return (FormEntity<T>) FormEntity.deserialize(BL, formState);
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     private void setFormEntity(int formID, FormEntity<T> formEntity) {
@@ -274,6 +290,26 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
             IOUtils.putFileBytes(new File("conf/forms/form" + formID), formState);
         } catch (IOException e) {
             throw new RuntimeException("Ошибка при сохранении состояния формы на диск", e);
+        }
+    }
+
+    public void saveForms(byte[] data) throws RemoteException {
+        ByteArrayInputStream dataStream = new ByteArrayInputStream(data);
+        DataInputStream inStream = new DataInputStream(dataStream);
+        try {
+            int cnt = inStream.readInt();
+            for (int i = 0; i < cnt; ++i) {
+                int previousBytesReaden = data.length - dataStream.available();
+                FormEntity form = FormEntity.deserialize(BL, inStream);
+                int formSize = inStream.readInt();
+                try {
+                    IOUtils.putFileBytes(new File("conf/forms/form" + form.getID()), data, previousBytesReaden, formSize);
+                } catch (IOException e) {
+                    throw new RuntimeException("Ошибка при сохранении состояния формы на диск", e);
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка при чтении состояния форм", e);
         }
     }
 

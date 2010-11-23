@@ -146,11 +146,6 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
                         throw new RuntimeException(e1);
                     }
                 }
-
-                @Override
-                public boolean canBeDefault(TreePath path) {
-                    return false;
-                }
             });
         }
 
@@ -163,11 +158,6 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
                     ApplicationContextProvider provider = (ApplicationContextProvider) object;
                     provider.getContext().setProperty(Lookup.DELETED_OBJECT_PROPERTY, deletedObject);
                 }
-            }
-
-            @Override
-            public boolean canBeDefault(TreePath path) {
-                return false;
             }
         });
     }

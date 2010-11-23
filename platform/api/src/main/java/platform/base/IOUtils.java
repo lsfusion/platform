@@ -34,13 +34,17 @@ public class IOUtils {
     }
 
     public static void putFileBytes(File file, byte[] array) throws IOException {
+        putFileBytes(file, array, 0, array.length);
+    }
+
+    public static void putFileBytes(File file, byte[] array, int off, int len) throws IOException {
         if (!file.getParentFile().exists()) {
             file.getParentFile().mkdirs();
         }
 
         OutputStream out = new FileOutputStream(file);
         try {
-            out.write(array);
+            out.write(array, off, len);
         } finally {
             out.close();
         }

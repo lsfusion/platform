@@ -296,6 +296,9 @@ public class ClientTree extends JTree {
     }
 
     public static ClientTreeNode getNode(TreePath path) {
+        if (path == null) {
+            return null;
+        }
 
         int cnt = path.getPathCount();
         for (int i = cnt - 1; i >= 0; i--) {

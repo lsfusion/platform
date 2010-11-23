@@ -41,11 +41,8 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return false;
     }
 
-    //todo: Добавление в этот список
-    public List<TreeGroupEntity> treeGroups = new ArrayList<TreeGroupEntity>();
-
-
     public List<GroupObjectEntity> groups = new ArrayList<GroupObjectEntity>();
+    public List<TreeGroupEntity> treeGroups = new ArrayList<TreeGroupEntity>();
     public List<PropertyDrawEntity> propertyDraws = new ArrayList<PropertyDrawEntity>();
     public Set<FilterEntity> fixedFilters = new HashSet<FilterEntity>();
     public List<RegularFilterGroupEntity> regularFilterGroups = new ArrayList<RegularFilterGroupEntity>();
@@ -569,7 +566,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public static FormEntity<?> deserialize(BusinessLogics BL, byte[] formState) {
-        DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(formState));
+        return deserialize(BL, new DataInputStream(new ByteArrayInputStream(formState)));
+    }
+
+    public static FormEntity<?> deserialize(BusinessLogics BL, DataInputStream inStream) {
         try {
             FormEntity form = new ServerSerializationPool(new ServerContext(BL)).deserializeObject(inStream);
             form.richDesign = new ServerSerializationPool(new ServerContext(BL, form)).deserializeObject(inStream);
@@ -578,6 +578,5 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         } catch (IOException e) {
             throw new RuntimeException("Ошибка при десериализации формы на сервере", e);
         }
-
     }
 }

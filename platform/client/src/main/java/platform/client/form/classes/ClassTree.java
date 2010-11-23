@@ -54,6 +54,11 @@ public abstract class ClassTree extends ClientTree {
                     public void actionPerformed(ClientTreeActionEvent e){
                         changeCurrentElement();
                     }
+
+                    @Override
+                    public boolean canBeDefault(TreePath path) {
+                        return true;
+                    }
                 });
 
         

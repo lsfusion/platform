@@ -89,6 +89,11 @@ public abstract class AbstractNavigator extends JPanel {
                     Object nodeObject = node.getUserObject();
                     return nodeObject instanceof ClientNavigatorForm;
                 }
+
+                @Override
+                public boolean canBeDefault(TreePath path) {
+                    return true;
+                }
             });
         }
 
