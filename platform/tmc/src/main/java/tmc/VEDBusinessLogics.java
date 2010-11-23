@@ -109,7 +109,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     CustomClass supplier;
     public ConcreteCustomClass article;
-    CustomClass store, articleGroup, localSupplier, importSupplier, orderLocal, format;
+    CustomClass store, articleGroup, localSupplier, importSupplier, orderLocal, format, brend, line, country, gender;
     CustomClass customerWhole;
     CustomClass customerInvoiceRetail;
     public ConcreteCustomClass customerCheckRetail;
@@ -156,6 +156,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         warehouse = addConcreteClass(5, "Распред. центр", store);
         article = addConcreteClass(6, "Товар", baseClass.named, barcodeObject);
         articleGroup = addConcreteClass(7, "Группа товаров", baseClass.named);
+
+        // новый классы
+        brend = addConcreteClass(50, "Бренд", baseClass.named);
+        country = addConcreteClass(51, "Страна", baseClass.named);
+        line = addConcreteClass(52, "Линия", baseClass.named);
+        gender = addConcreteClass(53, "Пол", baseClass.named);
+
         supplier = addAbstractClass("Поставщик", subject);
         localSupplier = addConcreteClass(8, "Местный поставщик", supplier);
         importSupplier = addConcreteClass(9, "Импортный поставщик", supplier);
@@ -272,6 +279,14 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP orderBirthDay;
     LP payWithCard;
     LP printOrderCheck;
+    // выноски
+    LP orderUser;
+    //LP orderArticleSaleDiscountSum;
+    LP orderHour;
+    LP orderContragentBarcode;
+    LP orderUserBarcode;
+    LP orderComputer;
+
 
 
     protected void initProperties() {
@@ -287,7 +302,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP min = addSFProp("(prm1+prm2-ABS(prm1-prm2))/2", DoubleClass.instance, 2);
         LP abs = addSFProp("ABS(prm1)", DoubleClass.instance, 1);
 
-        articleToGroup = addDProp("articleToGroup", "Группа товаров", articleGroup, article);
+        articleToGroup = addDProp("articleToGroup", "Группа товаров", articleGroup, article); // принадлежность товара группе
         articleToGroupName = addJProp(baseGroup, "Группа товаров", name, articleToGroup, 1);
 
         incStore = addCUProp("incStore", true, "Склад (прих.)", // generics
@@ -310,8 +325,19 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         cashRegComPort = addDProp(baseGroup, "cashRegComPort", "COM-порт фискального регистратора", IntegerClass.instance, computer);
         addJProp(baseGroup, "Магазин рабочего места", name, computerShop, 1);
 
+        // новые свойства поставщика
+        LP supplierDogovor = addDProp(baseGroup, "supplierDogovor", "Номер договора", StringClass.get(20), supplier);
+        LP supplierDogovorDate = addDProp(baseGroup, "supplierDogovorDate", "Дата начала договора", DateClass.instance, supplier);
+
+        // новые свойства местного поставщика
+        LP localSupplierUNN = addDProp(baseGroup, "localSupplierUNN", "УНН", StringClass.get(20), localSupplier);
+        LP localSupplierAddress = addDProp(baseGroup, "localSupplierAddress", "Адрес", StringClass.get(100), localSupplier);
+        LP localSupplierTel = addDProp(baseGroup, "localSupplierTel", "Контактный телефон", StringClass.get(20), localSupplier);
+        LP localSupplierAddressBank = addDProp(baseGroup, "localSupplierAddressBank", "Адрес банка", StringClass.get(100), localSupplier);
+        LP localSupplierBill = addDProp(baseGroup, "localSupplierBill", "Счёт", StringClass.get(30), localSupplier);
+
         orderSupplier = addCUProp("orderSupplier", true, "Поставщик", addDProp("localSupplier", "Местный поставщик", localSupplier, orderLocal),
-                addDProp("importSupplier", "Импортный поставщик", importSupplier, orderDeliveryImport));
+                addDProp("importSupplier", "Импортный поставщик", importSupplier, orderDeliveryImport)); // совокупность местных и импортных поставщиков
 
         LP outSubject = addCUProp(addJProp(and1, orderSupplier, 1, is(orderDelivery), 1), outStore);
 
@@ -331,7 +357,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addressContragent = addJProp(baseGroup, "Адрес", customerCheckRetailAddress, orderContragent, 1);
         initialSumContragent = addJProp(baseGroup, "Начальная сумма", clientInitialSum, orderContragent, 1);
 
-//        logClientInitialSum = addLProp(clientInitialSum);
+       //        logClientInitialSum = addLProp(clientInitialSum);
 
         nameContragentImpl = addJProp(true, "Контрагент", name, orderContragent, 1);
         phoneContragentImpl = addJProp(true, "Телефон", customerCheckRetailPhone, orderContragent, 1);
@@ -439,6 +465,23 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP shopFormat = addDProp("shopFormat", "Формат", format, shop);
         addJProp(baseGroup, "Формат", name, shopFormat, 1);
 
+        // новые свойства товара
+        LP fullName = addDProp(priceGroup, "fullName", "Полное наименование", StringClass.get(100), article);
+        LP gigiena = addDProp(priceGroup, "gigiena", "Гигиеническое разрешение", StringClass.get(50), article);
+        LP articleStatus = addDProp(priceGroup, "articleStatus", "Собственный/несобственный", LogicalClass.instance, article);
+
+        LP articleBrend = addDProp ("articleBrend", "Бренд товара", brend, article);
+        addJProp(priceGroup, "Бренд товара", name, articleBrend, 1);
+
+        LP articleCountry = addDProp ("articleCountry", "Страна товара", country, article);
+        addJProp(priceGroup, "Страна товара", name, articleCountry, 1);
+
+        LP articleLine = addDProp ("articleLine", "Линия товара", line, article);
+        addJProp(priceGroup, "Линия товара", name, articleLine, 1);
+
+        LP articleGender = addDProp ("articleGender", "Пол", gender, article);
+        addJProp(priceGroup, "Пол", name, articleGender, 1);
+        //**************************************************************************************************************
         currentRRP = addDProp(priceGroup, "currentRRP", "RRP", DoubleClass.instance, article);
         LP currentPriceRate = addDProp(priceGroup, "currentPriceRate", "Курс", DoubleClass.instance);
         LP currentFormatDiscount = addDProp(priceGroup, "currentFormatDiscount", "Скидка на формат", DoubleClass.instance, format);
@@ -459,8 +502,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addJProp(and1, xorActionAll, 1, is(article), 2), addJProp(xorActionArticleGroup, 1, articleToGroup, 2)));
 
         LP isStarted = addJProp(baseGroup, "Началась", and(true, true), is(action), 1,
-                addJProp(less2, currentDate, actionFrom, 1), 1,
+                addJProp(less2, currentDate, actionFrom, 1), 1,  // активация акции, если текущая дата в диапазоне акции
                 addJProp(greater2, currentDate, actionTo, 1), 1);
+
         LP articleSaleAction = addCGProp(priceGroup, false, "articleAction", "Дейст. распродажа",
                 addJProp(and1, 1, addJProp(and1, inAction, 1, 2, addJProp(and1, isStarted, 1, is(saleAction), 1), 1), 1, 2), inAction, 2);
         LP articleDiscount = addSUProp(Union.OVERRIDE, addCProp(DoubleClass.instance, 0, article), addJProp(priceGroup, "Тек. скидка", actionDiscount, articleSaleAction, 1));
@@ -477,7 +521,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP articleActionWithCheck = addDProp(baseGroup, "articleActionWithCheck", "Нак. с тек. чеком", LogicalClass.instance, articleAction);
 
         // продажа облигаций
-        issueObligation = addCUProp(documentPriceGroup, "Выдать", saleCertGiftObligation, addDProp("orderSaleCoupon", "Выдать", LogicalClass.instance, commitSaleCheckArticleRetail, coupon));
+        //**************************************************************************************************************
+        // новые свойства для подарочных сертификатов
+        LP certToSaled = addDProp(baseGroup, "certToSaled", "Продан заранее", LogicalClass.instance, giftObligation);
+        LP sverka = addJProp(equals2, 1, addJProp(and1, 1, certToSaled, 1), 2);
+        
+        issueObligation = addCUProp(documentPriceGroup, "Выдать", sverka, saleCertGiftObligation, addDProp("orderSaleCoupon", "Выдать", LogicalClass.instance, commitSaleCheckArticleRetail, coupon));
+
         LP obligationIssued = addCGProp(null, "obligationIssued", true, "Выд. документ", addJProp(and1, 1, issueObligation, 1, 2), issueObligation, 2);
 
         obligationSum = addDProp(baseGroup, "obligationSum", "Сумма", DoubleClass.instance, obligation);
@@ -487,7 +537,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP currentStoreDiscount = addCUProp(priceGroup, "Скидка на складе",
                 addJProp(and1, currentWarehouseDiscount, is(warehouse), 1),
-                addJProp(currentFormatDiscount, shopFormat, 1));
+                addJProp(currentFormatDiscount, shopFormat, 1));    // берётся скидка формата, если её нет - оптовая скидка
 
         LP actionPrice = addJProp(priceGroup, "Акц. цена", removePercent, currentPrice, 1, articleDiscount, 1);
         LP requiredStorePrice = addJProp(priceGroup, "Необх. цена", removePercent, actionPrice, 2, currentStoreDiscount, 1);
@@ -537,7 +587,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         // текущая схема
         articleSupplier = addDProp("articleSupplier", "Поставщик товара", supplier, article);
         addJProp(logisticsGroup, "Поставщик товара", name, articleSupplier, 1);
-        LP shopWarehouse = addDProp("storeWarehouse", "Распред. центр", warehouse, shop);
+        LP shopWarehouse = addDProp("storeWarehouse", "Распред. центр", warehouse, shop); // магазин может числиться не более чем в одном распределяющем центре
         addJProp(logisticsGroup, "Распред. центр", name, shopWarehouse, 1);
         LP articleSupplierPrice = addDProp(logisticsGroup, "articleSupplierPrice", "Цена поставок", DoubleClass.instance, article);
         LP supplierCycle = addDProp(logisticsGroup, "supplierCycle", "Цикл поставок", DoubleClass.instance, supplier);
@@ -546,9 +596,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP supplierToWarehouse = addDProp(logisticsGroup, "supplierToWarehouse", "Пост. на распред. центр", LogicalClass.instance, supplier);
 
         // абстрактный товар \ склад - поставщик
+        LP articleSuppliedOnWarehouse = addJProp(supplierToWarehouse, articleSupplier, 1);
         articleStoreSupplier = addSUProp("articleStoreSupplier", true, "Пост. товара на склад", Union.OVERRIDE, addJProp(and1, articleSupplier, 2, is(store), 1),
-                addJProp(and1, shopWarehouse, 1, addJProp(supplierToWarehouse, articleSupplier, 1), 2));
+                addJProp(and1, shopWarehouse, 1, articleSuppliedOnWarehouse, 2));
+        
         LP storeSupplierCycle = addCUProp(addJProp(and1, supplierCycle, 2, is(store), 1), addJProp(and1, shopCycle, 1, is(warehouse), 2));
+        // цикл распределения, если от распределяющего центра или цикл поставок, если от поставщика
 
         articleStorePeriod = addJProp("articleStorePeriod", true, "Цикл поставок на склад", storeSupplierCycle, 1, articleStoreSupplier, 1, 2);
 
@@ -557,6 +610,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP articleStoreToSell = addCUProp(logisticsGroup, "articleStoreToSell", "В ассортименте", addJProp(articleFormatToSell, shopFormat, 1, 2),
                 addDProp("articleWarehouseToSell", "В ассортименте", LogicalClass.instance, warehouse, article));
+
         articleStoreMin = addJProp("articleStoreMin", true, "Страх. запас", and1, addCUProp(logisticsGroup, "Страх. запас", addJProp(articleFormatMin, shopFormat, 1, 2),
                 addDProp("articleWarehouseMin", "Страх. запас", DoubleClass.instance, warehouse, article)), 1, 2, articleStoreToSell, 1, 2);
         LP articleStoreForecast = addJProp(and1, addDProp(logisticsGroup, "articleStoreForecast", "Прогноз прод. (в день)", DoubleClass.instance, store, article), 1, 2, articleStoreToSell, 1, 2);
@@ -572,7 +626,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP orderClientSaleSum = addDProp("orderClientSaleSum", "Нак. сумма", DoubleClass.instance, orderSaleArticleRetail);
         LP orderClientInitialSum = addDCProp("orderClientInitialSum", "Нак. сумма", clientInitialSum, true, orderContragent, 1, orderSaleArticleRetail);
         orderClientSum = addSUProp(baseGroup, "Нак. сумма", Union.SUM, addCProp(DoubleClass.instance, 0, orderSaleArticleRetail), orderClientSaleSum, orderClientInitialSum);
-        LP orderHour = addDCProp(baseGroup, "orderHour", "Час", currentHour, is(orderSale), 1, orderSaleArticleRetail);
+        orderHour = addDCProp(baseGroup, "orderHour", "Час", currentHour, is(orderSale), 1, orderSaleArticleRetail);
 
         changeQuantityTime = addTCProp(Time.EPOCH, "changeQuantityTime", "Время выбора", articleInnerQuantity, orderSaleArticleRetail);
         changeQuantityOrder = addOProp(documentGroup, "Номер", addJProp(and1, addCProp(IntegerClass.instance, 1), articleInnerQuantity, 1, 2), false, true, true, 1, 1, changeQuantityTime, 1, 2);
@@ -622,8 +676,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         orderSaleUseObligation = addDProp(documentPriceGroup, "orderSaleUseObligation", "Использовать", LogicalClass.instance, commitSaleCheckArticleRetail, obligation);
         LP obligationUseSum = addJProp(and1, obligationSum, 2, orderSaleUseObligation, 1, 2);
-        obligationDocument = addCGProp(null, "obligationDocument", "Исп. документ", addJProp(and1, 1, orderSaleUseObligation, 1, 2), orderSaleUseObligation, 2);
 
+        obligationDocument = addCGProp(null, "obligationDocument", "Исп. документ", addJProp(and1, 1, orderSaleUseObligation, 1, 2), orderSaleUseObligation, 2);
+                                        
         LP addDays = addSFProp("prm1+prm2", DateClass.instance, 2);
 
         couponStart = addDProp(baseGroup, "couponStart", "Дата начала купонов", DateClass.instance);
@@ -634,6 +689,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         couponFromIssued = addDCProp(baseGroup, "couponFromIssued", "Дата начала", couponStart, dateIssued, 1, coupon);
         LP couponToIssued = addDCProp("couponToIssued", "Дата окончания", couponExpiry, obligationIssued, 1, coupon);
         LP certToIssued = addDCProp("certToIssued", "Дата окончания", addJProp(addDays, 1, certExpiry), dateIssued, 1, giftObligation);
+
         obligationToIssued = addCUProp(baseGroup, "obligationToIssued", "Дата окончания", couponToIssued, certToIssued);
         orderSaleObligationCanBeUsed = addJProp(and(false, true, true, true), is(commitSaleCheckArticleRetail), 1, obligationIssued, 2,
                 addJProp(less2, orderSalePay, 1, obligationSumFrom, 2), 1, 2,
@@ -654,6 +710,22 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         orderSalePayCash = addDProp(documentPriceGroup, "orderSalePayCash", "Наличными", DoubleClass.instance, orderSaleCheckRetail);
         orderSalePayCard = addDProp(documentPriceGroup, "orderSalePayCard", "Карточкой", DoubleClass.instance, orderSaleCheckRetail);
+
+
+        forCard = addDProp(baseGroup, "inpSumCard", "Безнал. в кассе (ввод)", DoubleClass.instance, DateClass.instance, shop);
+        LP curCard = addJProp(cashRegGroup, true, "Безнал. в кассе(тек.)", forCard, currentDate, currentShop);
+        forCash = addDProp(baseGroup, "inpSumCash", "Наличных в кассе(ввод)", DoubleClass.instance, DateClass.instance, shop);
+        LP curCash = addJProp(cashRegGroup, true, "Наличных в кассе(тек.)", forCash, currentDate, currentShop);
+        forBank = addDProp(baseGroup, "inpSumBank", "Отправить в банк", DoubleClass.instance, DateClass.instance, shop);
+        LP curBank = addJProp(cashRegGroup, true, "Отправить в банк (тек.)", forBank, currentDate, currentShop);
+
+
+        LP allOrderSalePayCard = addSGProp(orderSalePayCard, date, 1);
+        LP allOrderSalePayCardCur = addJProp(cashRegGroup, "allOrderSalePayCardCur", "Безнал. в кассе", allOrderSalePayCard, currentDate);
+        LP allOrderSalePayNoObligation = addSGProp(orderSalePayNoObligation, date, 1);
+        LP allOrderSalePayNoObligationCur = addJProp(allOrderSalePayNoObligation, currentDate);
+
+        LP allOrderSalePayCash = addDUProp(cashRegGroup, "Наличных в кассе", allOrderSalePayNoObligationCur, allOrderSalePayCardCur);
 
         // сдача/доплата
         LP orderSalePayAll = addSUProp(Union.SUM, orderSalePayCard, orderSalePayCash);
@@ -702,10 +774,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         couponToIssueConstraint = addJProp("Кол-во выданных купонов не соответствует требуемому", diff2, couponToIssueQuantity, 1, 2, vzero);
         addConstraint(couponToIssueConstraint, false);
 
-        LP orderUser = addDCProp("orderUser", "Исп-ль заказа", currentUser, true, is(order), 1);
+        orderUser = addDCProp("orderUser", "Исп-ль заказа", currentUser, true, is(order), 1);
         orderUserName = addJProp("Исп-ль заказа", name, orderUser, 1);
+        // вспомогательные свойства
+        orderContragentBarcode = addJProp("Дисконт", barcode, orderContragent, 1);
+        orderUserBarcode = addJProp("Кассир", barcode, orderUser, 1);
 
-        LP orderComputer = addDCProp("orderComputer", "Компьютер заказа", currentComputer, true, is(order), 1);
+        orderComputer = addDCProp("orderComputer", "Компьютер заказа", currentComputer, true, is(order), 1);
         orderComputerName = addJProp("Компьютер заказа", hostname, orderComputer, 1);
 
         checkRetailExported = addDProp("checkRetailExported", "Экспортирован", LogicalClass.instance, checkRetail);
@@ -716,6 +791,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP importCustomerCheckRetail = addProp(baseGroup, new CustomerCheckRetailImportActionProperty(this, genSID()));
 
     }
+
+    LP forCard;
+    LP forCash;
+    LP forBank;
 
     private LP addSupplierProperty(LP property) {
         return addSUProp(Union.SUM, property, addSGProp(property, articleStoreSupplier, 1, 2, 2));
@@ -882,6 +961,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         tableFactory.include("articleaction", article, action);
         tableFactory.include("rates", DateClass.instance);
         tableFactory.include("intervals", DoubleClass.instance);
+        tableFactory.include("shoprates", DateClass.instance, shop);
     }
 
     protected void initIndexes() {
@@ -935,6 +1015,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private FormEntity saleCheckCertForm;
     private FormEntity cachRegManagementForm;
     private FormEntity returnSaleCheckRetailArticleForm;
+    //private FormEntity shopMoneyForm;
     public CommitSaleCheckRetailFormEntity commitSaleBrowseForm;
     public SaleCheckCertFormEntity saleCheckCertBrowseForm;
     public ReturnSaleCheckRetailFormEntity returnSaleCheckRetailBrowse;
@@ -964,6 +1045,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addFormEntity(new CommitSaleCheckRetailFormEntity(commitSaleForm, 1320, false, false));
         commitSaleBrowseForm = addFormEntity(new CommitSaleCheckRetailFormEntity(commitSaleForm, 1322, false, true));
         addFormEntity(new CommitSaleCheckRetailExcelFormEntity(commitSaleForm, 1323, "Выгрузка в Excel"));
+
+        addFormEntity(new ShopMoneyFormEntity(saleRetailCashRegisterElement, 1330, "Данные с касс"));
+
         saleCheckCertForm = addFormEntity(new SaleCheckCertFormEntity(saleRetailCashRegisterElement, 1325, true));
         saleCheckCertBrowseForm = addFormEntity(new SaleCheckCertFormEntity(saleCheckCertForm, 1335, false));
         returnSaleCheckRetailArticleForm = addFormEntity(new ReturnSaleCheckRetailFormEntity(saleRetailCashRegisterElement, true, 1345));
@@ -1028,6 +1112,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected GlobalFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Глобальные параметры");
             addPropertyDraw(publicGroup, true);
+
         }
     }
 
@@ -1433,6 +1518,28 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
     }
 
+     public class ShopMoneyFormEntity extends FormEntity {
+        public ShopMoneyFormEntity(NavigatorElement parent, int ID, String caption) {
+            super(parent, ID, caption);
+
+            ObjectEntity objShop = addSingleGroupObject(shop, baseGroup);
+            addObjectActions(this, objShop);
+
+            ObjectEntity objDate = addSingleGroupObject(DateClass.instance, objectValue);
+           // addObjectActions(this, objDate);
+
+            addPropertyDraw(objShop, baseGroup);
+            addPropertyDraw(objDate, objShop, baseGroup);
+            //addPropertyDraw(objShop, objDate, publicGroup);
+
+            addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(forBank, objDate, objShop)),
+                    new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(forCash, objDate, objShop)),
+                    new NotNullFilterEntity(addPropertyObject(forCard, objDate, objShop)))));
+            //addFixedFilter(new NotNullFilterEntity(getPropertyObject()));
+            //addFixedFilter(new CompareFilterEntity(addPropertyObject(shop, objDate), Compare.EQUALS, objShop));
+        }
+     }
+
     private abstract class SaleRetailFormEntity extends DocumentInnerFormEntity {
 
         @Override
@@ -1690,11 +1797,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
     }
 
+
+
     public class CommitSaleCheckRetailExcelFormEntity extends FormEntity {
 
         public CommitSaleCheckRetailExcelFormEntity(NavigatorElement parent, int iID, String caption) {
             super(parent, iID, caption);
-
+            // форма по проданным товарам (цена, стоимость, скидки, данные по продаже)
             GroupObjectEntity gobjDates = new GroupObjectEntity(genID());
             ObjectEntity dateFrom = new ObjectEntity(genID(), DateClass.instance, "Дата (с)");
             ObjectEntity dateTo = new ObjectEntity(genID(), DateClass.instance, "Дата (по)");
@@ -1717,11 +1826,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             gobjDocArt.add(objArt);
             addGroup(gobjDocArt);
 
-            addPropertyDraw(objDoc, baseGroup, documentGroup);
-            addPropertyDraw(objArt, baseGroup, documentGroup);
-            addPropertyDraw(objDoc, orderUserName);
-            addPropertyDraw(documentGroup, false, objDoc, objArt);
-            addPropertyDraw(baseGroup, false, objDoc, objArt);
+            addPropertyDraw(objArt, barcode, name);
+            addPropertyDraw(objDoc, objArt, orderSalePrice, articleQuantity);
+            addPropertyDraw(objDoc, objectValue, date, orderHour, orderUserBarcode, orderComputerName, outStore, orderContragentBarcode);
+            addPropertyDraw(objDoc, objArt, orderArticleSaleDiscountSum, orderArticleSaleDiscount, orderArticleSaleSumWithDiscount);
+
 
             removePropertyDraw(documentMoveGroup); // нужно, чтобы убрать Доступ. кол-во, которое не может нормально выполнить PostgreSQL
 
@@ -1729,6 +1838,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(date, objDoc), Compare.GREATER_EQUALS, dateFrom));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(date, objDoc), Compare.LESS_EQUALS, dateTo));
         }
+
+
 
         @Override
         public DefaultFormView createDefaultRichDesign() {
@@ -2503,5 +2614,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             view.get(entity).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.ALT_DOWN_MASK);
         }
     }
+
 
 }
