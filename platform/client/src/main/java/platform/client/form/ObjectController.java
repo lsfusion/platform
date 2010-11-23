@@ -60,29 +60,4 @@ class ObjectController {
         if (classView.equals(ClassViewType.GRID))
             classController.showViews();
     }
-
-    public void addObject() {
-
-        ClientObjectClass derivedClass = classController.getDerivedClass();
-
-        if (!(derivedClass instanceof ClientConcreteClass)) {
-            derivedClass = ClassDialog.dialogObjectClass(form.getComponent(), (ClientObjectClass)object.baseClass, derivedClass, true);
-            if (derivedClass == null) return;
-        }
-
-        try {
-            form.addObject(object, (ClientConcreteClass)derivedClass);
-        } catch (IOException e) {
-            throw new RuntimeException("Ошибка при добавлении объекта", e);
-        }
-    }
-
-    public void deleteObject() {
-
-        try {
-            form.changeClass(object, null);
-        } catch (IOException e) {
-            throw new RuntimeException("Ошибка при удалении объекта", e);
-        }
-    }
 }

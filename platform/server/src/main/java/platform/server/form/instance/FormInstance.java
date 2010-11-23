@@ -370,10 +370,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         return addObject;
     }
 
-    public void changeClass(CustomObjectInstance object, int classID) throws SQLException {
-        changeClass(object, object.getDataObject(), classID);
-    }
-
     public void changeClass(CustomObjectInstance object, DataObject change, int classID) throws SQLException {
         if (securityPolicy.cls.edit.change.checkPermission(object.currentClass)) {
             object.changeClass(session, change, classID);

@@ -335,26 +335,6 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
         }
     }
 
-    public void addObject(int objectID, int classID) {
-        CustomObjectInstance object = (CustomObjectInstance) form.getObjectInstance(objectID);
-        try {
-            form.addObject(object, (classID == -1) ? null : object.baseClass.findConcreteClassID(classID));
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void changeClass(int objectID, int classID) {
-        try {
-            CustomObjectInstance objectImplement = (CustomObjectInstance) form.getObjectInstance(objectID);
-            form.changeClass(objectImplement, classID);
-
-            updateCurrentClass = objectImplement;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public boolean canChangeClass(int objectID) throws RemoteException {
         return form.canChangeClass((CustomObjectInstance)form.getObjectInstance(objectID));
     }

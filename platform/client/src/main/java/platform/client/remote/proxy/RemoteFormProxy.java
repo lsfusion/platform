@@ -103,20 +103,6 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         logRemoteMethodEndVoidCall("changePropertyDraw");
     }
 
-    @PendingRemoteMethod
-    public void addObject(int objectID, int classID) throws RemoteException {
-        logRemoteMethodStartVoidCall("addObject");
-        target.addObject(objectID, classID);
-        logRemoteMethodEndVoidCall("addObject");
-    }
-
-    @PendingRemoteMethod
-    public void changeClass(int objectID, int classID) throws RemoteException {
-        logRemoteMethodStartVoidCall("changeClass");
-        target.changeClass(objectID, classID);
-        logRemoteMethodEndVoidCall("changeClass");
-    }
-
     public boolean canChangeClass(int objectID) throws RemoteException {
         logRemoteMethodStartCall("canChangeClass");
         boolean result = target.canChangeClass(objectID);

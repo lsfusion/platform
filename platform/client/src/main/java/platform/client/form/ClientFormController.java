@@ -513,20 +513,6 @@ public class ClientFormController {
         applyRemoteChanges();
     }
 
-    void addObject(ClientObject object, ClientConcreteClass cls) throws IOException {
-
-        remoteForm.addObject(object.getID(), cls.ID);
-        applyRemoteChanges();
-    }
-
-    public void changeClass(ClientObject object, ClientConcreteClass cls) throws IOException {
-
-        SwingUtils.stopSingleAction(object.groupObject.getActionID(), true);
-
-        remoteForm.changeClass(object.getID(), (cls == null) ? -1 : cls.ID);
-        applyRemoteChanges();
-    }
-
     public void changeGridClass(ClientObject object, ClientObjectClass cls) throws IOException {
 
         remoteForm.changeGridClass(object.getID(), cls.ID);
