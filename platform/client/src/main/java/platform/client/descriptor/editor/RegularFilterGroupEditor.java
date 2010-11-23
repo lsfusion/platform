@@ -10,6 +10,6 @@ public class RegularFilterGroupEditor extends GroupElementEditor {
     public RegularFilterGroupEditor(GroupObjectDescriptor groupObject, RegularFilterGroupDescriptor regularGroup) {
         super(groupObject);
 
-        add(new JLabel("Regular Filter Group : "+regularGroup));
+        addTab("Общее", new JLabel("Regular Filter Group : "+regularGroup));
     }
 }

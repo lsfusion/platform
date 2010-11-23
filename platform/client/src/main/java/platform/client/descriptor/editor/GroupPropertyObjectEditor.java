@@ -108,7 +108,7 @@ public class GroupPropertyObjectEditor extends SimplePropertyFilter implements I
                     if(select) { // добавляем propertyDraw
                         if(!isSelectedPropertyObject((PropertyObjectDescriptor) userObject)) {
                             PropertyDrawDescriptor propertyDraw = new PropertyDrawDescriptor(form.getContext(), (PropertyObjectDescriptor) userObject);
-                            if(!propertyDraw.getGroupObject(form.groupObjects).equals(groupObject))
+                            if(groupObject != null && !groupObject.equals(propertyDraw.getGroupObject(form.groupObjects)))
                                 propertyDraw.setToDraw(groupObject);
                             form.addToPropertyDraws(propertyDraw);
                         }

@@ -306,6 +306,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP min = addSFProp("(prm1+prm2-ABS(prm1-prm2))/2", DoubleClass.instance, 2);
         LP abs = addSFProp("ABS(prm1)", DoubleClass.instance, 1);
 
+        LP groupParent = addDProp("groupParent", "Родительская группа", articleGroup, articleGroup);
+        LP groupParentName = addJProp(baseGroup, "Родительская группа", name, groupParent, 1);
+
         articleToGroup = addDProp("articleToGroup", "Группа товаров", articleGroup, article); // принадлежность товара группе
         articleToGroupName = addJProp(baseGroup, "Группа товаров", name, articleToGroup, 1);
 

@@ -13,6 +13,6 @@ public class RegularFilterEditor extends GroupElementEditor {
     public RegularFilterEditor(GroupObjectDescriptor groupObject, RegularFilterDescriptor regularFilter, FormDescriptor form) {
         super(groupObject);
 
-        add(new TitledPanel("Наименование", new IncrementTextEditor(regularFilter, "caption")));
+        addTab("Общее", new TitledPanel("Наименование", new IncrementTextEditor(regularFilter, "caption")));
     }
 }
