@@ -667,9 +667,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         orderArticleSaleDiscountSum = addJProp(documentPriceGroup, "Сумма скидки", round1, addJProp(percent, orderArticleSaleSum, 1, 2, orderArticleSaleDiscount, 1, 2), 1, 2);
         orderArticleSaleSumWithDiscount = addDUProp(documentPriceGroup, "Сумма к опл.", orderArticleSaleSum, orderArticleSaleDiscountSum);
         orderSaleDiscountSum = addSGProp(documentAggrPriceGroup, "Сумма скидки", orderArticleSaleDiscountSum, 1);
+        LP orderSalePayGift = addSGProp(addJProp(and(false, false), obligationSum, 2, issueObligation, 1, 2, is(giftObligation), 2), 1);
         orderSalePay = addCUProp(documentAggrPriceGroup, "Сумма чека",
-                addSGProp(addJProp(and(false, false), obligationSum, 2, issueObligation, 1, 2, is(giftObligation), 2), 1),
-                addSGProp(orderArticleSaleSumWithDiscount, 1));
+                orderSalePayGift, addSGProp(orderArticleSaleSumWithDiscount, 1));
 
         LP returnArticleSaleSum = addJProp(documentPriceGroup, "Сумма возвр.", multiplyDouble2, returnInnerQuantity, 1, 2, 3, orderSaleDocPrice, 3, 2);
         returnArticleSaleDiscount = addJProp(documentPriceGroup, "Сумма скидки возвр.", round1, addJProp(percent, returnArticleSaleSum, 1, 2, 3, orderArticleSaleDiscount, 3, 2), 1, 2, 3);
@@ -717,21 +717,18 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         orderSalePayCash = addDProp(documentPriceGroup, "orderSalePayCash", "Наличными", DoubleClass.instance, orderSaleCheckRetail);
         orderSalePayCard = addDProp(documentPriceGroup, "orderSalePayCard", "Карточкой", DoubleClass.instance, orderSaleCheckRetail);
 
+        impSumCard = addDProp(baseGroup, "inpSumCard", "Безнал. в кассе (ввод)", DoubleClass.instance, DateClass.instance, shop);
+        LP curCard = addJProp(cashRegGroup, true, "Безнал. в кассе (ввод)", impSumCard, currentDate, currentShop);
+        impSumCash = addDProp(baseGroup, "inpSumCash", "Наличных в кассе (ввод)", DoubleClass.instance, DateClass.instance, shop);
+        LP curCash = addJProp(cashRegGroup, true, "Наличных в кассе (ввод)", impSumCash, currentDate, currentShop);
+        impSumBank = addDProp(baseGroup, "inpSumBank", "Отправить в банк", DoubleClass.instance, DateClass.instance, shop);
+        LP curBank = addJProp(cashRegGroup, true, "Отправить в банк (ввод)", impSumBank, currentDate, currentShop);
 
-        forCard = addDProp(baseGroup, "inpSumCard", "Безнал. в кассе (ввод)", DoubleClass.instance, DateClass.instance, shop);
-        LP curCard = addJProp(cashRegGroup, true, "Безнал. в кассе(тек.)", forCard, currentDate, currentShop);
-        forCash = addDProp(baseGroup, "inpSumCash", "Наличных в кассе(ввод)", DoubleClass.instance, DateClass.instance, shop);
-        LP curCash = addJProp(cashRegGroup, true, "Наличных в кассе(тек.)", forCash, currentDate, currentShop);
-        forBank = addDProp(baseGroup, "inpSumBank", "Отправить в банк", DoubleClass.instance, DateClass.instance, shop);
-        LP curBank = addJProp(cashRegGroup, true, "Отправить в банк (тек.)", forBank, currentDate, currentShop);
+        LP allOrderSalePayCard = addSGProp(baseGroup, "Безнал. в кассе", orderSalePayCard, date, 1, outStore, 1);
+        LP allOrderSalePayCash = addDUProp(cashRegGroup, "Наличных в кассе", addDUProp(addSGProp(orderSalePayNoObligation, date, 1, outStore, 1), addSGProp(returnSalePay, date, 1, incStore, 1)), allOrderSalePayCard);
 
-
-        LP allOrderSalePayCard = addSGProp(orderSalePayCard, date, 1);
-        LP allOrderSalePayCardCur = addJProp(cashRegGroup, "allOrderSalePayCardCur", "Безнал. в кассе", allOrderSalePayCard, currentDate);
-        LP allOrderSalePayNoObligation = addSGProp(orderSalePayNoObligation, date, 1);
-        LP allOrderSalePayNoObligationCur = addJProp(allOrderSalePayNoObligation, currentDate);
-
-        LP allOrderSalePayCash = addDUProp(cashRegGroup, "Наличных в кассе", allOrderSalePayNoObligationCur, allOrderSalePayCardCur);
+        LP allOrderSalePayCardCur = addJProp(cashRegGroup, "allOrderSalePayCardCur", "Безнал. в кассе", allOrderSalePayCard, currentDate, currentShop);
+        LP allOrderSalePayCashCur = addJProp(cashRegGroup, "Наличных в кассе", allOrderSalePayCash, currentDate, currentShop);
 
         // сдача/доплата
         LP orderSalePayAll = addSUProp(Union.SUM, orderSalePayCard, orderSalePayCash);
@@ -798,9 +795,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     }
 
-    LP forCard;
-    LP forCash;
-    LP forBank;
+    LP impSumCard;
+    LP impSumCash;
+    LP impSumBank;
 
     private LP addSupplierProperty(LP property) {
         return addSUProp(Union.SUM, property, addSGProp(property, articleStoreSupplier, 1, 2, 2));
@@ -1551,9 +1548,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addPropertyDraw(objDate, objShop, baseGroup);
             //addPropertyDraw(objShop, objDate, publicGroup);
 
-            addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(forBank, objDate, objShop)),
-                    new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(forCash, objDate, objShop)),
-                    new NotNullFilterEntity(addPropertyObject(forCard, objDate, objShop)))));
+            addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(impSumBank, objDate, objShop)),
+                    new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(impSumCash, objDate, objShop)),
+                    new NotNullFilterEntity(addPropertyObject(impSumCard, objDate, objShop)))));
             //addFixedFilter(new NotNullFilterEntity(getPropertyObject()));
             //addFixedFilter(new CompareFilterEntity(addPropertyObject(shop, objDate), Compare.EQUALS, objShop));
         }
