@@ -7,6 +7,13 @@ public class Scheduler implements Runnable {
     private int sleepTime;
     private List<SchedulerTask> tasks;
 
+    public SchedulerTask getTask(String sID) {
+        for(SchedulerTask task : tasks)
+            if(task.getID().equals(sID))
+                return task;
+        return null;                
+    }
+
     public Scheduler(int sleepTime, List<SchedulerTask> tasks) {
         this.sleepTime = sleepTime;
         this.tasks = tasks;

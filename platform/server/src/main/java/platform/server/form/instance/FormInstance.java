@@ -225,15 +225,23 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         return null;
     }
 
-    public PropertyDrawInstance getPropertyDraw(Property<?> property) {
+    public PropertyDrawInstance getPropertyDraw(Property<?> property, GroupObjectInstance group) {
         for (PropertyDrawInstance propertyDraw : properties)
-            if (property.equals(propertyDraw.propertyObject.property))
+            if (property.equals(propertyDraw.propertyObject.property) && (group==null || group.equals(propertyDraw.toDraw)))
                 return propertyDraw;
         return null;
     }
 
+    public PropertyDrawInstance getPropertyDraw(Property<?> property) {
+        return getPropertyDraw(property, null);
+    }
+
     public PropertyDrawInstance getPropertyDraw(LP<?> property) {
         return getPropertyDraw(property.property);
+    }
+
+    public PropertyDrawInstance getPropertyDraw(LP<?> property, GroupObjectInstance group) {
+        return getPropertyDraw(property.property, group);
     }
 
     public void serializePropertyEditorType(DataOutputStream outStream, PropertyDrawInstance<?> propertyDraw) throws SQLException, IOException {

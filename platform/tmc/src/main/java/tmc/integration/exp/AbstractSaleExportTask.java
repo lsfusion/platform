@@ -145,6 +145,10 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
 
         setRemoteFormFilter(formInstance);
 
+        // записываем фильтр на этот склад
+        PropertyDrawInstance outStore = formInstance.getPropertyDraw(BL.outStore);
+        outStore.toDraw.addTempFilter(new CompareFilterInstance(outStore.propertyObject, Compare.EQUALS, session.getDataObject(store, ObjectType.instance)));        
+
         PropertyDrawInstance issued = formInstance.getPropertyDraw(BL.issueObligation);
         issued.toDraw.addTempFilter(new NotNullFilterInstance(issued.propertyObject));
 
@@ -178,11 +182,15 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
         ObjectInstance inner = formInstance.instanceFactory.getInstance(BL.returnSaleCheckRetailBrowse.objInner);
         ObjectInstance article = formInstance.instanceFactory.getInstance(BL.returnSaleCheckRetailBrowse.objArt);
 
+        // записываем фильтр на этот склад
+        PropertyDrawInstance incStore = formInstance.getPropertyDraw(BL.incStore, doc.groupTo);
+        incStore.toDraw.addTempFilter(new CompareFilterInstance(incStore.propertyObject, Compare.EQUALS, session.getDataObject(store, ObjectType.instance)));
+
         map.put(barField, formInstance.getPropertyDraw(BL.barcode));
         map.put(nameField, formInstance.getPropertyDraw(BL.name));
         map.put(cenField, formInstance.getPropertyDraw(BL.orderSalePrice));
         map.put(kolField, formInstance.getPropertyDraw(BL.returnInnerQuantity));
-        map.put(dateField, formInstance.getPropertyDraw(BL.date));
+        map.put(dateField, formInstance.getPropertyDraw(BL.date, doc.groupTo));
         map.put(summField, formInstance.getPropertyDraw(BL.returnArticleSalePay));
         map.put(percentField, formInstance.getPropertyDraw(BL.orderArticleSaleDiscount));
 
@@ -243,7 +251,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
         return format.format(val);
     }
 
-    protected void run() throws Exception {
+    public void run() throws Exception {
 
         try {
 

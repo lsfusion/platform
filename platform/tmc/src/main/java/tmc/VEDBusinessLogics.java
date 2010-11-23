@@ -4,10 +4,7 @@ import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
-import platform.interop.action.ClientAction;
-import platform.interop.action.ApplyClientAction;
-import platform.interop.action.ClientResultAction;
-import platform.interop.action.ListClientAction;
+import platform.interop.action.*;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexComponentDirections;
 import platform.interop.form.screen.ExternalScreenParameters;
@@ -22,6 +19,8 @@ import platform.server.form.entity.filter.*;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.form.instance.PropertyDrawInstance;
+import platform.server.form.instance.filter.CompareFilterInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.ContainerView;
@@ -39,6 +38,7 @@ import platform.server.session.DataSession;
 import tmc.integration.PanelExternalScreen;
 import tmc.integration.PanelExternalScreenParameters;
 import tmc.integration.exp.CashRegController;
+import tmc.integration.exp.AbstractSaleExportTask;
 import tmc.integration.imp.CustomerCheckRetailImportActionProperty;
 
 import javax.swing.*;
@@ -52,6 +52,10 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.text.ParseException;
+import tmc.integration.exp.SaleExportTask;
+
 
 
 public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
@@ -286,7 +290,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP orderContragentBarcode;
     LP orderUserBarcode;
     LP orderComputer;
-
+    LP saleExport;
 
 
     protected void initProperties() {
@@ -312,11 +316,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         outStore = addCUProp("outCStore", true, "Склад (расх.)", // generics
                 addDProp("outStore", "Склад (расх.)", store, orderStoreOut),
                 addDProp("outShop", "Магазин (расх.)", shop, orderShopOut),
-                addDProp("outWarehouse", "Распред. центр (расх.)", warehouse, orderWarehouseOut));
+                addDProp("outWarehouse", "Распред. центр (расх.)", warehouse, orderWarehouseOut),
+                addDProp("certStore", "Магазин (серт.)", shop, saleCert));
         outStoreName = addJProp(baseGroup, "Склад (расх.)", name, outStore, 1);
 
         payWithCard = addAProp(null, new PayWithCardActionProperty());
         printOrderCheck = addAProp(null, new PrintOrderCheckActionProperty());
+        saleExport = addAProp(null, new SaleExportActionProperty());
 
         computerShop = addDProp("computerShop", "Магазин рабочего места", shop, computer);
         currentShop = addJProp("Текущий магазин", computerShop, currentComputer);
@@ -525,7 +531,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         // новые свойства для подарочных сертификатов
         LP certToSaled = addDProp(baseGroup, "certToSaled", "Продан заранее", LogicalClass.instance, giftObligation);
         LP sverka = addJProp(equals2, 1, addJProp(and1, 1, certToSaled, 1), 2);
-        
+
         issueObligation = addCUProp(documentPriceGroup, "Выдать", sverka, saleCertGiftObligation, addDProp("orderSaleCoupon", "Выдать", LogicalClass.instance, commitSaleCheckArticleRetail, coupon));
 
         LP obligationIssued = addCGProp(null, "obligationIssued", true, "Выд. документ", addJProp(and1, 1, issueObligation, 1, 2), issueObligation, 2);
@@ -599,7 +605,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP articleSuppliedOnWarehouse = addJProp(supplierToWarehouse, articleSupplier, 1);
         articleStoreSupplier = addSUProp("articleStoreSupplier", true, "Пост. товара на склад", Union.OVERRIDE, addJProp(and1, articleSupplier, 2, is(store), 1),
                 addJProp(and1, shopWarehouse, 1, articleSuppliedOnWarehouse, 2));
-        
+
         LP storeSupplierCycle = addCUProp(addJProp(and1, supplierCycle, 2, is(store), 1), addJProp(and1, shopCycle, 1, is(warehouse), 2));
         // цикл распределения, если от распределяющего центра или цикл поставок, если от поставщика
 
@@ -678,7 +684,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP obligationUseSum = addJProp(and1, obligationSum, 2, orderSaleUseObligation, 1, 2);
 
         obligationDocument = addCGProp(null, "obligationDocument", "Исп. документ", addJProp(and1, 1, orderSaleUseObligation, 1, 2), orderSaleUseObligation, 2);
-                                        
+
         LP addDays = addSFProp("prm1+prm2", DateClass.instance, 2);
 
         couponStart = addDProp(baseGroup, "couponStart", "Дата начала купонов", DateClass.instance);
@@ -843,7 +849,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     public LP clientInitialSum;
     LP clientSum;
     LP accumulatedClientSum;
-    LP incStore;
+    public LP incStore;
     LP incStoreName;
     public LP outStore;
     LP outStoreName;
@@ -1045,21 +1051,22 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addFormEntity(new CommitSaleCheckRetailFormEntity(commitSaleForm, 1320, false, false));
         commitSaleBrowseForm = addFormEntity(new CommitSaleCheckRetailFormEntity(commitSaleForm, 1322, false, true));
         addFormEntity(new CommitSaleCheckRetailExcelFormEntity(commitSaleForm, 1323, "Выгрузка в Excel"));
-
-        addFormEntity(new ShopMoneyFormEntity(saleRetailCashRegisterElement, 1330, "Данные с касс"));
-
-        saleCheckCertForm = addFormEntity(new SaleCheckCertFormEntity(saleRetailCashRegisterElement, 1325, true));
-        saleCheckCertBrowseForm = addFormEntity(new SaleCheckCertFormEntity(saleCheckCertForm, 1335, false));
-        returnSaleCheckRetailArticleForm = addFormEntity(new ReturnSaleCheckRetailFormEntity(saleRetailCashRegisterElement, true, 1345));
-        returnSaleCheckRetailBrowse = addFormEntity(new ReturnSaleCheckRetailFormEntity(returnSaleCheckRetailArticleForm, false, 1355));
+        saleCheckCertForm = addFormEntity(new SaleCheckCertFormEntity(saleRetailCashRegisterElement, 1325, true, false));
+        addFormEntity(new SaleCheckCertFormEntity(saleCheckCertForm, 1327, false, false));
+        saleCheckCertBrowseForm = addFormEntity(new SaleCheckCertFormEntity(saleCheckCertForm, 1335, false,true));
+        returnSaleCheckRetailArticleForm = addFormEntity(new ReturnSaleCheckRetailFormEntity(saleRetailCashRegisterElement, true, 1345, false));
+        addFormEntity(new ReturnSaleCheckRetailFormEntity(returnSaleCheckRetailArticleForm, false, 1347, false));
+        returnSaleCheckRetailBrowse = addFormEntity(new ReturnSaleCheckRetailFormEntity(returnSaleCheckRetailArticleForm, false, 1355, true));
         cachRegManagementForm = addFormEntity(cashRegController.createCashRegManagementFormEntity(saleRetailCashRegisterElement, 1365));
+        addFormEntity(new ShopMoneyFormEntity(saleRetailCashRegisterElement, 1330, "Данные из касс"));
         NavigatorElement saleRetailInvoice = new NavigatorElement(saleRetailElement, 1400, "Безналичный расчет");
         FormEntity saleRetailInvoiceForm = addFormEntity(new OrderSaleInvoiceRetailFormEntity(saleRetailInvoice, 1410, true, false));
         addFormEntity(new OrderSaleInvoiceRetailFormEntity(saleRetailInvoiceForm, 1420, false, false));
-        FormEntity saleInvoiceCert = addFormEntity(new SaleInvoiceCertFormEntity(saleRetailInvoice, 1440, true));
-        addFormEntity(new SaleInvoiceCertFormEntity(saleInvoiceCert, 1445, false));
-        FormEntity returnSaleInvoiceRetailArticle = addFormEntity(new ReturnSaleInvoiceRetailFormEntity(saleRetailInvoice, true, 1477));
-        addFormEntity(new ReturnSaleInvoiceRetailFormEntity(returnSaleInvoiceRetailArticle, false, 1487));
+        FormEntity saleInvoiceCert = addFormEntity(new SaleInvoiceCertFormEntity(saleRetailInvoice, 1440, true, false));
+        addFormEntity(new SaleInvoiceCertFormEntity(saleInvoiceCert, 1445, false, false));
+        FormEntity returnSaleInvoiceRetailArticle = addFormEntity(new ReturnSaleInvoiceRetailFormEntity(saleRetailInvoice, true, 1477, false));
+        addFormEntity(new ReturnSaleInvoiceRetailFormEntity(returnSaleInvoiceRetailArticle, false, 1487, false));
+        addFormEntity(new ReturnSaleInvoiceRetailFormEntity(returnSaleInvoiceRetailArticle, false, 1492, true));
         NavigatorElement saleWhole = new NavigatorElement(sale, 1500, "Управление оптовыми продажами");
         FormEntity saleWholeForm = addFormEntity(new SaleWholeFormEntity(saleWhole, 1520, true));
         addFormEntity(new SaleWholeFormEntity(saleWholeForm, 1540, false));
@@ -1523,12 +1530,24 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             super(parent, ID, caption);
 
             ObjectEntity objShop = addSingleGroupObject(shop, baseGroup);
-            addObjectActions(this, objShop);
+
+            GroupObjectEntity gobjDates = new GroupObjectEntity(genID());
+            ObjectEntity objDateFrom = new ObjectEntity(genID(), DateClass.instance, "Выгрузить от");
+            ObjectEntity objDateTo = new ObjectEntity(genID(), DateClass.instance, "Выгрузить до");
+            gobjDates.add(objDateFrom);
+            gobjDates.add(objDateTo);
+            addGroup(gobjDates);
+            
+            gobjDates.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
+            gobjDates.initClassView = ClassViewType.PANEL;
+
+            addPropertyDraw(objDateFrom, objectValue);
+            addPropertyDraw(objDateTo, objectValue);
+            addPropertyDraw(saleExport, objShop, objDateFrom, objDateTo);
 
             ObjectEntity objDate = addSingleGroupObject(DateClass.instance, objectValue);
            // addObjectActions(this, objDate);
 
-            addPropertyDraw(objShop, baseGroup);
             addPropertyDraw(objDate, objShop, baseGroup);
             //addPropertyDraw(objShop, objDate, publicGroup);
 
@@ -1965,9 +1984,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 //            addHintsNoUpdate(properties, moveGroup);
             addFixedOrder(addPropertyObject(changeQuantityTime, objInner, objArt), false);
 
-            PropertyObjectEntity shopImplement = addPropertyObject(currentShop);
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(incStore, objDoc), Compare.EQUALS, shopImplement));
-
             if (!noOuters) {
                 objOuter = addSingleGroupObject(commitDelivery, baseGroup, true);
 
@@ -2028,9 +2044,24 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
     }
 
-    private class ReturnSaleInvoiceRetailFormEntity extends ReturnSaleFormEntity {
-        private ReturnSaleInvoiceRetailFormEntity(NavigatorElement parent, boolean toAdd, int ID) {
-            super(parent, ID, toAdd, returnSaleInvoiceRetail, commitSaleInvoiceArticleRetail);
+    public class ReturnSaleRetailFormEntity extends ReturnSaleFormEntity {
+
+        public ReturnSaleRetailFormEntity(NavigatorElement parent, int ID, boolean toAdd, CustomClass documentClass, CustomClass commitClass, boolean allStores) {
+            super(parent, ID, toAdd, documentClass, commitClass);
+
+            if (allStores) {
+                addPropertyDraw(objDoc, incStore, incStoreName);
+                caption = caption + " (все склады)";
+            } else {
+                PropertyObjectEntity shopImplement = addPropertyObject(currentShop);
+                addFixedFilter(new CompareFilterEntity(addPropertyObject(incStore, objDoc), Compare.EQUALS, shopImplement));
+            }
+        }
+    }
+
+    private class ReturnSaleInvoiceRetailFormEntity extends ReturnSaleRetailFormEntity {
+        private ReturnSaleInvoiceRetailFormEntity(NavigatorElement parent, boolean toAdd, int ID, boolean allStores) {
+            super(parent, ID, toAdd, returnSaleInvoiceRetail, commitSaleInvoiceArticleRetail, allStores);
         }
 
         @Override
@@ -2049,10 +2080,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected Object[] getDocumentProps() {
             return new Object[]{returnSaleDiscount, returnSalePay, nameContragent, invoiceNumber, invoiceSeries};
         }
-
     }
 
-    public class ReturnSaleCheckRetailFormEntity extends ReturnSaleFormEntity {
+    public class ReturnSaleCheckRetailFormEntity extends ReturnSaleRetailFormEntity {
 
         @Override
         public boolean isReadOnly() {
@@ -2065,14 +2095,15 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             return "Номер чека";
         }
 
-        private ReturnSaleCheckRetailFormEntity(NavigatorElement parent, boolean toAdd, int ID) {
-            super(parent, ID, toAdd, returnSaleCheckRetail, commitSaleCheckArticleRetail);
+        private ReturnSaleCheckRetailFormEntity(NavigatorElement parent, boolean toAdd, int ID, boolean allStores) {
+            super(parent, ID, toAdd, returnSaleCheckRetail, commitSaleCheckArticleRetail, allStores);
 
             objDoc.caption = "Возвратный чек";
 
             if (toAdd) {
                 addPropertyDraw(cashRegOperGroup, true);
             } else {
+                addPropertyDraw(date, objDoc);
                 addPropertyDraw(checkRetailExported, objDoc);
             }
 
@@ -2345,11 +2376,20 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             return FONT_SMALL_PLAIN;
         }
 
-        protected SaleCertFormEntity(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd) {
+        protected SaleCertFormEntity(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd, boolean allStores) {
             super(parent, ID, documentClass, toAdd);
 
             if (!toAdd)
                 addPropertyDraw(date, objDoc);
+
+            if (allStores) {
+                addPropertyDraw(objDoc, outStore, outStoreName);
+                caption = caption + " (все склады)";
+            } else {
+                PropertyObjectEntity shopImplement = addPropertyObject(currentShop);
+                addFixedFilter(new CompareFilterEntity(addPropertyObject(outStore, objDoc), Compare.EQUALS, shopImplement));
+            }
+
             objObligation = addSingleGroupObject(giftObligation);
             addPropertyDraw(barcode, objObligation);
             addPropertyDraw(name, objObligation);
@@ -2415,8 +2455,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 //            return !toAdd;
         }
 
-        protected SaleCheckCertFormEntity(NavigatorElement parent, int ID, boolean toAdd) {
-            super(parent, ID, saleCheckCert, toAdd);
+        protected SaleCheckCertFormEntity(NavigatorElement parent, int ID, boolean toAdd, boolean allStores) {
+            super(parent, ID, saleCheckCert, toAdd, allStores);
 
             objDoc.caption = "Чек";
 
@@ -2491,8 +2531,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private class SaleInvoiceCertFormEntity extends SaleCertFormEntity {
-        protected SaleInvoiceCertFormEntity(NavigatorElement parent, int ID, boolean toAdd) {
-            super(parent, ID, saleInvoiceCert, toAdd);
+        protected SaleInvoiceCertFormEntity(NavigatorElement parent, int ID, boolean toAdd, boolean allStores) {
+            super(parent, ID, saleInvoiceCert, toAdd, allStores);
         }
 
         @Override
@@ -2615,5 +2655,44 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
     }
 
+    public class SaleExportActionProperty extends ActionProperty {
+
+        private final ClassPropertyInterface shopInterface;
+        private final ClassPropertyInterface dateFrom;
+        private final ClassPropertyInterface dateTo;
+
+        public SaleExportActionProperty() {
+            super(genSID(), "Экспорт реализации", new ValueClass[]{shop, DateClass.instance, DateClass.instance});
+
+            Iterator<ClassPropertyInterface> i = interfaces.iterator();
+            shopInterface = i.next();
+            dateFrom = i.next();
+            dateTo = i.next();
+        }
+
+        public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            Integer shopID = (Integer) keys.get(shopInterface).object;
+            try {
+                new AbstractSaleExportTask(VEDBusinessLogics.this, ((SaleExportTask)scheduler.getTask("saleExport")).getPath(shopID), shopID) {
+                    protected String getDbfName() {
+                        return "datadat.dbf";
+                    }
+
+                    protected void setRemoteFormFilter(FormInstance formInstance) throws ParseException {
+                        PropertyDrawInstance<?> dateDraw = formInstance.getPropertyDraw(date);
+                        dateDraw.toDraw.addTempFilter(new CompareFilterInstance(dateDraw.propertyObject, Compare.GREATER_EQUALS, keys.get(dateFrom)));
+                        dateDraw.toDraw.addTempFilter(new CompareFilterInstance(dateDraw.propertyObject, Compare.LESS_EQUALS, keys.get(dateTo)));
+                    }
+
+                    protected void updateRemoteFormProperties(FormInstance formInstance) throws SQLException {
+                    }
+                }.run();
+            } catch(Exception e) {
+                throw new RuntimeException(e);
+            }
+
+            actions.add(new MessageClientAction("Данные были успешно выгружены", "Экспорт"));
+        }
+    }
 
 }

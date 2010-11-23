@@ -12,6 +12,13 @@ public class SaleExportTask implements SchedulerTask {
     private List<String> path;
     private List<Integer> store;
 
+    public String getPath(Integer storePath ) {
+        for(int i=0;i<store.size();i++)
+            if(store.get(i).equals(storePath))
+                return path.get(i);
+        return null;
+    }
+
     public SaleExportTask(VEDBusinessLogics BL, List<String> path, List<Integer> store) {
 
         this.BL = BL;

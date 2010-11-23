@@ -3058,7 +3058,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         form.addPropertyDraw(delete, object);
     }
 
-    private Scheduler scheduler;
+    protected Scheduler scheduler;
 
     public void setScheduler(Scheduler scheduler) {
         this.scheduler = scheduler;
