@@ -10,14 +10,13 @@ public class NavigatorTreeNode extends ClientTreeNode<ClientNavigatorElement, Na
     private static final ImageIcon formIcon = new ImageIcon(Main.class.getResource("/platform/navigator/images/form.gif"));
     private static final ImageIcon reportIcon = new ImageIcon(Main.class.getResource("/platform/navigator/images/report.gif"));
 
-    private final ClientNavigatorElement navigatorElement;
+    private final NavigatorTree tree;
+    public final ClientNavigatorElement navigatorElement;
+    public boolean nodeStructureChanged;
 
-    public NavigatorTreeNode() {
-        this(null, true);
-    }
-
-    public NavigatorTreeNode(ClientNavigatorElement navigatorElement, boolean allowsChildren) {
-        super(navigatorElement, allowsChildren);
+    public NavigatorTreeNode(NavigatorTree tree, ClientNavigatorElement navigatorElement) {
+        super(navigatorElement, true);
+        this.tree = tree;
 
         this.navigatorElement = navigatorElement;
     }
@@ -27,7 +26,7 @@ public class NavigatorTreeNode extends ClientTreeNode<ClientNavigatorElement, Na
         return node instanceof NavigatorTreeNode && !node.isNodeDescendant(this) && this.allowsChildren;
     }
 
-    public boolean importData(ClientTree tree, TransferHandler.TransferSupport info) {
+    public boolean importData(ClientTree iTree, TransferHandler.TransferSupport info) {
         tree.expandPath(tree.getPathToRoot(this));
 
         NavigatorTreeNode draggingNode = ((NavigatorTreeNode) ClientTree.getNode(info));
@@ -40,18 +39,26 @@ public class NavigatorTreeNode extends ClientTreeNode<ClientNavigatorElement, Na
 
         if (parentNode == this) {
             int origIndex = parentNode.getIndex(draggingNode);
-            parentNode.remove(draggingNode);
-            parentNode.insert(draggingNode, index > origIndex ? index - 1 : index);
+            parentNode.removeNode(draggingNode);
+            parentNode.insertNode(draggingNode, index > origIndex ? index - 1 : index);
         } else {
             parentNode.remove(draggingNode);
-            insert(draggingNode, index);
+            insertNode(draggingNode, index);
 
             tree.getModel().reload(parentNode);
+            parentNode.nodeStructureChanged = true;
         }
 
         tree.getModel().reload(this);
 
+        structureChanged();
+
         return true;
+    }
+
+    private void structureChanged() {
+        nodeStructureChanged = true;
+        tree.navigator.nodeChanged(this);
     }
 
     @Override
@@ -65,5 +72,26 @@ public class NavigatorTreeNode extends ClientTreeNode<ClientNavigatorElement, Na
     @Override
     public NavigatorTreeNode getParent() {
         return (NavigatorTreeNode) super.getParent();
+    }
+
+    public void addNode(ClientTreeNode newChild) {
+        super.add(newChild);
+        if (newChild instanceof NavigatorTreeNode) {
+            structureChanged();
+        }
+    }
+
+    public void removeNode(ClientTreeNode child) {
+        super.remove(child);
+        if (child instanceof NavigatorTreeNode) {
+            structureChanged();
+        }
+    }
+
+    public void insertNode(ClientTreeNode newChild, int index) {
+        super.insert(newChild, index);
+        if (newChild instanceof NavigatorTreeNode) {
+            structureChanged();
+        }
     }
 }

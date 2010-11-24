@@ -1,33 +1,29 @@
 package platform.client.descriptor.view;
 
-import platform.base.context.IncrementView;
+import platform.base.BaseUtils;
 import platform.base.context.Lookup;
 import platform.client.Main;
 import platform.client.descriptor.FormDescriptor;
-import platform.client.navigator.*;
-import platform.client.tree.ClientTree;
-import platform.client.tree.ClientTreeAction;
-import platform.client.tree.ClientTreeActionEvent;
+import platform.client.navigator.ClientNavigator;
+import platform.client.navigator.NavigatorTreeNode;
 import platform.client.tree.ClientTreeNode;
-import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
-import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.List;
 
 public class NavigatorDescriptorView extends JPanel {
     private FormDescriptorView formView;
     private VisualSetupNavigator visualNavigator;
 
-    //todo: в будущем формы надо создавать на сервере и это убрать...
-    private Map<Integer, FormDescriptor> forms = new HashMap<Integer, FormDescriptor>();
+    private List<FormDescriptor> newForms = new ArrayList<FormDescriptor>();
+    private Map<Integer, FormDescriptor> editingForms = new HashMap<Integer, FormDescriptor>();
 
     private JButton previewBtn;
     private JButton saveBtn;
@@ -37,7 +33,7 @@ public class NavigatorDescriptorView extends JPanel {
 
         setLayout(new BorderLayout());
 
-        visualNavigator = new VisualSetupNavigator(clientNavigator.remoteNavigator);
+        visualNavigator = new VisualSetupNavigator(this, clientNavigator.remoteNavigator);
 
         formView = new FormDescriptorView();
 
@@ -55,38 +51,15 @@ public class NavigatorDescriptorView extends JPanel {
         saveBtn.setEnabled(false);
         saveBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                try {
-                    ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-                    DataOutputStream dataStream = new DataOutputStream(outStream);
-
-                    dataStream.writeInt(forms.size());
-                    for (FormDescriptor form : forms.values()) {
-                        int oldSize = outStream.size();
-                        form.serialize(dataStream);
-                        int formSize = outStream.size() - oldSize;
-                        dataStream.writeInt(formSize);
-                    }
-
-                    visualNavigator.remoteNavigator.saveForms(outStream.toByteArray());
-
-                    forms.clear();
-                    reopenForm(formView.getForm().ID);
-                } catch (IOException ioe) {
-                    throw new RuntimeException("Не могу сохранить форму.", ioe);
-                }
+                commitChanges();
             }
         });
 
-        cancelBtn = new JButton("Отменить все изменения");
+        cancelBtn = new JButton("Отменить изменения");
         cancelBtn.setEnabled(false);
         cancelBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                try {
-                    forms.clear();
-                    openForm(formView.getForm().getID());
-                } catch (IOException ioe) {
-                    throw new RuntimeException("Не могу открыть форму.", ioe);
-                }
+                cancelChanges();
             }
         });
 
@@ -106,27 +79,113 @@ public class NavigatorDescriptorView extends JPanel {
         add(commandPanel, BorderLayout.SOUTH);
     }
 
+    private void cancelChanges() {
+        try {
+            setupActionButtons(false);
+            visualNavigator.cancelNavigatorChanges();
+
+            while (newForms.size() > 0) {
+                FormDescriptor form = BaseUtils.last(newForms);
+                removeElement(form.ID);
+                newForms.remove(form);
+            }
+
+            editingForms.clear();
+
+            FormDescriptor currentForm = formView.getForm();
+            if (currentForm != null) {
+                reopenForm(currentForm.ID);
+            }
+        } catch (IOException ioe) {
+            throw new RuntimeException("Не могу открыть форму.", ioe);
+        }
+    }
+
+    private void commitChanges() {
+        try {
+            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+            DataOutputStream dataStream = new DataOutputStream(outStream);
+
+            //сохраняем формы
+            dataStream.writeInt(editingForms.size());
+            for (FormDescriptor form : editingForms.values()) {
+                int oldSize = outStream.size();
+                form.serialize(dataStream);
+                int formSize = outStream.size() - oldSize;
+                dataStream.writeInt(formSize);
+            }
+
+            //сохраняем новую структуру навигатора
+            Map<Integer, List<Integer>> changedElements = getChangedNavigatorElementsChildren();
+            dataStream.writeInt(changedElements.size());
+            for (Map.Entry<Integer, List<Integer>> entry : changedElements.entrySet()) {
+                dataStream.writeInt(entry.getKey());
+                dataStream.writeInt(entry.getValue().size());
+                for (Integer childID : entry.getValue()) {
+                    dataStream.writeInt(childID);
+                }
+            }
+
+            visualNavigator.remoteNavigator.saveVisualSetup(outStream.toByteArray());
+
+            editingForms.clear();
+            FormDescriptor currentForm = formView.getForm();
+            if (currentForm != null) {
+                reopenForm(currentForm.ID);
+            }
+        } catch (IOException ioe) {
+            throw new RuntimeException("Не могу сохранить форму.", ioe);
+        }
+    }
+
+    private Map<Integer, List<Integer>> getChangedNavigatorElementsChildren() {
+        HashMap<Integer, List<Integer>> result = new HashMap<Integer, List<Integer>>();
+        Enumeration<ClientTreeNode> nodes = visualNavigator.getTree().rootNode.depthFirstEnumeration();
+        while (nodes.hasMoreElements()) {
+            ClientTreeNode node = nodes.nextElement();
+            if (node instanceof NavigatorTreeNode) {
+                NavigatorTreeNode navigatorNode = (NavigatorTreeNode) node;
+                if (navigatorNode.nodeStructureChanged) {
+                    navigatorNode.nodeStructureChanged = false;
+                    List<Integer> children = new ArrayList<Integer>();
+                    for (int i = 0; i < navigatorNode.getChildCount(); ++i) {
+                        ClientTreeNode childNode = (ClientTreeNode) navigatorNode.getChildAt(i);
+                        if (childNode instanceof NavigatorTreeNode) {
+                            NavigatorTreeNode childNavigatorNode = (NavigatorTreeNode) childNode;
+                            children.add(childNavigatorNode.navigatorElement.ID);
+                        }
+                    }
+                    result.put(navigatorNode.navigatorElement.ID, children);
+                }
+            }
+        }
+
+        return result;
+    }
+
     public void reopenForm(int ID) throws IOException {
-        forms.remove(ID);
+        editingForms.remove(ID);
         openForm(ID);
     }
 
     public void openForm(int ID) throws IOException {
-        if (!forms.containsKey(ID)) {
-            forms.put(ID, FormDescriptor.deserialize(visualNavigator.remoteNavigator.getRichDesignByteArray(ID),
-                                                     visualNavigator.remoteNavigator.getFormEntityByteArray(ID)));
+        if (!editingForms.containsKey(ID)) {
+            editingForms.put(ID, FormDescriptor.deserialize(visualNavigator.remoteNavigator.getRichDesignByteArray(ID),
+                                                            visualNavigator.remoteNavigator.getFormEntityByteArray(ID)));
         }
-        formView.setForm(forms.get(ID));
+        formView.setForm(editingForms.get(ID));
         updateUI();
 
         setupActionButtons(true);
     }
 
-    private void removeForm(FormDescriptor form) {
-        form.getContext().setProperty(Lookup.DELETED_OBJECT_PROPERTY, form);
-        forms.remove(form.getID());
-
-        setupActionButtons(false);
+    public void removeElement(int elementID) {
+        FormDescriptor form = editingForms.get(elementID);
+        if (form != null) {
+            form.getContext().setProperty(Lookup.DELETED_OBJECT_PROPERTY, form);
+            editingForms.remove(form.getID());
+            newForms.remove(form);
+        }
     }
 
     private void setupActionButtons(boolean enabled) {
@@ -135,159 +194,35 @@ public class NavigatorDescriptorView extends JPanel {
         cancelBtn.setEnabled(enabled);
     }
 
-    private boolean isFormChanged(int formID) {
-        return forms.containsKey(formID);
+    public boolean isFormChanged(int formID) {
+        return editingForms.containsKey(formID);
     }
 
-    private class VisualSetupNavigator extends AbstractNavigator {
+    public FormDescriptor createAndOpenNewForm() {
+        FormDescriptor newForm = new FormDescriptor(Main.generateNewID());
 
-        public VisualSetupNavigator(RemoteNavigatorInterface iremoteNavigator) {
-            super(iremoteNavigator);
+        newForms.add(newForm);
+        editingForms.put(newForm.getID(), newForm);
+        formView.setForm(newForm);
 
-            tree.setDropMode(DropMode.ON_OR_INSERT);
-            tree.setDragEnabled(true);
-            tree.setCellRenderer(new VisualSetupNavigatorRenderer());
+        return newForm;
+    }
 
-            tree.rootNode.addSubTreeAction(
-                    new ClientTreeAction("Создать новую форму") {
-                        @Override
-                        public void actionPerformed(ClientTreeActionEvent e) {
-                            ClientTreeNode node = e.getNode();
-
-                            FormDescriptor newForm = new FormDescriptor(Main.generateNewID());
-                            forms.put(newForm.getID(), newForm);
-
-                            //раскрываем, чтобы загрузить узлы с сервера...
-                            tree.expandPath(tree.getPathToRoot(node));
-
-                            node.add(new NavigatorTreeNode(new NewNavigatorForm(newForm), true));
-
-                            tree.getModel().reload(node);
-
-                            formView.setForm(newForm);
-                        }
-
-                        @Override
-                        public boolean isApplicable(TreePath path) {
-                            ClientTreeNode node = ClientTree.getNode(path);
-                            if (node != null) {
-                                Object nodeObject = node.getUserObject();
-                                return nodeObject instanceof ClientNavigatorElement;
-                            }
-                            return false;
-                        }
-                    });
-
-            tree.rootNode.addSubTreeAction(
-                    new ClientTreeAction("Отменить изменения") {
-                        @Override
-                        public void actionPerformed(ClientTreeActionEvent e) {
-                            ClientTreeNode node = e.getNode();
-                            Object userObject = node.getUserObject();
-                            if (userObject instanceof ClientNavigatorForm) {
-                                ClientNavigatorForm navigatorForm = (ClientNavigatorForm) userObject;
-                                try {
-                                    FormDescriptor form = forms.get(navigatorForm.ID);
-                                    if (form == formView.getForm()) {
-                                        reopenForm(form.ID);
-                                    } else {
-                                        forms.remove(form.ID);
-                                    }
-                                } catch (IOException ioe) {
-                                    throw new RuntimeException("Ошибка при отмене формы.");
-                                }
-                            }
-                        }
-
-                        @Override
-                        public boolean isApplicable(TreePath path) {
-                            ClientTreeNode node = ClientTree.getNode(path);
-                            if (node != null) {
-                                Object nodeObject = node.getUserObject();
-
-                                if (nodeObject instanceof ClientNavigatorForm) {
-                                    ClientNavigatorForm navigatorForm = (ClientNavigatorForm) nodeObject;
-                                    return forms.containsKey(navigatorForm.ID);
-                                }
-                            }
-                            return false;
-                        }
-                    });
-
-            tree.rootNode.addSubTreeAction(
-                    new ClientTreeAction("Удалить") {
-                        @Override
-                        public void actionPerformed(ClientTreeActionEvent e) {
-                            ClientTreeNode child = e.getNode();
-                            ClientTreeNode parent = (ClientTreeNode) e.getNode().getParent();
-
-                            parent.remove(child);
-                            tree.getModel().reload(parent);
-
-                            Object userObject = child.getUserObject();
-                            if (userObject instanceof NewNavigatorForm) {
-                                NewNavigatorForm formElement = (NewNavigatorForm) userObject;
-                                removeForm(formElement.form);
-                            }
-                        }
-                    });
+    public void cancelForm(int formID) {
+        try {
+            FormDescriptor currentForm = formView.getForm();
+            if (currentForm != null && currentForm.ID == formID) {
+                reopenForm(formID);
+            } else {
+                editingForms.remove(formID);
+            }
+        } catch (IOException ioe) {
+            throw new RuntimeException("Ошибка при отмене формы.");
         }
+    }
 
-
-        @Override
-        public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
-            NavigatorDescriptorView.this.openForm(element.ID);
-        }
-
-        class VisualSetupNavigatorRenderer extends ClientTree.ClientTreeCellRenderer {
-
-            private Color textNonSelectionColor;
-
-            public VisualSetupNavigatorRenderer() {
-                super();
-
-                textNonSelectionColor = getTextNonSelectionColor();
-            }
-
-            @Override
-            public Component getTreeCellRendererComponent(JTree iTree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-                setTextNonSelectionColor(textNonSelectionColor);
-
-                if (value instanceof NavigatorTreeNode) {
-                    NavigatorTreeNode node = (NavigatorTreeNode) value;
-                    Object userObject = node.getUserObject();
-                    if (userObject instanceof ClientNavigatorForm) {
-                        ClientNavigatorForm form = (ClientNavigatorForm) userObject;
-                        if (isFormChanged(form.ID)) {
-                            setTextNonSelectionColor(Color.blue);
-                        }
-                    }
-                }
-
-                return super.getTreeCellRendererComponent(iTree, value, sel, expanded, leaf, row, hasFocus);
-            }
-        }
-
-        class NewNavigatorForm extends ClientNavigatorForm implements IncrementView {
-
-            private final FormDescriptor form;
-
-            public NewNavigatorForm(FormDescriptor form) {
-                super();
-                this.form = form;
-                ID = form.getID();
-
-                form.addDependency(form, "caption", this);
-            }
-
-            public void update(Object updateObject, String updateField) {
-                tree.updateUI();
-            }
-
-            @Override
-            public String toString() {
-                return form.getCaption();
-            }
-        }
+    public void nodeChanged(NavigatorTreeNode node) {
+        saveBtn.setEnabled(true);
+        cancelBtn.setEnabled(true);
     }
 }

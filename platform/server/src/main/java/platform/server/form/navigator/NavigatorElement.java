@@ -15,7 +15,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
     public String caption = "";
 
     public NavigatorElement() {
-        
+
     }
     public NavigatorElement(int iID, String icaption) { this(null, iID, icaption); }
     public NavigatorElement(NavigatorElement<T> parent, int ID, String caption) {
@@ -90,5 +90,12 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
         outStream.writeInt(getID());
         outStream.writeUTF(caption);
         outStream.writeBoolean(hasChildren());
+    }
+
+    public void removeAllChildren() {
+        for (NavigatorElement<T> child : children) {
+            child.parent = null;
+        }
+        children.clear();
     }
 }

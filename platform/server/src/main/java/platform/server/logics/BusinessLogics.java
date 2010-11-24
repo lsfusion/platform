@@ -1003,6 +1003,108 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         });
         thread.setDaemon(true);
         thread.start();
+
+        reloadNavigatorTree();
+    }
+
+    private final String navigatorTreeFilePath = "conf/" + getName() + "/navigatorTree.data";
+    private void reloadNavigatorTree() throws IOException {
+        if (new File(navigatorTreeFilePath).exists()) {
+            FileInputStream inStream = new FileInputStream(navigatorTreeFilePath);
+            try {
+                mergeNavigatorTree(new DataInputStream(inStream));
+            } finally {
+                inStream.close();
+            }
+        }
+    }
+
+    public void mergeNavigatorTree(DataInputStream inStream) throws IOException {
+        Collection<NavigatorElement<T>> children = baseElement.getChildren(true);
+        children.add(baseElement);
+        Map<Integer, NavigatorElement<T>> elementsMap = new HashMap<Integer, NavigatorElement<T>>();
+        for (NavigatorElement<T> child : children) {
+            elementsMap.put(child.getID(), child);
+        }
+
+        //читаем новую структуру навигатора, в процессе подчитывая сохранённые формы
+        int mapSize = inStream.readInt();
+        Map<Integer, List<Integer>> treeStructure = new HashMap<Integer, List<Integer>>();
+        for (int i = 0; i < mapSize; ++i) {
+            int parentID = inStream.readInt();
+            overrideElement(elementsMap, parentID);
+
+            int childrenCnt = inStream.readInt();
+            List<Integer> childrenIDs = new ArrayList<Integer>();
+            for (int j = 0; j < childrenCnt; ++j) {
+                int childID = inStream.readInt();
+                childrenIDs.add(childID);
+                overrideElement(elementsMap, childID);
+            }
+            treeStructure.put(parentID, childrenIDs);
+        }
+
+        //перестраиваем
+        for (Map.Entry<Integer, List<Integer>> entry : treeStructure.entrySet()) {
+            int parentID = entry.getKey();
+            NavigatorElement parent = elementsMap.get(parentID);
+            if (parent != null) {
+                parent.removeAllChildren();
+
+                for (int childID : entry.getValue()) {
+                    NavigatorElement<T> element = elementsMap.get(childID);
+
+                    if (element != null) {
+                        parent.add(element);
+                    }
+                }
+            }
+        }
+    }
+
+    private void overrideElement(Map<Integer, NavigatorElement<T>> elementsMap, int elementID) {
+        NavigatorElement<T> element = getOverridenForm(elementID);
+        if (element != null) {
+            elementsMap.put(elementID, element);
+        }
+    }
+
+    public String getFormSerializationPath(int formID) {
+        try {
+            return "conf/" + getName() + "/forms/form" + formID;
+        } catch (RemoteException re) {
+            return "conf/forms/form" + formID;
+        }
+    }
+
+    private FormEntity<T> getOverridenForm(int formID) {
+        try {
+            byte[] formState = IOUtils.getFileBytes(new File(getFormSerializationPath(formID)));
+            return (FormEntity<T>) FormEntity.deserialize(this, formState);
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    public void saveNavigatorTree() throws IOException {
+        Collection<NavigatorElement<T>> children = baseElement.getChildren(true);
+        children.add(baseElement);
+        File treeFile = new File(navigatorTreeFilePath);
+        if (!treeFile.getParentFile().exists()) {
+            treeFile.getParentFile().mkdirs();
+        }
+
+        DataOutputStream outStream = new DataOutputStream(new FileOutputStream(treeFile));
+        outStream.writeInt(children.size());
+        for (NavigatorElement child : children) {
+            outStream.writeInt(child.getID());
+
+            Collection<NavigatorElement<T>> thisChildren = child.getChildren(false);
+            outStream.writeInt(thisChildren.size());
+            for (NavigatorElement<T> thisChild : thisChildren) {
+                outStream.writeInt(thisChild.getID());
+            }
+        }
     }
 
     private void changeCurrentDate() throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
