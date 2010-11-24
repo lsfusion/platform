@@ -3,6 +3,7 @@ package platform.client.logics;
 import platform.base.context.ApplicationContext;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
+import platform.interop.form.layout.AbstractTreeGroup;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -10,7 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClientTreeGroup extends ClientComponent implements ClientIdentitySerializable {
+public class ClientTreeGroup extends ClientComponent implements ClientIdentitySerializable, AbstractTreeGroup<ClientContainer, ClientComponent> {
     public List<ClientGroupObject> groups = new ArrayList<ClientGroupObject>();
 
     public ClientTreeGroup() {
@@ -47,5 +48,9 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
             result += group.toString();
         }
         return result;
+    }
+
+    public ClientComponent getComponent() {
+        return this;
     }
 }

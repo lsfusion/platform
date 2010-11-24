@@ -621,19 +621,10 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
     }
 
     private void addTreeGroupDefaultContainers(TreeGroupDescriptor treeGroup) {
-        ClientContainer treeContainer = new ClientContainer(getContext());
-        treeContainer.setTitle("Дерево");
-        treeContainer.setDescription("Дерево");
-        treeContainer.setSID(GroupObjectContainerSet.TREE_GROUP_CONTAINER + treeGroup.getID());
-        treeContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
-        treeContainer.constraints.fillHorizontal = 1;
-        treeContainer.constraints.fillVertical = 1;
-        treeContainer.add(treeGroup.client);
 
-        treeGroup.client.constraints.fillHorizontal = 1;
-        treeGroup.client.constraints.fillVertical = 1;
+        TreeGroupContainerSet<ClientContainer, ClientComponent> set = TreeGroupContainerSet.create(treeGroup.client, new FormContainerFactory());
 
-        moveContainerInGroup(treeGroup, treeContainer, treeGroups);
+        moveContainerInGroup(treeGroup, set.getContainer(), treeGroups);
     }
 
     private void moveContainerInGroup(ContainerMovable<ClientContainer> concreateObject, ClientContainer parent, List<? extends ContainerMovable<ClientContainer>> objects) {

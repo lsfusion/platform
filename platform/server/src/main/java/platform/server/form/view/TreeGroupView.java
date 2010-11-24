@@ -1,6 +1,7 @@
 package platform.server.form.view;
 
 import platform.base.identity.IdentityObject;
+import platform.interop.form.layout.AbstractTreeGroup;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.TreeGroupEntity;
 import platform.server.serialization.ServerIdentitySerializable;
@@ -12,7 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TreeGroupView extends ComponentView implements ServerIdentitySerializable {
+public class TreeGroupView extends ComponentView implements ServerIdentitySerializable, AbstractTreeGroup<ContainerView, ComponentView> {
     public List<GroupObjectView> groups = new ArrayList<GroupObjectView>();
 
     public TreeGroupEntity entity;
@@ -47,5 +48,9 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
         groups = pool.deserializeList(inStream);
 
         entity = pool.context.entity.getTreeGroup(ID);
+    }
+
+    public ComponentView getComponent() {
+        return this;
     }
 }

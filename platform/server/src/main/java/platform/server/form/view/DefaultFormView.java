@@ -90,23 +90,14 @@ public class DefaultFormView extends FormView {
         }
 
         for (TreeGroupEntity treeGroup : formEntity.treeGroups) {
+
             TreeGroupView treeGroupView = new TreeGroupView(this, treeGroup);
-            treeGroupView.constraints.fillVertical = 1;
-            treeGroupView.constraints.fillHorizontal = 1;
             treeGroups.add(treeGroupView);
 
-            ContainerView treeContainer = containerFactory.createContainer();
-            treeContainer.setTitle("Дерево");
-            treeContainer.setDescription("Дерево");
-            treeContainer.setSID(GroupObjectContainerSet.TREE_GROUP_CONTAINER + treeGroupView.getID());
-            treeContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
-            treeContainer.constraints.fillVertical = 1;
-            treeContainer.constraints.fillHorizontal = 1;
-            treeContainer.add(treeGroupView);
+            TreeGroupContainerSet<ContainerView, ComponentView> treeSet = TreeGroupContainerSet.create(treeGroupView, containerFactory);
+            mainContainer.add(treeSet.getContainer());
 
-            mainContainer.add(treeContainer);
-
-            treeContainers.put(treeGroupView, treeContainer);  
+            treeContainers.put(treeGroupView, treeSet.getContainer());
         }
 
         for (PropertyDrawEntity control : formEntity.propertyDraws) {
