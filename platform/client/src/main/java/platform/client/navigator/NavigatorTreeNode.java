@@ -15,7 +15,7 @@ public class NavigatorTreeNode extends ClientTreeNode<ClientNavigatorElement, Na
     public boolean nodeStructureChanged;
 
     public NavigatorTreeNode(NavigatorTree tree, ClientNavigatorElement navigatorElement) {
-        super(navigatorElement, true);
+        super(navigatorElement);
         this.tree = tree;
 
         this.navigatorElement = navigatorElement;
@@ -46,7 +46,7 @@ public class NavigatorTreeNode extends ClientTreeNode<ClientNavigatorElement, Na
             insertNode(draggingNode, index);
 
             tree.getModel().reload(parentNode);
-            parentNode.nodeStructureChanged = true;
+            parentNode.structureChanged();
         }
 
         tree.getModel().reload(this);

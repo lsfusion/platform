@@ -28,6 +28,7 @@ public class NavigatorDescriptorView extends JPanel {
     private JButton previewBtn;
     private JButton saveBtn;
     private JButton cancelBtn;
+    private boolean hasChangedNodes = false;
 
     public NavigatorDescriptorView(final ClientNavigator clientNavigator) {
 
@@ -81,7 +82,6 @@ public class NavigatorDescriptorView extends JPanel {
 
     private void cancelChanges() {
         try {
-            setupActionButtons(false);
             visualNavigator.cancelNavigatorChanges();
 
             while (newForms.size() > 0) {
@@ -99,6 +99,12 @@ public class NavigatorDescriptorView extends JPanel {
         } catch (IOException ioe) {
             throw new RuntimeException("Не могу открыть форму.", ioe);
         }
+
+        hasChangedNodes = false;
+
+        setupActionButtons();
+
+        updateUI();
     }
 
     private void commitChanges() {
@@ -136,6 +142,12 @@ public class NavigatorDescriptorView extends JPanel {
         } catch (IOException ioe) {
             throw new RuntimeException("Не могу сохранить форму.", ioe);
         }
+
+        hasChangedNodes = false;
+
+        setupActionButtons();
+
+        updateUI();
     }
 
     private Map<Integer, List<Integer>> getChangedNavigatorElementsChildren() {
@@ -173,10 +185,12 @@ public class NavigatorDescriptorView extends JPanel {
             editingForms.put(ID, FormDescriptor.deserialize(visualNavigator.remoteNavigator.getRichDesignByteArray(ID),
                                                             visualNavigator.remoteNavigator.getFormEntityByteArray(ID)));
         }
-        formView.setForm(editingForms.get(ID));
-        updateUI();
 
-        setupActionButtons(true);
+        formView.setForm(editingForms.get(ID));
+
+        setupActionButtons();
+
+        updateUI();
     }
 
     public void removeElement(int elementID) {
@@ -188,10 +202,10 @@ public class NavigatorDescriptorView extends JPanel {
         }
     }
 
-    private void setupActionButtons(boolean enabled) {
-        previewBtn.setEnabled(enabled);
-        saveBtn.setEnabled(enabled);
-        cancelBtn.setEnabled(enabled);
+    private void setupActionButtons() {
+        previewBtn.setEnabled(formView.getForm() != null);
+        saveBtn.setEnabled(!editingForms.isEmpty() || hasChangedNodes);
+        cancelBtn.setEnabled(!editingForms.isEmpty() || hasChangedNodes);
     }
 
     public boolean isFormChanged(int formID) {
@@ -222,7 +236,7 @@ public class NavigatorDescriptorView extends JPanel {
     }
 
     public void nodeChanged(NavigatorTreeNode node) {
-        saveBtn.setEnabled(true);
-        cancelBtn.setEnabled(true);
+        hasChangedNodes = true;
+        setupActionButtons();
     }
 }
