@@ -1091,7 +1091,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                                 if(group.getUpTreeGroup()==null || !currentObject.isEmpty())
                                     updateGroupObject = new GroupObjectValue(group, group.keys.getKey(activeRow));
                             }
-                        }
+                        } else
+                            updateGroupObject = new GroupObjectValue(group, currentObject);
                     }
                     group.updated = (group.updated | GroupObjectInstance.UPDATED_KEYS);
                 } else
