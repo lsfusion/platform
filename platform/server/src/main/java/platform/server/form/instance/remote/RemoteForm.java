@@ -524,24 +524,6 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
         }
     }
 
-    public RemoteDialogInterface createObjectDialog(int objectID) {
-        try {
-            DialogInstance<T> dialogForm = form.createObjectDialog(objectID);
-            return new RemoteDialog<T>(dialogForm,dialogForm.entity.getRichDesign(), exportPort, currentClassListener);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public RemoteDialogInterface createObjectDialogWithValue(int objectID, int value) throws RemoteException {
-        try {
-            DialogInstance<T> dialogForm = form.createObjectDialog(objectID, value);
-            return new RemoteDialog<T>(dialogForm,dialogForm.entity.getRichDesign(), exportPort, currentClassListener);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public RemoteFormInterface createForm(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects) {
         try {
             FormInstance<T> formInstance = form.createForm(formEntity, mapObjects);

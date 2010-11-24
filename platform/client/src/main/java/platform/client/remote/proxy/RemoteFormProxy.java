@@ -252,14 +252,4 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     public RemoteDialogInterface createEditorPropertyDialog(int viewID) throws RemoteException {
         return createDialog("createEditorPropertyDialog", viewID);
     }
-
-    @NonPendingRemoteMethod
-    public RemoteDialogInterface createObjectDialog(int objectID) throws RemoteException {
-        return createDialog("createObjectDialog", objectID);
-    }
-
-    @NonPendingRemoteMethod
-    public RemoteDialogInterface createObjectDialogWithValue(int objectID, int value) throws RemoteException {
-        return createDialog("createObjectDialogWithValue", objectID, value);
-    }
 }

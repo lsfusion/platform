@@ -31,10 +31,6 @@ public interface RemoteFormInterface extends PendingRemote {
 
     RemoteDialogInterface createEditorPropertyDialog(int viewID) throws RemoteException;
 
-    RemoteDialogInterface createObjectDialog(int objectID) throws RemoteException;
-
-    RemoteDialogInterface createObjectDialogWithValue(int objectID, int value) throws RemoteException;
-
     // операции без ответа, можно pendiть до первой операции с ответом
 
     void changePageSize(int groupID, int pageSize) throws RemoteException;

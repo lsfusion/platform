@@ -1317,25 +1317,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         return new DialogInstance<T>(formEntity, BL, session, securityPolicy, focusListener, classListener, formEntity.object, instanceFactory.computer, change.read(session, this));
     }
 
-    public DialogInstance<T> createObjectDialog(int objectID) throws SQLException {
-        CustomObjectInstance objectImplement = (CustomObjectInstance) getObjectInstance(objectID);
-        ClassFormEntity<T> classForm = new ClassFormEntity<T>(BL, objectImplement.baseClass);
-        if (objectImplement.currentClass != null)
-            return new DialogInstance<T>(classForm, BL, session, securityPolicy, focusListener, classListener, classForm.object, instanceFactory.computer, objectImplement.getObjectValue().getValue());
-        else
-            return new DialogInstance<T>(classForm, BL, session, securityPolicy, focusListener, classListener, classForm.object, instanceFactory.computer);
-    }
-
-    public DialogInstance<T> createObjectDialog(int objectID, int value) throws RemoteException {
-        try {
-            CustomObjectInstance objectImplement = (CustomObjectInstance) getObjectInstance(objectID);
-            ClassFormEntity<T> classForm = new ClassFormEntity<T>(BL, objectImplement.baseClass);
-            return new DialogInstance<T>(classForm, BL, session, securityPolicy, focusListener, classListener, classForm.object, instanceFactory.computer, value);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private List<ClientAction> executeAutoActions(ObjectInstance object, RemoteForm form) throws SQLException {
 
         List<ClientAction> actions = new ArrayList<ClientAction>();
