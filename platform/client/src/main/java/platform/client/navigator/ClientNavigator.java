@@ -54,7 +54,7 @@ public abstract class ClientNavigator extends AbstractNavigator {
         @Override
         protected List<ClientNavigatorElement> getNodeElements(int elementID) throws IOException {
             return DeSerializer.deserializeListClientNavigatorElement(
-                                                remoteNavigator.getElementsByteArray((elementID == -1) ? RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTFORM : elementID));
+                                                remoteNavigator.getElementsByteArray((elementID == AbstractNavigator.BASE_ELEMENT_ID) ? RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTFORM : elementID));
         }
 
     }
@@ -72,7 +72,7 @@ public abstract class ClientNavigator extends AbstractNavigator {
         @Override
         protected List<ClientNavigatorElement> getNodeElements(int elementID) throws IOException {
             return DeSerializer.deserializeListClientNavigatorElement(
-                                                remoteNavigator.getElementsByteArray((elementID == -1) ? RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTCLASS : elementID));
+                                                remoteNavigator.getElementsByteArray((elementID == AbstractNavigator.BASE_ELEMENT_ID) ? RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTCLASS : elementID));
         }
 
     }
