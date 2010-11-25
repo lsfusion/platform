@@ -473,7 +473,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     protected void objectChanged(ConcreteCustomClass cls, Integer objectID) {
     }
 
-    public void changePageSize(GroupObjectInstance groupObject, int pageSize) {
+    public void changePageSize(GroupObjectInstance groupObject, Integer pageSize) {
         groupObject.setPageSize(pageSize);
     }
 

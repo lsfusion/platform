@@ -34,7 +34,7 @@ public class ClientRegularFilter extends IdentityObject implements ClientIdentit
 
     @Override
     public String toString() {
-        return getFullCaption();
+        return getFullCaption() + " (" + getID() + ")";
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

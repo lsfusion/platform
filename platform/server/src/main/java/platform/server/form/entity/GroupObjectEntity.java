@@ -18,6 +18,9 @@ import java.util.List;
 import java.util.Map;
 
 public class GroupObjectEntity extends IdentityObject implements Instantiable<GroupObjectInstance>, ServerIdentitySerializable {
+
+    public static int PAGE_SIZE_DEFAULT_VALUE = 10;
+
     private int ID;
     public TreeGroupEntity parent;
 
@@ -46,7 +49,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     public ClassViewType initClassView = ClassViewType.GRID;
     public List<ClassViewType> banClassView = new ArrayList<ClassViewType>();
-    public int pageSize = 10;
+    public Integer pageSize;
 
     public PropertyObjectEntity propertyHighlight;
 
@@ -64,6 +67,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         if (isParent != null) {
             pool.serializeMap(outStream, isParent);
         }
+        pool.writeObject(outStream, pageSize);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -75,6 +79,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         if (inStream.readBoolean()) {
             isParent = pool.deserializeMap(inStream);
         }
+        pageSize = pool.readObject(inStream);
     }
 
     public Map<ObjectEntity, PropertyObjectEntity> isParent = null;

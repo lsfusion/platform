@@ -203,7 +203,7 @@ public class ClientFormController {
 
                 final ClientRegularFilter singleFilter = filterGroup.filters.get(0);
 
-                final JCheckBox checkBox = new JCheckBox(singleFilter.toString());
+                final JCheckBox checkBox = new JCheckBox(singleFilter.getFullCaption());
 
                 if (filterGroup.defaultFilter >= 0) {
                     checkBox.setSelected(true);
@@ -235,8 +235,12 @@ public class ClientFormController {
                 });
             } else {
 
-                final JComboBox comboBox = new JComboBox(
-                        BaseUtils.mergeList(Collections.singletonList("(Все)"), filterGroup.filters).toArray());
+                List filterList = new ArrayList();
+                filterList.add("(Все)");
+                for(ClientRegularFilter filter : filterGroup.filters){
+                    filterList.add(filter.getFullCaption());
+                }
+                final JComboBox comboBox = new JComboBox(filterList.toArray());
 
                 if (filterGroup.defaultFilter >= 0) {
                     ClientRegularFilter defaultFilter = filterGroup.filters.get(filterGroup.defaultFilter);
@@ -573,7 +577,7 @@ public class ClientFormController {
         applyRemoteChanges();
     }
 
-    public void changePageSize(ClientGroupObject groupObject, int pageSize) throws IOException {
+    public void changePageSize(ClientGroupObject groupObject, Integer pageSize) throws IOException {
         remoteForm.changePageSize(groupObject.getID(), pageSize);
     }
 

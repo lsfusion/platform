@@ -32,6 +32,7 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
 
     private Map<ObjectDescriptor, PropertyObjectDescriptor> isParent = new HashMap<ObjectDescriptor, PropertyObjectDescriptor>();
     private TreeGroupDescriptor parent;
+    private Integer pageSize;
 
     public void setIsParent(Map<ObjectDescriptor, PropertyObjectDescriptor> isParent) {
         this.isParent = isParent;
@@ -52,6 +53,22 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
 
     public List<ClassViewType> getBanClassViewList() {
         return banClassViewList;
+    }
+
+    public void setPageSize(String pageSize){
+        if(pageSize.equals("")){
+            this.pageSize = null;
+        } else {
+            this.pageSize = Integer.parseInt(pageSize);
+        }
+    }
+
+    public String getPageSize(){
+        if(pageSize != null){
+            return String.valueOf(pageSize);
+        } else {
+            return "";
+        }
     }
 
     public void setBanClassViewList(List<ClassViewType> banClassViewList) {
@@ -100,6 +117,7 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
         if (!isParent.isEmpty()) {
             pool.serializeMap(outStream, isParent);
         }
+        pool.writeObject(outStream, pageSize);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -111,6 +129,7 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
         if (inStream.readBoolean()) {
             isParent = pool.deserializeMap(inStream);
         }
+        pageSize = pool.readObject(inStream);
 
         client = pool.context.getGroupObject(ID);
     }

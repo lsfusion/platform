@@ -378,11 +378,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public String toString() {
         if (!BaseUtils.isRedundantString(caption))
-            return caption;
+            return caption + " (" + getID() + ")";
 
         if (descriptor != null && descriptor.getPropertyObject() != null &&
                 descriptor.getPropertyObject().property.caption != null) {
-            return descriptor.getPropertyObject().property.caption;
+            return descriptor.getPropertyObject().property.caption + " (" + getID() + ")";
         }
 
         return "Неопределённое свойство";

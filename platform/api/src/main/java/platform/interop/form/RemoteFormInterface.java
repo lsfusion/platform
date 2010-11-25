@@ -33,7 +33,7 @@ public interface RemoteFormInterface extends PendingRemote {
 
     // операции без ответа, можно pendiть до первой операции с ответом
 
-    void changePageSize(int groupID, int pageSize) throws RemoteException;
+    void changePageSize(int groupID, Integer pageSize) throws RemoteException;
     void gainedFocus() throws RemoteException;
 
     void changeGroupObject(int groupID, byte[] value) throws RemoteException;

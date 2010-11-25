@@ -7,14 +7,18 @@ import platform.client.descriptor.editor.base.FlatButton;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 public class IncrementKeyStrokeEditor extends JPanel implements IncrementView {
 
     private final ApplicationContextProvider object;
     private final String field;
     private KeyStroke key;
-    private String keyStrokeText, keyString;
+    private String keyStrokeText;
     private JLabel title = new JLabel("Текущее сочетание: ");
+    private JLabel dropLabel = new JLabel("Сбросить");
 
     private KeyStrokeButton button = new KeyStrokeButton();
 
@@ -23,12 +27,32 @@ public class IncrementKeyStrokeEditor extends JPanel implements IncrementView {
         this.field = field;
         object.getContext().addDependency(object, field, this);
 
+        dropLabel.addMouseListener(adapter);
+
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         add(title);
         add(button);
         add(Box.createRigidArea(new Dimension(5, 5)));
+        add(dropLabel);
+        add(Box.createRigidArea(new Dimension(5, 5)));
         add(new IncrementCheckBox("Показывать сочетание клавиш", object, "showEditKey"));
     }
+
+    private MouseAdapter adapter = new MouseAdapter(){
+        public void mouseEntered(MouseEvent e){
+            e.getComponent().setForeground(Color.RED);
+        }
+
+        public void mouseExited(MouseEvent e){
+            e.getComponent().setForeground(Color.BLACK);
+        }
+
+        public void mouseClicked(MouseEvent e){
+            key = null;
+            button.transform();
+            updateField();
+        }
+    };
 
     private void updateField() {
         BaseUtils.invokeSetter(object, field, key);
@@ -43,6 +67,8 @@ public class IncrementKeyStrokeEditor extends JPanel implements IncrementView {
     }
 
     private class KeyStrokeButton extends FlatButton {
+
+        private String keyString;
 
         public void onClick() {
             KeyInputDialog keyInput = new KeyInputDialog(null);
@@ -73,6 +99,9 @@ public class IncrementKeyStrokeEditor extends JPanel implements IncrementView {
                     keyString = keyString.substring(0, keyString.length() - 3);
                 }
                 setText(keyString);
+            }
+            else{
+                setText("");
             }
         }
     }

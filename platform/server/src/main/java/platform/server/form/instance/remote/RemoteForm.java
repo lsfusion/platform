@@ -226,7 +226,7 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
         return outStream.toByteArray();
     }
 
-    public void changePageSize(int groupID, int pageSize) throws RemoteException {
+    public void changePageSize(int groupID, Integer pageSize) throws RemoteException {
 
         GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
         form.changePageSize(groupObject, pageSize);

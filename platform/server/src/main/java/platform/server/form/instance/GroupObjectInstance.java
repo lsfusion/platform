@@ -55,13 +55,16 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return entity.getID();
     }
 
-    private int pageSize = 0;
+    private Integer pageSize;
     public int getPageSize() {
         assert !isInTree();
         return pageSize;
     }
-    public void setPageSize(int pageSize) {
-        this.pageSize = pageSize;
+
+    public void setPageSize(Integer pageSize) {
+        if(entity.pageSize == null){
+            this.pageSize = pageSize;
+        }
     }
 
     public GroupObjectInstance(GroupObjectEntity entity, Collection<ObjectInstance> objects, PropertyObjectInstance propertyHighlight, Map<ObjectInstance, PropertyObjectInstance> parent) {
@@ -82,7 +85,11 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             this.curClassView = entity.initClassView;
             this.updated |= UPDATED_CLASSVIEW;
         }
-        this.pageSize = entity.pageSize;
+        if(entity.pageSize != null) {
+            this.pageSize = entity.pageSize;
+        } else {
+            this.pageSize = GroupObjectEntity.PAGE_SIZE_DEFAULT_VALUE;
+        }
 
         this.parent = parent;
     }

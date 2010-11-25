@@ -69,7 +69,7 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     }
 
     @PendingRemoteMethod
-    public void changePageSize(int groupID, int pageSize) throws RemoteException {
+    public void changePageSize(int groupID, Integer pageSize) throws RemoteException {
         logRemoteMethodStartVoidCall("changePageSize");
         target.changePageSize(groupID, pageSize);
         logRemoteMethodEndVoidCall("changePageSize");

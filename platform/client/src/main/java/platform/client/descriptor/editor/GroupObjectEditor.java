@@ -14,6 +14,7 @@ import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.descriptor.increment.editor.IncrementMultipleListEditor;
 import platform.client.descriptor.increment.editor.IncrementMultipleListSelectionModel;
 import platform.client.descriptor.increment.editor.IncrementSingleListSelectionModel;
+import platform.client.descriptor.increment.editor.IncrementTextEditor;
 import platform.interop.ClassViewType;
 
 import javax.swing.*;
@@ -45,6 +46,8 @@ public class GroupObjectEditor extends JTabbedPane implements NodeEditor {
 
         TitledPanel propertyHighlightPanel = new TitledPanel("Свойство выделения", new PropertyObjectEditor(group, "propertyHighlight", form, group));
 
+        TitledPanel pageSizePanel = new TitledPanel("Размер страницы", new IncrementTextEditor(group, "pageSize"));
+
         GroupPropertyObjectEditor groupPropertyObjectPanel = new GroupPropertyObjectEditor(form, group);
 
         JTabbedPane propertiesPanel = new JTabbedPane();
@@ -53,10 +56,10 @@ public class GroupObjectEditor extends JTabbedPane implements NodeEditor {
 
         DefaultOrdersEditor defaultOrdersPanel = new DefaultOrdersEditor(form, group);
         if (group.getParent() != null){
-            addTab("Общее", new NorthBoxPanel(initClassViewPanel, banClassViewPanel, propertyHighlightPanel, new IsParentEditor()));
+            addTab("Общее", new NorthBoxPanel(initClassViewPanel, banClassViewPanel, propertyHighlightPanel, pageSizePanel, new IsParentEditor()));
         }
         else{
-            addTab("Общее", new NorthBoxPanel(initClassViewPanel, banClassViewPanel, propertyHighlightPanel));
+            addTab("Общее", new NorthBoxPanel(initClassViewPanel, banClassViewPanel, propertyHighlightPanel, pageSizePanel));
         }
         addTab("Свойства", new NorthBoxPanel(groupPropertyObjectPanel));
         addTab("Отображение", new NorthBoxPanel(propertiesPanel));

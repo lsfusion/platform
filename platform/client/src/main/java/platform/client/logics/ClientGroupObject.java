@@ -90,7 +90,18 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
     }
 
     public String getCaption() {
-        return toString();
+        if (objects.isEmpty()) {
+            return "Пустая группа";
+        }
+
+        String result = "";
+        for (ClientObject object : objects) {
+            if (!result.isEmpty()) {
+                result += ", ";
+            }
+            result += object.getCaption();
+        }
+        return result;
     }
 
     public ClientComponent getGrid() {
@@ -140,18 +151,7 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
 
     @Override
     public String toString() {
-        if (objects.isEmpty()) {
-            return "Пустая группа";
-        }
-        
-        String result = "";
-        for (ClientObject object : objects) {
-            if (!result.isEmpty()) {
-                result += ", ";
-            }
-            result += object.toString();
-        }
-        return result;
+         return getCaption() + " (" + getID() + ")";
     }
 
     public ClientContainer getClientComponent(ClientContainer parent) {

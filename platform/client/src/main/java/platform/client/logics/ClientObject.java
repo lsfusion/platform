@@ -50,7 +50,7 @@ public class ClientObject extends IdentityObject implements Serializable, Client
         classChooser = pool.deserializeObject(inStream);
     }
 
-    public String getFullCaption() {
+    public String getCaption(){
         return !BaseUtils.isRedundantString(caption)
                 ? caption
                 : !BaseUtils.isRedundantString(baseClass)
@@ -60,6 +60,8 @@ public class ClientObject extends IdentityObject implements Serializable, Client
 
     @Override
     public String toString() {
-        return getFullCaption();
+        return !getCaption().equals("Неопределённый объект")
+                ? getCaption() + " (" + getID() + ")"
+                : getCaption();
     }
 }
