@@ -11,6 +11,10 @@ public class ClientNavigatorForm extends ClientNavigatorElement {
 
     }
 
+    public ClientNavigatorForm(int ID, String caption, boolean hasChildren) {
+        super(ID, caption, false);
+    }
+
     public ClientNavigatorForm(DataInputStream inStream) throws IOException {
         super(inStream);
         isPrintForm = inStream.readBoolean();

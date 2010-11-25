@@ -4,6 +4,8 @@ import platform.base.BaseUtils;
 import platform.base.identity.IdentityObject;
 import platform.server.logics.BusinessLogics;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -97,5 +99,21 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
             child.parent = null;
         }
         children.clear();
+    }
+
+    public static NavigatorElement<?> deserialize(byte[] elementState) throws IOException {
+        return deserialize(new DataInputStream(new ByteArrayInputStream(elementState)));
+    }
+
+    @Override
+    public String toString() {
+        return ID + ": " + (caption != null ? caption : "");
+    }
+
+    public static NavigatorElement<?> deserialize(DataInputStream inStream) throws IOException {
+        int ID = inStream.readInt();
+        String caption = inStream.readUTF();
+
+        return new NavigatorElement(ID, caption);
     }
 }

@@ -77,6 +77,7 @@ public class NavigatorTreeNode extends ClientTreeNode<ClientNavigatorElement, Na
     public void addNode(ClientTreeNode newChild) {
         super.add(newChild);
         if (newChild instanceof NavigatorTreeNode) {
+            navigatorElement.hasChildren = true;
             structureChanged();
         }
     }
@@ -91,6 +92,7 @@ public class NavigatorTreeNode extends ClientTreeNode<ClientNavigatorElement, Na
     public void insertNode(ClientTreeNode newChild, int index) {
         super.insert(newChild, index);
         if (newChild instanceof NavigatorTreeNode) {
+            navigatorElement.hasChildren = true;
             structureChanged();
         }
     }

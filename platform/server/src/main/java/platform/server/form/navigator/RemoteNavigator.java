@@ -286,8 +286,21 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         ByteArrayInputStream dataStream = new ByteArrayInputStream(data);
         DataInputStream inStream = new DataInputStream(dataStream);
         try {
-            //читаем формы
+            //читаем элементы
             int cnt = inStream.readInt();
+            for (int i = 0; i < cnt; ++i) {
+                int previousBytesReaden = data.length - dataStream.available();
+                NavigatorElement element = NavigatorElement.deserialize(inStream);
+                int elementSize = inStream.readInt();
+                try {
+                    IOUtils.putFileBytes(new File(BL.getElementSerializationPath(element.getID())), data, previousBytesReaden, elementSize);
+                } catch (IOException e) {
+                    throw new RuntimeException("Ошибка при сохранении состояния элемента на диск", e);
+                }
+            }
+
+            //читаем формы
+            cnt = inStream.readInt();
             for (int i = 0; i < cnt; ++i) {
                 int previousBytesReaden = data.length - dataStream.available();
                 FormEntity form = FormEntity.deserialize(BL, inStream);

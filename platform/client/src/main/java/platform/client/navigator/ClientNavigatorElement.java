@@ -1,6 +1,7 @@
 package platform.client.navigator;
 
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class ClientNavigatorElement {
@@ -9,9 +10,18 @@ public class ClientNavigatorElement {
     private String caption;
 
     protected boolean hasChildren = false;
-    public boolean hasChildren() { return hasChildren; }
 
-    public String toString() { return caption; }
+    public boolean hasChildren() {
+        return hasChildren;
+    }
+
+    public void setCaption(String caption) {
+        this.caption = caption;
+    }
+
+    public String toString() {
+        return caption;
+    }
 
     public ClientNavigatorElement() {
     }
@@ -31,10 +41,19 @@ public class ClientNavigatorElement {
     public static ClientNavigatorElement deserialize(DataInputStream inStream) throws IOException {
         byte type = inStream.readByte();
 
-        if(type==0) return new ClientNavigatorForm(inStream);
-        if(type==1) return new ClientNavigatorElement(inStream);
+        if (type == 0) {
+            return new ClientNavigatorForm(inStream);
+        }
+        if (type == 1) {
+            return new ClientNavigatorElement(inStream);
+        }
 
         throw new IOException();
+    }
+
+    public void serialize(DataOutputStream outStream) throws IOException {
+        outStream.writeInt(ID);
+        outStream.writeUTF(caption);
     }
 
     @Override

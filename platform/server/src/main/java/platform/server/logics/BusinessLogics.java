@@ -1023,28 +1023,42 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public void mergeNavigatorTree(DataInputStream inStream) throws IOException {
-        Collection<NavigatorElement<T>> children = baseElement.getChildren(true);
-        children.add(baseElement);
-        Map<Integer, NavigatorElement<T>> elementsMap = new HashMap<Integer, NavigatorElement<T>>();
-        for (NavigatorElement<T> child : children) {
-            elementsMap.put(child.getID(), child);
-        }
-
-        //читаем новую структуру навигатора, в процессе подчитывая сохранённые формы
-        int mapSize = inStream.readInt();
+        //читаем новую структуру навигатора, в процессе подчитывая сохранённые элементы
         Map<Integer, List<Integer>> treeStructure = new HashMap<Integer, List<Integer>>();
+        int mapSize = inStream.readInt();
         for (int i = 0; i < mapSize; ++i) {
             int parentID = inStream.readInt();
-            overrideElement(elementsMap, parentID);
-
             int childrenCnt = inStream.readInt();
             List<Integer> childrenIDs = new ArrayList<Integer>();
             for (int j = 0; j < childrenCnt; ++j) {
                 int childID = inStream.readInt();
                 childrenIDs.add(childID);
-                overrideElement(elementsMap, childID);
             }
             treeStructure.put(parentID, childrenIDs);
+        }
+
+        //формируем полное дерево, сохраняя мэппинг элементов
+        Map<Integer, NavigatorElement<T>> elementsMap = new HashMap<Integer, NavigatorElement<T>>();
+        for (NavigatorElement<T> parent : baseElement.getChildren(true)) {
+            int parentID = parent.getID();
+            elementsMap.put(parentID, parent);
+
+            if (!treeStructure.containsKey(parentID)) {
+                List<Integer> children = new ArrayList<Integer>();
+                for (NavigatorElement<T> child : parent.getChildren(false)) {
+                    children.add(child.getID());
+                }
+
+                treeStructure.put(parentID, children);
+            }
+        }
+
+        //override элементов
+        for (Map.Entry<Integer, List<Integer>> entry : treeStructure.entrySet()) {
+            overrideElement(elementsMap, entry.getKey());
+            for (int childID : entry.getValue()) {
+                overrideElement(elementsMap, childID);
+            }
         }
 
         //перестраиваем
@@ -1066,7 +1080,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     private void overrideElement(Map<Integer, NavigatorElement<T>> elementsMap, int elementID) {
-        NavigatorElement<T> element = getOverridenForm(elementID);
+        NavigatorElement<T> element = getOverridenElement(elementID);
+        if (element == null) {
+            element = getOverridenForm(elementID);
+        }
+
         if (element != null) {
             elementsMap.put(elementID, element);
         }
@@ -1089,24 +1107,45 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
+    public String getElementSerializationPath(int elementID) {
+        try {
+            return "conf/" + getName() + "/elements/element" + elementID;
+        } catch (RemoteException re) {
+            return "conf/elements/element" + elementID;
+        }
+    }
+
+    private NavigatorElement<T> getOverridenElement(int elementID) {
+        try {
+            byte[] elementState = IOUtils.getFileBytes(new File(getElementSerializationPath(elementID)));
+            return (NavigatorElement<T>) NavigatorElement.deserialize(elementState);
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
     public void saveNavigatorTree() throws IOException {
         Collection<NavigatorElement<T>> children = baseElement.getChildren(true);
-        children.add(baseElement);
         File treeFile = new File(navigatorTreeFilePath);
         if (!treeFile.getParentFile().exists()) {
             treeFile.getParentFile().mkdirs();
         }
 
-        DataOutputStream outStream = new DataOutputStream(new FileOutputStream(treeFile));
-        outStream.writeInt(children.size());
-        for (NavigatorElement child : children) {
-            outStream.writeInt(child.getID());
+        FileOutputStream fileOutStream = new FileOutputStream(treeFile);
+        try {
+            DataOutputStream outStream = new DataOutputStream(fileOutStream);
+            outStream.writeInt(children.size());
+            for (NavigatorElement child : children) {
+                outStream.writeInt(child.getID());
 
-            Collection<NavigatorElement<T>> thisChildren = child.getChildren(false);
-            outStream.writeInt(thisChildren.size());
-            for (NavigatorElement<T> thisChild : thisChildren) {
-                outStream.writeInt(thisChild.getID());
+                Collection<NavigatorElement<T>> thisChildren = child.getChildren(false);
+                outStream.writeInt(thisChildren.size());
+                for (NavigatorElement<T> thisChild : thisChildren) {
+                    outStream.writeInt(thisChild.getID());
+                }
             }
+        } finally {
+            fileOutStream.close();
         }
     }
 

@@ -1,6 +1,5 @@
 package platform.client.descriptor.view;
 
-import platform.base.context.IncrementView;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.navigator.*;
 import platform.client.tree.*;
@@ -11,6 +10,7 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.io.IOException;
+import java.util.Enumeration;
 
 class VisualSetupNavigator extends AbstractNavigator {
     private NavigatorDescriptorView navigatorDescriptorView;
@@ -34,7 +34,7 @@ class VisualSetupNavigator extends AbstractNavigator {
                         //раскрываем, чтобы загрузить узлы с сервера...
                         tree.expandPath(tree.getPathToRoot(node));
 
-                        node.addNode(new NavigatorTreeNode(tree, new NewNavigatorForm(newForm)));
+                        node.addNode(new NavigatorTreeNode(tree, new ClientNavigatorForm(newForm.getID(), newForm.getCaption(), false)));
 
                         tree.getModel().reload(node);
                     }
@@ -47,6 +47,27 @@ class VisualSetupNavigator extends AbstractNavigator {
                             return nodeObject instanceof ClientNavigatorElement;
                         }
                         return false;
+                    }
+                });
+
+        tree.rootNode.addSubTreeAction(
+                new ClientTreeAction("Создать новый элемент") {
+                    @Override
+                    public void actionPerformed(ClientTreeActionEvent e) {
+                        String caption = JOptionPane.showInputDialog(null, "Введите название элемента:", "Новый элемент", JOptionPane.QUESTION_MESSAGE);
+
+                        if (caption != null) {
+                            ClientNavigatorElement newElement = navigatorDescriptorView.createNewNavigatorElement(caption);
+
+                            NavigatorTreeNode node = (NavigatorTreeNode) e.getNode();
+
+                            //раскрываем, чтобы загрузить узлы с сервера...
+                            tree.expandPath(tree.getPathToRoot(node));
+
+                            node.addNode(new NavigatorTreeNode(tree, newElement));
+
+                            tree.getModel().reload(node);
+                        }
                     }
                 });
 
@@ -78,13 +99,19 @@ class VisualSetupNavigator extends AbstractNavigator {
                     @Override
                     public void actionPerformed(ClientTreeActionEvent e) {
                         ClientTreeNode child = e.getNode();
-                        NavigatorTreeNode parent = (NavigatorTreeNode) e.getNode().getParent();
+                        NavigatorTreeNode parent = (NavigatorTreeNode) child.getParent();
+
+                        Enumeration<ClientTreeNode> nodes = child.depthFirstEnumeration();
+                        while (nodes.hasMoreElements()) {
+                            ClientTreeNode node = nodes.nextElement();
+                            if (node instanceof NavigatorTreeNode) {
+                                NavigatorTreeNode navigatorNode = (NavigatorTreeNode) node;
+                                navigatorDescriptorView.removeElement(navigatorNode.navigatorElement.ID);
+                            }
+                        }
 
                         parent.removeNode(child);
                         tree.getModel().reload(parent);
-
-                        ClientNavigatorElement navigatorElement = (ClientNavigatorElement) child.getUserObject();
-                        navigatorDescriptorView.removeElement(navigatorElement.ID);
                     }
 
                     @Override
@@ -121,7 +148,7 @@ class VisualSetupNavigator extends AbstractNavigator {
         if (node.nodeStructureChanged) {
             TreePath path = tree.getPathToRoot(node);
             boolean wasExpanded = tree.isExpanded(path);
-            
+
             node.removeAllChildren();
             node.add(new ExpandingTreeNode());
 
@@ -136,7 +163,7 @@ class VisualSetupNavigator extends AbstractNavigator {
             for (int i = 0; i < node.getChildCount(); ++i) {
                 TreeNode child = node.getChildAt(i);
                 if (child instanceof NavigatorTreeNode) {
-                    cancelNodeChanges((NavigatorTreeNode)child);
+                    cancelNodeChanges((NavigatorTreeNode) child);
                 }
             }
         }
@@ -165,7 +192,7 @@ class VisualSetupNavigator extends AbstractNavigator {
                 if (node.nodeStructureChanged) {
                     changed = true;
                 }
-                
+
                 Object userObject = node.getUserObject();
                 if (userObject instanceof ClientNavigatorForm) {
                     ClientNavigatorForm form = (ClientNavigatorForm) userObject;
@@ -178,29 +205,6 @@ class VisualSetupNavigator extends AbstractNavigator {
             setTextNonSelectionColor(changed ? Color.blue : textNonSelectionColor);
 
             return super.getTreeCellRendererComponent(iTree, value, sel, expanded, leaf, row, hasFocus);
-        }
-    }
-
-    class NewNavigatorForm extends ClientNavigatorForm implements IncrementView {
-
-        private final FormDescriptor form;
-
-        public NewNavigatorForm(FormDescriptor form) {
-            super();
-            this.form = form;
-            ID = form.getID();
-            hasChildren = true;
-
-            form.addDependency(form, "caption", this);
-        }
-
-        public void update(Object updateObject, String updateField) {
-            tree.updateUI();
-        }
-
-        @Override
-        public String toString() {
-            return form.getCaption();
         }
     }
 }
