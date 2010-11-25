@@ -241,9 +241,11 @@ public class NavigatorDescriptorView extends JPanel {
     }
 
     private void setupActionButtons() {
+        boolean hasChanges = !changedForms.isEmpty() || !newForms.isEmpty() || !newElements.isEmpty() || hasChangedNodes;
+
         previewBtn.setEnabled(formView.getForm() != null);
-        saveBtn.setEnabled(!changedForms.isEmpty() || !newForms.isEmpty() || hasChangedNodes);
-        cancelBtn.setEnabled(!changedForms.isEmpty() || !newForms.isEmpty() || hasChangedNodes);
+        saveBtn.setEnabled(hasChanges);
+        cancelBtn.setEnabled(hasChanges);
     }
 
     public boolean isFormChanged(int formID) {
