@@ -106,6 +106,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         // делаем, чтобы сборщик мусора срабатывал каждую минуту - для удаления ненужных connection'ов
         System.setProperty("sun.rmi.dgc.server.gcInterval", "60000");
 
+        // время, по истечении которого будет сбрасываться remote ссылка на все Rmi объекты
+        System.setProperty("java.rmi.dgc.leaseValue", "300000");
+
         String logLevel = System.getProperty("platform.server.loglevel");
         if (logLevel != null) {
             LogManager.getLogManager().getLogger("").setLevel(Level.parse(logLevel));
