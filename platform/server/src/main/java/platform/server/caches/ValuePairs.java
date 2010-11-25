@@ -6,6 +6,7 @@ import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.translator.MapValuesTranslator;
+import platform.server.Settings;
 
 import java.util.Map;
 import java.util.Set;
@@ -21,6 +22,6 @@ public class ValuePairs extends GroupPairs<ConcreteClass, ValueExpr, MapValuesTr
             public ConcreteClass group(ValueExpr key) {
                 return key.objectClass;
             }
-        }, values1, values2);
+        }, values1, values2, Settings.instance.getMapInnerMaxIterations());
     }
 }

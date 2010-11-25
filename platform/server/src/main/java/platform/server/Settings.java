@@ -16,6 +16,16 @@ public class Settings {
         this.innerGroupExprs = innerGroupExprs;
     }
 
+    private int mapInnerMaxIterations = 0;
+
+    public int getMapInnerMaxIterations() {
+        return mapInnerMaxIterations;
+    }
+
+    public void setMapInnerMaxIterations(int mapInnerMaxIterations) {
+        this.mapInnerMaxIterations = mapInnerMaxIterations;
+    }
+
     // обозначает что компилятор будет проталкивать внутрь order подзапросов, общее условие
     private boolean pushOrderWhere = false;
 

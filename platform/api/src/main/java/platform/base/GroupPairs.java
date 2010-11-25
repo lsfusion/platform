@@ -3,27 +3,39 @@ package platform.base;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 public abstract class GroupPairs<G,O,I> implements Iterable<I>  {
+
+    private final static Logger logger = Logger.getLogger(GroupPairs.class.getName());
+
 
     protected abstract I createI(Map<O,O> map);
 
     private final Map<G, Set<O>> map1;
     private final Map<G, Set<O>> map2;
 
-    public GroupPairs(Map<O,G> group1, Map<O,G> group2, boolean mapConstruct) {
+    private final int maxIterations;
+
+    public GroupPairs(Map<O,G> group1, Map<O,G> group2, boolean mapConstruct, int maxIterations) {
         this.map1 = BaseUtils.groupSet(group1);
         this.map2 = BaseUtils.groupSet(group2);
+
+        this.maxIterations = maxIterations;
     }
 
-    public GroupPairs(BaseUtils.Group<G, O> getter, Set<O> set1, Set<O> set2) {
+    public GroupPairs(BaseUtils.Group<G, O> getter, Set<O> set1, Set<O> set2, int maxIterations) {
         this.map1 = BaseUtils.groupSet(getter, set1);
         this.map2 = BaseUtils.groupSet(getter, set2);
+
+        this.maxIterations = maxIterations;
     }
 
-    public GroupPairs(Map<G, Set<O>> map1, Map<G, Set<O>> map2) {
+    public GroupPairs(Map<G, Set<O>> map1, Map<G, Set<O>> map2, int maxIterations) {
         this.map1 = map1;
         this.map2 = map2;
+
+        this.maxIterations = maxIterations;
     }
 
     private class GroupIterator implements Iterator<I> {
@@ -41,9 +53,23 @@ public abstract class GroupPairs<G,O,I> implements Iterable<I>  {
 
         boolean first = true;
 
+        int groupNext = 0;
+
         public boolean hasNext() {
             if(first)
                 return true;
+
+            if(maxIterations > 0 && groupNext >= maxIterations) {
+                try {
+                    String stackTrace = "";
+                    for(StackTraceElement stackLine : Thread.currentThread().getStackTrace())
+                        stackTrace += stackLine.toString() + '\n';
+                    logger.severe("MAP INNER HASH : " + stackTrace);
+                } catch(Exception e) {
+                }
+                return false;
+            }
+
 
             for(Iterator<Map<O, O>> iterator : iterators)
                 if(iterator.hasNext())
@@ -55,6 +81,8 @@ public abstract class GroupPairs<G,O,I> implements Iterable<I>  {
         Map<O,O>[] iterations;
 
         public I next() {
+            groupNext++;
+
             for(int i=0;i<group1.length;i++) {
                 if(!first && iterators[i].hasNext()) {
                     iterations[i] = iterators[i].next();
