@@ -237,8 +237,10 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
     }
 
     public void dropProperty(ClientPropertyDraw property) {
-        grid.removeProperty(property);
-        gridProperties.remove(property);
+        if (grid != null) {
+            grid.removeProperty(property);
+            gridProperties.remove(property);
+        }
 
         panel.removeProperty(property);
         panelProperties.remove(property);
@@ -298,7 +300,9 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
 
     public void changeGridOrder(ClientPropertyDraw property, Order modiType) throws IOException {
-        grid.changeGridOrder(property, modiType);
+        if (grid != null) {
+            grid.changeGridOrder(property, modiType);
+        }
     }
 
     // приходится делать именно так, так как логика отображения одного GroupObject може не совпадать с логикой Container-Component

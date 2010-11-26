@@ -59,7 +59,7 @@ public abstract class GridTable extends ClientFormTable
     private boolean tabVertical = false;
 
     private int viewMoveInterval = 0;
-    
+
     public GridTable(GroupObjectLogicsSupplier ilogicsSupplier, ClientFormController iform) {
         super(new GridTableModel());
 
@@ -104,7 +104,7 @@ public abstract class GridTable extends ClientFormTable
             protected void changeOrder(int column, Order modiType) {
 
                 try {
-                    changeGridOrder(column, modiType);
+                    changeGridOrder(model.getColumnProperty(column), column, modiType);
                 } catch (IOException e) {
                     throw new RuntimeException("Ошибка изменении сортировки", e);
                 }
@@ -196,11 +196,6 @@ public abstract class GridTable extends ClientFormTable
         });
 
         this.moveToNextCellAction = nextAction;
-    }
-
-    // приходится давать доступ к rowKeys, так как контроллеру нужно заполнять значения колонок на основе ключей рядов
-    public List<ClientGroupObjectValue> getRowKeys() {
-        return rowKeys;
     }
 
     int getID() {
@@ -314,7 +309,7 @@ public abstract class GridTable extends ClientFormTable
         if (viewPos.y < 0) viewPos.y = 0;
         ((JViewport) getParent()).setViewPosition(viewPos);
         viewMoveInterval = 0;
-        
+
         selectRow(rowKeys.indexOf(currentObject));
     }
 
@@ -362,7 +357,7 @@ public abstract class GridTable extends ClientFormTable
     }
 
     public Object convertValueFromString(String value, int row, int column) {
-        Object parsedValue = null;
+        Object parsedValue;
         try {
             parsedValue = model.getColumnProperty(column).parseString(getForm(), value);
         } catch (ParseException pe) {
@@ -451,7 +446,7 @@ public abstract class GridTable extends ClientFormTable
             Object value = model.getValueAt(row, col);
 
             try {
-                form.changePropertyDraw((ClientPropertyDraw)model.getColumnProperty(col), value, multyChange, model.getColumnKey(col));
+                form.changePropertyDraw(model.getColumnProperty(col), value, multyChange, model.getColumnKey(col));
             } catch (IOException ioe) {
                 throw new RuntimeException("Ошибка при изменении значения свойства", ioe);
             }
@@ -601,39 +596,42 @@ public abstract class GridTable extends ClientFormTable
     private final List<Integer> orders = new ArrayList<Integer>();
     private final List<Boolean> orderDirections = new ArrayList<Boolean>();
 
-    public void changeGridOrder(int col, Order modiType) throws IOException {
-        ClientPropertyDraw property = model.getColumnProperty(col);
-        form.changeOrder(property, modiType, model.getColumnKey(col));
+    public void changeGridOrder(ClientPropertyDraw property, int col, Order modiType) throws IOException {
+        ClientGroupObjectValue columnKey = new ClientGroupObjectValue();
 
-        int ordNum;
-        switch (modiType) {
-            case REPLACE:
-                orders.clear();
-                orderDirections.clear();
+        if(col >= 0 && col < model.getColumnCount()) {
+            columnKey = model.getColumnKey(col);
+            int ordNum;
+            switch (modiType) {
+                case REPLACE:
+                    orders.clear();
+                    orderDirections.clear();
 
-                orders.add(col);
-                orderDirections.add(true);
-                break;
-            case ADD:
-                orders.add(col);
-                orderDirections.add(true);
-                break;
-            case DIR:
-                ordNum = orders.indexOf(col);
-                orderDirections.set(ordNum, !orderDirections.get(ordNum));
-                break;
-            case REMOVE:
-                ordNum = orders.indexOf(col);
-                orders.remove(ordNum);
-                orderDirections.remove(ordNum);
-                break;
+                    orders.add(col);
+                    orderDirections.add(true);
+                    break;
+                case ADD:
+                    orders.add(col);
+                    orderDirections.add(true);
+                    break;
+                case DIR:
+                    ordNum = orders.indexOf(col);
+                    orderDirections.set(ordNum, !orderDirections.get(ordNum));
+                    break;
+                case REMOVE:
+                    ordNum = orders.indexOf(col);
+                    orders.remove(ordNum);
+                    orderDirections.remove(ordNum);
+                    break;
+            }
+            tableHeader.resizeAndRepaint();
         }
 
-        tableHeader.resizeAndRepaint();
+        form.changeOrder(property, modiType, columnKey);
     }
 
     public void changeGridOrder(ClientPropertyDraw property, Order modiType) throws IOException {
-        changeGridOrder(model.getMinPropertyIndex(property), modiType);
+        changeGridOrder(property, model.getMinPropertyIndex(property), modiType);
     }
 
     private Boolean getSortDirection(int column) {
