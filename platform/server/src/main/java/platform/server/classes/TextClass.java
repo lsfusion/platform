@@ -11,6 +11,11 @@ import java.text.Format;
 public class TextClass extends DataClass<String> {
 
     public final static TextClass instance = new TextClass();
+    private final static String sid = "TextClass";
+
+    public TextClass() {
+        DataClass.storeClass(sid, instance);
+    }
 
     public String toString() {
         return "Текст";
@@ -71,5 +76,9 @@ public class TextClass extends DataClass<String> {
 
     public Object parseString(String s) throws ParseException {
         return s;
+    }
+
+    public String getSID() {
+        return sid;
     }
 }

@@ -7,7 +7,6 @@ import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyImplement;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.serialization.ServerCustomSerializable;
-import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;
@@ -58,9 +57,10 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyI
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        int propertyId = inStream.readInt();
+        String propertySID = inStream.readUTF();
 
-        property = pool.context.BL.getProperty(propertyId);
+        property = pool.context.BL.getProperty(propertySID);
+        assert property != null;
         mapping = new HashMap<P, PropertyObjectInterfaceEntity>();
 
         int size = inStream.readInt();

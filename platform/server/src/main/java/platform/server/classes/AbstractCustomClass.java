@@ -7,8 +7,8 @@ import java.util.List;
 
 public class AbstractCustomClass extends CustomClass {
 
-    public AbstractCustomClass(String caption, CustomClass... parents) {
-        super(caption, parents);
+    public AbstractCustomClass(String sID, String caption, CustomClass... parents) {
+        super(sID, caption, parents);
     }
 
     public void fillNextConcreteChilds(ConcreteCustomClassSet classSet) {

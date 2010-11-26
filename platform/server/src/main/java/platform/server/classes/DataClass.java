@@ -24,12 +24,14 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.Format;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, AndClassSet, OrClassSet {
+    private static Map<String, DataClass> sidToClass = new HashMap<String, DataClass>();
+
+    static void storeClass(String sid, DataClass cls) {
+        sidToClass.put(sid, cls);
+    }
 
     public abstract DataClass getCompatible(DataClass compClass);
 
@@ -208,5 +210,9 @@ public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, AndCl
 
     public Object parseString(String s) throws ParseException {
         throw new RuntimeException("Parsing values from string is not supported");
+    }
+
+    public static DataClass findDataClass(String sid) {
+        return sidToClass.get(sid);        
     }
 }

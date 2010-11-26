@@ -12,6 +12,11 @@ import java.text.NumberFormat;
 public class IntegerClass extends IntegralClass<Integer> {
 
     public final static IntegerClass instance = new IntegerClass(); 
+    private final static String sid = "IntegerClass";
+
+    public IntegerClass() {
+        DataClass.storeClass(sid, instance);
+    }
 
     public String toString() {
         return "Целое число";
@@ -64,5 +69,9 @@ public class IntegerClass extends IntegralClass<Integer> {
         } catch (Exception e) {
             throw new ParseException("error parsing int", e);
         }
+    }
+
+    public String getSID() {
+        return sid;
     }
 }

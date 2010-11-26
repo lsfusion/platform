@@ -81,6 +81,7 @@ public class StringClass extends DataClass<String> {
                 return string;
         StringClass string = new StringClass(length);
         strings.add(string);
+        DataClass.storeClass(string.getSID(), string);
         return string;
     }
 
@@ -91,5 +92,9 @@ public class StringClass extends DataClass<String> {
 
     public Object parseString(String s) throws ParseException {
         return s;
+    }
+
+    public String getSID() {
+        return "StringClass[" + length + "]";
     }
 }

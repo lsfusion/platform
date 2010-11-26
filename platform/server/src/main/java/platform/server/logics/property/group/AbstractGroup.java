@@ -83,6 +83,16 @@ public class AbstractGroup extends AbstractNode implements ServerIdentitySeriali
         return result;
     }
 
+    public Property getProperty(String sid) {
+        for (AbstractNode child : children) {
+            Property property = child.getProperty(sid);
+            if (property != null) {
+                return property;
+            }
+        }
+        return null;
+    }
+
     public List<PropertyClassImplement> getProperties(Collection<List<ValueClassWrapper>> classLists, boolean anyInInterface) {
         List<PropertyClassImplement> result = new ArrayList<PropertyClassImplement>();
         for (AbstractNode child : children)

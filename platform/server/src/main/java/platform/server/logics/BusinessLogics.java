@@ -515,20 +515,19 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP integerID;
     public LP dateID;
 
+    private final ConcreteValueClass classSIDValueClass = StringClass.get(250);
+    
     public static int genSystemClassID(int id) {
         return 9999976 - id;
     }
 
-    public Property getProperty(int id) {
-        for (Property property : getProperties()) {
-            if (property.getID() == id) {
-                return property;
-            }
-        }
-        return null;
+    public Property getProperty(String sid) {
+        return rootGroup.getProperty(sid);
     }
 
     public class SelectionPropertySet extends PropertySet {
+        static private final String prefix = "SelectionProperty_";
+
         private LinkedHashMap<Map<ValueClass, Integer>, SelectionProperty> properties =
                 new LinkedHashMap<Map<ValueClass, Integer>, SelectionProperty>();
 
@@ -547,15 +546,23 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         @Override
-        protected List<PropertyClassImplement> getProperties(List<ValueClassWrapper> classes) {
-            Map<ValueClass, Integer> key = createKey(classes);
-            SelectionProperty property;
-            if (!properties.containsKey(key)) {
-                property = createProperty(classes);
-                properties.put(key, property);
-            } else {
-                property = properties.get(key);
+        public Property getProperty(String sid) {
+            if (sid.startsWith(prefix)) {
+                String[] sids = sid.substring(prefix.length()).split("\\|");
+                ValueClass[] valueClasses = new ValueClass[sids.length];
+                for (int i = 0; i < sids.length; i++) {
+                    valueClasses[i] = BusinessLogics.this.findValueClass(sids[i]);
+                    assert valueClasses[i] != null;
+                }
+                return getProperty(valueClasses);
             }
+            return null;
+        }
+
+        @Override
+        protected List<PropertyClassImplement> getProperties(List<ValueClassWrapper> classes) {
+            ValueClass[] valueClasses = getClasses(classes);
+            SelectionProperty property = getProperty(valueClasses);
             PropertyInterface[] interfaces = new PropertyInterface[classes.size()];
             boolean[] was = new boolean[classes.size()];
             for (ClassPropertyInterface iface : property.interfaces) {
@@ -570,33 +577,60 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             return Collections.singletonList(new PropertyClassImplement(property, classes, Arrays.asList(interfaces)));
         }
 
-        protected SelectionProperty createProperty(List<ValueClassWrapper> classes) {
-            ValueClass[] classArray = new ValueClass[classes.size()];
-            for (int i = 0; i < classes.size(); i++) {
-                classArray[i] = classes.get(i).valueClass;
+        protected SelectionProperty createProperty(ValueClass[] classes) {
+            ValueClass[] classArray = new ValueClass[classes.length];
+            String sid = prefix;
+            for (int i = 0; i < classes.length; i++) {
+                classArray[i] = classes[i];
+                sid += classArray[i].getSID();
+                if (i + 1 < classes.length) {
+                    sid += '|';
+                }
             }
-            SelectionProperty property = new SelectionProperty(genSID(), classArray);
+
+            SelectionProperty property = new SelectionProperty(sid, classArray);
             registerProperty(new LP<ClassPropertyInterface>(property));
             setParent(property);
             return property;
         }
 
-        private Map<ValueClass, Integer> createKey(List<ValueClassWrapper> classes) {
+        private Map<ValueClass, Integer> createKey(ValueClass[] classes) {
             Map<ValueClass, Integer> key = new HashMap<ValueClass, Integer>();
-            for (ValueClassWrapper wrapper : classes) {
-                if (key.containsKey(wrapper.valueClass)) {
-                    key.put(wrapper.valueClass, key.get(wrapper.valueClass) + 1);
+            for (ValueClass valueClass : classes) {
+                if (key.containsKey(valueClass)) {
+                    key.put(valueClass, key.get(valueClass) + 1);
                 } else {
-                    key.put(wrapper.valueClass, 1);
+                    key.put(valueClass, 1);
                 }
             }
             return key;
+        }
+
+        private ValueClass[] getClasses(List<ValueClassWrapper> classes) {
+            ValueClass[] valueClasses = new ValueClass[classes.size()];
+            for (int i = 0; i < classes.size(); i++) {
+                valueClasses[i] = classes.get(i).valueClass;
+            }
+            return valueClasses;
+        }
+
+        private SelectionProperty getProperty(ValueClass[] classes) {
+            Map<ValueClass, Integer> key = createKey(classes);
+            if (!properties.containsKey(key)) {
+                SelectionProperty property = createProperty(classes);
+                properties.put(key, property);
+                return property;
+            } else {
+                return properties.get(key);
+            }
         }
     }
 
     protected SelectionPropertySet selection;
 
     public class ObjectValuePropertySet extends PropertySet {
+        private static final String prefix = "ObjectValueProperty_";
+
         LinkedHashMap<ValueClass, ObjectValueProperty> properties = new LinkedHashMap<ValueClass, ObjectValueProperty>();
 
         protected Class<?> getPropertyClass() {
@@ -606,6 +640,19 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         @Override
         public List<Property> getProperties() {
             return new ArrayList<Property>(properties.values());
+        }
+
+        @Override
+        public Property getProperty(String sid) {
+            if (sid.startsWith(prefix)) {
+                ValueClass valueClass = BusinessLogics.this.findValueClass(sid.substring(prefix.length()));
+                assert valueClass != null;
+                if (!properties.containsKey(valueClass)) {
+                    createProperty(valueClass);
+                }
+                return properties.get(valueClass);
+            }
+            return null;
         }
 
         @Override
@@ -627,7 +674,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         private void createProperty(ValueClass valueClass) {
-            ObjectValueProperty property = new ObjectValueProperty(genSID(), valueClass);
+            String sid = prefix + valueClass.getSID();
+            ObjectValueProperty property = new ObjectValueProperty(sid, valueClass);
             registerProperty(new LP<ClassPropertyInterface>(property));
             setParent(property);
             properties.put(valueClass, property);
@@ -663,18 +711,18 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         objectValue = new ObjectValuePropertySet();
         baseGroup.add(objectValue);
 
-        baseClass = new BaseClass("Объект");
+        baseClass = addBaseClass("object", "Объект");
 
-        transaction = addAbstractClass("Транзакция", baseClass);
-        barcodeObject = addAbstractClass("Штрих-кодированный объект", baseClass);
+        transaction = addAbstractClass("transaction", "Транзакция", baseClass);
+        barcodeObject = addAbstractClass("barcodeObject", "Штрих-кодированный объект", baseClass);
 
-        user = addAbstractClass("Пользователь", baseClass);
-        customUser = addConcreteClass(genSystemClassID(0), "Обычный пользователь", user, barcodeObject);
-        systemUser = addConcreteClass(genSystemClassID(2), "Системный пользователь", user);
-        computer = addConcreteClass(genSystemClassID(1), "Рабочее место", baseClass);
+        user = addAbstractClass("user", "Пользователь", baseClass);
+        customUser = addConcreteClass("customUser", "Обычный пользователь", user, barcodeObject);
+        systemUser = addConcreteClass("systemUser", "Системный пользователь", user);
+        computer = addConcreteClass("computer", "Рабочее место", baseClass);
 
-        policy = addConcreteClass(genSystemClassID(3), "Политика безопасности", baseClass.named);
-        session = addConcreteClass(genSystemClassID(4), "Транзакция", baseClass);
+        policy = addConcreteClass("policy", "Политика безопасности", baseClass.named);
+        session = addConcreteClass("session", "Транзакция", baseClass);
 
         tableFactory = new TableFactory();
         for (int i = 0; i < TableFactory.MAX_INTERFACE; i++) { // заполним базовые таблицы
@@ -745,7 +793,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         reverseBarcode = addSDProp("Реверс", LogicalClass.instance);
 
-        classSID = addDProp(baseGroup, "classSID", "Стат. код", IntegerClass.instance, baseClass.objectClass);
+        classSID = addDProp(baseGroup, "classSID", "Стат. код", classSIDValueClass, baseClass.objectClass);
         objectClass = addProperty(null, new LP<ClassPropertyInterface>(new ObjectClassProperty(genSID(), baseClass)));
         objectClassName = addJProp(baseGroup, "Класс объекта", name, objectClass, 1);
 
@@ -1362,7 +1410,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public void fillIDs() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         DataSession session = createSession();
 
-        Map<Integer, CustomClass> usedSIds = new HashMap<Integer, CustomClass>();
+        Map<String, CustomClass> usedSIds = new HashMap<String, CustomClass>();
         Set<Integer> usedIds = new HashSet<Integer>();
         Set<CustomClass> allClasses = new HashSet<CustomClass>();
         baseClass.fillChilds(allClasses);
@@ -1370,23 +1418,23 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         // baseClass'у и baseClass.objectClass'у нужны ID сразу потому как учавствуют в addObject
         baseClass.ID = 0;
         baseClass.named.ID = 1;
-        baseClass.objectClass.ID = baseClass.objectClass.sID;
+        baseClass.objectClass.ID = Integer.MAX_VALUE - 5;
 
         CustomClass usedClass;
         for (CustomClass customClass : allClasses)
             if (customClass instanceof ConcreteCustomClass) {
                 ConcreteCustomClass concreteClass = (ConcreteCustomClass) customClass;
-                if ((usedClass = usedSIds.put(concreteClass.sID, customClass)) != null)
+                if ((usedClass = usedSIds.put(concreteClass.getSID(), customClass)) != null)
                     throw new RuntimeException("Одинаковые идентификаторы у классов " + customClass.caption + " и " + usedClass.caption);
 
                 // ищем класс с таким sID, если не находим создаем
                 Query<String, Object> findClass = new Query<String, Object>(Collections.singleton("key"));
-                findClass.and(classSID.getExpr(session.modifier, BaseUtils.singleValue(findClass.mapKeys)).compare(new ValueExpr(concreteClass.sID, IntegerClass.instance), Compare.EQUALS));
+                findClass.and(classSID.getExpr(session.modifier, BaseUtils.singleValue(findClass.mapKeys)).compare(new ValueExpr(concreteClass.getSID(), classSIDValueClass), Compare.EQUALS));
                 OrderedMap<Map<String, Object>, Map<Object, Object>> result = findClass.execute(session);
                 if (result.size() == 0) { // не найдено добавляем новый объект и заменяем ему classID и title
                     DataObject classObject;
                     if (concreteClass.equals(baseClass.objectClass)) { // добавим с явным ID объект
-                        classObject = new DataObject(baseClass.objectClass.sID, baseClass.unknown);
+                        classObject = new DataObject(baseClass.objectClass.ID, baseClass.unknown);
                         session.changeClass(classObject, baseClass.objectClass);
                     } else {
                         classObject = session.addObject(baseClass.objectClass, session.modifier);
@@ -1403,7 +1451,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     }
 
                     name.execute(concreteClass.caption, session, session.modifier, classObject);
-                    classSID.execute(concreteClass.sID, session, session.modifier, classObject);
+                    classSID.execute(concreteClass.getSID(), session, session.modifier, classObject);
                 } else // assert'ся что класс 1
                     concreteClass.ID = (Integer) BaseUtils.singleKey(result).get("key");
 
@@ -1645,32 +1693,54 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return true;
     }
 
-    // функционал по заполнению св-в по номерам, нужен для BL
 
-    int genIDClasses = 0;
+    protected Map<String, CustomClass> sidToClass = new HashMap<String, CustomClass>();
 
-    protected ConcreteCustomClass addConcreteClass(String caption, CustomClass... parents) {
-        return addConcreteClass(baseGroup, genIDClasses++, caption, parents);
+    protected void storeCustomClass(CustomClass customClass) {
+        assert !sidToClass.containsKey(customClass.getSID());
+        sidToClass.put(customClass.getSID(), customClass);
     }
 
-    protected ConcreteCustomClass addConcreteClass(Integer ID, String caption, CustomClass... parents) {
-        return addConcreteClass(baseGroup, ID, caption, parents);
+    protected ConcreteCustomClass addConcreteClass(String sID, String caption, CustomClass... parents) {
+        return addConcreteClass(baseGroup, sID, caption, parents);
     }
 
-    protected ConcreteCustomClass addConcreteClass(AbstractGroup group, int sID, String caption, CustomClass... parents) {
+    protected ConcreteCustomClass addConcreteClass(AbstractGroup group, String sID, String caption, CustomClass... parents) {
         ConcreteCustomClass customClass = new ConcreteCustomClass(sID, caption, parents);
         group.add(customClass);
+        storeCustomClass(customClass);
         return customClass;
     }
 
-    protected AbstractCustomClass addAbstractClass(String caption, CustomClass... parents) {
-        return addAbstractClass(baseGroup, caption, parents);
+    protected BaseClass addBaseClass(String sID, String caption) {
+        BaseClass baseClass = new BaseClass("object", "Объект");
+        storeCustomClass(baseClass);
+        storeCustomClass(baseClass.objectClass);
+        storeCustomClass(baseClass.named);
+        return baseClass;
     }
 
-    protected AbstractCustomClass addAbstractClass(AbstractGroup group, String caption, CustomClass... parents) {
-        AbstractCustomClass customClass = new AbstractCustomClass(caption, parents);
+    protected AbstractCustomClass addAbstractClass(String sID, String caption, CustomClass... parents) {
+        return addAbstractClass(baseGroup, sID, caption, parents);
+    }
+
+    protected AbstractCustomClass addAbstractClass(AbstractGroup group, String sID, String caption, CustomClass... parents) {
+        AbstractCustomClass customClass = new AbstractCustomClass(sID, caption, parents);
         group.add(customClass);
+        storeCustomClass(customClass);
         return customClass;
+    }
+
+    public CustomClass findCustomClass(String sid) {
+        return sidToClass.get(sid);
+    }
+
+    public ValueClass findValueClass(String sid) {
+        ValueClass valueClass = findCustomClass(sid);
+        if (valueClass == null) {
+            valueClass = DataClass.findDataClass(sid);
+        }
+        return valueClass;
     }
 
     protected LP addDProp(String sID, String caption, ValueClass value, ValueClass... params) {

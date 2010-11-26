@@ -13,6 +13,11 @@ import java.text.Format;
 public class LogicalClass extends DataClass<Boolean> {
 
     public static final LogicalClass instance = new LogicalClass();
+    private final static String sid = "LogicalClass";
+
+    public LogicalClass() {
+        DataClass.storeClass(sid, instance);
+    }
 
     public String toString() {
         return "Logical";
@@ -97,5 +102,9 @@ public class LogicalClass extends DataClass<Boolean> {
         } catch (Exception e) {
             throw new ParseException("error parsing boolean", e);
         }
+    }
+
+    public String getSID() {
+        return sid;
     }
 }

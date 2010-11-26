@@ -28,10 +28,14 @@ public class ClassActionClass extends ActionClass {
 
     private final CustomClass baseClass;
     private final CustomClass defaultClass;
+    private final String sid;
 
+    // todo [dale]: Желательно не делать конструктор public, как в FileActionClass, например.
     public ClassActionClass(CustomClass baseClass, CustomClass defaultClass) {
         this.baseClass = baseClass;
         this.defaultClass = defaultClass;
+        sid = "ClassActionClass[" + defaultClass.getSID() + "]";
+        DataClass.storeClass(sid, this);
     }
 
     @Override
@@ -63,4 +67,9 @@ public class ClassActionClass extends ActionClass {
         if(value==null) return null;
         return ((Number)value).intValue();
     }
+
+    public String getSID() {
+        return sid;
+    }
 }
+

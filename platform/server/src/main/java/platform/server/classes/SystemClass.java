@@ -9,6 +9,11 @@ import java.text.Format;
 public class SystemClass extends DataClass<Integer> {
 
     public final static SystemClass instance = new SystemClass(); 
+    private final static String sid = "SystemClass";
+
+    public SystemClass() {
+        DataClass.storeClass(sid, instance);
+    }
 
     public String toString() {
         return "Системный";
@@ -57,5 +62,9 @@ public class SystemClass extends DataClass<Integer> {
 
     public int getBinaryLength(boolean charBinary) {
         throw new RuntimeException("not supported yet");
+    }
+
+    public String getSID() {
+        return sid;
     }
 }

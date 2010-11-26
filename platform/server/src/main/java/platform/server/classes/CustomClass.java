@@ -52,9 +52,15 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
     }
 
     public Integer ID;
+    protected String sID;
+
+    public String getSID() {
+        return sID;
+    }
 
     public String caption;
-    public CustomClass(String caption, CustomClass... parents) {
+    public CustomClass(String sID, String caption, CustomClass... parents) {
+        this.sID = sID;
         this.caption = caption;
         this.parents = new ArrayList<CustomClass>();
         children = new ArrayList<CustomClass>();
@@ -396,4 +402,9 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
     public List<PropertyClassImplement> getProperties(Collection<List<ValueClassWrapper>> classLists, boolean anyInInterface) {
         return new ArrayList<PropertyClassImplement>();
     }
+
+    public Property getProperty(String sid) {
+        return null;
+    }
+
 }

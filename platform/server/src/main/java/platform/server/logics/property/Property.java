@@ -484,6 +484,12 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return resultList;
     }
 
+    @Override
+    public Property getProperty(String sid) {
+        return this.sID.equals(sid) ? this : null;    
+    }
+
+
     public T getInterfaceById(int iID) {
         for (T inter : interfaces) {
             if (inter.getID() == iID) {

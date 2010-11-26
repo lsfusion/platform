@@ -97,41 +97,41 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
     protected void initClasses() {
 
-        article = addConcreteClass("Товар", baseClass.named);
-        articleGroup = addConcreteClass("Группа товаров", baseClass.named);
+        article = addConcreteClass("article", "Товар", baseClass.named);
+        articleGroup = addConcreteClass("articleGroup", "Группа товаров", baseClass.named);
 
-        store = addConcreteClass("Склад", baseClass.named);
+        store = addConcreteClass("store", "Склад", baseClass.named);
 
-        supplier = addConcreteClass("Поставщик", baseClass.named);
-        customer = addConcreteClass("Покупатель", baseClass.named);
+        supplier = addConcreteClass("supplier", "Поставщик", baseClass.named);
+        customer = addConcreteClass("customer", "Покупатель", baseClass.named);
 
-        document = addAbstractClass("Документ", baseClass.named);
-        primaryDocument = addAbstractClass("Первичный документ", document);
-        secondaryDocument = addAbstractClass("Непервичный документ", document);
-        quantityDocument = addAbstractClass("Товарный документ", document);
-        incomeDocument = addAbstractClass("Приходный документ", quantityDocument);
-        outcomeDocument = addAbstractClass("Расходный документ", quantityDocument);
-        fixedDocument = addAbstractClass("Зафиксированный документ", document);
-        accountDocument = addAbstractClass("Бухгалтерский документ", document);
+        document = addAbstractClass("document", "Документ", baseClass.named);
+        primaryDocument = addAbstractClass("primaryDocument", "Первичный документ", document);
+        secondaryDocument = addAbstractClass("secondaryDocument", "Непервичный документ", document);
+        quantityDocument = addAbstractClass("quantityDocument", "Товарный документ", document);
+        incomeDocument = addAbstractClass("incomeDocument", "Приходный документ", quantityDocument);
+        outcomeDocument = addAbstractClass("outcomeDocument", "Расходный документ", quantityDocument);
+        fixedDocument = addAbstractClass("fixedDocument", "Зафиксированный документ", document);
+        accountDocument = addAbstractClass("accountDocument", "Бухгалтерский документ", document);
 
-        extIncomeDocument = addConcreteClass("Внешний приход", incomeDocument, primaryDocument);
-        extIncomeDetail = addConcreteClass("Внешний приход (строки)", baseClass);
+        extIncomeDocument = addConcreteClass("extIncomeDocument", "Внешний приход", incomeDocument, primaryDocument);
+        extIncomeDetail = addConcreteClass("extIncomeDetail", "Внешний приход (строки)", baseClass);
 
-        intraDocument = addConcreteClass("Внутреннее перемещение", incomeDocument, outcomeDocument, primaryDocument, fixedDocument);
-        extOutcomeDocument = addAbstractClass("Внешний расход", outcomeDocument, secondaryDocument, accountDocument);
-        exchangeDocument = addConcreteClass("Пересорт", incomeDocument, outcomeDocument, secondaryDocument, fixedDocument);
+        intraDocument = addConcreteClass("intraDocument", "Внутреннее перемещение", incomeDocument, outcomeDocument, primaryDocument, fixedDocument);
+        extOutcomeDocument = addAbstractClass("extOutcomeDocument", "Внешний расход", outcomeDocument, secondaryDocument, accountDocument);
+        exchangeDocument = addConcreteClass("exchangeDocument", "Пересорт", incomeDocument, outcomeDocument, secondaryDocument, fixedDocument);
 
-        revalDocument = addConcreteClass("Переоценка", primaryDocument);
+        revalDocument = addConcreteClass("revalDocument", "Переоценка", primaryDocument);
 
-        saleDocument = addAbstractClass("Реализация", extOutcomeDocument);
-        cashSaleDocument = addConcreteClass("Реализация по кассе", saleDocument);
-        clearingSaleDocument = addConcreteClass("Реализация по б/н расчету", saleDocument, fixedDocument);
+        saleDocument = addAbstractClass("saleDocument", "Реализация", extOutcomeDocument);
+        cashSaleDocument = addConcreteClass("cashSaleDocument", "Реализация по кассе", saleDocument);
+        clearingSaleDocument = addConcreteClass("clearingSaleDocument", "Реализация по б/н расчету", saleDocument, fixedDocument);
 
-        invDocument = addConcreteClass("Инвентаризация", extOutcomeDocument, fixedDocument);
+        invDocument = addConcreteClass("invDocument", "Инвентаризация", extOutcomeDocument, fixedDocument);
 
-        returnDocument = addConcreteClass("Возврат поставщику", extOutcomeDocument, fixedDocument);
+        returnDocument = addConcreteClass("returnDocument", "Возврат поставщику", extOutcomeDocument, fixedDocument);
 
-        receipt = addConcreteClass("Чек", fixedDocument);
+        receipt = addConcreteClass("receipt", "Чек", fixedDocument);
     }
 
     protected void initProperties() {
@@ -1108,59 +1108,59 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     void initCustomArticleLogics() {
 
         // конкретные классы
-        CustomClass articleFood = addConcreteClass("Продтовары", article);
+        CustomClass articleFood = addConcreteClass("articleFood", "Продтовары", article);
         addDProp(baseGroup, "expTime", "Срок годности", StringClass.get(10), articleFood);
 
-        CustomClass articleAlcohol = addConcreteClass("Алкоголь", articleFood);
+        CustomClass articleAlcohol = addConcreteClass("articleAlcohol", "Алкоголь", articleFood);
         addDProp(baseGroup, "alchohol", "Крепость", IntegerClass.instance, articleAlcohol);
 
-        CustomClass articleVodka = addConcreteClass("Водка", articleAlcohol);
+        CustomClass articleVodka = addConcreteClass("articleVodka", "Водка", articleAlcohol);
         addDProp(baseGroup, "vodka","Прейск.", LogicalClass.instance, articleVodka);
 
-        CustomClass articleBeer = addConcreteClass("Пиво", articleAlcohol);
+        CustomClass articleBeer = addConcreteClass("articleBeer", "Пиво", articleAlcohol);
         addDProp(baseGroup, "beerType", "Тип", StringClass.get(10), articleBeer);
         addDProp(baseGroup, "beerPack", "Упак.", StringClass.get(10), articleBeer);
 
-        CustomClass wineTaste = addConcreteClass("Вкус вина", baseClass.named);
-        CustomClass articleWine = addConcreteClass("Вино", articleAlcohol);
+        CustomClass wineTaste = addConcreteClass("wineTaste", "Вкус вина", baseClass.named);
+        CustomClass articleWine = addConcreteClass("articleWine", "Вино", articleAlcohol);
         addJProp(baseGroup, "Вкус", name, addDProp("vineCode", "Код вкуса", wineTaste, articleWine), 1);
 
-        CustomClass articleMilkGroup = addConcreteClass("Молочные продукты", articleFood);
+        CustomClass articleMilkGroup = addConcreteClass("articleMilkGroup", "Молочные продукты", articleFood);
         addDProp(baseGroup, "milkProd", "Жирн.", DoubleClass.instance, articleMilkGroup);
 
-        CustomClass articleMilk = addConcreteClass("Молоко", articleMilkGroup);
+        CustomClass articleMilk = addConcreteClass("articleMilk", "Молоко", articleMilkGroup);
         addDProp(baseGroup, "milkPack", "Упак.", StringClass.get(10),  articleMilk);
 
-        CustomClass articleCheese = addConcreteClass("Сыр", articleMilkGroup);
+        CustomClass articleCheese = addConcreteClass("articleCheese", "Сыр", articleMilkGroup);
         addDProp(baseGroup, "cheeseWeight", "Вес.", LogicalClass.instance, articleCheese);
 
-        CustomClass articleCurd = addConcreteClass("Творог", articleMilkGroup);
+        CustomClass articleCurd = addConcreteClass("articleCurd", "Творог", articleMilkGroup);
 
-        CustomClass articleBreadGroup = addConcreteClass("Хлебобулочные изделия", articleFood);
+        CustomClass articleBreadGroup = addConcreteClass("articleBreadGroup", "Хлебобулочные изделия", articleFood);
         addDProp(baseGroup, "bunWeight", "Вес", IntegerClass.instance, articleBreadGroup);
 
-        CustomClass articleBread = addConcreteClass("Хлеб", articleBreadGroup);
+        CustomClass articleBread = addConcreteClass("articleBread", "Хлеб", articleBreadGroup);
         addDProp(baseGroup, "breadWight", "Вес", IntegerClass.instance, articleBread);
 
-        CustomClass articleCookies = addConcreteClass("Печенье", articleBreadGroup);
+        CustomClass articleCookies = addConcreteClass("articleCookies", "Печенье", articleBreadGroup);
 
-        CustomClass articleJuice = addConcreteClass("Соки", articleFood);
+        CustomClass articleJuice = addConcreteClass("articleJuice", "Соки", articleFood);
         addDProp(baseGroup, "juiceTaste", "Вкус", StringClass.get(10), articleJuice);
         addDProp(baseGroup, "juiceSize", "Литраж", IntegerClass.instance, articleJuice);
 
-        CustomClass articleClothes = addConcreteClass("Одежда", article);
+        CustomClass articleClothes = addConcreteClass("articleClothes", "Одежда", article);
         addDProp(baseGroup, "wearModel", "Модель", StringClass.get(10), articleClothes);
 
-        CustomClass shirtSize = addConcreteClass("Размер майки", baseClass.named);
-        CustomClass articleTShirt = addConcreteClass("Майки", articleClothes);
+        CustomClass shirtSize = addConcreteClass("shirtSize", "Размер майки", baseClass.named);
+        CustomClass articleTShirt = addConcreteClass("articleTShirt", "Майки", articleClothes);
         addJProp(baseGroup, "Размер", name, addDProp("shirtSize", "Код размера", shirtSize, articleTShirt), 1);
 
-        CustomClass articleJeans = addConcreteClass("Джинсы", articleClothes);
+        CustomClass articleJeans = addConcreteClass("articleJeans", "Джинсы", articleClothes);
         addDProp(baseGroup, "jeansWidth", "Ширина", IntegerClass.instance, articleJeans);
         addDProp(baseGroup, "jeansLength", "Длина", IntegerClass.instance, articleJeans);
 
-        CustomClass articleShooes = addConcreteClass("Обувь", article);
-        addDProp(baseGroup, "shoesColor", "Цвет", StringClass.get(10), articleShooes);
+        CustomClass articleShoes = addConcreteClass("articleShoes", "Обувь", article);
+        addDProp(baseGroup, "shoesColor", "Цвет", StringClass.get(10), articleShoes);
     }
 
     protected void initTables() {

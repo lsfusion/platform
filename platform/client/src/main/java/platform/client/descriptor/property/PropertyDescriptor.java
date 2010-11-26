@@ -31,4 +31,9 @@ public class PropertyDescriptor extends AbstractNodeDescriptor implements Client
     public String toString() {
         return caption;
     }
+
+    public String getSID() {
+        return sID;
+    } 
+
 }

@@ -11,11 +11,11 @@ public class BaseClass extends AbstractCustomClass {
     public final AbstractCustomClass named;
     public final CustomObjectClass objectClass;
 
-    public BaseClass(String caption) {
-        super(caption);
+    public BaseClass(String sID, String caption) {
+        super(sID, caption);
         table = new ObjectTable(this);
         unknown = new UnknownClass(this);
-        named = new AbstractCustomClass("Объект с именем", this);
+        named = new AbstractCustomClass("named", "Объект с именем", this);
         objectClass = new CustomObjectClass(named);
     }
 

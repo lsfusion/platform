@@ -12,12 +12,8 @@ import java.util.List;
 
 public class ConcreteCustomClass extends CustomClass implements ConcreteValueClass,ConcreteObjectClass {
 
-    public final int sID;
-
-    public ConcreteCustomClass(int sID, String caption, CustomClass... parents) {
-        super(caption, parents);
-
-        this.sID = sID;
+    public ConcreteCustomClass(String sID, String caption, CustomClass... parents) {
+        super(sID, caption, parents);
     }
 
     public boolean inSet(AndClassSet set) {

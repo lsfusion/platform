@@ -10,6 +10,11 @@ import java.sql.SQLException;
 public class DoubleClass extends IntegralClass<Double> {
 
     public final static DoubleClass instance = new DoubleClass();
+    private final static String sid = "DoubleClass";
+
+    public DoubleClass() {
+        DataClass.storeClass(sid, instance);
+    }
 
     public String toString() {
         return "Плавающее число";
@@ -54,5 +59,9 @@ public class DoubleClass extends IntegralClass<Double> {
         } catch (Exception e) {
             throw new ParseException("error parsing double", e);
         }
+    }
+
+    public String getSID() {
+        return sid;
     }
 }

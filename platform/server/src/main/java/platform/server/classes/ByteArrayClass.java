@@ -10,6 +10,11 @@ import java.text.Format;
 public class ByteArrayClass extends DataClass<byte[]> {
 
     public final static ByteArrayClass instance = new ByteArrayClass();
+    private final static String sid = "ByteArrayClass";
+
+    public ByteArrayClass() {
+        DataClass.storeClass(sid, instance);
+    }
 
     public String toString() {
         return "Массив байт";
@@ -58,5 +63,9 @@ public class ByteArrayClass extends DataClass<byte[]> {
     @Override
     public int getBinaryLength(boolean charBinary) {
         throw new RuntimeException("not supported");
+    }
+
+    public String getSID() {
+        return sid;
     }
 }

@@ -12,6 +12,11 @@ import java.text.NumberFormat;
 public class LongClass extends IntegralClass<Long> {
 
     public final static LongClass instance = new LongClass();
+    private final static String sid = "LongClass";
+
+    public LongClass() {
+        DataClass.storeClass(sid, instance);
+    }
 
     public String toString() {
         return "Большое целое число";
@@ -60,5 +65,9 @@ public class LongClass extends IntegralClass<Long> {
         } catch (Exception e) {
             throw new ParseException("error parsing long", e);
         }
+    }
+
+    public String getSID() {
+        return sid;
     }
 }

@@ -5,7 +5,11 @@ import platform.interop.Data;
 public class ExcelClass extends FileClass {
 
     public final static ExcelClass instance = new ExcelClass();
+    private final static String sid = "ExcelClass";
 
+    public ExcelClass() {
+        DataClass.storeClass(sid, instance);
+    }
 
     public String toString() {
         return "Файл Excel";
@@ -17,5 +21,9 @@ public class ExcelClass extends FileClass {
 
     public byte getTypeID() {
         return Data.EXCEL;
+    }
+
+    public String getSID() {
+        return sid;
     }
 }

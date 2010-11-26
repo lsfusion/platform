@@ -12,6 +12,11 @@ import java.text.Format;
 public class ActionClass extends DataClass<Object> {
 
     public static final ActionClass instance = new ActionClass();
+    private final static String sid = "ActionClass";
+
+    public ActionClass() {
+        DataClass.storeClass(sid, instance);
+    }
 
     @Override
     public String toString() {
@@ -66,5 +71,9 @@ public class ActionClass extends DataClass<Object> {
     @Override
     public boolean fillReportDrawField(ReportDrawField reportField) {
         return false;
+    }
+
+    public String getSID() {
+        return sid;
     }
 }

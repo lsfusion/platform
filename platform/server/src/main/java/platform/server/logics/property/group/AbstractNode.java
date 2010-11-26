@@ -20,5 +20,7 @@ public abstract class AbstractNode extends ImmutableObject {
 
     public abstract List<Property> getProperties();
 
+    public abstract Property getProperty(String sid);
+
     public abstract List<PropertyClassImplement> getProperties(Collection<List<ValueClassWrapper>> classLists, boolean anyInInterface);
 }

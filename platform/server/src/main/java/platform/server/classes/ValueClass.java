@@ -25,4 +25,6 @@ public interface ValueClass extends RemoteClass {
     BaseExpr getClassExpr();
 
     ValueClass getBaseClass();
+
+    String getSID();
 }

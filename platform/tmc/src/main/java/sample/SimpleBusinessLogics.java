@@ -59,45 +59,45 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
     
     protected void initClasses() {
 
-        article = addConcreteClass("Товар", baseClass.named);
-        articleGroup = addConcreteClass("Группа товаров", baseClass.named);
+        article = addConcreteClass("article", "Товар", baseClass.named);
+        articleGroup = addConcreteClass("articleGroup", "Группа товаров", baseClass.named);
 
-        store = addConcreteClass("Склад", baseClass.named);
+        store = addConcreteClass("store", "Склад", baseClass.named);
 
-        supplier = addConcreteClass("Поставщик", baseClass.named);
-        customer = addConcreteClass("Покупатель", baseClass.named);
-        format = addConcreteClass("Формат", baseClass.named);
-        region = addConcreteClass("Регион", baseClass.named);
-        category = addConcreteClass("Категория", baseClass.named);
+        supplier = addConcreteClass("supplier", "Поставщик", baseClass.named);
+        customer = addConcreteClass("customer", "Покупатель", baseClass.named);
+        format = addConcreteClass("format", "Формат", baseClass.named);
+        region = addConcreteClass("region", "Регион", baseClass.named);
+        category = addConcreteClass("category", "Категория", baseClass.named);
 
-        document = addAbstractClass("Документ", baseClass.named, transaction);
-        priceOutDocument = addAbstractClass("Документ изм. цены", document);
-        quantityDocument = addAbstractClass("Товарный документ", document);
-        incomeDocument = addAbstractClass("Приходный документ", quantityDocument, priceOutDocument);
-        outcomeDocument = addAbstractClass("Расходный документ", quantityDocument);
-        articleDocument = addAbstractClass("Перемещение товара", quantityDocument);
+        document = addAbstractClass("document", "Документ", baseClass.named, transaction);
+        priceOutDocument = addAbstractClass("priceOutDocument", "Документ изм. цены", document);
+        quantityDocument = addAbstractClass("quantityDocument", "Товарный документ", document);
+        incomeDocument = addAbstractClass("incomeDocument", "Приходный документ", quantityDocument, priceOutDocument);
+        outcomeDocument = addAbstractClass("outcomeDocument", "Расходный документ", quantityDocument);
+        articleDocument = addAbstractClass("articleDocument", "Перемещение товара", quantityDocument);
 
-        extIncomeOrder = addConcreteClass("Заказ", document);
-        extIncomeDocument = addConcreteClass("Внешний приход", incomeDocument, articleDocument);
+        extIncomeOrder = addConcreteClass("extIncomeOrder", "Заказ", document);
+        extIncomeDocument = addConcreteClass("extIncomeDocument", "Внешний приход", incomeDocument, articleDocument);
 
-        intraDocument = addConcreteClass("Внутреннее перемещение", incomeDocument, outcomeDocument, articleDocument);
-        extOutcomeDocument = addAbstractClass("Внешний расход", outcomeDocument);
-        exchangeDocument = addConcreteClass("Пересорт", outcomeDocument);
+        intraDocument = addConcreteClass("intraDocument", "Внутреннее перемещение", incomeDocument, outcomeDocument, articleDocument);
+        extOutcomeDocument = addAbstractClass("extOutcomeDocument", "Внешний расход", outcomeDocument);
+        exchangeDocument = addConcreteClass("exchangeDocument", "Пересорт", outcomeDocument);
 
-        saleDocument = addAbstractClass("Реализация", extOutcomeDocument, articleDocument);
-        cashSaleDocument = addConcreteClass("Реализация по кассе", saleDocument);
-        clearingSaleDocument = addConcreteClass("Реализация по б/н расчету", saleDocument);
+        saleDocument = addAbstractClass("saleDocument", "Реализация", extOutcomeDocument, articleDocument);
+        cashSaleDocument = addConcreteClass("cashSaleDocument", "Реализация по кассе", saleDocument);
+        clearingSaleDocument = addConcreteClass("clearingSaleDocument", "Реализация по б/н расчету", saleDocument);
 
-        invDocument = addConcreteClass("Инвентаризация", extOutcomeDocument);
+        invDocument = addConcreteClass("invDocument", "Инвентаризация", extOutcomeDocument);
 
-        returnDocument = addConcreteClass("Возврат поставщику", extOutcomeDocument);
+        returnDocument = addConcreteClass("returnDocument", "Возврат поставщику", extOutcomeDocument);
 
-        revalDocument = addConcreteClass("Переоценка", priceOutDocument);
-        taxDocument = addConcreteClass("Изменение НДС", priceOutDocument);
-        locTaxDocument = addConcreteClass("Изменение местн. нал.", priceOutDocument);
+        revalDocument = addConcreteClass("revalDocument", "Переоценка", priceOutDocument);
+        taxDocument = addConcreteClass("taxDocument", "Изменение НДС", priceOutDocument);
+        locTaxDocument = addConcreteClass("locTaxDocument", "Изменение местн. нал.", priceOutDocument);
 
-        contract = addConcreteClass("Договор", document);
-        specification = addConcreteClass("Спецификация", document);
+        contract = addConcreteClass("contract", "Договор", document);
+        specification = addConcreteClass("specification", "Спецификация", document);
     }
 
     LP artGroup, outStore, extIncPriceIn, extIncVATIn, invDBBalance,

@@ -14,14 +14,12 @@ public class FileActionClass extends ActionClass {
 
     private String filterDescription;
     private String filterExtensions[];
+    private final String sid;
 
-    public FileActionClass(String filterDescription, String[] filterExtensions) {
-        this.filterExtensions = filterExtensions;
+    FileActionClass(String filterDescription, String filterExtensions) {
+        this.filterExtensions = filterExtensions.split(" ");
         this.filterDescription = filterDescription;
-    }
-
-    public FileActionClass() {
-
+        sid = "FileActionClass[" + filterDescription + "," + filterExtensions + "]";
     }
 
     @Override
@@ -80,10 +78,15 @@ public class FileActionClass extends ActionClass {
         Pair<String, String> key = new Pair<String, String>(description, extensions);
         FileActionClass instance = instances.get(key);
         if (instance == null) {
-            instance = new FileActionClass(description, extensions.split(" "));
+            instance = new FileActionClass(description, extensions);
             instances.put(key, instance);
+            DataClass.storeClass(instance.getSID(), instance);
         }
 
         return instance;
+    }
+
+    public String getSID() {
+        return sid;
     }
 }

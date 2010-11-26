@@ -52,41 +52,41 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
     ConcreteCustomClass currency, exOperation, section, inOperation, outOperation, extraCost, person, pay, absMonth, mission, misOperation, department, sectionOut, city, extraPersonSection, extraAdmSection, contractor, reimbursement, vacation, incomeCash, incomeNotCash, outcomeCost;
 
     protected void initClasses() {
-        operation = addAbstractClass("Операции", transaction);
-        inAbsOperation = addAbstractClass("Абс. приход", operation);
-        outAbsOperation = addAbstractClass("Абс. расход", operation);
-        absOutPerson = addAbstractClass("Абс. расход сотруд.", outAbsOperation);
-        absOutTime = addAbstractClass("Абс. расход времен.", outAbsOperation);
-        departmentAbs = addAbstractClass("Абс. отдел", baseClass);
-        payerAbs = addAbstractClass("Абс. плательщик", baseClass);
+        operation = addAbstractClass("operation", "Операции", transaction);
+        inAbsOperation = addAbstractClass("inAbsOperation", "Абс. приход", operation);
+        outAbsOperation = addAbstractClass("outAbsOperation", "Абс. расход", operation);
+        absOutPerson = addAbstractClass("absOutPerson", "Абс. расход сотруд.", outAbsOperation);
+        absOutTime = addAbstractClass("absOutTime", "Абс. расход времен.", outAbsOperation);
+        departmentAbs = addAbstractClass("departmentAbs", "Абс. отдел", baseClass);
+        payerAbs = addAbstractClass("payerAbs", "Абс. плательщик", baseClass);
 
-        extraCost = addConcreteClass(1, "Дополнительные затраты", absOutTime, departmentAbs, payerAbs);
-        pay = addConcreteClass(2, "Выплата", absOutPerson, absOutTime, payerAbs);
-        exOperation = addConcreteClass(3, "Опер. конверсия", inAbsOperation, outAbsOperation, departmentAbs);
-        inOperation = addConcreteClass(25, "Опер. приход", inAbsOperation, departmentAbs);
-        outOperation = addConcreteClass(5, "Опер. расход", outAbsOperation, departmentAbs, payerAbs);
-        misOperation = addConcreteClass(13, "Опер. расход ком.", outAbsOperation, departmentAbs, payerAbs);
-        payer = addAbstractClass("Плательщик", baseClass.named);
+        extraCost = addConcreteClass("extraCost", "Дополнительные затраты", absOutTime, departmentAbs, payerAbs);
+        pay = addConcreteClass("pay", "Выплата", absOutPerson, absOutTime, payerAbs);
+        exOperation = addConcreteClass("exOperation", "Опер. конверсия", inAbsOperation, outAbsOperation, departmentAbs);
+        inOperation = addConcreteClass("inOperation", "Опер. приход", inAbsOperation, departmentAbs);
+        outOperation = addConcreteClass("outOperation", "Опер. расход", outAbsOperation, departmentAbs, payerAbs);
+        misOperation = addConcreteClass("misOperation", "Опер. расход ком.", outAbsOperation, departmentAbs, payerAbs);
+        payer = addAbstractClass("payer", "Плательщик", baseClass.named);
 
-        absMonth = addConcreteClass(6, "Месяц", baseClass.named);
-        currency = addConcreteClass(8, "Валюта", baseClass.named);
-        section = addConcreteClass(9, "Статья ком.", baseClass.named);
-        person = addConcreteClass(10, "Сотрудник", payer);
-        extraSection = addAbstractClass("Статья затрат", baseClass.named);
-        mission = addConcreteClass(12, "Командировка", baseClass);
+        absMonth = addConcreteClass("absMonth", "Месяц", baseClass.named);
+        currency = addConcreteClass("currency", "Валюта", baseClass.named);
+        section = addConcreteClass("section", "Статья ком.", baseClass.named);
+        person = addConcreteClass("person", "Сотрудник", payer);
+        extraSection = addAbstractClass("extraSection", "Статья затрат", baseClass.named);
+        mission = addConcreteClass("mission", "Командировка", baseClass);
 
-        department = addConcreteClass(14, "Отдел", baseClass.named);
-        sectionOut = addConcreteClass(15, "Статья расх.", baseClass.named);
-        city = addConcreteClass(16, "Город", baseClass.named);
-        extraPersonSection = addConcreteClass(17, "Статья затрат перс.", extraSection);
-        extraAdmSection = addConcreteClass(18, "Статья затрат админ.", extraSection);
-        contractor = addConcreteClass(19, "Контрагент", payer);
-        reimbursement = addConcreteClass(20, "Возмещение", transaction);
-        vacation = addConcreteClass(21, "Отпуск", baseClass);
+        department = addConcreteClass("department", "Отдел", baseClass.named);
+        sectionOut = addConcreteClass("sectionOut", "Статья расх.", baseClass.named);
+        city = addConcreteClass("city", "Город", baseClass.named);
+        extraPersonSection = addConcreteClass("extraPersonSection", "Статья затрат перс.", extraSection);
+        extraAdmSection = addConcreteClass("extraAdmSection", "Статья затрат админ.", extraSection);
+        contractor = addConcreteClass("contractor", "Контрагент", payer);
+        reimbursement = addConcreteClass("reimbursement", "Возмещение", transaction);
+        vacation = addConcreteClass("vacation", "Отпуск", baseClass);
 
-        incomeCash = addConcreteClass(4, "Приход по налу", inAbsOperation, departmentAbs);
-        incomeNotCash = addConcreteClass(23, "Приход по безналу", inAbsOperation, departmentAbs);
-        outcomeCost = addConcreteClass(24, "Расходы на обороты", outAbsOperation, departmentAbs, payerAbs);
+        incomeCash = addConcreteClass("incomeCash", "Приход по налу", inAbsOperation, departmentAbs);
+        incomeNotCash = addConcreteClass("incomeNotCash", "Приход по безналу", inAbsOperation, departmentAbs);
+        outcomeCost = addConcreteClass("outcomeCost", "Расходы на обороты", outAbsOperation, departmentAbs, payerAbs);
     }
 
     LP inSum, outSum, inCur, outCur, outPerson, outYear, outMonth, operationDepartment, personDepartment, reimbursementCurrencyIn, reimbursementPayer, vacationPerson;

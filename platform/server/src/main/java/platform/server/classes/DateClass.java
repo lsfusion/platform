@@ -16,6 +16,11 @@ import java.text.SimpleDateFormat;
 public class DateClass extends DataClass<Date> {
 
     public final static DateClass instance = new DateClass();
+    private final static String sid = "DateClass";
+
+    public DateClass() {
+        DataClass.storeClass(sid, instance);
+    }
 
     public String toString() {
         return "Дата";
@@ -88,5 +93,9 @@ public class DateClass extends DataClass<Date> {
         } catch (Exception e) {
             throw new ParseException("error parsing date", e);
         }
+    }
+
+    public String getSID() {
+        return sid;
     }
 }

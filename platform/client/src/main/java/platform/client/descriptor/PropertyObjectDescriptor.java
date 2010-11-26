@@ -1,11 +1,9 @@
 package platform.client.descriptor;
 
 import platform.base.BaseUtils;
-import platform.client.Main;
 import platform.client.descriptor.property.PropertyDescriptor;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
 import platform.client.serialization.ClientCustomSerializable;
-import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 
 import java.io.DataInputStream;
@@ -60,7 +58,7 @@ public class PropertyObjectDescriptor extends PropertyDescriptorImplement<Proper
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        outStream.writeInt(property.getID());
+        outStream.writeUTF(property.getSID());
 
         outStream.writeInt(mapping.size());
         for (Map.Entry<PropertyInterfaceDescriptor, PropertyObjectInterfaceDescriptor> entry : mapping.entrySet()) {

@@ -16,8 +16,8 @@ public class NumericClass extends IntegralClass<Double> {
         return "Число "+length+","+precision;
     }
 
-    byte length;
-    byte precision;
+    final byte length;
+    final byte precision;
 
     NumericClass(byte iLength, byte iPrecision) {
         length = iLength;
@@ -74,6 +74,7 @@ public class NumericClass extends IntegralClass<Double> {
                 return numeric;
         NumericClass numeric = new NumericClass(length,precision);
         numerics.add(numeric);
+        DataClass.storeClass(numeric.getSID(), numeric);
         return numeric;
     }
 
@@ -84,5 +85,9 @@ public class NumericClass extends IntegralClass<Double> {
 
     public Object getDefaultValue() {
         return 0.0;
+    }
+
+    public String getSID() {
+        return "NumericClass[" + length + "," + precision + "]";
     }
 }

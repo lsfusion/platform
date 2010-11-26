@@ -9,6 +9,11 @@ import java.util.Calendar;
 public class YearClass extends IntegerClass {
 
     public final static YearClass instance = new YearClass();
+    private final static String sid = "YearClass";
+
+    public YearClass() {
+        DataClass.storeClass(sid, instance);
+    }
 
     @Override
     public Format getDefaultFormat() {
@@ -28,5 +33,9 @@ public class YearClass extends IntegerClass {
     @Override
     public byte getTypeID() {
         return Data.YEAR;
+    }
+
+    public String getSID() {
+        return sid;
     }
 }
