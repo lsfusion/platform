@@ -64,7 +64,7 @@ public abstract class GroupPairs<G,O,I> implements Iterable<I>  {
                     String stackTrace = "";
                     for(StackTraceElement stackLine : Thread.currentThread().getStackTrace())
                         stackTrace += stackLine.toString() + '\n';
-                    logger.severe("MAP INNER HASH : " + stackTrace);
+                    logger.severe("MAP INNER HASH : " + map1 + '\n' + map2 + '\n' + stackTrace);
                 } catch(Exception e) {
                 }
                 return false;
