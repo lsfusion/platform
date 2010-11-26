@@ -52,6 +52,19 @@ public class NavigatorDescriptorView extends JPanel {
         }
     };
 
+    private final IncrementView updateHandler = new IncrementView() {
+        public void update(Object updateObject, String updateField) {
+            if (formView.getUpdated()) {
+                FormDescriptor currentForm = formView.getForm();
+                if (currentForm != null) {
+                    changedForms.put(currentForm.getID(), currentForm);
+                    visualNavigator.getTree().updateUI();
+                    setupActionButtons();
+                }
+            }
+        }
+    };
+
     public NavigatorDescriptorView(final ClientNavigator clientNavigator) {
 
         setLayout(new BorderLayout());
@@ -112,6 +125,7 @@ public class NavigatorDescriptorView extends JPanel {
                 newForms.remove(form.ID);
             }
 
+            formView.setUpdated(false);
             changedForms.clear();
 
             FormDescriptor currentForm = formView.getForm();
@@ -125,8 +139,6 @@ public class NavigatorDescriptorView extends JPanel {
         hasChangedNodes = false;
 
         setupActionButtons();
-
-        updateUI();
     }
 
     private void commitChanges() {
@@ -166,6 +178,7 @@ public class NavigatorDescriptorView extends JPanel {
 
             visualNavigator.remoteNavigator.saveVisualSetup(outStream.toByteArray());
 
+            formView.setUpdated(false);
             changedForms.clear();
             newForms.clear();
             newElements.clear();
@@ -180,8 +193,6 @@ public class NavigatorDescriptorView extends JPanel {
         hasChangedNodes = false;
 
         setupActionButtons();
-
-        updateUI();
     }
 
     private Map<Integer, List<Integer>> getChangedNavigatorElementsChildren() {
@@ -210,24 +221,23 @@ public class NavigatorDescriptorView extends JPanel {
     }
 
     public void openForm(int ID) throws IOException {
-        if (!changedForms.containsKey(ID)) {
+        FormDescriptor form = changedForms.get(ID);
+        if (form == null) {
             if (newForms.containsKey(ID)) {
-                changedForms.put(ID, newForms.get(ID));
+                form = newForms.get(ID);
             } else {
-                changedForms.put(ID, FormDescriptor.deserialize(visualNavigator.remoteNavigator.getRichDesignByteArray(ID),
-                                                                visualNavigator.remoteNavigator.getFormEntityByteArray(ID)));
+                form = FormDescriptor.deserialize(visualNavigator.remoteNavigator.getRichDesignByteArray(ID),
+                                                  visualNavigator.remoteNavigator.getFormEntityByteArray(ID));
             }
         }
 
-        FormDescriptor form = changedForms.get(ID);
         formView.setForm(form);
 
         form.removeDependency(captionUpdater);
         form.addDependency(form, "caption", captionUpdater);
+        form.addDependency(form, "updated", updateHandler);
 
         setupActionButtons();
-
-        updateUI();
     }
 
     public void removeElement(int elementID) {
@@ -246,6 +256,8 @@ public class NavigatorDescriptorView extends JPanel {
         previewBtn.setEnabled(formView.getForm() != null);
         saveBtn.setEnabled(hasChanges);
         cancelBtn.setEnabled(hasChanges);
+
+        updateUI();
     }
 
     public boolean isFormChanged(int formID) {

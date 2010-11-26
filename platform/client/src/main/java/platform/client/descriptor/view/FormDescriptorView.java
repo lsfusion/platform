@@ -94,8 +94,10 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
         }
 
         if (form != null) {
+            trackUpdates = false;
             addDependencies(form);
             form.updateDependency(this, "form");
+            trackUpdates = true;
         }
     }
 
@@ -133,8 +135,22 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
         form.getContext().removeLookupResultChangeListener(Lookup.DELETED_OBJECT_PROPERTY, this);
     }
 
+    private boolean trackUpdates = false;
+    private boolean updated = false;
     public void update(Object updateObject, String updateField) {
+        if (trackUpdates && updateObject != null && updateField != null) {
+            setUpdated(true);
+        }
         SwingUtilities.invokeLater(new OnUpdate());
+    }
+
+    public void setUpdated(boolean updated) {
+        this.updated = updated;
+        form.updateDependency(form, "updated");
+    }
+
+    public boolean getUpdated() {
+        return updated;
     }
 
     private void addActions(FormNode formNode) {
