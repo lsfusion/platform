@@ -1713,7 +1713,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected BaseClass addBaseClass(String sID, String caption) {
-        BaseClass baseClass = new BaseClass("object", "Объект");
+        BaseClass baseClass = new BaseClass(sID, caption);
         storeCustomClass(baseClass);
         storeCustomClass(baseClass.objectClass);
         storeCustomClass(baseClass.named);
