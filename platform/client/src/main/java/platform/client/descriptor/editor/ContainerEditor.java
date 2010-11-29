@@ -19,11 +19,9 @@ public class ContainerEditor extends JTabbedPane implements NodeEditor {
                 new TitledPanel("Описание", new IncrementTextEditor(descriptor, "description")),
                 new TitledPanel("Идентификатор", new IncrementTextEditor(descriptor, "sID"))));
 
-        JPanel defaultComponent = new JPanel();
-        defaultComponent.setLayout(new FlowLayout(FlowLayout.LEFT));
-        defaultComponent.add(new IncrementCheckBox("Компонент по умолчанию", descriptor, "defaultComponent"));
-
-        addTab("Отображение", new NorthBoxPanel(defaultComponent,
+        addTab("Отображение", new NorthBoxPanel(
+                new TitledPanel(null, new IncrementCheckBox("Панель закладок", descriptor, "tabbedPane")),
+                new TitledPanel(null, new IncrementCheckBox("Компонент по умолчанию", descriptor, "defaultComponent")),
                 new ComponentDesignEditor("Дизайн", descriptor.design)));
         
         addTab("Расположение", new NorthBoxPanel(new ComponentIntersectsEditor("Взаимное расположение компонентов", descriptor, "intersects"),

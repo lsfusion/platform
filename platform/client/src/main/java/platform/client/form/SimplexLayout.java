@@ -12,14 +12,13 @@ import platform.client.logics.ClientComponent;
 import platform.client.logics.ClientContainer;
 import platform.interop.form.layout.*;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -115,16 +114,64 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
 
     boolean fillVisibleComponents() {
 
+        // к сожалению, в JTabbedPane нету функционала, чтобы прятать определенные Tab'ы
+        // поэтому приходится их просто remove'ать из JTabbedPane, что делается в методе ClientFormTabbedPane.hide
+        // при этом Component который hide'ится сразу же выпадает из иерархии контейнеров и getParent возвращает null
+        // по этой причине перед выполнением механизма определения компонентов, которые надо располагать, нужно сначала показывать все спрятанные Tab'ы
+        for (Component component : allComponents) {
+            if (component instanceof ClientFormTabbedPane)
+                ((ClientFormTabbedPane)component).showAllComponents();
+        }
+
+        Set<Component> visibleComponents = new HashSet<Component>();
+
         components = new ArrayList<Component>();
         for (Component component : allComponents) {
 
-            boolean hasChild = hasNotContainerChild(component);
+            boolean hasChild = hasNotAutoHideableContainerChild(component);
 
-            // таким образом прячем и показываем контейнеры в зависимости от необходимости
-            // если этого не делать, почему-то ничего не показывает - лень разбираться почему
-            if (component instanceof ClientFormContainer) component.setVisible(hasChild);
+            boolean shouldBeVisible = hasChild;
 
-            if (hasChild)
+            Container parent = component.getParent();
+
+            // предполагается, что всеми потомками JTabbedPane мы управляем сами - пряча и показывая их при необходимости
+            if (parent instanceof JTabbedPane) {
+                JTabbedPane tabbedPane = (JTabbedPane)parent;
+                Component selectedComponent = tabbedPane.getSelectedComponent();
+                if (parent instanceof ClientFormTabbedPane && !hasChild) {
+                    ((ClientFormTabbedPane)tabbedPane).hide(component);
+                    shouldBeVisible = false;
+                    //todo : здесь нужно удостовериться, что следующий компонент не спрятан, иначе может получиться, что ни один объект не виден
+                } else {
+                    if (selectedComponent != component)
+                        shouldBeVisible = false;
+                    component.setVisible(shouldBeVisible);
+                }
+            } else {
+                // также мы управляем всеми контейнерами, реализующими интерфейс AutoHideableContainer
+                if (component instanceof AutoHideableContainer)
+                    component.setVisible(shouldBeVisible);
+            }
+
+            if (shouldBeVisible) {
+                visibleComponents.add(component);
+            }
+        }
+
+        // исключаем компоненты, которых нету в иерархии у предков
+        // это нужно, если какой-то объект visible, а один из его предков - нет
+        // такое нужно пока исключительно для JTabbedPane, когда вкладка невидима, а ее потомки - видимы 
+        for (Component component : visibleComponents) {
+            Component curComp = component;
+            boolean visible = true;
+            while (curComp != mainContainer) {
+                if (curComp == null || !visibleComponents.contains(curComp)) {
+                    visible = false;
+                    break;
+                }
+                curComp = curComp.getParent();
+            }
+            if (visible)
                 components.add(component);
         }
 
@@ -132,14 +179,23 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
         return components.isEmpty();
     }
 
-    private boolean hasNotContainerChild(Component component) {
+    // приходится перед добавлением некоторых объектов делать setVisible всем parent контейнерам
+    // иначе, если верхний контейнер не является видимым, добавляему объекту будет проставлен setVisible в false 
+    public static void showHideableContainers(Component comp) {
+        if (comp == null) return;
+        if (comp instanceof AutoHideableContainer)
+            comp.setVisible(true);
+        showHideableContainers(comp.getParent());
+    }
 
-        if (!(component instanceof ClientFormContainer))
-            return component.isVisible();
+    private boolean hasNotAutoHideableContainerChild(Component component) {
 
-        ClientFormContainer container = (ClientFormContainer) component;
-        for (Component child : container.getComponents())
-            if (hasNotContainerChild(child))
+        // для children'ов JTabbedPane всегда возвращаем true, поскольку setVisible для них управляется автоматически
+        if (!(component instanceof AutoHideableContainer))
+            return component.getParent() instanceof JTabbedPane || component.isVisible();
+
+        for (Component child : ((Container)component).getComponents())
+            if (hasNotAutoHideableContainerChild(child))
                 return true;
 
         return false;

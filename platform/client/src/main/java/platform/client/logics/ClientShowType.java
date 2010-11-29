@@ -35,8 +35,13 @@ public class ClientShowType extends ClientComponent {
     }
 
     @Override
+    public String getCaption() {
+        return "Вид";
+    }
+
+    @Override
     public String toString() {
-        return "Вид (" + groupObject.toString() + ")";
+        return getCaption() + " (" + groupObject.toString() + ")";
     }
 
     @Override

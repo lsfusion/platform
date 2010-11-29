@@ -104,4 +104,5 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         return defaultComponent;
     }
 
+    public abstract String getCaption();
 }

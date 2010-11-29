@@ -40,8 +40,13 @@ public class ClientFunction extends ClientComponent implements AbstractFunction<
     }
 
     @Override
-    public String toString() {
+    public String getCaption() {
         return caption;
+    }
+
+    @Override
+    public String toString() {
+        return getCaption();
     }
 
     @Override

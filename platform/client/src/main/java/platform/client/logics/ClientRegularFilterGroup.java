@@ -40,6 +40,11 @@ public class ClientRegularFilterGroup extends ClientComponent {
     }
 
     @Override
+    public String getCaption() {
+        return "Фильтр";
+    }
+
+    @Override
     public String toString() {
         return filters.toString();
     }

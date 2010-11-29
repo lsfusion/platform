@@ -54,9 +54,13 @@ public class ClientGrid extends ClientComponent {
         groupObject = pool.deserializeObject(inStream);
     }
 
+    public String getCaption() {
+        return "Таблица";
+    }
+
     @Override
     public String toString() {
-        return "Таблица (" + groupObject.toString() + ")";
+        return getCaption() + " (" + groupObject.toString() + ")";
     }
 
     @Override

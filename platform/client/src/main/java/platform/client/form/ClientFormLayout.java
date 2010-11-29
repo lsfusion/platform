@@ -16,7 +16,7 @@ import java.util.Map;
 public abstract class ClientFormLayout extends JPanel {
 
     // главный контейнер, который будет использоваться при отрисовке формы
-    private ClientFormContainer mainContainer;
+    private JComponent mainContainer;
 
     private FormFocusTraversalPolicy policy;
 
@@ -32,7 +32,7 @@ public abstract class ClientFormLayout extends JPanel {
     private SimplexLayout layoutManager;
 
     // отображение объектов от сервера на контейнеры для рисования
-    private Map<ClientContainer, ClientFormContainer> contviews = new HashMap<ClientContainer, ClientFormContainer>();
+    private Map<ClientContainer, JComponent> contviews = new HashMap<ClientContainer, JComponent>();
 
     public abstract void gainedFocus();
 
@@ -68,18 +68,28 @@ public abstract class ClientFormLayout extends JPanel {
         });
     }
 
+    // метод рекурсивно создает для каждого ClientContainer свой ClientFormContainer или ClientFormTabbedPane
     private void createContainerViews(ClientContainer container) {
 
-        ClientFormContainer formContainer = new ClientFormContainer(container);
+        JComponent formContainer = (container.getTabbedPane() ? new ClientFormTabbedPane(container, layoutManager) : new ClientFormContainer(container));
 
         if (container.container == null) {
             mainContainer = formContainer;
             layoutManager = new SimplexLayout(mainContainer, container);
         } else {
-            contviews.get(container.container).add(formContainer, container);
+            JComponent parent = contviews.get(container.container);
+            parent.add(formContainer, container);
+            if (!(parent instanceof JTabbedPane) && formContainer instanceof ClientFormContainer)
+                ((ClientFormContainer)formContainer).addBorder();
         }
 
-        formContainer.setLayout(layoutManager);
+        // нельзя перегружать LayoutManager у JTabbedPane, который не наследуется от TabbedPaneLayout
+        // поскольку он при расположении заполняют кучу private field'ов, которые в дальнейшем используются при отрисовке JTabbedPane
+        // вместо этого SimplexLayout передается в ClientFormTabbedPane и работает как бы "дополнительным" LayoutManager
+        if (!container.getTabbedPane()) {
+            formContainer.setLayout(layoutManager);
+        }
+        
         contviews.put(container, formContainer);
 
         for (ClientComponent child : container.children) {
@@ -132,7 +142,7 @@ public abstract class ClientFormLayout extends JPanel {
     public boolean add(ClientComponent key, Component view) {
         if (key == null || contviews.get(key.container) == null) return false;
         if (!contviews.get(key.container).isAncestorOf(view)) {
-            contviews.get(key.container).addComponent(view, key);
+            contviews.get(key.container).add(view, key);
             contviews.get(key.container).repaint();
             if (key.defaultComponent){
                 policy.addDefault(view);
@@ -146,7 +156,7 @@ public abstract class ClientFormLayout extends JPanel {
     public boolean remove(ClientComponent key, Component view) {
         if (key == null || contviews.get(key.container) == null) return false;
         if (contviews.get(key.container).isAncestorOf(view)) {
-            contviews.get(key.container).removeComponent(view);
+            contviews.get(key.container).remove(view);
             contviews.get(key.container).repaint();
             if (key.defaultComponent){
                 policy.removeDefault(view);

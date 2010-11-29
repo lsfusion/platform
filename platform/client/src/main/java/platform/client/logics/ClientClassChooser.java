@@ -48,8 +48,13 @@ public class ClientClassChooser extends ClientComponent {
     }
 
     @Override
+    public String getCaption() {
+        return "Дерево классов";
+    }
+
+    @Override
     public String toString() {
-        return "Дерево классов (" + object.toString() + ")";
+        return getCaption() + " (" + object.toString() + ")";
     }
 
     @Override

@@ -25,6 +25,8 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
 
     public List<ClientComponent> children = new ArrayList<ClientComponent>();
 
+    private boolean tabbedPane = false;
+
     public ClientContainer() {
     }
 
@@ -43,6 +45,8 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         pool.writeString(outStream, title);
         pool.writeString(outStream, description);
         pool.writeString(outStream, sID);
+
+        outStream.writeBoolean(tabbedPane);
     }
 
     @Override
@@ -54,6 +58,8 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         title = pool.readString(inStream);
         description = pool.readString(inStream);
         sID = pool.readString(inStream);
+
+        tabbedPane = inStream.readBoolean();
     }
 
     public void customConstructor() {
@@ -62,6 +68,14 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         // то же самое пока дублируется в ClientContainer
         constraints.fillVertical = -1;
         constraints.fillHorizontal = -1;
+    }
+
+    @Override
+    public String getCaption() {
+        if (title == null || title.equals("")) {
+            return (description == null) ? "" : description; 
+        } else
+            return title;
     }
 
     @Override
@@ -134,6 +148,15 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
     public void setDescription(String description) {
         this.description = description;
         updateDependency(this, "description");
+    }
+
+    public boolean getTabbedPane() {
+        return tabbedPane;
+    }
+
+    public void setTabbedPane(boolean tabbedPane) {
+        this.tabbedPane = tabbedPane;
+        updateDependency(this, "tabbedPane");
     }
 
     public String getSID() {

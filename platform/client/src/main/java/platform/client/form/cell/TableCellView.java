@@ -148,4 +148,9 @@ public class TableCellView extends JPanel implements CellView {
     public void setCaption(String caption) {
         label.setText(caption);
     }
+
+    @Override
+    public String toString() {
+        return key.toString();
+    }
 }

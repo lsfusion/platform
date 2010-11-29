@@ -14,6 +14,8 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
     public String title;
     public String description;
 
+    public boolean tabbedPane = false;
+
     public void setTitle(String title) {
         this.title = title;
     }
@@ -97,6 +99,8 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         pool.writeString(outStream, title);
         pool.writeString(outStream, description);
         pool.writeString(outStream, sID);
+
+        outStream.writeBoolean(tabbedPane);
     }
 
     @Override
@@ -108,5 +112,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         title = pool.readString(inStream);
         description = pool.readString(inStream);
         sID = pool.readString(inStream);
+
+        tabbedPane = inStream.readBoolean();
     }
 }

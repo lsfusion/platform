@@ -39,6 +39,11 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
     }
 
     @Override
+    public String getCaption() {
+        return "Дерево";
+    }
+
+    @Override
     public String toString() {
         String result = "";
         for (ClientGroupObject group : groups) {
