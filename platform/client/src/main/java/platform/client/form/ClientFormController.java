@@ -13,7 +13,6 @@ import platform.client.Log;
 import platform.client.Main;
 import platform.client.SwingUtils;
 import platform.client.logics.*;
-import platform.client.logics.classes.ClientConcreteClass;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.filter.ClientPropertyFilter;
 import platform.client.navigator.ClientNavigator;
@@ -235,16 +234,15 @@ public class ClientFormController {
                 });
             } else {
 
-                List filterList = new ArrayList();
-                filterList.add("(Все)");
-                for(ClientRegularFilter filter : filterGroup.filters){
-                    filterList.add(filter.getFullCaption());
+                final JComboBox comboBox = new JComboBox();
+                comboBox.addItem("(Все)");
+                for (ClientRegularFilter filter : filterGroup.filters) {
+                    comboBox.addItem(new ClientRegularFilterWrapped(filter));
                 }
-                final JComboBox comboBox = new JComboBox(filterList.toArray());
 
                 if (filterGroup.defaultFilter >= 0) {
                     ClientRegularFilter defaultFilter = filterGroup.filters.get(filterGroup.defaultFilter);
-                    comboBox.setSelectedItem(defaultFilter);
+                    comboBox.setSelectedItem(new ClientRegularFilterWrapped(defaultFilter));
                     try {
                         setRemoteRegularFilter(filterGroup, defaultFilter);
                     } catch (IOException e) {
@@ -258,7 +256,8 @@ public class ClientFormController {
                         try {
                             if (ie.getStateChange() == ItemEvent.SELECTED) {
                                 setRegularFilter(filterGroup,
-                                        ie.getItem() instanceof ClientRegularFilter ? (ClientRegularFilter) ie.getItem() : null);
+                                        ie.getItem() instanceof ClientRegularFilterWrapped
+                                                ? ((ClientRegularFilterWrapped) ie.getItem()).filter : null);
                             }
                         } catch (IOException e) {
                             throw new RuntimeException("Ошибка при изменении регулярного фильтра", e);
@@ -270,12 +269,32 @@ public class ClientFormController {
                 for (final ClientRegularFilter singleFilter : filterGroup.filters) {
                     formLayout.addBinding(singleFilter.key, "regularFilter" + filterGroup.getID() + singleFilter.getID(), new AbstractAction() {
                         public void actionPerformed(ActionEvent e) {
-                            comboBox.setSelectedItem(singleFilter);
+                            comboBox.setSelectedItem(new ClientRegularFilterWrapped(singleFilter));
                         }
                     });
                 }
             }
 
+        }
+    }
+
+    public class ClientRegularFilterWrapped {
+
+        public ClientRegularFilter filter;
+
+        public ClientRegularFilterWrapped(ClientRegularFilter filter) {
+            this.filter = filter;
+        }
+
+        @Override
+        public boolean equals(Object wrapped) {
+            return wrapped instanceof ClientRegularFilterWrapped
+                    ? this.filter.equals(((ClientRegularFilterWrapped) wrapped).filter) : this == wrapped;
+        }
+
+        @Override
+        public String toString() {
+            return filter.getFullCaption();
         }
     }
 

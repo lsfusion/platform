@@ -41,6 +41,15 @@ public class SimplexConstraints<T> extends ContextObject implements Serializable
         super(context);
     }
 
+    public DoNotIntersectSimplexConstraint getChildConstraints(){
+        return childConstraints;
+    }
+
+    public void setChildConstraints(DoNotIntersectSimplexConstraint childConstraints){
+        this.childConstraints = childConstraints;
+        updateDependency(this, "childConstraints");
+    }
+
     public String getFillVertical(){
         return String.valueOf(fillVertical);
     }

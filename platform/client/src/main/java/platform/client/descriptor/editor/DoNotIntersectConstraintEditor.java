@@ -34,6 +34,10 @@ public class DoNotIntersectConstraintEditor extends JPanel {
         bottomBox.addActionListener(actionListener);
         rightBox.addActionListener(actionListener);
 
+        recheck();
+    }
+
+    private void recheck(){
         if (constraint != null) {
             topBox.setSelected((constraint.forbDir & DoNotIntersectSimplexConstraint.TOP) == 0);
             leftBox.setSelected((constraint.forbDir & DoNotIntersectSimplexConstraint.LEFT) == 0);
@@ -45,6 +49,11 @@ public class DoNotIntersectConstraintEditor extends JPanel {
             bottomBox.setSelected(false);
             rightBox.setSelected(false);
         }
+    }
+
+    public void setConstraint(DoNotIntersectSimplexConstraint constraint){
+        this.constraint = constraint;
+        recheck();
     }
 
     public DoNotIntersectSimplexConstraint getConstraint() {

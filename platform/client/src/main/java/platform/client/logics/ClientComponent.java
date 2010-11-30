@@ -104,5 +104,14 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         return defaultComponent;
     }
 
+    public Map<ClientComponent, DoNotIntersectSimplexConstraint> getIntersects() {
+        return constraints.intersects;
+    }
+
+    public void setIntersects(Map<ClientComponent, DoNotIntersectSimplexConstraint> intersects) {
+        constraints.intersects = intersects;
+        updateDependency(this.constraints, "intersects");
+    }
+
     public abstract String getCaption();
 }

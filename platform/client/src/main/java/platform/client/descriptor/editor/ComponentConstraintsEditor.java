@@ -38,22 +38,26 @@ public class ComponentConstraintsEditor extends TitledPanel {
 
 
         fill = new TitledPanel("Заполнение");
-        fill.setLayout(new GridLayout(1, 4, 5, 5));
+        fill.setLayout(new BoxLayout(fill, BoxLayout.X_AXIS));
         fill.add(new JLabel("по горизонтали: "));
         fill.add(fillHorizontal);
+        fill.add(Box.createRigidArea(new Dimension(5, 5)));
         fill.add(new JLabel("по вертикали: "));
         fill.add(fillVertical);
 
         insetsSibling = new TitledPanel("Отступы относительно компонентов", siblingEditor);
 
         directions = new TitledPanel("Направление");
-        directions.setLayout(new GridLayout(1, 8, 5, 5));
+        directions.setLayout(new BoxLayout(directions, BoxLayout.X_AXIS));
         directions.add(new JLabel("вверх:"));
         directions.add(topDirection);
+        directions.add(Box.createRigidArea(new Dimension(5, 5)));
         directions.add(new JLabel("влево:"));
         directions.add(leftDirection);
+        directions.add(Box.createRigidArea(new Dimension(5, 5)));
         directions.add(new JLabel("вниз:"));
         directions.add(bottomDirection);
+        directions.add(Box.createRigidArea(new Dimension(5, 5)));
         directions.add(new JLabel("вправо:"));
         directions.add(rightDirection);
 
@@ -83,13 +87,16 @@ public class ComponentConstraintsEditor extends TitledPanel {
             bottomField = new IncrementTextEditor(constraints, field + "Bottom");
             rightField = new IncrementTextEditor(constraints, field + "Right");
 
-            setLayout(new GridLayout(1, 8, 10, 10));
+            setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
             add(new JLabel("сверху:"));
             add(topField);
+            add(Box.createRigidArea(new Dimension(5, 5)));
             add(new JLabel("слева:"));
             add(leftField);
+            add(Box.createRigidArea(new Dimension(5, 5)));
             add(new JLabel("снизу:"));
             add(bottomField);
+            add(Box.createRigidArea(new Dimension(5, 5)));
             add(new JLabel("справа:"));
             add(rightField);
         }

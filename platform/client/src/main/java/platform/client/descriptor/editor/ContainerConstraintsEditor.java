@@ -10,22 +10,19 @@ import java.awt.*;
 
 public class ContainerConstraintsEditor extends ComponentConstraintsEditor {
 
-    private DoNotIntersectConstraintEditor doNotIntersectEditor;
-    private SingleInsetsEditor insideEditor;
-    private JTextField maxVars;
-
     public ContainerConstraintsEditor(SimplexConstraints<ClientComponent> constraints) {
         super(constraints);
         initialize();
     }
 
     private void initialize() {
-        doNotIntersectEditor = new DoNotIntersectConstraintEditor(constraints.childConstraints);
-        insideEditor = new SingleInsetsEditor("insetsInside");
+        ChildConstraintsEditor childConstraintsEditor = new ChildConstraintsEditor(constraints, "childConstraints");
 
-        maxVars = new IncrementTextEditor(constraints, "maxVariables");
+        SingleInsetsEditor insideEditor = new SingleInsetsEditor("insetsInside");
 
-        TitledPanel doNotIntersect = new TitledPanel("Пересечения", doNotIntersectEditor);
+        JTextField maxVars = new IncrementTextEditor(constraints, "maxVariables");
+
+        TitledPanel doNotIntersect = new TitledPanel("Пересечения", childConstraintsEditor);
 
         TitledPanel insetsInside = new TitledPanel("Отступы от границ", insideEditor);
 
