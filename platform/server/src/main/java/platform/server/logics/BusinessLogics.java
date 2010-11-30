@@ -1072,52 +1072,52 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public void mergeNavigatorTree(DataInputStream inStream) throws IOException {
         //читаем новую структуру навигатора, в процессе подчитывая сохранённые элементы
-        Map<Integer, List<Integer>> treeStructure = new HashMap<Integer, List<Integer>>();
+        Map<String, List<String>> treeStructure = new HashMap<String, List<String>>();
         int mapSize = inStream.readInt();
         for (int i = 0; i < mapSize; ++i) {
-            int parentID = inStream.readInt();
+            String parentSID = inStream.readUTF();
             int childrenCnt = inStream.readInt();
-            List<Integer> childrenIDs = new ArrayList<Integer>();
+            List<String> childrenSIDs = new ArrayList<String>();
             for (int j = 0; j < childrenCnt; ++j) {
-                int childID = inStream.readInt();
-                childrenIDs.add(childID);
+                String childSID = inStream.readUTF();
+                childrenSIDs.add(childSID);
             }
-            treeStructure.put(parentID, childrenIDs);
+            treeStructure.put(parentSID, childrenSIDs);
         }
 
         //формируем полное дерево, сохраняя мэппинг элементов
-        Map<Integer, NavigatorElement<T>> elementsMap = new HashMap<Integer, NavigatorElement<T>>();
+        Map<String, NavigatorElement<T>> elementsMap = new HashMap<String, NavigatorElement<T>>();
         for (NavigatorElement<T> parent : baseElement.getChildren(true)) {
-            int parentID = parent.getID();
-            elementsMap.put(parentID, parent);
+            String parentSID = parent.getSID();
+            elementsMap.put(parentSID, parent);
 
-            if (!treeStructure.containsKey(parentID)) {
-                List<Integer> children = new ArrayList<Integer>();
+            if (!treeStructure.containsKey(parentSID)) {
+                List<String> children = new ArrayList<String>();
                 for (NavigatorElement<T> child : parent.getChildren(false)) {
-                    children.add(child.getID());
+                    children.add(child.getSID());
                 }
 
-                treeStructure.put(parentID, children);
+                treeStructure.put(parentSID, children);
             }
         }
 
         //override элементов
-        for (Map.Entry<Integer, List<Integer>> entry : treeStructure.entrySet()) {
+        for (Map.Entry<String, List<String>> entry : treeStructure.entrySet()) {
             overrideElement(elementsMap, entry.getKey());
-            for (int childID : entry.getValue()) {
-                overrideElement(elementsMap, childID);
+            for (String childSID : entry.getValue()) {
+                overrideElement(elementsMap, childSID);
             }
         }
 
         //перестраиваем
-        for (Map.Entry<Integer, List<Integer>> entry : treeStructure.entrySet()) {
-            int parentID = entry.getKey();
-            NavigatorElement parent = elementsMap.get(parentID);
+        for (Map.Entry<String, List<String>> entry : treeStructure.entrySet()) {
+            String parentSID = entry.getKey();
+            NavigatorElement parent = elementsMap.get(parentSID);
             if (parent != null) {
                 parent.removeAllChildren();
 
-                for (int childID : entry.getValue()) {
-                    NavigatorElement<T> element = elementsMap.get(childID);
+                for (String childSID : entry.getValue()) {
+                    NavigatorElement<T> element = elementsMap.get(childSID);
 
                     if (element != null) {
                         parent.add(element);
@@ -1127,45 +1127,45 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    private void overrideElement(Map<Integer, NavigatorElement<T>> elementsMap, int elementID) {
-        NavigatorElement<T> element = getOverridenElement(elementID);
+    private void overrideElement(Map<String, NavigatorElement<T>> elementsMap, String elementSID) {
+        NavigatorElement<T> element = getOverridenElement(elementSID);
         if (element == null) {
-            element = getOverridenForm(elementID);
+            element = getOverridenForm(elementSID);
         }
 
         if (element != null) {
-            elementsMap.put(elementID, element);
+            elementsMap.put(elementSID, element);
         }
     }
 
-    public String getFormSerializationPath(int formID) {
+    public String getFormSerializationPath(String formSID) {
         try {
-            return "conf/" + getName() + "/forms/form" + formID;
+            return "conf/" + getName() + "/forms/" + formSID;
         } catch (RemoteException re) {
-            return "conf/forms/form" + formID;
+            return "conf/forms/" + formSID;
         }
     }
 
-    private FormEntity<T> getOverridenForm(int formID) {
+    private FormEntity<T> getOverridenForm(String formSID) {
         try {
-            byte[] formState = IOUtils.getFileBytes(new File(getFormSerializationPath(formID)));
+            byte[] formState = IOUtils.getFileBytes(new File(getFormSerializationPath(formSID)));
             return (FormEntity<T>) FormEntity.deserialize(this, formState);
         } catch (IOException e) {
             return null;
         }
     }
 
-    public String getElementSerializationPath(int elementID) {
+    public String getElementSerializationPath(String elementSID) {
         try {
-            return "conf/" + getName() + "/elements/element" + elementID;
+            return "conf/" + getName() + "/elements/" + elementSID;
         } catch (RemoteException re) {
-            return "conf/elements/element" + elementID;
+            return "conf/elements/" + elementSID;
         }
     }
 
-    private NavigatorElement<T> getOverridenElement(int elementID) {
+    private NavigatorElement<T> getOverridenElement(String elementSID) {
         try {
-            byte[] elementState = IOUtils.getFileBytes(new File(getElementSerializationPath(elementID)));
+            byte[] elementState = IOUtils.getFileBytes(new File(getElementSerializationPath(elementSID)));
             return (NavigatorElement<T>) NavigatorElement.deserialize(elementState);
         } catch (IOException e) {
             return null;
@@ -1184,12 +1184,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             DataOutputStream outStream = new DataOutputStream(fileOutStream);
             outStream.writeInt(children.size());
             for (NavigatorElement child : children) {
-                outStream.writeInt(child.getID());
+                outStream.writeUTF(child.getSID());
 
                 Collection<NavigatorElement<T>> thisChildren = child.getChildren(false);
                 outStream.writeInt(thisChildren.size());
                 for (NavigatorElement<T> thisChild : thisChildren) {
-                    outStream.writeInt(thisChild.getID());
+                    outStream.writeUTF(thisChild.getSID());
                 }
             }
         } finally {

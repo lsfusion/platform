@@ -146,7 +146,9 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
 
     public void setUpdated(boolean updated) {
         this.updated = updated;
-        form.updateDependency(form, "updated");
+        if (form != null) {
+            form.updateDependency(form, "updated");
+        }
     }
 
     public boolean getUpdated() {

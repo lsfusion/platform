@@ -1,5 +1,7 @@
 package platform.client.navigator;
 
+import platform.interop.Constants;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -8,6 +10,7 @@ public class ClientNavigatorElement {
 
     public int ID;
     private String caption;
+    public String sID;
 
     protected boolean hasChildren = false;
 
@@ -28,12 +31,14 @@ public class ClientNavigatorElement {
 
     public ClientNavigatorElement(int ID, String caption, boolean hasChildren) {
         this.ID = ID;
+        this.sID = Constants.getDefaultNavigatorElementSID(ID);
         this.caption = caption;
         this.hasChildren = hasChildren;
     }
 
     public ClientNavigatorElement(DataInputStream inStream) throws IOException {
         ID = inStream.readInt();
+        sID = inStream.readUTF();
         caption = inStream.readUTF();
         hasChildren = inStream.readBoolean();
     }
@@ -68,5 +73,9 @@ public class ClientNavigatorElement {
             return element.ID == ID;
         }
         return false;
+    }
+
+    public String getSID() {
+        return sID;
     }
 }

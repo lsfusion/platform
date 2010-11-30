@@ -78,6 +78,8 @@ public class Main {
                 stopThread(mainThread);
                 mainThread = null;
 
+                System.gc();
+
                 start(args, module);
             }
         }).start();

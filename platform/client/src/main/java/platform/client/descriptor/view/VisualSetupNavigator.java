@@ -34,7 +34,7 @@ class VisualSetupNavigator extends AbstractNavigator {
                         //раскрываем, чтобы загрузить узлы с сервера...
                         tree.expandPath(tree.getPathToRoot(node));
 
-                        node.addNode(new NavigatorTreeNode(tree, new ClientNavigatorForm(newForm.getID(), newForm.getCaption(), false)));
+                        node.addNode(new NavigatorTreeNode(tree, new ClientNavigatorForm(newForm.getID(), newForm.getCaption())));
 
                         tree.getModel().reload(node);
                     }

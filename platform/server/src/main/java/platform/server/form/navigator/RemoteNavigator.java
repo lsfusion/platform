@@ -273,10 +273,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     }
 
     public void saveForm(int formID, byte[] formState) throws RemoteException {
-        setFormEntity(formID, (FormEntity<T>) FormEntity.deserialize(BL, formState));
+        FormEntity<T> form = (FormEntity<T>) FormEntity.deserialize(BL, formState);
+        setFormEntity(formID, form);
 
         try {
-            IOUtils.putFileBytes(new File(BL.getFormSerializationPath(formID)), formState);
+            IOUtils.putFileBytes(new File(BL.getFormSerializationPath(form.getSID())), formState);
         } catch (IOException e) {
             throw new RuntimeException("Ошибка при сохранении состояния формы на диск", e);
         }
@@ -293,7 +294,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
                 NavigatorElement element = NavigatorElement.deserialize(inStream);
                 int elementSize = inStream.readInt();
                 try {
-                    IOUtils.putFileBytes(new File(BL.getElementSerializationPath(element.getID())), data, previousBytesReaden, elementSize);
+                    IOUtils.putFileBytes(new File(BL.getElementSerializationPath(element.getSID())), data, previousBytesReaden, elementSize);
                 } catch (IOException e) {
                     throw new RuntimeException("Ошибка при сохранении состояния элемента на диск", e);
                 }
@@ -306,7 +307,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
                 FormEntity form = FormEntity.deserialize(BL, inStream);
                 int formSize = inStream.readInt();
                 try {
-                    IOUtils.putFileBytes(new File(BL.getFormSerializationPath(form.getID())), data, previousBytesReaden, formSize);
+                    IOUtils.putFileBytes(new File(BL.getFormSerializationPath(form.getSID())), data, previousBytesReaden, formSize);
                 } catch (IOException e) {
                     throw new RuntimeException("Ошибка при сохранении состояния формы на диск", e);
                 }

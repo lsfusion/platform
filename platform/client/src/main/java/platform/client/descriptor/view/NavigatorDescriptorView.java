@@ -166,13 +166,13 @@ public class NavigatorDescriptorView extends JPanel {
             }
 
             //сохраняем новую структуру навигатора
-            Map<Integer, List<Integer>> changedElements = getChangedNavigatorElementsChildren();
+            Map<String, List<String>> changedElements = getChangedNavigatorElementsChildren();
             dataStream.writeInt(changedElements.size());
-            for (Map.Entry<Integer, List<Integer>> entry : changedElements.entrySet()) {
-                dataStream.writeInt(entry.getKey());
+            for (Map.Entry<String, List<String>> entry : changedElements.entrySet()) {
+                dataStream.writeUTF(entry.getKey());
                 dataStream.writeInt(entry.getValue().size());
-                for (Integer childID : entry.getValue()) {
-                    dataStream.writeInt(childID);
+                for (String childSID : entry.getValue()) {
+                    dataStream.writeUTF(childSID);
                 }
             }
 
@@ -195,8 +195,8 @@ public class NavigatorDescriptorView extends JPanel {
         setupActionButtons();
     }
 
-    private Map<Integer, List<Integer>> getChangedNavigatorElementsChildren() {
-        HashMap<Integer, List<Integer>> result = new HashMap<Integer, List<Integer>>();
+    private Map<String, List<String>> getChangedNavigatorElementsChildren() {
+        HashMap<String, List<String>> result = new HashMap<String, List<String>>();
         Enumeration<ClientTreeNode> nodes = visualNavigator.getTree().rootNode.depthFirstEnumeration();
         while (nodes.hasMoreElements()) {
             ClientTreeNode node = nodes.nextElement();
@@ -204,15 +204,15 @@ public class NavigatorDescriptorView extends JPanel {
                 NavigatorTreeNode navigatorNode = (NavigatorTreeNode) node;
                 if (navigatorNode.nodeStructureChanged) {
                     navigatorNode.nodeStructureChanged = false;
-                    List<Integer> children = new ArrayList<Integer>();
+                    List<String> children = new ArrayList<String>();
                     for (int i = 0; i < navigatorNode.getChildCount(); ++i) {
                         ClientTreeNode childNode = (ClientTreeNode) navigatorNode.getChildAt(i);
                         if (childNode instanceof NavigatorTreeNode) {
                             NavigatorTreeNode childNavigatorNode = (NavigatorTreeNode) childNode;
-                            children.add(childNavigatorNode.navigatorElement.ID);
+                            children.add(childNavigatorNode.navigatorElement.sID);
                         }
                     }
-                    result.put(navigatorNode.navigatorElement.ID, children);
+                    result.put(navigatorNode.navigatorElement.sID, children);
                 }
             }
         }

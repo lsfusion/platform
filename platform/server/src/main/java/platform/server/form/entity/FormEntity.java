@@ -5,6 +5,7 @@ import platform.base.OrderedMap;
 import platform.base.Subsets;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
+import platform.interop.Constants;
 import platform.interop.action.ClientResultAction;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.filter.FilterEntity;
@@ -469,7 +470,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     @Override
     public String getSID() {
-        return "form" + ID;
+        return Constants.getDefaultFormSID(ID);
     }
 
     public Map<PropertyDrawEntity, GroupObjectEntity> forceDefaultDraw = new HashMap<PropertyDrawEntity, GroupObjectEntity>();

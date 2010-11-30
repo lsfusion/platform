@@ -2,6 +2,7 @@ package platform.server.form.navigator;
 
 import platform.base.BaseUtils;
 import platform.base.identity.IdentityObject;
+import platform.interop.Constants;
 import platform.server.logics.BusinessLogics;
 
 import java.io.ByteArrayInputStream;
@@ -90,6 +91,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
         outStream.writeByte(getTypeID());
 
         outStream.writeInt(getID());
+        outStream.writeUTF(getSID());
         outStream.writeUTF(caption);
         outStream.writeBoolean(hasChildren());
     }
@@ -115,5 +117,10 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
         String caption = inStream.readUTF();
 
         return new NavigatorElement(ID, caption);
+    }
+
+    @Override
+    public String getSID() {
+        return Constants.getDefaultNavigatorElementSID(ID);
     }
 }
