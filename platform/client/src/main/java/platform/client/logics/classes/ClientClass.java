@@ -10,6 +10,8 @@ abstract public class ClientClass implements Serializable {
     public abstract boolean hasChildren();
     public abstract void serialize(DataOutputStream outStream) throws IOException;
 
+    public abstract String getSID();
+    
     public abstract ClientType getType();
 
     protected ClientClass() {

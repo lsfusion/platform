@@ -13,11 +13,19 @@ public class ClientNumericClass extends ClientDoubleClass {
     public final int length;
     public final int precision;
 
+    private String sID;
+
+    @Override
+    public String getSID() {
+        return sID;
+    }
+
     public ClientNumericClass(DataInputStream inStream) throws IOException {
         super(inStream);
 
         length = inStream.readInt();
         precision = inStream.readInt();
+        sID = "NumericClass[" + length + "," + precision + "]";
     }
 
     public ClientNumericClass(int length, int precision) {
@@ -35,7 +43,7 @@ public class ClientNumericClass extends ClientDoubleClass {
         }
 
         public ClientNumericClass getDefaultType() {
-            return new ClientNumericClass(10,2);
+            return new ClientNumericClass(10, 2);
         }
 
         @Override
@@ -43,9 +51,10 @@ public class ClientNumericClass extends ClientDoubleClass {
             return "Число";
         }
     };
+
     @Override
     public ClientTypeClass getTypeClass() {
-        return type; 
+        return type;
     }
 
     @Override
@@ -57,9 +66,9 @@ public class ClientNumericClass extends ClientDoubleClass {
     }
 
     public Format getDefaultFormat() {
-        NumberFormat format = (NumberFormat)super.getDefaultFormat();
+        NumberFormat format = (NumberFormat) super.getDefaultFormat();
 
-        format.setMaximumIntegerDigits(length - precision - ((precision > 0)?1:0));
+        format.setMaximumIntegerDigits(length - precision - ((precision > 0) ? 1 : 0));
         format.setMaximumFractionDigits(precision);
         return format;
     }

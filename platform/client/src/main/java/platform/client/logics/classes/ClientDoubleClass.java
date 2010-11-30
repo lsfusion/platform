@@ -12,6 +12,14 @@ import java.text.*;
 public class ClientDoubleClass extends ClientIntegralClass implements ClientTypeClass {
 
     public final static ClientDoubleClass instance = new ClientDoubleClass();
+
+    private final String sID = "DoubleClass";
+
+    @Override
+    public String getSID() {
+        return sID;
+    }
+
     protected ClientDoubleClass() {
     }
 

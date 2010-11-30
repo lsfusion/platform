@@ -16,6 +16,13 @@ public class ClientDateClass extends ClientDataClass implements ClientTypeClass 
 
     public final static ClientDateClass instance = new ClientDateClass();
 
+    private final String sID = "DateClass";
+
+    @Override
+    public String getSID() {
+        return sID;
+    }
+
     public byte getTypeId() {
         return Data.DATE;
     }
@@ -34,7 +41,7 @@ public class ClientDateClass extends ClientDataClass implements ClientTypeClass 
     }
 
     public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) {
-        return new DatePropertyEditor(value, (SimpleDateFormat) format, design); 
+        return new DatePropertyEditor(value, (SimpleDateFormat) format, design);
     }
 
     public Object parseString(String s) throws ParseException {

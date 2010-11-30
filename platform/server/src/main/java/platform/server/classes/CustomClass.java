@@ -244,6 +244,7 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
         outStream.writeBoolean(this instanceof ConcreteCustomClass);
         outStream.writeUTF(caption);
         outStream.writeInt(ID);
+        outStream.writeUTF(getSID());
 
         outStream.writeByte(children.size());
         for (CustomClass cls : children)

@@ -15,10 +15,17 @@ public class ClientLogicalClass extends ClientDataClass implements ClientTypeCla
 
     public final static ClientLogicalClass instance = new ClientLogicalClass();
 
+    private final String sID = "LogicalClass";
+
+    @Override
+    public String getSID() {
+        return sID;
+    }
+
     public byte getTypeId() {
         return Data.LOGICAL;
     }
-    
+
     @Override
     public int getMinimumWidth(FontMetrics fontMetrics) {
         return getPreferredWidth(fontMetrics);
@@ -37,8 +44,13 @@ public class ClientLogicalClass extends ClientDataClass implements ClientTypeCla
         return null;
     }
 
-    public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) { return new LogicalPropertyRenderer(); }
-    public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) { return new LogicalPropertyEditor(value); }
+    public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) {
+        return new LogicalPropertyRenderer();
+    }
+
+    public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) {
+        return new LogicalPropertyEditor(value);
+    }
 
     public Object parseString(String s) throws ParseException {
         try {

@@ -17,6 +17,13 @@ public class ClientClassActionClass extends ClientActionClass {
     ClientObjectClass baseClass;
     ClientObjectClass defaultClass;
 
+    private String sID;
+
+    @Override
+    public String getSID() {
+        return sID;
+    }
+
     public ClientClassActionClass(DataInputStream inStream) throws IOException {
         super(inStream);
 
@@ -24,6 +31,7 @@ public class ClientClassActionClass extends ClientActionClass {
         // хотя известно, что придет именно ClientObjectClass
         baseClass = (ClientObjectClass) ClientTypeSerializer.deserializeClientClass(inStream);
         defaultClass = (ClientObjectClass) ClientTypeSerializer.deserializeClientClass(inStream);
+        sID = "ClassActionClass[" + defaultClass.getSID() + "]";
     }
 
     @Override

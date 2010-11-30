@@ -14,11 +14,17 @@ public class ClientExcelClass extends ClientFileClass {
 
     public final static ClientExcelClass instance = new ClientExcelClass();
 
+    private final String sID = "ExcelClass";
+
+    @Override
+    public String getSID() {
+        return sID;
+    }
+
     public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) {
         return new ExcelPropertyRenderer(format, design);
     }
 
-    @Override
     public byte getTypeId() {
         return Data.EXCEL;
     }

@@ -15,6 +15,13 @@ public class ClientTextClass extends ClientDataClass implements ClientTypeClass 
 
     public final static ClientTextClass instance = new ClientTextClass();
 
+    private final String sID = "TextClass";
+
+    @Override
+    public String getSID() {
+        return sID;
+    }
+
     public byte getTypeId() {
         return Data.TEXT;
     }

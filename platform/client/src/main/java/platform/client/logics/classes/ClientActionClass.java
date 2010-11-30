@@ -20,6 +20,13 @@ import java.text.ParseException;
 
 public class ClientActionClass extends ClientDataClass implements ClientTypeClass {
 
+    private final String sID = "ActionClass";
+
+    @Override
+    public String getSID() {
+        return sID;
+    }
+
     public ClientActionClass(DataInputStream inStream) throws IOException {
         super(inStream);
     }

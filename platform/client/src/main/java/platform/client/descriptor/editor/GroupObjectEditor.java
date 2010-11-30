@@ -3,6 +3,7 @@ package platform.client.descriptor.editor;
 import platform.base.context.ApplicationContext;
 import platform.base.context.ApplicationContextProvider;
 import platform.base.context.IncrementView;
+import platform.client.code.CodeGenerator;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.ObjectDescriptor;
@@ -55,6 +56,7 @@ public class GroupObjectEditor extends JTabbedPane implements NodeEditor {
         propertiesPanel.addTab("Выбор вида", new NorthBoxPanel(group.client.showType.getPropertiesEditor()));
 
         DefaultOrdersEditor defaultOrdersPanel = new DefaultOrdersEditor(form, group);
+        addTab("Код", CodeGenerator.getComponent(form));
         if (group.getParent() != null){
             addTab("Общее", new NorthBoxPanel(initClassViewPanel, banClassViewPanel, propertyHighlightPanel, pageSizePanel, new IsParentEditor()));
         }

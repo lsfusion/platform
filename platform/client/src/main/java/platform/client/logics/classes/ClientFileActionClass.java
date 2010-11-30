@@ -16,6 +16,13 @@ public class ClientFileActionClass extends ClientActionClass {
     private String filterDescription;
     private String filterExtensions[];
 
+    private String sID;
+
+    @Override
+    public String getSID() {
+        return sID;
+    }
+
     public ClientFileActionClass(DataInputStream inStream) throws IOException {
         super(inStream);
 
@@ -31,6 +38,7 @@ public class ClientFileActionClass extends ClientActionClass {
                 filterExtensions[i] = inStream.readUTF();
             }
         }
+        sID = "FileActionClass[" + filterDescription + "," + filterExtensions + "]";
     }
 
     @Override
@@ -48,6 +56,6 @@ public class ClientFileActionClass extends ClientActionClass {
     @Override
     public PropertyEditorComponent getEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
 //         return new FileActionPropertyEditor("Файлы таблиц (*.xls)", "xls");
-         return new FileActionPropertyEditor(filterDescription, filterExtensions);
+        return new FileActionPropertyEditor(filterDescription, filterExtensions);
     }
 }

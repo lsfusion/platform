@@ -44,7 +44,7 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
         return Integer.MAX_VALUE;
     }
 
-    public int getPreferredHeight(FontMetrics fontMetrics){
+    public int getPreferredHeight(FontMetrics fontMetrics) {
         return fontMetrics.getHeight() + 1;
     }
 
@@ -72,7 +72,7 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
         return true;
     }
 
-    public String getConformedMessage(){
+    public String getConformedMessage() {
         return "Вы действительно хотите редактировать свойство";
     }
 

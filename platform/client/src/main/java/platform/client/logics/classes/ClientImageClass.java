@@ -13,7 +13,13 @@ public class ClientImageClass extends ClientFileClass {
 
     public final static ClientImageClass instance = new ClientImageClass();
 
+    private final String sID = "ImageClass";
+
     @Override
+    public String getSID() {
+        return sID;
+    }
+
     public byte getTypeId() {
         return Data.IMAGE;
     }

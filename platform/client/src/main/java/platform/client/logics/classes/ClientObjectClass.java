@@ -13,6 +13,13 @@ public abstract class ClientObjectClass extends ClientClass {
     public final static ClientObjectType type = new ClientObjectType();
 
     public int ID;
+    
+    private String sID;
+
+    @Override
+    public String getSID(){
+        return sID;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -36,6 +43,7 @@ public abstract class ClientObjectClass extends ClientClass {
         super(inStream);
         caption = inStream.readUTF();
         ID = inStream.readInt();
+        sID = inStream.readUTF(); 
 
         int count = inStream.readByte();
         for (int i = 0; i < count; i++) {

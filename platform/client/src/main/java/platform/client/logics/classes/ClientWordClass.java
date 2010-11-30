@@ -14,11 +14,17 @@ public class ClientWordClass extends ClientFileClass {
 
     public final static ClientWordClass instance = new ClientWordClass();
 
+    private final String sID = "WordClass";
+
+    @Override
+    public String getSID() {
+        return sID;
+    }
+
     public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) {
         return new WordPropertyRenderer(format, design);
     }
 
-    @Override
     public byte getTypeId() {
         return Data.WORD;
     }

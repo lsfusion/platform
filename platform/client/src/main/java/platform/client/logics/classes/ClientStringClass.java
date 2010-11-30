@@ -18,10 +18,18 @@ public class ClientStringClass extends ClientDataClass {
 
     public final int length;
 
+    private String sID;
+
+    @Override
+    public String getSID() {
+        return sID;
+    }
+
     public ClientStringClass(DataInputStream inStream) throws IOException {
         super(inStream);
 
         length = inStream.readInt();
+        sID = "StringClass[" + length + "]";
     }
 
     public ClientStringClass(int length) {
