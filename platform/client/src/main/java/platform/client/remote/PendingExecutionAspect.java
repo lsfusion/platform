@@ -55,9 +55,11 @@ public class PendingExecutionAspect {
 
         if (remoteObject != lastRemoteObject) {
             if (lastRemoteObject != null) {
-                lastRemoteObject.flushPendingInvocations();
+                RemoteObjectProxy lastRemote = lastRemoteObject;
+                lastRemoteObject = null;
+
+                lastRemote.flushPendingInvocations();
             }
-            lastRemoteObject = null;
             return thisJoinPoint.proceed();
         }
 

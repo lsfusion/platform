@@ -14,6 +14,7 @@ import java.rmi.ConnectException;
 import java.rmi.ConnectIOException;
 import java.rmi.RemoteException;
 import java.util.ConcurrentModificationException;
+import static platform.base.BaseUtils.lineSeparator;
 
 public class ClientExceptionManager {
 
@@ -24,26 +25,29 @@ public class ClientExceptionManager {
     public static void handle(Throwable e, Component parentComponent) {
 
         // Проверяем на потерю соединения и делаем особую обработку
-        for (Throwable ex = e; ex != null; ex = ex.getCause()) {
-            if (ex instanceof ConnectIOException || ex instanceof ConnectException) {
-                ConnectionLostManager.setConnectionLost(true);
+        RemoteException remote = getRemoteExceptionCause(e);
+        if (remote instanceof ConnectIOException || remote instanceof ConnectException) {
+            //при этих RemoteException'ах возможно продолжение работы
+            ConnectionLostManager.connectionLost(false);
+            return;
+        }
+
+        boolean isInternalServerException = false;
+        if (remote != null) {
+            if (remote.getCause() instanceof InternalServerException) {
+                isInternalServerException = true;
+            } else {
+                //при остальных RemoteException'ах нужно релогиниться
+                ConnectionLostManager.connectionLost(true);
                 return;
-            }
-            if (ex == ex.getCause()) {
-                break;
             }
         }
 
         String message = e.getLocalizedMessage();
-        String trace = "";
-
-        boolean isServer = e.getCause() instanceof InternalServerException;
-        if (isServer) {
-            trace = ((InternalServerException) e.getCause()).trace;
-        } else {
+        if (!isInternalServerException) {
             while (e instanceof RuntimeException && e.getCause() != null) {
                 e = e.getCause();
-                message += " : \n" + e.getLocalizedMessage();
+                message += " : " + lineSeparator + e.getLocalizedMessage();
             }
         }
 
@@ -55,8 +59,8 @@ public class ClientExceptionManager {
                 !(erTrace.indexOf("bibliothek.gui.dock.themes.basic.action.buttons.ButtonPanel.setForeground(Unknown Source)") >= 0)) {
             try {
                 String info = "Клиент: " + OSUtils.getLocalHostName() + ",Ошибка: " + message;
-                if (!isServer) {
-                    info += "\n" + erTrace;
+                if (!isInternalServerException) {
+                    info += lineSeparator + erTrace;
                 }
                 Main.frame.remoteNavigator.clientExceptionLog(info);
             } catch (RemoteException exc) {
@@ -65,6 +69,15 @@ public class ClientExceptionManager {
         }
 
         e.printStackTrace();
+    }
+
+    private static RemoteException getRemoteExceptionCause(Throwable e) {
+        for (Throwable ex = e; ex != null && ex != ex.getCause(); ex = ex.getCause()) {
+            if (ex instanceof RemoteException) {
+                return (RemoteException) ex;
+            }
+        }
+        return null;
     }
 
 }

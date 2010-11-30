@@ -49,9 +49,7 @@ public class PingThread extends Thread {
             }
         } catch (RemoteException e) {
             throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-
+        } catch (InterruptedException ignored) {
         }
     }
 

@@ -5,7 +5,6 @@ import platform.client.exceptions.ClientExceptionManager;
 import platform.client.exceptions.ExceptionThreadGroup;
 import platform.client.form.SimplexLayout;
 import platform.client.logics.classes.ClientObjectClass;
-import platform.client.logics.classes.ClientObjectType;
 import platform.client.logics.classes.ClientTypeSerializer;
 import platform.client.rmi.ConnectionLostManager;
 import platform.client.rmi.RMITimeoutSocketFactory;
@@ -34,20 +33,19 @@ import java.util.logging.Logger;
 
 public class Main {
     private final static Logger logger = Logger.getLogger(SimplexLayout.class.getName());
-    public static MainFrame frame;
-
-    public interface ModuleFactory {
-        MainFrame initFrame(RemoteNavigatorInterface remoteNavigator) throws ClassNotFoundException, IOException;
-
-        void runExcel(RemoteFormInterface remoteForm);
-
-        boolean isFull();
-
-        SwingWorker<List<ServerInfo>, ServerInfo> getServerHostEnumerator(MutableComboBoxModel serverHostModel, String waitMessage);
-    }
 
     public static RemoteLogicsInterface remoteLogics;
+    public static MainFrame frame;
+    private static String[] args;
+    public static int computerId;
+
+    public static ModuleFactory module;
+    public static PingThread pingThread;
+    private static Thread mainThread;
+    public static RMITimeoutSocketFactory socketFactory;
+
     private static ClientObjectClass baseClass = null;
+
     public static ClientObjectClass getBaseClass() {
         if(baseClass==null)
             try {
@@ -58,13 +56,50 @@ public class Main {
         return baseClass;
     }
 
-    public static int computerId;
+    public static void restart() {
+        //рестарт в новом потоке
+        new Thread(new Runnable() {
+            public void run() {
+                if (frame != null) {
+                    frame.setVisible(false);
+                    frame.dispose();
+                    frame = null;
+                }
 
-    public static ModuleFactory module;
-    public static PingThread pingThread;
-    public static RMITimeoutSocketFactory socketFactory;
+                try {
+                    //вызываем какойнить flush метод, чтобы обнулить lastRemoteObject в аспектах
+                    remoteLogics.generateNewID();
+                } catch (RemoteException ignored) {
+                }
+                remoteLogics = null;
 
-    public static void start(final String[] args, ModuleFactory startModule) {
+                stopThread(pingThread);
+                pingThread = null;
+                stopThread(mainThread);
+                mainThread = null;
+
+                start(args, module);
+            }
+        }).start();
+    }
+
+    private static void stopThread(Thread thread) {
+        if (thread != null) {
+            thread.interrupt();
+            while (thread.getState() != Thread.State.TERMINATED) {
+                thread.interrupt();
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ignored) {
+                }
+            }
+            thread = null;
+        }
+    }
+
+    public static void start(final String[] iargs, ModuleFactory startModule) {
+        args = iargs;
+        module = startModule;
 
         System.setProperty("sun.awt.exception.handler", ClientExceptionManager.class.getName());
 
@@ -80,8 +115,6 @@ public class Main {
                 ClientLoggingManager.turnOnRmiLogging();
             }
         }
-
-        module = startModule;
 
         try {
             loadLibraries();
@@ -103,7 +136,7 @@ public class Main {
             }
         });
 
-        new Thread(new ExceptionThreadGroup(), "Init thread") {
+        mainThread = new Thread(new ExceptionThreadGroup(), "Init thread") {
 
             public void run() {
 
@@ -188,7 +221,9 @@ public class Main {
                 }
 
             }
-        }.start();
+        };
+        
+        mainThread.start();
     }
 
     private static void initRMISocketFactory(String timeout) throws IOException {
@@ -197,16 +232,18 @@ public class Main {
             factory = RMISocketFactory.getDefaultSocketFactory();
         }
 
-        socketFactory = new RMITimeoutSocketFactory(factory, Integer.valueOf(timeout));
+        if (socketFactory == null) {
+            socketFactory = new RMITimeoutSocketFactory(factory, Integer.valueOf(timeout));
 
-        RMISocketFactory.setFailureHandler(new RMIFailureHandler() {
+            RMISocketFactory.setFailureHandler(new RMIFailureHandler() {
 
-            public boolean failure(Exception ex) {
-                return true;
-            }
-        });
+                public boolean failure(Exception ex) {
+                    return true;
+                }
+            });
 
-        RMISocketFactory.setSocketFactory(socketFactory);
+            RMISocketFactory.setSocketFactory(socketFactory);
+        }
     }
 
     private static void startSplashScreen() {
@@ -268,5 +305,15 @@ public class Main {
         } catch (RemoteException e) {
             throw new RuntimeException("Ошибка при генерации ID");
         }
+    }
+
+    public interface ModuleFactory {
+        MainFrame initFrame(RemoteNavigatorInterface remoteNavigator) throws ClassNotFoundException, IOException;
+
+        void runExcel(RemoteFormInterface remoteForm);
+
+        boolean isFull();
+
+        SwingWorker<List<ServerInfo>, ServerInfo> getServerHostEnumerator(MutableComboBoxModel serverHostModel, String waitMessage);
     }
 }

@@ -31,7 +31,7 @@ public class RMITimeoutSocketFactory extends RMISocketFactory implements ISocket
         CountZipSocket socket = new CountZipSocket(host, port);
         socket.setObserver(this);
         socket.setSoTimeout(timeout);
-        ConnectionLostManager.setConnectionLost(false);
+        ConnectionLostManager.connectionRelived();
         return socket;
     }
 

@@ -7,8 +7,6 @@ import platform.client.Main;
 import platform.client.PropertyConstants;
 import platform.interop.DaemonThreadFactory;
 
-import javax.swing.*;
-import java.awt.*;
 import java.rmi.RemoteException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -19,20 +17,6 @@ public class ConnectionLostPainterUI extends LockableUI implements Runnable {
 
     public ConnectionLostPainterUI() {
         super(new BufferedImageOpEffect(new BlurFilter()));
-    }
-
-    @Override
-    public void paint(Graphics graphics, JComponent l) {
-        super.paint(graphics, l);
-
-        if (isLocked()) {
-            Graphics2D g2 = (Graphics2D)graphics;
-            String msg = "Соединение потеряно. Ждите либо попробуйте перезапустить приложение.";
-            g2.setFont(new Font(g2.getFont().getName(), Font.BOLD, 24));
-            l.setForeground(Color.RED);
-            FontMetrics fm = g2.getFontMetrics();
-            g2.drawString(msg, (l.getWidth()-fm.stringWidth(msg))/2, (l.getHeight()-fm.getHeight())/2);
-        }
     }
 
     @Override

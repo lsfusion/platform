@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 public class BaseUtils {
+    public static final String lineSeparator = System.getProperty("line.separator");
 
     public static boolean nullEquals(Object obj1, Object obj2) {
 
