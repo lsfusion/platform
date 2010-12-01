@@ -45,6 +45,9 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.Map.Entry;
 
+import static platform.interop.ClassViewType.*;
+import static platform.server.form.instance.GroupObjectInstance.*;
+
 // класс в котором лежит какие изменения произошли
 
 // нужен какой-то объект который
@@ -278,7 +281,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
             session.createTemporaryTable(expandTable);
         }
         expandTables.put(group, expandTable.insertRecord(session, BaseUtils.join(expandTable.mapKeys, value), new HashMap<PropertyField, ObjectValue>(), true));
-        group.updated |= GroupObjectInstance.UPDATED_EXPANDS;
+        group.updated |= UPDATED_EXPANDS;
     }
 
     public void changeGroupObject(GroupObjectInstance group, Map<ObjectInstance, ? extends ObjectValue> value) throws SQLException {
@@ -291,13 +294,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     public void switchClassView(GroupObjectInstance group) {
-        changeClassView(group, ClassViewType.switchView(group.curClassView));
+        changeClassView(group, switchView(group.curClassView));
     }
 
     public void changeClassView(GroupObjectInstance group, ClassViewType show) {
 
         group.curClassView = show;
-        group.updated = group.updated | GroupObjectInstance.UPDATED_CLASSVIEW;
+        group.updated = group.updated | UPDATED_CLASSVIEW;
     }
 
     // сстандартные фильтры
@@ -846,7 +849,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
     private boolean objectUpdated(Updated updated, Set<GroupObjectInstance> groupObjects) {
         for (GroupObjectInstance groupObject : groupObjects)
-            if ((groupObject.updated & GroupObjectInstance.UPDATED_KEYS) != 0)
+            if ((groupObject.updated & UPDATED_KEYS) != 0)
                 return true;
         return updated.objectUpdated(groupObjects);
     }
@@ -895,19 +898,19 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
             GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group
             for (GroupObjectInstance group : groups) {
 
-                if ((group.updated & GroupObjectInstance.UPDATED_CLASSVIEW) != 0) {
+                if ((group.updated & UPDATED_CLASSVIEW) != 0) {
                     result.classViews.put(group, group.curClassView);
                 }
 
-                if (group.curClassView == ClassViewType.HIDE) continue;
+                if (group.curClassView == HIDE) continue;
 
                 // если изменились класс грида или представление
-                boolean updateKeys = refresh || (group.updated & (GroupObjectInstance.UPDATED_GRIDCLASS | GroupObjectInstance.UPDATED_CLASSVIEW)) != 0;
+                boolean updateKeys = refresh || (group.updated & (UPDATED_GRIDCLASS | UPDATED_CLASSVIEW)) != 0;
 
                 if (FilterInstance.ignoreInInterface) {
-                    updateKeys |= (group.updated & GroupObjectInstance.UPDATED_FILTER) != 0;
+                    updateKeys |= (group.updated & UPDATED_FILTER) != 0;
                     group.filters = group.getSetFilters();
-                } else if ((group.updated & GroupObjectInstance.UPDATED_FILTER) != 0) {
+                } else if ((group.updated & UPDATED_FILTER) != 0) {
                     Set<FilterInstance> newFilters = new HashSet<FilterInstance>();
                     for (FilterInstance filt : group.getSetFilters())
                         if (filt.isInInterface(group))
@@ -922,7 +925,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
                 // порядки
                 OrderedMap<OrderInstance, Boolean> newOrders = new OrderedMap<OrderInstance, Boolean>();
-                if ((group.updated & GroupObjectInstance.UPDATED_ORDER) != 0) {
+                if ((group.updated & UPDATED_ORDER) != 0) {
                     for (Entry<OrderInstance, Boolean> setOrder : group.getSetOrders().entrySet())
                         if (setOrder.getKey().isInInterface(group))
                             newOrders.put(setOrder.getKey(), setOrder.getValue());
@@ -978,8 +981,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 int direction = DIRECTION_CENTER;
 
                 if(group.isInTree()) {
-                    if (!updateKeys && (group.getUpTreeGroup() != null && ((group.getUpTreeGroup().updated & GroupObjectInstance.UPDATED_EXPANDS) != 0)) ||
-                            (group.parent != null && (group.updated & GroupObjectInstance.UPDATED_EXPANDS) != 0))
+                    if (!updateKeys && (group.getUpTreeGroup() != null && ((group.getUpTreeGroup().updated & UPDATED_EXPANDS) != 0)) ||
+                            (group.parent != null && (group.updated & UPDATED_EXPANDS) != 0))
                         updateKeys = true;
                 } else {
                     if (userGroupSeeks.containsKey(group)) { // пользовательский поиск
@@ -995,7 +998,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                     } else if (updateKeys) // изменились фильтры, порядки, вид, ищем текущий объект
                         orderSeeks = new HashMap<OrderInstance, ObjectValue>(currentObject);
 
-                    if (!updateKeys && group.curClassView == ClassViewType.GRID && !currentObject.isEmpty() && (group.updated & GroupObjectInstance.UPDATED_OBJECT) != 0) { // скроллирование
+                    if (!updateKeys && group.curClassView == GRID && !currentObject.isEmpty() && (group.updated & UPDATED_OBJECT) != 0) { // скроллирование
                         int keyNum = group.keys.indexOf(currentObject);
                         if (group.upKeys && keyNum < group.getPageSize()) { // если меньше PageSize осталось и сверху есть ключи
                             updateKeys = true;
@@ -1023,7 +1026,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 }
 
                 if (updateKeys) {
-                    if (group.curClassView != ClassViewType.GRID) {
+                    if (group.curClassView != GRID) {
                         // панель
                         updateGroupObject(group, result, readKeys(group, orderSeeks));
                     } else {
@@ -1094,9 +1097,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                         } else
                             updateGroupObject = new GroupObjectValue(group, currentObject);
                     }
-                    group.updated = (group.updated | GroupObjectInstance.UPDATED_KEYS);
+                    group.updated = (group.updated | UPDATED_KEYS);
                 } else
-                    if((group.updated & GroupObjectInstance.UPDATED_OBJECT)!=0) { // так как объект может меняться скажем в результате ActionProperty и нужно об этом сказать клиенту
+                    if((group.updated & UPDATED_OBJECT)!=0) { // так как объект может меняться скажем в результате ActionProperty и нужно об этом сказать клиенту
                         if(currentObject.isEmpty()) { // если null был выбран
                             if(group.getUpTreeGroup()==null) // если не внутренняя группа
                                 updateGroupObject = new GroupObjectValue(group, group.getNulls());
@@ -1116,30 +1119,30 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 if (drawProperty.isAlwaysHide()){
                     continue;
                 }
-                if (drawProperty.toDraw != null && drawProperty.toDraw.curClassView == ClassViewType.HIDE) continue;
+                if (drawProperty.toDraw != null && drawProperty.toDraw.curClassView == HIDE) continue;
 
                 ClassViewType forceViewType = drawProperty.getForceViewType();
-                if (forceViewType != null && forceViewType == ClassViewType.HIDE) continue;
+                if (forceViewType != null && forceViewType == HIDE) continue;
 
                 boolean read = refresh || dataUpdated(drawProperty.propertyObject, changedProps);
 
                 Set<GroupObjectInstance> columnGroupGrids = new HashSet<GroupObjectInstance>();
                 for (GroupObjectInstance columnGroup : drawProperty.columnGroupObjects)
-                    if (columnGroup.curClassView == ClassViewType.GRID)
+                    if (columnGroup.curClassView == GRID)
                         columnGroupGrids.add(columnGroup);
                     else
-                        read = read || (columnGroup.updated & GroupObjectInstance.UPDATED_CLASSVIEW) != 0;
+                        read = read || (columnGroup.updated & UPDATED_CLASSVIEW) != 0;
 
                 boolean inInterface = false;
                 Set<GroupObjectInstance> keyGridObjects = null;
-                if (drawProperty.toDraw != null && drawProperty.toDraw.curClassView == ClassViewType.GRID && (forceViewType == null || forceViewType == ClassViewType.valueOf("GRID")) &&
+                if (drawProperty.toDraw != null && drawProperty.toDraw.curClassView == GRID && (forceViewType == null || forceViewType == GRID) &&
                         drawProperty.propertyObject.isInInterface(keyGridObjects = BaseUtils.addSet(columnGroupGrids, drawProperty.toDraw), forceViewType != null)) { // в grid'е
                     inInterface = true;
                     if (read || objectUpdated(drawProperty.propertyObject, keyGridObjects))
                         readProperties.put(drawProperty, keyGridObjects);
                 } else if (drawProperty.propertyObject.isInInterface(columnGroupGrids, false)) { // в панели
                     inInterface = true;
-                    if (read || (drawProperty.toDraw != null && (drawProperty.toDraw.updated & (GroupObjectInstance.UPDATED_CLASSVIEW | GroupObjectInstance.UPDATED_GRIDCLASS)) != 0) || objectUpdated(drawProperty.propertyObject, columnGroupGrids)) {
+                    if (read || (drawProperty.toDraw != null && (drawProperty.toDraw.updated & (UPDATED_CLASSVIEW | UPDATED_GRIDCLASS)) != 0) || objectUpdated(drawProperty.propertyObject, columnGroupGrids)) {
                         readProperties.put(drawProperty, columnGroupGrids);
                         result.panelProperties.add(drawProperty);
                     }
@@ -1147,17 +1150,24 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
                 if (inInterface) {
                     boolean added = isDrawed.add(drawProperty); // читаем title'ы
-                    if (drawProperty.propertyCaption != null && (added || refresh || (drawProperty.toDraw != null && (drawProperty.toDraw.updated & GroupObjectInstance.UPDATED_CLASSVIEW) != 0) // чтобы на клиента updateCaptions пришли а то они не приходят
-                            || dataUpdated(drawProperty.propertyCaption, changedProps) || objectUpdated(drawProperty.propertyCaption, columnGroupGrids))) // не было надо title перечитать
+                    if (drawProperty.propertyCaption != null
+                        && (added
+                            || refresh
+                            || (drawProperty.toDraw != null && (drawProperty.toDraw.updated & UPDATED_CLASSVIEW) != 0) // чтобы на клиента updateCaptions пришли а то они не приходят
+                            || dataUpdated(drawProperty.propertyCaption, changedProps) // не было надо title перечитать
+                            || objectUpdated(drawProperty.propertyCaption, columnGroupGrids))) {
                         readProperties.put(drawProperty.caption, columnGroupGrids);
-                } else if (isDrawed.remove(drawProperty))
-                    result.dropProperties.add(drawProperty); // вкидываем удаление из интерфейса
+                    }
+                } else if (isDrawed.remove(drawProperty)) {
+                    // вкидываем удаление из интерфейса
+                    result.dropProperties.add(drawProperty);
+                }
             }
 
             for (GroupObjectInstance group : groups) // читаем highlight'ы
                 if (group.propertyHighlight != null) {
-                    Set<GroupObjectInstance> gridGroups = (group.curClassView == ClassViewType.GRID ? Collections.singleton(group) : new HashSet<GroupObjectInstance>());
-                    if (refresh || (group.updated & GroupObjectInstance.UPDATED_CLASSVIEW) != 0 || dataUpdated(group.propertyHighlight, changedProps) || objectUpdated(group.propertyHighlight, gridGroups))
+                    Set<GroupObjectInstance> gridGroups = (group.curClassView == GRID ? Collections.singleton(group) : new HashSet<GroupObjectInstance>());
+                    if (refresh || (group.updated & UPDATED_CLASSVIEW) != 0 || dataUpdated(group.propertyHighlight, changedProps) || objectUpdated(group.propertyHighlight, gridGroups))
                         readProperties.put(group, gridGroups);
                 }
 
@@ -1165,7 +1175,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 Set<GroupObjectInstance> keyGroupObjects = entry.getKey();
                 Set<PropertyReadInstance> propertyList = entry.getValue();
 
-                Query<ObjectInstance, PropertyReadInstance> selectProps = new Query<ObjectInstance, PropertyReadInstance>(GroupObjectInstance.getObjects(GroupObjectInstance.getUpTreeGroups(keyGroupObjects)));
+                Query<ObjectInstance, PropertyReadInstance> selectProps = new Query<ObjectInstance, PropertyReadInstance>(GroupObjectInstance.getObjects(getUpTreeGroups(keyGroupObjects)));
                 for (GroupObjectInstance keyGroup : keyGroupObjects) {
                     GroupObjectTable groupTable = groupTables.get(keyGroup);
                     selectProps.and(groupTable.joinAnd(BaseUtils.join(groupTable.mapKeys, selectProps.mapKeys)).getWhere());
@@ -1234,7 +1244,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
         Set<GroupObjectInstance> reportObjects = new HashSet<GroupObjectInstance>();
         for (GroupObjectInstance group : groups)
-            if (group.curClassView != ClassViewType.HIDE)
+            if (group.curClassView != HIDE)
                 reportObjects.add(group);
 
         return reportObjects;
@@ -1245,7 +1255,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
         Set<GroupObjectInstance> reportObjects = new HashSet<GroupObjectInstance>();
         for (GroupObjectInstance group : groups)
-            if (group.curClassView == ClassViewType.GRID)
+            if (group.curClassView == GRID)
                 reportObjects.add(group);
 
         return reportObjects;

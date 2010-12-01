@@ -43,6 +43,10 @@ public abstract class PanelController {
         if(properties.containsKey(property)) // так как вызывается в addDrawProperty, без проверки было свойство в панели или нет
             for (PropertyController controller : properties.remove(property).values())
                 controller.removeView(formLayout);
+
+        columnKeys.remove(property);
+        captions.remove(property);
+        values.remove(property);
     }
 
     protected abstract void addGroupObjectActions(JComponent comp);
@@ -72,16 +76,19 @@ public abstract class PanelController {
     }
 
     public void update() {
-        for (Map.Entry<ClientPropertyDraw,Map<ClientGroupObjectValue,Object>> entry : updateValues.entrySet()) {
+        for (Map.Entry<ClientPropertyDraw,Map<ClientGroupObjectValue,Object>> entry : values.entrySet()) {
             ClientPropertyDraw property = entry.getKey();
+            Map<ClientGroupObjectValue, Object> propertyCaptions = captions.get(property);
             Map<ClientGroupObjectValue, PropertyController> propControllers = properties.get(property);
 
             Collection<ClientGroupObjectValue> drawKeys = new ArrayList<ClientGroupObjectValue>(); // чисто из-за autohide
-            for (ClientGroupObjectValue columnKey : updateKeys.get(property)) { // именно по columnKeys чтобы сохранить порядок
+            for (ClientGroupObjectValue columnKey : columnKeys.get(property)) { // именно по columnKeys чтобы сохранить порядок
                 Object value = entry.getValue().get(columnKey);
 
-                if (!(property.autoHide && value == null)) { // если не прятать при значении null
-                    PropertyController propController = propControllers.get(columnKey);
+                if (!(property.autoHide && value == null) // если не прятать при значении null
+                    && !(propertyCaptions!=null && propertyCaptions.get(columnKey)==null)) // и если значения propertyCaption != null
+                {
+                    PropertyController propController = propControllers.get(columnKey);                    
                     if (propController == null) {
                         propController = new PropertyController(property, form, columnKey);
                         addGroupObjectActions(propController.getView());
@@ -89,7 +96,7 @@ public abstract class PanelController {
 
                         propControllers.put(columnKey, propController);
                     }
-                    
+
                     propController.setValue(value);
 
                     drawKeys.add(columnKey);
@@ -107,7 +114,7 @@ public abstract class PanelController {
         }
 
         // там с updateCaptions гипотетически может быть проблема если при чтении captions изменятся ключи и нарушится целостность, но это локальный баг его можно позже устранить
-        for (Map.Entry<ClientPropertyDraw,Map<ClientGroupObjectValue,Object>> updateCaption : updateCaptions.entrySet()) {
+        for (Map.Entry<ClientPropertyDraw,Map<ClientGroupObjectValue,Object>> updateCaption : captions.entrySet()) {
             Map<ClientGroupObjectValue, PropertyController> propControllers = properties.get(updateCaption.getKey());
             for(Map.Entry<ClientGroupObjectValue,Object> updateKeys : updateCaption.getValue().entrySet()) {
                 PropertyController propController = propControllers.get(updateKeys.getKey());
@@ -116,35 +123,32 @@ public abstract class PanelController {
             }
         }
 
-        if(updateHighlight)
+        if (updateHighlight) {
             setHighlight(highlight);
-
-        updateKeys = new HashMap<ClientPropertyDraw, List<ClientGroupObjectValue>>();
-        updateValues = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
-        updateCaptions = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+        }
 
         updateHighlight = false;
     }
 
-    protected Map<ClientPropertyDraw, List<ClientGroupObjectValue>> updateKeys = new HashMap<ClientPropertyDraw, List<ClientGroupObjectValue>>();
+    protected Map<ClientPropertyDraw, List<ClientGroupObjectValue>> columnKeys = new HashMap<ClientPropertyDraw, List<ClientGroupObjectValue>>();
     public void updateColumnKeys(ClientPropertyDraw property, List<ClientGroupObjectValue> groupColumnKeys) {
-        updateKeys.put(property, groupColumnKeys);
+        columnKeys.put(property, groupColumnKeys);
     }
 
-    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> updateValues = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
     public void updatePropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> pvalues) {
-        updateValues.put(property, pvalues);
+        values.put(property, pvalues);
     }
-    
-    protected Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> updateCaptions = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+
+    protected Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> captions = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
     public void updatePropertyCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> captions) {
-        updateCaptions.put(property, captions);
+        this.captions.put(property, captions);
     }
 
     private boolean updateHighlight = false;
     private Object highlight;
     public void updateHighlightValue(Object highlight) {
         updateHighlight = true;
-        this.highlight = highlight; 
+        this.highlight = highlight;
     }
 }
