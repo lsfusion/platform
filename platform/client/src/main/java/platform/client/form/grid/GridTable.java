@@ -213,8 +213,6 @@ public abstract class GridTable extends ClientFormTable
     }
 
     public void updateTable() {
-        commitEditing();
-
         model.update(properties, rowKeys, columnKeys, captions, values, highlights);
 
         refreshColumnModel();

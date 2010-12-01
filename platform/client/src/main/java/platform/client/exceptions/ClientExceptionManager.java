@@ -59,7 +59,7 @@ public class ClientExceptionManager {
         String erTrace = os.toString();
 
         if (!(e instanceof ConcurrentModificationException) ||
-            !(erTrace.indexOf("bibliothek.gui.dock.themes.basic.action.buttons.ButtonPanel.setForeground(Unknown Source)") >= 0)) {
+            !(erTrace.indexOf("bibliothek.gui.dock.themes.basic.action.buttons.ButtonPanel.setForeground") >= 0)) {
             try {
                 String info = "Клиент: " + OSUtils.getLocalHostName() + ",Ошибка: " + message;
                 if (!isInternalServerException) {
