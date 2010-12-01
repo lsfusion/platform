@@ -966,11 +966,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         baseElement.add(baseClass.getBaseClassForm(this));
 
-        initBaseAuthentication();
-        initAuthentication();
-
         initBaseNavigators();
         initNavigators();
+
+        initBaseAuthentication();
+        initAuthentication();
 
         // считаем системного пользователя
         try {
