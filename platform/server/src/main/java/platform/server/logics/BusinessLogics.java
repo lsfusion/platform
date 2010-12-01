@@ -806,6 +806,39 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         onlyNotZero = addJProp(andNot1, 1, addJProp(equals2, 1, vzero), 1);
     }
 
+    /**
+     * Нужно для скрытия свойств при соблюдении какого-то критерия
+     *
+     * <pre>
+     * Пример использования:
+     *       Скроем свойство policyDescription, если у текущего user'а логин - "Admin"
+     *
+     *       Вводим свойство критерия:
+     *
+     *         LP hideUserPolicyDescription = addJProp(diff2, userLogin, 1, addCProp(StringClass.get(30), "Admin"));
+     *
+     *       Вводим свойство которое будет использовано в качестве propertyCaption для policyDescription:
+     *
+     *         policyDescriptorCaption = addHideCaptionProp(null, "Policy caption", policyDescription, hideUserPolicyDescription);
+     *
+     *       Далее в форме указываем соответсвующий propertyCaption:
+     *
+     *         PropertyDrawEntity descriptionDraw = getPropertyDraw(policyDescription, objPolicy.groupTo);
+     *         PropertyDrawEntity descriptorCaptionDraw = addPropertyDraw(policyDescriptorCaption, objUser);
+     *         descriptionDraw.setPropertyCaption(descriptorCaptionDraw.propertyObject);
+     * </pre>
+     * @param group ...
+     * @param caption ...
+     * @param original свойство, к которому будет применятся критерий сокрытия
+     * @param hideProperty критерий
+     * @return свойство, которое должно использоваться в качестве propertyCaption для скрываемого свойства
+     */
+    protected LP addHideCaptionProp(AbstractGroup group, String caption, LP original, LP hideProperty) {
+        LP originalCaption = addCProp(StringClass.get(100), original.property.caption);
+        LP result = addJProp(group, caption, and1, BaseUtils.add(new Object[]{originalCaption}, directLI(hideProperty)));
+        return result;
+    }
+
     void initBaseNavigators() {
         NavigatorElement policy = new NavigatorElement(baseElement, 50000, "Политики безопасности");
         addFormEntity(new UserPolicyFormEntity(policy, 50100));
