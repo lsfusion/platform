@@ -9,6 +9,7 @@ import platform.client.descriptor.nodes.ContainerNode;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.form.layout.AbstractContainer;
+import platform.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
 import java.io.DataInputStream;
@@ -62,12 +63,18 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         tabbedPane = inStream.readBoolean();
     }
 
-    public void customConstructor() {
-        initAggregateObjects(getContext());
+    @Override
+    public SimplexConstraints<ClientComponent> getDefaultConstraints() {
+        SimplexConstraints<ClientComponent> constraints = super.getDefaultConstraints();
         // по умолчанию, контейнеры не должны resize'ится вообще, то есть не стремится ни к максимальному размеру, ни к предпочитаемому
         // то же самое пока дублируется в ClientContainer
         constraints.fillVertical = -1;
         constraints.fillHorizontal = -1;
+        return constraints;
+    }
+
+    public void customConstructor() {
+        initAggregateObjects(getContext());
     }
 
     @Override

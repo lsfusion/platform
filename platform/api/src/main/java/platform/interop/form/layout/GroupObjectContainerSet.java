@@ -72,9 +72,6 @@ public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extend
         set.filterContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
         set.controlsContainer.add((T)set.filterContainer);
 
-        group.getGrid().getConstraints().fillVertical = 1;
-        group.getGrid().getConstraints().fillHorizontal = 1;
-
         set.gridContainer.add(group.getGrid());
 
         group.getShowType().getConstraints().directions = new SimplexComponentDirections(0.01,0,0,0.01);

@@ -25,6 +25,9 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
 
     public ClientContainer container;
     public SimplexConstraints<ClientComponent> constraints;
+    public SimplexConstraints<ClientComponent> getDefaultConstraints() {
+        return new SimplexConstraints<ClientComponent>();
+    }
 
     public boolean defaultComponent = false;
 
@@ -42,7 +45,8 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
     }
 
     protected void initAggregateObjects(ApplicationContext context) {
-        constraints = new SimplexConstraints<ClientComponent>(context);
+        constraints = getDefaultConstraints();
+        constraints.setContext(context);
         design = new ComponentDesign(context);
     }
 

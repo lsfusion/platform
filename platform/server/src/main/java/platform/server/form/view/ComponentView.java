@@ -20,7 +20,10 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     protected ContainerView container;
 
-    public SimplexConstraints<ComponentView> constraints = new SimplexConstraints<ComponentView>();
+    public SimplexConstraints<ComponentView> constraints = getDefaultConstraints();
+    public SimplexConstraints<ComponentView> getDefaultConstraints() {
+        return new SimplexConstraints<ComponentView>();
+    }
 
     public SimplexConstraints<ComponentView> getConstraints() {
         return constraints;
