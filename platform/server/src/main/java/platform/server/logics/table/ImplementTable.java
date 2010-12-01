@@ -75,7 +75,7 @@ public class ImplementTable extends Table {
 
         if(recCompare(IS_EQUAL,toCompare,iRec,mapTo)) return COMPARE_EQUAL;
         if(recCompare(IS_CHILD,toCompare,iRec,mapTo)) return COMPARE_UP;
-        if(recCompare(IS_EQUAL,toCompare,iRec,mapTo)) return COMPARE_DOWN;
+        if(recCompare(IS_PARENT,toCompare,iRec,mapTo)) return COMPARE_DOWN;
 
         return COMPARE_DIFF;
     }
