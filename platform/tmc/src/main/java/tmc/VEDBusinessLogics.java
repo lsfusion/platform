@@ -1651,7 +1651,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.get(getPropertyDraw(articleQuantity, objArt)).minimumSize = new Dimension(20, 20);
             design.get(getPropertyDraw(documentFreeQuantity, objArt)).minimumSize = new Dimension(90, 20);
             design.get(getPropertyDraw(orderArticleSaleDiscount, objArt)).minimumSize = new Dimension(20, 20);
-            getPropertyDraw(orderArticleSaleDiscountSum, objArt).isHide = true;
+            getPropertyDraw(orderArticleSaleDiscountSum, objArt).forceViewType = ClassViewType.HIDE;
             design.get(getPropertyDraw(barcode, objArt)).minimumSize = new Dimension(200, 100);
 
             return design;
@@ -1706,9 +1706,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addPropertyDraw(checkRetailExported, objDoc);
             }
             addPropertyDraw(orderUserName, objDoc);
-            getPropertyDraw(orderUserName).isHide = true;
+            getPropertyDraw(orderUserName).forceViewType = ClassViewType.HIDE;
             addPropertyDraw(accumulatedClientSum, objDoc);
-            getPropertyDraw(accumulatedClientSum).isHide = true;
+            getPropertyDraw(accumulatedClientSum).forceViewType = ClassViewType.HIDE;
         }
 
         @Override
@@ -2109,7 +2109,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             addPropertyDraw(documentBarcodePriceOv, objInner, objBarcode).setToDraw(objBarcode.groupTo);
             addPropertyDraw(orderUserName, objDoc);
-            getPropertyDraw(orderUserName).isHide = true;
+            getPropertyDraw(orderUserName).forceViewType = ClassViewType.HIDE;
             //addPropertyDraw(returnArticleSalePay, objArt);
         }
 
@@ -2464,7 +2464,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addPropertyDraw(cashRegOperGroup, true);
             }
             addPropertyDraw(orderUserName, objDoc);
-            getPropertyDraw(orderUserName).isHide = true;
+            getPropertyDraw(orderUserName).forceViewType = ClassViewType.HIDE;
             addPropertyDraw(accumulatedClientSum, objDoc);
         }
 

@@ -1116,9 +1116,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
             final Map<PropertyReadInstance, Set<GroupObjectInstance>> readProperties = new HashMap<PropertyReadInstance, Set<GroupObjectInstance>>();
 
             for (PropertyDrawInstance<?> drawProperty : properties) {
-                if (drawProperty.isAlwaysHide()){
-                    continue;
-                }
                 if (drawProperty.toDraw != null && drawProperty.toDraw.curClassView == HIDE) continue;
 
                 ClassViewType forceViewType = drawProperty.getForceViewType();

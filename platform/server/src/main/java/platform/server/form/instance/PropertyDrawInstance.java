@@ -15,10 +15,6 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
     public PropertyObjectInstance<P> propertyObject;
 
-    public boolean isAlwaysHide(){
-        return entity.isHide;
-    }
-
     public PropertyObjectInstance getPropertyObject() {
         return propertyObject;
     }
