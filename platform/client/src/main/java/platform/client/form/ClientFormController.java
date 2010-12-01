@@ -505,8 +505,11 @@ public class ClientFormController {
     }
 
     public void changeGroupObject(ClientGroupObject group, ClientGroupObjectValue objectValue) throws IOException {
-        if (group.parent != null
-            || (objectValue != null && !objectValue.equals(controllers.get(group).getCurrentObject()))) {
+        if (objectValue == null) {
+            return;
+        }
+        
+        if (group.parent != null || !objectValue.equals(controllers.get(group).getCurrentObject())) {
             remoteForm.changeGroupObject(group.getID(), objectValue.serialize(group));
 
             applyRemoteChanges();
