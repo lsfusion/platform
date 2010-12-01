@@ -36,12 +36,10 @@ public class Main {
 
     public static RemoteLogicsInterface remoteLogics;
     public static MainFrame frame;
-    private static String[] args;
     public static int computerId;
 
     public static ModuleFactory module;
     public static PingThread pingThread;
-    private static Thread mainThread;
     public static RMITimeoutSocketFactory socketFactory;
 
     private static ClientObjectClass baseClass = null;
@@ -57,50 +55,10 @@ public class Main {
     }
 
     public static void restart() {
-        //рестарт в новом потоке
-        new Thread(new Runnable() {
-            public void run() {
-                if (frame != null) {
-                    frame.setVisible(false);
-                    frame.dispose();
-                    frame = null;
-                }
-
-                try {
-                    //вызываем какойнить flush метод, чтобы обнулить lastRemoteObject в аспектах
-                    remoteLogics.generateNewID();
-                } catch (RemoteException ignored) {
-                }
-                remoteLogics = null;
-
-                stopThread(pingThread);
-                pingThread = null;
-                stopThread(mainThread);
-                mainThread = null;
-
-                System.gc();
-
-                start(args, module);
-            }
-        }).start();
-    }
-
-    private static void stopThread(Thread thread) {
-        if (thread != null) {
-            thread.interrupt();
-            while (thread.getState() != Thread.State.TERMINATED) {
-                thread.interrupt();
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ignored) {
-                }
-            }
-            thread = null;
-        }
+        System.exit(0);
     }
 
     public static void start(final String[] iargs, ModuleFactory startModule) {
-        args = iargs;
         module = startModule;
 
         System.setProperty("sun.awt.exception.handler", ClientExceptionManager.class.getName());
@@ -138,7 +96,7 @@ public class Main {
             }
         });
 
-        mainThread = new Thread(new ExceptionThreadGroup(), "Init thread") {
+        new Thread(new ExceptionThreadGroup(), "Init thread") {
 
             public void run() {
 
@@ -223,9 +181,7 @@ public class Main {
                 }
 
             }
-        };
-        
-        mainThread.start();
+        }.start();
     }
 
     private static void initRMISocketFactory(String timeout) throws IOException {

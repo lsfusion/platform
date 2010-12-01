@@ -73,17 +73,14 @@ public class ConnectionLostManager {
 
             this.fatal = fatal;
 
-            setSize(270, 130);
-            setResizable(false);
             setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
             setLocationRelativeTo(owner);
-            setLayout(new GridLayout(fatal ? 2 : 3, 1));
 
             String messageText = fatal
-                ? "<html>Соединение с сервером потеряно, <br> попробуйте перелогииться.</html>"
-                : "<html>Соединение с сервером потеряно, <br> вы можете перейти на форму логина <br> или подождать пока оно восстановиться.</html>";
+                ? "<html>Произошла ошибка при общении с сервером, <br> попробуйте вручную перезапустить приложение.</html>"
+                : "<html>Соединение с сервером потеряно, <br> вы можете подождать пока оно восстановится <br> или вручную перезапустить приложение.</html>";
 
-            okBut = new JButton("Перейти к логину");
+            okBut = new JButton("Закрыть приложение");
             okBut.addActionListener(this);
 
             JPanel messagePanel = new JPanel();
@@ -92,16 +89,23 @@ public class ConnectionLostManager {
             JPanel buttonPanel = new JPanel();
             buttonPanel.add(okBut);
 
-            add(messagePanel);
+
+            Container pane = getContentPane();
+            pane.setLayout(new BoxLayout(pane, BoxLayout.Y_AXIS));
+
+            pane.add(messagePanel);
             if (!fatal) {
                 JProgressBar progressBar = new JProgressBar();
                 progressBar.setIndeterminate(true);
                 JPanel progressPanel = new JPanel();
                 progressPanel.add(progressBar);
-                add(progressPanel);
+                pane.add(progressPanel);
             }
 
-            add(buttonPanel);
+            pane.add(buttonPanel);
+
+            pack();
+            setResizable(false);
         }
 
         public void actionPerformed(ActionEvent e) {

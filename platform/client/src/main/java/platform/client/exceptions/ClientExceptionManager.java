@@ -13,7 +13,9 @@ import java.io.PrintStream;
 import java.rmi.ConnectException;
 import java.rmi.ConnectIOException;
 import java.rmi.RemoteException;
+import java.rmi.ServerException;
 import java.util.ConcurrentModificationException;
+
 import static platform.base.BaseUtils.lineSeparator;
 
 public class ClientExceptionManager {
@@ -34,7 +36,8 @@ public class ClientExceptionManager {
 
         boolean isInternalServerException = false;
         if (remote != null) {
-            if (remote.getCause() instanceof InternalServerException) {
+            // если не подкласс, а сам эксешн, то не считаем фатальным...
+            if (remote.getClass() == RemoteException.class || remote.getCause() instanceof InternalServerException) {
                 isInternalServerException = true;
             } else {
                 //при остальных RemoteException'ах нужно релогиниться
@@ -56,7 +59,7 @@ public class ClientExceptionManager {
         String erTrace = os.toString();
 
         if (!(e instanceof ConcurrentModificationException) ||
-                !(erTrace.indexOf("bibliothek.gui.dock.themes.basic.action.buttons.ButtonPanel.setForeground(Unknown Source)") >= 0)) {
+            !(erTrace.indexOf("bibliothek.gui.dock.themes.basic.action.buttons.ButtonPanel.setForeground(Unknown Source)") >= 0)) {
             try {
                 String info = "Клиент: " + OSUtils.getLocalHostName() + ",Ошибка: " + message;
                 if (!isInternalServerException) {
@@ -74,7 +77,9 @@ public class ClientExceptionManager {
     private static RemoteException getRemoteExceptionCause(Throwable e) {
         for (Throwable ex = e; ex != null && ex != ex.getCause(); ex = ex.getCause()) {
             if (ex instanceof RemoteException) {
-                return (RemoteException) ex;
+                return ex instanceof ServerException
+                       ? (RemoteException) ex.getCause()
+                       : (RemoteException) ex;
             }
         }
         return null;
