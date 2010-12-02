@@ -116,13 +116,11 @@ public abstract class GridTable extends ClientFormTable
         setDefaultRenderer(Object.class, new ClientAbstractCellRenderer());
         setDefaultEditor(Object.class, new ClientAbstractCellEditor());
 
-        adjustHeaderSize();
         addComponentListener(new ComponentAdapter() {
             private int pageSize = 50;
 
             public void componentResized(ComponentEvent ce) {
                 //баг с прорисовкой хэдера
-                adjustHeaderSize();
 
                 // Listener срабатывает в самом начале, когда компонент еще не расположен
                 // В таком случае нет смысла вызывать изменение pageSize
@@ -149,11 +147,6 @@ public abstract class GridTable extends ClientFormTable
         });
 
         initializeActionMap();
-    }
-
-    private void adjustHeaderSize() {
-        tableHeader.setPreferredSize(new Dimension(columnModel.getTotalColumnWidth(), 34));
-        tableHeader.resizeAndRepaint();
     }
 
     private void initializeActionMap() {
@@ -771,6 +764,11 @@ public abstract class GridTable extends ClientFormTable
             ClientPropertyDraw cellView = model.getColumnProperty(modelIndex);
             toolTip += " (sID: " + cellView.getSID() + ")";
             return toolTip;
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            return new Dimension(columnModel.getTotalColumnWidth(), super.getPreferredSize().height*2);
         }
     }
 }
