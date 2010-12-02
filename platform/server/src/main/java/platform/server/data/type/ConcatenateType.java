@@ -189,4 +189,14 @@ public class ConcatenateType implements Type<byte[]> {
     public Object parseString(String s) throws ParseException {
         throw new RuntimeException("Parsing values from string is not supported");
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o || o instanceof ConcatenateType && Arrays.equals(types, ((ConcatenateType) o).types);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(types);
+    }
 }

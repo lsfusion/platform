@@ -19,9 +19,9 @@ public class NumericClass extends IntegralClass<Double> {
     final byte length;
     final byte precision;
 
-    NumericClass(byte iLength, byte iPrecision) {
-        length = iLength;
-        precision = iPrecision;
+    private NumericClass(byte length, byte precision) {
+        this.length = length;
+        this.precision = precision;
     }
 
     public Class getJavaClass() {

@@ -1,8 +1,11 @@
 package platform.server.session;
 
 import platform.base.QuickMap;
+import platform.base.BaseUtils;
 import platform.server.caches.MapValues;
 import platform.server.caches.MapValuesIterable;
+import platform.server.caches.ManualLazy;
+import platform.server.caches.AbstractMapValues;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.translator.MapValuesTranslate;
@@ -75,5 +78,13 @@ public abstract class AbstractPropertyChanges<P extends PropertyInterface, T ext
         for(int i=0;i<size;i++)
             result.add(getKey(i),getValue(i).translate(mapValues));
         return result;
+    }
+
+    private BaseUtils.HashComponents<ValueExpr> components = null;
+    @ManualLazy
+    public BaseUtils.HashComponents<ValueExpr> getComponents() {
+        if(components==null)
+            components = AbstractMapValues.getComponents(this);
+        return components;
     }
 }

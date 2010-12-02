@@ -11,20 +11,17 @@ import platform.server.caches.IdentityLazy;
 import platform.server.caches.InnerContext;
 import platform.server.caches.MapValuesIterable;
 import platform.server.caches.hash.HashContext;
-import platform.server.caches.hash.HashMapValues;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
+import platform.server.data.translator.MapValuesTranslator;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.property.*;
-import platform.server.session.Changes;
-import platform.server.session.MapDataChanges;
-import platform.server.session.Modifier;
-import platform.server.session.PropertyChange;
+import platform.server.session.*;
 
 import java.util.*;
 import java.util.logging.Logger;
@@ -69,20 +66,35 @@ public class MapCacheAspect {
                 cacheParse.put(hashQuery, hashCaches);
             }
         }
-//        synchronized(hashCaches) {
+        synchronized(hashCaches) {
             for(Query<?,?> cache : hashCaches) {
                 parsed = cacheQuery(cache, query);
                 if(parsed !=null) {
                     logger.info("cached");
+                    ((ParseInterface) query).setParse(parsed);
                     return parsed;
                 }
             }
             logger.info("not cached");
-            parsed = (ParsedQuery<K, V>) thisJoinPoint.proceed();
+            Query cache;
+            if(BaseUtils.onlyObjects(query.mapKeys.keySet()) && BaseUtils.onlyObjects(query.properties.keySet())) {
+                parsed = (ParsedQuery<K, V>) thisJoinPoint.proceed();
+                cache = query;
+            } else { // чтобы не было утечки памяти, "заменяем" компилируемый запрос на объекты
+                Map<K,Object> genKeys = BaseUtils.generateObjects(query.mapKeys.keySet());
+                Map<V,Object> genProps = BaseUtils.generateObjects(query.properties.keySet());
+                
+                cache = new Query<Object, Object>(BaseUtils.crossJoin(genKeys, query.mapKeys), BaseUtils.crossJoin(genProps, query.properties), query.where);
+                ParsedQuery<Object,Object> parsedCache = (ParsedQuery<Object,Object>) thisJoinPoint.proceed(new Object[]{cache, cache});
+                ((ParseInterface) cache).setParse(parsedCache);
+
+                parsed = new MapParsedQuery<K, V, Object, Object>(parsedCache, genProps, genKeys, MapValuesTranslator.noTranslate);
+            }
+
             ((ParseInterface) query).setParse(parsed);
-            hashCaches.add(query);
+            hashCaches.add(cache);
             return parsed;
-//        }
+        }
     }
 
     @Around("call(platform.server.data.query.ParsedQuery platform.server.data.query.Query.parse()) && target(query)")
@@ -138,6 +150,8 @@ public class MapCacheAspect {
     }
 
     <K,V> Join<V> join(Map<K,? extends Expr> joinExprs, MapValuesTranslate joinValues,Map<Integer,Map<JoinImplement<K>,Join<V>>> joinCaches,ProceedingJoinPoint thisJoinPoint) throws Throwable {
+        assert BaseUtils.onlyObjects(joinExprs.keySet());
+
         JoinImplement<K> joinImplement = new JoinImplement<K>(joinExprs,joinValues);
 
         Map<JoinImplement<K>,Join<V>> hashCaches;
@@ -200,7 +214,7 @@ public class MapCacheAspect {
 
         Map<U, U> hashCaches;
         synchronized(usedCaches) {
-            int hashImplement = implement.hashValues(HashMapValues.instance);
+            int hashImplement = implement.getComponents().hash;
             hashCaches = usedCaches.get(hashImplement);
             if(hashCaches==null) {
                 hashCaches = new HashMap<U, U>();
@@ -223,20 +237,29 @@ public class MapCacheAspect {
                 }
             }
 
+            logger.info("getUsedChanges - not cached "+property);
             U usedChanges = (U) thisJoinPoint.proceed();
             hashCaches.put(implement, usedChanges);
-            logger.info("getUsedChanges - not cached "+property);
 
             return usedChanges;
         }
     }
 
-    // aspect который ловит getExpr'ы и оборачивает их в query, для mapKeys после чего join'ит их чтобы импользовать кэши
     @Around("call(* platform.server.logics.property.Property.aspectGetUsedChanges(platform.server.session.Modifier)) " +
-            "&& target(property) && args(modifier)")
-    public Object callGetUsedChanges(ProceedingJoinPoint thisJoinPoint, Property property, Modifier modifier) throws Throwable {
-        // сначала target в аспекте должен быть
+            "&& target(property) && args(modifier) " +
+            "&& !cflowbelow(call(* platform.server.logics.property.Property.aspectGetUsedChanges(platform.server.session.Modifier)) || call(* platform.server.logics.property.Property.calculateExpr(java.util.Map,platform.server.session.Modifier,platform.server.data.where.WhereBuilder)))")
+    public Object callUpGetUsedChanges(ProceedingJoinPoint thisJoinPoint, Property property, Modifier modifier) throws Throwable {
         return getUsedChanges(property, modifier, ((MapPropertyInterface)property).getUsedChangesCache(), thisJoinPoint);
+    }
+
+    @Around("call(* platform.server.logics.property.Property.aspectGetUsedChanges(*)) " +
+            "&& target(property) && args(modifier) " +
+            "&& cflowbelow(call(* platform.server.logics.property.Property.aspectGetUsedChanges(platform.server.session.Modifier)) || call(* platform.server.logics.property.Property.calculateExpr(java.util.Map,platform.server.session.Modifier,platform.server.data.where.WhereBuilder)))")
+    public Object callRecGetUsedChanges(ProceedingJoinPoint thisJoinPoint, Property property, Modifier modifier) throws Throwable {
+        if(modifier instanceof IncrementApply) // сначала target в аспекте должен быть
+            return thisJoinPoint.proceed();
+        else
+            return getUsedChanges(property, modifier, ((MapPropertyInterface)property).getUsedChangesCache(), thisJoinPoint);
     }
 
     final String PROPERTY_STRING = "expr";
@@ -285,7 +308,7 @@ public class MapCacheAspect {
 
         Map<JoinExprInterfaceImplement<U>,Query<K,String>> hashCaches;
         synchronized(exprCaches) {
-            int hashImplement = implement.hashValues(HashMapValues.instance);
+            int hashImplement = implement.getComponents().hash;
             hashCaches = exprCaches.get(hashImplement);
             if(hashCaches==null) {
                 hashCaches = new HashMap<JoinExprInterfaceImplement<U>, Query<K, String>>();
@@ -515,10 +538,10 @@ public class MapCacheAspect {
                 }
             }
 
+            logger.info("getExpr - not cached "+property);
             WhereBuilder cacheWheres = Property.cascadeWhere(changedWheres);
             Expr expr = (Expr) thisJoinPoint.proceed(new Object[]{property,property,joinExprs,modifier,cacheWheres});
             hashCaches.put(implement, new ExprResult(expr, changedWheres!=null?cacheWheres.toWhere():null));
-            logger.info("getExpr - not cached "+property);
 
             // проверим
             if(checkInfinite && !(property instanceof FormulaProperty))

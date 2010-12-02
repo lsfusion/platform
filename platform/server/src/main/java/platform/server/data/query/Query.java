@@ -92,7 +92,7 @@ public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInter
     }
 
     public Join<V> join(Map<K, ? extends Expr> joinImplement) {
-        return join(joinImplement, MapValuesTranslator.noTranslate); //parse().join(joinImplement);
+        return join(joinImplement, MapValuesTranslator.noTranslate);
     }
 
     public Join<V> join(Map<K, ? extends Expr> joinImplement, MapValuesTranslate mapValues) {

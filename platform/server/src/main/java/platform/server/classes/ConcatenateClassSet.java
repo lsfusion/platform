@@ -6,6 +6,8 @@ import platform.server.classes.sets.OrClassSet;
 import platform.server.data.type.ConcatenateType;
 import platform.server.data.type.Type;
 
+import java.util.Arrays;
+
 public class ConcatenateClassSet implements ConcreteClass  {
 
     private AndClassSet[] classes;
@@ -78,5 +80,15 @@ public class ConcatenateClassSet implements ConcreteClass  {
 
     public AndClassSet getKeepClass() {
         throw new RuntimeException("not supported");
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o || o instanceof ConcatenateClassSet && Arrays.equals(classes, ((ConcatenateClassSet) o).classes);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(classes);
     }
 }

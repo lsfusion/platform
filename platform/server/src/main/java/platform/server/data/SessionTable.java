@@ -2,9 +2,7 @@ package platform.server.data;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.server.caches.IdentityLazy;
-import platform.server.caches.MapValues;
-import platform.server.caches.MapValuesIterable;
+import platform.server.caches.*;
 import platform.server.caches.hash.HashCodeValues;
 import platform.server.caches.hash.HashValues;
 import platform.server.classes.BaseClass;
@@ -219,5 +217,13 @@ public abstract class SessionTable<This extends SessionTable<This>> extends Tabl
             removeRows.remove(keys);
             return createThis(classes,propertyClasses,removeRows);
         }
+    }
+
+    private BaseUtils.HashComponents<ValueExpr> components = null;
+    @ManualLazy
+    public BaseUtils.HashComponents<ValueExpr> getComponents() {
+        if(components==null)
+            components = AbstractMapValues.getComponents(this);
+        return components;
     }
 }

@@ -16,7 +16,7 @@ public class Settings {
         this.innerGroupExprs = innerGroupExprs;
     }
 
-    private int mapInnerMaxIterations = 0;
+    private int mapInnerMaxIterations = 4;
 
     public int getMapInnerMaxIterations() {
         return mapInnerMaxIterations;

@@ -50,6 +50,8 @@ public class MapValuesTranslator extends AbstractMapTranslator implements MapVal
     }
 
     public MapValuesTranslate map(MapValuesTranslate map) {
+        if(this==noTranslate) return noTranslate;
+
         Map<ValueExpr, ValueExpr> mapResult = new HashMap<ValueExpr, ValueExpr>();
         for(Map.Entry<ValueExpr,ValueExpr> mapValue : mapValues.entrySet())
             mapResult.put(mapValue.getKey(), map.translate(mapValue.getValue()));
@@ -57,6 +59,8 @@ public class MapValuesTranslator extends AbstractMapTranslator implements MapVal
     }
 
     public MapValuesTranslate filter(Set<ValueExpr> values) {
+        if(this==noTranslate) return noTranslate;
+
         return new MapValuesTranslator(BaseUtils.filterKeys(mapValues,values));
     }
 
@@ -105,10 +109,14 @@ public class MapValuesTranslator extends AbstractMapTranslator implements MapVal
     }
 
     public MapValuesTranslate reverse() {
+        if(this==noTranslate) return noTranslate;
+        
         return new MapValuesTranslator(BaseUtils.reverse(mapValues));
     }
 
     public MapTranslate reverseMap() {
+        if(this==noTranslate) return (MapTranslate) noTranslate;
+
         return new MapValuesTranslator(BaseUtils.reverse(mapValues));
     }
 }

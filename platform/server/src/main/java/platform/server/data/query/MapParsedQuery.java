@@ -6,7 +6,6 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapValuesTranslate;
-import platform.server.data.translator.MapValuesTranslator;
 import platform.server.data.where.classes.ClassWhere;
 
 import java.util.Collection;
@@ -40,10 +39,6 @@ public class MapParsedQuery<K,V,MK,MV> implements ParsedQuery<K,V> {
     
     public Set<ValueExpr> getValues() {
         return mapValues.translateValues(query.getValues());
-    }
-
-    public Join<V> join(Map<K, ? extends Expr> joinImplement) {
-        return join(joinImplement, MapValuesTranslator.noTranslate);
     }
 
     public Join<V> join(Map<K, ? extends Expr> joinImplement, MapValuesTranslate joinValues) {

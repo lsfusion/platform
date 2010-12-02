@@ -1683,6 +1683,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addPropertyDraw(couponFromIssued, objObligation).forceViewType = ClassViewType.GRID;
             addPropertyDraw(obligationToIssued, objObligation);
             addPropertyDraw(orderSaleUseObligation, objDoc, objObligation);
+
+            objObligation.groupTo.propertyHighlight = addPropertyObject(obligationDocument, objObligation);
+            addHintsNoUpdate(obligationDocument);
+
             objObligation.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.HIDE, ClassViewType.PANEL));
 //            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(obligationDocument, objObligation))));
 //            addFixedFilter(new NotNullFilterEntity(addPropertyObject(orderSaleObligationCanNotBeUsed, objDoc, objObligation)));

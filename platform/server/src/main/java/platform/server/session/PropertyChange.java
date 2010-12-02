@@ -1,9 +1,7 @@
 package platform.server.session;
 
 import platform.base.BaseUtils;
-import platform.server.caches.IdentityLazy;
-import platform.server.caches.MapValues;
-import platform.server.caches.TwinsInnerContext;
+import platform.server.caches.*;
 import platform.server.caches.hash.HashContext;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.expr.Expr;
@@ -88,4 +86,11 @@ public class PropertyChange<T extends PropertyInterface> extends TwinsInnerConte
         return translateInner(mapValues.mapKeys());
     }
 
+    private BaseUtils.HashComponents<ValueExpr> components = null;
+    @ManualLazy
+    public BaseUtils.HashComponents<ValueExpr> getComponents() {
+        if(components==null)
+            components = AbstractMapValues.getComponents(this);
+        return components;
+    }
 }

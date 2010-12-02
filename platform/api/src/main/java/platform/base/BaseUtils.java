@@ -229,6 +229,13 @@ public class BaseUtils {
         return result;
     }
 
+    public static <K,V> Map<K,V> toMap(Set<K> collection, V value) {
+        Map<K,V> result = new HashMap<K, V>();
+        for(K object : collection)
+            result.put(object,value);
+        return result;
+    }
+
     public static <K> Map<Integer,K> toMap(List<K> list) {
         Map<Integer,K> result = new HashMap<Integer, K>();
         for(int i=0;i<list.size();i++)
@@ -714,6 +721,20 @@ public class BaseUtils {
         return groupList(getter, getter.keyList());
     }
 
+    public static <G,K> SortedMap<G,Set<K>> groupSortedSet(Group<G, K> getter, Set<K> keys, Comparator<G> comparator) {
+        SortedMap<G,Set<K>> result = new TreeMap<G, Set<K>>(comparator);
+        for(K key : keys) {
+            G group = getter.group(key);
+            Set<K> groupSet = result.get(group);
+            if(groupSet==null) {
+                groupSet = new HashSet<K>();
+                result.put(group,groupSet);
+            }
+            groupSet.add(key);
+        }
+        return result;
+    }
+
     public static <K> Map<K,Integer> multiSet(Collection<K> col) {
         Map<K,Integer> result = new HashMap<K, Integer>();
         for(K element : col) {
@@ -1056,4 +1077,94 @@ public class BaseUtils {
                 result.add((K) child);
         return result;
     }
+
+    // есть в общем то другая схема с генерацией всех перестановок, и поиском минимума (или суммированием)
+    public static class HashComponents<K> {
+        public final Map<K, Integer> map;
+        public final int hash;
+
+        public HashComponents(Map<K, Integer> map, int hash) {
+            this.map = map;
+            this.hash = hash;
+        }
+    }
+    public static interface HashInterface<K,C> {
+
+        SortedMap<C,Set<K>> getParams(); // важно чтобы для C был статичный компаратор
+
+        int hashParams(Map<K,Integer> map);
+    }
+
+    // цель минимизировать количество hashParams
+    public static <K, C> HashComponents<K> getComponents(HashInterface<K, C> hashInterface) {
+        Map<K, Integer> components = new HashMap<K, Integer>();
+
+        SortedMap<C, Set<K>> classGroupParams = hashInterface.getParams();
+        if(classGroupParams.size()==0)
+            return new HashComponents<K>(new HashMap<K, Integer>(), hashInterface.hashParams(components));
+
+        int resultHash = 0; // как по сути "список" минимальных хэшей
+        int compHash = 16769023;
+
+        Map<K, Integer> classHashes = new HashMap<K, Integer>();
+        for(Map.Entry<C,Set<K>> classParams : classGroupParams.entrySet()) // бежим по оставшимся параметрам
+            for(K param : classParams.getValue())
+                classHashes.put(param, classParams.getKey().hashCode());
+
+        Set<K> freeKeys = null;
+        for(Map.Entry<C,Set<K>> classParams : classGroupParams.entrySet()) {
+            freeKeys = classParams.getValue();
+
+            while(freeKeys.size() > 1) {
+                int minHash = Integer.MAX_VALUE;
+                Set<K> minKeys = new HashSet<K>();
+                for(K key : freeKeys) {
+                    Map<K, Integer> mergedComponents = new HashMap<K, Integer>(classHashes); // замещаем базовые ъэши - новыми
+                    mergedComponents.putAll(components);
+                    mergedComponents.put(key, compHash);
+
+                    int hash = hashInterface.hashParams(mergedComponents);
+                    if(hash < minHash) { // сбрасываем минимальные ключи
+                        minKeys = new HashSet<K>();
+                        minHash = hash;
+                    }
+
+                    if(hash == minHash) // добавляем в минимальные ключи
+                        minKeys.add(key);
+                }
+
+                for(K key : minKeys)
+                    components.put(key, compHash);
+
+                resultHash = resultHash * 31 + minHash;
+
+                freeKeys = BaseUtils.removeSet(freeKeys, minKeys);
+
+                compHash = QuickMap.hash(compHash * 57793 + 9369319);
+            }
+
+            if(freeKeys.size()==1) // если остался один объект в классе оставляем его с hashCode'ом (для оптимизации) 
+                components.put(BaseUtils.single(freeKeys), classParams.getKey().hashCode());
+        }
+
+        if(freeKeys.size()==1) // если остался один объект то финальный хэш не учтен (для оптимизации)
+            resultHash = resultHash * 31 + hashInterface.hashParams(components);
+
+        return new HashComponents<K>(components, resultHash);
+    }
+
+    public static boolean onlyObjects(Collection<?> col) {
+        for(Object object : col)
+            if(!object.getClass().equals(Object.class))
+                return false;
+        return true;            
+    }
+
+    public static <T> Map<T, Object> generateObjects(Set<T> col) {
+        Map<T, Object> result = new HashMap<T, Object>();
+        for(T object : col)
+            result.put(object, new Object());
+        return result;
+    }
+
 }
