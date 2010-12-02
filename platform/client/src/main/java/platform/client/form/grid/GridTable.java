@@ -768,7 +768,7 @@ public abstract class GridTable extends ClientFormTable
 
         @Override
         public Dimension getPreferredSize() {
-            return new Dimension(columnModel.getTotalColumnWidth(), super.getPreferredSize().height*2);
+            return new Dimension(columnModel.getTotalColumnWidth(), 34);
         }
     }
 }
