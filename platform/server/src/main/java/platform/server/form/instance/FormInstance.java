@@ -2,7 +2,6 @@ package platform.server.form.instance;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.base.Pair;
 import platform.interop.ClassViewType;
 import platform.interop.Scroll;
 import platform.interop.action.ClientAction;
@@ -74,15 +73,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     private UsedChanges fullChanges;
-
-    @Override
-    @ManualLazy
-    public UsedChanges fullChanges() {
-        if (fullChanges == null || !BaseUtils.hashEquals(fullChanges.session, getSession()))
-            fullChanges = super.fullChanges();
-        return fullChanges;
-    }
-
 
     public Modifier<? extends Changes> update(final SessionChanges sessionChanges) {
         return new NoUpdateModifier(hintsNoUpdate) {

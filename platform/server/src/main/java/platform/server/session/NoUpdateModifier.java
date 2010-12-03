@@ -81,7 +81,7 @@ public abstract class NoUpdateModifier extends Modifier<NoUpdateModifier.UsedCha
         }
     }
 
-    public UsedChanges fullChanges() {
+    public UsedChanges newFullChanges() {
         return new UsedChanges(this);
     }
 

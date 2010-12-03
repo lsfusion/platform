@@ -101,7 +101,7 @@ public class SessionDataProperty extends DataProperty {
             return UsedChanges.EMPTY;
         }
 
-        public UsedChanges fullChanges() {
+        public UsedChanges newFullChanges() {
             return new UsedChanges(properties);
         }
 

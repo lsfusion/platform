@@ -56,7 +56,7 @@ public class DataChangesModifier extends AbstractPropertyChangesModifier<ClassPr
     }
 
     @IdentityLazy
-    public UsedChanges fullChanges() {
+    public UsedChanges newFullChanges() {
         return new UsedChanges(this);
     }
 

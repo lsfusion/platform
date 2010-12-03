@@ -177,7 +177,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             return SessionChanges.EMPTY;
         }
 
-        public DefaultChanges fullChanges() {
+        public DefaultChanges newFullChanges() {
             return DefaultChanges.EMPTY;
         }
 

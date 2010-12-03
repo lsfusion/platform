@@ -2,6 +2,7 @@ package platform.server.session;
 
 import platform.base.BaseUtils;
 import platform.base.DateConverter;
+import platform.base.OrderedMap;
 import platform.interop.action.ClientAction;
 import platform.server.classes.*;
 import platform.server.data.KeyField;
@@ -9,6 +10,7 @@ import platform.server.data.ModifyQuery;
 import platform.server.data.PropertyField;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
@@ -73,7 +75,7 @@ public class DataSession extends SQLSession implements ChangesSession {
             return SimpleChanges.EMPTY;
         }
 
-        public SimpleChanges fullChanges() {
+        public SimpleChanges newFullChanges() {
             return new SimpleChanges(this);
         }
 
@@ -343,18 +345,53 @@ public class DataSession extends SQLSession implements ChangesSession {
     }
 
     public String check(final BusinessLogics<?> BL) throws SQLException {
-        IncrementApply increment = new IncrementApply(this);
 
         // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
         for(Property<?> property : BL.getAppliedProperties())
-            if(property.isFalse && property.hasChanges(increment)) {
-                String constraintResult = increment.check(property);
+            if(property.isFalse && property.hasChanges(modifier)) {
+                String constraintResult = check(property);
                 if(constraintResult!=null) {
                     // не надо DROP'ать так как Rollback автоматически drop'ает все temporary таблицы
                     rollbackTransaction();
                     return constraintResult;
                 }
             }
+        return null;
+    }
+
+    public <T extends PropertyInterface> String check(Property<T> property) throws SQLException {
+        if(property.isFalse) {
+            Query<T,String> changed = new Query<T,String>(property);
+
+            WhereBuilder changedWhere = new WhereBuilder();
+            Expr valueExpr = property.getExpr(changed.mapKeys, modifier, changedWhere);
+            changed.and(valueExpr.getWhere());
+            changed.and(changedWhere.toWhere()); // только на измененные смотрим
+
+            // сюда надо name'ы вставить
+            for(T propertyInterface : property.interfaces) {
+                Expr nameExpr;
+                if(property.getInterfaceType(propertyInterface) instanceof ObjectType) // иначе assert'ионы с compatible'ами нарушатся, если ключ скажем число
+                    nameExpr = name.getExpr(modifier, changed.mapKeys.get(propertyInterface));
+                else
+                    nameExpr = CaseExpr.NULL;
+                changed.properties.put("int"+propertyInterface.ID, nameExpr);
+            }
+
+            OrderedMap<Map<T, Object>, Map<String, Object>> result = changed.execute(this);
+            if(result.size()>0) {
+                String resultString = property.toString() + '\n';
+                for(Map.Entry<Map<T,Object>,Map<String,Object>> row : result.entrySet()) {
+                    String objects = "";
+                    for(T propertyInterface : property.interfaces)
+                        objects = (objects.length()==0?"":objects+", ") + BaseUtils.nvl((String)row.getValue().get("int"+propertyInterface.ID),row.getKey().get(propertyInterface).toString()).trim();
+                    resultString += "    " + objects + '\n';
+                }
+
+                return resultString;
+            }
+        }
+
         return null;
     }
 

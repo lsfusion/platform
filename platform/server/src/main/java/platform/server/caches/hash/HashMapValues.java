@@ -16,4 +16,13 @@ public class HashMapValues implements HashValues {
         return hashValues.get(expr);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        return this == o || o instanceof HashMapValues && hashValues.equals(((HashMapValues) o).hashValues);
+    }
+
+    @Override
+    public int hashCode() {
+        return hashValues.hashCode();
+    }
 }

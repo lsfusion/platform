@@ -7,17 +7,14 @@ import platform.server.caches.MapValuesIterable;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.PropertyField;
 import platform.server.data.KeyField;
-import platform.server.data.type.ObjectType;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
 import platform.server.classes.BaseClass;
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
 
 import java.util.*;
 import java.sql.SQLException;
@@ -112,7 +109,7 @@ public class IncrementApply extends Modifier<IncrementApply.UsedChanges> {
 
     }
 
-    public UsedChanges fullChanges() {
+    public UsedChanges newFullChanges() {
         return new UsedChanges(this);
     }
 
@@ -162,41 +159,5 @@ public class IncrementApply extends Modifier<IncrementApply.UsedChanges> {
             tables.put(property,changeTable);
 
         return changeTable;
-    }
-
-    public <T extends PropertyInterface> String check(Property<T> property) throws SQLException {
-        if(property.isFalse) {
-            Query<T,String> changed = new Query<T,String>(property);
-
-            WhereBuilder changedWhere = new WhereBuilder();
-            Expr valueExpr = property.getExpr(changed.mapKeys,this,changedWhere);
-            changed.and(valueExpr.getWhere());
-            changed.and(changedWhere.toWhere()); // только на измененные смотрим
-
-            // сюда надо name'ы вставить
-            for(T propertyInterface : property.interfaces) {
-                Expr nameExpr;
-                if(property.getInterfaceType(propertyInterface) instanceof ObjectType) // иначе assert'ионы с compatible'ами нарушатся, если ключ скажем число
-                    nameExpr = session.name.getExpr(this, changed.mapKeys.get(propertyInterface));
-                else
-                    nameExpr = CaseExpr.NULL;
-                changed.properties.put("int"+propertyInterface.ID, nameExpr);
-            }
-
-            OrderedMap<Map<T, Object>, Map<String, Object>> result = changed.execute(session);
-            if(result.size()>0) {
-                String resultString = property.toString() + '\n';
-                for(Map.Entry<Map<T,Object>,Map<String,Object>> row : result.entrySet()) {
-                    String objects = "";
-                    for(T propertyInterface : property.interfaces)
-                        objects = (objects.length()==0?"":objects+", ") + BaseUtils.nvl((String)row.getValue().get("int"+propertyInterface.ID),row.getKey().get(propertyInterface).toString()).trim();
-                    resultString += "    " + objects + '\n';
-                }
-
-                return resultString;
-            }
-        }
-
-        return null;
     }
 }
