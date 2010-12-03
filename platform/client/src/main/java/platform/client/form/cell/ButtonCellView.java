@@ -8,6 +8,7 @@ import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -79,6 +80,10 @@ public class ButtonCellView extends ClientButton implements CellView {
     }
 
     public void setHighlight(Object highlight) {
+        // пока не highlight'им
+    }
+
+    public void setHighlightColor(Color highlightColor) {
         // пока не highlight'им
     }
 }

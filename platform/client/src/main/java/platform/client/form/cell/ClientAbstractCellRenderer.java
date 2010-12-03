@@ -26,13 +26,19 @@ public class ClientAbstractCellRenderer extends JComponent
 
         JComponent comp = currentComp.getComponent();
 
-        if (cellTable.getHighlightValue(row) != null)
+        if (cellTable.getHighlightValue(row) != null) {
+            Color highlightColor = cellTable.getHighlightColor();
+            if (highlightColor == null) {
+                highlightColor = Color.yellow;
+            }
+            
             if (!hasFocus && !isSelected) {
-                comp.setBackground(Color.yellow);
+                comp.setBackground(highlightColor);
             } else {
                 Color bgColor = comp.getBackground();
-                comp.setBackground(new Color(Color.yellow.getRGB() & bgColor.getRGB()));
+                comp.setBackground(new Color(highlightColor.getRGB() & bgColor.getRGB()));
             }
+        }
 
         renderers.add(comp);
 

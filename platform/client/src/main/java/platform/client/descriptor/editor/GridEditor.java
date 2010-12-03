@@ -3,6 +3,7 @@ package platform.client.descriptor.editor;
 import platform.client.descriptor.editor.base.NorthBoxPanel;
 import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.descriptor.increment.editor.IncrementCheckBox;
+import platform.client.descriptor.increment.editor.IncrementColorEditor;
 import platform.client.logics.ClientGrid;
 
 public class GridEditor extends ComponentEditor {
@@ -15,7 +16,9 @@ public class GridEditor extends ComponentEditor {
                 new TitledPanel(null, new IncrementCheckBox("Показывать поиск", component, "showFind")),
                 new TitledPanel(null, new IncrementCheckBox("Показывать фильтр", component, "showFilter")),
                 new TitledPanel(null, new IncrementCheckBox("Вертикальная табуляция", component, "tabVertical")),
-                new TitledPanel(null, new IncrementCheckBox("Автоскрытие", component, "autoHide"))));
+                new TitledPanel(null, new IncrementCheckBox("Автоскрытие", component, "autoHide")),
+                new TitledPanel(null, new IncrementColorEditor("Цвет подсветки", component, "highlightColor"))
+        ));
 
         //todo: minRowCount
     }

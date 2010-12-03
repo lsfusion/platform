@@ -1,6 +1,7 @@
 package platform.client.form.cell;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 
 public interface CellView {
@@ -11,4 +12,5 @@ public interface CellView {
     void startEditing(KeyEvent e);
     void setCaption(String caption);
     void setHighlight(Object highlight);
+    void setHighlightColor(Color highlightColor);
 }

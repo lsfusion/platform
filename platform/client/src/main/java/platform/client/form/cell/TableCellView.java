@@ -21,6 +21,7 @@ public class TableCellView extends JPanel implements CellView {
     private final ClientFormController form;
 
     private Object highlight;
+    private Color highlightColor;
 
     @Override
     public int hashCode() {
@@ -66,6 +67,10 @@ public class TableCellView extends JPanel implements CellView {
 
             public Object getHighlightValue(int row) {
                 return TableCellView.this.highlight;
+            }
+
+            public Color getHighlightColor() {
+                return highlightColor;
             }
 
             public ClientFormController getForm() {
@@ -125,6 +130,10 @@ public class TableCellView extends JPanel implements CellView {
 
         revalidate();
         repaint();        
+    }
+
+    public void setHighlightColor(Color highlightColor) {
+        this.highlightColor = highlightColor;
     }
 
     public void startEditing(KeyEvent e) {

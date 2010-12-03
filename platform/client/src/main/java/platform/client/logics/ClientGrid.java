@@ -6,6 +6,7 @@ import platform.client.serialization.ClientSerializationPool;
 import platform.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -20,6 +21,8 @@ public class ClientGrid extends ClientComponent {
     public boolean autoHide;
 
     public ClientGroupObject groupObject;
+
+    public Color highlightColor;
 
     public ClientGrid() {
     }
@@ -48,6 +51,8 @@ public class ClientGrid extends ClientComponent {
         outStream.writeBoolean(tabVertical);
         outStream.writeBoolean(autoHide);
 
+        pool.writeObject(outStream, highlightColor);
+
         pool.serializeObject(outStream, groupObject);
     }
 
@@ -61,6 +66,8 @@ public class ClientGrid extends ClientComponent {
         minRowCount = inStream.readByte();
         tabVertical = inStream.readBoolean();
         autoHide = inStream.readBoolean();
+
+        highlightColor = pool.readObject(inStream);
 
         groupObject = pool.deserializeObject(inStream);
     }
@@ -122,5 +129,14 @@ public class ClientGrid extends ClientComponent {
 
     public byte getMinRowCount() {
         return minRowCount;
+    }
+
+    public Color getHighlightColor() {
+        return highlightColor;
+    }
+
+    public void setHighlightColor(Color highlightColor) {
+        this.highlightColor = highlightColor;
+        updateDependency(this, "highlightColor");
     }
 }

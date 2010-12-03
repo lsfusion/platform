@@ -53,6 +53,10 @@ class UserValueLinkView extends ValueLinkView {
                 return null;
             }
 
+            public Color getHighlightColor() {
+                return null;
+            }
+
             public ClientFormController getForm() {
                 return logicsSupplier.getForm();
             }

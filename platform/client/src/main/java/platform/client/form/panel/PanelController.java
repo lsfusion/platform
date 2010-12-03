@@ -90,7 +90,7 @@ public abstract class PanelController {
                 {
                     PropertyController propController = propControllers.get(columnKey);                    
                     if (propController == null) {
-                        propController = new PropertyController(property, form, columnKey);
+                        propController = new PropertyController(property, form, logicsSupplier.getGroupObject(), columnKey);
                         addGroupObjectActions(propController.getView());
                         propController.addView(formLayout);
 
