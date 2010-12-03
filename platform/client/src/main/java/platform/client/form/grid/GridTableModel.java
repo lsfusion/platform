@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static platform.base.BaseUtils.nullToString;
+
 public class GridTableModel extends AbstractTableModel {
     private Object[][] data = new Object[0][0];
     private ClientPropertyDraw[] columnProps = new ClientPropertyDraw[0];
@@ -76,11 +78,17 @@ public class GridTableModel extends AbstractTableModel {
 
         //заполняем имена колонок
         for (int i = 0; i < columnNames.length; ++i) {
-            Map<ClientGroupObjectValue, Object> columnCaption = columnCaptions.get(columnProps[i]);
-            if(columnCaption!=null)
-                columnNames[i] = BaseUtils.nullToString(columnCaption.get(columnKeys[i]));
-            else // значит на сервере propertyCaption'а нету и надо читать просто FullCaption
-                columnNames[i] = columnProps[i].getFullCaption();
+            String resultCaption = nullToString(columnProps[i].getFullCaption());
+
+            Map<ClientGroupObjectValue, Object> propColumnCaptions = columnCaptions.get(columnProps[i]);
+            if (propColumnCaptions != null) {
+                String columnCaption = nullToString(propColumnCaptions.get(columnKeys[i]));
+                resultCaption += resultCaption.isEmpty()
+                                 ? columnCaption
+                                 : " [" + columnCaption + "]";
+            }
+
+            columnNames[i] = resultCaption;
         }
     }
 

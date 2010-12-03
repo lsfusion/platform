@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 public class StringConcatenateProperty extends FormulaProperty<StringConcatenateProperty.Interface> {
+    private final String separator;
 
     public static class Interface extends PropertyInterface {
         public Interface(int ID) {
@@ -26,8 +27,9 @@ public class StringConcatenateProperty extends FormulaProperty<StringConcatenate
         return interfaces;
     }
 
-    public StringConcatenateProperty(String sID, String caption, int intNum) {
+    public StringConcatenateProperty(String sID, String caption, int intNum, String separator) {
         super(sID, caption, getInterfaces(intNum));
+        this.separator = separator;
     }
 
     public Interface getInterface(int i) {
@@ -41,6 +43,6 @@ public class StringConcatenateProperty extends FormulaProperty<StringConcatenate
         List<Expr> exprs = new ArrayList<Expr>();
         for(int i=0;i<interfaces.size();i++) // assertion что порядок сохранился
             exprs.add(joinImplement.get(getInterface(i)));
-        return StringConcatenateExpr.create(exprs);
+        return StringConcatenateExpr.create(exprs, separator);
     }
 }

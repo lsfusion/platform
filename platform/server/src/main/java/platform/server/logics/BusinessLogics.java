@@ -525,24 +525,59 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return rootGroup.getProperty(sid);
     }
 
-    public class SelectionPropertySet extends PropertySet {
-        static private final String prefix = "SelectionProperty_";
-
-        private LinkedHashMap<Map<ValueClass, Integer>, SelectionProperty> properties =
-                new LinkedHashMap<Map<ValueClass, Integer>, SelectionProperty>();
-
-        protected Class<?> getPropertyClass() {
-            return SelectionProperty.class;
-        }
-        
-        @Override
-        protected boolean isInInterface(List<ValueClassWrapper> classes) {
-            return classes.size() >= 1;
-        }
+    public abstract class MapClassesPropertySet<K, V extends Property> extends PropertySet {
+        protected LinkedHashMap<K, V> properties = new LinkedHashMap<K, V>();
 
         @Override
         public List<Property> getProperties() {
             return new ArrayList<Property>(properties.values());
+        }
+
+        @Override
+        protected List<PropertyClassImplement> getProperties(List<ValueClassWrapper> classes) {
+            ValueClass[] valueClasses = getClasses(classes);
+            V property = getProperty(valueClasses);
+
+            List<?> interfaces = getPropertyInterfaces(property, valueClasses);
+            return Collections.singletonList(new PropertyClassImplement(property, classes, interfaces));
+        }
+
+        private ValueClass[] getClasses(List<ValueClassWrapper> classes) {
+            ValueClass[] valueClasses = new ValueClass[classes.size()];
+            for (int i = 0; i < classes.size(); i++) {
+                valueClasses[i] = classes.get(i).valueClass;
+            }
+            return valueClasses;
+        }
+
+        protected V getProperty(ValueClass[] classes) {
+            K key = createKey(classes);
+            if (!properties.containsKey(key)) {
+                V property = createProperty(classes);
+                properties.put(key, property);
+                return property;
+            } else {
+                return properties.get(key);
+            }
+        }
+
+        protected abstract List<?> getPropertyInterfaces(V property, ValueClass[] valueClasses);
+
+        protected abstract V createProperty(ValueClass[] classes);
+
+        protected abstract K createKey(ValueClass[] classes);
+    }
+
+    public class SelectionPropertySet extends MapClassesPropertySet<Map<ValueClass, Integer>, SelectionProperty> {
+        static private final String prefix = "SelectionProperty_";
+
+        protected Class<?> getPropertyClass() {
+            return SelectionProperty.class;
+        }
+
+        @Override
+        protected boolean isInInterface(List<ValueClassWrapper> classes) {
+            return classes.size() >= 1;
         }
 
         @Override
@@ -560,21 +595,32 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         @Override
-        protected List<PropertyClassImplement> getProperties(List<ValueClassWrapper> classes) {
-            ValueClass[] valueClasses = getClasses(classes);
-            SelectionProperty property = getProperty(valueClasses);
-            PropertyInterface[] interfaces = new PropertyInterface[classes.size()];
-            boolean[] was = new boolean[classes.size()];
+        protected List<? extends PropertyInterface> getPropertyInterfaces(SelectionProperty property, ValueClass[] classes) {
+            int intNum = classes.length;
+            PropertyInterface[] interfaces = new PropertyInterface[intNum];
+            boolean[] was = new boolean[intNum];
             for (ClassPropertyInterface iface : property.interfaces) {
-                for (int i = 0; i < classes.size(); i++) {
-                    if (!was[i] && iface.interfaceClass == classes.get(i).valueClass) {
+                for (int i = 0; i < intNum; i++) {
+                    if (!was[i] && iface.interfaceClass == classes[i]) {
                         interfaces[i] = iface;
                         was[i] = true;
                         break;
                     }
                 }
             }
-            return Collections.singletonList(new PropertyClassImplement(property, classes, Arrays.asList(interfaces)));
+            return Arrays.asList(interfaces);
+        }
+
+        protected Map<ValueClass, Integer> createKey(ValueClass[] classes) {
+            Map<ValueClass, Integer> key = new HashMap<ValueClass, Integer>();
+            for (ValueClass valueClass : classes) {
+                if (key.containsKey(valueClass)) {
+                    key.put(valueClass, key.get(valueClass) + 1);
+                } else {
+                    key.put(valueClass, 1);
+                }
+            }
+            return key;
         }
 
         protected SelectionProperty createProperty(ValueClass[] classes) {
@@ -593,53 +639,87 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             setParent(property);
             return property;
         }
-
-        private Map<ValueClass, Integer> createKey(ValueClass[] classes) {
-            Map<ValueClass, Integer> key = new HashMap<ValueClass, Integer>();
-            for (ValueClass valueClass : classes) {
-                if (key.containsKey(valueClass)) {
-                    key.put(valueClass, key.get(valueClass) + 1);
-                } else {
-                    key.put(valueClass, 1);
-                }
-            }
-            return key;
-        }
-
-        private ValueClass[] getClasses(List<ValueClassWrapper> classes) {
-            ValueClass[] valueClasses = new ValueClass[classes.size()];
-            for (int i = 0; i < classes.size(); i++) {
-                valueClasses[i] = classes.get(i).valueClass;
-            }
-            return valueClasses;
-        }
-
-        private SelectionProperty getProperty(ValueClass[] classes) {
-            Map<ValueClass, Integer> key = createKey(classes);
-            if (!properties.containsKey(key)) {
-                SelectionProperty property = createProperty(classes);
-                properties.put(key, property);
-                return property;
-            } else {
-                return properties.get(key);
-            }
-        }
     }
 
-    protected SelectionPropertySet selection;
+	protected SelectionPropertySet selection;
 
-    public class ObjectValuePropertySet extends PropertySet {
-        private static final String prefix = "ObjectValueProperty_";
-
-        LinkedHashMap<ValueClass, ObjectValueProperty> properties = new LinkedHashMap<ValueClass, ObjectValueProperty>();
+    public class CompositeNamePropertySet extends MapClassesPropertySet<Integer, JoinProperty> {
+        private static final String prefix = "CompositeNameProperty_";
 
         protected Class<?> getPropertyClass() {
-            return ObjectValueProperty.class;
+            return JoinProperty.class;
         }
 
         @Override
-        public List<Property> getProperties() {
-            return new ArrayList<Property>(properties.values());
+        protected boolean isInInterface(List<ValueClassWrapper> classes) {
+            return classes.size() >= 1;
+        }
+
+        @Override
+        public Property getProperty(String sid) {
+            if (sid.startsWith(prefix)) {
+                int cnt = Integer.parseInt(sid.substring(prefix.length()));
+                if (!properties.containsKey(cnt)) {
+                    createProperty(cnt);
+                }
+                return properties.get(cnt);
+            }
+            return null;
+        }
+
+        @Override
+        protected List<?> getPropertyInterfaces(JoinProperty property, ValueClass[] valueClasses) {
+            return new ArrayList(property.interfaces);
+        }
+
+        @Override
+        protected Integer createKey(ValueClass[] classes) {
+            return classes.length;
+        }
+
+        @IdentityLazy
+        private LP getStringConcatanationProperty(int intNum) {
+            return new LP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), "Объед.", intNum, ", "));
+        }
+
+        @Override
+        protected JoinProperty<ClassPropertyInterface> createProperty(ValueClass[] classes) {
+            return createProperty(classes.length);
+        }
+
+        private JoinProperty<ClassPropertyInterface> createProperty(int intNum) {
+            String sid = prefix + intNum;
+
+            Object joinParams[] = new Object[2*intNum];
+            for (int i = 0; i < intNum; i++) {
+                joinParams[2*i] = name;
+                joinParams[2*i + 1] = i+1;
+            }
+
+            LP stringConcat = getStringConcatanationProperty(intNum);
+
+            JoinProperty<ClassPropertyInterface> joinProperty = new JoinProperty(sid, "Составное имя (" + intNum + ")", intNum, false);
+            LP listJoinProperty = new LP<JoinProperty.Interface>(joinProperty);
+            joinProperty.implement = mapImplement(stringConcat, readImplements(listJoinProperty.listInterfaces, joinParams));
+
+            registerProperty(listJoinProperty);
+            setParent(joinProperty);
+            return joinProperty;
+        }
+    }
+
+    protected CompositeNamePropertySet compositeName;
+
+    public class ObjectValuePropertySet extends MapClassesPropertySet<ValueClass, ObjectValueProperty> {
+        private static final String prefix = "ObjectValueProperty_";
+
+        @Override
+        protected boolean isInInterface(List<ValueClassWrapper> classes) {
+            return classes.size() == 1;
+        }
+
+        protected Class<?> getPropertyClass() {
+            return ObjectValueProperty.class;
         }
 
         @Override
@@ -647,38 +727,33 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             if (sid.startsWith(prefix)) {
                 ValueClass valueClass = BusinessLogics.this.findValueClass(sid.substring(prefix.length()));
                 assert valueClass != null;
-                if (!properties.containsKey(valueClass)) {
-                    createProperty(valueClass);
-                }
-                return properties.get(valueClass);
+                return getProperty(new ValueClass[] {valueClass});
             }
             return null;
         }
 
         @Override
-        protected List<PropertyClassImplement> getProperties(List<ValueClassWrapper> classes) {
-            assert classes.size() == 1;
-            ValueClassWrapper wrapper = classes.get(0);
-            ValueClass valueClass = wrapper.valueClass.getBaseClass();
-            if (!properties.containsKey(valueClass)) {
-                createProperty(valueClass);
-            }
-            ObjectValueProperty property = properties.get(valueClass);
-            PropertyInterface soleInterface = property.interfaces.iterator().next();
-            return Collections.singletonList(new PropertyClassImplement(property, wrapper, soleInterface));
+        protected List<?> getPropertyInterfaces(ObjectValueProperty property, ValueClass[] valueClasses) {
+            return Arrays.asList(property.interfaces.iterator().next());
         }
 
         @Override
-        protected boolean isInInterface(List<ValueClassWrapper> classes) {
-            return classes.size() == 1;
+        protected ValueClass createKey(ValueClass[] classes) {
+            assert classes.length == 1;
+            return classes[0];
         }
 
-        private void createProperty(ValueClass valueClass) {
+        @Override
+        protected ObjectValueProperty createProperty(ValueClass[] classes) {
+            assert classes.length == 1;
+
+            ValueClass valueClass = classes[0];
+
             String sid = prefix + valueClass.getSID();
             ObjectValueProperty property = new ObjectValueProperty(sid, valueClass);
             registerProperty(new LP<ClassPropertyInterface>(property));
             setParent(property);
-            properties.put(valueClass, property);
+            return property;
         }
     }
 
@@ -718,6 +793,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         objectValue = new ObjectValuePropertySet();
         baseGroup.add(objectValue);
+
+        compositeName = new CompositeNamePropertySet();
+        privateGroup.add(compositeName);
 
         baseClass = addBaseClass("object", "Объект");
 
@@ -1971,7 +2049,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected <P extends PropertyInterface> LP addSProp(int intNum) {
-        return addProperty(null, new LP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), "Объед.", intNum)));
+        return addProperty(null, new LP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), "Объед.", intNum, " ")));
+    }
+
+    protected <P extends PropertyInterface> LP addSProp(int intNum, String separator) {
+        return addProperty(null, new LP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), "Объед.", intNum, separator)));
     }
 
     protected LP addMFProp(ConcreteValueClass value, int paramCount) {

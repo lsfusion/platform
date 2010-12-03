@@ -26,7 +26,7 @@ public class PropertyDrawView extends ComponentView {
     public PropertyDrawEntity<?> entity;
 
     /**
-     * Example of use:
+     * Usage example:
      * <pre><code>
      *  LP someLP = ...;
      *  ...
@@ -79,12 +79,12 @@ public class PropertyDrawView extends ComponentView {
         return entity.propertyObject.property.caption;
     }
 
-    String getCaption() {
-        if (caption != null) {
-            return caption;
-        } else {
-            return getDefaultCaption();
-        }
+    private String getCaption() {
+        return caption != null
+               ? caption
+               : entity.propertyCaption == null
+                 ? getDefaultCaption()
+                 : null;
     }
 
     public ReportDrawField getReportDrawField() {

@@ -24,15 +24,17 @@ import java.util.List;
 public class StringConcatenateExpr extends StaticClassExpr {
 
     private List<BaseExpr> exprs;
+    private final String separator;
 
-    public StringConcatenateExpr(List<BaseExpr> exprs) {
+    public StringConcatenateExpr(List<BaseExpr> exprs, String separator) {
         this.exprs = exprs;
+        this.separator = separator;
     }
 
-    public static Expr create(List<? extends Expr> exprs) {
+    public static Expr create(List<? extends Expr> exprs, String separator) {
         ExprCaseList result = new ExprCaseList();
         for(MapCase<Integer> mapCase : CaseExpr.pullCases(BaseUtils.toMap(exprs)))
-            result.add(mapCase.where, BaseExpr.create(new StringConcatenateExpr(BaseUtils.toList(mapCase.data))));
+            result.add(mapCase.where, BaseExpr.create(new StringConcatenateExpr(BaseUtils.toList(mapCase.data), separator)));
         return result.getExpr();
     }
 
@@ -46,7 +48,7 @@ public class StringConcatenateExpr extends StaticClassExpr {
     }
 
     public BaseExpr translateOuter(MapTranslate translator) {
-        return new StringConcatenateExpr(translator.translateDirect(exprs));
+        return new StringConcatenateExpr(translator.translateDirect(exprs), separator);
     }
 
     public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
@@ -66,7 +68,7 @@ public class StringConcatenateExpr extends StaticClassExpr {
     }
 
     public Expr translateQuery(QueryTranslator translator) {
-        return create(translator.translate(exprs));
+        return create(translator.translate(exprs), separator);
     }
 
     public boolean twins(AbstractSourceJoin obj) {
@@ -85,9 +87,10 @@ public class StringConcatenateExpr extends StaticClassExpr {
         for(BaseExpr expr : exprs) {
             Type exprType = expr.getType(compile.keyType);
             String exprSource = expr.getSource(compile);
-            if(exprType instanceof StringClass)
+            if(exprType instanceof StringClass) {
                 exprSource = "rtrim(" + exprSource + ")";
-            source = source + (source.length()==0?"":" || ' ' || ") + exprSource;
+            }
+            source = source + (source.length()==0?"":" || '" + separator + "' || ") + exprSource;
         }
         return "(" + source + ")";
     }
