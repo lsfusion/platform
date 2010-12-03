@@ -323,9 +323,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addDProp("certStore", "Магазин (серт.)", shop, saleCert));
         outStoreName = addJProp(baseGroup, "Склад (расх.)", name, outStore, 1);
 
-        payWithCard = addAProp(null, new PayWithCardActionProperty());
-        printOrderCheck = addAProp(null, new PrintOrderCheckActionProperty());
-        saleExport = addAProp(null, new SaleExportActionProperty());
+        payWithCard = addAProp(new PayWithCardActionProperty());
+        printOrderCheck = addAProp(new PrintOrderCheckActionProperty());
+        saleExport = addAProp(new SaleExportActionProperty());
 
         computerShop = addDProp("computerShop", "Магазин рабочего места", shop, computer);
         currentShop = addJProp("Текущий магазин", computerShop, currentComputer);

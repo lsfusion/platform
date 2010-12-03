@@ -705,6 +705,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         baseGroup.createContainer = false;
         publicGroup.add(baseGroup);
 
+        idGroup = new AbstractGroup("Идентификаторы");
+        idGroup.createContainer = false;
+        publicGroup.add(idGroup);
+
+        actionGroup = new AbstractGroup("Действия");
+        actionGroup.createContainer = false;
+        publicGroup.add(actionGroup);
+
         selection = new SelectionPropertySet();
         sessionGroup.add(selection);
 
@@ -754,7 +762,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         vtrue = addCProp("Истина", LogicalClass.instance, true);
         vzero = addCProp("0", DoubleClass.instance, 0);
 
-        delete = addProperty(null, new LP<ClassPropertyInterface>(new DeleteObjectActionProperty(genSID(), baseClass)));
+        delete = addAProp(new DeleteObjectActionProperty(genSID(), baseClass));
 
         date = addDProp(baseGroup, "date", "Дата", DateClass.instance, transaction);
 
@@ -879,17 +887,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     @IdentityLazy
-    private ActionProperty getAddObjectAction(ValueClass cls) {
-        AddObjectActionProperty property = new AddObjectActionProperty(genSID(), (CustomClass) cls);
-        addProperty(null, new LP<ClassPropertyInterface>(property));
-        return property;
+    private LP getAddObjectAction(ValueClass cls) {
+        return addAProp(new AddObjectActionProperty(genSID(), (CustomClass) cls));
     }
 
     @IdentityLazy
-    private ActionProperty getImportObjectAction(ValueClass cls) {
-        ImportFromExcelActionProperty property = new ImportFromExcelActionProperty(genSID(), (CustomClass) cls);
-        addProperty(null, new LP<ClassPropertyInterface>(property));
-        return property;
+    private LP getImportObjectAction(ValueClass cls) {
+        return addAProp(new ImportFromExcelActionProperty(genSID(), (CustomClass) cls));
     }
 
     private static class ChangeUserActionProperty extends ActionProperty {
@@ -1310,6 +1314,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public AbstractGroup publicGroup;
     public AbstractGroup privateGroup;
     public AbstractGroup baseGroup;
+    public AbstractGroup idGroup;
+    public AbstractGroup actionGroup;
     public AbstractGroup sessionGroup;
 
     protected abstract void initGroups();
@@ -3291,8 +3297,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public void addObjectActions(FormEntity form, ObjectEntity object) {
-        form.forceDefaultDraw.put(form.addPropertyDraw(new LP<ClassPropertyInterface>(getImportObjectAction(object.baseClass))), object.groupTo);
-        form.forceDefaultDraw.put(form.addPropertyDraw(new LP<ClassPropertyInterface>(getAddObjectAction(object.baseClass))), object.groupTo);
+        form.forceDefaultDraw.put(form.addPropertyDraw(getImportObjectAction(object.baseClass)), object.groupTo);
+        form.forceDefaultDraw.put(form.addPropertyDraw(getAddObjectAction(object.baseClass)), object.groupTo);
         form.addPropertyDraw(delete, object);
     }
 
@@ -3366,12 +3372,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
+    protected LP addAProp(ActionProperty property) {
+        return addAProp(actionGroup, property);
+    }
+
     protected LP addAProp(AbstractGroup group, ActionProperty property) {
-        return addProperty(null, new LP<ClassPropertyInterface>(property));
+        return addProperty(group, new LP<ClassPropertyInterface>(property));
     }
 
     protected LP addBAProp(ConcreteCustomClass customClass, LP add) {
-        return addAProp(null, new AddBarcodeActionProperty(customClass, add.property, genSID()));
+        return addAProp(new AddBarcodeActionProperty(customClass, add.property, genSID()));
     }
 
     private class AddBarcodeActionProperty extends ActionProperty {
