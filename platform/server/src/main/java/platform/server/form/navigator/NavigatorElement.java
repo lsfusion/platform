@@ -53,7 +53,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
 
         result.add(this);
 
-        for (NavigatorElement child : children)
+        for (NavigatorElement<T> child : children)
             child.fillChildren(result);
     }
 

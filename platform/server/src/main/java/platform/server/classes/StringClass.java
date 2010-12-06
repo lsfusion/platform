@@ -95,6 +95,6 @@ public class StringClass extends DataClass<String> {
     }
 
     public String getSID() {
-        return "StringClass[" + length + "]";
+        return "StringClass_" + length;
     }
 }

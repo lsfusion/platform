@@ -106,7 +106,7 @@ public class ReportDesignGenerator {
             for (PropertyDrawView property : formView.properties) {
                 if (group.equals(property.entity.getToDraw(formView.entity))) {
                     ReportDrawField reportField = property.getReportDrawField();
-                    if (group.propertyHighlight == property.entity.propertyObject) {
+                    if (group.propertyHighlight != null && group.propertyHighlight.property == property.entity.propertyObject.property) {
                         addDesignField(design, reportField);
                         highlightPropertySID = reportField.sID;
                     } else if (reportField != null) {
@@ -155,11 +155,20 @@ public class ReportDesignGenerator {
                     groupCellStyle = DesignStyles.getGroupStyle(groups.indexOf(group), groupsCnt, minGroupLevel, treeGroupLevel, treeGroupLevel);
                 }
                 design.addStyle(groupCellStyle);
-                if (group.propertyHighlight != null) {
+                if (highlightPropertySID != null) {
                     JRDesignConditionalStyle condStyle = new JRDesignConditionalStyle();
                     condStyle.setParentStyle(groupCellStyle);
                     Color oldColor = condStyle.getBackcolor();
-                    condStyle.setBackcolor(new Color(oldColor.getRed(), oldColor.getGreen(), 0));
+                    Color newColor;
+                    if (groupView.highlightColor == null) {
+                        newColor = new Color(oldColor.getRed(), oldColor.getGreen(), 0);
+                    } else {
+                        double coeff = oldColor.getRed() / 255;
+                        newColor = new Color((int) (groupView.highlightColor.getRed() * coeff),
+                                             (int) (groupView.highlightColor.getGreen() * coeff),
+                                             (int) (groupView.highlightColor.getBlue() * coeff));
+                    }
+                    condStyle.setBackcolor(newColor);
                     JRDesignExpression expr =
                             ReportUtils.createExpression("new Boolean($F{" + highlightPropertySID + "})", java.lang.Boolean.class);
                     condStyle.setConditionExpression(expr);
