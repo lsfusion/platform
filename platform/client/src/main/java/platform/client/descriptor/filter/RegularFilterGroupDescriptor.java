@@ -86,4 +86,8 @@ public class RegularFilterGroupDescriptor extends ContextIdentityObject implemen
         filters.remove(filter);
         updateDependency(this, "filters");
     }
+
+    public String getCodeConstructor(String name) {
+        return "RegularFilterGroupEntity " + name + " = new RegularFilterGroupEntity(" + getID() + ");";
+    }
 }

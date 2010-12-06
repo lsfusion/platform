@@ -72,7 +72,7 @@ public class CompareFilterDescriptor extends PropertyFilterDescriptor {
         return result;
     }
 
-    public String getInstanceCode() {
+    public String getCodeConstructor() {
         String code = "new CompareFilterEntity(";
         
         code += "addPropertyObject(" + property.property.getSID();

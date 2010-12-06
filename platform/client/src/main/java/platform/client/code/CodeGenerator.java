@@ -8,6 +8,7 @@ import platform.client.logics.ClientContainer;
 import javax.swing.*;
 import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 public class CodeGenerator {
 
@@ -98,8 +99,20 @@ public class CodeGenerator {
     public static String addFixedFilters(Set<FilterDescriptor> filters, StringBuilder result) {
         for (FilterDescriptor filter : filters) {
             result.append(intend + "addFixedFilter(");
-            result.append(filter.getInstanceCode());
+            result.append(filter.getCodeConstructor());
             result.append(");\n");
+        }
+        return result.toString();
+    }
+    
+    public static String addRegularFilterGroups(List<RegularFilterGroupDescriptor> groups, StringBuilder result) {
+        for (RegularFilterGroupDescriptor filterGroup : groups) {
+            String groupName = "filterGroup" + getID();
+            result.append(intend + filterGroup.getCodeConstructor(groupName));
+            for (RegularFilterDescriptor filter : filterGroup.filters) {
+                result.append("\n" + intend + groupName + ".addFilter(" + filter.getCodeConstructor() + ");");
+            }
+            result.append("\n");
         }
         return result.toString();
     }
@@ -148,6 +161,10 @@ public class CodeGenerator {
         result.append("\n");
 
         addFixedFilters(form.fixedFilters, result);
+
+        result.append("\n");
+
+        addRegularFilterGroups(form.regularFilterGroups, result);
 
         result.append("\t}\n");
         intend = "\t";

@@ -58,7 +58,7 @@ public class IsClassFilterDescriptor extends PropertyFilterDescriptor {
         return result;
     }
 
-    public String getInstanceCode() {
+    public String getCodeConstructor() {
         String code = "new IsClassFilterEntity(";
         code += "addPropertyObject(" + property.property.getSID();
         for (PropertyInterfaceDescriptor pid : property.mapping.keySet()) {
