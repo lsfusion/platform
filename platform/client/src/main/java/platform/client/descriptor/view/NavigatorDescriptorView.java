@@ -43,7 +43,7 @@ public class NavigatorDescriptorView extends JPanel {
                         NavigatorTreeNode navigatorNode = (NavigatorTreeNode) node;
                         if (navigatorNode.navigatorElement.ID == form.ID) {
                             navigatorNode.navigatorElement.setCaption(form.getCaption());
-                            visualNavigator.getTree().updateUI();
+                            updateTree();
                             break;
                         }
                     }
@@ -52,13 +52,21 @@ public class NavigatorDescriptorView extends JPanel {
         }
     };
 
+    private void updateTree() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                visualNavigator.getTree().updateUI();
+            }
+        });
+    }
+
     private final IncrementView updateHandler = new IncrementView() {
         public void update(Object updateObject, String updateField) {
             if (formView.getUpdated()) {
                 FormDescriptor currentForm = formView.getForm();
                 if (currentForm != null) {
                     changedForms.put(currentForm.getID(), currentForm);
-                    visualNavigator.getTree().updateUI();
+                    updateTree();
                     setupActionButtons();
                 }
             }
