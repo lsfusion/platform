@@ -12,10 +12,7 @@ import platform.client.descriptor.editor.base.NamedContainer;
 import platform.client.descriptor.editor.base.NodeEditor;
 import platform.client.descriptor.editor.base.NorthBoxPanel;
 import platform.client.descriptor.editor.base.TitledPanel;
-import platform.client.descriptor.increment.editor.IncrementMultipleListEditor;
-import platform.client.descriptor.increment.editor.IncrementMultipleListSelectionModel;
-import platform.client.descriptor.increment.editor.IncrementSingleListSelectionModel;
-import platform.client.descriptor.increment.editor.IncrementTextEditor;
+import platform.client.descriptor.increment.editor.*;
 import platform.interop.ClassViewType;
 
 import javax.swing.*;
@@ -64,7 +61,7 @@ public class GroupObjectEditor extends JTabbedPane implements NodeEditor {
             addTab("Общее", new NorthBoxPanel(initClassViewPanel, banClassViewPanel, propertyHighlightPanel, pageSizePanel));
         }
         addTab("Свойства", new NorthBoxPanel(groupPropertyObjectPanel));
-        addTab("Отображение", new NorthBoxPanel(propertiesPanel));
+        addTab("Отображение", new NorthBoxPanel(new TitledPanel(null, new IncrementColorEditor("Цвет подсветки", group, "highlightColor")), propertiesPanel));
         addTab("Порядки по умолчанию", new NorthBoxPanel(defaultOrdersPanel));
 
     }                                        

@@ -39,7 +39,7 @@ public class PropertyController implements CellViewListener {
         this.columnKey = columnKey;
 
         view = key.getPanelComponent(form, columnKey);
-        view.setHighlightColor(groupObject != null ? groupObject.grid.highlightColor : null);
+        view.setHighlightColor(groupObject != null ? groupObject.highlightColor : null);
         view.setCaption(key.getFullCaption());
 
         if (key.focusable != null)

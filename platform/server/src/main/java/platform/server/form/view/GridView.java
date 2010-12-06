@@ -19,8 +19,6 @@ public class GridView extends ComponentView {
 
     public GroupObjectView groupObject;
 
-    public Color highlightColor;
-
     public GridView() {
         
     }
@@ -48,8 +46,6 @@ public class GridView extends ComponentView {
         outStream.writeBoolean(tabVertical);
         outStream.writeBoolean(autoHide);
 
-        pool.writeObject(outStream, highlightColor);
-
         pool.serializeObject(outStream, groupObject);
     }
 
@@ -63,8 +59,6 @@ public class GridView extends ComponentView {
         minRowCount = inStream.readByte();
         tabVertical = inStream.readBoolean();
         autoHide = inStream.readBoolean();
-
-        highlightColor = pool.readObject(inStream);
 
         groupObject = pool.deserializeObject(inStream);
     }

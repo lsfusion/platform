@@ -10,6 +10,7 @@ import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ClassViewType;
 
+import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -179,5 +180,14 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
 
     public ClientContainer getClientComponent(ClientContainer parent) {
         return client.getClientComponent(parent);
+    }
+
+    public Color getHighlightColor() {
+        return client.getHighlightColor();
+    }
+
+    public void setHighlightColor(Color highlightColor) {
+        client.setHighlightColor(highlightColor);
+        updateDependency(this, "highlightColor");
     }
 }

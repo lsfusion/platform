@@ -585,7 +585,7 @@ public abstract class GridTable extends ClientFormTable
     }
 
     public Color getHighlightColor() {
-        return logicsSupplier.getGroupObject().grid.highlightColor;
+        return logicsSupplier.getGroupObject().highlightColor;
     }
 
     private final List<Integer> orders = new ArrayList<Integer>();

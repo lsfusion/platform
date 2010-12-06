@@ -7,6 +7,7 @@ import platform.server.form.entity.ObjectEntity;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 
+import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -15,6 +16,8 @@ import java.util.ArrayList;
 public class GroupObjectView extends ArrayList<ObjectView> implements ServerIdentitySerializable, AbstractGroupObject<ComponentView> {
 
     public GroupObjectEntity entity;
+
+    public Color highlightColor;
 
     public GroupObjectView() {
         
@@ -58,6 +61,9 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         pool.writeObject(outStream, entity.banClassView);
         pool.serializeCollection(outStream, this, serializationType);
         pool.serializeObject(outStream, pool.context.view.getTreeGroup(entity.parent));
+
+        pool.writeObject(outStream, highlightColor);
+
         pool.serializeObject(outStream, grid, serializationType);
         pool.serializeObject(outStream, showType, serializationType);
 
@@ -66,6 +72,8 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         pool.deserializeCollection(this, inStream);
+
+        highlightColor = pool.readObject(inStream);
 
         grid = pool.deserializeObject(inStream);
         showType = pool.deserializeObject(inStream);

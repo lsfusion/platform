@@ -16,8 +16,7 @@ public class GridEditor extends ComponentEditor {
                 new TitledPanel(null, new IncrementCheckBox("Показывать поиск", component, "showFind")),
                 new TitledPanel(null, new IncrementCheckBox("Показывать фильтр", component, "showFilter")),
                 new TitledPanel(null, new IncrementCheckBox("Вертикальная табуляция", component, "tabVertical")),
-                new TitledPanel(null, new IncrementCheckBox("Автоскрытие", component, "autoHide")),
-                new TitledPanel(null, new IncrementColorEditor("Цвет подсветки", component, "highlightColor"))
+                new TitledPanel(null, new IncrementCheckBox("Автоскрытие", component, "autoHide"))
         ));
 
         //todo: minRowCount
