@@ -3,6 +3,8 @@ package platform.client.logics;
 import platform.client.descriptor.editor.ComponentEditor;
 import platform.base.context.ApplicationContext;
 import platform.client.serialization.ClientSerializationPool;
+import platform.interop.form.layout.GroupObjectContainerSet;
+import platform.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
 import java.io.DataInputStream;
@@ -65,5 +67,10 @@ public class ClientClassChooser extends ClientComponent {
     @Override
     public String getCodeConstructor(String name) {
         return "RegularFilterGroupView " + name + " = createRegularFilterGroup(" + getID() + ")";
+    }
+    
+    @Override
+    public SimplexConstraints<ClientComponent> getDefaultConstraints() {
+        return GroupObjectContainerSet.getClassChooserDefaultConstraints(super.getDefaultConstraints());
     }
 }

@@ -1,5 +1,7 @@
 package platform.server.form.view;
 
+import platform.interop.form.layout.GroupObjectContainerSet;
+import platform.interop.form.layout.SimplexConstraints;
 import platform.server.classes.CustomClass;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.serialization.ServerSerializationPool;
@@ -37,5 +39,10 @@ public class ClassChooserView extends ComponentView  {
 
         object = pool.deserializeObject(inStream);
         show = inStream.readBoolean();
+    }
+
+    @Override
+    public SimplexConstraints<ComponentView> getDefaultConstraints() {
+        return GroupObjectContainerSet.getClassChooserDefaultConstraints(super.getDefaultConstraints());
     }
 }

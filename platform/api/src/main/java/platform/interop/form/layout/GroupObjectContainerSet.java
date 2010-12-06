@@ -79,4 +79,16 @@ public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extend
 
         return set;
     }
+
+    public static <T> SimplexConstraints<T> getGridDefaultConstraints(SimplexConstraints<T> constraints) {
+        constraints.fillVertical = 1;
+        constraints.fillHorizontal = 1;
+        return constraints;
+    }
+
+    public static <T> SimplexConstraints<T> getClassChooserDefaultConstraints(SimplexConstraints<T> constraints) {
+        constraints.fillVertical = 1;
+        constraints.fillHorizontal = 0.2;
+        return constraints;
+    }
 }

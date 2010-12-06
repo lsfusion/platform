@@ -71,13 +71,13 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
+        entity = pool.context.entity.getGroupObject(ID);
+
         pool.deserializeCollection(this, inStream);
 
         highlightColor = pool.readObject(inStream);
 
         grid = pool.deserializeObject(inStream);
         showType = pool.deserializeObject(inStream);
-
-        entity = pool.context.entity.getGroupObject(ID);
     }
 }

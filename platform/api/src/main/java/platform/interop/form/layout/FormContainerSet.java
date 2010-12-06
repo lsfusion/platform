@@ -83,4 +83,10 @@ public class FormContainerSet <C extends AbstractContainer<C, T>, T extends Abst
 
         return set;
     }
+
+    public static <T> SimplexConstraints<T> getContainerDefaultConstraints(SimplexConstraints<T> constraints) {
+        constraints.fillVertical = -1;
+        constraints.fillHorizontal = -1;
+        return constraints;
+    }
 }

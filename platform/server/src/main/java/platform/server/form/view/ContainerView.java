@@ -1,6 +1,7 @@
 package platform.server.form.view;
 
 import platform.interop.form.layout.AbstractContainer;
+import platform.interop.form.layout.FormContainerSet;
 import platform.interop.form.layout.SimplexConstraints;
 import platform.server.serialization.ServerSerializationPool;
 
@@ -36,12 +37,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
     @Override
     public SimplexConstraints<ComponentView> getDefaultConstraints() {
-        SimplexConstraints<ComponentView> constraints = super.getDefaultConstraints();
-        // по умолчанию, контейнеры не должны resize'ится вообще, то есть не стремится ни к максимальному размеру, ни к предпочитаемому
-        // то же самое пока дублируется в ClientContainer
-        constraints.fillVertical = -1;
-        constraints.fillHorizontal = -1;
-        return constraints;
+        return FormContainerSet.getContainerDefaultConstraints(super.getDefaultConstraints());
     }
 
     List<ComponentView> children = new ArrayList<ComponentView>();

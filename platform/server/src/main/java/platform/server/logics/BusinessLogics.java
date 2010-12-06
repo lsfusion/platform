@@ -773,6 +773,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         publicGroup.createContainer = false;
         rootGroup.add(publicGroup);
 
+        actionGroup = new AbstractGroup("Действия");
+        actionGroup.createContainer = false;
+        rootGroup.add(actionGroup);
+
         privateGroup = new AbstractGroup("Внутренние свойства");
         privateGroup.createContainer = false;
         rootGroup.add(privateGroup);
@@ -784,10 +788,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         idGroup = new AbstractGroup("Идентификаторы");
         idGroup.createContainer = false;
         publicGroup.add(idGroup);
-
-        actionGroup = new AbstractGroup("Действия");
-        actionGroup.createContainer = false;
-        publicGroup.add(actionGroup);
 
         selection = new SelectionPropertySet();
         sessionGroup.add(selection);

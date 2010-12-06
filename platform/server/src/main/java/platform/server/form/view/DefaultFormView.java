@@ -80,11 +80,8 @@ public class DefaultFormView extends FormView {
             filterContainers.put(clientGroup, groupSet.getFilterContainer());
 
             for (ObjectView clientObject : clientGroup) {
-
-                clientObject.classChooser.constraints.fillVertical = 1;
-                clientObject.classChooser.constraints.fillHorizontal = 0.2;
+                // перемещаем classChooser в самое начало
                 groupSet.getGridContainer().add(0, clientObject.classChooser);
-
                 mobjects.put(clientObject.entity, clientObject);
             }
         }

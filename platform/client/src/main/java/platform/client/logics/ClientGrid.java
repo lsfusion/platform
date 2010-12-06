@@ -3,6 +3,7 @@ package platform.client.logics;
 import platform.client.descriptor.editor.GridEditor;
 import platform.base.context.ApplicationContext;
 import platform.client.serialization.ClientSerializationPool;
+import platform.interop.form.layout.GroupObjectContainerSet;
 import platform.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
@@ -31,12 +32,7 @@ public class ClientGrid extends ClientComponent {
 
     @Override
     public SimplexConstraints<ClientComponent> getDefaultConstraints() {
-        SimplexConstraints<ClientComponent> constraints = super.getDefaultConstraints();
-        // по умолчанию, таблица должна resize'ится до максимальных размеров
-        // то же самое пока дублируется в GridView
-        constraints.fillVertical = 1;
-        constraints.fillHorizontal = 1;
-        return constraints;
+        return GroupObjectContainerSet.getGridDefaultConstraints(super.getDefaultConstraints());
     }
 
     @Override
