@@ -475,7 +475,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public Map<PropertyDrawEntity, GroupObjectEntity> forceDefaultDraw = new HashMap<PropertyDrawEntity, GroupObjectEntity>();
 
-    public DefaultFormView createDefaultRichDesign() {
+    public FormView createDefaultRichDesign() {
         return new DefaultFormView(this);
     }
 

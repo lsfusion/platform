@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ClientRegularFilterGroup extends ClientComponent {
-    
+
     public List<ClientRegularFilter> filters = new ArrayList<ClientRegularFilter>();
 
     public int defaultFilter = -1;
@@ -47,5 +47,10 @@ public class ClientRegularFilterGroup extends ClientComponent {
     @Override
     public String toString() {
         return filters.toString();
+    }
+
+    @Override
+    public String getCodeConstructor(String name) {
+        return "RegularFilterGroupView " + name + " = createRegularFilterGroup(" + getID() + ")";
     }
 }

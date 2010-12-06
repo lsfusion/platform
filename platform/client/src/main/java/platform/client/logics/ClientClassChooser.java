@@ -61,4 +61,9 @@ public class ClientClassChooser extends ClientComponent {
     public JComponent getPropertiesEditor() {
         return new ComponentEditor(this);
     }
+
+    @Override
+    public String getCodeConstructor(String name) {
+        return "RegularFilterGroupView " + name + " = createRegularFilterGroup(" + getID() + ")";
+    }
 }

@@ -73,6 +73,7 @@ import java.util.*;
 import java.util.logging.*;
 
 // @GenericImmutable нельзя так как Spring валится
+
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends RemoteObject implements RemoteLogicsInterface {
     private final static Logger logger = Logger.getLogger(BusinessLogics.class.getName());
 
@@ -141,7 +142,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         XmlBeanFactory factory = new XmlBeanFactory(new FileSystemResource("conf/settings.xml"));
 
         if (factory.containsBean("settings")) {
-            Settings.instance = (Settings)factory.getBean("settings");
+            Settings.instance = (Settings) factory.getBean("settings");
         } else {
             Settings.instance = new Settings();
         }
@@ -516,7 +517,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP dateID;
 
     private final ConcreteValueClass classSIDValueClass = StringClass.get(250);
-    
+
     public static int genSystemClassID(int id) {
         return 9999976 - id;
     }
@@ -894,28 +895,29 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     /**
      * Нужно для скрытия свойств при соблюдении какого-то критерия
-     *
+     * <p/>
      * <pre>
      * Пример использования:
      *       Скроем свойство policyDescription, если у текущего user'а логин - "Admin"
-     *
+     * <p/>
      *       Вводим свойство критерия:
-     *
+     * <p/>
      *         LP hideUserPolicyDescription = addJProp(diff2, userLogin, 1, addCProp(StringClass.get(30), "Admin"));
-     *
+     * <p/>
      *       Вводим свойство которое будет использовано в качестве propertyCaption для policyDescription:
-     *
+     * <p/>
      *         policyDescriptorCaption = addHideCaptionProp(null, "Policy caption", policyDescription, hideUserPolicyDescription);
-     *
+     * <p/>
      *       Далее в форме указываем соответсвующий propertyCaption:
-     *
+     * <p/>
      *         PropertyDrawEntity descriptionDraw = getPropertyDraw(policyDescription, objPolicy.groupTo);
      *         PropertyDrawEntity descriptorCaptionDraw = addPropertyDraw(policyDescriptorCaption, objUser);
      *         descriptionDraw.setPropertyCaption(descriptorCaptionDraw.propertyObject);
      * </pre>
-     * @param group ...
-     * @param caption ...
-     * @param original свойство, к которому будет применятся критерий сокрытия
+     *
+     * @param group        ...
+     * @param caption      ...
+     * @param original     свойство, к которому будет применятся критерий сокрытия
      * @param hideProperty критерий
      * @return свойство, которое должно использоваться в качестве propertyCaption для скрываемого свойства
      */
@@ -1007,6 +1009,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private Map<ValueClass, LP> is = new HashMap<ValueClass, LP>();
 
     // получает свойство is
+
     protected LP is(ValueClass valueClass) {
         LP isProp = is.get(valueClass);
         if (isProp == null) {
@@ -1043,6 +1046,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     // по умолчанию с полным стартом
+
     public BusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(exportPort);
 
@@ -1174,6 +1178,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     private final String navigatorTreeFilePath = "conf/" + getName() + "/navigatorTree.data";
+
     private void reloadNavigatorTree() throws IOException {
         if (new File(navigatorTreeFilePath).exists()) {
             FileInputStream inStream = new FileInputStream(navigatorTreeFilePath);
@@ -1472,6 +1477,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected Set<List<? extends Property>> indexes = new HashSet<List<? extends Property>>();
 
     // получает список св-в в порядке использования
+
     private void fillPropertyList(Property<?> property, LinkedHashSet<Property> set) {
         for (Property depend : property.getDepends())
             fillPropertyList(depend, set);
@@ -1958,6 +1964,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     // сессионные
+
     protected LP addSDProp(String caption, ValueClass value, ValueClass... params) {
         return addSDProp((AbstractGroup) null, caption, value, params);
     }
@@ -2089,6 +2096,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     // Linear Implement
+
     private static abstract class LI {
         abstract <T extends PropertyInterface<T>> PropertyInterfaceImplement<T> map(List<T> interfaces);
 
@@ -2174,6 +2182,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     // считывает "линейные" имплементации
+
     static List<LI> readLI(Object[] params) {
         List<LI> result = new ArrayList<LI>();
         for (int i = 0; i < params.length; i++)
@@ -2448,6 +2457,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
           return addJProp(group, title, andNot1, BaseUtils.add(directLI(maxRestRemain),directLI(exceed)));
       }
     */
+
     protected LP addSGProp(LP groupProp, Object... params) {
         return addSGProp(privateGroup, "sys", groupProp, params);
     }
@@ -2630,6 +2640,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     // объединение классовое (непересекающихся) свойств
+
     protected LP addCUProp(LP... props) {
         return addCUProp(privateGroup, "sys", props);
     }
@@ -2653,6 +2664,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     Collection<LP[]> checkCUProps = new ArrayList<LP[]>();
 
     // объединяет разные по классам св-ва
+
     protected LP addCUProp(AbstractGroup group, String sID, String caption, LP... props) {
         return addCUProp(group, sID, false, caption, props);
     }
@@ -2663,6 +2675,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     // разница
+
     protected LP addDUProp(LP prop1, LP prop2) {
         return addDUProp(privateGroup, "sys", prop1, prop2);
     }
@@ -2724,6 +2737,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     // XOR
+
     protected LP addXorUProp(LP prop1, LP prop2) {
         return addXorUProp(privateGroup, genSID(), "sys", prop1, prop2);
     }
@@ -2745,6 +2759,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     // IF и IF ELSE
+
     protected LP addIfProp(LP prop, boolean not, LP ifProp, Object... params) {
         return addIfProp(privateGroup, genSID(), "sys", prop, not, ifProp, params);
     }
@@ -2774,6 +2789,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     // объединение пересекающихся свойств
+
     protected LP addSUProp(Union unionType, LP... props) {
         return addSUProp(privateGroup, "sys", unionType, props);
     }
@@ -2797,6 +2813,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     Collection<LP[]> checkSUProps = new ArrayList<LP[]>();
 
     // объединяет разные по классам св-ва
+
     protected LP addSUProp(AbstractGroup group, String sID, String caption, Union unionType, LP... props) {
         return addSUProp(group, sID, false, caption, unionType, props);
     }
@@ -2811,6 +2828,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     // объединяет заведомо непересекающиеся но не классовые свойства
+
     protected LP addXSUProp(AbstractGroup group, String sID, String caption, LP... props) {
         return addXSUProp(group, sID, false, caption, props);
     }
@@ -3360,6 +3378,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         autoFillDB = false;
     }
 */
+
     private void recalculateAggregations(SQLSession session, Collection<AggregateProperty> recalculateProperties) throws SQLException {
 
         for (Property property : getPropertyList())
@@ -3551,7 +3570,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             addProperties(classes, groupMap, result, idResult, isCompulsory, isAny);
 
             List<Property> newResult = BaseUtils.filterList(result, getProperties());
-            
+
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
             DataOutputStream dataStream = new DataOutputStream(outStream);
@@ -3589,7 +3608,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 }
             }
             if ((isCompulsory && classesGroups.size() == allGroups.size()) ||
-                (!isCompulsory && classesGroups.size() > 0 || groupMap.isEmpty()) || classList.isEmpty()) {
+                    (!isCompulsory && classesGroups.size() > 0 || groupMap.isEmpty()) || classList.isEmpty()) {
                 classLists.add(classList);
             }
         }
@@ -3603,4 +3622,22 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             idResult.add(ids);
         }
     }
+    /*
+    private Map<String, String> getPropertiesNames(String[] properties) {
+
+        Map<String, String> result = new HashMap<String, String>();
+        for (String prop : properties) {
+            result.put(prop, prop);
+        }
+
+        Class cls = this.getClass();
+        for (java.lang.reflect.Field field :  cls.getDeclaredFields()) {
+            
+            
+
+        }
+
+
+    }
+    */
 }

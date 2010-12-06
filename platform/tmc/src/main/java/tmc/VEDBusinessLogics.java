@@ -57,7 +57,6 @@ import java.util.List;
 import java.util.Map;
 
 
-
 public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     CashRegController cashRegController = new CashRegController(this);
@@ -263,7 +262,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         returnSaleInvoiceRetail = addConcreteClass("returnSaleInvoiceRetail", "Возврат розничного заказа по накладной", orderShopInc, orderInvoiceRetail, returnSaleInvoice);
         returnSaleCheckRetail = addConcreteClass("returnSaleCheckRetail", "Возврат реализации через кассу", orderShopInc, returnInner, commitInc, checkRetail);
 
-        obligation = addAbstractClass("obligation","Сертификат", baseClass.named, barcodeObject);
+        obligation = addAbstractClass("obligation", "Сертификат", baseClass.named, barcodeObject);
         coupon = addConcreteClass("coupon", "Купон", obligation);
         giftObligation = addConcreteClass("giftObligation", "Подарочный сертификат", obligation);
     }
@@ -366,7 +365,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addressContragent = addJProp(baseGroup, "Адрес", customerCheckRetailAddress, orderContragent, 1);
         initialSumContragent = addJProp(baseGroup, "Начальная сумма", clientInitialSum, orderContragent, 1);
 
-       //        logClientInitialSum = addLProp(clientInitialSum);
+        //        logClientInitialSum = addLProp(clientInitialSum);
 
         nameContragentImpl = addJProp(true, "Контрагент", name, orderContragent, 1);
         phoneContragentImpl = addJProp(true, "Телефон", customerCheckRetailPhone, orderContragent, 1);
@@ -479,16 +478,16 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP gigiena = addDProp(priceGroup, "gigiena", "Гигиеническое разрешение", StringClass.get(50), article);
         LP articleStatus = addDProp(priceGroup, "articleStatus", "Собственный/несобственный", LogicalClass.instance, article);
 
-        LP articleBrend = addDProp ("articleBrend", "Бренд товара", brend, article);
+        LP articleBrend = addDProp("articleBrend", "Бренд товара", brend, article);
         addJProp(priceGroup, "Бренд товара", name, articleBrend, 1);
 
-        LP articleCountry = addDProp ("articleCountry", "Страна товара", country, article);
+        LP articleCountry = addDProp("articleCountry", "Страна товара", country, article);
         addJProp(priceGroup, "Страна товара", name, articleCountry, 1);
 
-        LP articleLine = addDProp ("articleLine", "Линия товара", line, article);
+        LP articleLine = addDProp("articleLine", "Линия товара", line, article);
         addJProp(priceGroup, "Линия товара", name, articleLine, 1);
 
-        LP articleGender = addDProp ("articleGender", "Пол", gender, article);
+        LP articleGender = addDProp("articleGender", "Пол", gender, article);
         addJProp(priceGroup, "Пол", name, articleGender, 1);
         //**************************************************************************************************************
         currentRRP = addDProp(priceGroup, "currentRRP", "RRP", DoubleClass.instance, article);
@@ -1053,7 +1052,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addFormEntity(new CommitSaleCheckRetailExcelFormEntity(commitSaleForm, 1323, "Выгрузка в Excel"));
         saleCheckCertForm = addFormEntity(new SaleCheckCertFormEntity(saleRetailCashRegisterElement, 1325, true, false));
         addFormEntity(new SaleCheckCertFormEntity(saleCheckCertForm, 1327, false, false));
-        saleCheckCertBrowseForm = addFormEntity(new SaleCheckCertFormEntity(saleCheckCertForm, 1335, false,true));
+        saleCheckCertBrowseForm = addFormEntity(new SaleCheckCertFormEntity(saleCheckCertForm, 1335, false, true));
         returnSaleCheckRetailArticleForm = addFormEntity(new ReturnSaleCheckRetailFormEntity(saleRetailCashRegisterElement, true, 1345, false));
         addFormEntity(new ReturnSaleCheckRetailFormEntity(returnSaleCheckRetailArticleForm, false, 1347, false));
         returnSaleCheckRetailBrowse = addFormEntity(new ReturnSaleCheckRetailFormEntity(returnSaleCheckRetailArticleForm, false, 1355, true));
@@ -1148,7 +1147,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         @Override
         public DefaultFormView createDefaultRichDesign() {
 
-            DefaultFormView design = super.createDefaultRichDesign();
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
             if (getDefaultFont() != null)
                 design.setFont(getDefaultFont());
@@ -1525,7 +1524,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
     }
 
-     public class ShopMoneyFormEntity extends FormEntity {
+    public class ShopMoneyFormEntity extends FormEntity {
         public ShopMoneyFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
@@ -1537,7 +1536,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             gobjDates.add(objDateFrom);
             gobjDates.add(objDateTo);
             addGroup(gobjDates);
-            
+
             gobjDates.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
             gobjDates.initClassView = ClassViewType.PANEL;
 
@@ -1546,18 +1545,18 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addPropertyDraw(saleExport, objShop, objDateFrom, objDateTo);
 
             ObjectEntity objDate = addSingleGroupObject(DateClass.instance, objectValue);
-           // addObjectActions(this, objDate);
+            // addObjectActions(this, objDate);
 
             addPropertyDraw(objDate, objShop, baseGroup);
             //addPropertyDraw(objShop, objDate, publicGroup);
 
             addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(impSumBank, objDate, objShop)),
                     new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(impSumCash, objDate, objShop)),
-                    new NotNullFilterEntity(addPropertyObject(impSumCard, objDate, objShop)))));
+                            new NotNullFilterEntity(addPropertyObject(impSumCard, objDate, objShop)))));
             //addFixedFilter(new NotNullFilterEntity(getPropertyObject()));
             //addFixedFilter(new CompareFilterEntity(addPropertyObject(shop, objDate), Compare.EQUALS, objShop));
         }
-     }
+    }
 
     private abstract class SaleRetailFormEntity extends DocumentInnerFormEntity {
 
@@ -1821,7 +1820,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
 
-
     public class CommitSaleCheckRetailExcelFormEntity extends FormEntity {
 
         public CommitSaleCheckRetailExcelFormEntity(NavigatorElement parent, int iID, String caption) {
@@ -1863,10 +1861,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
 
 
-
         @Override
         public DefaultFormView createDefaultRichDesign() {
-            DefaultFormView design = super.createDefaultRichDesign();
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
             design.overridePageWidth = 3000;
             return design;
         }
@@ -2677,7 +2674,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
             Integer shopID = (Integer) keys.get(shopInterface).object;
             try {
-                new AbstractSaleExportTask(VEDBusinessLogics.this, ((SaleExportTask)scheduler.getTask("saleExport")).getPath(shopID), shopID) {
+                new AbstractSaleExportTask(VEDBusinessLogics.this, ((SaleExportTask) scheduler.getTask("saleExport")).getPath(shopID), shopID) {
                     protected String getDbfName() {
                         return "datadat.dbf";
                     }
@@ -2691,7 +2688,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                     protected void updateRemoteFormProperties(FormInstance formInstance) throws SQLException {
                     }
                 }.run();
-            } catch(Exception e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
 

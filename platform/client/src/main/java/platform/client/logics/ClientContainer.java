@@ -80,7 +80,7 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
     @Override
     public String getCaption() {
         if (title == null || title.equals("")) {
-            return (description == null) ? "" : description; 
+            return (description == null) ? "" : description;
         } else
             return title;
     }
@@ -178,7 +178,7 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         if (sID.equals(this.sID)) return this;
         for (ClientComponent comp : children) {
             if (comp instanceof ClientContainer) {
-                ClientContainer result = ((ClientContainer)comp).findContainerBySID(sID);
+                ClientContainer result = ((ClientContainer) comp).findContainerBySID(sID);
                 if (result != null) return result;
             }
         }
@@ -189,7 +189,12 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         return container != null && (equals(container) || isAncestorOf(container.container));
     }
 
-    public List<ClientComponent> getChildren(){
+    public List<ClientComponent> getChildren() {
         return children;
+    }
+
+    @Override
+    public String getCodeConstructor(String name) {
+        return "ContainerView " + name + " = createContainer(\"" + title + "\", \"" + description + "\", \"" + sID + "\")";
     }
 }

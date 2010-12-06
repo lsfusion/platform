@@ -48,4 +48,10 @@ public class ClientShowType extends ClientComponent {
     public JComponent getPropertiesEditor() {
         return new ComponentEditor(this);
     }
+
+    @Override
+    public String getCodeConstructor(String name) {
+        return "ShowTypeView " + name + " = createShowType(" + groupObject.getID() + ")";
+    }
+
 }

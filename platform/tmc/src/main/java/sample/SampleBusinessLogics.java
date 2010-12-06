@@ -180,7 +180,7 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
         @Override
         public DefaultFormView createDefaultRichDesign() {
-            DefaultFormView design = super.createDefaultRichDesign();
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 //            design.get(getPropertyDraw(documentStore)).autoHide = true;
 
             return design;

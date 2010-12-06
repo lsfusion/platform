@@ -112,7 +112,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         rateDay = addSUProp(Union.OVERRIDE, addCProp(IntegerClass.instance, 1, absMonth, YearClass.instance), userRateDay);
 
         LP daysInMonth = addDProp(baseGroup, "daysInMonth", "Дней в месяце", IntegerClass.instance, absMonth);
-        
+
         LP personStartWorkYear = addDProp(baseGroup, "personStartWorkYear", "Год начала раб.", YearClass.instance, person);
         LP personStartWorkMonth = addDProp("personStartWorkMonth", "Месяц начала раб.", absMonth, person);
         addJProp(baseGroup, "Месяц начала раб.", name, personStartWorkMonth, 1);
@@ -148,7 +148,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
         vacationPerson = addDProp("vacationPerson", "Сотрудник", person, vacation);
         LP vacationPersonName = addJProp(baseGroup, "vacationPersonName", "Имя сотрудника", name, vacationPerson, 1);
-        LP vacationStartDate = addDProp(baseGroup, "vacationStartDate" ,"Начало отпуска", DateClass.instance, vacation);
+        LP vacationStartDate = addDProp(baseGroup, "vacationStartDate", "Начало отпуска", DateClass.instance, vacation);
         LP vacationEndDate = addDProp(baseGroup, "vacationEndDate", "Окончание отпуска", DateClass.instance, vacation);
         LP vacationDaysQuantity = addJProp(baseGroup, "vacationDaysQuantity", "Длина отпуска, дней", daysBetweenDates, vacationEndDate, 1, vacationStartDate, 1);
         LP vacationWorkDays = addDProp(baseGroup, "vacationWorkDays", "Рабочих дней за период отпуска", IntegerClass.instance, vacation);
@@ -162,7 +162,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP extraRate = addDProp(baseGroup, "rateExtra", "Курс", DoubleClass.instance, extraCost);
         LP extraCurrency = addDProp("curExtra", "Валюта затрат", currency, extraCost);
         addJProp(baseGroup, "Валюта затрат", name, extraCurrency, 1);
-        
+
         exchangeRate = addDProp("exchangeRate", "Курс обмена", DoubleClass.instance, currency, currency, DateClass.instance);
 
         LP lessCmpDate = addJProp(and(false, true, false), object(DateClass.instance), 3, exchangeRate, 1, 2, 3, greater2, 3, 4, is(DateClass.instance), 4);
@@ -229,8 +229,8 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP perCent = addDProp(baseGroup, "perCent", "Процент", DoubleClass.instance, department);
 
         incomeOutcome = addDProp("incomeOutcome", "Расход по приходу", incomeNotCash, outcomeCost);
-        
-        LP inCost = addJProp(baseGroup, "inCost", "Стоимость оборотов", calcPerCent, addJProp(and1, inSum, 1, is(incomeNotCash), 1), 1, addJProp(perCent, operationDepartment,1), 1);
+
+        LP inCost = addJProp(baseGroup, "inCost", "Стоимость оборотов", calcPerCent, addJProp(and1, inSum, 1, is(incomeNotCash), 1), 1, addJProp(perCent, operationDepartment, 1), 1);
         LP payRevenueRate = addDProp(baseGroup, "payRevenueRate", "Курс", DoubleClass.instance, outcomeCost);
         LP paySumInCur = addJProp("paySumInCur", "Приведенная сумма расхода", sumByRate, outSum, 1, payRevenueRate, 1);
         LP totalOutcome = addSGProp(baseGroup, "totalOutcome", "Всего выплачено", paySumInCur, incomeOutcome, 1);
@@ -272,7 +272,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
         addConstraint(addJProp("Расходы превышают доходы", greater2, totalOutcome, 1, inCost, 1), false);
 
-        
+
         LP extraSum = addJProp(and1, addJProp(multiplyDouble2, outSum, 1, extraRate, 1), 1, is(extraCost), 1);
 
         salaryInMonth = addDProp(salaryGroup, "salaryInM", "Зарплата", DoubleClass.instance, person, absMonth, YearClass.instance);
@@ -402,7 +402,6 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         FormEntity exchangeRatesForm = new ExchangeRatesFormEntity(primaryData, 117, "Курсы валют");
 
 
-
         NavigatorElement aggregateData = new NavigatorElement(baseElement, 200, "Сводная информация");
         FormEntity departmentBalance = new DepartmentBalanceFormEntity(aggregateData, 214, "Баланс по отделам");
         FormEntity employeeExtraSum = addFormEntity(new DepartmentRevenueFormEntity(aggregateData, 218, "Обороты по отделам"));
@@ -432,11 +431,11 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         }
     }
 
-     private class IncomeFormEntity extends FormEntity {
-         private ObjectEntity objIncNotCash;
-         private ObjectEntity objOutcome;
+    private class IncomeFormEntity extends FormEntity {
+        private ObjectEntity objIncNotCash;
+        private ObjectEntity objOutcome;
 
-         public IncomeFormEntity(NavigatorElement parent, int ID, String caption) {
+        public IncomeFormEntity(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
             ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
@@ -460,12 +459,12 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
         @Override
         public DefaultFormView createDefaultRichDesign() {
-            DefaultFormView design = super.createDefaultRichDesign();
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
             design.addIntersection(design.getGroupObjectContainer(objIncNotCash.groupTo), design.getGroupObjectContainer(objOutcome.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             return design;
         }
-     }
+    }
 
     private class ExtraFormEntity extends FormEntity {
         private ObjectEntity objMonthOp;
@@ -504,7 +503,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
         @Override
         public DefaultFormView createDefaultRichDesign() {
-            DefaultFormView design = super.createDefaultRichDesign();
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
             design.get(objCur.groupTo).grid.constraints.fillHorizontal /= 2;
             design.addIntersection(design.getGroupObjectContainer(objMonthOp.groupTo), design.getGroupObjectContainer(objCur.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
@@ -558,7 +557,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         @Override
         public DefaultFormView createDefaultRichDesign() {
 
-            DefaultFormView design = super.createDefaultRichDesign();
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
             design.get(objExtraStateOp.groupTo).grid.constraints.fillHorizontal /= 3;
             design.addIntersection(design.getGroupObjectContainer(objExtraStateOp.groupTo), design.getGroupObjectContainer(objPayOp.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
@@ -600,7 +599,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
             objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
-            
+
             ObjectEntity objPerson = addSingleGroupObject(person, baseGroup);
             ObjectEntity objVacation = addSingleGroupObject(vacation, baseGroup);
 
@@ -669,7 +668,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         @Override
         public DefaultFormView createDefaultRichDesign() {
 
-            DefaultFormView design = super.createDefaultRichDesign();
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
             //design.get(objCurrency.groupTo).grid.constraints.fillHorizontal /= 2;
             design.addIntersection(design.getGroupObjectContainer(objCurrency.groupTo), design.getGroupObjectContainer(objDepartment.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);

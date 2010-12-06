@@ -118,4 +118,8 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
     }
 
     public abstract String getCaption();
+
+    public String getCodeConstructor(String name){
+        return "CreateContainer()";
+    }
 }

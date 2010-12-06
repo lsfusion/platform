@@ -435,7 +435,7 @@ public class CashRegController {
 
         @Override
         public DefaultFormView createDefaultRichDesign() {
-            DefaultFormView design = super.createDefaultRichDesign();
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
             design.setFont(VEDBusinessLogics.FONT_HUGE_BOLD);
             design.setPanelLabelAbove(BL.baseGroup, true);
 

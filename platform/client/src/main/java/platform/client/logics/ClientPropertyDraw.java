@@ -85,11 +85,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         updateDependency(this, "editKey");
     }
 
-    public boolean getShowEditKey(){
+    public boolean getShowEditKey() {
         return showEditKey;
     }
 
-    public void setShowEditKey(boolean showKey){
+    public void setShowEditKey(boolean showKey) {
         showEditKey = showKey;
         updateDependency(this, "showEditKey");
     }
@@ -396,7 +396,13 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     // приходится держать ссылку на Descriptor, чтобы правильно отображать caption в Настройка бизнес-логики
     private PropertyDrawDescriptor descriptor;
+
     public void setDescriptor(PropertyDrawDescriptor descriptor) {
         this.descriptor = descriptor;
+    }
+
+    @Override
+    public String getCodeConstructor(String name) {
+        return "PropertyDrawView " + name + " = createPropertyDraw(" + descriptor.getID() + ")";
     }
 }
