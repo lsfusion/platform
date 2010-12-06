@@ -1270,7 +1270,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         try {
             byte[] formState = IOUtils.getFileBytes(new File(getFormSerializationPath(formSID)));
             return (FormEntity<T>) FormEntity.deserialize(this, formState);
-        } catch (IOException e) {
+        } catch (Exception e) {
             return null;
         }
     }
@@ -1287,7 +1287,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         try {
             byte[] elementState = IOUtils.getFileBytes(new File(getElementSerializationPath(elementSID)));
             return (NavigatorElement<T>) NavigatorElement.deserialize(elementState);
-        } catch (IOException e) {
+        } catch (Exception e) {
             return null;
         }
     }
