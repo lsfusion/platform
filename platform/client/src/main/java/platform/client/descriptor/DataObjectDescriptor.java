@@ -12,8 +12,8 @@ import java.io.IOException;
 import java.util.List;
 
 public class DataObjectDescriptor extends ContextObject implements PropertyObjectInterfaceDescriptor {
-    Object object;
-    ClientTypeClass typeClass;
+    public Object object;
+    public ClientTypeClass typeClass;
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         BaseUtils.serializeObject(outStream, object);
@@ -44,5 +44,9 @@ public class DataObjectDescriptor extends ContextObject implements PropertyObjec
     @Override
     public String toString() {
         return object.toString() + " - " + typeClass.toString();
+    }
+
+    public String getInstanceCode() {
+        return "new DataObject(" + object + ", " + typeClass + ")";
     }
 }

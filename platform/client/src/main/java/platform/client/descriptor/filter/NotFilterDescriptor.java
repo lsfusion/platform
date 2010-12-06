@@ -48,4 +48,8 @@ public class NotFilterDescriptor extends FilterDescriptor {
     public FilterDescriptor getFilter() {
         return filter;
     }
+
+    public String getInstanceCode() {
+        return "new NotFilterEntity(" + filter.getInstanceCode() + ")";
+    }
 }

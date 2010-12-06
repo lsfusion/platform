@@ -60,4 +60,8 @@ public class OrFilterDescriptor extends FilterDescriptor {
     public FilterDescriptor getOp2() {
         return op2;
     }
+
+    public String getInstanceCode() {
+        return "new OrFilterEntity(" + op1.getInstanceCode() + ", " + op2.getInstanceCode() + ")";
+    }
 }

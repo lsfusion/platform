@@ -3,6 +3,7 @@ package platform.client.descriptor.filter;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.nodes.filters.FilterNode;
 import platform.client.descriptor.nodes.filters.NotNullFilterNode;
+import platform.client.descriptor.property.PropertyInterfaceDescriptor;
 import platform.client.serialization.ClientSerializationPool;
 
 import java.io.DataInputStream;
@@ -29,5 +30,15 @@ public class NotNullFilterDescriptor extends PropertyFilterDescriptor {
     @Override
     public FilterNode createNode(Object group) {
         return new NotNullFilterNode((GroupObjectDescriptor) group, this);
+    }
+
+    public String getInstanceCode() {
+        String code = "new NotNullFilterEntity(";
+        code += "addPropertyObject(" + property.property.getSID();
+        for (PropertyInterfaceDescriptor pid : property.mapping.keySet()) {
+            code += ", " + property.mapping.get(pid).getInstanceCode();
+        }
+        code += "))";
+        return code;
     }
 }

@@ -3,6 +3,7 @@ package platform.client.descriptor.filter;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.nodes.filters.FilterNode;
 import platform.client.descriptor.nodes.filters.IsClassFilterNode;
+import platform.client.descriptor.property.PropertyInterfaceDescriptor;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.classes.ClientTypeSerializer;
 import platform.client.serialization.ClientSerializationPool;
@@ -55,5 +56,15 @@ public class IsClassFilterDescriptor extends PropertyFilterDescriptor {
             result += " - класса " + objectClass;
         if (result.isEmpty()) result = "КЛАСС";
         return result;
+    }
+
+    public String getInstanceCode() {
+        String code = "new IsClassFilterEntity(";
+        code += "addPropertyObject(" + property.property.getSID();
+        for (PropertyInterfaceDescriptor pid : property.mapping.keySet()) {
+            code += ", " + property.mapping.get(pid).getInstanceCode();
+        }
+        code += ")";
+        return code;
     }
 }

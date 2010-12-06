@@ -37,6 +37,10 @@ public class ObjectDescriptor extends ContextIdentityObject implements PropertyO
         return client.toString();
     }
 
+    public String getInstanceCode() {
+        return getSID();
+    }
+
     public GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groups) {
         return groupTo;
     }

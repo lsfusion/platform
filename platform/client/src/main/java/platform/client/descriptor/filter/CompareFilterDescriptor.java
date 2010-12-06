@@ -1,8 +1,8 @@
 package platform.client.descriptor.filter;
 
-import platform.client.descriptor.GroupObjectDescriptor;
-import platform.client.descriptor.OrderDescriptor;
+import platform.client.descriptor.*;
 import platform.client.descriptor.nodes.filters.CompareFilterNode;
+import platform.client.descriptor.property.PropertyInterfaceDescriptor;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.Compare;
 
@@ -70,5 +70,17 @@ public class CompareFilterDescriptor extends PropertyFilterDescriptor {
             result += " " + value;
         if (result.isEmpty()) result = "СРАВНЕНИЕ";
         return result;
+    }
+
+    public String getInstanceCode() {
+        String code = "new CompareFilterEntity(";
+        
+        code += "addPropertyObject(" + property.property.getSID();
+        for (PropertyInterfaceDescriptor pid : property.mapping.keySet()) {
+            code += ", " + property.mapping.get(pid).getInstanceCode();
+        }
+        code += "), Compare." + compare.name() + ", ";
+        code += value.getInstanceCode() + ")";
+        return code;
     }
 }

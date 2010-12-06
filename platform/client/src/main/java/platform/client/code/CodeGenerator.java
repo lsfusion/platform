@@ -1,6 +1,7 @@
 package platform.client.code;
 
 import platform.client.descriptor.*;
+import platform.client.descriptor.filter.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -50,7 +51,7 @@ public class CodeGenerator {
                 new HashMap<Set<PropertyObjectInterfaceDescriptor>, Collection<PropertyDrawDescriptor>>();
 
         for (PropertyDrawDescriptor property : form.propertyDraws) {
-            HashSet values = new HashSet(property.getPropertyObject().mapping.values());
+            Set<PropertyObjectInterfaceDescriptor> values = new HashSet<PropertyObjectInterfaceDescriptor>(property.getPropertyObject().mapping.values());
             Collection<PropertyDrawDescriptor> props = propertiesInt.get(values);
             if (props == null) {
                 props = new ArrayList<PropertyDrawDescriptor>();
@@ -84,6 +85,15 @@ public class CodeGenerator {
         }
     }
 
+    public static String addFixedFilters(Set<FilterDescriptor> filters, StringBuilder result){
+        for(FilterDescriptor filter : filters) {
+            result.append(intend + "addFixedFilter(");
+            result.append(filter.getInstanceCode());
+            result.append(");\n");
+        }
+        return result.toString();
+    }
+
     public static String formDescriptorCode(FormDescriptor form) {
         intend = "";
         StringBuilder result = new StringBuilder();
@@ -98,6 +108,10 @@ public class CodeGenerator {
         result.append("\n");
 
         addProperties(form, result);
+
+        result.append("\n");
+
+        addFixedFilters(form.fixedFilters, result);
 
         result.append("\t}\n");
         
