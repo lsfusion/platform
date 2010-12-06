@@ -1,7 +1,6 @@
 package platform.client.form.renderer;
 
 import platform.client.form.PropertyRendererComponent;
-import platform.client.form.editor.StringPropertyEditor;
 import platform.interop.ComponentDesign;
 
 import javax.swing.*;
@@ -11,7 +10,7 @@ import java.text.Format;
 public class StringPropertyRenderer extends LabelPropertyRenderer
         implements PropertyRendererComponent {
 
-    public static final String EMPTY_STRING = "Неопределено";
+    public static final String EMPTY_STRING = "Не определено";
 
     private static final Color normalForeground = UIManager.getColor("TextField.foreground");
     private static final Color inactiveForeground = UIManager.getColor("TextField.inactiveForeground");
