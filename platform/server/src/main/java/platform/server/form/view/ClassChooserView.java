@@ -1,6 +1,5 @@
 package platform.server.form.view;
 
-import platform.interop.form.layout.GroupObjectContainerSet;
 import platform.interop.form.layout.SimplexConstraints;
 import platform.server.classes.CustomClass;
 import platform.server.form.entity.ObjectEntity;
@@ -43,6 +42,6 @@ public class ClassChooserView extends ComponentView  {
 
     @Override
     public SimplexConstraints<ComponentView> getDefaultConstraints() {
-        return GroupObjectContainerSet.getClassChooserDefaultConstraints(super.getDefaultConstraints());
+        return SimplexConstraints.getClassChooserDefaultConstraints(super.getDefaultConstraints());
     }
 }

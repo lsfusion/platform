@@ -1,7 +1,6 @@
 package platform.server.form.view;
 
 import platform.interop.form.layout.AbstractContainer;
-import platform.interop.form.layout.FormContainerSet;
 import platform.interop.form.layout.SimplexConstraints;
 import platform.server.serialization.ServerSerializationPool;
 
@@ -37,7 +36,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
     @Override
     public SimplexConstraints<ComponentView> getDefaultConstraints() {
-        return FormContainerSet.getContainerDefaultConstraints(super.getDefaultConstraints());
+        return SimplexConstraints.getContainerDefaultConstraints(super.getDefaultConstraints());
     }
 
     List<ComponentView> children = new ArrayList<ComponentView>();

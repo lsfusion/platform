@@ -13,6 +13,7 @@ import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ClassViewType;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.layout.SimplexConstraints;
 import platform.interop.form.screen.ExternalScreenConstraints;
 
 import javax.swing.*;
@@ -74,6 +75,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public ClientPropertyDraw(int ID, ApplicationContext context) {
         super(ID, context);
+    }
+
+    @Override
+    public SimplexConstraints<ClientComponent> getDefaultConstraints() {
+        return SimplexConstraints.getPropertyDrawDefaultConstraints(super.getDefaultConstraints());
     }
 
     public KeyStroke getEditKey() {

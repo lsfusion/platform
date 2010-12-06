@@ -195,4 +195,32 @@ public class SimplexConstraints<T> extends ContextObject implements Serializable
         this.intersects = intersects;
         updateDependency(this, "intersects");
     }
+
+    public static <T> SimplexConstraints<T> getContainerDefaultConstraints(SimplexConstraints<T> constraints) {
+        constraints.fillVertical = -1;
+        constraints.fillHorizontal = -1;
+        return constraints;
+    }
+
+    public static <T> SimplexConstraints<T> getGridDefaultConstraints(SimplexConstraints<T> constraints) {
+        constraints.fillVertical = 1;
+        constraints.fillHorizontal = 1;
+        return constraints;
+    }
+
+    public static <T> SimplexConstraints<T> getClassChooserDefaultConstraints(SimplexConstraints<T> constraints) {
+        constraints.fillVertical = 1;
+        constraints.fillHorizontal = 0.2;
+        return constraints;
+    }
+
+    public static <T> SimplexConstraints<T> getPropertyDrawDefaultConstraints(SimplexConstraints<T> constraints) {
+        constraints.insetsSibling = new Insets(0,0,2,2);
+        return constraints;
+    }
+
+    public static <T> SimplexConstraints<T> getRegularFilterGroupDefaultConstraints(SimplexConstraints<T> constraints) {
+        constraints.insetsSibling = new Insets(0,4,2,4);
+        return constraints;
+    }
 }

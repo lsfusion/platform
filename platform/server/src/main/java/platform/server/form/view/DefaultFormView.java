@@ -100,7 +100,6 @@ public class DefaultFormView extends FormView {
         for (PropertyDrawEntity control : formEntity.propertyDraws) {
 
             PropertyDrawView clientProperty = new PropertyDrawView(control);
-            clientProperty.constraints.insetsSibling = new Insets(0,0,2,2);
 
             GroupObjectEntity groupDraw = formEntity.forceDefaultDraw.get(control);
             if(groupDraw!=null) {
@@ -128,7 +127,6 @@ public class DefaultFormView extends FormView {
                 groupObjects.addAll(formEntity.getApplyObject(regFilter.filter.getObjects()).objects);
 
             RegularFilterGroupView filterGroupView = new RegularFilterGroupView(filterGroup);
-            filterGroupView.constraints.insetsSibling = new Insets(0,4,2,4);
             filterContainers.get(mgroupObjects.get(formEntity.getApplyObject(groupObjects))).add(filterGroupView);
 
             regularFilters.add(filterGroupView);

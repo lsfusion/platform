@@ -3,11 +3,9 @@ package platform.client.logics;
 import platform.client.descriptor.editor.GridEditor;
 import platform.base.context.ApplicationContext;
 import platform.client.serialization.ClientSerializationPool;
-import platform.interop.form.layout.GroupObjectContainerSet;
 import platform.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -32,7 +30,7 @@ public class ClientGrid extends ClientComponent {
 
     @Override
     public SimplexConstraints<ClientComponent> getDefaultConstraints() {
-        return GroupObjectContainerSet.getGridDefaultConstraints(super.getDefaultConstraints());
+        return SimplexConstraints.getGridDefaultConstraints(super.getDefaultConstraints());
     }
 
     @Override

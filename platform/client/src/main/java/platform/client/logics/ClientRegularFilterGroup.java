@@ -2,6 +2,7 @@ package platform.client.logics;
 
 import platform.client.serialization.ClientSerializationPool;
 import platform.base.context.ApplicationContext;
+import platform.interop.form.layout.SimplexConstraints;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -21,6 +22,11 @@ public class ClientRegularFilterGroup extends ClientComponent {
 
     public ClientRegularFilterGroup(int ID, ApplicationContext context) {
         super(ID, context);
+    }
+
+    @Override
+    public SimplexConstraints<ClientComponent> getDefaultConstraints() {
+        return SimplexConstraints.getRegularFilterGroupDefaultConstraints(super.getDefaultConstraints());
     }
 
     @Override

@@ -9,7 +9,6 @@ import platform.client.descriptor.nodes.ContainerNode;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.form.layout.AbstractContainer;
-import platform.interop.form.layout.FormContainerSet;
 import platform.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
@@ -66,7 +65,7 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
 
     @Override
     public SimplexConstraints<ClientComponent> getDefaultConstraints() {
-        return FormContainerSet.getContainerDefaultConstraints(super.getDefaultConstraints());
+        return SimplexConstraints.getContainerDefaultConstraints(super.getDefaultConstraints());
     }
 
     public void customConstructor() {

@@ -1,5 +1,6 @@
 package platform.server.form.view;
 
+import platform.interop.form.layout.SimplexConstraints;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.serialization.ServerSerializationPool;
@@ -27,6 +28,11 @@ public class RegularFilterGroupView extends ComponentView {
         for (RegularFilterEntity filterEntity : entity.filters) {
             filters.add(new RegularFilterView(filterEntity));
         }
+    }
+
+    @Override
+    public SimplexConstraints<ComponentView> getDefaultConstraints() {
+        return SimplexConstraints.getRegularFilterGroupDefaultConstraints(super.getDefaultConstraints());
     }
 
     @Override

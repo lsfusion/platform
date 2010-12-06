@@ -1,10 +1,8 @@
 package platform.server.form.view;
 
-import platform.interop.form.layout.GroupObjectContainerSet;
 import platform.interop.form.layout.SimplexConstraints;
 import platform.server.serialization.ServerSerializationPool;
 
-import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -31,7 +29,7 @@ public class GridView extends ComponentView {
 
     @Override
     public SimplexConstraints<ComponentView> getDefaultConstraints() {
-        return GroupObjectContainerSet.getGridDefaultConstraints(super.getDefaultConstraints());
+        return SimplexConstraints.getGridDefaultConstraints(super.getDefaultConstraints());
     }
 
     @Override

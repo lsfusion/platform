@@ -3,7 +3,6 @@ package platform.client.logics;
 import platform.client.descriptor.editor.ComponentEditor;
 import platform.base.context.ApplicationContext;
 import platform.client.serialization.ClientSerializationPool;
-import platform.interop.form.layout.GroupObjectContainerSet;
 import platform.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
@@ -71,6 +70,6 @@ public class ClientClassChooser extends ClientComponent {
     
     @Override
     public SimplexConstraints<ClientComponent> getDefaultConstraints() {
-        return GroupObjectContainerSet.getClassChooserDefaultConstraints(super.getDefaultConstraints());
+        return SimplexConstraints.getClassChooserDefaultConstraints(super.getDefaultConstraints());
     }
 }

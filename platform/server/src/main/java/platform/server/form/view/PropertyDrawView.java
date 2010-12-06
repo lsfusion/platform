@@ -1,6 +1,7 @@
 package platform.server.form.view;
 
 import platform.interop.form.ReportConstants;
+import platform.interop.form.layout.SimplexConstraints;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenConstraints;
 import platform.server.data.type.Type;
@@ -65,6 +66,11 @@ public class PropertyDrawView extends ComponentView {
     public PropertyDrawView(PropertyDrawEntity entity) {
         super(entity.ID);
         this.entity = entity;
+    }
+
+    @Override
+    public SimplexConstraints<ComponentView> getDefaultConstraints() {
+        return SimplexConstraints.getPropertyDrawDefaultConstraints(super.getDefaultConstraints());
     }
 
     public Type getType() {
