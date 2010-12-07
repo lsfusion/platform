@@ -1736,11 +1736,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 design.addIntersection(design.getGroupObjectContainer(objIssue.groupTo), design.getGroupObjectContainer(objCoupon.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
                 design.addIntersection(design.getGroupObjectContainer(objIssue.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
-                design.getGroupPropertyContainer(null, cashRegOperGroup).add(design.get(getPropertyDraw(payWithCard)));
-                design.getGroupPropertyContainer(null, cashRegOperGroup).add(design.get(getPropertyDraw(printOrderCheck)));
+                design.getGroupPropertyContainer(null, cashRegOperGroup).add(0, design.get(getPropertyDraw(payWithCard)));
+                design.getGroupPropertyContainer(null, cashRegOperGroup).add(1, design.get(getPropertyDraw(printOrderCheck)));
 
-                design.get(getPropertyDraw(payWithCard)).constraints.directions = new SimplexComponentDirections(0.1, -0.1, 0, 0.1);
-                design.get(getPropertyDraw(printOrderCheck)).constraints.directions = new SimplexComponentDirections(0.1, -0.1, 0, 0.1);
+                design.get(getPropertyDraw(printOrderCheck)).constraints.insetsSibling.right = 100;
             }
 
             design.get(objCoupon.groupTo).grid.minRowCount = 2;
