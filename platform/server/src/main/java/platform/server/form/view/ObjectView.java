@@ -17,9 +17,9 @@ public class ObjectView implements ServerIdentitySerializable {
     public ClassChooserView classChooser;
 
     public ObjectView() {
-        
+
     }
-    
+
     public ObjectView(IDGenerator idGen, ObjectEntity entity, GroupObjectView groupTo) {
 
         this.entity = entity;
@@ -28,11 +28,26 @@ public class ObjectView implements ServerIdentitySerializable {
         classChooser = new ClassChooserView(idGen.idShift(), this.entity, this);
     }
 
+    public ObjectView(IDGenerator idGen, ObjectEntity entity, GroupObjectView groupTo, boolean clChooser) {
+
+        this.entity = entity;
+        this.groupObject = groupTo;
+
+        classChooser = new ClassChooserView(idGen.idShift(), this.entity, this);
+    }
+
+    public void changeClassChooserLocation(ClassChooserView clChooser) {
+        clChooser.object = classChooser.object;
+        clChooser.show = classChooser.show;
+        classChooser = clChooser;
+    }
+
     public int getID() {
         return entity.ID;
     }
 
     int ID;
+
     public void setID(int iID) {
         ID = iID;
     }

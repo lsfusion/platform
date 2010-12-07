@@ -143,6 +143,12 @@ public class CodeGenerator {
             result.append(intend + "GroupObjectView " + name + " = design.createGroupObject(grObj" + groupObject.getSID() + ", component" +
                     groupObject.client.showType.getID() + ", component" + groupObject.client.grid.getID() + ");\n");
             result.append(intend + "design.groupObjects.add(" + name + ");\n");
+
+            for (ObjectDescriptor object : groupObject.objects) {
+                result.append(intend + name + ".getObjectView(" + objectNames.get(object) + ").changeClassChooserLocation(" +
+                        "component" + object.client.classChooser.getID() + ");\n");
+
+            }
         }
 
         result.append(intend + "return design;\n");

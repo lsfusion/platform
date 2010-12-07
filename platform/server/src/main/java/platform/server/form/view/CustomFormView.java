@@ -62,21 +62,25 @@ public class CustomFormView extends FormView {
 
     public ClassChooserView createClassChooser(int ID) {
         ClassChooserView view = new ClassChooserView();
+        view.ID = idGenerator.idShift();
         return view;
     }
 
     public GridView createGrid(int ID) {
         GridView view = new GridView();
+        view.ID = idGenerator.idShift();
         return view;
     }
 
     public ShowTypeView createShowType(int ID) {
         ShowTypeView view = new ShowTypeView();
+        view.ID = idGenerator.idShift();
         return view;
     }
 
     public RegularFilterGroupView createRegularFilterGroup(int ID) {
         RegularFilterGroupView view = new RegularFilterGroupView();
+        view.ID = idGenerator.idShift();
         return view;
     }
 
