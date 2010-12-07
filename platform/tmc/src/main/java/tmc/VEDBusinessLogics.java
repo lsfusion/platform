@@ -290,6 +290,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP orderUserBarcode;
     LP orderComputer;
     LP saleExport;
+    LP articleSaleAction;
 
 
     protected void initProperties() {
@@ -513,7 +514,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addJProp(less2, currentDate, actionFrom, 1), 1,  // активация акции, если текущая дата в диапазоне акции
                 addJProp(greater2, currentDate, actionTo, 1), 1);
 
-        LP articleSaleAction = addCGProp(priceGroup, false, "articleAction", "Дейст. распродажа",
+        articleSaleAction = addCGProp(priceGroup, false, "articleAction", "Дейст. распродажа",
                 addJProp(and1, 1, addJProp(and1, inAction, 1, 2, addJProp(and1, isStarted, 1, is(saleAction), 1), 1), 1, 2), inAction, 2);
         LP articleDiscount = addSUProp(Union.OVERRIDE, addCProp(DoubleClass.instance, 0, article), addJProp(priceGroup, "Тек. скидка", actionDiscount, articleSaleAction, 1));
         LP actionNoExtraDiscount = addDProp(baseGroup, "actionNoExtraDiscount", "Без доп. скидок", LogicalClass.instance, saleAction);
@@ -699,11 +700,15 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP certToIssued = addDCProp("certToIssued", "Дата окончания", addJProp(addDays, 1, certExpiry), dateIssued, 1, giftObligation);
 
         obligationToIssued = addCUProp(baseGroup, "obligationToIssued", "Дата окончания", couponToIssued, certToIssued);
-        orderSaleObligationCanBeUsed = addJProp(and(false, true, true, true), is(commitSaleCheckArticleRetail), 1, obligationIssued, 2,
+        LP orderSaleObligationAllowed = addJProp(and(false, true, true, true), is(commitSaleCheckArticleRetail), 1, obligationIssued, 2,
                 addJProp(less2, orderSalePay, 1, obligationSumFrom, 2), 1, 2,
                 addJProp(greater2, date, 1, obligationToIssued, 2), 1, 2,
                 addJProp(less2, date, 1, couponFromIssued, 2), 1, 2);
-        addConstraint(addJProp("Нельзя использовать выбранный сертификат", andNot1, orderSaleUseObligation, 1, 2, orderSaleObligationCanBeUsed, 1, 2), false);
+        addConstraint(addJProp("Нельзя использовать выбранный сертификат", andNot1, orderSaleUseObligation, 1, 2, orderSaleObligationAllowed, 1, 2), false);
+
+        LP orderSaleObligationCanBeUsed = addJProp(andNot1, orderSaleObligationAllowed, 1, 2, obligationDocument, 2);
+        orderSaleObligationCanNotBeUsed = addJProp(and(false, true), is(commitSaleCheckArticleRetail), 1, is(obligation), 2, orderSaleObligationCanBeUsed, 1, 2);
+
         LP orderSalePayGiftObligation = addSGProp(addJProp(and1, obligationUseSum, 1, 2, is(giftObligation), 2), 1);
         LP orderSalePayCoupon = addJProp(min, addSGProp(addJProp(and1, obligationUseSum, 1, 2, is(coupon), 2), 1), 1, addJProp(percent, orderSalePay, 1, couponMaxPercent), 1);
 
@@ -837,7 +842,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP confirmedInnerQuantity;
     LP couponStart;
     LP obligationDocument;
-    LP orderSaleObligationCanBeUsed;
+    LP orderSaleObligationCanNotBeUsed;
     LP orderSaleUseObligation;
 
     public LP xorActionArticle;
@@ -1682,8 +1687,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addPropertyDraw(obligationToIssued, objObligation);
             addPropertyDraw(orderSaleUseObligation, objDoc, objObligation);
 
-            objObligation.groupTo.propertyHighlight = addPropertyObject(obligationDocument, objObligation);
-            addHintsNoUpdate(obligationDocument);
+            if(toAdd) {
+                objArt.groupTo.propertyHighlight = addPropertyObject(articleSaleAction, objArt);
+
+                objObligation.groupTo.propertyHighlight = addPropertyObject(orderSaleObligationCanNotBeUsed, objDoc, objObligation);
+                addHintsNoUpdate(obligationDocument);
+            }
 
             objObligation.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.HIDE, ClassViewType.PANEL));
 //            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(obligationDocument, objObligation))));
@@ -1740,6 +1749,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 design.getGroupPropertyContainer(null, cashRegOperGroup).add(1, design.get(getPropertyDraw(printOrderCheck)));
 
                 design.get(getPropertyDraw(printOrderCheck)).constraints.insetsSibling.right = 100;
+
+                design.get(objObligation.groupTo).highlightColor = new Color(255,0,0);
             }
 
             design.get(objCoupon.groupTo).grid.minRowCount = 2;
