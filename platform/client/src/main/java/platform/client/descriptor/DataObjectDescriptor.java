@@ -10,6 +10,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public class DataObjectDescriptor extends ContextObject implements PropertyObjectInterfaceDescriptor {
     public Object object;
@@ -46,7 +47,7 @@ public class DataObjectDescriptor extends ContextObject implements PropertyObjec
         return object.toString() + " - " + typeClass.toString();
     }
 
-    public String getInstanceCode() {
+    public String getInstanceCode(Map<ObjectDescriptor, String> object) {
         return "new DataObject(" + object + ", " + typeClass + ")";
     }
 }
