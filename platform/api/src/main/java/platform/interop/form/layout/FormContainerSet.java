@@ -31,43 +31,51 @@ public class FormContainerSet <C extends AbstractContainer<C, T>, T extends Abst
 
         F printFunction = funcFactory.createFunction();
         printFunction.setCaption("Печать");
+        printFunction.setType("Print");
         printFunction.getConstraints().directions = new SimplexComponentDirections(0,0.01,0.01,0);
         set.formButtonContainer.add((T)printFunction);
 
         F xlsFunction = funcFactory.createFunction();
-        xlsFunction.setCaption("Excel");
+        xlsFunction.setCaption("Xls");
+        xlsFunction.setType("Xls");
         xlsFunction.getConstraints().directions = new SimplexComponentDirections(0,0.01,0.01,0);
         set.formButtonContainer.add((T)xlsFunction);
 
         F nullFunction = funcFactory.createFunction();
         nullFunction.setCaption("Сбросить");
+        nullFunction.setType("Null");
         nullFunction.getConstraints().directions = new SimplexComponentDirections(0,0.01,0.01,0);
         set.formButtonContainer.add((T)nullFunction);
 
         F refreshFunction = funcFactory.createFunction();
         refreshFunction.setCaption("Обновить");
+        refreshFunction.setType("Refresh");
         refreshFunction.getConstraints().directions = new SimplexComponentDirections(0,0,0.01,0.01);
         set.formButtonContainer.add((T)refreshFunction);
 
         F applyFunction = funcFactory.createFunction();
         applyFunction.setCaption("Применить");
+        applyFunction.setType("Apply");
         applyFunction.getConstraints().directions = new SimplexComponentDirections(0,0,0.01,0.01);
         applyFunction.getConstraints().insetsSibling = new Insets(0, 8, 0, 0);
         set.formButtonContainer.add((T)applyFunction);
 
         F cancelFunction = funcFactory.createFunction();
         cancelFunction.setCaption("Отменить");
+        cancelFunction.setType("Cancel");
         cancelFunction.getConstraints().directions = new SimplexComponentDirections(0,0,0.01,0.01);
         set.formButtonContainer.add((T)cancelFunction);
 
         F okFunction = funcFactory.createFunction();
         okFunction.setCaption("ОК");
+        okFunction.setType("Ok");
         okFunction.getConstraints().directions = new SimplexComponentDirections(0,0,0.01,0.01);
         okFunction.getConstraints().insetsSibling = new Insets(0, 8, 0, 0);
         set.formButtonContainer.add((T)okFunction);
 
         F closeFunction = funcFactory.createFunction();
         closeFunction.setCaption("Закрыть");
+        closeFunction.setType("Close");
         closeFunction.getConstraints().directions = new SimplexComponentDirections(0,0,0.01,0.01);
         set.formButtonContainer.add((T)closeFunction);
 

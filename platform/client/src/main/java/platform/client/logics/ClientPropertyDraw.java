@@ -409,6 +409,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     @Override
     public String getCodeConstructor(String name) {
-        return "PropertyDrawView " + name + " = createPropertyDraw(" + descriptor.getID() + ")";
+        String grObject = groupObject == null ? "" : "grObj" + groupObject.getSID() + ", ";
+        return "PropertyDrawView " + name + " = design.createPropertyDraw(" + grObject
+                + descriptor.getPropertyObject().property.getSID() + ")";
     }
 }

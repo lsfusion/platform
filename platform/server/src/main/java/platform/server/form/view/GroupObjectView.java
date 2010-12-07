@@ -20,17 +20,27 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
     public Color highlightColor;
 
     public GroupObjectView() {
-        
+
     }
-    
+
     public GroupObjectView(IDGenerator idGen, GroupObjectEntity entity) {
         this.entity = entity;
 
-        for(ObjectEntity object : this.entity.objects)
+        for (ObjectEntity object : this.entity.objects)
             add(new ObjectView(idGen, object, this));
-        
+
         grid = new GridView(idGen.idShift(), this);
         showType = new ShowTypeView(idGen.idShift(), this);
+    }
+
+    public GroupObjectView(IDGenerator idGen, GroupObjectEntity entity, GridView grid, ShowTypeView showType) {
+        this.entity = entity;
+
+        for (ObjectEntity object : this.entity.objects)
+            add(new ObjectView(idGen, object, this));
+
+        this.grid = grid;
+        this.showType = showType;
     }
 
     public GridView grid;
@@ -53,6 +63,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
     }
 
     int ID;
+
     public void setID(int iID) {
         ID = iID;
     }

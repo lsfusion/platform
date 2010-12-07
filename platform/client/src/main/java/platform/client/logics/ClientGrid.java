@@ -118,4 +118,9 @@ public class ClientGrid extends ClientComponent {
     public byte getMinRowCount() {
         return minRowCount;
     }
+
+    @Override
+    public String getCodeConstructor(String name) {
+        return "GridView " + name + " = design.createGrid(" + groupObject.getID() + ")";
+    }
 }

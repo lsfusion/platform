@@ -13,9 +13,14 @@ import java.io.IOException;
 public class ClientFunction extends ClientComponent implements AbstractFunction<ClientContainer, ClientComponent> {
 
     public String caption;
+    public String type;
 
     public void setCaption(String caption) {
         this.caption = caption;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public ClientFunction() {
@@ -30,6 +35,7 @@ public class ClientFunction extends ClientComponent implements AbstractFunction<
         super.customSerialize(pool, outStream, serializationType);
 
         pool.writeString(outStream, caption);
+        pool.writeString(outStream, type);
     }
 
     @Override
@@ -37,6 +43,7 @@ public class ClientFunction extends ClientComponent implements AbstractFunction<
         super.customDeserialize(pool, inStream);
 
         caption = pool.readString(inStream);
+        type = pool.readString(inStream);
     }
 
     @Override
@@ -52,5 +59,11 @@ public class ClientFunction extends ClientComponent implements AbstractFunction<
     @Override
     public JComponent getPropertiesEditor() {
         return new FunctionEditor(this);
+    }
+
+    @Override
+    public String getCodeConstructor(String name) {
+        return "FunctionView " + name + " = design.createFunction(\"" + caption + "\");\n" +
+                "\t   design.set" + type + "Function(" + name + ")";
     }
 }

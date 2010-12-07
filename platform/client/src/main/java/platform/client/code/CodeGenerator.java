@@ -26,8 +26,9 @@ public class CodeGenerator {
 
     private static void addInstanceVariable(FormDescriptor form, StringBuilder result) {
         for (GroupObjectDescriptor group : form.groupObjects) {
+            result.append(intend + "GroupObjectEntity grObj" + group.getSID() + ";\n");
             for (ObjectDescriptor object : group.objects) {
-                String name = "obj" + object.getID();
+                String name = "obj" + object.getSID();
                 result.append(intend + "ObjectEntity " + name + ";\n");
                 objectNames.put(object, name);
             }
@@ -41,23 +42,17 @@ public class CodeGenerator {
     }
 
     private static void addGroupObject(GroupObjectDescriptor groupObject, StringBuilder result) {
-        if (groupObject.objects.size() != 1) {
-            String grName = "grObj" + getID();
-            result.append(intend + "GroupObjectEntity " + grName + " = new GroupObjectEntity(genID());\n");
+        String grName = "grObj" + groupObject.getSID();
+        result.append(intend + grName + " = new GroupObjectEntity(genID());\n");
 
-            for (ObjectDescriptor object : groupObject.objects) {
-                String objName = objectNames.get(object);
-                result.append(intend + objName + " = new ObjectEntity(genID(), findValueClass(\"" +
-                        object.getBaseClass().getSID() + "\"), " + object.getCaption() + ");\n");
-                result.append(intend + grName + ".add(" + objName + ");\n");
-            }
-            result.append(intend + "addGroup(" + grName + ");\n");
-        } else {
-            String objName = objectNames.get(groupObject.objects.get(0));
-            result.append(intend + objName + " = addSingleGroupObject(findValueClass(\"" +
-                    groupObject.objects.get(0).getBaseClass().getSID() + "\"));\n");
-
+        for (ObjectDescriptor object : groupObject.objects) {
+            String objName = objectNames.get(object);
+            result.append(intend + objName + " = new ObjectEntity(genID(), findValueClass(\"" +
+                    object.getBaseClass().getSID() + "\"), " + object.getCaption() + ");\n");
+            result.append(intend + grName + ".add(" + objName + ");\n");
         }
+        result.append(intend + "addGroup(" + grName + ");\n");
+
     }
 
     private static void addProperties(FormDescriptor form, StringBuilder result) {
@@ -107,7 +102,7 @@ public class CodeGenerator {
         }
         return result.toString();
     }
-    
+
     public static String addRegularFilterGroups(List<RegularFilterGroupDescriptor> groups, StringBuilder result) {
         for (RegularFilterGroupDescriptor filterGroup : groups) {
             String groupName = "filterGroup" + getID();
@@ -125,7 +120,7 @@ public class CodeGenerator {
         StringBuilder temp = new StringBuilder();
         if (component instanceof ClientContainer) {
             for (ClientComponent child : ((ClientContainer) component).children) {
-                String childName = "component" + getID();
+                String childName = "component" + child.getID();
                 temp.append(intend + child.getCodeConstructor(childName) + ";\n");
                 temp.append(addContainers(child, childName));
                 temp.append(intend + name + ".add(" + childName + ");\n");
@@ -138,8 +133,19 @@ public class CodeGenerator {
         result.append(intend + "@Override\n");
         result.append(intend + "public FormView createDefaultRichDesign() {\n");
         intend += "   ";
-        result.append(intend + form.client.mainContainer.getCodeConstructor("mainContainer") + ";\n");
-        result.append(addContainers(form.client.mainContainer, "mainContainer"));
+        result.append(intend + "CustomFormView design = new CustomFormView(this);\n");
+        result.append(intend + "design.setMainContainer(design.createMainContainer(\"" + form.client.mainContainer.getSID() +
+                "\", \"" + form.client.mainContainer.getCaption() + "\"));\n");
+        result.append(addContainers(form.client.mainContainer, "design.mainContainer"));
+
+        for (GroupObjectDescriptor groupObject : form.groupObjects) {
+            String name = "groupView" + groupObject.getID();
+            result.append(intend + "GroupObjectView " + name + " = design.createGroupObject(grObj" + groupObject.getSID() + ", component" +
+                    groupObject.client.showType.getID() + ", component" + groupObject.client.grid.getID() + ");\n");
+            result.append(intend + "design.groupObjects.add(" + name + ");\n");
+        }
+
+        result.append(intend + "return design;\n");
 
     }
 

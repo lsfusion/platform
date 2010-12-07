@@ -65,7 +65,7 @@ public class ClientClassChooser extends ClientComponent {
 
     @Override
     public String getCodeConstructor(String name) {
-        return "RegularFilterGroupView " + name + " = createRegularFilterGroup(" + getID() + ")";
+        return "ClassChooserView " + name + " = design.createClassChooser(" + object.getID() + ")";
     }
     
     @Override

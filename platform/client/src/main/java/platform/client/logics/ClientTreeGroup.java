@@ -17,7 +17,7 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
     public ClientTreeGroup() {
 
     }
-    
+
     public ClientTreeGroup(int ID, ApplicationContext context) {
         super(ID, context);
     }
@@ -32,7 +32,7 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
         groups = pool.deserializeList(inStream);
 
         List<ClientGroupObject> upGroups = new ArrayList<ClientGroupObject>();
-        for(ClientGroupObject group : groups) {
+        for (ClientGroupObject group : groups) {
             group.upTreeGroups.addAll(upGroups);
             upGroups.add(group);
         }
@@ -58,4 +58,10 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
     public ClientComponent getComponent() {
         return this;
     }
+
+    @Override
+    public String getCodeConstructor(String name) {
+        return "TreeGroupView " + name + " = design.createTreeGroup(" + getID() + ")";
+    }
+
 }

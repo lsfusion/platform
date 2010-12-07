@@ -10,9 +10,15 @@ import java.io.IOException;
 public class FunctionView extends ComponentView implements AbstractFunction<ContainerView, ComponentView> {
 
     String caption;
+    
+    String type;
 
     public void setCaption(String caption) {
         this.caption = caption;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public FunctionView() {
@@ -28,6 +34,7 @@ public class FunctionView extends ComponentView implements AbstractFunction<Cont
         super.customSerialize(pool, outStream, serializationType);
 
         pool.writeString(outStream, caption);
+        pool.writeString(outStream, type);
     }
 
     @Override
@@ -35,5 +42,6 @@ public class FunctionView extends ComponentView implements AbstractFunction<Cont
         super.customDeserialize(pool, inStream);
 
         setCaption(pool.readString(inStream));
+        setType(pool.readString(inStream));
     }
 }

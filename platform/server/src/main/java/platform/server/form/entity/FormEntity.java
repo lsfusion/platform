@@ -97,6 +97,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     // счетчик идентификаторов
     private IDGenerator idGenerator = new DefaultIDGenerator();
+
     public IDGenerator getIDGenerator() {
         return idGenerator;
     }
@@ -127,7 +128,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public ObjectEntity getObject(int id) {
         for (GroupObjectEntity group : groups) {
-            for(ObjectEntity object : group.objects) {
+            for (ObjectEntity object : group.objects) {
                 if (object.getID() == id) {
                     return object;
                 }
@@ -148,13 +149,13 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public RegularFilterEntity getRegularFilter(int id) {
         for (RegularFilterGroupEntity filterGroup : regularFilterGroups) {
-            for(RegularFilterEntity filter : filterGroup.filters) {
+            for (RegularFilterEntity filter : filterGroup.filters) {
                 if (filter.getID() == id) {
                     return filter;
                 }
             }
         }
-        
+
         return null;
     }
 
@@ -252,7 +253,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     protected void addPropertyDraw(AbstractNode group, boolean upClasses, GroupObjectEntity groupObject, ObjectEntity... objects) {
         addPropertyDraw(group, upClasses, groupObject, false, objects);
     }
-    
+
     protected void addPropertyDraw(AbstractNode group, boolean upClasses, GroupObjectEntity groupObject, boolean useObjSubsets, ObjectEntity... objects) {
         List<ValueClassWrapper> valueClasses = new ArrayList<ValueClassWrapper>();
         Map<ObjectEntity, ValueClassWrapper> objectToClass = new HashMap<ObjectEntity, ValueClassWrapper>();
@@ -288,6 +289,13 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public PropertyDrawEntity addPropertyDraw(LP property, ObjectEntity... objects) {
         return addPropertyDraw(property, null, objects);
+    }
+
+    public PropertyDrawEntity addPropertyDraw(LP[] properties, ObjectEntity... objects) {
+        for (LP property : properties) {
+            addPropertyDraw(property, null, objects);
+        }
+        return null;
     }
 
     protected <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LP<P> property, GroupObjectEntity groupObject, ObjectEntity... objects) {

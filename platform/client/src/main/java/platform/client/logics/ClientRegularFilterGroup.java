@@ -57,6 +57,6 @@ public class ClientRegularFilterGroup extends ClientComponent {
 
     @Override
     public String getCodeConstructor(String name) {
-        return "RegularFilterGroupView " + name + " = createRegularFilterGroup(" + getID() + ")";
+        return "RegularFilterGroupView " + name + " = design.createRegularFilterGroup(" + getID() + ")";
     }
 }
