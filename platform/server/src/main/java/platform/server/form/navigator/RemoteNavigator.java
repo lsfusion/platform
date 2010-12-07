@@ -42,6 +42,7 @@ import java.rmi.RemoteException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.sql.SQLException;
+import java.lang.ref.WeakReference;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
@@ -136,10 +137,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         List<NavigatorElement> navigatorElements;
         switch (elementID) {
             case (RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTFORM):
+                FormInstance<T> currentForm = getCurrentForm();
                 if (currentForm == null)
-                    navigatorElements = new ArrayList();
+                    navigatorElements = new ArrayList<NavigatorElement>();
                 else
-                    navigatorElements = new ArrayList(currentForm.entity.relevantElements);
+                    navigatorElements = new ArrayList<NavigatorElement>(currentForm.entity.relevantElements);
                 break;
             case (RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTCLASS):
                 if (currentClass == null)
@@ -185,8 +187,18 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     }
 
     //используется для RelevantFormNavigator
-    FormInstance<T> currentForm;
+    private WeakReference<FormInstance<T>> weakCurrentForm = null;
+    public FormInstance<T> getCurrentForm() {
+        if(weakCurrentForm!=null)
+            return weakCurrentForm.get();
+        else
+            return null;
+    }
 
+    public void gainedFocus(FormInstance<T> form) {
+        weakCurrentForm = new WeakReference<FormInstance<T>>(form);
+    }
+    
     //используется для RelevantClassNavigator
     CustomClass currentClass;
 
@@ -195,10 +207,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
 
         currentClass = customClass;
         return true;
-    }
-
-    public void gainedFocus(FormInstance<T> form) {
-        currentForm = form;
     }
 
     public void objectChanged(ConcreteCustomClass cls, int objectID) {
@@ -239,6 +247,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
 
         try {
             DataSession session;
+            FormInstance<T> currentForm = getCurrentForm();
             if (currentSession && currentForm != null)
                 session = currentForm.session;
             else {

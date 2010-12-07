@@ -52,7 +52,7 @@ public class BaseUtils {
         return result;
     }
 
-    public static <K,E,V> List<Map<K,V>> joinList(Map<K,? extends E> map, List<Map<E,V>> list) {
+    public static <K,E,V> List<Map<K,V>> joinCol(Map<K,? extends E> map, Collection<Map<E,V>> list) {
         List<Map<K,V>> result = new ArrayList<Map<K, V>>();
         for(Map<E, V> joinMap : list)
             result.add(BaseUtils.join(map, joinMap));
@@ -873,11 +873,28 @@ public class BaseUtils {
         }
     };
 
+    public final static ArrayInstancer<String> stringInstancer = new ArrayInstancer<String>() {
+        public String[] newArray(int size) {
+            return new String[size];
+        }
+    };
+
     public static <T> T[] add(T[] array1,T[] array2,ArrayInstancer<T> instancer) {
         T[] result = instancer.newArray(array1.length+array2.length);
         System.arraycopy(array1,0,result,0,array1.length);
         System.arraycopy(array2,0,result,array1.length,array2.length);
         return result;
+    }
+
+    public static <T> T[] genArray(T element, int length, ArrayInstancer<T> instancer) {
+        T[] result = instancer.newArray(length);
+        for(int i=0;i<length;i++)
+            result[i] = element;
+        return result; 
+    }
+
+    public static String[] genArray(String element, int length) {
+        return genArray(element, length, stringInstancer);
     }
 
     public static boolean isData(Object object) {

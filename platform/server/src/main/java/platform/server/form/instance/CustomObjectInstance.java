@@ -18,6 +18,7 @@ import platform.server.session.ChangesSession;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Set;
+import java.lang.ref.WeakReference;
 
 public class CustomObjectInstance extends ObjectInstance {
 
@@ -26,9 +27,14 @@ public class CustomObjectInstance extends ObjectInstance {
 
     public ConcreteCustomClass currentClass;
 
-    private CustomClassListener classListener;
+    private WeakReference<CustomClassListener> weakClassListener;
+
+    public CustomClassListener getClassListener() {
+        return weakClassListener.get();        
+    }
+
     public void setClassListener(CustomClassListener classListener) {
-        this.classListener = classListener;
+        this.weakClassListener = new WeakReference<CustomClassListener>(classListener);
     }
 
     public boolean isAddOnTransaction() {
@@ -98,6 +104,7 @@ public class CustomObjectInstance extends ObjectInstance {
                 return;
             }
             changeClass = (ConcreteCustomClass) sessionClass;
+            CustomClassListener classListener = getClassListener();
             if (classListener != null) // если вообще кто-то следит за изменением классов объектов
                 classListener.objectChanged(changeClass, (Integer) getDataObject().object);
         }

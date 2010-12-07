@@ -33,6 +33,13 @@ public class DerivedProperty {
         joinProperty.implement = new PropertyImplement<PropertyInterfaceImplement<JoinProperty.Interface>,CompareFormulaProperty.Interface>(compareProperty,mapImplement);
     }
 
+    public static <L,T extends PropertyInterface,K extends PropertyInterface> Collection<PropertyInterfaceImplement<K>> mapImplements(Collection<PropertyInterfaceImplement<T>> interfaceImplements, Map<T,K> map) {
+        Collection<PropertyInterfaceImplement<K>> mapImplement = new ArrayList<PropertyInterfaceImplement<K>>();
+        for(PropertyInterfaceImplement<T> interfaceImplementEntry : interfaceImplements)
+            mapImplement.add(interfaceImplementEntry.map(map));
+        return mapImplement;
+    }
+
     public static <L,T extends PropertyInterface,K extends PropertyInterface> Map<L,PropertyInterfaceImplement<K>> mapImplements(Map<L,PropertyInterfaceImplement<T>> interfaceImplements, Map<T,K> map) {
         Map<L,PropertyInterfaceImplement<K>> mapImplement = new HashMap<L, PropertyInterfaceImplement<K>>();
         for(Map.Entry<L,PropertyInterfaceImplement<T>> interfaceImplementEntry : interfaceImplements.entrySet())
@@ -70,17 +77,23 @@ public class DerivedProperty {
         return new PropertyMapImplement<JoinProperty.Interface,T>(joinProperty,BaseUtils.reverse(joinMap));
     }
 
-    private static <T extends PropertyInterface> PropertyMapImplement<?,T> createAnd(Collection<T> interfaces, PropertyInterfaceImplement<T> object, PropertyInterfaceImplement<T> and) {
+    private static <T extends PropertyInterface> PropertyMapImplement<?,T> createAnd(Collection<T> interfaces, PropertyInterfaceImplement<T> object, Collection<PropertyInterfaceImplement<T>> ands) {
         JoinProperty<AndFormulaProperty.Interface> joinProperty = new JoinProperty<AndFormulaProperty.Interface>(genID(),"sys",interfaces.size(),false);
         Map<T, JoinProperty.Interface> joinMap = BaseUtils.buildMap(interfaces, joinProperty.interfaces);
 
-        AndFormulaProperty implement = new AndFormulaProperty(genID(),false);
+        AndFormulaProperty implement = new AndFormulaProperty(genID(),new boolean[ands.size()]);
         Map<AndFormulaProperty.Interface,PropertyInterfaceImplement<JoinProperty.Interface>> joinImplement = new HashMap<AndFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>();
         joinImplement.put(implement.objectInterface,object.map(joinMap));
-        joinImplement.put(implement.andInterfaces.iterator().next(),and.map(joinMap));
+        Iterator<AndFormulaProperty.AndInterface> andIterator = implement.andInterfaces.iterator();
+        for(PropertyInterfaceImplement<T> and : ands)
+            joinImplement.put(andIterator.next(),and.map(joinMap));
 
         joinProperty.implement = new PropertyImplement<PropertyInterfaceImplement<JoinProperty.Interface>,AndFormulaProperty.Interface>(implement,joinImplement);
         return new PropertyMapImplement<JoinProperty.Interface,T>(joinProperty,BaseUtils.reverse(joinMap));
+    }
+
+    private static <T extends PropertyInterface> PropertyMapImplement<?,T> createAnd(Collection<T> interfaces, PropertyInterfaceImplement<T> object, PropertyInterfaceImplement<T> and) {
+        return createAnd(interfaces, object, Collections.singleton(and));
     }
 
     private static <T extends PropertyInterface> PropertyMapImplement<?,T> createUnion(Collection<T> interfaces, PropertyMapImplement<?,T> first, PropertyMapImplement<?,T> rest) {
@@ -99,6 +112,16 @@ public class DerivedProperty {
 
         unionProperty.operands.put(from.map(mapInterfaces),1);
         unionProperty.operands.put(new PropertyMapImplement<T,UnionProperty.Interface>(restriction,mapInterfaces),-1);
+
+        return new PropertyMapImplement<UnionProperty.Interface,T>(unionProperty,BaseUtils.reverse(mapInterfaces));
+    }
+
+    private static <T extends PropertyInterface> PropertyMapImplement<?,T> createSum(String sID, String caption, Collection<T> interfaces, PropertyMapImplement<?, T> sum1, PropertyMapImplement<?,T> sum2) {
+        SumUnionProperty unionProperty = new SumUnionProperty(sID,caption,interfaces.size());
+        Map<T,UnionProperty.Interface> mapInterfaces = BaseUtils.buildMap(interfaces,unionProperty.interfaces);
+
+        unionProperty.operands.put(sum1.map(mapInterfaces),1);
+        unionProperty.operands.put(sum2.map(mapInterfaces),1);
 
         return new PropertyMapImplement<UnionProperty.Interface,T>(unionProperty,BaseUtils.reverse(mapInterfaces));
     }
@@ -259,6 +282,11 @@ public class DerivedProperty {
         return createJoin(new PropertyImplement<PropertyInterfaceImplement<T>, GroupProperty.Interface<T>>(partitionSum,partitionSum.getMapInterfaces()));
     }
 
+    private static <L extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<?,T> createPProp(PropertyMapImplement<L,T> mapImplement, Collection<PropertyInterfaceImplement<T>> partitions) {
+        // assert что все интерфейсы есть
+        return createPProp(mapImplement.property, mapImplements(partitions, BaseUtils.reverse(mapImplement.mapping))).map(mapImplement.mapping);
+    }
+
     private static <T extends PropertyInterface> PropertyMapImplement<?,T> createPOProp(Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>,Boolean> orders, boolean includeLast) {
         return createPOProp(genID(), "sys", property, partitions, orders, includeLast);
     }
@@ -318,20 +346,65 @@ public class DerivedProperty {
         return createAnd(restriction.interfaces, min, compare);
     }
 
-    private static <T extends PropertyInterface,L extends PropertyInterface> PropertyImplement<PropertyInterfaceImplement<T>, ?> createMaxProp(String sID, String caption, PropertyMapImplement<L,T> implement, Set<PropertyInterfaceImplement<T>> group) {
-        Map<PropertyInterfaceImplement<T>, PropertyInterfaceImplement<L>> mapImplements = mapImplements(BaseUtils.toMap(group), BaseUtils.reverse(implement.mapping));
-        MaxGroupProperty<L> maxProperty = new MaxGroupProperty<L>(sID, caption, mapImplements.values(), implement.property);
+    // получает первое свойство в порядке, остальное null'ы
+    private static <T extends PropertyInterface<T>> PropertyMapImplement<?,T> createFOProp(Property<T> property, BaseClass baseClass, Collection<PropertyInterfaceImplement<T>> partitions) {
+
+        List<PropertyInterfaceImplement<T>> listInterfaces = new ArrayList<PropertyInterfaceImplement<T>>(property.interfaces);
+
+        String[] sIDs = new String[listInterfaces.size()+1];
+        for(int i=0;i<listInterfaces.size()+1;i++)
+            sIDs[i] = genID();
+        List<PropertyImplement<PropertyInterfaceImplement<T>, ?>> maxProps = createMGProp(sIDs, BaseUtils.genArray("sys", listInterfaces.size()+1), property, baseClass, listInterfaces, partitions, new ArrayList<Property>());
+
+        Collection<PropertyInterfaceImplement<T>> compareImplements = new ArrayList<PropertyInterfaceImplement<T>>();
+        for(int i=1;i<maxProps.size();i++) { // делаем JoinProperty - i1=m1(i1, i2,..., in) and i2=m2(i1, ..., in) and i3=m3(i1, ..., in) ... and in=mn(i1,...in) (теоретически можно конкатенацией все решить, но ключей не хватит)
+            PropertyMapImplement<?, T> maxJoin = createJoin(maxProps.get(i));
+
+            compareImplements.add(createCompare(property.interfaces, listInterfaces.get(i - 1), maxJoin, Compare.EQUALS));
+        }
+        return createAnd(property.interfaces, property.getImplement(), compareImplements);
+    }
+
+    public static <L extends PropertyInterface, T extends PropertyInterface<T>> PropertyMapImplement<?,T> createPGProp(String sID, String caption, int roundlen, BaseClass baseClass, PropertyImplement<PropertyInterfaceImplement<T>,L> group, Property<T> proportion) {
+
+        // общая сумма по пропорции в partition'е
+        PropertyMapImplement<?, T> propSum = createPProp(proportion, group.mapping.values());
+
+        // строим partition distribute св-во
+        PropertyMapImplement<?, T> distribute = createJoin(group);
+
+        // округляем
+        PropertyMapImplement<?, T> distrRound = createFormula(proportion.interfaces, "ROUND(CAST((prm1*prm2/prm3) as NUMERIC(15,3)),"+roundlen+")", formulaClass, BaseUtils.toList(distribute, proportion.getImplement(), propSum));
+
+        // строим partition полученного округления
+        PropertyMapImplement<?, T> totRound = createPProp(distrRound, group.mapping.values());
+
+        // получаем сколько надо дораспределить
+        PropertyMapImplement<?, T> diffRound = createFormula(proportion.interfaces, "prm1-prm2", formulaClass, BaseUtils.toList(distribute, totRound)); // вообще гря разные параметры поэтому formula, а не diff
+
+        // берем первую пропорцию 
+        PropertyMapImplement<?, T> proportionFirst = createFOProp(proportion, baseClass, group.mapping.values());
+
+        // включаем всю оставшуюся сумму на нее
+        PropertyMapImplement<?, T> diffFirst = createAnd(proportion.interfaces, diffRound, proportionFirst);
+
+        // делаем union с основным distrRound'ом
+        return createSum(sID, caption, proportion.interfaces, distrRound, diffFirst);
+    }
+
+    private static <T extends PropertyInterface,L extends PropertyInterface> PropertyImplement<PropertyInterfaceImplement<T>, ?> createMaxProp(String sID, String caption, PropertyMapImplement<L,T> implement, Collection<PropertyInterfaceImplement<T>> group) {
+        MaxGroupProperty<L> maxProperty = new MaxGroupProperty<L>(sID, caption, mapImplements(group, BaseUtils.reverse(implement.mapping)), implement.property);
         return new PropertyImplement<PropertyInterfaceImplement<T>, GroupProperty.Interface<L>>(maxProperty, mapImplements(maxProperty.getMapInterfaces(),implement.mapping));
     }
     
-    public static <T extends PropertyInterface> List<PropertyImplement<PropertyInterfaceImplement<T>, ?>> createMGProp(String[] sIDs, String[] captions, Property<T> property, BaseClass baseClass, List<PropertyInterfaceImplement<T>> extra, Set<PropertyInterfaceImplement<T>> group, Collection<Property> persist) {
+    public static <T extends PropertyInterface> List<PropertyImplement<PropertyInterfaceImplement<T>, ?>> createMGProp(String[] sIDs, String[] captions, Property<T> property, BaseClass baseClass, List<PropertyInterfaceImplement<T>> extra, Collection<PropertyInterfaceImplement<T>> group, Collection<Property> persist) {
         if(extra.size()==0)
             return createEqualsMGProp(sIDs, captions, property, extra, group, persist);
         else
             return createConcMGProp(sIDs, captions, property, baseClass, extra, group, persist);
     }
 
-    private static <T extends PropertyInterface> List<PropertyImplement<PropertyInterfaceImplement<T>, ?>> createEqualsMGProp(String[] sIDs, String[] captions, Property<T> property, List<PropertyInterfaceImplement<T>> extra, Set<PropertyInterfaceImplement<T>> group, Collection<Property> persist) {
+    private static <T extends PropertyInterface> List<PropertyImplement<PropertyInterfaceImplement<T>, ?>> createEqualsMGProp(String[] sIDs, String[] captions, Property<T> property, List<PropertyInterfaceImplement<T>> extra, Collection<PropertyInterfaceImplement<T>> group, Collection<Property> persist) {
         Collection<T> interfaces = property.interfaces;
 
         PropertyMapImplement<?,T> propertyImplement = property.getImplement();
@@ -359,7 +432,7 @@ public class DerivedProperty {
         return result;
     }
 
-    private static <T extends PropertyInterface> List<PropertyImplement<PropertyInterfaceImplement<T>, ?>> createConcMGProp(String[] sIDs, String[] captions, Property<T> property, BaseClass baseClass, List<PropertyInterfaceImplement<T>> extra, Set<PropertyInterfaceImplement<T>> group, Collection<Property> persist) {
+    private static <T extends PropertyInterface> List<PropertyImplement<PropertyInterfaceImplement<T>, ?>> createConcMGProp(String[] sIDs, String[] captions, Property<T> property, BaseClass baseClass, List<PropertyInterfaceImplement<T>> extra, Collection<PropertyInterfaceImplement<T>> group, Collection<Property> persist) {
         String concID = BaseUtils.toString(sIDs, "_");
         String concCaption = BaseUtils.toString(captions, ", ");
 

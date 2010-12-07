@@ -13,7 +13,6 @@ import platform.server.caches.ManualLazy;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.DataClass;
-import platform.server.data.PropertyField;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.EqualsWhere;
@@ -43,6 +42,7 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.Map.Entry;
+import java.lang.ref.WeakReference;
 
 import static platform.interop.ClassViewType.*;
 import static platform.server.form.instance.GroupObjectInstance.*;
@@ -94,8 +94,15 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         return properties;
     }
 
-    final FocusListener<T> focusListener;
-    final CustomClassListener classListener;
+    private final WeakReference<FocusListener<T>> weakFocusListener;
+    public FocusListener<T> getFocusListener() {
+        return weakFocusListener.get();
+    }
+
+    private final WeakReference<CustomClassListener> weakClassListener;
+    public CustomClassListener getClassListener() {
+        return weakClassListener.get();
+    }
 
     public final FormEntity<T> entity;
 
@@ -113,8 +120,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
         instanceFactory = new InstanceFactory(computer);
 
-        this.focusListener = focusListener;
-        this.classListener = classListener;
+        this.weakFocusListener = new WeakReference<FocusListener<T>>(focusListener);
+        this.weakClassListener = new WeakReference<CustomClassListener>(classListener);
 
         sessionID = this.session.generateID(entity.getID());
 
@@ -268,9 +275,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         GroupObjectTable expandTable = expandTables.get(group);
         if(expandTable==null) {
             expandTable = new GroupObjectTable(group, "e", sessionID * RemoteFormInterface.GID_SHIFT + group.getID());
-            session.createTemporaryTable(expandTable);
+            session.createTemporaryTable(expandTable.table);
         }
-        expandTables.put(group, expandTable.insertRecord(session, BaseUtils.join(expandTable.mapKeys, value), new HashMap<PropertyField, ObjectValue>(), true));
+        expandTables.put(group, expandTable.insertRecord(session, value, true));
         group.updated |= UPDATED_EXPANDS;
     }
 
@@ -472,16 +479,18 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
     public void gainedFocus() {
         dataChanged = true;
-        focusListener.gainedFocus(this);
+        FocusListener<T> focusListener = getFocusListener();
+        if(focusListener!=null)
+            focusListener.gainedFocus(this);
     }
 
     void close() throws SQLException {
 
         session.incrementChanges.remove(this);
         for (GroupObjectTable groupObjectTable : groupTables.values())
-            session.dropTemporaryTable(groupObjectTable);
+            session.dropTemporaryTable(groupObjectTable.table);
         for (GroupObjectTable groupObjectTable : expandTables.values())
-            session.dropTemporaryTable(groupObjectTable);
+            session.dropTemporaryTable(groupObjectTable.table);
     }
 
     // --------------------------------------------------------------------------------------- //
@@ -517,7 +526,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     public FormInstance<T> createForm(FormEntity<T> form, Map<ObjectEntity, DataObject> mapObjects) throws SQLException {
-        return new FormInstance<T>(form, BL, session, securityPolicy, focusListener, classListener, instanceFactory.computer, DataObject.getMapValues(mapObjects));
+        return new FormInstance<T>(form, BL, session, securityPolicy, getFocusListener(), getClassListener(), instanceFactory.computer, DataObject.getMapValues(mapObjects));
     }
 
     public List<ClientAction> changeObject(ObjectInstance object, Object value, RemoteForm form) throws SQLException {
@@ -622,7 +631,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 if (groupObjectTable == null) {
                     GroupObjectTable newTable = groupTables.get(group);
                     if (newTable != null) {
-                        session.dropTemporaryTable(newTable);
+                        session.dropTemporaryTable(newTable.table);
                         groupTables.remove(group);
                     }
                 } else {
@@ -632,7 +641,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 if (expandObjectTable == null) {
                     GroupObjectTable newTable = expandTables.get(group);
                     if (newTable != null) {
-                        session.dropTemporaryTable(newTable);
+                        session.dropTemporaryTable(newTable.table);
                         expandTables.remove(group);
                     }
                 } else {
@@ -698,7 +707,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         if(expandTable==null)
             return Where.FALSE;
         else
-            return expandTable.join(BaseUtils.join(expandTable.mapKeys, mapKeys)).getWhere();
+            return expandTable.getWhere(mapKeys);
     }
 
     private OrderedMap<Map<ObjectInstance, DataObject>, Map<ObjectInstance, ObjectValue>> executeTree(GroupObjectInstance group) throws SQLException {
@@ -1070,10 +1079,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                         GroupObjectTable insertTable = groupTables.get(group);
                         if (insertTable == null) {
                             insertTable = new GroupObjectTable(group, "p", sessionID * RemoteFormInterface.GID_SHIFT + group.getID());
-                            session.createTemporaryTable(insertTable);
+                            session.createTemporaryTable(insertTable.table);
                         }
                         
-                        groupTables.put(group, insertTable.writeKeys(session, BaseUtils.joinList(insertTable.mapKeys,group.keys.keyList())));
+                        groupTables.put(group, insertTable.writeKeys(session, group.keys.keyList()));
                         result.gridObjects.put(group, group.keys.keyList());
 
                         if (!group.keys.containsKey(currentObject)) { // если нету currentObject'а, его нужно изменить
@@ -1165,7 +1174,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 Query<ObjectInstance, PropertyReadInstance> selectProps = new Query<ObjectInstance, PropertyReadInstance>(GroupObjectInstance.getObjects(getUpTreeGroups(keyGroupObjects)));
                 for (GroupObjectInstance keyGroup : keyGroupObjects) {
                     GroupObjectTable groupTable = groupTables.get(keyGroup);
-                    selectProps.and(groupTable.joinAnd(BaseUtils.join(groupTable.mapKeys, selectProps.mapKeys)).getWhere());
+                    selectProps.and(groupTable.getWhere(selectProps.mapKeys));
                 }
 
                 for (PropertyReadInstance propertyDraw : propertyList) {
@@ -1306,13 +1315,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
     public DialogInstance<T> createClassPropertyDialog(int viewID, int value) throws RemoteException, SQLException {
         ClassFormEntity<T> classForm = new ClassFormEntity<T>(BL, getPropertyDraw(viewID).propertyObject.getDialogClass());
-        return new DialogInstance<T>(classForm, BL, session, securityPolicy, focusListener, classListener, classForm.object, instanceFactory.computer, value);
+        return new DialogInstance<T>(classForm, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.object, instanceFactory.computer, value);
     }
 
     public DialogInstance<T> createEditorPropertyDialog(int viewID) throws SQLException {
         PropertyObjectInstance<?> change = getPropertyDraw(viewID).propertyObject.getChangeInstance();
         DataChangeFormEntity<T> formEntity = new DataChangeFormEntity<T>(BL, change.getDialogClass(), change.getValueImplement());
-        return new DialogInstance<T>(formEntity, BL, session, securityPolicy, focusListener, classListener, formEntity.object, instanceFactory.computer, change.read(session, this));
+        return new DialogInstance<T>(formEntity, BL, session, securityPolicy, getFocusListener(), getClassListener(), formEntity.object, instanceFactory.computer, change.read(session, this));
     }
 
     private List<ClientAction> executeAutoActions(ObjectInstance object, RemoteForm form) throws SQLException {

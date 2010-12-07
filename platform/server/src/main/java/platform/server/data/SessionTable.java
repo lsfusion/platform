@@ -19,11 +19,13 @@ import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.form.instance.ObjectInstance;
 
 import java.sql.SQLException;
 import java.util.*;
 
 // временная таблица на момент сессии
+// не должна содержать никаких локальных данных (форм а не бизнес-логики), так как попадает в кэширование и будет memory leak
 public abstract class SessionTable<This extends SessionTable<This>> extends Table implements MapValues<This> {
 
     // конструктор чистой структуры
@@ -158,7 +160,7 @@ public abstract class SessionTable<This extends SessionTable<This>> extends Tabl
     }
 
     // "обновляет" ключи в таблице
-    public This writeKeys(SQLSession session,List<Map<KeyField,DataObject>> writeRows) throws SQLException {
+    public This writeKeys(SQLSession session,Collection<Map<KeyField,DataObject>> writeRows) throws SQLException {
         if(rows==null)
             session.deleteKeyRecords(this, new HashMap<KeyField, Object>());
 
@@ -174,6 +176,15 @@ public abstract class SessionTable<This extends SessionTable<This>> extends Tabl
         }
         
         return createThis(writeClasses, new HashMap<PropertyField, ClassWhere<Field>>(), newRows);
+    }
+
+    // для rollback'а надо актуализирует базу, вообщем то можно через writeKeys было бы решить, но так быстрее
+    public void rewrite(SQLSession session, Collection<Map<KeyField,DataObject>> writeRows) throws SQLException {
+        if(rows==null) {
+            session.deleteKeyRecords(this, new HashMap<KeyField, Object>());
+            for(Map<KeyField, DataObject> row : writeRows)
+                session.insertRecord(this, row, new HashMap<PropertyField, ObjectValue>());
+        }
     }
 
     public This deleteAll(SQLSession session) throws SQLException {

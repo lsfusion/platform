@@ -138,7 +138,7 @@ public class Table extends ImmutableObject implements MapKeysInterface<KeyField>
 
     @Override
     public int hashCode() {
-        return name.hashCode();
+        return (name.hashCode() * 31 + classes.hashCode()) * 31 + propertyClasses.hashCode();
     }
 
     public void out(SQLSession session) throws SQLException {
