@@ -10,6 +10,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public class ObjectDescriptor extends ContextIdentityObject implements PropertyObjectInterfaceDescriptor, ClientIdentitySerializable, CustomConstructible {
 
@@ -35,10 +36,6 @@ public class ObjectDescriptor extends ContextIdentityObject implements PropertyO
     @Override
     public String toString() {
         return client.toString();
-    }
-
-    public String getInstanceCode() {
-        return getSID();
     }
 
     public GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groups) {
@@ -71,5 +68,9 @@ public class ObjectDescriptor extends ContextIdentityObject implements PropertyO
 
     public boolean getAddOnTransaction() {
         return client.addOnTransaction;
+    }
+
+    public String getInstanceCode(Map<ObjectDescriptor, String> objectNames){
+        return objectNames.get(this);
     }
 }

@@ -14,6 +14,7 @@ public class CodeGenerator {
 
     private static String intend;
     private static int id = 1;
+    private static Map<ObjectDescriptor, String> objectNames = new HashMap<ObjectDescriptor, String>();
 
     private static int getID() {
         return id++;
@@ -26,7 +27,9 @@ public class CodeGenerator {
     private static void addInstanceVariable(FormDescriptor form, StringBuilder result) {
         for (GroupObjectDescriptor group : form.groupObjects) {
             for (ObjectDescriptor object : group.objects) {
-                result.append(intend + "ObjectEntity obj" + object.getID() + ";\n");
+                String name = "obj" + object.getID();
+                result.append(intend + "ObjectEntity " + name + ";\n");
+                objectNames.put(object, name);
             }
         }
     }
@@ -43,14 +46,14 @@ public class CodeGenerator {
             result.append(intend + "GroupObjectEntity " + grName + " = new GroupObjectEntity(genID());\n");
 
             for (ObjectDescriptor object : groupObject.objects) {
-                String objName = "obj" + object.getID();
+                String objName = objectNames.get(object);
                 result.append(intend + objName + " = new ObjectEntity(genID(), findValueClass(\"" +
                         object.getBaseClass().getSID() + "\"), " + object.getCaption() + ");\n");
                 result.append(intend + grName + ".add(" + objName + ");\n");
             }
             result.append(intend + "addGroup(" + grName + ");\n");
         } else {
-            String objName = "obj" + groupObject.objects.get(0).getID();
+            String objName = objectNames.get(groupObject.objects.get(0));
             result.append(intend + objName + " = addSingleGroupObject(findValueClass(\"" +
                     groupObject.objects.get(0).getBaseClass().getSID() + "\"));\n");
 
@@ -87,7 +90,7 @@ public class CodeGenerator {
             for (PropertyObjectInterfaceDescriptor objectDescriptorInt : set) {
                 if (objectDescriptorInt instanceof ObjectDescriptor) {
                     ObjectDescriptor object = (ObjectDescriptor) objectDescriptorInt;
-                    entityArray.append("obj" + object.getID() + ",");
+                    entityArray.append(objectNames.get(object) + ",");
                 }
             }
             entityArray.replace(entityArray.length() - 1, entityArray.length(), ")");
@@ -99,7 +102,7 @@ public class CodeGenerator {
     public static String addFixedFilters(Set<FilterDescriptor> filters, StringBuilder result) {
         for (FilterDescriptor filter : filters) {
             result.append(intend + "addFixedFilter(");
-            result.append(filter.getCodeConstructor());
+            result.append(filter.getCodeConstructor(objectNames));
             result.append(");\n");
         }
         return result.toString();
@@ -110,8 +113,9 @@ public class CodeGenerator {
             String groupName = "filterGroup" + getID();
             result.append(intend + filterGroup.getCodeConstructor(groupName));
             for (RegularFilterDescriptor filter : filterGroup.filters) {
-                result.append("\n" + intend + groupName + ".addFilter(" + filter.getCodeConstructor() + ");");
+                result.append("\n" + intend + groupName + ".addFilter(" + filter.getCodeConstructor(objectNames) + ");");
             }
+            result.append("\n" + intend + "addRegularFilterGroup(" + groupName + ");");
             result.append("\n");
         }
         return result.toString();

@@ -3,6 +3,7 @@ package platform.client.descriptor.filter;
 import platform.base.context.ContextIdentityObject;
 import platform.client.descriptor.CustomConstructible;
 import platform.client.descriptor.GroupObjectDescriptor;
+import platform.client.descriptor.ObjectDescriptor;
 import platform.client.logics.ClientRegularFilter;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
@@ -12,6 +13,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.List;
+import java.util.Map;
 
 public class RegularFilterDescriptor extends ContextIdentityObject implements ClientIdentitySerializable, CustomConstructible {
 
@@ -67,8 +69,8 @@ public class RegularFilterDescriptor extends ContextIdentityObject implements Cl
         return client.toString();
     }
 
-    public String getCodeConstructor() {
-        return "new RegularFilterEntity(" + getID() + ", " + filter.getCodeConstructor() + ", \"" + client.caption
-                + "\", KeyStroke.getKeyStroke(\"" + client.key.toString() + "\"), " + client.showKey + ")";
+    public String getCodeConstructor(Map<ObjectDescriptor, String> objectNames) {
+        return "new RegularFilterEntity(" + getID() + ", " + filter.getCodeConstructor(objectNames) + ", \"" + client.caption
+                + "\", KeyStroke.getKeyStroke(\"" + client.key + "\"), " + client.showKey + ")";
     }
 }

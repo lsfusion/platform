@@ -1,6 +1,7 @@
 package platform.client.descriptor.filter;
 
 import platform.client.descriptor.GroupObjectDescriptor;
+import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.nodes.filters.FilterNode;
 import platform.client.descriptor.nodes.filters.NotFilterNode;
 import platform.client.serialization.ClientSerializationPool;
@@ -9,6 +10,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public class NotFilterDescriptor extends FilterDescriptor {
     public FilterDescriptor filter;
@@ -49,7 +51,7 @@ public class NotFilterDescriptor extends FilterDescriptor {
         return filter;
     }
 
-    public String getCodeConstructor() {
-        return "new NotFilterEntity(" + filter.getCodeConstructor() + ")";
+    public String getCodeConstructor(Map<ObjectDescriptor, String> objectNames) {
+        return "new NotFilterEntity(" + filter.getCodeConstructor(objectNames) + ")";
     }
 }

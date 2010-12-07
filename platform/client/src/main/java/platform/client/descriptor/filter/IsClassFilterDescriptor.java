@@ -1,6 +1,7 @@
 package platform.client.descriptor.filter;
 
 import platform.client.descriptor.GroupObjectDescriptor;
+import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.nodes.filters.FilterNode;
 import platform.client.descriptor.nodes.filters.IsClassFilterNode;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
@@ -12,6 +13,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public class IsClassFilterDescriptor extends PropertyFilterDescriptor {
 
@@ -58,11 +60,11 @@ public class IsClassFilterDescriptor extends PropertyFilterDescriptor {
         return result;
     }
 
-    public String getCodeConstructor() {
+    public String getCodeConstructor(Map<ObjectDescriptor, String> objectNames) {
         String code = "new IsClassFilterEntity(";
         code += "addPropertyObject(" + property.property.getSID();
         for (PropertyInterfaceDescriptor pid : property.mapping.keySet()) {
-            code += ", " + property.mapping.get(pid).getInstanceCode();
+            code += ", " + property.mapping.get(pid).getInstanceCode(objectNames);
         }
         code += ")";
         return code;

@@ -1,6 +1,7 @@
 package platform.client.descriptor.filter;
 
 import platform.client.descriptor.GroupObjectDescriptor;
+import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.nodes.filters.FilterNode;
 import platform.client.descriptor.nodes.filters.OrFilterNode;
 import platform.client.serialization.ClientSerializationPool;
@@ -9,6 +10,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public class OrFilterDescriptor extends FilterDescriptor {
     public FilterDescriptor op1;
@@ -61,7 +63,7 @@ public class OrFilterDescriptor extends FilterDescriptor {
         return op2;
     }
 
-    public String getCodeConstructor() {
-        return "new OrFilterEntity(" + op1.getCodeConstructor() + ", " + op2.getCodeConstructor() + ")";
+    public String getCodeConstructor(Map<ObjectDescriptor, String> objectNames) {
+        return "new OrFilterEntity(" + op1.getCodeConstructor(objectNames) + ", " + op2.getCodeConstructor(objectNames) + ")";
     }
 }

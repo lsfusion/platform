@@ -1,6 +1,7 @@
 package platform.client.descriptor.filter;
 
 import platform.client.descriptor.GroupObjectDescriptor;
+import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.nodes.filters.FilterNode;
 import platform.client.descriptor.nodes.filters.NotNullFilterNode;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
@@ -9,6 +10,7 @@ import platform.client.serialization.ClientSerializationPool;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Map;
 
 public class NotNullFilterDescriptor extends PropertyFilterDescriptor {
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
@@ -32,11 +34,11 @@ public class NotNullFilterDescriptor extends PropertyFilterDescriptor {
         return new NotNullFilterNode((GroupObjectDescriptor) group, this);
     }
 
-    public String getCodeConstructor() {
+    public String getCodeConstructor(Map<ObjectDescriptor, String> objectNames) {
         String code = "new NotNullFilterEntity(";
         code += "addPropertyObject(" + property.property.getSID();
         for (PropertyInterfaceDescriptor pid : property.mapping.keySet()) {
-            code += ", " + property.mapping.get(pid).getInstanceCode();
+            code += ", " + property.mapping.get(pid).getInstanceCode(objectNames);
         }
         code += "))";
         return code;

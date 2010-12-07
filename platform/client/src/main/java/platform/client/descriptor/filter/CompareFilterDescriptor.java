@@ -10,6 +10,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public class CompareFilterDescriptor extends PropertyFilterDescriptor {
     private Compare compare;
@@ -72,15 +73,15 @@ public class CompareFilterDescriptor extends PropertyFilterDescriptor {
         return result;
     }
 
-    public String getCodeConstructor() {
+    public String getCodeConstructor(Map<ObjectDescriptor, String> objectNames) {
         String code = "new CompareFilterEntity(";
         
         code += "addPropertyObject(" + property.property.getSID();
         for (PropertyInterfaceDescriptor pid : property.mapping.keySet()) {
-            code += ", " + property.mapping.get(pid).getInstanceCode();
+            code += ", " + property.mapping.get(pid).getInstanceCode(objectNames);
         }
         code += "), Compare." + compare.name() + ", ";
-        code += value.getInstanceCode() + ")";
+        code += value.getInstanceCode(objectNames) + ")";
         return code;
     }
 }
