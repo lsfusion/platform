@@ -11,6 +11,7 @@ import net.sf.jasperreports.engine.type.StretchTypeEnum;
 import platform.interop.form.ReportConstants;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.GroupObjectHierarchy;
+import platform.server.form.entity.PropertyObjectEntity;
 import platform.server.form.view.FormView;
 import platform.server.form.view.GroupObjectView;
 import platform.server.form.view.ObjectView;
@@ -100,16 +101,13 @@ public class ReportDesignGenerator {
             boolean hiddenGroup = hiddenGroupsId.contains(group.getID());
             GroupObjectView groupView = formView.getGroupObject(group);
             List<ReportDrawField> drawFields = new ArrayList<ReportDrawField>();
+            PropertyObjectEntity highlightProp = group.propertyHighlight;
 
             boolean hasColumnGroupProperty = false;
-            String highlightPropertySID = null;
             for (PropertyDrawView property : formView.properties) {
                 if (group.equals(property.entity.getToDraw(formView.entity))) {
                     ReportDrawField reportField = property.getReportDrawField();
-                    if (group.propertyHighlight != null && group.propertyHighlight.property == property.entity.propertyObject.property) {
-                        addDesignField(design, reportField);
-                        highlightPropertySID = reportField.sID;
-                    } else if (reportField != null) {
+                    if (reportField != null && (highlightProp == null || highlightProp.property != property.entity.propertyObject.property)) {
                         drawFields.add(reportField);
                         hasColumnGroupProperty = hasColumnGroupProperty || reportField.hasColumnGroupObjects;
                         if (reportField.hasCaptionProperty) {
@@ -118,6 +116,14 @@ public class ReportDesignGenerator {
                         }
                     }
                 }
+            }
+
+            String highlightPropertySID = null;
+            if (highlightProp != null) {
+                ReportDrawField reportField = new ReportDrawField(highlightProp.property.sID, "");
+                highlightProp.property.getType().fillReportDrawField(reportField);
+                addDesignField(design, reportField);
+                highlightPropertySID = reportField.sID;
             }
 
             if (!hiddenGroup) {
@@ -163,10 +169,7 @@ public class ReportDesignGenerator {
                     if (groupView.highlightColor == null) {
                         newColor = new Color(oldColor.getRed(), oldColor.getGreen(), 0);
                     } else {
-                        double coeff = oldColor.getRed() / 255;
-                        newColor = new Color((int) (groupView.highlightColor.getRed() * coeff),
-                                             (int) (groupView.highlightColor.getGreen() * coeff),
-                                             (int) (groupView.highlightColor.getBlue() * coeff));
+                        newColor = transformColor(groupView.highlightColor, oldColor.getRed() / 255);
                     }
                     condStyle.setBackcolor(newColor);
                     JRDesignExpression expr =
@@ -191,6 +194,10 @@ public class ReportDesignGenerator {
                 addDesignField(design, propertyField);
             }
         }
+    }
+
+    private Color transformColor(Color color, double coeff) {
+        return new Color((int) (color.getRed() * coeff), (int) (color.getGreen() * coeff), (int) (color.getBlue() * coeff));
     }
 
     private void addReportFieldToLayout(ReportLayout layout, ReportDrawField reportField, JRDesignStyle style) {

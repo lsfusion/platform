@@ -110,6 +110,12 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                 newQuery.properties.put(objectProp, object.getExpr(instanceToExpr, form));
             }
 
+            if (group.propertyHighlight != null) {
+                PropertyField highlightField =
+                        table.objectsToFields.get(new Pair<Object, PropertyType>(group.propertyHighlight, PropertyType.HIGHLIGHT));
+                newQuery.properties.put(highlightField, group.propertyHighlight.getExpr(instanceToExpr, form));
+            }
+
             if (group.curClassView != ClassViewType.GRID) {
                 for (ObjectInstance object : group.objects) {
                     newQuery.and(object.getExpr(instanceToExpr, form).compare(object.getObjectValue().getExpr(), Compare.EQUALS));
@@ -172,6 +178,13 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                     }
                 }
             }
+
+            for (GroupObjectInstance group : groups) {
+                if (group.propertyHighlight != null) {
+                    propertyList.add(new Pair<String, PropertyReadInstance>(group.propertyHighlight.property.sID, group));
+                }
+            }
+            
             ReportData data = new ReportData(keyList, propertyList);
 
             for (Map.Entry<Map<KeyField, Object>, Map<PropertyField, Object>> row : resultData.entrySet()) {
@@ -190,6 +203,13 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                             propertyValues.add(row.getValue().get(field));
                         }
                     }
+
+                for (GroupObjectInstance group : groups) {
+                    if (group.propertyHighlight != null) {
+                        PropertyField field = resTable.objectsToFields.get(new Pair<Object, PropertyType>(group.propertyHighlight, PropertyType.HIGHLIGHT));
+                        propertyValues.add(row.getValue().get(field));
+                    }
+                }
 
                 data.add(keyValues, propertyValues);
             }

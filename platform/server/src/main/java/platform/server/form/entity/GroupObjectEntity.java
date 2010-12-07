@@ -51,7 +51,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public List<ClassViewType> banClassView = new ArrayList<ClassViewType>();
     public Integer pageSize;
 
-    public PropertyObjectEntity propertyHighlight;
+    public PropertyObjectEntity<?> propertyHighlight;
 
     public GroupObjectInstance getInstance(InstanceFactory instanceFactory) {
         return instanceFactory.getInstance(this);

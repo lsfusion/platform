@@ -50,6 +50,18 @@ public class FormGroupHierarchyCreator {
             // Для свойств с группами в колонках не добавляем зависимости от групп, идущих в колонки 
             propObjects.removeAll(property.columnGroupObjects); 
             addDependencies(graph, propObjects, true);
+
+            if (property.propertyCaption != null) {
+                Set<GroupObjectEntity> captionObjects = getGroupsByObjects(property.propertyCaption.getObjectInstances());
+                addDependencies(graph, captionObjects, true);
+            }
+        }
+
+        for (GroupObjectEntity group : form.groups) {
+            if (group.propertyHighlight != null) {
+                Set<GroupObjectEntity> highlightObjects = getGroupsByObjects(group.propertyHighlight.getObjectInstances());
+                addDependencies(graph, highlightObjects, true);
+            }
         }
 
         for (FilterEntity filter : form.fixedFilters) {

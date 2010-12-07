@@ -21,7 +21,7 @@ import java.util.Map;
  */
 
 public class ReportTable extends SessionTable<ReportTable> {
-    public enum PropertyType {PLAIN, ORDER, CAPTION}
+    public enum PropertyType {PLAIN, ORDER, CAPTION, HIGHLIGHT}
     public final Map<KeyField, ObjectInstance> mapKeys;
     public final OrderedMap<PropertyField, Object> orders;
     public final Map<Pair<Object, PropertyType>, PropertyField> objectsToFields;
@@ -53,6 +53,13 @@ public class ReportTable extends SessionTable<ReportTable> {
                 KeyField key = new KeyField("object" + object.getsID(), object.getType());
                 mapKeys.put(key, object);
                 keys.add(key);
+            }
+
+            if (group.propertyHighlight != null) {
+                PropertyObjectInstance highlightObject = group.propertyHighlight;
+                PropertyField highlightField = new PropertyField("highlight" + highlightObject.property.sID, highlightObject.getType());
+                objectsToFields.put(new Pair<Object, PropertyType>(highlightObject, PropertyType.HIGHLIGHT), highlightField);
+                properties.add(highlightField);
             }
         }
 
