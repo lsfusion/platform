@@ -3,6 +3,7 @@ package platform.client.form.cell;
 import platform.base.BaseUtils;
 import platform.client.SwingUtils;
 import platform.client.form.PropertyEditorComponent;
+import platform.client.form.grid.GridTable;
 import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
@@ -99,6 +100,14 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
                 comp = currentComp.getComponent(SwingUtils.computeAbsoluteLocation(table), table.getCellRect(row, column, false), editEvent);
             } catch (Exception e) {
                 throw new RuntimeException("Ошибка при получении редактируемого значения", e);
+            }
+
+            if (comp == null) {
+                //todo: временная заглушка...
+                if (cellTable instanceof GridTable) {
+                    GridTable gridTable = (GridTable) cellTable;
+                    gridTable.editWasPerformed = true;
+                }
             }
 
             if (comp == null && currentComp.valueChanged()) {

@@ -61,6 +61,9 @@ public abstract class GridTable extends ClientFormTable
     private int viewMoveInterval = 0;
     private final GridView gridView;
 
+    //todo: временная заглушка...
+    public boolean editWasPerformed = false;
+
     public GridTable(GridView gridView, GroupObjectLogicsSupplier ilogicsSupplier, ClientFormController iform) {
         super(new GridTableModel());
         this.gridView = gridView;
@@ -470,8 +473,15 @@ public abstract class GridTable extends ClientFormTable
         }
 
         if (editEvent instanceof KeyEvent) {
+
+            //todo: временная заглушка...
+            if (editWasPerformed) {
+                editWasPerformed = false;
+                return false;
+            }
+
             KeyEvent keyEvent = (KeyEvent) editEvent;
-            if (keyEvent.getKeyChar() != KeyEvent.CHAR_UNDEFINED && keyEvent.getKeyCode() != KeyEvent.VK_ESCAPE) {
+            if (keyEvent.getID() == KeyEvent.KEY_PRESSED && keyEvent.getKeyChar() != KeyEvent.CHAR_UNDEFINED && keyEvent.getKeyCode() != KeyEvent.VK_ESCAPE) {
                 gridView.processFailedTableEditOnKeyEvent(keyEvent);
             }
         }
