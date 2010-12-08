@@ -11,8 +11,7 @@ public class DoubleClass extends IntegralClass<Double> {
 
     public final static DoubleClass instance = new DoubleClass();
     private final static String sid = "DoubleClass";
-
-    public DoubleClass() {
+    static {
         DataClass.storeClass(sid, instance);
     }
 

@@ -6,8 +6,7 @@ public class ImageClass extends FileClass {
 
     public final static ImageClass instance = new ImageClass();
     private final static String sid = "ImageClass";
-
-    public ImageClass() {
+    static {
         DataClass.storeClass(sid, instance);
     }
 

@@ -10,8 +10,7 @@ public class YearClass extends IntegerClass {
 
     public final static YearClass instance = new YearClass();
     private final static String sid = "YearClass";
-
-    public YearClass() {
+    static {
         DataClass.storeClass(sid, instance);
     }
 

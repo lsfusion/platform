@@ -12,8 +12,7 @@ public class TextClass extends DataClass<String> {
 
     public final static TextClass instance = new TextClass();
     private final static String sid = "TextClass";
-
-    public TextClass() {
+    static {
         DataClass.storeClass(sid, instance);
     }
 

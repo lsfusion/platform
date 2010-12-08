@@ -13,8 +13,7 @@ public class ActionClass extends DataClass<Object> {
 
     public static final ActionClass instance = new ActionClass();
     private final static String sid = "ActionClass";
-
-    public ActionClass() {
+    static {
         DataClass.storeClass(sid, instance);
     }
 

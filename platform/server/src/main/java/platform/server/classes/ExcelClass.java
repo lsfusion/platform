@@ -6,8 +6,7 @@ public class ExcelClass extends FileClass {
 
     public final static ExcelClass instance = new ExcelClass();
     private final static String sid = "ExcelClass";
-
-    public ExcelClass() {
+    static {
         DataClass.storeClass(sid, instance);
     }
 

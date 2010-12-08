@@ -10,8 +10,7 @@ public class SystemClass extends DataClass<Integer> {
 
     public final static SystemClass instance = new SystemClass(); 
     private final static String sid = "SystemClass";
-
-    public SystemClass() {
+    static {
         DataClass.storeClass(sid, instance);
     }
 

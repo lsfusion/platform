@@ -14,8 +14,7 @@ public class LogicalClass extends DataClass<Boolean> {
 
     public static final LogicalClass instance = new LogicalClass();
     private final static String sid = "LogicalClass";
-
-    public LogicalClass() {
+    static {
         DataClass.storeClass(sid, instance);
     }
 

@@ -13,8 +13,7 @@ public class LongClass extends IntegralClass<Long> {
 
     public final static LongClass instance = new LongClass();
     private final static String sid = "LongClass";
-
-    public LongClass() {
+    static {
         DataClass.storeClass(sid, instance);
     }
 

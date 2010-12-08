@@ -11,8 +11,7 @@ public class ByteArrayClass extends DataClass<byte[]> {
 
     public final static ByteArrayClass instance = new ByteArrayClass();
     private final static String sid = "ByteArrayClass";
-
-    public ByteArrayClass() {
+    static {
         DataClass.storeClass(sid, instance);
     }
 

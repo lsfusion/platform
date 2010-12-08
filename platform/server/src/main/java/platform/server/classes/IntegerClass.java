@@ -13,8 +13,7 @@ public class IntegerClass extends IntegralClass<Integer> {
 
     public final static IntegerClass instance = new IntegerClass(); 
     private final static String sid = "IntegerClass";
-
-    public IntegerClass() {
+    static {
         DataClass.storeClass(sid, instance);
     }
 

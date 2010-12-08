@@ -6,8 +6,7 @@ public class WordClass extends FileClass {
 
     public final static WordClass instance = new WordClass();
     private final static String sid = "WordClass";
-
-    public WordClass() {
+    static {
         DataClass.storeClass(sid, instance);
     }
 

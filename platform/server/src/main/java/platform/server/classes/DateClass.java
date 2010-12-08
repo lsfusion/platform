@@ -17,8 +17,7 @@ public class DateClass extends DataClass<Date> {
 
     public final static DateClass instance = new DateClass();
     private final static String sid = "DateClass";
-
-    public DateClass() {
+    static {
         DataClass.storeClass(sid, instance);
     }
 
