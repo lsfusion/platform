@@ -741,7 +741,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         @Override
         protected ValueClass createKey(ValueClass[] classes) {
             assert classes.length == 1;
-            return classes[0];
+            return classes[0].getBaseClass();
         }
 
         @Override
