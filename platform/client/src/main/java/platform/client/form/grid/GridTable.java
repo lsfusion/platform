@@ -481,7 +481,11 @@ public abstract class GridTable extends ClientFormTable
             }
 
             KeyEvent keyEvent = (KeyEvent) editEvent;
-            if (keyEvent.getID() == KeyEvent.KEY_PRESSED && keyEvent.getKeyChar() != KeyEvent.CHAR_UNDEFINED && keyEvent.getKeyCode() != KeyEvent.VK_ESCAPE) {
+
+            if (keyEvent.getID() == KeyEvent.KEY_PRESSED
+                && keyEvent.getKeyChar() != KeyEvent.CHAR_UNDEFINED
+                && keyEvent.getKeyCode() != KeyEvent.VK_ESCAPE
+                && keyEvent.getModifiersEx() == 0) {
                 gridView.processFailedTableEditOnKeyEvent(keyEvent);
             }
         }
