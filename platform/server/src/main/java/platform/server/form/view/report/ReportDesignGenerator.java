@@ -173,7 +173,7 @@ public class ReportDesignGenerator {
                     }
                     condStyle.setBackcolor(newColor);
                     JRDesignExpression expr =
-                            ReportUtils.createExpression("new Boolean($F{" + highlightPropertySID + "})", java.lang.Boolean.class);
+                            ReportUtils.createExpression("new Boolean($F{" + highlightPropertySID + "} != null)", java.lang.Boolean.class);
                     condStyle.setConditionExpression(expr);
                     groupCellStyle.addConditionalStyle(condStyle);
                 }
