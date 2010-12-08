@@ -4,6 +4,7 @@ import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 
 abstract class ValueLinkView extends JPanel {
 
@@ -20,4 +21,8 @@ abstract class ValueLinkView extends JPanel {
     abstract void propertyChanged(ClientPropertyDraw property) ;
 
     public void stopEditing() {}
+
+    public void forceEdit(KeyEvent editEvent) {
+        //do nothing by default
+    }
 }

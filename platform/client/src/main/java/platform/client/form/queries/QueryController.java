@@ -3,6 +3,7 @@ package platform.client.form.queries;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.logics.filter.ClientPropertyFilter;
 
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,4 +72,8 @@ abstract class QueryController implements QueryListener {
 
     protected abstract boolean queryChanged();
 
+    public void showOnTableEdit(KeyEvent editEvent) {
+        addConditionPressed(true);
+        view.forceEdit(editEvent);
+    }
 }

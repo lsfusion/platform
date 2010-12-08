@@ -59,9 +59,11 @@ public abstract class GridTable extends ClientFormTable
     private boolean tabVertical = false;
 
     private int viewMoveInterval = 0;
+    private final GridView gridView;
 
-    public GridTable(GroupObjectLogicsSupplier ilogicsSupplier, ClientFormController iform) {
+    public GridTable(GridView gridView, GroupObjectLogicsSupplier ilogicsSupplier, ClientFormController iform) {
         super(new GridTableModel());
+        this.gridView = gridView;
 
         setAutoCreateColumnsFromModel(false);
 
@@ -466,6 +468,14 @@ public abstract class GridTable extends ClientFormTable
             SwingUtils.stopSingleAction(logicsSupplier.getGroupObject().getActionID(), false);
             return true;
         }
+
+        if (editEvent instanceof KeyEvent) {
+            KeyEvent keyEvent = (KeyEvent) editEvent;
+            if (keyEvent.getKeyChar() != KeyEvent.CHAR_UNDEFINED && keyEvent.getKeyCode() != KeyEvent.VK_ESCAPE) {
+                gridView.processFailedTableEditOnKeyEvent(keyEvent);
+            }
+        }
+
         return false;
     }
 

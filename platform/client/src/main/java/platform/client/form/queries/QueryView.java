@@ -109,20 +109,13 @@ public abstract class QueryView extends JPanel {
             }
         });
 
-        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.ALT_DOWN_MASK), "removeAll");
-        getActionMap().put("removeAll", new AbstractAction() {
+        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "removeAll");
 
-            public void actionPerformed(ActionEvent ae) {
-                listener.allConditionsRemoved();
-                listener.applyPressed();
-            }
-        });
-
+        addActions(this);
     }
 
     // используется для того, чтобы во внешнем компоненте по нажатии кнопок можно было создать отбор/поиск
     public void addActions(JComponent comp) {
-
         comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(getKeyEvent(), 0), "newFilter");
         comp.getActionMap().put("newFilter", new AbstractAction() {
 
@@ -141,6 +134,14 @@ public abstract class QueryView extends JPanel {
             }
         });
 
+        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(getKeyEvent(), InputEvent.SHIFT_DOWN_MASK), "removeAll");
+        comp.getActionMap().put("removeAll", new AbstractAction() {
+
+            public void actionPerformed(ActionEvent ae) {
+                listener.allConditionsRemoved();
+                listener.applyPressed();
+            }
+        });
     }
 
     public Dimension getMaximumSize() {
@@ -246,4 +247,9 @@ public abstract class QueryView extends JPanel {
     protected abstract Icon getAddConditionIcon();
     protected abstract int getKeyEvent();
 
+    public void forceEdit(KeyEvent editEvent) {
+        if (condViews.size() > 0) {
+            condViews.values().iterator().next().forceEdit(editEvent);
+        }
+    }
 }

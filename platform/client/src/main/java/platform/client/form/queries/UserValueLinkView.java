@@ -8,6 +8,7 @@ import platform.client.logics.ClientUserValueLink;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 
 class UserValueLinkView extends ValueLinkView {
 
@@ -88,5 +89,9 @@ class UserValueLinkView extends ValueLinkView {
     void setValue(Object value) {
         valueLink.value = value;
         valueView.setValue(value);
+    }
+
+    public void forceEdit(KeyEvent editEvent) {
+        valueView.editCellAt(0, 0, editEvent);
     }
 }

@@ -2,10 +2,12 @@ package platform.client.form.grid;
 
 import platform.client.form.ClientFormController;
 import platform.client.form.GroupObjectLogicsSupplier;
-import platform.client.form.queries.QueryView;
+import platform.client.form.queries.FilterController;
+import platform.client.form.queries.FindController;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 
 public abstract class GridView extends JPanel {
 
@@ -15,14 +17,18 @@ public abstract class GridView extends JPanel {
     final GridBagConstraints paneConstraints;
 
     private final GridTable gridTable;
+    public final FilterController filterController;
+
     public GridTable getTable() {
         return gridTable;
     }
 
-    public GridView(GroupObjectLogicsSupplier logicsSupplier, ClientFormController form, QueryView findView, QueryView filterView, boolean tabVertical) {
+    public GridView(GroupObjectLogicsSupplier logicsSupplier, ClientFormController form, FindController findController, FilterController filterController, boolean tabVertical) {
+        this.filterController = filterController;
+
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        gridTable = new GridTable(logicsSupplier, form) {
+        gridTable = new GridTable(this, logicsSupplier, form) {
             protected void needToBeShown() {
                 GridView.this.needToBeShown();
             }
@@ -44,20 +50,20 @@ public abstract class GridView extends JPanel {
         paneConstraints.fill = GridBagConstraints.BOTH;
         paneConstraints.weightx = 1;
         paneConstraints.weighty = 1;
-        paneConstraints.insets = new Insets(4,4,4,4);
+        paneConstraints.insets = new Insets(4, 4, 4, 4);
 
         queriesContainer = new JPanel();
         queriesContainer.setLayout(new BoxLayout(queriesContainer, BoxLayout.X_AXIS));
 
-        if (findView != null) {
-            queriesContainer.add(findView);
-            queriesContainer.add(Box.createRigidArea(new Dimension(4,0)));
-            findView.addActions(gridTable);
+        if (findController != null) {
+            queriesContainer.add(findController.getView());
+            queriesContainer.add(Box.createRigidArea(new Dimension(4, 0)));
+            findController.getView().addActions(gridTable);
         }
 
-        if (filterView != null) {
-            queriesContainer.add(filterView);
-            filterView.addActions(gridTable);
+        if (filterController != null) {
+            queriesContainer.add(filterController.getView());
+            filterController.getView().addActions(gridTable);
         }
 
         queriesContainer.add(Box.createHorizontalGlue());
@@ -68,5 +74,12 @@ public abstract class GridView extends JPanel {
     }
 
     protected abstract void needToBeShown();
+
     protected abstract void needToBeHidden();
+
+    public void processFailedTableEditOnKeyEvent(KeyEvent keyEvent) {
+        if (filterController != null) {
+            filterController.showOnTableEdit(keyEvent);
+        }
+    }
 }

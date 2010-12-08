@@ -21,11 +21,13 @@ import java.util.Map;
 public class GridController {
 
     private final ClientGrid key;
+
     public ClientGrid getKey() {
         return key;
     }
 
     private final GridView view;
+
     public JComponent getView() {
         return view;
     }
@@ -68,7 +70,7 @@ public class GridController {
             }
         };
 
-        view = new GridView(logicsSupplier, form, GridController.this.key.showFind ? findController.getView() : null, GridController.this.key.showFilter ? filterController.getView() : null, GridController.this.key.tabVertical) {
+        view = new GridView(logicsSupplier, form, GridController.this.key.showFind ? findController : null, GridController.this.key.showFilter ? filterController : null, GridController.this.key.tabVertical) {
             protected void needToBeShown() {
                 if (!hidden && !view.isVisible()) {
                     view.setVisible(true);
@@ -113,7 +115,7 @@ public class GridController {
     }
 
     public void removeProperty(ClientPropertyDraw property) {
-            table.removeProperty(property);
+        table.removeProperty(property);
     }
 
     public void setGridObjects(List<ClientGroupObjectValue> gridObjects) {
@@ -131,7 +133,7 @@ public class GridController {
     public void updateHighlightValues(Map<ClientGroupObjectValue, Object> highlights) {
         table.updateHighlightValues(highlights);
     }
-    
+
     public void selectObject(ClientGroupObjectValue currentObject) {
         table.selectObject(currentObject);
     }

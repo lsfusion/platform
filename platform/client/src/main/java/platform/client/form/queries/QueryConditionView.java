@@ -1,6 +1,5 @@
 package platform.client.form.queries;
 
-import platform.base.Pair;
 import platform.client.ClientButton;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.logics.*;
@@ -9,10 +8,7 @@ import platform.interop.Compare;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.event.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -122,10 +118,6 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
 
     }
 
-    void requestValueFocus() {
-        valueView.requestFocusInWindow();
-    }
-
     void filterChanged() {
 
         if (valueView != null)
@@ -155,5 +147,13 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
     // Реализация интерфейса QueryListener
     public void valueChanged() {
         conditionChanged();
+    }
+
+    void requestValueFocus() {
+        valueView.requestFocusInWindow();
+    }
+
+    public void forceEdit(KeyEvent editEvent) {
+        valueView.forceEdit(editEvent);
     }
 }
