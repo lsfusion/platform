@@ -18,4 +18,12 @@ public class RemoteDialogProxy<T extends RemoteDialogInterface>
         logRemoteMethodEndCall("getDialogValue", result);
         return result;
     }
+
+    @ImmutableMethod
+    public Integer getInitFilterPropertyDraw() throws RemoteException {
+        logRemoteMethodStartCall("getInitFilterPropertyDraw");
+        Integer result = target.getInitFilterPropertyDraw();
+        logRemoteMethodEndCall("getInitFilterPropertyDraw", result);
+        return result;
+    }
 }

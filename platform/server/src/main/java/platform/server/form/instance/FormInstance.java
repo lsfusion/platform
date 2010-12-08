@@ -1319,9 +1319,22 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     public DialogInstance<T> createEditorPropertyDialog(int viewID) throws SQLException {
-        PropertyObjectInstance<?> change = getPropertyDraw(viewID).propertyObject.getChangeInstance();
+
+        PropertyObjectInstance propertyObject = getPropertyDraw(viewID).propertyObject;
+        PropertyObjectInstance<?> change = propertyObject.getChangeInstance();
+        Property filterProperty = propertyObject.property.getFilterProperty();
+
         DataChangeFormEntity<T> formEntity = new DataChangeFormEntity<T>(BL, change.getDialogClass(), change.getValueImplement());
-        return new DialogInstance<T>(formEntity, BL, session, securityPolicy, getFocusListener(), getClassListener(), formEntity.object, instanceFactory.computer, change.read(session, this));
+
+        ObjectEntity dialogObject = formEntity.object;
+        PropertyDrawEntity filterPropertyDraw = formEntity.getPropertyDraw(filterProperty, dialogObject);
+        if (filterPropertyDraw == null)
+            filterPropertyDraw = formEntity.addPropertyDraw(new LP(filterProperty), dialogObject);
+
+        DialogInstance<T> dialog = new DialogInstance<T>(formEntity, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, instanceFactory.computer, change.read(session, this));
+        dialog.initFilterPropertyDraw = filterPropertyDraw;
+
+        return dialog;
     }
 
     private List<ClientAction> executeAutoActions(ObjectInstance object, RemoteForm form) throws SQLException {

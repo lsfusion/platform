@@ -17,4 +17,11 @@ public class RemoteDialog<T extends BusinessLogics<T>> extends RemoteForm<T, Dia
     public Object getDialogValue() {
         return form.getDialogValue();
     }
+
+    public Integer getInitFilterPropertyDraw() throws RemoteException {
+        if (form.initFilterPropertyDraw != null)
+            return form.initFilterPropertyDraw.getID();
+        else
+            return null;
+    }
 }

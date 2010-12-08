@@ -144,6 +144,11 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
     }
 
     @Override
+    public Property getFilterProperty() {
+        return implement.property;
+    }
+
+    @Override
     public void proceedDefaultDraw(PropertyDrawEntity<Interface> entity, FormEntity form) {
         super.proceedDefaultDraw(entity, form);
         if (implement.mapping.size() == 1 && ((PropertyMapImplement<?, Interface>) BaseUtils.singleValue(implement.mapping)).property instanceof ObjectClassProperty) {

@@ -328,6 +328,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return new PropertyMapImplement<T, T>(this, getIdentityInterfaces());
     }
 
+    // определяет свойство по которому нужно сразу фильтровать при редактировании этого свойства
+    public Property getFilterProperty() {
+        return null;
+    }
+
     public Object read(SQLSession session, Map<T, DataObject> keys, Modifier<? extends Changes> modifier) throws SQLException {
         String readValue = "readvalue";
         Query<T, Object> readQuery = new Query<T, Object>(this);

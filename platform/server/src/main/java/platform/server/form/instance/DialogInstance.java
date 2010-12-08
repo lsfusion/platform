@@ -3,6 +3,7 @@ package platform.server.form.instance;
 import platform.server.auth.SecurityPolicy;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
+import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.listener.FocusListener;
 import platform.server.logics.BusinessLogics;
@@ -16,6 +17,7 @@ import java.util.Map;
 public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T> {
 
     ObjectInstance dialogObject;
+    public PropertyDrawEntity initFilterPropertyDraw;
 
     private DialogInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> tFocusView, CustomClassListener classListener, ObjectEntity dialogEntity, PropertyObjectInterfaceInstance computer, Map<ObjectEntity, Object> mapObjects) throws SQLException {
         super(entity, BL, session, securityPolicy, tFocusView, classListener, computer, mapObjects);
