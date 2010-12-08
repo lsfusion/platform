@@ -17,6 +17,8 @@ public class LongClass extends IntegralClass<Long> {
         DataClass.storeClass(sid, instance);
     }
 
+    protected LongClass() {}
+
     public String toString() {
         return "Большое целое число";
     }

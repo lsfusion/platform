@@ -17,6 +17,8 @@ public class ActionClass extends DataClass<Object> {
         DataClass.storeClass(sid, instance);
     }
 
+    protected ActionClass() {} 
+
     @Override
     public String toString() {
         return "Action";

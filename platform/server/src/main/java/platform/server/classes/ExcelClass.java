@@ -10,6 +10,8 @@ public class ExcelClass extends FileClass {
         DataClass.storeClass(sid, instance);
     }
 
+    protected ExcelClass() {}
+
     public String toString() {
         return "Файл Excel";
     }

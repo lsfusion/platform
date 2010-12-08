@@ -10,6 +10,8 @@ public class ImageClass extends FileClass {
         DataClass.storeClass(sid, instance);
     }
 
+    protected ImageClass() {}
+
     public String toString() {
         return "Изображение";
     }

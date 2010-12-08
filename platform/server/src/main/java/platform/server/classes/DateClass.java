@@ -21,6 +21,8 @@ public class DateClass extends DataClass<Date> {
         DataClass.storeClass(sid, instance);
     }
 
+    protected DateClass() {}
+
     public String toString() {
         return "Дата";
     }

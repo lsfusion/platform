@@ -14,6 +14,8 @@ public class SystemClass extends DataClass<Integer> {
         DataClass.storeClass(sid, instance);
     }
 
+    protected SystemClass() {}
+    
     public String toString() {
         return "Системный";
     }

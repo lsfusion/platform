@@ -10,6 +10,8 @@ public class WordClass extends FileClass {
         DataClass.storeClass(sid, instance);
     }
 
+    protected WordClass() {}
+
     public String toString() {
         return "Файл Word";
     }

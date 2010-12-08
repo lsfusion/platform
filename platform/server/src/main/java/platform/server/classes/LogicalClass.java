@@ -18,6 +18,8 @@ public class LogicalClass extends DataClass<Boolean> {
         DataClass.storeClass(sid, instance);
     }
 
+    protected LogicalClass() {}    
+
     public String toString() {
         return "Logical";
     }

@@ -17,6 +17,8 @@ public class IntegerClass extends IntegralClass<Integer> {
         DataClass.storeClass(sid, instance);
     }
 
+    protected IntegerClass() {}    
+
     public String toString() {
         return "Целое число";
     }

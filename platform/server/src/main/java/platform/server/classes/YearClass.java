@@ -14,6 +14,8 @@ public class YearClass extends IntegerClass {
         DataClass.storeClass(sid, instance);
     }
 
+    protected YearClass() {}    
+
     @Override
     public Format getDefaultFormat() {
         return DateFormat.getDateInstance(DateFormat.SHORT);

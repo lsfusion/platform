@@ -16,6 +16,8 @@ public class TextClass extends DataClass<String> {
         DataClass.storeClass(sid, instance);
     }
 
+    protected TextClass() {}
+    
     public String toString() {
         return "Текст";
     }
