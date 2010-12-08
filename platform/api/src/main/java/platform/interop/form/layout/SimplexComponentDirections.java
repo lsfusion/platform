@@ -18,4 +18,12 @@ public class SimplexComponentDirections implements Serializable {
 
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof SimplexComponentDirections) {
+            SimplexComponentDirections dirs = (SimplexComponentDirections) obj;
+            return T == dirs.T && L == dirs.L && B == dirs.B && R == dirs.R; 
+        }
+        return false;
+    }
 }

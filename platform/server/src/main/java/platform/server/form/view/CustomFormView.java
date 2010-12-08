@@ -1,6 +1,7 @@
 package platform.server.form.view;
 
 import platform.base.identity.IdentityObject;
+import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
@@ -92,5 +93,11 @@ public class CustomFormView extends FormView {
     public GroupObjectView createGroupObject(GroupObjectEntity groupObject, ShowTypeView showType, GridView grid) {
         GroupObjectView container = new GroupObjectView(idGenerator, groupObject, grid, showType);
         return container;
+    }
+
+    public void addIntersection(ComponentView comp1, ComponentView comp2, DoNotIntersectSimplexConstraint cons) {
+        if (comp1.container != comp2.container)
+            throw new RuntimeException("Запрещено создавать пересечения для объектов в разных контейнерах");
+        comp1.constraints.intersects.put(comp2, cons);
     }
 }

@@ -4,6 +4,9 @@ import platform.client.descriptor.*;
 import platform.client.descriptor.filter.*;
 import platform.client.logics.ClientComponent;
 import platform.client.logics.ClientContainer;
+import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
+import platform.interop.form.layout.SimplexComponentDirections;
+import platform.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
 import java.awt.*;
@@ -28,7 +31,7 @@ public class CodeGenerator {
         for (GroupObjectDescriptor group : form.groupObjects) {
             result.append(intend + "GroupObjectEntity grObj" + group.getSID() + ";\n");
             for (ObjectDescriptor object : group.objects) {
-                String name = "obj" + object.getSID();
+                String name = object.getSID();
                 result.append(intend + "ObjectEntity " + name + ";\n");
                 objectNames.put(object, name);
             }
@@ -122,11 +125,80 @@ public class CodeGenerator {
             for (ClientComponent child : ((ClientContainer) component).children) {
                 String childName = "component" + child.getID();
                 temp.append(intend + child.getCodeConstructor(childName) + ";\n");
+                temp.append(changeConstraints(component, childName));
                 temp.append(addContainers(child, childName));
                 temp.append(intend + name + ".add(" + childName + ");\n");
             }
         }
         return temp.toString();
+    }
+
+    private static String changeConstraints(ClientComponent component, String name) {
+        StringBuilder toReturn = new StringBuilder();
+        SimplexConstraints constraints = component.getDefaultConstraints();
+
+        if (!component.constraints.childConstraints.equals(constraints.childConstraints)) {
+            toReturn.append(intend + name + ".constraints.childConstraints = " + getConstraintCode(component.constraints.childConstraints) + ";\n");
+        }
+
+        if (component.constraints.fillHorizontal != constraints.fillHorizontal) {
+            toReturn.append(intend + name + ".constraints.fillHorizontal = " + component.constraints.fillHorizontal + ";\n");
+        }
+
+        if (component.constraints.fillVertical != constraints.fillVertical) {
+            toReturn.append(intend + name + ".constraints.fillVertical = " + component.constraints.fillVertical + ";\n");
+        }
+
+        Insets insetsInside = component.constraints.insetsInside;
+        if (!insetsInside.equals(constraints.insetsInside)) {
+            toReturn.append(intend + name + ".constraints.insetsInside = new Insets(" + insetsInside.top + ", " +
+                    insetsInside.left + ", " + insetsInside.bottom + ", " + insetsInside.right + ");\n");
+        }
+
+        Insets insetsSibling = component.constraints.insetsSibling;
+        if (!insetsSibling.equals(constraints.insetsSibling)) {
+            toReturn.append(intend + name + ".constraints.insetsSibling = new Insets(" + insetsSibling.top + ", " + 
+                    insetsSibling.left + ", " + insetsSibling.bottom + ", " + insetsSibling.right + ");\n");
+        }
+
+        SimplexComponentDirections directions = component.constraints.directions;
+        if (!directions.equals(constraints.directions)) {
+            toReturn.append(intend + name + ".constraints.directions = new SimplexComponentDirections(" +
+                    directions.T + ", " + directions.L + ", " + directions.B + ", " + directions.R + ");\n");
+        }
+
+        if (component.constraints.maxVariables != constraints.maxVariables) {
+            toReturn.append(intend + name + ".constraints.maxVariables = " + constraints.maxVariables + ");\n");
+        }
+
+        Map<ClientComponent, DoNotIntersectSimplexConstraint> map = component.getIntersects();
+        if (!map.isEmpty()) {
+            for (ClientComponent single : map.keySet()) {
+                toReturn.append(intend + "design.addIntersection(" +
+                        component.getSID() + ", " + single.getSID() + ", " + getConstraintCode(map.get(single)) + ");\n");
+            }
+        }
+        
+        return toReturn.toString();
+    }
+
+    public static String getConstraintCode(DoNotIntersectSimplexConstraint constraint) {
+        if(constraint.equals(DoNotIntersectSimplexConstraint.DO_NOT_INTERSECT)) {
+            return "DoNotIntersectSimplexConstraint.DO_NOT_INTERSECT";
+        } else if (constraint.equals(DoNotIntersectSimplexConstraint.TOTHE_BOTTOM)) {
+            return "DoNotIntersectSimplexConstraint.TOTHE_BOTTOM";
+        } else if (constraint.equals(DoNotIntersectSimplexConstraint.TOTHE_RIGHT)) {
+            return "DoNotIntersectSimplexConstraint.TOTHE_RIGHT";
+        } else if (constraint.equals(DoNotIntersectSimplexConstraint.TOTHE_RIGHTBOTTOM)) {
+            return "DoNotIntersectSimplexConstraint.TOTHE_RIGHTBOTTOM";
+        } else {
+            String result = "";
+            result += (constraint.forbDir & DoNotIntersectSimplexConstraint.TOP) != 0 ? "DoNotIntersectSimplexConstraint.TOP | " : "";
+            result += (constraint.forbDir & DoNotIntersectSimplexConstraint.LEFT) != 0 ? "DoNotIntersectSimplexConstraint.LEFT | " : "";
+            result += (constraint.forbDir & DoNotIntersectSimplexConstraint.BOTTOM) != 0 ? "DoNotIntersectSimplexConstraint.BOTTOM | " : "";
+            result += (constraint.forbDir & DoNotIntersectSimplexConstraint.RIGHT) != 0 ? "DoNotIntersectSimplexConstraint.RIGHT | " : "";
+            return result.substring(0, result.length() - 3);
+        }
     }
 
     private static void addRichDesign(FormDescriptor form, StringBuilder result) {
