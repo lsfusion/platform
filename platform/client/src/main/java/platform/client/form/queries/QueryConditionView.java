@@ -29,6 +29,7 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
     private final Map<ClientValueLink, ValueLinkView> valueViews;
 
     private final JButton delButton;
+    private JComboBox propertyView;
 
     public QueryConditionView(ClientPropertyFilter ifilter, GroupObjectLogicsSupplier logicsSupplier) {
 
@@ -39,19 +40,18 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
         Vector<ClientPropertyDraw> sources = new Vector<ClientPropertyDraw>();
         sources.addAll(logicsSupplier.getGroupObjectProperties());
 
-        JComboBox propertyView = new QueryConditionComboBox(sources);
+        propertyView = new QueryConditionComboBox(sources);
         add(propertyView);
 
-        if (logicsSupplier.getDefaultProperty() != null)
-            propertyView.setSelectedItem(logicsSupplier.getDefaultProperty());
-
-        filter.property = (ClientPropertyDraw) propertyView.getSelectedItem();
+        if (filter.property != null) {
+            propertyView.setSelectedItem(filter.property);
+        }
 
         propertyView.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent ie) {
                 if (ie.getStateChange() == ItemEvent.SELECTED) {
-                    filter.property = (ClientPropertyDraw)ie.getItem();
+                    filter.property = (ClientPropertyDraw) ie.getItem();
                     filterChanged();
                 }
             }
@@ -88,17 +88,17 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
         propertyValueView.setListener(this);
         valueViews.put(propertyValue, propertyValueView);
 
-        ClientValueLink[] classes = new ClientValueLink[] {userValue, objectValue, propertyValue};
+        ClientValueLink[] classes = new ClientValueLink[]{userValue, objectValue, propertyValue};
         classValueLinkView = new QueryConditionComboBox(classes);
         add(classValueLinkView);
 
-        filter.value = (ClientValueLink)classValueLinkView.getSelectedItem();
+        filter.value = (ClientValueLink) classValueLinkView.getSelectedItem();
 
         classValueLinkView.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent ie) {
                 if (ie.getStateChange() == ItemEvent.SELECTED) {
-                    filter.value = (ClientValueLink)classValueLinkView.getSelectedItem();
+                    filter.value = (ClientValueLink) classValueLinkView.getSelectedItem();
                     filterChanged();
                 }
             }
@@ -120,8 +120,9 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
 
     void filterChanged() {
 
-        if (valueView != null)
+        if (valueView != null) {
             remove(valueView);
+        }
 
         valueView = valueViews.get(filter.value);
 
@@ -138,6 +139,7 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
     }
 
     protected abstract void conditionChanged();
+
     protected abstract void conditionRemoved(ClientPropertyFilter condition);
 
     void stopEditing() {
@@ -153,7 +155,13 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
         valueView.requestFocusInWindow();
     }
 
-    public void forceEdit(KeyEvent editEvent) {
-        valueView.forceEdit(editEvent);
+    public void startEditing() {
+        valueView.startEditing();
+    }
+
+    public void setSelectedPropertyDraw(ClientPropertyDraw propertyDraw) {
+        if (propertyDraw != null) {
+            propertyView.setSelectedItem(propertyDraw);
+        }
     }
 }

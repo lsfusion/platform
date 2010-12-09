@@ -4,10 +4,10 @@ import platform.client.form.ClientFormController;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.form.queries.FilterController;
 import platform.client.form.queries.FindController;
+import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
 
 public abstract class GridView extends JPanel {
 
@@ -77,9 +77,13 @@ public abstract class GridView extends JPanel {
 
     protected abstract void needToBeHidden();
 
-    public void processFailedTableEditOnKeyEvent(KeyEvent keyEvent) {
+    public void quickEditFilter() {
+        quickEditFilter(null);
+    }
+
+    public void quickEditFilter(ClientPropertyDraw propertyDraw) {
         if (filterController != null) {
-            filterController.showOnTableEdit(keyEvent);
+            filterController.quickEditFilter(propertyDraw);
         }
     }
 }

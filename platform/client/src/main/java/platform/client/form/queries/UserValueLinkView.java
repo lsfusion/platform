@@ -82,6 +82,14 @@ class UserValueLinkView extends ValueLinkView {
         setValue(logicsSupplier.getSelectedValue(property));
     }
 
+    public void startEditing() {
+        valueView.editCellAt(0, 0);
+        Component editor = valueView.getEditorComponent();
+        if (editor != null) {
+            editor.requestFocusInWindow();
+        }
+    }
+
     public void stopEditing() {
         valueView.stopEditing();
     }
@@ -89,9 +97,5 @@ class UserValueLinkView extends ValueLinkView {
     void setValue(Object value) {
         valueLink.value = value;
         valueView.setValue(value);
-    }
-
-    public void forceEdit(KeyEvent editEvent) {
-        valueView.editCellAt(0, 0, editEvent);
     }
 }

@@ -19,6 +19,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
@@ -60,9 +61,6 @@ public abstract class GridTable extends ClientFormTable
 
     private int viewMoveInterval = 0;
     private final GridView gridView;
-
-    //todo: временная заглушка...
-    public boolean editWasPerformed = false;
 
     public GridTable(GridView gridView, GroupObjectLogicsSupplier ilogicsSupplier, ClientFormController iform) {
         super(new GridTableModel());
@@ -470,23 +468,13 @@ public abstract class GridTable extends ClientFormTable
             isInternalNavigating = false;
             SwingUtils.stopSingleAction(logicsSupplier.getGroupObject().getActionID(), false);
             return true;
-        }
-
-        if (editEvent instanceof KeyEvent) {
-
-            //todo: временная заглушка...
-            if (editWasPerformed) {
-                editWasPerformed = false;
-                return false;
-            }
-
-            KeyEvent keyEvent = (KeyEvent) editEvent;
-
-            if (keyEvent.getID() == KeyEvent.KEY_PRESSED
-                && keyEvent.getKeyChar() != KeyEvent.CHAR_UNDEFINED
-                && keyEvent.getKeyCode() != KeyEvent.VK_ESCAPE
-                && keyEvent.getModifiersEx() == 0) {
-                gridView.processFailedTableEditOnKeyEvent(keyEvent);
+        } else if (editEvent instanceof KeyEvent) {
+            TableCellEditor editor = getCellEditor(row, column);
+            if (editor instanceof ClientAbstractCellEditor) {
+                ClientAbstractCellEditor cellEditor = (ClientAbstractCellEditor) editor;
+                if (cellEditor.isCellEditable(editEvent) && !cellEditor.editPerformed) {
+                    gridView.quickEditFilter();
+                }
             }
         }
 

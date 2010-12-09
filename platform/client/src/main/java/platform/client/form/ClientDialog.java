@@ -5,8 +5,6 @@ import platform.interop.form.RemoteDialogInterface;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
@@ -15,8 +13,9 @@ import java.rmi.RemoteException;
 public class ClientDialog extends JDialog {
 
     private ClientFormController currentForm;
+    public boolean showQuickFilterOnStartup = true;
 
-    public ClientDialog(Component owner, RemoteDialogInterface dialog) throws IOException, ClassNotFoundException {
+    public ClientDialog(Component owner, final RemoteDialogInterface dialog) throws IOException, ClassNotFoundException {
         super(SwingUtils.getWindow(owner), Dialog.ModalityType.DOCUMENT_MODAL); // обозначаем parent'а и модальность
 
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -27,18 +26,21 @@ public class ClientDialog extends JDialog {
         getRootPane().setBorder(BorderFactory.createLineBorder(Color.gray, 1));
 
         addWindowListener(new WindowAdapter() {
-
             public void windowActivated(WindowEvent e) {
-                KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(currentForm.getComponent());
-            }
+                int initialFilterPropertyDrawID = -1;
+                if (showQuickFilterOnStartup) {
+                    showQuickFilterOnStartup = false;
+                    try {
+                         initialFilterPropertyDrawID = dialog.getInitFilterPropertyDraw();
+                    } catch (RemoteException ignored) {
+                    }
+                }
 
-        });
-
-        addMouseListener(new MouseAdapter() {
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                System.out.println("Mouse Pressed");
+                if (initialFilterPropertyDrawID > 0) {
+                    currentForm.quickEditFilter(initialFilterPropertyDrawID);
+                } else {
+                    KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(currentForm.getComponent());
+                }
             }
         });
 

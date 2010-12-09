@@ -3,6 +3,7 @@ package platform.client.form;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.client.form.grid.GridController;
+import platform.client.form.grid.GridView;
 import platform.client.form.panel.PanelController;
 import platform.client.form.showtype.ShowTypeController;
 import platform.client.logics.*;
@@ -371,5 +372,9 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         }
 
         return message;
+    }
+
+    public GridView getGridView() {
+        return grid.getView();
     }
 }

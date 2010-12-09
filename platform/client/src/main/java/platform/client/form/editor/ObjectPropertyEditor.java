@@ -30,8 +30,12 @@ public class ObjectPropertyEditor extends JDialog implements PropertyEditorCompo
 
         if (editEvent instanceof KeyEvent && ((KeyEvent)editEvent).getKeyCode() == KeyEvent.VK_SPACE) {
             clientDialog = new ClientNavigatorDialog(owner, dialog);
+            clientDialog.showQuickFilterOnStartup = false;
         } else {
             clientDialog = new ClientDialog(owner, dialog);
+            if (!(editEvent instanceof KeyEvent)) {
+                clientDialog.showQuickFilterOnStartup = false;
+            }
         }
 
         clientDialog.setSize(SwingUtils.clipDimension(clientDialog.calculatePreferredSize(),

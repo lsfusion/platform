@@ -28,7 +28,7 @@ public class GridController {
 
     private final GridView view;
 
-    public JComponent getView() {
+    public GridView getView() {
         return view;
     }
 

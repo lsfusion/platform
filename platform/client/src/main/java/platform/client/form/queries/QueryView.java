@@ -2,6 +2,7 @@ package platform.client.form.queries;
 
 import platform.client.ClientButton;
 import platform.client.form.GroupObjectLogicsSupplier;
+import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.filter.ClientPropertyFilter;
 
 import javax.swing.*;
@@ -247,9 +248,11 @@ public abstract class QueryView extends JPanel {
     protected abstract Icon getAddConditionIcon();
     protected abstract int getKeyEvent();
 
-    public void forceEdit(KeyEvent editEvent) {
+    public void startEditing(ClientPropertyDraw propertyDraw) {
         if (condViews.size() > 0) {
-            condViews.values().iterator().next().forceEdit(editEvent);
+            QueryConditionView view = condViews.values().iterator().next();
+            view.setSelectedPropertyDraw(propertyDraw);
+            view.startEditing();
         }
     }
 }

@@ -20,9 +20,9 @@ abstract class ValueLinkView extends JPanel {
 
     abstract void propertyChanged(ClientPropertyDraw property) ;
 
-    public void stopEditing() {}
-
-    public void forceEdit(KeyEvent editEvent) {
-        //do nothing by default
+    public void startEditing() {
+        requestFocusInWindow();
     }
+
+    public void stopEditing() {}
 }

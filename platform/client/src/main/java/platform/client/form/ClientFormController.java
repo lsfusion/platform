@@ -12,6 +12,7 @@ import platform.client.ClientButton;
 import platform.client.Log;
 import platform.client.Main;
 import platform.client.SwingUtils;
+import platform.client.form.grid.GridView;
 import platform.client.logics.*;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.filter.ClientPropertyFilter;
@@ -275,6 +276,17 @@ public class ClientFormController {
                 }
             }
 
+        }
+    }
+
+    public void quickEditFilter(int initialFilterPropertyDrawID) {
+        ClientPropertyDraw propertyDraw = form.getProperty(initialFilterPropertyDrawID);
+        if (propertyDraw != null && controllers.containsKey(propertyDraw.groupObject)) {
+            GroupObjectController groupController = controllers.get(propertyDraw.groupObject);
+            GridView gridView = groupController.getGridView();
+            if (gridView != null) {
+                gridView.quickEditFilter(propertyDraw);
+            }
         }
     }
 

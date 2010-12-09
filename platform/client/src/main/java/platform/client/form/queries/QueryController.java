@@ -1,9 +1,9 @@
 package platform.client.form.queries;
 
 import platform.client.form.GroupObjectLogicsSupplier;
+import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.filter.ClientPropertyFilter;
 
-import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +16,7 @@ abstract class QueryController implements QueryListener {
     }
 
     private final List<ClientPropertyFilter> conditions = new ArrayList<ClientPropertyFilter>();
+
     public List<ClientPropertyFilter> getConditions() {
         return conditions;
     }
@@ -23,7 +24,6 @@ abstract class QueryController implements QueryListener {
     private final GroupObjectLogicsSupplier logicsSupplier;
 
     QueryController(GroupObjectLogicsSupplier logicsSupplier) {
-
         this.logicsSupplier = logicsSupplier;
 
         view = createView();
@@ -34,46 +34,48 @@ abstract class QueryController implements QueryListener {
 
     // Здесь слушаем наш View
     public void applyPressed() {
-
         if (queryChanged()) {
             view.queryApplied();
         }
-
     }
 
     public void addConditionPressed(boolean replace) {
+        addConditionPressed(replace, null);
+    }
 
-        if (replace) // считаем, что в таком случае просто нажали сначала все удалить, а затем - добавить
+    public void addConditionPressed(boolean replace, ClientPropertyDraw propertyDraw) {
+        if (replace) {
+            // считаем, что в таком случае просто нажали сначала все удалить, а затем - добавить
             allConditionsRemoved();
+        }
 
         ClientPropertyFilter condition = new ClientPropertyFilter();
+        condition.property = propertyDraw != null ? propertyDraw : logicsSupplier.getDefaultProperty();
+
         conditions.add(condition);
 
         view.addConditionView(condition, logicsSupplier);
     }
 
     public void conditionRemoved(ClientPropertyFilter condition) {
-
         conditions.remove(condition);
 
         view.removeCondition(condition);
 
-        if (conditions.isEmpty())
+        if (conditions.isEmpty()) {
             applyPressed();
-
+        }
     }
 
     public void allConditionsRemoved() {
-
         conditions.clear();
-
         view.removeAllConditions();
     }
 
     protected abstract boolean queryChanged();
 
-    public void showOnTableEdit(KeyEvent editEvent) {
-        addConditionPressed(true);
-        view.forceEdit(editEvent);
+    public void quickEditFilter(ClientPropertyDraw propertyDraw) {
+        addConditionPressed(true, propertyDraw);
+        view.startEditing(propertyDraw);
     }
 }

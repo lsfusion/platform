@@ -3,7 +3,6 @@ package platform.client.form.cell;
 import platform.base.BaseUtils;
 import platform.client.SwingUtils;
 import platform.client.form.PropertyEditorComponent;
-import platform.client.form.grid.GridTable;
 import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
@@ -19,18 +18,19 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
 
     private EventObject editEvent;
 
-    private PropertyEditorComponent currentComp;
+    private PropertyEditorComponent propertyEditor;
+
+    public boolean editPerformed = false; 
 
     public Object getCellEditorValue() {
         try {
-            return currentComp.getCellEditorValue();
+            return propertyEditor.getCellEditorValue();
         } catch (RemoteException e) {
             throw new RuntimeException("Ошибка при получении выбранного значения", e);
         }
     }
 
     public boolean isCellEditable(EventObject e) {
-
         editEvent = e;
         if (e instanceof KeyEvent) {
 
@@ -73,6 +73,7 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
                                                  boolean isSelected,
                                                  int row,
                                                  int column) {
+        editPerformed = false;
 
         // лучше сбросить editEvent, иначе может происходить "залипание", если по какой-то причине не будет вызван isCellEditable
         EventObject editEvent = this.editEvent;
@@ -85,45 +86,36 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
         ClientPropertyDraw property = cellTable.getProperty(column);
 
         try {
-            if (cellTable.isDataChanging())
-                currentComp = property.getEditorComponent(cellTable.getForm(), ivalue);
-            else
-                currentComp = property.getClassComponent(cellTable.getForm(), ivalue);
+            if (cellTable.isDataChanging()) {
+                propertyEditor = property.getEditorComponent(cellTable.getForm(), ivalue);
+            } else {
+                propertyEditor = property.getClassComponent(cellTable.getForm(), ivalue);
+            }
         } catch (Exception e) {
             throw new RuntimeException("Ошибка при получении редактируемого значения", e);
         }
 
         Component comp = null;
-        if (currentComp != null) {
-
+        if (propertyEditor != null) {
+            editPerformed = true;
             try {
-                comp = currentComp.getComponent(SwingUtils.computeAbsoluteLocation(table), table.getCellRect(row, column, false), editEvent);
+                comp = propertyEditor.getComponent(SwingUtils.computeAbsoluteLocation(table), table.getCellRect(row, column, false), editEvent);
             } catch (Exception e) {
                 throw new RuntimeException("Ошибка при получении редактируемого значения", e);
             }
 
-            if (comp == null) {
-                //todo: временная заглушка...
-                if (cellTable instanceof GridTable) {
-                    GridTable gridTable = (GridTable) cellTable;
-                    gridTable.editWasPerformed = true;
+            if (comp == null && propertyEditor.valueChanged()) {
+                Object newValue = getCellEditorValue();
+                if (!BaseUtils.nullEquals(ivalue, newValue)) {
+                    table.setValueAt(newValue, row, column);
                 }
             }
-
-            if (comp == null && currentComp.valueChanged()) {
-
-                Object newValue = getCellEditorValue();
-                if (!BaseUtils.nullEquals(ivalue, newValue))
-                    table.setValueAt(newValue, row, column);
-            }
         }
 
-        if (comp != null) {
-            return comp;
-        } else {
-            this.stopCellEditing();
-            return null;
+        if (comp == null) {
+            stopCellEditing();
         }
+        
+        return comp;
     }
-
 }
