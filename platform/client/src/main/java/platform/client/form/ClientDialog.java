@@ -31,7 +31,10 @@ public class ClientDialog extends JDialog {
                 if (showQuickFilterOnStartup) {
                     showQuickFilterOnStartup = false;
                     try {
-                         initialFilterPropertyDrawID = dialog.getInitFilterPropertyDraw();
+                        Integer filterPropertyDraw = dialog.getInitFilterPropertyDraw();
+                        if (filterPropertyDraw != null) {
+                            initialFilterPropertyDrawID = filterPropertyDraw;
+                        }
                     } catch (RemoteException ignored) {
                     }
                 }

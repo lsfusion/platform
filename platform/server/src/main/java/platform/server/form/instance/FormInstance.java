@@ -1322,17 +1322,20 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
         PropertyObjectInstance propertyObject = getPropertyDraw(viewID).propertyObject;
         PropertyObjectInstance<?> change = propertyObject.getChangeInstance();
-        Property filterProperty = propertyObject.property.getFilterProperty();
 
         DataChangeFormEntity<T> formEntity = new DataChangeFormEntity<T>(BL, change.getDialogClass(), change.getValueImplement());
 
         ObjectEntity dialogObject = formEntity.object;
-        PropertyDrawEntity filterPropertyDraw = formEntity.getPropertyDraw(filterProperty, dialogObject);
-        if (filterPropertyDraw == null)
-            filterPropertyDraw = formEntity.addPropertyDraw(new LP(filterProperty), dialogObject);
-
         DialogInstance<T> dialog = new DialogInstance<T>(formEntity, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, instanceFactory.computer, change.read(session, this));
-        dialog.initFilterPropertyDraw = filterPropertyDraw;
+
+        Property filterProperty = propertyObject.property.getFilterProperty();
+        if (filterProperty != null) {
+            PropertyDrawEntity filterPropertyDraw = formEntity.getPropertyDraw(filterProperty, dialogObject);
+            if (filterPropertyDraw == null) {
+                filterPropertyDraw = formEntity.addPropertyDraw(new LP(filterProperty), dialogObject);
+            }
+            dialog.initFilterPropertyDraw = filterPropertyDraw;
+        }
 
         return dialog;
     }
