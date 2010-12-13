@@ -110,30 +110,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         // время, по истечении которого будет сбрасываться remote ссылка на все Rmi объекты
         System.setProperty("java.rmi.dgc.leaseValue", "300000");
 
-        String logLevel = System.getProperty("platform.server.loglevel");
-        if (logLevel != null) {
-            LogManager.getLogManager().getLogger("").setLevel(Level.parse(logLevel));
-        } else {
-            LogManager.getLogManager().getLogger("").setLevel(Level.SEVERE);
+        String logLevelStr = System.getProperty("platform.server.loglevel");
+        Level logLevel = logLevelStr != null ? Level.parse(logLevelStr) : Level.SEVERE;
+
+        LogManager.getLogManager().getLogger("").setLevel(logLevel);
+        for (Handler handler : LogManager.getLogManager().getLogger("").getHandlers()) {
+            handler.setLevel(logLevel);
         }
 
         initRMISocketFactory();
-
-        Handler consoleHandler = new StreamHandler(System.out, new SimpleFormatter()) {
-            @Override
-            public synchronized void publish(LogRecord record) {
-                try {
-                    String message = getFormatter().format(record);
-                    System.out.write(message.getBytes());
-                } catch (Exception exception) {
-                    reportError(null, exception, ErrorManager.FORMAT_FAILURE);
-                    return;
-                }
-            }
-        };
-
-        LogManager.getLogManager().getLogger("").getHandlers()[0].setLevel(Level.OFF);
-        LogManager.getLogManager().getLogger("").addHandler(consoleHandler);
 
         stopped = false;
 

@@ -109,7 +109,9 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            logger.fine("Remote method called: " + (System.currentTimeMillis()-startCall) + " " + outStream.size() + " " + this.getClass().getSimpleName() + "." + methodName);
+            logger.fine(
+                    String.format("Remote method called (time: %1$d ms.; result size: %2$d): %3$s.%4$s",
+                                  System.currentTimeMillis() - startCall, outStream.size(), this.getClass().getSimpleName(), methodName));
         }
     }
 
@@ -117,6 +119,7 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
     protected void logRemoteMethodStartVoidCall(String methodName) {
         logRemoteMethodStartCall(methodName);
     }
+
     @NonFlushRemoteMethod
     protected void logRemoteMethodEndVoidCall(String methodName) {
         logRemoteMethodEndCall(methodName,null);
