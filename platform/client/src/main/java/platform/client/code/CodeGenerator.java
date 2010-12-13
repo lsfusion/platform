@@ -4,6 +4,7 @@ import platform.client.descriptor.*;
 import platform.client.descriptor.filter.*;
 import platform.client.logics.ClientComponent;
 import platform.client.logics.ClientContainer;
+import platform.client.logics.ClientRegularFilterGroup;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexComponentDirections;
 import platform.interop.form.layout.SimplexConstraints;
@@ -18,6 +19,8 @@ public class CodeGenerator {
     private static String intend;
     private static int id = 1;
     private static Map<ObjectDescriptor, String> objectNames = new HashMap<ObjectDescriptor, String>();
+    private static Map<RegularFilterGroupDescriptor, String> filterGroups;
+    private static Map<ClientRegularFilterGroup, RegularFilterGroupDescriptor> filterGroupViews;
 
     private static int getID() {
         return id++;
@@ -36,6 +39,14 @@ public class CodeGenerator {
                 objectNames.put(object, name);
             }
         }
+        filterGroups = new HashMap<RegularFilterGroupDescriptor, String>();
+        filterGroupViews = new HashMap<ClientRegularFilterGroup, RegularFilterGroupDescriptor>();
+        for (RegularFilterGroupDescriptor group : form.regularFilterGroups) {
+            String name = "filterGroup" + group.getID();
+            result.append(intend + "RegularFilterGroupEntity " + name + ";\n");
+            filterGroups.put(group, name);
+            filterGroupViews.put(group.client, group);
+        }
     }
 
     private static void addConstructorDeclaration(FormDescriptor form, StringBuilder result) {
@@ -51,7 +62,7 @@ public class CodeGenerator {
         for (ObjectDescriptor object : groupObject.objects) {
             String objName = objectNames.get(object);
             result.append(intend + objName + " = new ObjectEntity(genID(), findValueClass(\"" +
-                    object.getBaseClass().getSID() + "\"), " + object.getCaption() + ");\n");
+                    object.getBaseClass().getSID() + "\"), \"" + object.getCaption() + "\");\n");
             result.append(intend + grName + ".add(" + objName + ");\n");
         }
         result.append(intend + "addGroup(" + grName + ");\n");
@@ -107,11 +118,11 @@ public class CodeGenerator {
     }
 
     public static String addRegularFilterGroups(List<RegularFilterGroupDescriptor> groups, StringBuilder result) {
-        for (RegularFilterGroupDescriptor filterGroup : groups) {
-            String groupName = "filterGroup" + getID();
-            result.append(intend + filterGroup.getCodeConstructor(groupName));
-            for (RegularFilterDescriptor filter : filterGroup.filters) {
-                result.append("\n" + intend + groupName + ".addFilter(" + filter.getCodeConstructor(objectNames) + ");");
+        for(RegularFilterGroupDescriptor group : groups) {
+            String groupName = filterGroups.get(group);
+            result.append(intend + groupName + " = " + group.getCodeConstructor());
+            for (RegularFilterDescriptor filter : group.filters) {
+                result.append("\n" + intend + groupName + ".addFilter(" + filter.getCodeConstructor(objectNames) + ", " + filter.getClient().showKey + ");");
             }
             result.append("\n" + intend + "addRegularFilterGroup(" + groupName + ");");
             result.append("\n");
@@ -124,10 +135,19 @@ public class CodeGenerator {
         if (component instanceof ClientContainer) {
             for (ClientComponent child : ((ClientContainer) component).children) {
                 String childName = "component" + child.getID();
-                temp.append(intend + child.getCodeConstructor(childName) + ";\n");
-                temp.append(changeConstraints(component, childName));
-                temp.append(addContainers(child, childName));
+                if(!(child instanceof ClientRegularFilterGroup)){
+                    temp.append(intend + child.getCodeConstructor(childName) + ";\n");
+                } else {
+                    temp.append(intend + ((ClientRegularFilterGroup)child).getCodeConstructor(childName, filterGroups.get(filterGroupViews.get(child))) + ";\n");
+                }
                 temp.append(intend + name + ".add(" + childName + ");\n");
+                temp.append(addContainers(child, childName));
+            }
+            temp.append(changeConstraints(component, name));
+            for (ClientComponent child : ((ClientContainer) component).children) {
+                if (!(child instanceof ClientContainer)) {
+                    temp.append(changeConstraints(child, "component" + child.getID()));
+                }
             }
         }
         return temp.toString();
@@ -138,7 +158,7 @@ public class CodeGenerator {
         SimplexConstraints constraints = component.getDefaultConstraints();
 
         if (!component.constraints.childConstraints.equals(constraints.childConstraints)) {
-            toReturn.append(intend + name + ".constraints.childConstraints = " + getConstraintCode(component.constraints.childConstraints) + ";\n");
+            toReturn.append(intend + name + ".constraints.childConstraints = " + component.constraints.childConstraints.getConstraintCode() + ";\n");
         }
 
         if (component.constraints.fillHorizontal != constraints.fillHorizontal) {
@@ -168,37 +188,18 @@ public class CodeGenerator {
         }
 
         if (component.constraints.maxVariables != constraints.maxVariables) {
-            toReturn.append(intend + name + ".constraints.maxVariables = " + constraints.maxVariables + ");\n");
+            toReturn.append(intend + name + ".constraints.maxVariables = " + constraints.maxVariables + ";\n");
         }
 
         Map<ClientComponent, DoNotIntersectSimplexConstraint> map = component.getIntersects();
         if (!map.isEmpty()) {
             for (ClientComponent single : map.keySet()) {
                 toReturn.append(intend + "design.addIntersection(" +
-                        component.getSID() + ", " + single.getSID() + ", " + getConstraintCode(map.get(single)) + ");\n");
+                        name + ", component" + single.getID() + ", " + map.get(single).getConstraintCode() + ");\n");
             }
         }
         
         return toReturn.toString();
-    }
-
-    public static String getConstraintCode(DoNotIntersectSimplexConstraint constraint) {
-        if(constraint.equals(DoNotIntersectSimplexConstraint.DO_NOT_INTERSECT)) {
-            return "DoNotIntersectSimplexConstraint.DO_NOT_INTERSECT";
-        } else if (constraint.equals(DoNotIntersectSimplexConstraint.TOTHE_BOTTOM)) {
-            return "DoNotIntersectSimplexConstraint.TOTHE_BOTTOM";
-        } else if (constraint.equals(DoNotIntersectSimplexConstraint.TOTHE_RIGHT)) {
-            return "DoNotIntersectSimplexConstraint.TOTHE_RIGHT";
-        } else if (constraint.equals(DoNotIntersectSimplexConstraint.TOTHE_RIGHTBOTTOM)) {
-            return "DoNotIntersectSimplexConstraint.TOTHE_RIGHTBOTTOM";
-        } else {
-            String result = "";
-            result += (constraint.forbDir & DoNotIntersectSimplexConstraint.TOP) != 0 ? "DoNotIntersectSimplexConstraint.TOP | " : "";
-            result += (constraint.forbDir & DoNotIntersectSimplexConstraint.LEFT) != 0 ? "DoNotIntersectSimplexConstraint.LEFT | " : "";
-            result += (constraint.forbDir & DoNotIntersectSimplexConstraint.BOTTOM) != 0 ? "DoNotIntersectSimplexConstraint.BOTTOM | " : "";
-            result += (constraint.forbDir & DoNotIntersectSimplexConstraint.RIGHT) != 0 ? "DoNotIntersectSimplexConstraint.RIGHT | " : "";
-            return result.substring(0, result.length() - 3);
-        }
     }
 
     private static void addRichDesign(FormDescriptor form, StringBuilder result) {

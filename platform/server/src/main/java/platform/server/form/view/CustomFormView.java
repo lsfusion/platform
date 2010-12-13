@@ -5,6 +5,7 @@ import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
+import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.logics.linear.LP;
 
 import java.util.List;
@@ -79,9 +80,10 @@ public class CustomFormView extends FormView {
         return view;
     }
 
-    public RegularFilterGroupView createRegularFilterGroup(int ID) {
-        RegularFilterGroupView view = new RegularFilterGroupView();
-        view.ID = idGenerator.idShift();
+    public RegularFilterGroupView createRegularFilterGroup(int ID, RegularFilterGroupEntity filterGroup) {
+        RegularFilterGroupView view = new RegularFilterGroupView(filterGroup);
+        view.ID = ID;
+        regularFilters.add(view);
         return view;
     }
 

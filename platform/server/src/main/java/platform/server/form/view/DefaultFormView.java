@@ -128,6 +128,7 @@ public class DefaultFormView extends FormView {
 
             RegularFilterGroupView filterGroupView = new RegularFilterGroupView(filterGroup);
             filterContainers.get(mgroupObjects.get(formEntity.getApplyObject(groupObjects))).add(filterGroupView);
+            filterContainers.get(mgroupObjects.get(formEntity.getApplyObject(groupObjects))).add(filterGroupView);
 
             regularFilters.add(filterGroupView);
         }

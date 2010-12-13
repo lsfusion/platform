@@ -42,6 +42,10 @@ public class RegularFilterDescriptor extends ContextIdentityObject implements Cl
         return client.caption;
     }
 
+    public ClientRegularFilter getClient() {
+        return client;
+    }
+
     public GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groupList) {
         if (filter == null) return null;
         return filter.getGroupObject(groupList);
@@ -71,6 +75,6 @@ public class RegularFilterDescriptor extends ContextIdentityObject implements Cl
 
     public String getCodeConstructor(Map<ObjectDescriptor, String> objectNames) {
         return "new RegularFilterEntity(" + getID() + ", " + filter.getCodeConstructor(objectNames) + ", \"" + client.caption
-                + "\", KeyStroke.getKeyStroke(\"" + client.key + "\"), " + client.showKey + ")";
+                + "\", KeyStroke.getKeyStroke(\"" + client.key + "\"))";
     }
 }

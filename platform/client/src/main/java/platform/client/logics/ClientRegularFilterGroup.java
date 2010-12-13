@@ -59,4 +59,8 @@ public class ClientRegularFilterGroup extends ClientComponent {
     public String getCodeConstructor(String name) {
         return "RegularFilterGroupView " + name + " = design.createRegularFilterGroup(" + getID() + ")";
     }
+
+    public String getCodeConstructor(String name, String descriptorName) {
+        return "RegularFilterGroupView " + name + " = design.createRegularFilterGroup(" + getID() + ", " + descriptorName + ")";
+    }
 }

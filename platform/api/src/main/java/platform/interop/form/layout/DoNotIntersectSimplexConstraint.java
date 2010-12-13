@@ -79,4 +79,24 @@ public class DoNotIntersectSimplexConstraint extends SingleSimplexConstraint {
     public boolean isStraight() {
         return Integer.bitCount(forbDir) >= 3;
     }
+
+    public String getConstraintCode() {
+        if(this.equals(DO_NOT_INTERSECT)) {
+            return "DoNotIntersectSimplexConstraint.DO_NOT_INTERSECT";
+        } else if (this.equals(TOTHE_BOTTOM)) {
+            return "DoNotIntersectSimplexConstraint.TOTHE_BOTTOM";
+        } else if (this.equals(TOTHE_RIGHT)) {
+            return "DoNotIntersectSimplexConstraint.TOTHE_RIGHT";
+        } else if (this.equals(TOTHE_RIGHTBOTTOM)) {
+            return "DoNotIntersectSimplexConstraint.TOTHE_RIGHTBOTTOM";
+        } else {
+            String result = "new DoNotIntersectSimplexConstraint(";
+            result += (forbDir & TOP) != 0 ? "DoNotIntersectSimplexConstraint.TOP | " : "";
+            result += (forbDir & LEFT) != 0 ? "DoNotIntersectSimplexConstraint.LEFT | " : "";
+            result += (forbDir & BOTTOM) != 0 ? "DoNotIntersectSimplexConstraint.BOTTOM | " : "";
+            result += (forbDir & RIGHT) != 0 ? "DoNotIntersectSimplexConstraint.RIGHT | " : "";
+            result = result.substring(0, result.length() - 3) + ")";
+            return result;
+        }
+    }
 }
