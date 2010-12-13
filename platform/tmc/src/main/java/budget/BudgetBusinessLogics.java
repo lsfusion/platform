@@ -455,6 +455,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(opDep, objIncCash), Compare.EQUALS, objDepartment));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(opDep, objIncNotCash), Compare.EQUALS, objDepartment));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(incomeOutcome, objOutcome), Compare.EQUALS, objIncNotCash));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(opDep, objOutcome), Compare.EQUALS, objDepartment));
         }
 
         @Override

@@ -105,10 +105,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public static void start(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, JRException {
 
         // делаем, чтобы сборщик мусора срабатывал каждую минуту - для удаления ненужных connection'ов
-        System.setProperty("sun.rmi.dgc.server.gcInterval", "60000");
 
-        // время, по истечении которого будет сбрасываться remote ссылка на все Rmi объекты
-        System.setProperty("java.rmi.dgc.leaseValue", "300000");
+        if (System.getProperty("sun.rmi.dgc.server.gcInterval") == null) {
+            System.setProperty("sun.rmi.dgc.server.gcInterval", "600000");
+        }
 
         String logLevelStr = System.getProperty("platform.server.loglevel");
         Level logLevel = logLevelStr != null ? Level.parse(logLevelStr) : Level.SEVERE;
