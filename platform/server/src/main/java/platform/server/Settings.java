@@ -115,4 +115,34 @@ public class Settings {
     public void setNoIncrementMaxGroupProperty(boolean noIncrementMaxGroupProperty) {
         this.noIncrementMaxGroupProperty = noIncrementMaxGroupProperty;
     }
+
+    private int freeConnections = 5;
+
+    public int getFreeConnections() {
+        return freeConnections;
+    }
+
+    public void setFreeConnections(int freeConnections) {
+        this.freeConnections = freeConnections;
+    }
+
+    private boolean commonUnique = false;
+
+    public boolean isCommonUnique() {
+        return commonUnique;
+    }
+
+    public void setCommonUnique(boolean commonUnique) {
+        this.commonUnique = commonUnique;
+    }
+
+    private boolean disablePoolConnections = false;
+
+    public boolean isDisablePoolConnections() {
+        return disablePoolConnections;
+    }
+
+    public void setDisablePoolConnections(boolean disablePoolConnections) {
+        this.disablePoolConnections = disablePoolConnections;
+    }
 }

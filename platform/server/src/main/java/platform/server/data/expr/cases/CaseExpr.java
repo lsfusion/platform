@@ -19,7 +19,7 @@ import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.translator.TranslateExprLazy;
 import platform.server.data.type.NullReader;
-import platform.server.data.type.Reader;
+import platform.server.data.type.ClassReader;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 
@@ -75,7 +75,7 @@ public class CaseExpr extends Expr {
         return cases.iterator().next().data.getType(keyType);
     }
 
-    public Reader getReader(KeyType keyType) {
+    public ClassReader getReader(KeyType keyType) {
         if(cases.isEmpty()) return NullReader.instance;
         return getType(keyType);
     }

@@ -13,7 +13,7 @@ import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.Query;
 import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.translator.QueryTranslator;
-import platform.server.data.type.Reader;
+import platform.server.data.type.ClassReader;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.logics.BusinessLogics;
@@ -33,7 +33,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
         return getType(getWhere());
     }   
 
-    public abstract Reader getReader(KeyType keyType);
+    public abstract ClassReader getReader(KeyType keyType);
 
     // возвращает Where на notNull
     private Where where=null;

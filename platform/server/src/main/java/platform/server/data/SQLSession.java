@@ -10,6 +10,7 @@ import platform.server.data.sql.SQLExecute;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeObject;
+import platform.server.data.type.Reader;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 
@@ -17,16 +18,25 @@ import java.sql.*;
 import java.util.*;
 import java.util.logging.Logger;
 
-public abstract class SQLSession {
+public abstract class SQLSession implements StatementParams {
     private final static Logger logger = Logger.getLogger(SQLSession.class.getName());
 
     public SQLSyntax syntax;
 
-    private Connection connection;
+    private ConnectionPool connectionPool;
 
-    protected abstract TypeObject getSQLUser();
-    protected abstract TypeObject getID();
-    protected abstract TypeObject getSQLComputer();
+    private Connection getConnection() throws SQLException {
+        return uniqueConnection !=null ? uniqueConnection : connectionPool.getCommon(this);
+    }
+
+    private void returnConnection(Connection connection) throws SQLException {
+        if(uniqueConnection !=null)
+            assert uniqueConnection == connection;
+        else
+            connectionPool.returnCommon(this, connection);
+    }
+
+    private Connection uniqueConnection = null;
 
     public final static String userParam = "adsadaweewuser";
     public final static String sessionParam = "dsfreerewrewrsf";
@@ -34,29 +44,49 @@ public abstract class SQLSession {
 
     public SQLSession(DataAdapter adapter) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         syntax = adapter;
-
-        connection = adapter.startConnection();
-        connection.setAutoCommit(true);
+        connectionPool = adapter;
     }
 
+    private void needUnique() throws SQLException { // получает unique connection
+        if(uniqueConnection ==null)
+            uniqueConnection = connectionPool.getUnique(this);
+    }
+
+    private void tryCommon() throws SQLException { // пытается вернуться к
+        if(!inTransaction && sessionTables.isEmpty()) { // вернемся к commonConnection'у
+            connectionPool.returnUnique(this, uniqueConnection);
+            uniqueConnection = null;
+        }
+    }
+
+    private boolean inTransaction;
     public void startTransaction() throws SQLException {
-        connection.setAutoCommit(false);
+        needUnique();
+
+        uniqueConnection.setAutoCommit(false);
+        inTransaction = true;
+    }
+
+    private void endTransaction() throws SQLException {
+        uniqueConnection.setAutoCommit(true);
+        inTransaction = false;
+        
+        tryCommon();
     }
 
     public void rollbackTransaction() throws SQLException {
-        connection.rollback();
-
-        connection.setAutoCommit(true);
+        uniqueConnection.rollback();
+        endTransaction();
     }
 
     public void commitTransaction() throws SQLException {
-        connection.commit();
-
-        connection.setAutoCommit(true);
+        uniqueConnection.commit();
+        endTransaction();
     }
 
     // удостоверивается что таблица есть
     public void ensureTable(Table table) throws SQLException {
+        Connection connection = getConnection();
 
         DatabaseMetaData metaData = connection.getMetaData();
         ResultSet tables = metaData.getTables(null, null, table.name, new String[]{"TABLE"});
@@ -65,6 +95,8 @@ public abstract class SQLSession {
             for (PropertyField property : table.properties)
                 addColumn(table.name, property);
         }
+
+        returnConnection(connection);
     }
 
     public void addExtraIndices(String table, List<KeyField> keys) throws SQLException {
@@ -168,7 +200,11 @@ public abstract class SQLSession {
         execute("CREATE TABLE " + table.name + " (" + createString + ")");
     }
 
+    private Set<String> sessionTables = new HashSet<String>();
+    
     public void createTemporaryTable(SessionTable<?> table) throws SQLException {
+        needUnique();
+
         String createString = "";
         String keyString = "";
         for (KeyField key : table.keys) {
@@ -181,13 +217,22 @@ public abstract class SQLSession {
         if (keyString.length() != 0)
             createString = createString + ", PRIMARY KEY " + syntax.getClustered() + " (" + keyString + ")";
         execute(syntax.getCreateSessionTable(table.name, createString));
+
+        sessionTables.add(table.name);
     }
 
     public void dropTemporaryTable(SessionTable table) throws SQLException {
+        boolean was = sessionTables.remove(table.name);
+        assert was;
+
         execute(syntax.getDropSessionTable(table.name));
+
+        tryCommon();
     }
 
     private void execute(String executeString) throws SQLException {
+        Connection connection = getConnection();
+
         logger.info(executeString);
 
         Statement statement = connection.createStatement();
@@ -198,6 +243,8 @@ public abstract class SQLSession {
             throw e;
         } finally {
             statement.close();
+
+            returnConnection(connection);
         }
     }
 
@@ -206,7 +253,9 @@ public abstract class SQLSession {
     }
 
     private int executeDML(String command, Map<String, TypeObject> paramObjects) throws SQLException {
-        PreparedStatement statement = getStatement(command, paramObjects);
+        Connection connection = getConnection();
+
+        PreparedStatement statement = getStatement(command, paramObjects, connection, this, syntax);
 
 //        System.out.println(statement);
         int result;
@@ -217,9 +266,43 @@ public abstract class SQLSession {
             throw e;
         } finally {
             statement.close();
+
+            returnConnection(connection);
         }
 
         return result;
+    }
+
+    public <K,V> OrderedMap<Map<K, Object>, Map<V, Object>> executeSelect(String select, Map<String, TypeObject> paramObjects, Map<K, String> keyNames, Map<K, ? extends Reader> keyReaders, Map<V, String> propertyNames, Map<V, ? extends Reader> propertyReaders) throws SQLException {
+        Connection connection = getConnection();
+
+        logger.info(select);
+
+        OrderedMap<Map<K,Object>,Map<V,Object>> execResult = new OrderedMap<Map<K, Object>, Map<V, Object>>();
+        PreparedStatement statement = getStatement(select, paramObjects, connection, this, syntax);
+        try {
+            ResultSet result = statement.executeQuery();
+            try {
+                while(result.next()) {
+                    Map<K,Object> rowKeys = new HashMap<K, Object>();
+                    for(Map.Entry<K,String> key : keyNames.entrySet())
+                        rowKeys.put(key.getKey(), keyReaders.get(key.getKey()).read(result.getObject(key.getValue())));
+                    Map<V,Object> rowProperties = new HashMap<V, Object>();
+                    for(Map.Entry<V,String> property : propertyNames.entrySet())
+                        rowProperties.put(property.getKey(),
+                                propertyReaders.get(property.getKey()).read(result.getObject(property.getValue())));
+                     execResult.put(rowKeys,rowProperties);
+                }
+            } finally {
+                result.close();
+            }
+        } finally {
+            statement.close();
+
+            returnConnection(connection);
+        }
+
+        return execResult;
     }
 
     private void insertParamRecord(Table table, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields) throws SQLException {
@@ -367,10 +450,11 @@ public abstract class SQLSession {
     }
 
     public void close() throws SQLException {
-        connection.close();
+        if(uniqueConnection!=null)
+            uniqueConnection.close();
     }
 
-    public PreparedStatement getStatement(String command, Map<String, TypeObject> paramObjects) throws SQLException {
+    private static PreparedStatement getStatement(String command, Map<String, TypeObject> paramObjects, Connection connection, StatementParams stateParams, SQLSyntax syntax) throws SQLException {
 
         char[][] params = new char[paramObjects.size() + 3][];
         TypeObject[] values = new TypeObject[params.length];
@@ -380,11 +464,11 @@ public abstract class SQLSession {
             values[paramNum++] = param.getValue();
         }
         params[paramNum] = userParam.toCharArray();
-        values[paramNum++] = getSQLUser();
+        values[paramNum++] = stateParams.getSQLUser();
         params[paramNum] = sessionParam.toCharArray();
-        values[paramNum++] = getID();
+        values[paramNum++] = stateParams.getID();
         params[paramNum] = computerParam.toCharArray();
-        values[paramNum++] = getSQLComputer();
+        values[paramNum++] = stateParams.getSQLComputer();
 
         // те которые isString сразу транслируем
         List<TypeObject> preparedParams = new ArrayList<TypeObject>();
@@ -397,7 +481,7 @@ public abstract class SQLSession {
             for (int p = 0; p < params.length; p++) {
                 if (BaseUtils.startsWith(toparse, i, params[p])) { // нашли
                     if (values[p].isSafeString()) { // если можно вручную пропарсить парсим
-                        parsedString = parsedString + new String(parsed, 0, num) + values[p].getString(this.syntax);
+                        parsedString = parsedString + new String(parsed, 0, num) + values[p].getString(syntax);
                         parsed = new char[toparse.length - i + (params.length - p) * 100];
                         num = 0;
                     } else {

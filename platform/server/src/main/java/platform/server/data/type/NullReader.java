@@ -8,7 +8,7 @@ import platform.server.data.query.Query;
 
 import java.util.Map;
 
-public class NullReader implements Reader<Object> {
+public class NullReader implements ClassReader<Object> {
 
     public static NullReader instance = new NullReader();
 

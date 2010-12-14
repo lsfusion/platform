@@ -167,11 +167,11 @@ public class DataSession extends SQLSession implements ChangesSession {
         return new TypeObject(user.getCurrentUser().object, ObjectType.instance);
     }
 
-    protected TypeObject getSQLComputer() {
+    public TypeObject getSQLComputer() {
         return new TypeObject(computer.getCurrentComputer().object, ObjectType.instance);
     }
 
-    protected TypeObject getID() {
+    public TypeObject getID() {
         return applyObject ==null?new TypeObject(0, ObjectType.instance):new TypeObject(applyObject);
     }
 

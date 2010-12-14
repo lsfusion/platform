@@ -2,7 +2,6 @@ package platform.server.data.type;
 
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteClass;
-import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.SQLSession;
 import platform.server.data.sql.SQLSyntax;
@@ -14,7 +13,7 @@ import java.sql.SQLException;
 import java.text.Format;
 import java.util.List;
 
-public interface Type<T> extends Reader<T> {
+public interface Type<T> extends ClassReader<T> {
 
     String getDB(SQLSyntax syntax);
 

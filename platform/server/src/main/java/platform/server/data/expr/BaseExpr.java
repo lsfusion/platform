@@ -13,7 +13,7 @@ import platform.server.data.expr.where.MapWhere;
 import platform.server.data.expr.where.LikeWhere;
 import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
-import platform.server.data.type.Reader;
+import platform.server.data.type.ClassReader;
 import platform.server.data.where.CheckWhere;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
@@ -50,7 +50,7 @@ public abstract class BaseExpr extends Expr {
         fillAndJoinWheres(joins, andWhere.and(getWhere()));
     }
 
-    public Reader getReader(KeyType keyType) {
+    public ClassReader getReader(KeyType keyType) {
         return getType(keyType); // assert'ится что не null
     }
 

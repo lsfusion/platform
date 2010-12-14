@@ -16,15 +16,13 @@ import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.NullReader;
-import platform.server.data.type.Reader;
+import platform.server.data.type.ClassReader;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeObject;
 import platform.server.data.where.CheckWhere;
 import platform.server.data.where.Where;
 import platform.server.Settings;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Logger;
@@ -43,9 +41,9 @@ public class CompiledQuery<K,V> {
     final public List<K> keyOrder;
     final public List<V> propertyOrder;
     final public Map<K,String> keyNames;
-    final public Map<K,Reader> keyReaders;
+    final public Map<K, ClassReader> keyReaders;
     final public Map<V,String> propertyNames;
-    final public Map<V,Reader> propertyReaders;
+    final public Map<V, ClassReader> propertyReaders;
 
     public final boolean unionAll;
 
@@ -141,8 +139,8 @@ public class CompiledQuery<K,V> {
         for(ValueExpr mapValue : query.values)
             params.put(mapValue, "qwer" + (paramCount++) + "ffd");
 
-        keyReaders = new HashMap<K, Reader>();
-        propertyReaders = new HashMap<V, Reader>();
+        keyReaders = new HashMap<K, ClassReader>();
+        propertyReaders = new HashMap<V, ClassReader>();
         for(Map.Entry<K,KeyExpr> key : query.mapKeys.entrySet())
             keyReaders.put(key.getKey(),query.where.isFalse()?NullReader.instance:key.getValue().getType(query.where));
         for(Map.Entry<V,Expr> property : query.properties.entrySet())
@@ -154,7 +152,7 @@ public class CompiledQuery<K,V> {
         unionAll = !(useFJ || queryJoins.size() < 2);
         if (unionAll) {
             Map<V, Type> castTypes = new HashMap<V, Type>();
-            for(Map.Entry<V,Reader> propertyReader : propertyReaders.entrySet())
+            for(Map.Entry<V, ClassReader> propertyReader : propertyReaders.entrySet())
                 if(propertyReader.getValue() instanceof Type)
                     castTypes.put(propertyReader.getKey(), (Type)propertyReader.getValue());
 
@@ -775,40 +773,13 @@ public class CompiledQuery<K,V> {
         return fillSelect(BaseUtils.join(BaseUtils.reverse(params), mapValues), fillKeySelect, fillPropertySelect, fillWhereSelect);
     }
 
-    public OrderedMap<Map<K, Object>, Map<V, Object>> execute(SQLSession session,boolean outSelect) throws SQLException {
-
-        OrderedMap<Map<K,Object>,Map<V,Object>> execResult = new OrderedMap<Map<K, Object>, Map<V, Object>>();
-
-//        if(outSelect)
-            logger.info(select);
-
-        PreparedStatement statement = session.getStatement(select,getQueryParams());
-        try {
-            ResultSet result = statement.executeQuery();
-            try {
-                while(result.next()) {
-                    Map<K,Object> rowKeys = new HashMap<K, Object>();
-                    for(Map.Entry<K,String> key : keyNames.entrySet())
-                        rowKeys.put(key.getKey(), keyReaders.get(key.getKey()).read(result.getObject(key.getValue())));
-                    Map<V,Object> rowProperties = new HashMap<V, Object>();
-                    for(Map.Entry<V,String> property : propertyNames.entrySet())
-                        rowProperties.put(property.getKey(),
-                                propertyReaders.get(property.getKey()).read(result.getObject(property.getValue())));
-                     execResult.put(rowKeys,rowProperties);
-                }
-            } finally {
-                result.close();
-            }
-        } finally {
-            statement.close();
-        }
-
-        return execResult;
+    public OrderedMap<Map<K, Object>, Map<V, Object>> execute(SQLSession session) throws SQLException {
+        return session.executeSelect(select, getQueryParams(), keyNames, keyReaders, propertyNames, propertyReaders);
     }
 
     void outSelect(SQLSession session) throws SQLException {
         // выведем на экран
-        OrderedMap<Map<K, Object>, Map<V, Object>> result = execute(session,true);
+        OrderedMap<Map<K, Object>, Map<V, Object>> result = execute(session);
 
         for(Map.Entry<Map<K,Object>,Map<V,Object>> rowMap : result.entrySet()) {
             for(Map.Entry<K,Object> key : rowMap.getKey().entrySet()) {
