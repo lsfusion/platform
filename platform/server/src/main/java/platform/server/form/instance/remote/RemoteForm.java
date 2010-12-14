@@ -286,7 +286,7 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
         
         try {
             GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
-            form.changeGroupObject(groupObject, deserializeKeys(groupObject, value));
+            groupObject.change(form.session, deserializeKeys(groupObject, value));
 
             updateCurrentClass = groupObject.objects.iterator().next();
         } catch (Exception e) {

@@ -49,7 +49,7 @@ public class NotFilterInstance extends FilterInstance {
         return filter.getApplyObject();
     }
 
-    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) throws SQLException {
+    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) {
         return filter.getWhere(mapKeys, modifier).not();
     }
 

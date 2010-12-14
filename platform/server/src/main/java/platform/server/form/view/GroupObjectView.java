@@ -83,7 +83,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.writeObject(outStream, entity.banClassView);
         pool.serializeCollection(outStream, this, serializationType);
-        pool.serializeObject(outStream, pool.context.view.getTreeGroup(entity.parent));
+        pool.serializeObject(outStream, pool.context.view.getTreeGroup(entity.treeGroup));
 
         pool.writeObject(outStream, highlightColor);
 

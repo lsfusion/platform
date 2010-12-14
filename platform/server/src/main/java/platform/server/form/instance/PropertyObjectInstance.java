@@ -141,7 +141,7 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
         return session.execute(property,new PropertyChange<P>(mapKeys,session.getObjectValue(value, property.getType()).getExpr(),changeWhere), modifier ,executeForm, mapping);
     }
 
-    public Expr getExpr(Map<ObjectInstance, ? extends Expr> classSource, Modifier<? extends Changes> modifier) throws SQLException {
+    public Expr getExpr(Map<ObjectInstance, ? extends Expr> classSource, Modifier<? extends Changes> modifier) {
 
         Map<P, Expr> joinImplement = new HashMap<P, Expr>();
         for(P propertyInterface : property.interfaces)

@@ -102,7 +102,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
         for(KeyExpr key : keys) {
             Type type = key.getType(getWhere());
             if(type instanceof DataClass)
-                keyValues.put(key, new ValueExpr(((DataClass)type).getDefaultValue(), (DataClass)type));
+                keyValues.put(key, ((DataClass)type).getDefaultExpr());
             else
                 keyRest.add(key);
         }

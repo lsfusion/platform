@@ -22,7 +22,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public static int PAGE_SIZE_DEFAULT_VALUE = 10;
 
     private int ID;
-    public TreeGroupEntity parent;
+    public TreeGroupEntity treeGroup;
 
     public List<ObjectEntity> objects = new ArrayList<ObjectEntity>();
 
@@ -61,7 +61,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         pool.serializeCollection(outStream, objects);
         pool.writeInt(outStream, initClassView.ordinal());
         pool.writeObject(outStream, banClassView);
-        pool.serializeObject(outStream, parent);
+        pool.serializeObject(outStream, treeGroup);
         pool.serializeObject(outStream, propertyHighlight);
         outStream.writeBoolean(isParent != null);
         if (isParent != null) {
@@ -74,7 +74,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         pool.deserializeCollection(objects, inStream);
         initClassView = ClassViewType.values()[pool.readInt(inStream)];
         banClassView = pool.readObject(inStream);
-        parent = pool.deserializeObject(inStream);
+        treeGroup = pool.deserializeObject(inStream);
         propertyHighlight = pool.deserializeObject(inStream);
         if (inStream.readBoolean()) {
             isParent = pool.deserializeMap(inStream);

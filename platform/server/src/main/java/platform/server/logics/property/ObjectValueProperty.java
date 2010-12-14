@@ -51,7 +51,7 @@ public class ObjectValueProperty extends ExecuteProperty {
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
         FormInstance<?> remoteForm = executeForm.form;
         if(mapObjects.size()>0 && BaseUtils.singleValue(mapObjects) instanceof ObjectInstance)
-            actions.addAll(remoteForm.changeObject((ObjectInstance)BaseUtils.singleValue(mapObjects), value.getValue(), executeForm));
+            actions.addAll(remoteForm.changeObject((ObjectInstance)BaseUtils.singleValue(mapObjects), value, executeForm));
     }
 
     protected Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {

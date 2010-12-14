@@ -37,7 +37,6 @@ import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
-import platform.server.form.instance.OrderInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.ComputerController;
@@ -3440,14 +3439,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 if (mapObjects.get(key.getKey()) == null) {
                     for (ObjectInstance object : objects) {
                         ConcreteClass keyClass = form.session.getCurrentClass(key.getValue());
-                        if (keyClass instanceof ConcreteValueClass && object.getBaseClass().isCompatibleParent((ValueClass) keyClass)) {
-                            Map<OrderInstance, Object> userSeeks = form.userGroupSeeks.get(object.groupTo);
-                            if (userSeeks == null) {
-                                userSeeks = new HashMap<OrderInstance, Object>();
-                                form.userGroupSeeks.put(object.groupTo, userSeeks);
-                            }
-                            userSeeks.put(object, key.getValue().object);
-                        }
+                        if (keyClass instanceof ConcreteValueClass && object.getBaseClass().isCompatibleParent((ValueClass) keyClass))
+                            object.groupTo.addSeek(object, key.getValue(), false);
                     }
                 }
             }

@@ -11,7 +11,6 @@ import platform.server.session.Modifier;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Map;
 
 public class NotNullFilterInstance<P extends PropertyInterface> extends PropertyFilterInstance<P> {
@@ -24,7 +23,7 @@ public class NotNullFilterInstance<P extends PropertyInterface> extends Property
         super(inStream, form);
     }
 
-    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) throws SQLException {
+    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) {
         return property.getExpr(mapKeys, modifier).getWhere();
     }
 }

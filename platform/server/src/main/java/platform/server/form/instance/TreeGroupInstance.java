@@ -2,11 +2,20 @@ package platform.server.form.instance;
 
 import platform.server.form.entity.TreeGroupEntity;
 import platform.server.caches.IdentityLazy;
+import platform.server.logics.DataObject;
+import platform.server.logics.property.Property;
+import platform.server.session.DataSession;
+import platform.server.session.Changes;
+import platform.server.session.Modifier;
+import platform.server.classes.BaseClass;
+import platform.server.classes.CustomClass;
 import platform.base.BaseUtils;
 
 import java.util.List;
 import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Map;
+import java.sql.SQLException;
 
 public class TreeGroupInstance {
     public TreeGroupEntity entity;
@@ -55,5 +64,19 @@ public class TreeGroupInstance {
 
     public int getID() {
         return entity.getID();
+    }
+
+    public void updateKeys(DataSession session, int sessionID, Modifier<? extends Changes> modifier, BaseClass baseClass, boolean refresh, FormChanges result, Collection<Property> changedProps, Collection<CustomClass> changedClasses) throws SQLException {
+        GroupObjectInstance selectGroup = null;
+        Map<ObjectInstance, DataObject> selectObjects = null;
+
+        for(GroupObjectInstance group : groups) {
+            selectObjects = group.updateKeys(session, sessionID, modifier, baseClass, refresh, result, changedProps, changedClasses);
+            if(selectObjects!=null) // то есть нужно изменять объект
+                selectGroup = group;
+        }
+
+        if(selectGroup!=null)
+            selectGroup.update(session, result, selectObjects);
     }
 }

@@ -36,13 +36,15 @@ public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, AndCl
     public abstract DataClass getCompatible(DataClass compClass);
 
     public abstract Object getDefaultValue();
-
-    public ValueExpr getActionExpr() {
-        return new ValueExpr(getDefaultValue(), this);
+    public DataObject getDefaultObjectValue() {
+        return new DataObject(getDefaultValue(), this);
+    }
+    public ValueExpr getDefaultExpr() {
+        return getDefaultObjectValue().getExpr();
     }
 
     public BaseExpr getClassExpr() {
-        return getActionExpr();
+        return getDefaultExpr();
     }
 
     public AbstractGroup getParent() {

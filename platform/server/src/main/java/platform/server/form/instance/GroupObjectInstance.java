@@ -4,12 +4,17 @@ import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Order;
+import static platform.interop.ClassViewType.HIDE;
+import static platform.interop.ClassViewType.GRID;
 import platform.interop.form.PropertyRead;
 import platform.interop.form.RemoteFormInterface;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.where.CompareWhere;
 import platform.server.data.query.MapKeysInterface;
+import platform.server.data.query.Query;
 import platform.server.data.where.Where;
+import platform.server.data.SQLSession;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.instance.filter.FilterInstance;
 import platform.server.form.instance.listener.CustomClassListener;
@@ -19,6 +24,11 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.property.Property;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
+import platform.server.session.ChangesSession;
+import platform.server.session.DataSession;
+import platform.server.caches.IdentityLazy;
+import platform.server.classes.BaseClass;
+import platform.server.classes.CustomClass;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -26,6 +36,9 @@ import java.util.*;
 public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, PropertyReadInstance {
 
     public final PropertyObjectInstance propertyHighlight;
+    final static int DIRECTION_DOWN = 1;
+    final static int DIRECTION_UP = 2;
+    final static int DIRECTION_CENTER = 3;
 
     public PropertyObjectInstance getPropertyObject() {
         return propertyHighlight;
@@ -194,7 +207,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         updated |= UPDATED_ORDER;
     }
 
-    // с активным интерфейсом
+    // с активным интерфейсом, assertion что содержит все ObjectInstance
     OrderedMap<OrderInstance,Boolean> orders = new OrderedMap<OrderInstance, Boolean>();
 
     public void fillUpdateProperties(Set<Property> properties) {
@@ -260,7 +273,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         throw new RuntimeException("key not found");
     }
 
-    public Where getFilterWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) throws SQLException {
+    public Where getFilterWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) {
         Where where = Where.TRUE;
         for(FilterInstance filt : filters)
             where = where.and(filt.getWhere(mapKeys, modifier));
@@ -274,7 +287,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return where;
     }
 
-    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) throws SQLException {
+    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) {
         return getFilterWhere(mapKeys, modifier).and(getClassWhere(mapKeys, modifier));
     }
 
@@ -320,4 +333,391 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public final Map<ObjectInstance, PropertyObjectInstance> parent;
+
+    // поиски по свойствам\объектам
+    public SeekObjects userSeeks = null;
+
+    public void addSeek(OrderInstance order, ObjectValue value, boolean addSeek) {
+        if(userSeeks==null)
+            userSeeks = new SeekObjects(false);
+        userSeeks = userSeeks.add(order, value, addSeek);
+    }
+
+    public void dropSeek(ObjectInstance object) {
+        if(userSeeks==null)
+            userSeeks = new SeekObjects(false, getGroupObjectValue());
+        userSeeks = userSeeks.remove(object);
+    }
+
+    public void seek(boolean end) {
+        userSeeks = new SeekObjects(new HashMap<OrderInstance, ObjectValue>(), end);
+    }
+
+    public void seek(Map<OrderInstance, ObjectValue> seek, boolean end) {
+        userSeeks = new SeekObjects(seek, end);
+    }
+
+    @IdentityLazy
+    public Map<DataObjectInstance, DataObject> getFreeDataObjects() throws SQLException {
+        Map<DataObjectInstance, DataObject> freeObjects = new HashMap<DataObjectInstance, DataObject>();
+
+        Map<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
+
+        Set<KeyExpr> usedContext = new HashSet<KeyExpr>();
+        getFilterWhere(mapKeys, Property.defaultModifier).enumKeys(usedContext);
+        for(ObjectInstance object : objects)
+            if(object instanceof DataObjectInstance && !usedContext.contains(mapKeys.get(object))) // если DataObject и нету ключей
+                freeObjects.put((DataObjectInstance) object, ((DataObjectInstance) object).getBaseClass().getDefaultObjectValue());
+
+        return freeObjects;
+    }
+
+    public GroupObjectTable keyTable = null;
+    public GroupObjectTable expandTable = null;
+    
+    private Where getExpandWhere(Map<ObjectInstance, ? extends Expr> mapKeys) {
+        if(expandTable==null)
+            return Where.FALSE;
+        else
+            return expandTable.getWhere(mapKeys);
+    }
+    
+    private OrderedMap<Map<ObjectInstance, DataObject>, Map<ObjectInstance, ObjectValue>> executeTree(SQLSession session, Modifier<? extends Changes> modifier, BaseClass baseClass) throws SQLException {
+        assert isInTree();
+
+        Map<ObjectInstance, KeyExpr> mapKeys = KeyExpr.getMapKeys(GroupObjectInstance.getObjects(getUpTreeGroups()));
+
+        Map<ObjectInstance,Expr> expandExprs = new HashMap<ObjectInstance, Expr>();
+
+        Where expandWhere;
+        if(getUpTreeGroup()!=null)
+            expandWhere = getUpTreeGroup().getExpandWhere(mapKeys); // для верхней группы брать только из expandTable'а
+        else
+            expandWhere = Where.TRUE;
+
+        if(parent!=null) {
+            for(Map.Entry<ObjectInstance, PropertyObjectInstance> parentEntry : parent.entrySet())
+                expandExprs.put(parentEntry.getKey(), parentEntry.getValue().getExpr(mapKeys, modifier));
+
+            Where nullWhere = Where.FALSE;
+            for(Expr expr : expandExprs.values())
+                nullWhere = nullWhere.or(expr.getWhere().not());
+            expandWhere = expandWhere.and(nullWhere).or(getExpandWhere(BaseUtils.override(mapKeys,expandExprs))); // если есть parent, то те чей parent равен null
+        }
+
+        OrderedMap<Expr, Boolean> orderExprs = new OrderedMap<Expr, Boolean>();
+        for (Map.Entry<OrderInstance, Boolean> toOrder : orders.entrySet())
+            orderExprs.put(toOrder.getKey().getExpr(mapKeys, modifier), toOrder.getValue());
+
+        return new Query<ObjectInstance, ObjectInstance>(mapKeys, expandExprs, getWhere(mapKeys, modifier).and(expandWhere)).
+                    executeClasses(session, baseClass, orderExprs);
+    }
+
+    public void change(ChangesSession session, Map<ObjectInstance, DataObject> value) throws SQLException {
+        // проставим все объектам метки изменений
+        assert value.isEmpty() || value.keySet().equals(new HashSet<ObjectInstance>(GroupObjectInstance.getObjects(getUpTreeGroups())));
+        for (ObjectInstance object : GroupObjectInstance.getObjects(getUpTreeGroups()))
+            object.changeValue(session, value.isEmpty()?NullValue.instance:value.get(object));
+        for(ObjectInstance object : GroupObjectInstance.getObjects(getDownTreeGroups()))
+            object.changeValue(session, NullValue.instance);
+    }
+
+    public void update(ChangesSession session, FormChanges changes, Map<ObjectInstance, DataObject> value) throws SQLException {
+        if(value.isEmpty())
+            changes.objects.put(this, NullValue.getMap(getObjects(getUpTreeGroups())));
+        else
+            changes.objects.put(this, value);
+        change(session, value);
+    }
+
+    public Map<ObjectInstance, DataObject> updateKeys(DataSession session, int sessionID, Modifier<? extends Changes> modifier, BaseClass baseClass, boolean refresh, FormChanges result, Collection<Property> changedProps, Collection<CustomClass> changedClasses) throws SQLException {
+        if ((updated & UPDATED_CLASSVIEW) != 0) {
+            result.classViews.put(this, curClassView);
+        }
+
+        if (curClassView == HIDE) return null;
+
+        // если изменились класс грида или представление
+        boolean updateKeys = refresh || (updated & (UPDATED_GRIDCLASS | UPDATED_CLASSVIEW)) != 0;
+
+        if (FilterInstance.ignoreInInterface) {
+            updateKeys |= (updated & UPDATED_FILTER) != 0;
+            filters = getSetFilters();
+        } else if ((updated & UPDATED_FILTER) != 0) {
+            Set<FilterInstance> newFilters = new HashSet<FilterInstance>();
+            for (FilterInstance filt : getSetFilters())
+                if (filt.isInInterface(this))
+                    newFilters.add(filt);
+
+            updateKeys |= !newFilters.equals(filters);
+            filters = newFilters;
+        } else // остались те же setFilters
+            for (FilterInstance filt : getSetFilters())
+                if (refresh || filt.classUpdated(Collections.singleton(this)))
+                    updateKeys |= (filt.isInInterface(this) ? filters.add(filt) : filters.remove(filt));
+
+        // порядки
+        OrderedMap<OrderInstance, Boolean> newOrders = new OrderedMap<OrderInstance, Boolean>();
+        if ((updated & UPDATED_ORDER) != 0) {
+            for (Map.Entry<OrderInstance, Boolean> setOrder : getSetOrders().entrySet())
+                if (setOrder.getKey().isInInterface(this))
+                    newOrders.put(setOrder.getKey(), setOrder.getValue());
+            updateKeys |= !orders.equals(newOrders);
+        } else { // значит setOrders не изменился
+            for (Map.Entry<OrderInstance, Boolean> setOrder : getSetOrders().entrySet()) {
+                OrderInstance orderInstance = setOrder.getKey();
+
+                boolean isInInterface = orders.containsKey(orderInstance);
+                if ((refresh || orderInstance.classUpdated(Collections.singleton(this))) && !(orderInstance.isInInterface(this) == isInInterface)) {
+                    isInInterface = !isInInterface;
+                    updateKeys = true;
+                }
+                if (isInInterface)
+                    newOrders.put(orderInstance, setOrder.getValue());
+            }
+        }
+        orders = newOrders;
+
+        if (!updateKeys) // изменились "верхние" объекты для фильтров
+            for (FilterInstance filt : filters)
+                if (filt.objectUpdated(Collections.singleton(this))) {
+                    updateKeys = true;
+                    break;
+                }
+        if (!updateKeys) // изменились "верхние" объекты для порядков
+            for (OrderInstance order : orders.keySet())
+                if (order.objectUpdated(Collections.singleton(this))) {
+                    updateKeys = true;
+                    break;
+                }
+        if (!updateKeys) // изменились данные по фильтрам
+            for (FilterInstance filt : filters)
+                if (filt.dataUpdated(changedProps)) {
+                    updateKeys = true;
+                    break;
+                }
+        if (!updateKeys) // изменились данные по порядкам
+            for (OrderInstance order : orders.keySet())
+                if (order.dataUpdated(changedProps)) {
+                    updateKeys = true;
+                    break;
+                }
+        if (!updateKeys) // классы удалились\добавились
+            for (ObjectInstance object : objects)
+                if (object.classChanged(changedClasses)) {  // || object.classUpdated() сомнительный or
+                    updateKeys = true;
+                    break;
+                }
+
+        Map<ObjectInstance, DataObject> currentObject = getGroupObjectValue();
+        SeekObjects orderSeeks = null;
+        int direction = DIRECTION_CENTER;
+
+        if(isInTree()) {
+            if (!updateKeys && (getUpTreeGroup() != null && ((getUpTreeGroup().updated & UPDATED_EXPANDS) != 0)) ||
+                    (parent != null && (updated & UPDATED_EXPANDS) != 0))
+                updateKeys = true;
+        } else {
+            if (userSeeks!=null) { // пользовательский поиск
+                orderSeeks = userSeeks;
+                updateKeys = true;
+                currentObject = new HashMap<ObjectInstance, DataObject>();
+            } else if (updateKeys) // изменились фильтры, порядки, вид, ищем текущий объект
+                orderSeeks = new SeekObjects(false, currentObject);
+
+            if (!updateKeys && curClassView == GRID && !currentObject.isEmpty() && (updated & UPDATED_OBJECT) != 0) { // скроллирование
+                int keyNum = keys.indexOf(currentObject);
+                if (upKeys && keyNum < getPageSize()) { // если меньше PageSize осталось и сверху есть ключи
+                    updateKeys = true;
+
+                    int lowestInd = getPageSize() * 2 - 1;
+                    if (lowestInd >= keys.size()) // по сути END
+                        orderSeeks = new SeekObjects(true);
+                    else {
+                        direction = DIRECTION_UP;
+                        orderSeeks = new SeekObjects(keys.getValue(lowestInd), false);
+                    }
+                } else // наоборот вниз
+                    if (downKeys && keyNum >= keys.size() - getPageSize()) { // assert что pageSize не null
+                        updateKeys = true;
+
+                        int highestInd = keys.size() - getPageSize() * 2;
+                        if (highestInd < 0) // по сути HOME
+                            orderSeeks = new SeekObjects(false);
+                        else {
+                            direction = DIRECTION_DOWN;
+                            orderSeeks = new SeekObjects(keys.getValue(highestInd), false);
+                        }
+                    }
+            }
+        }
+
+        if (updateKeys) {
+            assert orderSeeks != null;
+
+            updated = (updated | UPDATED_KEYS);
+            
+            if (curClassView != GRID) // панель
+                return orderSeeks.readKeys(session, modifier, baseClass);
+            else {
+                int activeRow = -1; // какой ряд выбранным будем считать
+                keys = new OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>>();
+
+                if (isInTree()) { // если дерево, то без поиска, но возможно с parent'ами
+                    assert orderSeeks.values.isEmpty() && !orderSeeks.end;
+
+                    List<Map<ObjectInstance, DataObject>> expandParents = new ArrayList<Map<ObjectInstance, DataObject>>();
+                    for(Map.Entry<Map<ObjectInstance, DataObject>, Map<ObjectInstance, ObjectValue>> resultRow : executeTree(session, modifier, baseClass).entrySet()) {
+                        keys.put(resultRow.getKey(), new HashMap<OrderInstance, ObjectValue>());
+                        expandParents.add(BaseUtils.filterClass(resultRow.getValue(), DataObject.class));
+                    }
+                    result.parentObjects.put(this, expandParents);
+                } else {
+                    if (!orders.starts(orderSeeks.values.keySet())) // если не "хватает" спереди ключей, дочитываем
+                        orderSeeks = orderSeeks.readValues(session, modifier, baseClass);
+
+                    if (direction == DIRECTION_CENTER) { // оптимизируем если HOME\END, то читаем одним запросом
+                        if(orderSeeks.values.isEmpty()) {
+                            if (orderSeeks.end) { // END
+                                direction = DIRECTION_UP;
+                                downKeys = false;
+                            } else { // HOME
+                                direction = DIRECTION_DOWN;
+                                upKeys = false;
+                            }
+                        }
+                    } else {
+                        downKeys = true;
+                        upKeys = true;
+                        assert !orderSeeks.values.isEmpty();
+                    }
+
+                    int readSize = getPageSize() * 3 / (direction == DIRECTION_CENTER ? 2 : 1);
+
+                    if (direction == DIRECTION_UP || direction == DIRECTION_CENTER) { // сначала Up
+                        keys.putAll(orderSeeks.executeOrders(session, modifier, baseClass, readSize, false).reverse());
+                        upKeys = (keys.size() == readSize);
+                        activeRow = keys.size() - 1;
+                    }
+                    if (direction == DIRECTION_DOWN || direction == DIRECTION_CENTER) { // затем Down
+                        OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> executeList = orderSeeks.executeOrders(session, modifier, baseClass, readSize, true);
+                        if (executeList.size() > 0 && !(orderSeeks.end && activeRow>0)) activeRow = keys.size(); // не выбираем если идет seekDown и уже выбран ряд - это то что надо
+                        keys.putAll(executeList);
+                        downKeys = (executeList.size() == readSize);
+                    }
+                }
+
+                // параллельно будем обновлять ключи чтобы JoinSelect'ить
+                if (keyTable == null) {
+                    keyTable = new GroupObjectTable(this, "p", sessionID * RemoteFormInterface.GID_SHIFT + getID());
+                    session.createTemporaryTable(keyTable.table);
+                }
+
+                keyTable = keyTable.writeKeys(session, keys.keyList());
+                result.gridObjects.put(this, keys.keyList());
+
+                if (!keys.containsKey(currentObject)) { // если нету currentObject'а, его нужно изменить
+                    if(getUpTreeGroup()==null) // если верхняя группа
+                        return activeRow>=0?keys.getKey(activeRow):new HashMap<ObjectInstance,DataObject>();
+                    else // иначе assertion что activeRow < 0, выбираем верхнюю
+                        return keys.size()>0 && !currentObject.isEmpty()?keys.keySet().iterator().next():new HashMap<ObjectInstance,DataObject>();
+                } else // так как сейчас клиент требует прислать ему groupObject даже если он не изменился, если приходят ключи
+                    return currentObject;
+            }
+        }
+
+        return null; // ничего не изменилось
+    }
+
+    public class SeekObjects {
+        public Map<OrderInstance, ObjectValue> values;
+        public boolean end;
+
+        public SeekObjects(Map<OrderInstance, ObjectValue> values, boolean end) {
+            this.values = values;
+            this.end = end;
+        }
+
+        public SeekObjects(boolean end, Map<ObjectInstance, DataObject> values) {
+            this((Map<OrderInstance,ObjectValue>)(Map<? extends OrderInstance,? extends ObjectValue>)values, end);
+        }
+
+        public SeekObjects(boolean end) {
+            this(new HashMap<OrderInstance, ObjectValue>(), end);
+        }
+
+        public SeekObjects add(OrderInstance order, ObjectValue value, boolean down) {
+            return new SeekObjects(BaseUtils.merge(values, Collections.singletonMap(order, value)), this.end || down);
+        }
+
+        public SeekObjects remove(ObjectInstance object) {
+            return new SeekObjects(BaseUtils.filterNotKeys(values, Collections.singleton(object)), end);
+        }
+
+        public SeekObjects reverse() {
+            return new SeekObjects(values, !end);
+        }
+
+        // возвращает OrderInstance из orderSeeks со значениями, а также если есть parent, то parent'ы
+        public OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> executeOrders(SQLSession session, Modifier<? extends Changes> modifier, BaseClass baseClass, int readSize, boolean down) throws SQLException {
+            assert !isInTree();
+
+            Map<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
+
+            // assertion что group.orders начинается с orderSeeks
+            OrderedMap<OrderInstance, Boolean> orders;
+            if (readSize == 1)
+                orders = GroupObjectInstance.this.orders.moveStart(values.keySet());
+            else
+                orders = GroupObjectInstance.this.orders;
+
+            assert orders.starts(values.keySet());
+
+            Map<OrderInstance, Expr> orderExprs = new HashMap<OrderInstance, Expr>();
+            for (Map.Entry<OrderInstance, Boolean> toOrder : orders.entrySet())
+                orderExprs.put(toOrder.getKey(), toOrder.getKey().getExpr(mapKeys, modifier));
+
+            Where orderWhere = end?Where.FALSE:Where.TRUE; // строим условия на упорядочивание
+            for (Map.Entry<OrderInstance, Boolean> toOrder : orders.reverse().entrySet()) {
+                ObjectValue toSeek = values.get(toOrder.getKey());
+                if (toSeek != null)
+                    orderWhere = toSeek.order(orderExprs.get(toOrder.getKey()), toOrder.getValue(), orderWhere);
+            }
+
+            if (readSize == 1) { // в частном случае если есть "висячие" ключи не в фильтре и нужна одна запись ставим равно вместо >
+                Map<DataObjectInstance, DataObject> freeObjects = getFreeDataObjects();
+                orderWhere = orderWhere.and(end==!down? CompareWhere.compareValues(BaseUtils.filterKeys(mapKeys, freeObjects.keySet()), freeObjects):Where.FALSE); // seekDown==!down, чтобы и вверх и вниз не попали одни и те же ключи
+            }
+
+            return new Query<ObjectInstance, OrderInstance>(mapKeys, orderExprs, getWhere(mapKeys, modifier).and(down ? orderWhere : orderWhere.not())).
+                        executeClasses(session, down ? orders : Query.reverseOrder(orders), readSize, baseClass);
+        }
+
+        // считывает одну запись
+        private Map.Entry<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> readObjects(SQLSession session, Modifier<? extends Changes> modifier, BaseClass baseClass) throws SQLException {
+            OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> result = executeOrders(session, modifier, baseClass, 1, !end);
+            if (result.size() == 0)
+                result = new SeekObjects(values, !end).executeOrders(session, modifier, baseClass, 1, end);
+            if (result.size() > 0)
+                return result.singleEntry();
+            else
+                return null;
+        }
+
+        public Map<ObjectInstance, DataObject> readKeys(SQLSession session, Modifier<? extends Changes> modifier, BaseClass baseClass) throws SQLException {
+            Map.Entry<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> objects = readObjects(session, modifier, baseClass);
+            if (objects != null)
+                return objects.getKey();
+            else
+                return new HashMap<ObjectInstance, DataObject>();
+        }
+
+        public SeekObjects readValues(SQLSession session, Modifier<? extends Changes> modifier, BaseClass baseClass) throws SQLException {
+            Map.Entry<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> objects = readObjects(session, modifier, baseClass);
+            if (objects != null)
+                return new SeekObjects(objects.getValue(), end);
+            else
+                return new SeekObjects(false);
+        }
+    }
 }

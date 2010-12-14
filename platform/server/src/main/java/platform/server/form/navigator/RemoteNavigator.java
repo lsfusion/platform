@@ -30,6 +30,7 @@ import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.view.FormView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.serialization.SerializationType;
@@ -258,15 +259,15 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
             FormInstance<T> formInstance = new FormInstance<T>(formEntity, BL, session, securityPolicy, this, this, computer);
 
             for (GroupObjectInstance groupObject : formInstance.groups) {
-                Map<OrderInstance, Object> userSeeks = new HashMap<OrderInstance, Object>();
+                Map<OrderInstance, ObjectValue> userSeeks = new HashMap<OrderInstance, ObjectValue>();
                 for (ObjectInstance object : groupObject.objects)
                     if (object instanceof CustomObjectInstance) {
                         Integer objectID = classCache.getObject(((CustomObjectInstance) object).baseClass);
                         if (objectID != null)
-                            userSeeks.put(object, objectID);
+                            userSeeks.put(object, session.getDataObject(objectID, ObjectType.instance));
                     }
                 if (!userSeeks.isEmpty())
-                    formInstance.userGroupSeeks.put(groupObject, userSeeks);
+                    groupObject.seek(userSeeks, false);
             }
 
             return new RemoteForm<T, FormInstance<T>>(formInstance, formEntity.getRichDesign(), exportPort, this);

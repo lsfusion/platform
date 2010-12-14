@@ -5,7 +5,6 @@ import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.ConcreteObjectClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.data.expr.Expr;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.form.entity.ObjectEntity;
@@ -51,11 +50,6 @@ public class CustomObjectInstance extends ObjectInstance {
         return baseClass;
     }
 
-    public void setDefaultValue(ChangesSession session) throws SQLException {
-        changeValue(session, NullValue.instance);
-        groupTo.updated = groupTo.updated | GroupObjectInstance.UPDATED_GRIDCLASS;
-    }
-
     public AndClassSet getClassSet(Set<GroupObjectInstance> gridGroups) {
         if(objectInGrid(gridGroups))
             return getGridClass().getUpSet();
@@ -77,22 +71,22 @@ public class CustomObjectInstance extends ObjectInstance {
     ObjectValue value = NullValue.instance;
 
     public void changeValue(ChangesSession session, ObjectValue changeValue) throws SQLException {
-
-        assert changeValue!=null;
-        
         if(changeValue.equals(value)) return;
 
         value = changeValue;
 
-        updateValueClass(session);
+        updateCurrentClass(session);
+
+        updated = updated | ObjectInstance.UPDATED_OBJECT;
+        groupTo.updated = groupTo.updated | GroupObjectInstance.UPDATED_OBJECT;
     }
 
     public void refreshValueClass(ChangesSession session) throws SQLException {
         value = value.refresh(session);
-        updateValueClass(session);
+        updateCurrentClass(session);
     }
 
-    public void updateValueClass(ChangesSession session) throws SQLException {
+    public void updateCurrentClass(ChangesSession session) throws SQLException {
         // запишем класс объекта
         ConcreteCustomClass changeClass;
         if(value instanceof NullValue)
@@ -100,7 +94,7 @@ public class CustomObjectInstance extends ObjectInstance {
         else {
             ConcreteClass sessionClass = session.getCurrentClass(getDataObject());
             if(!(sessionClass instanceof ConcreteCustomClass)) {
-                changeValue(session, NullValue.instance);
+                groupTo.dropSeek(this);
                 return;
             }
             changeClass = (ConcreteCustomClass) sessionClass;
@@ -113,22 +107,10 @@ public class CustomObjectInstance extends ObjectInstance {
             currentClass = changeClass;
             updated = updated | ObjectInstance.UPDATED_CLASS;
         }
-
-        // вообще должно быть в changeValue, но так как пока в endApply отдельно не "разбирается" случай изменения класса без изменения объекта, сделано так
-        updated = updated | ObjectInstance.UPDATED_OBJECT;
-        groupTo.updated = groupTo.updated | GroupObjectInstance.UPDATED_OBJECT;
-    }
-
-    public void changeValue(ChangesSession session, Object changeValue) throws SQLException {
-        changeValue(session,session.getObjectValue(changeValue, baseClass.getType()));
     }
 
     public boolean classChanged(Collection<CustomClass> changedClasses) {
         return changedClasses.contains(gridClass);
-    }
-
-    public boolean classUpdated() {
-        return (updated & ObjectInstance.UPDATED_CLASS)!=0;
     }
 
     public boolean classUpdated(Set<GroupObjectInstance> gridGroups) {
@@ -146,19 +128,15 @@ public class CustomObjectInstance extends ObjectInstance {
         return value;
     }
 
-    protected Expr getExpr() {
-        return value.getExpr();
-    }
-
     public void changeClass(ChangesSession session, DataObject change, int classID) throws SQLException {
 
         // запишем объекты, которые надо будет сохранять
         if(classID==-1) {
             session.changeClass(change,null);
-            changeValue(session, NullValue.instance);
+            groupTo.dropSeek(this);
         } else {
             session.changeClass(change, baseClass.findConcreteClassID(classID));
-            updateValueClass(session);
+            updateCurrentClass(session);
         }
     }
 

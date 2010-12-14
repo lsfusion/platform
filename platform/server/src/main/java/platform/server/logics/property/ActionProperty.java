@@ -37,7 +37,7 @@ public abstract class ActionProperty extends ExecuteProperty {
     }
     
     protected Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
-        return getValueClass().getActionExpr().and(ClassProperty.getIsClassWhere(joinImplement, modifier, changedWhere));
+        return getValueClass().getDefaultExpr().and(ClassProperty.getIsClassWhere(joinImplement, modifier, changedWhere));
     }
 
     protected DataClass getValueClass() {

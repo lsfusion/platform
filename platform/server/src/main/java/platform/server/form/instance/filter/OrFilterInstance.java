@@ -61,7 +61,7 @@ public class OrFilterInstance extends FilterInstance {
             return apply2;
     }
 
-    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) throws SQLException {
+    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) {
         return op1.getWhere(mapKeys, modifier).or(op2.getWhere(mapKeys, modifier));
     }
 

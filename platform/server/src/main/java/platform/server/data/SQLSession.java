@@ -34,6 +34,7 @@ public abstract class SQLSession {
 
     public SQLSession(DataAdapter adapter) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         syntax = adapter;
+
         connection = adapter.startConnection();
         connection.setAutoCommit(true);
     }

@@ -70,7 +70,7 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
         return super.objectUpdated(gridGroups) || value.objectUpdated(gridGroups);
     }
 
-    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) throws SQLException {
+    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) {
         return property.getExpr(mapKeys, modifier).compare(value.getExpr(mapKeys, modifier), compare);
     }
 

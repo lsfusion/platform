@@ -12,7 +12,6 @@ import platform.server.session.Modifier;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Map;
 
 public class IsClassFilterInstance<P extends PropertyInterface> extends PropertyFilterInstance<P> {
@@ -29,7 +28,7 @@ public class IsClassFilterInstance<P extends PropertyInterface> extends Property
         isClass = form.getCustomClass(inStream.readInt());
     }
 
-    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) throws SQLException {
+    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) {
         return modifier.getSession().getIsClassWhere(property.getExpr(mapKeys, modifier), isClass, null);
     }
 }

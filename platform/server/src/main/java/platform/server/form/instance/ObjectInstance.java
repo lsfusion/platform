@@ -46,7 +46,6 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
     }
 
     public abstract ValueClass getBaseClass();
-    public abstract void setDefaultValue(ChangesSession session) throws SQLException;
 
     public abstract ObjectValue getObjectValue();
     public DataObject getDataObject() {
@@ -67,11 +66,9 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
 
     public abstract ValueClass getGridClass();
 
-    public abstract void changeValue(ChangesSession session, Object changeValue) throws SQLException;
     public abstract void changeValue(ChangesSession session, ObjectValue changeValue) throws SQLException;
 
     public abstract boolean classChanged(Collection<CustomClass> changedClasses);
-    public abstract boolean classUpdated();
 
     public abstract Type getType();
 
@@ -83,7 +80,10 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
     public boolean dataUpdated(Collection<Property> changedProps) { return false; }
     public void fillProperties(Set<Property> properties) { }
 
-    protected abstract Expr getExpr();
+    protected Expr getExpr() {
+        return getObjectValue().getExpr();
+    }
+
     public Expr getExpr(Map<ObjectInstance, ? extends Expr> classSource, Modifier<? extends Changes> modifier) {
         Expr result;
         if(classSource!=null && (result = classSource.get(this))!=null)
