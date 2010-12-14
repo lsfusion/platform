@@ -4,6 +4,7 @@ import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Order;
+import platform.interop.Compare;
 import static platform.interop.ClassViewType.HIDE;
 import static platform.interop.ClassViewType.GRID;
 import platform.interop.form.PropertyRead;
@@ -358,8 +359,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     @IdentityLazy
-    public Map<DataObjectInstance, DataObject> getFreeDataObjects() throws SQLException {
-        Map<DataObjectInstance, DataObject> freeObjects = new HashMap<DataObjectInstance, DataObject>();
+    public Collection<DataObjectInstance> getFreeDataObjects() throws SQLException {
+        Collection<DataObjectInstance> freeObjects = new ArrayList<DataObjectInstance>();
 
         Map<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
 
@@ -367,7 +368,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         getFilterWhere(mapKeys, Property.defaultModifier).enumKeys(usedContext);
         for(ObjectInstance object : objects)
             if(object instanceof DataObjectInstance && !usedContext.contains(mapKeys.get(object))) // если DataObject и нету ключей
-                freeObjects.put((DataObjectInstance) object, ((DataObjectInstance) object).getBaseClass().getDefaultObjectValue());
+                freeObjects.add((DataObjectInstance) object);
 
         return freeObjects;
     }
@@ -684,12 +685,20 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     orderWhere = toSeek.order(orderExprs.get(toOrder.getKey()), toOrder.getValue(), orderWhere);
             }
 
+            if(!down)
+                orderWhere = orderWhere.not();
+
             if (readSize == 1) { // в частном случае если есть "висячие" ключи не в фильтре и нужна одна запись ставим равно вместо >
-                Map<DataObjectInstance, DataObject> freeObjects = getFreeDataObjects();
-                orderWhere = orderWhere.and(end==!down? CompareWhere.compareValues(BaseUtils.filterKeys(mapKeys, freeObjects.keySet()), freeObjects):Where.FALSE); // seekDown==!down, чтобы и вверх и вниз не попали одни и те же ключи
+                Collection<DataObjectInstance> freeObjects = getFreeDataObjects();
+                for(DataObjectInstance freeObject : freeObjects) {
+                    ObjectValue freeValue = values.get(freeObject);
+                    if(freeValue==null || !(freeValue instanceof DataObject))
+                        freeValue = freeObject.getBaseClass().getDefaultObjectValue();
+                    orderWhere = orderWhere.and(end==!down?mapKeys.get(freeObject).compare((DataObject)freeValue, Compare.EQUALS):Where.FALSE); // seekDown==!down, чтобы и вверх и вниз не попали одни и те же ключи
+                }
             }
 
-            return new Query<ObjectInstance, OrderInstance>(mapKeys, orderExprs, getWhere(mapKeys, modifier).and(down ? orderWhere : orderWhere.not())).
+            return new Query<ObjectInstance, OrderInstance>(mapKeys, orderExprs, getWhere(mapKeys, modifier).and(orderWhere)).
                         executeClasses(session, down ? orders : Query.reverseOrder(orders), readSize, baseClass);
         }
 
