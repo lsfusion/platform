@@ -711,8 +711,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP orderSalePayGiftObligation = addSGProp(addJProp(and1, obligationUseSum, 1, 2, is(giftObligation), 2), 1);
         LP orderSalePayCoupon = addJProp(min, addSGProp(addJProp(and1, obligationUseSum, 1, 2, is(coupon), 2), 1), 1, addJProp(percent, orderSalePay, 1, couponMaxPercent), 1);
+        orderSalePayObligation = addSUProp(documentAggrPriceGroup, "Сумма серт.", Union.SUM, orderSalePayGiftObligation, orderSalePayCoupon);
 
-        orderSalePayNoObligation = addJProp(documentAggrPriceGroup, "Сумма к опл.", onlyPositive, addDUProp(orderSalePay, addSUProp(Union.SUM, orderSalePayGiftObligation, orderSalePayCoupon)), 1);
+        orderSalePayNoObligation = addJProp(documentAggrPriceGroup, "Сумма к опл.", onlyPositive, addDUProp(orderSalePay, orderSalePayObligation), 1);
         orderArticleSaleSumCoeff = addPGProp(documentPriceGroup, "orderArticleSaleSumCoeff", false, -1, "Сумма со скидкой", orderArticleSaleSumWithDiscount, orderSalePayNoObligation, 1);
 
         LP clientSaleSum = addSGProp(orderSalePayNoObligation, orderContragent, 1);
@@ -847,6 +848,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     public LP xorActionArticle;
     LP inAction;
+    LP orderSalePayObligation;
     LP orderSalePayNoObligation;
     public LP orderArticleSaleSumCoeff;
     public LP clientInitialSum;
@@ -1547,18 +1549,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addPropertyDraw(objDateFrom, objectValue);
             addPropertyDraw(objDateTo, objectValue);
             addPropertyDraw(saleExport, objShop, objDateFrom, objDateTo);
-
-            ObjectEntity objDate = addSingleGroupObject(DateClass.instance, objectValue);
-            // addObjectActions(this, objDate);
-
-            addPropertyDraw(objDate, objShop, baseGroup);
-            //addPropertyDraw(objShop, objDate, publicGroup);
-
-            addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(impSumBank, objDate, objShop)),
-                    new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(impSumCash, objDate, objShop)),
-                            new NotNullFilterEntity(addPropertyObject(impSumCard, objDate, objShop)))));
-            //addFixedFilter(new NotNullFilterEntity(getPropertyObject()));
-            //addFixedFilter(new CompareFilterEntity(addPropertyObject(shop, objDate), Compare.EQUALS, objShop));
         }
     }
 
@@ -1567,7 +1557,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         @Override
         protected Object[] getDocumentProps() {
             return new Object[]{nameContragentImpl, phoneContragentImpl, bornContragentImpl, addressContragentImpl, initialSumContragentImpl, orderClientSum,
-                    orderSalePay, orderSaleDiscountSum, orderSalePayNoObligation, orderSalePayCash, orderSalePayCard, orderSaleToDo, orderSaleToDoSum, orderBirthDay, orderNoDiscount, payWithCard, printOrderCheck};
+                    orderSalePay, orderSaleDiscountSum, orderSalePayObligation, orderSalePayNoObligation, orderSalePayCash, orderSalePayCard, orderSaleToDo, orderSaleToDoSum, orderBirthDay, orderNoDiscount, payWithCard, printOrderCheck};
         }
 
         @Override
