@@ -3,12 +3,17 @@ package platform.client.form.queries;
 import platform.client.ClientButton;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.logics.*;
+import platform.client.logics.classes.ClientInsensitiveStringClass;
+import platform.client.logics.classes.ClientStringClass;
 import platform.client.logics.filter.ClientPropertyFilter;
 import platform.interop.Compare;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -30,6 +35,7 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
 
     private final JButton delButton;
     private JComboBox propertyView;
+    private JComboBox compareView;
 
     public QueryConditionView(ClientPropertyFilter ifilter, GroupObjectLogicsSupplier logicsSupplier) {
 
@@ -43,9 +49,13 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
         propertyView = new QueryConditionComboBox(sources);
         add(propertyView);
 
+        compareView = new QueryConditionComboBox(Compare.values());
+        add(compareView);
+
         if (filter.property != null) {
-            propertyView.setSelectedItem(filter.property);
+            setSelectedPropertyDraw(filter.property);
         }
+        filter.compare = (Compare) compareView.getSelectedItem();
 
         propertyView.addItemListener(new ItemListener() {
 
@@ -56,11 +66,6 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
                 }
             }
         });
-
-        JComboBox compareView = new QueryConditionComboBox(Compare.values());
-        add(compareView);
-
-        filter.compare = (Compare) compareView.getSelectedItem();
 
         compareView.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
@@ -159,9 +164,19 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
         valueView.startEditing();
     }
 
+    public static Map<Class, Compare> defaultCompares = new HashMap<Class, Compare>(){{
+        put(ClientStringClass.class, Compare.START_WITH);
+        put(ClientInsensitiveStringClass.class, Compare.START_WITH);
+    }};
+
     public void setSelectedPropertyDraw(ClientPropertyDraw propertyDraw) {
         if (propertyDraw != null) {
             propertyView.setSelectedItem(propertyDraw);
+            Compare compareToSet = defaultCompares.get(propertyDraw.baseType.getClass());
+            if (compareToSet == null) {
+                compareToSet = Compare.EQUALS;
+            }
+            compareView.setSelectedItem(compareToSet);
         }
     }
 }

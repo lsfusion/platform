@@ -41,6 +41,7 @@ public class ClientTypeSerializer {
         if (type == Data.LOGICAL) return ClientLogicalClass.instance;
         if (type == Data.DATE) return ClientDateClass.instance;
         if (type == Data.STRING) return new ClientStringClass(inStream);
+        if (type == Data.INSENSITIVESTRING) return new ClientInsensitiveStringClass(inStream);
         if (type == Data.IMAGE) return ClientImageClass.instance;
         if (type == Data.WORD) return ClientWordClass.instance;
         if (type == Data.EXCEL) return ClientExcelClass.instance;

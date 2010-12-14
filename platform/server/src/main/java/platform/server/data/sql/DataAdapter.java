@@ -232,4 +232,8 @@ public abstract class DataAdapter implements SQLSyntax, ConnectionPool {
     public String typeConvertSuffix(Type oldType, Type newType, String name){
         return "";
     }
+
+    public String getInsensitiveLike() {
+        return "LIKE";
+    }
 }

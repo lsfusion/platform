@@ -90,8 +90,10 @@ public abstract class BaseExpr extends Expr {
                     return GreaterWhere.create((BaseExpr)expr,this).or(EqualsWhere.create(this,(BaseExpr)expr));
                 case NOT_EQUALS: // оба заданы и не равно
                     return getWhere().and(expr.getWhere()).and(EqualsWhere.create(this,(BaseExpr)expr).not());
+                case START_WITH:
+                    return LikeWhere.create(this, (BaseExpr)expr, true);
                 case LIKE:
-                    return LikeWhere.create(this, (BaseExpr)expr); 
+                    return LikeWhere.create(this, (BaseExpr)expr, false);
             }
             throw new RuntimeException("should not be");
         } else {

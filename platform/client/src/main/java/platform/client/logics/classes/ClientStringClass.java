@@ -18,7 +18,7 @@ public class ClientStringClass extends ClientDataClass {
 
     public final int length;
 
-    private String sID;
+    protected String sID;
 
     @Override
     public String getSID() {

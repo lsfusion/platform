@@ -13,6 +13,7 @@ import java.util.Map;
 
 public class StringConcatenateProperty extends FormulaProperty<StringConcatenateProperty.Interface> {
     private final String separator;
+    private final boolean caseSensitive;
 
     public static class Interface extends PropertyInterface {
         public Interface(int ID) {
@@ -28,8 +29,13 @@ public class StringConcatenateProperty extends FormulaProperty<StringConcatenate
     }
 
     public StringConcatenateProperty(String sID, String caption, int intNum, String separator) {
+        this(sID, caption, intNum, separator, true);
+    }
+
+    public StringConcatenateProperty(String sID, String caption, int intNum, String separator, boolean caseSensitive) {
         super(sID, caption, getInterfaces(intNum));
         this.separator = separator;
+        this.caseSensitive = caseSensitive;
     }
 
     public Interface getInterface(int i) {
@@ -43,6 +49,6 @@ public class StringConcatenateProperty extends FormulaProperty<StringConcatenate
         List<Expr> exprs = new ArrayList<Expr>();
         for(int i=0;i<interfaces.size();i++) // assertion что порядок сохранился
             exprs.add(joinImplement.get(getInterface(i)));
-        return StringConcatenateExpr.create(exprs, separator);
+        return StringConcatenateExpr.create(exprs, separator, caseSensitive);
     }
 }

@@ -122,4 +122,9 @@ public class PostgreDataAdapter extends DataAdapter {
     public String typeConvertSuffix(Type oldType, Type newType, String name) {
         return "USING " + name + "::" + newType.getDB(this);
     }
+
+    @Override
+    public String getInsensitiveLike() {
+        return "ILIKE";
+    }
 }

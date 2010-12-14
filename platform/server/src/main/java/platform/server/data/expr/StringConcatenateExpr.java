@@ -4,6 +4,7 @@ import platform.base.BaseUtils;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.ConcreteClass;
+import platform.server.classes.InsensitiveStringClass;
 import platform.server.classes.StringClass;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.ExprCaseList;
@@ -25,16 +26,18 @@ public class StringConcatenateExpr extends StaticClassExpr {
 
     private List<BaseExpr> exprs;
     private final String separator;
+    private final boolean caseSensitive;
 
-    public StringConcatenateExpr(List<BaseExpr> exprs, String separator) {
+    public StringConcatenateExpr(List<BaseExpr> exprs, String separator, boolean caseSensitive) {
         this.exprs = exprs;
         this.separator = separator;
+        this.caseSensitive = caseSensitive;
     }
 
-    public static Expr create(List<? extends Expr> exprs, String separator) {
+    public static Expr create(List<? extends Expr> exprs, String separator, boolean caseSensitive) {
         ExprCaseList result = new ExprCaseList();
         for(MapCase<Integer> mapCase : CaseExpr.pullCases(BaseUtils.toMap(exprs)))
-            result.add(mapCase.where, BaseExpr.create(new StringConcatenateExpr(BaseUtils.toList(mapCase.data), separator)));
+            result.add(mapCase.where, BaseExpr.create(new StringConcatenateExpr(BaseUtils.toList(mapCase.data), separator, caseSensitive)));
         return result.getExpr();
     }
 
@@ -48,7 +51,7 @@ public class StringConcatenateExpr extends StaticClassExpr {
     }
 
     public BaseExpr translateOuter(MapTranslate translator) {
-        return new StringConcatenateExpr(translator.translateDirect(exprs), separator);
+        return new StringConcatenateExpr(translator.translateDirect(exprs), separator, caseSensitive);
     }
 
     public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
@@ -60,7 +63,7 @@ public class StringConcatenateExpr extends StaticClassExpr {
         int length = 0;
         for(BaseExpr expr : exprs)
             length += expr.getType(keyType).getBinaryLength(true);
-        return StringClass.get(length);
+        return caseSensitive ? StringClass.get(length) : InsensitiveStringClass.get(length);
     }
 
     public Where calculateWhere() {
@@ -68,7 +71,7 @@ public class StringConcatenateExpr extends StaticClassExpr {
     }
 
     public Expr translateQuery(QueryTranslator translator) {
-        return create(translator.translate(exprs), separator);
+        return create(translator.translate(exprs), separator, caseSensitive);
     }
 
     public boolean twins(AbstractSourceJoin obj) {

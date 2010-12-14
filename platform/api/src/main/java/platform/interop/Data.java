@@ -20,4 +20,5 @@ public class Data {
     public final static byte EXCEL = 15;
     public final static byte TEXT = 16;
     public final static byte YEAR = 17;
+    public final static byte INSENSITIVESTRING = 18;
 }

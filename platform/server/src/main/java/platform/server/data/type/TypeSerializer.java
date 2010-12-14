@@ -44,6 +44,7 @@ public class TypeSerializer {
         if (type == Data.LOGICAL) return LogicalClass.instance;
         if (type == Data.DATE) return DateClass.instance;
         if (type == Data.STRING) return StringClass.get(inStream.readInt());
+        if (type == Data.INSENSITIVESTRING) return InsensitiveStringClass.get(inStream.readInt());
         if (type == Data.IMAGE) return ImageClass.instance;
         if (type == Data.WORD) return WordClass.instance;
         if (type == Data.EXCEL) return ExcelClass.instance;
