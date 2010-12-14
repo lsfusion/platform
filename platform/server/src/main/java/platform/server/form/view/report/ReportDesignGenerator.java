@@ -105,7 +105,9 @@ public class ReportDesignGenerator {
 
             boolean hasColumnGroupProperty = false;
             for (PropertyDrawView property : formView.properties) {
-                if (group.equals(property.entity.getToDraw(formView.entity))) {
+                GroupObjectEntity applyGroup = property.entity.propertyObject.getApplyObject(formView.entity.groups);
+                GroupObjectEntity drawGroup = property.entity.getToDraw(formView.entity);
+                if (group.equals(drawGroup) && (applyGroup == null || applyGroup == drawGroup)) {
                     ReportDrawField reportField = property.getReportDrawField();
                     if (reportField != null && (highlightProp == null || highlightProp.property != property.entity.propertyObject.property)) {
                         drawFields.add(reportField);

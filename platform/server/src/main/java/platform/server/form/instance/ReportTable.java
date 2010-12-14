@@ -64,7 +64,7 @@ public class ReportTable extends SessionTable<ReportTable> {
         }
 
         for(PropertyDrawInstance property : props) {
-            if (groups.contains(property.propertyObject.getApplyObject()) && property.columnGroupObjects.isEmpty()) {
+            if (property.columnGroupObjects.isEmpty()) {
                 PropertyField propField = new PropertyField("property" + property.getsID(), property.propertyObject.getType());
                 objectsToFields.put(new Pair<Object, PropertyType>(property, PropertyType.PLAIN), propField);
                 properties.add(propField);

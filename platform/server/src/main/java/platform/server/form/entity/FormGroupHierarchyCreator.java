@@ -46,14 +46,16 @@ public class FormGroupHierarchyCreator {
 
     private void addDependenciesToGraph(Map<GroupObjectEntity, Set<GroupObjectEntity>> graph) {
         for (PropertyDrawEntity<?> property : form.propertyDraws) {
-            Set<GroupObjectEntity> propObjects = getGroupsByObjects(property.propertyObject.getObjectInstances());
-            // Для свойств с группами в колонках не добавляем зависимости от групп, идущих в колонки 
-            propObjects.removeAll(property.columnGroupObjects); 
-            addDependencies(graph, propObjects, true);
+            if (property.getToDraw(form) == property.propertyObject.getApplyObject(form.groups)) {
+                Set<GroupObjectEntity> propObjects = getGroupsByObjects(property.propertyObject.getObjectInstances());
+                // Для свойств с группами в колонках не добавляем зависимости от групп, идущих в колонки
+                propObjects.removeAll(property.columnGroupObjects);
+                addDependencies(graph, propObjects, true);
 
-            if (property.propertyCaption != null) {
-                Set<GroupObjectEntity> captionObjects = getGroupsByObjects(property.propertyCaption.getObjectInstances());
-                addDependencies(graph, captionObjects, true);
+                if (property.propertyCaption != null) {
+                    Set<GroupObjectEntity> captionObjects = getGroupsByObjects(property.propertyCaption.getObjectInstances());
+                    addDependencies(graph, captionObjects, true);
+                }
             }
         }
 

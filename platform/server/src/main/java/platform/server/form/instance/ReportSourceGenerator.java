@@ -123,8 +123,8 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
             }
         }
 
-        for(PropertyDrawInstance<?> property : form.properties) {
-            if (groups.contains(property.propertyObject.getApplyObject()) && property.columnGroupObjects.isEmpty()) { // todo [dale]: getApplyObject???
+        for(PropertyDrawInstance<?> property : filterProperties(groups)) {
+            if (property.columnGroupObjects.isEmpty()) {
                 PropertyField propField = table.objectsToFields.get(new Pair<Object, PropertyType>(property, PropertyType.PLAIN));
                 newQuery.properties.put(propField, property.propertyObject.getExpr(instanceToExpr, form));
 
@@ -153,49 +153,47 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
             }
             groups.addAll(localGroups);
 
-            ReportTable table = new ReportTable("report_" + sid, groups, form.properties);
+            ReportTable table = new ReportTable("report_" + sid, groups, filterProperties(groups));
             form.session.createTemporaryTable(table);
-            Query<KeyField, PropertyField> query = createQuery(groups, table, parentTable);
-            ReportTable resTable = table.writeRows(form.session, query, form.BL.baseClass);
+            try {
+                Query<KeyField, PropertyField> query = createQuery(groups, table, parentTable);
+                ReportTable resTable = table.writeRows(form.session, query, form.BL.baseClass);
 
-            Query<KeyField, PropertyField> resultQuery = new Query<KeyField, PropertyField>(resTable);
-            Join<PropertyField> tableJoin = resTable.join(resultQuery.mapKeys);
-            resultQuery.properties.putAll(tableJoin.getExprs());
-            resultQuery.and(tableJoin.getWhere());
-            OrderedMap<Map<KeyField, Object>, Map<PropertyField, Object>> resultData =
-                    resultQuery.execute(form.session, BaseUtils.innerJoin(resTable.orders, orders), 0);
+                Query<KeyField, PropertyField> resultQuery = new Query<KeyField, PropertyField>(resTable);
+                Join<PropertyField> tableJoin = resTable.join(resultQuery.mapKeys);
+                resultQuery.properties.putAll(tableJoin.getExprs());
+                resultQuery.and(tableJoin.getWhere());
+                OrderedMap<Map<KeyField, Object>, Map<PropertyField, Object>> resultData =
+                        resultQuery.execute(form.session, BaseUtils.innerJoin(resTable.orders, orders), 0);
 
-            Map<ObjectInstance, KeyField> keyFields = BaseUtils.reverse(resTable.mapKeys);
+                Map<ObjectInstance, KeyField> keyFields = BaseUtils.reverse(resTable.mapKeys);
 
-            List<ObjectInstance> keyList = GroupObjectInstance.getObjects(groups);
+                List<ObjectInstance> keyList = GroupObjectInstance.getObjects(groups);
 
-            List<Pair<String, PropertyReadInstance>> propertyList = new ArrayList<Pair<String, PropertyReadInstance>>();
-            for(PropertyDrawInstance property : form.properties) {
-                if (groups.contains(property.toDraw)) {
+                List<Pair<String, PropertyReadInstance>> propertyList = new ArrayList<Pair<String, PropertyReadInstance>>();
+                for(PropertyDrawInstance property : filterProperties(groups)) {
                     propertyList.add(new Pair<String, PropertyReadInstance>(property.getsID(), property));
                     if (property.propertyCaption != null) {
                         propertyList.add(new Pair<String, PropertyReadInstance>(property.getsID(), property.caption));
                     }
                 }
-            }
 
-            for (GroupObjectInstance group : groups) {
-                if (group.propertyHighlight != null) {
-                    propertyList.add(new Pair<String, PropertyReadInstance>(group.propertyHighlight.property.sID, group));
-                }
-            }
-            
-            ReportData data = new ReportData(keyList, propertyList);
-
-            for (Map.Entry<Map<KeyField, Object>, Map<PropertyField, Object>> row : resultData.entrySet()) {
-                List<Object> keyValues = new ArrayList<Object>();
-                for (ObjectInstance object : keyList) {
-                    keyValues.add(row.getKey().get(keyFields.get(object)));
+                for (GroupObjectInstance group : groups) {
+                    if (group.propertyHighlight != null) {
+                        propertyList.add(new Pair<String, PropertyReadInstance>(group.propertyHighlight.property.sID, group));
+                    }
                 }
 
-                List<Object> propertyValues = new ArrayList<Object>();
-                for(PropertyDrawInstance property : form.properties)
-                    if (groups.contains(property.toDraw)) {          // todo [dale]: разобраться c toDraw/getApplyObject (при генерации дизайнов тоже)
+                ReportData data = new ReportData(keyList, propertyList);
+
+                for (Map.Entry<Map<KeyField, Object>, Map<PropertyField, Object>> row : resultData.entrySet()) {
+                    List<Object> keyValues = new ArrayList<Object>();
+                    for (ObjectInstance object : keyList) {
+                        keyValues.add(row.getKey().get(keyFields.get(object)));
+                    }
+
+                    List<Object> propertyValues = new ArrayList<Object>();
+                    for(PropertyDrawInstance property : filterProperties(groups)) {
                         PropertyField field = resTable.objectsToFields.get(new Pair<Object, PropertyType>(property, PropertyType.PLAIN));
                         propertyValues.add(row.getValue().get(field));
                         if (property.propertyCaption != null) {
@@ -204,20 +202,34 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                         }
                     }
 
-                for (GroupObjectInstance group : groups) {
-                    if (group.propertyHighlight != null) {
-                        PropertyField field = resTable.objectsToFields.get(new Pair<Object, PropertyType>(group.propertyHighlight, PropertyType.HIGHLIGHT));
-                        propertyValues.add(row.getValue().get(field));
+                    for (GroupObjectInstance group : groups) {
+                        if (group.propertyHighlight != null) {
+                            PropertyField field = resTable.objectsToFields.get(new Pair<Object, PropertyType>(group.propertyHighlight, PropertyType.HIGHLIGHT));
+                            propertyValues.add(row.getValue().get(field));
+                        }
                     }
+
+                    data.add(keyValues, propertyValues);
                 }
 
-                data.add(keyValues, propertyValues);
-            }
-            sources.put(sid, data);
+                sources.put(sid, data);
 
-            iterateChildReports(hierarchy.getChildNodes(node), groups, resTable);
-            form.session.dropTemporaryTable(table);
+                iterateChildReports(hierarchy.getChildNodes(node), groups, resTable);
+            } finally {
+                form.session.dropTemporaryTable(table);
+            }
         }
+    }
+
+    private List<PropertyDrawInstance> filterProperties(Collection<GroupObjectInstance> filterGroups) {
+        List<PropertyDrawInstance> resultList = new ArrayList<PropertyDrawInstance>();
+        for (PropertyDrawInstance property : form.properties) {
+            GroupObjectInstance applyGroup = property.propertyObject.getApplyObject();
+            if ((applyGroup == null || property.toDraw == applyGroup) && filterGroups.contains(property.toDraw)) {
+                resultList.add(property);
+            }
+        }
+        return resultList;
     }
 
     public ColumnGroupCaptionsData getColumnGroupCaptions() throws SQLException {

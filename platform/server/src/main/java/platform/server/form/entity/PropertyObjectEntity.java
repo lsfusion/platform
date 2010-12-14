@@ -34,6 +34,19 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyI
         return instanceFactory.getInstance(this);
     }
 
+    public GroupObjectEntity getApplyObject(List<GroupObjectEntity> groupList) {
+        GroupObjectEntity applyObject = null;
+        int maxIndex = -1;
+        for (ObjectEntity object : getObjectInstances()) {
+            int index = groupList.indexOf(object.groupTo);
+            if (index > maxIndex) {
+                applyObject = object.groupTo;
+                maxIndex = index;
+            }
+        }
+        return applyObject;
+    }
+
     public Collection<ObjectEntity> getObjectInstances() {
         Collection<ObjectEntity> result = new ArrayList<ObjectEntity>();
         for(PropertyObjectInterfaceEntity object : mapping.values())
