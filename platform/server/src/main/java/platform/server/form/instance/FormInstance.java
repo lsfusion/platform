@@ -505,9 +505,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
     public List<ClientAction> changeObject(ObjectInstance object, ObjectValue value, RemoteForm form) throws SQLException {
 
-        if(entity.autoActions.size() > 0) // дебилизм конечно но пока так
-            object.changeValue(session, value);
-        else
+        if(entity.autoActions.size() > 0) { // дебилизм конечно но пока так
+            if(object instanceof DataObjectInstance && !(value instanceof DataObject))
+                object.changeValue(session, ((DataObjectInstance)object).getBaseClass().getDefaultObjectValue());
+            else
+                object.changeValue(session, value);
+        } else
             object.groupTo.addSeek(object, value, false);
 
         // запускаем все Action'ы, которые следят за этим объектом
