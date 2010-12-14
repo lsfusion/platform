@@ -522,6 +522,7 @@ public class ClientFormController {
         }
         
         if (group.parent != null || !objectValue.equals(controllers.get(group).getCurrentObject())) {
+            controllers.get(group).setCurrentGroupObject(objectValue);
             remoteForm.changeGroupObject(group.getID(), objectValue.serialize(group));
 
             applyRemoteChanges();
