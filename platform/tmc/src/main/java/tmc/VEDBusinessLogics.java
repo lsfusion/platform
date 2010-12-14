@@ -23,10 +23,7 @@ import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.filter.CompareFilterInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;
-import platform.server.form.view.ContainerView;
-import platform.server.form.view.DefaultFormView;
-import platform.server.form.view.ObjectView;
-import platform.server.form.view.PropertyDrawView;
+import platform.server.form.view.*;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -475,21 +472,21 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addJProp(baseGroup, "Формат", name, shopFormat, 1);
 
         // новые свойства товара
-        LP fullName = addDProp(priceGroup, "fullName", "Полное наименование", StringClass.get(100), article);
-        LP gigiena = addDProp(priceGroup, "gigiena", "Гигиеническое разрешение", StringClass.get(50), article);
-        LP articleStatus = addDProp(priceGroup, "articleStatus", "Собственный/несобственный", LogicalClass.instance, article);
+        LP fullName = addDProp(artExtraGroup, "fullName", "Полное наименование", StringClass.get(100), article);
+        LP gigiena = addDProp(artExtraGroup, "gigiena", "Гигиеническое разрешение", StringClass.get(50), article);
+        LP articleStatus = addDProp(artExtraGroup, "articleStatus", "Собственный/несобственный", LogicalClass.instance, article);
 
         LP articleBrend = addDProp("articleBrend", "Бренд товара", brend, article);
-        addJProp(priceGroup, "Бренд товара", name, articleBrend, 1);
+        addJProp(artExtraGroup, "Бренд товара", name, articleBrend, 1);
 
         LP articleCountry = addDProp("articleCountry", "Страна товара", country, article);
-        addJProp(priceGroup, "Страна товара", name, articleCountry, 1);
+        addJProp(artExtraGroup, "Страна товара", name, articleCountry, 1);
 
         LP articleLine = addDProp("articleLine", "Линия товара", line, article);
-        addJProp(priceGroup, "Линия товара", name, articleLine, 1);
+        addJProp(artExtraGroup, "Линия товара", name, articleLine, 1);
 
         LP articleGender = addDProp("articleGender", "Пол", gender, article);
-        addJProp(priceGroup, "Пол", name, articleGender, 1);
+        addJProp(artExtraGroup, "Пол", name, articleGender, 1);
         //**************************************************************************************************************
         currentRRP = addDProp(priceGroup, "currentRRP", "RRP", DoubleClass.instance, article);
         LP currentPriceRate = addDProp(priceGroup, "currentPriceRate", "Курс", DoubleClass.instance);
@@ -917,6 +914,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     public AbstractGroup cashRegGroup;
     public AbstractGroup cashRegOperGroup, cashRegAdminGroup;
     AbstractGroup couponGroup;
+    AbstractGroup artExtraGroup;
 
     protected void initGroups() {
         documentGroup = new AbstractGroup("Параметры документа");
@@ -957,6 +955,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         couponGroup = new AbstractGroup("Параметры купона");
         publicGroup.add(couponGroup);
+
+        artExtraGroup = new AbstractGroup("Доп. атрибуты товара");
+        publicGroup.add(artExtraGroup);
     }
 
     protected void initTables() {
@@ -2188,7 +2189,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             ObjectEntity objSupplier = addSingleGroupObject(supplier, publicGroup, true);
             addObjectActions(this, objSupplier);
 
-            ObjectEntity objArt = addSingleGroupObject(article, publicGroup, true);
+            ObjectEntity objArt = addSingleGroupObject(article, baseGroup, true, priceGroup, logisticsGroup);
             addObjectActions(this, objArt);
 
             addPropertyDraw(objSupplier, objArt, publicGroup, true);
@@ -2229,7 +2230,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             ObjectEntity objFormat = addSingleGroupObject(format, publicGroup, true);
             addObjectActions(this, objFormat);
 
-            ObjectEntity objArt = addSingleGroupObject(article, publicGroup, true);
+            ObjectEntity objArt = addSingleGroupObject(article, baseGroup, true);
 
             addPropertyDraw(objFormat, objArt, publicGroup, true);
 
@@ -2312,7 +2313,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addObjectActions(this, objAction);
 
             ObjectEntity objArtGroup = addSingleGroupObject(articleGroup, publicGroup, true);
-            ObjectEntity objArt = addSingleGroupObject(article, publicGroup, true);
+            ObjectEntity objArt = addSingleGroupObject(article, baseGroup, true, priceGroup);
 
             if (noArticleGroups)
                 objArtGroup.groupTo.initClassView = ClassViewType.HIDE;
