@@ -7,13 +7,13 @@ import org.aspectj.lang.annotation.Aspect;
 import java.util.logging.Logger;
 
 @Aspect
-public class RemoteObjectLogger {
-    private final static Logger logger = Logger.getLogger(RemoteObjectLogger.class.getName());
+public class RemoteObjectLoggerAspect {
+    private final static Logger logger = Logger.getLogger(RemoteObjectLoggerAspect.class.getName());
 
-    @Around("execution(* platform.interop.RemoteLogicsInterface.*(..))" +
+    @Around("(execution(* platform.interop.RemoteLogicsInterface.*(..))" +
             " || execution(* platform.interop.form.RemoteFormInterface.*(..))" +
             " || execution(* platform.interop.form.RemoteDialogInterface.*(..))" +
-            " || execution(* platform.interop.navigator.RemoteNavigatorInterface.*(..))" +
+            " || execution(* platform.interop.navigator.RemoteNavigatorInterface.*(..)))" +
             " && !execution(* *.ping(..))")
     public Object executeRemoteMethod(ProceedingJoinPoint thisJoinPoint) throws Throwable {
         long startTime = System.currentTimeMillis();
