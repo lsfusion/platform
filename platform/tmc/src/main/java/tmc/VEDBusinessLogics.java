@@ -531,8 +531,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         // новые свойства для подарочных сертификатов
         LP certToSaled = addDProp(baseGroup, "certToSaled", "Продан заранее", LogicalClass.instance, obligation);
         LP sverka = addJProp(equals2, 1, addJProp(and1, 1, certToSaled, 1), 2);
-
-        issueObligation = addCUProp(documentPriceGroup, "Выдать", sverka, saleCertGiftObligation, addDProp("orderSaleCoupon", "Выдать", LogicalClass.instance, commitSaleCheckArticleRetail, coupon));
+        LP issueCoupon = addDProp("orderSaleCoupon", "Выдать купон", LogicalClass.instance, commitSaleCheckArticleRetail, coupon);
+        issueObligation = addCUProp(documentPriceGroup, "Выдать", sverka, saleCertGiftObligation, issueCoupon);
 
         LP obligationIssued = addCGProp(null, "obligationIssued", true, "Выд. документ", addJProp(and1, 1, issueObligation, 1, 2), issueObligation, 2);
 
@@ -779,7 +779,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP couponDocToIssueSum = addDCProp("couponDocToIssueSum", "Сумма купона к выд.", addIfProp(addMGProp(addJProp(and1, couponIssueSum, 3, addJProp(greater2, orderSaleDocPrice, 1, 2, 3), 1, 2, 3), 1, 2), false, inCoupon, 2), true, 1, 2, articleQuantity, 1, 2, commitSaleCheckArticleRetail); // здесь конечно хорошо было бы orderSaleDocPrice вытащить за скобки, но будет висячий ключ поэтому приходится пока немого извращаться
 
         couponToIssueQuantity = addDUProp("К выдаче", addSGProp(articleQuantity, 1, couponDocToIssueSum, 1, 2),
-                addSGProp(addJProp(and1, addCProp(DoubleClass.instance, 1), addIfProp(issueObligation, false, is(coupon), 2), 1, 2), 1, obligationSum, 2));
+                addSGProp(addJProp(and1, addCProp(DoubleClass.instance, 1), issueCoupon, 1, 2), 1, obligationSum, 2));
         couponToIssueConstraint = addJProp("Кол-во выданных купонов не соответствует требуемому", diff2, couponToIssueQuantity, 1, 2, vzero);
         addConstraint(couponToIssueConstraint, false);
 
