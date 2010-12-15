@@ -529,7 +529,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         // продажа облигаций
         //**************************************************************************************************************
         // новые свойства для подарочных сертификатов
-        LP certToSaled = addDProp(baseGroup, "certToSaled", "Продан заранее", LogicalClass.instance, giftObligation);
+        LP certToSaled = addDProp(baseGroup, "certToSaled", "Продан заранее", LogicalClass.instance, obligation);
         LP sverka = addJProp(equals2, 1, addJProp(and1, 1, certToSaled, 1), 2);
 
         issueObligation = addCUProp(documentPriceGroup, "Выдать", sverka, saleCertGiftObligation, addDProp("orderSaleCoupon", "Выдать", LogicalClass.instance, commitSaleCheckArticleRetail, coupon));
@@ -706,8 +706,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP orderSaleObligationCanBeUsed = addJProp(andNot1, orderSaleObligationAllowed, 1, 2, obligationDocument, 2);
         orderSaleObligationCanNotBeUsed = addJProp(and(false, true), is(commitSaleCheckArticleRetail), 1, is(obligation), 2, orderSaleObligationCanBeUsed, 1, 2);
 
+        LP orderMaxCoupon = addDCProp("orderMaxCoupon", "Макс. процент по купонам", couponMaxPercent, is(orderSaleArticleRetail), 1);
+
         LP orderSalePayGiftObligation = addSGProp(addJProp(and1, obligationUseSum, 1, 2, is(giftObligation), 2), 1);
-        LP orderSalePayCoupon = addJProp(min, addSGProp(addJProp(and1, obligationUseSum, 1, 2, is(coupon), 2), 1), 1, addJProp(percent, orderSalePay, 1, couponMaxPercent), 1);
+        LP orderSalePayCoupon = addJProp(min, addSGProp(addJProp(and1, obligationUseSum, 1, 2, is(coupon), 2), 1), 1, addJProp(percent, orderSalePay, 1, orderMaxCoupon, 1), 1);
         orderSalePayObligation = addSUProp(documentAggrPriceGroup, "Сумма серт.", Union.SUM, orderSalePayGiftObligation, orderSalePayCoupon);
 
         orderSalePayNoObligation = addJProp(documentAggrPriceGroup, "Сумма к опл.", onlyPositive, addDUProp(orderSalePay, orderSalePayObligation), 1);
