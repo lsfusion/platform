@@ -469,6 +469,12 @@ public abstract class GridTable extends ClientFormTable
 
     public boolean editCellAt(int row, int column, EventObject editEvent) {
         multyChange = editEvent instanceof KeyEvent && ((KeyEvent) editEvent).getKeyCode() == KeyEvent.VK_F12;
+
+        ClientAbstractCellEditor cellEditor = getAbstractCellEditor(row, column);
+        if (cellEditor != null) {
+            cellEditor.editPerformed  = false;
+        }
+
         if (super.editCellAt(row, column, editEvent)) {
             //нужно для редактирования нефокусных ячеек
             isInternalNavigating = true;
@@ -476,17 +482,20 @@ public abstract class GridTable extends ClientFormTable
             isInternalNavigating = false;
             SwingUtils.stopSingleAction(logicsSupplier.getGroupObject().getActionID(), false);
             return true;
-        } else if (editEvent instanceof KeyEvent) {
-            TableCellEditor editor = getCellEditor(row, column);
-            if (editor instanceof ClientAbstractCellEditor) {
-                ClientAbstractCellEditor cellEditor = (ClientAbstractCellEditor) editor;
-                if (cellEditor.isCellEditable(editEvent) && !cellEditor.editPerformed) {
-                    gridView.quickEditFilter();
-                }
+        } else if (editEvent instanceof KeyEvent && cellEditor != null) {
+            if (!cellEditor.editPerformed && cellEditor.isCellEditable(editEvent)) {
+                gridView.quickEditFilter();
             }
         }
 
         return false;
+    }
+
+    public ClientAbstractCellEditor getAbstractCellEditor(int row, int column) {
+        TableCellEditor editor = getCellEditor(row, column);
+        return editor instanceof ClientAbstractCellEditor
+               ? (ClientAbstractCellEditor) editor
+               : null;
     }
 
     private void moveToFocusableCellIfNeeded() {

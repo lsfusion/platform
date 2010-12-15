@@ -73,7 +73,6 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
                                                  boolean isSelected,
                                                  int row,
                                                  int column) {
-        editPerformed = false;
 
         // лучше сбросить editEvent, иначе может происходить "залипание", если по какой-то причине не будет вызван isCellEditable
         EventObject editEvent = this.editEvent;
