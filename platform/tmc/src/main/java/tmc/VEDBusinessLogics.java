@@ -769,7 +769,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         barcodeNotFoundMessage = addJProp(true, "", and(false, true), addMAProp("Штрих-код не найден!", "Ошибка"), is(StringClass.get(13)), 1, barcodeToObject, 1);
 
         LP xorCouponArticleGroup = addDProp(couponGroup, "xorCouponArticleGroup", "Вкл.", LogicalClass.instance, articleGroup);
-        LP xorCouponArticle = addDProp(couponGroup, "xorCouponArticle", "Вкл./искл.", LogicalClass.instance, article);
+        xorCouponArticle = addDProp(couponGroup, "xorCouponArticle", "Вкл./искл.", LogicalClass.instance, article);
         inCoupon = addXorUProp(couponGroup, "inCoupon", true, "Выд. купон", xorCouponArticle, addJProp(xorCouponArticleGroup, articleToGroup, 1));
 
         couponIssueSum = addDProp(couponGroup, "couponIssueSum", "Сумма купона", DoubleClass.instance, DoubleClass.instance);
@@ -813,6 +813,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP couponToIssueConstraint;
     LP couponIssueSum;
     LP couponToIssueQuantity;
+    LP xorCouponArticle;
     LP inCoupon;
     public LP issueObligation;
     public LP obligationSum;
@@ -2558,11 +2559,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private class CouponArticleFormEntity extends FormEntity {
+        private ObjectEntity objArt;
+
         protected CouponArticleFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Товары по купонам");
 
             ObjectEntity objArtGroup = addSingleGroupObject(articleGroup, baseGroup, true, couponGroup, true);
-            ObjectEntity objArt = addSingleGroupObject(article, baseGroup, true, couponGroup, true);
+            objArt = addSingleGroupObject(article, baseGroup, true, couponGroup, true);
 
             if (noArticleGroups)
                 objArtGroup.groupTo.initClassView = ClassViewType.HIDE;
@@ -2585,6 +2588,14 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                     "Не в акции",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0)));
             addRegularFilterGroup(inCouponGroup);
+        }
+
+        @Override
+        public DefaultFormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+            design.setReadOnly(objArt, true);
+            design.setReadOnly(xorCouponArticle, false);
+            return design;
         }
     }
 
