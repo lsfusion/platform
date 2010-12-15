@@ -7,6 +7,7 @@ import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.form.cell.CellTableInterface;
 import platform.client.form.cell.ClientAbstractCellEditor;
 import platform.client.form.cell.ClientAbstractCellRenderer;
+import platform.client.form.queries.QueryView;
 import platform.client.form.sort.GridHeaderMouseListener;
 import platform.client.form.sort.GridHeaderRenderer;
 import platform.client.logics.ClientGroupObjectValue;
@@ -392,7 +393,7 @@ public abstract class GridTable extends ClientFormTable
     }
 
     @Override
-    protected boolean processKeyBinding(KeyStroke ks, KeyEvent ae, int condition, boolean pressed) {
+    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
         try {
             // Отдельно обработаем CTRL + HOME и CTRL + END
             if (ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_HOME, InputEvent.CTRL_DOWN_MASK))) {
@@ -404,19 +405,26 @@ public abstract class GridTable extends ClientFormTable
                 form.changeGroupObject(logicsSupplier.getGroupObject(), Scroll.END);
                 return true;
             }
-        } catch (IOException e) {
-            throw new RuntimeException("Ошибка при переходе на запись", e);
+        } catch (IOException ioe) {
+            throw new RuntimeException("Ошибка при переходе на запись", ioe);
         }
 
         if (form.isDialogMode() && form.isReadOnlyMode() && ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0))) {
             return false;
         }
 
+        if (condition == WHEN_FOCUSED && gridView.hasActiveFilter() && ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0))) {
+            Action removeAllAction = getActionMap().get(QueryView.REMOVE_ALL_ACTION);
+            if (removeAllAction != null) {
+                return SwingUtilities.notifyAction(removeAllAction, ks, e, this, e.getModifiers());
+            }
+        }
+
         if (ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0))) {
             commitEditing();
         }
 
-        return super.processKeyBinding(ks, ae, condition, pressed);
+        return super.processKeyBinding(ks, e, condition, pressed);
     }
 
     private void commitEditing() {

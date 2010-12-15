@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class QueryView extends JPanel {
+    public static final String REMOVE_ALL_ACTION = "removeAll";
 
     private final static Dimension iconButtonDimension = new Dimension(22,22);
 
@@ -110,7 +111,7 @@ public abstract class QueryView extends JPanel {
             }
         });
 
-        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "removeAll");
+        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), REMOVE_ALL_ACTION);
 
         addActions(this);
     }
@@ -135,8 +136,8 @@ public abstract class QueryView extends JPanel {
             }
         });
 
-        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(getKeyEvent(), InputEvent.SHIFT_DOWN_MASK), "removeAll");
-        comp.getActionMap().put("removeAll", new AbstractAction() {
+        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(getKeyEvent(), InputEvent.SHIFT_DOWN_MASK), REMOVE_ALL_ACTION);
+        comp.getActionMap().put(REMOVE_ALL_ACTION, new AbstractAction() {
 
             public void actionPerformed(ActionEvent ae) {
                 listener.allConditionsRemoved();

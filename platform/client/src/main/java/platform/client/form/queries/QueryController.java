@@ -78,4 +78,8 @@ abstract class QueryController implements QueryListener {
         addConditionPressed(true, propertyDraw);
         view.startEditing(propertyDraw);
     }
+
+    public boolean hasActiveFilter() {
+        return conditions.size() > 0;
+    }
 }

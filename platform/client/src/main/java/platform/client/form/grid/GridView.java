@@ -86,4 +86,8 @@ public abstract class GridView extends JPanel {
             filterController.quickEditFilter(propertyDraw);
         }
     }
+
+    public boolean hasActiveFilter() {
+        return filterController != null && filterController.hasActiveFilter();
+    }
 }
