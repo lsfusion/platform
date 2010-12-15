@@ -2,6 +2,7 @@ package platform.server.data.sql;
 
 import platform.server.data.type.Type;
 import platform.server.data.ConnectionPool;
+import platform.server.data.AbstractConnectionPool;
 import platform.server.Settings;
 
 import java.sql.SQLException;
@@ -9,7 +10,7 @@ import java.sql.Connection;
 import java.util.*;
 import java.lang.ref.WeakReference;
 
-public abstract class DataAdapter implements SQLSyntax, ConnectionPool {
+public abstract class DataAdapter extends AbstractConnectionPool implements SQLSyntax {
 
     public String server;
     public String dataBase;
@@ -32,92 +33,6 @@ public abstract class DataAdapter implements SQLSyntax, ConnectionPool {
         this.password = password;
 
         ensureDB();
-
-        if(!Settings.instance.isCommonUnique())
-            common = startConnection();
-    }
-
-    private Connection common;
-
-    public Connection getCommon(Object object) throws SQLException {
-        if(Settings.instance.isCommonUnique())
-            return getUnique(object);
-        else
-            return common;
-    }
-
-    public void returnCommon(Object object, Connection connection) throws SQLException {
-        if(Settings.instance.isCommonUnique())
-            returnUnique(object, connection);
-        else
-            assert common==connection;
-    }
-
-    private final Object lock = new Object();
-    private final Map<Connection, WeakReference<Object>> usedConnections = new HashMap<Connection, WeakReference<Object>>();
-    private final Stack<Connection> freeConnections = new Stack<Connection>();
-
-    private void checkUsed() throws SQLException {
-        synchronized(lock) {
-            Iterator<Map.Entry<Connection,WeakReference<Object>>> it = usedConnections.entrySet().iterator();
-            while(it.hasNext()) {
-                Map.Entry<Connection, WeakReference<Object>> usedEntry = it.next();
-                if(usedEntry.getValue().get()==null) {
-                    it.remove(); // можно было бы попробовать использовать повторно, но connection может быть "грязным" то есть с транзакцией или временными таблицами
-                    usedEntry.getKey().close();
-                }
-            }
-        }
-    }
-
-    private void addFreeConnection(Connection connection) throws SQLException {
-        // assert что synchronized lock
-        if(freeConnections.size() < Settings.instance.getFreeConnections())
-            freeConnections.push(connection);
-        else
-            connection.close();
-    }
-
-    private Connection newConnection() throws SQLException {
-        try {
-            Connection newConnection = startConnection();
-            newConnection.setAutoCommit(true);
-            return newConnection;            
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (InstantiationException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public Connection getUnique(Object object) throws SQLException {
-        if(Settings.instance.isDisablePoolConnections())
-            return newConnection();
-
-        checkUsed();
-
-        synchronized(lock) {
-            Connection freeConnection = freeConnections.isEmpty() ? newConnection() : freeConnections.pop();
-
-            usedConnections.put(freeConnection, new WeakReference<Object>(object));
-            return freeConnection;
-        }
-    }
-
-    public void returnUnique(Object object, Connection connection) throws SQLException {
-        if(Settings.instance.isDisablePoolConnections()) {
-            connection.close();
-            return;
-        }
-
-        synchronized(lock) {
-            WeakReference<Object> weakObject = usedConnections.remove(connection);
-            assert weakObject.get().equals(object);
-            assert connection.getAutoCommit();
-            addFreeConnection(connection);
-        }
     }
 
     public String getStringType(int length) {

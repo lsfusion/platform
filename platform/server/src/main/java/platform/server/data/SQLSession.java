@@ -26,17 +26,17 @@ public abstract class SQLSession implements StatementParams {
     private ConnectionPool connectionPool;
 
     private Connection getConnection() throws SQLException {
-        return uniqueConnection !=null ? uniqueConnection : connectionPool.getCommon(this);
+        return privateConnection !=null ? privateConnection : connectionPool.getCommon(this);
     }
 
     private void returnConnection(Connection connection) throws SQLException {
-        if(uniqueConnection !=null)
-            assert uniqueConnection == connection;
+        if(privateConnection !=null)
+            assert privateConnection == connection;
         else
             connectionPool.returnCommon(this, connection);
     }
 
-    private Connection uniqueConnection = null;
+    private Connection privateConnection = null;
 
     public final static String userParam = "adsadaweewuser";
     public final static String sessionParam = "dsfreerewrewrsf";
@@ -47,40 +47,40 @@ public abstract class SQLSession implements StatementParams {
         connectionPool = adapter;
     }
 
-    private void needUnique() throws SQLException { // получает unique connection
-        if(uniqueConnection ==null)
-            uniqueConnection = connectionPool.getUnique(this);
+    private void needPrivate() throws SQLException { // получает unique connection
+        if(privateConnection ==null)
+            privateConnection = connectionPool.getPrivate(this);
     }
 
     private void tryCommon() throws SQLException { // пытается вернуться к
         if(!inTransaction && sessionTables.isEmpty()) { // вернемся к commonConnection'у
-            connectionPool.returnUnique(this, uniqueConnection);
-            uniqueConnection = null;
+            connectionPool.returnPrivate(this, privateConnection);
+            privateConnection = null;
         }
     }
 
     private boolean inTransaction;
     public void startTransaction() throws SQLException {
-        needUnique();
+        needPrivate();
 
-        uniqueConnection.setAutoCommit(false);
+        privateConnection.setAutoCommit(false);
         inTransaction = true;
     }
 
     private void endTransaction() throws SQLException {
-        uniqueConnection.setAutoCommit(true);
+        privateConnection.setAutoCommit(true);
         inTransaction = false;
-        
+
         tryCommon();
     }
 
     public void rollbackTransaction() throws SQLException {
-        uniqueConnection.rollback();
+        privateConnection.rollback();
         endTransaction();
     }
 
     public void commitTransaction() throws SQLException {
-        uniqueConnection.commit();
+        privateConnection.commit();
         endTransaction();
     }
 
@@ -203,7 +203,7 @@ public abstract class SQLSession implements StatementParams {
     private Set<String> sessionTables = new HashSet<String>();
     
     public void createTemporaryTable(SessionTable<?> table) throws SQLException {
-        needUnique();
+        needPrivate();
 
         String createString = "";
         String keyString = "";
@@ -450,8 +450,8 @@ public abstract class SQLSession implements StatementParams {
     }
 
     public void close() throws SQLException {
-        if(uniqueConnection!=null)
-            uniqueConnection.close();
+        if(privateConnection !=null)
+            privateConnection.close();
     }
 
     private static PreparedStatement getStatement(String command, Map<String, TypeObject> paramObjects, Connection connection, StatementParams stateParams, SQLSyntax syntax) throws SQLException {
