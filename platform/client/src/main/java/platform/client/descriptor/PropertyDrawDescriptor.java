@@ -150,6 +150,24 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
         updateDependency(this, "caption");
     }
 
+    public void setFocusable(Boolean focusable) {
+        client.focusable = focusable;
+        getContext().updateDependency(this, "focusable");
+    }
+
+    public Boolean getFocusable() {
+        return client.focusable;
+    }
+
+    public void setReadOnly(boolean readOnly) {
+        client.readOnly = readOnly;
+        getContext().updateDependency(this, "readOnly");
+    }
+
+    public boolean getReadOnly() {
+        return client.readOnly;
+    }
+
     public String getCaption() {
         return client.caption;
     }

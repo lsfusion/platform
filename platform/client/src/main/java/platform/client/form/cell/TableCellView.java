@@ -51,7 +51,9 @@ public class TableCellView extends JPanel implements CellView {
 
         key.design.designHeader(label);
 
-        table = new CellTable(key.readOnly) {
+        //игнорируем key.readOnly, чтобы разрешить редактирование,
+        //readOnly будет проверяться на уровне сервера и обрезаться возвратом пустого changeType
+        table = new CellTable(false) {
 
             protected boolean cellValueChanged(Object value) {
                 return listener.cellValueChanged(value);

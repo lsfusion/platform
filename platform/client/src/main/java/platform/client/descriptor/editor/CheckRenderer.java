@@ -1,6 +1,6 @@
 package platform.client.descriptor.editor;
 
-import platform.client.descriptor.editor.base.TristateCheckBox;
+import platform.client.descriptor.editor.base.AbstractTristateCheckBox;
 
 import javax.swing.*;
 import javax.swing.plaf.ColorUIResource;
@@ -8,13 +8,13 @@ import javax.swing.tree.TreeCellRenderer;
 import java.awt.*;
 
 class CheckRenderer extends JPanel implements TreeCellRenderer {
-    protected TristateCheckBox check;
+    protected AbstractTristateCheckBox check;
 
     protected platform.client.descriptor.editor.CheckRenderer.TreeLabel label;
 
     public CheckRenderer() {
         setLayout(null);
-        add(check = new TristateCheckBox() {
+        add(check = new AbstractTristateCheckBox() {
             protected void onChange() {
                 // ничего не делаем
             }

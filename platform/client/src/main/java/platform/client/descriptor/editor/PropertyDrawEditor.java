@@ -66,6 +66,8 @@ public class PropertyDrawEditor extends GroupElementEditor {
         });
 
         TitledPanel shouldBeLastPanel = new TitledPanel(null, new IncrementCheckBox("Должно быть последним", descriptor, "shouldBeLast"));
+        TitledPanel readOnlyPanel = new TitledPanel(null, new IncrementCheckBox("Только для чтения", descriptor, "readOnly"));
+        TitledPanel focusablePanel = new TitledPanel(null, new IncrementTristateCheckBox("Может иметь фокус", descriptor, "focusable"));
 
         TitledPanel forceTypePanel = new TitledPanel("Тип просмотра", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "forceViewType") {
             public List<?> getSingleList(){
@@ -85,6 +87,8 @@ public class PropertyDrawEditor extends GroupElementEditor {
                 columnGroupObjectsPanel,
                 propertyCaptionPanel,
                 shouldBeLastPanel,
+                readOnlyPanel,
+                focusablePanel,
                 forceTypePanel,
                 editKeyPanel));
 

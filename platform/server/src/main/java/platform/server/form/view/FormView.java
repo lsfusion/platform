@@ -4,10 +4,7 @@ import platform.base.identity.IDGenerator;
 import platform.base.OrderedMap;
 import platform.interop.form.layout.AbstractForm;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
-import platform.server.form.entity.FormEntity;
-import platform.server.form.entity.GroupObjectEntity;
-import platform.server.form.entity.ObjectEntity;
-import platform.server.form.entity.TreeGroupEntity;
+import platform.server.form.entity.*;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.group.AbstractGroup;
@@ -250,6 +247,18 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         for (TreeGroupView treeGroup : treeGroups)
             if (entity.equals(treeGroup.entity))
                 return treeGroup;
+        return null;
+    }
+
+    public PropertyDrawView getProperty(PropertyDrawEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+        for (PropertyDrawView property : properties) {
+            if (entity.equals(property.entity)) {
+                return property;
+            }
+        }
         return null;
     }
 

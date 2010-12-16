@@ -552,7 +552,7 @@ public abstract class GridTable extends ClientFormTable
     }
 
     public Object getSelectedValue(ClientPropertyDraw property) {
-        return getSelectedValue(model.getMinPropertyIndex(property));
+        return getSelectedValue(getMinPropertyIndex(property));
     }
 
     private Object getSelectedValue(int col) {
@@ -565,7 +565,7 @@ public abstract class GridTable extends ClientFormTable
     }
 
     public Object getValue(ClientPropertyDraw property, int row) {
-        int col = model.getMinPropertyIndex(property);
+        int col = getMinPropertyIndex(property);
         if (row != -1 && row < getRowCount() && col != -1 && col < getColumnCount()) {
             return model.getValueAt(row, col);
         } else {
@@ -655,7 +655,11 @@ public abstract class GridTable extends ClientFormTable
     }
 
     public void changeGridOrder(ClientPropertyDraw property, Order modiType) throws IOException {
-        changeGridOrder(property, model.getMinPropertyIndex(property), modiType);
+        changeGridOrder(property, getMinPropertyIndex(property), modiType);
+    }
+
+    public int getMinPropertyIndex(ClientPropertyDraw property) {
+        return model.getMinPropertyIndex(property);
     }
 
     private Boolean getSortDirection(int column) {
@@ -666,6 +670,17 @@ public abstract class GridTable extends ClientFormTable
     @Override
     protected JTableHeader createDefaultTableHeader() {
         return new GridTableHeader(columnModel);
+    }
+
+    public void selectProperty(ClientPropertyDraw propertyDraw) {
+        if (propertyDraw == null) {
+            return;
+        }
+
+        int ind = getMinPropertyIndex(propertyDraw);
+        if (ind != -1) {
+            setColumnSelectionInterval(ind, ind);
+        }
     }
 
     private class GoToCellAction extends AbstractAction {

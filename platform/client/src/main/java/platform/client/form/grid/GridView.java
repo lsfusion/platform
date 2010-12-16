@@ -84,6 +84,7 @@ public abstract class GridView extends JPanel {
     public void quickEditFilter(ClientPropertyDraw propertyDraw) {
         if (filterController != null) {
             filterController.quickEditFilter(propertyDraw);
+            gridTable.selectProperty(propertyDraw);
         }
     }
 
