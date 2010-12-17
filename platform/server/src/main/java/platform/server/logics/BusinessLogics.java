@@ -3401,9 +3401,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public void addObjectActions(FormEntity form, ObjectEntity object) {
-        form.forceDefaultDraw.put(form.addPropertyDraw(getImportObjectAction(object.baseClass)), object.groupTo);
-        form.forceDefaultDraw.put(form.addPropertyDraw(getAddObjectAction(object.baseClass)), object.groupTo);
+        addObjectActions(form, object, false);
+    }
+
+    public void addObjectActions(FormEntity form, ObjectEntity object, boolean actionImport) {
         form.addPropertyDraw(delete, object);
+        if (actionImport)
+            form.forceDefaultDraw.put(form.addPropertyDraw(getImportObjectAction(object.baseClass)), object.groupTo);
+        form.forceDefaultDraw.put(form.addPropertyDraw(getAddObjectAction(object.baseClass)), object.groupTo);
     }
 
     protected Scheduler scheduler;

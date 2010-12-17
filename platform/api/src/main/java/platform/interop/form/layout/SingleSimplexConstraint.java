@@ -11,6 +11,11 @@ abstract public class SingleSimplexConstraint implements Serializable {
                                                                    DoNotIntersectSimplexConstraint.LEFT |
                                                                    DoNotIntersectSimplexConstraint.TOP);
 
+    public static final DoNotIntersectSimplexConstraint TOTHE_LEFT = new DoNotIntersectSimplexConstraint(
+                                                               DoNotIntersectSimplexConstraint.RIGHT |
+                                                               DoNotIntersectSimplexConstraint.TOP |
+                                                               DoNotIntersectSimplexConstraint.BOTTOM);
+
     public static final DoNotIntersectSimplexConstraint TOTHE_RIGHT = new DoNotIntersectSimplexConstraint(
                                                                DoNotIntersectSimplexConstraint.LEFT |
                                                                DoNotIntersectSimplexConstraint.TOP |

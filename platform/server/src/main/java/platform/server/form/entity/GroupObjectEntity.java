@@ -1,5 +1,6 @@
 package platform.server.form.entity;
 
+import platform.base.BaseUtils;
 import platform.base.identity.IdentityObject;
 import platform.interop.ClassViewType;
 import platform.interop.form.RemoteFormInterface;
@@ -89,5 +90,11 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         for (int i = 0; i < objects.size(); i++) {
             isParent.put(objects.get(i), properties[i]);
         }
+    }
+
+    public void setSingleClassView(ClassViewType type) {
+        initClassView = type;
+        banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.GRID, ClassViewType.HIDE));
+        banClassView.remove(type);
     }
 }
