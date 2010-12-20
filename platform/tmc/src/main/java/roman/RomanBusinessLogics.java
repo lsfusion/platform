@@ -51,7 +51,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP supplierColorSupplier;
     private LP nameSupplierColorSupplier;
     private LP supplierSizeSupplier;
-    private LP nameSizeColorSupplier;
+    private LP nameSupplierSizeSupplier;
     private LP supplierItem;
     private LP nameSupplierItem;
     private LP sidColorSupplier;
@@ -73,6 +73,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP articleSIDDocument;
     private LP incrementNumberDocumentSID;
     private LP addNEArticleCompositeSIDSupplier;
+    private LP numberDocumentSIDArticle;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -117,7 +118,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         nameSupplierColorSupplier = addJProp(baseGroup, "nameSupplierColorSupplier", "Поставщик", name, supplierColorSupplier, 1);
 
         supplierSizeSupplier = addDProp(idGroup, "supplierSizeSupplier", "Поставщик (ИД)", supplier, sizeSupplier);
-        nameSizeColorSupplier = addJProp(baseGroup, "nameSupplierSizeSupplier", "Поставщик", name, supplierSizeSupplier, 1);
+        nameSupplierSizeSupplier = addJProp(baseGroup, "nameSupplierSizeSupplier", "Поставщик", name, supplierSizeSupplier, 1);
 
         supplierDocument = addDProp(idGroup, "supplierDocument", "Поставщик (ИД)", supplier, document);
         nameSupplierDocument = addJProp(baseGroup, "nameSupplierDocument", "Поставщик", name, supplierDocument, 1);
@@ -172,13 +173,17 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         articleSIDDocument = addJProp(idGroup, "articleSIDDocument", "Артикул (ИД)", articleSIDSupplier, 1, supplierDocument, 2);
 
         numberDocumentArticle = addDProp(baseGroup, "numberDocumentArticle", "Номер", IntegerClass.instance, document, article);
-        incrementNumberDocumentSID = addJProp(true, "Добавить строку", addIAProp(numberDocumentArticle, 1),
-                                                  1, articleSIDDocument, 2, 1);
+        numberDocumentSIDArticle = addJProp(numberDocumentArticle, 1, articleSIDDocument, 2, 1);
+
+        incrementNumberDocumentSID = addJProp(true, "Добавить строку", andNot1,
+                                                  addJProp(true, addIAProp(numberDocumentArticle, 1),
+                                                  1, articleSIDDocument, 2, 1), 1, 2,
+                                                  numberDocumentSIDArticle, 1, 2);
 
         quantityDocumentArticle = addDGProp(baseGroup, "quantityDocumentArticle", "Кол-во",
                 1, false,
                 quantityDocumentSku, 1, articleItem, 2,
-                addCProp(DoubleClass.instance, Double.MAX_VALUE, document, article), 1, 2,
+                addCProp(DoubleClass.instance, Double.MAX_VALUE, document, sku), 1, 2,
                 2);
         
         quantityDocumentArticleColor = addSGProp(baseGroup, "quantityDocumentArticleColor", "Кол-во", quantityDocumentSku, 1, articleItem, 2, colorSupplierItem, 2);
