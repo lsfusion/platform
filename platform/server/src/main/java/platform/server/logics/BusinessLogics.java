@@ -556,6 +556,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public class SelectionPropertySet extends MapClassesPropertySet<Map<ValueClass, Integer>, SelectionProperty> {
         static private final String prefix = "SelectionProperty_";
+        private Map<String, LP> selectionLP = new HashMap<String, LP>();
 
         protected Class<?> getPropertyClass() {
             return SelectionProperty.class;
@@ -609,25 +610,47 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             return key;
         }
 
-        protected SelectionProperty createProperty(ValueClass[] classes) {
-            ValueClass[] classArray = new ValueClass[classes.length];
+        private String getSID(ValueClass[] classes) {
             String sid = prefix;
             for (int i = 0; i < classes.length; i++) {
-                classArray[i] = classes[i];
-                sid += classArray[i].getSID();
+                sid += classes[i].getSID();
                 if (i + 1 < classes.length) {
                     sid += '|';
                 }
             }
+            return sid;
+        }
+
+        protected SelectionProperty createProperty(ValueClass[] classes) {
+            ValueClass[] classArray = new ValueClass[classes.length];
+            String sid = getSID(classes);
+            for (int i = 0; i < classes.length; i++) {
+                classArray[i] = classes[i];
+            }
 
             SelectionProperty property = new SelectionProperty(sid, classArray);
-            registerProperty(new LP<ClassPropertyInterface>(property));
+            LP lp = new LP<ClassPropertyInterface>(property);
+            registerProperty(lp);
+            selectionLP.put(sid, lp);
             setParent(property);
             return property;
         }
+
+        public LP getLP(ValueClass[] classes) {
+            String sid = getSID(classes);
+            if (!selectionLP.containsKey(sid)) {
+                createProperty(classes);
+            }
+
+            return selectionLP.get(sid);
+        }
+
+        public LP getLP(ObjectEntity object) {
+            return getLP(new ValueClass[]{object.baseClass});
+        }
     }
 
-	protected SelectionPropertySet selection;
+    protected SelectionPropertySet selection;
 
     public class CompositeNamePropertySet extends MapClassesPropertySet<Integer, JoinProperty> {
         private static final String prefix = "CompositeNameProperty_";
@@ -676,10 +699,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         private JoinProperty<ClassPropertyInterface> createProperty(int intNum) {
             String sid = prefix + intNum;
 
-            Object joinParams[] = new Object[2*intNum];
+            Object joinParams[] = new Object[2 * intNum];
             for (int i = 0; i < intNum; i++) {
-                joinParams[2*i] = name;
-                joinParams[2*i + 1] = i+1;
+                joinParams[2 * i] = name;
+                joinParams[2 * i + 1] = i + 1;
             }
 
             LP stringConcat = getStringConcatanationProperty(intNum);
@@ -713,7 +736,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             if (sid.startsWith(prefix)) {
                 ValueClass valueClass = BusinessLogics.this.findValueClass(sid.substring(prefix.length()));
                 assert valueClass != null;
-                return getProperty(new ValueClass[] {valueClass});
+                return getProperty(new ValueClass[]{valueClass});
             }
             return null;
         }
@@ -953,12 +976,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     @IdentityLazy
-    private LP getAddObjectAction(ValueClass cls) {
+    protected LP getAddObjectAction(ValueClass cls) {
         return addAProp(new AddObjectActionProperty(genSID(), (CustomClass) cls));
     }
 
     @IdentityLazy
-    private LP getImportObjectAction(ValueClass cls) {
+    protected LP getImportObjectAction(ValueClass cls) {
         return addAProp(new ImportFromExcelActionProperty(genSID(), (CustomClass) cls));
     }
 
@@ -2240,6 +2263,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         lp.property.ID = idGenerator.idShift();
     }
 
+    protected LP getLP(String sID) {
+        objectValue.getProperty(sID);
+        selection.getProperty(sID);
+        for (LP lp : lproperties) {
+            if (lp.property.sID.equals(sID)) {
+                return lp;
+            }
+        }
+        return null;
+    }
+
     protected LP addJProp(LP mainProp, Object... params) {
         return addJProp(privateGroup, "sys", mainProp, params);
     }
@@ -3504,7 +3538,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             DataSession session = remoteForm.session;
             if (addProperty.read(session, new HashMap(), remoteForm) != null) {
                 String barString = (String) BaseUtils.singleValue(keys).object;
-                if(barString.trim().length()!=0) {
+                if (barString.trim().length() == 0) {
                     addProperty.execute(new HashMap(), session, null, remoteForm);
                     barcode.execute(barString, session, remoteForm, session.addObject(customClass, remoteForm));
                 }

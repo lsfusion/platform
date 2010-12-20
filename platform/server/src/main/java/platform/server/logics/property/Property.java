@@ -57,6 +57,14 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public int ID = 0;
 
+    public String getCode() {
+        return sID;
+    }
+
+    public boolean isField() {
+        return false;
+    }
+
     public int getID() {
         return ID;
     }
@@ -76,7 +84,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public boolean isInInterface(Map<T, ? extends AndClassSet> interfaceClasses, boolean isAny) {
-        return isAny ? anyInInterface(interfaceClasses) : allInInterface(interfaceClasses);        
+        return isAny ? anyInInterface(interfaceClasses) : allInInterface(interfaceClasses);
     }
 
     @IdentityLazy
@@ -462,7 +470,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public List<Property> getProperties() {
-        return Collections.singletonList((Property)this);
+        return Collections.singletonList((Property) this);
     }
 
     @Override
@@ -491,7 +499,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     @Override
     public Property getProperty(String sid) {
-        return this.sID.equals(sid) ? this : null;    
+        return this.sID.equals(sid) ? this : null;
     }
 
 
@@ -508,6 +516,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         outStream.writeUTF(sID);
         outStream.writeUTF(caption);
+        outStream.writeUTF(getCode());
+        outStream.writeBoolean(isField());
 
         pool.serializeCollection(outStream, interfaces);
         pool.serializeObject(outStream, getParent());

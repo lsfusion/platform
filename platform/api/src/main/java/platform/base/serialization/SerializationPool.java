@@ -26,7 +26,7 @@ public abstract class SerializationPool<C> {
     public SerializationPool(C context) {
         this(context, null);
     }
-    
+
     public SerializationPool(C context, ApplicationContext appContext) {
         this.context = context;
         this.appContext = appContext;
@@ -155,9 +155,9 @@ public abstract class SerializationPool<C> {
             //ложим объект в пул, если надо
             if (IdentitySerializable.class.isAssignableFrom(clazz)) {
                 put(getClassId(clazz), id, instance);
-                ((IdentitySerializable)instance).setID(id);
+                ((IdentitySerializable) instance).setID(id);
             }
-            if(setInstanceContext(instance)){
+            if (setInstanceContext(instance)) {
                 appContext.idRegister(id);
             }
 
@@ -227,8 +227,8 @@ public abstract class SerializationPool<C> {
 
     public String readString(DataInputStream inStream) throws IOException {
         return inStream.readBoolean()
-               ? inStream.readUTF()
-               : null;
+                ? inStream.readUTF()
+                : null;
     }
 
     public void writeInt(DataOutputStream outStream, Integer integer) throws IOException {
@@ -240,13 +240,13 @@ public abstract class SerializationPool<C> {
 
     public Integer readInt(DataInputStream inStream) throws IOException {
         return inStream.readBoolean()
-               ? inStream.readInt()
-               : null;
+                ? inStream.readInt()
+                : null;
     }
 
-    private boolean setInstanceContext(Object instance){
+    private boolean setInstanceContext(Object instance) {
         if (instance instanceof ApplicationContextHolder && appContext != null) {
-            ((ApplicationContextHolder)instance).setContext(appContext);
+            ((ApplicationContextHolder) instance).setContext(appContext);
             return true;
         }
         return false;

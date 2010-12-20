@@ -2,8 +2,11 @@ package platform.client.logics;
 
 import platform.base.BaseUtils;
 import platform.client.SwingUtils;
+import platform.client.code.CodeGenerator;
+import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.PropertyDrawDescriptor;
 import platform.base.context.ApplicationContext;
+import platform.client.descriptor.PropertyObjectInterfaceDescriptor;
 import platform.client.form.*;
 import platform.client.form.cell.CellView;
 import platform.client.logics.classes.ClientType;
@@ -409,8 +412,24 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     @Override
     public String getCodeConstructor(String name) {
-        String grObject = groupObject == null ? "" : "grObj" + groupObject.getSID() + ", ";
-        return "PropertyDrawView " + name + " = design.createPropertyDraw(" + grObject
-                + descriptor.getPropertyObject().property.getSID() + ")";
+        StringBuilder result = new StringBuilder("PropertyDrawView " + name + " = design.createPropertyDraw(");
+
+        if (descriptor.getPropertyObject().property.isField) {
+            result.append("prop" + descriptor.getSID());
+        } else {
+            String grObject = groupObject == null ? "" : "grObj" + groupObject.getSID() + ", ";
+
+            result.append(grObject + descriptor.getPropertyObject().property.code);
+
+            Set<PropertyObjectInterfaceDescriptor> values = new HashSet<PropertyObjectInterfaceDescriptor>(descriptor.getPropertyObject().mapping.values());
+
+            for (PropertyObjectInterfaceDescriptor objectDescriptorInt : values) {
+                if (objectDescriptorInt instanceof ObjectDescriptor) {
+                    ObjectDescriptor object = (ObjectDescriptor) objectDescriptorInt;
+                    result.append(", " + CodeGenerator.objectNames.get(object));
+                }
+            }
+        }
+        return result.toString() + ")";
     }
 }

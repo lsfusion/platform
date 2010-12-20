@@ -11,6 +11,8 @@ import java.util.Collection;
 public class PropertyDescriptor extends AbstractNodeDescriptor implements ClientIdentitySerializable {
     public String caption;
     private String sID;
+    public String code;
+    public boolean isField;
 
     public Collection<PropertyInterfaceDescriptor> interfaces;
 
@@ -21,6 +23,8 @@ public class PropertyDescriptor extends AbstractNodeDescriptor implements Client
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         sID = inStream.readUTF();
         caption = inStream.readUTF();
+        code = inStream.readUTF();
+        isField = inStream.readBoolean();
 
         interfaces = pool.deserializeList(inStream);
 
@@ -34,6 +38,6 @@ public class PropertyDescriptor extends AbstractNodeDescriptor implements Client
 
     public String getSID() {
         return sID;
-    } 
+    }
 
 }

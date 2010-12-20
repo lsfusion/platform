@@ -29,6 +29,10 @@ public class DeleteObjectActionProperty extends ActionProperty {
         super(sID, "Удалить", new ValueClass[]{baseClass});
     }
 
+    public String getCode(){
+        return "delete";
+    }
+
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
         ((FormInstance<?>)executeForm.form).changeClass((CustomObjectInstance) BaseUtils.singleValue(mapObjects), BaseUtils.singleValue(keys), -1);
     }

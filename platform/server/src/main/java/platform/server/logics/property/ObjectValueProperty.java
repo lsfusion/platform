@@ -36,14 +36,19 @@ public class ObjectValueProperty extends ExecuteProperty {
         this.typeClass = valueClass;
     }
 
+    @Override
+    public String getCode() {
+        return "getLP(\"ObjectValueProperty_" + typeClass.getSID() + "\")";
+    }
+
     protected ValueClass getValueClass() {
         return typeClass;
     }
 
     @Override
     public CustomClass getDialogClass(Map<ClassPropertyInterface, DataObject> mapValues, Map<ClassPropertyInterface, ConcreteClass> mapClasses, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) {
-        if(mapObjects.size()>0 && BaseUtils.singleValue(mapObjects) instanceof ObjectInstance)
-            return ((CustomObjectInstance)BaseUtils.singleValue(mapObjects)).getBaseClass();
+        if (mapObjects.size() > 0 && BaseUtils.singleValue(mapObjects) instanceof ObjectInstance)
+            return ((CustomObjectInstance) BaseUtils.singleValue(mapObjects)).getBaseClass();
         else
             return super.getDialogClass(mapValues, mapClasses, mapObjects);
     }
@@ -66,7 +71,7 @@ public class ObjectValueProperty extends ExecuteProperty {
     public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
         super.proceedDefaultDesign(view, entity);
         PropertyObjectInterfaceEntity mapObject = BaseUtils.singleValue(entity.propertyObject.mapping);
-        if(mapObject instanceof ObjectEntity)
-            view.get(entity).caption = ((ObjectEntity)mapObject).getCaption(); 
+        if (mapObject instanceof ObjectEntity)
+            view.get(entity).caption = ((ObjectEntity) mapObject).getCaption();
     }
 }

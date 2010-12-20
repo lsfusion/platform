@@ -29,17 +29,22 @@ public class AddObjectActionProperty extends ActionProperty {
     private CustomClass valueClass;
 
     public AddObjectActionProperty(String sID, CustomClass valueClass) {
-        super(sID, "Добавить (" + valueClass + ")", new ValueClass[] {}); // сам класс не передаем, поскольку это свойство "глобальное"
+        super(sID, "Добавить (" + valueClass + ")", new ValueClass[]{}); // сам класс не передаем, поскольку это свойство "глобальное"
 
         this.valueClass = valueClass;
     }
 
+    @Override
+    public String getCode() {
+        return "getAddObjectAction(" + valueClass.getSID() + ")";
+    }
+
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-        FormInstance<?> form = (FormInstance<?>)executeForm.form;
+        FormInstance<?> form = (FormInstance<?>) executeForm.form;
         if (valueClass.hasChildren())
-            form.addObject((ConcreteCustomClass)form.getCustomClass((Integer)value.getValue()));
+            form.addObject((ConcreteCustomClass) form.getCustomClass((Integer) value.getValue()));
         else
-            form.addObject((ConcreteCustomClass)valueClass);
+            form.addObject((ConcreteCustomClass) valueClass);
     }
 
     @Override
@@ -56,6 +61,7 @@ public class AddObjectActionProperty extends ActionProperty {
         entity.shouldBeLast = true;
         entity.forceViewType = ClassViewType.PANEL;
     }
+
     @Override
     public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
         super.proceedDefaultDesign(view, entity);

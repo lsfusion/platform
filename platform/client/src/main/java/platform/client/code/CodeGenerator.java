@@ -2,6 +2,7 @@ package platform.client.code;
 
 import platform.client.descriptor.*;
 import platform.client.descriptor.filter.*;
+import platform.client.descriptor.property.PropertyDescriptor;
 import platform.client.logics.ClientComponent;
 import platform.client.logics.ClientContainer;
 import platform.client.logics.ClientRegularFilterGroup;
@@ -18,7 +19,7 @@ public class CodeGenerator {
 
     private static String intend;
     private static int id = 1;
-    private static Map<ObjectDescriptor, String> objectNames = new HashMap<ObjectDescriptor, String>();
+    public static Map<ObjectDescriptor, String> objectNames = new HashMap<ObjectDescriptor, String>();
     private static Map<RegularFilterGroupDescriptor, String> filterGroups;
     private static Map<ClientRegularFilterGroup, RegularFilterGroupDescriptor> filterGroupViews;
 
@@ -39,6 +40,13 @@ public class CodeGenerator {
                 objectNames.put(object, name);
             }
         }
+
+        for (PropertyDrawDescriptor prop : form.propertyDraws) {
+            if (prop.getPropertyObject().property.isField) {
+                result.append(intend + "PropertyDrawEntity prop" + prop.getSID() + ";\n");
+            }
+        }
+
         filterGroups = new HashMap<RegularFilterGroupDescriptor, String>();
         filterGroupViews = new HashMap<ClientRegularFilterGroup, RegularFilterGroupDescriptor>();
         for (RegularFilterGroupDescriptor group : form.regularFilterGroups) {
@@ -74,6 +82,18 @@ public class CodeGenerator {
                 new HashMap<Set<PropertyObjectInterfaceDescriptor>, Collection<PropertyDrawDescriptor>>();
 
         for (PropertyDrawDescriptor property : form.propertyDraws) {
+            if (property.getPropertyObject().property.isField) {
+                result.append(intend + "prop" + property.getSID() + " = addPropertyDraw(" + property.getPropertyObject().property.code);
+                for (PropertyObjectInterfaceDescriptor objectInterface : property.getPropertyObject().mapping.values()) {
+                    if (objectInterface instanceof ObjectDescriptor) {
+                        ObjectDescriptor object = (ObjectDescriptor) objectInterface;
+                        result.append(", " + objectNames.get(object));
+                    }
+                }
+                result.append(");\n");
+
+                continue;
+            }
             Set<PropertyObjectInterfaceDescriptor> values = new HashSet<PropertyObjectInterfaceDescriptor>(property.getPropertyObject().mapping.values());
             Collection<PropertyDrawDescriptor> props = propertiesInt.get(values);
             if (props == null) {
@@ -90,7 +110,7 @@ public class CodeGenerator {
             propArray.append("new LP[]{");
 
             for (PropertyDrawDescriptor prop : propCollection) {
-                propArray.append(prop.getPropertyObject().property.getSID() + ",");
+                propArray.append(prop.getPropertyObject().property.code + ",");
             }
             propArray.replace(propArray.length() - 1, propArray.length(), "}");
 
@@ -118,7 +138,7 @@ public class CodeGenerator {
     }
 
     public static String addRegularFilterGroups(List<RegularFilterGroupDescriptor> groups, StringBuilder result) {
-        for(RegularFilterGroupDescriptor group : groups) {
+        for (RegularFilterGroupDescriptor group : groups) {
             String groupName = filterGroups.get(group);
             result.append(intend + groupName + " = " + group.getCodeConstructor());
             for (RegularFilterDescriptor filter : group.filters) {
@@ -135,10 +155,10 @@ public class CodeGenerator {
         if (component instanceof ClientContainer) {
             for (ClientComponent child : ((ClientContainer) component).children) {
                 String childName = "component" + child.getID();
-                if(!(child instanceof ClientRegularFilterGroup)){
+                if (!(child instanceof ClientRegularFilterGroup)) {
                     temp.append(intend + child.getCodeConstructor(childName) + ";\n");
                 } else {
-                    temp.append(intend + ((ClientRegularFilterGroup)child).getCodeConstructor(childName, filterGroups.get(filterGroupViews.get(child))) + ";\n");
+                    temp.append(intend + ((ClientRegularFilterGroup) child).getCodeConstructor(childName, filterGroups.get(filterGroupViews.get(child))) + ";\n");
                 }
                 temp.append(intend + name + ".add(" + childName + ");\n");
                 temp.append(addContainers(child, childName));
@@ -177,7 +197,7 @@ public class CodeGenerator {
 
         Insets insetsSibling = component.constraints.insetsSibling;
         if (!insetsSibling.equals(constraints.insetsSibling)) {
-            toReturn.append(intend + name + ".constraints.insetsSibling = new Insets(" + insetsSibling.top + ", " + 
+            toReturn.append(intend + name + ".constraints.insetsSibling = new Insets(" + insetsSibling.top + ", " +
                     insetsSibling.left + ", " + insetsSibling.bottom + ", " + insetsSibling.right + ");\n");
         }
 
@@ -198,7 +218,7 @@ public class CodeGenerator {
                         name + ", component" + single.getID() + ", " + map.get(single).getConstraintCode() + ");\n");
             }
         }
-        
+
         return toReturn.toString();
     }
 

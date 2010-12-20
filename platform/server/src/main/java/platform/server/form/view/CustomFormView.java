@@ -1,14 +1,19 @@
 package platform.server.form.view;
 
+import org.springframework.beans.factory.parsing.PropertyEntry;
 import platform.base.identity.IdentityObject;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectEntity;
+import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.logics.linear.LP;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class CustomFormView extends FormView {
 
@@ -56,6 +61,26 @@ public class CustomFormView extends FormView {
 
     public PropertyDrawView createPropertyDraw(LP lp) {
         PropertyDrawEntity property = form.getPropertyDraw(lp);
+        return createPropertyDraw(property);
+    }
+
+    public PropertyDrawView createPropertyDraw(LP lp, ObjectEntity... objects) {
+        List<ObjectEntity> list = Arrays.asList(objects);
+        Set<ObjectEntity> set = new HashSet(list);
+        PropertyDrawEntity propertyEntity = null;
+
+        List<PropertyDrawEntity> props = form.propertyDraws;
+        for (PropertyDrawEntity prop : props) {
+            if (lp.property.sID.equals(prop.propertyObject.property.sID) && new HashSet(prop.propertyObject.mapping.values()).equals(set)) {
+                propertyEntity = prop;
+                break;
+            }
+        }
+
+        return createPropertyDraw(propertyEntity);
+    }
+
+    public PropertyDrawView createPropertyDraw(PropertyDrawEntity property) {
         PropertyDrawView view = new PropertyDrawView(property);
         properties.add(view);
         order.add(view);

@@ -22,12 +22,23 @@ public class SelectionProperty extends SessionDataProperty {
     }
 
     @Override
+    public String getCode() {
+
+        return "selection";
+    }
+
+    @Override
+    public boolean isField() {
+        return true;
+    }
+
+    @Override
     public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity form) {
         RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(form.genID());
         filterGroup.addFilter(new RegularFilterEntity(form.genID(),
-                                                      new NotNullFilterEntity(entity.propertyObject),
-                                                      "Отмеченные",
-                                                      KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.ALT_DOWN_MASK)), false);
+                new NotNullFilterEntity(entity.propertyObject),
+                "Отмеченные",
+                KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.ALT_DOWN_MASK)), false);
         form.addRegularFilterGroup(filterGroup);
 
         entity.getToDraw(form).propertyHighlight = entity.propertyObject;
