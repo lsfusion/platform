@@ -121,4 +121,11 @@ public class LP<T extends PropertyInterface> {
         Map<T, DataObject> mapKeys = getMapValues(objects);
         return property.execute(mapKeys, session, value, modifier);
     }
+
+    public static List<Property> toPropertyArray(LP[] properties) {
+        List<Property> result = new ArrayList<Property>();
+        for (LP property : properties)
+            result.add(property.property);
+        return result;
+    }
 }

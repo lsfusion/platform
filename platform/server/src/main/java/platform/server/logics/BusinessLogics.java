@@ -3460,6 +3460,53 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addProperty(group, new LP<ClassPropertyInterface>(new SeekActionProperty(genSID(), caption, new ValueClass[]{baseClass}, lp == null ? null : lp.property)));
     }
 
+    // params - по каким входам группировать
+    protected LP addIAProp(LP dataProperty, Integer... params) {
+        return addAProp(new IncrementActionProperty(genSID(), "sys", dataProperty,
+                                                    addMGProp(dataProperty, params),
+                                                    params));
+    }
+
+    public static class IncrementActionProperty extends ActionProperty {
+
+        LP dataProperty;
+        LP maxProperty;
+        List<Integer> params;
+
+        private IncrementActionProperty(String sID, String caption, LP dataProperty, LP maxProperty, Integer[] params) {
+            super(sID, caption, dataProperty.getMapClasses());
+
+            this.dataProperty = dataProperty;
+            this.maxProperty = maxProperty;
+            this.params = Arrays.asList(params);
+        }
+
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            FormInstance<?> form = executeForm.form;
+            DataSession session = form.session;
+
+            // здесь опять учитываем, что порядок тот же
+            int i = 0;
+            DataObject[] dataPropertyInput = new DataObject[keys.size()];
+            List<DataObject> maxPropertyInput = new ArrayList<DataObject>();
+
+            for (ClassPropertyInterface classInterface : interfaces) {
+                dataPropertyInput[i] = keys.get(classInterface);
+                if (params.contains(i+1)) {
+                    maxPropertyInput.add(dataPropertyInput[i]);
+                }
+                i++;
+            }
+
+            Integer maxValue = (Integer)maxProperty.read(session, maxPropertyInput.toArray(new DataObject[0]));;
+            if (maxValue == null)
+                maxValue = 0;
+            maxValue += 1;
+
+            dataProperty.execute(maxValue, session, form, dataPropertyInput);
+        }
+    }
+
     protected LP addMAProp(String message, String caption) {
         return addMAProp(message, null, caption);
     }
@@ -3546,6 +3593,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
+    protected LP addAAProp(CustomClass customClass, LP... properties) {
+        return addAProp(new AddObjectActionProperty(genSID(), customClass, LP.toPropertyArray(properties)));
+    }
 
     private Map<String, String> formSets;
 

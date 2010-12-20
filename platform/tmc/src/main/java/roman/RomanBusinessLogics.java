@@ -5,10 +5,7 @@ import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.auth.User;
-import platform.server.classes.AbstractCustomClass;
-import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.DoubleClass;
-import platform.server.classes.StringClass;
+import platform.server.classes.*;
 import platform.server.data.sql.DataAdapter;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
@@ -67,8 +64,15 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP originalNameArticle;
     private ConcreteCustomClass country;
     private LP countryOfOriginArticle;
+    private LP nameCountryOfOriginArticle;
     private LP articleSIDSupplier;
     private LP seekArticleSIDSupplier;
+    private LP addArticleCompositeSIDSupplier;
+    private LP numberDocumentArticle;
+    private LP incrementNumberDocumentArticle;
+    private LP articleSIDDocument;
+    private LP incrementNumberDocumentSID;
+    private LP addNEArticleCompositeSIDSupplier;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -122,7 +126,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         sidArticle = addDProp(baseGroup, "sidArticle", "Код", StringClass.get(50), article);
         originalNameArticle = addDProp(baseGroup, "originalNameArticle", "Имя производителя", StringClass.get(50), article);
-        countryOfOriginArticle = addDProp(baseGroup, "countryOfOriginArticle", "Страна происхождения", country, article);
+
+        countryOfOriginArticle = addDProp(idGroup, "countryOfOriginArticle", "Страна происхождения (ИД)", country, article);
+        nameCountryOfOriginArticle = addJProp(baseGroup, "nameCountryOfOriginArticle", "Страна происхождения", name, countryOfOriginArticle, 1);
 
         supplierArticle = addDProp(idGroup, "supplierArticle", "Поставщик (ИД)", supplier, article);
         nameSupplierArticle = addJProp(baseGroup, "nameSupplierArticle", "Поставщик", name, supplierArticle, 1);
@@ -130,6 +136,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         articleSIDSupplier = addCGProp(idGroup, "articleSIDSupplier", "Артикул (ИД)", object(article), sidArticle, sidArticle, 1, supplierArticle, 1);
 
         seekArticleSIDSupplier = addJProp(true, "Поиск артикула", addSAProp(null), articleSIDSupplier, 1, 2);
+        addArticleCompositeSIDSupplier = addJProp(true, "Ввод артикула", addAAProp(articleComposite, sidArticle, supplierArticle), 1, 2);
+        addNEArticleCompositeSIDSupplier = addJProp(true, "Ввод артикула (НС)", andNot1, addArticleCompositeSIDSupplier, 1, 2, articleSIDSupplier, 1, 2);
 
         // Item
 
@@ -158,6 +166,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         // кол-во заказа
         quantityDocumentSku = addDProp(baseGroup, "quantityDocumentSku", "Кол-во", DoubleClass.instance, document, sku);
+
+        // заказ по артикулам
+
+        articleSIDDocument = addJProp(idGroup, "articleSIDDocument", "Артикул (ИД)", articleSIDSupplier, 1, supplierDocument, 2);
+
+        numberDocumentArticle = addDProp(baseGroup, "numberDocumentArticle", "Номер", IntegerClass.instance, document, article);
+        incrementNumberDocumentSID = addJProp(true, "Добавить строку", addIAProp(numberDocumentArticle, 1),
+                                                  1, articleSIDDocument, 2, 1);
 
         quantityDocumentArticle = addDGProp(baseGroup, "quantityDocumentArticle", "Кол-во",
                 1, false,
@@ -204,11 +220,12 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objSizeSupplier;
         private ObjectEntity objColorSupplier;
         private ObjectEntity objOrder;
+        private ObjectEntity objSupplier;
 
         private OrderFormEntity(NavigatorElement parent, int iID, String caption) {
             super(parent, iID, caption);
 
-            ObjectEntity objSupplier = addSingleGroupObject(supplier, "Поставщик", objectValue, name);
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", name);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objOrder = addSingleGroupObject(order, "Заказ", date, sidDocument);
@@ -217,9 +234,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objSIDArticle = addSingleGroupObject(StringClass.get(50), "Ввод артикула", objectValue);
             objSIDArticle.groupTo.setSingleClassView(ClassViewType.PANEL);
 
+            addAutoAction(objSIDArticle, addPropertyObject(addNEArticleCompositeSIDSupplier, objSIDArticle, objSupplier));
+            addAutoAction(objSIDArticle, addPropertyObject(incrementNumberDocumentSID, objOrder, objSIDArticle));
             addAutoAction(objSIDArticle, addPropertyObject(seekArticleSIDSupplier, objSIDArticle, objSupplier));
 
-            objArticleComposite = addSingleGroupObject(articleComposite, "Артикул", sidArticle, originalNameArticle, countryOfOriginArticle);
+            objArticleComposite = addSingleGroupObject(articleComposite, "Артикул");
+            addPropertyDraw(numberDocumentArticle, objOrder, objArticleComposite);
+            addPropertyDraw(objArticleComposite, sidArticle, originalNameArticle, nameCountryOfOriginArticle);
             addObjectActions(this, objArticleComposite);
 
             objItem = addSingleGroupObject(item, "Товар", barcode, sidColorSupplierItem, nameColorSupplierItem, nameSizeSupplierItem);
@@ -242,9 +263,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierColorSupplier, objColorSupplier), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierSizeSupplier, objSizeSupplier), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(articleItem, objItem), Compare.EQUALS, objArticleComposite));
-            addFixedFilter(new OrFilterEntity(
-                                new NotNullFilterEntity(addPropertyObject(quantityDocumentArticle, objOrder, objArticleComposite)),
-                                new CompareFilterEntity(addPropertyObject(sidArticle, objArticleComposite), Compare.EQUALS, objSIDArticle)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(numberDocumentArticle, objOrder, objArticleComposite)));
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(new RegularFilterEntity(genID(),
@@ -258,11 +277,15 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
 
+            design.setReadOnly(objSupplier, true);
+
+            design.defaultOrders.put(design.get(getPropertyDraw(numberDocumentArticle)), true);
+
             design.get(getPropertyDraw(objectValue, objSIDArticle)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0);
 
             design.get(objOrder.groupTo).grid.constraints.fillVertical = 0.5;
-            design.get(objArticleComposite.groupTo).grid.constraints.fillHorizontal = 2.0;
-            design.get(objItem.groupTo).grid.constraints.fillHorizontal = 1.5;
+            design.get(objArticleComposite.groupTo).grid.constraints.fillHorizontal = 4.0;
+            design.get(objItem.groupTo).grid.constraints.fillHorizontal = 3;
 
             design.addIntersection(design.getGroupObjectContainer(objArticleComposite.groupTo),
                                    design.getGroupObjectContainer(objSizeSupplier.groupTo),
