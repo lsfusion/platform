@@ -42,6 +42,8 @@ import platform.server.form.navigator.ComputerController;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.navigator.RemoteNavigator;
 import platform.server.form.navigator.UserController;
+import platform.server.form.view.DefaultFormView;
+import platform.server.form.view.FormView;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.AddObjectActionProperty;
@@ -59,6 +61,8 @@ import platform.server.net.ServerSocketFactory;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.DataSession;
 
+import javax.swing.*;
+import java.awt.event.KeyEvent;
 import java.io.*;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -503,6 +507,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP integerID;
     public LP dateID;
 
+    public LP objectByName;
+    public LP seekObjectName;
+
     private final ConcreteValueClass classSIDValueClass = StringClass.get(250);
 
     public static int genSystemClassID(int id) {
@@ -909,6 +916,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         LP sessionDate = addDProp(baseGroup, "sessionDate", "Дата сессии", DateClass.instance, session);
         sessionDate.setDerivedChange(currentDate, true, is(session), 1);
         onlyNotZero = addJProp(andNot1, 1, addJProp(equals2, 1, vzero), 1);
+
+        objectByName = addMGProp(idGroup, "objectByName", "Объект (Имя)", object(baseClass.named), name, 1);
+        seekObjectName = addJProp(true, "Поиск объекта", addSAProp(null), objectByName, 1);
     }
 
     /**
@@ -966,6 +976,28 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return;
     }
 
+    protected Map<CustomClass, AbstractClassFormEntity<T>> classForms = new HashMap<CustomClass, AbstractClassFormEntity<T>>();
+
+    public AbstractClassFormEntity<T> getClassForm(CustomClass customClass) {
+        AbstractClassFormEntity <T>form = classForms.get(customClass);
+        if (form != null) {
+            return form;
+        }
+
+        form = new DefaultClassFormEntity(this, customClass);
+        classForms.put(customClass, form);
+
+        return form;
+    }
+
+    public void putClassForm(CustomClass customClass, AbstractClassFormEntity<T> form) {
+        classForms.put(customClass, form);
+    }
+
+    protected void initBaseClassForms() {
+        putClassForm(baseClass.named, new NamedObjectClassForm(this, baseClass.named));
+    }
+
     private class UserPolicyFormEntity extends FormEntity {
         protected UserPolicyFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Политики пользователей");
@@ -981,6 +1013,30 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             PropertyDrawEntity loginDraw = getPropertyDraw(userLogin, objUser.groupTo);
             balanceDraw.addColumnGroupObject(objUser.groupTo);
             balanceDraw.setPropertyCaption(loginDraw.propertyObject);
+        }
+    }
+
+    public class NamedObjectClassForm extends DefaultClassFormEntity {
+        public ObjectEntity objObjectName;
+
+        public NamedObjectClassForm(BusinessLogics BL, CustomClass cls) {
+            super(BL, cls);
+
+            objObjectName = addSingleGroupObject(StringClass.get(50), "Поиск по имени", objectValue);
+            objObjectName.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            //двигаем в начало
+            groups.remove(objObjectName.groupTo);
+            groups.add(0, objObjectName.groupTo);
+
+            addAutoAction(objObjectName, addPropertyObject(seekObjectName, objObjectName));
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
+            design.get(getPropertyDraw(objectValue, objObjectName)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0);
+            return design;
         }
     }
 
@@ -1100,6 +1156,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         initExternalScreens();
 
         logger.info("Initializing navigators...");
+
+        initBaseClassForms();
 
         baseElement.add(baseClass.getBaseClassForm(this));
 
@@ -3730,8 +3788,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         Class cls = this.getClass();
         for (java.lang.reflect.Field field :  cls.getDeclaredFields()) {
-            
-            
+
+
 
         }
 

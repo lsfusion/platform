@@ -22,7 +22,6 @@ import platform.server.data.type.Type;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
-import platform.server.form.entity.ClassFormEntity;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.CustomObjectInstance;
@@ -280,7 +279,7 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
     private FormEntity baseClassForm = null;
     public FormEntity getBaseClassForm(BusinessLogics<?> BL) {
         if(baseClassForm==null) {
-            baseClassForm = new ClassFormEntity(BL,this);
+            baseClassForm = BL.getClassForm(this);
             for(CustomClass child : children)
                 baseClassForm.add(child.getBaseClassForm(BL));
         }

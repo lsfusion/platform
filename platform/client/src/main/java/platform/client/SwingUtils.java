@@ -62,16 +62,9 @@ public class SwingUtils {
     }
 
     public static Point computeAbsoluteLocation(Component comp) {
-
-        Point pt = new Point();
-        while (comp != null ) {
-            Point ptc = comp.getLocation();
-            pt.x += ptc.x;
-            pt.y += ptc.y;
-            comp = comp.getParent();
-        }
-
-        return pt;
+        Point result = comp.getLocation();
+        SwingUtilities.convertPointToScreen(result, comp);
+        return result;
     }
 
     private final static WeakHashMap<String, Timer> timers = new WeakHashMap<String, Timer>();
@@ -143,8 +136,9 @@ public class SwingUtils {
 
     // запрашивает положение объекта, чтобы он не вылезал за экран
     public static void requestLocation(Component comp, Point point) {
-        point.x = Math.min(point.x, comp.getParent().getWidth() - comp.getWidth() - 20);
-        point.y = Math.min(point.y, comp.getParent().getHeight() - comp.getHeight() - 20);
+        Container parent = comp.getParent();
+        point.x = Math.min(point.x, parent.getX() + parent.getWidth() - comp.getWidth() - 20);
+        point.y = Math.min(point.y, parent.getY() + parent.getHeight() - comp.getHeight() - 20);
         comp.setLocation(point);
     }
 

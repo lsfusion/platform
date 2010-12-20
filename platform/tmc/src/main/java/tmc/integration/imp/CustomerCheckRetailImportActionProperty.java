@@ -2,16 +2,14 @@ package tmc.integration.imp;
 
 import org.xBaseJ.DBF;
 import platform.interop.action.ClientAction;
-import platform.interop.action.MessageClientAction;
 import platform.server.auth.PolicyManager;
 import platform.server.classes.ValueClass;
-import platform.server.form.entity.ClassFormEntity;
+import platform.server.form.entity.DefaultClassFormEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import tmc.VEDBusinessLogics;
@@ -40,7 +38,7 @@ public class CustomerCheckRetailImportActionProperty extends ActionProperty {
             int recordCount = impFile.getRecordCount();
 
             FormInstance formInstance = new FormInstance(
-                    new ClassFormEntity(BL, BL.customerCheckRetail),
+                    new DefaultClassFormEntity(BL, BL.customerCheckRetail),
                     BL, BL.createSession(), PolicyManager.defaultSecurityPolicy, null, null,
                     new DataObject(executeForm.form.instanceFactory.computer, BL.computer));
 

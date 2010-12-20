@@ -16,6 +16,8 @@ import platform.server.data.query.Query;
 import platform.server.data.type.TypeSerializer;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.FilterEntity;
+import platform.server.form.entity.filter.NotFilterEntity;
+import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.form.instance.filter.FilterInstance;
 import platform.server.form.instance.filter.RegularFilterGroupInstance;
@@ -29,6 +31,9 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ObjectValueProperty;
 import platform.server.logics.property.Property;
+import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.PropertyValueImplement;
+import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.session.*;
 
 import java.io.DataOutputStream;
@@ -970,9 +975,26 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     public DialogInstance<T> createClassPropertyDialog(int viewID, int value) throws RemoteException, SQLException {
-        ClassFormEntity<T> classForm = new ClassFormEntity<T>(BL, getPropertyDraw(viewID).propertyObject.getDialogClass());
-        return new DialogInstance<T>(classForm, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.object, value, instanceFactory.computer);
+        AbstractClassFormEntity<T> classForm = BL.getClassForm(getPropertyDraw(viewID).propertyObject.getDialogClass());
+        return new DialogInstance<T>(classForm, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.getObject(), value, instanceFactory.computer);
     }
+
+    public <P extends PropertyInterface> AbstractClassFormEntity<T> getDataChaneFormEntity(PropertyObjectInstance<P> changeProperty) {
+        PropertyValueImplement<P> implement = changeProperty.getValueImplement();
+        AbstractClassFormEntity<T> formEntity = BL.getClassForm(changeProperty.getDialogClass());
+        formEntity.caption = implement.toString();
+        for (MaxChangeProperty<?, P> constrainedProperty : BL.getChangeConstrainedProperties(implement.property)) {
+            formEntity.addFixedFilter(
+                    new NotFilterEntity(
+                            new NotNullFilterEntity<MaxChangeProperty.Interface<P>>(
+                                    constrainedProperty.getPropertyObjectEntity(implement.mapping, formEntity.getObject())
+                            )
+                    )
+            );
+        }
+        return formEntity;
+    }
+
 
     public DialogInstance<T> createEditorPropertyDialog(int viewID) throws SQLException {
         PropertyDrawInstance propertyDraw = getPropertyDraw(viewID);
@@ -980,9 +1002,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         PropertyObjectInstance<?> changeProperty = getChangePropertyObjectInstance(propertyDraw);
         assert changeProperty != null;
 
-        DataChangeFormEntity<T> formEntity = new DataChangeFormEntity<T>(BL, changeProperty.getDialogClass(), changeProperty.getValueImplement());
+        AbstractClassFormEntity<T> formEntity = getDataChaneFormEntity(changeProperty);
 
-        ObjectEntity dialogObject = formEntity.object;
+        ObjectEntity dialogObject = formEntity.getObject();
         DialogInstance<T> dialog = new DialogInstance<T>(formEntity, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, changeProperty.read(session, this), instanceFactory.computer);
 
         //если для readOnly свойства возвращалось ObjectValueProperty для изменения объекта,

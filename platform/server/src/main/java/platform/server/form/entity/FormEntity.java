@@ -491,7 +491,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public FormView getRichDesign() {
         if (richDesign == null) {
-            return new DefaultFormView(this);
+            return createDefaultRichDesign();
         } else {
             return richDesign;
         }
