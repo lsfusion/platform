@@ -39,6 +39,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.Map.Entry;
 
+import static java.util.Collections.singletonMap;
 import static platform.interop.ClassViewType.*;
 import static platform.server.form.instance.GroupObjectInstance.*;
 
@@ -245,11 +246,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
             && propertyDraw.propertyObject.mapping.values().size() == 1
             && propertyDraw.propertyObject.mapping.values().iterator().next() == propertyDraw.toDraw.objects.iterator().next()) {
 
-            for (PropertyDrawInstance objectPropertyDraw : properties) {
-                if (objectPropertyDraw.toDraw == propertyDraw.toDraw && (objectPropertyDraw.propertyObject.property instanceof ObjectValueProperty)) {
-                    return objectPropertyDraw.propertyObject;
-                }
-            }
+            ObjectInstance singleObject = BaseUtils.single(propertyDraw.toDraw.objects);
+            ObjectValueProperty objectValueProperty = BL.getObjectValueProperty(singleObject.getBaseClass());
+
+            return objectValueProperty.getImplement().mapObjects(
+                    singletonMap(
+                            BaseUtils.single(objectValueProperty.interfaces),
+                            singleObject));
         }
 
         //контролируем возможность изменения свойства здесь

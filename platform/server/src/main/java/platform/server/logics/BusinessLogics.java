@@ -6,6 +6,7 @@ import org.springframework.core.io.FileSystemResource;
 import platform.base.*;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
+import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.action.ClientAction;
@@ -32,9 +33,7 @@ import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
-import platform.server.form.entity.FormEntity;
-import platform.server.form.entity.ObjectEntity;
-import platform.server.form.entity.PropertyDrawEntity;
+import platform.server.form.entity.*;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
@@ -69,7 +68,10 @@ import java.rmi.server.RMIFailureHandler;
 import java.rmi.server.RMISocketFactory;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.logging.*;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 // @GenericImmutable нельзя так как Spring валится
 
@@ -509,6 +511,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public Property getProperty(String sid) {
         return rootGroup.getProperty(sid);
+    }
+
+    public ObjectValueProperty getObjectValueProperty(ValueClass... valueClasses) {
+        List<Property> properties = objectValue.getProperties(valueClasses);
+        return properties.size() > 0
+               ? (ObjectValueProperty) properties.iterator().next()
+               : null;
     }
 
     public abstract class MapClassesPropertySet<K, V extends Property> extends PropertySet {

@@ -1,12 +1,14 @@
 package platform.server.logics.property.group;
 
 import platform.server.classes.ConcreteCustomClass;
+import platform.server.classes.ValueClass;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyClassImplement;
 import platform.server.logics.property.ValueClassWrapper;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 // set'ы свойств, нужен в общем то когда входы динамической длины
@@ -32,6 +34,21 @@ public abstract class PropertySet extends AbstractNode {
             }
         }
         return resultList;
+    }
+
+    public List<Property> getProperties(ValueClass... classes) {
+        List<ValueClassWrapper> classList = new ArrayList<ValueClassWrapper>();
+        for (ValueClass cls : classes) {
+            classList.add(new ValueClassWrapper(cls));
+        }
+
+        List<PropertyClassImplement> clsImplements = getProperties(Collections.singleton(classList), true);
+        List<Property> result = new ArrayList<Property>();
+        for (PropertyClassImplement clsImplement : clsImplements) {
+            result.add(clsImplement.property);
+        }
+
+        return result;
     }
 
     protected abstract List<PropertyClassImplement> getProperties(List<ValueClassWrapper> classes);

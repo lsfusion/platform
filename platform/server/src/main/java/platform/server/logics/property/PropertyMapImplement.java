@@ -51,7 +51,7 @@ public class PropertyMapImplement<T extends PropertyInterface,P extends Property
     public PropertyMapImplement<?,P> mapChangeImplement() {
         return property.getChangeImplement().map(mapping);
     }
-    public PropertyObjectInstance<T> mapObjects(Map<P, PropertyObjectInterfaceInstance> mapObjects) {
+    public PropertyObjectInstance<T> mapObjects(Map<P, ? extends PropertyObjectInterfaceInstance> mapObjects) {
         return new PropertyObjectInstance<T>(property, BaseUtils.join(mapping, mapObjects));        
     }
     public PropertyValueImplement<T> mapValues(Map<P, DataObject> mapValues) {
