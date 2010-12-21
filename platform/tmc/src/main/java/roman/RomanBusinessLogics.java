@@ -29,6 +29,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private ConcreteCustomClass articleSingle;
     private ConcreteCustomClass item;
     private ConcreteCustomClass sku;
+    private LP multiplyDouble2;
     private LP sidArticle;
     private LP articleItem;
     private LP sidArticleItem;
@@ -40,10 +41,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP supplierDocument;
     private LP nameSupplierDocument;
     private LP sidDocument;
+    private LP sumDocument;
     private ConcreteCustomClass colorSupplier;
     private ConcreteCustomClass sizeSupplier;
     private LP supplierArticle;
     private LP nameSupplierArticle;
+    private LP priceDocumentArticle;
+    private LP sumDocumentArticle;
     private LP colorSupplierItem;
     private LP nameColorSupplierItem;
     private LP sizeSupplierItem;
@@ -54,6 +58,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP nameSupplierSizeSupplier;
     private LP supplierItem;
     private LP nameSupplierItem;
+    private ConcreteCustomClass valuta;
+    private ConcreteCustomClass shop;
+    private LP valutaSupplier;  //
+    private LP nameValutaSupplier;
+    private LP valutaOrder;
+    private LP nameValutaOrder;
+    private LP shopOrder;
+    private LP nameShopOrder;
     private LP sidColorSupplier;
     private LP sidColorSupplierItem;
     private LP quantityDocumentSku;
@@ -88,6 +100,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         country = addConcreteClass("country", "Страна", baseClass.named);
 
+        valuta = addConcreteClass("valuta", "Валюта", baseClass.named);
+
+        shop = addConcreteClass("shop", "Магазин", baseClass.named);
+
         sku = addConcreteClass("sku", "SKU", barcodeObject);
 
         article = addAbstractClass("article", "Артикул", baseClass);
@@ -112,6 +128,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     @Override
     protected void initProperties() {
 
+        multiplyDouble2 = addMFProp(DoubleClass.instance, 2);
+
+        valutaSupplier = addDProp(baseGroup, "valutaSupplier", "Валюта (код)", valuta, supplier);
+        nameValutaSupplier = addJProp(baseGroup, "nameValutaSupplier", "Валюта", name, valutaSupplier, 1);
+
         sidColorSupplier = addDProp(baseGroup, "sidColorSupplier", "Код", StringClass.get(50), colorSupplier);
 
         supplierColorSupplier = addDProp(idGroup, "supplierColorSupplier", "Поставщик (ИД)", supplier, colorSupplier);
@@ -123,6 +144,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         supplierDocument = addDProp(idGroup, "supplierDocument", "Поставщик (ИД)", supplier, document);
         nameSupplierDocument = addJProp(baseGroup, "nameSupplierDocument", "Поставщик", name, supplierDocument, 1);
 
+        // Order
+        valutaOrder = addDProp(baseGroup, "valutaOrder", "Валюта (код)", valuta, order);
+        nameValutaOrder = addJProp(baseGroup, "nameValutaOrder", "Валюта", name, valutaOrder, 1);
+
+        shopOrder = addDProp(baseGroup, "shopOrder", "Магазин (код)", shop, order);
+        nameShopOrder = addJProp(baseGroup, "nameShopOrder", "Магазин", name, shopOrder, 1);
+
         // Article
 
         sidArticle = addDProp(baseGroup, "sidArticle", "Код", StringClass.get(50), article);
@@ -130,6 +158,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         countryOfOriginArticle = addDProp(idGroup, "countryOfOriginArticle", "Страна происхождения (ИД)", country, article);
         nameCountryOfOriginArticle = addJProp(baseGroup, "nameCountryOfOriginArticle", "Страна происхождения", name, countryOfOriginArticle, 1);
+
+        priceDocumentArticle = addDProp(baseGroup, "priceDocumentArticle", "Цена", DoubleClass.instance, document, article);
 
         supplierArticle = addDProp(idGroup, "supplierArticle", "Поставщик (ИД)", supplier, article);
         nameSupplierArticle = addJProp(baseGroup, "nameSupplierArticle", "Поставщик", name, supplierArticle, 1);
@@ -186,6 +216,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 addCProp(DoubleClass.instance, Double.MAX_VALUE, document, sku), 1, 2,
                 2);
         
+        sumDocumentArticle = addJProp(baseGroup, "Сумма", multiplyDouble2, quantityDocumentArticle, 1, 2, priceDocumentArticle, 1, 2);
+        sumDocument = addSGProp(baseGroup, "sumDocument", "Сумма документа", sumDocumentArticle, 1);
+
         quantityDocumentArticleColor = addSGProp(baseGroup, "quantityDocumentArticleColor", "Кол-во", quantityDocumentSku, 1, articleItem, 2, colorSupplierItem, 2);
         quantityDocumentArticleSize = addSGProp(baseGroup, "quantityDocumentArticleSize", "Кол-во", quantityDocumentSku, 1, articleItem, 2, sizeSupplierItem, 2);
 
@@ -230,10 +263,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private OrderFormEntity(NavigatorElement parent, int iID, String caption) {
             super(parent, iID, caption);
 
-            objSupplier = addSingleGroupObject(supplier, "Поставщик", name);
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameValutaSupplier);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objOrder = addSingleGroupObject(order, "Заказ", date, sidDocument);
+            objOrder = addSingleGroupObject(order, "Заказ", date, sidDocument, nameValutaOrder, sumDocument, nameShopOrder);
             addObjectActions(this, objOrder);
 
             objSIDArticle = addSingleGroupObject(StringClass.get(50), "Ввод артикула", objectValue);
@@ -246,6 +279,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objArticleComposite = addSingleGroupObject(articleComposite, "Артикул");
             addPropertyDraw(numberDocumentArticle, objOrder, objArticleComposite);
             addPropertyDraw(objArticleComposite, sidArticle, originalNameArticle, nameCountryOfOriginArticle);
+            addPropertyDraw(priceDocumentArticle, objOrder, objArticleComposite);
+            addPropertyDraw(sumDocumentArticle, objOrder, objArticleComposite);
             addObjectActions(this, objArticleComposite);
 
             objItem = addSingleGroupObject(item, "Товар", barcode, sidColorSupplierItem, nameColorSupplierItem, nameSizeSupplierItem);

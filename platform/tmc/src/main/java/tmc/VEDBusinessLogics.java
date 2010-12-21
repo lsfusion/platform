@@ -113,6 +113,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     CustomClass customerWhole;
     CustomClass customerInvoiceRetail;
     public ConcreteCustomClass customerCheckRetail;
+    //CustomClass customerCheckRetail;
     CustomClass orderWhole;
     CustomClass orderInvoiceRetail;
     CustomClass checkRetail;
@@ -792,6 +793,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         orderComputer = addDCProp("orderComputer", "Компьютер заказа", currentComputer, true, is(order), 1);
         orderComputerName = addJProp("Компьютер заказа", hostname, orderComputer, 1);
 
+
+        setNotNull(addJProp("Штрих-код покупателя", and1, barcode, 1, is(customerCheckRetail), 1));
+        //setNotNull(addJProp("Штрих-код товара", and1, barcode, 1, is(article), 1));
+        setNotNull(addJProp("Штрих-код сертификата", and1, barcode, 1, is(obligation), 1));
+        //setNotNull(addJProp(andNot1, barcode, 1, is(user), 1));
+
         checkRetailExported = addDProp("checkRetailExported", "Экспортирован", LogicalClass.instance, checkRetail);
 
         cashRegController = new CashRegController(this); // бред конечно создавать его здесь, но влом создавать getCashRegController()
@@ -872,7 +879,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP articleStoreMin;
     LP articleFullStoreDemand;
 
-    LP customerCheckRetailPhone, customerCheckRetailBorn, customerCheckRetailAddress;
+    LP customerCheckRetailPhone, customerCheckRetailBorn, customerCheckRetailAddress, customerCheckRetailDiscount;
 
     LP nameContragent, phoneContragent, bornContragent, addressContragent, initialSumContragent;
     LP nameContragentImpl, phoneContragentImpl, bornContragentImpl, addressContragentImpl, initialSumContragentImpl;
@@ -1030,7 +1037,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private FormEntity saleCheckCertForm;
     private FormEntity cachRegManagementForm;
     private FormEntity returnSaleCheckRetailArticleForm;
-    //private FormEntity shopMoneyForm;
+
     public CommitSaleCheckRetailFormEntity commitSaleBrowseForm;
     public SaleCheckCertFormEntity saleCheckCertBrowseForm;
     public ReturnSaleCheckRetailFormEntity returnSaleCheckRetailBrowse;
@@ -1068,6 +1075,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         returnSaleCheckRetailBrowse = addFormEntity(new ReturnSaleCheckRetailFormEntity(returnSaleCheckRetailArticleForm, false, 1355, true));
         cachRegManagementForm = addFormEntity(cashRegController.createCashRegManagementFormEntity(saleRetailCashRegisterElement, 1365));
         addFormEntity(new ShopMoneyFormEntity(saleRetailCashRegisterElement, 1330, "Данные из касс"));
+        addFormEntity(new ClientFormEntity(saleRetailCashRegisterElement, 1370, "Редактирование клиентов"));
         NavigatorElement saleRetailInvoice = new NavigatorElement(saleRetailElement, 1400, "Безналичный расчет");
         FormEntity saleRetailInvoiceForm = addFormEntity(new OrderSaleInvoiceRetailFormEntity(saleRetailInvoice, 1410, true, false));
         addFormEntity(new OrderSaleInvoiceRetailFormEntity(saleRetailInvoiceForm, 1420, false, false));
@@ -1129,6 +1137,53 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             super(parent, ID, "Глобальные параметры");
             addPropertyDraw(publicGroup, true);
 
+        }
+    }
+
+    private class ClientFormEntity extends FormEntity {
+
+        private ClientFormEntity(NavigatorElement parent, int iID, String caption) {
+            super(parent, iID, caption);
+
+            GroupObjectEntity gobjFindClient = new GroupObjectEntity(genID());
+            ObjectEntity barcodeClient = new ObjectEntity(genID(), StringClass.get(13), "Введите штрих код");
+            ObjectEntity nameClient = new ObjectEntity(genID(), StringClass.get(100), "Введите ФИО");
+
+            gobjFindClient.add(barcodeClient);
+            gobjFindClient.add(nameClient);
+
+            addGroup(gobjFindClient);
+
+            gobjFindClient.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
+            gobjFindClient.initClassView = ClassViewType.PANEL;
+
+            addPropertyDraw(barcodeClient, objectValue);
+            addPropertyDraw(nameClient, objectValue);
+
+            ObjectEntity objClient = addSingleGroupObject(customerCheckRetail, "Клиент");
+            ObjectEntity objDoc = addSingleGroupObject(commitSaleCheckArticleRetail, "Чек");
+
+            addPropertyDraw(objClient, barcode, name, customerCheckRetailPhone, customerCheckRetailBorn, customerCheckRetailAddress, customerCheckRetailDiscount, clientInitialSum, clientSum);
+            addPropertyDraw(objDoc, objectValue, date, orderHour, outStore, orderSalePayNoObligation);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(barcode, objClient), Compare.EQUALS, addPropertyObject(orderContragentBarcode, objDoc)));
+
+            //addFixedFilter(new NotNullFilterEntity(addPropertyObject(barcode, objClient)));
+
+            addFixedFilter(new OrFilterEntity(
+                    new CompareFilterEntity(addPropertyObject(barcode, objClient), Compare.EQUALS, barcodeClient),
+                    new CompareFilterEntity(addPropertyObject(name, objClient), Compare.EQUALS, nameClient)));
+        }
+
+
+        @Override
+        public DefaultFormView createDefaultRichDesign() {
+
+            DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
+                        
+            design.setKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F6, InputEvent.SHIFT_DOWN_MASK | InputEvent.SHIFT_MASK));
+
+            return design;
         }
     }
 
@@ -2451,7 +2506,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     }
 
-    public class SaleCheckCertFormEntity extends SaleCertFormEntity {
+       public class SaleCheckCertFormEntity extends SaleCertFormEntity {
 
         @Override
         public boolean isReadOnly() {
