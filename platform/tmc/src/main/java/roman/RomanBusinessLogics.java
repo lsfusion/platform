@@ -29,7 +29,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private ConcreteCustomClass articleSingle;
     private ConcreteCustomClass item;
     private ConcreteCustomClass sku;
-    private LP multiplyDouble2;
     private LP sidArticle;
     private LP articleItem;
     private LP sidArticleItem;
@@ -79,13 +78,16 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP nameCountryOfOriginArticle;
     private LP articleSIDSupplier;
     private LP seekArticleSIDSupplier;
-    private LP addArticleCompositeSIDSupplier;
     private LP numberDocumentArticle;
     private LP incrementNumberDocumentArticle;
     private LP articleSIDDocument;
     private LP incrementNumberDocumentSID;
+    private LP addArticleSingleSIDSupplier;
+    private LP addNEArticleSingleSIDSupplier;
+    private LP addArticleCompositeSIDSupplier;
     private LP addNEArticleCompositeSIDSupplier;
     private LP numberDocumentSIDArticle;
+    private LP quantityDocumentArticle;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -128,8 +130,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     @Override
     protected void initProperties() {
 
-        multiplyDouble2 = addMFProp(DoubleClass.instance, 2);
-
         currencySupplier = addDProp(idGroup, "currencySupplier", "Валюта (ИД)", currency, supplier);
         nameCurrencySupplier = addJProp(baseGroup, "nameCurrencySupplier", "Валюта", name, currencySupplier, 1);
 
@@ -167,8 +167,12 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         articleSIDSupplier = addCGProp(idGroup, "articleSIDSupplier", "Артикул (ИД)", object(article), sidArticle, sidArticle, 1, supplierArticle, 1);
 
         seekArticleSIDSupplier = addJProp(true, "Поиск артикула", addSAProp(null), articleSIDSupplier, 1, 2);
-        addArticleCompositeSIDSupplier = addJProp(true, "Ввод артикула", addAAProp(articleComposite, sidArticle, supplierArticle), 1, 2);
-        addNEArticleCompositeSIDSupplier = addJProp(true, "Ввод артикула (НС)", andNot1, addArticleCompositeSIDSupplier, 1, 2, articleSIDSupplier, 1, 2);
+
+        addArticleSingleSIDSupplier = addJProp(true, "Ввод простого артикула", addAAProp(articleSingle, sidArticle, supplierArticle), 1, 2);
+        addNEArticleSingleSIDSupplier = addJProp(true, "Ввод простого артикула (НС)", andNot1, addArticleSingleSIDSupplier, 1, 2, articleSIDSupplier, 1, 2);
+
+        addArticleCompositeSIDSupplier = addJProp(true, "Ввод составного артикула", addAAProp(articleComposite, sidArticle, supplierArticle), 1, 2);
+        addNEArticleCompositeSIDSupplier = addJProp(true, "Ввод составного артикула (НС)", andNot1, addArticleCompositeSIDSupplier, 1, 2, articleSIDSupplier, 1, 2);
 
         // Item
 
@@ -195,9 +199,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         sidDocument = addDProp(baseGroup, "sidDocument", "Код", StringClass.get(50), document);
 
-        // кол-во заказа
-        quantityDocumentSku = addDProp(baseGroup, "quantityDocumentSku", "Кол-во", DoubleClass.instance, document, sku);
-
         // заказ по артикулам
 
         articleSIDDocument = addJProp(idGroup, "articleSIDDocument", "Артикул (ИД)", articleSIDSupplier, 1, supplierDocument, 2);
@@ -210,15 +211,20 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                                                   1, articleSIDDocument, 2, 1), 1, 2,
                                                   numberDocumentSIDArticle, 1, 2);
 
+        // кол-во заказа
+        quantityDocumentSku = addDProp(baseGroup, "quantityDocumentSku", "Кол-во", DoubleClass.instance, document, sku);
+
         quantityDocumentArticleComposite = addDGProp(baseGroup, "quantityDocumentArticleComposite", "Кол-во",
                 1, false,
                 quantityDocumentSku, 1, articleItem, 2,
                 addCProp(DoubleClass.instance, Double.MAX_VALUE, document, sku), 1, 2,
                 2);
 
+        quantityDocumentArticle = addCUProp(baseGroup, "quantityDocumentArticle", "Кол-во", quantityDocumentArticleComposite, quantityDocumentSku);
+
         priceDocumentArticle = addDProp(baseGroup, "priceDocumentArticle", "Цена", DoubleClass.instance, document, article);
 
-        sumDocumentArticle = addJProp(baseGroup, "Сумма", multiplyDouble2, quantityDocumentArticleComposite, 1, 2, priceDocumentArticle, 1, 2);
+        sumDocumentArticle = addJProp(baseGroup, "Сумма", multiplyDouble2, quantityDocumentArticle, 1, 2, priceDocumentArticle, 1, 2);
         sumDocument = addSGProp(baseGroup, "sumDocument", "Сумма документа", sumDocumentArticle, 1);
 
         quantityDocumentArticleCompositeColor = addSGProp(baseGroup, "quantityDocumentArticleCompositeColor", "Кол-во", quantityDocumentSku, 1, articleItem, 2, colorSupplierItem, 2);
@@ -254,13 +260,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     }
 
     private class OrderFormEntity extends FormEntity<RomanBusinessLogics> {
-        private ObjectEntity objSIDArticle;
-        private ObjectEntity objArticleComposite;
+        private ObjectEntity objSupplier;
+        private ObjectEntity objOrder;
+        private ObjectEntity objSIDArticleComposite;
+        private ObjectEntity objSIDArticleSingle;
+        private ObjectEntity objArticle;
         private ObjectEntity objItem;
         private ObjectEntity objSizeSupplier;
         private ObjectEntity objColorSupplier;
-        private ObjectEntity objOrder;
-        private ObjectEntity objSupplier;
 
         private OrderFormEntity(NavigatorElement parent, int iID, String caption) {
             super(parent, iID, caption);
@@ -271,45 +278,54 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objOrder = addSingleGroupObject(order, "Заказ", date, sidDocument, nameCurrencyOrder, sumDocument, nameShopOrder);
             addObjectActions(this, objOrder);
 
-            objSIDArticle = addSingleGroupObject(StringClass.get(50), "Ввод артикула", objectValue);
-            objSIDArticle.groupTo.setSingleClassView(ClassViewType.PANEL);
+            objSIDArticleComposite = addSingleGroupObject(StringClass.get(50), "Ввод составного артикула", objectValue);
+            objSIDArticleComposite.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            addAutoAction(objSIDArticle, addPropertyObject(addNEArticleCompositeSIDSupplier, objSIDArticle, objSupplier));
-            addAutoAction(objSIDArticle, addPropertyObject(incrementNumberDocumentSID, objOrder, objSIDArticle));
-            addAutoAction(objSIDArticle, addPropertyObject(seekArticleSIDSupplier, objSIDArticle, objSupplier));
+            addAutoAction(objSIDArticleComposite, addPropertyObject(addNEArticleCompositeSIDSupplier, objSIDArticleComposite, objSupplier));
+            addAutoAction(objSIDArticleComposite, addPropertyObject(incrementNumberDocumentSID, objOrder, objSIDArticleComposite));
+            addAutoAction(objSIDArticleComposite, addPropertyObject(seekArticleSIDSupplier, objSIDArticleComposite, objSupplier));
 
-            objArticleComposite = addSingleGroupObject(articleComposite, "Артикул");
-            addPropertyDraw(numberDocumentArticle, objOrder, objArticleComposite);
-            addPropertyDraw(objArticleComposite, sidArticle, originalNameArticle, nameCountryOfOriginArticle);
-            addPropertyDraw(quantityDocumentArticleComposite, objOrder, objArticleComposite);
-            addPropertyDraw(priceDocumentArticle, objOrder, objArticleComposite);
-            addPropertyDraw(sumDocumentArticle, objOrder, objArticleComposite);
-            addObjectActions(this, objArticleComposite);
+            objSIDArticleSingle = addSingleGroupObject(StringClass.get(50), "Ввод простого артикула", objectValue);
+            objSIDArticleSingle.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            addAutoAction(objSIDArticleSingle, addPropertyObject(addNEArticleSingleSIDSupplier, objSIDArticleSingle, objSupplier));
+            addAutoAction(objSIDArticleSingle, addPropertyObject(incrementNumberDocumentSID, objOrder, objSIDArticleSingle));
+            addAutoAction(objSIDArticleSingle, addPropertyObject(seekArticleSIDSupplier, objSIDArticleSingle, objSupplier));
+
+            objArticle = addSingleGroupObject(article, "Артикул");
+            objArticle.groupTo.setSingleClassView(ClassViewType.GRID);
+
+            addPropertyDraw(numberDocumentArticle, objOrder, objArticle);
+            addPropertyDraw(objArticle, sidArticle, originalNameArticle, nameCountryOfOriginArticle);
+            addPropertyDraw(quantityDocumentArticle, objOrder, objArticle);
+            addPropertyDraw(priceDocumentArticle, objOrder, objArticle);
+            addPropertyDraw(sumDocumentArticle, objOrder, objArticle);
+            addPropertyDraw(delete, objArticle);
 
             objItem = addSingleGroupObject(item, "Товар", barcode, sidColorSupplierItem, nameColorSupplierItem, nameSizeSupplierItem);
             addObjectActions(this, objItem);
 
             objSizeSupplier = addSingleGroupObject(sizeSupplier, "Размер", selection, name);
-            objColorSupplier = addSingleGroupObject(colorSupplier, "Цвет", sidColorSupplier, name);
+            objColorSupplier = addSingleGroupObject(colorSupplier, "Цвет", selection, sidColorSupplier, name);
 
-            PropertyDrawEntity quantityColumn = addPropertyDraw(quantityDocumentArticleCompositeColorSize, objOrder, objArticleComposite, objColorSupplier, objSizeSupplier);
+            PropertyDrawEntity quantityColumn = addPropertyDraw(quantityDocumentArticleCompositeColorSize, objOrder, objArticle, objColorSupplier, objSizeSupplier);
             quantityColumn.columnGroupObjects.add(objSizeSupplier.groupTo);
             quantityColumn.propertyCaption = addPropertyObject(name, objSizeSupplier);
 
             addPropertyDraw(quantityDocumentSku, objOrder, objItem);
-            addPropertyDraw(quantityDocumentArticleCompositeColor, objOrder, objArticleComposite, objColorSupplier);
-            addPropertyDraw(quantityDocumentArticleCompositeSize, objOrder, objArticleComposite, objSizeSupplier);
+            addPropertyDraw(quantityDocumentArticleCompositeColor, objOrder, objArticle, objColorSupplier);
+            addPropertyDraw(quantityDocumentArticleCompositeSize, objOrder, objArticle, objSizeSupplier);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objOrder), Compare.EQUALS, objSupplier));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierArticle, objArticleComposite), Compare.EQUALS, objSupplier));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierArticle, objArticle), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierColorSupplier, objColorSupplier), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierSizeSupplier, objSizeSupplier), Compare.EQUALS, objSupplier));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(articleItem, objItem), Compare.EQUALS, objArticleComposite));
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(numberDocumentArticle, objOrder, objArticleComposite)));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(articleItem, objItem), Compare.EQUALS, objArticle));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(numberDocumentArticle, objOrder, objArticle)));
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(new RegularFilterEntity(genID(),
-                                  new NotNullFilterEntity(addPropertyObject(quantityDocumentArticleCompositeColor, objOrder, objArticleComposite, objColorSupplier)),
+                                  new NotNullFilterEntity(addPropertyObject(quantityDocumentArticleCompositeColor, objOrder, objArticle, objColorSupplier)),
                                   "Заказано",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
             addRegularFilterGroup(filterGroup);
@@ -323,13 +339,18 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             design.defaultOrders.put(design.get(getPropertyDraw(numberDocumentArticle)), true);
 
-            design.get(getPropertyDraw(objectValue, objSIDArticle)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0);
+            design.get(getPropertyDraw(objectValue, objSIDArticleComposite)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0);
+            design.get(getPropertyDraw(objectValue, objSIDArticleSingle)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0);
 
             design.get(objOrder.groupTo).grid.constraints.fillVertical = 0.5;
-            design.get(objArticleComposite.groupTo).grid.constraints.fillHorizontal = 4;
+            design.get(objArticle.groupTo).grid.constraints.fillHorizontal = 4;
             design.get(objItem.groupTo).grid.constraints.fillHorizontal = 3;
 
-            design.addIntersection(design.getGroupObjectContainer(objArticleComposite.groupTo),
+            design.addIntersection(design.getGroupObjectContainer(objSIDArticleComposite.groupTo),
+                                   design.getGroupObjectContainer(objSIDArticleSingle.groupTo),
+                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            design.addIntersection(design.getGroupObjectContainer(objArticle.groupTo),
                                    design.getGroupObjectContainer(objSizeSupplier.groupTo),
                                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 

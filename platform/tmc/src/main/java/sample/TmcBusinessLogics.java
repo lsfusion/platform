@@ -147,7 +147,6 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
     LP percent, revPercent, addPercent;
     LP round, roundm1;
-    LP multiplyDouble2;
     LP equals22;
 
     private void initAbstractProperties() {
@@ -158,7 +157,6 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         addPercent = addSFProp("((prm1*(100+prm2))/100)", DoubleClass.instance, 2);
         round = addSFProp("round(CAST(prm1 as numeric),0)", DoubleClass.instance, 1);
         roundm1 = addSFProp("round(CAST(prm1 as numeric),-1)", DoubleClass.instance, 1);
-        multiplyDouble2 = addMFProp(DoubleClass.instance,2);
     }
 
     // ======================================================================================================= //

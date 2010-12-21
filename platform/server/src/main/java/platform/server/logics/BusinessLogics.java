@@ -459,6 +459,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP between;
     protected LP object1, and1, andNot1;
     protected LP equals2, diff2;
+    protected LP multiplyDouble2;
     protected LP divideDouble;
     protected LP string2;
     protected LP insensetiveString2;
@@ -666,7 +667,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    protected SelectionPropertySet selection;
+    public SelectionPropertySet selection;
 
     public class CompositeNamePropertySet extends MapClassesPropertySet<Integer, JoinProperty> {
         private static final String prefix = "CompositeNameProperty_";
@@ -861,6 +862,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         greater22 = addJProp(greater2, concat2, 1, 2, concat2, 3, 4);
         less22 = addJProp(less2, concat2, 1, 2, concat2, 3, 4);
         diff2 = addCFProp(Compare.NOT_EQUALS);
+        multiplyDouble2 = addMFProp(DoubleClass.instance, 2);
         divideDouble = addSFProp("((prm1)/(prm2))", DoubleClass.instance, 2);
         between = addJProp("Между", and1, groeq2, 1, 2, groeq2, 3, 1);
         vtrue = addCProp("Истина", LogicalClass.instance, true);
