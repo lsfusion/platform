@@ -145,7 +145,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         nameSupplierDocument = addJProp(baseGroup, "nameSupplierDocument", "Поставщик", name, supplierDocument, 1);
 
         // Order
-        currencyOrder = addDProp(idGroup, "currencyOrder", "Валюта (ИД)", currency, order);
+
+        currencyOrder = addDCProp(baseGroup, "currencyOrder", "Валюта (ИД)", currencySupplier, supplierDocument, 1);
+        //currencyOrder = addDProp(idGroup, "currencyOrder", "Валюта (ИД)", currency, order);
         nameCurrencyOrder = addJProp(baseGroup, "nameCurrencyOrder", "Валюта", name, currencyOrder, 1);
 
         shopOrder = addDProp(idGroup, "shopOrder", "Магазин (ИД)", store, order);
