@@ -323,8 +323,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             design.get(getPropertyDraw(objectValue, objSIDArticle)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0);
 
-            design.get(objOrder.groupTo).grid.constraints.fillVertical = 0.5;
-            design.get(objArticleComposite.groupTo).grid.constraints.fillHorizontal = 4.0;
+            design.get(objOrder.groupTo).grid.constraints.fillVertical = 1;
+            design.get(objArticleComposite.groupTo).grid.constraints.fillHorizontal = 3.5;
             design.get(objItem.groupTo).grid.constraints.fillHorizontal = 3;
 
             design.addIntersection(design.getGroupObjectContainer(objArticleComposite.groupTo),
