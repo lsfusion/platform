@@ -1,12 +1,11 @@
 package platform.server.data.query;
 
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
 import platform.base.Counter;
+import platform.base.OrderedMap;
+import platform.server.Settings;
 import platform.server.caches.OuterContext;
-import platform.server.data.KeyField;
-import platform.server.data.SQLSession;
-import platform.server.data.Table;
+import platform.server.data.*;
 import platform.server.data.expr.*;
 import platform.server.data.expr.query.*;
 import platform.server.data.expr.where.MapWhere;
@@ -15,13 +14,9 @@ import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.translator.QueryTranslator;
-import platform.server.data.type.NullReader;
-import platform.server.data.type.ClassReader;
-import platform.server.data.type.Type;
-import platform.server.data.type.TypeObject;
+import platform.server.data.type.*;
 import platform.server.data.where.CheckWhere;
 import platform.server.data.where.Where;
-import platform.server.Settings;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -47,7 +42,7 @@ public class CompiledQuery<K,V> {
 
     public final boolean unionAll;
 
-    final Map<ValueExpr,String> params;
+    final Map<Value,String> params;
 
     private boolean checkQuery() {
         assert !params.containsValue(null);
@@ -79,8 +74,8 @@ public class CompiledQuery<K,V> {
         propertyReaders = BaseUtils.join(mapProperties,compile.propertyReaders);
         unionAll = compile.unionAll;
 
-        params = new HashMap<ValueExpr, String>();
-        for(Map.Entry<ValueExpr,String> param : compile.params.entrySet())
+        params = new HashMap<Value, String>();
+        for(Map.Entry<Value,String> param : compile.params.entrySet())
             params.put(mapValues.translate(param.getKey()), param.getValue());
 
         assert checkQuery();
@@ -88,7 +83,7 @@ public class CompiledQuery<K,V> {
 
     static class FullSelect extends CompileSource {
 
-        FullSelect(KeyType keyType, Map<ValueExpr, String> params, SQLSyntax syntax) {
+        FullSelect(KeyType keyType, Map<Value, String> params, SQLSyntax syntax) {
             super(keyType, params, syntax);
         }
 
@@ -135,8 +130,8 @@ public class CompiledQuery<K,V> {
             propertyNames.put(property.getKey(),"jprop"+(propertyCount++));
 
         int paramCount = 0;
-        params = new HashMap<ValueExpr, String>();
-        for(ValueExpr mapValue : query.values)
+        params = new HashMap<Value, String>();
+        for(Value mapValue : query.values)
             params.put(mapValue, "qwer" + (paramCount++) + "ffd");
 
         keyReaders = new HashMap<K, ClassReader>();
@@ -223,7 +218,7 @@ public class CompiledQuery<K,V> {
 
         final String prefix;
 
-        public InnerSelect(KeyType keyType, JoinSet innerJoins, SQLSyntax syntax, Map<ValueExpr, String> params, String prefix) {
+        public InnerSelect(KeyType keyType, JoinSet innerJoins, SQLSyntax syntax, Map<Value, String> params, String prefix) {
             super(keyType, params, syntax);
 
             this.prefix = prefix;
@@ -234,7 +229,7 @@ public class CompiledQuery<K,V> {
             innerJoins.fillJoins(innerTables, innerGroups);
             for(Table.Join table : innerTables) {
                 assert !tables.containsKey(table); // assert'ы так как innerWhere должен быть взаимоисключающий
-                tables.put(table,new TableSelect(table,syntax));
+                tables.put(table,new TableSelect(table));
             }
             for(GroupJoin group : innerGroups) {
                 assert !groups.containsKey(group);
@@ -338,9 +333,9 @@ public class CompiledQuery<K,V> {
                 return result;
             }
 
-            TableSelect(Table.Join join,SQLSyntax syntax) {
+            TableSelect(Table.Join join) {
                 super(join);
-                this.source = join.getName(syntax);
+                this.source = join.getQueryName(InnerSelect.this);
             }
 
             public String getSource() {
@@ -352,7 +347,7 @@ public class CompiledQuery<K,V> {
         private String getAlias(Table.Join table) {
             TableSelect join = tables.get(table);
             if(join==null) {
-                join = new TableSelect(table,syntax);
+                join = new TableSelect(table);
                 tables.put(table,join);
             }
             return join.alias;
@@ -548,7 +543,7 @@ public class CompiledQuery<K,V> {
     }
 
     // castTypes параметр чисто для бага Postgre и может остальных
-    private static <K,V> String getInnerSelect(Map<K, KeyExpr> mapKeys, InnerSelectJoin innerSelect, Map<V, Expr> compiledProps, Map<ValueExpr, String> params, OrderedMap<V, Boolean> orders, int top, SQLSyntax syntax, Map<K, String> keyNames, Map<V, String> propertyNames, List<K> keyOrder, List<V> propertyOrder, Map<V, Type> castTypes, String prefix, boolean noInline) {
+    private static <K,V> String getInnerSelect(Map<K, KeyExpr> mapKeys, InnerSelectJoin innerSelect, Map<V, Expr> compiledProps, Map<Value, String> params, OrderedMap<V, Boolean> orders, int top, SQLSyntax syntax, Map<K, String> keyNames, Map<V, String> propertyNames, List<K> keyOrder, List<V> propertyOrder, Map<V, Type> castTypes, String prefix, boolean noInline) {
         Map<K,String> andKeySelect = new HashMap<K, String>(); Collection<String> andWhereSelect = new ArrayList<String>(); Map<V,String> andPropertySelect = new HashMap<V, String>();
         String andFrom = fillInnerSelect(mapKeys, innerSelect, compiledProps, andKeySelect, andPropertySelect, andWhereSelect, params, syntax, prefix);
 
@@ -564,7 +559,7 @@ public class CompiledQuery<K,V> {
                 BaseUtils.toString(whereSelect, " AND "), Query.stringOrder(propertyOrder,keySelect.size(), orders,syntax),"",top==0?"":String.valueOf(top));
     }
 
-    private static <K,AV> String fillSingleSelect(Map<K, KeyExpr> mapKeys, InnerSelectJoin innerSelect, Map<AV, Expr> compiledProps, Map<K, String> keySelect, Map<AV, String> propertySelect, Map<ValueExpr,String> params, SQLSyntax syntax, String prefix) {
+    private static <K,AV> String fillSingleSelect(Map<K, KeyExpr> mapKeys, InnerSelectJoin innerSelect, Map<AV, Expr> compiledProps, Map<K, String> keySelect, Map<AV, String> propertySelect, Map<Value,String> params, SQLSyntax syntax, String prefix) {
         return fillFullSelect(mapKeys, Collections.singleton(innerSelect), compiledProps, new OrderedMap<AV, Boolean>(), 0, keySelect, propertySelect, params, syntax, prefix);
 
 /*        FullSelect FJSelect = new FullSelect(innerSelect.where, params,syntax); // для keyType'а берем первый where
@@ -596,7 +591,7 @@ public class CompiledQuery<K,V> {
         return "(" + getInnerSelect(mapKeys, innerSelect, joinProps, params, new OrderedMap<String, Boolean>(),0 , syntax, keyNames, BaseUtils.toMap(joinProps.keySet()), new ArrayList<K>(), new ArrayList<String>(), null, prefix, true) + ") " + innerAlias;*/
     }
 
-    private static <K,AV> String fillInnerSelect(Map<K, KeyExpr> mapKeys, final InnerSelectJoin innerSelect, Map<AV, Expr> compiledProps, Map<K, String> keySelect, Map<AV, String> propertySelect, Collection<String> whereSelect, Map<ValueExpr, String> params, SQLSyntax syntax, String prefix) {
+    private static <K,AV> String fillInnerSelect(Map<K, KeyExpr> mapKeys, final InnerSelectJoin innerSelect, Map<AV, Expr> compiledProps, Map<K, String> keySelect, Map<AV, String> propertySelect, Collection<String> whereSelect, Map<Value, String> params, SQLSyntax syntax, String prefix) {
         if(Settings.instance.getInnerGroupExprs() > 0) { // если не одни joinData
             final Set<GroupExpr> groupExprs = new HashSet<GroupExpr>(); final Counter repeats = new Counter();
             for(Expr property : compiledProps.values())
@@ -631,7 +626,7 @@ public class CompiledQuery<K,V> {
         return compile.getFrom(innerSelect.where,whereSelect);
     }
 
-    private static <K,AV> String fillFullSelect(Map<K, KeyExpr> mapKeys, Collection<InnerSelectJoin> innerSelects, Map<AV, Expr> compiledProps, OrderedMap<AV,Boolean> orders, int top, Map<K, String> keySelect, Map<AV, String> propertySelect, Map<ValueExpr,String> params, SQLSyntax syntax, String prefix) {
+    private static <K,AV> String fillFullSelect(Map<K, KeyExpr> mapKeys, Collection<InnerSelectJoin> innerSelects, Map<AV, Expr> compiledProps, OrderedMap<AV,Boolean> orders, int top, Map<K, String> keySelect, Map<AV, String> propertySelect, Map<Value,String> params, SQLSyntax syntax, String prefix) {
         FullSelect FJSelect = new FullSelect(innerSelects.iterator().next().where, params,syntax); // для keyType'а берем первый where
 
         // создаем And подзапросыs
@@ -751,10 +746,14 @@ public class CompiledQuery<K,V> {
             query = query.replaceAll(translateValue.getKey(),translateValue.getValue());
         return query;
     }
-    public Map<String, TypeObject> getQueryParams() {
-        Map<String, TypeObject> mapValues = new HashMap<String, TypeObject>();
-        for(Map.Entry<ValueExpr,String> param : params.entrySet())
-            mapValues.put(param.getValue(),new TypeObject(param.getKey().object,param.getKey().objectClass.getType()));
+    public Map<String, ParseInterface> getQueryParams(QueryEnvironment env) {
+        Map<String, ParseInterface> mapValues = new HashMap<String, ParseInterface>();
+        for(Map.Entry<Value,String> param : params.entrySet())
+            mapValues.put(param.getValue(),param.getKey().getParseInterface());
+        mapValues.put(SQLSession.userParam, env.getSQLUser());
+        mapValues.put(SQLSession.computerParam, env.getSQLComputer());
+        mapValues.put(SQLSession.sessionParam, env.getID());
+
         return mapValues;
     }
 
@@ -769,17 +768,17 @@ public class CompiledQuery<K,V> {
     }
 
     // для GroupQuery
-    public String fillSelect(Map<K, String> fillKeySelect, Map<V, String> fillPropertySelect, Collection<String> fillWhereSelect, Map<ValueExpr,String> mapValues) {
+    public String fillSelect(Map<K, String> fillKeySelect, Map<V, String> fillPropertySelect, Collection<String> fillWhereSelect, Map<Value,String> mapValues) {
         return fillSelect(BaseUtils.join(BaseUtils.reverse(params), mapValues), fillKeySelect, fillPropertySelect, fillWhereSelect);
     }
 
-    public OrderedMap<Map<K, Object>, Map<V, Object>> execute(SQLSession session) throws SQLException {
-        return session.executeSelect(select, getQueryParams(), keyNames, keyReaders, propertyNames, propertyReaders);
+    public OrderedMap<Map<K, Object>, Map<V, Object>> execute(SQLSession session, QueryEnvironment env) throws SQLException {
+        return session.executeSelect(select, getQueryParams(env), keyNames, keyReaders, propertyNames, propertyReaders);
     }
 
-    void outSelect(SQLSession session) throws SQLException {
+    void outSelect(SQLSession session, QueryEnvironment env) throws SQLException {
         // выведем на экран
-        OrderedMap<Map<K, Object>, Map<V, Object>> result = execute(session);
+        OrderedMap<Map<K, Object>, Map<V, Object>> result = execute(session, env);
 
         for(Map.Entry<Map<K,Object>,Map<V,Object>> rowMap : result.entrySet()) {
             for(Map.Entry<K,Object> key : rowMap.getKey().entrySet()) {

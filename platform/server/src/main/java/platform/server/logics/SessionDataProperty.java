@@ -10,7 +10,7 @@ import platform.server.data.where.WhereBuilder;
 import platform.server.logics.property.*;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
-import platform.server.session.SessionChanges;
+import platform.server.session.ExprChanges;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -27,7 +27,7 @@ public class SessionDataProperty extends DataProperty {
 
     @Override
     public Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
-        if(modifier.equals(defaultModifier))
+        if(modifier == (Modifier<? extends Changes>)defaultModifier)
             return CaseExpr.NULL;
         return super.calculateExpr(joinImplement, modifier, changedWhere);
     }
@@ -54,11 +54,11 @@ public class SessionDataProperty extends DataProperty {
             properties = Collections.singleton(property);
         }
 
-        private UsedChanges(UsedChanges changes, SessionChanges merge) {
-            super(changes, merge);
+        private UsedChanges(UsedChanges changes, Changes merge) {
+            super(changes, merge, true);
             properties = changes.properties;
         }
-        public UsedChanges addChanges(SessionChanges changes) {
+        public UsedChanges addChanges(Changes changes) {
             return new UsedChanges(this, changes);
         }
 
@@ -111,8 +111,8 @@ public class SessionDataProperty extends DataProperty {
             return usedChanges;
         }
 
-        public SessionChanges getSession() {
-            return SessionChanges.EMPTY;
+        public ExprChanges getSession() {
+            return ExprChanges.EMPTY;
         }
 
         public <P extends PropertyInterface> Expr changed(Property<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere) {

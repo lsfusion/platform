@@ -2,7 +2,10 @@ package platform.server.form.instance;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 // считанные данные (должен быть интерфейс Serialize)
 public class FormData {

@@ -6,12 +6,11 @@ import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.OuterContext;
 import platform.server.data.Table;
+import platform.server.data.Value;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.KeyType;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.OrderExpr;
-import platform.server.data.expr.query.QueryExpr;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.logics.BusinessLogics;
@@ -34,7 +33,7 @@ abstract public class AbstractSourceJoin<T extends OuterContext<T>> extends Abst
     public abstract boolean twins(AbstractSourceJoin obj);
 
     protected static class ToString extends CompileSource  {
-        public ToString(Set<ValueExpr> values, Set<KeyExpr> keys) {
+        public ToString(Set<Value> values, Set<KeyExpr> keys) {
             super(new KeyType() {
                 public Type getKeyType(KeyExpr expr) {
                     return ObjectType.instance;
@@ -79,16 +78,16 @@ abstract public class AbstractSourceJoin<T extends OuterContext<T>> extends Abst
         });
     }
 
-    public void enumValues(final Set<ValueExpr> values) {
+    public void enumValues(final Set<Value> values) {
         enumerate(new ExprEnumerator() {
             public boolean enumerate(SourceJoin join) {
-                if(join instanceof ValueExpr)
-                    values.add((ValueExpr)join);
-                if(join instanceof QueryExpr)
-                    values.addAll(((QueryExpr<?,?,?>)join).getInnerValues());
+                join.enumInnerValues(values);
                 return true;
             }
         });
+    }
+
+    public void enumInnerValues(Set<Value> values) {
     }
 
     public final static ArrayInstancer<SourceJoin> instancer = new ArrayInstancer<SourceJoin>() {
@@ -112,12 +111,12 @@ abstract public class AbstractSourceJoin<T extends OuterContext<T>> extends Abst
         return result;
     }
 
-    public static Set<ValueExpr> enumValues(Collection<? extends SourceJoin> set, SourceJoin... array) {
+    public static Set<Value> enumValues(Collection<? extends SourceJoin> set, SourceJoin... array) {
         return enumValues(merge(set,array));
     }
 
-    public static Set<ValueExpr> enumValues(SourceJoin... array) {
-        Set<ValueExpr> result = new HashSet<ValueExpr>();
+    public static Set<Value> enumValues(SourceJoin... array) {
+        Set<Value> result = new HashSet<Value>();
         for(SourceJoin element : array)
             element.enumValues(result);
         return result;

@@ -12,13 +12,9 @@ public abstract class Field {
     public String name;
     public Type type;
 
-    Field(String iName,Type iType) {
-        name = iName;
-        type = iType;
-
-        if(type==null)
-            iType = iType;
-        assert type!=null;
+    protected Field(String name,Type type) {
+        this.name = name;
+        this.type = type;
     }
 
     public String getDeclare(SQLSyntax syntax) {
@@ -52,11 +48,11 @@ public abstract class Field {
 
     @Override
     public boolean equals(Object obj) {
-        return this==obj || obj instanceof Field && name.equals(((Field)obj).name);
+        return this==obj || getClass()==obj.getClass() && name.equals(((Field)obj).name) && type.equals(((Field)obj).type);
     }
 
     @Override
     public int hashCode() {
-        return name.hashCode();
+        return (getClass().hashCode() * 31 + name.hashCode()) * 31 + type.hashCode();
     }
 }

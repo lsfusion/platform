@@ -1,13 +1,13 @@
 package platform.server.logics;
 
 import platform.server.caches.hash.HashValues;
+import platform.server.data.Value;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
 import platform.server.form.instance.ObjectInstance;
-import platform.server.session.ChangesSession;
+import platform.server.session.SessionChanges;
 
 import java.util.*;
 
@@ -52,15 +52,15 @@ public class NullValue extends ObjectValue<NullValue> {
         return 0;
     }
 
-    public Set<ValueExpr> getValues() {
-        return new HashSet<ValueExpr>();
+    public Set<Value> getValues() {
+        return new HashSet<Value>();
     }
 
     public NullValue translate(MapValuesTranslate mapValues) {
         return this;
     }
 
-    public ObjectValue refresh(ChangesSession session) {
+    public ObjectValue refresh(SessionChanges session) {
         return this;
     }
 

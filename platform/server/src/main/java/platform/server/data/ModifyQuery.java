@@ -14,12 +14,18 @@ import java.util.List;
 import java.util.Map;
 
 public class ModifyQuery {
-    public Table table;
-    private Query<KeyField, PropertyField> change;
+    public final Table table;
+    private final Query<KeyField, PropertyField> change;
+    private final QueryEnvironment env;
 
     public ModifyQuery(Table table, Query<KeyField, PropertyField> change) {
+        this(table, change, QueryEnvironment.empty);
+    }
+
+    public ModifyQuery(Table table, Query<KeyField, PropertyField> change, QueryEnvironment env) {
         this.table = table;
         this.change = change;
+        this.env = env;
     }
 
     public SQLExecute getUpdate(SQLSyntax syntax) {
@@ -97,7 +103,7 @@ public class ModifyQuery {
                 throw new RuntimeException();
         }
 
-        return new SQLExecute(update,changeCompile.getQueryParams());        
+        return new SQLExecute(update,changeCompile.getQueryParams(env));
     }
 
     public SQLExecute getInsertLeftKeys(SQLSyntax syntax) {
@@ -108,7 +114,7 @@ public class ModifyQuery {
         // исключим ключи которые есть
         leftKeysQuery.and(table.joinAnd(leftKeysQuery.mapKeys).getWhere().not());
 
-        return (new ModifyQuery(table,leftKeysQuery)).getInsertSelect(syntax);
+        return (new ModifyQuery(table,leftKeysQuery,env)).getInsertSelect(syntax);
     }
 
     private static String getInsertCastSelect(CompiledQuery<KeyField, PropertyField> changeCompile, SQLSyntax syntax) {
@@ -142,6 +148,6 @@ public class ModifyQuery {
         for(PropertyField propertyField : changeCompile.propertyOrder)
             insertString = (insertString.length()==0?"":insertString+",") + propertyField.name;
 
-        return new SQLExecute("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") " + getInsertCastSelect(changeCompile, syntax),changeCompile.getQueryParams());
+        return new SQLExecute("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") " + getInsertCastSelect(changeCompile, syntax),changeCompile.getQueryParams(env));
     }
 }

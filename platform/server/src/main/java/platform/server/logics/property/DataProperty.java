@@ -1,9 +1,7 @@
 package platform.server.logics.property;
 
-import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
 import platform.server.classes.ValueClass;
-import platform.server.data.PropertyField;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.query.Join;
@@ -38,9 +36,10 @@ public abstract class DataProperty extends UserProperty {
     }
 
     public <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier) {
-        SessionChanges session = modifier.getSession();
-        return (derivedChange != null ? derivedChange.getUsedChanges(modifier) : modifier.newChanges()).addChanges(
-                session.getSessionChanges(this).add(new SessionChanges(session, ClassProperty.getValueClasses(interfaces), true)));
+        SimpleChanges modifierChanges = modifier.getChanges();
+        return (derivedChange != null ? derivedChange.getUsedChanges(modifier) : modifier.newChanges()).
+                addChanges(new SimpleChanges(modifierChanges, ClassProperty.getValueClasses(interfaces), true)).
+                addChanges(new SimpleChanges(modifierChanges, this));
     }
 
     @Override
@@ -52,17 +51,16 @@ public abstract class DataProperty extends UserProperty {
 
     public Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
 
-        SessionChanges session = modifier.getSession();
+        ExprChanges session = modifier.getSession();
 
         Expr dataExpr = getExpr(joinImplement);
 
-        // ручные изменения
         ExprCaseList cases = new ExprCaseList();
-        DataChangeTable dataChange = session.data.get(this);
-        if(dataChange!=null) {
-            Join<PropertyField> changedJoin = dataChange.join(BaseUtils.join(dataChange.mapKeys, joinImplement));
-            cases.add(changedJoin.getWhere(),changedJoin.getExpr(dataChange.value));
-        }
+
+        // ручные изменения
+        Join<String> changedJoin = session.getDataChange(this, joinImplement);
+        if(changedJoin!=null)
+            cases.add(changedJoin.getWhere(),changedJoin.getExpr("value"));
 
         // блок с удалением
         Where removeWhere = session.getRemoveWhere(value,dataExpr);

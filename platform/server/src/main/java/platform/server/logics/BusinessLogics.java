@@ -204,6 +204,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public final static SQLSyntax debugSyntax = new PostgreDataAdapter();
 
     protected DataAdapter adapter;
+    protected SQLSession sql;
 
     public SQLSyntax getAdapter() {
         return adapter;
@@ -300,7 +301,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     ).compare(new DataObject(strHostName), Compare.EQUALS)
             );
 
-            Set<Map<String, Object>> keys = q.execute(session).keySet();
+            Set<Map<String, Object>> keys = q.execute(session.sql, session.env).keySet();
             if (keys.size() == 0) {
                 DataObject addObject = session.addObject(computer, session.modifier);
                 hostname.execute(strHostName, session, session.modifier, addObject);
@@ -322,7 +323,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public ConcreteClass getDataClass(Object object, Type type) {
         try {
             DataSession session = createSession();
-            ConcreteClass result = type.getDataClass(object, session, baseClass);
+            ConcreteClass result = type.getDataClass(object, session.sql, baseClass);
             session.close();
 
             return result;
@@ -415,7 +416,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             q.and(q.mapKeys.get("userId").compare(new DataObject(userId, customUser), Compare.EQUALS));
 
             OrderedMap<Object, Boolean> orderBy = new OrderedMap(BaseUtils.toList("pOrder"), false);
-            Set<Map<String, Object>> keys = q.execute(session, orderBy, 0).keySet();
+            Set<Map<String, Object>> keys = q.execute(session.sql, orderBy, 0, session.env).keySet();
             if (keys.size() != 0) {
                 for (Map<String, Object> keyMap : keys) {
                     result.add((Integer) keyMap.get("policyId"));
@@ -1127,6 +1128,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         super(exportPort);
 
         this.adapter = adapter;
+        sql = createSQL();
 
         initBase();
 
@@ -1171,7 +1173,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         // считаем системного пользователя
         try {
-            DataSession session = createSession(new UserController() {
+            DataSession session = createSession(sql, new UserController() {
                 public void changeCurrentUser(DataObject user) {
                     throw new RuntimeException("not supported");
                 }
@@ -1187,7 +1189,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             Query<String, Object> query = new Query<String, Object>(Collections.singleton("key"));
             query.and(BaseUtils.singleValue(query.mapKeys).isClass(systemUser));
-            Set<Map<String, Object>> rows = query.execute(session, new OrderedMap<Object, Boolean>(), 1).keySet();
+            Set<Map<String, Object>> rows = query.execute(session.sql, new OrderedMap<Object, Boolean>(), 1, session.env).keySet();
             if (rows.size() == 0) { // если нету добавим
                 systemUserObject = (Integer) session.addObject(systemUser, session.modifier).object;
                 session.apply(this);
@@ -1196,7 +1198,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             query = new Query<String, Object>(Collections.singleton("key"));
             query.and(hostname.getExpr(session.modifier, BaseUtils.singleValue(query.mapKeys)).compare(new DataObject("systemhost"), Compare.EQUALS));
-            rows = query.execute(session, new OrderedMap<Object, Boolean>(), 1).keySet();
+            rows = query.execute(session.sql, new OrderedMap<Object, Boolean>(), 1, session.env).keySet();
             if (rows.size() == 0) { // если нету добавим
                 DataObject computerObject = session.addObject(computer, session.modifier);
                 systemComputer = (Integer) computerObject.object;
@@ -1524,8 +1526,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         indexes.add(index);
     }
 
+    public SQLSession createSQL() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+        return new SQLSession(adapter);
+    }
+
     public DataSession createSession() throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        return createSession(new UserController() {
+        return createSession(sql, new UserController() {
             public void changeCurrentUser(DataObject user) {
                 throw new RuntimeException("not supported");
             }
@@ -1541,8 +1547,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         });
     }
 
-    public DataSession createSession(UserController userController, ComputerController computerController) throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        return new DataSession(adapter, userController, computerController, baseClass, baseClass.named, session, name, transaction, date, notDeterministic);
+    public DataSession createSession(SQLSession sql, UserController userController, ComputerController computerController) throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+        return new DataSession(sql, userController, computerController, baseClass, baseClass.named, session, name, transaction, date, notDeterministic);
     }
 
     public List<DerivedChange<?, ?>> notDeterministic = new ArrayList<DerivedChange<?, ?>>();
@@ -1631,7 +1637,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 // ищем класс с таким sID, если не находим создаем
                 Query<String, Object> findClass = new Query<String, Object>(Collections.singleton("key"));
                 findClass.and(classSID.getExpr(session.modifier, BaseUtils.singleValue(findClass.mapKeys)).compare(new ValueExpr(concreteClass.getSID(), classSIDValueClass), Compare.EQUALS));
-                OrderedMap<Map<String, Object>, Map<Object, Object>> result = findClass.execute(session);
+                OrderedMap<Map<String, Object>, Map<Object, Object>> result = findClass.execute(session.sql, session.env);
                 if (result.size() == 0) { // не найдено добавляем новый объект и заменяем ему classID и title
                     DataObject classObject;
                     if (concreteClass.equals(baseClass.objectClass)) { // добавим с явным ID объект
@@ -1679,20 +1685,21 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public void synchronizeDB() throws SQLException, IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
 
         DataSession session = createSession();
+        SQLSession sqlSession = session.sql;
 
-        session.startTransaction();
+        sqlSession.startTransaction();
 
         // инициализируем таблицы
-        tableFactory.fillDB(session);
+        tableFactory.fillDB(sqlSession, baseClass);
 
         // "старое" состояние базы
         DataInputStream inputDB = null;
-        byte[] struct = (byte[]) session.readRecord(GlobalTable.instance, new HashMap<KeyField, DataObject>(), GlobalTable.instance.struct);
+        byte[] struct = (byte[]) sqlSession.readRecord(StructTable.instance, new HashMap<KeyField, DataObject>(), StructTable.instance.struct);
         if (struct != null) inputDB = new DataInputStream(new ByteArrayInputStream(struct));
 
         if (struct != null && struct.length == 0) { //чисто для бага JTDS
-            session.rollbackTransaction();
-            session.close();
+            sqlSession.rollbackTransaction();
+            sqlSession.close();
             return;
         }
 /*        try {
@@ -1773,14 +1780,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     index.add(inputDB.readUTF());
                 ImplementTable implementTable = implementTables.get(prevTable.name);
                 if (implementTable == null || !mapIndexes.get(implementTable).remove(index))
-                    session.dropIndex(prevTable.name, index);
+                    sqlSession.dropIndex(prevTable.name, index);
             }
         }
 
         // добавим таблицы которых не было
         for (ImplementTable table : implementTables.values()) {
             if (!prevTables.containsKey(table.name))
-                session.createTable(table.name, table.keys);
+                sqlSession.createTable(table.name, table.keys);
         }
 
         Set<ImplementTable> packTables = new HashSet<ImplementTable>();
@@ -1805,25 +1812,25 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     }
                     if (foundInterfaces.size() == mapKeys.size()) { // если все нашли
                         if (!(keep = property.mapTable.table.name.equals(prevTable.name))) { // если в другой таблице
-                            session.addColumn(property.mapTable.table.name, property.field);
+                            sqlSession.addColumn(property.mapTable.table.name, property.field);
                             // делаем запрос на перенос
                             System.out.print("Идет перенос колонки " + property.field + " (" + property.caption + ")" + " из таблицы " + prevTable.name + " в таблицу " + property.mapTable.table.name + "... ");
                             Query<KeyField, PropertyField> moveColumn = new Query<KeyField, PropertyField>(property.mapTable.table);
                             Expr moveExpr = prevTable.joinAnd(BaseUtils.join(BaseUtils.join(foundInterfaces, ((Property<PropertyInterface>) property).mapTable.mapKeys), moveColumn.mapKeys)).getExpr(prevTable.findProperty(sID));
                             moveColumn.properties.put(property.field, moveExpr);
                             moveColumn.and(moveExpr.getWhere());
-                            session.modifyRecords(new ModifyQuery(property.mapTable.table, moveColumn));
+                            sqlSession.modifyRecords(new ModifyQuery(property.mapTable.table, moveColumn));
                             logger.info("Done");
                         } else // надо проверить что тип не изменился
                             if (!prevTable.findProperty(sID).type.equals(property.field.type))
-                                session.modifyColumn(property.mapTable.table.name, property.field, prevTable.findProperty(sID).type);
+                                sqlSession.modifyColumn(property.mapTable.table.name, property.field, prevTable.findProperty(sID).type);
                         is.remove();
                     }
                     break;
                 }
             }
             if (!keep) {
-                session.dropColumn(prevTable.name, sID);
+                sqlSession.dropColumn(prevTable.name, sID);
                 ImplementTable table = implementTables.get(prevTable.name); // надо упаковать таблицу если удалили колонку
                 if (table != null) packTables.add(table);
             }
@@ -1831,7 +1838,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         Collection<AggregateProperty> recalculateProperties = new ArrayList<AggregateProperty>();
         for (Property property : storedProperties) { // добавляем оставшиеся
-            session.addColumn(property.mapTable.table.name, property.field);
+            sqlSession.addColumn(property.mapTable.table.name, property.field);
             if (property instanceof AggregateProperty)
                 recalculateProperties.add((AggregateProperty) property);
         }
@@ -1839,29 +1846,28 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         // удаляем таблицы старые
         for (String table : prevTables.keySet())
             if (!implementTables.containsKey(table))
-                session.dropTable(table);
+                sqlSession.dropTable(table);
 
         // упакуем таблицы
         for (ImplementTable table : packTables)
-            session.packTable(table);
+            sqlSession.packTable(table);
 
-        recalculateAggregations(session, recalculateProperties);
+        recalculateAggregations(sqlSession, recalculateProperties);
 
         // создадим индексы в базе
         for (Map.Entry<ImplementTable, Set<List<String>>> mapIndex : mapIndexes.entrySet())
             for (List<String> index : mapIndex.getValue())
-                session.addIndex(mapIndex.getKey().name, index);
+                sqlSession.addIndex(mapIndex.getKey().name, index);
 
         try {
-            session.updateInsertRecord(GlobalTable.instance, new HashMap<KeyField, DataObject>(),
-                    Collections.singletonMap(GlobalTable.instance.struct, (ObjectValue) new DataObject((Object) outDBStruct.toByteArray(), ByteArrayClass.instance)));
+            sqlSession.updateInsertRecord(StructTable.instance, new HashMap<KeyField, DataObject>(), Collections.singletonMap(StructTable.instance.struct, (ObjectValue) new DataObject((Object) outDBStruct.toByteArray(), ByteArrayClass.instance)));
         }
         catch (Exception e) {
-            session.updateInsertRecord(GlobalTable.instance, new HashMap<KeyField, DataObject>(),
-                    Collections.singletonMap(GlobalTable.instance.struct, (ObjectValue) new DataObject((Object) new byte[0], ByteArrayClass.instance)));
+            Map<PropertyField, ObjectValue> propFields = Collections.singletonMap(StructTable.instance.struct, (ObjectValue) new DataObject((Object) new byte[0], ByteArrayClass.instance));
+            sqlSession.updateInsertRecord(StructTable.instance, new HashMap<KeyField, DataObject>(), propFields);
         }
 
-        session.commitTransaction();
+        sqlSession.commitTransaction();
 
 /*        byte[] outBytes = outDBStruct.toByteArray();
         FileOutputStream outFileStruct = new FileOutputStream("prevstruct.str");
@@ -1873,13 +1879,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         for (ImplementTable table : implementTables.values()) {
             if (prevTables.containsKey(table.name)) {
                 try {
-                    session.addExtraIndices(table.name, table.keys);
+                    sqlSession.addExtraIndices(table.name, table.keys);
                 } catch (SQLException e) {
                 }
             }
         }
 
-        session.close();
+        sqlSession.close();
     }
 
     boolean checkPersistent(SQLSession session) throws SQLException {
@@ -3652,7 +3658,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
             FormInstance<?> remoteForm = executeForm.form;
             DataSession session = remoteForm.session;
-            if (addProperty.read(session, new HashMap(), remoteForm) != null) {
+            if (addProperty.read(session.sql, new HashMap(), remoteForm, session.env) != null) {
                 String barString = (String) BaseUtils.singleValue(keys).object;
                 if (barString.trim().length() == 0) {
                     addProperty.execute(new HashMap(), session, null, remoteForm);

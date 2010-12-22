@@ -3,19 +3,22 @@ package platform.server.form.instance;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
-import platform.interop.Order;
-import platform.interop.Compare;
-import static platform.interop.ClassViewType.HIDE;
 import static platform.interop.ClassViewType.GRID;
+import static platform.interop.ClassViewType.HIDE;
+import platform.interop.Compare;
+import platform.interop.Order;
 import platform.interop.form.PropertyRead;
-import platform.interop.form.RemoteFormInterface;
+import platform.server.caches.IdentityLazy;
+import platform.server.classes.BaseClass;
+import platform.server.classes.CustomClass;
+import platform.server.data.SQLSession;
+import platform.server.data.QueryEnvironment;
+import platform.server.data.type.Type;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.where.CompareWhere;
 import platform.server.data.query.MapKeysInterface;
 import platform.server.data.query.Query;
 import platform.server.data.where.Where;
-import platform.server.data.SQLSession;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.instance.filter.FilterInstance;
 import platform.server.form.instance.listener.CustomClassListener;
@@ -24,12 +27,9 @@ import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.Property;
 import platform.server.session.Changes;
+import platform.server.session.SessionChanges;
 import platform.server.session.Modifier;
-import platform.server.session.ChangesSession;
-import platform.server.session.DataSession;
-import platform.server.caches.IdentityLazy;
-import platform.server.classes.BaseClass;
-import platform.server.classes.CustomClass;
+import platform.server.session.NoPropertyTableUsage;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -84,8 +84,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public GroupObjectInstance(GroupObjectEntity entity, Collection<ObjectInstance> objects, PropertyObjectInstance propertyHighlight, Map<ObjectInstance, PropertyObjectInstance> parent) {
 
         this.entity = entity;
-
-        assert (getID() < RemoteFormInterface.GID_SHIFT);
 
         this.objects = objects;
 
@@ -373,8 +371,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return freeObjects;
     }
 
-    public GroupObjectTable keyTable = null;
-    public GroupObjectTable expandTable = null;
+    public NoPropertyTableUsage<ObjectInstance> keyTable = null;
+    public NoPropertyTableUsage<ObjectInstance> expandTable = null;
     
     private Where getExpandWhere(Map<ObjectInstance, ? extends Expr> mapKeys) {
         if(expandTable==null)
@@ -383,7 +381,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             return expandTable.getWhere(mapKeys);
     }
     
-    private OrderedMap<Map<ObjectInstance, DataObject>, Map<ObjectInstance, ObjectValue>> executeTree(SQLSession session, Modifier<? extends Changes> modifier, BaseClass baseClass) throws SQLException {
+    private OrderedMap<Map<ObjectInstance, DataObject>, Map<ObjectInstance, ObjectValue>> executeTree(SQLSession session, QueryEnvironment env, Modifier<? extends Changes> modifier, BaseClass baseClass) throws SQLException {
         assert isInTree();
 
         Map<ObjectInstance, KeyExpr> mapKeys = KeyExpr.getMapKeys(GroupObjectInstance.getObjects(getUpTreeGroups()));
@@ -411,10 +409,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             orderExprs.put(toOrder.getKey().getExpr(mapKeys, modifier), toOrder.getValue());
 
         return new Query<ObjectInstance, ObjectInstance>(mapKeys, expandExprs, getWhere(mapKeys, modifier).and(expandWhere)).
-                    executeClasses(session, baseClass, orderExprs);
+                    executeClasses(session, env, baseClass, orderExprs);
     }
 
-    public void change(ChangesSession session, Map<ObjectInstance, DataObject> value) throws SQLException {
+    public void change(SessionChanges session, Map<ObjectInstance, DataObject> value) throws SQLException {
         // проставим все объектам метки изменений
         assert value.isEmpty() || value.keySet().equals(new HashSet<ObjectInstance>(GroupObjectInstance.getObjects(getUpTreeGroups())));
         for (ObjectInstance object : GroupObjectInstance.getObjects(getUpTreeGroups()))
@@ -423,7 +421,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             object.changeValue(session, NullValue.instance);
     }
 
-    public void update(ChangesSession session, FormChanges changes, Map<ObjectInstance, DataObject> value) throws SQLException {
+    public void update(SessionChanges session, FormChanges changes, Map<ObjectInstance, DataObject> value) throws SQLException {
         if(value.isEmpty())
             changes.objects.put(this, NullValue.getMap(getObjects(getUpTreeGroups())));
         else
@@ -431,7 +429,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         change(session, value);
     }
 
-    public Map<ObjectInstance, DataObject> updateKeys(DataSession session, int sessionID, Modifier<? extends Changes> modifier, BaseClass baseClass, boolean refresh, FormChanges result, Collection<Property> changedProps, Collection<CustomClass> changedClasses) throws SQLException {
+    public Map<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, Modifier<? extends Changes> modifier, BaseClass baseClass, boolean refresh, FormChanges result, Collection<Property> changedProps, Collection<CustomClass> changedClasses) throws SQLException {
         if ((updated & UPDATED_CLASSVIEW) != 0) {
             result.classViews.put(this, curClassView);
         }
@@ -557,9 +555,9 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             assert orderSeeks != null;
 
             updated = (updated | UPDATED_KEYS);
-            
+
             if (curClassView != GRID) // панель
-                return orderSeeks.readKeys(session, modifier, baseClass);
+                return orderSeeks.readKeys(sql, env, modifier, baseClass);
             else {
                 int activeRow = -1; // какой ряд выбранным будем считать
                 keys = new OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>>();
@@ -568,14 +566,14 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     assert orderSeeks.values.isEmpty() && !orderSeeks.end;
 
                     List<Map<ObjectInstance, DataObject>> expandParents = new ArrayList<Map<ObjectInstance, DataObject>>();
-                    for(Map.Entry<Map<ObjectInstance, DataObject>, Map<ObjectInstance, ObjectValue>> resultRow : executeTree(session, modifier, baseClass).entrySet()) {
+                    for(Map.Entry<Map<ObjectInstance, DataObject>, Map<ObjectInstance, ObjectValue>> resultRow : executeTree(sql, env, modifier, baseClass).entrySet()) {
                         keys.put(resultRow.getKey(), new HashMap<OrderInstance, ObjectValue>());
                         expandParents.add(BaseUtils.filterClass(resultRow.getValue(), DataObject.class));
                     }
                     result.parentObjects.put(this, expandParents);
                 } else {
                     if (!orders.starts(orderSeeks.values.keySet())) // если не "хватает" спереди ключей, дочитываем
-                        orderSeeks = orderSeeks.readValues(session, modifier, baseClass);
+                        orderSeeks = orderSeeks.readValues(sql, env, modifier, baseClass);
 
                     if (direction == DIRECTION_CENTER) { // оптимизируем если HOME\END, то читаем одним запросом
                         if(orderSeeks.values.isEmpty()) {
@@ -596,12 +594,12 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     int readSize = getPageSize() * 3 / (direction == DIRECTION_CENTER ? 2 : 1);
 
                     if (direction == DIRECTION_UP || direction == DIRECTION_CENTER) { // сначала Up
-                        keys.putAll(orderSeeks.executeOrders(session, modifier, baseClass, readSize, false).reverse());
+                        keys.putAll(orderSeeks.executeOrders(sql, env, modifier, baseClass, readSize, false).reverse());
                         upKeys = (keys.size() == readSize);
                         activeRow = keys.size() - 1;
                     }
                     if (direction == DIRECTION_DOWN || direction == DIRECTION_CENTER) { // затем Down
-                        OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> executeList = orderSeeks.executeOrders(session, modifier, baseClass, readSize, true);
+                        OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> executeList = orderSeeks.executeOrders(sql, env, modifier, baseClass, readSize, true);
                         if (executeList.size() > 0 && !(orderSeeks.end && activeRow>0)) activeRow = keys.size(); // не выбираем если идет seekDown и уже выбран ряд - это то что надо
                         keys.putAll(executeList);
                         downKeys = (executeList.size() == readSize);
@@ -609,12 +607,9 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 }
 
                 // параллельно будем обновлять ключи чтобы JoinSelect'ить
-                if (keyTable == null) {
-                    keyTable = new GroupObjectTable(this, "p", sessionID * RemoteFormInterface.GID_SHIFT + getID());
-                    session.createTemporaryTable(keyTable.table);
-                }
-
-                keyTable = keyTable.writeKeys(session, keys.keyList());
+                if (keyTable == null)
+                    keyTable = createKeyTable();
+                keyTable.writeKeys(sql, keys.keyList());
                 result.gridObjects.put(this, keys.keyList());
 
                 if (!keys.containsKey(currentObject)) { // если нету currentObject'а, его нужно изменить
@@ -660,7 +655,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         }
 
         // возвращает OrderInstance из orderSeeks со значениями, а также если есть parent, то parent'ы
-        public OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> executeOrders(SQLSession session, Modifier<? extends Changes> modifier, BaseClass baseClass, int readSize, boolean down) throws SQLException {
+        public OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> executeOrders(SQLSession session, QueryEnvironment env, Modifier<? extends Changes> modifier, BaseClass baseClass, int readSize, boolean down) throws SQLException {
             assert !isInTree();
 
             Map<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
@@ -699,34 +694,43 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             }
 
             return new Query<ObjectInstance, OrderInstance>(mapKeys, orderExprs, getWhere(mapKeys, modifier).and(orderWhere)).
-                        executeClasses(session, down ? orders : Query.reverseOrder(orders), readSize, baseClass);
+                        executeClasses(session, down ? orders : Query.reverseOrder(orders), readSize, baseClass, env);
         }
 
         // считывает одну запись
-        private Map.Entry<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> readObjects(SQLSession session, Modifier<? extends Changes> modifier, BaseClass baseClass) throws SQLException {
-            OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> result = executeOrders(session, modifier, baseClass, 1, !end);
+        private Map.Entry<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> readObjects(SQLSession session, QueryEnvironment env, Modifier<? extends Changes> modifier, BaseClass baseClass) throws SQLException {
+            OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> result = executeOrders(session, env, modifier, baseClass, 1, !end);
             if (result.size() == 0)
-                result = new SeekObjects(values, !end).executeOrders(session, modifier, baseClass, 1, end);
+                result = new SeekObjects(values, !end).executeOrders(session, env, modifier, baseClass, 1, end);
             if (result.size() > 0)
                 return result.singleEntry();
+
             else
                 return null;
         }
 
-        public Map<ObjectInstance, DataObject> readKeys(SQLSession session, Modifier<? extends Changes> modifier, BaseClass baseClass) throws SQLException {
-            Map.Entry<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> objects = readObjects(session, modifier, baseClass);
+        public Map<ObjectInstance, DataObject> readKeys(SQLSession session, QueryEnvironment env, Modifier<? extends Changes> modifier, BaseClass baseClass) throws SQLException {
+            Map.Entry<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> objects = readObjects(session, env, modifier, baseClass);
             if (objects != null)
                 return objects.getKey();
             else
                 return new HashMap<ObjectInstance, DataObject>();
         }
 
-        public SeekObjects readValues(SQLSession session, Modifier<? extends Changes> modifier, BaseClass baseClass) throws SQLException {
-            Map.Entry<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> objects = readObjects(session, modifier, baseClass);
+        public SeekObjects readValues(SQLSession session, QueryEnvironment env, Modifier<? extends Changes> modifier, BaseClass baseClass) throws SQLException {
+            Map.Entry<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> objects = readObjects(session, env, modifier, baseClass);
             if (objects != null)
                 return new SeekObjects(objects.getValue(), end);
             else
                 return new SeekObjects(false);
         }
+    }
+
+    public NoPropertyTableUsage<ObjectInstance> createKeyTable() {
+        return new NoPropertyTableUsage<ObjectInstance>(GroupObjectInstance.getObjects(getUpTreeGroups()), new Type.Getter<ObjectInstance>() {
+            public Type getType(ObjectInstance key) {
+                return key.getType();
+            }
+        });                
     }
 }

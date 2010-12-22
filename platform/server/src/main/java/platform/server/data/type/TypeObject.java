@@ -6,7 +6,7 @@ import platform.server.logics.DataObject;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class TypeObject {
+public class TypeObject implements ParseInterface {
 
     private final Object object;
     private final Type type;

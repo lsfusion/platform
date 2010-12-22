@@ -5,7 +5,7 @@ import platform.base.QuickMap;
 import platform.server.caches.hash.HashCodeValues;
 import platform.server.caches.hash.HashTranslateValues;
 import platform.server.caches.hash.HashValues;
-import platform.server.data.expr.ValueExpr;
+import platform.server.data.Value;
 import platform.server.data.translator.MapValuesTranslate;
 
 import java.util.Iterator;
@@ -48,7 +48,7 @@ public class MapValuesIterable extends MapIterable<MapValuesTranslate, MapValues
         return hash;
     }
 
-    public static <K> void enumValues(Set<ValueExpr> values, Map<K,? extends MapValues> map) {
+    public static <K> void enumValues(Set<Value> values, Map<K,? extends MapValues> map) {
         for(MapValues<?> value : map.values())
             values.addAll(value.getValues());
     }

@@ -35,40 +35,35 @@ import java.util.*;
 
 public class Table extends ImmutableObject implements MapKeysInterface<KeyField> {
     public final String name;
-    public final List<KeyField> keys = new ArrayList<KeyField>(); // List потому как в таком порядке индексы будут строиться
-    public final Collection<PropertyField> properties = new ArrayList<PropertyField>();
+    public final List<KeyField> keys; // List потому как в таком порядке индексы будут строиться
+    public final Set<PropertyField> properties;
 
     public boolean isSingle() {
         return keys.size()==0;
     }
 
     public Map<KeyField, KeyExpr> getMapKeys() {
-        Map<KeyField,KeyExpr> result = new HashMap<KeyField, KeyExpr>();
-        for(KeyField key : keys)
-            result.put(key,new KeyExpr(key.name));
-        return result;
-    }
-
-    public Table(String name,ClassWhere<KeyField> classes) {
-        this.name = name;
-        this.classes = classes;
-        propertyClasses = new HashMap<PropertyField, ClassWhere<Field>>();
+        return KeyExpr.getMapKeys(keys);
     }
 
     public Table(String name) {
-        this.name = name;
-        classes = new ClassWhere<KeyField>();
-        propertyClasses = new HashMap<PropertyField, ClassWhere<Field>>();
+        this(name, new ArrayList<KeyField>(), new HashSet<PropertyField>(), new ClassWhere<KeyField>(), new HashMap<PropertyField, ClassWhere<Field>>());
     }
 
-    public Table(String name,ClassWhere<KeyField> classes,Map<PropertyField, ClassWhere<Field>> propertyClasses) {
+    public Table(String name, List<KeyField> keys, Set<PropertyField> properties,ClassWhere<KeyField> classes,Map<PropertyField, ClassWhere<Field>> propertyClasses) {
         this.name = name;
+        this.keys = keys;
+        this.properties = properties;
         this.classes = classes;
         this.propertyClasses = propertyClasses;
     }
 
     public String getName(SQLSyntax Syntax) {
         return name;
+    }
+
+    public String getQueryName(CompileSource source) {
+        return getName(source.syntax);
     }
 
     public String toString() {
@@ -103,9 +98,11 @@ public class Table extends ImmutableObject implements MapKeysInterface<KeyField>
     public Table(DataInputStream inStream, BaseClass baseClass) throws IOException {
         name = inStream.readUTF();
         int keysNum = inStream.readInt();
+        keys = new ArrayList<KeyField>();
         for(int i=0;i<keysNum;i++)
             keys.add((KeyField) Field.deserialize(inStream));
         int propNum = inStream.readInt();
+        properties = new HashSet<PropertyField>();
         for(int i=0;i<propNum;i++)
             properties.add((PropertyField) Field.deserialize(inStream));
 
@@ -156,8 +153,19 @@ public class Table extends ImmutableObject implements MapKeysInterface<KeyField>
         return new CaseJoin<PropertyField>(result, properties);
     }
 
-    public platform.server.data.query.Join<PropertyField> joinAnd(Map<KeyField, ? extends BaseExpr> joinImplement) {
+    public Join joinAnd(Map<KeyField, ? extends BaseExpr> joinImplement) {
         return new Join(joinImplement);
+    }
+
+    public int hashOuter(HashContext hashContext) {
+        return hashCode();
+    }
+
+    public Table translateOuter(MapTranslate translator) {
+        return this;
+    }
+
+    public void enumInnerValues(Set<Value> values) {
     }
 
     public class Join extends platform.server.data.query.Join<PropertyField> implements InnerJoin {
@@ -201,7 +209,7 @@ public class Table extends ImmutableObject implements MapKeysInterface<KeyField>
 
         @IdentityLazy
         public int hashOuter(HashContext hashContext) {
-            int hash = Table.this.hashCode()*31;
+            int hash = Table.this.hashOuter(hashContext)*31;
                 // нужен симметричный хэш относительно выражений
             for(Map.Entry<KeyField, BaseExpr> join : joins.entrySet())
                 hash += join.getKey().hashCode() * join.getValue().hashOuter(hashContext);
@@ -210,7 +218,11 @@ public class Table extends ImmutableObject implements MapKeysInterface<KeyField>
 
         @ParamLazy
         public Join translateOuter(MapTranslate translator) {
-            return new Join(translator.translateDirect(joins));
+            return Table.this.translateOuter(translator).joinAnd(translator.translateDirect(joins));
+        }
+        
+        public void enumInnerValues(Set<Value> values) {
+            Table.this.enumInnerValues(values);
         }
 
         @ParamLazy
@@ -226,8 +238,8 @@ public class Table extends ImmutableObject implements MapKeysInterface<KeyField>
                 return this;
         }
 
-        public String getName(SQLSyntax syntax) {
-            return Table.this.getName(syntax);
+        public String getQueryName(CompileSource source) {
+            return Table.this.getQueryName(source);
         }
 
         private Table getTable() {
@@ -330,6 +342,11 @@ public class Table extends ImmutableObject implements MapKeysInterface<KeyField>
             public long calculateComplexity() {
                 return Join.this.getComplexity();
             }
+
+            @Override
+            public void enumInnerValues(Set<Value> values) {
+                Join.this.enumInnerValues(values);
+            }
         }
 
         public class Expr extends InnerExpr {
@@ -337,8 +354,8 @@ public class Table extends ImmutableObject implements MapKeysInterface<KeyField>
             public final PropertyField property;
 
             // напрямую может конструироваться только при полной уверенности что не null
-            private Expr(PropertyField iProperty) {
-                property = iProperty;
+            private Expr(PropertyField property) {
+                this.property = property;
             }
 
             public platform.server.data.expr.Expr translateQuery(QueryTranslator translator) {
@@ -352,6 +369,11 @@ public class Table extends ImmutableObject implements MapKeysInterface<KeyField>
 
             public Expr translateOuter(MapTranslate translator) {
                 return Join.this.translateOuter(translator).getDirectExpr(property);
+            }
+
+            @Override
+            public void enumInnerValues(Set<Value> values) {
+                Join.this.enumInnerValues(values);
             }
 
             public void enumDepends(ExprEnumerator enumerator) {

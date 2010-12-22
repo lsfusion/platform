@@ -12,6 +12,7 @@ import platform.server.caches.InnerContext;
 import platform.server.caches.MapValuesIterable;
 import platform.server.caches.hash.HashContext;
 import platform.server.caches.hash.HashValues;
+import platform.server.data.Value;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
@@ -127,7 +128,7 @@ public class MapCacheAspect {
         }
 
         @IdentityLazy
-        public Set<ValueExpr> getValues() {
+        public Set<Value> getValues() {
             // нельзя из values так как вообще не его контекст
             return BaseUtils.mergeSet(AbstractSourceJoin.enumValues(exprs.values()), mapValues.getValues());
         }
@@ -233,7 +234,7 @@ public class MapCacheAspect {
                         U cacheResult = cache.getValue().translate(mapValues);
                         if(!modifier.neededClass(cacheResult)) {
                             assert !cacheResult.modifyUsed();
-                            return modifier.newChanges().addChanges(cacheResult.session);
+                            return modifier.newChanges().addChanges(cacheResult);
                         }
                         return cacheResult;
                     }
@@ -286,7 +287,7 @@ public class MapCacheAspect {
             return 31 * usedChanges.hashValues(hashValues) + (changed ? 1 : 0);
         }
 
-        public Set<ValueExpr> getValues() {
+        public Set<Value> getValues() {
             return usedChanges.getValues();
         }
 
@@ -389,8 +390,8 @@ public class MapCacheAspect {
             return change.getKeys();
         }
 
-        public Set<ValueExpr> getValues() {
-            Set<ValueExpr> result = new HashSet<ValueExpr>();
+        public Set<Value> getValues() {
+            Set<Value> result = new HashSet<Value>();
             result.addAll(usedChanges.getValues());
             result.addAll(change.getValues());
             return result;
@@ -486,8 +487,8 @@ public class MapCacheAspect {
             return AbstractSourceJoin.enumKeys(joinImplement.values());
         }
 
-        public Set<ValueExpr> getValues() {
-            Set<ValueExpr> result = new HashSet<ValueExpr>();
+        public Set<Value> getValues() {
+            Set<Value> result = new HashSet<Value>();
             result.addAll(usedChanges.getValues());
             result.addAll(AbstractSourceJoin.enumValues(joinImplement.values()));
             return result;

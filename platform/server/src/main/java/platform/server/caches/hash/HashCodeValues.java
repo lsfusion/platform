@@ -1,6 +1,6 @@
 package platform.server.caches.hash;
 
-import platform.server.data.expr.ValueExpr;
+import platform.server.data.Value;
 
 public class HashCodeValues implements HashValues {
 
@@ -8,7 +8,7 @@ public class HashCodeValues implements HashValues {
     }
     public final static HashValues instance = new HashCodeValues();
 
-    public int hash(ValueExpr expr) {
+    public int hash(Value expr) {
         return expr.hashCode();
     }
 

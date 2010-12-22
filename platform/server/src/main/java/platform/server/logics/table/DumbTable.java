@@ -3,9 +3,10 @@ package platform.server.logics.table;
 import platform.server.classes.SystemClass;
 import platform.server.data.KeyField;
 import platform.server.data.Table;
+import platform.server.data.GlobalTable;
 import platform.server.data.where.classes.ClassWhere;
 
-public class DumbTable extends Table {
+public class DumbTable extends GlobalTable {
 
     public static final DumbTable instance = new DumbTable();
 

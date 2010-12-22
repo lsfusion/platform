@@ -13,14 +13,14 @@ import java.sql.SQLException;
 import java.util.*;
 
 // таблица счетчика sID
-public class IDTable extends Table {
+public class IDTable extends GlobalTable {
 
     public static final IDTable instance = new IDTable(); 
 
     KeyField key;
     PropertyField value;
 
-    IDTable() {
+    public IDTable() {
         super("idtable");
         key = new KeyField("id", SystemClass.instance);
         keys.add(key);

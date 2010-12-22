@@ -11,8 +11,8 @@ import platform.interop.Order;
 import platform.interop.Scroll;
 import platform.interop.action.CheckFailed;
 import platform.interop.action.ClientAction;
-import platform.interop.action.ResultClientAction;
 import platform.interop.action.ClientApply;
+import platform.interop.action.ResultClientAction;
 import platform.interop.form.RemoteChanges;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
@@ -34,10 +34,10 @@ import platform.server.serialization.ServerContext;
 import platform.server.serialization.ServerSerializationPool;
 
 import java.io.*;
+import java.lang.ref.WeakReference;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
-import java.lang.ref.WeakReference;
 
 // фасад для работы с клиентом
 public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> extends platform.interop.remote.RemoteObject implements RemoteFormInterface {

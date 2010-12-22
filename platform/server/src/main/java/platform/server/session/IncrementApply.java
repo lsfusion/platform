@@ -1,33 +1,35 @@
 package platform.server.session;
 
-import platform.server.logics.property.Property;
-import platform.server.logics.property.PropertyInterface;
+import platform.base.BaseUtils;
 import platform.server.caches.IdentityLazy;
+import platform.server.caches.MapValues;
 import platform.server.caches.MapValuesIterable;
 import platform.server.caches.hash.HashValues;
-import platform.server.data.expr.ValueExpr;
-import platform.server.data.expr.Expr;
-import platform.server.data.translator.MapValuesTranslate;
-import platform.server.data.where.WhereBuilder;
-import platform.server.data.PropertyField;
+import platform.server.classes.BaseClass;
 import platform.server.data.KeyField;
+import platform.server.data.Value;
+import platform.server.data.type.Type;
+import platform.server.data.expr.Expr;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
-import platform.server.classes.BaseClass;
-import platform.base.BaseUtils;
+import platform.server.data.translator.MapValuesTranslate;
+import platform.server.data.where.WhereBuilder;
+import platform.server.logics.property.Property;
+import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.table.ImplementTable;
 
-import java.util.*;
 import java.sql.SQLException;
+import java.util.*;
 
 // вообщем то public потому как иначе aspect не ловит
 public class IncrementApply extends Modifier<IncrementApply.UsedChanges> {
 
-    Map<Property, IncrementChangeTable> tables = new HashMap<Property, IncrementChangeTable>();
+    Map<Property, SessionTableUsage<KeyField, Property>> tables = new HashMap<Property, SessionTableUsage<KeyField, Property>>();
 
     public final DataSession session;
 
-    public SessionChanges getSession() {
-        return session.changes;
+    public ExprChanges getSession() {
+        return session;
     }
 
     IncrementApply(DataSession session) {
@@ -35,16 +37,18 @@ public class IncrementApply extends Modifier<IncrementApply.UsedChanges> {
     }
 
     public static class UsedChanges extends Changes<UsedChanges> {
-        final Map<Property, IncrementChangeTable> increment;
+        final Map<Property, MapValues> increment;
 
         private UsedChanges() {
-             increment = new HashMap<Property, IncrementChangeTable>();
+             increment = new HashMap<Property, MapValues>();
         }
         private final static UsedChanges EMPTY = new UsedChanges();
 
         public UsedChanges(IncrementApply modifier) {
-             super(modifier);
-             increment = new HashMap<Property, IncrementChangeTable>(modifier.tables);
+            super(modifier);
+            increment = new HashMap<Property, MapValues>();
+            for(Map.Entry<Property, SessionTableUsage<KeyField, Property>> incrementEntry : modifier.tables.entrySet())
+                increment.put(incrementEntry.getKey(), incrementEntry.getValue().getUsage());
         }
 
         @Override
@@ -57,11 +61,11 @@ public class IncrementApply extends Modifier<IncrementApply.UsedChanges> {
             return super.hasChanges() || modifyUsed();
         }
 
-        private UsedChanges(UsedChanges changes, SessionChanges merge) {
-            super(changes, merge);
+        private UsedChanges(UsedChanges changes, Changes merge) {
+            super(changes, merge, true);
             increment = changes.increment;
         }
-        public UsedChanges addChanges(SessionChanges changes) {
+        public UsedChanges addChanges(Changes changes) {
             return new UsedChanges(this, changes);
         }
 
@@ -86,15 +90,15 @@ public class IncrementApply extends Modifier<IncrementApply.UsedChanges> {
 
         @Override
         @IdentityLazy
-        public Set<ValueExpr> getValues() {
-            Set<ValueExpr> result = new HashSet<ValueExpr>();
+        public Set<Value> getValues() {
+            Set<Value> result = new HashSet<Value>();
             result.addAll(super.getValues());
             MapValuesIterable.enumValues(result, increment);
             return result;
         }
 
-        public UsedChanges(Property property, IncrementChangeTable table) {
-            increment = Collections.singletonMap(property, table);
+        public UsedChanges(Property property, SessionTableUsage<KeyField, Property> incrementTable) {
+            increment = Collections.singletonMap(property, incrementTable.getUsage());
         }
 
         private UsedChanges(UsedChanges usedChanges, MapValuesTranslate mapValues) {
@@ -114,11 +118,11 @@ public class IncrementApply extends Modifier<IncrementApply.UsedChanges> {
     }
 
     public <P extends PropertyInterface> Expr changed(Property<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere) {
-        IncrementChangeTable incrementTable = tables.get(property);
+        SessionTableUsage<KeyField, Property> incrementTable = tables.get(property);
         if(incrementTable!=null) { // если уже все посчитано - просто возвращаем его
-            Join<PropertyField> incrementJoin = incrementTable.join(BaseUtils.join(BaseUtils.reverse(BaseUtils.join(property.mapTable.mapKeys, incrementTable.mapKeys)), joinImplement));
+            Join<Property> incrementJoin = incrementTable.join(BaseUtils.join(BaseUtils.reverse(property.mapTable.mapKeys),joinImplement));
             changedWhere.add(incrementJoin.getWhere());
-            return incrementJoin.getExpr(incrementTable.changes.get(property));
+            return incrementJoin.getExpr(property);
         } else
             return null;
     }
@@ -128,7 +132,7 @@ public class IncrementApply extends Modifier<IncrementApply.UsedChanges> {
     }
 
     public UsedChanges used(Property property, UsedChanges usedChanges) {
-        IncrementChangeTable incrementTable = tables.get(property);
+        SessionTableUsage<KeyField, Property> incrementTable = tables.get(property);
         if(incrementTable!=null)
             return new UsedChanges(property, incrementTable);
         else
@@ -139,21 +143,20 @@ public class IncrementApply extends Modifier<IncrementApply.UsedChanges> {
         return UsedChanges.EMPTY;
     }
 
-    public IncrementChangeTable read(Collection<Property> properties, BaseClass baseClass) throws SQLException {
+    public SessionTableUsage<KeyField, Property> read(ImplementTable implement, Collection<Property> properties, BaseClass baseClass) throws SQLException {
         // создаем таблицу
-        IncrementChangeTable changeTable = new IncrementChangeTable(properties);
-        session.createTemporaryTable(changeTable);
+        SessionTableUsage<KeyField, Property> changeTable = new SessionTableUsage<KeyField, Property>(implement.keys, new ArrayList<Property>(properties),
+                new Type.Getter<KeyField>() {public Type getType(KeyField key) {return key.type;}}, new Type.Getter<Property>() {public Type getType(Property key) {return key.getType();}});
 
         // подготавливаем запрос
-        Query<KeyField,PropertyField> changesQuery = new Query<KeyField, PropertyField>(changeTable);
+        Query<KeyField,Property> changesQuery = new Query<KeyField, Property>(implement);
         WhereBuilder changedWhere = new WhereBuilder();
-        for(Map.Entry<Property,PropertyField> change : changeTable.changes.entrySet())
-            changesQuery.properties.put(change.getValue(),
-                    change.getKey().getIncrementExpr(BaseUtils.join(changeTable.mapKeys, changesQuery.mapKeys), this, changedWhere));
+        for(Property property : properties)
+            changesQuery.properties.put(property, property.getIncrementExpr(changesQuery.mapKeys, this, changedWhere));
         changesQuery.and(changedWhere.toWhere());
 
         // подготовили - теперь надо сохранить в курсор и записать классы
-        changeTable = changeTable.writeRows(session, changesQuery, baseClass);
+        changeTable.writeRows(session.sql, changesQuery, baseClass, session.env);
 
         for(Property property : properties)
             tables.put(property,changeTable);

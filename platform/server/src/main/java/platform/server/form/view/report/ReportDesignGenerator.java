@@ -11,6 +11,7 @@ import net.sf.jasperreports.engine.type.StretchTypeEnum;
 import platform.interop.form.ReportConstants;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.GroupObjectHierarchy;
+import static platform.server.form.entity.GroupObjectHierarchy.ReportNode;
 import platform.server.form.entity.PropertyObjectEntity;
 import platform.server.form.view.FormView;
 import platform.server.form.view.GroupObjectView;
@@ -20,8 +21,6 @@ import platform.server.form.view.PropertyDrawView;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
-
-import static platform.server.form.entity.GroupObjectHierarchy.ReportNode;
 
 /**
  * User: DAle

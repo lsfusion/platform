@@ -1,6 +1,5 @@
 package platform.server.form.view;
 
-import platform.base.identity.IdentityObject;
 import platform.interop.form.layout.AbstractTreeGroup;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.TreeGroupEntity;

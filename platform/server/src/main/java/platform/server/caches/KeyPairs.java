@@ -1,8 +1,8 @@
 package platform.server.caches;
 
 import platform.base.GroupPairs;
-import platform.server.data.expr.KeyExpr;
 import platform.server.Settings;
+import platform.server.data.expr.KeyExpr;
 
 import java.util.Map;
 

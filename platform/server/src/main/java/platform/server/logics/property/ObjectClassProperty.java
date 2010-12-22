@@ -23,7 +23,7 @@ import platform.server.logics.ObjectValue;
 import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
-import platform.server.session.SessionChanges;
+import platform.server.session.SimpleChanges;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -65,7 +65,7 @@ public class ObjectClassProperty extends ExecuteProperty {
     }
 
     protected <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier) {
-        return modifier.newChanges().addChanges(new SessionChanges(modifier.getSession(), true));
+        return modifier.newChanges().addChanges(new SimpleChanges(modifier.getChanges(), true));
     }
 
     @Override

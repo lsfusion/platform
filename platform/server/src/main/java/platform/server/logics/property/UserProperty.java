@@ -41,7 +41,7 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
 
     @Override
     protected <U extends Changes<U>> U calculateUsedDataChanges(Modifier<U> modifier) {
-        return modifier.newChanges().addChanges(new SessionChanges(modifier.getSession(), BaseUtils.merge(ClassProperty.getValueClasses(interfaces),Collections.singleton(getValueClass())), false));
+        return modifier.newChanges().addChanges(new SimpleChanges(modifier.getChanges(), BaseUtils.merge(ClassProperty.getValueClasses(interfaces),Collections.singleton(getValueClass())), false));
     }
 
     @Override

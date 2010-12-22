@@ -8,6 +8,7 @@ import platform.server.classes.DoubleClass;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.StringClass;
 import platform.server.classes.sets.AndClassSet;
+import platform.server.data.Value;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.SystemValueExpr;
 import platform.server.data.expr.ValueExpr;
@@ -23,7 +24,7 @@ import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.serialization.ServerSerializationPool;
-import platform.server.session.ChangesSession;
+import platform.server.session.SessionChanges;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -144,8 +145,8 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return hashValues.hash(getExpr());
     }
 
-    public Set<ValueExpr> getValues() {
-        return Collections.singleton(getExpr());
+    public Set<Value> getValues() {
+        return Collections.<Value>singleton(getExpr());
     }
 
     private DataObject(ValueExpr expr) {
@@ -156,7 +157,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return new DataObject(mapValues.translate(getExpr()));
     }
 
-    public DataObject refresh(ChangesSession session) throws SQLException {
+    public DataObject refresh(SessionChanges session) throws SQLException {
         return session.getDataObject(object, objectClass.getType());
     }
 

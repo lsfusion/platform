@@ -1,8 +1,8 @@
 package platform.server.data.query;
 
 import platform.base.OrderedMap;
+import platform.server.data.Value;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.classes.ClassWhere;
@@ -18,5 +18,5 @@ public interface ParsedQuery<K,V> {
 
     Join<V> join(Map<K, ? extends Expr> joinImplement, MapValuesTranslate joinValues); // последний параметр = какой есть\какой нужно, joinImplement не translate'ся
 
-    Set<ValueExpr> getValues();
+    Set<Value> getValues();
 }

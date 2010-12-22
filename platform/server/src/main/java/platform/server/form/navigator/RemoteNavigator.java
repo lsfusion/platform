@@ -9,6 +9,7 @@ package platform.server.form.navigator;
 
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
+import platform.base.WeakIdentityHashSet;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.RemoteObject;
@@ -21,6 +22,7 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
 import platform.server.data.type.ObjectType;
 import platform.server.data.where.Where;
+import platform.server.data.SQLSession;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.instance.*;
 import platform.server.form.instance.listener.CurrentClassListener;
@@ -39,50 +41,43 @@ import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.*;
 
 import java.io.*;
+import java.lang.ref.WeakReference;
 import java.rmi.RemoteException;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.sql.SQLException;
-import java.lang.ref.WeakReference;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
-public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject implements RemoteNavigatorInterface, FocusListener<T>, CustomClassListener, UserController, CurrentClassListener, ComputerController {
+public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject implements RemoteNavigatorInterface, FocusListener<T>, CustomClassListener, CurrentClassListener {
 
     T BL;
+    SQLSession sql;
 
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
 
-    public RemoteNavigator(T iBL, User currentUser, int computer, int port) throws RemoteException {
+    public RemoteNavigator(T BL, User currentUser, int computer, int port) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
         super(port);
 
-        BL = iBL;
+        this.BL = BL;
         classCache = new ClassCache();
 
-        securityPolicy = BL.policyManager.getSecurityPolicy(currentUser);
+        securityPolicy = this.BL.policyManager.getSecurityPolicy(currentUser);
 
-        user = new DataObject(currentUser.ID, BL.customUser);
-        this.computer = new DataObject(computer, BL.computer);
+        user = new DataObject(currentUser.ID, this.BL.customUser);
+        this.computer = new DataObject(computer, this.BL.computer);
+        this.sql = this.BL.createSQL();
     }
 
     private DataObject user;
 
-    public DataObject getCurrentUser() {
-        return user;
-    }
-
-    public DataObject getCurrentComputer() {
-        return computer.getDataObject();
-    }
-
-    WeakHashMap<DataSession, Object> sessions = new WeakHashMap<DataSession, Object>();
-
+    WeakIdentityHashSet<DataSession> sessions = new WeakIdentityHashSet<DataSession>();
     public void changeCurrentUser(DataObject user) {
         this.user = user;
 
         Modifier<? extends Changes> userModifier = new PropertyChangesModifier(Property.defaultModifier, new PropertyChanges(
                 BL.currentUser.property, new PropertyChange<PropertyInterface>(new HashMap<PropertyInterface, KeyExpr>(), user.getExpr(), Where.TRUE)));
-        for (DataSession session : sessions.keySet())
+        for (DataSession session : sessions)
             session.updateProperties(userModifier);
     }
 
@@ -118,8 +113,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
 
             ObjectOutputStream objectStream = new ObjectOutputStream(outStream);
             Query<Object, String> query = new Query<Object, String>(new HashMap<Object, KeyExpr>());
-            query.properties.put("name", BL.currentUserName.getExpr(session.modifier));
-            objectStream.writeObject(BaseUtils.nvl((String) query.execute(session).singleValue().get("name"), "(без имени)").trim());
+            query.properties.put("name", BL.currentUserName.getExpr());
+            objectStream.writeObject(BaseUtils.nvl((String) query.execute(session.sql, session.env).singleValue().get("name"), "(без имени)").trim());
 
             session.close();
         } catch (Exception e) {
@@ -129,8 +124,38 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         return outStream.toByteArray();
     }
 
+    private static class WeakUserController implements UserController { // чтобы помочь сборщику мусора и устранить цикд
+        WeakReference<RemoteNavigator> weakThis;
+
+        private WeakUserController(RemoteNavigator navigator) {
+            this.weakThis = new WeakReference<RemoteNavigator>(navigator);
+        }
+
+        public void changeCurrentUser(DataObject user) {
+            weakThis.get().changeCurrentUser(user);
+        }
+
+        public DataObject getCurrentUser() {
+            return weakThis.get().user;
+        }
+    }
+
+    private static class WeakComputerController implements ComputerController { // чтобы помочь сборщику мусора и устранить цикд
+        WeakReference<RemoteNavigator> weakThis;
+
+        private WeakComputerController(RemoteNavigator navigator) {
+            this.weakThis = new WeakReference<RemoteNavigator>(navigator);
+        }
+
+        public DataObject getCurrentComputer() {
+            return weakThis.get().computer.getDataObject();
+        }
+    }
+
     private DataSession createSession() throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        return BL.createSession(this, this);
+        DataSession session = BL.createSession(sql, new WeakUserController(this) , new WeakComputerController(this));
+        sessions.add(session);
+        return session;
     }
 
     List<NavigatorElement> getElements(int elementID) {
@@ -251,10 +276,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
             FormInstance<T> currentForm = getCurrentForm();
             if (currentSession && currentForm != null)
                 session = currentForm.session;
-            else {
+            else
                 session = createSession();
-                sessions.put(session, true);
-            }
 
             FormInstance<T> formInstance = new FormInstance<T>(formEntity, BL, session, securityPolicy, this, this, computer);
 

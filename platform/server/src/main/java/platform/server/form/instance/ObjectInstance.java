@@ -10,7 +10,7 @@ import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.Property;
 import platform.server.session.Changes;
-import platform.server.session.ChangesSession;
+import platform.server.session.SessionChanges;
 import platform.server.session.Modifier;
 
 import java.sql.SQLException;
@@ -66,7 +66,7 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
 
     public abstract ValueClass getGridClass();
 
-    public abstract void changeValue(ChangesSession session, ObjectValue changeValue) throws SQLException;
+    public abstract void changeValue(SessionChanges session, ObjectValue changeValue) throws SQLException;
 
     public abstract boolean classChanged(Collection<CustomClass> changedClasses);
 

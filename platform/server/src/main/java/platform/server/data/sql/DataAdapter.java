@@ -1,14 +1,9 @@
 package platform.server.data.sql;
 
-import platform.server.data.type.Type;
-import platform.server.data.ConnectionPool;
 import platform.server.data.AbstractConnectionPool;
-import platform.server.Settings;
+import platform.server.data.type.Type;
 
 import java.sql.SQLException;
-import java.sql.Connection;
-import java.util.*;
-import java.lang.ref.WeakReference;
 
 public abstract class DataAdapter extends AbstractConnectionPool implements SQLSyntax {
 

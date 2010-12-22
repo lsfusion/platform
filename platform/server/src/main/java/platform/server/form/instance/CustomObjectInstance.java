@@ -12,12 +12,12 @@ import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
-import platform.server.session.ChangesSession;
+import platform.server.session.SessionChanges;
 
+import java.lang.ref.WeakReference;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Set;
-import java.lang.ref.WeakReference;
 
 public class CustomObjectInstance extends ObjectInstance {
 
@@ -70,7 +70,7 @@ public class CustomObjectInstance extends ObjectInstance {
 
     ObjectValue value = NullValue.instance;
 
-    public void changeValue(ChangesSession session, ObjectValue changeValue) throws SQLException {
+    public void changeValue(SessionChanges session, ObjectValue changeValue) throws SQLException {
         if(changeValue.equals(value)) return;
 
         value = changeValue;
@@ -81,12 +81,12 @@ public class CustomObjectInstance extends ObjectInstance {
         groupTo.updated = groupTo.updated | GroupObjectInstance.UPDATED_OBJECT;
     }
 
-    public void refreshValueClass(ChangesSession session) throws SQLException {
+    public void refreshValueClass(SessionChanges session) throws SQLException {
         value = value.refresh(session);
         updateCurrentClass(session);
     }
 
-    public void updateCurrentClass(ChangesSession session) throws SQLException {
+    public void updateCurrentClass(SessionChanges session) throws SQLException {
         // запишем класс объекта
         ConcreteCustomClass changeClass;
         if(value instanceof NullValue)
@@ -128,7 +128,7 @@ public class CustomObjectInstance extends ObjectInstance {
         return value;
     }
 
-    public void changeClass(ChangesSession session, DataObject change, int classID) throws SQLException {
+    public void changeClass(SessionChanges session, DataObject change, int classID) throws SQLException {
 
         // запишем объекты, которые надо будет сохранять
         if(classID==-1) {

@@ -37,7 +37,7 @@ public class MeanClassWhere implements DNFWheres.Interface<MeanClassWhere> {
 
     // пока так потом компоненты надо образовывать будет
     public MeanClassWhere and(MeanClassWhere where) {
-        return new MeanClassWhere(classWhere.and(where.classWhere), BaseUtils.merge(equals,where.equals)); // даже если совпадают ничего страшного, все равно зафиксировано в InnerJoins - Where
+        return new MeanClassWhere(classWhere.and(where.classWhere), BaseUtils.override(equals,where.equals)); // даже если совпадают ничего страшного, все равно зафиксировано в InnerJoins - Where
     }
 
     public boolean isFalse() {

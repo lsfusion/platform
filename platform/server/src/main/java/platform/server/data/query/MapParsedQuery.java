@@ -2,8 +2,8 @@ package platform.server.data.query;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.server.data.Value;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.classes.ClassWhere;
@@ -37,7 +37,7 @@ public class MapParsedQuery<K,V,MK,MV> implements ParsedQuery<K,V> {
         return (ClassWhere<B>) new ClassWhere<Object>(query.getClassWhere(BaseUtils.filterKeys(mapProps, classProps).values()), BaseUtils.reverse(BaseUtils.merge(mapProps, mapKeys)));
     }
     
-    public Set<ValueExpr> getValues() {
+    public Set<Value> getValues() {
         return mapValues.translateValues(query.getValues());
     }
 

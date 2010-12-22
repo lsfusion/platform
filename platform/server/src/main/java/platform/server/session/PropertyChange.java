@@ -4,9 +4,9 @@ import platform.base.BaseUtils;
 import platform.server.caches.*;
 import platform.server.caches.hash.HashContext;
 import platform.server.caches.hash.HashValues;
+import platform.server.data.Value;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.Query;
 import platform.server.data.translator.MapTranslate;
@@ -35,7 +35,7 @@ public class PropertyChange<T extends PropertyInterface> extends TwinsInnerConte
     }
 
     @IdentityLazy
-    public Set<ValueExpr> getValues() {
+    public Set<Value> getValues() {
         return AbstractSourceJoin.enumValues(expr,where);
     }
 
@@ -86,9 +86,9 @@ public class PropertyChange<T extends PropertyInterface> extends TwinsInnerConte
         return translateInner(mapValues.mapKeys());
     }
 
-    private BaseUtils.HashComponents<ValueExpr> components = null;
+    private BaseUtils.HashComponents<Value> components = null;
     @ManualLazy
-    public BaseUtils.HashComponents<ValueExpr> getComponents() {
+    public BaseUtils.HashComponents<Value> getComponents() {
         if(components==null)
             components = AbstractMapValues.getComponents(this);
         return components;

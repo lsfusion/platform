@@ -1,9 +1,9 @@
 package platform.server.data.translator;
 
 import platform.base.BaseUtils;
+import platform.server.data.Value;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.PullExpr;
-import platform.server.data.expr.ValueExpr;
 
 import java.util.Map;
 import java.util.Set;
@@ -30,7 +30,7 @@ public class MapTranslator extends AbstractMapTranslator {
             return transExpr;
     }
 
-    public ValueExpr translate(ValueExpr expr) {
+    public <V extends Value> V translate(V expr) {
         return values.translate(expr);
     }
 
@@ -54,7 +54,7 @@ public class MapTranslator extends AbstractMapTranslator {
         return new MapTranslator(BaseUtils.reverse(keys), values.reverse());
     }
 
-    public boolean identityValues(Set<ValueExpr> values) {
+    public boolean identityValues(Set<? extends Value> values) {
         return BaseUtils.identity(keys) && this.values.identityValues(values);
     }
 }

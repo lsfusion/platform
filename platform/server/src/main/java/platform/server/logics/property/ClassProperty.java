@@ -8,7 +8,7 @@ import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
-import platform.server.session.SessionChanges;
+import platform.server.session.SimpleChanges;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -37,7 +37,7 @@ public class ClassProperty extends AggregateProperty<ClassPropertyInterface> {
     }
 
     public static <U extends Changes<U>> U getIsClassUsedChanges(Collection<ClassPropertyInterface> interfaces, Modifier<U> modifier) {
-        return modifier.newChanges().addChanges(new SessionChanges(modifier.getSession(), getValueClasses(interfaces), false));
+        return modifier.newChanges().addChanges(new SimpleChanges(modifier.getChanges(), getValueClasses(interfaces), false));
     }
 
     public <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier) {

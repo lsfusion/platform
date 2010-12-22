@@ -36,10 +36,10 @@ public class DataChangesModifier extends AbstractPropertyChangesModifier<ClassPr
             return new UsedChanges(this, mapValues);
         }
 
-        private UsedChanges(UsedChanges changes, SessionChanges merge) {
+        private UsedChanges(UsedChanges changes, Changes merge) {
             super(changes, merge);
         }
-        public UsedChanges addChanges(SessionChanges changes) {
+        public UsedChanges addChanges(Changes changes) {
             return new UsedChanges(this, changes);
         }
 
@@ -55,7 +55,6 @@ public class DataChangesModifier extends AbstractPropertyChangesModifier<ClassPr
         return UsedChanges.EMPTY;
     }
 
-    @IdentityLazy
     public UsedChanges newFullChanges() {
         return new UsedChanges(this);
     }

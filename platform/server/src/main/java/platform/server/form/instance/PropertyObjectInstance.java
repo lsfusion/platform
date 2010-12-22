@@ -8,6 +8,7 @@ import platform.server.classes.ConcreteClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.SQLSession;
+import platform.server.data.QueryEnvironment;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.type.Type;
@@ -119,8 +120,8 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
         return property.getEditorType(mapping);
     }
 
-    public Object read(SQLSession session, Modifier<? extends Changes> modifier) throws SQLException {
-        return property.read(session, getInterfaceValues(), modifier);
+    public Object read(SQLSession session, Modifier<? extends Changes> modifier, QueryEnvironment env) throws SQLException {
+        return property.read(session, getInterfaceValues(), modifier, env);
     }
 
     public List<ClientAction> execute(DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteForm executeForm, GroupObjectInstance groupObject) throws SQLException {

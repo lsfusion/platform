@@ -2,8 +2,8 @@ package platform.server.session;
 
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashValues;
+import platform.server.data.Value;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.query.Join;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.WhereBuilder;
@@ -17,7 +17,7 @@ import java.util.Set;
 public abstract class AbstractPropertyChangesModifier<P extends PropertyInterface, T extends Property<P>, AC extends AbstractPropertyChanges<P,T,AC>,
                                             UC extends AbstractPropertyChangesModifier.UsedChanges<P,T,AC,UC>> extends Modifier<UC> {
 
-    final SessionChanges session;
+    final ExprChanges session;
     final AC changes;
 
     public AbstractPropertyChangesModifier(Modifier modifier, AC changes) {
@@ -25,7 +25,7 @@ public abstract class AbstractPropertyChangesModifier<P extends PropertyInterfac
         this.changes = changes;
     }
 
-    public SessionChanges getSession() {
+    public ExprChanges getSession() {
         return session;
     }
 
@@ -52,8 +52,8 @@ public abstract class AbstractPropertyChangesModifier<P extends PropertyInterfac
             return super.hasChanges() || modifyUsed();
         }
 
-        protected UsedChanges(UC changes, SessionChanges merge) {
-            super(changes, merge);
+        protected UsedChanges(UC changes, Changes merge) {
+            super(changes, merge, true);
             this.changes = changes.changes;
         }
 
@@ -75,8 +75,8 @@ public abstract class AbstractPropertyChangesModifier<P extends PropertyInterfac
 
         @Override
         @IdentityLazy
-        public Set<ValueExpr> getValues() {
-            Set<ValueExpr> result = new HashSet<ValueExpr>();
+        public Set<Value> getValues() {
+            Set<Value> result = new HashSet<Value>();
             result.addAll(super.getValues());
             result.addAll(changes.getValues());
             return result;

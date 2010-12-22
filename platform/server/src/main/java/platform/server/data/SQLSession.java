@@ -2,15 +2,16 @@ package platform.server.data;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.base.MutableObject;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.SQLExecute;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.type.Reader;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeObject;
-import platform.server.data.type.Reader;
+import platform.server.data.type.ParseInterface;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 
@@ -18,7 +19,7 @@ import java.sql.*;
 import java.util.*;
 import java.util.logging.Logger;
 
-public abstract class SQLSession implements StatementParams {
+public class SQLSession extends MutableObject {
     private final static Logger logger = Logger.getLogger(SQLSession.class.getName());
 
     public SQLSyntax syntax;
@@ -183,49 +184,40 @@ public abstract class SQLSession implements StatementParams {
         logger.info(" Done");
     }
 
-    public void createTable(Table table) throws SQLException {
-        String createString = "";
-        String keyString = "";
-        for (KeyField key : table.keys) {
-            createString = (createString.length() == 0 ? "" : createString + ',') + key.getDeclare(syntax);
-            keyString = (keyString.length() == 0 ? "" : keyString + ',') + key.name;
-        }
-        for (PropertyField prop : table.properties)
-            createString = (createString.length() == 0 ? "" : createString + ',') + prop.getDeclare(syntax);
-        if (createString.length() == 0)
-            createString = "dumb bit";
-        else
-            createString = createString + ",CONSTRAINT PK_" + table.name + " PRIMARY KEY " + syntax.getClustered() + " (" + keyString + ")";
-
-        execute("CREATE TABLE " + table.name + " (" + createString + ")");
-    }
-
-    private Set<String> sessionTables = new HashSet<String>();
+    private final Set<String> sessionTables = new HashSet<String>();
+    private int sessionCounter = 0;
     
-    public void createTemporaryTable(SessionTable<?> table) throws SQLException {
+    public String createTemporaryTable(List<KeyField> keys, Collection<PropertyField> properties, Object owner) throws SQLException {
         needPrivate();
 
-        String createString = "";
-        String keyString = "";
-        for (KeyField key : table.keys) {
-            createString = (createString.length() == 0 ? "" : createString + ',') + key.getDeclare(syntax);
-            keyString = (keyString.length() == 0 ? "" : keyString + ',') + key.name;
+        synchronized(sessionTables) {
+            String name = "t_" + (sessionCounter++);
+
+            String createString = "";
+            String keyString = "";
+            for (KeyField key : keys) {
+                createString = (createString.length() == 0 ? "" : createString + ',') + key.getDeclare(syntax);
+                keyString = (keyString.length() == 0 ? "" : keyString + ',') + key.name;
+            }
+            for (PropertyField prop : properties)
+                createString = (createString.length() == 0 ? "" : createString + ',') + prop.getDeclare(syntax);
+
+            if (keyString.length() != 0)
+                createString = createString + ", PRIMARY KEY " + syntax.getClustered() + " (" + keyString + ")";
+            execute(syntax.getCreateSessionTable(name, createString));
+
+            sessionTables.add(name);
+            return name;
         }
-        for (PropertyField prop : table.properties)
-            createString = (createString.length() == 0 ? "" : createString + ',') + prop.getDeclare(syntax);
-
-        if (keyString.length() != 0)
-            createString = createString + ", PRIMARY KEY " + syntax.getClustered() + " (" + keyString + ")";
-        execute(syntax.getCreateSessionTable(table.name, createString));
-
-        sessionTables.add(table.name);
     }
 
-    public void dropTemporaryTable(SessionTable table) throws SQLException {
-        boolean was = sessionTables.remove(table.name);
-        assert was;
+    public void dropTemporaryTable(SessionTable table, Object owner) throws SQLException {
+        synchronized(sessionTables) {
+            boolean was = sessionTables.remove(table.name);
+            assert was;
 
-        execute(syntax.getDropSessionTable(table.name));
+            execute(syntax.getDropSessionTable(table.name));
+        }
 
         tryCommon();
     }
@@ -252,10 +244,10 @@ public abstract class SQLSession implements StatementParams {
         return executeDML(execute.command, execute.params);
     }
 
-    private int executeDML(String command, Map<String, TypeObject> paramObjects) throws SQLException {
+    private int executeDML(String command, Map<String, ParseInterface> paramObjects) throws SQLException {
         Connection connection = getConnection();
 
-        PreparedStatement statement = getStatement(command, paramObjects, connection, this, syntax);
+        PreparedStatement statement = getStatement(command, paramObjects, connection, syntax);
 
 //        System.out.println(statement);
         int result;
@@ -273,13 +265,13 @@ public abstract class SQLSession implements StatementParams {
         return result;
     }
 
-    public <K,V> OrderedMap<Map<K, Object>, Map<V, Object>> executeSelect(String select, Map<String, TypeObject> paramObjects, Map<K, String> keyNames, Map<K, ? extends Reader> keyReaders, Map<V, String> propertyNames, Map<V, ? extends Reader> propertyReaders) throws SQLException {
+    public <K,V> OrderedMap<Map<K, Object>, Map<V, Object>> executeSelect(String select, Map<String, ParseInterface> paramObjects, Map<K, String> keyNames, Map<K, ? extends Reader> keyReaders, Map<V, String> propertyNames, Map<V, ? extends Reader> propertyReaders) throws SQLException {
         Connection connection = getConnection();
 
         logger.info(select);
 
         OrderedMap<Map<K,Object>,Map<V,Object>> execResult = new OrderedMap<Map<K, Object>, Map<V, Object>>();
-        PreparedStatement statement = getStatement(select, paramObjects, connection, this, syntax);
+        PreparedStatement statement = getStatement(select, paramObjects, connection, syntax);
         try {
             ResultSet result = statement.executeQuery();
             try {
@@ -310,7 +302,7 @@ public abstract class SQLSession implements StatementParams {
         String valueString = "";
 
         int paramNum = 0;
-        Map<String, TypeObject> params = new HashMap<String, TypeObject>();
+        Map<String, ParseInterface> params = new HashMap<String, ParseInterface>();
 
         // пробежим по KeyFields'ам
         for (KeyField key : table.keys) {
@@ -379,12 +371,13 @@ public abstract class SQLSession implements StatementParams {
     public boolean isRecord(Table table, Map<KeyField, DataObject> keyFields) throws SQLException {
 
         // по сути пустое кол-во ключей
-        Query<Object, String> isRecQuery = new Query<Object, String>(new HashMap<Object, KeyExpr>());
+        Query<KeyField, String> query = new Query<KeyField, String>(keyFields.keySet());
+        query.putKeyWhere(keyFields);
 
         // сначала закинем KeyField'ы и прогоним Select
-        isRecQuery.and(table.joinAnd(DataObject.getMapValueExprs(keyFields)).getWhere());
+        query.and(table.joinAnd(query.mapKeys).getWhere());
 
-        return isRecQuery.execute(this).size() > 0;
+        return query.execute(this).size() > 0;
     }
 
     public void ensureRecord(Table table, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields) throws SQLException {
@@ -410,13 +403,14 @@ public abstract class SQLSession implements StatementParams {
 
     public Object readRecord(Table table, Map<KeyField, DataObject> keyFields, PropertyField field) throws SQLException {
         // по сути пустое кол-во ключей
-        Query<Object, String> getQuery = new Query<Object, String>(new HashMap<Object, KeyExpr>());
+        Query<KeyField, String> query = new Query<KeyField, String>(keyFields.keySet());
 
         // сначала закинем KeyField'ы и прогоним Select
-        Expr fieldExpr = table.joinAnd(DataObject.getMapValueExprs(keyFields)).getExpr(field);
-        getQuery.properties.put("result", fieldExpr);
-        getQuery.and(fieldExpr.getWhere());
-        OrderedMap<Map<Object, Object>, Map<String, Object>> result = getQuery.execute(this);
+        Expr fieldExpr = table.joinAnd(query.mapKeys).getExpr(field);
+        query.putKeyWhere(keyFields);
+        query.properties.put("result", fieldExpr);
+        query.and(fieldExpr.getWhere());
+        OrderedMap<Map<KeyField, Object>, Map<String, Object>> result = query.execute(this);
         if (result.size() > 0)
             return result.singleValue().get("result");
         else
@@ -454,24 +448,18 @@ public abstract class SQLSession implements StatementParams {
             privateConnection.close();
     }
 
-    private static PreparedStatement getStatement(String command, Map<String, TypeObject> paramObjects, Connection connection, StatementParams stateParams, SQLSyntax syntax) throws SQLException {
+    private static PreparedStatement getStatement(String command, Map<String, ParseInterface> paramObjects, Connection connection, SQLSyntax syntax) throws SQLException {
 
-        char[][] params = new char[paramObjects.size() + 3][];
-        TypeObject[] values = new TypeObject[params.length];
+        char[][] params = new char[paramObjects.size()][];
+        ParseInterface[] values = new ParseInterface[params.length];
         int paramNum = 0;
-        for (Map.Entry<String, TypeObject> param : paramObjects.entrySet()) {
+        for (Map.Entry<String, ParseInterface> param : paramObjects.entrySet()) {
             params[paramNum] = param.getKey().toCharArray();
             values[paramNum++] = param.getValue();
         }
-        params[paramNum] = userParam.toCharArray();
-        values[paramNum++] = stateParams.getSQLUser();
-        params[paramNum] = sessionParam.toCharArray();
-        values[paramNum++] = stateParams.getID();
-        params[paramNum] = computerParam.toCharArray();
-        values[paramNum++] = stateParams.getSQLComputer();
 
         // те которые isString сразу транслируем
-        List<TypeObject> preparedParams = new ArrayList<TypeObject>();
+        List<ParseInterface> preparedParams = new ArrayList<ParseInterface>();
         char[] toparse = command.toCharArray();
         String parsedString = "";
         char[] parsed = new char[toparse.length + params.length * 100];
@@ -509,7 +497,7 @@ public abstract class SQLSession implements StatementParams {
 
         PreparedStatement statement = connection.prepareStatement(parsedString);
         paramNum = 1;
-        for (TypeObject param : preparedParams)
+        for (ParseInterface param : preparedParams)
             param.writeParam(statement, paramNum++, syntax);
 
         return statement;

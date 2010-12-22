@@ -39,11 +39,11 @@ public abstract class NoUpdateModifier extends Modifier<NoUpdateModifier.UsedCha
             noUpdateProps = Collections.singleton(property);            
         }
 
-        private UsedChanges(UsedChanges changes, SessionChanges merge) {
-            super(changes, merge);
+        private UsedChanges(UsedChanges changes, Changes merge) {
+            super(changes, merge, true);
             noUpdateProps = changes.noUpdateProps;
         }
-        public UsedChanges addChanges(SessionChanges changes) {
+        public UsedChanges addChanges(Changes changes) {
             return new UsedChanges(this, changes);
         }
 

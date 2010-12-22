@@ -2,7 +2,11 @@ package platform.server.data.translator;
 
 import platform.base.ImmutableObject;
 import platform.base.OrderedMap;
-import platform.server.data.expr.*;
+import platform.server.data.Value;
+import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.VariableClassExpr;
 
 import java.util.*;
 
@@ -65,10 +69,10 @@ public abstract class AbstractMapTranslator extends ImmutableObject implements M
         return result;
     }
 
-    public Set<ValueExpr> translateValues(Set<ValueExpr> set) {
-        Set<ValueExpr> result = new HashSet<ValueExpr>();
-        for(ValueExpr expr : set)
-            result.add(expr.translateOuter(this));
+    public <V extends Value> Set<V> translateValues(Set<V> set) {
+        Set<V> result = new HashSet<V>();
+        for(V expr : set)
+            result.add(translate(expr));
         return result;
     }
 

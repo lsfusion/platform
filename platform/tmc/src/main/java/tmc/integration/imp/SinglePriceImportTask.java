@@ -9,7 +9,7 @@ import platform.server.classes.DataClass;
 import platform.server.classes.DoubleClass;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.StringClass;
-import platform.server.data.CustomSessionTable;
+import platform.server.data.SessionTable;
 import platform.server.data.Field;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
@@ -72,13 +72,9 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
             classProperties.put(priceField, new ClassWhere<Field>(barcodeField, barcodeClass).and(new ClassWhere<Field>(priceField, priceClass)));
             classProperties.put(noDiscField, new ClassWhere<Field>(barcodeField, barcodeClass).and(new ClassWhere<Field>(noDiscField, LogicalClass.instance)));
 
-            CustomSessionTable table = new CustomSessionTable("priceimp",
-                    new ClassWhere(barcodeField, barcodeClass), classProperties,
-                    Collections.singleton(barcodeField), BaseUtils.toSet(nameField, priceField, noDiscField));
-
             DataSession session = BL.createSession();
-            session.createTemporaryTable(table);
 
+            Map<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> rows = new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>();
             for (int i = 0; i < recordCount; i++) {
 
                 impFile.read();
@@ -95,8 +91,10 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
                 properties.put(priceField, new DataObject(price));
                 properties.put(noDiscField, noDisc==null ? NullValue.instance : new DataObject(true, LogicalClass.instance));
 
-                session.insertRecord(table, keys, properties);
+                rows.put(keys, properties);
             }
+
+            SessionTable table = new SessionTable(session.sql, Collections.singletonList(barcodeField), BaseUtils.toSet(nameField, priceField, noDiscField), new ClassWhere(barcodeField, barcodeClass), classProperties, rows, impFile);
 
             Map<PropertyInterface, KeyExpr> mapKeys = (Map<PropertyInterface,KeyExpr>) BL.barcodeToObject.property.getMapKeys();
             Map<KeyField, KeyExpr> mapFields = Collections.singletonMap(barcodeField, BaseUtils.singleValue(mapKeys));
@@ -106,7 +104,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
 
             query.properties.put("value", BL.barcodeToObject.property.getExpr(mapKeys));
 
-            OrderedMap<Map<KeyField, Object>, Map<Object, Object>> result = query.execute(session);
+            OrderedMap<Map<KeyField, Object>, Map<Object, Object>> result = query.execute(session.sql, session.env);
 
             for (Map.Entry<Map<KeyField, Object>, Map<Object, Object>> row : result.entrySet()) {
 

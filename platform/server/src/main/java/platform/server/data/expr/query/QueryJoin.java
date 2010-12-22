@@ -6,9 +6,9 @@ import platform.server.caches.InnerHashContext;
 import platform.server.caches.OuterContext;
 import platform.server.caches.TwinsInnerContext;
 import platform.server.caches.hash.HashContext;
+import platform.server.data.Value;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 
@@ -23,20 +23,20 @@ public abstract class QueryJoin<K extends BaseExpr,I extends OuterContext<I>> ex
 
     // нужны чтобы при merge'е у транслятора хватало ключей/значений
     private final Set<KeyExpr> keys;
-    private final Set<ValueExpr> values;
+    private final Set<Value> values;
 
     public Set<KeyExpr> getKeys() {
         return keys;
     }
 
-    public Set<ValueExpr> getValues() {
+    public Set<Value> getValues() {
         return values;
     }
 
     // дублируем аналогичную логику GroupExpr'а
     protected QueryJoin(QueryJoin<K,I> join, MapTranslate translator) {
         // надо еще транслировать "внутренние" values
-        Set<ValueExpr> queryValues = join.getValues();
+        Set<Value> queryValues = join.getValues();
         MapValuesTranslate mapValues = translator.mapValues().filter(queryValues);
 
         if(mapValues.identity()) { // если все совпадает то и не перетранслируем внутри ничего
@@ -53,7 +53,7 @@ public abstract class QueryJoin<K extends BaseExpr,I extends OuterContext<I>> ex
         values = mapValues.translateValues(queryValues);
     }
 
-    public QueryJoin(Set<KeyExpr> keys, Set<ValueExpr> values, I inner, Map<K, BaseExpr> group) {
+    public QueryJoin(Set<KeyExpr> keys, Set<Value> values, I inner, Map<K, BaseExpr> group) {
         this.keys = keys;
         this.values = values;
 
@@ -71,10 +71,10 @@ public abstract class QueryJoin<K extends BaseExpr,I extends OuterContext<I>> ex
                 hash += groupExpr.getKey().hashOuter(hashContext) ^ hashOuterExpr(groupExpr.getValue());
             hash = hash * 31;
             for(KeyExpr key : keys)
-                hash += key.hashOuter(hashContext);
+                hash += hashContext.keys.hash(key);
             hash = hash * 31;
-            for(ValueExpr key : values)
-                hash += key.hashOuter(hashContext);
+            for(Value value : values)
+                hash += hashContext.values.hash(value);
             return hash * 31 + query.hashOuter(hashContext);
         }
 
@@ -88,7 +88,7 @@ public abstract class QueryJoin<K extends BaseExpr,I extends OuterContext<I>> ex
             return outerExpr.hashCode();
         }
 
-        public Set<ValueExpr> getValues() {
+        public Set<Value> getValues() {
             return values;
         }
     };
@@ -98,7 +98,7 @@ public abstract class QueryJoin<K extends BaseExpr,I extends OuterContext<I>> ex
         return innerContext.hashInner(hashContext);
     }
 
-    protected abstract QueryJoin<K, I> createThis(Set<KeyExpr> keys, Set<ValueExpr> values, I query, Map<K,BaseExpr> group);
+    protected abstract QueryJoin<K, I> createThis(Set<KeyExpr> keys, Set<Value> values, I query, Map<K,BaseExpr> group);
 
     public QueryJoin<K, I> translateInner(MapTranslate translator) {
         return createThis(translator.translateKeys(keys), translator.translateValues(values), query.translateOuter(translator), (Map<K,BaseExpr>) translator.translateKeys(group));

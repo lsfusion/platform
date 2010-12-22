@@ -1,13 +1,13 @@
 package platform.server.session;
 
-import platform.base.QuickMap;
 import platform.base.BaseUtils;
+import platform.base.QuickMap;
+import platform.server.caches.AbstractMapValues;
+import platform.server.caches.ManualLazy;
 import platform.server.caches.MapValues;
 import platform.server.caches.MapValuesIterable;
-import platform.server.caches.ManualLazy;
-import platform.server.caches.AbstractMapValues;
 import platform.server.caches.hash.HashValues;
-import platform.server.data.expr.ValueExpr;
+import platform.server.data.Value;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
@@ -66,8 +66,8 @@ public abstract class AbstractPropertyChanges<P extends PropertyInterface, T ext
         return MapValuesIterable.hash(this,hashValues);
     }
 
-    public Set<ValueExpr> getValues() {
-        Set<ValueExpr> result = new HashSet<ValueExpr>();
+    public Set<Value> getValues() {
+        Set<Value> result = new HashSet<Value>();
         for(int i=0;i<size;i++)
             result.addAll(getValue(i).getValues());
         return result;
@@ -80,9 +80,9 @@ public abstract class AbstractPropertyChanges<P extends PropertyInterface, T ext
         return result;
     }
 
-    private BaseUtils.HashComponents<ValueExpr> components = null;
+    private BaseUtils.HashComponents<Value> components = null;
     @ManualLazy
-    public BaseUtils.HashComponents<ValueExpr> getComponents() {
+    public BaseUtils.HashComponents<Value> getComponents() {
         if(components==null)
             components = AbstractMapValues.getComponents(this);
         return components;

@@ -15,6 +15,10 @@ import java.util.List;
 
 public interface Type<T> extends ClassReader<T> {
 
+    public static interface Getter<K> {
+        Type getType(K key);
+    }
+
     String getDB(SQLSyntax syntax);
 
     boolean isSafeString(Object value);

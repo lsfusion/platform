@@ -1,16 +1,15 @@
 package platform.server.caches;
 
-import platform.base.ImmutableObject;
 import platform.base.BaseUtils;
+import platform.base.ImmutableObject;
+import platform.base.GlobalObject;
 import platform.server.caches.hash.HashCodeValues;
-import platform.server.caches.hash.HashMapKeys;
-import platform.server.caches.hash.HashContext;
 import platform.server.caches.hash.HashMapValues;
-import platform.server.data.expr.ValueExpr;
-import platform.server.data.expr.KeyExpr;
-import platform.server.classes.*;
+import platform.server.data.Value;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
 
 public abstract class AbstractMapValues<U extends AbstractMapValues<U>> extends ImmutableObject implements MapValues<U>  {
 
@@ -25,30 +24,30 @@ public abstract class AbstractMapValues<U extends AbstractMapValues<U>> extends 
         return hashCode;
     }
 
-    public static SortedMap<ConcreteClass, Set<ValueExpr>> getSortedParams(Set<ValueExpr> values) {
-        return BaseUtils.groupSortedSet(new BaseUtils.Group<ConcreteClass, ValueExpr>() {
-            public ConcreteClass group(ValueExpr key) {
-                return key.objectClass;
+    public static SortedMap<GlobalObject, Set<Value>> getSortedParams(Set<Value> values) {
+        return BaseUtils.groupSortedSet(new BaseUtils.Group<GlobalObject, Value>() {
+            public GlobalObject group(Value key) {
+                return key.getValueClass();
             }
-        }, values, ConcreteClass.comparator);
+        }, values, GlobalObject.comparator);
     }
 
     // множественные наследование
-    public static BaseUtils.HashComponents<ValueExpr> getComponents(final MapValues<?> mapValues) {
-        return BaseUtils.getComponents(new BaseUtils.HashInterface<ValueExpr, ConcreteClass>() {
-            public SortedMap<ConcreteClass,Set<ValueExpr>> getParams() {
+    public static BaseUtils.HashComponents<Value> getComponents(final MapValues<?> mapValues) {
+        return BaseUtils.getComponents(new BaseUtils.HashInterface<Value, GlobalObject>() {
+            public SortedMap<GlobalObject,Set<Value>> getParams() {
                 return getSortedParams(mapValues.getValues());
             }
 
-            public int hashParams(Map<ValueExpr, Integer> map) {
+            public int hashParams(Map<Value, Integer> map) {
                 return mapValues.hashValues(map.size()>0?new HashMapValues(map): HashCodeValues.instance);
             }
         });
     }
 
-    private BaseUtils.HashComponents<ValueExpr> components = null;
+    private BaseUtils.HashComponents<Value> components = null;
     @ManualLazy
-    public BaseUtils.HashComponents<ValueExpr> getComponents() {
+    public BaseUtils.HashComponents<Value> getComponents() {
         if(components==null)
             components = getComponents(this);
         return components;

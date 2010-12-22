@@ -1,8 +1,8 @@
 package platform.server.caches.hash;
 
-import platform.server.data.expr.ValueExpr;
+import platform.server.data.Value;
 
 public interface HashValues {
 
-    int hash(ValueExpr expr);
+    int hash(Value expr);
 }

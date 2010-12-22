@@ -3,6 +3,7 @@ package platform.server.data.expr.query;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
+import platform.server.data.Value;
 import platform.server.data.expr.*;
 import platform.server.data.query.InnerJoin;
 import platform.server.data.query.JoinSet;
@@ -56,15 +57,15 @@ public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> implements I
         return new GroupJoin(this, translator);
     }
 
-    public GroupJoin(Set<KeyExpr> keys, Set<ValueExpr> values, Where where, JoinSet joins, Map<BaseExpr, BaseExpr> group) {
+    public GroupJoin(Set<KeyExpr> keys, Set<Value> values, Where where, JoinSet joins, Map<BaseExpr, BaseExpr> group) {
         super(keys,values,new Query(where,joins),group);
     }
 
-    public GroupJoin(Set<KeyExpr> keys, Set<ValueExpr> values, Query inner, Map<BaseExpr, BaseExpr> group) {
+    public GroupJoin(Set<KeyExpr> keys, Set<Value> values, Query inner, Map<BaseExpr, BaseExpr> group) {
         super(keys, values, inner, group);
     }
 
-    protected QueryJoin<BaseExpr, Query> createThis(Set<KeyExpr> keys, Set<ValueExpr> values, Query query, Map<BaseExpr, BaseExpr> group) {
+    protected QueryJoin<BaseExpr, Query> createThis(Set<KeyExpr> keys, Set<Value> values, Query query, Map<BaseExpr, BaseExpr> group) {
         return new GroupJoin(keys, values, query, group);
     }
 

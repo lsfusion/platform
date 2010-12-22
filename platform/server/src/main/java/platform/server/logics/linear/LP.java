@@ -6,6 +6,7 @@ import platform.base.Result;
 import platform.interop.action.ClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.data.SQLSession;
+import platform.server.data.QueryEnvironment;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.classes.ClassWhere;
@@ -107,13 +108,20 @@ public class LP<T extends PropertyInterface> {
         return property.getExpr(mapExprs,modifier,null);
     }
 
-    public Object read(SQLSession session, Modifier<? extends Changes> modifier, DataObject... objects) throws SQLException {
+    public Expr getExpr(Expr... exprs) {
+        Map<T, Expr> mapExprs = new HashMap<T, Expr>();
+        for(int i=0;i<listInterfaces.size();i++)
+            mapExprs.put(listInterfaces.get(i),exprs[i]);
+        return property.getExpr(mapExprs);
+    }
+
+    public Object read(SQLSession session, Modifier<? extends Changes> modifier, QueryEnvironment env, DataObject... objects) throws SQLException {
         Map<T, DataObject> mapValues = getMapValues(objects);
-        return property.read(session, mapValues, modifier);
+        return property.read(session, mapValues, modifier, env);
     }
 
     public Object read(DataSession session, DataObject... objects) throws SQLException {
-        return read(session, session.modifier, objects);
+        return read(session.sql, session.modifier, session.env, objects);
     }
 
     // execute'ы без Form'

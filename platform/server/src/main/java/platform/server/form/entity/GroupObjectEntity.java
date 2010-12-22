@@ -30,9 +30,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public GroupObjectEntity() {
     }
 
-    public GroupObjectEntity(int iID) {
-        ID = iID;
-        assert (ID < RemoteFormInterface.GID_SHIFT);
+    public GroupObjectEntity(int ID) {
+        this.ID = ID;
     }
 
     public int getID() {

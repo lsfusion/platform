@@ -3,11 +3,11 @@ package platform.server.form.instance;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
+import static platform.interop.ClassViewType.*;
 import platform.interop.Scroll;
 import platform.interop.action.ClientAction;
 import platform.interop.action.ResultClientAction;
 import platform.interop.exceptions.ComplexQueryException;
-import platform.interop.form.RemoteFormInterface;
 import platform.server.auth.SecurityPolicy;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.ConcreteCustomClass;
@@ -19,6 +19,7 @@ import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.entity.filter.NotFilterEntity;
 import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
+import static platform.server.form.instance.GroupObjectInstance.*;
 import platform.server.form.instance.filter.FilterInstance;
 import platform.server.form.instance.filter.RegularFilterGroupInstance;
 import platform.server.form.instance.filter.RegularFilterInstance;
@@ -29,10 +30,7 @@ import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.ObjectValueProperty;
-import platform.server.logics.property.Property;
-import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.PropertyValueImplement;
+import platform.server.logics.property.*;
 import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.session.*;
 
@@ -44,7 +42,6 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.Map.Entry;
 
-import static java.util.Collections.singletonMap;
 import static platform.interop.ClassViewType.*;
 import static platform.server.form.instance.GroupObjectInstance.*;
 
@@ -57,14 +54,12 @@ import static platform.server.form.instance.GroupObjectInstance.*;
 
 public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
-    public final int sessionID;
-
     public final T BL;
 
     public DataSession session;
 
-    public SessionChanges getSession() {
-        return session.changes;
+    public ExprChanges getSession() {
+        return session;
     }
 
     SecurityPolicy securityPolicy;
@@ -73,17 +68,15 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         return BL.baseClass.findClassID(classID);
     }
 
-    private UsedChanges fullChanges;
-
-    public Modifier<? extends Changes> update(final SessionChanges sessionChanges) {
+    public Modifier<? extends Changes> update(final ExprChanges sessionChanges) {
         return new NoUpdateModifier(hintsNoUpdate) {
-            public SessionChanges getSession() {
+            public ExprChanges getSession() {
                 return sessionChanges;
             }
         };
     }
 
-    public Set<Property> getUpdateProperties(SessionChanges sessionChanges) {
+    public Set<Property> getUpdateProperties(ExprChanges sessionChanges) {
         return getUpdateProperties(update(sessionChanges));
     }
 
@@ -123,8 +116,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
         this.weakFocusListener = new WeakReference<FocusListener<T>>(focusListener);
         this.weakClassListener = new WeakReference<CustomClassListener>(classListener);
-
-        sessionID = this.session.generateID(entity.getID());
 
         hintsNoUpdate = entity.hintsNoUpdate;
 
@@ -255,7 +246,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
             ObjectValueProperty objectValueProperty = BL.getObjectValueProperty(singleObject.getBaseClass());
 
             return objectValueProperty.getImplement().mapObjects(
-                    singletonMap(
+                    Collections.singletonMap(
                             BaseUtils.single(objectValueProperty.interfaces),
                             singleObject));
         }
@@ -288,11 +279,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     public void expandGroupObject(GroupObjectInstance group, Map<ObjectInstance, DataObject> value) throws SQLException {
-        if(group.expandTable==null) {
-            group.expandTable = new GroupObjectTable(group, "e", sessionID * RemoteFormInterface.GID_SHIFT + group.getID());
-            session.createTemporaryTable(group.expandTable.table);
-        }
-        group.expandTable = group.expandTable.insertRecord(session, value, true);
+        if(group.expandTable==null)
+            group.expandTable = group.createKeyTable();
+        group.expandTable.insertRecord(session.sql, value, true);
         group.updated |= UPDATED_EXPANDS;
     }
 
@@ -496,9 +485,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         session.incrementChanges.remove(this);
         for (GroupObjectInstance group : groups) {
             if(group.keyTable!=null)
-                session.dropTemporaryTable(group.keyTable.table);
+                group.keyTable.drop(session.sql);
             if(group.expandTable!=null)
-                session.dropTemporaryTable(group.expandTable.table);
+                group.expandTable.drop(session.sql);
         }
     }
 
@@ -528,10 +517,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
             group.fillUpdateProperties(result);
         }
         return result;
-    }
-
-    public Collection<Property> getNoUpdateProperties() {
-        return hintsNoUpdate;
     }
 
     public FormInstance<T> createForm(FormEntity<T> form, Map<ObjectEntity, DataObject> mapObjects) throws SQLException {
@@ -611,8 +596,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
             Collection<Object> objects = new ArrayList<Object>();
 
-            GroupObjectTable groupObjectTable;
-            GroupObjectTable expandObjectTable;
+            NoPropertyTableUsage<ObjectInstance> groupObjectTable;
+            NoPropertyTableUsage<ObjectInstance> expandObjectTable;
 
             private Group(GroupObjectInstance iGroup) {
                 group = iGroup;
@@ -645,20 +630,20 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 // восстанавливаем ключи в сессии
                 if (groupObjectTable == null) {
                     if (group.keyTable != null) {
-                        session.dropTemporaryTable(group.keyTable.table);
+                        group.keyTable.drop(session.sql);
                         group.keyTable = null;
                     }
                 } else {
-                    groupObjectTable.rewrite(session, group.keys.keySet());
+                    groupObjectTable.writeKeys(session.sql, group.keys.keySet());
                     group.keyTable = groupObjectTable;
                 }
                 if (expandObjectTable == null) {
                     if (group.expandTable != null) {
-                        session.dropTemporaryTable(group.expandTable.table);
+                        group.expandTable.drop(session.sql);
                         group.expandTable = null;
                     }
                 } else {
-                    expandObjectTable.rewrite(session, group.keys.keySet());
+                    expandObjectTable.writeKeys(session.sql, group.keys.keySet());
                     group.expandTable = expandObjectTable;
                 }
             }
@@ -668,11 +653,15 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         Map<PropertyDrawInstance, Boolean> isDrawed;
         Map<RegularFilterGroupInstance, RegularFilterInstance> regularFilterValues;
 
-        Map<FormInstance, DataSession.UpdateChanges> incrementChanges;
-        Map<FormInstance, DataSession.UpdateChanges> appliedChanges;
-        Map<FormInstance, DataSession.UpdateChanges> updateChanges;
+        IdentityHashMap<FormInstance, DataSession.UpdateChanges> incrementChanges;
+        IdentityHashMap<FormInstance, DataSession.UpdateChanges> appliedChanges;
+        IdentityHashMap<FormInstance, DataSession.UpdateChanges> updateChanges;
 
-        SessionChanges changes;
+        Map<CustomClass, SingleKeyNoPropertyUsage> add;
+        Map<CustomClass, SingleKeyNoPropertyUsage> remove;
+        Map<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> data;
+
+        SingleKeyPropertyUsage news = null;
 
         ApplyTransaction() {
             for (GroupObjectInstance group : FormInstance.this.groups)
@@ -681,10 +670,15 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
             regularFilterValues = new HashMap<RegularFilterGroupInstance, RegularFilterInstance>(FormInstance.this.regularFilterValues);
 
             if (dataChanged) {
-                incrementChanges = new HashMap<FormInstance, DataSession.UpdateChanges>(session.incrementChanges);
-                appliedChanges = new HashMap<FormInstance, DataSession.UpdateChanges>(session.appliedChanges);
-                updateChanges = new HashMap<FormInstance, DataSession.UpdateChanges>(session.updateChanges);
-                changes = session.changes;
+                incrementChanges = new IdentityHashMap<FormInstance, DataSession.UpdateChanges>(session.incrementChanges);
+                appliedChanges = new IdentityHashMap<FormInstance, DataSession.UpdateChanges>(session.appliedChanges);
+                updateChanges = new IdentityHashMap<FormInstance, DataSession.UpdateChanges>(session.updateChanges);
+
+                add = new HashMap<CustomClass, SingleKeyNoPropertyUsage>(session.add);
+                remove = new HashMap<CustomClass, SingleKeyNoPropertyUsage>(session.remove);
+                data = new HashMap<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>>(session.data);
+
+                news = session.news;
             }
         }
 
@@ -698,7 +692,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 session.incrementChanges = incrementChanges;
                 session.appliedChanges = appliedChanges;
                 session.updateChanges = updateChanges;
-                session.changes = changes;
+
+                session.add = add;
+                session.remove = remove;
+                session.data = data;
+
+                session.news = news;
             }
         }
     }
@@ -775,7 +774,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
             GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group
             for (GroupObjectInstance group : groups) {
-                Map<ObjectInstance, DataObject> selectObjects = group.updateKeys(session, sessionID, this, BL.baseClass, refresh, result, changedProps, changedClasses);
+                Map<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, session.env, this, BL.baseClass, refresh, result, changedProps, changedClasses);
                 if(selectObjects!=null) // то есть нужно изменять объект
                     updateGroupObject = new GroupObjectValue(group, selectObjects);
 
@@ -834,7 +833,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
                 Query<ObjectInstance, PropertyReadInstance> selectProps = new Query<ObjectInstance, PropertyReadInstance>(GroupObjectInstance.getObjects(getUpTreeGroups(keyGroupObjects)));
                 for (GroupObjectInstance keyGroup : keyGroupObjects) {
-                    GroupObjectTable groupTable = keyGroup.keyTable;
+                    NoPropertyTableUsage<ObjectInstance> groupTable = keyGroup.keyTable;
                     selectProps.and(groupTable.getWhere(selectProps.mapKeys));
                 }
 
@@ -842,7 +841,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                     selectProps.properties.put(propertyDraw, propertyDraw.getPropertyObject().getExpr(selectProps.mapKeys, this));
                 }
 
-                OrderedMap<Map<ObjectInstance, Object>, Map<PropertyReadInstance, Object>> queryResult = selectProps.execute(session);
+                OrderedMap<Map<ObjectInstance, Object>, Map<PropertyReadInstance, Object>> queryResult = selectProps.execute(session.sql, session.env);
                 for (PropertyReadInstance propertyDraw : propertyList) {
                     Map<Map<ObjectInstance, DataObject>, Object> propertyValues = new HashMap<Map<ObjectInstance, DataObject>, Object>();
                     for (Entry<Map<ObjectInstance, Object>, Map<PropertyReadInstance, Object>> resultRow : queryResult.entrySet()) {
@@ -878,7 +877,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         }
 
         if (dataChanged)
-            result.dataChanged = session.changes.hasChanges();
+            result.dataChanged = session.hasChanges();
 
         // сбрасываем все пометки
         for (GroupObjectInstance group : groups) {
@@ -954,7 +953,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         for (PropertyDrawInstance<?> property : propertyDraws)
             query.properties.put(property, property.propertyObject.getExpr(query.mapKeys, this));
 
-        OrderedMap<Map<ObjectInstance, Object>, Map<Object, Object>> resultSelect = query.execute(session, queryOrders, 0);
+        OrderedMap<Map<ObjectInstance, Object>, Map<Object, Object>> resultSelect = query.execute(session.sql, queryOrders, 0, session.env);
         for (Entry<Map<ObjectInstance, Object>, Map<Object, Object>> row : resultSelect.entrySet()) {
             Map<ObjectInstance, Object> groupValue = new HashMap<ObjectInstance, Object>();
             for (GroupObjectInstance group : groups)
@@ -1005,7 +1004,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         AbstractClassFormEntity<T> formEntity = getDataChaneFormEntity(changeProperty);
 
         ObjectEntity dialogObject = formEntity.getObject();
-        DialogInstance<T> dialog = new DialogInstance<T>(formEntity, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, changeProperty.read(session, this), instanceFactory.computer);
+        DialogInstance<T> dialog = new DialogInstance<T>(formEntity, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, changeProperty.read(session.sql, this, session.env), instanceFactory.computer);
 
         //если для readOnly свойства возвращалось ObjectValueProperty для изменения объекта,
         //то используем само свойство в качестве фильтра
@@ -1032,7 +1031,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 for (PropertyObjectEntity autoAction : autoActions.getValue()) {
                     PropertyObjectInstance action = instanceFactory.getInstance(autoAction);
                     if (action.isInInterface(null)) {
-                        List<ClientAction> change = changeProperty(action, action.getChangeInstance().read(session, this) == null ? true : null, form);
+                        List<ClientAction> change = changeProperty(action, action.getChangeInstance().read(session.sql, this, session.env) == null ? true : null, form);
                         if (change != null) {
                             actions.addAll(change);
                         }

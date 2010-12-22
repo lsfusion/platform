@@ -1,10 +1,12 @@
 package platform.server.data.expr;
 
 import platform.base.BaseUtils;
+import platform.base.GlobalObject;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.DoubleClass;
 import platform.server.classes.LogicalClass;
+import platform.server.data.Value;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
@@ -13,6 +15,7 @@ import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
+import platform.server.data.type.TypeObject;
 import platform.server.data.where.Where;
 
 import java.util.HashSet;
@@ -20,7 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 
-public class ValueExpr extends AbstractValueExpr {
+public class ValueExpr extends AbstractValueExpr implements Value {
 
     public ValueExpr(Object object, ConcreteClass objectClass) {
         super(object, objectClass);
@@ -85,29 +88,42 @@ public class ValueExpr extends AbstractValueExpr {
         return new VariableExprSet();
     }
 
-    public static ValueExpr ZERO = new ValueExpr(0, DoubleClass.instance);
+    @Override
+    public void enumInnerValues(Set<Value> values) {
+        values.add(this);
+    }
 
-    private static Set<ValueExpr> staticExprs;
+    public static Value ZERO = new ValueExpr(0, DoubleClass.instance);
+
+    private static Set<Value> staticExprs;
     {
-        staticExprs = new HashSet<ValueExpr>();
+        staticExprs = new HashSet<Value>();
         staticExprs.add(ValueExpr.ZERO);
         staticExprs.add(null);
     }
 
-    public static Set<? extends Expr> removeStatic(Set<? extends Expr> col) {
+    public static Set<? extends Value> removeStatic(Set<? extends Value> col) {
         return BaseUtils.removeSet(col,staticExprs);
     }
 
-    public static <V> Map<ValueExpr,V> removeStatic(Map<ValueExpr,V> map) {
+    public static <V> Map<Value,V> removeStatic(Map<Value,V> map) {
         return BaseUtils.filterNotKeys(map,staticExprs);
     }
 
     // пересечение с игнорированием ValueExpr.TRUE
-    public static boolean noStaticEquals(Set<? extends Expr> col1, Set<? extends Expr> col2) {
+    public static boolean noStaticEquals(Set<? extends Value> col1, Set<? extends Value> col2) {
         return removeStatic(col1).equals(removeStatic(col2));
     }
 
     public long calculateComplexity() {
         return 1;
+    }
+
+    public TypeObject getParseInterface() {
+        return new TypeObject(object, objectClass.getType());
+    }
+
+    public GlobalObject getValueClass() {
+        return objectClass;
     }
 }

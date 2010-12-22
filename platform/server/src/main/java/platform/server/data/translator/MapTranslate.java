@@ -1,7 +1,11 @@
 package platform.server.data.translator;
 
 import platform.base.OrderedMap;
-import platform.server.data.expr.*;
+import platform.server.data.Value;
+import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.VariableClassExpr;
 
 import java.util.List;
 import java.util.Map;
@@ -10,7 +14,7 @@ import java.util.Set;
 public interface MapTranslate {
 
     KeyExpr translate(KeyExpr expr);
-    ValueExpr translate(ValueExpr expr);
+    <V extends Value> V translate(V expr);
 
     // аналог mapKeys в HashValues - оставляет только трансляцию выражений
     MapValuesTranslate mapValues();
@@ -34,7 +38,7 @@ public interface MapTranslate {
 
     Set<KeyExpr> translateKeys(Set<KeyExpr> set);
 
-    Set<ValueExpr> translateValues(Set<ValueExpr> set);
+    <V extends Value> Set<V> translateValues(Set<V> set);
 
     List<Expr> translate(List<Expr> list);
 
@@ -42,5 +46,5 @@ public interface MapTranslate {
 
     MapTranslate reverseMap();
 
-    boolean identityValues(Set<ValueExpr> values);
+    boolean identityValues(Set<? extends Value> values);
 }

@@ -2695,7 +2695,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             DataObject document = BaseUtils.singleValue(keys);
             orderSalePayCash.execute(null, session, remoteForm, document);
-            orderSalePayCard.execute(orderSalePayNoObligation.read(session, remoteForm, document), session, remoteForm, document);
+            orderSalePayCard.execute(orderSalePayNoObligation.read(session.sql, remoteForm, session.env, document), session, remoteForm, document);
 
             actions.add(new ApplyClientAction());
         }

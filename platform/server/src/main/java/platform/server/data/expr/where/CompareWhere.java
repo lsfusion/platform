@@ -4,7 +4,9 @@ import platform.interop.Compare;
 import platform.server.caches.ManualLazy;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
-import platform.server.data.where.*;
+import platform.server.data.where.OrObjectWhere;
+import platform.server.data.where.OrWhere;
+import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
 
 import java.util.Map;

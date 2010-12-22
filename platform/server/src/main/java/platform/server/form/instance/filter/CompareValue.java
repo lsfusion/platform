@@ -6,7 +6,6 @@ import platform.server.form.instance.Updated;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
 
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Map;
 

@@ -6,7 +6,11 @@ import platform.server.caches.InnerHashContext;
 import platform.server.caches.OuterContext;
 import platform.server.caches.TwinsInnerContext;
 import platform.server.caches.hash.HashContext;
-import platform.server.data.expr.*;
+import platform.server.data.Value;
+import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.InnerExpr;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.VariableExprSet;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.translator.MapTranslate;
@@ -88,7 +92,7 @@ public abstract class QueryExpr<K extends BaseExpr,I extends OuterContext<I>,J e
             return inherit.getKeys();
         }
 
-        public Set<ValueExpr> getValues() {
+        public Set<Value> getValues() {
             return QueryExpr.this.getValues();
         }
 
@@ -113,7 +117,7 @@ public abstract class QueryExpr<K extends BaseExpr,I extends OuterContext<I>,J e
     }
 
     @IdentityLazy
-    public Set<ValueExpr> getValues() {
+    public Set<Value> getValues() {
         return enumValues(group.keySet(), query.getEnum());
     }
 
@@ -130,8 +134,9 @@ public abstract class QueryExpr<K extends BaseExpr,I extends OuterContext<I>,J e
         enumerator.fill(group);
     }
 
-    public Set<ValueExpr> getInnerValues() {
-        return innerContext.getValues();
+    @Override
+    public void enumInnerValues(Set<Value> values) {
+        values.addAll(innerContext.getValues());
     }
 
     public VariableExprSet getJoinFollows() {

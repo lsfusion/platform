@@ -1,18 +1,20 @@
 package platform.server.data.expr.where;
 
+import platform.interop.Compare;
+import platform.server.caches.ParamLazy;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.VariableExprSet;
-import platform.server.data.query.ExprEnumerator;
-import platform.server.data.query.JoinData;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
+import platform.server.data.query.ExprEnumerator;
+import platform.server.data.query.JoinData;
 import platform.server.data.query.innerjoins.ObjectJoinSets;
-import platform.server.data.where.*;
-import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
-import platform.server.caches.ParamLazy;
-import platform.interop.Compare;
+import platform.server.data.where.DataWhere;
+import platform.server.data.where.DataWhereSet;
+import platform.server.data.where.Where;
+import platform.server.data.where.classes.ClassExprWhere;
 
 public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWhere {
 

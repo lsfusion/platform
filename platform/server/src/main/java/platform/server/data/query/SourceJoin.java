@@ -1,7 +1,7 @@
 package platform.server.data.query;
 
+import platform.server.data.Value;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.where.Where;
 
@@ -18,7 +18,9 @@ public interface SourceJoin {
 
     void enumerate(ExprEnumerator enumerator);
     void enumKeys(Set<KeyExpr> keys);
-    void enumValues(Set<ValueExpr> values);
+
+    void enumValues(Set<Value> values);
+    void enumInnerValues(Set<Value> values);
 
     // для дебага, определяет сложность выражения, предполагается что например packFollowFalse уменьшает сложность выражения чтобы не допустить рекурсию
     public abstract long getComplexity();

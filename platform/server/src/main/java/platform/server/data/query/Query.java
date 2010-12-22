@@ -8,9 +8,10 @@ import platform.server.caches.InnerContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.data.SQLSession;
+import platform.server.data.Value;
+import platform.server.data.QueryEnvironment;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
@@ -45,6 +46,10 @@ public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInter
         this.mapKeys = mapKeys;
         this.properties = properties;
         this.where = where;
+    }
+
+    public <MK,MV> Query(Query<MK, MV> query, Map<K, MK> mapK, Map<V, MV> mapV) {
+        this(BaseUtils.join(mapK, query.mapKeys), BaseUtils.join(mapV, query.properties), query.where);
     }
 
     public Query(Map<K, KeyExpr> mapKeys, Map<V, Expr> properties) {
@@ -82,12 +87,16 @@ public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInter
         return mapKeys.get(key).getType(where);
     }
 
+    public Type getPropertyType(V property) {
+        return properties.get(property).getType(where);
+    }
+
     public Set<KeyExpr> getKeys() {
         return new HashSet<KeyExpr>(mapKeys.values());
     }
 
     @IdentityLazy
-    public Set<ValueExpr> getValues() {
+    public Set<Value> getValues() {
         return AbstractSourceJoin.enumValues(properties.values(),where);
     }
 
@@ -153,17 +162,26 @@ public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInter
     }
 
     public OrderedMap<Map<K, Object>, Map<V, Object>> execute(SQLSession session) throws SQLException {
-        return execute(session,new OrderedMap<V, Boolean>(),0);
+        return execute(session, QueryEnvironment.empty);
     }
-    public OrderedMap<Map<K, Object>, Map<V, Object>> execute(SQLSession session,OrderedMap<V,Boolean> orders,int selectTop) throws SQLException {
-        return compile(session.syntax,orders,selectTop).execute(session);
+
+    public OrderedMap<Map<K, Object>, Map<V, Object>> execute(SQLSession session, QueryEnvironment env) throws SQLException {
+        return execute(session,new OrderedMap<V, Boolean>(),0, env);
+    }
+
+    public OrderedMap<Map<K, Object>, Map<V, Object>> execute(SQLSession session, OrderedMap<V, Boolean> orders, int selectTop, QueryEnvironment env) throws SQLException {
+        return compile(session.syntax,orders,selectTop).execute(session, env);
     }
 
     public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(SQLSession session, BaseClass baseClass) throws SQLException {
-        return executeClasses(session, new OrderedMap<V, Boolean>(), 0, baseClass);
+        return executeClasses(session, new OrderedMap<V, Boolean>(), 0, baseClass, QueryEnvironment.empty);
     }
 
-    public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(SQLSession session, BaseClass baseClass, OrderedMap<? extends Expr, Boolean> orders) throws SQLException {
+    public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(SQLSession session, QueryEnvironment env, BaseClass baseClass) throws SQLException {
+        return executeClasses(session, new OrderedMap<V, Boolean>(), 0, baseClass, env);
+    }
+
+    public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(SQLSession session, QueryEnvironment env, BaseClass baseClass, OrderedMap<? extends Expr, Boolean> orders) throws SQLException {
         OrderedMap<Object, Boolean> orderProperties = new OrderedMap<Object, Boolean>();
         Query<K,Object> orderQuery = new Query<K,Object>((Query<K,Object>) this);
         for(Map.Entry<? extends Expr,Boolean> order : orders.entrySet()) {
@@ -173,12 +191,12 @@ public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInter
         }
 
         OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> result = new OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>>();
-        for(Map.Entry<Map<K, DataObject>,Map<Object, ObjectValue>> orderRow : orderQuery.executeClasses(session, orderProperties, 0, baseClass).entrySet())
+        for(Map.Entry<Map<K, DataObject>,Map<Object, ObjectValue>> orderRow : orderQuery.executeClasses(session, orderProperties, 0, baseClass, env).entrySet())
             result.put(orderRow.getKey(), BaseUtils.filterKeys(orderRow.getValue(), properties.keySet()));
         return result;
     }
 
-    public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(SQLSession session,OrderedMap<? extends V,Boolean> orders,int selectTop, BaseClass baseClass) throws SQLException {
+    public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(SQLSession session, OrderedMap<? extends V, Boolean> orders, int selectTop, BaseClass baseClass, QueryEnvironment env) throws SQLException {
         OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> result = new OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>>();
 
         if(where.isFalse()) return result; // иначе типы ключей не узнаем
@@ -191,7 +209,7 @@ public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInter
         for(Expr expr : properties.values())
             expr.getReader(classQuery.where).prepareClassesQuery(expr, classQuery, baseClass);
 
-        OrderedMap<Map<K, Object>, Map<Object, Object>> rows = classQuery.execute(session, (OrderedMap<Object,Boolean>) orders,selectTop);
+        OrderedMap<Map<K, Object>, Map<Object, Object>> rows = classQuery.execute(session, (OrderedMap<Object,Boolean>) orders,selectTop, env);
 
         // перемаппим
         for(Map.Entry<Map<K,Object>,Map<Object,Object>> row : rows.entrySet()) {
@@ -208,10 +226,13 @@ public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInter
     }
 
     public void outSelect(SQLSession session) throws SQLException {
-        compile(session.syntax).outSelect(session);
+        outSelect(session, QueryEnvironment.empty);
     }
-    public void outSelect(SQLSession session,OrderedMap<V,Boolean> orders,int selectTop) throws SQLException {
-        compile(session.syntax,orders,selectTop).outSelect(session);
+    public void outSelect(SQLSession session, QueryEnvironment env) throws SQLException {
+        compile(session.syntax).outSelect(session, env);
+    }
+    public void outSelect(SQLSession session, QueryEnvironment env, OrderedMap<V,Boolean> orders,int selectTop) throws SQLException {
+        compile(session.syntax,orders,selectTop).outSelect(session, env);
     }
 
     public String toString() {

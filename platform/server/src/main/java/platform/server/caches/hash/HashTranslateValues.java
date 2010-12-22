@@ -1,7 +1,7 @@
 package platform.server.caches.hash;
 
 import platform.server.caches.NoCacheInterface;
-import platform.server.data.expr.ValueExpr;
+import platform.server.data.Value;
 import platform.server.data.translator.MapValuesTranslate;
 
 public class HashTranslateValues implements HashValues, NoCacheInterface {
@@ -12,7 +12,7 @@ public class HashTranslateValues implements HashValues, NoCacheInterface {
         this.map = map;
     }
 
-    public int hash(ValueExpr expr) {
+    public int hash(Value expr) {
         return map.translate(expr).hashCode();
     }
 

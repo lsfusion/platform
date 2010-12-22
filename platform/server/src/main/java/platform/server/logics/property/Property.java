@@ -16,7 +16,6 @@ import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.where.CompareWhere;
 import platform.server.data.query.MapKeysInterface;
 import platform.server.data.query.Query;
-import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
@@ -145,51 +144,20 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return result;
     }
 
-    protected static class DefaultChanges extends Changes<DefaultChanges> {
-        private DefaultChanges() {
+    public static Modifier<SimpleChanges> defaultModifier = new Modifier<SimpleChanges>() {
+        public SimpleChanges newChanges() {
+            return SimpleChanges.EMPTY;
         }
 
-        public final static DefaultChanges EMPTY = new DefaultChanges();
-
-        private DefaultChanges(DefaultChanges changes, SessionChanges merge) {
-            super(changes, merge);
+        public ExprChanges getSession() {
+            return ExprChanges.EMPTY;
         }
 
-        public DefaultChanges addChanges(SessionChanges changes) {
-            return new DefaultChanges(this, changes);
+        public SimpleChanges newFullChanges() {
+            return SimpleChanges.EMPTY;
         }
 
-        private DefaultChanges(DefaultChanges changes, DefaultChanges merge) {
-            super(changes, merge);
-        }
-
-        public DefaultChanges add(DefaultChanges changes) {
-            return new DefaultChanges(this, changes);
-        }
-
-        public DefaultChanges(DefaultChanges changes, MapValuesTranslate mapValues) {
-            super(changes, mapValues);
-        }
-
-        public DefaultChanges translate(MapValuesTranslate mapValues) {
-            return new DefaultChanges(this, mapValues);
-        }
-    }
-
-    public static Modifier<DefaultChanges> defaultModifier = new Modifier<DefaultChanges>() {
-        public DefaultChanges newChanges() {
-            return DefaultChanges.EMPTY;
-        }
-
-        public SessionChanges getSession() {
-            return SessionChanges.EMPTY;
-        }
-
-        public DefaultChanges newFullChanges() {
-            return DefaultChanges.EMPTY;
-        }
-
-        public DefaultChanges used(Property property, DefaultChanges usedChanges) {
+        public SimpleChanges used(Property property, SimpleChanges usedChanges) {
             return usedChanges;
         }
 
@@ -198,7 +166,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         }
 
         public boolean neededClass(Changes changes) {
-            return changes instanceof DefaultChanges;
+            return changes instanceof SimpleChanges;
         }
     };
 
@@ -341,18 +309,18 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return null;
     }
 
-    public Object read(SQLSession session, Map<T, DataObject> keys, Modifier<? extends Changes> modifier) throws SQLException {
+    public Object read(SQLSession session, Map<T, DataObject> keys, Modifier<? extends Changes> modifier, QueryEnvironment env) throws SQLException {
         String readValue = "readvalue";
         Query<T, Object> readQuery = new Query<T, Object>(this);
 
         readQuery.putKeyWhere(keys);
 
         readQuery.properties.put(readValue, getExpr(readQuery.mapKeys, modifier, null));
-        return BaseUtils.singleValue(readQuery.execute(session)).get(readValue);
+        return BaseUtils.singleValue(readQuery.execute(session, env)).get(readValue);
     }
 
     public ObjectValue readClasses(DataSession session, Map<T, DataObject> keys, Modifier<? extends Changes> modifier) throws SQLException {
-        return session.getObjectValue(read(session, keys, modifier), getType());
+        return session.getObjectValue(read(session.sql, keys, modifier, session.env), getType());
     }
 
     public Expr getIncrementExpr(Map<KeyField, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
@@ -525,5 +493,12 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         //десериализация не нужна, т.к. вместо создания объекта, происходит поиск в BL
+    }
+
+    public SinglePropertyTableUsage<T> createChangeTable() {
+        return new SinglePropertyTableUsage<T>(new ArrayList<T>(interfaces), new Type.Getter<T>() {
+            public Type getType(T key) {
+                return getInterfaceType(key);
+            }}, getType());
     }
 }

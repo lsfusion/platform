@@ -3,10 +3,10 @@ package platform.server.data.expr.query;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
+import platform.server.data.Value;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.query.SourceJoin;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.Where;
@@ -47,15 +47,15 @@ public class OrderJoin extends QueryJoin<KeyExpr, OrderJoin.Query> {
         }
     }
 
-    public OrderJoin(Set<KeyExpr> keys, Set<ValueExpr> values, Where inner, Set<Expr> partitions, Map<KeyExpr, BaseExpr> group) {
+    public OrderJoin(Set<KeyExpr> keys, Set<Value> values, Where inner, Set<Expr> partitions, Map<KeyExpr, BaseExpr> group) {
         super(keys, values, new Query(inner, partitions), group);
     }
 
-    private OrderJoin(Set<KeyExpr> keys, Set<ValueExpr> values, Query inner, Map<KeyExpr, BaseExpr> group) {
+    private OrderJoin(Set<KeyExpr> keys, Set<Value> values, Query inner, Map<KeyExpr, BaseExpr> group) {
         super(keys, values, inner, group);
     }
 
-    protected QueryJoin<KeyExpr, Query> createThis(Set<KeyExpr> keys, Set<ValueExpr> values, Query query, Map<KeyExpr, BaseExpr> group) {
+    protected QueryJoin<KeyExpr, Query> createThis(Set<KeyExpr> keys, Set<Value> values, Query query, Map<KeyExpr, BaseExpr> group) {
         return new OrderJoin(keys, values, query, group);
     }
 }

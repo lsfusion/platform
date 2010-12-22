@@ -1,18 +1,17 @@
 package platform.server.caches.hash;
 
-import platform.server.data.expr.ValueExpr;
-import platform.server.data.expr.KeyExpr;
+import platform.server.data.Value;
 
 import java.util.Map;
 
 public class HashMapValues implements HashValues {
 
-    private Map<ValueExpr, Integer> hashValues;
-    public HashMapValues(Map<ValueExpr, Integer> hashValues) {
+    private Map<Value, Integer> hashValues;
+    public HashMapValues(Map<Value, Integer> hashValues) {
         this.hashValues = hashValues;
     }
 
-    public int hash(ValueExpr expr) {
+    public int hash(Value expr) {
         return hashValues.get(expr);
     }
 

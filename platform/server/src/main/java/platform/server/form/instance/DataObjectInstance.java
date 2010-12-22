@@ -1,5 +1,6 @@
 package platform.server.form.instance;
 
+import platform.base.BaseUtils;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.DataClass;
@@ -8,8 +9,7 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.data.type.Type;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.logics.ObjectValue;
-import platform.server.session.ChangesSession;
-import platform.base.BaseUtils;
+import platform.server.session.SessionChanges;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -38,7 +38,7 @@ public class DataObjectInstance extends ObjectInstance {
         return dataClass;
     }
 
-    public void changeValue(ChangesSession session, ObjectValue objectValue) throws SQLException {
+    public void changeValue(SessionChanges session, ObjectValue objectValue) throws SQLException {
         Object changeValue = objectValue.getValue();
         if(BaseUtils.nullEquals(value,changeValue)) return;
 

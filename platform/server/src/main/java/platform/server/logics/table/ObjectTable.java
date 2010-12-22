@@ -3,10 +3,7 @@ package platform.server.logics.table;
 import platform.server.classes.BaseClass;
 import platform.server.classes.SystemClass;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.data.Field;
-import platform.server.data.KeyField;
-import platform.server.data.PropertyField;
-import platform.server.data.Table;
+import platform.server.data.*;
 import platform.server.data.type.ObjectType;
 import platform.server.data.where.classes.ClassWhere;
 
@@ -14,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 // таблица в которой лежат объекты
-public class ObjectTable extends Table {
+public class ObjectTable extends GlobalTable {
 
     public KeyField key;
     public PropertyField objectClass;

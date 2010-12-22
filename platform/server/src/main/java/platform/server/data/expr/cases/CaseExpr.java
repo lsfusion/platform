@@ -18,8 +18,8 @@ import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.translator.TranslateExprLazy;
-import platform.server.data.type.NullReader;
 import platform.server.data.type.ClassReader;
+import platform.server.data.type.NullReader;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 

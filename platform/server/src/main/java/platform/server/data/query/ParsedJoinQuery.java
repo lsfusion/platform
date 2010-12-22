@@ -4,10 +4,10 @@ import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.SynchronizedLazy;
+import platform.server.data.Value;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.MapCase;
 import platform.server.data.sql.SQLSyntax;
@@ -28,9 +28,9 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
     public final Map<V, Expr> properties;
     protected final Where where;
 
-    protected final Set<ValueExpr> values;
+    protected final Set<Value> values;
 
-    public Set<ValueExpr> getValues() {
+    public Set<Value> getValues() {
         return values;
     }
 

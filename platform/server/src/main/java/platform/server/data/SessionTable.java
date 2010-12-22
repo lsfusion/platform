@@ -1,240 +1,191 @@
 package platform.server.data;
 
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
-import platform.server.caches.*;
-import platform.server.caches.hash.HashCodeValues;
+import platform.base.Pair;
+import platform.base.GlobalObject;
+import platform.interop.Compare;
+import platform.server.caches.AbstractMapValues;
+import platform.server.caches.IdentityLazy;
+import platform.server.caches.ManualLazy;
 import platform.server.caches.hash.HashValues;
+import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
-import platform.server.classes.ConcreteClass;
-import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.ValueExpr;
-import platform.server.data.expr.cases.ExprCaseList;
-import platform.server.data.expr.where.CompareWhere;
 import platform.server.data.query.Query;
+import platform.server.data.query.CompileSource;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapValuesTranslate;
-import platform.server.data.where.Where;
+import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.classes.ClassWhere;
+import platform.server.data.type.ParseInterface;
+import platform.server.data.type.StringParseInterface;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.form.instance.ObjectInstance;
 
 import java.sql.SQLException;
+import java.sql.PreparedStatement;
 import java.util.*;
 
-// временная таблица на момент сессии
-// не должна содержать никаких локальных данных (форм а не бизнес-логики), так как попадает в кэширование и будет memory leak
-public abstract class SessionTable<This extends SessionTable<This>> extends Table implements MapValues<This> {
+public class SessionTable extends Table implements SessionData<SessionTable>, Value {// в явную хранимые ряды
 
-    // конструктор чистой структуры
-    protected SessionTable(String name) {
-        super(name);
-        rows = new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>();
+    public SessionTable(String name, List<KeyField> keys, Set<PropertyField> properties, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses) {
+        super(name, keys, properties, classes, propertyClasses);
     }
 
-    // конструктор добавления записей
-    protected SessionTable(String name, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows) {
-        super(name,classes,propertyClasses);
-//        assert !(rows==null && keys.size()==0);
-        this.rows = rows;
+    public List<KeyField> getKeys() {
+        return keys;
     }
 
-    public String getName(SQLSyntax Syntax) {
-        return Syntax.getSessionTableName(name);
+    public Set<PropertyField> getProperties() {
+        return properties;
     }
-
-    // в явную хранимые ряды
-    public final static int MAX_ROWS = 1;
-    protected final Map<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> rows;
 
     @Override
-    public platform.server.data.query.Join<PropertyField> joinAnd(final Map<KeyField, ? extends BaseExpr> joinImplement) {
-        if(rows==null) return super.joinAnd(joinImplement); // если рядов много то Join'им
+    public String getName(SQLSyntax syntax) {
+        return syntax.getSessionTableName(name);
+    }
 
-        return new platform.server.data.query.Join<PropertyField>() {
+    @Override
+    public String getQueryName(CompileSource source) {
+        assert source.params.containsKey(this);
+        return source.params.get(this);
+    }
 
-            public Expr getExpr(PropertyField property) {
-                ExprCaseList result = new ExprCaseList();
-                for(Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> row : rows.entrySet())
-                    result.add(CompareWhere.compareValues(joinImplement,row.getKey()),row.getValue().get(property).getExpr());
-                return result.getExpr();                
-            }
+    @Override
+    public int hashOuter(HashContext hashContext) {
+        return hashValues(hashContext.values);
+    }
 
-            public Where getWhere() {
-                Where result = Where.FALSE;
-                for(Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> row : rows.entrySet())
-                    result = result.or(CompareWhere.compareValues(joinImplement,row.getKey()));
-                return result;
-            }
+    @Override
+    public Table translateOuter(MapTranslate translator) {
+        return translate(translator.mapValues()); 
+    }
 
-            public Collection<PropertyField> getProperties() {
-                return properties;
-            }
-        };
+    @Override
+    public void enumInnerValues(Set<Value> values) {
+        values.add(this);
     }
 
     @IdentityLazy
     public int hashValues(HashValues hashValues) {
-        int hash = 0;
-        if(rows!=null)
-            for(Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> row : rows.entrySet())
-                hash += MapValuesIterable.hash(row.getKey(),hashValues) ^ MapValuesIterable.hash(row.getValue(),hashValues); 
-        return hash * 31 + super.hashCode();
+        return hashValues.hash(this);
     }
 
-    public Set<ValueExpr> getValues() {
-        Set<ValueExpr> result = new HashSet<ValueExpr>();
-        if(rows!=null)
-            for(Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> row : rows.entrySet()) {
-                MapValuesIterable.enumValues(result,row.getKey());
-                MapValuesIterable.enumValues(result,row.getValue());
+    public Set<Value> getValues() {
+        return Collections.singleton((Value)this);
+    }
+
+    public SessionTable translate(MapValuesTranslate mapValues) {
+        return mapValues.translate(this);
+    }
+
+    public ParseInterface getParseInterface() {
+        return new StringParseInterface() {
+            public String getString(SQLSyntax syntax) {
+                return getName(syntax);
             }
-        return result;
+        };
     }
 
-    public This translate(MapValuesTranslate mapValues) {
-        Map<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> transRows = null;
-        if(rows!=null) {
-            transRows = new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>();
-            for(Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> row : rows.entrySet())
-                transRows.put(mapValues.translateValues(row.getKey()), mapValues.translateValues(row.getValue()));
+    // теоретически достаточно только
+    private static class Struct implements GlobalObject {
+
+        public final List<KeyField> keys; // List потому как в таком порядке индексы будут строиться
+        public final Collection<PropertyField> properties;
+        protected final ClassWhere<KeyField> classes; // по сути условия на null'ы в том числе
+        protected final Map<PropertyField,ClassWhere<Field>> propertyClasses;
+
+        private Struct(List<KeyField> keys, Collection<PropertyField> properties, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses) {
+            this.keys = keys;
+            this.properties = properties;
+            this.classes = classes;
+            this.propertyClasses = propertyClasses;
         }
-        return createThis(classes, propertyClasses, transRows);
+
+        @Override
+        public boolean equals(Object o) {
+            return this == o || o instanceof Struct && classes.equals(((Struct) o).classes) && keys.equals(((Struct) o).keys) && properties.equals(((Struct) o).properties) && propertyClasses.equals(((Struct) o).propertyClasses);
+        }
+
+        @Override
+        public int hashCode() {
+            return 31 * (31 * (31 * keys.hashCode() + properties.hashCode()) + classes.hashCode()) + propertyClasses.hashCode();
+        }
+    }
+
+    private Struct struct = null;
+    @ManualLazy
+    public GlobalObject getValueClass() {
+        if(struct==null)
+            struct = new Struct(keys, properties, classes, propertyClasses);
+        return struct;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj) && BaseUtils.nullEquals(rows,((SessionTable)obj).rows);
+    public boolean equals(Object o) {
+        return this == o || o instanceof SessionTable && name.equals(((SessionTable) o).name) && getValueClass().equals(((SessionTable) o).getValueClass());
     }
 
-    boolean hashCoded = false;
-    int hashCode;
     @Override
     public int hashCode() { // можно было бы взять из AbstractMapValues но без мн-го наследования
-        if(!hashCoded) {
-            hashCode = hashValues(HashCodeValues.instance);
-            hashCoded = true;
-        }
-        return hashCode;
+        return name.hashCode() * 31 + getValueClass().hashCode();
     }
 
-    public abstract This createThis(ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows);
+    public SessionTable insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, Object owner) throws SQLException {
 
-    public This insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update) throws SQLException {
+        Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orClasses = SessionRows.insertRecord(classes, propertyClasses, keyFields, propFields);
 
-        Map<KeyField, ConcreteClass> keyClasses = DataObject.getMapClasses(keyFields);
+        if(update)
+            session.updateInsertRecord(this,keyFields,propFields);
+        else
+            session.insertRecord(this,keyFields,propFields);
 
-        Map<PropertyField, ClassWhere<Field>> orPropertyClasses = new HashMap<PropertyField, ClassWhere<Field>>(); 
-        for(Map.Entry<PropertyField,ObjectValue> propertyField : propFields.entrySet()) {
-            ClassWhere<Field> existedPropertyClasses = propertyClasses.get(propertyField.getKey());
-            if(propertyField.getValue() instanceof DataObject) {
-                ClassWhere<Field> insertClasses = new ClassWhere<Field>(BaseUtils.merge(keyClasses,
-                        Collections.singletonMap(propertyField.getKey(),((DataObject)propertyField.getValue()).objectClass)));
-                if(existedPropertyClasses!=null)
-                    insertClasses = insertClasses.or(existedPropertyClasses);
-                orPropertyClasses.put(propertyField.getKey(),insertClasses);
-            } else
-                orPropertyClasses.put(propertyField.getKey(),existedPropertyClasses!=null?existedPropertyClasses:ClassWhere.<Field>STATIC(false));
-        }
-
-        Map<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> orRows = null;
-        if(rows!=null) {
-            orRows = new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>(rows);
-            Map<PropertyField, ObjectValue> prevValue = orRows.put(keyFields,propFields);
-            assert update || prevValue==null;
-
-            if(orRows.size()>MAX_ROWS) {
-                for(Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> row : orRows.entrySet())
-                    session.insertRecord(this,row.getKey(),row.getValue());
-                orRows = null;
-            }
-        } else
-            if(update)
-                session.updateInsertRecord(this,keyFields,propFields);
-            else
-                session.insertRecord(this,keyFields,propFields);
-        
-        return createThis(classes.or(new ClassWhere<KeyField>(keyClasses)), orPropertyClasses, orRows);
+        return new SessionTable(name, keys, properties, orClasses.first, orClasses.second);
     }
 
     // "обновляет" ключи в таблице
-    public This writeKeys(SQLSession session,Collection<Map<KeyField,DataObject>> writeRows) throws SQLException {
-        if(rows==null)
-            session.deleteKeyRecords(this, new HashMap<KeyField, Object>());
-
-        Map<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> newRows = writeRows.size()>MAX_ROWS?null:new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>();
-
-        ClassWhere<KeyField> writeClasses = new ClassWhere<KeyField>();
-        for(Map<KeyField, DataObject> row : writeRows) {
-            writeClasses = writeClasses.or(new ClassWhere<KeyField>(DataObject.getMapClasses(row)));
-            if(newRows==null)
-                session.insertRecord(this,row,new HashMap<PropertyField, ObjectValue>());
-            else
-                newRows.put(row, new HashMap<PropertyField, ObjectValue>());
-        }
-        
-        return createThis(writeClasses, new HashMap<PropertyField, ClassWhere<Field>>(), newRows);
+    public SessionData rewrite(SQLSession session, Collection<Map<KeyField, DataObject>> writeRows, Object owner) throws SQLException {
+        return SessionRows.rewrite(this, session, writeRows, owner);
     }
 
-    // для rollback'а надо актуализирует базу, вообщем то можно через writeKeys было бы решить, но так быстрее
-    public void rewrite(SQLSession session, Collection<Map<KeyField,DataObject>> writeRows) throws SQLException {
-        if(rows==null) {
-            session.deleteKeyRecords(this, new HashMap<KeyField, Object>());
-            for(Map<KeyField, DataObject> row : writeRows)
-                session.insertRecord(this, row, new HashMap<PropertyField, ObjectValue>());
-        }
+    public SessionData rewrite(SQLSession session, Query<KeyField, PropertyField> query, BaseClass baseClass, QueryEnvironment env, Object owner) throws SQLException {
+        return SessionRows.rewrite(this, session, query, baseClass, env, owner);
     }
 
-    public This deleteAll(SQLSession session) throws SQLException {
-        return writeKeys(session, new ArrayList<Map<KeyField, DataObject>>()); 
+    public SessionTable deleteRecords(SQLSession session, Map<KeyField,DataObject> keys) throws SQLException {
+        session.deleteKeyRecords(this, DataObject.getMapValues(keys));
+        return this;
     }
 
-    public This writeRows(SQLSession session, Query<KeyField,PropertyField> query, BaseClass baseClass) throws SQLException {
-        if(rows==null)
-            session.deleteKeyRecords(this, new HashMap<KeyField, Object>());
-        
-        int inserted = session.insertSelect(new ModifyQuery(this,query));
-
-        // читаем классы не считывая данные
-        Map<PropertyField,ClassWhere<Field>> insertClasses = new HashMap<PropertyField, ClassWhere<Field>>();
-        for(PropertyField field : query.properties.keySet())
-            insertClasses.put(field,query.<Field>getClassWhere(Collections.singleton(field)));
-
-        This result = createThis(query.<KeyField>getClassWhere(new ArrayList<PropertyField>()),insertClasses, null);
-
-        // нужно прочитать то что записано
-        if(inserted <= MAX_ROWS) {
-            OrderedMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> readRows = result.read(session, baseClass);
-
-            session.deleteKeyRecords(this, new HashMap<KeyField, Object>());
-
-            // надо бы batch update сделать, то есть зная уже сколько запискй
-            result = createThis(new ClassWhere<KeyField>(),new HashMap<PropertyField, ClassWhere<Field>>(), new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>());
-            for(Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> writeRow : readRows.entrySet())
-                result = result.insertRecord(session, writeRow.getKey(), writeRow.getValue(), false);
-        }
-
-        return result;
+    public SessionTable deleteKey(SQLSession session, KeyField mapField, DataObject object) throws SQLException {
+        session.deleteKeyRecords(this, Collections.singletonMap(mapField,object.object));
+        return this;
     }
 
-    public This deleteRecords(SQLSession session, Map<KeyField,DataObject> keys) throws SQLException {
-        if(rows==null) {
-            session.deleteKeyRecords(this, DataObject.getMapValues(keys));
-            return (This)this;
-        } else {
-            Map<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> removeRows = new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>(rows);
-            removeRows.remove(keys);
-            return createThis(classes,propertyClasses,removeRows);
-        }
+    public SessionTable deleteProperty(SQLSession session, PropertyField property, DataObject object) throws SQLException {
+        Query<KeyField,PropertyField> dropValues = new Query<KeyField, PropertyField>(this);
+        platform.server.data.query.Join<PropertyField> dataJoin = joinAnd(dropValues.mapKeys);
+        dropValues.and(dataJoin.getExpr(property).compare(object, Compare.EQUALS));
+        dropValues.properties.put(property, Expr.NULL);
+        session.updateRecords(new ModifyQuery(this,dropValues));
+        return this;
     }
 
-    private BaseUtils.HashComponents<ValueExpr> components = null;
+    private BaseUtils.HashComponents<Value> components = null;
     @ManualLazy
-    public BaseUtils.HashComponents<ValueExpr> getComponents() {
+    public BaseUtils.HashComponents<Value> getComponents() {
         if(components==null)
             components = AbstractMapValues.getComponents(this);
         return components;
+    }
+
+    public SessionTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows, Object owner) throws SQLException {
+        super(session.createTemporaryTable(keys, properties, owner), keys, properties, classes, propertyClasses);
+        for(Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> row : rows.entrySet())
+            session.insertRecord(this,row.getKey(),row.getValue());
+    }
+
+    public void drop(SQLSession session, Object owner) throws SQLException {
+        session.dropTemporaryTable(this, owner);
     }
 }

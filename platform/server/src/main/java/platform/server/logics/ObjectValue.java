@@ -10,7 +10,7 @@ import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.filter.CompareValue;
 import platform.server.logics.property.Property;
 import platform.server.session.Changes;
-import platform.server.session.ChangesSession;
+import platform.server.session.SessionChanges;
 import platform.server.session.Modifier;
 
 import java.sql.SQLException;
@@ -64,5 +64,5 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractMapV
 
     public abstract Where order(Expr expr, boolean desc, Where orderWhere);
 
-    public abstract ObjectValue refresh(ChangesSession session) throws SQLException;
+    public abstract ObjectValue refresh(SessionChanges session) throws SQLException;
 }

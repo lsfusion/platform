@@ -1,19 +1,16 @@
 package platform.server.logics.table;
 
 import platform.server.classes.ValueClass;
-import platform.server.data.Field;
-import platform.server.data.KeyField;
-import platform.server.data.PropertyField;
-import platform.server.data.Table;
+import platform.server.data.*;
 import platform.server.data.where.classes.ClassWhere;
 
 import java.util.*;
 
-public class ImplementTable extends Table {
-    Map<KeyField, ValueClass> mapFields = new HashMap<KeyField, ValueClass>();
+public class ImplementTable extends GlobalTable {
+    public Map<KeyField, ValueClass> mapFields = new HashMap<KeyField, ValueClass>();
 
-    public ImplementTable(String iName, ValueClass... implementClasses) {
-        super(iName);
+    public ImplementTable(String name, ValueClass... implementClasses) {
+        super(name);
 
         for(int fieldNum=0;fieldNum<implementClasses.length;fieldNum++) {
             KeyField field = new KeyField("key"+fieldNum,implementClasses[fieldNum].getType());

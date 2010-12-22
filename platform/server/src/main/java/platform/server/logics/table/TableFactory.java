@@ -2,11 +2,12 @@ package platform.server.logics.table;
 
 import platform.server.classes.SystemClass;
 import platform.server.classes.ValueClass;
-import platform.server.data.GlobalTable;
+import platform.server.classes.BaseClass;
+import platform.server.data.StructTable;
 import platform.server.data.PropertyField;
+import platform.server.data.SQLSession;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.session.DataSession;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -47,20 +48,19 @@ public class TableFactory {
         throw new RuntimeException("No table found");    
     }
 
-    public void fillDB(DataSession session) throws SQLException {
+    public void fillDB(SQLSession sql, BaseClass baseClass) throws SQLException {
 
-        session.ensureTable(session.baseClass.table);
-        session.ensureTable(IDTable.instance);
-        session.ensureTable(GlobalTable.instance);
+        sql.ensureTable(baseClass.table);
+        sql.ensureTable(IDTable.instance);
+        sql.ensureTable(StructTable.instance);
 
         for (Integer idType : IDTable.getCounters())
-            session.ensureRecord(IDTable.instance,Collections.singletonMap(IDTable.instance.key,new DataObject(idType, SystemClass.instance)),
-                    Collections.singletonMap(IDTable.instance.value,(ObjectValue)new DataObject(0, SystemClass.instance)));
+            sql.ensureRecord(IDTable.instance, Collections.singletonMap(IDTable.instance.key,new DataObject(idType, SystemClass.instance)), Collections.singletonMap(IDTable.instance.value,(ObjectValue)new DataObject(0, SystemClass.instance)));
 
         // создадим dumb
-        session.ensureTable(DumbTable.instance);
-        session.ensureRecord(DumbTable.instance,Collections.singletonMap(DumbTable.instance.key,new DataObject(1, SystemClass.instance)), new HashMap<PropertyField, ObjectValue>());
+        sql.ensureTable(DumbTable.instance);
+        sql.ensureRecord(DumbTable.instance, Collections.singletonMap(DumbTable.instance.key,new DataObject(1, SystemClass.instance)), new HashMap<PropertyField, ObjectValue>());
 
-        session.ensureTable(EmptyTable.instance);
+        sql.ensureTable(EmptyTable.instance);
     }
 }

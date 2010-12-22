@@ -109,7 +109,7 @@ public class BaseUtils {
     }
 
 
-    public static <BK,K extends BK,V> Map<K,V> filterKeys(Map<BK,V> map, Collection<K> keys) {
+    public static <BK,K extends BK,V> Map<K,V> filterKeys(Map<BK,V> map, Collection<? extends K> keys) {
         Map<K,V> result = new HashMap<K, V>();
         for(K key : keys) {
             V value = map.get(key);
@@ -229,7 +229,7 @@ public class BaseUtils {
         return result;
     }
 
-    public static <K,V> Map<K,V> toMap(Set<K> collection, V value) {
+    public static <K,V> Map<K,V> toMap(Collection<K> collection, V value) {
         Map<K,V> result = new HashMap<K, V>();
         for(K object : collection)
             result.put(object,value);
@@ -240,6 +240,13 @@ public class BaseUtils {
         Map<Integer,K> result = new HashMap<Integer, K>();
         for(int i=0;i<list.size();i++)
             result.put(i,list.get(i));
+        return result;
+    }
+
+    public static <K, V> OrderedMap<K, V> toOrderedMap(List<? extends K> list, V value) {
+        OrderedMap<K, V> result = new OrderedMap<K, V>();
+        for(K element : list)
+            result.put(element, value);
         return result;
     }
 
@@ -477,12 +484,17 @@ public class BaseUtils {
 
     public static <B,K1 extends B,K2 extends B,V> Map<B,V> merge(Map<K1,? extends V> map1,Map<K2,? extends V> map2) {
         Map<B,V> result = new HashMap<B,V>(map1);
-        result.putAll(map2);
+        for (Map.Entry<K2, ? extends V> entry2 : map2.entrySet()) {
+            V prevValue = result.put(entry2.getKey(), entry2.getValue());
+            assert prevValue==null || prevValue.equals(entry2.getValue());
+        }
         return result;
     }
 
     public static <B,K1 extends B,K2 extends B,V> Map<B,V> override(Map<K1,? extends V> map1,Map<K2,? extends V> map2) {
-        return BaseUtils.<B,K1,K2,V>merge(map1, map2);
+        Map<B,V> result = new HashMap<B,V>(map1);
+        result.putAll(map2);
+        return result;
     }
 
     public static <K,V> boolean isSubMap(Map<? extends K,? extends V> map1,Map<K,? extends V> map2) {
@@ -634,6 +646,12 @@ public class BaseUtils {
         OrderedMap<T, K> result = new OrderedMap<T, K>();
         for (T element : list)
             result.put(element, map.get(element));
+        return result;
+    }
+
+    public static <K, V> OrderedMap<K, V> mergeOrders(OrderedMap<K, V> map1, OrderedMap<K, V> map2) {
+        OrderedMap<K, V> result = new OrderedMap<K, V>(map1);
+        result.putAll(map2);
         return result;
     }
 

@@ -40,15 +40,15 @@ public class CashRegController {
     private int cashRegComPort = 0;
 
     public int getCashRegComPort(FormInstance formInstance) {
-        int result;
         try {
-            result = (Integer) BL.cashRegComPort.read(formInstance.session, formInstance, formInstance.instanceFactory.computer.getDataObject());
+            Integer result = (Integer) BL.cashRegComPort.read(formInstance.session.sql, formInstance, formInstance.session.env, formInstance.instanceFactory.computer.getDataObject());
+            if(result==null)
+                return 0;
+            else
+                return result;
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        } catch (NullPointerException e) {
-            result = 0;
         }
-        return result;
     }
 
     public ClientResultAction getCashRegApplyActions(FormInstance formInstance, int payType,
