@@ -64,11 +64,11 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
     @NonFlushRemoteMethod
     public Object flushPendingInvocations() throws RemoteException {
         if (pendingInvocations.size() > 0) {
-            Object ret = execute(pendingInvocations.toArray(new MethodInvocation[pendingInvocations.size()]));
-
-            pendingInvocations.clear();
-
-            return ret;
+            try {
+                return execute(pendingInvocations.toArray(new MethodInvocation[pendingInvocations.size()]));
+            } finally {
+                pendingInvocations.clear();
+            }
         }
         return null;
     }
