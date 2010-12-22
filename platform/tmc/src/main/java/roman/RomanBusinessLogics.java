@@ -89,6 +89,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP addArticleCompositeSIDSupplier;
     private LP addNEArticleCompositeSIDSupplier;
     private LP numberDocumentSIDArticle;
+    private LP inOrderInvoice;
+    private LP quantityOrderInvoiceSku;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -225,16 +227,22 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         quantityDocumentArticle = addCUProp(baseGroup, "quantityDocumentArticle", "Кол-во", quantityDocumentArticleComposite, quantityDocumentArticleSingle);
 
-        priceDocumentArticle = addDProp(baseGroup, "priceDocumentArticle", "Цена", DoubleClass.instance, document, article);
-
-        sumDocumentArticle = addJProp(baseGroup, "Сумма", multiplyDouble2, quantityDocumentArticle, 1, 2, priceDocumentArticle, 1, 2);
-        sumDocument = addSGProp(baseGroup, "sumDocument", "Сумма документа", sumDocumentArticle, 1);
-
         quantityDocumentArticleCompositeColor = addSGProp(baseGroup, "quantityDocumentArticleCompositeColor", "Кол-во", quantityDocumentSku, 1, articleItem, 2, colorSupplierItem, 2);
         quantityDocumentArticleCompositeSize = addSGProp(baseGroup, "quantityDocumentArticleCompositeSize", "Кол-во", quantityDocumentSku, 1, articleItem, 2, sizeSupplierItem, 2);
 
         quantityDocumentArticleCompositeColorSize = addCGProp(baseGroup, "quantityDocumentArticleCompositeColorSize", "Кол-во",
                 quantityDocumentSku, quantityDocumentSku, 1, articleItem, 2, colorSupplierItem, 2, sizeSupplierItem, 2); // порядок
+
+        // связь инвойсов и заказов
+        inOrderInvoice = addDProp(baseGroup, "inOrderInvoice", "Вкл", LogicalClass.instance, order, invoice);
+        quantityOrderInvoiceSku = addPGProp(baseGroup, "quantityOrderInvoiceSku", true, 0, "Кол-во по заказу/инвойсу",
+                                            addJProp(and1, quantityDocumentSku, 1, 3, inOrderInvoice, 1, 2),
+                                            quantityDocumentSku, 2, 3);
+
+        priceDocumentArticle = addDProp(baseGroup, "priceDocumentArticle", "Цена", DoubleClass.instance, document, article);
+
+        sumDocumentArticle = addJProp(baseGroup, "Сумма", multiplyDouble2, quantityDocumentArticle, 1, 2, priceDocumentArticle, 1, 2);
+        sumDocument = addSGProp(baseGroup, "sumDocument", "Сумма документа", sumDocumentArticle, 1);
     }
 
     @Override
@@ -367,8 +375,99 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     }
 
     private class InvoiceFormEntity extends FormEntity<RomanBusinessLogics> {
+        private ObjectEntity objSupplier;
+        private ObjectEntity objOrder;
+        private ObjectEntity objInvoice;
+        private ObjectEntity objArticle;
+        private ObjectEntity objItem;
+        private ObjectEntity objSizeSupplier;
+        private ObjectEntity objColorSupplier;
+
         private InvoiceFormEntity(NavigatorElement parent, int iID, String caption) {
             super(parent, iID, caption);
+
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameCurrencySupplier);
+            objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            objInvoice = addSingleGroupObject(invoice, "Инвойс", date, sidDocument);
+            addObjectActions(this, objInvoice);
+
+            objOrder = addSingleGroupObject(order, "Заказ");
+            addPropertyDraw(inOrderInvoice, objOrder, objInvoice);
+            addPropertyDraw(objOrder, date, sidDocument, nameCurrencyOrder, sumDocument, nameShopOrder);
+
+            objArticle = addSingleGroupObject(article, "Артикул");
+            objArticle.groupTo.setSingleClassView(ClassViewType.GRID);
+
+            addPropertyDraw(numberDocumentArticle, objInvoice, objArticle);
+            addPropertyDraw(objArticle, sidArticle, originalNameArticle, nameCountryOfOriginArticle);
+            addPropertyDraw(quantityDocumentArticle, objInvoice, objArticle);
+            addPropertyDraw(priceDocumentArticle, objInvoice, objArticle);
+            addPropertyDraw(sumDocumentArticle, objInvoice, objArticle);
+            addObjectActions(this, objArticle);
+
+            objItem = addSingleGroupObject(item, "Товар", barcode, sidColorSupplierItem, nameColorSupplierItem, nameSizeSupplierItem);
+            addObjectActions(this, objItem);
+
+            objSizeSupplier = addSingleGroupObject(sizeSupplier, "Размер", selection, name);
+            objColorSupplier = addSingleGroupObject(colorSupplier, "Цвет", selection, sidColorSupplier, name);
+
+            PropertyDrawEntity quantityColumn = addPropertyDraw(quantityDocumentArticleCompositeColorSize, objInvoice, objArticle, objColorSupplier, objSizeSupplier);
+            quantityColumn.columnGroupObjects.add(objSizeSupplier.groupTo);
+            quantityColumn.propertyCaption = addPropertyObject(name, objSizeSupplier);
+
+            addPropertyDraw(quantityDocumentSku, objInvoice, objItem);
+            addPropertyDraw(quantityDocumentSku, objOrder, objItem);
+            addPropertyDraw(quantityOrderInvoiceSku, objOrder, objInvoice, objItem);
+            addPropertyDraw(quantityDocumentArticleCompositeColor, objInvoice, objArticle, objColorSupplier);
+            addPropertyDraw(quantityDocumentArticleCompositeSize, objInvoice, objArticle, objSizeSupplier);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objOrder), Compare.EQUALS, objSupplier));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objInvoice), Compare.EQUALS, objSupplier));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierArticle, objArticle), Compare.EQUALS, objSupplier));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierColorSupplier, objColorSupplier), Compare.EQUALS, objSupplier));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierSizeSupplier, objSizeSupplier), Compare.EQUALS, objSupplier));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(articleItem, objItem), Compare.EQUALS, objArticle));
+
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
+                                  new NotNullFilterEntity(addPropertyObject(quantityDocumentArticleCompositeColor, objInvoice, objArticle, objColorSupplier)),
+                                  "Заказано",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
+            addRegularFilterGroup(filterGroup);
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
+
+            design.setReadOnly(objSupplier, true);
+
+//            design.defaultOrders.put(design.get(getPropertyDraw(numberDocumentArticle)), true);
+
+            design.get(objOrder.groupTo).grid.constraints.fillVertical = 0.5;
+            design.get(objInvoice.groupTo).grid.constraints.fillVertical = 0.5;
+            design.get(objInvoice.groupTo).grid.constraints.fillHorizontal = 3;
+            design.get(objArticle.groupTo).grid.constraints.fillHorizontal = 4;
+            design.get(objItem.groupTo).grid.constraints.fillHorizontal = 3;
+
+            design.addIntersection(design.getGroupObjectContainer(objInvoice.groupTo),
+                                   design.getGroupObjectContainer(objOrder.groupTo),
+                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            design.addIntersection(design.getGroupObjectContainer(objArticle.groupTo),
+                                   design.getGroupObjectContainer(objSizeSupplier.groupTo),
+                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            design.addIntersection(design.getGroupObjectContainer(objItem.groupTo),
+                                   design.getGroupObjectContainer(objSizeSupplier.groupTo),
+                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            design.addIntersection(design.getGroupObjectContainer(objItem.groupTo),
+                                   design.getGroupObjectContainer(objColorSupplier.groupTo),
+                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            return design;
         }
     }
 
