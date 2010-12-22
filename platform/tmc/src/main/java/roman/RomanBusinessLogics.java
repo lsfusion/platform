@@ -69,6 +69,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP sidColorSupplierItem;
     private LP quantityDocumentSku;
     private LP quantityDocumentArticleComposite;
+    private LP quantityDocumentArticleSingle;
+    private LP quantityDocumentArticle;
     private LP quantityDocumentArticleCompositeColor;
     private LP quantityDocumentArticleCompositeSize;
     private LP quantityDocumentArticleCompositeColorSize;
@@ -87,7 +89,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP addArticleCompositeSIDSupplier;
     private LP addNEArticleCompositeSIDSupplier;
     private LP numberDocumentSIDArticle;
-    private LP quantityDocumentArticle;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -215,12 +216,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         quantityDocumentSku = addDProp(baseGroup, "quantityDocumentSku", "Кол-во", DoubleClass.instance, document, sku);
 
         quantityDocumentArticleComposite = addDGProp(baseGroup, "quantityDocumentArticleComposite", "Кол-во",
-                1, false,
+                1, false, // кол-во объектов для порядка и ascending/descending
                 quantityDocumentSku, 1, articleItem, 2,
-                addCProp(DoubleClass.instance, Double.MAX_VALUE, document, sku), 1, 2,
+                addCProp(DoubleClass.instance, Double.MAX_VALUE, document, sku), 1, 2, // ограничение (максимально-возможное число)
                 2);
 
-        quantityDocumentArticle = addCUProp(baseGroup, "quantityDocumentArticle", "Кол-во", quantityDocumentArticleComposite, quantityDocumentSku);
+        quantityDocumentArticleSingle = addJProp(baseGroup, "quantityDocumentArticle", "Кол-во", and1, quantityDocumentSku, 1, 2, is(articleSingle), 2);
+
+        quantityDocumentArticle = addCUProp(baseGroup, "quantityDocumentArticle", "Кол-во", quantityDocumentArticleComposite, quantityDocumentArticleSingle);
 
         priceDocumentArticle = addDProp(baseGroup, "priceDocumentArticle", "Цена", DoubleClass.instance, document, article);
 
@@ -230,11 +233,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         quantityDocumentArticleCompositeColor = addSGProp(baseGroup, "quantityDocumentArticleCompositeColor", "Кол-во", quantityDocumentSku, 1, articleItem, 2, colorSupplierItem, 2);
         quantityDocumentArticleCompositeSize = addSGProp(baseGroup, "quantityDocumentArticleCompositeSize", "Кол-во", quantityDocumentSku, 1, articleItem, 2, sizeSupplierItem, 2);
 
-        quantityDocumentArticleCompositeColorSize = addDGProp(baseGroup, "quantityDocumentArticleCompositeColorSize", "Кол-во",
-                1, false, // кол-во объектов для порядка и ascending/descending
-                quantityDocumentSku, 1, articleItem, 2, colorSupplierItem, 2, sizeSupplierItem, 2,
-                addCProp(DoubleClass.instance, Double.MAX_VALUE, document, sku), 1, 2, // ограничение (максимально-возможное число)
-                2); // порядок
+        quantityDocumentArticleCompositeColorSize = addCGProp(baseGroup, "quantityDocumentArticleCompositeColorSize", "Кол-во",
+                quantityDocumentSku, quantityDocumentSku, 1, articleItem, 2, colorSupplierItem, 2, sizeSupplierItem, 2); // порядок
     }
 
     @Override
