@@ -17,14 +17,26 @@ import java.awt.event.KeyEvent;
 
 public class SelectionProperty extends SessionDataProperty {
 
+    ValueClass[] classes;
+
     public SelectionProperty(String sID, ValueClass[] classes) {
         super(sID, "Отметить", classes, LogicalClass.instance);
+        this.classes = classes;
     }
 
     @Override
     public String getCode() {
-
-        return "selection";
+        StringBuilder result = new StringBuilder("selection.getLP(new ValueClass[]{");
+        boolean first = true;
+        for (ValueClass cls : classes) {
+            if (first) {
+                result.append(cls.getSID());
+            } else {
+                result.append(" ," + cls.getSID());
+            }
+        }
+        result.append("})");
+        return result.toString();
     }
 
     @Override

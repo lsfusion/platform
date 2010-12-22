@@ -42,6 +42,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return false;
     }
 
+    public boolean shouldProceedDefaultDraw() {
+        return true;
+    }
+
     public List<GroupObjectEntity> groups = new ArrayList<GroupObjectEntity>();
     public List<TreeGroupEntity> treeGroups = new ArrayList<TreeGroupEntity>();
     public List<PropertyDrawEntity> propertyDraws = new ArrayList<PropertyDrawEntity>();
@@ -319,7 +323,9 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(GroupObjectEntity groupObject, PropertyObjectEntity<P> propertyImplement) {
 
         PropertyDrawEntity<P> propertyDraw = new PropertyDrawEntity<P>(genID(), propertyImplement, groupObject);
-        propertyImplement.property.proceedDefaultDraw(propertyDraw, this);
+        if (shouldProceedDefaultDraw()) {
+            propertyImplement.property.proceedDefaultDraw(propertyDraw, this);
+        }
 
         if (propertyImplement.property.sID != null) {
 
