@@ -51,7 +51,7 @@ public class ClientShowType extends ClientComponent {
 
     @Override
     public String getCodeConstructor(String name) {
-        return "ShowTypeView " + name + " = design.createShowType(" + groupObject.getID() + ")";
+        return "ShowTypeView " + name + " = design.createShowType(" + groupObject.getID() + ");";
     }
 
 }

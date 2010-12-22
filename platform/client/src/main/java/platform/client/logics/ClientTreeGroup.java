@@ -61,7 +61,7 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
 
     @Override
     public String getCodeConstructor(String name) {
-        return "TreeGroupView " + name + " = design.createTreeGroup(" + getID() + ")";
+        return "TreeGroupView " + name + " = design.createTreeGroup(" + getID() + ");";
     }
 
 }

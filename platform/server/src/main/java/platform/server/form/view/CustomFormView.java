@@ -105,9 +105,8 @@ public class CustomFormView extends FormView {
         return view;
     }
 
-    public RegularFilterGroupView createRegularFilterGroup(int ID, RegularFilterGroupEntity filterGroup) {
+    public RegularFilterGroupView createRegularFilterGroup(RegularFilterGroupEntity filterGroup) {
         RegularFilterGroupView view = new RegularFilterGroupView(filterGroup);
-        view.ID = ID;
         regularFilters.add(view);
         return view;
     }

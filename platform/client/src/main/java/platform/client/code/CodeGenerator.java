@@ -3,9 +3,7 @@ package platform.client.code;
 import platform.client.descriptor.*;
 import platform.client.descriptor.filter.*;
 import platform.client.descriptor.property.PropertyDescriptor;
-import platform.client.logics.ClientComponent;
-import platform.client.logics.ClientContainer;
-import platform.client.logics.ClientRegularFilterGroup;
+import platform.client.logics.*;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexComponentDirections;
 import platform.interop.form.layout.SimplexConstraints;
@@ -92,6 +90,10 @@ public class CodeGenerator {
                 }
                 result.append(");\n");
 
+                for (GroupObjectDescriptor descriptor : property.getColumnGroupObjects()) {
+                    result.append(intend + "prop" + property.getSID() + ".addColumnGroupObject(" + descriptor.getSID() + ");\n");    
+                }
+
                 continue;
             }
             Set<PropertyObjectInterfaceDescriptor> values = new HashSet<PropertyObjectInterfaceDescriptor>(property.getPropertyObject().mapping.values());
@@ -156,10 +158,28 @@ public class CodeGenerator {
             for (ClientComponent child : ((ClientContainer) component).children) {
                 String childName = "component" + child.getID();
                 if (!(child instanceof ClientRegularFilterGroup)) {
-                    temp.append(intend + child.getCodeConstructor(childName) + ";\n");
+                    temp.append(intend + child.getCodeConstructor(childName) + "\n");
                 } else {
-                    temp.append(intend + ((ClientRegularFilterGroup) child).getCodeConstructor(childName, filterGroups.get(filterGroupViews.get(child))) + ";\n");
+                    temp.append(intend + ((ClientRegularFilterGroup) child).getCodeConstructor(childName, filterGroups.get(filterGroupViews.get(child))) + "\n");
                 }
+
+                if(child instanceof ClientPropertyDraw) {
+                    List<ClientGroupObject> groupList = ((ClientPropertyDraw)child).columnGroupObjects;
+                    if ( !groupList.isEmpty() ) {
+                        temp.append(intend + childName + ".entity.columnGroupObjects.");
+                        if(groupList.size() == 1) {
+                            temp.append("add(" + "grObj" + groupList.get(0).getSID() + ");\n");
+                        } else {
+                            temp.append("addAll(BaseUtils.toList(");
+                            for (ClientGroupObject object : groupList) {
+                                temp.append("grObj" + object.getSID() + ", ");
+                            }
+                            temp.delete(temp.length() - 2, temp.length());
+                            temp.append("));\n");
+                        }
+                    }
+                }
+
                 temp.append(intend + name + ".add(" + childName + ");\n");
                 temp.append(addContainers(child, childName));
             }

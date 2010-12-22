@@ -430,6 +430,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                 }
             }
         }
-        return result.toString() + ")";
+        result.append(");");
+        return result.toString();
     }
 }

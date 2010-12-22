@@ -64,6 +64,6 @@ public class ClientFunction extends ClientComponent implements AbstractFunction<
     @Override
     public String getCodeConstructor(String name) {
         return "FunctionView " + name + " = design.createFunction(\"" + caption + "\");\n" +
-                "\t   design.set" + type + "Function(" + name + ")";
+                "\t   design.set" + type + "Function(" + name + ");";
     }
 }

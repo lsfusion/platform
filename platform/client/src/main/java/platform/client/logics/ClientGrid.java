@@ -121,6 +121,6 @@ public class ClientGrid extends ClientComponent {
 
     @Override
     public String getCodeConstructor(String name) {
-        return "GridView " + name + " = design.createGrid(" + groupObject.getID() + ")";
+        return "GridView " + name + " = design.createGrid(" + groupObject.getID() + ");";
     }
 }
