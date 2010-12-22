@@ -99,7 +99,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP invoicedOrderArticleSingle;
     private LP invoicedOrderArticle;
     private LP numberDocumentArticleSingle;
-    private LP numberDocumentArticleComposite;
+    private LP numberDocumentArticleItem;
     private LP numberDocumentSku;
     private LP quantityDataDocumentSku;
 
@@ -221,8 +221,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         numberDocumentSIDArticle = addJProp(numberDocumentArticle, 1, articleSIDDocument, 2, 1);
 
         numberDocumentArticleSingle = addJProp(baseGroup, "numberDocumentArticleSingle", "Номер", and1, numberDocumentArticle, 1, 2, is(articleSingle), 2);
-        numberDocumentArticleComposite = addJProp(baseGroup, "numberDocumentArticleComposite", "Номер", numberDocumentArticle, 1, articleItem, 2);
-        numberDocumentSku = addCUProp(baseGroup, "numberDocumentSku", "Номер", numberDocumentArticleSingle, numberDocumentArticleComposite);
+        numberDocumentArticleItem = addJProp(baseGroup, "numberDocumentArticleItem", "Номер", numberDocumentArticle, 1, articleItem, 2);
+        numberDocumentSku = addCUProp(baseGroup, "numberDocumentSku", "Номер", numberDocumentArticleSingle, numberDocumentArticleItem);
 
         incrementNumberDocumentSID = addJProp(true, "Добавить строку", andNot1,
                                                   addJProp(true, addIAProp(numberDocumentArticle, 1),
@@ -254,10 +254,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         orderedOrderInvoiceSku = addJProp(and1, quantityDocumentSku, 1, 3, inOrderInvoice, 1, 2);
 
-        // todo : здесь надо derive'ить, иначе могут быть проблемы с расписыванием
-        quantityOrderInvoiceSku = addPGProp(baseGroup, "quantityOrderInvoiceSku", true, 0, "Кол-во по заказу/инвойсу (расч.)",
-                orderedOrderInvoiceSku,
-                quantityDocumentSku, 2, 3);
+//        // todo : здесь надо derive'ить, иначе могут быть проблемы с расписыванием
+//        quantityOrderInvoiceSku = addPGProp(baseGroup, "quantityOrderInvoiceSku", true, 0, "Кол-во по заказу/инвойсу (расч.)",
+//                orderedOrderInvoiceSku,
+//                quantityDocumentSku, 2, 3);
+
+        // todo : переделать на PGProp
+        quantityOrderInvoiceSku = addDProp(baseGroup, "quantityOrderInvoiceSku", "Кол-во по заказу/инвойсу (расч.)", DoubleClass.instance,
+                                           order, invoice, sku);
 
         orderedInvoiceSku = addSGProp(baseGroup, "orderedInvoiceSku", "Кол-во заказано",
                                       orderedOrderInvoiceSku, 2, 3);
