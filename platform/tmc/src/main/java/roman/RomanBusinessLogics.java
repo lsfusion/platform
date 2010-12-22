@@ -98,6 +98,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP invoicedOrderArticleComposite;
     private LP invoicedOrderArticleSingle;
     private LP invoicedOrderArticle;
+    private LP numberDocumentArticleSingle;
+    private LP numberDocumentArticleComposite;
+    private LP numberDocumentSku;
+    private LP quantityDataDocumentSku;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -216,13 +220,18 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         numberDocumentArticle = addDProp(baseGroup, "numberDocumentArticle", "Номер", IntegerClass.instance, document, article);
         numberDocumentSIDArticle = addJProp(numberDocumentArticle, 1, articleSIDDocument, 2, 1);
 
+        numberDocumentArticleSingle = addJProp(baseGroup, "numberDocumentArticleSingle", "Номер", and1, numberDocumentArticle, 1, 2, is(articleSingle), 2);
+        numberDocumentArticleComposite = addJProp(baseGroup, "numberDocumentArticleComposite", "Номер", numberDocumentArticle, 1, articleItem, 2);
+        numberDocumentSku = addCUProp(baseGroup, "numberDocumentSku", "Номер", numberDocumentArticleSingle, numberDocumentArticleComposite);
+
         incrementNumberDocumentSID = addJProp(true, "Добавить строку", andNot1,
                                                   addJProp(true, addIAProp(numberDocumentArticle, 1),
                                                   1, articleSIDDocument, 2, 1), 1, 2,
                                                   numberDocumentSIDArticle, 1, 2);
 
         // кол-во заказа
-        quantityDocumentSku = addDProp(baseGroup, "quantityDocumentSku", "Кол-во", DoubleClass.instance, document, sku);
+        quantityDataDocumentSku = addDProp("quantityDataDocumentSku", "Кол-во (первичное)", DoubleClass.instance, document, sku);
+        quantityDocumentSku = addJProp(baseGroup, "quantityDocumentSku", "Кол-во", and1, quantityDataDocumentSku, 1, 2, numberDocumentSku, 1, 2);
 
         quantityDocumentArticleComposite = addDGProp(baseGroup, "quantityDocumentArticleComposite", "Кол-во",
                 1, false, // кол-во объектов для порядка и ascending/descending
