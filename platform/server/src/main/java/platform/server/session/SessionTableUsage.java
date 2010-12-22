@@ -1,21 +1,18 @@
 package platform.server.session;
 
+import platform.base.BaseUtils;
+import platform.base.OrderedMap;
+import platform.server.caches.MapValues;
+import platform.server.classes.BaseClass;
 import platform.server.data.*;
+import platform.server.data.expr.Expr;
 import platform.server.data.query.Join;
 import platform.server.data.query.MapJoin;
 import platform.server.data.query.Query;
 import platform.server.data.type.Type;
-import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
-import platform.server.caches.MapValues;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.property.Property;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.form.instance.ObjectInstance;
-import platform.server.classes.BaseClass;
-import platform.base.BaseUtils;
-import platform.base.OrderedMap;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -92,14 +89,15 @@ public class SessionTableUsage<K,V> {
         return table;
     }
 
-    public SessionTableUsage(SQLSession sql, final Query<K,V> query, BaseClass baseClass, QueryEnvironment env) throws SQLException { // здесь порядок особо не важен, так как assert что getUsage'а не будет
+    public SessionTableUsage(SQLSession sql, final Query<K,V> query, BaseClass baseClass, QueryEnvironment env,
+                             final Map<K, Type> keyTypes, final Map<V, Type> propertyTypes) throws SQLException { // здесь порядок особо не важен, так как assert что getUsage'а не будет
         this(new ArrayList<K>(query.mapKeys.keySet()), new ArrayList<V>(query.properties.keySet()), new Type.Getter<K>() {
             public Type getType(K key) {
-                return query.getKeyType(key);
+                return keyTypes.get(key);
             }
         }, new Type.Getter<V>() {
             public Type getType(V key) {
-                return query.getPropertyType(key);
+                return propertyTypes.get(key);
             }
         });
         writeRows(sql, query, baseClass, env);

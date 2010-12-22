@@ -7,14 +7,16 @@ import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.form.ReportConstants;
 import platform.server.data.query.Query;
+import platform.server.data.type.Type;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.GroupObjectHierarchy;
-import static platform.server.form.entity.GroupObjectHierarchy.ReportNode;
 import platform.server.logics.BusinessLogics;
 import platform.server.session.SessionTableUsage;
 
 import java.sql.SQLException;
 import java.util.*;
+
+import static platform.server.form.entity.GroupObjectHierarchy.ReportNode;
 
 /**
  * User: DAle
@@ -56,13 +58,15 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         return sources;
     }
 
-    private Query<ObjectInstance, Pair<Object, PropertyType>> createQuery(List<GroupObjectInstance> groups, SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>> parentTable, OrderedMap<Pair<Object, PropertyType>, Boolean> orders) {
+    private Query<ObjectInstance, Pair<Object, PropertyType>> createQuery(List<GroupObjectInstance> groups, SessionTableUsage<ObjectInstance,
+            Pair<Object, PropertyType>> parentTable, OrderedMap<Pair<Object, PropertyType>, Boolean> orders, Map<Pair<Object, PropertyType>, Type> types) {
 
         Query<ObjectInstance, Pair<Object, PropertyType>> newQuery =
                 new Query<ObjectInstance, Pair<Object, PropertyType>>(GroupObjectInstance.getObjects(groups));
 
-        if (parentTable != null)
+        if (parentTable != null) {
             newQuery.and(parentTable.getWhere(newQuery.mapKeys));
+        }
 
         for (GroupObjectInstance group : groups) {
             newQuery.and(group.getWhere(newQuery.mapKeys, form));
@@ -71,10 +75,14 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                 Pair<Object, PropertyType> orderObject = new Pair<Object, PropertyType>(order.getKey(), PropertyType.ORDER);
                 newQuery.properties.put(orderObject, order.getKey().getExpr(newQuery.mapKeys, form));
                 orders.put(orderObject, order.getValue());
+                types.put(orderObject, order.getKey().getType());
             }
 
-            if (group.propertyHighlight != null)
-                newQuery.properties.put(new Pair<Object, PropertyType>(group.propertyHighlight, PropertyType.HIGHLIGHT), group.propertyHighlight.getExpr(newQuery.mapKeys, form));
+            if (group.propertyHighlight != null) {
+                Pair<Object, PropertyType> highlightObject = new Pair<Object, PropertyType>(group.propertyHighlight, PropertyType.HIGHLIGHT);
+                newQuery.properties.put(highlightObject, group.propertyHighlight.getExpr(newQuery.mapKeys, form));
+                types.put(highlightObject, group.propertyHighlight.getType());
+            }
 
             if (group.curClassView != ClassViewType.GRID)
                 for (ObjectInstance object : group.objects) {
@@ -84,10 +92,15 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
 
         for(PropertyDrawInstance<?> property : filterProperties(groups)) {
             if (property.columnGroupObjects.isEmpty()) {
-                newQuery.properties.put(new Pair<Object, PropertyType>(property, PropertyType.PLAIN), property.propertyObject.getExpr(newQuery.mapKeys, form));
+                Pair<Object, PropertyType> propertyObject = new Pair<Object, PropertyType>(property, PropertyType.PLAIN);
+                newQuery.properties.put(propertyObject, property.propertyObject.getExpr(newQuery.mapKeys, form));
+                types.put(propertyObject, property.propertyObject.getType());
 
-                if (property.propertyCaption != null)
-                    newQuery.properties.put(new Pair<Object, PropertyType>(property, PropertyType.CAPTION), property.propertyCaption.getExpr(newQuery.mapKeys, form));
+                if (property.propertyCaption != null) {
+                    Pair<Object, PropertyType> captionObject = new Pair<Object, PropertyType>(property, PropertyType.CAPTION);
+                    newQuery.properties.put(captionObject, property.propertyCaption.getExpr(newQuery.mapKeys, form));
+                    types.put(captionObject, property.propertyObject.getType());
+                }
             }
         }
         return newQuery;
@@ -105,8 +118,15 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
             groups.addAll(localGroups);
 
             OrderedMap<Pair<Object, PropertyType>, Boolean> orders = new OrderedMap<Pair<Object, PropertyType>, Boolean>();
+            Map<Pair<Object, PropertyType>, Type> propTypes = new HashMap<Pair<Object, PropertyType>, Type>();
+            Map<ObjectInstance, Type> keyTypes = new HashMap<ObjectInstance, Type>();
+            for (ObjectInstance object : GroupObjectInstance.getObjects(groups)) {
+                keyTypes.put(object, object.getType());
+            }
+
+            Query<ObjectInstance, Pair<Object, PropertyType>> query = createQuery(groups, parentTable, orders, propTypes);
             SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>> reportTable = new SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>>(
-                    form.session.sql, createQuery(groups, parentTable, orders), form.BL.baseClass, form.session.env);
+                    form.session.sql, query, form.BL.baseClass, form.session.env, keyTypes, propTypes);
 
             try {
                 OrderedMap<Map<ObjectInstance, Object>, Map<Pair<Object, PropertyType>, Object>> resultData = reportTable.read(form.session.sql, form.session.env, orders);
@@ -132,13 +152,16 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                     List<Object> propertyValues = new ArrayList<Object>();
                     for(PropertyDrawInstance property : filterProperties(groups)) {
                         propertyValues.add(row.getValue().get(new Pair<Object, PropertyType>(property, PropertyType.PLAIN)));
-                        if (property.propertyCaption != null)
+                        if (property.propertyCaption != null) {
                             propertyValues.add(row.getValue().get(new Pair<Object, PropertyType>(property, PropertyType.CAPTION)));
+                        }
                     }
 
-                    for (GroupObjectInstance group : groups)
-                        if (group.propertyHighlight != null)
+                    for (GroupObjectInstance group : groups) {
+                        if (group.propertyHighlight != null) {
                             propertyValues.add(row.getValue().get(new Pair<Object, PropertyType>(group.propertyHighlight, PropertyType.HIGHLIGHT)));
+                        }
+                    }
 
                     data.add(BaseUtils.mapList(keyList, row.getKey()), propertyValues);
                 }
