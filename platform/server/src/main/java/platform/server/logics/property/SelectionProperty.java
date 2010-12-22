@@ -1,5 +1,6 @@
 package platform.server.logics.property;
 
+import platform.interop.KeyStrokes;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
@@ -10,10 +11,6 @@ import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.SessionDataProperty;
-
-import javax.swing.*;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 
 public class SelectionProperty extends SessionDataProperty {
 
@@ -32,7 +29,7 @@ public class SelectionProperty extends SessionDataProperty {
             if (first) {
                 result.append(cls.getSID());
             } else {
-                result.append(" ," + cls.getSID());
+                result.append(" ,").append(cls.getSID());
             }
         }
         result.append("})");
@@ -50,7 +47,7 @@ public class SelectionProperty extends SessionDataProperty {
         filterGroup.addFilter(new RegularFilterEntity(form.genID(),
                 new NotNullFilterEntity(entity.propertyObject),
                 "Отмеченные",
-                KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.ALT_DOWN_MASK)), false);
+                KeyStrokes.getSelectionFilterKeyStroke()), false);
         form.addRegularFilterGroup(filterGroup);
 
         entity.getToDraw(form).propertyHighlight = entity.propertyObject;
@@ -59,6 +56,6 @@ public class SelectionProperty extends SessionDataProperty {
     @Override
     public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
         PropertyDrawView selectionPropView = view.get(entity);
-        selectionPropView.editKey = KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.ALT_DOWN_MASK);
+        selectionPropView.editKey = KeyStrokes.getSelectionPropertyKeyStroke();
     }
 }

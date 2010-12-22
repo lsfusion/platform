@@ -31,6 +31,7 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.List;
 
+@SuppressWarnings({"UnusedDeclaration"})
 public class ClientPropertyDraw extends ClientComponent implements ClientPropertyRead, ClientIdentitySerializable {
     public Caption captionRead = new Caption();
 
@@ -138,6 +139,14 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             return null;
         }
         return changeType.getEditorComponent(form, this, value, getFormat(), design);
+    }
+
+    public PropertyEditorComponent getObjectEditorComponent(ClientFormController form, Object value) throws IOException, ClassNotFoundException {
+        ClientType changeType = getPropertyChangeType(form);
+        if (changeType == null) {
+            return null;
+        }
+        return changeType.getObjectEditorComponent(form, this, value, getFormat(), design);
     }
 
     public PropertyEditorComponent getClassComponent(ClientFormController form, Object value) throws IOException, ClassNotFoundException {
@@ -258,7 +267,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public Object parseString(ClientFormController form, String s) throws ParseException {
-        ClientType changeType = null;
+        ClientType changeType;
         try {
             changeType = getPropertyChangeType(form);
             if (changeType == null) {
@@ -415,18 +424,18 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         StringBuilder result = new StringBuilder("PropertyDrawView " + name + " = design.createPropertyDraw(");
 
         if (descriptor.getPropertyObject().property.isField) {
-            result.append("prop" + descriptor.getSID());
+            result.append("prop").append(descriptor.getSID());
         } else {
             String grObject = groupObject == null ? "" : "grObj" + groupObject.getSID() + ", ";
 
-            result.append(grObject + descriptor.getPropertyObject().property.code);
+            result.append(grObject).append(descriptor.getPropertyObject().property.code);
 
             Set<PropertyObjectInterfaceDescriptor> values = new HashSet<PropertyObjectInterfaceDescriptor>(descriptor.getPropertyObject().mapping.values());
 
             for (PropertyObjectInterfaceDescriptor objectDescriptorInt : values) {
                 if (objectDescriptorInt instanceof ObjectDescriptor) {
                     ObjectDescriptor object = (ObjectDescriptor) objectDescriptorInt;
-                    result.append(", " + CodeGenerator.objectNames.get(object));
+                    result.append(", ").append(CodeGenerator.objectNames.get(object));
                 }
             }
         }

@@ -19,6 +19,7 @@ import platform.client.logics.filter.ClientPropertyFilter;
 import platform.client.navigator.ClientNavigator;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ClassViewType;
+import platform.interop.KeyStrokes;
 import platform.interop.Order;
 import platform.interop.Scroll;
 import platform.interop.action.CheckFailed;
@@ -59,7 +60,6 @@ public class ClientFormController {
     private JButton buttonApply;
     private JButton buttonCancel;
 
-    private Color defaultApplyBackground;
     public boolean dataChanged;
 
     public final Map<ClientGroupObject, List<ClientGroupObjectValue>> currentGridObjects = new HashMap<ClientGroupObject, List<ClientGroupObjectValue>>();
@@ -312,120 +312,80 @@ public class ClientFormController {
 
     private void initializeButtons() {
 
-        KeyStroke altP = KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.ALT_DOWN_MASK);
-        KeyStroke altX = KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.ALT_DOWN_MASK);
-        KeyStroke altDel = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.ALT_DOWN_MASK);
-        KeyStroke altR = KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.ALT_DOWN_MASK);
-        KeyStroke altEnter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, (isDialogMode() && isReadOnlyMode()) ? 0 : InputEvent.ALT_DOWN_MASK);
-        KeyStroke escape = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+        KeyStroke printKeyStroke = KeyStrokes.getPrintKeyStroke();
+        KeyStroke xlsKeyStroke = KeyStrokes.getXlsKeyStroke();
+        KeyStroke nullKeyStroke = KeyStrokes.getNullKeyStroke();
+        KeyStroke refreshKeyStroke = KeyStrokes.getRefreshKeyStroke();
+        KeyStroke applyKeyStroke = KeyStrokes.getApplyKeyStroke(isDialogMode() && isReadOnlyMode());
+        KeyStroke cancelKeyStroke = KeyStrokes.getCancelKeyStroke();
 
         // Добавляем стандартные кнопки
 
-        if (Main.module.isFull()) {
-            AbstractAction printAction = new AbstractAction(form.getPrintFunction().caption + " (" + SwingUtils.getKeyStrokeCaption(altP) + ")") {
-
+        if (Main.module.isFull() && !isDialogMode()) {
+            addClientFunction(form.getPrintFunction(), printKeyStroke, new AbstractAction() {
                 public void actionPerformed(ActionEvent ae) {
                     print();
                 }
-            };
-            formLayout.addBinding(altP, "altPPressed", printAction);
+            });
 
-            JButton buttonPrint = new ClientButton(printAction);
-            buttonPrint.setFocusable(false);
-
-            AbstractAction xlsAction = new AbstractAction(form.getXlsFunction().caption + " (" + SwingUtils.getKeyStrokeCaption(altX) + ")") {
-
+            addClientFunction(form.getXlsFunction(), xlsKeyStroke, new AbstractAction() {
                 public void actionPerformed(ActionEvent ae) {
                     Main.module.runExcel(remoteForm);
                 }
-            };
-            formLayout.addBinding(altX, "altXPressed", xlsAction);
-
-            JButton buttonXls = new ClientButton(xlsAction);
-            buttonXls.setFocusable(false);
-
-            if (!isDialogMode()) {
-                formLayout.add(form.getPrintFunction(), buttonPrint);
-                formLayout.add(form.getXlsFunction(), buttonXls);
-            }
+            });
         }
 
-        AbstractAction nullAction = new AbstractAction(form.getNullFunction().caption + " (" + SwingUtils.getKeyStrokeCaption(altDel) + ")") {
-
-            public void actionPerformed(ActionEvent ae) {
-                nullPressed();
-            }
-        };
-        JButton buttonNull = new ClientButton(nullAction);
-        buttonNull.setFocusable(false);
-
-        AbstractAction refreshAction = new AbstractAction(form.getRefreshFunction().caption + " (" + SwingUtils.getKeyStrokeCaption(altR) + ")") {
-
+        addClientFunction(form.getRefreshFunction(), refreshKeyStroke, new AbstractAction() {
             public void actionPerformed(ActionEvent ae) {
                 refreshData();
             }
-        };
-        JButton buttonRefresh = new ClientButton(refreshAction);
-        buttonRefresh.setFocusable(false);
-
-        AbstractAction applyAction = new AbstractAction(form.getApplyFunction().caption + " (" + SwingUtils.getKeyStrokeCaption(altEnter) + ")") {
-
-            public void actionPerformed(ActionEvent ae) {
-                applyChanges(false);
-            }
-        };
-        buttonApply = new ClientButton(applyAction);
-        buttonApply.setFocusable(false);
-
-        AbstractAction cancelAction = new AbstractAction(form.getCancelFunction().caption + " (" + SwingUtils.getKeyStrokeCaption(escape) + ")") {
-
-            public void actionPerformed(ActionEvent ae) {
-                cancelChanges();
-            }
-        };
-        buttonCancel = new ClientButton(cancelAction);
-        buttonCancel.setFocusable(false);
-
-        AbstractAction okAction = new AbstractAction(form.getOkFunction().caption + " (" + SwingUtils.getKeyStrokeCaption(altEnter) + ")") {
-
-            public void actionPerformed(ActionEvent ae) {
-                okPressed();
-            }
-        };
-        JButton buttonOK = new ClientButton(okAction);
-        buttonOK.setFocusable(false);
-
-        AbstractAction closeAction = new AbstractAction(form.getCloseFunction().caption + " (" + SwingUtils.getKeyStrokeCaption(escape) + ")") {
-
-            public void actionPerformed(ActionEvent ae) {
-                closePressed();
-            }
-        };
-        JButton buttonClose = new ClientButton(closeAction);
-        buttonClose.setFocusable(false);
-
-        formLayout.addBinding(altR, "altRPressed", refreshAction);
-        formLayout.add(form.getRefreshFunction(), buttonRefresh);
+        });
 
         if (!isDialogMode()) {
+            buttonApply = addClientFunction(form.getApplyFunction(), applyKeyStroke, new AbstractAction() {
+                public void actionPerformed(ActionEvent ae) {
+                    applyChanges(false);
+                }
+            });
 
-            formLayout.addBinding(altEnter, "enterPressed", applyAction);
-            formLayout.add(form.getApplyFunction(), buttonApply);
-
-            formLayout.addBinding(escape, "escapePressed", cancelAction);
-            formLayout.add(form.getCancelFunction(), buttonCancel);
-
+            buttonCancel = addClientFunction(form.getCancelFunction(), cancelKeyStroke, new AbstractAction() {
+                public void actionPerformed(ActionEvent ae) {
+                    cancelChanges();
+                }
+            });
         } else {
+            addClientFunction(form.getNullFunction(), nullKeyStroke, new AbstractAction() {
+                public void actionPerformed(ActionEvent ae) {
+                    nullPressed();
+                }
+            });
 
-            formLayout.addBinding(altDel, "altDelPressed", nullAction);
-            formLayout.add(form.getNullFunction(), buttonNull);
+            addClientFunction(form.getOkFunction(), applyKeyStroke, new AbstractAction() {
+                public void actionPerformed(ActionEvent ae) {
+                    okPressed();
+                }
+            });
 
-            formLayout.addBinding(altEnter, "enterPressed", okAction);
-            formLayout.add(form.getOkFunction(), buttonOK);
-
-            formLayout.addBinding(escape, "escapePressed", closeAction);
-            formLayout.add(form.getCloseFunction(), buttonClose);
+            addClientFunction(form.getCloseFunction(), cancelKeyStroke, new AbstractAction() {
+                public void actionPerformed(ActionEvent ae) {
+                    closePressed();
+                }
+            });
         }
+    }
+
+    private JButton addClientFunction(ClientFunction function, final KeyStroke keyStroke, final AbstractAction functionAction) {
+        if (function.visible) {
+            functionAction.putValue(Action.NAME, function.caption + " (" + SwingUtils.getKeyStrokeCaption(keyStroke) + ")");
+
+            JButton actionButton = new ClientButton(functionAction);
+            actionButton.setFocusable(false);
+
+            formLayout.add(function, actionButton);
+            formLayout.addBinding(keyStroke, function.type + "FunctionAction", functionAction);
+            return actionButton;
+        }
+        return null;
     }
 
     private boolean ordersInitialized = false;
@@ -462,20 +422,13 @@ public class ClientFormController {
     }
 
     private void applyFormChanges(ClientFormChanges formChanges) {
-
         if (formChanges.dataChanged != null && buttonApply != null) {
-            if (defaultApplyBackground == null)
-                defaultApplyBackground = buttonApply.getBackground();
-
             dataChanged = formChanges.dataChanged;
-            if (dataChanged) {
-                buttonApply.setBackground(Color.green);
-                buttonApply.setEnabled(true);
-                buttonCancel.setEnabled(true);
-            } else {
-                buttonApply.setBackground(defaultApplyBackground);
-                buttonApply.setEnabled(false);
-                buttonCancel.setEnabled(false);
+
+            buttonApply.setBackground(dataChanged ? Color.green : getDefaultApplyBackground());
+            buttonApply.setEnabled(dataChanged);
+            if (buttonCancel != null) {
+                buttonCancel.setEnabled(dataChanged);
             }
         }
 
@@ -514,6 +467,14 @@ public class ClientFormController {
         if (formChanges.message.length() > 0) {
             Log.printFailedMessage(formChanges.message);
         }
+    }
+
+    private Color defaultApplyBackground;
+    private Color getDefaultApplyBackground() {
+        if (defaultApplyBackground == null) {
+            defaultApplyBackground = buttonApply.getBackground();
+        }
+        return defaultApplyBackground;
     }
 
     public void changeGroupObject(ClientGroupObject group, ClientGroupObjectValue objectValue) throws IOException {
@@ -666,7 +627,7 @@ public class ClientFormController {
                     if (clientApply instanceof CheckFailed) // чтобы не делать лишний RMI вызов
                         Log.printFailedMessage(((CheckFailed) clientApply).message);
                     else {
-                        Object clientResult = null;
+                        Object clientResult;
                         try {
                             clientResult = ((ClientResultAction) clientApply).dispatchResult(actionDispatcher);
                         } catch (Exception e) {

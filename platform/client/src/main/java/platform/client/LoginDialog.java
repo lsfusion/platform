@@ -5,6 +5,7 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 import org.apache.commons.codec.binary.Base64;
 import platform.base.OSUtils;
+import platform.interop.KeyStrokes;
 import platform.interop.ServerInfo;
 
 import javax.swing.*;
@@ -148,9 +149,7 @@ public class LoginDialog extends JDialog {
             public void actionPerformed(ActionEvent e) {
                 onCancel();
             }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-
-
+        }, KeyStrokes.getEscape(), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 
     private boolean isValid(String server) {

@@ -4,6 +4,7 @@ import platform.client.ClientButton;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.filter.ClientPropertyFilter;
+import platform.interop.KeyStrokes;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -11,7 +12,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,7 +20,6 @@ public abstract class QueryView extends JPanel {
 
     private final static Dimension iconButtonDimension = new Dimension(22,22);
 
-    private final JPanel buttons;
     private final JPanel condContainer;
 
     private final JButton applyButton;
@@ -28,7 +27,7 @@ public abstract class QueryView extends JPanel {
     private final JButton collapseButton;
 
     // при помощи listener идет общение с контроллером
-    // выделен в отдельный интерфейс, а не внутренним классом, поскольку от QueryView идет наследование 
+    // выделен в отдельный интерфейс, а не внутренним классом, поскольку от QueryView идет наследование
     private QueryListener listener;
 
     void setListener(QueryListener listener) {
@@ -43,7 +42,7 @@ public abstract class QueryView extends JPanel {
 
         setBorder(new EmptyBorder(0,0,0,0));
 
-        buttons = new JPanel();
+        JPanel buttons = new JPanel();
         buttons.setLayout(new BoxLayout(buttons, BoxLayout.X_AXIS));
 
         add(buttons);
@@ -98,7 +97,7 @@ public abstract class QueryView extends JPanel {
         condContainer.setLayout(new BoxLayout(condContainer, BoxLayout.Y_AXIS));
         add(condContainer);
 
-        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "applyQuery");
+        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getEnter(), "applyQuery");
         getActionMap().put("applyQuery", new AbstractAction() {
 
             public void actionPerformed(ActionEvent ae) {
@@ -111,14 +110,14 @@ public abstract class QueryView extends JPanel {
             }
         });
 
-        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), REMOVE_ALL_ACTION);
+        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getRemoveFiltersKeyStroke(), REMOVE_ALL_ACTION);
 
         addActions(this);
     }
 
     // используется для того, чтобы во внешнем компоненте по нажатии кнопок можно было создать отбор/поиск
     public void addActions(JComponent comp) {
-        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(getKeyEvent(), 0), "newFilter");
+        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getKeyStroke(0), "newFilter");
         comp.getActionMap().put("newFilter", new AbstractAction() {
 
             public void actionPerformed(ActionEvent ae) {
@@ -127,7 +126,7 @@ public abstract class QueryView extends JPanel {
             }
         });
 
-        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(getKeyEvent(), InputEvent.ALT_DOWN_MASK), "addFilter");
+        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getKeyStroke(InputEvent.ALT_DOWN_MASK), "addFilter");
         comp.getActionMap().put("addFilter", new AbstractAction() {
 
             public void actionPerformed(ActionEvent ae) {
@@ -136,7 +135,7 @@ public abstract class QueryView extends JPanel {
             }
         });
 
-        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(getKeyEvent(), InputEvent.SHIFT_DOWN_MASK), REMOVE_ALL_ACTION);
+        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getKeyStroke(InputEvent.SHIFT_DOWN_MASK), REMOVE_ALL_ACTION);
         comp.getActionMap().put(REMOVE_ALL_ACTION, new AbstractAction() {
 
             public void actionPerformed(ActionEvent ae) {
@@ -169,7 +168,7 @@ public abstract class QueryView extends JPanel {
     void queryApplied() {
 
         applyButton.setVisible(false);
-        
+
         validate();
     }
 
@@ -247,7 +246,7 @@ public abstract class QueryView extends JPanel {
 
     protected abstract Icon getApplyIcon();
     protected abstract Icon getAddConditionIcon();
-    protected abstract int getKeyEvent();
+    protected abstract KeyStroke getKeyStroke(int modifier);
 
     public void startEditing(ClientPropertyDraw propertyDraw) {
         if (condViews.size() > 0) {

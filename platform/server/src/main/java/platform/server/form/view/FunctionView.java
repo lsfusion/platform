@@ -13,14 +13,9 @@ public class FunctionView extends ComponentView implements AbstractFunction<Cont
     
     String type;
 
-    public void setCaption(String caption) {
-        this.caption = caption;
-    }
+    boolean visible = true;
 
-    public void setType(String type) {
-        this.type = type;
-    }
-
+    @SuppressWarnings({"UnusedDeclaration"})
     public FunctionView() {
 
     }
@@ -35,6 +30,7 @@ public class FunctionView extends ComponentView implements AbstractFunction<Cont
 
         pool.writeString(outStream, caption);
         pool.writeString(outStream, type);
+        outStream.writeBoolean(visible);
     }
 
     @Override
@@ -43,5 +39,18 @@ public class FunctionView extends ComponentView implements AbstractFunction<Cont
 
         setCaption(pool.readString(inStream));
         setType(pool.readString(inStream));
+        setVisible(inStream.readBoolean());
+    }
+
+    public void setCaption(String caption) {
+        this.caption = caption;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
     }
 }

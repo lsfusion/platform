@@ -11,12 +11,10 @@ import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 public class RemoteFormProxy<T extends RemoteFormInterface>
         extends RemoteObjectProxy<T>
         implements RemoteFormInterface {
-    private static Logger logger = Logger.getLogger(RemoteFormProxy.class.getName());
 
     public static final Map<Integer, byte[]> cachedRichDesign = new HashMap<Integer, byte[]>();
 
@@ -251,5 +249,10 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     @NonPendingRemoteMethod
     public RemoteDialogInterface createEditorPropertyDialog(int viewID) throws RemoteException {
         return createDialog("createEditorPropertyDialog", viewID);
+    }
+
+    @NonPendingRemoteMethod
+    public RemoteDialogInterface createObjectEditorDialog(int viewID) throws RemoteException {
+        return createDialog("createObjectEditorDialog", viewID);
     }
 }

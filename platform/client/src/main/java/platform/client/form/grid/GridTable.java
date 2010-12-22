@@ -12,6 +12,7 @@ import platform.client.form.sort.GridHeaderMouseListener;
 import platform.client.form.sort.GridHeaderRenderer;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
+import platform.interop.KeyStrokes;
 import platform.interop.Order;
 import platform.interop.Scroll;
 
@@ -144,11 +145,15 @@ public abstract class GridTable extends ClientFormTable
             }
         });
 
-        addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                if (form.isDialogMode() && e.getClickCount() > 1) form.okPressed();
-            }
-        });
+        if (form.isDialogMode()) {
+            addMouseListener(new MouseAdapter() {
+                public void mouseClicked(MouseEvent e) {
+                    if (e.getClickCount() > 1) {
+                        form.okPressed();
+                    }
+                }
+            });
+        }
 
         initializeActionMap();
     }
@@ -396,12 +401,12 @@ public abstract class GridTable extends ClientFormTable
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
         try {
             // Отдельно обработаем CTRL + HOME и CTRL + END
-            if (ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_HOME, InputEvent.CTRL_DOWN_MASK))) {
+            if (ks.equals(KeyStrokes.getCtrlHome())) {
                 form.changeGroupObject(logicsSupplier.getGroupObject(), Scroll.HOME);
                 return true;
             }
 
-            if (ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_END, InputEvent.CTRL_DOWN_MASK))) {
+            if (ks.equals(KeyStrokes.getCtrlEnd())) {
                 form.changeGroupObject(logicsSupplier.getGroupObject(), Scroll.END);
                 return true;
             }
@@ -409,18 +414,20 @@ public abstract class GridTable extends ClientFormTable
             throw new RuntimeException("Ошибка при переходе на запись", ioe);
         }
 
-        if (form.isDialogMode() && form.isReadOnlyMode() && ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0))) {
+
+        boolean isReadOnlyDialog = form.isDialogMode() && form.isReadOnlyMode();
+        if (isReadOnlyDialog && ks.equals(KeyStrokes.getApplyKeyStroke(isReadOnlyDialog))) {
             return false;
         }
 
-        if (condition == WHEN_FOCUSED && gridView.hasActiveFilter() && ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0))) {
+        if (condition == WHEN_FOCUSED && gridView.hasActiveFilter() && ks.equals(KeyStrokes.getRemoveFiltersKeyStroke())) {
             Action removeAllAction = getActionMap().get(QueryView.REMOVE_ALL_ACTION);
             if (removeAllAction != null) {
                 return SwingUtilities.notifyAction(removeAllAction, ks, e, this, e.getModifiers());
             }
         }
 
-        if (ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0))) {
+        if (ks.equals(KeyStrokes.getEnter())) {
             commitEditing();
         }
 
@@ -468,7 +475,7 @@ public abstract class GridTable extends ClientFormTable
     }
 
     public boolean editCellAt(int row, int column, EventObject editEvent) {
-        multyChange = editEvent instanceof KeyEvent && ((KeyEvent) editEvent).getKeyCode() == KeyEvent.VK_F12;
+        multyChange = KeyStrokes.isGroupCorrectionEvent(editEvent);
 
         ClientAbstractCellEditor cellEditor = getAbstractCellEditor(row, column);
         if (cellEditor != null) {
@@ -705,7 +712,7 @@ public abstract class GridTable extends ClientFormTable
                     column--;
                 }
             }
-            int num = 0;
+            int num;
             if (tabVertical) {
                 num = column * getRowCount() + row;
             } else {

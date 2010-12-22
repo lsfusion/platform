@@ -106,11 +106,6 @@ class DatePropertyEditorComponent extends JTextFieldDateEditor {
         super(datePattern, maskPattern, placeholder);
 
         setBorder(new EmptyBorder(0, 1, 0, 0));
-
-/*        SwingUtils.addFocusTraversalKey(this,
-                KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
-                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));*/
-
     }
 
     @Override

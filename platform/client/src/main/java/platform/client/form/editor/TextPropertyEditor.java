@@ -2,6 +2,7 @@ package platform.client.form.editor;
 
 import platform.client.form.PropertyEditorComponent;
 import platform.interop.ComponentDesign;
+import platform.interop.KeyStrokes;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,6 +14,7 @@ import java.rmi.RemoteException;
 import java.util.EventObject;
 
 
+@SuppressWarnings({"FieldCanBeLocal"})
 public class TextPropertyEditor extends JScrollPane implements PropertyEditorComponent, PropertyChangeListener {
     private final int WIDTH = 250;
     private final int HEIGHT = 200;
@@ -82,7 +84,7 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditorCom
 
 
     public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) throws IOException, ClassNotFoundException {
-        if (editEvent instanceof KeyEvent && ((KeyEvent) editEvent).getKeyCode() == KeyEvent.VK_SPACE) {
+        if (KeyStrokes.isSpaceEvent(editEvent)) {
             Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
             int x = (int) Math.min(tableLocation.getX(), screenSize.getWidth() - WIDTH);
             dialog.setBounds(x, (int) tableLocation.getY(), WIDTH, HEIGHT);
@@ -100,10 +102,6 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditorCom
 
     public boolean valueChanged() {
         return state;
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        optionPane.setValue(btnString1);
     }
 
     public void propertyChange(PropertyChangeEvent e) {

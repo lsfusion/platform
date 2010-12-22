@@ -4,6 +4,7 @@ import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 import platform.interop.ClassViewType;
+import platform.interop.KeyStrokes;
 import platform.interop.action.ClientAction;
 import platform.server.classes.*;
 import platform.server.data.type.ParseException;
@@ -20,9 +21,6 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 
-import javax.swing.*;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.io.ByteArrayInputStream;
 import java.sql.SQLException;
 import java.util.*;
@@ -67,7 +65,7 @@ public class ImportFromExcelActionProperty extends ActionProperty {
 
         for (int i = 1; i < sh.getRows(); ++i) {
             FormInstance<?> form = (FormInstance<?>) executeForm.form;
-            DataObject instance = form.addObject((ConcreteCustomClass) valueClass);
+            form.addObject((ConcreteCustomClass) valueClass);
             
             for (int j = 0; j < sh.getColumns(); ++j) {
                 Cell cell = sh.getCell(j, i);
@@ -101,7 +99,7 @@ public class ImportFromExcelActionProperty extends ActionProperty {
     @Override
     public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
         super.proceedDefaultDesign(view, entity);
-        view.get(entity).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.ALT_DOWN_MASK);
+        view.get(entity).editKey = KeyStrokes.getImportActionPropertyKeyStroke();
     }
 
 }

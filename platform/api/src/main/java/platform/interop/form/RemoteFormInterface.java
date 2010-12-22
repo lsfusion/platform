@@ -1,7 +1,6 @@
 package platform.interop.form;
 
 import platform.interop.ClassViewType;
-import platform.interop.action.ClientResultAction;
 import platform.interop.action.ClientApply;
 import platform.interop.remote.PendingRemote;
 
@@ -28,6 +27,8 @@ public interface RemoteFormInterface extends PendingRemote {
     boolean hasClientApply() throws RemoteException; // чисто для оптимизации одного RMI вызова
 
     RemoteDialogInterface createClassPropertyDialog(int viewID, int value) throws RemoteException;
+
+    RemoteDialogInterface createObjectEditorDialog(int viewID) throws RemoteException;
 
     RemoteDialogInterface createEditorPropertyDialog(int viewID) throws RemoteException;
 
@@ -68,9 +69,4 @@ public interface RemoteFormInterface extends PendingRemote {
     void applyClientChanges(Object clientResult) throws RemoteException;
 
     void applyChanges() throws RemoteException;
-    
-    final static int GID_SHIFT = 1000;
-
-    final static int CHANGEGROUPOBJECT_FIRSTROW = 0;
-    final static int CHANGEGROUPOBJECT_LASTROW = 1;
 }

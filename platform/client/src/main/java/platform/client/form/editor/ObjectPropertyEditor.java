@@ -4,6 +4,7 @@ import platform.client.SwingUtils;
 import platform.client.form.ClientDialog;
 import platform.client.form.ClientNavigatorDialog;
 import platform.client.form.PropertyEditorComponent;
+import platform.interop.KeyStrokes;
 import platform.interop.form.RemoteDialogInterface;
 
 import javax.swing.*;
@@ -26,20 +27,19 @@ public class ObjectPropertyEditor extends JDialog implements PropertyEditorCompo
         this.dialog = dialog;
     }
 
-    public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) throws IOException, ClassNotFoundException {
-
-        if (editEvent instanceof KeyEvent && ((KeyEvent)editEvent).getKeyCode() == KeyEvent.VK_SPACE) {
+    public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject event) throws IOException, ClassNotFoundException {
+        if (KeyStrokes.isSpaceEvent(event) || KeyStrokes.isObjectEditorDialogEvent(event)) {
             clientDialog = new ClientNavigatorDialog(owner, dialog);
             clientDialog.showQuickFilterOnStartup = false;
         } else {
             clientDialog = new ClientDialog(owner, dialog);
-            if (!(editEvent instanceof KeyEvent)) {
+            if (!(event instanceof KeyEvent)) {
                 clientDialog.showQuickFilterOnStartup = false;
             }
         }
 
         clientDialog.setSize(SwingUtils.clipDimension(clientDialog.calculatePreferredSize(),
-                                                      new Dimension(400, 300),
+                                                      new Dimension(200, 100),
                                                       new Dimension(1000, 700)));
         SwingUtils.requestLocation(clientDialog, new Point((int)(tableLocation.getX() + cellRectangle.getX()), (int)(tableLocation.getY() + cellRectangle.getMaxY())));
 

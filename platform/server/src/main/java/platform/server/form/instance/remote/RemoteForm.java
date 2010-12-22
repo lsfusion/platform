@@ -40,19 +40,20 @@ import java.sql.SQLException;
 import java.util.*;
 
 // фасад для работы с клиентом
-public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> extends platform.interop.remote.RemoteObject implements RemoteFormInterface {
+public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> extends platform.interop.remote.RemoteObject implements RemoteFormInterface {
 
     public final F form;
     public final FormView richDesign;
 
     private final WeakReference<CurrentClassListener> weakCurrentClassListener;
+
     private CurrentClassListener getCurrentClassListener() {
         return weakCurrentClassListener.get();
     }
 
     public RemoteForm(F form, FormView richDesign, int port, CurrentClassListener currentClassListener) throws RemoteException {
         super(port);
-        
+
         this.form = form;
         this.richDesign = richDesign;
         this.weakCurrentClassListener = new WeakReference<CurrentClassListener>(currentClassListener);
@@ -169,7 +170,7 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
     }
 
     private Map<String, JasperDesign> getReportDesigns(boolean toExcel) {
-        if (hasCustomReportDesign())  {
+        if (hasCustomReportDesign()) {
             Map<String, JasperDesign> designs = getCustomReportDesigns();
             if (designs != null) {
                 return designs;
@@ -260,11 +261,12 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
         actions = new ArrayList<ClientAction>();
 
         int objectClassID = 0;
-        if(updateCurrentClass!=null) {
+        if (updateCurrentClass != null) {
             ConcreteCustomClass currentClass = form.getObjectClass(updateCurrentClass);
             CurrentClassListener currentClassListener = getCurrentClassListener();
-            if(currentClass != null && currentClassListener != null && currentClassListener.changeCurrentClass(currentClass))
+            if (currentClass != null && currentClassListener != null && currentClassListener.changeCurrentClass(currentClass)) {
                 objectClassID = currentClass.ID;
+            }
 
             updateCurrentClass = null;
         }
@@ -275,15 +277,17 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
         DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(treePathKeys));
 
         Map<ObjectInstance, Object> mapValues = new HashMap<ObjectInstance, Object>();
-        for(GroupObjectInstance treeGroup : group.getUpTreeGroups())
-            for(ObjectInstance objectInstance : treeGroup.objects)
+        for (GroupObjectInstance treeGroup : group.getUpTreeGroups()) {
+            for (ObjectInstance objectInstance : treeGroup.objects) {
                 mapValues.put(objectInstance, BaseUtils.deserializeObject(inStream));
+            }
+        }
 
         return group.findGroupObjectValue(mapValues);
     }
-    
+
     public void changeGroupObject(int groupID, byte[] value) {
-        
+
         try {
             GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
             groupObject.change(form.session, deserializeKeys(groupObject, value));
@@ -341,10 +345,10 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
     }
 
     public boolean canChangeClass(int objectID) throws RemoteException {
-        return form.canChangeClass((CustomObjectInstance)form.getObjectInstance(objectID));
+        return form.canChangeClass((CustomObjectInstance) form.getObjectInstance(objectID));
     }
 
-    public void changeGridClass(int objectID,int idClass) {
+    public void changeGridClass(int objectID, int idClass) {
         ((CustomObjectInstance) form.getObjectInstance(objectID)).changeGridClass(idClass);
     }
 
@@ -371,7 +375,7 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
             }
 
             if (found) {
-                keys.putAll( groupInstance.findGroupObjectValue(mapValues) );
+                keys.putAll(groupInstance.findGroupObjectValue(mapValues));
             }
         }
         return keys;
@@ -389,8 +393,9 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
 
     public void clearUserFilters() {
 
-        for(GroupObjectInstance group : form.groups)
+        for (GroupObjectInstance group : form.groups) {
             group.clearUserFilters();
+        }
     }
 
     public void addFilter(byte[] state) {
@@ -432,10 +437,11 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
     public ClientApply checkClientChanges() throws RemoteException {
         try {
             String result = form.checkApply();
-            if(result!=null)
+            if (result != null) {
                 return new CheckFailed(result);
-            else
+            } else {
                 return form.entity.getClientApply(form);
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -444,7 +450,7 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
     public void applyClientChanges(Object clientResult) throws RemoteException {
         String checkClientApply = form.entity.checkClientApply(clientResult);
         try {
-            if(checkClientApply!=null) {
+            if (checkClientApply != null) {
                 actions.add(new ResultClientAction(checkClientApply, true));
             } else {
                 form.commitApply();
@@ -483,14 +489,15 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
 
     public byte[] getChildClassesByteArray(int objectID, int classID) {
 
-        List<CustomClass> childClasses = (((CustomObjectInstance)form.getObjectInstance(objectID)).baseClass).findClassID(classID).children;
+        List<CustomClass> childClasses = (((CustomObjectInstance) form.getObjectInstance(objectID)).baseClass).findClassID(classID).children;
 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         DataOutputStream dataStream = new DataOutputStream(outStream);
         try {
             dataStream.writeInt(childClasses.size());
-            for (CustomClass cls : childClasses)
+            for (CustomClass cls : childClasses) {
                 cls.serialize(dataStream);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -503,7 +510,7 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
             DataOutputStream dataStream = new DataOutputStream(outStream);
 
-            form.serializePropertyEditorType(dataStream,form.getPropertyDraw(propertyID));
+            form.serializePropertyEditorType(dataStream, form.getPropertyDraw(propertyID));
 
             return outStream.toByteArray();
         } catch (Exception e) {
@@ -514,7 +521,16 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
     public RemoteDialogInterface createClassPropertyDialog(int viewID, int value) throws RemoteException {
         try {
             DialogInstance<T> dialogForm = form.createClassPropertyDialog(viewID, value);
-            return new RemoteDialog<T>(dialogForm,dialogForm.entity.getRichDesign(),exportPort, getCurrentClassListener());
+            return new RemoteDialog<T>(dialogForm, dialogForm.entity.getRichDesign(), exportPort, getCurrentClassListener());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public RemoteDialogInterface createObjectEditorDialog(int viewID) throws RemoteException {
+        try {
+            DialogInstance<T> dialogForm = form.createObjectEditorDialog(viewID);
+            return new RemoteDialog<T>(dialogForm, dialogForm.entity.getRichDesign(), exportPort, getCurrentClassListener());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -523,7 +539,7 @@ public class RemoteForm<T extends BusinessLogics<T>,F extends FormInstance<T>> e
     public RemoteDialogInterface createEditorPropertyDialog(int viewID) throws RemoteException {
         try {
             DialogInstance<T> dialogForm = form.createEditorPropertyDialog(viewID);
-            return new RemoteDialog<T>(dialogForm,dialogForm.entity.getRichDesign(),exportPort, getCurrentClassListener());
+            return new RemoteDialog<T>(dialogForm, dialogForm.entity.getRichDesign(), exportPort, getCurrentClassListener());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

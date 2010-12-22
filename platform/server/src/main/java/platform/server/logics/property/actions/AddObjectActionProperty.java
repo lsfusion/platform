@@ -2,6 +2,7 @@ package platform.server.logics.property.actions;
 
 import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
+import platform.interop.KeyStrokes;
 import platform.interop.action.ClientAction;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
@@ -15,17 +16,16 @@ import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.view.DefaultFormView;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.Property;
 import platform.server.session.DataSession;
 
-import javax.swing.*;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 public class AddObjectActionProperty extends ActionProperty {
 
@@ -42,7 +42,7 @@ public class AddObjectActionProperty extends ActionProperty {
             for (Property property : properties) {
                 result.add(property.getCommonClasses().value);
             }
-        return result.toArray(new ValueClass[0]);
+        return result.toArray(new ValueClass[result.size()]);
     }
 
     public AddObjectActionProperty(String sID, CustomClass valueClass, List<Property> properties) {
@@ -96,7 +96,7 @@ public class AddObjectActionProperty extends ActionProperty {
     @Override
     public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
         super.proceedDefaultDesign(view, entity);
-        view.get(entity).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_L, InputEvent.ALT_DOWN_MASK);
+        view.get(entity).editKey = KeyStrokes.getAddActionPropertyKeyStroke();
     }
 
 }

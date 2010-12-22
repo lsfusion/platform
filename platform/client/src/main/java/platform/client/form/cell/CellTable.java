@@ -4,6 +4,7 @@ import platform.base.BaseUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.SingleCellTable;
 import platform.client.logics.ClientPropertyDraw;
+import platform.interop.KeyStrokes;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -44,7 +45,7 @@ public abstract class CellTable extends SingleCellTable
 
     @Override
     public Object convertValueFromString(String value, int row, int column) {
-        Object parsedValue = null;
+        Object parsedValue;
         try {
             parsedValue = getProperty(column).parseString(getForm(), value);
         } catch (ParseException pe) {
@@ -94,11 +95,9 @@ public abstract class CellTable extends SingleCellTable
 
     @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-
         // пусть Enter обрабатывает верхний контейнер, если
         //noinspection SimplifiableIfStatement
-        if (e.getKeyCode() == KeyEvent.VK_ENTER && e.getModifiers() == 0 && pressed && !isDataChanging()) return false;
-
+        if (ks.equals(KeyStrokes.getEnter()) && !isDataChanging()) return false;
         return super.processKeyBinding(ks, e, condition, pressed);
     }
 }

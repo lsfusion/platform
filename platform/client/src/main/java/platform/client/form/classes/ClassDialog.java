@@ -4,12 +4,12 @@ import platform.client.SwingUtils;
 import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientConcreteClass;
 import platform.client.logics.classes.ClientObjectClass;
+import platform.interop.KeyStrokes;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 
 public class ClassDialog extends JDialog {
 
@@ -55,7 +55,7 @@ public class ClassDialog extends JDialog {
 
         JButton cancelButton = new JButton(cancelAction);
 
-        getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "closeDialog");
+        getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getEscape(), "closeDialog");
         getRootPane().getActionMap().put("closeDialog", cancelAction);
 
         buttonContainer.add(okButton);

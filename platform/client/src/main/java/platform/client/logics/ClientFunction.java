@@ -14,6 +14,7 @@ public class ClientFunction extends ClientComponent implements AbstractFunction<
 
     public String caption;
     public String type;
+    public boolean visible;
 
     public void setCaption(String caption) {
         this.caption = caption;
@@ -23,6 +24,7 @@ public class ClientFunction extends ClientComponent implements AbstractFunction<
         this.type = type;
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public ClientFunction() {
     }
 
@@ -36,6 +38,7 @@ public class ClientFunction extends ClientComponent implements AbstractFunction<
 
         pool.writeString(outStream, caption);
         pool.writeString(outStream, type);
+        outStream.writeBoolean(visible);
     }
 
     @Override
@@ -44,6 +47,7 @@ public class ClientFunction extends ClientComponent implements AbstractFunction<
 
         caption = pool.readString(inStream);
         type = pool.readString(inStream);
+        visible = inStream.readBoolean();
     }
 
     @Override

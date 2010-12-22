@@ -65,6 +65,10 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
         return new ObjectPropertyEditor(form.getComponent(), property.createEditorForm(form.remoteForm));
     }
 
+    public PropertyEditorComponent getObjectEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
+        return new ObjectPropertyEditor(form.getComponent(), form.remoteForm.createObjectEditorDialog(property.ID));
+    }
+
     public PropertyEditorComponent getClassComponent(ClientFormController form, ClientPropertyDraw property, Object value, Format format) throws IOException, ClassNotFoundException {
         return new ObjectPropertyEditor(form.getComponent(), property.createClassForm(form.remoteForm, (Integer) value));
     }

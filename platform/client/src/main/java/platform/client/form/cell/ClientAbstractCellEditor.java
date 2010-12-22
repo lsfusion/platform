@@ -1,9 +1,9 @@
 package platform.client.form.cell;
 
-import platform.base.BaseUtils;
 import platform.client.SwingUtils;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.logics.ClientPropertyDraw;
+import platform.interop.KeyStrokes;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
@@ -20,7 +20,7 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
 
     private PropertyEditorComponent propertyEditor;
 
-    public boolean editPerformed = false; 
+    public boolean editPerformed = false;
 
     public Object getCellEditorValue() {
         try {
@@ -36,12 +36,12 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
 
             KeyEvent event = (KeyEvent) e;
 
-            if (event.getKeyCode() == KeyEvent.VK_F12) return true; // групповая корректировка
+            if (KeyStrokes.isGroupCorrectionEvent(event)) return true; // групповая корректировка
 
-            if (event.getKeyChar() == KeyEvent.CHAR_UNDEFINED) return false;
+            if (KeyStrokes.isKeyEvent(event, KeyEvent.CHAR_UNDEFINED)) return false;
 
             // ESC почему-то считается KEY_TYPED кнопкой, пока обрабатываем отдельно
-            if (event.getKeyCode() == KeyEvent.VK_ESCAPE) return false;
+            if (KeyStrokes.isEscapeEvent(event)) return false;
 
             //будем считать, что если нажата кнопка ALT то явно пользователь не хочет вводить текст
             //noinspection RedundantIfStatement
@@ -51,15 +51,10 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
         }
 
         if (e instanceof MouseEvent) {
-
-            MouseEvent event = (MouseEvent) e;
-
-            //noinspection RedundantIfStatement
-//            if (event.getClickCount() < 2) return false;
-
             return true;
         }
 
+        //noinspection RedundantIfStatement
         if (e == null) {
             // значит программно вызвали редактирование
             return true;
@@ -86,7 +81,9 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
 
         try {
             if (cellTable.isDataChanging()) {
-                propertyEditor = property.getEditorComponent(cellTable.getForm(), ivalue);
+                propertyEditor = KeyStrokes.isObjectEditorDialogEvent(editEvent)
+                                 ? property.getObjectEditorComponent(cellTable.getForm(), ivalue)
+                                 : property.getEditorComponent(cellTable.getForm(), ivalue);
             } else {
                 propertyEditor = property.getClassComponent(cellTable.getForm(), ivalue);
             }
@@ -104,17 +101,14 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
             }
 
             if (comp == null && propertyEditor.valueChanged()) {
-                Object newValue = getCellEditorValue();
-                if (!BaseUtils.nullEquals(ivalue, newValue)) {
-                    table.setValueAt(newValue, row, column);
-                }
+                table.setValueAt(getCellEditorValue(), row, column);
             }
         }
 
         if (comp == null) {
             stopCellEditing();
         }
-        
+
         return comp;
     }
 }

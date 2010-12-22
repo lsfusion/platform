@@ -1,6 +1,7 @@
 package platform.server.logics.property.actions;
 
 import platform.base.BaseUtils;
+import platform.interop.KeyStrokes;
 import platform.interop.action.ClientAction;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ValueClass;
@@ -16,9 +17,6 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 
-import javax.swing.*;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +43,6 @@ public class DeleteObjectActionProperty extends ActionProperty {
     @Override
     public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
         super.proceedDefaultDesign(view, entity);
-        view.get(entity).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.ALT_DOWN_MASK);
+        view.get(entity).editKey = KeyStrokes.getDeleteActionPropertyKeyStroke();
     }
 }

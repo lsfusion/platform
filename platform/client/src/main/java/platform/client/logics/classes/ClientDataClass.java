@@ -64,6 +64,10 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
         return getComponent(value, format, design);
     }
 
+    public PropertyEditorComponent getObjectEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
+        return getEditorComponent(form, property, value, format, design);
+    }
+
     public PropertyEditorComponent getClassComponent(ClientFormController form, ClientPropertyDraw property, Object value, Format format) throws IOException, ClassNotFoundException {
         return getComponent(value, format, null);
     }

@@ -1,5 +1,7 @@
 package platform.client.form;
 
+import platform.interop.KeyStrokes;
+
 import javax.swing.*;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
@@ -29,12 +31,7 @@ public abstract class ClientFormTable extends JTable {
         getTableHeader().setFocusable(false);
         getTableHeader().setReorderingAllowed(false);
 
-        //  Have the enter key work the same as the tab key
-        InputMap im = getInputMap(JTable.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-
-        KeyStroke tab = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
-        KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
-        im.put(enter, im.get(tab));
+        setupActionMap();
 
         setTransferHandler(new TransferHandler() {
             protected Transferable createTransferable(JComponent c) {
@@ -89,6 +86,12 @@ public abstract class ClientFormTable extends JTable {
         });
     }
 
+    private void setupActionMap() {
+        //  Have the enter key work the same as the tab key
+        InputMap im = getInputMap(JTable.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        im.put(KeyStrokes.getEnter(), im.get(KeyStrokes.getTab()));
+    }
+
     public boolean editCellAt(int row, int column, EventObject e){
         if (e instanceof MouseEvent) {
             // чтобы не срабатывало редактирование при изменении ряда,
@@ -113,13 +116,12 @@ public abstract class ClientFormTable extends JTable {
     public abstract Object convertValueFromString(String value, int row, int column);
 
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-
         boolean consumed = super.processKeyBinding(ks, e, condition, pressed);
-        // Вырежем F2, чтобы startEditing не поглощало его
-        if (ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0))) return false;
-        if (ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0))) return false;
+        // Вырежем кнопки фильтров, чтобы startEditing не поглощало его
+        if (ks.equals(KeyStrokes.getFindKeyStroke(0))) return false;
+        if (ks.equals(KeyStrokes.getFilterKeyStroke(0))) return false;
         //noinspection SimplifiableIfStatement
-        if (ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0))) return false;
+        if (ks.equals(KeyStrokes.getF8())) return false;
 
         return consumed;
     }

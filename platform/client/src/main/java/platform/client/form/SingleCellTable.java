@@ -1,10 +1,13 @@
 package platform.client.form;
 
 import platform.client.SwingUtils;
+import platform.interop.KeyStrokes;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
 
 public abstract class SingleCellTable extends ClientFormTable {
 
@@ -12,7 +15,6 @@ public abstract class SingleCellTable extends ClientFormTable {
         super();
 
         addFocusListener(new FocusListener() {
-
             public void focusGained(FocusEvent e) {
                 requestFocusInWindow();
                 changeSelection(0, 0, false, false);
@@ -21,21 +23,16 @@ public abstract class SingleCellTable extends ClientFormTable {
             public void focusLost(FocusEvent e) {
                 getSelectionModel().clearSelection();
             }
-
         });
 
         SwingUtils.addFocusTraversalKey(this,
-                KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
-                KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0));
-
-/*        SwingUtils.addFocusTraversalKey(this,
-                KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
-                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));*/
+                                        KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
+                                        KeyStrokes.getForwardTraversalKeyStroke());
 
         SwingUtils.addFocusTraversalKey(this,
-                KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
-                KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.SHIFT_DOWN_MASK));
-   }
+                                        KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
+                                        KeyStrokes.getBackwardTraversalKeyStroke());
+    }
 
     // приходится делать вот таким извращенным способом, поскольку ComponentListener срабатывает после перерисовки формы
     @Override
@@ -44,33 +41,29 @@ public abstract class SingleCellTable extends ClientFormTable {
         super.setBounds(x, y, width, height);
     }
 
-    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e,
-					int condition, boolean pressed) {
-
+    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
         // сами обрабатываем нажатие клавиши Enter
-        if (e.getKeyCode() == KeyEvent.VK_ENTER && e.getModifiers() == 0 && pressed) {
-
+        if (ks.equals(KeyStrokes.getEnter())) {
             if (isEditing()) {
-
                 Component editorComp = getEditorComponent(), nextComp = null;
-                if (editorComp instanceof JComponent)
-                    nextComp = ((JComponent)editorComp).getNextFocusableComponent();
+                if (editorComp instanceof JComponent) {
+                    //noinspection deprecation
+                    nextComp = ((JComponent) editorComp).getNextFocusableComponent();
+                }
 
                 getCellEditor().stopCellEditing();
 
                 // приходится таким волшебным образом извращаться, поскольку в stopCellEditing в явную устанавливается фокус на JTable
                 // это не устраивает, если по нажатии кнопки из другого компонена вызывается редактирование, а потом необходимо вернуть фокус обратно
-                if (nextComp != null)
+                if (nextComp != null) {
                     nextComp.requestFocusInWindow();
-
-            } else
+                }
+            } else {
                 KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent();
-
+            }
             return true;
+        }
 
-        } else
-            return super.processKeyBinding(ks, e, condition, pressed);
-
+        return super.processKeyBinding(ks, e, condition, pressed);
     }
-
 }

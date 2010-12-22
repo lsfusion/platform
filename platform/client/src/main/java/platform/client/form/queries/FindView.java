@@ -1,7 +1,8 @@
 package platform.client.form.queries;
 
+import platform.interop.KeyStrokes;
+
 import javax.swing.*;
-import java.awt.event.KeyEvent;
 
 public class FindView extends QueryView {
     
@@ -13,7 +14,7 @@ public class FindView extends QueryView {
         return new ImageIcon(getClass().getResource("/platform/client/form/images/findadd.gif"));
     }
 
-    protected int getKeyEvent() {
-        return KeyEvent.VK_F3;
+    protected KeyStroke getKeyStroke(int modifier) {
+        return KeyStrokes.getFindKeyStroke(modifier);
     }
 }
