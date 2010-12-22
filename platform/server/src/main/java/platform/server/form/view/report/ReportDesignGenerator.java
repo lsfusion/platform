@@ -11,7 +11,6 @@ import net.sf.jasperreports.engine.type.StretchTypeEnum;
 import platform.interop.form.ReportConstants;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.GroupObjectHierarchy;
-import static platform.server.form.entity.GroupObjectHierarchy.ReportNode;
 import platform.server.form.entity.PropertyObjectEntity;
 import platform.server.form.view.FormView;
 import platform.server.form.view.GroupObjectView;
@@ -21,6 +20,8 @@ import platform.server.form.view.PropertyDrawView;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+
+import static platform.server.form.entity.GroupObjectHierarchy.ReportNode;
 
 /**
  * User: DAle
@@ -162,7 +163,13 @@ public class ReportDesignGenerator {
                     groupCellStyle = DesignStyles.getGroupStyle(groups.indexOf(group), groupsCnt, minGroupLevel, treeGroupLevel, treeGroupLevel);
                 }
                 design.addStyle(groupCellStyle);
+                JRDesignStyle groupCaptionStyle = groupCellStyle;
                 if (highlightPropertySID != null) {
+                    if (detail) {
+                        groupCaptionStyle = (JRDesignStyle) groupCellStyle.clone();
+                        groupCaptionStyle.setName(groupCellStyle.getName() + "_caption");
+                        design.addStyle(groupCaptionStyle);
+                    }
                     JRDesignConditionalStyle condStyle = new JRDesignConditionalStyle();
                     condStyle.setParentStyle(groupCellStyle);
                     Color oldColor = condStyle.getBackcolor();
@@ -180,7 +187,7 @@ public class ReportDesignGenerator {
                 }
 
                 for(ReportDrawField reportField : drawFields) {
-                    addReportFieldToLayout(reportLayout, reportField, groupCellStyle);
+                    addReportFieldToLayout(reportLayout, reportField, groupCaptionStyle, groupCellStyle);
                 }
                 reportLayout.doLayout(pageWidth);
             }
@@ -201,7 +208,7 @@ public class ReportDesignGenerator {
         return new Color((int) (color.getRed() * coeff), (int) (color.getGreen() * coeff), (int) (color.getBlue() * coeff));
     }
 
-    private void addReportFieldToLayout(ReportLayout layout, ReportDrawField reportField, JRDesignStyle style) {
+    private void addReportFieldToLayout(ReportLayout layout, ReportDrawField reportField, JRDesignStyle captionStyle, JRDesignStyle style) {
         String designCaptionText;
         if (reportField.hasCaptionProperty) {
             designCaptionText = ReportUtils.createFieldString(reportField.sID + ReportConstants.captionSuffix);
@@ -209,7 +216,7 @@ public class ReportDesignGenerator {
             designCaptionText = '"' + reportField.caption + '"';
         }
         JRDesignExpression captionExpr = ReportUtils.createExpression(designCaptionText, reportField.captionClass);
-        JRDesignTextField captionField = ReportUtils.createTextField(style, captionExpr);
+        JRDesignTextField captionField = ReportUtils.createTextField(captionStyle, captionExpr);
         captionField.setHorizontalAlignment(HorizontalAlignEnum.CENTER);
 
         JRDesignExpression dataExpr = ReportUtils.createExpression(ReportUtils.createFieldString(reportField.sID), reportField.valueClass);
