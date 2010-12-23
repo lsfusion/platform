@@ -38,7 +38,7 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
 
             if (KeyStrokes.isGroupCorrectionEvent(event)) return true; // групповая корректировка
 
-            if (KeyStrokes.isKeyEvent(event, KeyEvent.CHAR_UNDEFINED)) return false;
+            if (event.getKeyChar() == KeyEvent.CHAR_UNDEFINED) return false;
 
             // ESC почему-то считается KEY_TYPED кнопкой, пока обрабатываем отдельно
             if (KeyStrokes.isEscapeEvent(event)) return false;
