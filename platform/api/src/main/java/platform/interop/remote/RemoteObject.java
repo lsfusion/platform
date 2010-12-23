@@ -50,7 +50,7 @@ public class RemoteObject extends UnicastRemoteObject implements PendingRemote {
         result[0] = createdObject;
         for (int i = 0; i < invocations.length; ++i) {
             try {
-                result[i+1] = invoke(createdObject, invocations[i]);
+                result[i+1] = createdObject == null ? null : invoke(createdObject, invocations[i]);
             } catch (InvocationTargetException e) {
                 throw new RemoteException("Ошибка при вызове метода: " + invocations[i].name, e.getTargetException());
             } catch (Exception e) {

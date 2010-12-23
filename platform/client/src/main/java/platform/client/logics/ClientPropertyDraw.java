@@ -143,10 +143,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public PropertyEditorComponent getObjectEditorComponent(ClientFormController form, Object value) throws IOException, ClassNotFoundException {
         ClientType changeType = getPropertyChangeType(form);
-        if (changeType == null) {
-            return null;
-        }
-        return changeType.getObjectEditorComponent(form, this, value, getFormat(), design);
+        return changeType == null
+               ? null
+               : changeType.getObjectEditorComponent(form, this, value, getFormat(), design);
     }
 
     public PropertyEditorComponent getClassComponent(ClientFormController form, Object value) throws IOException, ClassNotFoundException {

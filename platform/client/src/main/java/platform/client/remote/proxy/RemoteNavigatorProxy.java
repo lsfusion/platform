@@ -60,6 +60,10 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
         Object[] result = createAndExecute(creator, invocations.toArray(new MethodInvocation[invocations.size()]));
 
         RemoteFormInterface remoteForm = (RemoteFormInterface) result[0];
+        if (remoteForm == null) {
+            return null;
+        }
+
         RemoteFormProxy proxy = new RemoteFormProxy(remoteForm);
         for (int i = 0; i < invocations.size(); ++i) {
             proxy.setProperty(invocations.get(i).name, result[i + 1]);

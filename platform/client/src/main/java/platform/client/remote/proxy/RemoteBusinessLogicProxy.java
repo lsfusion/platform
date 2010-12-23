@@ -25,8 +25,12 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
 
         Object[] result = createAndExecute(creator, invocations.toArray(new MethodInvocation[invocations.size()]));
 
-        RemoteNavigatorInterface remoteDialog = (RemoteNavigatorInterface) result[0];
-        RemoteNavigatorProxy proxy = new RemoteNavigatorProxy(remoteDialog);
+        RemoteNavigatorInterface remoteNavigator = (RemoteNavigatorInterface) result[0];
+        if (remoteNavigator == null) {
+            return null;
+        }
+
+        RemoteNavigatorProxy proxy = new RemoteNavigatorProxy(remoteNavigator);
         for (int i = 0; i < invocations.size(); ++i) {
             proxy.setProperty(invocations.get(i).name, result[i+1]);
         }

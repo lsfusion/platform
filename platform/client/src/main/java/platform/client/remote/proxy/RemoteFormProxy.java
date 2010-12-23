@@ -233,6 +233,10 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         Object[] result = createAndExecute(creator, invocations.toArray(new MethodInvocation[invocations.size()]));
 
         RemoteDialogInterface remoteDialog = (RemoteDialogInterface) result[0];
+        if (remoteDialog == null) {
+            return null;
+        }
+
         RemoteDialogProxy proxy = new RemoteDialogProxy(remoteDialog);
         for (int i = 0; i < invocations.size(); ++i) {
             proxy.setProperty(invocations.get(i).name, result[i + 1]);

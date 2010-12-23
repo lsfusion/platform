@@ -12,6 +12,7 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.client.Main;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
+import platform.interop.form.RemoteDialogInterface;
 
 import java.awt.*;
 import java.io.IOException;
@@ -66,7 +67,10 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
     }
 
     public PropertyEditorComponent getObjectEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
-        return new ObjectPropertyEditor(form.getComponent(), form.remoteForm.createObjectEditorDialog(property.ID));
+        RemoteDialogInterface remoteDialog = form.remoteForm.createObjectEditorDialog(property.ID);
+        return remoteDialog == null
+               ? null
+               : new ObjectPropertyEditor(form.getComponent(), remoteDialog);
     }
 
     public PropertyEditorComponent getClassComponent(ClientFormController form, ClientPropertyDraw property, Object value, Format format) throws IOException, ClassNotFoundException {

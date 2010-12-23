@@ -998,9 +998,17 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         PropertyObjectInstance<?> changeProperty = getChangePropertyObjectInstance(propertyDraw);
         assert changeProperty != null;
 
+        CustomClass objectClass = changeProperty.getDialogClass();
         AbstractClassFormEntity<T> classForm = BL.getObjectForm(changeProperty.getDialogClass());
 
-        return new DialogInstance<T>(classForm, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.getObject(), changeProperty.read(session.sql, this, session.env), instanceFactory.computer);
+        Object currentObject = changeProperty.read(session.sql, this, session.env);
+        if (currentObject == null && objectClass instanceof ConcreteCustomClass) {
+            currentObject = addObject((ConcreteCustomClass)objectClass).object;
+        }
+
+        return currentObject == null
+               ? null
+               : new DialogInstance<T>(classForm, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.getObject(), currentObject, instanceFactory.computer);
     }
 
     public DialogInstance<T> createEditorPropertyDialog(int viewID) throws SQLException {
