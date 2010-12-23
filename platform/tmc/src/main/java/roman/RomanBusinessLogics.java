@@ -61,8 +61,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private ConcreteCustomClass store;
     private LP currencySupplier;  //
     private LP nameCurrencySupplier;
-    private LP currencyOrder;
-    private LP nameCurrencyOrder;
+    private LP currencyDocument;
+    private LP nameCurrencyDocument;
     private LP shopOrder;
     private LP nameShopOrder;
     private LP sidColorSupplier;
@@ -164,9 +164,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         // Order
 
-        currencyOrder = addDCProp(baseGroup, "currencyOrder", "Валюта (ИД)", currencySupplier, supplierDocument, 1);
-        //currencyOrder = addDProp(idGroup, "currencyOrder", "Валюта (ИД)", currency, order);
-        nameCurrencyOrder = addJProp(baseGroup, "nameCurrencyOrder", "Валюта", name, currencyOrder, 1);
+        currencyDocument = addDCProp(baseGroup, "currencyDocument", "Валюта (ИД)", currencySupplier, supplierDocument, 1);
+        //currencyDocument = addDProp(idGroup, "currencyDocument", "Валюта (ИД)", currency, order);
+        nameCurrencyDocument = addJProp(baseGroup, "nameCurrencyDocument", "Валюта", name, currencyDocument, 1);
 
         shopOrder = addDProp(idGroup, "shopOrder", "Магазин (ИД)", store, order);
         nameShopOrder = addJProp(baseGroup, "nameShopOrder", "Магазин", name, shopOrder, 1);
@@ -237,10 +237,28 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         quantityDataDocumentSku = addDProp("quantityDataDocumentSku", "Кол-во (первичное)", DoubleClass.instance, document, sku);
         quantityDocumentSku = addJProp(baseGroup, "quantityDocumentSku", "Кол-во", and1, quantityDataDocumentSku, 1, 2, numberDocumentSku, 1, 2);
 
+        // связь инвойсов и заказов
+        inOrderInvoice = addDProp(baseGroup, "inOrderInvoice", "Вкл", LogicalClass.instance, order, invoice);
+        orderedOrderInvoiceSku = addJProp(and1, quantityDocumentSku, 1, 3, inOrderInvoice, 1, 2);
+
+        orderedInvoiceSku = addSGProp(baseGroup, "orderedInvoiceSku", "Кол-во заказано", orderedOrderInvoiceSku, 2, 3);
+
+//        // todo : здесь надо derive'ить, иначе могут быть проблемы с расписыванием
+//        quantityOrderInvoiceSku = addPGProp(baseGroup, "quantityOrderInvoiceSku", true, 0, "Кол-во по заказу/инвойсу (расч.)",
+//                orderedOrderInvoiceSku,
+//                quantityDocumentSku, 2, 3);
+
+        // todo : переделать на PGProp
+        quantityOrderInvoiceSku = addDProp(baseGroup, "quantityOrderInvoiceSku", "Кол-во по заказу/инвойсу (расч.)", DoubleClass.instance,
+                                           order, invoice, sku);
+
+        invoicedOrderSku = addSGProp(baseGroup, "invoicedOrderSku", "Выставлено инвойсов", quantityOrderInvoiceSku, 1, 3);
+
+        // для заказа при вводе этого количества все кидается на первую
         quantityDocumentArticleComposite = addDGProp(baseGroup, "quantityDocumentArticleComposite", "Кол-во",
                 1, false, // кол-во объектов для порядка и ascending/descending
                 quantityDocumentSku, 1, articleItem, 2,
-                addCProp(DoubleClass.instance, Double.MAX_VALUE, document, sku), 1, 2, // ограничение (максимально-возможное число)
+                addCUProp(addCProp(DoubleClass.instance, Double.MAX_VALUE, order, sku), orderedInvoiceSku), 1, 2, // ограничение (максимально-возможное число)
                 2);
 
         quantityDocumentArticleSingle = addJProp(baseGroup, "quantityDocumentArticleSingle", "Кол-во", and1, quantityDocumentSku, 1, 2, is(articleSingle), 2);
@@ -253,25 +271,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         quantityDocumentArticleCompositeColorSize = addCGProp(baseGroup, "quantityDocumentArticleCompositeColorSize", "Кол-во",
                 quantityDocumentSku, quantityDocumentSku, 1, articleItem, 2, colorSupplierItem, 2, sizeSupplierItem, 2); // порядок
 
-        // связь инвойсов и заказов
-        inOrderInvoice = addDProp(baseGroup, "inOrderInvoice", "Вкл", LogicalClass.instance, order, invoice);
-
         orderedOrderInvoiceArticle = addJProp(and1, quantityDocumentArticle, 1, 3, inOrderInvoice, 1, 2);
-        orderedOrderInvoiceSku = addJProp(and1, quantityDocumentSku, 1, 3, inOrderInvoice, 1, 2);
-
-//        // todo : здесь надо derive'ить, иначе могут быть проблемы с расписыванием
-//        quantityOrderInvoiceSku = addPGProp(baseGroup, "quantityOrderInvoiceSku", true, 0, "Кол-во по заказу/инвойсу (расч.)",
-//                orderedOrderInvoiceSku,
-//                quantityDocumentSku, 2, 3);
-
-        // todo : переделать на PGProp
-        quantityOrderInvoiceSku = addDProp(baseGroup, "quantityOrderInvoiceSku", "Кол-во по заказу/инвойсу (расч.)", DoubleClass.instance,
-                                           order, invoice, sku);
 
         orderedInvoiceArticle = addSGProp(baseGroup, "orderedInvoiceArticle", "Кол-во заказано", orderedOrderInvoiceArticle, 2, 3);
-        orderedInvoiceSku = addSGProp(baseGroup, "orderedInvoiceSku", "Кол-во заказано", orderedOrderInvoiceSku, 2, 3);
+//        quantityDocumentArticle.setDerivedChange(orderedInvoiceArticle, 1, 2, numberDocumentArticle, 1, 2);
 
-        invoicedOrderSku = addSGProp(baseGroup, "invoicedOrderSku", "Выставлено инвойсов", quantityOrderInvoiceSku, 1, 3);
         invoicedOrderArticleComposite = addSGProp(baseGroup, "orderedInvoiceArticleComposite", "Выставлено инвойсов", invoicedOrderSku, 1, articleItem, 2);
         invoicedOrderArticleSingle = addJProp(baseGroup, "invoicedOrderArticleSingle", "Выставлено инвойсов", and1, invoicedOrderSku, 1, 2, is(articleSingle), 2);
         invoicedOrderArticle = addCUProp(baseGroup, "invoicedOrderArticle", "Выставлено инвойсов", invoicedOrderArticleComposite, invoicedOrderArticleSingle);
@@ -280,6 +284,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         priceOrderInvoiceArticle = addJProp(and1, priceDocumentArticle, 1, 3, inOrderInvoice, 1, 2);
         priceOrderedInvoiceArticle = addMGProp(baseGroup, "priceOrderedInvoiceArticle", "Цена в заказе", priceOrderInvoiceArticle, 2, 3);
+        priceDocumentArticle.setDerivedChange(priceOrderedInvoiceArticle, 1, 2, numberDocumentArticle, 1, 2);
 
         sumDocumentArticle = addJProp(baseGroup, "Сумма", multiplyDouble2, quantityDocumentArticle, 1, 2, priceDocumentArticle, 1, 2);
         sumDocument = addSGProp(baseGroup, "sumDocument", "Сумма документа", sumDocumentArticle, 1);
@@ -323,7 +328,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameCurrencySupplier);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objOrder = addSingleGroupObject(order, "Заказ", date, sidDocument, nameCurrencyOrder, sumDocument, nameShopOrder);
+            objOrder = addSingleGroupObject(order, "Заказ", date, sidDocument, nameCurrencyDocument, sumDocument, nameShopOrder);
             addObjectActions(this, objOrder);
 
             objSIDArticleComposite = addSingleGroupObject(StringClass.get(50), "Ввод составного артикула", objectValue);
@@ -433,12 +438,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameCurrencySupplier);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objInvoice = addSingleGroupObject(invoice, "Инвойс", date, sidDocument);
+            objInvoice = addSingleGroupObject(invoice, "Инвойс", date, sidDocument, nameCurrencyDocument, sumDocument, nameShopOrder);
             addObjectActions(this, objInvoice);
 
             objOrder = addSingleGroupObject(order, "Заказ");
+            objOrder.groupTo.setSingleClassView(ClassViewType.GRID);
             addPropertyDraw(inOrderInvoice, objOrder, objInvoice);
-            addPropertyDraw(objOrder, date, sidDocument, nameCurrencyOrder, sumDocument, nameShopOrder);
+            addPropertyDraw(objOrder, date, sidDocument, nameCurrencyDocument, sumDocument, nameShopOrder);
 
             objSIDArticleComposite = addSingleGroupObject(StringClass.get(50), "Ввод составного артикула", objectValue);
             objSIDArticleComposite.groupTo.setSingleClassView(ClassViewType.PANEL);
@@ -492,7 +498,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(new RegularFilterEntity(genID(),
                                   new NotNullFilterEntity(addPropertyObject(quantityDocumentArticleCompositeColor, objInvoice, objArticle, objColorSupplier)),
-                                  "Заказано",
+                                  "В инвойсе",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
             addRegularFilterGroup(filterGroup);
         }
@@ -503,7 +509,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             design.setReadOnly(objSupplier, true);
 
-//            design.defaultOrders.put(design.get(getPropertyDraw(numberDocumentArticle)), true);
+            design.defaultOrders.put(design.get(getPropertyDraw(numberDocumentArticle)), true);
 
             design.get(objOrder.groupTo).grid.constraints.fillVertical = 0.5;
             design.get(objInvoice.groupTo).grid.constraints.fillVertical = 0.5;

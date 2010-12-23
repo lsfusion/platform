@@ -43,7 +43,7 @@ public class MeanClassWheres extends DNFWheres<MeanClassWhere, CheckWhere, MeanC
                     equalMap.add(equal.getKey(),equal.getValue());
 
                 result = result.or(orMean.classWhere.andEquals(equalMap));
-                assert !orMean.classWhere.means(getValue(i).not());
+//                assert !orMean.classWhere.means(getValue(i).not());
             }
         return result;
     }
