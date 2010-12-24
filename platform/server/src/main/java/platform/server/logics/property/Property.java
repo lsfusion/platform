@@ -53,6 +53,12 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public int maximumCharWidth;
     public int preferredCharWidth;
 
+    public void setFixedCharWidth(int charWidth) {
+        minimumCharWidth = charWidth;
+        maximumCharWidth = charWidth;
+        preferredCharWidth = charWidth;
+    }
+
     public boolean askConfirm = false;
 
     public String toString() {
