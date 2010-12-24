@@ -25,17 +25,12 @@ public class PropertyDrawEditor extends GroupElementEditor {
 
         TitledPanel propertyObjectPanel = new TitledPanel("Реализация", new PropertyObjectEditor(descriptor, "propertyObject", form, groupObject));
 
-        TitledPanel groupObjectPanel = new TitledPanel("Группа объектов", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "toDraw") {
+        TitledPanel groupObjectPanel = new TitledPanel("Группа объектов", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "toDraw", true) {
             public List<?> getSingleList() {
                 PropertyObjectDescriptor propertyObject = descriptor.getPropertyObject();
                 return propertyObject != null
                         ? propertyObject.getGroupObjects(form.groupObjects)
                         : new ArrayList();
-            }
-
-            @Override
-            public boolean allowNulls() {
-                return true;
             }
 
             public void fillListDependencies() {

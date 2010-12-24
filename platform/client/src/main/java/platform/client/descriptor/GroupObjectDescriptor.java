@@ -114,7 +114,7 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
 
     public void setFilterProperty(PropertyDrawDescriptor filterProperty) {
         this.filterProperty = filterProperty;
-        this.client.filterProperty = filterProperty.client;
+        this.client.filterProperty = filterProperty == null ? null : filterProperty.client;
         updateDependency(this, "filterProperty");
     }
 

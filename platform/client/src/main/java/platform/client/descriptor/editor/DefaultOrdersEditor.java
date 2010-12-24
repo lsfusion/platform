@@ -43,13 +43,7 @@ public class DefaultOrdersEditor extends JPanel implements IncrementView {
         form.addDependency(dataHolder, "defaultOrders", this);
 
         if (group == null) {
-            add(new TitledPanel("Группа", new JComboBox(new IncrementSingleListSelectionModel(dataHolder, "groupObject") {
-
-                @Override
-                public boolean allowNulls() {
-                    return true;
-                }
-
+            add(new TitledPanel("Группа", new JComboBox(new IncrementSingleListSelectionModel(dataHolder, "groupObject", true) {
                 public List<?> getSingleList() {
                     return form.groupObjects;
                 }

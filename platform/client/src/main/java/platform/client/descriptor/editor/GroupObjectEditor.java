@@ -42,6 +42,17 @@ public class GroupObjectEditor extends JTabbedPane implements NodeEditor {
                     }
                 }));
 
+        TitledPanel filterPropertyPanel = new TitledPanel("Свойство по умолчанию для фильтрации", new JComboBox(new IncrementSingleListSelectionModel(group, "filterProperty", true) {
+            public List<?> getSingleList() {
+                return form.getGroupPropertyDraws(group);
+            }
+
+            @Override
+            public void fillListDependencies() {
+                form.addDependency(form, "propertyDraws", this);
+            }
+        }));
+
         TitledPanel propertyHighlightPanel = new TitledPanel("Свойство выделения", new PropertyObjectEditor(group, "propertyHighlight", form, group));
 
         TitledPanel pageSizePanel = new TitledPanel("Размер страницы", new IncrementTextEditor(group, "pageSize"));
@@ -54,11 +65,12 @@ public class GroupObjectEditor extends JTabbedPane implements NodeEditor {
 
         DefaultOrdersEditor defaultOrdersPanel = new DefaultOrdersEditor(form, group);
         addTab("Код", CodeGenerator.getComponent(form));
+
         if (group.getParent() != null){
-            addTab("Общее", new NorthBoxPanel(initClassViewPanel, banClassViewPanel, propertyHighlightPanel, pageSizePanel, new IsParentEditor()));
+            addTab("Общее", new NorthBoxPanel(initClassViewPanel, banClassViewPanel, propertyHighlightPanel, filterPropertyPanel, pageSizePanel, new IsParentEditor()));
         }
         else{
-            addTab("Общее", new NorthBoxPanel(initClassViewPanel, banClassViewPanel, propertyHighlightPanel, pageSizePanel));
+            addTab("Общее", new NorthBoxPanel(initClassViewPanel, banClassViewPanel, propertyHighlightPanel, filterPropertyPanel, pageSizePanel));
         }
         addTab("Свойства", new NorthBoxPanel(groupPropertyObjectPanel));
         addTab("Отображение", new NorthBoxPanel(new TitledPanel(null, new IncrementColorEditor("Цвет подсветки", group, "highlightColor")), propertiesPanel));
