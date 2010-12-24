@@ -10,11 +10,9 @@ public class ObjectFormEntity<T extends BusinessLogics<T>> extends AbstractClass
 
     protected final ObjectEntity object;
     protected final String clsSID;
-    private final T BL;
 
     protected ObjectFormEntity(T BL, CustomClass cls, int ID, String caption) {
-        super(ID, caption);
-        this.BL = BL;
+        super(BL, cls, ID, caption);
 
         object = addSingleGroupObject(cls, BL.baseGroup, true);
         object.groupTo.setSingleClassView(ClassViewType.PANEL);
@@ -43,5 +41,10 @@ public class ObjectFormEntity<T extends BusinessLogics<T>> extends AbstractClass
 
     public ObjectEntity getObject() {
         return object;
+    }
+
+    @Override
+    public AbstractClassFormEntity copy() {
+        return new ObjectFormEntity(BL, cls);
     }
 }

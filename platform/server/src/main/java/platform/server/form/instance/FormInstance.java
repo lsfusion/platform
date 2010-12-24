@@ -974,7 +974,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
     public <P extends PropertyInterface> AbstractClassFormEntity<T> getDataChangeFormEntity(PropertyObjectInstance<P> changeProperty) {
         PropertyValueImplement<P> implement = changeProperty.getValueImplement();
-        AbstractClassFormEntity<T> formEntity = BL.getClassEditForm(changeProperty.getDialogClass());
+        AbstractClassFormEntity<T> formEntity = BL.getClassEditForm(changeProperty.getDialogClass()).createCopy();
         formEntity.caption = implement.toString();
         for (MaxChangeProperty<?, P> constrainedProperty : BL.getChangeConstrainedProperties(implement.property)) {
             formEntity.addFixedFilter(

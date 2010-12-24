@@ -1082,6 +1082,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             design.get(getPropertyDraw(objectValue, objObjectName)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0);
             return design;
         }
+
+        @Override
+        public AbstractClassFormEntity copy() {
+            return new NamedObjectClassForm(BL, cls);
+        }
     }
 
     @IdentityLazy

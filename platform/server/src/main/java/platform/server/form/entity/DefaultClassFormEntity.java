@@ -9,7 +9,7 @@ public class DefaultClassFormEntity<T extends BusinessLogics<T>> extends Abstrac
     protected final String clsSID;
 
     protected DefaultClassFormEntity(T BL, CustomClass cls, int ID, String caption) {
-        super(ID, caption);
+        super(BL, cls, ID, caption);
 
         object = addSingleGroupObject(cls, BL.baseGroup, true);
         BL.addObjectActions(this, object);
@@ -28,5 +28,10 @@ public class DefaultClassFormEntity<T extends BusinessLogics<T>> extends Abstrac
 
     public ObjectEntity getObject() {
         return object;
+    }
+
+    @Override
+    public AbstractClassFormEntity copy() {
+        return new DefaultClassFormEntity(BL, cls);
     }
 }
