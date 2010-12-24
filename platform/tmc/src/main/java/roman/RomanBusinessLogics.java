@@ -33,7 +33,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP articleItem;
     private LP sidArticleItem;
     private ConcreteCustomClass order;
-    private ConcreteCustomClass invoice;
+    private AbstractCustomClass invoice;
     private ConcreteCustomClass shipment;
     private ConcreteCustomClass supplier;
     private AbstractCustomClass document;
@@ -80,15 +80,15 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP nameCountryOfOriginArticle;
     private LP articleSIDSupplier;
     private LP seekArticleSIDSupplier;
-    private LP numberDocumentArticle;
+    private LP numberListArticle;
     private LP incrementNumberDocumentArticle;
-    private LP articleSIDDocument;
-    private LP incrementNumberDocumentSID;
+    private LP articleSIDList;
+    private LP incrementNumberListSID;
     private LP addArticleSingleSIDSupplier;
     private LP addNEArticleSingleSIDSupplier;
     private LP addArticleCompositeSIDSupplier;
     private LP addNEArticleCompositeSIDSupplier;
-    private LP numberDocumentSIDArticle;
+    private LP numberListSIDArticle;
     private LP inOrderInvoice;
     private LP quantityOrderInvoiceSku;
     private LP orderedOrderInvoiceSku;
@@ -98,14 +98,37 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP invoicedOrderArticleComposite;
     private LP invoicedOrderArticleSingle;
     private LP invoicedOrderArticle;
-    private LP numberDocumentArticleSingle;
-    private LP numberDocumentArticleItem;
-    private LP numberDocumentSku;
-    private LP quantityDataDocumentSku;
+    private LP inListArticleSingle;
+    private LP numberArticleListItem;
+    private LP inListSku;
+    private LP quantityListSku;
     private LP orderedOrderInvoiceArticle;
     private LP orderedInvoiceArticle;
     private LP priceOrderInvoiceArticle;
     private LP priceOrderedInvoiceArticle;
+    private AbstractCustomClass boxDocument;
+    private AbstractCustomClass simpleDocument;
+    private ConcreteCustomClass supplierBox;
+    private LP quantityBoxDocumentSupplierBoxSku;
+    private LP quantityBoxDocumentSku;
+    private ConcreteCustomClass boxInvoice;
+    private ConcreteCustomClass simpleInvoice;
+    private LP sidSupplierBox;
+    private LP inListItem;
+    private AbstractCustomClass list;
+    private LP quantitySimpleDocumentSku;
+    private LP quantityDataListSku;
+    private LP boxDocumentSupplierBox;
+    private LP sidBoxDocumentSupplierBox;
+    private LP supplierSupplierBox;
+    private LP supplierSimpleDocument;
+    private LP orderedSupplierBoxSku;
+    private LP quantityListArticleComposite;
+    private LP quantityBoxDocumentArticleComposite;
+    private LP quantitySimpleDocumentArticleComposite;
+    private LP quantityListArticleSingle;
+    private LP quantityListArticle;
+    private LP orderedSimpleInvoiceSku;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -133,10 +156,19 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         item = addConcreteClass("item", "Товар", sku);
 
         document = addAbstractClass("document", "Документ", transaction);
+        list = addAbstractClass("list", "Список", baseClass);
 
-        order = addConcreteClass("order", "Заказ", document);
+        boxDocument = addAbstractClass("boxDocument", "Документ по коробам", document);
+        simpleDocument = addAbstractClass("simpleDocument", "Документ без коробов", document, list);
 
-        invoice = addConcreteClass("invoice", "Инвойс", document);
+        supplierBox = addConcreteClass("supplierBox", "Короб поставщика", list);
+
+        order = addConcreteClass("order", "Заказ", simpleDocument);
+
+        invoice = addAbstractClass("invoice", "Инвойс", document);
+        boxInvoice = addConcreteClass("boxInvoice", "Инвойс по коробам", invoice, boxDocument);
+        simpleInvoice = addConcreteClass("simpleInvoice", "Инвойс без коробов", invoice, simpleDocument);
+
         shipment = addConcreteClass("shipment", "Поставка", document);
 
         supplier = addConcreteClass("supplier", "Поставщик", baseClass.named);
@@ -161,6 +193,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         supplierDocument = addDProp(idGroup, "supplierDocument", "Поставщик (ИД)", supplier, document);
         nameSupplierDocument = addJProp(baseGroup, "nameSupplierDocument", "Поставщик", name, supplierDocument, 1);
+
+        supplierSimpleDocument = addJProp("supplierSimpleDocument", "Поставщик (ИД)", and1, supplierDocument, 1, is(simpleDocument), 1);
 
         // Order
 
@@ -217,31 +251,49 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         sidDocument = addDProp(baseGroup, "sidDocument", "Код", StringClass.get(50), document);
 
+        // коробки
+        sidSupplierBox = addDProp(baseGroup, "sidSupplierBox", "Код", StringClass.get(50), supplierBox);
+
+        boxDocumentSupplierBox = addDProp(idGroup, "boxDocumentSupplierBox", "Документ по коробам (ИД)", boxDocument, supplierBox);
+        sidBoxDocumentSupplierBox = addJProp(baseGroup, "nameBoxDocumentSupplierBox", "Документ по коробам", sidDocument, boxDocumentSupplierBox, 1);
+
+        supplierSupplierBox = addJProp(idGroup, "supplierSupplierBox", "Поставщик (ИД)", supplierDocument, boxDocumentSupplierBox, 1);
+
         // заказ по артикулам
 
-        articleSIDDocument = addJProp(idGroup, "articleSIDDocument", "Артикул (ИД)", articleSIDSupplier, 1, supplierDocument, 2);
+        articleSIDList = addJProp(idGroup, "articleSIDList", "Артикул (ИД)", articleSIDSupplier, 1,
+                addCUProp(supplierSimpleDocument, supplierSupplierBox), 2);
 
-        numberDocumentArticle = addDProp(baseGroup, "numberDocumentArticle", "Номер", IntegerClass.instance, document, article);
-        numberDocumentSIDArticle = addJProp(numberDocumentArticle, 1, articleSIDDocument, 2, 1);
+        numberListArticle = addDProp(baseGroup, "numberListArticle", "Номер", IntegerClass.instance, list, article);
+        numberListSIDArticle = addJProp(numberListArticle, 1, articleSIDList, 2, 1);
 
-        numberDocumentArticleSingle = addJProp(baseGroup, "numberDocumentArticleSingle", "Номер", and1, numberDocumentArticle, 1, 2, is(articleSingle), 2);
-        numberDocumentArticleItem = addJProp(baseGroup, "numberDocumentArticleItem", "Номер", numberDocumentArticle, 1, articleItem, 2);
-        numberDocumentSku = addCUProp(baseGroup, "numberDocumentSku", "Номер", numberDocumentArticleSingle, numberDocumentArticleItem);
+        inListArticleSingle = addJProp(baseGroup, "inListArticleSingle", "Вкл", and1, addCProp(LogicalClass.instance, true, list, articleSingle), 1, 2, numberListArticle, 1, 2);
+        numberArticleListItem = addJProp("numberArticleListItem", "Номер артикула в списке", numberListArticle, 1, articleItem, 2);
+        inListItem = addJProp(baseGroup, "inListItem", "Вкл", and1, addCProp(LogicalClass.instance, true, list, item), 1, 2, numberArticleListItem, 1, 2);
+        inListSku = addCUProp(baseGroup, "inListSku", "Вкл", inListArticleSingle, numberArticleListItem);
 
-        incrementNumberDocumentSID = addJProp(true, "Добавить строку", andNot1,
-                                                  addJProp(true, addIAProp(numberDocumentArticle, 1),
-                                                  1, articleSIDDocument, 2, 1), 1, 2,
-                                                  numberDocumentSIDArticle, 1, 2);
+        incrementNumberListSID = addJProp(true, "Добавить строку", andNot1,
+                                                  addJProp(true, addIAProp(numberListArticle, 1),
+                                                  1, articleSIDList, 2, 1), 1, 2,
+                numberListSIDArticle, 1, 2); // если еще не было добавлено такой строки
 
         // кол-во заказа
-        quantityDataDocumentSku = addDProp("quantityDataDocumentSku", "Кол-во (первичное)", DoubleClass.instance, document, sku);
-        quantityDocumentSku = addJProp(baseGroup, "quantityDocumentSku", "Кол-во", and1, quantityDataDocumentSku, 1, 2, numberDocumentSku, 1, 2);
+        quantityDataListSku = addDProp("quantityDataListSku", "Кол-во (первичное)", DoubleClass.instance, list, sku);
+        quantityListSku = addJProp(baseGroup, "quantityListSku", "Кол-во", and1, quantityDataListSku, 1, 2, inListSku, 1, 2);
+
+        quantitySimpleDocumentSku = addJProp(baseGroup, "quantitySimpleDocumentSku", "Кол-во", and1, quantityListSku, 1, 2, is(simpleDocument), 1);
+        quantityBoxDocumentSku = addSGProp(baseGroup, "quantityBoxDocumentSku", "Кол-во в инвойсе", quantityListSku, boxDocumentSupplierBox, 1, 2);
+
+        quantityDocumentSku = addCUProp(baseGroup, "quantityDocumentSku", "Кол-во", quantitySimpleDocumentSku, quantityBoxDocumentSku);
 
         // связь инвойсов и заказов
         inOrderInvoice = addDProp(baseGroup, "inOrderInvoice", "Вкл", LogicalClass.instance, order, invoice);
         orderedOrderInvoiceSku = addJProp(and1, quantityDocumentSku, 1, 3, inOrderInvoice, 1, 2);
 
         orderedInvoiceSku = addSGProp(baseGroup, "orderedInvoiceSku", "Кол-во заказано", orderedOrderInvoiceSku, 2, 3);
+        orderedSimpleInvoiceSku = addJProp(baseGroup, "orderedSimpleInvoiceSku", "Кол-во заказано", and1, orderedInvoiceSku, 1, 2, is(simpleInvoice), 1);
+        // здесь на самом деле есть ограничение, что supplierBox ссылается именно на invoice
+        orderedSupplierBoxSku = addJProp("orderedSupplierBoxSku", "Кол-во заказано", orderedInvoiceSku, boxDocumentSupplierBox, 1, 2);
 
 //        // todo : здесь надо derive'ить, иначе могут быть проблемы с расписыванием
 //        quantityOrderInvoiceSku = addPGProp(baseGroup, "quantityOrderInvoiceSku", true, 0, "Кол-во по заказу/инвойсу (расч.)",
@@ -255,11 +307,21 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         invoicedOrderSku = addSGProp(baseGroup, "invoicedOrderSku", "Выставлено инвойсов", quantityOrderInvoiceSku, 1, 3);
 
         // для заказа при вводе этого количества все кидается на первую
-        quantityDocumentArticleComposite = addDGProp(baseGroup, "quantityDocumentArticleComposite", "Кол-во",
+        quantityListArticleComposite = addDGProp(baseGroup, "quantityListArticleComposite", "Кол-во",
                 1, false, // кол-во объектов для порядка и ascending/descending
-                quantityDocumentSku, 1, articleItem, 2,
-                addCUProp(addCProp(DoubleClass.instance, Double.MAX_VALUE, order, sku), orderedInvoiceSku), 1, 2, // ограничение (максимально-возможное число)
+                quantityListSku, 1, articleItem, 2,
+                addCUProp(addCProp(DoubleClass.instance, Double.MAX_VALUE, order, sku), orderedSimpleInvoiceSku, orderedSupplierBoxSku), 1, 2, // ограничение (максимально-возможное число)
                 2);
+        quantityListArticleSingle = addJProp("quantityListArticleSingle", "Кол-во", and1, quantityListSku, 1, 2, is(articleSingle), 2);
+        quantityListArticle = addCUProp(baseGroup, "quantityListArticle", "Кол-во", quantityListArticleComposite, quantityListArticleSingle);
+
+        quantityBoxDocumentArticleComposite = addSGProp("quantityBoxDocumentArticleComposite", "Кол-во",
+                                                quantityListArticleComposite, boxDocumentSupplierBox, 1, 2);
+
+        quantitySimpleDocumentArticleComposite = addJProp("quantitySimpleDocumentArticleComposite", "Кол-во",
+                and1, quantityListArticleComposite, 1, 2, is(simpleDocument), 1);
+
+        quantityDocumentArticleComposite = addCUProp(quantityBoxDocumentArticleComposite, quantitySimpleDocumentArticleComposite);
 
         quantityDocumentArticleSingle = addJProp(baseGroup, "quantityDocumentArticleSingle", "Кол-во", and1, quantityDocumentSku, 1, 2, is(articleSingle), 2);
 
@@ -268,23 +330,28 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         quantityDocumentArticleCompositeColor = addSGProp(baseGroup, "quantityDocumentArticleCompositeColor", "Кол-во", quantityDocumentSku, 1, articleItem, 2, colorSupplierItem, 2);
         quantityDocumentArticleCompositeSize = addSGProp(baseGroup, "quantityDocumentArticleCompositeSize", "Кол-во", quantityDocumentSku, 1, articleItem, 2, sizeSupplierItem, 2);
 
-        quantityDocumentArticleCompositeColorSize = addCGProp(baseGroup, "quantityDocumentArticleCompositeColorSize", "Кол-во",
-                quantityDocumentSku, quantityDocumentSku, 1, articleItem, 2, colorSupplierItem, 2, sizeSupplierItem, 2); // порядок
+        quantityDocumentArticleCompositeColorSize = addDGProp(baseGroup, "quantityDocumentArticleCompositeColorSize", "Кол-во",
+                1, false,
+                quantityDocumentSku, 1, articleItem, 2, colorSupplierItem, 2, sizeSupplierItem, 2,
+                addCProp(DoubleClass.instance, Double.MAX_VALUE, document, sku), 1, 2,
+                2);
 
         orderedOrderInvoiceArticle = addJProp(and1, quantityDocumentArticle, 1, 3, inOrderInvoice, 1, 2);
 
         orderedInvoiceArticle = addSGProp(baseGroup, "orderedInvoiceArticle", "Кол-во заказано", orderedOrderInvoiceArticle, 2, 3);
-//        quantityDocumentArticle.setDerivedChange(orderedInvoiceArticle, 1, 2, numberDocumentArticle, 1, 2);
+//        quantityDocumentArticle.setDerivedChange(orderedInvoiceArticle, 1, 2, numberListArticle, 1, 2);
 
         invoicedOrderArticleComposite = addSGProp(baseGroup, "orderedInvoiceArticleComposite", "Выставлено инвойсов", invoicedOrderSku, 1, articleItem, 2);
         invoicedOrderArticleSingle = addJProp(baseGroup, "invoicedOrderArticleSingle", "Выставлено инвойсов", and1, invoicedOrderSku, 1, 2, is(articleSingle), 2);
         invoicedOrderArticle = addCUProp(baseGroup, "invoicedOrderArticle", "Выставлено инвойсов", invoicedOrderArticleComposite, invoicedOrderArticleSingle);
 
+        // цены
+
         priceDocumentArticle = addDProp(baseGroup, "priceDocumentArticle", "Цена", DoubleClass.instance, document, article);
 
         priceOrderInvoiceArticle = addJProp(and1, priceDocumentArticle, 1, 3, inOrderInvoice, 1, 2);
         priceOrderedInvoiceArticle = addMGProp(baseGroup, "priceOrderedInvoiceArticle", "Цена в заказе", priceOrderInvoiceArticle, 2, 3);
-        priceDocumentArticle.setDerivedChange(priceOrderedInvoiceArticle, 1, 2, numberDocumentArticle, 1, 2);
+        priceDocumentArticle.setDerivedChange(priceOrderedInvoiceArticle, 1, 2, numberListArticle, 1, 2);
 
         sumDocumentArticle = addJProp(baseGroup, "Сумма", multiplyDouble2, quantityDocumentArticle, 1, 2, priceDocumentArticle, 1, 2);
         sumDocument = addSGProp(baseGroup, "sumDocument", "Сумма документа", sumDocumentArticle, 1);
@@ -301,7 +368,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     @Override
     protected void initNavigators() throws JRException, FileNotFoundException {
         addFormEntity(new OrderFormEntity(baseElement, 10, "Заказы"));
-        addFormEntity(new InvoiceFormEntity(baseElement, 20, "Инвойсы"));
+        addFormEntity(new InvoiceFormEntity(baseElement, 20, "Инвойсы по коробам", true));
+        addFormEntity(new InvoiceFormEntity(baseElement, 25, "Инвойсы без коробов", false));
         addFormEntity(new ShipmentFormEntity(baseElement, 30, "Поставки"));
     }
 
@@ -335,20 +403,20 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objSIDArticleComposite.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             addAutoAction(objSIDArticleComposite, addPropertyObject(addNEArticleCompositeSIDSupplier, objSIDArticleComposite, objSupplier));
-            addAutoAction(objSIDArticleComposite, addPropertyObject(incrementNumberDocumentSID, objOrder, objSIDArticleComposite));
+            addAutoAction(objSIDArticleComposite, addPropertyObject(incrementNumberListSID, objOrder, objSIDArticleComposite));
             addAutoAction(objSIDArticleComposite, addPropertyObject(seekArticleSIDSupplier, objSIDArticleComposite, objSupplier));
 
             objSIDArticleSingle = addSingleGroupObject(StringClass.get(50), "Ввод простого артикула", objectValue);
             objSIDArticleSingle.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             addAutoAction(objSIDArticleSingle, addPropertyObject(addNEArticleSingleSIDSupplier, objSIDArticleSingle, objSupplier));
-            addAutoAction(objSIDArticleSingle, addPropertyObject(incrementNumberDocumentSID, objOrder, objSIDArticleSingle));
+            addAutoAction(objSIDArticleSingle, addPropertyObject(incrementNumberListSID, objOrder, objSIDArticleSingle));
             addAutoAction(objSIDArticleSingle, addPropertyObject(seekArticleSIDSupplier, objSIDArticleSingle, objSupplier));
 
             objArticle = addSingleGroupObject(article, "Артикул");
             objArticle.groupTo.setSingleClassView(ClassViewType.GRID);
 
-            addPropertyDraw(numberDocumentArticle, objOrder, objArticle);
+            addPropertyDraw(numberListArticle, objOrder, objArticle);
             addPropertyDraw(objArticle, sidArticle, originalNameArticle, nameCountryOfOriginArticle);
             addPropertyDraw(quantityDocumentArticle, objOrder, objArticle);
             addPropertyDraw(priceDocumentArticle, objOrder, objArticle);
@@ -376,7 +444,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierColorSupplier, objColorSupplier), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierSizeSupplier, objSizeSupplier), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(articleItem, objItem), Compare.EQUALS, objArticle));
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(numberDocumentArticle, objOrder, objArticle)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(numberListArticle, objOrder, objArticle)));
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(new RegularFilterEntity(genID(),
@@ -392,7 +460,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             design.setReadOnly(objSupplier, true);
 
-            design.defaultOrders.put(design.get(getPropertyDraw(numberDocumentArticle)), true);
+            design.defaultOrders.put(design.get(getPropertyDraw(numberListArticle)), true);
 
             design.get(getPropertyDraw(objectValue, objSIDArticleComposite)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0);
             design.get(getPropertyDraw(objectValue, objSIDArticleSingle)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0);
@@ -425,6 +493,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objSupplier;
         private ObjectEntity objOrder;
         private ObjectEntity objInvoice;
+        private ObjectEntity objSupplierBox;
         private ObjectEntity objSIDArticleComposite;
         private ObjectEntity objSIDArticleSingle;
         private ObjectEntity objArticle;
@@ -432,13 +501,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objSizeSupplier;
         private ObjectEntity objColorSupplier;
 
-        private InvoiceFormEntity(NavigatorElement parent, int iID, String caption) {
+        private InvoiceFormEntity(NavigatorElement parent, int iID, String caption, boolean box) {
             super(parent, iID, caption);
 
             objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameCurrencySupplier);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objInvoice = addSingleGroupObject(invoice, "Инвойс", date, sidDocument, nameCurrencyDocument, sumDocument, nameShopOrder);
+            objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс", date, sidDocument, nameCurrencyDocument, sumDocument, nameShopOrder);
             addObjectActions(this, objInvoice);
 
             objOrder = addSingleGroupObject(order, "Заказ");
@@ -446,26 +515,32 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addPropertyDraw(inOrderInvoice, objOrder, objInvoice);
             addPropertyDraw(objOrder, date, sidDocument, nameCurrencyDocument, sumDocument, nameShopOrder);
 
+            if (box) {
+                objSupplierBox = addSingleGroupObject(supplierBox, "Короб", sidSupplierBox);
+                objSupplierBox.groupTo.initClassView = ClassViewType.PANEL;
+                addObjectActions(this, objSupplierBox);
+            }
+
             objSIDArticleComposite = addSingleGroupObject(StringClass.get(50), "Ввод составного артикула", objectValue);
             objSIDArticleComposite.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             addAutoAction(objSIDArticleComposite, addPropertyObject(addNEArticleCompositeSIDSupplier, objSIDArticleComposite, objSupplier));
-            addAutoAction(objSIDArticleComposite, addPropertyObject(incrementNumberDocumentSID, objInvoice, objSIDArticleComposite));
+            addAutoAction(objSIDArticleComposite, addPropertyObject(incrementNumberListSID, (box ? objSupplierBox : objInvoice), objSIDArticleComposite));
             addAutoAction(objSIDArticleComposite, addPropertyObject(seekArticleSIDSupplier, objSIDArticleComposite, objSupplier));
 
             objSIDArticleSingle = addSingleGroupObject(StringClass.get(50), "Ввод простого артикула", objectValue);
             objSIDArticleSingle.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             addAutoAction(objSIDArticleSingle, addPropertyObject(addNEArticleSingleSIDSupplier, objSIDArticleSingle, objSupplier));
-            addAutoAction(objSIDArticleSingle, addPropertyObject(incrementNumberDocumentSID, objInvoice, objSIDArticleSingle));
+            addAutoAction(objSIDArticleSingle, addPropertyObject(incrementNumberListSID, (box ? objSupplierBox : objInvoice), objSIDArticleSingle));
             addAutoAction(objSIDArticleSingle, addPropertyObject(seekArticleSIDSupplier, objSIDArticleSingle, objSupplier));
 
             objArticle = addSingleGroupObject(article, "Артикул");
             objArticle.groupTo.setSingleClassView(ClassViewType.GRID);
 
-            addPropertyDraw(numberDocumentArticle, objInvoice, objArticle);
+            addPropertyDraw(numberListArticle, (box ? objSupplierBox : objInvoice), objArticle);
             addPropertyDraw(objArticle, sidArticle, originalNameArticle, nameCountryOfOriginArticle);
-            addPropertyDraw(quantityDocumentArticle, objInvoice, objArticle);
+            addPropertyDraw(quantityListArticle, (box ? objSupplierBox : objInvoice), objArticle);
             addPropertyDraw(priceDocumentArticle, objInvoice, objArticle);
             addPropertyDraw(sumDocumentArticle, objInvoice, objArticle);
             addPropertyDraw(orderedInvoiceArticle, objInvoice, objArticle);
@@ -482,18 +557,20 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             quantityColumn.columnGroupObjects.add(objSizeSupplier.groupTo);
             quantityColumn.propertyCaption = addPropertyObject(name, objSizeSupplier);
 
-            addPropertyDraw(quantityDocumentSku, objInvoice, objItem);
+            addPropertyDraw(quantityListSku, (box ? objSupplierBox : objInvoice), objItem);
             addPropertyDraw(orderedInvoiceSku, objInvoice, objItem);
             addPropertyDraw(quantityDocumentArticleCompositeColor, objInvoice, objArticle, objColorSupplier);
             addPropertyDraw(quantityDocumentArticleCompositeSize, objInvoice, objArticle, objSizeSupplier);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objOrder), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objInvoice), Compare.EQUALS, objSupplier));
+            if (box)
+                addFixedFilter(new CompareFilterEntity(addPropertyObject(boxDocumentSupplierBox, objSupplierBox), Compare.EQUALS, objInvoice));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierArticle, objArticle), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierColorSupplier, objColorSupplier), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierSizeSupplier, objSizeSupplier), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(articleItem, objItem), Compare.EQUALS, objArticle));
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(numberDocumentArticle, objInvoice, objArticle)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(numberListArticle, (box ? objSupplierBox : objInvoice), objArticle)));
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(new RegularFilterEntity(genID(),
@@ -509,7 +586,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             design.setReadOnly(objSupplier, true);
 
-            design.defaultOrders.put(design.get(getPropertyDraw(numberDocumentArticle)), true);
+            design.defaultOrders.put(design.get(getPropertyDraw(numberListArticle)), true);
 
             design.get(objOrder.groupTo).grid.constraints.fillVertical = 0.5;
             design.get(objInvoice.groupTo).grid.constraints.fillVertical = 0.5;
