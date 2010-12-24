@@ -309,14 +309,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         // здесь на самом деле есть ограничение, что supplierBox ссылается именно на invoice
         orderedSupplierBoxSku = addJProp("orderedSupplierBoxSku", "Кол-во заказано", orderedInvoiceSku, boxDocumentSupplierBox, 1, 2);
 
-//        // todo : здесь надо derive'ить, иначе могут быть проблемы с расписыванием
-//        quantityOrderInvoiceSku = addPGProp(baseGroup, "quantityOrderInvoiceSku", true, 0, "Кол-во по заказу/инвойсу (расч.)",
-//                orderedOrderInvoiceSku,
-//                quantityDocumentSku, 2, 3);
 
-        // todo : переделать на PGProp
-        quantityOrderInvoiceSku = addDProp(baseGroup, "quantityOrderInvoiceSku", "Кол-во по заказу/инвойсу (расч.)", DoubleClass.instance,
-                                           order, invoice, sku);
+//        // todo : переделать на PGProp        // todo : здесь надо derive'ить, иначе могут быть проблемы с расписыванием
+        quantityOrderInvoiceSku = addPGProp(baseGroup, "quantityOrderInvoiceSku", true, 0, "Кол-во по заказу/инвойсу (расч.)",
+                orderedOrderInvoiceSku,
+                quantityDocumentSku, 2, 3);
+
+//        quantityOrderInvoiceSku = addDProp(baseGroup, "quantityOrderInvoiceSku", "Кол-во по заказу/инвойсу (расч.)", DoubleClass.instance,
+//                                           order, invoice, sku);
 
         invoicedOrderSku = addSGProp(baseGroup, "invoicedOrderSku", "Выставлено инвойсов", quantityOrderInvoiceSku, 1, 3);
 
@@ -449,7 +449,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objArticle.groupTo.setSingleClassView(ClassViewType.GRID);
 
             addPropertyDraw(numberListArticle, objOrder, objArticle);
-            addPropertyDraw(objArticle, sidArticle, originalNameArticle, nameCountryOfOriginArticle);
+            addPropertyDraw(objArticle, sidArticle, originalNameArticle, nameCountryOfOriginArticle, barcode);
             addPropertyDraw(quantityDocumentArticle, objOrder, objArticle);
             addPropertyDraw(priceDocumentArticle, objOrder, objArticle);
             addPropertyDraw(sumDocumentArticle, objOrder, objArticle);
