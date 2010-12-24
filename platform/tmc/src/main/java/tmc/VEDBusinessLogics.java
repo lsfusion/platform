@@ -1405,7 +1405,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             super(parent, ID, documentClass, toAdd);
 
             objArt = addSingleGroupObject(article, getArticleProps());
-            objArt.groupTo.filterProperty = getPropertyDraw(name, objArt.groupTo);
 
             addPropertyDraw(objDoc, objArt, getDocumentArticleProps());
 
@@ -1653,7 +1652,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             // чтобы в порядке нужном
             addPropertyDraw(changeQuantityOrder, objDoc, objArt);
             addPropertyDraw(barcode, objArt);
-            addPropertyDraw(name, objArt);
+
+            objArt.groupTo.filterProperty = addPropertyDraw(name, objArt);
+
             addPropertyDraw(articleQuantity, objDoc, objArt); // для timeChanges иначе можно было бы articleQuantity
             addPropertyDraw(documentFreeQuantity, objDoc, objArt);
             addPropertyDraw(orderSalePrice, objDoc, objArt);

@@ -44,17 +44,23 @@ abstract class QueryController implements QueryListener {
     }
 
     public void addConditionPressed(boolean replace, ClientPropertyDraw propertyDraw) {
+        ClientPropertyDraw filterProperty = propertyDraw != null ? propertyDraw : logicsSupplier.getDefaultProperty();
+        if (filterProperty == null) {
+            //не добавляем, если нет ни одного свойства
+            return;
+        }
+
         if (replace) {
             // считаем, что в таком случае просто нажали сначала все удалить, а затем - добавить
             allConditionsRemoved();
         }
 
-        ClientPropertyFilter condition = new ClientPropertyFilter();
-        condition.property = propertyDraw != null ? propertyDraw : logicsSupplier.getDefaultProperty();
+        ClientPropertyFilter filter = new ClientPropertyFilter();
+        filter.property = filterProperty;
 
-        conditions.add(condition);
+        conditions.add(filter);
 
-        view.addConditionView(condition, logicsSupplier);
+        view.addConditionView(filter, logicsSupplier);
     }
 
     public void conditionRemoved(ClientPropertyFilter condition) {

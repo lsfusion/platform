@@ -443,7 +443,12 @@ public abstract class GridTable extends ClientFormTable
     }
 
     public ClientPropertyDraw getCurrentProperty() {
-        return getSelectedProperty();
+        ClientPropertyDraw selectedProperty = getSelectedProperty();
+        return selectedProperty != null
+               ? selectedProperty
+               : model.getColumnCount() > 0
+                 ? model.getColumnProperty(0)
+                 : null;
     }
 
     @Override
