@@ -1,7 +1,6 @@
 package platform.server.session;
 
 import platform.base.BaseUtils;
-import platform.base.ImmutableObject;
 import platform.base.MutableObject;
 import platform.server.caches.ManualLazy;
 import platform.server.data.expr.Expr;
@@ -17,7 +16,7 @@ public abstract class Modifier<U extends Changes<U>> extends MutableObject {
     public abstract U used(Property property,U usedChanges);
     public abstract U newChanges();
 
-    public abstract U newFullChanges();
+    protected abstract U newFullChanges();
 
     U fullChanges; // чтобы кэшировать ссылку, можно было бы TwinLazy использовать но будет memory leak
     @ManualLazy

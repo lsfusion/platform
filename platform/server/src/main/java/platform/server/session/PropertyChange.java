@@ -7,8 +7,11 @@ import platform.server.caches.hash.HashValues;
 import platform.server.data.Value;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.cases.ExprCaseList;
+import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.Query;
+import platform.server.data.query.Join;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
@@ -50,13 +53,25 @@ public class PropertyChange<T extends PropertyInterface> extends TwinsInnerConte
     public PropertyChange<T> add(PropertyChange<T> change) {
         if(equals(change))
             return this;
-        throw new RuntimeException("not supported yet");
+
+        // assert что addJoin.getWhere() не пересекается с where, в общем случае что по пересекаемым они совпадают
+        Join<String> addJoin = change.join(mapKeys);
+        return new PropertyChange<T>(mapKeys, expr.ifElse(where, addJoin.getExpr("value")), where.or(addJoin.getWhere()));
     }
 
-    public <V> Query<T,V> getQuery(V value) {
-        Query<T,V> query = new Query<T, V>(mapKeys); // через query для кэша
+    public Where getWhere(Map<T, ? extends Expr> joinImplement) {
+        return join(joinImplement).getWhere();
+    }
+
+    public Join<String> join(Map<T, ? extends Expr> joinImplement) {
+        return getQuery().join(joinImplement);
+    }
+
+    @IdentityLazy
+    public Query<T,String> getQuery() {
+        Query<T,String> query = new Query<T, String>(mapKeys); // через query для кэша
         query.and(where);
-        query.properties.put(value,expr);
+        query.properties.put("value",expr);
         return query;
    }
 

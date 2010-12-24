@@ -1,6 +1,5 @@
 package platform.server.session;
 
-import platform.server.caches.IdentityLazy;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.DataProperty;

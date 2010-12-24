@@ -277,14 +277,18 @@ public class DerivedProperty {
     }
 
     // строится partition с пустым order'ом
-    private static <T extends PropertyInterface> PropertyMapImplement<?,T> createPProp(Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions) {
-        SumGroupProperty<T> partitionSum = new SumGroupProperty<T>(genID(),"sys",partitions,property);
-        return createJoin(new PropertyImplement<PropertyInterfaceImplement<T>, GroupProperty.Interface<T>>(partitionSum,partitionSum.getMapInterfaces()));
+    private static <T extends PropertyInterface> PropertyMapImplement<?,T> createPProp(Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, boolean sum) {
+        GroupProperty<T> partitionGroup;
+        if(sum)
+            partitionGroup = new SumGroupProperty<T>(genID(),"sys",partitions,property);
+        else
+            partitionGroup = new MaxGroupProperty<T>(genID(),"sys",partitions,property);
+        return createJoin(new PropertyImplement<PropertyInterfaceImplement<T>, GroupProperty.Interface<T>>(partitionGroup,partitionGroup.getMapInterfaces()));
     }
 
-    private static <L extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<?,T> createPProp(PropertyMapImplement<L,T> mapImplement, Collection<PropertyInterfaceImplement<T>> partitions) {
+    private static <L extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<?,T> createPProp(PropertyMapImplement<L, T> mapImplement, Collection<PropertyInterfaceImplement<T>> partitions, boolean sum) {
         // assert что все интерфейсы есть
-        return createPProp(mapImplement.property, mapImplements(partitions, BaseUtils.reverse(mapImplement.mapping))).map(mapImplement.mapping);
+        return createPProp(mapImplement.property, mapImplements(partitions, BaseUtils.reverse(mapImplement.mapping)), sum).map(mapImplement.mapping);
     }
 
     private static <T extends PropertyInterface> PropertyMapImplement<?,T> createPOProp(Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>,Boolean> orders, boolean includeLast) {
@@ -294,7 +298,7 @@ public class DerivedProperty {
     public static <T extends PropertyInterface> PropertyMapImplement<?,T> createPOProp(String sID, String caption, Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>,Boolean> orders, boolean includeLast) {
         PropertyMapImplement<?,T> orderSum = createOProp(property, partitions, orders, includeLast);
 
-        PropertyMapImplement<?,T> partitionSum = createPProp(property, partitions);
+        PropertyMapImplement<?,T> partitionSum = createPProp(property, partitions, true);
 
         return createFormula(sID, caption, property.interfaces, "(prm1*100)/prm2", formulaClass, BaseUtils.toList(orderSum, partitionSum)); // создаем процент
     }
@@ -349,7 +353,7 @@ public class DerivedProperty {
     // получает первое свойство в порядке, остальное null'ы
     private static <T extends PropertyInterface<T>> PropertyMapImplement<?,T> createFOProp(Property<T> property, BaseClass baseClass, Collection<PropertyInterfaceImplement<T>> partitions) {
 
-        List<PropertyInterfaceImplement<T>> listInterfaces = new ArrayList<PropertyInterfaceImplement<T>>(property.interfaces);
+/*        List<PropertyInterfaceImplement<T>> listInterfaces = new ArrayList<PropertyInterfaceImplement<T>>(property.interfaces);
 
         String[] sIDs = new String[listInterfaces.size()+1];
         for(int i=0;i<listInterfaces.size()+1;i++)
@@ -362,13 +366,25 @@ public class DerivedProperty {
 
             compareImplements.add(createCompare(property.interfaces, listInterfaces.get(i - 1), maxJoin, Compare.EQUALS));
         }
-        return createAnd(property.interfaces, property.getImplement(), compareImplements);
+        return createAnd(property.interfaces, property.getImplement(), compareImplements);*/
+
+        ConcatenateProperty concatenate = new ConcatenateProperty(property.interfaces.size());
+        PropertyMapImplement<ConcatenateProperty.Interface, T> concImplement = new PropertyMapImplement<ConcatenateProperty.Interface, T>(concatenate, BaseUtils.buildMap(concatenate.interfaces, property.interfaces));
+
+        // concatenate property и проверяем
+        PropertyMapImplement<?, T> andImplement = createAnd(property.interfaces, concImplement, property.getImplement());
+
+        // делаем PProp на MAX по этому свойству
+        PropertyMapImplement<?, T> maxPartition = createPProp(andImplement, partitions, false);
+
+        // делаем Compare с этим PProp, JoinProperty concatenate
+        return createCompare(property.interfaces, andImplement, maxPartition, Compare.EQUALS);
     }
 
     public static <L extends PropertyInterface, T extends PropertyInterface<T>> PropertyMapImplement<?,T> createPGProp(String sID, String caption, int roundlen, BaseClass baseClass, PropertyImplement<PropertyInterfaceImplement<T>,L> group, Property<T> proportion) {
 
         // общая сумма по пропорции в partition'е
-        PropertyMapImplement<?, T> propSum = createPProp(proportion, group.mapping.values());
+        PropertyMapImplement<?, T> propSum = createPProp(proportion, group.mapping.values(), true);
 
         // строим partition distribute св-во
         PropertyMapImplement<?, T> distribute = createJoin(group);
@@ -377,7 +393,7 @@ public class DerivedProperty {
         PropertyMapImplement<?, T> distrRound = createFormula(proportion.interfaces, "ROUND(CAST((prm1*prm2/prm3) as NUMERIC(15,3)),"+roundlen+")", formulaClass, BaseUtils.toList(distribute, proportion.getImplement(), propSum));
 
         // строим partition полученного округления
-        PropertyMapImplement<?, T> totRound = createPProp(distrRound, group.mapping.values());
+        PropertyMapImplement<?, T> totRound = createPProp(distrRound, group.mapping.values(), true);
 
         // получаем сколько надо дораспределить
         PropertyMapImplement<?, T> diffRound = createFormula(proportion.interfaces, "prm1-prm2", formulaClass, BaseUtils.toList(distribute, totRound)); // вообще гря разные параметры поэтому formula, а не diff

@@ -190,7 +190,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
         newClasses.put(change,toClass);
 
         // по тем по кому не было restart'а new -> to
-        updateProperties(new UsedSessionChanges(new SimpleChanges(getUsedChanges(), addClasses, removeClasses, true)));
+        updateProperties(new UsedSimpleChanges(new SimpleChanges(getUsedChanges(), addClasses, removeClasses, true)));
         for(UpdateChanges incrementChange : incrementChanges.values()) {
             incrementChange.addClasses.addAll(addClasses);
             incrementChange.removeClasses.addAll(removeClasses);
@@ -201,7 +201,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
         changeProperty(property, keys, newValue, sql);
 
         // по тем по кому не было restart'а new -> to
-        updateProperties(new UsedSessionChanges(new SimpleChanges(getUsedChanges(), property)));
+        updateProperties(new UsedSimpleChanges(new SimpleChanges(getUsedChanges(), property)));
     }
 
     private void updateProperties(ExprChanges changes) {
@@ -233,7 +233,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
         // сначала читаем изменения, чтобы не было каскадных непредсказуемых эффектов
         Map<UserProperty, Map<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>> propRows = new HashMap<UserProperty, Map<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>>();
         for(int i=0;i<dataChanges.size;i++)
-            propRows.put(dataChanges.getKey(i), dataChanges.getValue(i).getQuery("value").executeClasses(sql, env, baseClass));
+            propRows.put(dataChanges.getKey(i), dataChanges.getValue(i).getQuery().executeClasses(sql, env, baseClass));
 
         // потом изменяем
         List<ClientAction> actions = new ArrayList<ClientAction>();
@@ -536,36 +536,8 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
             return Where.FALSE;
     }
 
-    private static class UsedSessionChanges implements ExprChanges {
-        private final SimpleChanges changes;
-
-        private UsedSessionChanges(SimpleChanges changes) {
-            this.changes = changes;
-        }
-
-        public Where getIsClassWhere(Expr expr, ValueClass isClass, WhereBuilder changedWheres) {
-            throw new RuntimeException("not supported");
-        }
-
-        public Expr getIsClassExpr(Expr expr, BaseClass baseClass, WhereBuilder changedWheres) {
-            throw new RuntimeException("not supported");
-        }
-
-        public Join<String> getDataChange(DataProperty property, Map<ClassPropertyInterface, ? extends Expr> joinImplement) {
-            throw new RuntimeException("not supported");
-        }
-
-        public Where getRemoveWhere(ValueClass valueClass, Expr expr) {
-            throw new RuntimeException("not supported");
-        }
-
-        public SimpleChanges getUsedChanges() {
-            return changes;
-        }
-    }
-
     public ExprChanges getSessionChanges(DataProperty property) {
-        return new UsedSessionChanges(new SimpleChanges(getUsedChanges(), property));
+        return new UsedSimpleChanges(new SimpleChanges(getUsedChanges(), property));
     }
 
     // IMMUTABLE

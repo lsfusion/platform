@@ -6,6 +6,7 @@ import platform.server.data.expr.BaseExpr;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Collection;
 
 public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
 
@@ -42,6 +43,13 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
     }
     public static <K> ClassWhere<K> STATIC(boolean isTrue) {
         return new ClassWhere<K>(isTrue);
+    }
+
+    public static <M,K> Map<M,ClassWhere<K>> STATIC(Collection<M> keys, boolean isTrue) {
+        Map<M, ClassWhere<K>> result = new HashMap<M, ClassWhere<K>>();
+        for(M key : keys)
+            result.put(key, ClassWhere.<K>STATIC(isTrue));
+        return result;
     }
 
     private ClassWhere(And<K>[] iWheres) {

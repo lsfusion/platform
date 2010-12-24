@@ -53,7 +53,7 @@ public class SessionRows implements SessionData<SessionRows> {
     }
 
     public SessionRows(List<KeyField> keys, Set<PropertyField> properties) {
-        this(keys, properties, new ClassWhere<KeyField>(), new HashMap<PropertyField, ClassWhere<Field>>(), new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>());
+        this(keys, properties, ClassWhere.<KeyField>STATIC(false), ClassWhere.<PropertyField, Field>STATIC(properties, false), new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>());
     }
 
     public SessionRows(List<KeyField> keys, Set<PropertyField> properties, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows) {
@@ -135,14 +135,12 @@ public class SessionRows implements SessionData<SessionRows> {
         Map<PropertyField, ClassWhere<Field>> orPropertyClasses = new HashMap<PropertyField, ClassWhere<Field>>();
         for(Map.Entry<PropertyField,ObjectValue> propertyField : propFields.entrySet()) {
             ClassWhere<Field> existedPropertyClasses = propertyClasses.get(propertyField.getKey());
-            if(propertyField.getValue() instanceof DataObject) {
-                ClassWhere<Field> insertPropertyClasses = new ClassWhere<Field>(BaseUtils.merge(insertKeyClasses,
-                        Collections.singletonMap(propertyField.getKey(),((DataObject)propertyField.getValue()).objectClass)));
-                if(existedPropertyClasses!=null)
-                    insertPropertyClasses = insertPropertyClasses.or(existedPropertyClasses);
-                orPropertyClasses.put(propertyField.getKey(),insertPropertyClasses);
-            } else
-                orPropertyClasses.put(propertyField.getKey(),existedPropertyClasses!=null?existedPropertyClasses:ClassWhere.<Field>STATIC(false));
+            assert existedPropertyClasses!=null;
+            if(propertyField.getValue() instanceof DataObject)
+                orPropertyClasses.put(propertyField.getKey(), existedPropertyClasses.or(new ClassWhere<Field>(BaseUtils.merge(insertKeyClasses,
+                                Collections.singletonMap(propertyField.getKey(),((DataObject)propertyField.getValue()).objectClass)))));
+            else
+                orPropertyClasses.put(propertyField.getKey(), existedPropertyClasses);
         }
         return new Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>>(
                 classes.or(new ClassWhere<KeyField>(insertKeyClasses)), orPropertyClasses);

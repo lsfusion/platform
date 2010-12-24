@@ -187,7 +187,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         supplier = addConcreteClass("supplier", "Поставщик", baseClass.named);
 
-        colorSupplier = addConcreteClass("colorSupplier", "Цвет поставщика", baseClass.named); 
+        colorSupplier = addConcreteClass("colorSupplier", "Цвет поставщика", baseClass.named);
         sizeSupplier = addConcreteClass("sizeSupplier", "Размер поставщика", baseClass.named);
     }
 

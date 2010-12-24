@@ -68,11 +68,11 @@ public abstract class DataProperty extends UserProperty {
             removeWhere = removeWhere.or(session.getRemoveWhere(remove.interfaceClass,joinImplement.get(remove)));
         cases.add(removeWhere.and(dataExpr.getWhere()), Expr.NULL);
 
-        // свойства по умолчанию
+        // производные изменения
         if(derivedChange !=null) {
             PropertyChange<ClassPropertyInterface> defaultChanges = derivedChange.getDataChanges(modifier).get(this);
             if(defaultChanges !=null) {
-                Join<String> defaultJoin = defaultChanges.getQuery("value").join(joinImplement);
+                Join<String> defaultJoin = defaultChanges.join(joinImplement);
                 cases.add(defaultJoin.getWhere(),defaultJoin.getExpr("value"));
             }
         }

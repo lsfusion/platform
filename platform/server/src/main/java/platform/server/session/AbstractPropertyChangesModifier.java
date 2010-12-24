@@ -102,7 +102,7 @@ public abstract class AbstractPropertyChangesModifier<P extends PropertyInterfac
     public <E extends PropertyInterface> Expr changed(Property<E> property, Map<E, ? extends Expr> joinImplement, WhereBuilder changedWhere) {
         PropertyChange<E> dataChange;
         if((dataChange = (PropertyChange<E>) getPropertyChange(property))!=null) {
-            Join<String> join = dataChange.getQuery("value").join(joinImplement);
+            Join<String> join = dataChange.join(joinImplement);
             if(changedWhere !=null) changedWhere.add(join.getWhere());
             return join.getExpr("value");
         } else // иначе не трогаем
