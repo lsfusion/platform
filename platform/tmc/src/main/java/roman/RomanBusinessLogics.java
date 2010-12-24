@@ -6,6 +6,7 @@ import platform.interop.Compare;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.auth.User;
 import platform.server.classes.*;
+import platform.server.data.Union;
 import platform.server.data.sql.DataAdapter;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
@@ -129,6 +130,19 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP quantityListArticleSingle;
     private LP quantityListArticle;
     private LP orderedSimpleInvoiceSku;
+    private LP priceDataDocumentItem;
+    private LP priceArticleDocumentItem;
+    private LP priceDocumentItem;
+    private LP priceDocumentArticleSingle;
+    private LP priceDocumentSku;
+    private LP sumDocumentSku;
+    private LP sumDocumentItem;
+    private LP sumDocumentArticleSingle;
+    private LP sumDocumentArticleComposite;
+    private LP quantityListItem;
+    private LP quantitySimpleDocumentItem;
+    private LP quantityBoxDocumentItem;
+    private LP quantityDocumentItem;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -306,6 +320,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         invoicedOrderSku = addSGProp(baseGroup, "invoicedOrderSku", "Выставлено инвойсов", quantityOrderInvoiceSku, 1, 3);
 
+        quantityListItem = addJProp(baseGroup, "quantityListItem", "Кол-во", and1, quantityListSku, 1, 2, is(item), 2);
+
+        quantitySimpleDocumentItem = addJProp(baseGroup, "quantitySimpleDocumentItem", "Кол-во", and1, quantityListItem, 1, 2, is(simpleDocument), 1);
+        quantityBoxDocumentItem = addSGProp(baseGroup, "quantityBoxDocumentItem", "Кол-во", quantityListItem, boxDocumentSupplierBox, 1, 2);
+
+        quantityDocumentItem = addCUProp(baseGroup, "quantityDocumentItem", "Кол-во", quantityBoxDocumentItem, quantitySimpleDocumentItem);
+
         // для заказа при вводе этого количества все кидается на первую
         quantityListArticleComposite = addDGProp(baseGroup, "quantityListArticleComposite", "Кол-во",
                 1, false, // кол-во объектов для порядка и ascending/descending
@@ -348,13 +369,24 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         // цены
 
         priceDocumentArticle = addDProp(baseGroup, "priceDocumentArticle", "Цена", DoubleClass.instance, document, article);
+        priceDataDocumentItem = addDProp(baseGroup, "priceDataDocumentItem", "Цена по товару", DoubleClass.instance, document, item);
+        priceArticleDocumentItem = addJProp(baseGroup, "priceArticleDocumentItem", "Цена по артикулу", priceDocumentArticle, 1, articleItem, 2);
+        priceDocumentItem = addSUProp(baseGroup, "priceDocumentItem", "Цена", Union.OVERRIDE, priceArticleDocumentItem, priceDataDocumentItem);
+
+        priceDocumentArticleSingle = addJProp(baseGroup, "priceDocumentArticleSingle", "Цена", and1, priceDocumentArticle, 1, 2, is(articleSingle), 2);
+        priceDocumentSku = addCUProp(baseGroup, "priceDocumentSku", "Цена", priceDocumentItem, priceDocumentArticleSingle);
 
         priceOrderInvoiceArticle = addJProp(and1, priceDocumentArticle, 1, 3, inOrderInvoice, 1, 2);
         priceOrderedInvoiceArticle = addMGProp(baseGroup, "priceOrderedInvoiceArticle", "Цена в заказе", priceOrderInvoiceArticle, 2, 3);
         priceDocumentArticle.setDerivedChange(priceOrderedInvoiceArticle, 1, 2, numberListArticle, 1, 2);
 
-        sumDocumentArticle = addJProp(baseGroup, "Сумма", multiplyDouble2, quantityDocumentArticle, 1, 2, priceDocumentArticle, 1, 2);
-        sumDocument = addSGProp(baseGroup, "sumDocument", "Сумма документа", sumDocumentArticle, 1);
+        sumDocumentItem = addJProp(baseGroup, "sumDocumentItem", "Сумма", multiplyDouble2, quantityDocumentItem, 1, 2, priceDocumentItem, 1, 2);
+        sumDocumentArticleSingle = addJProp(baseGroup, "sumDocumentArticleSingle", "Сумма", multiplyDouble2, quantityDocumentArticleSingle, 1, 2, priceDocumentArticleSingle, 1, 2);
+        sumDocumentArticleComposite = addSGProp(baseGroup, "sumDocumentArticleComposite", "Сумма", sumDocumentItem, 1, articleItem, 2);
+        sumDocumentArticle = addCUProp(baseGroup, "sumDocumentArticle", "Сумма", sumDocumentArticleComposite, sumDocumentArticleSingle);
+
+        sumDocumentSku = addJProp(baseGroup, "sumDocumentSku", "Сумма", multiplyDouble2, quantityDocumentSku, 1, 2, priceDocumentSku, 1, 2);
+        sumDocument = addSGProp(baseGroup, "sumDocument", "Сумма документа", sumDocumentSku, 1);
     }
 
     @Override
@@ -435,6 +467,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             quantityColumn.propertyCaption = addPropertyObject(name, objSizeSupplier);
 
             addPropertyDraw(quantityDocumentSku, objOrder, objItem);
+            addPropertyDraw(priceDocumentItem, objOrder, objItem);
             addPropertyDraw(invoicedOrderSku, objOrder, objItem);
             addPropertyDraw(quantityDocumentArticleCompositeColor, objOrder, objArticle, objColorSupplier);
             addPropertyDraw(quantityDocumentArticleCompositeSize, objOrder, objArticle, objSizeSupplier);
@@ -558,6 +591,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             quantityColumn.propertyCaption = addPropertyObject(name, objSizeSupplier);
 
             addPropertyDraw(quantityListSku, (box ? objSupplierBox : objInvoice), objItem);
+            addPropertyDraw(priceDocumentItem, objInvoice, objItem);
             addPropertyDraw(orderedInvoiceSku, objInvoice, objItem);
             addPropertyDraw(quantityDocumentArticleCompositeColor, objInvoice, objArticle, objColorSupplier);
             addPropertyDraw(quantityDocumentArticleCompositeSize, objInvoice, objArticle, objSizeSupplier);
