@@ -25,6 +25,7 @@ import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.view.DefaultFormView;
+import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.SessionDataProperty;
@@ -47,6 +48,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public final String sID;
 
     public String caption;
+
+    public int minimumCharWidth;
+    public int maximumCharWidth;
+    public int preferredCharWidth;
 
     public boolean askConfirm = false;
 
@@ -427,6 +432,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<T> entity) {
+        PropertyDrawView propertyView = view.get(entity);
+        propertyView.minimumCharWidth = minimumCharWidth;
+        propertyView.maximumCharWidth = maximumCharWidth;
+        propertyView.preferredCharWidth = preferredCharWidth;
     }
 
     public boolean hasChild(Property prop) {

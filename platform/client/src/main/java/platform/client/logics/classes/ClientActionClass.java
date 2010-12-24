@@ -40,8 +40,8 @@ public class ClientActionClass extends ClientDataClass implements ClientTypeClas
     }
 
     @Override
-    public int getMaximumWidth(FontMetrics fontMetrics) {
-        return getPreferredWidth(fontMetrics);
+    public int getMaximumWidth(int maxCharWidth, FontMetrics fontMetrics) {
+        return getPreferredWidth(0, fontMetrics);
     }
 
     public Format getDefaultFormat() {

@@ -40,12 +40,12 @@ public class ClientWordClass extends ClientFileClass {
     }
 
     @Override
-    public int getPreferredWidth(FontMetrics font) {
+    public int getPreferredWidth(int prefCharWidth, FontMetrics font) {
         return 18;
     }
 
     @Override
-    public int getMinimumWidth(FontMetrics font) {
+    public int getMinimumWidth(int minCharWidth, FontMetrics font) {
         return 15;
     }
 

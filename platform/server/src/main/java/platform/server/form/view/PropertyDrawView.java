@@ -41,6 +41,10 @@ public class PropertyDrawView extends ComponentView {
     public Dimension maximumSize;
     public Dimension preferredSize;
 
+    public int minimumCharWidth;
+    public int maximumCharWidth;
+    public int preferredCharWidth;
+
     public KeyStroke editKey;
     public boolean showEditKey = true;
 
@@ -59,6 +63,7 @@ public class PropertyDrawView extends ComponentView {
 
     public GroupObjectEntity keyBindingGroup = null;
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public PropertyDrawView() {
 
     }
@@ -141,6 +146,10 @@ public class PropertyDrawView extends ComponentView {
         pool.writeObject(outStream, maximumSize);
         pool.writeObject(outStream, preferredSize);
 
+        outStream.writeInt(minimumCharWidth);
+        outStream.writeInt(maximumCharWidth);
+        outStream.writeInt(preferredCharWidth);
+
         pool.writeObject(outStream, editKey);
 
         outStream.writeBoolean(showEditKey);
@@ -187,6 +196,10 @@ public class PropertyDrawView extends ComponentView {
         maximumSize = pool.readObject(inStream);
         preferredSize = pool.readObject(inStream);
 
+        minimumCharWidth = inStream.readInt();
+        maximumCharWidth = inStream.readInt();
+        preferredCharWidth = inStream.readInt();
+
         editKey = pool.readObject(inStream);
         showEditKey = inStream.readBoolean();
 
@@ -211,5 +224,10 @@ public class PropertyDrawView extends ComponentView {
         }
 
         entity = pool.context.entity.getPropertyDraw(inStream.readInt());
+    }
+
+    @Override
+    public String toString() {
+        return getCaption();
     }
 }

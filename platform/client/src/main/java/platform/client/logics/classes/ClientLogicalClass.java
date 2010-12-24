@@ -27,12 +27,11 @@ public class ClientLogicalClass extends ClientDataClass implements ClientTypeCla
     }
 
     @Override
-    public int getMinimumWidth(FontMetrics fontMetrics) {
-        return getPreferredWidth(fontMetrics);
+    public int getMinimumWidth(int minCharWidth, FontMetrics fontMetrics) {
+        return 25;
     }
 
-
-    public int getPreferredWidth(FontMetrics fontMetrics) {
+    public int getPreferredWidth(int prefCharWidth, FontMetrics fontMetrics) {
         return 25;
     }
 

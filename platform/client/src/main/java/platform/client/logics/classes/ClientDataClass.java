@@ -1,5 +1,6 @@
 package platform.client.logics.classes;
 
+import platform.base.BaseUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.cell.CellView;
@@ -32,15 +33,23 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
         return false;
     }
 
-    public int getMinimumWidth(FontMetrics fontMetrics) {
-        return fontMetrics.stringWidth(getMinimumMask()) + 8;
+    public int getMinimumWidth(int minCharWidth, FontMetrics fontMetrics) {
+        String minMask = minCharWidth != 0
+                      ? BaseUtils.replicate('0', minCharWidth)
+                      : getMinimumMask();
+
+        return fontMetrics.stringWidth(minMask) + 8;
     }
 
-    public int getPreferredWidth(FontMetrics fontMetrics) {
-        return fontMetrics.stringWidth(getPreferredMask()) + 8;
+    public int getPreferredWidth(int prefCharWidth, FontMetrics fontMetrics) {
+        String prefMask = prefCharWidth != 0
+                      ? BaseUtils.replicate('0', prefCharWidth)
+                      : getPreferredMask();
+
+        return fontMetrics.stringWidth(prefMask) + 8;
     }
 
-    public int getMaximumWidth(FontMetrics fontMetrics) {
+    public int getMaximumWidth(int maxCharWidth, FontMetrics fontMetrics) {
         return Integer.MAX_VALUE;
     }
 

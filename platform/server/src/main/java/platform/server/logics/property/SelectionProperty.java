@@ -43,6 +43,7 @@ public class SelectionProperty extends SessionDataProperty {
 
     @Override
     public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity form) {
+        super.proceedDefaultDraw(entity, form);
         RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(form.genID());
         filterGroup.addFilter(new RegularFilterEntity(form.genID(),
                 new NotNullFilterEntity(entity.propertyObject),
@@ -55,6 +56,7 @@ public class SelectionProperty extends SessionDataProperty {
 
     @Override
     public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
+        super.proceedDefaultDesign(view, entity);
         PropertyDrawView selectionPropView = view.get(entity);
         selectionPropView.editKey = KeyStrokes.getSelectionPropertyKeyStroke();
     }

@@ -52,9 +52,12 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ExternalScreenConstraints externalScreenConstraints;
 
     protected Dimension minimumSize;
+    protected Dimension maximumSize;
     protected Dimension preferredSize;
 
-    protected Dimension maximumSize;
+    public int minimumCharWidth;
+    public int maximumCharWidth;
+    public int preferredCharWidth;
 
     protected transient PropertyRendererComponent renderer;
 
@@ -164,7 +167,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         if (minimumSize != null) {
             return minimumSize.width;
         }
-        return baseType.getMinimumWidth(comp.getFontMetrics(design.getFont(comp)));
+        return baseType.getMinimumWidth(minimumCharWidth, comp.getFontMetrics(design.getFont(comp)));
     }
 
     public int getMinimumHeight(JComponent comp) {
@@ -186,7 +189,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         if (preferredSize != null) {
             return preferredSize.width;
         }
-        return baseType.getPreferredWidth(comp.getFontMetrics(design.getFont(comp)));
+        return baseType.getPreferredWidth(preferredCharWidth, comp.getFontMetrics(design.getFont(comp)));
     }
 
     public int getPreferredHeight(JComponent comp) {
@@ -207,7 +210,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         if (maximumSize != null) {
             return maximumSize.width;
         }
-        return baseType.getMaximumWidth(comp.getFontMetrics(design.getFont(comp)));
+        return baseType.getMaximumWidth(maximumCharWidth, comp.getFontMetrics(design.getFont(comp)));
     }
 
     public int getMaximumHeight(JComponent comp) {
@@ -234,7 +237,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public CellView getPanelComponent(ClientFormController form, ClientGroupObjectValue columnKey) {
         return baseType.getPanelComponent(this, columnKey, form);
     }
-
 
     Format getFormat() {
         if (format == null) {
@@ -292,6 +294,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         pool.writeObject(outStream, maximumSize);
         pool.writeObject(outStream, preferredSize);
 
+        outStream.writeInt(minimumCharWidth);
+        outStream.writeInt(maximumCharWidth);
+        outStream.writeInt(preferredCharWidth);
+
         pool.writeObject(outStream, editKey);
 
         outStream.writeBoolean(showEditKey);
@@ -323,6 +329,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         minimumSize = pool.readObject(inStream);
         maximumSize = pool.readObject(inStream);
         preferredSize = pool.readObject(inStream);
+
+        minimumCharWidth = inStream.readInt();
+        maximumCharWidth = inStream.readInt();
+        preferredCharWidth = inStream.readInt();
 
         editKey = pool.readObject(inStream);
         showEditKey = inStream.readBoolean();

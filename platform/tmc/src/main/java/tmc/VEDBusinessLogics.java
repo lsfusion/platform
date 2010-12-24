@@ -2702,6 +2702,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
+            super.proceedDefaultDesign(view, entity);
             view.get(entity).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.ALT_DOWN_MASK);
         }
     }
@@ -2720,6 +2721,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
+            super.proceedDefaultDesign(view, entity);
             view.get(entity).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.ALT_DOWN_MASK);
         }
     }
