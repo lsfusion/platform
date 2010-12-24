@@ -1405,6 +1405,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             super(parent, ID, documentClass, toAdd);
 
             objArt = addSingleGroupObject(article, getArticleProps());
+            objArt.groupTo.filterProperty = getPropertyDraw(name, objArt.groupTo);
+
             addPropertyDraw(objDoc, objArt, getDocumentArticleProps());
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());

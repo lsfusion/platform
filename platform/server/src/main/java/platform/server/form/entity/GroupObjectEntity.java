@@ -3,7 +3,6 @@ package platform.server.form.entity;
 import platform.base.BaseUtils;
 import platform.base.identity.IdentityObject;
 import platform.interop.ClassViewType;
-import platform.interop.form.RemoteFormInterface;
 import platform.server.form.instance.GroupObjectInstance;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.Instantiable;
@@ -23,6 +22,9 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public static int PAGE_SIZE_DEFAULT_VALUE = 10;
 
     private int ID;
+
+    public PropertyDrawEntity filterProperty;
+
     public TreeGroupEntity treeGroup;
 
     public List<ObjectEntity> objects = new ArrayList<ObjectEntity>();
@@ -63,6 +65,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         pool.writeObject(outStream, banClassView);
         pool.serializeObject(outStream, treeGroup);
         pool.serializeObject(outStream, propertyHighlight);
+        pool.serializeObject(outStream, filterProperty);
         outStream.writeBoolean(isParent != null);
         if (isParent != null) {
             pool.serializeMap(outStream, isParent);
@@ -76,6 +79,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         banClassView = pool.readObject(inStream);
         treeGroup = pool.deserializeObject(inStream);
         propertyHighlight = pool.deserializeObject(inStream);
+        filterProperty = pool.deserializeObject(inStream);
         if (inStream.readBoolean()) {
             isParent = pool.deserializeMap(inStream);
         }

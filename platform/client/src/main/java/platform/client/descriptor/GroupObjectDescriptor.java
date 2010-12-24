@@ -1,7 +1,6 @@
 package platform.client.descriptor;
 
 import platform.base.BaseUtils;
-import platform.base.context.ApplicationContext;
 import platform.base.context.ApplicationContextHolder;
 import platform.base.context.ContextIdentityObject;
 import platform.client.logics.ClientContainer;
@@ -28,6 +27,7 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
     private ClassViewType initClassView = ClassViewType.GRID;
     private List<ClassViewType> banClassViewList = new ArrayList<ClassViewType>();
     private PropertyObjectDescriptor propertyHighlight;
+    private PropertyDrawDescriptor filterProperty;
 
     public List<ObjectDescriptor> objects = new ArrayList<ObjectDescriptor>();
 
@@ -108,12 +108,23 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
         updateDependency(this, "propertyHighlight");
     }
 
+    public PropertyDrawDescriptor getFilterProperty() {
+        return filterProperty;
+    }
+
+    public void setFilterProperty(PropertyDrawDescriptor filterProperty) {
+        this.filterProperty = filterProperty;
+        this.client.filterProperty = filterProperty.client;
+        updateDependency(this, "filterProperty");
+    }
+
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeCollection(outStream, objects);
         pool.writeInt(outStream, initClassView.ordinal());
         pool.writeObject(outStream, banClassViewList);
         pool.serializeObject(outStream, parent);
         pool.serializeObject(outStream, propertyHighlight);
+        pool.serializeObject(outStream, filterProperty);
         outStream.writeBoolean(!isParent.isEmpty());
         if (!isParent.isEmpty()) {
             pool.serializeMap(outStream, isParent);
@@ -127,6 +138,7 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
         banClassViewList = pool.readObject(inStream);
         parent = pool.deserializeObject(inStream);
         propertyHighlight = pool.deserializeObject(inStream);
+        filterProperty = pool.deserializeObject(inStream);
         if (inStream.readBoolean()) {
             isParent = pool.deserializeMap(inStream);
         }

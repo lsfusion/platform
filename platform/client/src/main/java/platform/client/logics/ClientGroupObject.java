@@ -1,17 +1,16 @@
 package platform.client.logics;
 
+import platform.base.BaseUtils;
+import platform.base.OrderedMap;
+import platform.base.context.ApplicationContext;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
-import platform.base.OrderedMap;
 import platform.base.identity.IdentityObject;
-import platform.base.BaseUtils;
-import platform.client.Main;
 import platform.client.form.ClientFormController;
 import platform.client.form.GroupObjectController;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ClassViewType;
-import platform.base.context.ApplicationContext;
 import platform.interop.form.layout.AbstractGroupObject;
 import platform.interop.form.layout.GroupObjectContainerSet;
 
@@ -19,10 +18,14 @@ import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class ClientGroupObject extends IdentityObject implements ClientPropertyRead, ClientIdentitySerializable, AbstractGroupObject<ClientComponent> {
+
+    public ClientPropertyDraw filterProperty;
 
     public ClientTreeGroup parent;
     public boolean isRecursive;
@@ -134,6 +137,8 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
 
         grid = pool.deserializeObject(inStream);
         showType = pool.deserializeObject(inStream);
+
+        filterProperty = pool.deserializeObject(inStream);
 
         isRecursive = inStream.readBoolean();
     }

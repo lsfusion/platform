@@ -350,7 +350,10 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
     }
 
     public ClientPropertyDraw getDefaultProperty() {
-        return grid.getCurrentProperty();
+        ClientPropertyDraw defaultProperty = groupObject.filterProperty;
+        return defaultProperty != null
+               ? defaultProperty
+               : grid.getCurrentProperty();
     }
 
     public Object getSelectedValue(ClientPropertyDraw cell) {

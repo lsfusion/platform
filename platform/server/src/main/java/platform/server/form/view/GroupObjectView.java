@@ -89,6 +89,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
         pool.serializeObject(outStream, grid, serializationType);
         pool.serializeObject(outStream, showType, serializationType);
+        pool.serializeObject(outStream, pool.context.view.getProperty(entity.filterProperty));
 
         outStream.writeBoolean(entity.isParent != null);
     }
