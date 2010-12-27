@@ -53,9 +53,67 @@ public class CustomFormView extends FormView {
         return container;
     }
 
-    public FunctionView createFunction(String caption) {
+    public FunctionView createPrintFunction(String caption) {
         FunctionView function = new FunctionView(idGenerator.idShift());
         function.setCaption(caption);
+        function.setType("Print");
+        setPrintFunction(function);
+        return function;
+    }
+
+    public FunctionView createXlsFunction(String caption) {
+        FunctionView function = new FunctionView(idGenerator.idShift());
+        function.setCaption(caption);
+        function.setType("Xls");
+        setXlsFunction(function);
+        return function;
+    }
+
+    public FunctionView createNullFunction(String caption) {
+        FunctionView function = new FunctionView(idGenerator.idShift());
+        function.setCaption(caption);
+        function.setType("Null");
+        setNullFunction(function);
+        return function;
+    }
+
+    public FunctionView createRefreshFunction(String caption) {
+        FunctionView function = new FunctionView(idGenerator.idShift());
+        function.setCaption(caption);
+        function.setType("Refresh");
+        setRefreshFunction(function);
+        return function;
+    }
+
+    public FunctionView createApplyFunction(String caption) {
+        FunctionView function = new FunctionView(idGenerator.idShift());
+        function.setCaption(caption);
+        function.setType("Apply");
+        setApplyFunction(function);
+        return function;
+    }
+
+    public FunctionView createCancelFunction(String caption) {
+        FunctionView function = new FunctionView(idGenerator.idShift());
+        function.setCaption(caption);
+        function.setType("Cancel");
+        setCancelFunction(function);
+        return function;
+    }
+
+     public FunctionView createOkFunction(String caption) {
+        FunctionView function = new FunctionView(idGenerator.idShift());
+        function.setCaption(caption);
+        function.setType("Ok");
+        setOkFunction(function);
+        return function;
+    }
+
+     public FunctionView createCloseFunction(String caption) {
+        FunctionView function = new FunctionView(idGenerator.idShift());
+        function.setCaption(caption);
+        function.setType("Close");
+        setCloseFunction(function);
         return function;
     }
 

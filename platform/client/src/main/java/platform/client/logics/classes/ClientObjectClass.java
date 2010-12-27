@@ -17,6 +17,11 @@ public abstract class ClientObjectClass extends ClientClass {
     private String sID;
 
     @Override
+    public String getCode() {
+        return sID;
+    }
+
+    @Override
     public String getSID(){
         return sID;
     }

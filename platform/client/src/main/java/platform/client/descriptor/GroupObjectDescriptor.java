@@ -19,8 +19,8 @@ import java.util.List;
 import java.util.Map;
 
 public class GroupObjectDescriptor extends ContextIdentityObject implements ClientIdentitySerializable,
-                                                                            ContainerMovable<ClientContainer>,
-                                                                            ApplicationContextHolder, CustomConstructible {
+        ContainerMovable<ClientContainer>,
+        ApplicationContextHolder, CustomConstructible {
 
     public ClientGroupObject client;
 
@@ -56,16 +56,16 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
         return banClassViewList;
     }
 
-    public void setPageSize(String pageSize){
-        if(pageSize.equals("")){
+    public void setPageSize(String pageSize) {
+        if (pageSize.equals("")) {
             this.pageSize = null;
         } else {
             this.pageSize = Integer.parseInt(pageSize);
         }
     }
 
-    public String getPageSize(){
-        if(pageSize != null){
+    public String getPageSize() {
+        if (pageSize != null) {
             return String.valueOf(pageSize);
         } else {
             return "";
@@ -201,5 +201,16 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
     public void setHighlightColor(Color highlightColor) {
         client.setHighlightColor(highlightColor);
         updateDependency(this, "highlightColor");
+    }
+
+    public String getVariableName() {
+        if (objects.size() == 1) {
+            return objects.get(0).getVariableName() + ".groupTo";
+        }
+        StringBuilder result = new StringBuilder("grObj");
+        for (ObjectDescriptor obj : objects) {
+            result.append(obj.getBaseClass().getSID());
+        }
+        return result.toString();
     }
 }

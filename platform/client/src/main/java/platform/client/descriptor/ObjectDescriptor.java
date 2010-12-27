@@ -73,4 +73,8 @@ public class ObjectDescriptor extends ContextIdentityObject implements PropertyO
     public String getInstanceCode(Map<ObjectDescriptor, String> objectNames){
         return objectNames.get(this);
     }
+
+    public String getVariableName(){
+        return "obj" + getBaseClass().getSID();
+    }
 }

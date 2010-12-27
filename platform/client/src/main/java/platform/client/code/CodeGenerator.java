@@ -4,6 +4,7 @@ import platform.client.descriptor.*;
 import platform.client.descriptor.filter.*;
 import platform.client.descriptor.property.PropertyDescriptor;
 import platform.client.logics.*;
+import platform.interop.ClassViewType;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexComponentDirections;
 import platform.interop.form.layout.SimplexConstraints;
@@ -16,14 +17,9 @@ import java.util.List;
 public class CodeGenerator {
 
     private static String intend;
-    private static int id = 1;
     public static Map<ObjectDescriptor, String> objectNames = new HashMap<ObjectDescriptor, String>();
     private static Map<RegularFilterGroupDescriptor, String> filterGroups;
     private static Map<ClientRegularFilterGroup, RegularFilterGroupDescriptor> filterGroupViews;
-
-    private static int getID() {
-        return id++;
-    }
 
     private static void addClassDeclaration(FormDescriptor form, StringBuilder result) {
         result.append(intend + "private class " + form.getSID() + " extends FormEntity {\n");
@@ -31,11 +27,12 @@ public class CodeGenerator {
 
     private static void addInstanceVariable(FormDescriptor form, StringBuilder result) {
         for (GroupObjectDescriptor group : form.groupObjects) {
-            result.append(intend + "GroupObjectEntity grObj" + group.getSID() + ";\n");
+            if (group.objects.size() != 1) {
+                result.append(intend + "GroupObjectEntity " + group.getVariableName() + ";\n");
+            }
             for (ObjectDescriptor object : group.objects) {
-                String name = object.getSID();
-                result.append(intend + "ObjectEntity " + name + ";\n");
-                objectNames.put(object, name);
+                result.append(intend + "ObjectEntity " + object.getVariableName() + ";\n");
+                objectNames.put(object, object.getVariableName());
             }
         }
 
@@ -62,17 +59,25 @@ public class CodeGenerator {
     }
 
     private static void addGroupObject(GroupObjectDescriptor groupObject, StringBuilder result) {
-        String grName = "grObj" + groupObject.getSID();
-        result.append(intend + grName + " = new GroupObjectEntity(genID());\n");
+        String grName = groupObject.getVariableName();
 
-        for (ObjectDescriptor object : groupObject.objects) {
-            String objName = objectNames.get(object);
-            result.append(intend + objName + " = new ObjectEntity(genID(), findValueClass(\"" +
-                    object.getBaseClass().getSID() + "\"), \"" + object.getCaption() + "\");\n");
-            result.append(intend + grName + ".add(" + objName + ");\n");
+        if (groupObject.objects.size() == 1) {
+            ObjectDescriptor object = groupObject.objects.get(0);
+            result.append(intend + object.getVariableName() + " = addSingleGroupObject(" +
+                    object.getBaseClass().getCode() + ", \"" + object.getCaption() + "\");\n");
+        } else {
+            result.append(intend + grName + " = new GroupObjectEntity(genID());\n");
+            for (ObjectDescriptor object : groupObject.objects) {
+                String objName = object.getVariableName();
+                result.append(intend + objName + " = new ObjectEntity(genID(), " +
+                        object.getBaseClass().getCode() + ", \"" + object.getCaption() + "\");\n");
+                result.append(intend + grName + ".add(" + objName + ");\n");
+            }
+            result.append(intend + "addGroup(" + grName + ");\n");
         }
-        result.append(intend + "addGroup(" + grName + ");\n");
-
+        if (groupObject.getInitClassView() != ClassViewType.GRID) {
+            result.append(intend + grName + ".initClassView = ClassViewType." + groupObject.getInitClassView() + ";\n");
+        }
     }
 
     private static void addProperties(FormDescriptor form, StringBuilder result) {
@@ -85,13 +90,13 @@ public class CodeGenerator {
                 for (PropertyObjectInterfaceDescriptor objectInterface : property.getPropertyObject().mapping.values()) {
                     if (objectInterface instanceof ObjectDescriptor) {
                         ObjectDescriptor object = (ObjectDescriptor) objectInterface;
-                        result.append(", " + objectNames.get(object));
+                        result.append(", " + object.getVariableName());
                     }
                 }
                 result.append(");\n");
 
                 for (GroupObjectDescriptor descriptor : property.getColumnGroupObjects()) {
-                    result.append(intend + "prop" + property.getSID() + ".addColumnGroupObject(" + descriptor.getSID() + ");\n");    
+                    result.append(intend + "prop" + property.getSID() + ".addColumnGroupObject(" + descriptor.getVariableName() + ");\n");
                 }
 
                 continue;
@@ -121,7 +126,7 @@ public class CodeGenerator {
             for (PropertyObjectInterfaceDescriptor objectDescriptorInt : set) {
                 if (objectDescriptorInt instanceof ObjectDescriptor) {
                     ObjectDescriptor object = (ObjectDescriptor) objectDescriptorInt;
-                    entityArray.append(objectNames.get(object) + ",");
+                    entityArray.append(object.getVariableName() + ",");
                 }
             }
             entityArray.replace(entityArray.length() - 1, entityArray.length(), ")");
@@ -163,11 +168,11 @@ public class CodeGenerator {
                     temp.append(intend + ((ClientRegularFilterGroup) child).getCodeConstructor(childName, filterGroups.get(filterGroupViews.get(child))) + "\n");
                 }
 
-                if(child instanceof ClientPropertyDraw) {
-                    List<ClientGroupObject> groupList = ((ClientPropertyDraw)child).columnGroupObjects;
-                    if ( !groupList.isEmpty() ) {
+                if (child instanceof ClientPropertyDraw) {
+                    List<ClientGroupObject> groupList = ((ClientPropertyDraw) child).columnGroupObjects;
+                    if (!groupList.isEmpty()) {
                         temp.append(intend + childName + ".entity.columnGroupObjects.");
-                        if(groupList.size() == 1) {
+                        if (groupList.size() == 1) {
                             temp.append("add(" + "grObj" + groupList.get(0).getSID() + ");\n");
                         } else {
                             temp.append("addAll(BaseUtils.toList(");
@@ -253,12 +258,12 @@ public class CodeGenerator {
 
         for (GroupObjectDescriptor groupObject : form.groupObjects) {
             String name = "groupView" + groupObject.getID();
-            result.append(intend + "GroupObjectView " + name + " = design.createGroupObject(grObj" + groupObject.getSID() + ", component" +
+            result.append(intend + "GroupObjectView " + name + " = design.createGroupObject(" + groupObject.getVariableName() + ", component" +
                     groupObject.client.showType.getID() + ", component" + groupObject.client.grid.getID() + ");\n");
             result.append(intend + "design.groupObjects.add(" + name + ");\n");
 
             for (ObjectDescriptor object : groupObject.objects) {
-                result.append(intend + name + ".getObjectView(" + objectNames.get(object) + ").changeClassChooserLocation(" +
+                result.append(intend + name + ".getObjectView(" + object.getVariableName() + ").changeClassChooserLocation(" +
                         "component" + object.client.classChooser.getID() + ");\n");
 
             }
@@ -266,6 +271,14 @@ public class CodeGenerator {
 
         result.append(intend + "return design;\n");
 
+    }
+
+    public static void addShouldProceed(StringBuilder result) {
+        result.append("\n");
+        result.append("\t@Override\n");
+        result.append("\tpublic boolean shouldProceedDefaultDraw() {\n");
+        result.append("\t  return false;\n");
+        result.append("\t}\n");
     }
 
     public static String formDescriptorCode(FormDescriptor form) {
@@ -301,6 +314,8 @@ public class CodeGenerator {
         result.append("\n");
         addRichDesign(form, result);
         result.append("\t}\n");
+
+        addShouldProceed(result);
 
         result.append("}\n");
 

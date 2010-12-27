@@ -25,11 +25,16 @@ public class ClientStringClass extends ClientDataClass {
         return sID;
     }
 
+    @Override
+    public String getCode() {
+        return "StringClass.get(" + length + ")";
+    }
+
     public ClientStringClass(DataInputStream inStream) throws IOException {
         super(inStream);
 
         length = inStream.readInt();
-        sID = "StringClass[" + length + "]";
+        sID = "StringClass_" + length;
     }
 
     public ClientStringClass(int length) {

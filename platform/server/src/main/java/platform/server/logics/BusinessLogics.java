@@ -739,6 +739,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected CompositeNamePropertySet compositeName;
 
     public class ObjectValuePropertySet extends MapClassesPropertySet<ValueClass, ObjectValueProperty> {
+        private Map<String, LP> sidToLP = new HashMap<String, LP>();
         private static final String prefix = "ObjectValueProperty_";
 
         @Override
@@ -779,9 +780,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             String sid = prefix + valueClass.getSID();
             ObjectValueProperty property = new ObjectValueProperty(sid, valueClass);
-            registerProperty(new LP<ClassPropertyInterface>(property));
+            LP prop = new LP<ClassPropertyInterface>(property);
+            registerProperty(prop);
+            sidToLP.put(sid, prop);
             setParent(property);
             return property;
+        }
+
+        public LP getLP(ValueClass cls) {
+           String sid = prefix + cls.getSID();
+           return sidToLP.get(sid);
         }
     }
 

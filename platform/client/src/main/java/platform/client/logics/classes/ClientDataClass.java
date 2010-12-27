@@ -25,6 +25,11 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
     }
 
     @Override
+    public String getCode() {
+        return getSID()+".instance";
+    }
+
+    @Override
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeByte(getTypeClass().getTypeId());
     }

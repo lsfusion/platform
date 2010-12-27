@@ -36,7 +36,7 @@ public class NotNullFilterDescriptor extends PropertyFilterDescriptor {
 
     public String getCodeConstructor(Map<ObjectDescriptor, String> objectNames) {
         String code = "new NotNullFilterEntity(";
-        code += "addPropertyObject(" + property.property.getSID();
+        code += "addPropertyObject(" + property.property.code;
         for (PropertyInterfaceDescriptor pid : property.mapping.keySet()) {
             code += ", " + property.mapping.get(pid).getInstanceCode(objectNames);
         }

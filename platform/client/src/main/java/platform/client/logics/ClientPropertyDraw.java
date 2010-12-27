@@ -444,7 +444,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             for (PropertyObjectInterfaceDescriptor objectDescriptorInt : values) {
                 if (objectDescriptorInt instanceof ObjectDescriptor) {
                     ObjectDescriptor object = (ObjectDescriptor) objectDescriptorInt;
-                    result.append(", ").append(CodeGenerator.objectNames.get(object));
+                    result.append(", ").append(object.getVariableName());
                 }
             }
         }

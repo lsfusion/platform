@@ -11,6 +11,8 @@ abstract public class ClientClass implements Serializable {
     public abstract void serialize(DataOutputStream outStream) throws IOException;
 
     public abstract String getSID();
+
+    public abstract String getCode();
     
     public abstract ClientType getType();
 
