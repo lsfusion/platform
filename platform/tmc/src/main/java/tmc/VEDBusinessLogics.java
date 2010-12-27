@@ -1048,7 +1048,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         FormEntity incomePrice = addFormEntity(new IncomePriceFormEntity(print, 4100));
         FormEntity revalueAct = addFormEntity(new RevalueActFormEntity(print, 4200));
         FormEntity pricers = addFormEntity(new PricersFormEntity(print, 4300));
-        addFormEntity(new TestForm(print, 4400, "Пример"));
 
         NavigatorElement delivery = new NavigatorElement(baseElement, 1000, "Управление закупками");
         addFormEntity(new SupplierArticleFormEntity(delivery, 1050));
@@ -1180,7 +1179,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         @Override
         public DefaultFormView createDefaultRichDesign() {
 
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+            DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
 
             design.setKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F6, InputEvent.SHIFT_DOWN_MASK | InputEvent.SHIFT_MASK));
 
@@ -1740,7 +1739,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addPropertyDraw(obligationToIssued, objObligation);
             addPropertyDraw(orderSaleUseObligation, objDoc, objObligation);
 
-            if (toAdd) {
+            if(toAdd) {
                 objArt.groupTo.propertyHighlight = addPropertyObject(articleSaleAction, objArt);
 
                 objObligation.groupTo.propertyHighlight = addPropertyObject(orderSaleObligationCanNotBeUsed, objDoc, objObligation);
@@ -1803,7 +1802,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
                 design.get(getPropertyDraw(printOrderCheck)).constraints.insetsSibling.right = 100;
 
-                design.get(objObligation.groupTo).highlightColor = new Color(255, 0, 0);
+                design.get(objObligation.groupTo).highlightColor = new Color(255,0,0);
             }
 
             design.get(objCoupon.groupTo).grid.minRowCount = 2;
@@ -2510,7 +2509,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     }
 
-    public class SaleCheckCertFormEntity extends SaleCertFormEntity {
+       public class SaleCheckCertFormEntity extends SaleCertFormEntity {
 
         @Override
         public boolean isReadOnly() {
@@ -2769,147 +2768,5 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             actions.add(new MessageClientAction("Данные были успешно выгружены", "Экспорт"));
         }
     }
-
-    private class TestForm extends FormEntity {
-        ObjectEntity objcustomUser;
-        ObjectEntity objpolicy;
-        PropertyDrawEntity propobj3;
-        RegularFilterGroupEntity filterGroup4;
-
-        public TestForm(NavigatorElement parent, int iID, String caption) {
-            super(parent, iID, caption);
-
-            objcustomUser = addSingleGroupObject(customUser, "null");
-            objpolicy = addSingleGroupObject(policy, "null");
-
-            propobj3 = addPropertyDraw(selection.getLP(new ValueClass[]{customUser}), objcustomUser);
-            addPropertyDraw(new LP[]{getAddObjectAction(customUser)});
-            addPropertyDraw(new LP[]{objectValue.getLP(policy)}, objpolicy);
-            addPropertyDraw(new LP[]{userPolicyOrder}, objpolicy, objcustomUser);
-            addPropertyDraw(new LP[]{getLP("ObjectValueProperty_named"), userLogin, userPassword, userFirstName, userLastName,barcode,delete}, objcustomUser);
-
-            filterGroup4 = new RegularFilterGroupEntity(4);
-            filterGroup4.addFilter(new RegularFilterEntity(5, new NotNullFilterEntity(addPropertyObject(selection.getLP(new ValueClass[]{customUser}), objcustomUser)), "Отмеченные", KeyStroke.getKeyStroke("alt pressed O")), true);
-            addRegularFilterGroup(filterGroup4);
-        }
-
-        @Override
-        public FormView createDefaultRichDesign() {
-            CustomFormView design = new CustomFormView(this);
-            design.setMainContainer(design.createMainContainer("mainContainer", "Главный контейнер"));
-            ContainerView component36 = design.createContainer("Обычный пользователь", "Группа объектов", "groupContainer1");
-            design.mainContainer.add(component36);
-            ContainerView component37 = design.createContainer(null, "Табличная часть", "gridContainer1");
-            component36.add(component37);
-            ClassChooserView component33 = design.createClassChooser(2);
-            component37.add(component33);
-            GridView component34 = design.createGrid(1);
-            component37.add(component34);
-            component37.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
-            ContainerView component38 = design.createContainer(null, "Панель", "panelContainer1");
-            component36.add(component38);
-            PropertyDrawView component3 = design.createPropertyDraw(propobj3);
-            component38.add(component3);
-            PropertyDrawView component6 = design.createPropertyDraw(getLP("ObjectValueProperty_named"), objcustomUser);
-            component38.add(component6);
-            PropertyDrawView component7 = design.createPropertyDraw(userLogin, objcustomUser);
-            component38.add(component7);
-            PropertyDrawView component8 = design.createPropertyDraw(userPassword, objcustomUser);
-            component38.add(component8);
-            PropertyDrawView component9 = design.createPropertyDraw(userFirstName, objcustomUser);
-            component38.add(component9);
-            PropertyDrawView component10 = design.createPropertyDraw(userLastName, objcustomUser);
-            component38.add(component10);
-            PropertyDrawView component12 = design.createPropertyDraw(barcode, objcustomUser);
-            component38.add(component12);
-            PropertyDrawView component21 = design.createPropertyDraw(getAddObjectAction(customUser));
-            component38.add(component21);
-            PropertyDrawView component20 = design.createPropertyDraw(delete, objcustomUser);
-            component38.add(component20);
-            ContainerView component39 = design.createContainer(null, "Управляющие объекты", "null");
-            component38.add(component39);
-            ContainerView component40 = design.createContainer(null, "Контейнер фильтров", "filterContainer1");
-            component39.add(component40);
-            RegularFilterGroupView component4 = design.createRegularFilterGroup(filterGroup4);
-            component40.add(component4);
-            component40.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
-            ShowTypeView component35 = design.createShowType(1);
-            component39.add(component35);
-            component39.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
-            component39.constraints.insetsInside = new Insets(0, 0, 0, 0);
-            component35.constraints.directions = new SimplexComponentDirections(0.01, 0.0, 0.0, 0.01);
-            component36.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
-            ContainerView component44 = design.createContainer("Политика безопасности", "Группа объектов", "groupContainer14");
-            design.mainContainer.add(component44);
-            ContainerView component45 = design.createContainer(null, "Табличная часть", "gridContainer14");
-            component44.add(component45);
-            ClassChooserView component41 = design.createClassChooser(15);
-            component45.add(component41);
-            GridView component42 = design.createGrid(14);
-            component45.add(component42);
-            component45.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
-            ContainerView component46 = design.createContainer(null, "Панель", "panelContainer14");
-            component44.add(component46);
-            PropertyDrawView component16 = design.createPropertyDraw(getLP("ObjectValueProperty_named"), objpolicy);
-            component46.add(component16);
-            PropertyDrawView component22 = design.createPropertyDraw(userPolicyOrder, objpolicy, objcustomUser);
-            component22.entity.columnGroupObjects.add(objcustomUser.groupTo);
-            component46.add(component22);
-            ContainerView component47 = design.createContainer(null, "Управляющие объекты", "null");
-            component46.add(component47);
-            ContainerView component48 = design.createContainer(null, "Контейнер фильтров", "filterContainer14");
-            component47.add(component48);
-            component48.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
-            ShowTypeView component43 = design.createShowType(14);
-            component47.add(component43);
-            component47.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
-            component47.constraints.insetsInside = new Insets(0, 0, 0, 0);
-            component43.constraints.directions = new SimplexComponentDirections(0.01, 0.0, 0.0, 0.01);
-            component44.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
-            ContainerView component24 = design.createContainer(null, "Служебные кнопки", "null");
-            design.mainContainer.add(component24);
-            FunctionView component25 = design.createPrintFunction("Печать");
-            component24.add(component25);
-            FunctionView component26 = design.createXlsFunction("Xls");
-            component24.add(component26);
-            FunctionView component27 = design.createNullFunction("Сбросить");
-            component24.add(component27);
-            FunctionView component28 = design.createRefreshFunction("Обновить");
-            component24.add(component28);
-            FunctionView component29 = design.createApplyFunction("Применить");
-            component24.add(component29);
-            FunctionView component30 = design.createCancelFunction("Отменить");
-            component24.add(component30);
-            FunctionView component31 = design.createOkFunction("ОК");
-            component24.add(component31);
-            FunctionView component32 = design.createCloseFunction("Закрыть");
-            component24.add(component32);
-            component24.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
-            component25.constraints.directions = new SimplexComponentDirections(0.0, 0.01, 0.01, 0.0);
-            component26.constraints.directions = new SimplexComponentDirections(0.0, 0.01, 0.01, 0.0);
-            component27.constraints.directions = new SimplexComponentDirections(0.0, 0.01, 0.01, 0.0);
-            component28.constraints.directions = new SimplexComponentDirections(0.0, 0.0, 0.01, 0.01);
-            component29.constraints.insetsSibling = new Insets(0, 8, 0, 0);
-            component29.constraints.directions = new SimplexComponentDirections(0.0, 0.0, 0.01, 0.01);
-            component30.constraints.directions = new SimplexComponentDirections(0.0, 0.0, 0.01, 0.01);
-            component31.constraints.insetsSibling = new Insets(0, 8, 0, 0);
-            component31.constraints.directions = new SimplexComponentDirections(0.0, 0.0, 0.01, 0.01);
-            component32.constraints.directions = new SimplexComponentDirections(0.0, 0.0, 0.01, 0.01);
-            design.mainContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
-            GroupObjectView groupView1 = design.createGroupObject(objcustomUser.groupTo, component35, component34);
-            design.groupObjects.add(groupView1);
-            groupView1.getObjectView(objcustomUser).changeClassChooserLocation(component33);
-            GroupObjectView groupView14 = design.createGroupObject(objpolicy.groupTo, component43, component42);
-            design.groupObjects.add(groupView14);
-            groupView14.getObjectView(objpolicy).changeClassChooserLocation(component41);
-            return design;
-        }
-
-        @Override
-        public boolean shouldProceedDefaultDraw() {
-            return false;
-        }
-    }
-
 
 }
