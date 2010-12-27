@@ -88,6 +88,6 @@ public class RegularFilterGroupDescriptor extends ContextIdentityObject implemen
     }
 
     public String getCodeConstructor() {
-        return "new RegularFilterGroupEntity(" + getID() + ");";
+        return "new RegularFilterGroupEntity(genID());";
     }
 }

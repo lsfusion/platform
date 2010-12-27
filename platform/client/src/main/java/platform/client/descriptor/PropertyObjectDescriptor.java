@@ -95,10 +95,10 @@ public class PropertyObjectDescriptor extends PropertyDescriptorImplement<Proper
         return property.hashCode() * 31 + mapping.hashCode();
     }
 
-    public String getInstanceCode(Map<ObjectDescriptor, String> objectNames) {
-        String code = "addPropertyObject(" + property.getSID();
+    public String getInstanceCode() {
+        String code = "addPropertyObject(" + property.code;
         for (PropertyInterfaceDescriptor pid : mapping.keySet()) {
-            code += ", " + mapping.get(pid).getInstanceCode(objectNames);
+            code += ", " + mapping.get(pid).getInstanceCode();
         }
         code += ")";
         return code;

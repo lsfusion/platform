@@ -138,7 +138,7 @@ public class CodeGenerator {
     public static String addFixedFilters(Set<FilterDescriptor> filters, StringBuilder result) {
         for (FilterDescriptor filter : filters) {
             result.append(intend + "addFixedFilter(");
-            result.append(filter.getCodeConstructor(objectNames));
+            result.append(filter.getCodeConstructor());
             result.append(");\n");
         }
         return result.toString();
@@ -149,7 +149,7 @@ public class CodeGenerator {
             String groupName = filterGroups.get(group);
             result.append(intend + groupName + " = " + group.getCodeConstructor());
             for (RegularFilterDescriptor filter : group.filters) {
-                result.append("\n" + intend + groupName + ".addFilter(" + filter.getCodeConstructor(objectNames) + ", " + filter.getClient().showKey + ");");
+                result.append("\n" + intend + groupName + ".addFilter(" + filter.getCodeConstructor() + ", " + filter.getClient().showKey + ");");
             }
             result.append("\n" + intend + "addRegularFilterGroup(" + groupName + ");");
             result.append("\n");
@@ -157,7 +157,7 @@ public class CodeGenerator {
         return result.toString();
     }
 
-    private static String addContainers(ClientComponent component, String name) {
+    private static String addContainers(FormDescriptor form, ClientComponent component, String name) {
         StringBuilder temp = new StringBuilder();
         if (component instanceof ClientContainer) {
             for (ClientComponent child : ((ClientContainer) component).children) {
@@ -168,25 +168,28 @@ public class CodeGenerator {
                     temp.append(intend + ((ClientRegularFilterGroup) child).getCodeConstructor(childName, filterGroups.get(filterGroupViews.get(child))) + "\n");
                 }
 
-                if (child instanceof ClientPropertyDraw) {
-                    List<ClientGroupObject> groupList = ((ClientPropertyDraw) child).columnGroupObjects;
-                    if (!groupList.isEmpty()) {
-                        temp.append(intend + childName + ".entity.columnGroupObjects.");
-                        if (groupList.size() == 1) {
-                            temp.append("add(" + "grObj" + groupList.get(0).getSID() + ");\n");
-                        } else {
-                            temp.append("addAll(BaseUtils.toList(");
-                            for (ClientGroupObject object : groupList) {
-                                temp.append("grObj" + object.getSID() + ", ");
+                if(child instanceof ClientPropertyDraw) {
+                    List<ClientGroupObject> groupList = ((ClientPropertyDraw)child).columnGroupObjects;
+                    if ( !groupList.isEmpty() ) {
+                        for (ClientGroupObject group : groupList) {
+                            for (GroupObjectDescriptor obj : form.groupObjects) {
+                                if (obj.client.equals(group)) {
+                                    temp.append(intend + childName + ".entity.addColumnGroupObject(" + obj.getVariableName() + ");\n");    
+                                }
                             }
-                            temp.delete(temp.length() - 2, temp.length());
-                            temp.append("));\n");
                         }
+                        temp.append(intend + childName + ".entity.setPropertyCaption(" +
+                                ((ClientPropertyDraw)child).getDescriptor().getPropertyCaption().getInstanceCode());
+                        temp.append(");\n");
+                    }
+                    
+                    if (((ClientPropertyDraw) child).editKey != null) {
+                        temp.append(intend + childName + ".editKey = KeyStroke.getKeyStroke(\"" + ((ClientPropertyDraw) child).editKey + "\");\n");
                     }
                 }
 
                 temp.append(intend + name + ".add(" + childName + ");\n");
-                temp.append(addContainers(child, childName));
+                temp.append(addContainers(form, child, childName));
             }
             temp.append(changeConstraints(component, name));
             for (ClientComponent child : ((ClientContainer) component).children) {
@@ -254,7 +257,7 @@ public class CodeGenerator {
         result.append(intend + "CustomFormView design = new CustomFormView(this);\n");
         result.append(intend + "design.setMainContainer(design.createMainContainer(\"" + form.client.mainContainer.getSID() +
                 "\", \"" + form.client.mainContainer.getCaption() + "\"));\n");
-        result.append(addContainers(form.client.mainContainer, "design.mainContainer"));
+        result.append(addContainers(form, form.client.mainContainer, "design.mainContainer"));
 
         for (GroupObjectDescriptor groupObject : form.groupObjects) {
             String name = "groupView" + groupObject.getID();

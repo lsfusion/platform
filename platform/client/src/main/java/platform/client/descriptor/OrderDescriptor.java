@@ -9,7 +9,7 @@ import java.util.Map;
 public interface OrderDescriptor extends ClientCustomSerializable {
 
     GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groups);
-    public String getInstanceCode(Map<ObjectDescriptor, String> objectNames);
+    public String getInstanceCode();
 
     public static String[] derivedNames = new String[]{"Сравнение", "Определено", "Класс", "Отрицание", "Или"};
     public static Class[] derivedClasses = new Class[]{CompareFilterDescriptor.class, NotNullFilterDescriptor.class, IsClassFilterDescriptor.class, NotFilterDescriptor.class, OrFilterDescriptor.class};

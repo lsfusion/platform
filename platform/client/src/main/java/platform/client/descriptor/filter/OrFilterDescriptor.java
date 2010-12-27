@@ -63,7 +63,7 @@ public class OrFilterDescriptor extends FilterDescriptor {
         return op2;
     }
 
-    public String getCodeConstructor(Map<ObjectDescriptor, String> objectNames) {
-        return "new OrFilterEntity(" + op1.getCodeConstructor(objectNames) + ", " + op2.getCodeConstructor(objectNames) + ")";
+    public String getCodeConstructor() {
+        return "new OrFilterEntity(" + op1.getCodeConstructor() + ", " + op2.getCodeConstructor() + ")";
     }
 }

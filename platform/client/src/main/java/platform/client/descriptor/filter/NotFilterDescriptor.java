@@ -51,7 +51,7 @@ public class NotFilterDescriptor extends FilterDescriptor {
         return filter;
     }
 
-    public String getCodeConstructor(Map<ObjectDescriptor, String> objectNames) {
-        return "new NotFilterEntity(" + filter.getCodeConstructor(objectNames) + ")";
+    public String getCodeConstructor() {
+        return "new NotFilterEntity(" + filter.getCodeConstructor() + ")";
     }
 }

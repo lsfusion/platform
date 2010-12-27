@@ -24,7 +24,7 @@ public abstract class FilterDescriptor extends ContextObject implements ClientCu
 
     public abstract FilterNode createNode(Object group);
 
-    public abstract String getCodeConstructor(Map<ObjectDescriptor, String> objectNames);
+    public abstract String getCodeConstructor();
 
     public static String[] derivedNames = new String[]{"Сравнение", "Определено", "Класс", "Отрицание", "Или"};
     public static Class[] derivedClasses = new Class[]{CompareFilterDescriptor.class, NotNullFilterDescriptor.class, IsClassFilterDescriptor.class, NotFilterDescriptor.class, OrFilterDescriptor.class};

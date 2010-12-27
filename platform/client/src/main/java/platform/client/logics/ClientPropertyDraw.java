@@ -428,6 +428,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         this.descriptor = descriptor;
     }
 
+    public PropertyDrawDescriptor getDescriptor() {
+        return descriptor;
+    }
+
     @Override
     public String getCodeConstructor(String name) {
         StringBuilder result = new StringBuilder("PropertyDrawView " + name + " = design.createPropertyDraw(");

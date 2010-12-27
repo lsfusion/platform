@@ -3,10 +3,7 @@ package platform.server.form.view;
 import org.springframework.beans.factory.parsing.PropertyEntry;
 import platform.base.identity.IdentityObject;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
-import platform.server.form.entity.FormEntity;
-import platform.server.form.entity.GroupObjectEntity;
-import platform.server.form.entity.ObjectEntity;
-import platform.server.form.entity.PropertyDrawEntity;
+import platform.server.form.entity.*;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.logics.linear.LP;
 
