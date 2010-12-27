@@ -70,6 +70,8 @@ public abstract class GridTable extends ClientFormTable
 
         setAutoCreateColumnsFromModel(false);
 
+        setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+
         model = (GridTableModel) getModel();
 
         logicsSupplier = ilogicsSupplier;
@@ -371,7 +373,11 @@ public abstract class GridTable extends ClientFormTable
         TableColumnModel columnModel = getColumnModel();
 
         for (int i = 0; i < getColumnCount(); i++) {
-            minWidth += columnModel.getColumn(i).getMinWidth();
+            if (autoResizeMode == JTable.AUTO_RESIZE_OFF) {
+                minWidth += columnModel.getColumn(i).getWidth();
+            } else {
+                minWidth += columnModel.getColumn(i).getMinWidth();
+            }
         }
 
         // тут надо смотреть pane, а не саму table
@@ -388,13 +394,30 @@ public abstract class GridTable extends ClientFormTable
         int newAutoResizeMode = fitWidth()
                                 ? JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS
                                 : JTable.AUTO_RESIZE_OFF;
-
         if (newAutoResizeMode != autoResizeMode) {
             autoResizeMode = newAutoResizeMode;
             setAutoResizeMode(newAutoResizeMode);
-        }
 
+            if (newAutoResizeMode == JTable.AUTO_RESIZE_OFF) {
+                setPreferredColumnWidthsAsMinWidth();
+            } else {
+                resetPreferredColumnWidths();
+            }
+        }
         super.doLayout();
+    }
+
+    private void setPreferredColumnWidthsAsMinWidth() {
+        for (int i = 0; i < model.getColumnCount(); ++i) {
+            getColumnModel().getColumn(i).setPreferredWidth(getColumnModel().getColumn(i).getMinWidth());
+        }
+    }
+
+    private void resetPreferredColumnWidths() {
+        for (int i = 0; i < model.getColumnCount(); ++i) {
+            ClientPropertyDraw cell = model.getColumnProperty(i);
+            getColumnModel().getColumn(i).setPreferredWidth(cell.getPreferredWidth(this));
+        }
     }
 
     @Override
