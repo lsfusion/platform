@@ -285,7 +285,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     public void switchClassView(GroupObjectInstance group) {
-        changeClassView(group, switchView(group.curClassView));
+        ClassViewType newClassView = switchView(group.curClassView);
+        if (group.entity.isAllowedClassView(newClassView)) {
+            changeClassView(group, newClassView);
+        }
     }
 
     public void changeClassView(GroupObjectInstance group, ClassViewType show) {

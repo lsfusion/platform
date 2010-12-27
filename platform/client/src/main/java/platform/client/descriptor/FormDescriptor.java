@@ -35,6 +35,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
     public Set<FilterDescriptor> fixedFilters = new HashSet<FilterDescriptor>();
     public List<RegularFilterGroupDescriptor> regularFilterGroups = new ArrayList<RegularFilterGroupDescriptor>();
     public Map<PropertyDrawDescriptor, GroupObjectDescriptor> forceDefaultDraw = new HashMap<PropertyDrawDescriptor, GroupObjectDescriptor>();
+    public Map<ObjectDescriptor, List<PropertyObjectDescriptor>> autoActions = new HashMap<ObjectDescriptor, List<PropertyObjectDescriptor>>();
 
     // по сути IncrementLazy
     IncrementView allPropertiesLazy;
@@ -211,6 +212,12 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         pool.serializeCollection(outStream, fixedFilters);
         pool.serializeCollection(outStream, regularFilterGroups);
         pool.serializeMap(outStream, forceDefaultDraw);
+
+        outStream.writeInt(autoActions.size());
+        for (Map.Entry<ObjectDescriptor, List<PropertyObjectDescriptor>> entry : autoActions.entrySet()) {
+            pool.serializeObject(outStream, entry.getKey());
+            pool.serializeCollection(outStream, entry.getValue());
+        }
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -223,6 +230,14 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         fixedFilters = pool.deserializeSet(inStream);
         regularFilterGroups = pool.deserializeList(inStream);
         forceDefaultDraw = pool.deserializeMap(inStream);
+
+        autoActions = new HashMap<ObjectDescriptor, List<PropertyObjectDescriptor>>();
+        int length = inStream.readInt();
+        for (int i = 0; i < length; ++i) {
+            ObjectDescriptor object = pool.deserializeObject(inStream);
+            List<PropertyObjectDescriptor> actions = pool.deserializeList(inStream);
+            autoActions.put(object, actions);
+        }
 
         client = pool.context;
 

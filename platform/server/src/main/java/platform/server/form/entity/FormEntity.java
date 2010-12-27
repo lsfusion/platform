@@ -533,6 +533,12 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         pool.serializeCollection(outStream, fixedFilters);
         pool.serializeCollection(outStream, regularFilterGroups);
         pool.serializeMap(outStream, forceDefaultDraw);
+
+        outStream.writeInt(autoActions.size());
+        for (Map.Entry<ObjectEntity, List<PropertyObjectEntity>> entry : autoActions.entrySet()) {
+            pool.serializeObject(outStream, entry.getKey());
+            pool.serializeCollection(outStream, entry.getValue());
+        }
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -545,6 +551,14 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         fixedFilters = pool.deserializeSet(inStream);
         regularFilterGroups = pool.deserializeList(inStream);
         forceDefaultDraw = pool.deserializeMap(inStream);
+
+        autoActions = new HashMap<ObjectEntity, List<PropertyObjectEntity>>();
+        int length = inStream.readInt();
+        for (int i = 0; i < length; ++i) {
+            ObjectEntity object = pool.deserializeObject(inStream);
+            List<PropertyObjectEntity> actions = pool.deserializeList(inStream);
+            autoActions.put(object, actions);
+        }
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {

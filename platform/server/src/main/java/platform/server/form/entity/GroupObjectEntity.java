@@ -100,4 +100,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.GRID, ClassViewType.HIDE));
         banClassView.remove(type);
     }
+
+    public boolean isAllowedClassView(ClassViewType type) {
+        return !banClassView.contains(type);
+    }
 }
