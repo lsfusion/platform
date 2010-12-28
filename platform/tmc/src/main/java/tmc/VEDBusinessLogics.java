@@ -1390,6 +1390,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     private abstract class ArticleFormEntity extends DocumentFormEntity {
         public final ObjectEntity objArt;
+        public RegularFilterGroupEntity articleFilterGroup;
+        public RegularFilterEntity documentFilter;
 
         protected abstract PropertyObjectEntity getCommitedQuantity();
 
@@ -1408,13 +1410,14 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             addPropertyDraw(objDoc, objArt, getDocumentArticleProps());
 
-            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
-            filterGroup.addFilter(new RegularFilterEntity(genID(),
+            articleFilterGroup = new RegularFilterGroupEntity(genID());
+            documentFilter = new RegularFilterEntity(genID(),
                     getDocumentArticleFilter(),
                     "Документ",
-                    KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)), !toAdd || filled);
-            fillExtraFilters(filterGroup, toAdd && !filled);
-            addRegularFilterGroup(filterGroup);
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0));
+            articleFilterGroup.addFilter(documentFilter, !toAdd || filled);
+            fillExtraFilters(articleFilterGroup, toAdd && !filled);
+            addRegularFilterGroup(articleFilterGroup);
 
 //            addHintsNoUpdate(properties, moveGroup);
         }
@@ -1470,17 +1473,21 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     private abstract class InnerFormEntity extends ArticleNoCheckFormEntity {
 
+        public RegularFilterEntity availableFilter;
+
         protected PropertyObjectEntity getCommitedQuantity() {
             return addPropertyObject(articleInnerQuantity, objDoc, objArt);
         }
 
         @Override
         protected void fillExtraFilters(RegularFilterGroupEntity filterGroup, boolean toAdd) {
-            if (!fixFilters)
-                filterGroup.addFilter(new RegularFilterEntity(genID(),
+            if (!fixFilters) {
+                availableFilter = new RegularFilterEntity(genID(),
                         new NotNullFilterEntity(addPropertyObject(documentFreeQuantity, objDoc, objArt)),
                         "Дост. кол-во",
-                        KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)), toAdd);
+                        KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0));
+                filterGroup.addFilter(availableFilter, toAdd);
+            }
         }
 
         protected InnerFormEntity(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd, boolean filled) {
@@ -1824,6 +1831,16 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             objObligationView.classChooser.show = false;
 
             design.get(getPropertyDraw(objectClassName, objObligation)).maximumSize = new Dimension(50, 50);
+
+            if (documentFilter != null) {
+                RegularFilterView docFilterView = design.get(articleFilterGroup).get(documentFilter);
+                RegularFilterView availableFilterView = design.get(articleFilterGroup).get(availableFilter);
+
+                //todo: проставить нужные порядки
+//                docFilterView.orders.put(design.getProperty(getPropertyDraw(articleQuantity)), true);
+//                availableFilterView.orders.put(design.getProperty(getPropertyDraw(documentFreeQuantity)), true);
+//                design.get(articleFilterGroup).nullOrders.put(design.getProperty(getPropertyDraw(documentFreeQuantity)), false);
+            }
 
             return design;
         }

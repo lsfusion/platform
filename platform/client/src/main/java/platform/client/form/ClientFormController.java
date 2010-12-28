@@ -6,6 +6,7 @@
 package platform.client.form;
 
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
 import platform.client.ClientButton;
@@ -24,19 +25,24 @@ import platform.interop.Order;
 import platform.interop.Scroll;
 import platform.interop.action.CheckFailed;
 import platform.interop.action.ClientAction;
-import platform.interop.action.ClientResultAction;
 import platform.interop.action.ClientApply;
+import platform.interop.action.ClientResultAction;
 import platform.interop.form.RemoteChanges;
 import platform.interop.form.RemoteFormInterface;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static platform.interop.Order.*;
 
 public class ClientFormController {
 
@@ -194,89 +200,85 @@ public class ClientFormController {
     }
 
     private void initializeRegularFilters() {
-
         // Проинициализируем регулярные фильтры
-
         for (final ClientRegularFilterGroup filterGroup : form.regularFilterGroups) {
-
             if (filterGroup.filters.size() == 1) {
-
-                final ClientRegularFilter singleFilter = filterGroup.filters.get(0);
-
-                final JCheckBox checkBox = new JCheckBox(singleFilter.getFullCaption());
-
-                if (filterGroup.defaultFilter >= 0) {
-                    checkBox.setSelected(true);
-                    try {
-                        setRemoteRegularFilter(filterGroup, singleFilter);
-                    } catch (IOException e) {
-                        throw new RuntimeException("Ошибка при инициализации регулярного фильтра", e);
-                    }
-                }
-
-                checkBox.addItemListener(new ItemListener() {
-
-                    public void itemStateChanged(ItemEvent ie) {
-                        try {
-                            if (ie.getStateChange() == ItemEvent.SELECTED)
-                                setRegularFilter(filterGroup, singleFilter);
-                            if (ie.getStateChange() == ItemEvent.DESELECTED)
-                                setRegularFilter(filterGroup, null);
-                        } catch (IOException e) {
-                            throw new RuntimeException("Ошибка при изменении регулярного фильтра", e);
-                        }
-                    }
-                });
-                formLayout.add(filterGroup, checkBox);
-                formLayout.addBinding(singleFilter.key, "regularFilter" + filterGroup.getID() + singleFilter.getID(), new AbstractAction() {
-                    public void actionPerformed(ActionEvent e) {
-                        checkBox.setSelected(!checkBox.isSelected());
-                    }
-                });
+                createSingleFilterComponent(filterGroup, BaseUtils.single(filterGroup.filters));
             } else {
+                createMultipleFilterComponent(filterGroup);
+            }
+        }
+    }
 
-                final JComboBox comboBox = new JComboBox();
-                comboBox.addItem("(Все)");
-                for (ClientRegularFilter filter : filterGroup.filters) {
-                    comboBox.addItem(new ClientRegularFilterWrapped(filter));
-                }
+    private void createMultipleFilterComponent(final ClientRegularFilterGroup filterGroup) {
+        final JComboBox comboBox = new JComboBox();
+        comboBox.addItem(new ClientRegularFilterWrapped("(Все)"));
+        for (ClientRegularFilter filter : filterGroup.filters) {
+            comboBox.addItem(new ClientRegularFilterWrapped(filter));
+        }
 
-                if (filterGroup.defaultFilter >= 0) {
-                    ClientRegularFilter defaultFilter = filterGroup.filters.get(filterGroup.defaultFilter);
-                    comboBox.setSelectedItem(new ClientRegularFilterWrapped(defaultFilter));
-                    try {
-                        setRemoteRegularFilter(filterGroup, defaultFilter);
-                    } catch (IOException e) {
-                        throw new RuntimeException("Ошибка при инициализации регулярного фильтра", e);
+        if (filterGroup.defaultFilter >= 0) {
+            ClientRegularFilter defaultFilter = filterGroup.filters.get(filterGroup.defaultFilter);
+            comboBox.setSelectedItem(new ClientRegularFilterWrapped(defaultFilter));
+            try {
+                setRemoteRegularFilter(filterGroup, defaultFilter);
+            } catch (IOException e) {
+                throw new RuntimeException("Ошибка при инициализации регулярного фильтра", e);
+            }
+        }
+
+        comboBox.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent ie) {
+                try {
+                    if (ie.getStateChange() == ItemEvent.SELECTED) {
+                        setRegularFilter(filterGroup, ((ClientRegularFilterWrapped) ie.getItem()).filter);
                     }
-                }
-
-                comboBox.addItemListener(new ItemListener() {
-
-                    public void itemStateChanged(ItemEvent ie) {
-                        try {
-                            if (ie.getStateChange() == ItemEvent.SELECTED) {
-                                setRegularFilter(filterGroup,
-                                        ie.getItem() instanceof ClientRegularFilterWrapped
-                                                ? ((ClientRegularFilterWrapped) ie.getItem()).filter : null);
-                            }
-                        } catch (IOException e) {
-                            throw new RuntimeException("Ошибка при изменении регулярного фильтра", e);
-                        }
-                    }
-                });
-                formLayout.add(filterGroup, comboBox);
-
-                for (final ClientRegularFilter singleFilter : filterGroup.filters) {
-                    formLayout.addBinding(singleFilter.key, "regularFilter" + filterGroup.getID() + singleFilter.getID(), new AbstractAction() {
-                        public void actionPerformed(ActionEvent e) {
-                            comboBox.setSelectedItem(new ClientRegularFilterWrapped(singleFilter));
-                        }
-                    });
+                } catch (IOException e) {
+                    throw new RuntimeException("Ошибка при изменении регулярного фильтра", e);
                 }
             }
+        });
+        formLayout.add(filterGroup, comboBox);
 
+        for (final ClientRegularFilter filter : filterGroup.filters) {
+            formLayout.addBinding(filter.key, "regularFilter" + filterGroup.getID() + filter.getID(), new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    comboBox.setSelectedItem(new ClientRegularFilterWrapped(filter));
+                }
+            });
         }
+    }
+
+    private void createSingleFilterComponent(final ClientRegularFilterGroup filterGroup, final ClientRegularFilter singleFilter) {
+        final JCheckBox checkBox = new JCheckBox(singleFilter.getFullCaption());
+
+        if (filterGroup.defaultFilter >= 0) {
+            checkBox.setSelected(true);
+            try {
+                setRemoteRegularFilter(filterGroup, singleFilter);
+            } catch (IOException e) {
+                throw new RuntimeException("Ошибка при инициализации регулярного фильтра", e);
+            }
+        }
+
+        checkBox.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent ie) {
+                try {
+                    if (ie.getStateChange() == ItemEvent.SELECTED)
+                        setRegularFilter(filterGroup, singleFilter);
+                    if (ie.getStateChange() == ItemEvent.DESELECTED)
+                        setRegularFilter(filterGroup, null);
+                } catch (IOException e) {
+                    throw new RuntimeException("Ошибка при изменении регулярного фильтра", e);
+                }
+            }
+        });
+        formLayout.add(filterGroup, checkBox);
+        formLayout.addBinding(singleFilter.key, "regularFilter" + filterGroup.getID() + singleFilter.getID(), new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                checkBox.setSelected(!checkBox.isSelected());
+            }
+        });
     }
 
     public void quickEditFilter(int initialFilterPropertyDrawID) {
@@ -293,20 +295,30 @@ public class ClientFormController {
     public class ClientRegularFilterWrapped {
 
         public ClientRegularFilter filter;
+        private String caption;
+
+        public ClientRegularFilterWrapped(String caption) {
+            this(caption, null);
+        }
 
         public ClientRegularFilterWrapped(ClientRegularFilter filter) {
+            this(null, filter);
+        }
+
+        public ClientRegularFilterWrapped(String caption, ClientRegularFilter filter) {
             this.filter = filter;
+            this.caption = caption;
         }
 
         @Override
         public boolean equals(Object wrapped) {
             return wrapped instanceof ClientRegularFilterWrapped
-                    ? this.filter.equals(((ClientRegularFilterWrapped) wrapped).filter) : this == wrapped;
+                   && (filter != null ? filter.equals(((ClientRegularFilterWrapped) wrapped).filter) : this == wrapped);
         }
 
         @Override
         public String toString() {
-            return filter.getFullCaption();
+            return caption==null ? filter.getFullCaption() : caption;
         }
     }
 
@@ -389,14 +401,26 @@ public class ClientFormController {
     }
 
     private boolean ordersInitialized = false;
-    private void initializeOrders() throws IOException {
-        ordersInitialized = true;
-        // Применяем порядки по умолчанию
-        for (Map.Entry<ClientPropertyDraw, Boolean> entry : form.defaultOrders.entrySet()) {
-            controllers.get(entry.getKey().getGroupObject()).changeGridOrder(entry.getKey(), Order.ADD);
-            if (!entry.getValue()) {
-                controllers.get(entry.getKey().getGroupObject()).changeGridOrder(entry.getKey(), Order.DIR);
+    private void initializeOrders() {
+        if (!ordersInitialized) {
+            try {
+                // Применяем порядки по умолчанию
+                applyOrders(form.defaultOrders);
+                ordersInitialized = true;
+            } catch (IOException e) {
+                throw new RuntimeException("Не могу проинициализировать порядки по умолчанию");
             }
+        }
+    }
+
+    private void applyOrders(OrderedMap<ClientPropertyDraw, Boolean> orders) throws IOException {
+        boolean firstOrder = true;
+        for (Map.Entry<ClientPropertyDraw, Boolean> entry : orders.entrySet()) {
+            controllers.get(entry.getKey().getGroupObject()).changeGridOrder(entry.getKey(), firstOrder ? REPLACE : ADD);
+            if (!entry.getValue()) {
+                controllers.get(entry.getKey().getGroupObject()).changeGridOrder(entry.getKey(), DIR);
+            }
+            firstOrder = false;
         }
     }
 
@@ -448,13 +472,7 @@ public class ClientFormController {
             treeController.processFormChanges(formChanges, currentGridObjects);
         }
 
-        if (!ordersInitialized) {
-            try {
-                initializeOrders();
-            } catch (IOException e) {
-                throw new RuntimeException("Не могу проинициализировать порядки по умолчанию");
-            }
-        }
+        initializeOrders();
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -568,8 +586,9 @@ public class ClientFormController {
     }
 
     private void setRegularFilter(ClientRegularFilterGroup filterGroup, ClientRegularFilter filter) throws IOException {
-
         setRemoteRegularFilter(filterGroup, filter);
+
+        applyOrders(filter != null ? filter.orders : filterGroup.nullOrders);
 
         applyRemoteChanges();
     }

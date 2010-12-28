@@ -307,13 +307,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         if (prevFilter != null)
             prevFilter.filter.getApplyObject().removeRegularFilter(prevFilter.filter);
 
-        if (filter == null)
+        if (filter == null) {
             regularFilterValues.remove(filterGroup);
-        else {
+        } else {
             regularFilterValues.put(filterGroup, filter);
             filter.filter.getApplyObject().addRegularFilter(filter.filter);
         }
-
     }
 
     // -------------------------------------- Изменение данных ----------------------------------- //

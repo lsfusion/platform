@@ -22,6 +22,9 @@ public class DefaultFormView extends FormView {
     private transient Map<PropertyDrawEntity, PropertyDrawView> mproperties = new HashMap<PropertyDrawEntity, PropertyDrawView>();
     public PropertyDrawView get(PropertyDrawEntity property) { return mproperties.get(property); }
 
+    private transient Map<RegularFilterGroupEntity, RegularFilterGroupView> mfilters = new HashMap<RegularFilterGroupEntity, RegularFilterGroupView>();
+    public RegularFilterGroupView get(RegularFilterGroupEntity filterGroup) { return mfilters.get(filterGroup); }
+
     public ContainerView getMainContainer() { return mainContainer; }
 
     private transient Map<GroupObjectView, ContainerView> panelContainers = new HashMap<GroupObjectView, ContainerView>();
@@ -130,6 +133,7 @@ public class DefaultFormView extends FormView {
             filterContainers.get(mgroupObjects.get(formEntity.getApplyObject(groupObjects))).add(filterGroupView);
 
             regularFilters.add(filterGroupView);
+            mfilters.put(filterGroup, filterGroupView);
         }
 
         // передобавляем еще раз, чтобы управляющие кнопки оказались в конце контейнера

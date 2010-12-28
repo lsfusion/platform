@@ -21,6 +21,7 @@ import java.util.List;
 public class RegularFilterGroupDescriptor extends ContextIdentityObject implements ClientIdentitySerializable, ContainerMovable<ClientComponent>, CustomConstructible {
 
     public List<RegularFilterDescriptor> filters = new ArrayList<RegularFilterDescriptor>();
+    public int defaultFilter = -1;
 
     public GroupObjectDescriptor getGroupObject(List<GroupObjectDescriptor> groupList) {
         GroupObjectDescriptor result = null;
@@ -48,11 +49,13 @@ public class RegularFilterGroupDescriptor extends ContextIdentityObject implemen
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeCollection(outStream, filters);
+        outStream.writeInt(defaultFilter);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         filters = pool.deserializeList(inStream);
         client = pool.context.getRegularFilterGroup(ID);
+        defaultFilter = inStream.readInt();
     }
 
     public void customConstructor() {

@@ -1,5 +1,6 @@
 package platform.client.logics;
 
+import platform.base.OrderedMap;
 import platform.base.identity.IdentityObject;
 import platform.client.SwingUtils;
 import platform.client.serialization.ClientIdentitySerializable;
@@ -9,12 +10,15 @@ import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Map;
 
 public class ClientRegularFilter extends IdentityObject implements ClientIdentitySerializable {
 
     public String caption = "";
     public KeyStroke key;
     public boolean showKey;
+
+    public OrderedMap<ClientPropertyDraw, Boolean> orders = new OrderedMap<ClientPropertyDraw, Boolean>();
 
     public ClientRegularFilter() {
     }
@@ -38,7 +42,11 @@ public class ClientRegularFilter extends IdentityObject implements ClientIdentit
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        //не надо, т.к. на сервер все данные - в entity
+        outStream.writeInt(orders.size());
+        for (Map.Entry<ClientPropertyDraw, Boolean> entry : orders.entrySet()) {
+            pool.serializeObject(outStream, entry.getKey(), serializationType);
+            outStream.writeBoolean(entry.getValue());
+        }
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -46,5 +54,11 @@ public class ClientRegularFilter extends IdentityObject implements ClientIdentit
 
         key = pool.readObject(inStream);
         showKey = inStream.readBoolean();
+
+        int orderCount = inStream.readInt();
+        for (int i = 0; i < orderCount; i++) {
+            ClientPropertyDraw order = pool.deserializeObject(inStream);
+            orders.put(order, inStream.readBoolean());
+        }
     }
 }

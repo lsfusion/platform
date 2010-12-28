@@ -1,5 +1,6 @@
 package platform.client.logics;
 
+import platform.base.OrderedMap;
 import platform.client.serialization.ClientSerializationPool;
 import platform.base.context.ApplicationContext;
 import platform.interop.form.layout.SimplexConstraints;
@@ -9,10 +10,13 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ClientRegularFilterGroup extends ClientComponent {
 
     public List<ClientRegularFilter> filters = new ArrayList<ClientRegularFilter>();
+
+    public OrderedMap<ClientPropertyDraw, Boolean> nullOrders = new OrderedMap<ClientPropertyDraw, Boolean>();
 
     public int defaultFilter = -1;
 
@@ -34,6 +38,12 @@ public class ClientRegularFilterGroup extends ClientComponent {
         super.customSerialize(pool, outStream, serializationType);
 
         pool.serializeCollection(outStream, filters);
+
+        outStream.writeInt(nullOrders.size());
+        for (Map.Entry<ClientPropertyDraw, Boolean> entry : nullOrders.entrySet()) {
+            pool.serializeObject(outStream, entry.getKey(), serializationType);
+            outStream.writeBoolean(entry.getValue());
+        }
     }
 
     @Override
@@ -43,6 +53,12 @@ public class ClientRegularFilterGroup extends ClientComponent {
         filters = pool.deserializeList(inStream);
 
         defaultFilter = inStream.readInt();
+
+        int orderCount = inStream.readInt();
+        for (int i = 0; i < orderCount; i++) {
+            ClientPropertyDraw order = pool.deserializeObject(inStream);
+            nullOrders.put(order, inStream.readBoolean());
+        }
     }
 
     @Override

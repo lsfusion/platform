@@ -200,9 +200,9 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         regularFilters = pool.deserializeList(inStream);
 
         int orderCount = inStream.readInt();
-        for(int i=0;i<orderCount;i++) {
+        for (int i = 0; i < orderCount; i++) {
             PropertyDrawView order = pool.deserializeObject(inStream);
-            defaultOrders.put(order,inStream.readBoolean());
+            defaultOrders.put(order, inStream.readBoolean());
         }
 
         printFunction = pool.deserializeObject(inStream);
