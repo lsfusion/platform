@@ -295,11 +295,17 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return addPropertyDraw(property, null, objects);
     }
 
-    public PropertyDrawEntity addPropertyDraw(LP[] properties, ObjectEntity... objects) {
-        for (LP property : properties) {
-            addPropertyDraw(property, null, objects);
+    public void addPropertyDraw(LP[] properties, ObjectEntity... objects) {
+        Map<ValueClass, ObjectEntity> classToObject = new HashMap<ValueClass, ObjectEntity>();
+        for (ObjectEntity object : objects) {
+            assert classToObject.put(object.baseClass, object) == null; // ValueClass объектов не должны совпадать
         }
-        return null;
+
+        for (LP property : properties) {
+            List<ObjectEntity> orderedObjects =
+                    BaseUtils.mapList(property.listInterfaces, BaseUtils.join(property.property.getMapClasses(), classToObject));
+            addPropertyDraw(property, null, orderedObjects.toArray(new ObjectEntity[1]));
+        }
     }
 
     protected <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LP<P> property, GroupObjectEntity groupObject, ObjectEntity... objects) {
