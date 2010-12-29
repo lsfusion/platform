@@ -298,7 +298,8 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public void addPropertyDraw(LP[] properties, ObjectEntity... objects) {
         Map<ValueClass, ObjectEntity> classToObject = new HashMap<ValueClass, ObjectEntity>();
         for (ObjectEntity object : objects) {
-            assert classToObject.put(object.baseClass, object) == null; // ValueClass объектов не должны совпадать
+            Object oldValue = classToObject.put(object.baseClass, object);
+            assert oldValue == null; // ValueClass объектов не должны совпадать
         }
 
         for (LP property : properties) {
