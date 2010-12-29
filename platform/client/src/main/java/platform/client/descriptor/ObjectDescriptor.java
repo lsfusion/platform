@@ -74,7 +74,8 @@ public class ObjectDescriptor extends ContextIdentityObject implements PropertyO
         return this.getVariableName();
     }
 
-    public String getVariableName(){
-        return "obj" + getBaseClass().getSID();
+    public String getVariableName() {
+        String name = getBaseClass().getSID().substring(0, 1).toUpperCase() + getBaseClass().getSID().substring(1);
+        return "obj" + name;
     }
 }

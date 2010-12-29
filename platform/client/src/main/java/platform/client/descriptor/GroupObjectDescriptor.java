@@ -207,10 +207,11 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
         if (objects.size() == 1) {
             return objects.get(0).getVariableName() + ".groupTo";
         }
-        StringBuilder result = new StringBuilder("grObj");
+        StringBuilder result = new StringBuilder("");
         for (ObjectDescriptor obj : objects) {
             result.append(obj.getBaseClass().getSID());
         }
-        return result.toString();
+        String name = result.toString().substring(0, 1).toUpperCase() + result.toString().substring(1);
+        return "grObj" + name;
     }
 }

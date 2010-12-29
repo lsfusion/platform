@@ -64,7 +64,7 @@ public class CodeGenerator {
         if (groupObject.objects.size() == 1) {
             ObjectDescriptor object = groupObject.objects.get(0);
             result.append(intend + object.getVariableName() + " = addSingleGroupObject(" +
-                    object.getBaseClass().getCode() + ", \"" + object.getCaption() + "\");\n");
+                    object.getBaseClass().getCode() + ", " + (object.getCaption() == null ? null : "\"" + object.getCaption() + "\"") + ");\n");
         } else {
             result.append(intend + grName + " = new GroupObjectEntity(genID());\n");
             for (ObjectDescriptor object : groupObject.objects) {
@@ -168,21 +168,21 @@ public class CodeGenerator {
                     temp.append(intend + ((ClientRegularFilterGroup) child).getCodeConstructor(childName, filterGroups.get(filterGroupViews.get(child))) + "\n");
                 }
 
-                if(child instanceof ClientPropertyDraw) {
-                    List<ClientGroupObject> groupList = ((ClientPropertyDraw)child).columnGroupObjects;
-                    if ( !groupList.isEmpty() ) {
+                if (child instanceof ClientPropertyDraw) {
+                    List<ClientGroupObject> groupList = ((ClientPropertyDraw) child).columnGroupObjects;
+                    if (!groupList.isEmpty()) {
                         for (ClientGroupObject group : groupList) {
                             for (GroupObjectDescriptor obj : form.groupObjects) {
                                 if (obj.client.equals(group)) {
-                                    temp.append(intend + childName + ".entity.addColumnGroupObject(" + obj.getVariableName() + ");\n");    
+                                    temp.append(intend + childName + ".entity.addColumnGroupObject(" + obj.getVariableName() + ");\n");
                                 }
                             }
                         }
                         temp.append(intend + childName + ".entity.setPropertyCaption(" +
-                                ((ClientPropertyDraw)child).getDescriptor().getPropertyCaption().getInstanceCode());
+                                ((ClientPropertyDraw) child).getDescriptor().getPropertyCaption().getInstanceCode());
                         temp.append(");\n");
                     }
-                    
+
                     if (((ClientPropertyDraw) child).editKey != null) {
                         temp.append(intend + childName + ".editKey = KeyStroke.getKeyStroke(\"" + ((ClientPropertyDraw) child).editKey + "\");\n");
                     }

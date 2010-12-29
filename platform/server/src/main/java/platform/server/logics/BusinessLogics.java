@@ -526,8 +526,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public ObjectValueProperty getObjectValueProperty(ValueClass... valueClasses) {
         List<Property> properties = objectValue.getProperties(valueClasses);
         return properties.size() > 0
-               ? (ObjectValueProperty) properties.iterator().next()
-               : null;
+                ? (ObjectValueProperty) properties.iterator().next()
+                : null;
     }
 
     public abstract class MapClassesPropertySet<K, V extends Property> extends PropertySet {
@@ -788,8 +788,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         public LP getLP(ValueClass cls) {
-           String sid = prefix + cls.getSID();
-           return sidToLP.get(sid);
+            String sid = prefix + cls.getSID();
+            if (!sidToLP.containsKey(sid)) {
+                createProperty(new ValueClass[]{cls});
+            }
+            return sidToLP.get(sid);
         }
     }
 
@@ -991,6 +994,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected abstract class ClassFormsMap {
         private Map<CustomClass, AbstractClassFormEntity<T>> forms = new HashMap<CustomClass, AbstractClassFormEntity<T>>();
+
         public AbstractClassFormEntity<T> getForm(CustomClass customClass) {
             AbstractClassFormEntity<T> form = forms.get(customClass);
             if (form != null) {
@@ -1031,17 +1035,23 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     };
 
-    /** используются для классовых форм в навигаторе */
+    /**
+     * используются для классовых форм в навигаторе
+     */
     public AbstractClassFormEntity<T> getClassForm(CustomClass customClass) {
         return classForms.getForm(customClass);
     }
 
-    /** используются при редактировании свойства даного класса из диалога, т.е. фактически для выбора объекта данного класса */
+    /**
+     * используются при редактировании свойства даного класса из диалога, т.е. фактически для выбора объекта данного класса
+     */
     public AbstractClassFormEntity<T> getClassEditForm(CustomClass customClass) {
         return classEditForms.getForm(customClass);
     }
 
-    /** используется для редактирования конкретного объекта данного класса */
+    /**
+     * используется для редактирования конкретного объекта данного класса
+     */
     public AbstractClassFormEntity<T> getObjectForm(CustomClass customClass) {
         return objectForms.getForm(customClass);
     }
@@ -1086,7 +1096,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         @Override
         public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
             design.get(getPropertyDraw(objectValue, objObjectName)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0);
             return design;
         }
@@ -1915,8 +1925,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         try {
             sqlSession.updateInsertRecord(StructTable.instance, new HashMap<KeyField, DataObject>(), Collections.singletonMap(StructTable.instance.struct, (ObjectValue) new DataObject((Object) outDBStruct.toByteArray(), ByteArrayClass.instance)));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Map<PropertyField, ObjectValue> propFields = Collections.singletonMap(StructTable.instance.struct, (ObjectValue) new DataObject((Object) new byte[0], ByteArrayClass.instance));
             sqlSession.updateInsertRecord(StructTable.instance, new HashMap<KeyField, DataObject>(), propFields);
         }
@@ -3592,8 +3601,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     // params - по каким входам группировать
     protected LP addIAProp(LP dataProperty, Integer... params) {
         return addAProp(new IncrementActionProperty(genSID(), "sys", dataProperty,
-                                                    addMGProp(dataProperty, params),
-                                                    params));
+                addMGProp(dataProperty, params),
+                params));
     }
 
     public static class IncrementActionProperty extends ActionProperty {
@@ -3621,13 +3630,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             for (ClassPropertyInterface classInterface : interfaces) {
                 dataPropertyInput[i] = keys.get(classInterface);
-                if (params.contains(i+1)) {
+                if (params.contains(i + 1)) {
                     maxPropertyInput.add(dataPropertyInput[i]);
                 }
                 i++;
             }
 
-            Integer maxValue = (Integer)maxProperty.read(session, maxPropertyInput.toArray(new DataObject[0]));;
+            Integer maxValue = (Integer) maxProperty.read(session, maxPropertyInput.toArray(new DataObject[0]));
+            ;
             if (maxValue == null)
                 maxValue = 0;
             maxValue += 1;

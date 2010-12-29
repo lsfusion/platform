@@ -65,7 +65,7 @@ public class ClientClassChooser extends ClientComponent {
 
     @Override
     public String getCodeConstructor(String name) {
-        return "ClassChooserView " + name + " = design.createClassChooser(" + object.getID() + ");";
+        return "ClassChooserView " + name + " = design.createClassChooser();";
     }
     
     @Override

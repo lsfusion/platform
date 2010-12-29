@@ -38,7 +38,7 @@ public class ObjectValueProperty extends ExecuteProperty {
 
     @Override
     public String getCode() {
-        return "objectValue.getLP(" + typeClass.getSID() + ")";
+        return "objectValue.getLP(baseClass.named)";
     }
 
     protected ValueClass getValueClass() {
