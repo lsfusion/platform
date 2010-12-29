@@ -89,6 +89,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return SimplexConstraints.getPropertyDrawDefaultConstraints(super.getDefaultConstraints());
     }
 
+    @Override
+    public boolean hasDefaultParameters() {
+        return super.hasDefaultParameters() && editKey == null && columnGroupObjects.isEmpty();
+    }
+
     public KeyStroke getEditKey() {
         return (editKey != null) ? editKey : null;
     }
@@ -432,9 +437,13 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return descriptor;
     }
 
+    public String getCodeClass() {
+        return "PropertyDrawView";
+    }
+
     @Override
-    public String getCodeConstructor(String name) {
-        StringBuilder result = new StringBuilder("PropertyDrawView " + name + " = design.createPropertyDraw(");
+    public String getCodeConstructor() {
+        StringBuilder result = new StringBuilder("design.createPropertyDraw(");
 
         if (descriptor.getPropertyObject().property.isField) {
             result.append("prop").append(descriptor.getSID());
@@ -452,7 +461,12 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                 }
             }
         }
-        result.append(");");
+        result.append(")");
         return result.toString();
+    }
+
+    public String getCodeEditKey(String name) {
+        String result = "design.setEditKey(" + name + ", KeyStroke.getKeyStroke(\"" + editKey + "\"));\n";
+        return result;
     }
 }

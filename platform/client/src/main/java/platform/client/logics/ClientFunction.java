@@ -4,6 +4,7 @@ import platform.client.descriptor.editor.FunctionEditor;
 import platform.client.serialization.ClientSerializationPool;
 import platform.base.context.ApplicationContext;
 import platform.interop.form.layout.AbstractFunction;
+import platform.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
 import java.io.DataInputStream;
@@ -65,9 +66,18 @@ public class ClientFunction extends ClientComponent implements AbstractFunction<
         return new FunctionEditor(this);
     }
 
+    public String getCodeClass() {
+        return "FunctionView";
+    }
+
     @Override
-    public String getCodeConstructor(String name) {
-        return "FunctionView " + name + " = design.create" + type + "Function(\"" + caption + "\");";
+    public String getCodeConstructor() {
+        return "design.create" + type + "Function(\"" + caption + "\")";
         //+                "\t   design.set" + type + "Function(" + name + ");";
+    }
+
+    @Override
+    public SimplexConstraints<ClientComponent> getDefaultConstraints() {
+        return SimplexConstraints.getFunctionDefaultConstraints(super.getDefaultConstraints());
     }
 }

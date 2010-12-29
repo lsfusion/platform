@@ -49,9 +49,13 @@ public class ClientShowType extends ClientComponent {
         return new ComponentEditor(this);
     }
 
+    public String getCodeClass() {
+        return "ShowTypeView";
+    }
+
     @Override
-    public String getCodeConstructor(String name) {
-        return "ShowTypeView " + name + " = design.createShowType();";
+    public String getCodeConstructor() {
+        return "design.createShowType()";
     }
 
 }

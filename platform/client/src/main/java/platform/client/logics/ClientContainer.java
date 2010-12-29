@@ -188,9 +188,13 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         return children;
     }
 
+    public String getCodeClass() {
+        return "ContainerView";
+    }
+
     @Override
-    public String getCodeConstructor(String name) {
-        return "ContainerView " + name + " = design.createContainer(" +
+    public String getCodeConstructor() {
+        return "design.createContainer(" +
                 (title == null ? null : ("\"" + title + "\""))
                 + ", \"" + description + "\", " + (sID == null ? sID : ("\"" + sID + "\"")) + ");";
     }

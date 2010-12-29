@@ -119,8 +119,12 @@ public class ClientGrid extends ClientComponent {
         return minRowCount;
     }
 
+    public String getCodeClass() {
+        return "GridView";
+    }
+
     @Override
-    public String getCodeConstructor(String name) {
-        return "GridView " + name + " = design.createGrid();";
+    public String getCodeConstructor() {
+        return "design.createGrid()";
     }
 }

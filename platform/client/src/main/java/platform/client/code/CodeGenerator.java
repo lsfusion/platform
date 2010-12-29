@@ -64,13 +64,13 @@ public class CodeGenerator {
         if (groupObject.objects.size() == 1) {
             ObjectDescriptor object = groupObject.objects.get(0);
             result.append(intend + object.getVariableName() + " = addSingleGroupObject(" +
-                    object.getBaseClass().getCode() + ", " + (object.getCaption() == null ? null : "\"" + object.getCaption() + "\"") + ");\n");
+                    object.getBaseClass().getCode() + ", " + (object.client.getCaption() == null ? null : "\"" + object.client.getCaption() + "\"") + ");\n");
         } else {
             result.append(intend + grName + " = new GroupObjectEntity(genID());\n");
             for (ObjectDescriptor object : groupObject.objects) {
                 String objName = object.getVariableName();
                 result.append(intend + objName + " = new ObjectEntity(genID(), " +
-                        object.getBaseClass().getCode() + ", \"" + object.getCaption() + "\");\n");
+                        object.getBaseClass().getCode() + ", " + (object.client.getCaption() == null ? null : "\"" + object.client.getCaption() + "\"") + ");\n");
                 result.append(intend + grName + ".add(" + objName + ");\n");
             }
             result.append(intend + "addGroup(" + grName + ");\n");
@@ -162,43 +162,54 @@ public class CodeGenerator {
         if (component instanceof ClientContainer) {
             for (ClientComponent child : ((ClientContainer) component).children) {
                 String childName = "component" + child.getID();
+                String ifDefault = "";
+
                 if (!(child instanceof ClientRegularFilterGroup)) {
-                    temp.append(intend + child.getCodeConstructor(childName) + "\n");
+                    ifDefault += child.getCodeConstructor();
                 } else {
-                    temp.append(intend + ((ClientRegularFilterGroup) child).getCodeConstructor(childName, filterGroups.get(filterGroupViews.get(child))) + "\n");
+                    ifDefault +=((ClientRegularFilterGroup) child).getCodeConstructor(filterGroups.get(filterGroupViews.get(child)));
                 }
 
-                if (child instanceof ClientPropertyDraw) {
-                    List<ClientGroupObject> groupList = ((ClientPropertyDraw) child).columnGroupObjects;
-                    if (!groupList.isEmpty()) {
-                        for (ClientGroupObject group : groupList) {
-                            for (GroupObjectDescriptor obj : form.groupObjects) {
-                                if (obj.client.equals(group)) {
-                                    temp.append(intend + childName + ".entity.addColumnGroupObject(" + obj.getVariableName() + ");\n");
+                if (!child.hasDefaultParameters() || child instanceof ClientContainer || child instanceof ClientGrid) {
+                    temp.append(intend + child.getCodeClass() + " " + childName + " = " + ifDefault + ";\n");
+
+                    temp.append(changeConstraints(child, childName));
+
+                    //группы в колонки
+                    if(child instanceof ClientPropertyDraw) {
+                        List<ClientGroupObject> groupList = ((ClientPropertyDraw)child).columnGroupObjects;
+                        if ( !groupList.isEmpty() ) {
+                            for (ClientGroupObject group : groupList) {
+                                for (GroupObjectDescriptor obj : form.groupObjects) {
+                                    if (obj.client.equals(group)) {
+                                        temp.append(intend + childName + ".entity.addColumnGroupObject(" + obj.getVariableName() + ");\n");
+                                    }
                                 }
                             }
+                            temp.append(intend + childName + ".entity.setPropertyCaption(" +
+                                    ((ClientPropertyDraw)child).getDescriptor().getPropertyCaption().getInstanceCode());
+                            temp.append(");\n");
                         }
-                        temp.append(intend + childName + ".entity.setPropertyCaption(" +
-                                ((ClientPropertyDraw) child).getDescriptor().getPropertyCaption().getInstanceCode());
-                        temp.append(");\n");
                     }
-
-                    if (((ClientPropertyDraw) child).editKey != null) {
-                        temp.append(intend + childName + ".editKey = KeyStroke.getKeyStroke(\"" + ((ClientPropertyDraw) child).editKey + "\");\n");
-                    }
+                    temp.append(intend + name + ".add(" + childName + ");\n");
+                } else {
+                    temp.append(intend + name + ".add(" + ifDefault + ");\n");
                 }
-
-                temp.append(intend + name + ".add(" + childName + ");\n");
                 temp.append(addContainers(form, child, childName));
             }
-            temp.append(changeConstraints(component, name));
-            for (ClientComponent child : ((ClientContainer) component).children) {
-                if (!(child instanceof ClientContainer)) {
-                    temp.append(changeConstraints(child, "component" + child.getID()));
-                }
+        }
+        temp.append(changeIntersects(component));
+        return temp.toString();
+    }
+
+    private static String setEditKeys(FormDescriptor form) {
+        String result = "\n";
+        for (PropertyDrawDescriptor property : form.propertyDraws) {
+            if (property.client.editKey != null) {
+                result += intend + property.client.getCodeEditKey("component" + property.client.getID());
             }
         }
-        return temp.toString();
+        return result + "\n";
     }
 
     private static String changeConstraints(ClientComponent component, String name) {
@@ -239,15 +250,42 @@ public class CodeGenerator {
             toReturn.append(intend + name + ".constraints.maxVariables = " + constraints.maxVariables + ";\n");
         }
 
+        return toReturn.toString();
+    }
+
+    private static String changeIntersects(ClientComponent component) {
+        StringBuilder toReturn = new StringBuilder();
         Map<ClientComponent, DoNotIntersectSimplexConstraint> map = component.getIntersects();
         if (!map.isEmpty()) {
             for (ClientComponent single : map.keySet()) {
-                toReturn.append(intend + "design.addIntersection(" +
-                        name + ", component" + single.getID() + ", " + map.get(single).getConstraintCode() + ");\n");
+                toReturn.append(intend + "design.addIntersection(component" +
+                        component.getID() + ", component" + single.getID() + ", " + map.get(single).getConstraintCode() + ");\n");
             }
         }
-
         return toReturn.toString();
+    }
+
+    private static String adjustDesign(ClientComponent component, String name) {
+        StringBuilder temp = new StringBuilder();
+        if(component instanceof ClientContainer) {
+            for (ClientComponent child : ((ClientContainer) component).children) {
+                String childName = "component" + child.getID();
+                temp.append(adjustDesign(child, childName));
+            }
+        }
+        if (component.design.background != null) {
+            temp.append(intend + component.design.getCodeBackground(name));
+        }
+        if (component.design.foreground != null) {
+            temp.append(intend + component.design.getCodeForeground(name));
+        }
+        if (component.design.font != null) {
+            temp.append(intend + component.design.getCodeFont(name));
+        }
+        if (component.design.headerFont != null) {
+            temp.append(intend + component.design.getCodeHeaderFont(name));
+        }
+        return temp.toString();
     }
 
     private static void addRichDesign(FormDescriptor form, StringBuilder result) {
@@ -258,6 +296,10 @@ public class CodeGenerator {
         result.append(intend + "design.setMainContainer(design.createMainContainer(\"" + form.client.mainContainer.getSID() +
                 "\", \"" + form.client.mainContainer.getCaption() + "\"));\n");
         result.append(addContainers(form, form.client.mainContainer, "design.mainContainer"));
+        result.append(changeConstraints(form.client.mainContainer, "design.mainContainer"));
+
+        result.append(setEditKeys(form));
+        result.append(adjustDesign(form.client.mainContainer, "design.mainContainer")).append("\n");
 
         for (GroupObjectDescriptor groupObject : form.groupObjects) {
             String name = "groupView" + groupObject.getID();

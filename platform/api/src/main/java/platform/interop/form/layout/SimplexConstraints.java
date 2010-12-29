@@ -45,6 +45,26 @@ public class SimplexConstraints<T> extends ContextObject implements Serializable
         return childConstraints;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SimplexConstraints that = (SimplexConstraints) o;
+
+        if (!childConstraints.equals(that.getChildConstraints()) ||
+                maxVariables != that.maxVariables ||
+                fillVertical != that.fillHorizontal ||
+                fillHorizontal != that.fillHorizontal ||
+                !insetsSibling.equals(that.insetsSibling) ||
+                !insetsInside.equals(that.insetsInside) ||
+                !directions.equals(that.directions) ||
+                !intersects.equals(that.intersects))
+            return false;
+
+        return true;
+    }
+
     public void setChildConstraints(DoNotIntersectSimplexConstraint childConstraints){
         this.childConstraints = childConstraints;
         updateDependency(this, "childConstraints");
@@ -221,6 +241,11 @@ public class SimplexConstraints<T> extends ContextObject implements Serializable
 
     public static <T> SimplexConstraints<T> getRegularFilterGroupDefaultConstraints(SimplexConstraints<T> constraints) {
         constraints.insetsSibling = new Insets(0,4,2,4);
+        return constraints;
+    }
+
+    public static <T> SimplexConstraints<T> getFunctionDefaultConstraints(SimplexConstraints<T> constraints) {
+        constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
         return constraints;
     }
 }

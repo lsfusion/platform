@@ -108,6 +108,10 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         return defaultComponent;
     }
 
+    public boolean hasDefaultParameters() {
+        return constraints.equals(getDefaultConstraints()) && design.isDefaultDesign();
+    }
+
     public Map<ClientComponent, DoNotIntersectSimplexConstraint> getIntersects() {
         return constraints.intersects;
     }
@@ -119,7 +123,9 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
 
     public abstract String getCaption();
 
-    public String getCodeConstructor(String name){
+    public String getCodeConstructor() {
         return "CreateContainer()";
     }
+
+    public abstract String getCodeClass();
 }

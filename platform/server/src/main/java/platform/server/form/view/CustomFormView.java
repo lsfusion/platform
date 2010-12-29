@@ -3,10 +3,13 @@ package platform.server.form.view;
 import org.springframework.beans.factory.parsing.PropertyEntry;
 import platform.base.identity.IdentityObject;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
+import platform.interop.form.layout.SimplexComponentDirections;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.logics.linear.LP;
 
+import javax.swing.*;
+import java.awt.*;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -78,6 +81,7 @@ public class CustomFormView extends FormView {
         FunctionView function = new FunctionView(idGenerator.idShift());
         function.setCaption(caption);
         function.setType("Refresh");
+        function.getConstraints().directions = new SimplexComponentDirections(0,0,0.01,0.01);
         setRefreshFunction(function);
         return function;
     }
@@ -86,6 +90,7 @@ public class CustomFormView extends FormView {
         FunctionView function = new FunctionView(idGenerator.idShift());
         function.setCaption(caption);
         function.setType("Apply");
+        function.getConstraints().directions = new SimplexComponentDirections(0,0,0.01,0.01);
         setApplyFunction(function);
         return function;
     }
@@ -94,6 +99,7 @@ public class CustomFormView extends FormView {
         FunctionView function = new FunctionView(idGenerator.idShift());
         function.setCaption(caption);
         function.setType("Cancel");
+        function.getConstraints().directions = new SimplexComponentDirections(0,0,0.01,0.01);
         setCancelFunction(function);
         return function;
     }
@@ -102,6 +108,7 @@ public class CustomFormView extends FormView {
         FunctionView function = new FunctionView(idGenerator.idShift());
         function.setCaption(caption);
         function.setType("Ok");
+        function.getConstraints().directions = new SimplexComponentDirections(0,0,0.01,0.01);
         setOkFunction(function);
         return function;
     }
@@ -110,6 +117,7 @@ public class CustomFormView extends FormView {
         FunctionView function = new FunctionView(idGenerator.idShift());
         function.setCaption(caption);
         function.setType("Close");
+        function.getConstraints().directions = new SimplexComponentDirections(0,0,0.01,0.01);
         setCloseFunction(function);
         return function;
     }
@@ -142,19 +150,19 @@ public class CustomFormView extends FormView {
         return view;
     }
 
-    public ClassChooserView createClassChooser(int ID) {
+    public ClassChooserView createClassChooser() {
         ClassChooserView view = new ClassChooserView();
         view.ID = idGenerator.idShift();
         return view;
     }
 
-    public GridView createGrid(int ID) {
+    public GridView createGrid() {
         GridView view = new GridView();
         view.ID = idGenerator.idShift();
         return view;
     }
 
-    public ShowTypeView createShowType(int ID) {
+    public ShowTypeView createShowType() {
         ShowTypeView view = new ShowTypeView();
         view.ID = idGenerator.idShift();
         return view;
@@ -180,5 +188,25 @@ public class CustomFormView extends FormView {
         if (comp1.container != comp2.container)
             throw new RuntimeException("Запрещено создавать пересечения для объектов в разных контейнерах");
         comp1.constraints.intersects.put(comp2, cons);
+    }
+
+    public void setEditKey(PropertyDrawView property, KeyStroke editKey){
+        property.editKey = editKey;
+    }
+
+    public void setBackground(ComponentView property, Color color) {
+        property.design.background = color;
+    }
+
+    public void setForeground(ComponentView property, Color color) {
+        property.design.foreground = color;
+    }
+
+    public void setFont(ComponentView property, Font font) {
+        property.design.font = font;
+    }
+
+    public void setHeaderFont(ComponentView property, Font font) {
+        property.design.headerFont = font;
     }
 }
