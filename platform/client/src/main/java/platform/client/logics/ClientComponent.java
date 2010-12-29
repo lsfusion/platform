@@ -108,8 +108,8 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         return defaultComponent;
     }
 
-    public boolean hasDefaultParameters() {
-        return constraints.equals(getDefaultConstraints()) && design.isDefaultDesign();
+    public boolean shouldBeDeclared() {
+        return !constraints.equals(getDefaultConstraints()) || !design.isDefaultDesign();
     }
 
     public Map<ClientComponent, DoNotIntersectSimplexConstraint> getIntersects() {
@@ -128,4 +128,10 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
     }
 
     public abstract String getCodeClass();
+
+    public String getVariableName() {
+        String className = getCodeClass();
+        return sID != null ? sID :
+                className.substring(0, 1).toLowerCase() + className.substring(1, className.length()) + getID();
+    }
 }

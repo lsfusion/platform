@@ -58,4 +58,8 @@ public class ClientShowType extends ClientComponent {
         return "design.createShowType()";
     }
 
+    @Override
+    public boolean shouldBeDeclared() {
+        return true;
+    }
 }

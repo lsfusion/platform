@@ -76,4 +76,9 @@ public class ClientClassChooser extends ClientComponent {
     public SimplexConstraints<ClientComponent> getDefaultConstraints() {
         return SimplexConstraints.getClassChooserDefaultConstraints(super.getDefaultConstraints());
     }
+
+    @Override
+    public boolean shouldBeDeclared() {
+        return true;
+    }
 }

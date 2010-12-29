@@ -2,7 +2,6 @@ package platform.client.logics;
 
 import platform.base.BaseUtils;
 import platform.client.SwingUtils;
-import platform.client.code.CodeGenerator;
 import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.PropertyDrawDescriptor;
 import platform.base.context.ApplicationContext;
@@ -90,8 +89,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     @Override
-    public boolean hasDefaultParameters() {
-        return super.hasDefaultParameters() && editKey == null && columnGroupObjects.isEmpty();
+    public boolean shouldBeDeclared() {
+        return super.shouldBeDeclared() || editKey != null || !columnGroupObjects.isEmpty();
     }
 
     public KeyStroke getEditKey() {
@@ -448,6 +447,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         if (descriptor.getPropertyObject().property.isField) {
             result.append("prop").append(descriptor.getSID());
         } else {
+            if (getCaption() != null) {
+                result.append("\"" + getCaption() + "\", ");
+            }
             String grObject = groupObject == null ? "" : "grObj" + groupObject.getSID() + ", ";
 
             result.append(grObject).append(descriptor.getPropertyObject().property.code);

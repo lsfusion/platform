@@ -127,4 +127,9 @@ public class ClientGrid extends ClientComponent {
     public String getCodeConstructor() {
         return "design.createGrid()";
     }
+
+    @Override
+    public boolean shouldBeDeclared() {
+        return true;
+    }
 }

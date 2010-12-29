@@ -2,7 +2,6 @@ package platform.client.code;
 
 import platform.client.descriptor.*;
 import platform.client.descriptor.filter.*;
-import platform.client.descriptor.property.PropertyDescriptor;
 import platform.client.logics.*;
 import platform.interop.ClassViewType;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
@@ -17,7 +16,6 @@ import java.util.List;
 public class CodeGenerator {
 
     private static String intend;
-    public static Map<ObjectDescriptor, String> objectNames = new HashMap<ObjectDescriptor, String>();
     private static Map<RegularFilterGroupDescriptor, String> filterGroups;
     private static Map<ClientRegularFilterGroup, RegularFilterGroupDescriptor> filterGroupViews;
 
@@ -32,7 +30,6 @@ public class CodeGenerator {
             }
             for (ObjectDescriptor object : group.objects) {
                 result.append(intend + "ObjectEntity " + object.getVariableName() + ";\n");
-                objectNames.put(object, object.getVariableName());
             }
         }
 
@@ -161,7 +158,7 @@ public class CodeGenerator {
         StringBuilder temp = new StringBuilder();
         if (component instanceof ClientContainer) {
             for (ClientComponent child : ((ClientContainer) component).children) {
-                String childName = "component" + child.getID();
+                String childName = child.getVariableName();
                 String ifDefault = "";
 
                 if (!(child instanceof ClientRegularFilterGroup)) {
@@ -170,7 +167,7 @@ public class CodeGenerator {
                     ifDefault +=((ClientRegularFilterGroup) child).getCodeConstructor(filterGroups.get(filterGroupViews.get(child)));
                 }
 
-                if (!child.hasDefaultParameters() || child instanceof ClientContainer || child instanceof ClientGrid) {
+                if (child.shouldBeDeclared() || child instanceof ClientContainer || child instanceof ClientGrid) {
                     temp.append(intend + child.getCodeClass() + " " + childName + " = " + ifDefault + ";\n");
 
                     temp.append(changeConstraints(child, childName));
@@ -206,7 +203,7 @@ public class CodeGenerator {
         String result = "\n";
         for (PropertyDrawDescriptor property : form.propertyDraws) {
             if (property.client.editKey != null) {
-                result += intend + property.client.getCodeEditKey("component" + property.client.getID());
+                result += intend + property.client.getCodeEditKey(property.client.getVariableName());
             }
         }
         return result + "\n";
@@ -258,8 +255,8 @@ public class CodeGenerator {
         Map<ClientComponent, DoNotIntersectSimplexConstraint> map = component.getIntersects();
         if (!map.isEmpty()) {
             for (ClientComponent single : map.keySet()) {
-                toReturn.append(intend + "design.addIntersection(component" +
-                        component.getID() + ", component" + single.getID() + ", " + map.get(single).getConstraintCode() + ");\n");
+                toReturn.append(intend + "design.addIntersection(" +
+                        component.getVariableName() + ", " + single.getVariableName() + ", " + map.get(single).getConstraintCode() + ");\n");
             }
         }
         return toReturn.toString();
@@ -269,7 +266,7 @@ public class CodeGenerator {
         StringBuilder temp = new StringBuilder();
         if(component instanceof ClientContainer) {
             for (ClientComponent child : ((ClientContainer) component).children) {
-                String childName = "component" + child.getID();
+                String childName = child.getVariableName();
                 temp.append(adjustDesign(child, childName));
             }
         }
@@ -303,13 +300,13 @@ public class CodeGenerator {
 
         for (GroupObjectDescriptor groupObject : form.groupObjects) {
             String name = "groupView" + groupObject.getID();
-            result.append(intend + "GroupObjectView " + name + " = design.createGroupObject(" + groupObject.getVariableName() + ", component" +
-                    groupObject.client.showType.getID() + ", component" + groupObject.client.grid.getID() + ");\n");
+            result.append(intend + "GroupObjectView " + name + " = design.createGroupObject(" + groupObject.getVariableName() + ", " +
+                    groupObject.client.showType.getVariableName() + ", " + groupObject.client.grid.getVariableName() + ");\n");
             result.append(intend + "design.groupObjects.add(" + name + ");\n");
 
             for (ObjectDescriptor object : groupObject.objects) {
                 result.append(intend + name + ".getObjectView(" + object.getVariableName() + ").changeClassChooserLocation(" +
-                        "component" + object.client.classChooser.getID() + ");\n");
+                        object.client.classChooser.getVariableName() + ");\n");
 
             }
         }

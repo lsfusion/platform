@@ -10,10 +10,8 @@ import platform.server.logics.linear.LP;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 
 public class CustomFormView extends FormView {
 
@@ -125,6 +123,12 @@ public class CustomFormView extends FormView {
     public PropertyDrawView createPropertyDraw(LP lp) {
         PropertyDrawEntity property = form.getPropertyDraw(lp);
         return createPropertyDraw(property);
+    }
+
+    public PropertyDrawView createPropertyDraw(String caption, LP lp, ObjectEntity... objects) {
+        PropertyDrawView view = createPropertyDraw(lp, objects);
+        view.caption = caption;
+        return view;
     }
 
     public PropertyDrawView createPropertyDraw(LP lp, ObjectEntity... objects) {
