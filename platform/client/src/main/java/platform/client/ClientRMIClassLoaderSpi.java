@@ -24,7 +24,7 @@ public class ClientRMIClassLoaderSpi extends RMIClassLoaderSpi {
         @Override
         protected Class<?> findClass(String name) throws ClassNotFoundException {
             try {
-                byte[] classBytes = Main.remoteLogics.findClass(name);
+                byte[] classBytes = Main.remoteLoader.findClass(name);
                 return defineClass(name, classBytes, 0, classBytes.length);
             } catch (RemoteException remote) {
                 throw new ClassNotFoundException("Ошибка при загрузке класса на клиенте", remote);
@@ -39,7 +39,7 @@ public class ClientRMIClassLoaderSpi extends RMIClassLoaderSpi {
         try {
             return sun.rmi.server.LoaderHandler.loadClass(codebase, name, defaultLoader);
         } catch (ClassNotFoundException ce) {
-            if (Main.remoteLogics != null) {
+            if (Main.remoteLoader != null) {
                 return remoteLoader.loadClass(name);
             } else
                 throw ce;
@@ -48,7 +48,17 @@ public class ClientRMIClassLoaderSpi extends RMIClassLoaderSpi {
 
     @Override
     public Class<?> loadProxyClass(String codebase, String[] interfaces, ClassLoader defaultLoader) throws MalformedURLException, ClassNotFoundException {
-        return sun.rmi.server.LoaderHandler.loadProxyClass(codebase, interfaces, defaultLoader);
+        try {
+            return sun.rmi.server.LoaderHandler.loadProxyClass(codebase, interfaces, defaultLoader);
+        } catch (ClassNotFoundException ce) {
+            if (Main.remoteLoader != null) {
+                for (String iFace : interfaces) {
+                    loadClass(codebase, iFace, defaultLoader);
+                }
+                return sun.rmi.server.LoaderHandler.loadProxyClass(codebase, interfaces, remoteLoader);
+            } else
+                throw ce;
+        }
     }
 
     @Override

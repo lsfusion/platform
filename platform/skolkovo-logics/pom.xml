@@ -8,6 +8,36 @@
         <version>1.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
+    <packaging>jar</packaging>
+    <name>Skolkovo Logics</name>
+
+    <build>
+        <plugins>
+            <plugin>
+              <artifactId>maven-assembly-plugin</artifactId>
+              <configuration>
+                 <finalName>skolkovo-logics</finalName>
+                 <appendAssemblyId>true</appendAssemblyId>
+                 <archive>
+                     <manifest>
+                         <mainClass>platform.server.logics.BusinessLogics</mainClass>
+                     </manifest>
+                 </archive>
+                  <descriptors>
+                     <descriptor>src/assemble/distribution.xml</descriptor>
+                  </descriptors>
+              </configuration>
+              <executions>
+                <execution>
+                  <phase>install</phase>
+                  <goals>
+                    <goal>single</goal>
+                  </goals>
+                </execution>
+              </executions>
+            </plugin>
+         </plugins>
+    </build>
 
     <artifactId>skolkovo-logics</artifactId>
     <dependencies>

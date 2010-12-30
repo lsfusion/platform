@@ -141,7 +141,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         BL = (BusinessLogics) factory.getBean("businessLogics");
         registry = LocateRegistry.createRegistry(BL.getExportPort());
 
-        registry.rebind("BusinessLogics", BL);
+//        registry.rebind("BusinessLogics", BL);
+        registry.rebind("BusinessLogicsLoader", new BusinessLogicsLoader(BL));
 
         logger.severe("Server has successfully started");
 

@@ -2,6 +2,7 @@ package platform.client;
 
 import platform.base.OSUtils;
 import platform.client.remote.proxy.RemoteBusinessLogicProxy;
+import platform.interop.RemoteLoaderInterface;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
@@ -85,12 +86,15 @@ public final class LoginAction {
     }
 
     private int connect() {
+        RemoteLoaderInterface remoteLoader;
         RemoteLogicsInterface remoteLogics;
         int computerId;
         RemoteNavigatorInterface remoteNavigator;
 
         try {
-            RemoteLogicsInterface remote = (RemoteLogicsInterface) Naming.lookup("rmi://" + loginInfo.getServerHost() + ":" + loginInfo.getServerPort() + "/BusinessLogics");
+            Main.remoteLoader = remoteLoader = (RemoteLoaderInterface) Naming.lookup("rmi://" + loginInfo.getServerHost() + ":" + loginInfo.getServerPort() + "/BusinessLogicsLoader");
+            RemoteLogicsInterface remote = remoteLoader.getRemoteLogics();
+
             remoteLogics = new RemoteBusinessLogicProxy(remote);
             computerId = remoteLogics.getComputer(OSUtils.getLocalHostName());
             remoteNavigator = remoteLogics.createNavigator(loginInfo.getUserName(), loginInfo.getPassword(), computerId);
