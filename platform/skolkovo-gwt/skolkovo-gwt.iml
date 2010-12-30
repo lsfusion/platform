@@ -15,7 +15,7 @@
       <configuration>
         <setting name="compilerMaxHeapSize" value="128" />
         <setting name="gwtScriptOutputStyle" value="DETAILED" />
-        <setting name="gwtSdkUrl" value="file://D:/Program Files/gwt-2.1.0" />
+        <setting name="gwtSdkUrl" value="file://$GWT_PATH" />
         <setting name="webFacet" value="Web" />
       </configuration>
     </facet>

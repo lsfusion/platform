@@ -12,7 +12,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="server" scope="RUNTIME" />
+    <orderEntry type="module" module-name="server" />
     <orderEntry type="module" module-name="api" />
     <orderEntry type="library" name="Maven: lpsolve:lpsolve:5.5.1" level="project" />
     <orderEntry type="library" name="Maven: findbugs:annotations:1.0.0" level="project" />
