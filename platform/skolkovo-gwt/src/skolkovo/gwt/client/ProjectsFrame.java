@@ -48,6 +48,8 @@ public class ProjectsFrame implements EntryPoint {
     }
 
     private void fillProjectsList() {
+        projectsList.clear();
+        projectsList.addItem("...loading...");
         ProjectsService.App.getInstance().getProjects(new AsyncCallback<String[]>(){
             public void onFailure(Throwable caught) {}
             public void onSuccess(String[] projects) {
