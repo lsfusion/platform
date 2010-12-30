@@ -72,6 +72,7 @@
         <module>fullclient</module>
         <module>server</module>
         <module>tmc</module>
+        <module>skolkovo-logics</module>
     </modules>
 
     <dependencyManagement>
