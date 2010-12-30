@@ -15,6 +15,7 @@ import platform.server.data.type.ParseInterface;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 
+import java.lang.ref.WeakReference;
 import java.sql.*;
 import java.util.*;
 import java.util.logging.Logger;
@@ -54,7 +55,8 @@ public class SQLSession extends MutableObject {
     }
 
     private void tryCommon() throws SQLException { // пытается вернуться к
-        if(!inTransaction && sessionTables.isEmpty()) { // вернемся к commonConnection'у
+        removeUnusedTemporaryTables();
+        if(!inTransaction && sessionTablesMap.isEmpty()) { // вернемся к commonConnection'у
             connectionPool.returnPrivate(this, privateConnection);
             privateConnection = null;
         }
@@ -184,13 +186,15 @@ public class SQLSession extends MutableObject {
         logger.info(" Done");
     }
 
-    private final Set<String> sessionTables = new HashSet<String>();
+    private final Map<String, WeakReference<Object>> sessionTablesMap = new HashMap<String, WeakReference<Object>>();
     private int sessionCounter = 0;
     
     public String createTemporaryTable(List<KeyField> keys, Collection<PropertyField> properties, Object owner) throws SQLException {
         needPrivate();
 
-        synchronized(sessionTables) {
+        removeUnusedTemporaryTables();
+
+        synchronized(sessionTablesMap) {
             String name = "t_" + (sessionCounter++);
 
             String createString = "";
@@ -206,17 +210,31 @@ public class SQLSession extends MutableObject {
                 createString = createString + ", PRIMARY KEY " + syntax.getClustered() + " (" + keyString + ")";
             execute(syntax.getCreateSessionTable(name, createString));
 
-            sessionTables.add(name);
+            sessionTablesMap.put(name, new WeakReference<Object>(owner));
             return name;
         }
     }
 
-    public void dropTemporaryTable(SessionTable table, Object owner) throws SQLException {
-        synchronized(sessionTables) {
-            boolean was = sessionTables.remove(table.name);
-            assert was;
+    private void removeUnusedTemporaryTables() throws SQLException {
+        synchronized (sessionTablesMap) {
+            for (Map.Entry<String, WeakReference<Object>> entry : sessionTablesMap.entrySet()) {
+                if (entry.getValue().get() == null) {
+                    dropTemporaryTable(entry.getKey(), null);
+                }
+            }
+        }
+    }
 
-            execute(syntax.getDropSessionTable(table.name));
+    public void dropTemporaryTable(SessionTable table, Object owner) throws SQLException {
+        dropTemporaryTable(table.name, owner);
+    }
+
+    public void dropTemporaryTable(String tableName, Object owner) throws SQLException {
+        synchronized (sessionTablesMap) {
+            assert sessionTablesMap.containsKey(tableName);
+            sessionTablesMap.remove(tableName);
+
+            execute(syntax.getDropSessionTable(tableName));
         }
 
         tryCommon();
