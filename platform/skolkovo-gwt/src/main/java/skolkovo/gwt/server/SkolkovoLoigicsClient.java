@@ -10,10 +10,18 @@ import java.rmi.server.RMIFailureHandler;
 import java.rmi.server.RMISocketFactory;
 
 public class SkolkovoLoigicsClient {
-    private static RMISocketFactory socketFactory;
-    private static SkolkovoRemoteInterface logics;
+    private static SkolkovoLoigicsClient instance = new SkolkovoLoigicsClient();
+    private SkolkovoLoigicsClient() {
+    }
 
-    private static void initRMISocketFactory() throws IOException {
+    public static SkolkovoLoigicsClient getInstance() {
+        return instance;
+    }
+
+    private RMISocketFactory socketFactory;
+    private SkolkovoRemoteInterface logics;
+
+    private void initRMISocketFactory() throws IOException {
         if (socketFactory == null) {
             socketFactory = RMISocketFactory.getSocketFactory();
             if (socketFactory == null) {
@@ -33,7 +41,7 @@ public class SkolkovoLoigicsClient {
         }
     }
 
-    public static SkolkovoRemoteInterface getLogics() {
+    public SkolkovoRemoteInterface getLogics() {
         //пока вообще не кэшируем, чтобы не париться с обработкой дисконнекта.
 //        if (logics == null) {
             try {
