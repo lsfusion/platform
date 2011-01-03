@@ -1,6 +1,7 @@
 package skolkovo.gwt.server;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import platform.interop.RemoteLoaderInterface;
 import skolkovo.gwt.client.ExpertService;
 import skolkovo.api.remote.SkolkovoRemoteInterface;
 
@@ -11,9 +12,11 @@ public class ExpertServiceImpl extends RemoteServiceServlet implements ExpertSer
     private static SkolkovoRemoteInterface getBL() {
         System.out.println("getting bl...");
         try {
-            return (SkolkovoRemoteInterface) Naming.lookup("rmi://" + "localhost" + ":" + "7652" + "/BusinessLogics");
+            RemoteLoaderInterface loader = (RemoteLoaderInterface) Naming.lookup("rmi://" + "localhost" + ":" + "7652" + "/BusinessLogics");
+            return (SkolkovoRemoteInterface) loader.getRemoteLogics();
         } catch (Exception e) {
-            System.out.println("bl is null...");
+            System.err.println("bl is null...");
+            e.printStackTrace();
             return null;
         }
     }
@@ -26,7 +29,7 @@ public class ExpertServiceImpl extends RemoteServiceServlet implements ExpertSer
                 result = getBL().getProjectNames(0);
             }
         } catch (RemoteException e) {
-            System.out.println("Exception while getting...");
+            System.err.println("Exception while getting...");
             result = null;
         }
 
