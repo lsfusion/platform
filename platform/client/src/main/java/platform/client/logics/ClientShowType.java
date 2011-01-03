@@ -3,6 +3,7 @@ package platform.client.logics;
 import platform.client.descriptor.editor.ComponentEditor;
 import platform.client.serialization.ClientSerializationPool;
 import platform.base.context.ApplicationContext;
+import platform.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
 import java.io.DataInputStream;
@@ -15,6 +16,11 @@ public class ClientShowType extends ClientComponent {
     }
 
     public ClientGroupObject groupObject;
+
+    @Override
+    public SimplexConstraints<ClientComponent> getDefaultConstraints() {
+        return SimplexConstraints.getShowTypeDefaultConstraints(super.getDefaultConstraints());
+    }
 
     public ClientShowType(ApplicationContext context) {
         super(context);

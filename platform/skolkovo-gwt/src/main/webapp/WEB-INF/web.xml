@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns="http://java.sun.com/xml/ns/javaee"
-           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
 		  http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-           version="2.5">
+         version="2.5">
 
     <servlet>
         <servlet-name>ProjectsService</servlet-name>
@@ -13,4 +13,27 @@
         <servlet-name>ProjectsService</servlet-name>
         <url-pattern>/skolkovo.gwt.Expert/ProjectsService</url-pattern>
     </servlet-mapping>
+
+    <!-- Описание ограниченных урлов  -->
+    <security-constraint>
+      <web-resource-collection>
+        <web-resource-name>Private area</web-resource-name>
+        <url-pattern>/expert.html</url-pattern>
+      </web-resource-collection>
+      <auth-constraint>
+        <role-name>skolkovo</role-name>
+      </auth-constraint>
+    </security-constraint>
+
+    <!-- Определение вида аутентификации  -->
+    <login-config>
+      <auth-method>BASIC</auth-method>
+      <realm-name>You must log in</realm-name>
+    </login-config>
+
+    <security-role>
+      <role-name>skolkovo</role-name>
+    </security-role>
+
+
 </web-app>

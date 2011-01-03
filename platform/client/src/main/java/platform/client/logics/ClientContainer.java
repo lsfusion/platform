@@ -161,6 +161,7 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         updateDependency(this, "tabbedPane");
     }
 
+    @Override
     public String getSID() {
         return sID;
     }
