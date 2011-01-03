@@ -1,16 +1,12 @@
 package skolkovo;
 
 import net.sf.jasperreports.engine.JRException;
-import platform.interop.ClassViewType;
 import platform.interop.Compare;
-import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.auth.User;
 import platform.server.classes.*;
-import platform.server.data.Union;
 import platform.server.data.sql.DataAdapter;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
-import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.filter.CompareFilterEntity;
 import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
@@ -243,7 +239,14 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         }
     }
 
-    public String[] getProjectNames(int expertId) throws RemoteException {
-        return new String[] {"aurora", "gannimed", "mustang"};
+    public VoteInfo getVoteInfo(int expertId, int projectId) throws RemoteException {
+        //todo:
+        VoteInfo voteInfo = new VoteInfo();
+        voteInfo.expertName = "Bla blanich";
+        return voteInfo;
+    }
+
+    public void setVoteInfo(int expertId, int projectId, VoteInfo voteInfo) throws RemoteException {
+        //todo:
     }
 }

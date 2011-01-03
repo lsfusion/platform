@@ -1,12 +1,13 @@
 package skolkovo.gwt.client;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
-import com.google.gwt.core.client.GWT;
+import skolkovo.gwt.shared.GwtVoteInfo;
 
 @RemoteServiceRelativePath("ProjectsService")
 public interface ExpertService extends RemoteService {
-    String[] getProjects();
+    GwtVoteInfo getVoteInfo(int expertId, int projectId);
 
     /**
      * Utility/Convenience class.
