@@ -6,11 +6,11 @@
            version="2.5">
 
     <servlet>
-        <servlet-name>skolkovo.gwt.Projects ProjectsService</servlet-name>
-        <servlet-class>skolkovo.gwt.server.ProjectsServiceImpl</servlet-class>
+        <servlet-name>ProjectsService</servlet-name>
+        <servlet-class>skolkovo.gwt.server.ExpertServiceImpl</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>skolkovo.gwt.Projects ProjectsService</servlet-name>
-        <url-pattern>/skolkovo.gwt.Projects/ProjectsService</url-pattern>
+        <servlet-name>ProjectsService</servlet-name>
+        <url-pattern>/skolkovo.gwt.Expert/ProjectsService</url-pattern>
     </servlet-mapping>
 </web-app>

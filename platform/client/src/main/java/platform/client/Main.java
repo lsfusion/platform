@@ -8,6 +8,7 @@ import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.classes.ClientTypeSerializer;
 import platform.client.rmi.ConnectionLostManager;
 import platform.client.rmi.RMITimeoutSocketFactory;
+import platform.interop.RemoteLoaderInterface;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.ServerInfo;
 import platform.interop.form.RemoteFormInterface;
@@ -34,6 +35,7 @@ import java.util.logging.Logger;
 public class Main {
     private final static Logger logger = Logger.getLogger(SimplexLayout.class.getName());
 
+    public static RemoteLoaderInterface remoteLoader;
     public static RemoteLogicsInterface remoteLogics;
     public static MainFrame frame;
     public static int computerId;

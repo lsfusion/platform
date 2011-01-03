@@ -303,7 +303,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         // кол-во заказа
         quantityDataListSku = addDProp("quantityDataListSku", "Кол-во (первичное)", DoubleClass.instance, list, sku);
-        quantityListSku = addJProp(baseGroup, "quantityListSku", "Кол-во", and1, quantityDataListSku, 1, 2, inListSku, 1, 2);
+        quantityListSku = addJProp(baseGroup, "quantityListSku", true, "Кол-во", and1, quantityDataListSku, 1, 2, inListSku, 1, 2);
 
         quantitySimpleDocumentSku = addJProp(baseGroup, "quantitySimpleDocumentSku", "Кол-во", and1, quantityListSku, 1, 2, is(simpleDocument), 1);
         quantityBoxDocumentSku = addSGProp(baseGroup, "quantityBoxDocumentSku", "Кол-во в инвойсе", quantityListSku, boxDocumentSupplierBox, 1, 2);
@@ -321,12 +321,12 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
 
 //        // todo : переделать на PGProp        // todo : здесь надо derive'ить, иначе могут быть проблемы с расписыванием
-        quantityOrderInvoiceSku = addPGProp(baseGroup, "quantityOrderInvoiceSku", true, 0, "Кол-во по заказу/инвойсу (расч.)",
-                orderedOrderInvoiceSku,
-                quantityDocumentSku, 2, 3);
+//        quantityOrderInvoiceSku = addPGProp(baseGroup, "quantityOrderInvoiceSku", true, 0, "Кол-во по заказу/инвойсу (расч.)",
+//                orderedOrderInvoiceSku,
+//                quantityDocumentSku, 2, 3);
 
-//        quantityOrderInvoiceSku = addDProp(baseGroup, "quantityOrderInvoiceSku", "Кол-во по заказу/инвойсу (расч.)", DoubleClass.instance,
-//                                           order, invoice, sku);
+        quantityOrderInvoiceSku = addDProp(baseGroup, "quantityOrderInvoiceSku", "Кол-во по заказу/инвойсу (расч.)", DoubleClass.instance,
+                                           order, invoice, sku);
 
         invoicedOrderSku = addSGProp(baseGroup, "invoicedOrderSku", "Выставлено инвойсов", quantityOrderInvoiceSku, 1, 3);
 

@@ -1,13 +1,13 @@
 package skolkovo.gwt.server;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
-import skolkovo.gwt.client.ProjectsService;
-import skolkovo.remote.SkolkovoRemoteInterface;
+import skolkovo.gwt.client.ExpertService;
+import skolkovo.api.remote.SkolkovoRemoteInterface;
 
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 
-public class ProjectsServiceImpl extends RemoteServiceServlet implements ProjectsService {
+public class ExpertServiceImpl extends RemoteServiceServlet implements ExpertService {
     private static SkolkovoRemoteInterface getBL() {
         System.out.println("getting bl...");
         try {

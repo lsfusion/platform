@@ -72,7 +72,9 @@
         <module>fullclient</module>
         <module>server</module>
         <module>tmc</module>
+        <module>skolkovo-api</module>
         <module>skolkovo-logics</module>
+        <module>skolkovo-gwt</module>
     </modules>
 
     <dependencyManagement>

@@ -8,6 +8,7 @@
         <version>1.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
+    <artifactId>skolkovo-logics</artifactId>
     <packaging>jar</packaging>
     <name>Skolkovo Logics</name>
 
@@ -39,8 +40,12 @@
          </plugins>
     </build>
 
-    <artifactId>skolkovo-logics</artifactId>
     <dependencies>
+        <dependency>
+            <groupId>by.luxsoft.platform</groupId>
+            <artifactId>skolkovo-api</artifactId>
+            <version>1.0</version>
+        </dependency>
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
             <artifactId>server</artifactId>

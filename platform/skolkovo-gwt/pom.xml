@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>platform</artifactId>
+        <groupId>by.luxsoft.platform</groupId>
+        <version>1.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>skolkovo-gwt</artifactId>
+    <packaging>war</packaging>
+    <name>Skolkovo GWT</name>
+
+    <dependencies>
+        <dependency>
+          <groupId>com.google.gwt</groupId>
+          <artifactId>gwt-servlet</artifactId>
+          <version>2.1.0</version>
+          <scope>runtime</scope>
+        </dependency>
+        <dependency>
+          <groupId>com.google.gwt</groupId>
+          <artifactId>gwt-user</artifactId>
+          <version>2.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>by.luxsoft.platform</groupId>
+            <artifactId>skolkovo-api</artifactId>
+            <version>1.0</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+
+      <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/classes</outputDirectory>
+
+      <plugins>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>gwt-maven-plugin</artifactId>
+          <version>2.1.0</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>compile</goal>
+             </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+
+       <!-- Copy static web files before executing gwt:run -->
+       <plugin>
+         <groupId>org.apache.maven.plugins</groupId>
+         <artifactId>maven-war-plugin</artifactId>
+         <version>2.1.1</version>
+         <executions>
+           <execution>
+             <goals>
+               <goal>war</goal>
+             </goals>
+           </execution>
+         </executions>
+       </plugin>
+
+      </plugins>
+    </build>
+
+</project>

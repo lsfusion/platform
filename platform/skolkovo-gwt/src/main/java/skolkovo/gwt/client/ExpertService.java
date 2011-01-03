@@ -5,17 +5,17 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 import com.google.gwt.core.client.GWT;
 
 @RemoteServiceRelativePath("ProjectsService")
-public interface ProjectsService extends RemoteService {
+public interface ExpertService extends RemoteService {
     String[] getProjects();
 
     /**
      * Utility/Convenience class.
-     * Use ProjectsService.App.getInstance() to access static instance of ProjectsServiceAsync
+     * Use ExpertService.App.getInstance() to access static instance of ProjectsServiceAsync
      */
     public static class App {
-        private static final ProjectsServiceAsync ourInstance = (ProjectsServiceAsync) GWT.create(ProjectsService.class);
+        private static final ExpertServiceAsync ourInstance = (ExpertServiceAsync) GWT.create(ExpertService.class);
 
-        public static ProjectsServiceAsync getInstance() {
+        public static ExpertServiceAsync getInstance() {
             return ourInstance;
         }
     }

@@ -9,7 +9,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootPanel;
 
-public class ProjectsFrame implements EntryPoint {
+public class ExpertFrame implements EntryPoint {
     private ListBox projectsList;
     private Button button;
     private Label projectLabel;
@@ -50,7 +50,7 @@ public class ProjectsFrame implements EntryPoint {
     private void fillProjectsList() {
         projectsList.clear();
         projectsList.addItem("...loading...");
-        ProjectsService.App.getInstance().getProjects(new AsyncCallback<String[]>(){
+        ExpertService.App.getInstance().getProjects(new AsyncCallback<String[]>(){
             public void onFailure(Throwable caught) {}
             public void onSuccess(String[] projects) {
                 projectsList.clear();

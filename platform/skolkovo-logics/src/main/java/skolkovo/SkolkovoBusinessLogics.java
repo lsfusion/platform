@@ -20,7 +20,7 @@ import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
-import skolkovo.remote.SkolkovoRemoteInterface;
+import skolkovo.api.remote.SkolkovoRemoteInterface;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;

@@ -11,10 +11,11 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="server" />
+    <orderEntry type="module" module-name="skolkovo-api" />
     <orderEntry type="module" module-name="api" />
     <orderEntry type="library" name="Maven: lpsolve:lpsolve:5.5.1" level="project" />
     <orderEntry type="library" name="Maven: findbugs:annotations:1.0.0" level="project" />
+    <orderEntry type="module" module-name="server" />
     <orderEntry type="library" name="Maven: jasperreports:jasperreports:3.7.2" level="project" />
     <orderEntry type="library" name="Maven: commons-beanutils:commons-beanutils:1.8.0" level="project" />
     <orderEntry type="library" name="Maven: commons-logging:commons-logging:1.0.2" level="project" />

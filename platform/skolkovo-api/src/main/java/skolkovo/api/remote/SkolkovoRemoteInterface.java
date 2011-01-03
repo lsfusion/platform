@@ -1,4 +1,4 @@
-package skolkovo.remote;
+package skolkovo.api.remote;
 
 import platform.interop.RemoteLogicsInterface;
 
