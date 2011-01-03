@@ -491,7 +491,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP userPassword;
     public LP userFirstName;
     public LP userLastName;
-    public LP userRole;
+    public LP roleSID;
+    public LP sidToRole;
+    public LP inUserRole;
+    public LP inLoginSID;
     public LP currentUserName;
     public LP<?> loginToUser;
 
@@ -907,7 +910,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         userPassword = addDProp(baseGroup, "userPassword", "Пароль", StringClass.get(30), customUser);
         userFirstName = addDProp(baseGroup, "userFirstName", "Имя", StringClass.get(30), customUser);
         userLastName = addDProp(baseGroup, "userLastName", "Фамилия", StringClass.get(30), customUser);
-        userRole = addDProp(baseGroup, "isHaveRole", "Роли", LogicalClass.instance, customUser, role);
+
+        roleSID = addDProp(baseGroup, "roleSID", "Идентификатор", StringClass.get(30), role);
+        sidToRole = addCGProp(baseGroup, "sidToRole", "Роль (ИД)", object(role), roleSID, roleSID, 1);
+        inUserRole = addDProp(baseGroup, "inUserRole", "Вкл.", LogicalClass.instance, customUser, role);
+        inLoginSID = addJProp("inLoginSID", true, "Логину назначена роль", inUserRole, loginToUser, 1, sidToRole, 2);
 
         name = addCUProp(baseGroup, "Имя", addDProp("name", "Имя", InsensitiveStringClass.get(60), baseClass.named),
                 addJProp(insensetiveString2, userFirstName, 1, userLastName, 1));
@@ -944,7 +951,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     private void initBaseTables() {
         tableFactory.include("customUser", customUser);
-        tableFactory.include("UserRole", customUser, role);
+        tableFactory.include("loginSID", StringClass.get(30), StringClass.get(30));
     }
 
     /**
@@ -982,7 +989,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     void initBaseNavigators() {
-        NavigatorElement policy = new NavigatorElement(baseElement, 50000, "Политики безопасности");
+        NavigatorElement policy = new NavigatorElement(baseElement, 50000, "Администрирование");
         addFormEntity(new UserPolicyFormEntity(policy, 50100));
     }
 
@@ -1075,11 +1082,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             super(parent, ID, "Политики пользователей");
 
             ObjectEntity objUser = addSingleGroupObject(customUser, selection, baseGroup, true);
+            ObjectEntity objRole = addSingleGroupObject(role, baseGroup, true);
             ObjectEntity objPolicy = addSingleGroupObject(policy, baseGroup, true);
 
             addObjectActions(this, objUser);
+            addObjectActions(this, objRole);
 
             addPropertyDraw(objUser, objPolicy, baseGroup, true);
+            addPropertyDraw(objUser, objRole, baseGroup, true);
 
             PropertyDrawEntity balanceDraw = getPropertyDraw(userPolicyOrder, objPolicy.groupTo);
             PropertyDrawEntity loginDraw = getPropertyDraw(userLogin, objUser.groupTo);
