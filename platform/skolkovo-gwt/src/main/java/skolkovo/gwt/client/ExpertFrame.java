@@ -3,6 +3,7 @@ package skolkovo.gwt.client;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 import skolkovo.gwt.shared.GwtVoteInfo;
@@ -14,8 +15,24 @@ public class ExpertFrame implements EntryPoint {
     }
 
     private void update() {
+        String voteIdStr = Window.Location.getParameter("voteId");
+        if (voteIdStr == null) {
+            showErrorPage();
+            return;
+        }
 
-        ExpertService.App.getInstance().getVoteInfo("admin", 0, new AsyncCallback<GwtVoteInfo>() {
+        int voteId;
+        try {
+            voteId = voteIdStr == null ? Integer.parseInt(voteIdStr) : 0;
+        } catch (NumberFormatException nfe) {
+            showErrorPage();
+            return;
+        }
+
+        //todo: не получать здесь вообще, брать прямо на сервере
+        String userName = "admin";
+
+        ExpertService.App.getInstance().getVoteInfo(userName, voteId, new AsyncCallback<GwtVoteInfo>() {
             public void onFailure(Throwable caught) {
                 //todo: change it
                 onSuccess(null);
@@ -23,10 +40,14 @@ public class ExpertFrame implements EntryPoint {
 
             public void onSuccess(GwtVoteInfo vi) {
                 if (vi == null) {
+                    //todo:
+//                    showErrorPage();
+//                    return;
+
                     vi = new GwtVoteInfo();
                     vi.projectClaimer = "НьюВак";
                     vi.expertName = "Some guy";
-                    vi.cluster = "Медицинские технологии в области разработки оборудования, лекарственных средств";
+                    vi.projectCluster = "Медицинские технологии в области разработки оборудования, лекарственных средств";
                 }
 
                 VerticalPanel manePane = new VerticalPanel();
@@ -46,7 +67,7 @@ public class ExpertFrame implements EntryPoint {
                                 "Пожалуйста, заполните данный бюллетень");
 
                 CheckBox cbInterest = new CheckBox("Являетесь ли Вы заинтересованным лицом по отношению к заявителю проекта?");
-                CheckBox cbClusterSuitable = new CheckBox("Проект соответствует направлению \"" + vi.cluster + "\"");
+                CheckBox cbClusterSuitable = new CheckBox("Проект соответствует направлению \"" + vi.projectCluster + "\"");
                 CheckBox cbConcurrentProject = new CheckBox("Проект предполагает разработку и/или коммерциализацию уникальных и/или обладающих конкурентными преимуществами перед мировыми аналогами продуктов и/или технологий?");
 
                 Label lbConcurrentLabel = new Label("Приведите обоснование Вашего ответа (800-1000 символов):");
@@ -130,6 +151,11 @@ public class ExpertFrame implements EntryPoint {
                 RootPanel.get().add(contentPane);
             }
         });
+    }
+
+    private void showErrorPage() {
+        //todo:
+
     }
 
     private Widget createVerticalSpacer(int height) {
