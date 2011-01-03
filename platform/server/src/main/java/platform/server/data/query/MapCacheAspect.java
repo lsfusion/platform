@@ -547,6 +547,9 @@ public class MapCacheAspect {
             Expr expr = (Expr) thisJoinPoint.proceed(new Object[]{property,property,joinExprs,modifier,cacheWheres});
             hashCaches.put(implement, new ExprResult(expr, changedWheres!=null?cacheWheres.toWhere():null));
 
+//            if(expr.getComplexity()>100)
+//                System.out.println("COMPLEX" + property);
+
             // проверим
             if(checkInfinite && !(property instanceof FormulaProperty))
                 expr.checkInfiniteKeys();

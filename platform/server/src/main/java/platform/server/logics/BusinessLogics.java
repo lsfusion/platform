@@ -1474,7 +1474,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     private void checkClass(CustomClass c) {
-        assert (!(c instanceof AbstractCustomClass) || (c.hasChildren())) : "Doesn't exist concrete class";
+        assert (!(c instanceof AbstractCustomClass) || c.hasChildren() || c.equals(transaction) || c.equals(barcodeObject)) : "Doesn't exist concrete class";
         for (CustomClass children : c.children) {
             checkClass(children);
         }
@@ -1645,7 +1645,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return linkedSet;
     }
 
-    private boolean depends(Property<?> property, Property check) {
+    private boolean depends(Property<?> property, Property check) { // пока только для getChangeConstrainedProperties
         if (property.equals(check))
             return true;
         for (Property depend : property.getDepends())
@@ -2672,7 +2672,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addMGProp(AbstractGroup group, String sID, String caption, LP groupProp, Object... params) {
-        return addMGProp(group, new String[]{sID}, new String[]{caption}, 0, groupProp, params)[0];
+        return addMGProp(group, sID, false, caption, groupProp, params);
+    }
+
+    protected LP addMGProp(AbstractGroup group, String sID, boolean persist, String caption, LP groupProp, Object... params) {
+        return addMGProp(group, persist, new String[]{sID}, new String[]{caption}, 0, groupProp, params)[0];
     }
 
     protected <T extends PropertyInterface> LP[] addMGProp(AbstractGroup group, String[] ids, String[] captions, int extra, LP<T> groupProp, Object... params) {

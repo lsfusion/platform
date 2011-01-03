@@ -338,7 +338,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     public void addSeek(OrderInstance order, ObjectValue value, boolean addSeek) {
         if(userSeeks==null)
-            userSeeks = new SeekObjects(false);
+            userSeeks = new SeekObjects(false, getGroupObjectValue());
         userSeeks = userSeeks.add(order, value, addSeek);
     }
 
@@ -643,7 +643,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         }
 
         public SeekObjects add(OrderInstance order, ObjectValue value, boolean down) {
-            return new SeekObjects(BaseUtils.merge(values, Collections.singletonMap(order, value)), this.end || down);
+            return new SeekObjects(BaseUtils.override(values, Collections.singletonMap(order, value)), this.end || down);
         }
 
         public SeekObjects remove(ObjectInstance object) {

@@ -1,6 +1,8 @@
 package platform.server.caches;
 
 import platform.base.EmptyIterator;
+import platform.base.GlobalObject;
+import platform.base.BaseUtils;
 import platform.server.caches.hash.HashCodeValues;
 import platform.server.caches.hash.HashMapValues;
 import platform.server.caches.hash.HashValues;
@@ -41,8 +43,8 @@ public class MapContextIterable implements Iterable<MapTranslate> {
             HashValues hashFromValues; HashValues hashToValues;
             mapValues = null;
             if(values) {
-                Map<Value, Integer> mapFromValues = from.getValueComponents();
-                Map<Value, Integer> mapToValues = to.getValueComponents();
+                Map<Value, GlobalObject> mapFromValues = from.getValueComponents();
+                Map<Value, GlobalObject> mapToValues = to.getValueComponents();
                 valueIterator = new ValuePairs(mapFromValues,mapToValues).iterator();
                 if(valueIterator.hasNext())
                     mapValues = valueIterator.next();

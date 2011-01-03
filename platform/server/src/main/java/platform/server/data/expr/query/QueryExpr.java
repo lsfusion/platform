@@ -162,6 +162,6 @@ public abstract class QueryExpr<K extends BaseExpr,I extends OuterContext<I>,J e
     }
 
     public long calculateComplexity() {
-        return (getComplexity(Arrays.asList(query.getEnum())) + getComplexity(group.keySet())) * 100 + getComplexity(group.values());
+        return (getComplexity(Arrays.asList(query.getEnum())) + getComplexity(group.keySet())) * 1 + getComplexity(group.values());
     }
 }

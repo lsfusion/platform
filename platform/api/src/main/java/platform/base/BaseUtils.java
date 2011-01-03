@@ -739,7 +739,7 @@ public class BaseUtils {
         return groupList(getter, getter.keyList());
     }
 
-    public static <G,K> SortedMap<G,Set<K>> groupSortedSet(Group<G, K> getter, Set<K> keys, Comparator<G> comparator) {
+    public static <G,K> SortedMap<G,Set<K>> groupSortedSet(Group<G, K> getter, Set<K> keys, Comparator<? super G> comparator) {
         SortedMap<G,Set<K>> result = new TreeMap<G, Set<K>>(comparator);
         for(K key : keys) {
             G group = getter.group(key);
@@ -751,6 +751,18 @@ public class BaseUtils {
             groupSet.add(key);
         }
         return result;
+    }
+
+    public static <G, K> SortedMap<G,Set<K>> groupSortedSet(final Map<K, G> getter, Comparator<? super G> comparator) {
+        return groupSortedSet(new Group<G,K>() {
+            public G group(K key) {
+                return getter.get(key);
+            }
+        }, getter.keySet(), comparator);
+    }
+
+    public static <G extends GlobalObject, K> SortedMap<G,Set<K>> groupSortedSet(final Map<K, G> getter) {
+        return groupSortedSet(getter, GlobalObject.comparator);
     }
 
     public static <K> Map<K,Integer> multiSet(Collection<K> col) {
@@ -1113,50 +1125,69 @@ public class BaseUtils {
         return result;
     }
 
+    public static class HashClass<C extends GlobalObject> implements GlobalObject {
+        private C valueClass;
+        private int hash;
+
+        public HashClass(C valueClass, int hash) {
+            this.valueClass = valueClass;
+            this.hash = hash;
+        }
+
+        public HashClass(C valueClass) {
+            this(valueClass, 0);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return this == o || o instanceof HashClass && hash == ((HashClass) o).hash && valueClass.equals(((HashClass) o).valueClass);
+        }
+
+        @Override
+        public int hashCode() {
+            return 31 * valueClass.hashCode() + hash;
+        }
+    }
+
     // есть в общем то другая схема с генерацией всех перестановок, и поиском минимума (или суммированием)
     public static class HashComponents<K> {
-        public final Map<K, Integer> map;
+        public final Map<K, GlobalObject> map; // или сам класс или HashClass, то есть всегда содержит информацию о классе
         public final int hash;
 
-        public HashComponents(Map<K, Integer> map, int hash) {
+        public HashComponents(Map<K, GlobalObject> map, int hash) {
             this.map = map;
             this.hash = hash;
         }
     }
     public static interface HashInterface<K,C> {
 
-        SortedMap<C,Set<K>> getParams(); // важно чтобы для C был статичный компаратор
+        Map<K, C> getParams(); // важно чтобы для C был статичный компаратор
 
-        int hashParams(Map<K,Integer> map);
+        int hashParams(Map<K, ? extends GlobalObject> map);
     }
 
     // цель минимизировать количество hashParams
-    public static <K, C> HashComponents<K> getComponents(HashInterface<K, C> hashInterface) {
-        Map<K, Integer> components = new HashMap<K, Integer>();
+    public static <K, C extends GlobalObject> HashComponents<K> getComponents(HashInterface<K, C> hashInterface) {
+        Map<K, GlobalObject> components = new HashMap<K, GlobalObject>();
 
-        SortedMap<C, Set<K>> classGroupParams = hashInterface.getParams();
-        if(classGroupParams.size()==0)
-            return new HashComponents<K>(new HashMap<K, Integer>(), hashInterface.hashParams(components));
+        final Map<K, C> classParams = hashInterface.getParams();
+        if(classParams.size()==0)
+            return new HashComponents<K>(new HashMap<K, GlobalObject>(), hashInterface.hashParams(components));
 
         int resultHash = 0; // как по сути "список" минимальных хэшей
         int compHash = 16769023;
 
-        Map<K, Integer> classHashes = new HashMap<K, Integer>();
-        for(Map.Entry<C,Set<K>> classParams : classGroupParams.entrySet()) // бежим по оставшимся параметрам
-            for(K param : classParams.getValue())
-                classHashes.put(param, classParams.getKey().hashCode());
-
         Set<K> freeKeys = null;
-        for(Map.Entry<C,Set<K>> classParams : classGroupParams.entrySet()) {
-            freeKeys = classParams.getValue();
+        for(Map.Entry<C,Set<K>> classGroupParam : BaseUtils.groupSortedSet(classParams).entrySet()) {
+            freeKeys = classGroupParam.getValue();
 
             while(freeKeys.size() > 1) {
                 int minHash = Integer.MAX_VALUE;
                 Set<K> minKeys = new HashSet<K>();
                 for(K key : freeKeys) {
-                    Map<K, Integer> mergedComponents = new HashMap<K, Integer>(classHashes); // замещаем базовые ъэши - новыми
+                    Map<K, GlobalObject> mergedComponents = new HashMap<K, GlobalObject>(classParams); // замещаем базовые ъэши - новыми
                     mergedComponents.putAll(components);
-                    mergedComponents.put(key, compHash);
+                    mergedComponents.put(key, new HashClass<C>(classGroupParam.getKey(),compHash));
 
                     int hash = hashInterface.hashParams(mergedComponents);
                     if(hash < minHash) { // сбрасываем минимальные ключи
@@ -1169,7 +1200,7 @@ public class BaseUtils {
                 }
 
                 for(K key : minKeys)
-                    components.put(key, compHash);
+                    components.put(key, new HashClass<C>(classGroupParam.getKey(), compHash));
 
                 resultHash = resultHash * 31 + minHash;
 
@@ -1179,7 +1210,7 @@ public class BaseUtils {
             }
 
             if(freeKeys.size()==1) // если остался один объект в классе оставляем его с hashCode'ом (для оптимизации) 
-                components.put(BaseUtils.single(freeKeys), classParams.getKey().hashCode());
+                components.put(BaseUtils.single(freeKeys), classGroupParam.getKey());
         }
 
         if(freeKeys.size()==1) // если остался один объект то финальный хэш не учтен (для оптимизации)

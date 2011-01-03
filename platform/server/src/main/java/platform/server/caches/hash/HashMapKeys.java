@@ -2,23 +2,25 @@ package platform.server.caches.hash;
 
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.PullExpr;
+import platform.base.BaseUtils;
+import platform.base.GlobalObject;
 
 import java.util.Map;
 
 public class HashMapKeys implements HashKeys {
 
-    private Map<KeyExpr, Integer> hashKeys;
-    public HashMapKeys(Map<KeyExpr, Integer> hashKeys) {
+    private Map<KeyExpr, ? extends GlobalObject> hashKeys;
+    public HashMapKeys(Map<KeyExpr, ? extends GlobalObject> hashKeys) {
         this.hashKeys = hashKeys;
     }
 
     public int hash(KeyExpr expr) {
-        Integer hash = hashKeys.get(expr);
+        GlobalObject hash = hashKeys.get(expr);
         if(hash==null) {
             assert expr instanceof PullExpr;
             return expr.hashCode();
         } else
-            return hash;
+            return hash.hashCode();
     }
 
     @Override

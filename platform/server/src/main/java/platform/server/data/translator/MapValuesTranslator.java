@@ -35,6 +35,7 @@ public class MapValuesTranslator extends AbstractMapTranslator implements MapVal
 
     public MapValuesTranslator(Map<Value, Value> mapValues) {
         this.mapValues = mapValues;
+        // assert что ValueClass'ы совпадают
 
         assert !ValueExpr.removeStatic(mapValues).containsValue(null);
     }

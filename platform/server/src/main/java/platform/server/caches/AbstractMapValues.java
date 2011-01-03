@@ -9,7 +9,7 @@ import platform.server.data.Value;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
+import java.util.HashMap;
 
 public abstract class AbstractMapValues<U extends AbstractMapValues<U>> extends ImmutableObject implements MapValues<U>  {
 
@@ -24,22 +24,21 @@ public abstract class AbstractMapValues<U extends AbstractMapValues<U>> extends 
         return hashCode;
     }
 
-    public static SortedMap<GlobalObject, Set<Value>> getSortedParams(Set<Value> values) {
-        return BaseUtils.groupSortedSet(new BaseUtils.Group<GlobalObject, Value>() {
-            public GlobalObject group(Value key) {
-                return key.getValueClass();
-            }
-        }, values, GlobalObject.comparator);
+    public static Map<Value, GlobalObject> getParamClasses(Set<Value> values) {
+        Map<Value, GlobalObject> result = new HashMap<Value, GlobalObject>();
+        for(Value value : values)
+            result.put(value, value.getValueClass());
+        return result;
     }
 
     // множественные наследование
     public static BaseUtils.HashComponents<Value> getComponents(final MapValues<?> mapValues) {
         return BaseUtils.getComponents(new BaseUtils.HashInterface<Value, GlobalObject>() {
-            public SortedMap<GlobalObject,Set<Value>> getParams() {
-                return getSortedParams(mapValues.getValues());
+            public Map<Value, GlobalObject> getParams() {
+                return getParamClasses(mapValues.getValues());
             }
 
-            public int hashParams(Map<Value, Integer> map) {
+            public int hashParams(Map<Value, ? extends GlobalObject> map) {
                 return mapValues.hashValues(map.size()>0?new HashMapValues(map): HashCodeValues.instance);
             }
         });

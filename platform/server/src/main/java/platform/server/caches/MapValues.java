@@ -1,6 +1,7 @@
 package platform.server.caches;
 
 import platform.base.BaseUtils;
+import platform.base.GlobalObject;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.Value;
 import platform.server.data.translator.MapValuesTranslate;

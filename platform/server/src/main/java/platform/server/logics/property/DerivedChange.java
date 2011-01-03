@@ -25,6 +25,7 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
 
     protected void fillDepends(Set<Property> depends) {
         if(valueChanged) depends.add(value.property);
+        FunctionProperty.fillDepends(depends,BaseUtils.merge(value.mapping.values(),onChange));
     }
     
     public DerivedChange(Property<C> property, PropertyImplement<PropertyInterfaceImplement<C>,D> value, Collection<PropertyMapImplement<?,C>> onChange, boolean valueChanged) {
@@ -37,8 +38,7 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
     public <U extends Changes<U>> U getUsedChanges(Modifier<U> modifier) {
 
         Set<Property> used = new HashSet<Property>();
-        FunctionProperty.fillDepends(used,BaseUtils.merge(value.mapping.values(),onChange));
-        if(valueChanged) used.add(value.property);
+        fillDepends(used);
         return modifier.getUsedChanges(used).add(property.getUsedDataChanges(modifier));
     }
 

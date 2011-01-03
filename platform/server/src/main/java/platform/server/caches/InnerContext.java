@@ -3,6 +3,7 @@ package platform.server.caches;
 import platform.base.BaseUtils;
 import platform.base.Result;
 import platform.base.GlobalObject;
+import platform.base.GlobalInteger;
 import platform.server.caches.hash.HashCodeValues;
 import platform.server.caches.hash.HashContext;
 import platform.server.caches.hash.HashMapKeys;
@@ -12,7 +13,6 @@ import platform.server.data.translator.MapTranslate;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 
 public abstract class InnerContext<I extends InnerContext<I>> extends InnerHashContext {
 
@@ -45,17 +45,19 @@ public abstract class InnerContext<I extends InnerContext<I>> extends InnerHashC
         return hashInner(values?new HashMapValues(getValueComponents()):HashCodeValues.instance);
     }
 
-    private Map<Value, Integer> valueComponents;
+    private final GlobalInteger keyValueHash = new GlobalInteger(5);
+
+    private Map<Value, GlobalObject> valueComponents;
     @ManualLazy
-    public Map<Value, Integer> getValueComponents() {
+    public Map<Value, GlobalObject> getValueComponents() {
         if(valueComponents==null) {
-            final HashMapKeys hashKeys = new HashMapKeys(BaseUtils.toMap(getKeys(), 5));
+            final HashMapKeys hashKeys = new HashMapKeys(BaseUtils.toMap(getKeys(), keyValueHash));
             valueComponents = BaseUtils.getComponents(new BaseUtils.HashInterface<Value, GlobalObject>() {
-                public SortedMap<GlobalObject,Set<Value>> getParams() {
-                    return AbstractMapValues.getSortedParams(getValues());
+                public Map<Value, GlobalObject> getParams() {
+                    return AbstractMapValues.getParamClasses(getValues());
                 }
 
-                public int hashParams(Map<Value, Integer> map) {
+                public int hashParams(Map<Value, ? extends GlobalObject> map) {
                     return hashInner(new HashContext(hashKeys, map.size()>0?new HashMapValues(map):HashCodeValues.instance));
                 }
             }).map;

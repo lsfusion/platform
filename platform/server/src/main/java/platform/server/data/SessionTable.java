@@ -23,7 +23,6 @@ import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 
 import java.sql.SQLException;
-import java.sql.PreparedStatement;
 import java.util.*;
 
 public class SessionTable extends Table implements SessionData<SessionTable>, Value {// в явную хранимые ряды

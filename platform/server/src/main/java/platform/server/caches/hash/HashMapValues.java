@@ -1,18 +1,19 @@
 package platform.server.caches.hash;
 
 import platform.server.data.Value;
+import platform.base.GlobalObject;
 
 import java.util.Map;
 
 public class HashMapValues implements HashValues {
 
-    private Map<Value, Integer> hashValues;
-    public HashMapValues(Map<Value, Integer> hashValues) {
+    private Map<Value, ? extends GlobalObject> hashValues;
+    public HashMapValues(Map<Value, ? extends GlobalObject> hashValues) {
         this.hashValues = hashValues;
     }
 
     public int hash(Value expr) {
-        return hashValues.get(expr);
+        return hashValues.get(expr).hashCode();
     }
 
     @Override
