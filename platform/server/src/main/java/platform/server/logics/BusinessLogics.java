@@ -290,6 +290,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public ConcreteCustomClass computer;
     public ConcreteCustomClass policy;
     public ConcreteCustomClass session;
+    public ConcreteCustomClass role;
 
     public Integer getComputer(String strHostName) {
         try {
@@ -490,6 +491,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP userPassword;
     public LP userFirstName;
     public LP userLastName;
+    public LP userRole;
     public LP currentUserName;
     public LP<?> loginToUser;
 
@@ -846,6 +848,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         customUser = addConcreteClass("customUser", "Обычный пользователь", user, barcodeObject);
         systemUser = addConcreteClass("systemUser", "Системный пользователь", user);
         computer = addConcreteClass("computer", "Рабочее место", baseClass);
+        role = addConcreteClass("role", "Роль", baseClass);
 
         policy = addConcreteClass("policy", "Политика безопасности", baseClass.named);
         session = addConcreteClass("session", "Транзакция", baseClass);
@@ -904,6 +907,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         userPassword = addDProp(baseGroup, "userPassword", "Пароль", StringClass.get(30), customUser);
         userFirstName = addDProp(baseGroup, "userFirstName", "Имя", StringClass.get(30), customUser);
         userLastName = addDProp(baseGroup, "userLastName", "Фамилия", StringClass.get(30), customUser);
+        userRole = addDProp(baseGroup, "isHaveRole", "Роли", LogicalClass.instance, customUser, role);
 
         name = addCUProp(baseGroup, "Имя", addDProp("name", "Имя", InsensitiveStringClass.get(60), baseClass.named),
                 addJProp(insensetiveString2, userFirstName, 1, userLastName, 1));
@@ -936,6 +940,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         objectByName = addMGProp(idGroup, "objectByName", "Объект (Имя)", object(baseClass.named), name, 1);
         seekObjectName = addJProp(true, "Поиск объекта", addSAProp(null), objectByName, 1);
+    }
+
+    private void initBaseTables() {
+        tableFactory.include("customUser", customUser);
+        tableFactory.include("UserRole", customUser, role);
     }
 
     /**
@@ -1203,6 +1212,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         checkClasses(); //проверка на то, что у каждого абстрактного класса есть конкретный потомок
 
         // после classes и до properties, чтобы можно было бы создать таблицы и использовать persistent таблицы в частности для определения классов
+        initBaseTables();
+
         initTables();
 
         initBaseProperties();
