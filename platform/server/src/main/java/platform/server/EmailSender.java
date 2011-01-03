@@ -1,4 +1,4 @@
-package platform.client;
+package platform.server;
 
 
 import javax.activation.DataHandler;
