@@ -278,6 +278,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             voteInfo.competent = (Integer)expertVoteCompetent.read(session, expertObj, voteObj);
             voteInfo.complete = (Integer)expertVoteComplete.read(session, expertObj, voteObj);
             voteInfo.completeComment = (String)expertVoteCompleteComment.read(session, expertObj, voteObj);
+            return voteInfo;
 
         } catch (Exception e) {
             e.printStackTrace();
