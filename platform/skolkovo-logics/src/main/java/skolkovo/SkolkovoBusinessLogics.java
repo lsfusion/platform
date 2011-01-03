@@ -248,36 +248,24 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     public VoteInfo getVoteInfo(String login, int voteId) throws RemoteException {
         //todo:
         try {
+
             DataSession session = createSession();
-            Integer expertId = (Integer)expertLogin.read(session, new DataObject(login, StringClass.get(30)));
-            if (expertId == null) {
-                throw new RuntimeException("Не удалось найти пользователя с логином " + login);
-            }
-
-            DataObject voteObj = new DataObject(voteId, vote);
-
-            Integer projectId = (Integer)voteProject.read(session, voteObj);
-            if (projectId == null) {
-                throw new RuntimeException("Не удалось найти проект для заседания с идентификатором " + voteId);
-            }
-
-            DataObject expertObj = new DataObject(expertId, expert);
-            DataObject projectObj = new DataObject(projectId, project);
+            VoteObjects vo = new VoteObjects(session, login, voteId);
 
             VoteInfo voteInfo = new VoteInfo();
-            voteInfo.expertName = (String)name.read(session, expertObj);
-            voteInfo.projectName = (String)name.read(session, projectObj);
-            voteInfo.projectClaimer = (String)projectClaimerName.read(session, projectObj);
-            voteInfo.projectCluster = (String)projectClusterName.read(session, projectObj);
+            voteInfo.expertName = (String)name.read(session, vo.expertObj);
+            voteInfo.projectName = (String)name.read(session, vo.projectObj);
+            voteInfo.projectClaimer = (String)projectClaimerName.read(session, vo.projectObj);
+            voteInfo.projectCluster = (String)projectClusterName.read(session, vo.projectObj);
 
-            voteInfo.connected = (Boolean)expertVoteConnected.read(session, expertObj, voteObj);
-            voteInfo.inCluster = (Boolean)expertVoteInCluster.read(session, expertObj, voteObj);
-            voteInfo.innovative = (Boolean)expertVoteInnovative.read(session, expertObj, voteObj);
-            voteInfo.innovativeComment = (String)expertVoteInnovativeComment.read(session, expertObj, voteObj);
-            voteInfo.foreign = (Boolean)expertVoteForeign.read(session, expertObj, voteObj);
-            voteInfo.competent = (Integer)expertVoteCompetent.read(session, expertObj, voteObj);
-            voteInfo.complete = (Integer)expertVoteComplete.read(session, expertObj, voteObj);
-            voteInfo.completeComment = (String)expertVoteCompleteComment.read(session, expertObj, voteObj);
+            voteInfo.connected = (Boolean)expertVoteConnected.read(session, vo.expertObj, vo.voteObj);
+            voteInfo.inCluster = (Boolean)expertVoteInCluster.read(session, vo.expertObj, vo.voteObj);
+            voteInfo.innovative = (Boolean)expertVoteInnovative.read(session, vo.expertObj, vo.voteObj);
+            voteInfo.innovativeComment = (String)expertVoteInnovativeComment.read(session, vo.expertObj, vo.voteObj);
+            voteInfo.foreign = (Boolean)expertVoteForeign.read(session, vo.expertObj, vo.voteObj);
+            voteInfo.competent = (Integer)expertVoteCompetent.read(session, vo.expertObj, vo.voteObj);
+            voteInfo.complete = (Integer)expertVoteComplete.read(session, vo.expertObj, vo.voteObj);
+            voteInfo.completeComment = (String)expertVoteCompleteComment.read(session, vo.expertObj, vo.voteObj);
             return voteInfo;
 
         } catch (Exception e) {
@@ -288,5 +276,46 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     public void setVoteInfo(String login, int voteId, VoteInfo voteInfo) throws RemoteException {
         //todo:
+
+        try {
+
+            DataSession session = createSession();
+            VoteObjects vo = new VoteObjects(session, login, voteId);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RemoteException("Ошибка при записи информации о голосовании", e);
+        }
+    }
+
+    private class VoteObjects {
+
+        DataObject expertObj;
+        DataObject voteObj;
+        DataObject projectObj;
+
+        private VoteObjects(DataSession session, String login, int voteId) throws SQLException {
+
+            Integer expertId = (Integer)expertLogin.read(session, new DataObject(login, StringClass.get(30)));
+            if (expertId == null) {
+                throw new RuntimeException("Не удалось найти пользователя с логином " + login);
+            }
+
+            voteObj = new DataObject(voteId, vote);
+
+            Integer projectId = (Integer)voteProject.read(session, voteObj);
+            if (projectId == null) {
+                throw new RuntimeException("Не удалось найти проект для заседания с идентификатором " + voteId);
+            }
+
+            expertObj = new DataObject(expertId, expert);
+
+            Boolean inVote = (Boolean)expertInVote.read(session, expertObj, voteObj);
+            if (inVote == null || !inVote) {
+                throw new RuntimeException("Эксперт с логином " + login + " не назначен на заседание с идентификатором " + voteId);
+            }
+
+            projectObj = new DataObject(projectId, project);
+        }
     }
 }
