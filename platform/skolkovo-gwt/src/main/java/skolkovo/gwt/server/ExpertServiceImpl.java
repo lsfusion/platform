@@ -10,7 +10,7 @@ public class ExpertServiceImpl extends RemoteServiceServlet implements ExpertSer
     public String[] getProjects() {
         String[] result = null;
         try {
-            SkolkovoRemoteInterface logics = SkolkovoLoigicsClient.getInstance().getLogics();
+            SkolkovoRemoteInterface logics = SkolkovoLogicsClient.getInstance().getLogics();
             if (logics != null) {
                 result = logics.getProjectNames(-1);
             }

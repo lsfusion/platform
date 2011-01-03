@@ -9,12 +9,12 @@ import java.rmi.Naming;
 import java.rmi.server.RMIFailureHandler;
 import java.rmi.server.RMISocketFactory;
 
-public class SkolkovoLoigicsClient {
-    private static SkolkovoLoigicsClient instance = new SkolkovoLoigicsClient();
-    private SkolkovoLoigicsClient() {
+public class SkolkovoLogicsClient {
+    private static SkolkovoLogicsClient instance = new SkolkovoLogicsClient();
+    private SkolkovoLogicsClient() {
     }
 
-    public static SkolkovoLoigicsClient getInstance() {
+    public static SkolkovoLogicsClient getInstance() {
         return instance;
     }
 
