@@ -125,6 +125,10 @@ public class LP<T extends PropertyInterface> {
     }
 
     // execute'ы без Form'
+    public List<ClientAction> execute(Object value, DataSession session, DataObject... objects) throws SQLException {
+        return execute(value, session, session.modifier, objects);
+    }
+
     public List<ClientAction> execute(Object value, DataSession session, Modifier<? extends Changes> modifier, DataObject... objects) throws SQLException {
         Map<T, DataObject> mapKeys = getMapValues(objects);
         return property.execute(mapKeys, session, value, modifier);

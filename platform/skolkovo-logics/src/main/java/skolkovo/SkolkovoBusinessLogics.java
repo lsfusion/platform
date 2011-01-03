@@ -246,7 +246,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     }
 
     public VoteInfo getVoteInfo(String login, int voteId) throws RemoteException {
-        //todo:
+
         try {
 
             DataSession session = createSession();
@@ -275,12 +275,25 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     }
 
     public void setVoteInfo(String login, int voteId, VoteInfo voteInfo) throws RemoteException {
-        //todo:
 
         try {
 
             DataSession session = createSession();
             VoteObjects vo = new VoteObjects(session, login, voteId);
+
+            expertVoteDone.execute(true, session, vo.expertObj, vo.voteObj);
+            expertVoteConnected.execute(voteInfo.connected, session, vo.expertObj, vo.voteObj);
+            expertVoteInCluster.execute(voteInfo.inCluster, session, vo.expertObj, vo.voteObj);
+            expertVoteInnovative.execute(voteInfo.innovative, session, vo.expertObj, vo.voteObj);
+            expertVoteInnovativeComment.execute(voteInfo.innovativeComment, session, vo.expertObj, vo.voteObj);
+            expertVoteForeign.execute(voteInfo.foreign, session, vo.expertObj, vo.voteObj);
+            expertVoteCompetent.execute(voteInfo.competent, session, vo.expertObj, vo.voteObj);
+            expertVoteComplete.execute(voteInfo.complete, session, vo.expertObj, vo.voteObj);
+            expertVoteCompleteComment.execute(voteInfo.completeComment, session, vo.expertObj, vo.voteObj);
+
+            String result = session.apply(this);
+            if (result != null)
+                throw new RuntimeException("Не удалось сохранить информацию о голосовании : " + result);
 
         } catch (Exception e) {
             e.printStackTrace();
