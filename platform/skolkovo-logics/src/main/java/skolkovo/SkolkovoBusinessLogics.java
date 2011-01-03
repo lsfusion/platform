@@ -15,7 +15,9 @@ import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.logics.BusinessLogics;
+import platform.server.logics.DataObject;
 import platform.server.logics.linear.LP;
+import platform.server.session.DataSession;
 import skolkovo.api.remote.SkolkovoRemoteInterface;
 
 import javax.swing.*;
@@ -46,11 +48,11 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     protected void initClasses() {
 
-        participant = addAbstractClass("participant", "Участник", baseClass.named);
+        participant = addAbstractClass("participant", "Участник", customUser);
 
         project = addConcreteClass("project", "Проект", baseClass.named);
         expert = addConcreteClass("expert", "Эксперт", participant);
-        cluster = addConcreteClass("cluster", "Кластер", baseClass.named);
+        cluster = addConcreteClass("projectCluster", "Кластер", baseClass.named);
         claimer = addConcreteClass("claimer", "Заявитель", participant);
         document = addConcreteClass("document", "Документ", baseClass.named);
 
@@ -60,8 +62,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP voteProject;
     LP projectDate;
     LP expertCluster;
-    LP projectCluster;
-    LP projectClaimer;
+    LP projectCluster, projectClusterName;
+    LP projectClaimer, projectClaimerName;
     LP participantEmail;
 
     LP documentProject;
@@ -90,6 +92,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP projectValuedVote;
     LP projectNeedExtraVote;
 
+    LP expertLogin;
+
     protected void initProperties() {
 
         LP addDays = addSFProp("prm1+prm2", DateClass.instance, 2);
@@ -101,10 +105,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         projectDate = addDProp(baseGroup, "projectDate", "Дата проекта", DateClass.instance, project);
         expertCluster = addDProp("expertCluster", "Кластер (ИД)", cluster, expert); addJProp(baseGroup, "Кластер", name, expertCluster, 1);
 
-        projectCluster = addDProp("projectCluster", "Кластер (ИД)", cluster, project); addJProp(baseGroup, "Кластер", name, projectCluster, 1);
+        projectCluster = addDProp("projectCluster", "Кластер (ИД)", cluster, project); projectClusterName = addJProp(baseGroup, "Кластер", name, projectCluster, 1);
         LP voteCluster = addJProp("Кластер (ИД)", projectCluster, voteProject, 1); addJProp(baseGroup, "Кластер", name, voteCluster, 1);
 
-        projectClaimer = addDProp("projectClaimer", "Заявитель (ИД)", claimer, project); addJProp(baseGroup, "Заявитель", name, projectClaimer, 1);
+        projectClaimer = addDProp("projectClaimer", "Заявитель (ИД)", claimer, project); projectClaimerName = addJProp(baseGroup, "Заявитель", name, projectClaimer, 1);
         participantEmail = addDProp(baseGroup, "participantEmail", "E-mail", StringClass.get(50), participant);
 
         documentProject = addDProp("documentProject", "Проект (ИД)", project, document); addJProp(baseGroup, "Проект", name, documentProject, 1);
@@ -144,6 +148,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         addConstraint(addJProp("Количество экспертов не соответствует требуемому", andNot1, is(vote), 1, addJProp(equals2, requiredQuantity,
                 addSGProp(addJProp(and1, addCProp(IntegerClass.instance, 1), expertInVote, 2, 1), 2), 1), 1), false);
+
+        expertLogin = addCGProp(baseGroup, "expertLogin", "Эксперт (ИД)", object(expert), userLogin, userLogin, 1);
     }
 
     protected void initTables() {
@@ -241,12 +247,45 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     public VoteInfo getVoteInfo(String login, int voteId) throws RemoteException {
         //todo:
-        VoteInfo voteInfo = new VoteInfo();
-        voteInfo.expertName = "Some name";
-        return voteInfo;
+        try {
+            DataSession session = createSession();
+            Integer expertId = (Integer)expertLogin.read(session, new DataObject(login, StringClass.get(30)));
+            if (expertId == null) {
+                throw new RuntimeException("Не удалось найти пользователя с логином " + login);
+            }
+
+            DataObject voteObj = new DataObject(voteId, vote);
+
+            Integer projectId = (Integer)voteProject.read(session, voteObj);
+            if (projectId == null) {
+                throw new RuntimeException("Не удалось найти проект для заседания с идентификатором " + voteId);
+            }
+
+            DataObject expertObj = new DataObject(expertId, expert);
+            DataObject projectObj = new DataObject(projectId, project);
+
+            VoteInfo voteInfo = new VoteInfo();
+            voteInfo.expertName = (String)name.read(session, expertObj);
+            voteInfo.projectName = (String)name.read(session, projectObj);
+            voteInfo.projectClaimer = (String)projectClaimerName.read(session, projectObj);
+            voteInfo.projectCluster = (String)projectClusterName.read(session, projectObj);
+
+            voteInfo.connected = (Boolean)expertVoteConnected.read(session, expertObj, voteObj);
+            voteInfo.inCluster = (Boolean)expertVoteInCluster.read(session, expertObj, voteObj);
+            voteInfo.innovative = (Boolean)expertVoteInnovative.read(session, expertObj, voteObj);
+            voteInfo.innovativeComment = (String)expertVoteInnovativeComment.read(session, expertObj, voteObj);
+            voteInfo.foreign = (Boolean)expertVoteForeign.read(session, expertObj, voteObj);
+            voteInfo.competent = (Integer)expertVoteCompetent.read(session, expertObj, voteObj);
+            voteInfo.complete = (Integer)expertVoteComplete.read(session, expertObj, voteObj);
+            voteInfo.completeComment = (String)expertVoteCompleteComment.read(session, expertObj, voteObj);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RemoteException("Ошибка при считывании информации о проекте", e);
+        }
     }
 
-    public void setVoteInfo(int expertId, int voteId, VoteInfo voteInfo) throws RemoteException {
+    public void setVoteInfo(String login, int voteId, VoteInfo voteInfo) throws RemoteException {
         //todo:
     }
 }

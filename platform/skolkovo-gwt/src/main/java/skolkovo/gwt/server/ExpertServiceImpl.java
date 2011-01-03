@@ -14,6 +14,7 @@ public class ExpertServiceImpl extends RemoteServiceServlet implements ExpertSer
             return VoteFactory.toGwtVoteInfo(logics.getVoteInfo(login, voteId));
         } catch (RemoteException e) {
             System.err.println("Exception while getting vote info.");
+            e.printStackTrace();
         }
 
         return null;
