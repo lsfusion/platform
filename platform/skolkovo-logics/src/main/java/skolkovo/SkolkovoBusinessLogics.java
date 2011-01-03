@@ -239,14 +239,14 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         }
     }
 
-    public VoteInfo getVoteInfo(int expertId, int projectId) throws RemoteException {
+    public VoteInfo getVoteInfo(String login, int voteId) throws RemoteException {
         //todo:
         VoteInfo voteInfo = new VoteInfo();
         voteInfo.expertName = "Some name";
         return voteInfo;
     }
 
-    public void setVoteInfo(int expertId, int projectId, VoteInfo voteInfo) throws RemoteException {
+    public void setVoteInfo(int expertId, int voteId, VoteInfo voteInfo) throws RemoteException {
         //todo:
     }
 }

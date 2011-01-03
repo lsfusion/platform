@@ -8,10 +8,10 @@ import skolkovo.gwt.shared.GwtVoteInfo;
 import java.rmi.RemoteException;
 
 public class ExpertServiceImpl extends RemoteServiceServlet implements ExpertService {
-    public GwtVoteInfo getVoteInfo(int expertId, int projectId) {
+    public GwtVoteInfo getVoteInfo(String login, int voteId) {
         try {
             SkolkovoRemoteInterface logics = SkolkovoLogicsClient.getInstance().getLogics();
-            return VoteFactory.toGwtVoteInfo(logics.getVoteInfo(expertId, projectId));
+            return VoteFactory.toGwtVoteInfo(logics.getVoteInfo(login, voteId));
         } catch (RemoteException e) {
             System.err.println("Exception while getting vote info.");
         }

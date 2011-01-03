@@ -15,6 +15,7 @@ public class VoteInfo implements Serializable {
 
     //{{vote info
     public boolean interestedPerson;
+    public boolean isClusterSuitable;
     public boolean isConcurrentProject;
     public String concurrencyExplanation;
     public boolean isForeignSpecialistInvolved;

@@ -6,6 +6,6 @@ import skolkovo.VoteInfo;
 import java.rmi.RemoteException;
 
 public interface SkolkovoRemoteInterface extends RemoteLogicsInterface {
-    VoteInfo getVoteInfo(int expertId, int projectId) throws RemoteException;
-    void setVoteInfo(int expertId, int projectId, VoteInfo voteInfo) throws RemoteException;
+    VoteInfo getVoteInfo(String login, int voteId) throws RemoteException;
+    void setVoteInfo(int expertId, int voteId, VoteInfo voteInfo) throws RemoteException;
 }
