@@ -47,9 +47,15 @@ public class CountZipSocket extends Socket {
 
     @Override
     public synchronized void close() throws IOException {
-        OutputStream o = getOutputStream();
-        o.flush();
         super.close();
+        if (in != null) {
+            in.close();
+            in = null;
+        }
+        if (out != null) {
+            out.close();
+            out = null;
+        }
     }
 }
 

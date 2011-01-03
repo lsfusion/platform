@@ -18,6 +18,7 @@ import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.RemoteObject;
+import platform.interop.remote.ServerSocketFactory;
 import platform.server.Settings;
 import platform.server.auth.PolicyManager;
 import platform.server.auth.SecurityPolicy;
@@ -58,7 +59,6 @@ import platform.server.logics.table.ImplementTable;
 import platform.server.logics.table.TableFactory;
 import platform.server.net.ServerInstanceLocator;
 import platform.server.net.ServerInstanceLocatorSettings;
-import platform.server.net.ServerSocketFactory;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.DataSession;
 

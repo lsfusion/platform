@@ -54,8 +54,10 @@ public class ExpertFrame implements EntryPoint {
             public void onFailure(Throwable caught) {}
             public void onSuccess(String[] projects) {
                 projectsList.clear();
-                for (String project : projects) {
-                    projectsList.addItem(project);
+                if (projects != null) {
+                    for (String project : projects) {
+                        projectsList.addItem(project);
+                    }
                 }
             }
         });
