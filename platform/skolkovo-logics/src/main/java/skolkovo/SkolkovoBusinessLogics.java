@@ -1,12 +1,18 @@
 package skolkovo;
 
 import net.sf.jasperreports.engine.JRException;
+import platform.interop.ClassViewType;
 import platform.interop.Compare;
+import platform.interop.action.ClientAction;
+import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.auth.User;
 import platform.server.classes.*;
+import platform.server.data.Union;
+import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
+import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.filter.CompareFilterEntity;
 import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
@@ -14,10 +20,16 @@ import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
+import platform.server.form.instance.remote.RemoteForm;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
+import platform.server.logics.property.ActionProperty;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.linear.LP;
 import platform.server.session.DataSession;
+import platform.base.BaseUtils;
 import skolkovo.api.remote.SkolkovoRemoteInterface;
 
 import javax.swing.*;
@@ -26,6 +38,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.*;
 
 public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogics> implements SkolkovoRemoteInterface {
 
@@ -43,6 +56,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     ConcreteCustomClass vote;
 
+    StaticCustomClass voteResult;
+
     protected void initGroups() {
     }
 
@@ -50,17 +65,18 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         participant = addAbstractClass("participant", "Участник", customUser);
 
-        project = addConcreteClass("project", "Проект", baseClass.named);
+        project = addConcreteClass("project", "Проект", baseClass.named, transaction);
         expert = addConcreteClass("expert", "Эксперт", participant);
-        cluster = addConcreteClass("projectCluster", "Кластер", baseClass.named);
+        cluster = addConcreteClass("cluster", "Кластер", baseClass.named);
         claimer = addConcreteClass("claimer", "Заявитель", participant);
         document = addConcreteClass("document", "Документ", baseClass.named);
 
-        vote = addConcreteClass("vote", "Заседание", baseClass);
+        vote = addConcreteClass("vote", "Заседание", baseClass, transaction);
+
+        voteResult = addStaticClass("voteResult", "Результат заседания", new String[]{"refused","connected","voted"}, new String[]{"Отказался", "Аффилирован", "Проголосовал"});
     }
 
     LP voteProject;
-    LP projectDate;
     LP expertCluster;
     LP projectCluster, projectClusterName;
     LP projectClaimer, projectClaimerName;
@@ -70,12 +86,13 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP documentFile;
 
     LP expertInVote;
-    LP voteStartDate;
     LP voteEndDate;
 
     LP voteOpened;
     LP projectVote;
+    LP requiredQuantity;
 
+    LP expertVoteResult;
     LP expertVoteDone;
     LP expertVoteConnected;
     LP expertVoteInCluster;
@@ -92,17 +109,18 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP projectValuedVote;
     LP projectNeedExtraVote;
 
+    LP generateVote;
+
     LP expertLogin;
 
     protected void initProperties() {
 
         LP addDays = addSFProp("prm1+prm2", DateClass.instance, 2);
         LP requiredPeriod = addDProp(baseGroup, "votePeriod", "Срок заседания", IntegerClass.instance);
-        LP requiredQuantity = addDProp(baseGroup, "voteRequiredQuantity", "Кол-во экспертов", IntegerClass.instance);
+        requiredQuantity = addDProp(baseGroup, "voteRequiredQuantity", "Кол-во экспертов", IntegerClass.instance);
         LP limitExperts = addDProp(baseGroup, "limitExperts", "Кол-во прогол. экспертов", IntegerClass.instance);
 
         voteProject = addDProp("voteProject", "Проект (ИД)", project, vote); addJProp(baseGroup, "Проект", name, voteProject, 1);
-        projectDate = addDProp(baseGroup, "projectDate", "Дата проекта", DateClass.instance, project);
         expertCluster = addDProp("expertCluster", "Кластер (ИД)", cluster, expert); addJProp(baseGroup, "Кластер", name, expertCluster, 1);
 
         projectCluster = addDProp("projectCluster", "Кластер (ИД)", cluster, project); projectClusterName = addJProp(baseGroup, "Кластер", name, projectCluster, 1);
@@ -116,17 +134,18 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         expertInVote = addDProp(baseGroup, "expertInVote", "Вкл", LogicalClass.instance, expert, vote); // !!! нужно отослать письмо с документами и т.д
 
-        voteStartDate = addDProp(baseGroup, "expertVoteStartDate", "Дата начала", DateClass.instance, vote);
-        voteEndDate = addJProp(baseGroup, "expertVoteEndDate", "Дата окончания", addDays, voteStartDate, 1, requiredPeriod);
+        voteEndDate = addJProp("voteEndDate", "Дата окончания", addDays, addJProp(and1, date, 1, is(vote), 1), 1, requiredPeriod);
 
-        voteOpened = addJProp(baseGroup, "expertVoteOpened", "Открыто", greater2, voteEndDate, 1, currentDate);
+        voteOpened = addJProp(baseGroup, "voteOpened", "Открыто", greater2, voteEndDate, 1, currentDate);
         projectVote = addCGProp(baseGroup, false, "projectVote", "Тек. заседание", addJProp(and1, 1, voteOpened, 1), voteOpened, voteProject, 1); // активно только одно заседание
 
-        projectExpertVote = addCGProp(baseGroup, false, "projectExpertVote", "Заседание", addJProp(and1, 1, expertInVote, 2, 1), expertInVote, voteProject, 1, 2); // только один раз может голосовать
+//        projectExpertVote = addCGProp(baseGroup, false, "projectExpertVote", "Заседание", addJProp(and1, 1, expertInVote, 2, 1), expertInVote, voteProject, 1, 2); // только один раз может голосовать
 
         // результаты голосования
-        expertVoteDone = addDProp(baseGroup, "expertVoteDone", "Выполнено", LogicalClass.instance, expert, vote);
-        expertVoteConnected = addDProp(baseGroup, "expertVoteConnected", "Аффилирован", LogicalClass.instance, expert, vote);
+        expertVoteResult = addDProp("expertVoteResult", "Результат (ИД)", voteResult, expert, vote);
+        addJProp(baseGroup, "Результат", name, expertVoteResult, 1, 2);
+        expertVoteDone = addJProp("Проголосовал", equals2, expertVoteResult, 1, 2, addCProp(voteResult, "voted"));
+
         expertVoteInCluster = addDProp(baseGroup, "expertVoteInCluster", "Соот-ет кластеру", LogicalClass.instance, expert, vote);
         expertVoteInnovative = addDProp(baseGroup, "expertVoteInnovative", "Подходит", LogicalClass.instance, expert, vote);
         expertVoteInnovativeComment = addDProp(baseGroup, "expertVoteInnovativeComment", "Подходит (комм.)", TextClass.instance, expert, vote);
@@ -141,13 +160,16 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         LP projectIsSuccessedVote = addCGProp(baseGroup, false, "projectIsSuccessedVote", "Достаточно оценок", addJProp(and1, 1, voteSuccessed, 1), voteSuccessed, voteProject, 1); // если есть состоявшееся заседание
         LP projectClosedVotes = addJProp(andNot1, is(project), 1, projectVote, 1); // нету заседаний
         projectValuedVote = addJProp(baseGroup, "projectValuedVote", "Оценен", and1, projectIsSuccessedVote, 1, projectClosedVotes, 1); // нет открытого заседания и есть состояшееся заседания
-        projectNeedExtraVote = addJProp(and(true, true), is(project), 1, projectVote, 1, projectIsSuccessedVote, 1); // есть открытое заседания и есть состояшееся заседания !!! нужно создать новое заседание
+        projectNeedExtraVote = addJProp(baseGroup, "Треб. заседание", and(true, true), is(project), 1, projectVote, 1, projectIsSuccessedVote, 1); // есть открытое заседания и есть состояшееся заседания !!! нужно создать новое заседание
 
         addConstraint(addJProp("Эксперт не соответствует необходимому кластеру", diff2,
                         expertCluster, 1, addJProp(and1, voteCluster, 2, expertInVote, 1, 2), 1, 2), false);
 
         addConstraint(addJProp("Количество экспертов не соответствует требуемому", andNot1, is(vote), 1, addJProp(equals2, requiredQuantity,
-                addSGProp(addJProp(and1, addCProp(IntegerClass.instance, 1), expertInVote, 2, 1), 2), 1), 1), false);
+                addSGProp(addJProp(and1, addCProp(IntegerClass.instance, 1), expertInVote, 2, 1), 1), 1), 1), false);
+
+        generateVote = addAProp(baseGroup, new GenerateVoteActionProperty());
+        generateVote.setDerivedChange(addCProp(ActionClass.instance,true), projectNeedExtraVote, 1);
 
         expertLogin = addCGProp(baseGroup, "expertLogin", "Эксперт (ИД)", object(expert), userLogin, userLogin, 1);
     }
@@ -331,4 +353,47 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             projectObj = new DataObject(projectId, project);
         }
     }
+
+    public class GenerateVoteActionProperty extends ActionProperty {
+
+        private final ClassPropertyInterface projectInterface;
+
+        public GenerateVoteActionProperty() {
+            super(genSID(), "Сгенерировать заседание", new ValueClass[]{project});
+
+            Iterator<ClassPropertyInterface> i = interfaces.iterator();
+            projectInterface = i.next();
+        }
+
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            throw new RuntimeException("no need");
+        }
+
+        @Override
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            DataObject projectObject = keys.get(projectInterface);
+
+            // нужно выбрать случайных экспертов из того же кластера
+            Query<String, Object> query = new Query<String, Object>(Collections.singleton("key"));
+            query.and(expertCluster.getExpr(session.modifier,query.mapKeys.get("key")).compare(projectCluster.getExpr(session.modifier, projectObject.getExpr()), Compare.EQUALS));
+
+            List<DataObject> experts = new ArrayList<DataObject>();
+            for(Map<String, DataObject> row : query.executeClasses(session.sql, session.env, baseClass).keySet())
+                experts.add(row.get("key"));
+
+            Integer required = BaseUtils.nvl((Integer) requiredQuantity.read(session), 0);
+            if(required > experts.size()) {
+                logger.info("not enough experts");
+                return;
+            }
+
+            DataObject voteObject = session.addObject(vote, session.modifier);
+            voteProject.execute(projectObject.object, session, session.modifier, voteObject);
+
+            Random rand = new Random();
+            for(int i=0;i<required;i++)
+                expertInVote.execute(true, session, session.modifier, experts.remove(rand.nextInt(experts.size())), voteObject);
+        }
+    }
+
 }

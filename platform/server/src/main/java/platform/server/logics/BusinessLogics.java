@@ -27,7 +27,6 @@ import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.PostgreDataAdapter;
@@ -81,7 +80,7 @@ import java.util.logging.Logger;
 // @GenericImmutable нельзя так как Spring валится
 
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends RemoteObject implements RemoteLogicsInterface {
-    private final static Logger logger = Logger.getLogger(BusinessLogics.class.getName());
+    protected final static Logger logger = Logger.getLogger(BusinessLogics.class.getName());
 
     public byte[] findClass(String name) {
 
@@ -933,7 +932,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         reverseBarcode = addSDProp("Реверс", LogicalClass.instance);
 
-        classSID = addDProp(baseGroup, "classSID", "Стат. код", classSIDValueClass, baseClass.objectClass);
+        classSID = addDProp("classSID", "Стат. код", classSIDValueClass, baseClass.sidClass);
         objectClass = addProperty(null, new LP<ClassPropertyInterface>(new ObjectClassProperty(genSID(), baseClass)));
         objectClassName = addJProp(baseGroup, "Класс объекта", name, objectClass, 1);
 
@@ -990,7 +989,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     void initBaseNavigators() {
         NavigatorElement policy = new NavigatorElement(baseElement, 50000, "Администрирование");
-        addFormEntity(new UserPolicyFormEntity(policy, 50100));
+//        addFormEntity(new UserPolicyFormEntity(policy, 50100));
     }
 
     protected SecurityPolicy permitAllPolicy, readOnlyPolicy;
@@ -1220,6 +1219,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         initClasses();
         checkClasses(); //проверка на то, что у каждого абстрактного класса есть конкретный потомок
+        baseClass.initObjectClass();
+        storeCustomClass(baseClass.objectClass);        
 
         // после classes и до properties, чтобы можно было бы создать таблицы и использовать persistent таблицы в частности для определения классов
         initBaseTables();
@@ -1495,7 +1496,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     private void checkClass(CustomClass c) {
-        assert (!(c instanceof AbstractCustomClass) || c.hasChildren() || c.equals(transaction) || c.equals(barcodeObject)) : "Doesn't exist concrete class";
+        assert (!(c instanceof AbstractCustomClass) || c.hasChildren() || c.equals(baseClass.sidClass) || c.equals(transaction) || c.equals(barcodeObject)) : "Doesn't exist concrete class";
         for (CustomClass children : c.children) {
             checkClass(children);
         }
@@ -1634,7 +1635,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public DataSession createSession(SQLSession sql, UserController userController, ComputerController computerController) throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        return new DataSession(sql, userController, computerController, baseClass, baseClass.named, session, name, transaction, date, notDeterministic);
+        return new DataSession(sql, userController, computerController, baseClass, baseClass.named, session, name, transaction, date, currentDate, notDeterministic);
     }
 
     public List<DerivedChange<?, ?>> notDeterministic = new ArrayList<DerivedChange<?, ?>>();
@@ -1684,6 +1685,34 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return result;
     }
 
+    private List<Property> getDerivedPropertyList() { // переставляет execute'ы заведомо до changeProps, чтобы разрешать циклы
+        List<Property> result = new ArrayList<Property>();
+        for (Property property : getPropertyList())
+            if (property instanceof ExecuteProperty) {
+                ExecuteProperty executeProperty = (ExecuteProperty)property;
+                Integer minChange = null;
+                for(Property changeProp : executeProperty.getChangeProps()) {
+                    int index = result.indexOf(changeProp);
+                    if(index>=0 && (minChange==null || index<minChange))
+                        minChange = index;
+                }
+                if(minChange!=null)
+                    result.add(minChange, property);
+                else
+                    result.add(property);
+            }
+        return result;
+    }
+
+    @IdentityLazy
+    public List<ExecuteProperty> getExecuteDerivedProperties() {
+        List<ExecuteProperty> result = new ArrayList<ExecuteProperty>();
+        for (Property property : getDerivedPropertyList())
+            if (property instanceof ExecuteProperty && ((ExecuteProperty)property).derivedChange!=null)
+                result.add((ExecuteProperty) property);
+        return result;
+    }
+
     public <P extends PropertyInterface> Collection<MaxChangeProperty<?, P>> getChangeConstrainedProperties(Property<P> change) {
         Collection<MaxChangeProperty<?, P>> result = new ArrayList<MaxChangeProperty<?, P>>();
         for (Property<?> property : getPropertyList())
@@ -1703,76 +1732,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public void fillIDs() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         DataSession session = createSession();
 
-        Map<String, CustomClass> usedSIds = new HashMap<String, CustomClass>();
-        Set<Integer> usedIds = new HashSet<Integer>();
-        Set<CustomClass> allClasses = new HashSet<CustomClass>();
-        baseClass.fillChilds(allClasses);
-
-        // baseClass'у и baseClass.objectClass'у нужны ID сразу потому как учавствуют в addObject
-        baseClass.ID = 0;
-        baseClass.named.ID = 1;
-        baseClass.objectClass.ID = Integer.MAX_VALUE - 5;
-
-        CustomClass usedClass;
-        for (CustomClass customClass : allClasses)
-            if (customClass instanceof ConcreteCustomClass) {
-                ConcreteCustomClass concreteClass = (ConcreteCustomClass) customClass;
-                if ((usedClass = usedSIds.put(concreteClass.getSID(), customClass)) != null)
-                    throw new RuntimeException("Одинаковые идентификаторы у классов " + customClass.caption + " и " + usedClass.caption);
-
-                // ищем класс с таким sID, если не находим создаем
-                Query<String, Object> findClass = new Query<String, Object>(Collections.singleton("key"));
-                findClass.and(classSID.getExpr(session.modifier, BaseUtils.singleValue(findClass.mapKeys)).compare(new ValueExpr(concreteClass.getSID(), classSIDValueClass), Compare.EQUALS));
-                OrderedMap<Map<String, Object>, Map<Object, Object>> result = findClass.execute(session.sql, session.env);
-                if (result.size() == 0) { // не найдено добавляем новый объект и заменяем ему classID и title
-                    DataObject classObject;
-                    if (concreteClass.equals(baseClass.objectClass)) { // добавим с явным ID объект
-                        classObject = new DataObject(baseClass.objectClass.ID, baseClass.unknown);
-                        session.changeClass(classObject, baseClass.objectClass);
-                    } else {
-                        classObject = session.addObject(baseClass.objectClass, session.modifier);
-                        concreteClass.ID = (Integer) classObject.object;
-
-                        // также для обратной совместимости в objects меняем старые ID на новые, только если с таким sID нету ID
-//                        if(!session.isRecord(baseClass.table, Collections.singletonMap(baseClass.table.key, new DataObject(concreteClass.sID, SystemClass.instance)))) {
-//                        Query<KeyField, PropertyField> update = new Query<KeyField, PropertyField>(baseClass.table);
-//                        Join<PropertyField> baseJoin = baseClass.table.join(update.mapKeys);
-//                        update.and(baseJoin.getExpr(baseClass.table.objectClass).compare(new ValueExpr(concreteClass.sID, SystemClass.instance), Compare.EQUALS));
-//                        update.properties.put(baseClass.table.objectClass, new ValueExpr(classObject.object, SystemClass.instance));
-//                        session.modifyRecords(new ModifyQuery(baseClass.table, update));
-//                        }
-                    }
-
-                    name.execute(concreteClass.caption, session, session.modifier, classObject);
-                    classSID.execute(concreteClass.getSID(), session, session.modifier, classObject);
-                } else // assert'ся что класс 1
-                    concreteClass.ID = (Integer) BaseUtils.singleKey(result).get("key");
-
-                usedIds.add(concreteClass.ID);
-            }
+        baseClass.fillIDs(session, name, classSID);
 
         session.apply(this);
-
-        int free = 0;
-        for (CustomClass customClass : allClasses)
-            if (customClass instanceof AbstractCustomClass) {
-                while (usedIds.contains(free))
-                    free++;
-                customClass.ID = free++;
-            }
-
-        /*session.startTransaction();
-        for(CustomClass customClass : allClasses)
-            if(customClass instanceof ConcreteCustomClass)
-                name.execute(customClass.title.substring(0,BaseUtils.min(customClass.title.length(),50)), session, session.modifier, new DataObject(customClass.ID, baseClass.objectClass));
-        session.apply(this);*/
+        session.close();
     }
 
     public void synchronizeDB() throws SQLException, IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
 
         DataSession session = createSession();
-        SQLSession sqlSession = session.sql;
 
+        SQLSession sqlSession = session.sql;
         sqlSession.startTransaction();
 
         // инициализируем таблицы
@@ -1970,7 +1940,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
         }
 
-        sqlSession.close();
+        session.close();
     }
 
     boolean checkPersistent(SQLSession session) throws SQLException {
@@ -2004,10 +1974,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return customClass;
     }
 
+    protected StaticCustomClass addStaticClass(String sID, String caption, String[] sids, String[] names) {
+        StaticCustomClass customClass = new StaticCustomClass(sID, caption, baseClass.sidClass, sids, names);
+        storeCustomClass(customClass);
+        return customClass;
+    }
+
     protected BaseClass addBaseClass(String sID, String caption) {
         BaseClass baseClass = new BaseClass(sID, caption);
         storeCustomClass(baseClass);
-        storeCustomClass(baseClass.objectClass);
         storeCustomClass(baseClass.named);
         return baseClass;
     }
@@ -2170,27 +2145,27 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addProperty(group, new LP<ShiftChangeProperty.Interface<P>>(new ShiftChangeProperty<P, PropertyInterface>(genSID(), caption, lp.property, new PropertyMapImplement<PropertyInterface, P>(reverseBarcode.property))));
     }
 
-    protected LP addCProp(ConcreteValueClass valueClass, Object value, ValueClass... params) {
+    protected LP addCProp(StaticClass valueClass, Object value, ValueClass... params) {
         return addCProp(privateGroup, genSID(), "sys", valueClass, value, params);
     }
 
-    protected LP addCProp(String caption, ConcreteValueClass valueClass, Object value, ValueClass... params) {
+    protected LP addCProp(String caption, StaticClass valueClass, Object value, ValueClass... params) {
         return addCProp(genSID(), caption, valueClass, value, params);
     }
 
-    protected LP addCProp(String sID, String caption, ConcreteValueClass valueClass, Object value, ValueClass... params) {
+    protected LP addCProp(String sID, String caption, StaticClass valueClass, Object value, ValueClass... params) {
         return addCProp(null, sID, caption, valueClass, value, params);
     }
 
-    protected LP addCProp(String sID, boolean persistent, String caption, ConcreteValueClass valueClass, Object value, ValueClass... params) {
+    protected LP addCProp(String sID, boolean persistent, String caption, StaticClass valueClass, Object value, ValueClass... params) {
         return addCProp(null, sID, persistent, caption, valueClass, value, params);
     }
 
-    protected LP addCProp(AbstractGroup group, String sID, String caption, ConcreteValueClass valueClass, Object value, ValueClass... params) {
+    protected LP addCProp(AbstractGroup group, String sID, String caption, StaticClass valueClass, Object value, ValueClass... params) {
         return addCProp(group, sID, false, caption, valueClass, value, params);
     }
 
-    protected LP addCProp(AbstractGroup group, String sID, boolean persistent, String caption, ConcreteValueClass valueClass, Object value, ValueClass... params) {
+    protected LP addCProp(AbstractGroup group, String sID, boolean persistent, String caption, StaticClass valueClass, Object value, ValueClass... params) {
         return addProperty(group, persistent, new LP<ClassPropertyInterface>(new ClassProperty(sID, caption, params, valueClass, value)));
     }
 

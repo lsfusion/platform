@@ -211,7 +211,7 @@ public class MapCacheAspect {
 
     public <K extends PropertyInterface,U extends Changes<U>> U getUsedChanges(Property<K> property, Modifier<U> modifier, Map<Integer, Map<U, U>> usedCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
-        if(!(property instanceof FunctionProperty) && !(property instanceof DataProperty && ((DataProperty)property).derivedChange!=null)) // если не Function или DataProperty с derived, то нету рекурсии и эффективнее просто вы
+        if(!(property instanceof FunctionProperty) && !(property instanceof UserProperty && ((UserProperty)property).derivedChange!=null)) // если не Function или DataProperty с derived, то нету рекурсии и эффективнее просто вы
             return (U) thisJoinPoint.proceed(); 
 
         U implement = modifier.fullChanges();

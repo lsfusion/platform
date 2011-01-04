@@ -106,6 +106,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
     public final CustomClass transaction;
     public final LP<?> date;
     public final ConcreteCustomClass sessionClass;
+    public final LP<?> currentDate;
 
     // для отладки
     public static boolean reCalculateAggr = false;
@@ -117,7 +118,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
 
     public DataObject applyObject = null;
 
-    public DataSession(SQLSession sql, final UserController user, final ComputerController computer, BaseClass baseClass, CustomClass namedObject, ConcreteCustomClass sessionClass, LP<?> name, CustomClass transaction, LP<?> date, List<DerivedChange<?,?>> notDeterministic) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+    public DataSession(SQLSession sql, final UserController user, final ComputerController computer, BaseClass baseClass, CustomClass namedObject, ConcreteCustomClass sessionClass, LP<?> name, CustomClass transaction, LP<?> date, LP<?> currentDate, List<DerivedChange<?,?>> notDeterministic) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         this.sql = sql;
 
         this.baseClass = baseClass;
@@ -127,6 +128,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
         this.date = date;
         this.notDeterministic = notDeterministic;
         this.sessionClass = sessionClass;
+        this.currentDate = currentDate;
 
         this.user = user;
         this.computer = computer;
@@ -168,7 +170,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
             name.execute(customClass.caption+" "+object.object, this, modifier, object);
 
         if(customClass.isChild(transaction))
-            date.execute(DateConverter.dateToSql(new Date()), DataSession.this, modifier, object);
+            date.execute(currentDate.read(sql, modifier, env), DataSession.this, modifier, object);
 
         return object;
     }
@@ -308,7 +310,6 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
                 String constraintResult = check(property);
                 if(constraintResult!=null) {
                     // не надо DROP'ать так как Rollback автоматически drop'ает все temporary таблицы
-                    sql.rollbackTransaction();
                     return constraintResult;
                 }
             }
@@ -355,6 +356,14 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
         // до start transaction
         if(applyObject==null)
             applyObject = addObject(sessionClass, modifier);
+
+        for(ExecuteProperty property : BL.getExecuteDerivedProperties()) {
+            PropertyChange<ClassPropertyInterface> propertyChange = property.derivedChange.getDataChanges(modifier).get(property);
+            if(propertyChange!=null)
+                for(Map.Entry<Map<ClassPropertyInterface,DataObject>,Map<String,ObjectValue>> executeRow :
+                        propertyChange.getQuery().executeClasses(sql, env, baseClass).entrySet())
+                    property.execute(executeRow.getKey(), executeRow.getValue().get("value"), this, new ArrayList<ClientAction>(), null, null);
+        }
 
         sql.startTransaction();
 

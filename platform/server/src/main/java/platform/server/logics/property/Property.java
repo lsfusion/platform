@@ -398,8 +398,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return new DataChangesModifier(modifier, getDataChanges(modifier, toNull));
     }
 
-    public Collection<DataProperty> getDataChanges() { // не должно быть Action'ов
-        return (Collection<DataProperty>) ((Collection<? extends Property>) getDataChanges(defaultModifier, false).keys());
+    public Collection<UserProperty> getDataChanges() { // не должно быть Action'ов
+        return getDataChanges(defaultModifier, false).keys();
     }
 
     protected MapDataChanges<T> getJoinDataChanges(Map<T, ? extends Expr> implementExprs, Expr expr, Where where, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {

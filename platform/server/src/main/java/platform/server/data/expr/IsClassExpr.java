@@ -4,7 +4,7 @@ import platform.server.caches.ParamLazy;
 import platform.server.caches.TwinLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
-import platform.server.classes.CustomObjectClass;
+import platform.server.classes.StaticCustomClass;
 import platform.server.data.Table;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.AbstractSourceJoin;
@@ -50,7 +50,7 @@ public class IsClassExpr extends StaticClassExpr {
         return getStaticClass().getType();
     }
 
-    public CustomObjectClass getStaticClass() {
+    public StaticCustomClass getStaticClass() {
         return baseClass.objectClass;
     }
 

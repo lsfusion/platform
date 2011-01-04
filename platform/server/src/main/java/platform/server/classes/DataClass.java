@@ -26,7 +26,7 @@ import java.sql.SQLException;
 import java.text.Format;
 import java.util.*;
 
-public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, AndClassSet, OrClassSet {
+public abstract class DataClass<T> implements StaticClass, Type<T>, AndClassSet, OrClassSet {
     private static Map<String, DataClass> sidToClass = new HashMap<String, DataClass>();
 
     static void storeClass(String sid, DataClass cls) {
@@ -143,6 +143,10 @@ public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, AndCl
 
     public DataObject getEmptyValueExpr() {
         return new DataObject(0, this);
+    }
+
+    public Expr getStaticExpr(Object value) {
+        return new ValueExpr(value, this);
     }
 
     protected abstract Class getJavaClass();

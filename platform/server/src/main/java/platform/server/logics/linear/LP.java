@@ -68,7 +68,7 @@ public class LP<T extends PropertyInterface> {
         if(BL!=null && derivedChange.notDeterministic())
             BL.notDeterministic.add(derivedChange);
         else
-            for(DataProperty dataProperty : property.getDataChanges())
+            for(UserProperty dataProperty : property.getDataChanges())
                 dataProperty.derivedChange = derivedChange;
     }
 

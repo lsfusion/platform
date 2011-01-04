@@ -42,13 +42,6 @@ public abstract class DataProperty extends UserProperty {
                 addChanges(new SimpleChanges(modifierChanges, this));
     }
 
-    @Override
-    protected void fillDepends(Set<Property> depends, boolean derived) {
-        if(derived && derivedChange !=null) derivedChange.fillDepends(depends);
-    }
-
-    public DerivedChange<?,?> derivedChange = null;
-
     public Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
 
         ExprChanges session = modifier.getSession();

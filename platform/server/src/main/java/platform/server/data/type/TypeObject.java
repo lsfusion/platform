@@ -19,7 +19,7 @@ public class TypeObject implements ParseInterface {
     }
 
     public TypeObject(DataObject dataObject) {
-        this(dataObject.object,dataObject.objectClass.getType());
+        this(dataObject.object,dataObject.getType());
     }
 
     public boolean isSafeString() {

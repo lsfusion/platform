@@ -71,10 +71,10 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     }
 
     public boolean isString(SQLSyntax syntax) {
-        return objectClass.getType().isSafeString(object);
+        return getType().isSafeString(object);
     }
     public String getString(SQLSyntax syntax) {
-        return objectClass.getType().getString(object, syntax);
+        return getType().getString(object, syntax);
     }
 
     public ValueExpr getExpr() {
@@ -158,7 +158,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     }
 
     public DataObject refresh(SessionChanges session) throws SQLException {
-        return session.getDataObject(object, objectClass.getType());
+        return session.getDataObject(object, getType());
     }
 
     public boolean isNull() {
@@ -168,7 +168,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         BaseUtils.serializeObject(outStream, object);
 
-        TypeSerializer.serializeType(outStream, objectClass.getType());
+        TypeSerializer.serializeType(outStream, getType());
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {

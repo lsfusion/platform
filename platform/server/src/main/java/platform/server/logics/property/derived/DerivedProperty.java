@@ -3,10 +3,7 @@ package platform.server.logics.property.derived;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.interop.Compare;
-import platform.server.classes.BaseClass;
-import platform.server.classes.ConcreteValueClass;
-import platform.server.classes.DoubleClass;
-import platform.server.classes.ValueClass;
+import platform.server.classes.*;
 import platform.server.logics.property.*;
 
 import java.util.*;
@@ -19,7 +16,7 @@ public class DerivedProperty {
         return "GDVID"+(ids++);
     }
 
-    private static ConcreteValueClass formulaClass = DoubleClass.instance;
+    private static StaticClass formulaClass = DoubleClass.instance;
 
     // общие методы
 
@@ -126,7 +123,7 @@ public class DerivedProperty {
         return new PropertyMapImplement<UnionProperty.Interface,T>(unionProperty,BaseUtils.reverse(mapInterfaces));
     }
 
-    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createStatic(Object value, ConcreteValueClass valueClass) {
+    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createStatic(Object value, StaticClass valueClass) {
         return new PropertyMapImplement<ClassPropertyInterface,T>(new ClassProperty(genID(),"sys",new ValueClass[]{}, valueClass, value),new HashMap<ClassPropertyInterface, T>());
     }
 

@@ -2,6 +2,7 @@ package platform.server.logics.property;
 
 import platform.server.classes.ConcreteValueClass;
 import platform.server.classes.ValueClass;
+import platform.server.classes.StaticClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.where.Where;
@@ -9,6 +10,7 @@ import platform.server.data.where.WhereBuilder;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
 import platform.server.session.SimpleChanges;
+import platform.server.logics.DataObject;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -17,13 +19,13 @@ import java.util.Set;
 
 public class ClassProperty extends AggregateProperty<ClassPropertyInterface> {
 
-    final ConcreteValueClass valueClass;
+    final StaticClass staticClass;
     final Object value;
 
-    public ClassProperty(String sID, String caption, ValueClass[] classes, ConcreteValueClass valueClass, Object value) {
+    public ClassProperty(String sID, String caption, ValueClass[] classes, StaticClass staticClass, Object value) {
         super(sID, caption, DataProperty.getInterfaces(classes));
         
-        this.valueClass = valueClass;
+        this.staticClass = staticClass;
         this.value = value;
 
         assert value !=null;
@@ -53,6 +55,6 @@ public class ClassProperty extends AggregateProperty<ClassPropertyInterface> {
 
     public Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
         // здесь session может быть null
-        return new ValueExpr(value,valueClass).and(getIsClassWhere(joinImplement, modifier, changedWhere));
+        return staticClass.getStaticExpr(value).and(getIsClassWhere(joinImplement, modifier, changedWhere));
     }
 }

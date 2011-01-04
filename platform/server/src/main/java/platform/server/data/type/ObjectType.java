@@ -2,17 +2,12 @@ package platform.server.data.type;
 
 import net.sf.jasperreports.engine.JRAlignment;
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.data.PropertyField;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.KeyType;
-import platform.server.data.expr.ValueExpr;
-import platform.server.data.query.Join;
 import platform.server.data.query.Query;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.form.view.report.ReportDrawField;
@@ -22,8 +17,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.Format;
 import java.text.NumberFormat;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -79,17 +72,11 @@ public class ObjectType implements Type<Integer> {
     }
 
     public ConcreteClass getDataClass(Object value, SQLSession session, BaseClass baseClass) throws SQLException {
-        Query<Object,String> query = new Query<Object,String>(new HashMap<Object, KeyExpr>());
-        Join<PropertyField> joinTable = baseClass.table.joinAnd(Collections.singletonMap(baseClass.table.key,new ValueExpr(value,baseClass.getConcrete())));
-        query.and(joinTable.getWhere());
-        query.properties.put("classid", joinTable.getExpr(baseClass.table.objectClass));
-        OrderedMap<Map<Object, Object>, Map<String, Object>> result = query.execute(session);
-        if(result.size()==0)
+        Integer classID = baseClass.getClassID((Integer) value, session);
+        if(classID==null)
             return baseClass.unknown;
-        else {
-            assert (result.size()==1);
-            return baseClass.findConcreteClassID((Integer) result.singleValue().get("classid"));
-        }
+        else
+            return baseClass.findConcreteClassID(classID);
     }
 
     public ConcreteClass getBinaryClass(byte[] value, SQLSession session, BaseClass baseClass) throws SQLException {
