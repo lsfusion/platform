@@ -24,55 +24,31 @@ public class EmailSender {
     Session mailSession;
     MimeMessage message;
     Multipart mp = new MimeMultipart();
+    String emails[];
 
     public EmailSender(String... targets) {
+        emails = targets;
+
         Properties mailProps = new Properties();
         mailProps.setProperty("mail.smtp.host", smtpHost);
         mailProps.put("mail.from", fromAddress);
-
         mailSession = Session.getInstance(mailProps, null);
-
+        
         message = new MimeMessage(mailSession);
-        try {
-            message.setFrom();
-            setRecipients(targets);
-        } catch (MessagingException e) {
-            e.printStackTrace();
-        }
     }
 
-    public void setRecipients(String... targets) {
+    public void setRecipients(String... targets) throws MessagingException {
         InternetAddress dests[] = new InternetAddress[targets.length];
-        try {
-            for (int i = 0; i < targets.length; i++) {
-                dests[i] = new InternetAddress(targets[i].trim().toLowerCase());
-            }
-            message.setRecipients(MimeMessage.RecipientType.TO, dests);
-        } catch (MessagingException e) {
-            e.printStackTrace();
+        for (int i = 0; i < targets.length; i++) {
+            dests[i] = new InternetAddress(targets[i].trim().toLowerCase());
         }
+        message.setRecipients(MimeMessage.RecipientType.TO, dests);
     }
 
-    public void setTheme(String theme) {
-        try {
-            message.setSubject(theme);
-        } catch (MessagingException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setText(String text) {
+    public void setText(String text) throws MessagingException {
         MimeBodyPart textPart = new MimeBodyPart();
-        try {
-
-            textPart.setDataHandler((new DataHandler(new HTMLDataSource(text))));
-            textPart.attachFile("d:\\test.txt");
-            mp.addBodyPart(textPart);
-        } catch (MessagingException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        textPart.setDataHandler((new DataHandler(new HTMLDataSource(text))));
+        mp.addBodyPart(textPart);
     }
 
     static class HTMLDataSource implements DataSource {
@@ -96,39 +72,30 @@ public class EmailSender {
         }
 
         public String getName() {
-            return "text/html dataSource";
+            return "dataSource to send text/html";
         }
     }
 
-    public void attachFile(String path) {
-        try {
-            mp.addBodyPart(addFile(path));
-        } catch (MessagingException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private MimeBodyPart addFile(String path) {
+    public void attachFile(String path) throws MessagingException {
         MimeBodyPart filePart = new MimeBodyPart();
         FileDataSource fds = new FileDataSource(path);
-        try {
-            filePart.setDataHandler(new DataHandler(fds));
-            filePart.setFileName(fds.getName());
-        } catch (MessagingException e) {
-            e.printStackTrace();
-        }
-        return filePart;
+        filePart.setDataHandler(new DataHandler(fds));
+        filePart.setFileName(fds.getName());
+        mp.addBodyPart(filePart);
     }
 
-    public void sendMail(String theme, String text, String... filePaths) {
+    public void sendMail(String subject, String text, String... filePaths) {
         try {
+            message.setFrom();
             message.setSentDate(new java.util.Date());
-            setTheme(theme);
+            setRecipients(emails);
+            message.setSubject(subject);
             setText(text);
             for (String path : filePaths) {
                 attachFile(path);
             }
             message.setContent(mp);
+
             Transport.send(message);
         } catch (MessagingException e) {
             e.printStackTrace();
