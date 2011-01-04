@@ -56,7 +56,8 @@ public class EmailActionProperty extends ActionProperty {
     }
 
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapExecuteObjects) {
-        String[] reportPaths = new String[forms.size()];
+        String embeddedFilePath = "";
+        String[] reportPaths = new String[forms.size()-1];
         for (int i = 0; i < forms.size(); i++) {
             RemoteFormInterface remoteForm = executeForm.createForm(forms.get(i), BaseUtils.join(mapObjects.get(i), keys));
 
@@ -66,7 +67,11 @@ public class EmailActionProperty extends ActionProperty {
                 print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
 
                 File file = File.createTempFile("lsfReport", ".html");
-                reportPaths[i] = file.getAbsolutePath();
+                if (i == 0) {
+                    embeddedFilePath = file.getAbsolutePath();
+                } else {
+                    reportPaths[i-1] = file.getAbsolutePath();
+                }
 
                 JRHtmlExporter htmlExporter = new JRHtmlExporter();
                 htmlExporter.setParameter(JRHtmlExporterParameter.IS_USING_IMAGES_TO_ALIGN, false);
@@ -78,7 +83,7 @@ public class EmailActionProperty extends ActionProperty {
             }
         }
         EmailSender sender = new EmailSender("danchenko@gmail.com", "dale@luxsoft.by");
-        sender.sendMail(subject, "empty", reportPaths);
+        sender.sendMail(subject, embeddedFilePath, reportPaths);
     }
 
 }
