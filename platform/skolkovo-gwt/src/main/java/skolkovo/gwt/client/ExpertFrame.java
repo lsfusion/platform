@@ -85,6 +85,7 @@ public class ExpertFrame implements EntryPoint {
                 taInnovativeComment.setEnabled(!vi.voteDone);
 
                 cbForeign = new CheckBox("Проект предполагает участие иностранного (не являющегося гражданином Российской Федерации) специалиста, который имеет значительный авторитет в инвестиционной и/или исследовательской среде");
+                cbForeign.setEnabled(!vi.voteDone);
 
                 lbCompetent = new Label("Оцените Вашу компетенцию по теме проекта (от 1 до 5 баллов)");
                 bxCompetent = new ListBox();
