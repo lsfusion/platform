@@ -55,7 +55,7 @@ public class SQLSession extends MutableObject {
     }
 
     private void tryCommon() throws SQLException { // пытается вернуться к
-        removeUnusedTemporaryTables();
+//        removeUnusedTemporaryTables();
         if(!inTransaction && sessionTablesMap.isEmpty()) { // вернемся к commonConnection'у
             connectionPool.returnPrivate(this, privateConnection);
             privateConnection = null;
@@ -192,7 +192,7 @@ public class SQLSession extends MutableObject {
     public String createTemporaryTable(List<KeyField> keys, Collection<PropertyField> properties, Object owner) throws SQLException {
         needPrivate();
 
-        removeUnusedTemporaryTables();
+//        removeUnusedTemporaryTables();
 
         synchronized(sessionTablesMap) {
             String name = "t_" + (sessionCounter++);
