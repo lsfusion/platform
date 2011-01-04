@@ -115,6 +115,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             System.setProperty("sun.rmi.dgc.server.gcInterval", "600000");
         }
 
+        System.setProperty("mail.mime.encodefilename", "true");
+
         String logLevelStr = System.getProperty("platform.server.loglevel");
         Level logLevel = logLevelStr != null ? Level.parse(logLevelStr) : Level.SEVERE;
 

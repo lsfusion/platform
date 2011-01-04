@@ -2,6 +2,7 @@ package platform.client.form.editor;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -17,7 +18,7 @@ public class DocumentPropertyEditor extends FilePropertyEditor {
 
     @Override
     public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) throws IOException, ClassNotFoundException {
-        if (editEvent == null) {
+        if (editEvent instanceof KeyEvent) {         // todo [dale]: !!!
             returnValue = this.showOpenDialog(null);
         } else {
             openDocument();

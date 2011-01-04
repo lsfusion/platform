@@ -61,7 +61,11 @@ public class EmailActionProperty extends ActionProperty {
         String[] reportPaths = new String[forms.size()-1];
         Map<ByteArray, String> files = new HashMap<ByteArray, String>();
         for (int i = 0; i < forms.size(); i++) {
-            RemoteFormInterface remoteForm = executeForm.createForm(forms.get(i), BaseUtils.join(mapObjects.get(i), keys));
+            Map<ObjectEntity, DataObject> mapping = new HashMap<ObjectEntity, DataObject>();
+            if (mapObjects != null && mapObjects.size() > i && mapObjects.get(i) != null) {
+                mapping = BaseUtils.join(mapObjects.get(i), keys);
+            }
+            RemoteFormInterface remoteForm = executeForm.createForm(forms.get(i), mapping);
 
             try {
                 ReportGenerator_tmp report = new ReportGenerator_tmp(remoteForm, true, files);
