@@ -464,6 +464,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP equals2, diff2;
     protected LP multiplyDouble2;
     protected LP divideDouble;
+    protected LP addDate2;
     protected LP string2;
     protected LP insensetiveString2;
     protected LP concat2;
@@ -883,6 +884,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         diff2 = addCFProp(Compare.NOT_EQUALS);
         multiplyDouble2 = addMFProp(DoubleClass.instance, 2);
         divideDouble = addSFProp("((prm1)/(prm2))", DoubleClass.instance, 2);
+        addDate2 = addSFProp("prm1+prm2", DateClass.instance, 2);
         between = addJProp("Между", and1, groeq2, 1, 2, groeq2, 3, 1);
         vtrue = addCProp("Истина", LogicalClass.instance, true);
         vzero = addCProp("0", DoubleClass.instance, 0);
