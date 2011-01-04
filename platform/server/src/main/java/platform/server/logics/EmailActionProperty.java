@@ -59,11 +59,11 @@ public class EmailActionProperty extends ActionProperty {
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapExecuteObjects) {
         String embeddedFilePath = "";
         String[] reportPaths = new String[forms.size()-1];
+        Map<ByteArray, String> files = new HashMap<ByteArray, String>();
         for (int i = 0; i < forms.size(); i++) {
             RemoteFormInterface remoteForm = executeForm.createForm(forms.get(i), BaseUtils.join(mapObjects.get(i), keys));
 
             try {
-                Map<ByteArray, String> files = new HashMap<ByteArray, String>();
                 ReportGenerator_tmp report = new ReportGenerator_tmp(remoteForm, true, files);
                 JasperPrint print = report.createReport();
                 print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
@@ -85,7 +85,7 @@ public class EmailActionProperty extends ActionProperty {
             }
         }
         EmailSender sender = new EmailSender("danchenko@gmail.com", "dale@luxsoft.by");
-        sender.sendMail(subject, embeddedFilePath, reportPaths);
+        sender.sendMail(subject, embeddedFilePath, files, reportPaths);
     }
 
 }

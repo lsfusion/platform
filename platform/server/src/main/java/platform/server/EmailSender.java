@@ -1,6 +1,8 @@
 package platform.server;
 
 
+import platform.base.ByteArray;
+
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.activation.FileDataSource;
@@ -12,7 +14,9 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.mail.util.ByteArrayDataSource;
 import java.io.*;
+import java.util.Map;
 import java.util.Properties;
 
 public class EmailSender {
@@ -81,7 +85,15 @@ public class EmailSender {
         mp.addBodyPart(filePart);
     }
 
-    public void sendMail(String subject, String htmlFilePath, String... filePaths) {
+    public void attachFile(byte[] buf, String fileName) throws MessagingException {
+        MimeBodyPart filePart = new MimeBodyPart();
+        ByteArrayDataSource fds = new ByteArrayDataSource(buf, "application/msword");
+        filePart.setDataHandler(new DataHandler(fds));
+        filePart.setFileName(fileName);
+        mp.addBodyPart(filePart);
+    }
+
+    public void sendMail(String subject, String htmlFilePath, Map<ByteArray, String> attachments, String... filePaths) {
         try {
             message.setFrom();
             message.setSentDate(new java.util.Date());
@@ -98,6 +110,9 @@ public class EmailSender {
             setText(result);
             for (String path : filePaths) {
                 attachFile(path);
+            }
+            for (Map.Entry<ByteArray, String> entry : attachments.entrySet()) {
+                attachFile(entry.getKey().array, entry.getValue());
             }
             message.setContent(mp);
 
