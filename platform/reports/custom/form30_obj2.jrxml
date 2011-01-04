@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="obj2" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
+	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
+		<box leftPadding="2" rightPadding="2">
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+	</style>
+	<parameter name="obj8_report" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="obj8_source" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="obj8_params" class="java.util.Map"/>
+	<field name="obj2" class="java.lang.Integer"/>
+	<field name="obj3" class="java.lang.Integer"/>
+	<field name="property35" class="java.lang.String"/>
+	<field name="nameClaimerVote" class="java.lang.String"/>
+	<field name="nameProjectVote" class="java.lang.String"/>
+	<group name="captionGroup1">
+		<groupExpression><![CDATA[String.valueOf($F{obj2})+" "+String.valueOf($F{obj3})]]></groupExpression>
+		<groupHeader>
+			<band height="18" splitType="Prevent">
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="0" y="0" width="267" height="18"/>
+					<textElement textAlignment="Center"/>
+					<textFieldExpression class="java.lang.String"><![CDATA["Имя"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="267" y="0" width="267" height="18"/>
+					<textElement textAlignment="Center"/>
+					<textFieldExpression class="java.lang.String"><![CDATA["Заявитель"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="534" y="0" width="268" height="18"/>
+					<textElement textAlignment="Center"/>
+					<textFieldExpression class="java.lang.String"><![CDATA["Проект"]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="textGroup1">
+		<groupExpression><![CDATA[String.valueOf($F{obj2})+" "+String.valueOf($F{obj3})]]></groupExpression>
+		<groupHeader>
+			<band height="18" splitType="Prevent">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="267" height="18"/>
+					<textElement textAlignment="Left"/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{property35}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="267" y="0" width="267" height="18"/>
+					<textElement textAlignment="Left"/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{nameClaimerVote}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="534" y="0" width="268" height="18"/>
+					<textElement textAlignment="Left"/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{nameProjectVote}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<detail>
+		<band>
+			<subreport>
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
+				<parametersMapExpression><![CDATA[$P{obj8_params}]]></parametersMapExpression>
+				<dataSourceExpression><![CDATA[$P{obj8_source}]]></dataSourceExpression>
+				<subreportExpression class="net.sf.jasperreports.engine.JasperReport"><![CDATA[$P{obj8_report}]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+</jasperReport>
