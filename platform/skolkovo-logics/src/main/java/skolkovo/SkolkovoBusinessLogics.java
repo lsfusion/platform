@@ -195,6 +195,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         generateVote.setDerivedChange(addCProp(ActionClass.instance,true), needExtraVoteProject, 1);
 
         expertLogin = addCGProp(baseGroup, "expertLogin", "Эксперт (ИД)", object(expert), userLogin, userLogin, 1);
+        LP expertRole = addCProp(StringClass.get(30), "expert", expert);
+        addCUProp("userRole", true, "Роль пользователя", expertRole);
     }
 
     protected void initTables() {

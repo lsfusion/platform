@@ -21,7 +21,7 @@
         <url-pattern>/expert.html</url-pattern>
       </web-resource-collection>
       <auth-constraint>
-        <role-name>skolkovo</role-name>
+        <role-name>expert</role-name>
       </auth-constraint>
     </security-constraint>
 
@@ -32,7 +32,7 @@
     </login-config>
 
     <security-role>
-      <role-name>skolkovo</role-name>
+      <role-name>expert</role-name>
     </security-role>
 
 
