@@ -12,6 +12,7 @@ import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectEntity;
+import platform.server.form.entity.GroupObjectHierarchy;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.filter.CompareFilterEntity;
 import platform.server.form.entity.filter.NotNullFilterEntity;
@@ -211,8 +212,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         succeededVote = addJProp(baseGroup, "succeededVote", "Состоялось", groeq2, quantityDoneVote, 1, limitExperts); // достаточно экспертов
 
         voteSucceededProject = addCGProp(idGroup, false, "voteSucceededProject", "Успешное заседание (ИД)",
-                                         addJProp(and1, 1, succeededVote, 1), succeededVote,
-                                         projectVote, 1);
+                addJProp(and1, 1, succeededVote, 1), succeededVote,
+                projectVote, 1);
 
         noCurrentVoteProject = addJProp("noCurrentVoteProject", "Нет текущих заседаний", andNot1, is(project), 1, voteInProgressProject, 1); // нету текущих заседаний
 
@@ -380,10 +381,12 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         private ObjectEntity objDocument;
 
+        private GroupObjectEntity gobjExpertVote;
+
         private ExpertLetterFormEntity(NavigatorElement parent, int iID) {
             super(parent, iID, "Письмо о заседании");
 
-            GroupObjectEntity gobjExpertVote = new GroupObjectEntity(genID());
+            gobjExpertVote = new GroupObjectEntity(genID());
             objExpert = new ObjectEntity(genID(), expert, "Эксперт");
             objVote = new ObjectEntity(genID(), vote, "Заседание");
             gobjExpertVote.add(objExpert);
@@ -399,6 +402,11 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectDocument, objDocument), Compare.EQUALS, addPropertyObject(projectVote, objVote)));
 
             emailLetterExpertVote = addEAProp(baseGroup, "Отослать письмо", "Тест письма", Collections.<FormEntity>singletonList(this), Collections.singletonList(Arrays.asList(objExpert, objVote)));
+        }
+
+        @Override
+        public void modifyHierarchy(GroupObjectHierarchy groupHierarchy) {
+            groupHierarchy.markGroupAsNonJoinable(gobjExpertVote);
         }
     }
 

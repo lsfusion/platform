@@ -517,8 +517,12 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         if (groupHierarchy == null) {
             FormGroupHierarchyCreator creator = new FormGroupHierarchyCreator(this);
             groupHierarchy = creator.createHierarchy();
+            modifyHierarchy(groupHierarchy);
         }
         return groupHierarchy.createReportHierarchy();
+    }
+
+    public void modifyHierarchy(GroupObjectHierarchy groupHierarchy) {
     }
 
     public GroupObjectHierarchy getGroupHierarchy() {
