@@ -6,6 +6,7 @@ import net.sf.jasperreports.engine.JRField;
 import platform.base.BaseUtils;
 import platform.base.DateConverter;
 import platform.base.Pair;
+import platform.base.ByteArray;
 import platform.interop.form.PropertyRead;
 import platform.interop.form.ReportConstants;
 
@@ -39,7 +40,9 @@ public class ClientReportData_tmp implements JRDataSource {
     public static final String beginMarker = "[";
     public static final String endMarker = "]";
 
-    public ClientReportData_tmp(DataInputStream inStream) throws IOException {
+    private final Map<ByteArray, String> files;
+
+    public ClientReportData_tmp(DataInputStream inStream, Map<ByteArray, String> files) throws IOException {
 
         if (!inStream.readBoolean()) {
             int objectCnt = inStream.readInt();
@@ -77,6 +80,8 @@ public class ClientReportData_tmp implements JRDataSource {
             }
         }
         iterator = keyRows.listIterator();
+
+        this.files = files;
     }
 
     public boolean next() throws JRException {
@@ -133,6 +138,16 @@ public class ClientReportData_tmp implements JRDataSource {
             value = ((String) value).trim();
         }
 
+        if (value instanceof byte[]) {
+            ByteArray file = new ByteArray(((byte[])value));
+            String fileName = files.get(file);
+            if(fileName==null) {
+                fileName = "Файл " + (files.size()+1) + ".doc";
+                files.put(file, fileName);
+            }
+            value = fileName;
+        }
+        
         return value;
     }
 

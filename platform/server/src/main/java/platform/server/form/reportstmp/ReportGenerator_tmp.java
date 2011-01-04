@@ -4,6 +4,7 @@ import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.design.*;
 import platform.base.BaseUtils;
 import platform.base.Pair;
+import platform.base.ByteArray;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.ReportConstants;
 
@@ -40,13 +41,13 @@ public class ReportGenerator_tmp {
         public Map<String, List<List<Object>>> compositeColumnValues;
     }
 
-    public ReportGenerator_tmp(RemoteFormInterface remoteForm, boolean toExcel) throws IOException, ClassNotFoundException, JRException {
+    public ReportGenerator_tmp(RemoteFormInterface remoteForm, boolean toExcel, Map<ByteArray, String> files) throws IOException, ClassNotFoundException, JRException {
         Pair<String, Map<String, List<String>>> hpair = retrieveReportHierarchy(remoteForm);
         rootID = hpair.first;
         hierarchy = hpair.second;
         designs = retrieveReportDesigns(remoteForm, toExcel);
 
-        sourcesGenerationOutput output = retrieveReportSources(remoteForm);
+        sourcesGenerationOutput output = retrieveReportSources(remoteForm, files);
         data = output.data;
         compositeColumnValues = output.compositeColumnValues;
 
@@ -101,7 +102,7 @@ public class ReportGenerator_tmp {
         return (Map<String, JasperDesign>) objStream.readObject();
     }
 
-    private static sourcesGenerationOutput retrieveReportSources(RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
+    private static sourcesGenerationOutput retrieveReportSources(RemoteFormInterface remoteForm, Map<ByteArray, String> files) throws IOException, ClassNotFoundException {
         sourcesGenerationOutput output = new sourcesGenerationOutput();
         byte[] sourcesArray = remoteForm.getReportSourcesByteArray();
         DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(sourcesArray));
@@ -109,7 +110,7 @@ public class ReportGenerator_tmp {
         output.data = new HashMap<String, ClientReportData_tmp>();
         for (int i = 0; i < size; i++) {
             String sid = dataStream.readUTF();
-            ClientReportData_tmp reportData = new ClientReportData_tmp(dataStream);
+            ClientReportData_tmp reportData = new ClientReportData_tmp(dataStream, files);
             output.data.put(sid, reportData);
         }
 

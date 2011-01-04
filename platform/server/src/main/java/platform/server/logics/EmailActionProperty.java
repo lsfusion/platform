@@ -5,6 +5,7 @@ import net.sf.jasperreports.engine.export.JRHtmlExporter;
 import net.sf.jasperreports.engine.export.JRHtmlExporterParameter;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import platform.base.BaseUtils;
+import platform.base.ByteArray;
 import platform.interop.action.ClientAction;
 import platform.interop.form.RemoteFormInterface;
 import platform.server.EmailSender;
@@ -62,7 +63,8 @@ public class EmailActionProperty extends ActionProperty {
             RemoteFormInterface remoteForm = executeForm.createForm(forms.get(i), BaseUtils.join(mapObjects.get(i), keys));
 
             try {
-                ReportGenerator_tmp report = new ReportGenerator_tmp(remoteForm, true);
+                Map<ByteArray, String> files = new HashMap<ByteArray, String>();
+                ReportGenerator_tmp report = new ReportGenerator_tmp(remoteForm, true, files);
                 JasperPrint print = report.createReport();
                 print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
 
