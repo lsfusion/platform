@@ -989,7 +989,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     void initBaseNavigators() {
         NavigatorElement policy = new NavigatorElement(baseElement, 50000, "Администрирование");
-//        addFormEntity(new UserPolicyFormEntity(policy, 50100));
+        addFormEntity(new UserPolicyFormEntity(policy, 50100));
     }
 
     protected SecurityPolicy permitAllPolicy, readOnlyPolicy;
