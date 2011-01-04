@@ -122,24 +122,24 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         limitExperts = addDProp(baseGroup, "limitExperts", "Кол-во прогол. экспертов", IntegerClass.instance);
 
         projectVote = addDProp(idGroup, "projectVote", "Проект (ИД)", project, vote);
-        nameProjectVote = addJProp(baseGroup, "Проект", name, projectVote, 1);
+        nameProjectVote = addJProp(baseGroup, "nameProjectVote", "Проект", name, projectVote, 1);
 
         clusterExpert = addDProp(idGroup, "clusterExpert", "Кластер (ИД)", cluster, expert);
-        nameClusterExpert = addJProp(baseGroup, "Кластер", name, clusterExpert, 1);
+        nameClusterExpert = addJProp(baseGroup, "nameClusterExpert", "Кластер", name, clusterExpert, 1);
 
         clusterProject = addDProp(idGroup, "clusterProject", "Кластер (ИД)", cluster, project);
-        nameClusterProject = addJProp(baseGroup, "Кластер", name, clusterProject, 1);
+        nameClusterProject = addJProp(baseGroup, "nameClusterProject", "Кластер", name, clusterProject, 1);
 
-        clusterVote = addJProp(idGroup, "Кластер (ИД)", clusterProject, projectVote, 1);
-        nameClusterVote = addJProp(baseGroup, "Кластер", name, clusterVote, 1);
+        clusterVote = addJProp(idGroup, "clusterVote", "Кластер (ИД)", clusterProject, projectVote, 1);
+        nameClusterVote = addJProp(baseGroup, "nameClusterVote", "Кластер", name, clusterVote, 1);
 
         claimerProject = addDProp(idGroup, "claimerProject", "Заявитель (ИД)", claimer, project);
-        nameClaimerProject = addJProp(baseGroup, "Заявитель", name, claimerProject, 1);
+        nameClaimerProject = addJProp(baseGroup, "nameClaimerProject", "Заявитель", name, claimerProject, 1);
 
         emailParticipant = addDProp(baseGroup, "emailParticipant", "E-mail", StringClass.get(50), participant);
 
         projectDocument = addDProp(idGroup, "projectDocument", "Проект (ИД)", project, document);
-        nameProjectDocument = addJProp(baseGroup, "Проект", name, projectDocument, 1);
+        nameProjectDocument = addJProp(baseGroup, "nameProjectDocument", "Проект", name, projectDocument, 1);
 
         fileDocument = addDProp(baseGroup, "fileDocument", "Файл", WordClass.instance, document);
 
@@ -156,9 +156,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         // результаты голосования
         voteResultExpertVote = addDProp(idGroup, "voteResultExpertVote", "Результат (ИД)", voteResult, expert, vote);
-        nameVoteResultExpertVote = addJProp(baseGroup, "Результат", name, voteResultExpertVote, 1, 2);
+        nameVoteResultExpertVote = addJProp(baseGroup, "nameVoteResultExpertVote", "Результат", name, voteResultExpertVote, 1, 2);
 
-        doneExpertVote = addJProp(baseGroup, "Проголосовал", equals2, voteResultExpertVote, 1, 2, addCProp(voteResult, "voted"));
+        doneExpertVote = addJProp(baseGroup, "doneExpertVote", "Проголосовал", equals2,
+                                  voteResultExpertVote, 1, 2, addCProp(voteResult, "voted"));
 
         inClusterExpertVote = addDProp(baseGroup, "inClusterExpertVote", "Соот-ет кластеру", LogicalClass.instance, expert, vote);
         innovativeExpertVote = addDProp(baseGroup, "innovativeExpertVote", "Подходит", LogicalClass.instance, expert, vote);
@@ -168,18 +169,18 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         completeExpertVote = addDProp(baseGroup, "completeExpertVote", "Полная инф.", IntegerClass.instance, expert, vote);
         completeCommentExpertVote = addDProp(baseGroup, "completeCommentExpertVote", "Полная инф. (комм.)", TextClass.instance, expert, vote);
 
-        quantityDoneVote = addSGProp(baseGroup, "Проголосовало", addJProp(and1, addCProp(IntegerClass.instance, 1), doneExpertVote, 1, 2), 2); // сколько экспертов высказалось
-        succeededVote = addJProp(baseGroup, "Состоялось", groeq2, quantityDoneVote, 1, limitExperts); // достаточно экспертов
+        quantityDoneVote = addSGProp(baseGroup, "quantityDoneVote", "Проголосовало", addJProp(and1, addCProp(IntegerClass.instance, 1), doneExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        succeededVote = addJProp(baseGroup, "succeededVote", "Состоялось", groeq2, quantityDoneVote, 1, limitExperts); // достаточно экспертов
 
         voteSucceededProject = addCGProp(idGroup, false, "voteSucceededProject", "Успешное заседание (ИД)",
                                                 addJProp(and1, 1, succeededVote, 1), succeededVote,
                                                 projectVote, 1);
 
-        noCurrentVoteProject = addJProp(andNot1, is(project), 1, voteCurrentProject, 1); // нету текущих заседаний
+        noCurrentVoteProject = addJProp(baseGroup, "noCurrentVoteProject", "Нет текущих заседаний", andNot1, is(project), 1, voteCurrentProject, 1); // нету текущих заседаний
 
         voteValuedProject = addJProp(idGroup, "voteValuedProject", "Оцененнное заседание (ИД)", and1, voteSucceededProject, 1, noCurrentVoteProject, 1); // нет открытого заседания и есть состояшееся заседания
 
-        needExtraVoteProject = addJProp(baseGroup, "Треб. заседание", and(true, true),
+        needExtraVoteProject = addJProp(baseGroup, "needExtraVoteProject", "Треб. заседание", and(true, true),
                                         is(project), 1,
                                         voteCurrentProject, 1,
                                         voteSucceededProject, 1); // есть открытое заседания и есть состояшееся заседания !!! нужно создать новое заседание
@@ -190,7 +191,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         addConstraint(addJProp("Количество экспертов не соответствует требуемому", andNot1, is(vote), 1, addJProp(equals2, requiredQuantity,
                 addSGProp(addJProp(and1, addCProp(IntegerClass.instance, 1), inExpertVote, 2, 1), 1), 1), 1), false);
 
-        generateVote = addAProp(baseGroup, new GenerateVoteActionProperty());
+        generateVote = addAProp(actionGroup, new GenerateVoteActionProperty());
         generateVote.setDerivedChange(addCProp(ActionClass.instance,true), needExtraVoteProject, 1);
 
         expertLogin = addCGProp(baseGroup, "expertLogin", "Эксперт (ИД)", object(expert), userLogin, userLogin, 1);
