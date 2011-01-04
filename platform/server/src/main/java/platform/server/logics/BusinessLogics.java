@@ -290,7 +290,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public ConcreteCustomClass computer;
     public ConcreteCustomClass policy;
     public ConcreteCustomClass session;
-    public ConcreteCustomClass role;
+    public ConcreteCustomClass userRole;
 
     public Integer getComputer(String strHostName) {
         try {
@@ -491,7 +491,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP userPassword;
     public LP userFirstName;
     public LP userLastName;
-    public LP roleSID;
+    public LP userRoleSID;
     public LP sidToRole;
     public LP inUserRole;
     public LP inLoginSID;
@@ -851,7 +851,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         customUser = addConcreteClass("customUser", "Обычный пользователь", user, barcodeObject);
         systemUser = addConcreteClass("systemUser", "Системный пользователь", user);
         computer = addConcreteClass("computer", "Рабочее место", baseClass);
-        role = addConcreteClass("role", "Роль", baseClass);
+        userRole = addConcreteClass("userRole", "Роль", baseClass);
 
         policy = addConcreteClass("policy", "Политика безопасности", baseClass.named);
         session = addConcreteClass("session", "Транзакция", baseClass);
@@ -911,9 +911,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         userFirstName = addDProp(baseGroup, "userFirstName", "Имя", StringClass.get(30), customUser);
         userLastName = addDProp(baseGroup, "userLastName", "Фамилия", StringClass.get(30), customUser);
 
-        roleSID = addDProp(baseGroup, "roleSID", "Идентификатор", StringClass.get(30), role);
-        sidToRole = addCGProp(baseGroup, "sidToRole", "Роль (ИД)", object(role), roleSID, roleSID, 1);
-        inUserRole = addDProp(baseGroup, "inUserRole", "Вкл.", LogicalClass.instance, customUser, role);
+        userRoleSID = addDProp(baseGroup, "userRoleSID", "Идентификатор", StringClass.get(30), userRole);
+        sidToRole = addCGProp(baseGroup, "sidToRole", "Роль (ИД)", object(userRole), userRoleSID, userRoleSID, 1);
+        inUserRole = addDProp(baseGroup, "inUserRole", "Вкл.", LogicalClass.instance, customUser, userRole);
         inLoginSID = addJProp("inLoginSID", true, "Логину назначена роль", inUserRole, loginToUser, 1, sidToRole, 2);
 
         name = addCUProp(baseGroup, "Имя", addDProp("name", "Имя", InsensitiveStringClass.get(60), baseClass.named),
@@ -1082,7 +1082,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             super(parent, ID, "Политики пользователей");
 
             ObjectEntity objUser = addSingleGroupObject(customUser, selection, baseGroup, true);
-            ObjectEntity objRole = addSingleGroupObject(role, baseGroup, true);
+            ObjectEntity objRole = addSingleGroupObject(userRole, baseGroup, true);
             ObjectEntity objPolicy = addSingleGroupObject(policy, baseGroup, true);
 
             addObjectActions(this, objUser);

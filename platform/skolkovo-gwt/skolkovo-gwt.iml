@@ -19,7 +19,7 @@
         <setting name="gwtSdkUrl" value="file://$MAVEN_REPOSITORY$/com/google/gwt/gwt-dev/2.1.0/" />
         <setting name="webFacet" value="Web" />
         <packaging>
-          <module name="skolkovo.gwt.Projects" path="/skolkovo.gwt.Projects" />
+          <module name="skolkovo.gwt.Expert" path="/skolkovo.gwt.Expert" />
         </packaging>
       </configuration>
     </facet>
@@ -32,9 +32,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/target/generated-sources/annotations" isTestSource="false" />
-      <excludeFolder url="file://$MODULE_DIR$/target/.generated" />
-      <excludeFolder url="file://$MODULE_DIR$/target/extra" />
-      <excludeFolder url="file://$MODULE_DIR$/target/maven-archiver" />
       <excludeFolder url="file://$MODULE_DIR$/target/skolkovo-gwt-1.0" />
     </content>
     <orderEntry type="inheritedJdk" />

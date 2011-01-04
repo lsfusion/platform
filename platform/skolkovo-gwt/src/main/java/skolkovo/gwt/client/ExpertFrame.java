@@ -79,14 +79,14 @@ public class ExpertFrame implements EntryPoint {
 
                 Label lbCompetence = new Label("Оцените Вашу компетенцию по теме проекта (от 1 до 5 баллов)");
                 ListBox bxCompetence = new ListBox();
-                bxCompetence.setWidth("100%");
+                bxCompetence.setWidth("10%");
                 for (int i = 1; i <= 5; ++i) {
                     bxCompetence.addItem("" + i);
                 }
 
                 Label lbCompleteness = new Label("Оцените достаточность представленных материалов для оценки проекта (от 1 до 5 баллов)");
                 ListBox bxCompleteness = new ListBox();
-                bxCompleteness.setWidth("100%");
+                bxCompleteness.setWidth("10%");
                 for (int i = 1; i <= 5; ++i) {
                     bxCompleteness.addItem("" + i);
                 }
@@ -117,7 +117,7 @@ public class ExpertFrame implements EntryPoint {
                     }
                 });
 
-                manePane.setWidth("600");
+                manePane.setWidth("1024");
                 manePane.setSpacing(10);
                 manePane.add(caption);
                 manePane.add(createVerticalSpacer(20));
