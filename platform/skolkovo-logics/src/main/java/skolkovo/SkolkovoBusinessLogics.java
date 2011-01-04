@@ -212,11 +212,12 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     }
 
     protected void initNavigators() throws JRException, FileNotFoundException {
+        ExpertLetterFormEntity letterForm = new ExpertLetterFormEntity(baseElement, 30);
+        addFormEntity(letterForm);
+
         addFormEntity(new ProjectFormEntity(baseElement, 10));
         addFormEntity(new ExpertFormEntity(baseElement, 15));
         addFormEntity(new GlobalFormEntity(baseElement, 20));
-
-        addFormEntity(new ExpertLetterFormEntity(baseElement, 30));        
     }
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
@@ -323,6 +324,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             objDocument = addSingleGroupObject(document, name, fileDocument);
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectDocument, objDocument), Compare.EQUALS, addPropertyObject(projectVote, objVote)));
+
+            addEAProp(baseGroup, "Отослать письмо", "Тест письма", Collections.<FormEntity>singletonList(this), Collections.singletonList(Arrays.asList(objExpert, objVote)));
         }
     }
 
