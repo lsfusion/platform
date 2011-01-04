@@ -141,6 +141,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP voteValuedProject;
     LP needExtraVoteProject;
 
+    LP emailLetterExpertVote;
+
     LP generateVote;
 
     LP expertLogin;
@@ -353,6 +355,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             objVote = addSingleGroupObject(vote, objectValue, nameProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote, delete);
 
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
+            addPropertyDraw(objExpert, objVote, emailLetterExpertVote);  
             setForceViewType(voteResultCommentGroup, ClassViewType.PANEL);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
@@ -395,7 +398,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             objDocument = addSingleGroupObject(document, name, fileDocument);
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectDocument, objDocument), Compare.EQUALS, addPropertyObject(projectVote, objVote)));
 
-            addEAProp(baseGroup, "Отослать письмо", "Тест письма", Collections.<FormEntity>singletonList(this), Collections.singletonList(Arrays.asList(objExpert, objVote)));
+            emailLetterExpertVote = addEAProp(baseGroup, "Отослать письмо", "Тест письма", Collections.<FormEntity>singletonList(this), Collections.singletonList(Arrays.asList(objExpert, objVote)));
         }
     }
 
