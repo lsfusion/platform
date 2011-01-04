@@ -23,7 +23,7 @@ public class LongClass extends IntegralClass<Long> {
         return "Большое целое число";
     }
 
-    public Class getJavaClass() {
+    public Class getReportJavaClass() {
         return Long.class;
     }
 
@@ -56,7 +56,7 @@ public class LongClass extends IntegralClass<Long> {
         return 0l;
     }
 
-    public Format getDefaultFormat() {
+    public Format getReportFormat() {
         return NumberFormat.getIntegerInstance();
     }
 

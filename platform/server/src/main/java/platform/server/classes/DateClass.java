@@ -29,11 +29,11 @@ public class DateClass extends DataClass<Date> {
 
     public int getPreferredWidth() { return 70; }
 
-    public Format getDefaultFormat() {
+    public Format getReportFormat() {
         return DateFormat.getDateInstance(DateFormat.SHORT);
     }
 
-    public Class getJavaClass() {
+    public Class getReportJavaClass() {
         return java.util.Date.class;
     }
 

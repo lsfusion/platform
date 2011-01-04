@@ -27,11 +27,11 @@ public class StringClass extends DataClass<String> {
     public int getMinimumWidth() { return 30; }
     public int getPreferredWidth() { return 250; }
 
-    public Format getDefaultFormat() {
+    public Format getReportFormat() {
         return null;
     }
 
-    public Class getJavaClass() {
+    public Class getReportJavaClass() {
         return String.class;
     }
 

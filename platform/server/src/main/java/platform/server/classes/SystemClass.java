@@ -24,11 +24,11 @@ public class SystemClass extends DataClass<Integer> {
         throw new RuntimeException("not supported yet");
     }
 
-    public Format getDefaultFormat() {
+    public Format getReportFormat() {
         throw new RuntimeException("not supported yet");
     }
 
-    public Class getJavaClass() {
+    public Class getReportJavaClass() {
         return Integer.class;
     }
 

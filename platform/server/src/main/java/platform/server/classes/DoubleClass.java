@@ -21,7 +21,7 @@ public class DoubleClass extends IntegralClass<Double> {
         return "Плавающее число";
     }
 
-    public Class getJavaClass() {
+    public Class getReportJavaClass() {
         return Double.class;
     }
 

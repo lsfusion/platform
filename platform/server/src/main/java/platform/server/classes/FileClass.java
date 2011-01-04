@@ -13,12 +13,12 @@ public abstract class FileClass extends DataClass<byte[]> {
         return new byte[0];
     }
 
-    public Class getJavaClass() {
-        return new byte[0].getClass();
+    public Class getReportJavaClass() {
+        return String.class;
     }
 
-    public Format getDefaultFormat() {
-        throw new RuntimeException("not supported");
+    public Format getReportFormat() {
+        return null;
     }
 
     public String getDB(SQLSyntax syntax) {

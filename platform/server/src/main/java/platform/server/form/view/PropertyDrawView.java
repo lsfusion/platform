@@ -107,7 +107,7 @@ public class PropertyDrawView extends ComponentView {
         reportField.minimumWidth = type.getMinimumWidth();
         reportField.preferredWidth = type.getPreferredWidth();
 
-        Format format = type.getDefaultFormat();
+        Format format = type.getReportFormat();
         if (format instanceof DecimalFormat) {
             reportField.pattern = ((DecimalFormat) format).toPattern();
         }

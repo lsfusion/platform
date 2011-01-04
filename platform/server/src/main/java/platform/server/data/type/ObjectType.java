@@ -61,7 +61,7 @@ public class ObjectType implements Type<Integer> {
     public int getMaximumWidth() { return getPreferredWidth(); }
     public int getMinimumWidth() { return getPreferredWidth(); }
 
-    public Format getDefaultFormat() {
+    public Format getReportFormat() {
         return NumberFormat.getInstance();
     }
 

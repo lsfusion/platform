@@ -22,7 +22,7 @@ public class ClassActionClass extends ActionClass {
     }
 
     @Override
-    protected Class getJavaClass() {
+    protected Class getReportJavaClass() {
         return Integer.class;
     }
 

@@ -17,7 +17,7 @@ public class YearClass extends IntegerClass {
     protected YearClass() {}    
 
     @Override
-    public Format getDefaultFormat() {
+    public Format getReportFormat() {
         return DateFormat.getDateInstance(DateFormat.SHORT);
     }
 

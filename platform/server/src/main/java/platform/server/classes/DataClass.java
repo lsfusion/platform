@@ -149,9 +149,9 @@ public abstract class DataClass<T> implements StaticClass, Type<T>, AndClassSet,
         return new ValueExpr(value, this);
     }
 
-    protected abstract Class getJavaClass();
+    protected abstract Class getReportJavaClass();
 
-    public abstract Format getDefaultFormat();
+    public abstract Format getReportFormat();
 
     public int getMinimumWidth() {
         return getPreferredWidth();
@@ -166,7 +166,7 @@ public abstract class DataClass<T> implements StaticClass, Type<T>, AndClassSet,
     }
 
     public boolean fillReportDrawField(ReportDrawField reportField) {
-        reportField.valueClass = getJavaClass();
+        reportField.valueClass = getReportJavaClass();
         reportField.alignment = JRAlignment.HORIZONTAL_ALIGN_LEFT;
         return !reportField.valueClass.isArray();
     }

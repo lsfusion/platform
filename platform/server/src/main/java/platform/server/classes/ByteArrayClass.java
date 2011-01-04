@@ -29,11 +29,11 @@ public class ByteArrayClass extends DataClass<byte[]> {
         return new byte[0];
     }
 
-    public Class getJavaClass() {
+    public Class getReportJavaClass() {
         return new byte[0].getClass();
     }
 
-    public Format getDefaultFormat() {
+    public Format getReportFormat() {
         throw new RuntimeException("not supported");
     }
 

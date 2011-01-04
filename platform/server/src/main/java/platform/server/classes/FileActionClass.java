@@ -39,7 +39,7 @@ public class FileActionClass extends ActionClass {
     }
 
     @Override
-    protected Class getJavaClass() {
+    protected Class getReportJavaClass() {
         return byte[].class;
     }
 

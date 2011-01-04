@@ -13,7 +13,7 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
     public int getMinimumWidth() { return 45; }
     public int getPreferredWidth() { return 80; }
 
-    public Format getDefaultFormat() {
+    public Format getReportFormat() {
         return NumberFormat.getInstance();
     }
 

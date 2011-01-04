@@ -65,7 +65,7 @@ public class ConcatenateType implements Type<byte[]> {
         throw new RuntimeException("not supported");
     }
 
-    public Format getDefaultFormat() {
+    public Format getReportFormat() {
         throw new RuntimeException("not supported");
     }
 

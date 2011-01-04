@@ -24,7 +24,7 @@ public class NumericClass extends IntegralClass<Double> {
         this.precision = precision;
     }
 
-    public Class getJavaClass() {
+    public Class getReportJavaClass() {
         return Double.class;
     }
 

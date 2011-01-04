@@ -2,6 +2,7 @@ package skolkovo;
 
 import net.sf.jasperreports.engine.JRException;
 import platform.interop.Compare;
+import platform.interop.ClassViewType;
 import platform.interop.action.ClientAction;
 import platform.server.auth.User;
 import platform.server.classes.*;
@@ -9,6 +10,7 @@ import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
+import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.filter.CompareFilterEntity;
 import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
@@ -79,11 +81,13 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP claimerProject, nameClaimerProject;
     LP emailParticipant;
 
+    LP claimerVote, nameClaimerVote;
+
     LP projectDocument, nameProjectDocument;
     LP fileDocument;
 
     LP inExpertVote;
-    LP dateStartVote, dateEndVote;
+    LP dateEndVote;
 
     LP openedVote;
     LP voteCurrentProject;
@@ -136,6 +140,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         claimerProject = addDProp(idGroup, "claimerProject", "Заявитель (ИД)", claimer, project);
         nameClaimerProject = addJProp(baseGroup, "nameClaimerProject", "Заявитель", name, claimerProject, 1);
 
+        claimerVote = addJProp(idGroup, "claimerVote", "Заявитель (ИД)", claimerProject, projectVote, 1);
+        nameClaimerVote = addJProp(idGroup, "nameClaimerVote", "Заявитель", name, claimerVote, 1);
+
         emailParticipant = addDProp(baseGroup, "emailParticipant", "E-mail", StringClass.get(50), participant);
 
         projectDocument = addDProp(idGroup, "projectDocument", "Проект (ИД)", project, document);
@@ -145,7 +152,6 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         inExpertVote = addDProp(baseGroup, "inExpertVote", "Вкл", LogicalClass.instance, expert, vote); // !!! нужно отослать письмо с документами и т.д
 
-        dateStartVote = addJProp(baseGroup, "dateStartVote", "Дата начала", and1, date, 1, is(vote), 1);
         dateEndVote = addJProp(baseGroup, "dateEndVote", "Дата окончания", addDate2, addJProp(and1, date, 1, is(vote), 1), 1, requiredPeriod);
 
         openedVote = addJProp(baseGroup, "openedVote", "Открыто", greater2, dateEndVote, 1, currentDate);
@@ -209,6 +215,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         addFormEntity(new ProjectFormEntity(baseElement, 10));
         addFormEntity(new ExpertFormEntity(baseElement, 15));
         addFormEntity(new GlobalFormEntity(baseElement, 20));
+
+        addFormEntity(new ExpertLetterFormEntity(baseElement, 30));        
     }
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
@@ -289,6 +297,32 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             addPropertyDraw(objVote, objExpert, baseGroup);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
+        }
+    }
+
+    private class ExpertLetterFormEntity extends FormEntity<SkolkovoBusinessLogics> { // письмо эксперту
+        private ObjectEntity objExpert;
+        private ObjectEntity objVote;
+
+        private ObjectEntity objDocument;
+
+        private ExpertLetterFormEntity(NavigatorElement parent, int iID) {
+            super(parent, iID, "Письмо о заседании");
+
+            GroupObjectEntity gobjExpertVote = new GroupObjectEntity(genID());
+            objExpert = new ObjectEntity(genID(), expert, "Эксперт");
+            objVote = new ObjectEntity(genID(), vote, "Заседание");
+            gobjExpertVote.add(objExpert);
+            gobjExpertVote.add(objVote);
+            addGroup(gobjExpertVote);
+            gobjExpertVote.initClassView = ClassViewType.PANEL;
+
+            addPropertyDraw(objExpert, name);
+            addPropertyDraw(objVote, nameClaimerVote, nameProjectVote);
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
+
+            objDocument = addSingleGroupObject(document, name, fileDocument);
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(projectDocument, objDocument), Compare.EQUALS, addPropertyObject(projectVote, objVote)));
         }
     }
 

@@ -30,11 +30,11 @@ public class TextClass extends DataClass<String> {
         return 250;
     }
 
-    public Format getDefaultFormat() {
+    public Format getReportFormat() {
         return null;
     }
 
-    public Class getJavaClass() {
+    public Class getReportJavaClass() {
         return String.class;
     }
 

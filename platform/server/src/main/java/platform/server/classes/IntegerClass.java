@@ -23,7 +23,7 @@ public class IntegerClass extends IntegralClass<Integer> {
         return "Целое число";
     }
 
-    public Class getJavaClass() {
+    public Class getReportJavaClass() {
         return Integer.class;
     }
 
@@ -60,7 +60,7 @@ public class IntegerClass extends IntegralClass<Integer> {
         return 0;
     }
 
-    public Format getDefaultFormat() {
+    public Format getReportFormat() {
         return NumberFormat.getIntegerInstance();
     }
 

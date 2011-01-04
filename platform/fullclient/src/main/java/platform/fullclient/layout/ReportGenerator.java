@@ -4,6 +4,7 @@ import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.design.*;
 import platform.base.BaseUtils;
 import platform.base.Pair;
+import platform.base.ByteArray;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.ReportConstants;
 
@@ -26,7 +27,7 @@ public class ReportGenerator {
     private final Map<String, ClientReportData> data;
     private final Map<String, List<List<Object>>> compositeColumnValues;
 
-    private static class sourcesGenerationOutput {
+    private static class SourcesGenerationOutput {
         public Map<String, ClientReportData> data;
         // данные для свойств с группами в колонках
         // объекты, от которых зависит свойство
@@ -38,12 +39,16 @@ public class ReportGenerator {
     }
 
     public ReportGenerator(RemoteFormInterface remoteForm, boolean toExcel) throws IOException, ClassNotFoundException, JRException {
+        this(remoteForm, toExcel, new HashMap<ByteArray, String>());
+    }
+
+    public ReportGenerator(RemoteFormInterface remoteForm, boolean toExcel, Map<ByteArray, String> files) throws IOException, ClassNotFoundException, JRException {
         Pair<String, Map<String, List<String>>> hpair = retrieveReportHierarchy(remoteForm);
         rootID = hpair.first;
         hierarchy = hpair.second;
         designs = retrieveReportDesigns(remoteForm, toExcel);
 
-        sourcesGenerationOutput output = retrieveReportSources(remoteForm);
+        SourcesGenerationOutput output = retrieveReportSources(remoteForm, files);
         data = output.data;
         compositeColumnValues = output.compositeColumnValues;
 
@@ -98,15 +103,15 @@ public class ReportGenerator {
         return (Map<String, JasperDesign>) objStream.readObject();
     }
 
-    private static sourcesGenerationOutput retrieveReportSources(RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
-        sourcesGenerationOutput output = new sourcesGenerationOutput();
+    private static SourcesGenerationOutput retrieveReportSources(RemoteFormInterface remoteForm, Map<ByteArray,String> files) throws IOException, ClassNotFoundException {
+        SourcesGenerationOutput output = new SourcesGenerationOutput();
         byte[] sourcesArray = remoteForm.getReportSourcesByteArray();
         DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(sourcesArray));
         int size = dataStream.readInt();
         output.data = new HashMap<String, ClientReportData>();
         for (int i = 0; i < size; i++) {
             String sid = dataStream.readUTF();
-            ClientReportData reportData = new ClientReportData(dataStream);
+            ClientReportData reportData = new ClientReportData(dataStream, files);
             output.data.put(sid, reportData);
         }
 

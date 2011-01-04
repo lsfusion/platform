@@ -38,7 +38,7 @@ public class ActionClass extends DataClass<Object> {
         return Data.ACTION;
     }
 
-    protected Class getJavaClass() {
+    protected Class getReportJavaClass() {
         return Boolean.class;
     }
 
@@ -60,7 +60,7 @@ public class ActionClass extends DataClass<Object> {
         statement.setByte(num, (byte)1);
     }
 
-    public Format getDefaultFormat() {
+    public Format getReportFormat() {
         return null;
     }
 

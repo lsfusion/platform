@@ -26,11 +26,11 @@ public class LogicalClass extends DataClass<Boolean> {
 
     public int getPreferredWidth() { return 35; }
 
-    public Format getDefaultFormat() {
+    public Format getReportFormat() {
         return null;
     }
 
-    public Class getJavaClass() {
+    public Class getReportJavaClass() {
         return Boolean.class;
     }
 

@@ -29,7 +29,7 @@ public interface Type<T> extends ClassReader<T> {
 
     DataObject getEmptyValueExpr();
 
-    Format getDefaultFormat();
+    Format getReportFormat();
     int getMinimumWidth();
     int getPreferredWidth();
     int getMaximumWidth();
