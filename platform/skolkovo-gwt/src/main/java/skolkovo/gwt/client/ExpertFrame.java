@@ -10,44 +10,47 @@ import skolkovo.gwt.shared.GwtVoteInfo;
 
 public class ExpertFrame implements EntryPoint {
 
+    private CheckBox cbInCluster;
+    private CheckBox cbInnovative;
+    private Label lbInnovative;
+    private TextArea taInnovativeComment;
+    private CheckBox cbForeign;
+    private Label lbCompetent;
+    private ListBox bxCompetent;
+    private Label lbComplete;
+    private ListBox bxComplete;
+    private Label lbCompleteComment;
+    private TextArea taCompleteComment;
+
     public void onModuleLoad() {
         update();
     }
 
-    private void update() {
-        String voteIdStr = Window.Location.getParameter("voteId");
-        if (voteIdStr == null) {
-            showErrorPage();
-            return;
-        }
 
-        int voteId;
+    public int getVoteId() {
         try {
-            voteId = voteIdStr == null ? Integer.parseInt(voteIdStr) : 0;
-        } catch (NumberFormatException nfe) {
+            return Integer.parseInt(Window.Location.getParameter("voteId"));
+        } catch (Exception nfe) {
+            return -1;
+        }
+    }
+
+    private void update() {
+        int voteId = getVoteId();
+        if (voteId == -1) {
             showErrorPage();
             return;
         }
 
-        //todo: не получать здесь вообще, брать прямо на сервере
-        String userName = "admin";
-
-        ExpertService.App.getInstance().getVoteInfo(userName, voteId, new AsyncCallback<GwtVoteInfo>() {
+        ExpertService.App.getInstance().getVoteInfo(voteId, new AsyncCallback<GwtVoteInfo>() {
             public void onFailure(Throwable caught) {
-                //todo: change it
-                onSuccess(null);
+                showErrorPage();
             }
 
             public void onSuccess(GwtVoteInfo vi) {
                 if (vi == null) {
-                    //todo:
-//                    showErrorPage();
-//                    return;
-
-                    vi = new GwtVoteInfo();
-                    vi.projectClaimer = "НьюВак";
-                    vi.expertName = "Some guy";
-                    vi.projectCluster = "Медицинские технологии в области разработки оборудования, лекарственных средств";
+                    showErrorPage();
+                    return;
                 }
 
                 VerticalPanel manePane = new VerticalPanel();
@@ -66,96 +69,117 @@ public class ExpertFrame implements EntryPoint {
                                 "<br/>" +
                                 "Пожалуйста, заполните данный бюллетень");
 
-                CheckBox cbInterest = new CheckBox("Являетесь ли Вы заинтересованным лицом по отношению к заявителю проекта?");
-                CheckBox cbClusterSuitable = new CheckBox("Проект соответствует направлению \"" + vi.projectCluster + "\"");
-                CheckBox cbConcurrentProject = new CheckBox("Проект предполагает разработку и/или коммерциализацию уникальных и/или обладающих конкурентными преимуществами перед мировыми аналогами продуктов и/или технологий?");
+                cbInCluster = new CheckBox("Проект соответствует направлению \"" + vi.projectCluster + "\"");
+                cbInCluster.setValue(vi.inCluster);
+                cbInCluster.setEnabled(!vi.voteDone);
 
-                Label lbConcurrentLabel = new Label("Приведите обоснование Вашего ответа (800-1000 символов):");
-                TextArea taConcurrentDescription = new TextArea();
-                taConcurrentDescription.setSize("100%", "");
-                taConcurrentDescription.setVisibleLines(8);
+                cbInnovative = new CheckBox("Проект предполагает разработку и/или коммерциализацию уникальных и/или обладающих конкурентными преимуществами перед мировыми аналогами продуктов и/или технологий?");
+                cbInnovative.setValue(vi.innovative);
+                cbInnovative.setEnabled(!vi.voteDone);
 
-                CheckBox cbForeignSpecialistInvolved = new CheckBox("Проект предполагает участие иностранного (не являющегося гражданином Российской Федерации) специалиста, который имеет значительный авторитет в инвестиционной и/или исследовательской среде");
+                lbInnovative = new Label("Приведите обоснование Вашего ответа (800-1000 символов):");
+                taInnovativeComment = new TextArea();
+                taInnovativeComment.setSize("100%", "");
+                taInnovativeComment.setVisibleLines(8);
+                taInnovativeComment.setText(vi.innovativeComment);
+                taInnovativeComment.setEnabled(!vi.voteDone);
 
-                Label lbCompetence = new Label("Оцените Вашу компетенцию по теме проекта (от 1 до 5 баллов)");
-                ListBox bxCompetence = new ListBox();
-                bxCompetence.setWidth("10%");
+                cbForeign = new CheckBox("Проект предполагает участие иностранного (не являющегося гражданином Российской Федерации) специалиста, который имеет значительный авторитет в инвестиционной и/или исследовательской среде");
+
+                lbCompetent = new Label("Оцените Вашу компетенцию по теме проекта (от 1 до 5 баллов)");
+                bxCompetent = new ListBox();
+                bxCompetent.setWidth("10%");
                 for (int i = 1; i <= 5; ++i) {
-                    bxCompetence.addItem("" + i);
+                    bxCompetent.addItem("" + i);
                 }
+                bxCompetent.setItemSelected(vi.competent - 1, true);
+                bxCompetent.setEnabled(!vi.voteDone);
 
-                Label lbCompleteness = new Label("Оцените достаточность представленных материалов для оценки проекта (от 1 до 5 баллов)");
-                ListBox bxCompleteness = new ListBox();
-                bxCompleteness.setWidth("10%");
+                lbComplete = new Label("Оцените достаточность представленных материалов для оценки проекта (от 1 до 5 баллов)");
+                bxComplete = new ListBox();
+                bxComplete.setWidth("10%");
                 for (int i = 1; i <= 5; ++i) {
-                    bxCompleteness.addItem("" + i);
+                    bxComplete.addItem("" + i);
                 }
+                bxComplete.setItemSelected(vi.complete - 1, true);
+                bxComplete.setEnabled(!vi.voteDone);
 
-                Label lbCompletnessDescription = new Label("Приведите обоснование Вашей оценки (200-300 символов):");
-                TextArea taCompletnessDescription = new TextArea();
-                taCompletnessDescription.setSize("100%", "");
-                taCompletnessDescription.setVisibleLines(8);
-
-                Button bVote = new Button("Оценить");
-                bVote.addClickHandler(new ClickHandler() {
-                    public void onClick(ClickEvent event) {
-                        update();
-                    }
-                });
-
-                Button bCancel = new Button("Отказаться от оценки");
-                bCancel.addClickHandler(new ClickHandler() {
-                    public void onClick(ClickEvent event) {
-                        update();
-                    }
-                });
-
-                Button bAffilate = new Button("Я являюсь заинтересованным лицом");
-                bAffilate.addClickHandler(new ClickHandler() {
-                    public void onClick(ClickEvent event) {
-                        update();
-                    }
-                });
+                lbCompleteComment = new Label("Приведите обоснование Вашей оценки (200-300 символов):");
+                taCompleteComment = new TextArea();
+                taCompleteComment.setSize("100%", "");
+                taCompleteComment.setVisibleLines(8);
+                taCompleteComment.setText(vi.completeComment);
+                taCompleteComment.setEnabled(!vi.voteDone);
 
                 manePane.setWidth("1024");
                 manePane.setSpacing(10);
                 manePane.add(caption);
                 manePane.add(createVerticalSpacer(20));
-                manePane.add(cbInterest);
-                manePane.add(cbClusterSuitable);
-                manePane.add(cbConcurrentProject);
-                manePane.add(lbConcurrentLabel);
-                manePane.add(taConcurrentDescription);
-                manePane.add(cbForeignSpecialistInvolved);
-                manePane.add(lbCompetence);
-                manePane.add(bxCompetence);
-                manePane.add(lbCompleteness);
-                manePane.add(bxCompleteness);
-                manePane.add(lbCompletnessDescription);
-                manePane.add(taCompletnessDescription);
-                manePane.add(bVote);
-                manePane.add(bCancel);
-                manePane.add(bAffilate);
+                manePane.add(cbInCluster);
+                manePane.add(cbInnovative);
+                manePane.add(lbInnovative);
+                manePane.add(taInnovativeComment);
+                manePane.add(cbForeign);
+                manePane.add(lbCompetent);
+                manePane.add(bxCompetent);
+                manePane.add(lbComplete);
+                manePane.add(bxComplete);
+                manePane.add(lbCompleteComment);
+                manePane.add(taCompleteComment);
+                if (!vi.voteDone) {
+                    manePane.add(createButtonsPane());
+                }
 
-                VerticalPanel contentPane = new VerticalPanel();
-                contentPane.setWidth("100%");
-                contentPane.setHorizontalAlignment(HorizontalPanel.ALIGN_CENTER);
-
-                VerticalPanel borderPanel = new VerticalPanel();
-                borderPanel.add(manePane);
-                borderPanel.setBorderWidth(1);
-
-                contentPane.add(borderPanel);
-
-                RootPanel.get().clear();
-                RootPanel.get().add(contentPane);
+                setManePane(manePane);
             }
         });
     }
 
-    private void showErrorPage() {
-        //todo:
+    private VerticalPanel createButtonsPane() {
+        Button bVote = new Button("Оценить");
+        bVote.addClickHandler(new VoteClickHandler("voted"));
 
+        Button bRefused = new Button("Отказаться от оценки");
+        bRefused.addClickHandler(new VoteClickHandler("refused"));
+
+        Button bConnected = new Button("Я являюсь заинтересованным лицом");
+        bConnected.addClickHandler(new VoteClickHandler("connected"));
+
+        VerticalPanel btnPanel = new VerticalPanel();
+        btnPanel.setWidth("100%");
+        btnPanel.setHorizontalAlignment(HorizontalPanel.ALIGN_CENTER);
+        btnPanel.add(bVote);
+        btnPanel.add(bRefused);
+        btnPanel.add(bConnected);
+        return btnPanel;
+    }
+
+    private void setManePane(VerticalPanel manePane) {
+        VerticalPanel contentPane = new VerticalPanel();
+        contentPane.setWidth("100%");
+        contentPane.setHorizontalAlignment(HorizontalPanel.ALIGN_CENTER);
+
+        VerticalPanel borderPanel = new VerticalPanel();
+        borderPanel.add(manePane);
+        borderPanel.setBorderWidth(1);
+
+        contentPane.add(borderPanel);
+
+        RootPanel.get().clear();
+        RootPanel.get().add(contentPane);
+    }
+
+    private void showErrorPage() {
+        VerticalPanel manePane = new VerticalPanel();
+
+        HTMLPanel caption = new HTMLPanel(
+                        "<h5>Произошла ошибка при обработке запроса.</h5>");
+
+        manePane.setWidth("1024");
+        manePane.setSpacing(10);
+        manePane.add(caption);
+
+        setManePane(manePane);
     }
 
     private Widget createVerticalSpacer(int height) {
@@ -163,5 +187,45 @@ public class ExpertFrame implements EntryPoint {
         spacer.setHeight(Integer.toString(height));
         spacer.setWidth("100%");
         return spacer;
+    }
+
+    private class VoteClickHandler implements ClickHandler {
+        private final String voteResult;
+
+        private VoteClickHandler(String voteResult) {
+            this.voteResult = voteResult;
+        }
+
+        public void onClick(ClickEvent event) {
+            RootPanel.get().clear();
+
+            GwtVoteInfo vi = new GwtVoteInfo();
+
+            vi.voteResult = voteResult;
+
+            vi.inCluster = cbInCluster.getValue();
+            vi.innovative = cbInnovative.getValue();
+            vi.innovativeComment = taInnovativeComment.getText();
+            vi.foreign = cbForeign.getValue();
+            vi.competent = bxCompetent.getSelectedIndex() + 1;
+            vi.complete = bxComplete.getSelectedIndex() + 1;
+            vi.completeComment = taCompleteComment.getText();
+
+            int voteId = getVoteId();
+            if (voteId == -1) {
+                showErrorPage();
+                return;
+            }
+
+            ExpertService.App.getInstance().setVoteInfo(vi, getVoteId(), new AsyncCallback<Void>() {
+                public void onFailure(Throwable caught) {
+                    showErrorPage();
+                }
+
+                public void onSuccess(Void result) {
+                    update();
+                }
+            });
+        }
     }
 }

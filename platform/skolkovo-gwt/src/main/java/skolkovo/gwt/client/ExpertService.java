@@ -7,7 +7,8 @@ import skolkovo.gwt.shared.GwtVoteInfo;
 
 @RemoteServiceRelativePath("ProjectsService")
 public interface ExpertService extends RemoteService {
-    GwtVoteInfo getVoteInfo(String login, int voteId);
+    GwtVoteInfo getVoteInfo(int voteId);
+    void setVoteInfo(GwtVoteInfo voteInfo, int voteId);
 
     /**
      * Utility/Convenience class.

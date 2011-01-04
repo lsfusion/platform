@@ -14,7 +14,8 @@ public class VoteInfo implements Serializable {
     //}}
 
     //{{vote info
-    public boolean connected;
+    public boolean voteDone;
+    public String voteResult;
     public boolean inCluster;
     public boolean innovative;
     public String innovativeComment;

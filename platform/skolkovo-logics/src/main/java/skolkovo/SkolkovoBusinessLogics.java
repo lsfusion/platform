@@ -1,9 +1,9 @@
 package skolkovo;
 
 import net.sf.jasperreports.engine.JRException;
+import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
-import platform.interop.ClassViewType;
 import platform.interop.action.ClientAction;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.auth.User;
@@ -11,26 +11,25 @@ import platform.server.classes.*;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
 import platform.server.form.entity.FormEntity;
-import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.GroupObjectEntity;
+import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.filter.CompareFilterEntity;
 import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
-import platform.server.form.instance.remote.RemoteForm;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.linear.LP;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.DataSession;
-import platform.base.BaseUtils;
 import skolkovo.api.remote.SkolkovoRemoteInterface;
 
 import javax.swing.*;
@@ -42,6 +41,8 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
+
+import static platform.base.BaseUtils.nvl;
 
 public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogics> implements SkolkovoRemoteInterface {
 
@@ -90,7 +91,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         vote = addConcreteClass("vote", "Заседание", baseClass, transaction);
 
-        voteResult = addStaticClass("voteResult", "Результат заседания", new String[]{"refused","connected","voted"}, new String[]{"Отказался", "Аффилирован", "Проголосовал"});
+        voteResult = addStaticClass("voteResult", "Результат заседания", new String[]{"refused", "connected", "voted"}, new String[]{"Отказался", "Аффилирован", "Проголосовал"});
     }
 
     LP projectVote, nameProjectVote;
@@ -199,8 +200,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         succeededVote = addJProp(baseGroup, "succeededVote", "Состоялось", groeq2, quantityDoneVote, 1, limitExperts); // достаточно экспертов
 
         voteSucceededProject = addCGProp(idGroup, false, "voteSucceededProject", "Успешное заседание (ИД)",
-                addJProp(and1, 1, succeededVote, 1), succeededVote,
-                projectVote, 1);
+                                         addJProp(and1, 1, succeededVote, 1), succeededVote,
+                                         projectVote, 1);
 
         noCurrentVoteProject = addJProp(baseGroup, "noCurrentVoteProject", "Нет текущих заседаний", andNot1, is(project), 1, voteCurrentProject, 1); // нету текущих заседаний
 
@@ -212,13 +213,13 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                                         voteSucceededProject, 1); // есть открытое заседания и есть состояшееся заседания !!! нужно создать новое заседание
 
         addConstraint(addJProp("Эксперт не соответствует необходимому кластеру", diff2,
-                clusterExpert, 1, addJProp(and1, clusterVote, 2, inExpertVote, 1, 2), 1, 2), false);
+                               clusterExpert, 1, addJProp(and1, clusterVote, 2, inExpertVote, 1, 2), 1, 2), false);
 
         addConstraint(addJProp("Количество экспертов не соответствует требуемому", andNot1, is(vote), 1, addJProp(equals2, requiredQuantity,
-                addSGProp(addJProp(and1, addCProp(IntegerClass.instance, 1), inExpertVote, 2, 1), 1), 1), 1), false);
+                                                                                                                  addSGProp(addJProp(and1, addCProp(IntegerClass.instance, 1), inExpertVote, 2, 1), 1), 1), 1), false);
 
         generateVote = addAProp(actionGroup, new GenerateVoteActionProperty());
-        generateVote.setDerivedChange(addCProp(ActionClass.instance,true), needExtraVoteProject, 1);
+        generateVote.setDerivedChange(addCProp(ActionClass.instance, true), needExtraVoteProject, 1);
 
         expertLogin = addCGProp(baseGroup, "expertLogin", "Эксперт (ИД)", object(expert), userLogin, userLogin, 1);
 
@@ -277,22 +278,22 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             RegularFilterGroupEntity expertFilterGroup = new RegularFilterGroupEntity(genID());
             expertFilterGroup.addFilter(new RegularFilterEntity(genID(),
-                                  new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)),
-                                  "В заседании",
-                                  KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)), true);
+                                                                new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)),
+                                                                "В заседании",
+                                                                KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)), true);
             addRegularFilterGroup(expertFilterGroup);
 
             RegularFilterGroupEntity projectFilterGroup = new RegularFilterGroupEntity(genID());
             projectFilterGroup.addFilter(new RegularFilterEntity(genID(),
-                                  new NotNullFilterEntity(addPropertyObject(voteValuedProject, objProject)),
-                                  "Оценен",
-                                  KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
+                                                                 new NotNullFilterEntity(addPropertyObject(voteValuedProject, objProject)),
+                                                                 "Оценен",
+                                                                 KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
             addRegularFilterGroup(projectFilterGroup);
         }
 
         @Override
         public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
             design.addIntersection(design.getGroupObjectContainer(objVote.groupTo),
                                    design.getGroupObjectContainer(objDocument.groupTo),
@@ -315,7 +316,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private GlobalFormEntity(NavigatorElement parent, int iID) {
             super(parent, iID, "Глобальные параметры");
 
-            addPropertyDraw(new LP[] {currentDate, requiredPeriod, requiredQuantity, limitExperts});
+            addPropertyDraw(new LP[]{currentDate, requiredPeriod, requiredQuantity, limitExperts});
         }
     }
 
@@ -339,7 +340,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         @Override
         public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
             design.setPanelLabelAbove(voteResultCommentGroup, true);
             design.setConstraintsFillHorizontal(voteResultCommentGroup, 0.5);
@@ -386,19 +387,20 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             VoteObjects vo = new VoteObjects(session, login, voteId);
 
             VoteInfo voteInfo = new VoteInfo();
-            voteInfo.expertName = (String)name.read(session, vo.expertObj);
-            voteInfo.projectName = (String)name.read(session, vo.projectObj);
+            voteInfo.expertName = (String) name.read(session, vo.expertObj);
+            voteInfo.projectName = (String) name.read(session, vo.projectObj);
             voteInfo.projectClaimer = (String) nameClaimerProject.read(session, vo.projectObj);
             voteInfo.projectCluster = (String) nameClusterProject.read(session, vo.projectObj);
 
-            voteInfo.connected = (Boolean)expertVoteConnected.read(session, vo.expertObj, vo.voteObj);
-            voteInfo.inCluster = (Boolean) inClusterExpertVote.read(session, vo.expertObj, vo.voteObj);
-            voteInfo.innovative = (Boolean) innovativeExpertVote.read(session, vo.expertObj, vo.voteObj);
+            voteInfo.inCluster = nvl((Boolean) inClusterExpertVote.read(session, vo.expertObj, vo.voteObj), false);
+            voteInfo.innovative = nvl((Boolean) innovativeExpertVote.read(session, vo.expertObj, vo.voteObj), false);
             voteInfo.innovativeComment = (String) innovativeCommentExpertVote.read(session, vo.expertObj, vo.voteObj);
-            voteInfo.foreign = (Boolean) foreignExpertVote.read(session, vo.expertObj, vo.voteObj);
-            voteInfo.competent = (Integer) competentExpertVote.read(session, vo.expertObj, vo.voteObj);
-            voteInfo.complete = (Integer) completeExpertVote.read(session, vo.expertObj, vo.voteObj);
+            voteInfo.foreign = nvl((Boolean) foreignExpertVote.read(session, vo.expertObj, vo.voteObj), false);
+            voteInfo.competent = nvl((Integer) competentExpertVote.read(session, vo.expertObj, vo.voteObj), 1);
+            voteInfo.complete = nvl((Integer) completeExpertVote.read(session, vo.expertObj, vo.voteObj), 1);
             voteInfo.completeComment = (String) completeCommentExpertVote.read(session, vo.expertObj, vo.voteObj);
+            voteInfo.voteDone = nvl((Boolean) doneExpertVote.read(session, vo.expertObj, vo.voteObj), false);
+
             return voteInfo;
 
         } catch (Exception e) {
@@ -414,8 +416,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             DataSession session = createSession();
             VoteObjects vo = new VoteObjects(session, login, voteId);
 
-            doneExpertVote.execute(true, session, vo.expertObj, vo.voteObj);
-            expertVoteConnected.execute(voteInfo.connected, session, vo.expertObj, vo.voteObj);
+            voteResultExpertVote.execute(voteResult.getID(voteInfo.voteResult), session, vo.expertObj, vo.voteObj);
             inClusterExpertVote.execute(voteInfo.inCluster, session, vo.expertObj, vo.voteObj);
             innovativeExpertVote.execute(voteInfo.innovative, session, vo.expertObj, vo.voteObj);
             innovativeCommentExpertVote.execute(voteInfo.innovativeComment, session, vo.expertObj, vo.voteObj);
@@ -425,8 +426,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             completeCommentExpertVote.execute(voteInfo.completeComment, session, vo.expertObj, vo.voteObj);
 
             String result = session.apply(this);
-            if (result != null)
+            if (result != null) {
                 throw new RuntimeException("Не удалось сохранить информацию о голосовании : " + result);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -442,7 +444,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         private VoteObjects(DataSession session, String login, int voteId) throws SQLException {
 
-            Integer expertId = (Integer)expertLogin.read(session, new DataObject(login, StringClass.get(30)));
+            Integer expertId = (Integer) expertLogin.read(session, new DataObject(login, StringClass.get(30)));
             if (expertId == null) {
                 throw new RuntimeException("Не удалось найти пользователя с логином " + login);
             }
@@ -486,14 +488,15 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             // нужно выбрать случайных экспертов из того же кластера
             Query<String, Object> query = new Query<String, Object>(Collections.singleton("key"));
-            query.and(clusterExpert.getExpr(session.modifier,query.mapKeys.get("key")).compare(clusterProject.getExpr(session.modifier, projectObject.getExpr()), Compare.EQUALS));
+            query.and(clusterExpert.getExpr(session.modifier, query.mapKeys.get("key")).compare(clusterProject.getExpr(session.modifier, projectObject.getExpr()), Compare.EQUALS));
 
             List<DataObject> experts = new ArrayList<DataObject>();
-            for(Map<String, DataObject> row : query.executeClasses(session.sql, session.env, baseClass).keySet())
+            for (Map<String, DataObject> row : query.executeClasses(session.sql, session.env, baseClass).keySet()) {
                 experts.add(row.get("key"));
+            }
 
-            Integer required = BaseUtils.nvl((Integer) requiredQuantity.read(session), 0);
-            if(required > experts.size()) {
+            Integer required = nvl((Integer) requiredQuantity.read(session), 0);
+            if (required > experts.size()) {
                 logger.info("not enough experts");
                 return;
             }
@@ -502,8 +505,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             projectVote.execute(projectObject.object, session, session.modifier, voteObject);
 
             Random rand = new Random();
-            for(int i=0;i<required;i++)
+            for (int i = 0; i < required; i++) {
                 inExpertVote.execute(true, session, session.modifier, experts.remove(rand.nextInt(experts.size())), voteObject);
+            }
         }
     }
 

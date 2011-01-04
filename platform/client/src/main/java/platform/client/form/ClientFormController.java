@@ -449,7 +449,8 @@ public class ClientFormController {
         if (formChanges.dataChanged != null && buttonApply != null) {
             dataChanged = formChanges.dataChanged;
 
-            buttonApply.setBackground(dataChanged ? Color.green : getDefaultApplyBackground());
+            Color defaultBackGround = getDefaultApplyBackground();
+            buttonApply.setBackground(dataChanged ? Color.green : defaultBackGround);
             buttonApply.setEnabled(dataChanged);
             if (buttonCancel != null) {
                 buttonCancel.setEnabled(dataChanged);
