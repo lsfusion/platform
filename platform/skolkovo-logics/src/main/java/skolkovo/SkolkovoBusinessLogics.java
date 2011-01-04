@@ -61,6 +61,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     ConcreteCustomClass vote;
 
     StaticCustomClass voteResult;
+    StaticCustomClass projectStatus;
 
     AbstractGroup voteResultGroup;
     AbstractGroup voteResultCheckGroup;
@@ -91,7 +92,13 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         vote = addConcreteClass("vote", "Заседание", baseClass, transaction);
 
-        voteResult = addStaticClass("voteResult", "Результат заседания", new String[]{"refused", "connected", "voted"}, new String[]{"Отказался", "Аффилирован", "Проголосовал"});
+        voteResult = addStaticClass("voteResult", "Результат заседания", 
+                                    new String[]{"refused", "connected", "voted"}, 
+                                    new String[]{"Отказался", "Аффилирован", "Проголосовал"});
+        
+        projectStatus = addStaticClass("projectStatus", "Статус проекта",
+                                       new String[]{"unknown", "needExtraVote", "inProgress", "succeeded", "valued"},
+                                       new String[]{"Неизвестный статус", "Требуется заседание", "Идет заседание", "Достаточно голосов", "Произведена оценка"});
     }
 
     LP projectVote, nameProjectVote;
@@ -110,7 +117,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP dateStartVote, dateEndVote;
 
     LP openedVote;
-    LP voteCurrentProject;
+    LP voteInProgressProject;
     LP requiredPeriod;
     LP requiredQuantity;
     LP limitExperts;
@@ -137,6 +144,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP generateVote;
 
     LP expertLogin;
+
+    LP statusProject, nameStatusProject;
 
     protected void initProperties() {
 
@@ -177,7 +186,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         openedVote = addJProp(baseGroup, "openedVote", "Открыто", greater2, dateEndVote, 1, currentDate);
 
-        voteCurrentProject = addCGProp(idGroup, false, "voteCurrentProject", "Тек. заседание (ИД)",
+        voteInProgressProject = addCGProp(idGroup, false, "voteInProgressProject", "Тек. заседание (ИД)",
                                        addJProp(and1, 1, openedVote, 1), openedVote,
                                        projectVote, 1); // активно только одно заседание
 
@@ -203,13 +212,13 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                                          addJProp(and1, 1, succeededVote, 1), succeededVote,
                                          projectVote, 1);
 
-        noCurrentVoteProject = addJProp(baseGroup, "noCurrentVoteProject", "Нет текущих заседаний", andNot1, is(project), 1, voteCurrentProject, 1); // нету текущих заседаний
+        noCurrentVoteProject = addJProp("noCurrentVoteProject", "Нет текущих заседаний", andNot1, is(project), 1, voteInProgressProject, 1); // нету текущих заседаний
 
         voteValuedProject = addJProp(idGroup, "voteValuedProject", "Оцененнное заседание (ИД)", and1, voteSucceededProject, 1, noCurrentVoteProject, 1); // нет открытого заседания и есть состояшееся заседания
 
-        needExtraVoteProject = addJProp(baseGroup, "needExtraVoteProject", "Треб. заседание", and(true, true),
+        needExtraVoteProject = addJProp("needExtraVoteProject", "Треб. заседание", and(true, true),
                                         is(project), 1,
-                                        voteCurrentProject, 1,
+                voteInProgressProject, 1,
                                         voteSucceededProject, 1); // есть открытое заседания и есть состояшееся заседания !!! нужно создать новое заседание
 
         addConstraint(addJProp("Эксперт не соответствует необходимому кластеру", diff2,
@@ -223,8 +232,19 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         expertLogin = addCGProp(baseGroup, "expertLogin", "Эксперт (ИД)", object(expert), userLogin, userLogin, 1);
 
-        LP expertRole = addCProp(StringClass.get(30), "expert", expert);
-        addCUProp("userRole", true, "Роль пользователя", expertRole);
+        addCUProp("userRole", true, "Роль пользователя", addCProp(StringClass.get(30), "expert", expert));
+
+        statusProject = addIfElseUProp(idGroup, "statusProject", "Статус (ИД)",
+                                  addCProp(projectStatus, "valued", project),
+                                  addIfElseUProp(addCProp(projectStatus, "succeeded", project),
+                                          addIfElseUProp(addCProp(projectStatus, "inProgress", project),
+                                                  addIfElseUProp(addCProp(projectStatus, "needExtraVote", project),
+                                                                 addCProp(projectStatus, "unknown", project),
+                                                                 needExtraVoteProject, 1),
+                                                         voteInProgressProject, 1),
+                                                 voteSucceededProject, 1),
+                                  voteValuedProject, 1);
+        nameStatusProject = addJProp(baseGroup, "nameStatusProject", "Статус", name, statusProject, 1);
     }
 
     protected void initTables() {
@@ -256,10 +276,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ProjectFormEntity(NavigatorElement parent, int iID) {
             super(parent, iID, "Реестр проектов");
 
-            objProject = addSingleGroupObject(project, objectValue, date, name, nameClusterProject, nameClaimerProject, generateVote);
+            objProject = addSingleGroupObject(project, objectValue, date, name, nameClusterProject, nameClaimerProject, nameStatusProject, generateVote);
             addObjectActions(this, objProject);
 
-            objVote = addSingleGroupObject(vote, objectValue, date, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote, delete);
+            objVote = addSingleGroupObject(vote, objectValue, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote, delete);
             objVote.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
 
             objDocument = addSingleGroupObject(document, objectValue, name, fileDocument);
