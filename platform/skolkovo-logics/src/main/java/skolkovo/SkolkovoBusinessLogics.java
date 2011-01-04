@@ -106,7 +106,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP fileDocument;
 
     LP inExpertVote;
-    LP dateEndVote;
+    LP dateStartVote, dateEndVote;
 
     LP openedVote;
     LP voteCurrentProject;
@@ -171,7 +171,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         inExpertVote = addDProp(baseGroup, "inExpertVote", "Вкл", LogicalClass.instance, expert, vote); // !!! нужно отослать письмо с документами и т.д
 
-        dateEndVote = addJProp(baseGroup, "dateEndVote", "Дата окончания", addDate2, addJProp(and1, date, 1, is(vote), 1), 1, requiredPeriod);
+        dateStartVote = addJProp(baseGroup, "dateStartVote", "Дата начала", and1, date, 1, is(vote), 1);
+        dateEndVote = addJProp(baseGroup, "dateEndVote", "Дата окончания", addDate2, dateStartVote, 1, requiredPeriod);
 
         openedVote = addJProp(baseGroup, "openedVote", "Открыто", greater2, dateEndVote, 1, currentDate);
 
