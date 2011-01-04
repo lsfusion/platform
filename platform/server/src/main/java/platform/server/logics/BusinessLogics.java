@@ -782,7 +782,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         protected ObjectValueProperty createProperty(ValueClass[] classes) {
             assert classes.length == 1;
 
-            ValueClass valueClass = classes[0];
+            ValueClass valueClass = classes[0].getBaseClass();
 
             String sid = prefix + valueClass.getSID();
             ObjectValueProperty property = new ObjectValueProperty(sid, valueClass);
