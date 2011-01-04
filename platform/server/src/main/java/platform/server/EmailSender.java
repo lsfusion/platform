@@ -12,10 +12,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.Properties;
 
 public class EmailSender {
@@ -84,13 +81,21 @@ public class EmailSender {
         mp.addBodyPart(filePart);
     }
 
-    public void sendMail(String subject, String text, String... filePaths) {
+    public void sendMail(String subject, String htmlFilePath, String... filePaths) {
         try {
             message.setFrom();
             message.setSentDate(new java.util.Date());
             setRecipients(emails);
             message.setSubject(subject);
-            setText(text);
+
+            String result = "";
+            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(htmlFilePath)));
+            while (in.ready()) {
+                String s = in.readLine();
+                result += s;
+            }
+
+            setText(result);
             for (String path : filePaths) {
                 attachFile(path);
             }
@@ -98,6 +103,10 @@ public class EmailSender {
 
             Transport.send(message);
         } catch (MessagingException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
