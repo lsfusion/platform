@@ -1,9 +1,11 @@
 package skolkovo;
 
 import net.sf.jasperreports.engine.JRException;
+import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.ClassViewType;
 import platform.interop.action.ClientAction;
+import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.auth.User;
 import platform.server.classes.*;
 import platform.server.data.query.Query;
@@ -26,17 +28,20 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.linear.LP;
+import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.DataSession;
 import platform.base.BaseUtils;
 import skolkovo.api.remote.SkolkovoRemoteInterface;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.List;
 
 public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogics> implements SkolkovoRemoteInterface {
 
@@ -56,17 +61,31 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     StaticCustomClass voteResult;
 
+    AbstractGroup voteResultGroup;
+    AbstractGroup voteResultCheckGroup;
+    AbstractGroup voteResultCommentGroup;
+
     protected void initGroups() {
+        voteResultGroup = new AbstractGroup("Результаты голосования");
+        publicGroup.add(voteResultGroup);
+
+        voteResultCheckGroup = new AbstractGroup("Результаты голосования (выбор)");
+        voteResultCheckGroup.createContainer = false;
+        voteResultGroup.add(voteResultCheckGroup);
+
+        voteResultCommentGroup = new AbstractGroup("Результаты голосования (комментарии)");
+        voteResultCommentGroup.createContainer = false;
+        voteResultGroup.add(voteResultCommentGroup);
     }
 
     protected void initClasses() {
 
-        participant = addAbstractClass("participant", "Участник", customUser);
+        participant = addAbstractClass("participant", "Участник", baseClass);
 
         project = addConcreteClass("project", "Проект", baseClass.named, transaction);
-        expert = addConcreteClass("expert", "Эксперт", participant);
+        expert = addConcreteClass("expert", "Эксперт", customUser, participant);
         cluster = addConcreteClass("cluster", "Кластер", baseClass.named);
-        claimer = addConcreteClass("claimer", "Заявитель", participant);
+        claimer = addConcreteClass("claimer", "Заявитель", baseClass.named, participant);
         document = addConcreteClass("document", "Документ", baseClass.named);
 
         vote = addConcreteClass("vote", "Заседание", baseClass, transaction);
@@ -162,25 +181,25 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         // результаты голосования
         voteResultExpertVote = addDProp(idGroup, "voteResultExpertVote", "Результат (ИД)", voteResult, expert, vote);
-        nameVoteResultExpertVote = addJProp(baseGroup, "nameVoteResultExpertVote", "Результат", name, voteResultExpertVote, 1, 2);
 
         doneExpertVote = addJProp(baseGroup, "doneExpertVote", "Проголосовал", equals2,
                                   voteResultExpertVote, 1, 2, addCProp(voteResult, "voted"));
 
-        inClusterExpertVote = addDProp(baseGroup, "inClusterExpertVote", "Соот-ет кластеру", LogicalClass.instance, expert, vote);
-        innovativeExpertVote = addDProp(baseGroup, "innovativeExpertVote", "Подходит", LogicalClass.instance, expert, vote);
-        innovativeCommentExpertVote = addDProp(baseGroup, "innovativeCommentExpertVote", "Подходит (комм.)", TextClass.instance, expert, vote);
-        foreignExpertVote = addDProp(baseGroup, "foreignExpertVote", "Инн. спец.", LogicalClass.instance, expert, vote);
-        competentExpertVote = addDProp(baseGroup, "competentExpertVote", "Компет.", IntegerClass.instance, expert, vote);
-        completeExpertVote = addDProp(baseGroup, "completeExpertVote", "Полная инф.", IntegerClass.instance, expert, vote);
-        completeCommentExpertVote = addDProp(baseGroup, "completeCommentExpertVote", "Полная инф. (комм.)", TextClass.instance, expert, vote);
+        nameVoteResultExpertVote = addJProp(voteResultCheckGroup, "nameVoteResultExpertVote", "Результат", name, voteResultExpertVote, 1, 2);
+        inClusterExpertVote = addDProp(voteResultCheckGroup, "inClusterExpertVote", "Соотв-ие кластеру", LogicalClass.instance, expert, vote);
+        innovativeExpertVote = addDProp(voteResultCheckGroup, "innovativeExpertVote", "Инновац.", LogicalClass.instance, expert, vote);
+        innovativeCommentExpertVote = addDProp(voteResultCommentGroup, "innovativeCommentExpertVote", "Инновационность (комм.)", TextClass.instance, expert, vote);
+        foreignExpertVote = addDProp(voteResultCheckGroup, "foreignExpertVote", "Иностр. специалист", LogicalClass.instance, expert, vote);
+        competentExpertVote = addDProp(voteResultCheckGroup, "competentExpertVote", "Компет.", IntegerClass.instance, expert, vote);
+        completeExpertVote = addDProp(voteResultCheckGroup, "completeExpertVote", "Полнота информ.", IntegerClass.instance, expert, vote);
+        completeCommentExpertVote = addDProp(voteResultCommentGroup, "completeCommentExpertVote", "Полнота информации (комм.)", TextClass.instance, expert, vote);
 
         quantityDoneVote = addSGProp(baseGroup, "quantityDoneVote", "Проголосовало", addJProp(and1, addCProp(IntegerClass.instance, 1), doneExpertVote, 1, 2), 2); // сколько экспертов высказалось
         succeededVote = addJProp(baseGroup, "succeededVote", "Состоялось", groeq2, quantityDoneVote, 1, limitExperts); // достаточно экспертов
 
         voteSucceededProject = addCGProp(idGroup, false, "voteSucceededProject", "Успешное заседание (ИД)",
-                                                addJProp(and1, 1, succeededVote, 1), succeededVote,
-                                                projectVote, 1);
+                addJProp(and1, 1, succeededVote, 1), succeededVote,
+                projectVote, 1);
 
         noCurrentVoteProject = addJProp(baseGroup, "noCurrentVoteProject", "Нет текущих заседаний", andNot1, is(project), 1, voteCurrentProject, 1); // нету текущих заседаний
 
@@ -201,6 +220,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         generateVote.setDerivedChange(addCProp(ActionClass.instance,true), needExtraVoteProject, 1);
 
         expertLogin = addCGProp(baseGroup, "expertLogin", "Эксперт (ИД)", object(expert), userLogin, userLogin, 1);
+
         LP expertRole = addCProp(StringClass.get(30), "expert", expert);
         addCUProp("userRole", true, "Роль пользователя", expertRole);
     }
@@ -234,18 +254,21 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ProjectFormEntity(NavigatorElement parent, int iID) {
             super(parent, iID, "Реестр проектов");
 
-            objProject = addSingleGroupObject(project, baseGroup);
+            objProject = addSingleGroupObject(project, objectValue, date, name, nameClusterProject, nameClaimerProject, generateVote);
             addObjectActions(this, objProject);
 
-            objVote = addSingleGroupObject(vote, baseGroup);
-            addObjectActions(this, objVote);
+            objVote = addSingleGroupObject(vote, objectValue, date, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote, delete);
+            objVote.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
 
-            objDocument = addSingleGroupObject(document, baseGroup);
+            objDocument = addSingleGroupObject(document, objectValue, name, fileDocument);
             addObjectActions(this, objDocument);
 
-            objExpert = addSingleGroupObject(expert, baseGroup);
+            objExpert = addSingleGroupObject(expert);
+            addPropertyDraw(objExpert, objVote, inExpertVote);
+            addPropertyDraw(objExpert, objectValue, name, emailParticipant);
+            addPropertyDraw(voteResultGroup, true, objExpert, objVote);
 
-            addPropertyDraw(objVote, objExpert, baseGroup);
+            setForceViewType(voteResultCommentGroup, ClassViewType.PANEL);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectVote, objVote), Compare.EQUALS, objProject));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectDocument, objDocument), Compare.EQUALS, objProject));
@@ -270,6 +293,18 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
 
+            design.addIntersection(design.getGroupObjectContainer(objVote.groupTo),
+                                   design.getGroupObjectContainer(objDocument.groupTo),
+                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            design.get(objProject.groupTo).grid.constraints.fillVertical = 1.5;
+            design.get(objExpert.groupTo).grid.constraints.fillVertical = 1.5;
+
+            design.setPanelLabelAbove(voteResultCommentGroup, true);
+            design.setConstraintsFillHorizontal(voteResultCommentGroup, 1);
+
+            design.setPreferredSize(voteResultCheckGroup, new Dimension(60, 1));
+
             return design;
         }
     }
@@ -288,16 +323,29 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ObjectEntity objVote;
 
         private ExpertFormEntity(NavigatorElement parent, int iID) {
-            super(parent, iID, "Статистика по экспертам");
+            super(parent, iID, "Реестр экспертов");
 
-            objExpert = addSingleGroupObject(expert, baseGroup);
+            objExpert = addSingleGroupObject(expert, selection, objectValue, userFirstName, userLastName, userLogin, userPassword, emailParticipant, nameClusterExpert);
             addObjectActions(this, objExpert);
 
-            objVote = addSingleGroupObject(vote, baseGroup);
+            objVote = addSingleGroupObject(vote, objectValue, nameProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote, delete);
 
-            addPropertyDraw(objVote, objExpert, baseGroup);
+            addPropertyDraw(voteResultGroup, true, objExpert, objVote);
+            setForceViewType(voteResultCommentGroup, ClassViewType.PANEL);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
+
+            design.setPanelLabelAbove(voteResultCommentGroup, true);
+            design.setConstraintsFillHorizontal(voteResultCommentGroup, 0.5);
+
+            design.setPreferredSize(voteResultCheckGroup, new Dimension(60, 1));
+
+            return design;
         }
     }
 

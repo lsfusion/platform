@@ -599,4 +599,24 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
     public void setPanelLabelAbove(PropertyDrawView property, boolean panelLabelAbove) {
         property.panelLabelAbove = panelLabelAbove;
     }
+
+    public void setConstraintsFillHorizontal(AbstractGroup group, double fillFactor) {
+        for (PropertyDrawView property : getProperties(group)) {
+            setConstraintsFillHorizontal(property, fillFactor);
+        }
+    }
+
+    private void setConstraintsFillHorizontal(PropertyDrawView property, double fillFactor) {
+        property.constraints.fillHorizontal = fillFactor;
+    }
+
+    public void setPreferredSize(AbstractGroup group, Dimension size) {
+        for (PropertyDrawView property : getProperties(group)) {
+            setPreferredSize(property, size);
+        }
+    }
+
+    private void setPreferredSize(PropertyDrawView property, Dimension size) {
+        property.preferredSize = new Dimension(size);
+    }
 }

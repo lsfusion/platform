@@ -5,6 +5,7 @@ import platform.base.OrderedMap;
 import platform.base.Subsets;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
+import platform.interop.ClassViewType;
 import platform.interop.Constants;
 import platform.interop.action.ClientResultAction;
 import platform.server.classes.ValueClass;
@@ -615,4 +616,13 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
             throw new RuntimeException("Ошибка при десериализации формы на сервере", e);
         }
     }
+
+    protected void setForceViewType(AbstractGroup group, ClassViewType type) {
+        for (PropertyDrawEntity propertyDraw : propertyDraws) {
+            if (group.hasChild(propertyDraw.propertyObject.property)) {
+                propertyDraw.forceViewType = type;
+            }
+        }
+    }
+
 }
