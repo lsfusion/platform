@@ -22,7 +22,7 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> {
 
     abstract void mapFillDepends(Collection<Property> depends);
 
-    ObjectValue read(DataSession session, Map<P, DataObject> interfaceValues, Modifier<? extends Changes> modifier) throws SQLException;
+    Object read(DataSession session, Map<P, DataObject> interfaceValues, Modifier<? extends Changes> modifier) throws SQLException;
 
     MapDataChanges<P> mapJoinDataChanges(Map<P, KeyExpr> joinImplement, Expr expr, Where where, WhereBuilder changedWhere, Modifier<? extends Changes> modifier);
 

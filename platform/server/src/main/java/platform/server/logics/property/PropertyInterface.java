@@ -43,8 +43,8 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return joinImplement.get((P) this);
     }
 
-    public ObjectValue read(DataSession session, Map<P, DataObject> interfaceValues, Modifier<? extends Changes> modifier) {
-        return interfaceValues.get((P) this);
+    public Object read(DataSession session, Map<P, DataObject> interfaceValues, Modifier<? extends Changes> modifier) {
+        return interfaceValues.get((P) this).object;
     }
 
     public void mapFillDepends(Collection<Property> depends) {

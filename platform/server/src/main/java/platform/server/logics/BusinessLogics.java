@@ -16,6 +16,7 @@ import platform.interop.action.UserReloginClientAction;
 import platform.interop.exceptions.LoginException;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
+import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.RemoteObject;
 import platform.interop.remote.ServerSocketFactory;
@@ -1691,20 +1692,22 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     private List<Property> getDerivedPropertyList() { // переставляет execute'ы заведомо до changeProps, чтобы разрешать циклы
         List<Property> result = new ArrayList<Property>();
-        for (Property property : getPropertyList())
+        for (Property property : getPropertyList()) {
+            Integer minChange = null;
             if (property instanceof ExecuteProperty) {
                 ExecuteProperty executeProperty = (ExecuteProperty)property;
-                Integer minChange = null;
                 for(Property changeProp : executeProperty.getChangeProps()) {
                     int index = result.indexOf(changeProp);
                     if(index>=0 && (minChange==null || index<minChange))
                         minChange = index;
                 }
-                if(minChange!=null)
-                    result.add(minChange, property);
-                else
-                    result.add(property);
             }
+            if(minChange!=null)
+                result.add(minChange, property);
+            else
+                result.add(property);
+        }
+
         return result;
     }
 
@@ -2141,8 +2144,20 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addProperty(group, new LP<ClassPropertyInterface>(new FormActionProperty(genSID(), caption, form, params)));
     }
 
-    protected LP addEAProp(AbstractGroup group, String caption, String mailSubject, List<FormEntity> forms, List<List<ObjectEntity>> objects) {
-        return addProperty(group, new LP<ClassPropertyInterface>(new EmailActionProperty(genSID(), caption, mailSubject, forms, objects)));
+    protected LP addEAProp(AbstractGroup group, String caption, String mailSubject, ValueClass... params) {
+        return addProperty(group, new LP<ClassPropertyInterface>(new EmailActionProperty(genSID(), caption, mailSubject, this, params)));
+    }
+    protected <X extends PropertyInterface> void addEARecepient(LP<ClassPropertyInterface> eaProp, LP<X> emailProp, Integer... params) {
+        Map<X, ClassPropertyInterface> mapInterfaces = new HashMap<X, ClassPropertyInterface>();
+        for(int i=0;i<emailProp.listInterfaces.size();i++)
+            mapInterfaces.put(emailProp.listInterfaces.get(i), eaProp.listInterfaces.get(params[i] - 1));
+        ((EmailActionProperty)eaProp.property).addRecepient(new PropertyMapImplement<X,ClassPropertyInterface>(emailProp.property, mapInterfaces));
+    }
+    protected void addEAForm(LP<ClassPropertyInterface> eaProp, FormEntity form, Object... params) {
+        Map<ObjectEntity, ClassPropertyInterface> mapObjects = new HashMap<ObjectEntity, ClassPropertyInterface>();
+        for(int i=0;i< params.length/2;i++)
+            mapObjects.put((ObjectEntity) params[2*i], eaProp.listInterfaces.get((Integer) params[2*i+1] - 1));
+        ((EmailActionProperty)eaProp.property).addForm(form, mapObjects);
     }
 
     protected <P extends PropertyInterface> LP addSCProp(LP<P> lp) {
@@ -3877,4 +3892,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     }
     */
+
+    public RemoteFormInterface createForm(DataSession session, FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects) {
+        try {
+            FormInstance<T> formInstance = new FormInstance<T>(formEntity, (T)this, session, PolicyManager.defaultSecurityPolicy, null, null, new DataObject(getServerComputer(), computer), mapObjects);
+            return new RemoteForm<T, FormInstance<T>>(formInstance, formEntity.getRichDesign(), exportPort, null);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

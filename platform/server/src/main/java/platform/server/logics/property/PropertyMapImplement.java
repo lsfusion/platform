@@ -36,8 +36,8 @@ public class PropertyMapImplement<T extends PropertyInterface,P extends Property
         depends.add(property);
     }
 
-    public ObjectValue read(DataSession session, Map<P, DataObject> interfaceValues, Modifier<? extends Changes> modifier) throws SQLException {
-        return property.readClasses(session,BaseUtils.join(mapping,interfaceValues),modifier);
+    public Object read(DataSession session, Map<P, DataObject> interfaceValues, Modifier<? extends Changes> modifier) throws SQLException {
+        return property.read(session.sql,BaseUtils.join(mapping,interfaceValues),modifier,session.env);
     }
 
     public MapDataChanges<P> mapDataChanges(PropertyChange<P> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {

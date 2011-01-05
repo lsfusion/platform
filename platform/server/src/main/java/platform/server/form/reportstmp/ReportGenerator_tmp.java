@@ -239,7 +239,7 @@ public class ReportGenerator_tmp {
         if (exprText.startsWith("$F{")) {
             id = exprText.substring(3, exprText.length()-1);
         } else {
-            assert exprText.startsWith("\"");
+//            assert exprText.startsWith("\"");
             id = exprText.substring(1, exprText.length()-1);
         }
 

@@ -26,9 +26,11 @@ import platform.server.form.view.FormView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.EmailActionProperty;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.Property;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.DataSession;
 import skolkovo.api.remote.SkolkovoRemoteInterface;
@@ -248,6 +250,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                                                  voteSucceededProject, 1),
                                   voteValuedProject, 1);
         nameStatusProject = addJProp(baseGroup, "nameStatusProject", "Статус", name, statusProject, 1);
+
+        emailLetterExpertVote = addEAProp(baseGroup, "Отослать письмо", "Тест письма", expert, vote);
+        addEARecepient(emailLetterExpertVote, emailParticipant, 1);
+        emailLetterExpertVote.setDerivedChange(addCProp(ActionClass.instance, true), inExpertVote, 1, 2);
     }
 
     protected void initTables() {
@@ -401,7 +407,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             objDocument = addSingleGroupObject(document, name, fileDocument);
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectDocument, objDocument), Compare.EQUALS, addPropertyObject(projectVote, objVote)));
 
-            emailLetterExpertVote = addEAProp(baseGroup, "Отослать письмо", "Тест письма", Collections.<FormEntity>singletonList(this), Collections.singletonList(Arrays.asList(objExpert, objVote)));
+            addEAForm(emailLetterExpertVote, this, objExpert, 1, objVote, 2);
         }
 
         @Override
@@ -539,6 +545,11 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             for (int i = 0; i < required; i++) {
                 inExpertVote.execute(true, session, session.modifier, experts.remove(rand.nextInt(experts.size())), voteObject);
             }
+        }
+
+        @Override
+        public Set<Property> getChangeProps() {
+            return BaseUtils.toSet(projectVote.property, inExpertVote.property);
         }
     }
 

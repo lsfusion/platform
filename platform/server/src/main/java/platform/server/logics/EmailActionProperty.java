@@ -9,17 +9,20 @@ import platform.base.ByteArray;
 import platform.interop.action.ClientAction;
 import platform.interop.form.RemoteFormInterface;
 import platform.server.EmailSender;
+import platform.server.auth.PolicyManager;
+import platform.server.session.DataSession;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.reportstmp.ReportGenerator_tmp;
-import platform.server.logics.property.ActionProperty;
-import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.*;
 
 import java.io.File;
 import java.util.*;
+import java.sql.SQLException;
 
 /**
  * User: DAle
@@ -30,42 +33,47 @@ import java.util.*;
 public class EmailActionProperty extends ActionProperty {
     private final List<FormEntity> forms;
     private final List<Map<ObjectEntity, ClassPropertyInterface>> mapObjects = new ArrayList<Map<ObjectEntity, ClassPropertyInterface>>();
+
+    private final List<PropertyMapImplement<?, ClassPropertyInterface>> recepients = new ArrayList<PropertyMapImplement<?, ClassPropertyInterface>>();
+
     private final String subject;
 
-    public static ValueClass[] getValueClasses(List<List<ObjectEntity>> objects) {
-        List<ValueClass> valueClasses = new ArrayList<ValueClass>();
-        for(List<ObjectEntity> formObjects : objects) {
-            for (ObjectEntity object : formObjects) {
-                valueClasses.add(object.baseClass);
-            }
-        }
-        return valueClasses.toArray(new ValueClass[valueClasses.size()]);
+    private final BusinessLogics<?> BL; // для возможности работы с формами в автоматическом режиме
+
+    public EmailActionProperty(String sID, String caption, String mailSubject, BusinessLogics<?> BL, ValueClass[] classes) {
+        super(sID, caption, classes);
+
+        this.subject = mailSubject;
+        forms = new ArrayList<FormEntity>();
+        this.BL = BL;
     }
 
-    public EmailActionProperty(String sID, String caption, String mailSubject, List<FormEntity> forms, List<List<ObjectEntity>> objects) {
-        super(sID, caption, getValueClasses(objects));
-        this.subject = mailSubject;
-        this.forms = forms;
-        Iterator<ClassPropertyInterface> iter = interfaces.iterator();
-        for (List<ObjectEntity> formObjects : objects) {
-            Map<ObjectEntity, ClassPropertyInterface> mapping = new HashMap<ObjectEntity, ClassPropertyInterface>();
-            for (ObjectEntity object : formObjects) {
-                mapping.put(object, iter.next());
-            }
-            mapObjects.add(mapping);
-        }
+    public <R extends PropertyInterface> void addRecepient(PropertyMapImplement<R, ClassPropertyInterface> recepient) {
+        recepients.add(recepient);
     }
+
+    public void addForm(FormEntity form, Map<ObjectEntity, ClassPropertyInterface> objects) {
+        forms.add(form);
+        mapObjects.add(objects);
+    }
+
 
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapExecuteObjects) {
+        throw new RuntimeException("should not be");
+    }
+
+    @Override
+    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapExecuteObjects) throws SQLException {
         String embeddedFilePath = "";
         String[] reportPaths = new String[forms.size()-1];
         Map<ByteArray, String> files = new HashMap<ByteArray, String>();
         for (int i = 0; i < forms.size(); i++) {
-            Map<ObjectEntity, DataObject> mapping = new HashMap<ObjectEntity, DataObject>();
-            if (mapObjects != null && mapObjects.size() > i && mapObjects.get(i) != null) {
-                mapping = BaseUtils.join(mapObjects.get(i), keys);
-            }
-            RemoteFormInterface remoteForm = executeForm.createForm(forms.get(i), mapping);
+            Map<ObjectEntity, DataObject> formObjects = BaseUtils.join(mapObjects.get(i), keys);
+            RemoteFormInterface remoteForm;
+            if(executeForm!=null)
+                remoteForm = executeForm.createForm(forms.get(i), formObjects);
+            else
+                remoteForm = BL.createForm(session, forms.get(i), formObjects);
 
             try {
                 ReportGenerator_tmp report = new ReportGenerator_tmp(remoteForm, true, files);
@@ -84,12 +92,20 @@ public class EmailActionProperty extends ActionProperty {
                 htmlExporter.setParameter(JRHtmlExporterParameter.OUTPUT_FILE_NAME, file.getAbsolutePath());
                 htmlExporter.setParameter(JRHtmlExporterParameter.JASPER_PRINT, print);
                 htmlExporter.exportReport();
+
+                List<String> recepientEmails = new ArrayList<String>();
+                for(PropertyMapImplement<?, ClassPropertyInterface> recepient : recepients) {
+                    String recepientEmail = (String) recepient.read(session, keys, executeForm!=null? executeForm.form :session.modifier);
+                    if(recepientEmail!=null)
+                        recepientEmails.add(recepientEmail);
+                }
+
+                EmailSender sender = new EmailSender(recepientEmails.toArray(new String[recepientEmails.size()]));
+                sender.sendMail(subject, embeddedFilePath, files, reportPaths);
             } catch (Exception e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
         }
-        EmailSender sender = new EmailSender("danchenko@gmail.com", "dale@luxsoft.by");
-        sender.sendMail(subject, embeddedFilePath, files, reportPaths);
     }
 
 }
