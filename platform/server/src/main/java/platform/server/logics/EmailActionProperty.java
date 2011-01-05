@@ -64,21 +64,22 @@ public class EmailActionProperty extends ActionProperty {
 
     @Override
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapExecuteObjects) throws SQLException {
-        String embeddedFilePath = "";
-        String[] reportPaths = new String[forms.size()-1];
-        Map<ByteArray, String> files = new HashMap<ByteArray, String>();
-        for (int i = 0; i < forms.size(); i++) {
-            Map<ObjectEntity, DataObject> formObjects = BaseUtils.join(mapObjects.get(i), keys);
-            RemoteFormInterface remoteForm;
-            if(executeForm!=null)
-                remoteForm = executeForm.createForm(forms.get(i), formObjects);
-            else
-                remoteForm = BL.createForm(session, forms.get(i), formObjects);
 
-            try {
-                ReportGenerator_tmp report = new ReportGenerator_tmp(remoteForm, true, files);
-                JasperPrint print = report.createReport();
-                print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
+        try {
+            String embeddedFilePath = "";
+            String[] reportPaths = new String[forms.size()-1];
+            Map<ByteArray, String> files = new HashMap<ByteArray, String>();
+            for (int i = 0; i < forms.size(); i++) {
+                Map<ObjectEntity, DataObject> formObjects = BaseUtils.join(mapObjects.get(i), keys);
+                RemoteFormInterface remoteForm;
+                if(executeForm!=null)
+                    remoteForm = executeForm.createForm(forms.get(i), formObjects);
+                else
+                    remoteForm = BL.createForm(session, forms.get(i), formObjects);
+
+                    ReportGenerator_tmp report = new ReportGenerator_tmp(remoteForm, true, files);
+                    JasperPrint print = report.createReport();
+                    print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
 
                 File file = File.createTempFile("lsfReport", ".html");
                 if (i == 0) {
@@ -92,19 +93,19 @@ public class EmailActionProperty extends ActionProperty {
                 htmlExporter.setParameter(JRHtmlExporterParameter.OUTPUT_FILE_NAME, file.getAbsolutePath());
                 htmlExporter.setParameter(JRHtmlExporterParameter.JASPER_PRINT, print);
                 htmlExporter.exportReport();
-
-                List<String> recepientEmails = new ArrayList<String>();
-                for(PropertyMapImplement<?, ClassPropertyInterface> recepient : recepients) {
-                    String recepientEmail = (String) recepient.read(session, keys, executeForm!=null? executeForm.form :session.modifier);
-                    if(recepientEmail!=null)
-                        recepientEmails.add(recepientEmail);
-                }
-
-                EmailSender sender = new EmailSender(recepientEmails.toArray(new String[recepientEmails.size()]));
-                sender.sendMail(subject, embeddedFilePath, files, reportPaths);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
             }
+
+            List<String> recepientEmails = new ArrayList<String>();
+            for(PropertyMapImplement<?, ClassPropertyInterface> recepient : recepients) {
+                String recepientEmail = (String) recepient.read(session, keys, executeForm!=null? executeForm.form :session.modifier);
+                if(recepientEmail!=null)
+                    recepientEmails.add(recepientEmail);
+            }
+
+            EmailSender sender = new EmailSender(recepientEmails.toArray(new String[recepientEmails.size()]));
+            sender.sendMail(subject, embeddedFilePath, files, reportPaths);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
