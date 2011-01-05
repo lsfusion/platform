@@ -67,7 +67,7 @@ public class EmailSender {
         }
 
         public String getContentType() {
-            return "text/html";
+            return "text/html charset=utf-8";
         }
 
         public String getName() {
