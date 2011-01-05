@@ -26,7 +26,6 @@ import platform.server.form.view.FormView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.EmailActionProperty;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -437,6 +436,12 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             voteInfo.competent = nvl((Integer) competentExpertVote.read(session, vo.expertObj, vo.voteObj), 1);
             voteInfo.complete = nvl((Integer) completeExpertVote.read(session, vo.expertObj, vo.voteObj), 1);
             voteInfo.completeComment = (String) completeCommentExpertVote.read(session, vo.expertObj, vo.voteObj);
+
+            Integer vResult = (Integer) voteResultExpertVote.read(session, vo.expertObj, vo.voteObj);
+            if (vResult != null) {
+                voteInfo.voteResult = voteResult.getSID(vResult);
+            }
+
             voteInfo.voteDone = nvl((Boolean) doneExpertVote.read(session, vo.expertObj, vo.voteObj), false);
 
             return voteInfo;
@@ -455,13 +460,15 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             VoteObjects vo = new VoteObjects(session, login, voteId);
 
             voteResultExpertVote.execute(voteResult.getID(voteInfo.voteResult), session, vo.expertObj, vo.voteObj);
-            inClusterExpertVote.execute(voteInfo.inCluster, session, vo.expertObj, vo.voteObj);
-            innovativeExpertVote.execute(voteInfo.innovative, session, vo.expertObj, vo.voteObj);
-            innovativeCommentExpertVote.execute(voteInfo.innovativeComment, session, vo.expertObj, vo.voteObj);
-            foreignExpertVote.execute(voteInfo.foreign, session, vo.expertObj, vo.voteObj);
-            competentExpertVote.execute(voteInfo.competent, session, vo.expertObj, vo.voteObj);
-            completeExpertVote.execute(voteInfo.complete, session, vo.expertObj, vo.voteObj);
-            completeCommentExpertVote.execute(voteInfo.completeComment, session, vo.expertObj, vo.voteObj);
+            if (voteInfo.voteResult.equals("voted")) {
+                inClusterExpertVote.execute(voteInfo.inCluster, session, vo.expertObj, vo.voteObj);
+                innovativeExpertVote.execute(voteInfo.innovative, session, vo.expertObj, vo.voteObj);
+                innovativeCommentExpertVote.execute(voteInfo.innovativeComment, session, vo.expertObj, vo.voteObj);
+                foreignExpertVote.execute(voteInfo.foreign, session, vo.expertObj, vo.voteObj);
+                competentExpertVote.execute(voteInfo.competent, session, vo.expertObj, vo.voteObj);
+                completeExpertVote.execute(voteInfo.complete, session, vo.expertObj, vo.voteObj);
+                completeCommentExpertVote.execute(voteInfo.completeComment, session, vo.expertObj, vo.voteObj);
+            }
 
             String result = session.apply(this);
             if (result != null) {

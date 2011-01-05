@@ -53,82 +53,95 @@ public class ExpertFrame implements EntryPoint {
                     return;
                 }
 
-                VerticalPanel manePane = new VerticalPanel();
-
                 HTMLPanel caption = new HTMLPanel(
-                                "<h4>БЮЛЛЕТЕНЬ ОЦЕНКИ ПРОЕКТА</h4>" +
-                                "Эксперт: <i>" + vi.expertName + "</i><br/>" +
-                                "<br/>" +
-                                "Организация-заявитель: <i>" + vi.projectClaimer + "</i><br/>" +
-                                "<br/>" +
-                                "Вы получили следующие материалы по проекту:<br/>" +
-                                "&nbsp;&nbsp;1. Анкета проекта<br/>" +
-                                "&nbsp;&nbsp;2. Резюме проекта<br/>" +
-                                "&nbsp;&nbsp;3. Резюме иностранного специалиста, участвующего и/или планирующего участвовать в проекте (опционально)<br/>" +
-                                "&nbsp;&nbsp;4. Техническое описание продукта/технологии (опционально)<br/>" +
-                                "<br/>" +
-                                "Пожалуйста, заполните данный бюллетень");
+                        "<h4>БЮЛЛЕТЕНЬ ОЦЕНКИ ПРОЕКТА</h4>" +
+                        "Эксперт: <i>" + vi.expertName + "</i><br/>" +
+                        "<br/>" +
+                        "Организация-заявитель: <i>" + vi.projectClaimer + "</i><br/>" +
+                        "<br/>" +
+                        "Вы получили следующие материалы по проекту:<br/>" +
+                        "&nbsp;&nbsp;1. Анкета проекта<br/>" +
+                        "&nbsp;&nbsp;2. Резюме проекта<br/>" +
+                        "&nbsp;&nbsp;3. Резюме иностранного специалиста, участвующего и/или планирующего участвовать в проекте (опционально)<br/>" +
+                        "&nbsp;&nbsp;4. Техническое описание продукта/технологии (опционально)<br/>" +
+                        "<br/>" +
+                        (vi.voteDone ? "" : "Пожалуйста, заполните данный бюллетень") +
+                        "<h5>" +
+                        ("voted".equals(vi.voteResult)
+                             ? "Вы уже оценили эту заявку."
+                             : "refused".equals(vi.voteResult)
+                                 ? "Вы отказались от оценки этой заявки."
+                                 : "connected".equals(vi.voteResult)
+                                     ? "Вы являетесь заинтерисованным лицом для этой заявки."
+                                     : ""
+                        ) +
+                        "</h5>"
+                );
 
-                cbInCluster = new CheckBox("Проект соответствует направлению \"" + vi.projectCluster + "\"");
-                cbInCluster.setValue(vi.inCluster);
-                cbInCluster.setEnabled(!vi.voteDone);
-
-                cbInnovative = new CheckBox("Проект предполагает разработку и/или коммерциализацию уникальных и/или обладающих конкурентными преимуществами перед мировыми аналогами продуктов и/или технологий?");
-                cbInnovative.setValue(vi.innovative);
-                cbInnovative.setEnabled(!vi.voteDone);
-
-                lbInnovative = new Label("Приведите обоснование Вашего ответа (800-1000 символов):");
-                taInnovativeComment = new TextArea();
-                taInnovativeComment.setSize("100%", "");
-                taInnovativeComment.setVisibleLines(8);
-                taInnovativeComment.setText(vi.innovativeComment);
-                taInnovativeComment.setEnabled(!vi.voteDone);
-
-                cbForeign = new CheckBox("Проект предполагает участие иностранного (не являющегося гражданином Российской Федерации) специалиста, который имеет значительный авторитет в инвестиционной и/или исследовательской среде");
-                cbForeign.setEnabled(!vi.voteDone);
-
-                lbCompetent = new Label("Оцените Вашу компетенцию по теме проекта (от 1 до 5 баллов)");
-                bxCompetent = new ListBox();
-                bxCompetent.setWidth("10%");
-                for (int i = 1; i <= 5; ++i) {
-                    bxCompetent.addItem("" + i);
-                }
-                bxCompetent.setItemSelected(vi.competent - 1, true);
-                bxCompetent.setEnabled(!vi.voteDone);
-
-                lbComplete = new Label("Оцените достаточность представленных материалов для оценки проекта (от 1 до 5 баллов)");
-                bxComplete = new ListBox();
-                bxComplete.setWidth("10%");
-                for (int i = 1; i <= 5; ++i) {
-                    bxComplete.addItem("" + i);
-                }
-                bxComplete.setItemSelected(vi.complete - 1, true);
-                bxComplete.setEnabled(!vi.voteDone);
-
-                lbCompleteComment = new Label("Приведите обоснование Вашей оценки (200-300 символов):");
-                taCompleteComment = new TextArea();
-                taCompleteComment.setSize("100%", "");
-                taCompleteComment.setVisibleLines(8);
-                taCompleteComment.setText(vi.completeComment);
-                taCompleteComment.setEnabled(!vi.voteDone);
-
+                VerticalPanel manePane = new VerticalPanel();
                 manePane.setWidth("1024");
                 manePane.setSpacing(10);
                 manePane.add(caption);
-                manePane.add(createVerticalSpacer(20));
-                manePane.add(cbInCluster);
-                manePane.add(cbInnovative);
-                manePane.add(lbInnovative);
-                manePane.add(taInnovativeComment);
-                manePane.add(cbForeign);
-                manePane.add(lbCompetent);
-                manePane.add(bxCompetent);
-                manePane.add(lbComplete);
-                manePane.add(bxComplete);
-                manePane.add(lbCompleteComment);
-                manePane.add(taCompleteComment);
-                if (!vi.voteDone) {
-                    manePane.add(createButtonsPane());
+
+                if (!vi.voteDone || "voted".equals(vi.voteResult)) {
+                    manePane.add(createVerticalSpacer(20));
+                    cbInCluster = new CheckBox("Проект соответствует направлению \"" + vi.projectCluster + "\"");
+                    cbInCluster.setValue(vi.inCluster);
+                    cbInCluster.setEnabled(!vi.voteDone);
+
+                    cbInnovative = new CheckBox("Проект предполагает разработку и/или коммерциализацию уникальных и/или обладающих конкурентными преимуществами перед мировыми аналогами продуктов и/или технологий?");
+                    cbInnovative.setValue(vi.innovative);
+                    cbInnovative.setEnabled(!vi.voteDone);
+
+                    lbInnovative = new Label("Приведите обоснование Вашего ответа (800-1000 символов):");
+                    taInnovativeComment = new TextArea();
+                    taInnovativeComment.setSize("100%", "");
+                    taInnovativeComment.setVisibleLines(8);
+                    taInnovativeComment.setText(vi.innovativeComment);
+                    taInnovativeComment.setEnabled(!vi.voteDone);
+
+                    cbForeign = new CheckBox("Проект предполагает участие иностранного (не являющегося гражданином Российской Федерации) специалиста, который имеет значительный авторитет в инвестиционной и/или исследовательской среде");
+                    cbForeign.setEnabled(!vi.voteDone);
+
+                    lbCompetent = new Label("Оцените Вашу компетенцию по теме проекта (от 1 до 5 баллов)");
+                    bxCompetent = new ListBox();
+                    bxCompetent.setWidth("10%");
+                    for (int i = 1; i <= 5; ++i) {
+                        bxCompetent.addItem("" + i);
+                    }
+                    bxCompetent.setItemSelected(vi.competent - 1, true);
+                    bxCompetent.setEnabled(!vi.voteDone);
+
+                    lbComplete = new Label("Оцените достаточность представленных материалов для оценки проекта (от 1 до 5 баллов)");
+                    bxComplete = new ListBox();
+                    bxComplete.setWidth("10%");
+                    for (int i = 1; i <= 5; ++i) {
+                        bxComplete.addItem("" + i);
+                    }
+                    bxComplete.setItemSelected(vi.complete - 1, true);
+                    bxComplete.setEnabled(!vi.voteDone);
+
+                    lbCompleteComment = new Label("Приведите обоснование Вашей оценки (200-300 символов):");
+                    taCompleteComment = new TextArea();
+                    taCompleteComment.setSize("100%", "");
+                    taCompleteComment.setVisibleLines(8);
+                    taCompleteComment.setText(vi.completeComment);
+                    taCompleteComment.setEnabled(!vi.voteDone);
+
+                    manePane.add(cbInCluster);
+                    manePane.add(cbInnovative);
+                    manePane.add(lbInnovative);
+                    manePane.add(taInnovativeComment);
+                    manePane.add(cbForeign);
+                    manePane.add(lbCompetent);
+                    manePane.add(bxCompetent);
+                    manePane.add(lbComplete);
+                    manePane.add(bxComplete);
+                    manePane.add(lbCompleteComment);
+                    manePane.add(taCompleteComment);
+                    if (!vi.voteDone) {
+                        manePane.add(createButtonsPane());
+                    }
                 }
 
                 setManePane(manePane);
@@ -136,7 +149,7 @@ public class ExpertFrame implements EntryPoint {
         });
     }
 
-    private VerticalPanel createButtonsPane() {
+    private Panel createButtonsPane() {
         Button bVote = new Button("Оценить");
         bVote.addClickHandler(new VoteClickHandler("voted"));
 
@@ -146,13 +159,17 @@ public class ExpertFrame implements EntryPoint {
         Button bConnected = new Button("Я являюсь заинтересованным лицом");
         bConnected.addClickHandler(new VoteClickHandler("connected"));
 
-        VerticalPanel btnPanel = new VerticalPanel();
-        btnPanel.setWidth("100%");
-        btnPanel.setHorizontalAlignment(HorizontalPanel.ALIGN_CENTER);
+        HorizontalPanel btnPanel = new HorizontalPanel();
         btnPanel.add(bVote);
         btnPanel.add(bRefused);
         btnPanel.add(bConnected);
-        return btnPanel;
+
+        VerticalPanel pane = new VerticalPanel();
+        pane.setWidth("100%");
+        pane.setHorizontalAlignment(HorizontalPanel.ALIGN_CENTER);
+        pane.add(btnPanel);
+
+        return pane;
     }
 
     private void setManePane(VerticalPanel manePane) {

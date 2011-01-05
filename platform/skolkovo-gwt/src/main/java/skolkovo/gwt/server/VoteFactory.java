@@ -14,8 +14,8 @@ public class VoteFactory {
         gwtVoteInfo.projectClaimer = emptyIfNull(voteInfo.projectClaimer);
         gwtVoteInfo.projectName = emptyIfNull(voteInfo.projectName);
         gwtVoteInfo.projectCluster = emptyIfNull(voteInfo.projectCluster);
-        gwtVoteInfo.voteDone = voteInfo.voteDone;
-        gwtVoteInfo.voteResult = voteInfo.voteResult;
+        gwtVoteInfo.voteResult = emptyIfNull(voteInfo.voteResult);
+        gwtVoteInfo.voteDone = !gwtVoteInfo.voteResult.trim().isEmpty();
         gwtVoteInfo.inCluster = voteInfo.inCluster;
         gwtVoteInfo.innovative = voteInfo.innovative;
         gwtVoteInfo.innovativeComment = emptyIfNull(voteInfo.innovativeComment);

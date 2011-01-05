@@ -37,6 +37,13 @@ public class StaticCustomClass extends ConcreteCustomClass implements StaticClas
         throw new RuntimeException("sid not found");
     }
 
+    public String getSID(int id) {
+        for(int i=0;i<ids.length;i++)
+            if(ids[i] == id)
+                return sids[i];
+        throw new RuntimeException("id not found");
+    }
+
     public void fillIDs(DataSession session, LP name, LP classSID, Map<String, StaticCustomClass> usedSIds, Set<Integer> usedIds) throws SQLException {
         StaticCustomClass usedClass;
         for(int i = 0;i<sids.length;i++) {
