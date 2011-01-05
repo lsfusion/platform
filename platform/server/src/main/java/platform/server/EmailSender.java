@@ -96,7 +96,7 @@ public class EmailSender {
             message.setFrom();
             message.setSentDate(new java.util.Date());
             setRecipients(emails);
-            message.setSubject(subject);
+            message.setSubject(subject, "utf-8");
 
             String result = "";
             BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(htmlFilePath)));
