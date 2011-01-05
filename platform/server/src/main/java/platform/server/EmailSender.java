@@ -20,14 +20,17 @@ import java.util.Map;
 import java.util.Properties;
 
 public class EmailSender {
-    String smtpHost = "169.254.1.6";
-    String fromAddress = "luxsoft@adsl.by";
+    private final String smtpHost;
+    private final String fromAddress;
     Session mailSession;
     MimeMessage message;
     Multipart mp = new MimeMultipart();
     String emails[];
 
-    public EmailSender(String... targets) {
+    public EmailSender(String smtpHost, String fromAddress, String... targets) {
+        this.smtpHost = smtpHost;
+        this.fromAddress = fromAddress; 
+
         emails = targets;
 
         Properties mailProps = new Properties();

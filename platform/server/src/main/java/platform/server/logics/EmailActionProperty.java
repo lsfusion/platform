@@ -7,10 +7,12 @@ import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import platform.base.BaseUtils;
 import platform.base.ByteArray;
 import platform.interop.action.ClientAction;
+import platform.interop.action.MessageClientAction;
 import platform.interop.form.RemoteFormInterface;
 import platform.server.EmailSender;
 import platform.server.auth.PolicyManager;
 import platform.server.session.DataSession;
+import platform.server.session.Modifier;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
@@ -46,6 +48,8 @@ public class EmailActionProperty extends ActionProperty {
         this.subject = mailSubject;
         forms = new ArrayList<FormEntity>();
         this.BL = BL;
+
+        askConfirm = true;
     }
 
     public <R extends PropertyInterface> void addRecepient(PropertyMapImplement<R, ClassPropertyInterface> recepient) {
@@ -77,9 +81,9 @@ public class EmailActionProperty extends ActionProperty {
                 else
                     remoteForm = BL.createForm(session, forms.get(i), formObjects);
 
-                    ReportGenerator_tmp report = new ReportGenerator_tmp(remoteForm, true, files);
-                    JasperPrint print = report.createReport();
-                    print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
+                ReportGenerator_tmp report = new ReportGenerator_tmp(remoteForm, true, files);
+                JasperPrint print = report.createReport();
+                print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
 
                 File file = File.createTempFile("lsfReport", ".html");
                 if (i == 0) {
@@ -95,15 +99,23 @@ public class EmailActionProperty extends ActionProperty {
                 htmlExporter.exportReport();
             }
 
+            Modifier<?> modifier = executeForm!=null? executeForm.form :session.modifier;
+
             List<String> recepientEmails = new ArrayList<String>();
             for(PropertyMapImplement<?, ClassPropertyInterface> recepient : recepients) {
-                String recepientEmail = (String) recepient.read(session, keys, executeForm!=null? executeForm.form :session.modifier);
+                String recepientEmail = (String) recepient.read(session, keys, modifier);
                 if(recepientEmail!=null)
                     recepientEmails.add(recepientEmail);
             }
 
-            EmailSender sender = new EmailSender(recepientEmails.toArray(new String[recepientEmails.size()]));
-            sender.sendMail(subject, embeddedFilePath, files, reportPaths);
+            String smtpHost = (String) BL.smtpHost.read(session.sql, modifier, session.env);
+            String fromAddress = (String) BL.fromAddress.read(session.sql, modifier, session.env);
+            if(smtpHost==null || fromAddress==null)
+                actions.add(new MessageClientAction("Не задан SMTP хост или адрес отправителя. Письма отосланы не будут.","Отсылка писем"));
+            else {
+                EmailSender sender = new EmailSender(smtpHost.trim(), fromAddress.trim(), recepientEmails.toArray(new String[recepientEmails.size()]));
+                sender.sendMail(subject, embeddedFilePath, files, reportPaths);
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

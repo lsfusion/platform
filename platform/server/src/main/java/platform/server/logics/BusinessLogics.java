@@ -523,6 +523,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP objectByName;
     public LP seekObjectName;
 
+    protected LP smtpHost;
+    protected LP fromAddress;
+
     private final ConcreteValueClass classSIDValueClass = StringClass.get(250);
 
     public static int genSystemClassID(int id) {
@@ -953,6 +956,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         objectByName = addMGProp(idGroup, "objectByName", "Объект (Имя)", object(baseClass.named), name, 1);
         seekObjectName = addJProp(true, "Поиск объекта", addSAProp(null), objectByName, 1);
+
+        smtpHost = addDProp("smtpHost", "SMTP хост", StringClass.get(50));
+        fromAddress = addDProp("fromAddress", "Адрес отправителя", StringClass.get(50));
     }
 
     private void initBaseTables() {
@@ -997,6 +1003,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     void initBaseNavigators() {
         NavigatorElement policy = new NavigatorElement(baseElement, 50000, "Администрирование");
         addFormEntity(new UserPolicyFormEntity(policy, 50100));
+        addFormEntity(new AdminFormEntity(policy, 50200));        
     }
 
     protected SecurityPolicy permitAllPolicy, readOnlyPolicy;
@@ -1101,6 +1108,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             PropertyDrawEntity loginDraw = getPropertyDraw(userLogin, objUser.groupTo);
             balanceDraw.addColumnGroupObject(objUser.groupTo);
             balanceDraw.setPropertyCaption(loginDraw.propertyObject);
+        }
+    }
+
+    private class AdminFormEntity extends FormEntity {
+
+        private AdminFormEntity(NavigatorElement parent, int iID) {
+            super(parent, iID, "Глобальные параметры");
+
+            addPropertyDraw(new LP[]{smtpHost, fromAddress});
         }
     }
 

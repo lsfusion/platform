@@ -298,7 +298,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
         if(check!=null)
             return check;
 
-        write(BL);
+        write(BL, new ArrayList<ClientAction>());
         return null;
     }
 
@@ -352,18 +352,23 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
         return null;
     }
 
-    public void write(final BusinessLogics<?> BL) throws SQLException {
-        // до start transaction
-        if(applyObject==null)
-            applyObject = addObject(sessionClass, modifier);
+    public void executeDerived(final BusinessLogics<?> BL, List<ClientAction> actions) throws SQLException {
 
         for(ExecuteProperty property : BL.getExecuteDerivedProperties()) {
             PropertyChange<ClassPropertyInterface> propertyChange = property.derivedChange.getDataChanges(modifier).get(property);
             if(propertyChange!=null)
                 for(Map.Entry<Map<ClassPropertyInterface,DataObject>,Map<String,ObjectValue>> executeRow :
                         propertyChange.getQuery().executeClasses(sql, env, baseClass).entrySet())
-                    property.execute(executeRow.getKey(), executeRow.getValue().get("value"), this, new ArrayList<ClientAction>(), null, null);
-        }
+                    property.execute(executeRow.getKey(), executeRow.getValue().get("value"), this, actions, null, null);
+        }        
+    }
+
+    public void write(final BusinessLogics<?> BL, List<ClientAction> actions) throws SQLException {
+        // до start transaction
+        if(applyObject==null)
+            applyObject = addObject(sessionClass, modifier);
+
+        executeDerived(BL, actions);
 
         sql.startTransaction();
 

@@ -428,28 +428,27 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     public void applyActionChanges(List<ClientAction> actions) throws SQLException {
-
-        String check = checkApply();
-        if (check != null)
-            actions.add(new ResultClientAction(check, true));
-        else {
-            commitApply();
-
-            actions.add(new ResultClientAction("Изменения были удачно записаны...", false));
-        }
+        commitApply(checkApply(), actions);
     }
 
     public String checkApply() throws SQLException {
         return session.check(BL);
     }
 
-    public void commitApply() throws SQLException {
-        session.write(BL);
+    public void commitApply(String checkResult, List<ClientAction> actions) throws SQLException {
+        if (checkResult != null) {
+            actions.add(new ResultClientAction(checkResult, true));
+            return;
+        }
+
+        session.write(BL, actions);
 
         refreshData();
         addObjectOnTransaction();
 
         dataChanged = true; // временно пока applyChanges синхронен, для того чтобы пересылался факт изменения данных
+
+        actions.add(new ResultClientAction("Изменения были удачно записаны...", false));
     }
 
     public void cancelChanges() throws SQLException {

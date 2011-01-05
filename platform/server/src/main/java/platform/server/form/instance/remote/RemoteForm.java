@@ -448,14 +448,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public void applyClientChanges(Object clientResult) throws RemoteException {
-        String checkClientApply = form.entity.checkClientApply(clientResult);
         try {
-            if (checkClientApply != null) {
-                actions.add(new ResultClientAction(checkClientApply, true));
-            } else {
-                form.commitApply();
-                actions.add(new ResultClientAction("Изменения были удачно записаны...", false));
-            }
+            form.commitApply(form.entity.checkClientApply(clientResult), actions);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

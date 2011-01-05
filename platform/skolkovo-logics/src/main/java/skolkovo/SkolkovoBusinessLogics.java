@@ -5,6 +5,7 @@ import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.action.ClientAction;
+import platform.interop.action.MessageClientAction;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.auth.User;
 import platform.server.classes.*;
@@ -588,7 +589,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             Integer required = nvl((Integer) requiredQuantity.read(session), 0);
             if (required > experts.size()) {
-                logger.info("not enough experts");
+                actions.add(new MessageClientAction("Недостаточно экспертов по кластеру", "Генерация заседания"));
                 return;
             }
 
