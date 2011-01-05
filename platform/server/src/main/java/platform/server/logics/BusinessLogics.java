@@ -749,7 +749,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public class ObjectValuePropertySet extends MapClassesPropertySet<ValueClass, ObjectValueProperty> {
         private Map<String, LP> sidToLP = new HashMap<String, LP>();
-        private static final String prefix = "ObjectValueProperty_";
+        private static final String prefix = "objectValueProperty_";
 
         @Override
         protected boolean isInInterface(List<ValueClassWrapper> classes) {

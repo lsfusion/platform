@@ -165,9 +165,13 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     protected ObjectEntity addSingleGroupObject(ValueClass baseClass, String caption, Object... groups) {
+        return addSingleGroupObject(genID(), baseClass, caption, groups);
+    }
 
-        GroupObjectEntity groupObject = new GroupObjectEntity(genID());
-        ObjectEntity object = new ObjectEntity(genID(), baseClass, caption);
+    protected ObjectEntity addSingleGroupObject(int ID, ValueClass baseClass, String caption, Object... groups) {
+
+        GroupObjectEntity groupObject = new GroupObjectEntity(ID);
+        ObjectEntity object = new ObjectEntity(ID, baseClass, caption);
         groupObject.add(object);
         addGroup(groupObject);
 
@@ -178,6 +182,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     protected ObjectEntity addSingleGroupObject(ValueClass baseClass, Object... groups) {
         return addSingleGroupObject(baseClass, null, groups);
+    }
+
+    protected ObjectEntity addSingleGroupObject(int ID, ValueClass baseClass, Object... groups) {
+        return addSingleGroupObject(ID, baseClass, null, groups);
     }
 
     protected void addTreeGroupObject(GroupObjectEntity... tGroups) {

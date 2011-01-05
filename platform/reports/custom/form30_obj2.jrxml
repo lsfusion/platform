@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="obj2" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.0"/>
-	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="119"/>
+	<property name="ireport.x" value="18"/>
+	<property name="ireport.y" value="122"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -23,7 +23,7 @@
 	<group name="textGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{obj2})+" "+String.valueOf($F{obj3})]]></groupExpression>
 		<groupHeader>
-			<band height="259" splitType="Prevent">
+			<band height="261" splitType="Prevent">
 				<textField>
 					<reportElement x="31" y="95" width="712" height="100"/>
 					<textElement>
@@ -48,19 +48,34 @@
 			</band>
 		</groupHeader>
 		<groupFooter>
-			<band height="300">
+			<band height="318">
 				<staticText>
-					<reportElement x="31" y="25" width="712" height="256"/>
+					<reportElement x="31" y="25" width="712" height="112"/>
 					<textElement>
 						<font size="20"/>
 					</textElement>
 					<text><![CDATA[Согласно положению об экспертных коллегиях Фонда, установленный срок проведения заочного заседания экспертной коллегии – 5 дней.
 Для голосования по проекту, или отказа от участия в заседании, пожалуйста перейдите по ссылке
-(уникальная ссылка).
-Во время голосования Вам понадобиться приложить комментарии, согласно положению, время сессии приложения для голосования эксперта ограничено 1 час. Пожалуйста подготовьте Ваши комментарии заранее.
+
+]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="31" y="185" width="712" height="133"/>
+					<textElement>
+						<font size="20"/>
+					</textElement>
+					<text><![CDATA[Во время голосования Вам понадобиться приложить комментарии, согласно положению, время сессии приложения для голосования эксперта ограничено 1 час. Пожалуйста подготовьте Ваши комментарии заранее.
 С уважением,
 Вице – президент, руководитель аппарата Фонда]]></text>
 				</staticText>
+				<textField hyperlinkType="Reference" hyperlinkTarget="Blank">
+					<reportElement x="31" y="137" width="712" height="48" forecolor="#3399FF"/>
+					<textElement>
+						<font size="20"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Ссылка для голосования"]]></textFieldExpression>
+					<hyperlinkReferenceExpression><![CDATA["http://81.25.47.234:9090/skolkovo/expert.html?voteId="+$F{obj2}]]></hyperlinkReferenceExpression>
+				</textField>
 			</band>
 		</groupFooter>
 	</group>

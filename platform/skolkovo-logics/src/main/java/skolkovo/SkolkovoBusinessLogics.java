@@ -392,9 +392,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ExpertLetterFormEntity(NavigatorElement parent, int iID) {
             super(parent, iID, "Письмо о заседании");
 
-            gobjExpertVote = new GroupObjectEntity(genID());
-            objExpert = new ObjectEntity(genID(), expert, "Эксперт");
-            objVote = new ObjectEntity(genID(), vote, "Заседание");
+            gobjExpertVote = new GroupObjectEntity(2);
+            objExpert = new ObjectEntity(2, expert, "Эксперт");
+            objVote = new ObjectEntity(3, vote, "Заседание");
             gobjExpertVote.add(objExpert);
             gobjExpertVote.add(objVote);
             addGroup(gobjExpertVote);
@@ -404,7 +404,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             addPropertyDraw(objVote, nameClaimerVote, nameProjectVote);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
 
-            objDocument = addSingleGroupObject(document, name, fileDocument);
+            objDocument = addSingleGroupObject(8, document, name, fileDocument);
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectDocument, objDocument), Compare.EQUALS, addPropertyObject(projectVote, objVote)));
 
             addEAForm(emailLetterExpertVote, this, objExpert, 1, objVote, 2);
