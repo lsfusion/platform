@@ -10,7 +10,7 @@
 		</box>
 	</style>
 	<field name="obj8" class="java.lang.Integer"/>
-	<field name="property359" class="java.lang.String"/>
+	<field name="docName" class="java.lang.String"/>
 	<field name="fileDocument" class="java.lang.String"/>
 	<detail>
 		<band height="45">
@@ -19,7 +19,7 @@
 				<textElement textAlignment="Left">
 					<font size="20"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{property359}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{docName}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="398" y="0" width="201" height="45"/>

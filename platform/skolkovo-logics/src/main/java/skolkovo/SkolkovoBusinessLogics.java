@@ -404,7 +404,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             addPropertyDraw(objVote, nameClaimerVote, nameProjectVote);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
 
-            objDocument = addSingleGroupObject(8, document, name, fileDocument);
+            objDocument = addSingleGroupObject(8, document, fileDocument);
+            addPropertyDraw(name, objDocument).setSID("docName");
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectDocument, objDocument), Compare.EQUALS, addPropertyObject(projectVote, objVote)));
 
             addEAForm(emailLetterExpertVote, this, objExpert, 1, objVote, 2);

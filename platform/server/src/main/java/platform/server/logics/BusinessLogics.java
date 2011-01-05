@@ -920,7 +920,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         inUserRole = addDProp(baseGroup, "inUserRole", "Вкл.", LogicalClass.instance, customUser, userRole);
         inLoginSID = addJProp("inLoginSID", true, "Логину назначена роль", inUserRole, loginToUser, 1, sidToRole, 2);
 
-        name = addCUProp(baseGroup, "Имя", addDProp("name", "Имя", InsensitiveStringClass.get(60), baseClass.named),
+        name = addCUProp(baseGroup, "commonName", "Имя", addDProp("name", "Имя", InsensitiveStringClass.get(60), baseClass.named),
                 addJProp(insensetiveString2, userFirstName, 1, userLastName, 1));
 
         nameToPolicy = addCGProp(null, "nameToPolicy", "Политика", object(policy), name, name, 1);
