@@ -304,12 +304,11 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     }
 
     protected void initNavigators() throws JRException, FileNotFoundException {
-        ExpertLetterFormEntity letterForm = new ExpertLetterFormEntity(baseElement, 30);
-        addFormEntity(letterForm);
-
         addFormEntity(new ProjectFormEntity(baseElement, 10));
         addFormEntity(new ExpertFormEntity(baseElement, 15));
         addFormEntity(new GlobalFormEntity(baseElement, 20));
+
+        addFormEntity(new ExpertLetterFormEntity(baseElement, 30));
     }
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
@@ -436,7 +435,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private GroupObjectEntity gobjExpertVote;
 
         private ExpertLetterFormEntity(NavigatorElement parent, int iID) {
-            super(parent, iID, "Письмо о заседании");
+            super(parent, iID, "Письмо о заседании", true);
 
             gobjExpertVote = new GroupObjectEntity(2);
             objExpert = new ObjectEntity(2, expert, "Эксперт");
