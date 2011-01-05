@@ -99,8 +99,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                                     new String[]{"Отказался", "Аффилирован", "Проголосовал"});
         
         projectStatus = addStaticClass("projectStatus", "Статус проекта",
-                                       new String[]{"unknown", "needExtraVote", "inProgress", "succeeded", "valued"},
-                                       new String[]{"Неизвестный статус", "Требуется заседание", "Идет заседание", "Достаточно голосов", "Произведена оценка"});
+                                       new String[]{"unknown", "needExtraVote", "inProgress", "succeeded", "accepted", "rejected"},
+                                       new String[]{"Неизвестный статус", "Требуется заседание", "Идет заседание", "Достаточно голосов", "Оценен положительно", "Оценен отрицательно"});
     }
 
     LP projectVote, nameProjectVote;
@@ -135,17 +135,26 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP completeExpertVote;
     LP completeCommentExpertVote;
 
-    LP projectExpertVote;
     LP quantityDoneVote;
+    LP quantityInClusterVote;
+    LP quantityInnovativeVote;
+    LP quantityForeignVote;
+    LP acceptedInClusterVote;
+    LP acceptedInnovativeVote;
+    LP acceptedForeignVote;
+
+    LP acceptedVote;
     LP succeededVote;
     LP voteSucceededProject;
     LP noCurrentVoteProject;
     LP voteValuedProject;
+    LP acceptedProject;
+    LP voteRejectedProject;
     LP needExtraVoteProject;
 
     LP emailLetterExpertVote;
 
-    LP generateVote;
+    LP generateVoteProject, hideGenerateVoteProject;
 
     LP expertLogin;
 
@@ -209,16 +218,45 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         completeExpertVote = addDProp(voteResultCheckGroup, "completeExpertVote", "Полнота информ.", IntegerClass.instance, expert, vote);
         completeCommentExpertVote = addDProp(voteResultCommentGroup, "completeCommentExpertVote", "Полнота информации (комм.)", TextClass.instance, expert, vote);
 
-        quantityDoneVote = addSGProp(baseGroup, "quantityDoneVote", "Проголосовало", addJProp(and1, addCProp(IntegerClass.instance, 1), doneExpertVote, 1, 2), 2); // сколько экспертов высказалось
-        succeededVote = addJProp(baseGroup, "succeededVote", "Состоялось", groeq2, quantityDoneVote, 1, limitExperts); // достаточно экспертов
+        quantityDoneVote = addSGProp(voteResultGroup, "quantityDoneVote", "Проголосовало",
+                                     addJProp(and1, addCProp(IntegerClass.instance, 1), doneExpertVote, 1, 2), 2); // сколько экспертов высказалось
+
+        quantityInClusterVote = addSGProp(voteResultGroup, "quantityInClusterVote", "Соотв-ие кластеру (голоса)",
+                                     addJProp(and1, addCProp(IntegerClass.instance, 1), inClusterExpertVote, 1, 2), 2); // сколько экспертов высказалось
+
+        quantityInnovativeVote = addSGProp(voteResultGroup, "quantityInnovativeVote", "Инновац. (голоса)",
+                                     addJProp(and1, addCProp(IntegerClass.instance, 1), innovativeExpertVote, 1, 2), 2); // сколько экспертов высказалось
+
+        quantityForeignVote = addSGProp(voteResultGroup, "quantityForeignVote", "Иностр. специалист (голоса)",
+                                     addJProp(and1, addCProp(IntegerClass.instance, 1), innovativeExpertVote, 1, 2), 2); // сколько экспертов высказалось
+
+        acceptedInClusterVote = addJProp(voteResultGroup, "acceptedInClusterVote", "Соотв-ие кластеру", greater2,
+                                          addJProp(multiplyIntegerBy2, quantityInClusterVote, 1), 1,
+                                          quantityDoneVote, 1);
+
+        acceptedInnovativeVote = addJProp(voteResultGroup, "acceptedInnovativeVote", "Инновац.", greater2,
+                                           addJProp(multiplyIntegerBy2, quantityInnovativeVote, 1), 1,
+                                           quantityDoneVote, 1);
+
+        acceptedForeignVote = addJProp(voteResultGroup, "acceptedForeignVote", "Иностр. специалист", greater2,
+                                        addJProp(multiplyIntegerBy2, quantityInnovativeVote, 1), 1,
+                                        quantityDoneVote, 1);
+
+        acceptedVote = addJProp(voteResultGroup, "acceptedVote", "Положительно", and(false, false),
+                                acceptedInClusterVote, 1, acceptedInnovativeVote, 1, acceptedForeignVote, 1);
+
+        succeededVote = addJProp(voteResultGroup, "succeededVote", "Состоялось", groeq2, quantityDoneVote, 1, limitExperts); // достаточно экспертов
 
         voteSucceededProject = addCGProp(idGroup, false, "voteSucceededProject", "Успешное заседание (ИД)",
                 addJProp(and1, 1, succeededVote, 1), succeededVote,
                 projectVote, 1);
 
-        noCurrentVoteProject = addJProp("noCurrentVoteProject", "Нет текущих заседаний", andNot1, is(project), 1, voteInProgressProject, 1); // нету текущих заседаний
+        noCurrentVoteProject = addJProp(baseGroup, "noCurrentVoteProject", "Нет текущих заседаний", andNot1, is(project), 1, voteInProgressProject, 1); // нету текущих заседаний
 
         voteValuedProject = addJProp(idGroup, "voteValuedProject", "Оцененнное заседание (ИД)", and1, voteSucceededProject, 1, noCurrentVoteProject, 1); // нет открытого заседания и есть состояшееся заседания
+
+        acceptedProject = addJProp(baseGroup, "acceptedProject", "Оценен положительно", acceptedVote, voteValuedProject, 1);
+        voteRejectedProject = addJProp(baseGroup, "rejectedProject", "Оценен отрицательно", andNot1, voteValuedProject, 1, acceptedVote, 1);
 
         needExtraVoteProject = addJProp("needExtraVoteProject", "Треб. заседание", and(true, true),
                                         is(project), 1,
@@ -231,23 +269,26 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         addConstraint(addJProp("Количество экспертов не соответствует требуемому", andNot1, is(vote), 1, addJProp(equals2, requiredQuantity,
                                                                                                                   addSGProp(addJProp(and1, addCProp(IntegerClass.instance, 1), inExpertVote, 2, 1), 1), 1), 1), false);
 
-        generateVote = addAProp(actionGroup, new GenerateVoteActionProperty());
-        generateVote.setDerivedChange(addCProp(ActionClass.instance, true), needExtraVoteProject, 1);
+        generateVoteProject = addAProp(actionGroup, new GenerateVoteActionProperty());
+        hideGenerateVoteProject = addHideCaptionProp(privateGroup, "Сгенерировать заседание", generateVoteProject, needExtraVoteProject);
+        generateVoteProject.setDerivedChange(addCProp(ActionClass.instance, true), needExtraVoteProject, 1);
 
         expertLogin = addCGProp(baseGroup, "expertLogin", "Эксперт (ИД)", object(expert), userLogin, userLogin, 1);
 
         addCUProp("userRole", true, "Роль пользователя", addCProp(StringClass.get(30), "expert", expert));
 
         statusProject = addIfElseUProp(idGroup, "statusProject", "Статус (ИД)",
-                                  addCProp(projectStatus, "valued", project),
-                                  addIfElseUProp(addCProp(projectStatus, "succeeded", project),
-                                          addIfElseUProp(addCProp(projectStatus, "inProgress", project),
-                                                  addIfElseUProp(addCProp(projectStatus, "needExtraVote", project),
-                                                                 addCProp(projectStatus, "unknown", project),
-                                                                 needExtraVoteProject, 1),
-                                                         voteInProgressProject, 1),
-                                                 voteSucceededProject, 1),
-                                  voteValuedProject, 1);
+                                  addCProp(projectStatus, "accepted", project),
+                                  addIfElseUProp(addCProp(projectStatus, "rejected", project),
+                                                 addIfElseUProp(addCProp(projectStatus, "succeeded", project),
+                                                                addIfElseUProp(addCProp(projectStatus, "inProgress", project),
+                                                                               addIfElseUProp(addCProp(projectStatus, "needExtraVote", project),
+                                                                                              addCProp(projectStatus, "unknown", project),
+                                                                                              needExtraVoteProject, 1),
+                                                                               voteInProgressProject, 1),
+                                                                voteSucceededProject, 1),
+                                                 voteRejectedProject, 1),
+                                  acceptedProject, 1);
         nameStatusProject = addJProp(baseGroup, "nameStatusProject", "Статус", name, statusProject, 1);
 
         emailLetterExpertVote = addEAProp(baseGroup, "Отослать письмо", "Тест письма", expert, vote);
@@ -284,10 +325,13 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ProjectFormEntity(NavigatorElement parent, int iID) {
             super(parent, iID, "Реестр проектов");
 
-            objProject = addSingleGroupObject(project, objectValue, date, name, nameClusterProject, nameClaimerProject, nameStatusProject, generateVote);
+            objProject = addSingleGroupObject(project, objectValue, date, name, nameClusterProject, nameClaimerProject, nameStatusProject, generateVoteProject);
             addObjectActions(this, objProject);
 
-            objVote = addSingleGroupObject(vote, objectValue, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote, delete);
+            getPropertyDraw(generateVoteProject).forceViewType = ClassViewType.PANEL;
+            getPropertyDraw(generateVoteProject).propertyCaption = addPropertyObject(hideGenerateVoteProject, objProject);
+
+            objVote = addSingleGroupObject(vote, objectValue, dateStartVote, dateEndVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, delete);
             objVote.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
 
             objDocument = addSingleGroupObject(document, objectValue, name, fileDocument);
@@ -326,6 +370,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             design.addIntersection(design.getGroupObjectContainer(objVote.groupTo),
                                    design.getGroupObjectContainer(objDocument.groupTo),
                                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            design.get(objVote.groupTo).grid.constraints.fillHorizontal = 1.5;
 
             design.get(objProject.groupTo).grid.constraints.fillVertical = 1.5;
             design.get(objExpert.groupTo).grid.constraints.fillVertical = 1.5;
