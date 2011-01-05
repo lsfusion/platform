@@ -38,18 +38,18 @@ public class ExpertFrame implements EntryPoint {
     private void update() {
         int voteId = getVoteId();
         if (voteId == -1) {
-            showErrorPage();
+            showErrorPage(null);
             return;
         }
 
         ExpertService.App.getInstance().getVoteInfo(voteId, new AsyncCallback<GwtVoteInfo>() {
             public void onFailure(Throwable caught) {
-                showErrorPage();
+                showErrorPage(caught);
             }
 
             public void onSuccess(GwtVoteInfo vi) {
                 if (vi == null) {
-                    showErrorPage();
+                    showErrorPage(null);
                     return;
                 }
 
@@ -101,6 +101,7 @@ public class ExpertFrame implements EntryPoint {
                     taInnovativeComment.setEnabled(!vi.voteDone);
 
                     cbForeign = new CheckBox("Проект предполагает участие иностранного (не являющегося гражданином Российской Федерации) специалиста, который имеет значительный авторитет в инвестиционной и/или исследовательской среде");
+                    cbForeign.setValue(vi.foreign);
                     cbForeign.setEnabled(!vi.voteDone);
 
                     lbCompetent = new Label("Оцените Вашу компетенцию по теме проекта (от 1 до 5 баллов)");
@@ -187,7 +188,7 @@ public class ExpertFrame implements EntryPoint {
         RootPanel.get().add(contentPane);
     }
 
-    private void showErrorPage() {
+    private void showErrorPage(Throwable caught) {
         VerticalPanel manePane = new VerticalPanel();
 
         HTMLPanel caption = new HTMLPanel(
@@ -215,12 +216,15 @@ public class ExpertFrame implements EntryPoint {
         }
 
         public void onClick(ClickEvent event) {
+            if (!Window.confirm("Вы уверены в своём выборе? Вы не сможете изменить его впоследствии.")) {
+                return;
+            }
+
             RootPanel.get().clear();
 
             GwtVoteInfo vi = new GwtVoteInfo();
 
             vi.voteResult = voteResult;
-
             vi.inCluster = cbInCluster.getValue();
             vi.innovative = cbInnovative.getValue();
             vi.innovativeComment = taInnovativeComment.getText();
@@ -231,13 +235,13 @@ public class ExpertFrame implements EntryPoint {
 
             int voteId = getVoteId();
             if (voteId == -1) {
-                showErrorPage();
+                showErrorPage(null);
                 return;
             }
 
             ExpertService.App.getInstance().setVoteInfo(vi, getVoteId(), new AsyncCallback<Void>() {
                 public void onFailure(Throwable caught) {
-                    showErrorPage();
+                    showErrorPage(caught);
                 }
 
                 public void onSuccess(Void result) {

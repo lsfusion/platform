@@ -8,6 +8,16 @@
     <servlet>
         <servlet-name>ProjectsService</servlet-name>
         <servlet-class>skolkovo.gwt.server.ExpertServiceImpl</servlet-class>
+        <init-param>
+            <description>Сервер, на котором работает сервер приложения.</description>
+            <param-name>serverHost</param-name>
+            <param-value>localhost</param-value>
+        </init-param>
+        <init-param>
+            <description>Порт, на котором работает сервер приложения.</description>
+            <param-name>serverPort</param-name>
+            <param-value>7652</param-value>
+        </init-param>
     </servlet>
     <servlet-mapping>
         <servlet-name>ProjectsService</servlet-name>

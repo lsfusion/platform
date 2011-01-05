@@ -9,6 +9,7 @@ import java.rmi.RemoteException;
 import java.security.Principal;
 
 public class ExpertServiceImpl extends RemoteServiceServlet implements ExpertService {
+
     public GwtVoteInfo getVoteInfo(int voteId) {
         try {
             Principal user = getThreadLocalRequest().getUserPrincipal();
@@ -16,8 +17,7 @@ public class ExpertServiceImpl extends RemoteServiceServlet implements ExpertSer
                 return null;
             }
 
-            SkolkovoRemoteInterface logics = SkolkovoLogicsClient.getInstance().getLogics();
-            return VoteFactory.toGwtVoteInfo(logics.getVoteInfo(user.getName(), voteId));
+            return VoteFactory.toGwtVoteInfo(getLogics().getVoteInfo(user.getName(), voteId));
         } catch (RemoteException e) {
             System.err.println("Exception while getting vote info.");
             e.printStackTrace();
@@ -30,12 +30,17 @@ public class ExpertServiceImpl extends RemoteServiceServlet implements ExpertSer
         try {
             Principal user = getThreadLocalRequest().getUserPrincipal();
             if (user != null) {
-                SkolkovoRemoteInterface logics = SkolkovoLogicsClient.getInstance().getLogics();
-                logics.setVoteInfo(user.getName(), voteId, VoteFactory.toVoteInfo(voteInfo));
+                getLogics().setVoteInfo(user.getName(), voteId, VoteFactory.toVoteInfo(voteInfo));
             }
         } catch (RemoteException e) {
             System.err.println("Exception while setting vote info.");
             e.printStackTrace();
         }
+    }
+
+    private SkolkovoRemoteInterface getLogics() {
+        String serverHost = getServletContext().getInitParameter("serverHost");
+        String serverPort = getServletContext().getInitParameter("serverPort");
+        return SkolkovoLogicsClient.getInstance().getLogics(serverHost, serverPort);
     }
 }

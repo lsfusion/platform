@@ -20,7 +20,7 @@ public class VoteFactory {
         gwtVoteInfo.innovative = voteInfo.innovative;
         gwtVoteInfo.innovativeComment = emptyIfNull(voteInfo.innovativeComment);
         gwtVoteInfo.foreign = voteInfo.foreign;
-        gwtVoteInfo.competent = max(1, min(voteInfo.complete, 5));
+        gwtVoteInfo.competent = max(1, min(voteInfo.competent, 5));
         gwtVoteInfo.complete = max(1, min(voteInfo.complete, 5));
         gwtVoteInfo.completeComment = emptyIfNull(voteInfo.completeComment);
 
@@ -44,7 +44,7 @@ public class VoteFactory {
         voteInfo.innovative = gwtVoteInfo.innovative;
         voteInfo.innovativeComment = gwtVoteInfo.innovativeComment;
         voteInfo.foreign = gwtVoteInfo.foreign;
-        voteInfo.competent = max(1, min(gwtVoteInfo.complete, 5));
+        voteInfo.competent = max(1, min(gwtVoteInfo.competent, 5));
         voteInfo.complete = max(1, min(gwtVoteInfo.complete, 5));
         voteInfo.completeComment = gwtVoteInfo.completeComment;
 

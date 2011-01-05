@@ -501,33 +501,35 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     public VoteInfo getVoteInfo(String login, int voteId) throws RemoteException {
 
         try {
-
             DataSession session = createSession();
-            VoteObjects vo = new VoteObjects(session, login, voteId);
+            try {
+                VoteObjects vo = new VoteObjects(session, login, voteId);
 
-            VoteInfo voteInfo = new VoteInfo();
-            voteInfo.expertName = (String) name.read(session, vo.expertObj);
-            voteInfo.projectName = (String) name.read(session, vo.projectObj);
-            voteInfo.projectClaimer = (String) nameClaimerProject.read(session, vo.projectObj);
-            voteInfo.projectCluster = (String) nameClusterProject.read(session, vo.projectObj);
+                VoteInfo voteInfo = new VoteInfo();
+                voteInfo.expertName = (String) name.read(session, vo.expertObj);
+                voteInfo.projectName = (String) name.read(session, vo.projectObj);
+                voteInfo.projectClaimer = (String) nameClaimerProject.read(session, vo.projectObj);
+                voteInfo.projectCluster = (String) nameClusterProject.read(session, vo.projectObj);
 
-            voteInfo.inCluster = nvl((Boolean) inClusterExpertVote.read(session, vo.expertObj, vo.voteObj), false);
-            voteInfo.innovative = nvl((Boolean) innovativeExpertVote.read(session, vo.expertObj, vo.voteObj), false);
-            voteInfo.innovativeComment = (String) innovativeCommentExpertVote.read(session, vo.expertObj, vo.voteObj);
-            voteInfo.foreign = nvl((Boolean) foreignExpertVote.read(session, vo.expertObj, vo.voteObj), false);
-            voteInfo.competent = nvl((Integer) competentExpertVote.read(session, vo.expertObj, vo.voteObj), 1);
-            voteInfo.complete = nvl((Integer) completeExpertVote.read(session, vo.expertObj, vo.voteObj), 1);
-            voteInfo.completeComment = (String) completeCommentExpertVote.read(session, vo.expertObj, vo.voteObj);
+                voteInfo.inCluster = nvl((Boolean) inClusterExpertVote.read(session, vo.expertObj, vo.voteObj), false);
+                voteInfo.innovative = nvl((Boolean) innovativeExpertVote.read(session, vo.expertObj, vo.voteObj), false);
+                voteInfo.innovativeComment = (String) innovativeCommentExpertVote.read(session, vo.expertObj, vo.voteObj);
+                voteInfo.foreign = nvl((Boolean) foreignExpertVote.read(session, vo.expertObj, vo.voteObj), false);
+                voteInfo.competent = nvl((Integer) competentExpertVote.read(session, vo.expertObj, vo.voteObj), 1);
+                voteInfo.complete = nvl((Integer) completeExpertVote.read(session, vo.expertObj, vo.voteObj), 1);
+                voteInfo.completeComment = (String) completeCommentExpertVote.read(session, vo.expertObj, vo.voteObj);
 
-            Integer vResult = (Integer) voteResultExpertVote.read(session, vo.expertObj, vo.voteObj);
-            if (vResult != null) {
-                voteInfo.voteResult = voteResult.getSID(vResult);
+                Integer vResult = (Integer) voteResultExpertVote.read(session, vo.expertObj, vo.voteObj);
+                if (vResult != null) {
+                    voteInfo.voteResult = voteResult.getSID(vResult);
+                }
+
+                voteInfo.voteDone = nvl((Boolean) doneExpertVote.read(session, vo.expertObj, vo.voteObj), false);
+
+                return voteInfo;
+            } finally {
+                session.close();
             }
-
-            voteInfo.voteDone = nvl((Boolean) doneExpertVote.read(session, vo.expertObj, vo.voteObj), false);
-
-            return voteInfo;
-
         } catch (Exception e) {
             e.printStackTrace();
             throw new RemoteException("Ошибка при считывании информации о проекте", e);
@@ -537,26 +539,28 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     public void setVoteInfo(String login, int voteId, VoteInfo voteInfo) throws RemoteException {
 
         try {
-
             DataSession session = createSession();
-            VoteObjects vo = new VoteObjects(session, login, voteId);
+            try {
+                VoteObjects vo = new VoteObjects(session, login, voteId);
 
-            voteResultExpertVote.execute(voteResult.getID(voteInfo.voteResult), session, vo.expertObj, vo.voteObj);
-            if (voteInfo.voteResult.equals("voted")) {
-                inClusterExpertVote.execute(voteInfo.inCluster, session, vo.expertObj, vo.voteObj);
-                innovativeExpertVote.execute(voteInfo.innovative, session, vo.expertObj, vo.voteObj);
-                innovativeCommentExpertVote.execute(voteInfo.innovativeComment, session, vo.expertObj, vo.voteObj);
-                foreignExpertVote.execute(voteInfo.foreign, session, vo.expertObj, vo.voteObj);
-                competentExpertVote.execute(voteInfo.competent, session, vo.expertObj, vo.voteObj);
-                completeExpertVote.execute(voteInfo.complete, session, vo.expertObj, vo.voteObj);
-                completeCommentExpertVote.execute(voteInfo.completeComment, session, vo.expertObj, vo.voteObj);
+                voteResultExpertVote.execute(voteResult.getID(voteInfo.voteResult), session, vo.expertObj, vo.voteObj);
+                if (voteInfo.voteResult.equals("voted")) {
+                    inClusterExpertVote.execute(voteInfo.inCluster, session, vo.expertObj, vo.voteObj);
+                    innovativeExpertVote.execute(voteInfo.innovative, session, vo.expertObj, vo.voteObj);
+                    innovativeCommentExpertVote.execute(voteInfo.innovativeComment, session, vo.expertObj, vo.voteObj);
+                    foreignExpertVote.execute(voteInfo.foreign, session, vo.expertObj, vo.voteObj);
+                    competentExpertVote.execute(voteInfo.competent, session, vo.expertObj, vo.voteObj);
+                    completeExpertVote.execute(voteInfo.complete, session, vo.expertObj, vo.voteObj);
+                    completeCommentExpertVote.execute(voteInfo.completeComment, session, vo.expertObj, vo.voteObj);
+                }
+
+                String result = session.apply(this);
+                if (result != null) {
+                    throw new RuntimeException("Не удалось сохранить информацию о голосовании : " + result);
+                }
+            } finally {
+                session.close();
             }
-
-            String result = session.apply(this);
-            if (result != null) {
-                throw new RuntimeException("Не удалось сохранить информацию о голосовании : " + result);
-            }
-
         } catch (Exception e) {
             e.printStackTrace();
             throw new RemoteException("Ошибка при записи информации о голосовании", e);

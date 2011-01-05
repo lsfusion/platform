@@ -1,5 +1,6 @@
 package skolkovo.gwt.server;
 
+import platform.base.BaseUtils;
 import platform.interop.RemoteLoaderInterface;
 import platform.interop.remote.ServerSocketFactory;
 import skolkovo.api.remote.SkolkovoRemoteInterface;
@@ -11,6 +12,9 @@ import java.rmi.server.RMISocketFactory;
 
 public class SkolkovoLogicsClient {
     private static SkolkovoLogicsClient instance = new SkolkovoLogicsClient();
+    private static final String DEFAULT_HOST = "localhost";
+    private static final String DEFAULT_PORT = "7652";
+
     private SkolkovoLogicsClient() {
     }
 
@@ -41,12 +45,15 @@ public class SkolkovoLogicsClient {
         }
     }
 
-    public SkolkovoRemoteInterface getLogics() {
+    public SkolkovoRemoteInterface getLogics(String serverHost, String serverPort) {
+        serverHost = BaseUtils.nvl(serverHost, DEFAULT_HOST);
+        serverPort = BaseUtils.nvl(serverPort, DEFAULT_PORT);
+
         //пока вообще не кэшируем, чтобы не париться с обработкой дисконнекта.
 //        if (logics == null) {
             try {
                 initRMISocketFactory();
-                RemoteLoaderInterface loader = (RemoteLoaderInterface) Naming.lookup("rmi://" + "localhost" + ":" + "7652" + "/BusinessLogicsLoader");
+                RemoteLoaderInterface loader = (RemoteLoaderInterface) Naming.lookup("rmi://" + serverHost + ":" + serverPort + "/BusinessLogicsLoader");
                 logics = (SkolkovoRemoteInterface) loader.getRemoteLogics();
             } catch (Exception e) {
                 e.printStackTrace();
