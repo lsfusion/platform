@@ -15,7 +15,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 
 public class ReportDockable extends FormDockable {
 
@@ -40,7 +39,7 @@ public class ReportDockable extends FormDockable {
     Component getActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
 
         try {
-            ReportGenerator report = new ReportGenerator(remoteForm, false);
+            ReportGenerator report = new ReportGenerator(remoteForm, false, false);
             JasperPrint print = report.createReport();
             reportCaption = print.getName();
             print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
@@ -72,7 +71,7 @@ public class ReportDockable extends FormDockable {
 
             JExcelApiExporter xlsExporter = new JExcelApiExporter();
 
-            ReportGenerator report = new ReportGenerator(remoteForm, true);
+            ReportGenerator report = new ReportGenerator(remoteForm, true, true);
             JasperPrint print = report.createReport();
             print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
 

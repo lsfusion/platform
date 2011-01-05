@@ -38,11 +38,11 @@ public class ReportGenerator {
         public Map<String, List<List<Object>>> compositeColumnValues;
     }
 
-    public ReportGenerator(RemoteFormInterface remoteForm, boolean toExcel) throws IOException, ClassNotFoundException, JRException {
-        this(remoteForm, toExcel, new HashMap<ByteArray, String>());
+    public ReportGenerator(RemoteFormInterface remoteForm, boolean toExcel, boolean ignorePagination) throws IOException, ClassNotFoundException, JRException {
+        this(remoteForm, toExcel, ignorePagination, new HashMap<ByteArray, String>());
     }
 
-    public ReportGenerator(RemoteFormInterface remoteForm, boolean toExcel, Map<ByteArray, String> files) throws IOException, ClassNotFoundException, JRException {
+    public ReportGenerator(RemoteFormInterface remoteForm, boolean toExcel, boolean ignorePagination, Map<ByteArray, String> files) throws IOException, ClassNotFoundException, JRException {
         Pair<String, Map<String, List<String>>> hpair = retrieveReportHierarchy(remoteForm);
         rootID = hpair.first;
         hierarchy = hpair.second;
@@ -52,7 +52,7 @@ public class ReportGenerator {
         data = output.data;
         compositeColumnValues = output.compositeColumnValues;
 
-        transformDesigns();
+        transformDesigns(ignorePagination);
     }
 
     public JasperPrint createReport() throws JRException {
@@ -180,12 +180,10 @@ public class ReportGenerator {
     }
 
     // Пока что добавляет только свойства с группами в колонках
-    private void transformDesigns() {
+    private void transformDesigns(boolean ignorePagination) {
         for (JasperDesign design : designs.values()) {
             transformDesign(design);
-//            try {
-//                JasperCompileManager.compileReportToFile(design, "D:/"+design.getName());
-//            } catch (Exception e) {}
+            design.setIgnorePagination(ignorePagination);
         }
     }
 
@@ -240,7 +238,7 @@ public class ReportGenerator {
         if (exprText.startsWith("$F{")) {
             id = exprText.substring(3, exprText.length()-1);
         } else {
-            assert exprText.startsWith("\"");
+            assert exprText.startsWith("\"");  // Текст должен содержаться в кавычках
             id = exprText.substring(1, exprText.length()-1);
         }
 

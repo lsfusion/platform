@@ -10,21 +10,25 @@ import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.interop.form.RemoteFormInterface;
 import platform.server.EmailSender;
-import platform.server.auth.PolicyManager;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.reportstmp.ReportGenerator_tmp;
-import platform.server.logics.property.*;
+import platform.server.logics.property.ActionProperty;
+import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.PropertyMapImplement;
+import platform.server.session.DataSession;
+import platform.server.session.Modifier;
 
 import java.io.File;
-import java.util.*;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * User: DAle
@@ -81,7 +85,7 @@ public class EmailActionProperty extends ActionProperty {
                 else
                     remoteForm = BL.createForm(session, forms.get(i), formObjects);
 
-                ReportGenerator_tmp report = new ReportGenerator_tmp(remoteForm, true, files);
+                ReportGenerator_tmp report = new ReportGenerator_tmp(remoteForm, false, true, files);
                 JasperPrint print = report.createReport();
                 print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
 

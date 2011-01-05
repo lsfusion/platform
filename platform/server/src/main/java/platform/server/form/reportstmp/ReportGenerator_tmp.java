@@ -30,7 +30,7 @@ public class ReportGenerator_tmp {
     private final Map<String, ClientReportData_tmp> data;
     private final Map<String, List<List<Object>>> compositeColumnValues;
 
-    private static class sourcesGenerationOutput {
+    private static class SourcesGenerationOutput {
         public Map<String, ClientReportData_tmp> data;
         // данные для свойств с группами в колонках
         // объекты, от которых зависит свойство
@@ -41,17 +41,21 @@ public class ReportGenerator_tmp {
         public Map<String, List<List<Object>>> compositeColumnValues;
     }
 
-    public ReportGenerator_tmp(RemoteFormInterface remoteForm, boolean toExcel, Map<ByteArray, String> files) throws IOException, ClassNotFoundException, JRException {
+    public ReportGenerator_tmp(RemoteFormInterface remoteForm, boolean toExcel, boolean ignorePagination) throws IOException, ClassNotFoundException, JRException {
+        this(remoteForm, toExcel, ignorePagination, new HashMap<ByteArray, String>());
+    }
+
+    public ReportGenerator_tmp(RemoteFormInterface remoteForm, boolean toExcel, boolean ignorePagination, Map<ByteArray, String> files) throws IOException, ClassNotFoundException, JRException {
         Pair<String, Map<String, List<String>>> hpair = retrieveReportHierarchy(remoteForm);
         rootID = hpair.first;
         hierarchy = hpair.second;
         designs = retrieveReportDesigns(remoteForm, toExcel);
 
-        sourcesGenerationOutput output = retrieveReportSources(remoteForm, files);
+        SourcesGenerationOutput output = retrieveReportSources(remoteForm, files);
         data = output.data;
         compositeColumnValues = output.compositeColumnValues;
 
-        transformDesigns();
+        transformDesigns(ignorePagination);
     }
 
     public JasperPrint createReport() throws JRException {
@@ -102,8 +106,8 @@ public class ReportGenerator_tmp {
         return (Map<String, JasperDesign>) objStream.readObject();
     }
 
-    private static sourcesGenerationOutput retrieveReportSources(RemoteFormInterface remoteForm, Map<ByteArray, String> files) throws IOException, ClassNotFoundException {
-        sourcesGenerationOutput output = new sourcesGenerationOutput();
+    private static SourcesGenerationOutput retrieveReportSources(RemoteFormInterface remoteForm, Map<ByteArray, String> files) throws IOException, ClassNotFoundException {
+        SourcesGenerationOutput output = new SourcesGenerationOutput();
         byte[] sourcesArray = remoteForm.getReportSourcesByteArray();
         DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(sourcesArray));
         int size = dataStream.readInt();
@@ -179,12 +183,10 @@ public class ReportGenerator_tmp {
     }
 
     // Пока что добавляет только свойства с группами в колонках
-    private void transformDesigns() {
+    private void transformDesigns(boolean ignorePagination) {
         for (JasperDesign design : designs.values()) {
             transformDesign(design);
-//            try {
-//                JasperCompileManager.compileReportToFile(design, "D:/"+design.getName());
-//            } catch (Exception e) {}
+            design.setIgnorePagination(ignorePagination);
         }
     }
 
