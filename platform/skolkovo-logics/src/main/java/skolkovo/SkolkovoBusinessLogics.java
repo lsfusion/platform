@@ -352,15 +352,15 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         emailLetterExpertVote = addEAProp(baseGroup, "Отослать письмо", "Письмо о заседании", expert, vote);
         addEARecepient(emailLetterExpertVote, emailParticipant, 1);
-        emailLetterExpertVote.setDerivedChange(addCProp(ActionClass.instance, true), inExpertVote, 1, 2);
+        emailLetterExpertVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), inExpertVote, 1, 2);
 
         emailStartVote = addEAProp(baseGroup, "Созыв заседания (e-mail)", "Созыв заседания", vote);
         addEARecepient(emailStartVote, emailDocuments);
-        emailStartVote.setDerivedChange(addCProp(ActionClass.instance, true), openedVote, 1);
+        emailStartVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), openedVote, 1);
 
         emailProtocolVote = addEAProp(baseGroup, "Протокол заседания (e-mail)", "Протокол заседания", vote);
         addEARecepient(emailProtocolVote, emailDocuments);
-        emailProtocolVote.setDerivedChange(addCProp(ActionClass.instance, true), closedVote, 1);
+        emailProtocolVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), closedVote, 1);
     }
 
     protected void initTables() {
