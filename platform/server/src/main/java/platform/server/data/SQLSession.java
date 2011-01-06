@@ -55,7 +55,7 @@ public class SQLSession extends MutableObject {
     }
 
     private void tryCommon() throws SQLException { // пытается вернуться к
-//        removeUnusedTemporaryTables();
+        removeUnusedTemporaryTables();
         if(!inTransaction && sessionTablesMap.isEmpty()) { // вернемся к commonConnection'у
             connectionPool.returnPrivate(this, privateConnection);
             privateConnection = null;
@@ -192,7 +192,7 @@ public class SQLSession extends MutableObject {
     public String createTemporaryTable(List<KeyField> keys, Collection<PropertyField> properties, Object owner) throws SQLException {
         needPrivate();
 
-//        removeUnusedTemporaryTables();
+        removeUnusedTemporaryTables();
 
         synchronized(sessionTablesMap) {
             String name = "t_" + (sessionCounter++);
@@ -217,24 +217,26 @@ public class SQLSession extends MutableObject {
 
     private void removeUnusedTemporaryTables() throws SQLException {
         synchronized (sessionTablesMap) {
-            for (Map.Entry<String, WeakReference<Object>> entry : sessionTablesMap.entrySet()) {
+            for (Iterator<Map.Entry<String, WeakReference<Object>>> iterator = sessionTablesMap.entrySet().iterator(); iterator.hasNext();) {
+                Map.Entry<String, WeakReference<Object>> entry = iterator.next();
                 if (entry.getValue().get() == null) {
-                    dropTemporaryTable(entry.getKey(), null);
+                    dropTemporaryTableFromDB(entry.getKey());
+                    iterator.remove();
                 }
             }
         }
     }
 
-    public void dropTemporaryTable(SessionTable table, Object owner) throws SQLException {
-        dropTemporaryTable(table.name, owner);
+    private void dropTemporaryTableFromDB(String tableName) throws SQLException {
+        execute(syntax.getDropSessionTable(tableName));
     }
 
-    public void dropTemporaryTable(String tableName, Object owner) throws SQLException {
+    public void dropTemporaryTable(SessionTable table, Object owner) throws SQLException {
         synchronized (sessionTablesMap) {
-            assert sessionTablesMap.containsKey(tableName);
-            sessionTablesMap.remove(tableName);
+            assert sessionTablesMap.containsKey(table.name);
+            sessionTablesMap.remove(table.name);
 
-            execute(syntax.getDropSessionTable(tableName));
+            dropTemporaryTableFromDB(table.name);
         }
 
         tryCommon();
@@ -267,7 +269,6 @@ public class SQLSession extends MutableObject {
 
         PreparedStatement statement = getStatement(command, paramObjects, connection, syntax);
 
-//        System.out.println(statement);
         int result;
         try {
             result = statement.executeUpdate();
