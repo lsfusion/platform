@@ -130,6 +130,10 @@ public class LP<T extends PropertyInterface> {
     }
 
     public List<ClientAction> execute(Object value, DataSession session, Modifier<? extends Changes> modifier, DataObject... objects) throws SQLException {
+        //отдельно обрабатываем false-значения: используем null вместо false
+        if (value instanceof Boolean && !(Boolean)value) {
+            value = null;
+        }
         Map<T, DataObject> mapKeys = getMapValues(objects);
         return property.execute(mapKeys, session, value, modifier);
     }
