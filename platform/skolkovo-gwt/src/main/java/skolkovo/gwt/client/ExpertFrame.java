@@ -67,16 +67,16 @@ public class ExpertFrame implements EntryPoint {
                         "&nbsp;&nbsp;4. Техническое описание продукта/технологии (опционально)<br/>" +
                         "<br/>" +
                         (vi.voteDone ? "" : "Пожалуйста, заполните данный бюллетень") +
-                        "<h5>" +
+                        "<h4>" +
                         ("voted".equals(vi.voteResult)
-                             ? "Вы уже оценили эту заявку."
+                             ? "Ваша оценка по этой заявке учтена."
                              : "refused".equals(vi.voteResult)
-                                 ? "Вы отказались от оценки этой заявки."
+                                 ? "Ваш отказ от оценки этой заявки учтён."
                                  : "connected".equals(vi.voteResult)
                                      ? "Вы являетесь заинтерисованным лицом для этой заявки."
                                      : ""
                         ) +
-                        "</h5>"
+                        "</h4>"
                 );
 
                 VerticalPanel manePane = new VerticalPanel();
@@ -85,7 +85,9 @@ public class ExpertFrame implements EntryPoint {
                 manePane.add(caption);
 
                 if (!vi.voteDone || "voted".equals(vi.voteResult)) {
-                    manePane.add(createVerticalSpacer(20));
+                    if (!vi.voteDone) {
+                        manePane.add(createVerticalSpacer(20));
+                    }
                     cbInCluster = new CheckBox("Проект соответствует направлению \"" + vi.projectCluster + "\"");
                     cbInCluster.setValue(vi.inCluster);
                     cbInCluster.setEnabled(!vi.voteDone);
