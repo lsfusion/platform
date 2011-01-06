@@ -99,7 +99,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                 if (property.propertyCaption != null) {
                     Pair<Object, PropertyType> captionObject = new Pair<Object, PropertyType>(property, PropertyType.CAPTION);
                     newQuery.properties.put(captionObject, property.propertyCaption.getExpr(newQuery.mapKeys, form));
-                    types.put(captionObject, property.propertyObject.getType());
+                    types.put(captionObject, property.propertyCaption.getType());
                 }
             }
         }
