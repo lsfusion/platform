@@ -11,11 +11,14 @@ import skolkovo.gwt.shared.MessageException;
 
 public class ExpertFrame implements EntryPoint {
 
-    private CheckBox cbInCluster;
-    private CheckBox cbInnovative;
+    private Label lbInCluster;
+    private ListBox bxInCluster;
     private Label lbInnovative;
+    private ListBox bxInnovative;
+    private Label lbInnovativeComment;
     private TextArea taInnovativeComment;
-    private CheckBox cbForeign;
+    private Label lbForeign;
+    private ListBox bxForeign;
     private Label lbCompetent;
     private ListBox bxCompetent;
     private Label lbComplete;
@@ -88,24 +91,30 @@ public class ExpertFrame implements EntryPoint {
                     if (!vi.voteDone) {
                         manePane.add(createVerticalSpacer(20));
                     }
-                    cbInCluster = new CheckBox("Проект соответствует направлению \"" + vi.projectCluster + "\"");
-                    cbInCluster.setValue(vi.inCluster);
-                    cbInCluster.setEnabled(!vi.voteDone);
+                    lbInCluster = new Label("Проект соответствует направлению \"" + vi.projectCluster + "\"");
+                    bxInCluster = new ListBox();
+                    bxInCluster.setWidth("10%");
+                    addListBoxBooleanItems(bxInCluster, vi.voteDone ? (vi.inCluster ? 1 : 2): 0);
+                    bxInCluster.setEnabled(!vi.voteDone);
 
-                    cbInnovative = new CheckBox("Проект предполагает разработку и/или коммерциализацию уникальных и/или обладающих конкурентными преимуществами перед мировыми аналогами продуктов и/или технологий?");
-                    cbInnovative.setValue(vi.innovative);
-                    cbInnovative.setEnabled(!vi.voteDone);
+                    lbInnovative = new Label("Проект предполагает разработку и/или коммерциализацию уникальных и/или обладающих конкурентными преимуществами перед мировыми аналогами продуктов и/или технологий?");
+                    bxInnovative = new ListBox();
+                    bxInnovative.setWidth("10%");
+                    addListBoxBooleanItems(bxInnovative, vi.voteDone ? (vi.innovative ? 1 : 2): 0);
+                    bxInnovative.setEnabled(!vi.voteDone);
 
-                    lbInnovative = new Label("Приведите обоснование Вашего ответа (800-1000 символов):");
+                    lbInnovativeComment = new Label("Приведите обоснование Вашего ответа (800-1000 символов):");
                     taInnovativeComment = new TextArea();
                     taInnovativeComment.setSize("100%", "");
                     taInnovativeComment.setVisibleLines(8);
                     taInnovativeComment.setText(vi.innovativeComment);
                     taInnovativeComment.setEnabled(!vi.voteDone);
 
-                    cbForeign = new CheckBox("Проект предполагает участие иностранного (не являющегося гражданином Российской Федерации) специалиста, который имеет значительный авторитет в инвестиционной и/или исследовательской среде");
-                    cbForeign.setValue(vi.foreign);
-                    cbForeign.setEnabled(!vi.voteDone);
+                    lbForeign = new Label("Проект предполагает участие иностранного (не являющегося гражданином Российской Федерации) специалиста, который имеет значительный авторитет в инвестиционной и/или исследовательской среде");
+                    bxForeign = new ListBox();
+                    bxForeign.setWidth("10%");
+                    addListBoxBooleanItems(bxForeign, vi.voteDone ? (vi.foreign ? 1 : 2): 0);
+                    bxForeign.setEnabled(!vi.voteDone);
 
                     lbCompetent = new Label("Оцените Вашу компетенцию по теме проекта (от 1 до 5 баллов)");
                     bxCompetent = new ListBox();
@@ -132,11 +141,14 @@ public class ExpertFrame implements EntryPoint {
                     taCompleteComment.setText(vi.completeComment);
                     taCompleteComment.setEnabled(!vi.voteDone);
 
-                    manePane.add(cbInCluster);
-                    manePane.add(cbInnovative);
+                    manePane.add(lbInCluster);
+                    manePane.add(bxInCluster);
                     manePane.add(lbInnovative);
+                    manePane.add(bxInnovative);
+                    manePane.add(lbInnovativeComment);
                     manePane.add(taInnovativeComment);
-                    manePane.add(cbForeign);
+                    manePane.add(lbForeign);
+                    manePane.add(bxForeign);
                     manePane.add(lbCompetent);
                     manePane.add(bxCompetent);
                     manePane.add(lbComplete);
@@ -151,6 +163,13 @@ public class ExpertFrame implements EntryPoint {
                 setManePane(manePane);
             }
         });
+    }
+
+    private void addListBoxBooleanItems(ListBox listBox, int defaultValue) {
+        listBox.addItem("");
+        listBox.addItem("Да");
+        listBox.addItem("Нет");
+        listBox.setItemSelected(defaultValue, true);
     }
 
     private Panel createButtonsPane() {
@@ -227,6 +246,14 @@ public class ExpertFrame implements EntryPoint {
         }
 
         public void onClick(ClickEvent event) {
+            if ("voted".equals(voteResult) &&
+                    (bxInCluster.getSelectedIndex() == 0 ||
+                     bxInnovative.getSelectedIndex() == 0 ||
+                     bxForeign.getSelectedIndex() == 0)) {
+                Window.alert("Ваш голос не может быть учтен, так как не на все вопросы дан ответ.");
+                return;
+            }
+
             if (!Window.confirm("Вы уверены в своём выборе? Вы не сможете изменить его впоследствии.")) {
                 return;
             }
@@ -236,10 +263,11 @@ public class ExpertFrame implements EntryPoint {
             GwtVoteInfo vi = new GwtVoteInfo();
 
             vi.voteResult = voteResult;
-            vi.inCluster = cbInCluster.getValue();
-            vi.innovative = cbInnovative.getValue();
+
+            vi.inCluster = bxInCluster.getSelectedIndex() == 1;
+            vi.innovative = bxInnovative.getSelectedIndex() == 1;
             vi.innovativeComment = taInnovativeComment.getText();
-            vi.foreign = cbForeign.getValue();
+            vi.foreign = bxForeign.getSelectedIndex() == 1;
             vi.competent = bxCompetent.getSelectedIndex() + 1;
             vi.complete = bxComplete.getSelectedIndex() + 1;
             vi.completeComment = taCompleteComment.getText();

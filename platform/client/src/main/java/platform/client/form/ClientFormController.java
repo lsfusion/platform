@@ -405,8 +405,8 @@ public class ClientFormController {
         if (!ordersInitialized) {
             try {
                 // Применяем порядки по умолчанию
-                applyOrders(form.defaultOrders);
                 ordersInitialized = true;
+                applyOrders(form.defaultOrders);
             } catch (IOException e) {
                 throw new RuntimeException("Не могу проинициализировать порядки по умолчанию");
             }

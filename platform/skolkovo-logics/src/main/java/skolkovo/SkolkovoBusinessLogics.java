@@ -372,7 +372,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     protected void initNavigators() throws JRException, FileNotFoundException {
         addFormEntity(new ProjectFormEntity(baseElement, 10));
         addFormEntity(new VoteFormEntity(baseElement, 15));
-        addFormEntity(new ExpertFormEntity(baseElement, 15));
+        addFormEntity(new ExpertFormEntity(baseElement, 18));
         addFormEntity(new GlobalFormEntity(baseElement, 20));
 
         NavigatorElement print = new NavigatorElement(baseElement, 60, "Печатные формы");
