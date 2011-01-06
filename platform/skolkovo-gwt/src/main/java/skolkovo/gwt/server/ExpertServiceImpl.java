@@ -4,13 +4,13 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import skolkovo.api.remote.SkolkovoRemoteInterface;
 import skolkovo.gwt.client.ExpertService;
 import skolkovo.gwt.shared.GwtVoteInfo;
+import skolkovo.gwt.shared.MessageException;
 
-import java.rmi.RemoteException;
 import java.security.Principal;
 
 public class ExpertServiceImpl extends RemoteServiceServlet implements ExpertService {
 
-    public GwtVoteInfo getVoteInfo(int voteId) {
+    public GwtVoteInfo getVoteInfo(int voteId) throws MessageException {
         try {
             Principal user = getThreadLocalRequest().getUserPrincipal();
             if (user == null) {
@@ -18,23 +18,21 @@ public class ExpertServiceImpl extends RemoteServiceServlet implements ExpertSer
             }
 
             return VoteFactory.toGwtVoteInfo(getLogics().getVoteInfo(user.getName(), voteId));
-        } catch (RemoteException e) {
-            System.err.println("Exception while getting vote info.");
+        } catch (Throwable e) {
             e.printStackTrace();
+            throw new MessageException(DebugUtil.getInitialCause(e).getMessage());
         }
-
-        return null;
     }
 
-    public void setVoteInfo(GwtVoteInfo voteInfo, int voteId) {
+    public void setVoteInfo(GwtVoteInfo voteInfo, int voteId) throws MessageException {
         try {
             Principal user = getThreadLocalRequest().getUserPrincipal();
             if (user != null) {
                 getLogics().setVoteInfo(user.getName(), voteId, VoteFactory.toVoteInfo(voteInfo));
             }
-        } catch (RemoteException e) {
-            System.err.println("Exception while setting vote info.");
+        } catch (Throwable e) {
             e.printStackTrace();
+            throw new MessageException(DebugUtil.getInitialCause(e).getMessage());
         }
     }
 

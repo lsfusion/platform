@@ -56,7 +56,7 @@ public class SkolkovoLogicsClient {
                 RemoteLoaderInterface loader = (RemoteLoaderInterface) Naming.lookup("rmi://" + serverHost + ":" + serverPort + "/BusinessLogicsLoader");
                 logics = (SkolkovoRemoteInterface) loader.getRemoteLogics();
             } catch (Exception e) {
-                e.printStackTrace();
+                throw new RuntimeException("Произошла ошибка при подлючении к серверу приложения.");
             }
 //        }
         return logics;

@@ -7,6 +7,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 import skolkovo.gwt.shared.GwtVoteInfo;
+import skolkovo.gwt.shared.MessageException;
 
 public class ExpertFrame implements EntryPoint {
 
@@ -189,11 +190,19 @@ public class ExpertFrame implements EntryPoint {
     }
 
     private void showErrorPage(Throwable caught) {
-        VerticalPanel manePane = new VerticalPanel();
+
+        String message = "";
+        if (caught instanceof MessageException) {
+            message = caught.getMessage();
+        } else {
+            message = "Произошла внутренняя ошибка при обработке запроса. Попробуйте перезагрузить страницу.<br>" +
+                      "При повторе данной ошибки, обратитесь к администратору.";
+        }
 
         HTMLPanel caption = new HTMLPanel(
-                        "<h5>Произошла ошибка при обработке запроса.</h5>");
+                        "<h5>" + message + "</h5>");
 
+        VerticalPanel manePane = new VerticalPanel();
         manePane.setWidth("1024");
         manePane.setSpacing(10);
         manePane.add(caption);
