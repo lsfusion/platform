@@ -117,8 +117,12 @@ public class EmailActionProperty extends ActionProperty {
             if(smtpHost==null || fromAddress==null)
                 actions.add(new MessageClientAction("Не задан SMTP хост или адрес отправителя. Письма отосланы не будут.","Отсылка писем"));
             else {
-                EmailSender sender = new EmailSender(smtpHost.trim(), fromAddress.trim(), recepientEmails.toArray(new String[recepientEmails.size()]));
-                sender.sendMail(subject, embeddedFilePath, files, reportPaths);
+                try {
+                    EmailSender sender = new EmailSender(smtpHost.trim(), fromAddress.trim(), recepientEmails.toArray(new String[recepientEmails.size()]));
+                    sender.sendMail(subject, embeddedFilePath, files, reportPaths);
+                } catch (Exception e) {
+                    actions.add(new MessageClientAction("Не удалось отправить почту","Отсылка писем"));
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
