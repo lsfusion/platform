@@ -1,5 +1,6 @@
 package platform.server.form.entity;
 
+import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.Subsets;
@@ -34,10 +35,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.Logger;
 
 public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> implements ServerIdentitySerializable {
-    private final static Logger logger = Logger.getLogger(FormEntity.class.getName());
+    private final static Logger logger = Logger.getLogger(FormEntity.class);
 
     public boolean isReadOnly() {
         return false;

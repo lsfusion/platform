@@ -1,5 +1,6 @@
 package platform.client.remote.proxy;
 
+import org.apache.log4j.Logger;
 import platform.interop.remote.MethodInvocation;
 import platform.interop.remote.PendingRemote;
 
@@ -12,11 +13,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public abstract class RemoteObjectProxy<T extends PendingRemote> implements PendingRemote {
-    private static Logger logger = Logger.getLogger(RemoteFormProxy.class.getName());
+    private static Logger logger = Logger.getLogger(RemoteFormProxy.class);
 
     private List<MethodInvocation> pendingInvocations = new ArrayList<MethodInvocation>();
 
@@ -30,9 +29,9 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
     public Object execute(MethodInvocation[] invocations) throws RemoteException {
         logRemoteMethodStartCall("execute");
 
-        if (logger.isLoggable(Level.FINEST)) {
+        if (logger.isDebugEnabled()) {
             for (MethodInvocation invocation : invocations) {
-                logger.finest("  Invocation in execute: " + invocation.toString());
+                logger.debug("  Invocation in execute: " + invocation.toString());
             }
         }
 
@@ -44,10 +43,10 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
     @NonFlushRemoteMethod
     public Object[] createAndExecute(MethodInvocation creator, MethodInvocation[] invocations) throws RemoteException {
         logRemoteMethodStartCall("createAndExecute");
-        if (logger.isLoggable(Level.FINEST)) {
-            logger.finest("  Creator   in  createAndExecute: " + creator.toString());
+        if (logger.isDebugEnabled()) {
+            logger.debug("  Creator   in  createAndExecute: " + creator.toString());
             for (MethodInvocation invocation : invocations) {
-                logger.finest("  Invocation in createAndExecute: " + invocation.toString());
+                logger.debug("  Invocation in createAndExecute: " + invocation.toString());
             }
         }
 
@@ -94,22 +93,22 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
 
     @NonFlushRemoteMethod
     protected void logRemoteMethodStartCall(String methodName) {
-        if (logger.isLoggable(Level.FINE)) {
+        if (logger.isInfoEnabled()) {
             startCall = System.currentTimeMillis(); 
-            logger.fine("Calling remote method: " + this.getClass().getSimpleName() + "." + methodName);
+            logger.info("Calling remote method: " + this.getClass().getSimpleName() + "." + methodName);
         }
     }
 
     @NonFlushRemoteMethod
     protected void logRemoteMethodEndCall(String methodName, Object result) {
-        if (logger.isLoggable(Level.FINE)) {
+        if (logger.isInfoEnabled()) {
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
             try {
                 new ObjectOutputStream(outStream).writeObject(result);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            logger.fine(
+            logger.info(
                     String.format("Remote method called (time: %1$d ms.; result size: %2$d): %3$s.%4$s",
                                   System.currentTimeMillis() - startCall, outStream.size(), this.getClass().getSimpleName(), methodName));
         }

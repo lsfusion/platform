@@ -7,6 +7,7 @@ package platform.client.form;
 
 import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
+import org.apache.log4j.Logger;
 import platform.base.OSUtils;
 import platform.client.logics.ClientComponent;
 import platform.client.logics.ClientContainer;
@@ -19,13 +20,12 @@ import java.awt.event.ComponentListener;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * @author NewUser
  */
 public class SimplexLayout implements LayoutManager2, ComponentListener {
-    private final static Logger logger = Logger.getLogger(SimplexLayout.class.getName());
+    private final static Logger logger = Logger.getLogger(SimplexLayout.class);
     public boolean disableLayout = false;
 
     Dimension oldDimension;

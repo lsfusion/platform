@@ -1,5 +1,6 @@
 package platform.server.data.query;
 
+import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -25,11 +26,10 @@ import platform.server.logics.property.*;
 import platform.server.session.*;
 
 import java.util.*;
-import java.util.logging.Logger;
 
 @Aspect
 public class MapCacheAspect {
-    private final static Logger logger = Logger.getLogger(MapCacheAspect.class.getName());
+    private final static Logger logger = Logger.getLogger(MapCacheAspect.class);
     // добавление кэшированного св-ва
     public interface ParseInterface {
         ParsedQuery getParse(); void setParse(ParsedQuery query);

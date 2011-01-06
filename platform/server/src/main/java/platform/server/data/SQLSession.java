@@ -1,27 +1,27 @@
 package platform.server.data;
 
+import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
 import platform.base.MutableObject;
+import platform.base.OrderedMap;
 import platform.server.data.expr.Expr;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.SQLExecute;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.type.ParseInterface;
 import platform.server.data.type.Reader;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeObject;
-import platform.server.data.type.ParseInterface;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 
 import java.lang.ref.WeakReference;
 import java.sql.*;
 import java.util.*;
-import java.util.logging.Logger;
 
 public class SQLSession extends MutableObject {
-    private final static Logger logger = Logger.getLogger(SQLSession.class.getName());
+    private final static Logger logger = Logger.getLogger(SQLSession.class);
 
     public SQLSyntax syntax;
 

@@ -1,5 +1,6 @@
 package platform.server.data.query;
 
+import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.base.Counter;
 import platform.base.OrderedMap;
@@ -14,18 +15,20 @@ import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.translator.QueryTranslator;
-import platform.server.data.type.*;
+import platform.server.data.type.ClassReader;
+import platform.server.data.type.NullReader;
+import platform.server.data.type.ParseInterface;
+import platform.server.data.type.Type;
 import platform.server.data.where.CheckWhere;
 import platform.server.data.where.Where;
 
 import java.sql.SQLException;
 import java.util.*;
-import java.util.logging.Logger;
 
 // нужен для Map'а ключей / значений
 // Immutable/Thread Safe
 public class CompiledQuery<K,V> {
-    private final static Logger logger = Logger.getLogger(CompiledQuery.class.getName());
+    private final static Logger logger = Logger.getLogger(CompiledQuery.class);
 
     final public String from;
     final public Map<K,String> keySelect;

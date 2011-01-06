@@ -1,5 +1,6 @@
 package platform.client;
 
+import org.apache.log4j.Logger;
 import platform.base.OSUtils;
 import platform.client.exceptions.ClientExceptionManager;
 import platform.client.exceptions.ExceptionThreadGroup;
@@ -28,12 +29,9 @@ import java.rmi.server.RMIClassLoader;
 import java.rmi.server.RMIFailureHandler;
 import java.rmi.server.RMISocketFactory;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
 public class Main {
-    private final static Logger logger = Logger.getLogger(SimplexLayout.class.getName());
+    private final static Logger logger = Logger.getLogger(SimplexLayout.class);
 
     public static RemoteLoaderInterface remoteLoader;
     public static RemoteLogicsInterface remoteLogics;
@@ -125,7 +123,6 @@ public class Main {
 
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
-                    String logLevel = System.getProperty(PropertyConstants.PLATFORM_CLIENT_LOGLEVEL);
                     String timeout = System.getProperty(PropertyConstants.PLATFORM_CLIENT_CONNECTION_LOST_TIMEOUT, "7200000");
 
                     initRMISocketFactory(timeout);
@@ -140,12 +137,6 @@ public class Main {
                     remoteLogics = loginAction.getRemoteLogics();
                     computerId = loginAction.getComputerId();
                     RemoteNavigatorInterface remoteNavigator = loginAction.getRemoteNavigator();
-
-                    if (logLevel != null) {
-                        LogManager.getLogManager().getLogger("").setLevel(Level.parse(logLevel));
-                    } else {
-                        LogManager.getLogManager().getLogger("").setLevel(Level.SEVERE);
-                    }
 
                     logger.info("Before init frame");
                     frame = module.initFrame(remoteNavigator);

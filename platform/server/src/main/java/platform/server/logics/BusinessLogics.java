@@ -1,6 +1,7 @@
 package platform.server.logics;
 
 import net.sf.jasperreports.engine.JRException;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.core.io.FileSystemResource;
 import platform.base.*;
@@ -14,9 +15,9 @@ import platform.interop.action.MessageClientAction;
 import platform.interop.action.UserChangedClientAction;
 import platform.interop.action.UserReloginClientAction;
 import platform.interop.exceptions.LoginException;
+import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
-import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.RemoteObject;
 import platform.interop.remote.ServerSocketFactory;
@@ -74,15 +75,11 @@ import java.rmi.server.RMIFailureHandler;
 import java.rmi.server.RMISocketFactory;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
 // @GenericImmutable нельзя так как Spring валится
 
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends RemoteObject implements RemoteLogicsInterface {
-    protected final static Logger logger = Logger.getLogger(BusinessLogics.class.getName());
+    protected final static Logger logger = Logger.getLogger(BusinessLogics.class);
 
     public byte[] findClass(String name) {
 
@@ -119,19 +116,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         System.setProperty("mail.mime.encodefilename", "true");
 
-        String logLevelStr = System.getProperty("platform.server.loglevel");
-        Level logLevel = logLevelStr != null ? Level.parse(logLevelStr) : Level.SEVERE;
-
-        LogManager.getLogManager().getLogger("").setLevel(logLevel);
-        for (Handler handler : LogManager.getLogManager().getLogger("").getHandlers()) {
-            handler.setLevel(logLevel);
-        }
-
         initRMISocketFactory();
 
         stopped = false;
 
-        logger.severe("Server is starting...");
+        logger.info("Server is starting...");
 
         XmlBeanFactory factory = new XmlBeanFactory(new FileSystemResource("conf/settings.xml"));
 
@@ -147,13 +136,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 //        registry.rebind("BusinessLogics", BL);
         registry.rebind("BusinessLogicsLoader", new BusinessLogicsLoader(BL));
 
-        logger.severe("Server has successfully started");
+        logger.info("Server has successfully started");
 
         if (factory.containsBean("serverInstanceLocatorSettings")) {
             ServerInstanceLocatorSettings settings = (ServerInstanceLocatorSettings) factory.getBean("serverInstanceLocatorSettings");
             new ServerInstanceLocator().start(settings, BL.getExportPort());
 
-            logger.severe("Server instance locator successfully started");
+            logger.info("Server instance locator successfully started");
         }
 
         synchronized (serviceMonitor) {
@@ -319,7 +308,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
 
             session.close();
-            logger.warning("Begin user session " + strHostName + " " + result);
+            logger.debug("Begin user session " + strHostName + " " + result);
             return result;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -339,7 +328,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public void endSession(String clientInfo) {
-        logger.warning("End user session " + clientInfo);
+        logger.debug("End user session " + clientInfo);
     }
 
     public Integer getServerComputer() {
@@ -1270,7 +1259,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         initExternalScreens();
 
-        logger.info("Initializing navigators...");
+        logger.debug("Initializing navigators...");
 
         initBaseClassForms();
 
@@ -1622,7 +1611,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         assert !idSet.contains(property.sID);
         property.stored = true;
 
-        logger.info("Initializing stored property...");
+        logger.debug("Initializing stored property...");
         property.markStored(tableFactory);
     }
 
@@ -1896,7 +1885,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                         if (!(keep = property.mapTable.table.name.equals(prevTable.name))) { // если в другой таблице
                             sqlSession.addColumn(property.mapTable.table.name, property.field);
                             // делаем запрос на перенос
-                            System.out.print("Идет перенос колонки " + property.field + " (" + property.caption + ")" + " из таблицы " + prevTable.name + " в таблицу " + property.mapTable.table.name + "... ");
+                            logger.info("Идет перенос колонки " + property.field + " (" + property.caption + ")" + " из таблицы " + prevTable.name + " в таблицу " + property.mapTable.table.name + "... ");
                             Query<KeyField, PropertyField> moveColumn = new Query<KeyField, PropertyField>(property.mapTable.table);
                             Expr moveExpr = prevTable.joinAnd(BaseUtils.join(BaseUtils.join(foundInterfaces, ((Property<PropertyInterface>) property).mapTable.mapKeys), moveColumn.mapKeys)).getExpr(prevTable.findProperty(sID));
                             moveColumn.properties.put(property.field, moveExpr);
@@ -3137,15 +3126,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private boolean checkProps() {
         if (checkClasses)
             for (Property prop : getProperties()) {
-                logger.info("Checking property : " + prop + "...");
+                logger.debug("Checking property : " + prop + "...");
                 assert prop.check();
             }
         for (LP[] props : checkCUProps) {
-            logger.info("Checking class properties : " + props + "...");
+            logger.debug("Checking class properties : " + props + "...");
             assert !intersect(props);
         }
         for (LP[] props : checkSUProps) {
-            logger.info("Checking union properties : " + props + "...");
+            logger.debug("Checking union properties : " + props + "...");
             assert intersect(props);
         }
         return true;
@@ -3616,9 +3605,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             if (property instanceof AggregateProperty) {
                 AggregateProperty dependProperty = (AggregateProperty) property;
                 if (recalculateProperties.contains(dependProperty)) {
-                    System.out.print("Идет перерасчет аггрегированного св-ва (" + dependProperty + ")... ");
+                    logger.debug("Идет перерасчет аггрегированного св-ва (" + dependProperty + ")... ");
                     dependProperty.recalculateAggregation(session);
-                    logger.info("Done");
+                    logger.debug("Done");
                 }
             }
     }
@@ -3811,7 +3800,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public void outputPropertyClasses() {
         for (LP lp : lproperties) {
-            logger.info(lp.property.sID + " : " + lp.property.caption + " - " + lp.getClassWhere());
+            logger.debug(lp.property.sID + " : " + lp.property.caption + " - " + lp.getClassWhere());
         }
     }
 

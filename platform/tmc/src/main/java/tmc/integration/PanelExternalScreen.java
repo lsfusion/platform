@@ -2,6 +2,7 @@ package tmc.integration;
 
 import com.jacob.activeX.ActiveXComponent;
 import com.jacob.com.Dispatch;
+import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenComponent;
@@ -10,10 +11,9 @@ import platform.interop.form.screen.ExternalScreenParameters;
 import tmc.integration.exp.FiscalRegister.FiscalReg;
 
 import java.util.Map;
-import java.util.logging.Logger;
 
 public class PanelExternalScreen implements ExternalScreen {
-    private final static Logger logger = Logger.getLogger(PanelExternalScreen.class.getName());
+    private final static Logger logger = Logger.getLogger(PanelExternalScreen.class);
     private PanelExternalScreenParameters parameters = new PanelExternalScreenParameters(-1, -1);
 
     public int getID() {

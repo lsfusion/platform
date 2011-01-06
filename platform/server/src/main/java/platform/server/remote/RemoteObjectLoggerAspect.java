@@ -1,14 +1,13 @@
 package platform.server.remote;
 
+import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 
-import java.util.logging.Logger;
-
 @Aspect
 public class RemoteObjectLoggerAspect {
-    private final static Logger logger = Logger.getLogger(RemoteObjectLoggerAspect.class.getName());
+    private final static Logger logger = Logger.getLogger(RemoteObjectLoggerAspect.class);
 
     @Around("(execution(* platform.interop.RemoteLogicsInterface.*(..))" +
             " || execution(* platform.interop.form.RemoteFormInterface.*(..))" +

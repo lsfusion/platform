@@ -3,6 +3,7 @@ package platform.server.logics.property.actions;
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
+import org.apache.log4j.Logger;
 import platform.interop.ClassViewType;
 import platform.interop.KeyStrokes;
 import platform.interop.action.ClientAction;
@@ -24,11 +25,9 @@ import platform.server.logics.property.ClassPropertyInterface;
 import java.io.ByteArrayInputStream;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class ImportFromExcelActionProperty extends ActionProperty {
-    private static Logger LOGGER = Logger.getLogger(ImportFromExcelActionProperty.class.getName());
+    private static Logger logger = Logger.getLogger(ImportFromExcelActionProperty.class);
 
     private CustomClass valueClass;
 
@@ -46,7 +45,7 @@ public class ImportFromExcelActionProperty extends ActionProperty {
             ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
             sh = Workbook.getWorkbook(inFile).getSheet(0);
         } catch (Exception e) {
-            LOGGER.severe("Не могу прочитать .xsl файл.");
+            logger.fatal("Не могу прочитать .xsl файл.");
             return;
         }
 
@@ -78,7 +77,7 @@ public class ImportFromExcelActionProperty extends ActionProperty {
                         Type type = property.propertyObject.getChangeInstance().getType();
                         form.changeProperty(property, type.parseString(cellValue));
                     } catch (ParseException e) {
-                        LOGGER.log(Level.WARNING, "не конвертировано значение совйства", e);
+                        logger.warn("Не конвертировано значение совйства", e);
                     }
                 }
             }

@@ -1,15 +1,15 @@
 package platform.server.data;
 
+import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 
 import java.util.Map;
-import java.util.logging.Logger;
 
 @Aspect
 public class SQLSessionLoggerAspect {
-    private final static Logger logger = Logger.getLogger(SQLSessionLoggerAspect.class.getName());
+    private final static Logger logger = Logger.getLogger(SQLSessionLoggerAspect.class);
 
     @Around("execution(void platform.server.data.SQLSession.execute(java.lang.String)) && args(queryString)")
     public Object executeSQL(ProceedingJoinPoint thisJoinPoint, String queryString) throws Throwable {

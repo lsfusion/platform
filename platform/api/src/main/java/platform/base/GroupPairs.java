@@ -1,13 +1,14 @@
 package platform.base;
 
+import org.apache.log4j.Logger;
+
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 
 public abstract class GroupPairs<G,O,I> implements Iterable<I>  {
 
-    private final static Logger logger = Logger.getLogger(GroupPairs.class.getName());
+    private final static Logger logger = Logger.getLogger(GroupPairs.class);
 
 
     protected abstract I createI(Map<O,O> map);
@@ -64,7 +65,7 @@ public abstract class GroupPairs<G,O,I> implements Iterable<I>  {
                     String stackTrace = "";
                     for(StackTraceElement stackLine : Thread.currentThread().getStackTrace())
                         stackTrace += stackLine.toString() + '\n';
-                    logger.severe("MAP INNER HASH : " + map1 + '\n' + map2 + '\n' + stackTrace);
+                    logger.fatal("MAP INNER HASH : " + map1 + '\n' + map2 + '\n' + stackTrace);
                 } catch(Exception e) {
                 }
                 return false;
