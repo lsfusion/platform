@@ -116,6 +116,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP clusterVote, nameClusterVote;
     LP claimerProject, nameClaimerProject;
     LP emailParticipant;
+    LP emailDocuments;
 
     LP claimerVote, nameClaimerVote;
 
@@ -126,6 +127,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP dateStartVote, dateEndVote;
 
     LP openedVote;
+    LP closedVote;
     LP voteInProgressProject;
     LP requiredPeriod;
     LP requiredQuantity;
@@ -161,6 +163,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP needExtraVoteProject;
 
     LP emailLetterExpertVote;
+    LP emailStartVote;
+    LP emailProtocolVote;
 
     LP generateVoteProject, hideGenerateVoteProject;
 
@@ -221,6 +225,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         dateEndVote = addJProp(baseGroup, "dateEndVote", "Дата окончания", addDate2, dateStartVote, 1, requiredPeriod);
 
         openedVote = addJProp(baseGroup, "openedVote", "Открыто", greater2, dateEndVote, 1, currentDate);
+        closedVote = addJProp(baseGroup, "closedVote", "Закрыто", andNot1, is(vote), 1, openedVote, 1);
 
         voteInProgressProject = addCGProp(idGroup, false, "voteInProgressProject", "Тек. заседание (ИД)",
                                        addJProp(and1, 1, openedVote, 1), openedVote,
@@ -343,9 +348,19 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         datePrevVote = addOProp("prevDateVote", "Пред. засед.", OrderType.PREVIOUS, dateEndVote, true, true, 1, projectVote, 1, date, 1);
         numberExpertVote = addOProp("numberExpertVote", "Номер", OrderType.SUM, addJProp(and1, addCProp(IntegerClass.instance, 1), inExpertVote, 1, 2), true, true, 1, 2, 1);
 
-        emailLetterExpertVote = addEAProp(baseGroup, "Отослать письмо", "Тест письма", expert, vote);
+        emailDocuments = addDProp(baseGroup, "emailDocuments", "E-mail для документов", StringClass.get(50));
+
+        emailLetterExpertVote = addEAProp(baseGroup, "Отослать письмо", "Письмо о заседании", expert, vote);
         addEARecepient(emailLetterExpertVote, emailParticipant, 1);
         emailLetterExpertVote.setDerivedChange(addCProp(ActionClass.instance, true), inExpertVote, 1, 2);
+
+        emailStartVote = addEAProp(baseGroup, "Созыв заседания (e-mail)", "Созыв заседания", vote);
+        addEARecepient(emailStartVote, emailDocuments);
+        emailStartVote.setDerivedChange(addCProp(ActionClass.instance, true), openedVote, 1);
+
+        emailProtocolVote = addEAProp(baseGroup, "Протокол заседания (e-mail)", "Протокол заседания", vote);
+        addEARecepient(emailProtocolVote, emailDocuments);
+        emailProtocolVote.setDerivedChange(addCProp(ActionClass.instance, true), closedVote, 1);
     }
 
     protected void initTables() {
@@ -361,9 +376,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         addFormEntity(new GlobalFormEntity(baseElement, 20));
 
         NavigatorElement print = new NavigatorElement(baseElement, 60, "Печатные формы");
+        addFormEntity(new VoteStartFormEntity(print, 40));
         addFormEntity(new ExpertLetterFormEntity(print, 30));
         addFormEntity(new VoteProtocolFormEntity(print, 35));
-        addFormEntity(new VoteStartFormEntity(print, 40));
     }
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
@@ -445,7 +460,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private GlobalFormEntity(NavigatorElement parent, int iID) {
             super(parent, iID, "Глобальные параметры");
 
-            addPropertyDraw(new LP[]{currentDate, requiredPeriod, requiredQuantity, limitExperts});
+            addPropertyDraw(new LP[]{currentDate, requiredPeriod, requiredQuantity, limitExperts, emailDocuments});
         }
     }
 
@@ -578,6 +593,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             objExpert = addSingleGroupObject(2, expert, name);
             addPropertyDraw(numberExpertVote, objExpert, objVote);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
+
+            addEAForm(emailStartVote, this, objVote, 1);
         }
 
         @Override
@@ -603,6 +620,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(doneExpertVote, objExpert, objVote)));
+
+            addEAForm(emailProtocolVote, this, objVote, 1);
         }
 
         @Override
