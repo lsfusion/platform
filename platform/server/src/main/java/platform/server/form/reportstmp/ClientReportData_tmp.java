@@ -138,6 +138,10 @@ public class ClientReportData_tmp implements JRDataSource {
             value = ((String) value).trim();
         }
 
+        if(jrField.getDescription()!=null && Number.class.isAssignableFrom(jrField.getValueClass()) && jrField.getDescription().contains("@Z") && value == null) {
+            value = jrField.getValueClass().cast(0);
+        }
+        
         if (value instanceof byte[]) {
             ByteArray file = new ByteArray(((byte[])value));
             String fileName = files.get(file);

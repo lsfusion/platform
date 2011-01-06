@@ -1928,7 +1928,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addPropertyDraw(objArt, barcode, name);
             addPropertyDraw(objDoc, objArt, orderSalePrice, articleQuantity);
             addPropertyDraw(objDoc, objectValue, date, orderHour, orderUserBarcode, orderComputerName, outStore, orderContragentBarcode);
-            addPropertyDraw(objDoc, objArt, orderArticleSaleDiscountSum, orderArticleSaleDiscount, orderArticleSaleSumWithDiscount);
+            addPropertyDraw(objDoc, objArt, orderArticleSaleDiscountSum, orderArticleSaleDiscount, orderArticleSaleSumWithDiscount, orderArticleSaleSumCoeff);
 
 
             removePropertyDraw(documentMoveGroup); // нужно, чтобы убрать Доступ. кол-во, которое не может нормально выполнить PostgreSQL

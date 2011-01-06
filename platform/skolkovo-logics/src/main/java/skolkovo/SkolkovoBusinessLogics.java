@@ -141,6 +141,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP completeExpertVote;
     LP completeCommentExpertVote;
 
+    LP quantityRepliedVote;
     LP quantityDoneVote;
     LP quantityInClusterVote;
     LP quantityInnovativeVote;
@@ -235,6 +236,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         completeExpertVote = addDProp(voteResultCheckGroup, "completeExpertVote", "Полнота информ.", IntegerClass.instance, expert, vote);
         completeCommentExpertVote = addDProp(voteResultCommentGroup, "completeCommentExpertVote", "Полнота информации (комм.)", TextClass.instance, expert, vote);
 
+
+        quantityRepliedVote = addSGProp(voteResultGroup, "quantityRepliedVote", "Ответило",
+                                     addJProp(and1, addCProp(IntegerClass.instance, 1), voteResultExpertVote, 1, 2), 2); // сколько экспертов высказалось
+
         quantityDoneVote = addSGProp(voteResultGroup, "quantityDoneVote", "Проголосовало",
                                      addJProp(and1, addCProp(IntegerClass.instance, 1), doneExpertVote, 1, 2), 2); // сколько экспертов высказалось
 
@@ -256,7 +261,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                                            quantityDoneVote, 1);
 
         acceptedForeignVote = addJProp(voteResultGroup, "acceptedForeignVote", "Иностр. специалист", greater2,
-                                        addJProp(multiplyIntegerBy2, quantityInnovativeVote, 1), 1,
+                                        addJProp(multiplyIntegerBy2, quantityForeignVote, 1), 1,
                                         quantityDoneVote, 1);
 
         acceptedVote = addJProp(voteResultGroup, "acceptedVote", "Положительно", and(false, false),
@@ -341,10 +346,13 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     protected void initNavigators() throws JRException, FileNotFoundException {
         addFormEntity(new ProjectFormEntity(baseElement, 10));
+        addFormEntity(new VoteFormEntity(baseElement, 15));
         addFormEntity(new ExpertFormEntity(baseElement, 15));
         addFormEntity(new GlobalFormEntity(baseElement, 20));
 
-        addFormEntity(new ExpertLetterFormEntity(baseElement, 30));
+        NavigatorElement print = new NavigatorElement(baseElement, 60, "Печатные формы");
+        addFormEntity(new ExpertLetterFormEntity(print, 30));
+        addFormEntity(new VoteProtocolFormEntity(print, 35));
     }
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
@@ -430,6 +438,52 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         }
     }
 
+    private class VoteFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+        private ObjectEntity objVote;
+        private ObjectEntity objExpert;
+
+        private VoteFormEntity(NavigatorElement parent, int iID) {
+            super(parent, iID, "Реестр заседаний");
+
+            objVote = addSingleGroupObject(vote, objectValue, nameProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote, delete);
+
+            objExpert = addSingleGroupObject(expert, selection, objectValue, userFirstName, userLastName, userLogin, userPassword, emailParticipant, nameClusterExpert);
+
+            addPropertyDraw(voteResultGroup, true, objExpert, objVote);
+            addPropertyDraw(objExpert, objVote, emailLetterExpertVote);
+            setForceViewType(voteResultCommentGroup, ClassViewType.PANEL);
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
+            
+            RegularFilterGroupEntity voteFilterGroup = new RegularFilterGroupEntity(genID());
+            voteFilterGroup.addFilter(new RegularFilterEntity(genID(),
+                                                                new NotNullFilterEntity(addPropertyObject(openedVote, objVote)),
+                                                                "Открыто",
+                                                                KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)), true);
+            voteFilterGroup.addFilter(new RegularFilterEntity(genID(),
+                                                                new NotNullFilterEntity(addPropertyObject(succeededVote, objVote)),
+                                                                "Состоялось",
+                                                                KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)), false);
+            voteFilterGroup.addFilter(new RegularFilterEntity(genID(),
+                                                                new NotNullFilterEntity(addPropertyObject(acceptedVote, objVote)),
+                                                                "Положительно",
+                                                                KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)), false);
+            addRegularFilterGroup(voteFilterGroup);
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            design.setPanelLabelAbove(voteResultCommentGroup, true);
+            design.setConstraintsFillHorizontal(voteResultCommentGroup, 0.5);
+
+            design.setPreferredSize(voteResultCheckGroup, new Dimension(60, 1));
+
+            return design;
+        }
+    }
+
     private class ExpertFormEntity extends FormEntity<SkolkovoBusinessLogics> {
         private ObjectEntity objExpert;
         private ObjectEntity objVote;
@@ -495,6 +549,31 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         @Override
         public void modifyHierarchy(GroupObjectHierarchy groupHierarchy) {
             groupHierarchy.markGroupAsNonJoinable(gobjExpertVote);
+        }
+    }
+
+    private class VoteProtocolFormEntity extends FormEntity<SkolkovoBusinessLogics> { // письмо эксперту
+
+        private ObjectEntity objVote;
+        
+        private ObjectEntity objExpert;
+
+        private VoteProtocolFormEntity(NavigatorElement parent, int iID) {
+            super(parent, iID, "Протокол заседания", true);
+
+            objVote = addSingleGroupObject(1, vote, date, nameClaimerVote, quantityRepliedVote, quantityDoneVote, succeededVote, quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote, acceptedForeignVote);
+            objVote.groupTo.initClassView = ClassViewType.PANEL;
+
+            objExpert = addSingleGroupObject(12, expert, userFirstName, userLastName);
+
+            addPropertyDraw(voteResultGroup, true, objExpert, objVote);
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(doneExpertVote, objExpert, objVote)));
+        }
+
+        @Override
+        public void modifyHierarchy(GroupObjectHierarchy groupHierarchy) {
+            groupHierarchy.markGroupAsNonJoinable(objVote.groupTo);
         }
     }
 
