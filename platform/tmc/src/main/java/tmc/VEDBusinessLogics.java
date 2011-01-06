@@ -13,6 +13,7 @@ import platform.server.auth.User;
 import platform.server.classes.*;
 import platform.server.data.Time;
 import platform.server.data.Union;
+import platform.server.data.expr.query.OrderType;
 import platform.server.data.sql.DataAdapter;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
@@ -636,7 +637,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         orderHour = addDCProp(baseGroup, "orderHour", "Час", currentHour, is(orderSale), 1, orderSaleArticleRetail);
 
         changeQuantityTime = addTCProp(Time.EPOCH, "changeQuantityTime", "Время выбора", articleInnerQuantity, orderSaleArticleRetail);
-        changeQuantityOrder = addOProp(documentGroup, "Номер", addJProp(and1, addCProp(IntegerClass.instance, 1), articleInnerQuantity, 1, 2), false, true, true, 1, 1, changeQuantityTime, 1, 2);
+        changeQuantityOrder = addOProp(documentGroup, "Номер", OrderType.SUM, addJProp(and1, addCProp(IntegerClass.instance, 1), articleInnerQuantity, 1, 2), true, true, 1, 1, changeQuantityTime, 1, 2);
 
         orderSaleDocPrice = addDCProp("orderSalePrice", "Цена прод.", saleStorePrice, outStore, 1, 2, articleQuantity, 1, 2, orderSale);
         orderSalePrice = addSUProp(documentPriceGroup, "Цена прод.", Union.OVERRIDE, addJProp(and1, addJProp(saleStorePrice, outStore, 1, 2), 1, 2, is(orderSale), 1), orderSaleDocPrice);

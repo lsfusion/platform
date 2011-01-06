@@ -28,6 +28,7 @@ import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.query.OrderType;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.PostgreDataAdapter;
@@ -2558,19 +2559,32 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return mapLGProp(group, persistent, new PropertyImplement<PropertyInterfaceImplement<P>, GroupProperty.Interface<P>>(property, property.getMapInterfaces()), listImplements);
     }
 
-    protected <P extends PropertyInterface> LP addOProp(String caption, LP<P> sum, boolean percent, boolean ascending, boolean includeLast, int partNum, Object... params) {
-        return addOProp((AbstractGroup) null, genSID(), caption, sum, percent, ascending, includeLast, partNum, params);
+    protected <P extends PropertyInterface> LP addOProp(String caption, OrderType orderType, LP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
+        return addOProp(genSID(), caption, orderType, sum, ascending, includeLast, partNum, params);
     }
 
-    protected <P extends PropertyInterface> LP addOProp(AbstractGroup group, String caption, LP<P> sum, boolean percent, boolean ascending, boolean includeLast, int partNum, Object... params) {
-        return addOProp(group, genSID(), caption, sum, percent, ascending, includeLast, partNum, params);
+    protected <P extends PropertyInterface> LP addOProp(String sID, String caption, OrderType orderType, LP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
+        return addOProp((AbstractGroup) null, sID, caption, orderType, sum, ascending, includeLast, partNum, params);
     }
 
-    protected <P extends PropertyInterface> LP addOProp(AbstractGroup group, String sID, String caption, LP<P> sum, boolean percent, boolean ascending, boolean includeLast, int partNum, Object... params) {
-        return addOProp(group, sID, false, caption, sum, percent, ascending, includeLast, partNum, params);
+    protected <P extends PropertyInterface> LP addOProp(AbstractGroup group, String caption, OrderType orderType, LP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
+        return addOProp(group, genSID(), caption, orderType, sum, ascending, includeLast, partNum, params);
     }
 
-    protected <P extends PropertyInterface> LP addOProp(AbstractGroup group, String sID, boolean persistent, String caption, LP<P> sum, boolean percent, boolean ascending, boolean includeLast, int partNum, Object... params) {
+    protected <P extends PropertyInterface> LP addOProp(AbstractGroup group, String sID, String caption, OrderType orderType, LP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
+        return addOProp(group, sID, false, caption, sum, false, orderType, ascending, includeLast, partNum, params);
+    }
+
+    // проценты
+    protected <P extends PropertyInterface> LP addPOProp(AbstractGroup group, String caption, LP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
+        return addPOProp(group, genSID(), false, caption, sum, ascending, includeLast, partNum, params);
+    }
+
+    protected <P extends PropertyInterface> LP addPOProp(AbstractGroup group, String sID, boolean persistent, String caption, LP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
+        return addOProp(group, sID, persistent, caption, sum, true, null, ascending, includeLast, partNum, params);
+    }
+
+    private <P extends PropertyInterface> LP addOProp(AbstractGroup group, String sID, boolean persistent, String caption, LP<P> sum, boolean percent, OrderType orderType, boolean ascending, boolean includeLast, int partNum, Object... params) {
         List<LI> li = readLI(params);
 
         Collection<PropertyInterfaceImplement<P>> partitions = mapLI(li.subList(0, partNum), sum.listInterfaces);
@@ -2580,7 +2594,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         if (percent)
             orderProperty = DerivedProperty.createPOProp(sID, caption, sum.property, partitions, orders, includeLast);
         else
-            orderProperty = DerivedProperty.createOProp(sID, caption, sum.property, partitions, orders, includeLast);
+            orderProperty = DerivedProperty.createOProp(sID, caption, orderType, sum.property, partitions, orders, includeLast);
 
         return mapLProp(group, persistent, orderProperty, sum);
     }

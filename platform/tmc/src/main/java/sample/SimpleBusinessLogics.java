@@ -443,16 +443,16 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
        saleFormatGroupBetweenDateSum = addSGProp("Сумма реализ. за период", saleFormatArticleBetweenDateSum, 1, artGroup, 2, 3, 4);
         
        // АВС-категория группы в формате
-       resultABCGroup = initABCAnalyze(addOProp(null,"Процент ABC группы", saleFormatGroupBetweenDateSum, true, false, true, 3, 1, 3, 4, saleFormatGroupBetweenDateSum, 1, 2, 3, 4),"группы");
+       resultABCGroup = initABCAnalyze(addPOProp(null,"Процент ABC группы", saleFormatGroupBetweenDateSum, false, true, 3, 1, 3, 4, saleFormatGroupBetweenDateSum, 1, 2, 3, 4),"группы");
 
         // ABC-категория по товарам в группе - кол-во
-       resultABCInsideGroupQuantity = initABCAnalyze(addOProp(null, "Процент ABC товара в группе по кол-ву", saleFormatArticleBetweenDateQuantity, true, false, true, 4, 1, artGroup, 2, 3, 4, saleFormatArticleBetweenDateQuantity, 1, 2, 3, 4),"товара по кол-ву в группе");
+       resultABCInsideGroupQuantity = initABCAnalyze(addPOProp(null, "Процент ABC товара в группе по кол-ву", saleFormatArticleBetweenDateQuantity, false, true, 4, 1, artGroup, 2, 3, 4, saleFormatArticleBetweenDateQuantity, 1, 2, 3, 4),"товара по кол-ву в группе");
 
         // ABC-категория по товарам в группе - сумма
-        resultABCInsideGroupSum = initABCAnalyze(addOProp(null, "Процент ABC товара в группе по сумме", saleFormatArticleBetweenDateSum, true, false, true, 4, 1, artGroup, 2, 3, 4, saleFormatArticleBetweenDateSum, 1, 2, 3, 4),"товара по сумме в группе");
+        resultABCInsideGroupSum = initABCAnalyze(addPOProp(null, "Процент ABC товара в группе по сумме", saleFormatArticleBetweenDateSum, false, true, 4, 1, artGroup, 2, 3, 4, saleFormatArticleBetweenDateSum, 1, 2, 3, 4),"товара по сумме в группе");
 
        // АВС-категория товара по формату
-        resultABCSum = initABCAnalyze(addOProp(null, "Процент ABC товара", saleFormatArticleBetweenDateSum, true, false, true, 3, 1, 3, 4, saleFormatArticleBetweenDateSum, 1, 2, 3, 4),"товара");
+        resultABCSum = initABCAnalyze(addPOProp(null, "Процент ABC товара", saleFormatArticleBetweenDateSum, false, true, 3, 1, 3, 4, saleFormatArticleBetweenDateSum, 1, 2, 3, 4),"товара");
 
         // изменение цен
         LP incPriceOutChange = addDProp("incPriceOutChange", "Цена розн. (прих.)", DoubleClass.instance, incomeDocument, article);

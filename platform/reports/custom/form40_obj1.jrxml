@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="obj1" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
+	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
+		<box leftPadding="2" rightPadding="2">
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+	</style>
+	<parameter name="obj2_report" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="obj2_source" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="obj2_params" class="java.util.Map"/>
+	<field name="obj1" class="java.lang.Integer"/>
+	<field name="date" class="java.util.Date"/>
+	<field name="dateProjectVote" class="java.util.Date"/>
+	<field name="nameClaimerVote" class="java.lang.String"/>
+	<field name="prevDateVote" class="java.util.Date"/>
+	<group name="captionGroup1">
+		<groupExpression><![CDATA[String.valueOf($F{obj1})]]></groupExpression>
+	</group>
+	<group name="textGroup1">
+		<groupExpression><![CDATA[String.valueOf($F{obj1})]]></groupExpression>
+		<groupHeader>
+			<band height="268" splitType="Prevent">
+				<textField isStretchWithOverflow="true">
+					<reportElement stretchType="RelativeToBandHeight" x="26" y="163" width="795" height="48"/>
+					<textElement/>
+					<textFieldExpression><![CDATA["Некоммерческая организация Фонд развития Центра разработки и коммерциализации новых технологий, рассмотрев поданную " + $F{nameClaimerVote} + " заявку на присвоение статуса участника проекта от " + $F{dateProjectVote} + ", на основании решения Фонда о направлении заявки соискателя на рассмотрение в Экспертную коллегию для проведения экспертизы заявки по существу от "+ $F{date} +", "+($F{prevDateVote}==null?"в соответствии с пунктами 4-7 Положения об Экспертных коллегиях Фонда «Сколково»":"учитывая, что заседание предыдущей Экспертной коллегии было признано несостоявшимся (протокол заседания Экспертной коллегии по вопросу о соответствии проекта, представленного соискателем, критериям, указанным в подпункте Е пункта 2 Положения о присвоении и утрате статуса участника проекта по созданию и обеспечению функционирования инновационного центра «Сколково», от "+$F{prevDateVote}+"), в соответствии с пунктом 12 Положения об Экспертных коллегиях Фонда «Сколково»")]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="101" y="87" width="151" height="26"/>
+					<textElement/>
+					<text><![CDATA[«      »______________ 2010 г]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="328" y="10" width="192" height="64"/>
+					<textElement/>
+					<text><![CDATA[
+Некоммерческая организация
+Фонд развития Центра разработки и
+коммерциализации новых технологий
+
+]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="511" y="92" width="82" height="21"/>
+					<textElement/>
+					<text><![CDATA[№________
+
+]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="404" y="113" width="45" height="18"/>
+					<textElement/>
+					<text><![CDATA[Москва]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="398" y="77" width="62" height="18"/>
+					<textElement/>
+					<text><![CDATA[РЕШЕНИЕ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement positionType="Float" x="50" y="211" width="670" height="56"/>
+					<textElement/>
+					<text><![CDATA[р е ш и л
+1. Созвать заседание новой Экспертной коллегии для проведения экспертизы указанной заявки по существу.
+2. Путем случайной выборки из числа экспертов по Направлению деятельности, указанному Соискателем в заявке, определить следующий состав новой Экспертной коллегии:
+]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="316" y="131" width="426" height="20"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.String"><![CDATA["О созыве заседания "+($F{prevDateVote}==null?"":"новой")+" Экспертной коллегии"]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="98">
+				<staticText>
+					<reportElement x="26" y="0" width="663" height="20"/>
+					<textElement/>
+					<text><![CDATA[3. Направить членам новой Экспертной коллегии материалы заявки соискателя (в электронном виде) и Бюллетень оценки.
+
+Руководитель Аппарата Президента
+и Советов Фонда                                                                                                              ФИО
+]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="26" y="44" width="596" height="31"/>
+					<textElement/>
+					<text><![CDATA[Руководитель Аппарата Президента
+и Советов Фонда
+]]></text>
+				</staticText>
+			</band>
+		</groupFooter>
+	</group>
+	<detail>
+		<band>
+			<subreport>
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
+				<parametersMapExpression><![CDATA[$P{obj2_params}]]></parametersMapExpression>
+				<dataSourceExpression><![CDATA[$P{obj2_source}]]></dataSourceExpression>
+				<subreportExpression class="net.sf.jasperreports.engine.JasperReport"><![CDATA[$P{obj2_report}]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+</jasperReport>

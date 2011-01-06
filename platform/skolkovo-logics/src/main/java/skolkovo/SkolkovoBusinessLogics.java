@@ -11,6 +11,7 @@ import platform.server.auth.User;
 import platform.server.classes.*;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
+import platform.server.data.expr.query.OrderType;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.GroupObjectHierarchy;
@@ -174,6 +175,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP percentInnovativeExpert;
     LP percentForeignExpert;
 
+    LP datePrevVote;
+    LP dateProjectVote;
+    LP numberExpertVote;
+
     protected void initProperties() {
 
         LP percent = addSFProp("(prm1*100/prm2)", DoubleClass.instance, 2);
@@ -185,6 +190,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         projectVote = addDProp(idGroup, "projectVote", "Проект (ИД)", project, vote);
         nameProjectVote = addJProp(baseGroup, "nameProjectVote", "Проект", name, projectVote, 1);
+
+        dateProjectVote = addJProp("dateProjectVote", "Дата проекта", date, projectVote, 1);
 
         clusterExpert = addDProp(idGroup, "clusterExpert", "Кластер (ИД)", cluster, expert);
         nameClusterExpert = addJProp(baseGroup, "nameClusterExpert", "Кластер", name, clusterExpert, 1);
@@ -333,6 +340,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                                      addJProp(and1, addCProp(IntegerClass.instance, 1), foreignExpertVote, 1, 2), 1);
         percentForeignExpert = addJProp(expertResultGroup, "percentForeignExpert", "Иностр. специалист (%)", percent, quantityForeignExpert, 1, quantityDoneExpert, 1);
 
+        datePrevVote = addOProp("prevDateVote", "Пред. засед.", OrderType.PREVIOUS, dateEndVote, true, true, 1, projectVote, 1, date, 1);
+        numberExpertVote = addOProp("numberExpertVote", "Номер", OrderType.SUM, addJProp(and1, addCProp(IntegerClass.instance, 1), inExpertVote, 1, 2), true, true, 1, 2, 1);
+
         emailLetterExpertVote = addEAProp(baseGroup, "Отослать письмо", "Тест письма", expert, vote);
         addEARecepient(emailLetterExpertVote, emailParticipant, 1);
         emailLetterExpertVote.setDerivedChange(addCProp(ActionClass.instance, true), inExpertVote, 1, 2);
@@ -353,6 +363,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         NavigatorElement print = new NavigatorElement(baseElement, 60, "Печатные формы");
         addFormEntity(new ExpertLetterFormEntity(print, 30));
         addFormEntity(new VoteProtocolFormEntity(print, 35));
+        addFormEntity(new VoteStartFormEntity(print, 40));
     }
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
@@ -549,6 +560,29 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         @Override
         public void modifyHierarchy(GroupObjectHierarchy groupHierarchy) {
             groupHierarchy.markGroupAsNonJoinable(gobjExpertVote);
+        }
+    }
+
+    private class VoteStartFormEntity extends FormEntity<SkolkovoBusinessLogics> { // письмо эксперту
+
+        private ObjectEntity objVote;
+
+        private ObjectEntity objExpert;
+
+        private VoteStartFormEntity(NavigatorElement parent, int iID) {
+            super(parent, iID, "Созыв заседания", true);
+
+            objVote = addSingleGroupObject(1, vote, date, dateProjectVote, nameClaimerVote, datePrevVote);
+            objVote.groupTo.initClassView = ClassViewType.PANEL;
+
+            objExpert = addSingleGroupObject(2, expert, name);
+            addPropertyDraw(numberExpertVote, objExpert, objVote);
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
+        }
+
+        @Override
+        public void modifyHierarchy(GroupObjectHierarchy groupHierarchy) {
+            groupHierarchy.markGroupAsNonJoinable(objVote.groupTo);
         }
     }
 

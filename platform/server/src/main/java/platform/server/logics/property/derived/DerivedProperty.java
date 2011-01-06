@@ -5,6 +5,7 @@ import platform.base.OrderedMap;
 import platform.interop.Compare;
 import platform.server.classes.*;
 import platform.server.logics.property.*;
+import platform.server.data.expr.query.OrderType;
 
 import java.util.*;
 
@@ -247,16 +248,16 @@ public class DerivedProperty {
     }
 
     private static <T extends PropertyInterface> PropertyMapImplement<?,T> createOProp(Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>,Boolean> orders, boolean includeLast) {
-        return createOProp(genID(), "sys", property, partitions, orders, includeLast);
+        return createOProp(genID(), "sys", OrderType.SUM, property, partitions, orders, includeLast);
     }
-    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createOProp(String sID, String caption, Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean includeLast) {
-        assert orders.size()>0;
-
+    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createOProp(String sID, String caption, OrderType orderType, Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean includeLast) {
         if(true) {
-            OrderProperty<T> orderProperty = new OrderProperty<T>(sID, caption, property, partitions, orders, includeLast);
+            OrderProperty<T> orderProperty = new OrderProperty<T>(sID, caption, orderType, property, partitions, orders, includeLast);
             return new PropertyMapImplement<OrderProperty.Interface<T>,T>(orderProperty,orderProperty.getMapInterfaces());
         }
 
+        assert orders.size()>0;
+        
         if(orders.size()==1) return createSOProp(sID, caption, property, partitions, orders.singleKey(), orders.singleValue(), includeLast);
         // итеративно делаем Union, перекидывая order'ы в partition'ы
         SumUnionProperty unionProperty = new SumUnionProperty(sID,caption,property.interfaces.size());

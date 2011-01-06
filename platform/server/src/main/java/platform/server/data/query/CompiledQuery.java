@@ -483,7 +483,7 @@ public class CompiledQuery<K,V> {
 
                 Map<String,String> propertySelect = new HashMap<String, String>();
                 for(Map.Entry<OrderExpr.Query,String> expr : queries.entrySet()) // ORDER BY не проверяем на Clause потому как всегда должна быть
-                    propertySelect.put(expr.getValue(),"SUM(" + fromPropertySelect.get(expr.getKey().expr) +
+                    propertySelect.put(expr.getValue(),exprs.get(expr.getKey()).orderType.getSource(syntax) + "(" + fromPropertySelect.get(expr.getKey().expr) +
                             ") OVER ("+ BaseUtils.clause("PARTITION BY ",BaseUtils.toString(BaseUtils.filterKeys(fromPropertySelect, expr.getKey().partitions).values(),",")) +
                             " ORDER BY " + Query.stringOrder(BaseUtils.mapOrder(expr.getKey().orders,fromPropertySelect), syntax) + ")");
                 return "(" + syntax.getSelect(fromSelect, SQLSession.stringExpr(keySelect,propertySelect),

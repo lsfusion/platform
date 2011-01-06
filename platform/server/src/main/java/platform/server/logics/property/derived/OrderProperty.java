@@ -7,6 +7,7 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.OrderExpr;
+import platform.server.data.expr.query.OrderType;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.property.FunctionProperty;
 import platform.server.logics.property.Property;
@@ -19,8 +20,9 @@ import java.util.*;
 
 public class OrderProperty<T extends PropertyInterface> extends FunctionProperty<OrderProperty.Interface<T>> {
 
-    public OrderProperty(String sID, String caption, Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean includeLast) {
+    public OrderProperty(String sID, String caption, OrderType orderType, Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean includeLast) {
         super(sID, caption, getInterfaces(property));
+        this.orderType = orderType;
         this.property = property;
         this.partitions = partitions;
         this.orders = orders;
@@ -31,6 +33,8 @@ public class OrderProperty<T extends PropertyInterface> extends FunctionProperty
     Collection<PropertyInterfaceImplement<T>> partitions;
     OrderedMap<PropertyInterfaceImplement<T>,Boolean> orders;
     boolean includeLast;
+
+    private final OrderType orderType;
 
     public static class Interface<T extends PropertyInterface> extends PropertyInterface<Interface<T>> {
         public T propertyInterface;
@@ -87,6 +91,6 @@ public class OrderProperty<T extends PropertyInterface> extends FunctionProperty
             changedWhere.add(GroupExpr.create(getPartitionImplements(mapKeys, defaultModifier, null), ValueExpr.TRUE, orderWhere.toWhere(), true, partitionImplements).getWhere().map(mapExprs));
         }
 
-        return OrderExpr.create(propertyExpr, orderExprs, new HashSet<Expr>(partitionImplements.values()), mapExprs);
+        return OrderExpr.create(orderType, propertyExpr, orderExprs, new HashSet<Expr>(partitionImplements.values()), mapExprs);
     }
 }

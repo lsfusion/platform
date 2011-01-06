@@ -2,7 +2,10 @@ package platform.server.data.expr.query;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.base.QuickMap;
 import platform.server.Settings;
+import platform.server.classes.sets.AndClassSet;
+import platform.server.classes.DataClass;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ParamLazy;
@@ -27,6 +30,8 @@ import java.util.Map;
 import java.util.Set;
 
 public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> implements JoinData {
+
+    public final OrderType orderType;
 
     public static class Query extends AbstractOuterContext<Query> {
         public Expr expr;
@@ -80,25 +85,27 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
         }
     }
 
-    private OrderExpr(Map<KeyExpr,BaseExpr> group, Expr expr, OrderedMap<Expr, Boolean> orders, Set<Expr> partitions) {
-        super(new Query(expr, orders, partitions),group);
+    private OrderExpr(OrderType orderType, Map<KeyExpr,BaseExpr> group, Expr expr, OrderedMap<Expr, Boolean> orders, Set<Expr> partitions) {
+        this(orderType, new Query(expr, orders, partitions),group);
     }
 
     // трансляция
     private OrderExpr(OrderExpr orderExpr, MapTranslate translator) {
         super(orderExpr, translator);
+        orderType = orderExpr.orderType;
     }
 
     public OrderExpr translateOuter(MapTranslate translator) {
         return new OrderExpr(this,translator);
     }
 
-    private OrderExpr(Query query, Map<KeyExpr, BaseExpr> group) {
+    private OrderExpr(OrderType orderType, Query query, Map<KeyExpr, BaseExpr> group) {
         super(query, group);
+        this.orderType = orderType;
     }
 
     protected OrderExpr createThis(Query query, Map<KeyExpr, BaseExpr> group) {
-        return new OrderExpr(query, group);
+        return new OrderExpr(orderType, query, group);
     }
 
     public Type getType(KeyType keyType) {
@@ -121,7 +128,7 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
     public Expr translateQuery(QueryTranslator translator) {
         ExprCaseList result = new ExprCaseList();
         for(MapCase<KeyExpr> mapCase : CaseExpr.pullCases(translator.translate(group)))
-            result.add(mapCase.where, createBase(mapCase.data, query.expr, query.orders, query.partitions));
+            result.add(mapCase.where, createBase(orderType, mapCase.data, query.expr, query.orders, query.partitions));
         return result.getExpr();
     }
 
@@ -149,12 +156,12 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
     public Expr packFollowFalse(Where falseWhere) {
         Map<KeyExpr, Expr> packedGroup = packFollowFalse(pushValues(falseWhere), falseWhere);
         if(!BaseUtils.hashEquals(packedGroup,group))
-            return create(query.expr, query.orders, query.partitions, packedGroup);
+            return create(orderType, query.expr, query.orders, query.partitions, packedGroup);
         else
             return this;
     }
 
-    protected static Expr createBase(Map<KeyExpr, BaseExpr> group, Expr expr, OrderedMap<Expr, Boolean> orders, Set<Expr> partitions) {
+    protected static Expr createBase(OrderType orderType, Map<KeyExpr, BaseExpr> group, Expr expr, OrderedMap<Expr, Boolean> orders, Set<Expr> partitions) {
         // проверим если в group есть ключи которые ссылаются на ValueExpr и они есть в partition'е - убираем их из partition'а
         Map<KeyExpr,BaseExpr> restGroup = new HashMap<KeyExpr, BaseExpr>();
         Set<Expr> restPartitions = new HashSet<Expr>(partitions);
@@ -171,13 +178,18 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
             restPartitions = translator.translate(restPartitions);
         }
 
-        return BaseExpr.create(new OrderExpr(restGroup,expr,orders,restPartitions));
+        return BaseExpr.create(new OrderExpr(orderType, restGroup,expr,orders,restPartitions));
     }
 
-    public static Expr create(Expr expr, OrderedMap<Expr, Boolean> orders, Set<Expr> partitions, Map<KeyExpr, ? extends Expr> group) {
+    public static Expr create(OrderType orderType, Expr expr, OrderedMap<Expr, Boolean> orders, Set<Expr> partitions, Map<KeyExpr, ? extends Expr> group) {
         ExprCaseList result = new ExprCaseList();
         for(MapCase<KeyExpr> mapCase : CaseExpr.pullCases(group))
-            result.add(mapCase.where, createBase(mapCase.data, expr, orders, partitions));
+            result.add(mapCase.where, createBase(orderType, mapCase.data, expr, orders, partitions));
         return result.getExpr();
+    }
+
+    @Override
+    public AndClassSet getAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and) {
+        return (DataClass)query.getType();
     }
 }

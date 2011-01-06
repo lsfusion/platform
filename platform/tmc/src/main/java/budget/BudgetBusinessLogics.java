@@ -9,6 +9,7 @@ import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.auth.User;
 import platform.server.classes.*;
 import platform.server.data.Union;
+import platform.server.data.expr.query.OrderType;
 import platform.server.data.sql.DataAdapter;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
@@ -137,7 +138,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP sumByRate = addSFProp("(prm1*prm2)", DoubleClass.instance, 2);
         LP calcPerCent = addSFProp("(prm1*prm2/100)", DoubleClass.instance, 2);
 
-        monthNum = addOProp("Номер месяца", addJProp(and1, addCProp(IntegerClass.instance, 1), is(absMonth), 1), false, true, true, 0, 1);
+        monthNum = addOProp("Номер месяца", OrderType.SUM, addJProp(and1, addCProp(IntegerClass.instance, 1), is(absMonth), 1), true, true, 0, 1);
         LP internalNum = addCGProp(null, "extNumToIntNum", "Внутренний номер", object(absMonth), monthNum, monthNum, 1);
         LP monthInDate = addJProp("Реальный месяц", internalNum, extMonthInDate, 1);
         dateByMY = addJProp("Дата курса для года/месяца", dateBy, rateDay, 1, 2, monthNum, 1, 2);
