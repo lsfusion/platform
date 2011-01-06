@@ -268,7 +268,9 @@ public class ReportGenerator_tmp {
                     designField.setValueClassName(subExpr.getValueClassName());
                     try {
                         design.addField(designField);
-                    } catch (JRException e) {}  // todo [dale]: обработать ошибку
+                    } catch (JRException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
                 subFields.get(i).setExpression(subExpr);
             }
