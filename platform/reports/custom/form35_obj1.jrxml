@@ -90,7 +90,7 @@
 					<textFieldExpression class="java.lang.String"><![CDATA["2. В срок, указанный в пункте 8 Положения об Экспертных коллегиях Фонда «Сколково», в Фонд направлены " + $F{quantityRepliedVote} + " заполненных Бюллетеней оценки. Из них в " + $F{quantityDoneVote} + " Бюллетенях оценки члены Экспертной коллегии указали на то, что они не являются заинтересованными лицами по отношению к соискателю. Таким образом, в соответствии с абзацем 5 пункта 7, пунктами 10, 11 Положения об Экспертных коллегиях Фонда «Сколково» в заседании приняло участие " + $F{quantityDoneVote} + " членов Экспертной коллегии, в связи с чем заседание Экспертной коллегии признается "+($F{succeededVote}==null?"не":"")+" состоявшимся "]]></textFieldExpression>
 				</textField>
 			</band>
-			<band height="250">
+			<band height="250" splitType="Immediate">
 				<printWhenExpression><![CDATA[$F{succeededVote} != null]]></printWhenExpression>
 				<staticText>
 					<reportElement positionType="Float" x="29" y="216" width="382" height="20"/>
