@@ -133,6 +133,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP requiredQuantity;
     LP limitExperts;
 
+    LP dateExpertVote;
     LP voteResultExpertVote, nameVoteResultExpertVote;
     LP doneExpertVote;
     LP expertVoteConnected;
@@ -233,6 +234,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         // результаты голосования
         voteResultExpertVote = addDProp(idGroup, "voteResultExpertVote", "Результат (ИД)", voteResult, expert, vote);
+        dateExpertVote = addDProp(voteResultCheckGroup, "dateExpertVote", "Дата рез.", DateClass.instance, expert, vote);
 
         doneExpertVote = addJProp(baseGroup, "doneExpertVote", "Проголосовал", equals2,
                                   voteResultExpertVote, 1, 2, addCProp(voteResult, "voted"));

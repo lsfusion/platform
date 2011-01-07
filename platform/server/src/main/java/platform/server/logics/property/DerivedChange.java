@@ -54,9 +54,11 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
 
         Where andWhere = Where.TRUE; // докинем дополнительные условия
         for(PropertyMapImplement<?,C> propChange : onChange) {
-            andWhere = andWhere.and(propChange.mapExpr(mapKeys, modifier, onChangeWhere).getWhere());
-            if(forceChanged) // при forceChanged проверяем что раньше null был
-                andWhere = andWhere.and(propChange.mapExpr(mapKeys, Property.defaultModifier, null).getWhere().not());
+            if(forceChanged) { // при forceChanged проверяем что раньше null был
+                andWhere = andWhere.and(propChange.mapExpr(mapKeys, modifier, null).getWhere());
+                onChangeWhere.add(propChange.mapExpr(mapKeys, Property.defaultModifier, null).getWhere().not());
+            } else
+                andWhere = andWhere.and(propChange.mapExpr(mapKeys, modifier, onChangeWhere).getWhere());
         }
 
         Where derivedWhere = andWhere.and(onChangeWhere.toWhere()); // если не делать нижней проверки могут пойти сложные не нужные getExpr
