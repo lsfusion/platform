@@ -1,6 +1,7 @@
 package skolkovo;
 
 import java.io.Serializable;
+import java.util.Date;
 
 public class VoteInfo implements Serializable {
     //{{expert info
@@ -24,4 +25,6 @@ public class VoteInfo implements Serializable {
     public int complete; //[1, 5]
     public String completeComment;
     //}}
+
+    public Date date;
 }

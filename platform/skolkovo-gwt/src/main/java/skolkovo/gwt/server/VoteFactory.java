@@ -1,5 +1,6 @@
 package skolkovo.gwt.server;
 
+import platform.base.DateConverter;
 import skolkovo.VoteInfo;
 import skolkovo.gwt.shared.GwtVoteInfo;
 
@@ -23,6 +24,7 @@ public class VoteFactory {
         gwtVoteInfo.competent = max(1, min(voteInfo.competent, 5));
         gwtVoteInfo.complete = max(1, min(voteInfo.complete, 5));
         gwtVoteInfo.completeComment = emptyIfNull(voteInfo.completeComment);
+        gwtVoteInfo.date = voteInfo.date;
 
         return gwtVoteInfo;
     }
@@ -47,6 +49,7 @@ public class VoteFactory {
         voteInfo.competent = max(1, min(gwtVoteInfo.competent, 5));
         voteInfo.complete = max(1, min(gwtVoteInfo.complete, 5));
         voteInfo.completeComment = gwtVoteInfo.completeComment;
+        voteInfo.date = gwtVoteInfo.date;
 
         return voteInfo;
     }

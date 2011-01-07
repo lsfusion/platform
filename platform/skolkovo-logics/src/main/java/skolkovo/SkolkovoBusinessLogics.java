@@ -2,6 +2,7 @@ package skolkovo;
 
 import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
+import platform.base.DateConverter;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.action.ClientAction;
@@ -659,6 +660,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                 }
 
                 voteInfo.voteDone = nvl((Boolean) doneExpertVote.read(session, vo.expertObj, vo.voteObj), false);
+                voteInfo.date = DateConverter.sqlToDate((java.sql.Date)dateExpertVote.read(session, vo.expertObj, vo.voteObj));
 
                 return voteInfo;
             } finally {
@@ -677,6 +679,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             try {
                 VoteObjects vo = new VoteObjects(session, login, voteId);
 
+                dateExpertVote.execute(DateConverter.dateToSql(voteInfo.date), session, vo.expertObj, vo.voteObj);
                 voteResultExpertVote.execute(voteResult.getID(voteInfo.voteResult), session, vo.expertObj, vo.voteObj);
                 if (voteInfo.voteResult.equals("voted")) {
                     inClusterExpertVote.execute(voteInfo.inCluster, session, vo.expertObj, vo.voteObj);

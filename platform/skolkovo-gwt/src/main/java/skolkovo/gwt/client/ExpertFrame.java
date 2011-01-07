@@ -3,11 +3,14 @@ package skolkovo.gwt.client;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 import skolkovo.gwt.shared.GwtVoteInfo;
 import skolkovo.gwt.shared.MessageException;
+
+import java.util.Date;
 
 public class ExpertFrame implements EntryPoint {
 
@@ -79,7 +82,11 @@ public class ExpertFrame implements EntryPoint {
                                      ? "Вы являетесь заинтерисованным лицом для этой заявки."
                                      : ""
                         ) +
-                        "</h4>"
+                        "</h4>" +
+                        "<br/>" +
+                        // todo : надо переделать на формат в зависимости от locale
+                        "Дата: <i>" + DateTimeFormat.getFormat("dd.MM.yy").format(vi.date == null ? new Date() : vi.date) + "</i>" +
+                        "<br/><br/>"
                 );
 
                 VerticalPanel manePane = new VerticalPanel();
@@ -262,6 +269,7 @@ public class ExpertFrame implements EntryPoint {
 
             GwtVoteInfo vi = new GwtVoteInfo();
 
+            vi.date = new Date();
             vi.voteResult = voteResult;
 
             vi.inCluster = bxInCluster.getSelectedIndex() == 1;

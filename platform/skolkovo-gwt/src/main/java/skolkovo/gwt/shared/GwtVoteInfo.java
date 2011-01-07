@@ -2,6 +2,8 @@ package skolkovo.gwt.shared;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
+import java.util.Date;
+
 public class GwtVoteInfo implements IsSerializable {
     //{{expert info
     public String expertName = "";
@@ -24,6 +26,8 @@ public class GwtVoteInfo implements IsSerializable {
     public int complete = 1; //[1, 5]
     public String completeComment = "";
     //}}
+
+    public Date date;
 
     public GwtVoteInfo() {
     }
