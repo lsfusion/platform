@@ -1,6 +1,5 @@
 package skolkovo.gwt.server;
 
-import platform.base.DateConverter;
 import skolkovo.VoteInfo;
 import skolkovo.gwt.shared.GwtVoteInfo;
 
@@ -12,25 +11,25 @@ public class VoteFactory {
         GwtVoteInfo gwtVoteInfo = new GwtVoteInfo();
 
         gwtVoteInfo.expertName = voteInfo.expertName;
-        gwtVoteInfo.projectClaimer = emptyIfNull(voteInfo.projectClaimer);
-        gwtVoteInfo.projectName = emptyIfNull(voteInfo.projectName);
-        gwtVoteInfo.projectCluster = emptyIfNull(voteInfo.projectCluster);
-        gwtVoteInfo.voteResult = emptyIfNull(voteInfo.voteResult);
+        gwtVoteInfo.projectClaimer = emptyIfNullAndTrim(voteInfo.projectClaimer);
+        gwtVoteInfo.projectName = emptyIfNullAndTrim(voteInfo.projectName);
+        gwtVoteInfo.projectCluster = emptyIfNullAndTrim(voteInfo.projectCluster);
+        gwtVoteInfo.voteResult = emptyIfNullAndTrim(voteInfo.voteResult);
         gwtVoteInfo.voteDone = !gwtVoteInfo.voteResult.trim().isEmpty();
         gwtVoteInfo.inCluster = voteInfo.inCluster;
         gwtVoteInfo.innovative = voteInfo.innovative;
-        gwtVoteInfo.innovativeComment = emptyIfNull(voteInfo.innovativeComment);
+        gwtVoteInfo.innovativeComment = emptyIfNullAndTrim(voteInfo.innovativeComment);
         gwtVoteInfo.foreign = voteInfo.foreign;
         gwtVoteInfo.competent = max(1, min(voteInfo.competent, 5));
         gwtVoteInfo.complete = max(1, min(voteInfo.complete, 5));
-        gwtVoteInfo.completeComment = emptyIfNull(voteInfo.completeComment);
+        gwtVoteInfo.completeComment = emptyIfNullAndTrim(voteInfo.completeComment);
         gwtVoteInfo.date = voteInfo.date;
 
         return gwtVoteInfo;
     }
 
-    private static String emptyIfNull(String s) {
-        return s == null ? "" : s;
+    private static String emptyIfNullAndTrim(String s) {
+        return s == null ? "" : s.trim();
     }
 
     public static VoteInfo toVoteInfo(GwtVoteInfo gwtVoteInfo) {

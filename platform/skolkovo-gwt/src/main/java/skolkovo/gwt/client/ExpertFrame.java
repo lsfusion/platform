@@ -30,6 +30,7 @@ public class ExpertFrame implements EntryPoint {
     private TextArea taCompleteComment;
 
     public void onModuleLoad() {
+        Window.setTitle(getMessages().title());
         update();
     }
 
@@ -61,33 +62,20 @@ public class ExpertFrame implements EntryPoint {
                 }
 
                 HTMLPanel caption = new HTMLPanel(
-                        "<h4>БЮЛЛЕТЕНЬ ОЦЕНКИ ПРОЕКТА</h4>" +
-                        "Эксперт: <i>" + vi.expertName + "</i><br/>" +
-                        "<br/>" +
-                        "Организация-заявитель: <i>" + vi.projectClaimer + "</i><br/>" +
-                        "<br/>" +
-                        "Вы получили следующие материалы по проекту:<br/>" +
-                        "&nbsp;&nbsp;1. Анкета проекта<br/>" +
-                        "&nbsp;&nbsp;2. Резюме проекта<br/>" +
-                        "&nbsp;&nbsp;3. Резюме иностранного специалиста, участвующего и/или планирующего участвовать в проекте (опционально)<br/>" +
-                        "&nbsp;&nbsp;4. Техническое описание продукта/технологии (опционально)<br/>" +
-                        "<br/>" +
-                        (vi.voteDone ? "" : "Пожалуйста, заполните данный бюллетень") +
-                        "<h4>" +
-                        ("voted".equals(vi.voteResult)
-                             ? "Ваша оценка по этой заявке учтена."
-                             : "refused".equals(vi.voteResult)
-                                 ? "Ваш отказ от оценки этой заявки учтён."
-                                 : "connected".equals(vi.voteResult)
-                                     ? "Вы являетесь заинтерисованным лицом для этой заявки."
-                                     : ""
-                        ) +
-                        "</h4>" +
-                        "<br/>" +
-                        // todo : надо переделать на формат в зависимости от locale
-                        "Дата: <i>" + DateTimeFormat.getFormat("dd.MM.yy").format(vi.date == null ? new Date() : vi.date) + "</i>" +
-                        "<br/><br/>"
-                );
+                        getMessages().caption(
+                                vi.expertName,
+                                vi.projectClaimer,
+                                vi.voteDone ? "" : getMessages().pleasePrompt(),
+                                "voted".equals(vi.voteResult)
+                                     ? getMessages().votedPrompt()
+                                     : "refused".equals(vi.voteResult)
+                                         ? getMessages().refusedPrompt()
+                                         : "connected".equals(vi.voteResult)
+                                             ? getMessages().connectedPrompt()
+                                             : "",
+                                // todo : надо переделать на формат в зависимости от locale
+                                DateTimeFormat.getFormat("dd.MM.yy").format(vi.date == null ? new Date() : vi.date)
+                        ));
 
                 VerticalPanel manePane = new VerticalPanel();
                 manePane.setWidth("1024");
@@ -98,32 +86,34 @@ public class ExpertFrame implements EntryPoint {
                     if (!vi.voteDone) {
                         manePane.add(createVerticalSpacer(20));
                     }
-                    lbInCluster = new Label("Проект соответствует направлению \"" + vi.projectCluster + "\"");
+
+                    lbInCluster = new Label(getMessages().lbInCluster(vi.projectCluster));
+
                     bxInCluster = new ListBox();
                     bxInCluster.setWidth("10%");
                     addListBoxBooleanItems(bxInCluster, vi.voteDone ? (vi.inCluster ? 1 : 2): 0);
                     bxInCluster.setEnabled(!vi.voteDone);
 
-                    lbInnovative = new Label("Проект предполагает разработку и/или коммерциализацию уникальных и/или обладающих конкурентными преимуществами перед мировыми аналогами продуктов и/или технологий?");
+                    lbInnovative = new Label(getMessages().lbInnovative());
                     bxInnovative = new ListBox();
                     bxInnovative.setWidth("10%");
                     addListBoxBooleanItems(bxInnovative, vi.voteDone ? (vi.innovative ? 1 : 2): 0);
                     bxInnovative.setEnabled(!vi.voteDone);
 
-                    lbInnovativeComment = new Label("Приведите обоснование Вашего ответа (800-1000 символов):");
+                    lbInnovativeComment = new Label(getMessages().lbInnovativeComment());
                     taInnovativeComment = new TextArea();
                     taInnovativeComment.setSize("100%", "");
                     taInnovativeComment.setVisibleLines(8);
                     taInnovativeComment.setText(vi.innovativeComment);
                     taInnovativeComment.setEnabled(!vi.voteDone);
 
-                    lbForeign = new Label("Проект предполагает участие иностранного (не являющегося гражданином Российской Федерации) специалиста, который имеет значительный авторитет в инвестиционной и/или исследовательской среде");
+                    lbForeign = new Label(getMessages().lbForeign());
                     bxForeign = new ListBox();
                     bxForeign.setWidth("10%");
                     addListBoxBooleanItems(bxForeign, vi.voteDone ? (vi.foreign ? 1 : 2): 0);
                     bxForeign.setEnabled(!vi.voteDone);
 
-                    lbCompetent = new Label("Оцените Вашу компетенцию по теме проекта (от 1 до 5 баллов)");
+                    lbCompetent = new Label(getMessages().lbCompetent());
                     bxCompetent = new ListBox();
                     bxCompetent.setWidth("10%");
                     for (int i = 1; i <= 5; ++i) {
@@ -132,7 +122,7 @@ public class ExpertFrame implements EntryPoint {
                     bxCompetent.setItemSelected(vi.competent - 1, true);
                     bxCompetent.setEnabled(!vi.voteDone);
 
-                    lbComplete = new Label("Оцените достаточность представленных материалов для оценки проекта (от 1 до 5 баллов)");
+                    lbComplete = new Label(getMessages().lbComplete());
                     bxComplete = new ListBox();
                     bxComplete.setWidth("10%");
                     for (int i = 1; i <= 5; ++i) {
@@ -141,7 +131,7 @@ public class ExpertFrame implements EntryPoint {
                     bxComplete.setItemSelected(vi.complete - 1, true);
                     bxComplete.setEnabled(!vi.voteDone);
 
-                    lbCompleteComment = new Label("Приведите обоснование Вашей оценки (200-300 символов):");
+                    lbCompleteComment = new Label(getMessages().lbCompleteComment());
                     taCompleteComment = new TextArea();
                     taCompleteComment.setSize("100%", "");
                     taCompleteComment.setVisibleLines(8);
@@ -172,6 +162,10 @@ public class ExpertFrame implements EntryPoint {
         });
     }
 
+    private ExpertFrameMessages getMessages() {
+        return ExpertService.Messages.getInstance();
+    }
+
     private void addListBoxBooleanItems(ListBox listBox, int defaultValue) {
         listBox.addItem("");
         listBox.addItem("Да");
@@ -180,13 +174,13 @@ public class ExpertFrame implements EntryPoint {
     }
 
     private Panel createButtonsPane() {
-        Button bVote = new Button("Оценить");
+        Button bVote = new Button(getMessages().btnVote());
         bVote.addClickHandler(new VoteClickHandler("voted"));
 
-        Button bRefused = new Button("Отказаться от оценки");
+        Button bRefused = new Button(getMessages().btnRefused());
         bRefused.addClickHandler(new VoteClickHandler("refused"));
 
-        Button bConnected = new Button("Я являюсь заинтересованным лицом");
+        Button bConnected = new Button(getMessages().btnConnected());
         bConnected.addClickHandler(new VoteClickHandler("connected"));
 
         HorizontalPanel btnPanel = new HorizontalPanel();
@@ -223,8 +217,7 @@ public class ExpertFrame implements EntryPoint {
         if (caught instanceof MessageException) {
             message = caught.getMessage();
         } else {
-            message = "Произошла внутренняя ошибка при обработке запроса. Попробуйте перезагрузить страницу.<br>" +
-                      "При повторе данной ошибки, обратитесь к администратору.";
+            message = getMessages().internalServerErrorMessage();
         }
 
         HTMLPanel caption = new HTMLPanel(
@@ -257,11 +250,11 @@ public class ExpertFrame implements EntryPoint {
                     (bxInCluster.getSelectedIndex() == 0 ||
                      bxInnovative.getSelectedIndex() == 0 ||
                      bxForeign.getSelectedIndex() == 0)) {
-                Window.alert("Ваш голос не может быть учтен, так как не на все вопросы дан ответ.");
+                Window.alert(getMessages().incompletePrompt());
                 return;
             }
 
-            if (!Window.confirm("Вы уверены в своём выборе? Вы не сможете изменить его впоследствии.")) {
+            if (!Window.confirm(getMessages().confirmPrompt())) {
                 return;
             }
 

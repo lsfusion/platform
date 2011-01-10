@@ -16,10 +16,18 @@ public interface ExpertService extends RemoteService {
      * Use ExpertService.App.getInstance() to access static instance of ProjectsServiceAsync
      */
     public static class App {
-        private static final ExpertServiceAsync ourInstance = (ExpertServiceAsync) GWT.create(ExpertService.class);
+        private static final ExpertServiceAsync instance = (ExpertServiceAsync) GWT.create(ExpertService.class);
 
         public static ExpertServiceAsync getInstance() {
-            return ourInstance;
+            return instance;
+        }
+    }
+
+    public static class Messages {
+        private static final ExpertFrameMessages instance = (ExpertFrameMessages) GWT.create(ExpertFrameMessages.class);
+
+        public static ExpertFrameMessages getInstance() {
+            return instance;
         }
     }
 }
