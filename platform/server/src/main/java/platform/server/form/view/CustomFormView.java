@@ -133,12 +133,12 @@ public class CustomFormView extends FormView {
 
     public PropertyDrawView createPropertyDraw(LP lp, ObjectEntity... objects) {
         List<ObjectEntity> list = Arrays.asList(objects);
-        Set<ObjectEntity> set = new HashSet(list);
+        Set<ObjectEntity> set = new HashSet<ObjectEntity>(list);
         PropertyDrawEntity propertyEntity = null;
 
         List<PropertyDrawEntity> props = form.propertyDraws;
         for (PropertyDrawEntity prop : props) {
-            if (lp.property.sID.equals(prop.propertyObject.property.sID) && new HashSet(prop.propertyObject.mapping.values()).equals(set)) {
+            if (lp.property.sID.equals(prop.propertyObject.property.sID) && new HashSet<ObjectEntity>(prop.propertyObject.mapping.values()).equals(set)) {
                 propertyEntity = prop;
                 break;
             }
@@ -169,6 +169,7 @@ public class CustomFormView extends FormView {
     public ShowTypeView createShowType() {
         ShowTypeView view = new ShowTypeView();
         view.ID = idGenerator.idShift();
+        view.getConstraints().directions = new SimplexComponentDirections(0.01,0,0.0,0.01);
         return view;
     }
 

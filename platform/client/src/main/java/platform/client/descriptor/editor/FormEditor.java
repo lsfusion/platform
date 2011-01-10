@@ -1,5 +1,6 @@
 package platform.client.descriptor.editor;
 
+import platform.client.code.CodeGenerator;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.editor.base.NodeEditor;
 import platform.client.descriptor.editor.base.TitledPanel;
@@ -19,6 +20,8 @@ public class FormEditor extends JPanel implements NodeEditor {
         add(new TitledPanel("Заголовок", new IncrementTextEditor(form, "caption")));
         add(Box.createRigidArea(new Dimension(5, 5)));
         add(new TitledPanel("Порядки по умолчанию", new DefaultOrdersEditor(form, null)));
+        add(Box.createRigidArea(new Dimension(5, 5)));
+        add(new TitledPanel("Код", CodeGenerator.getComponent(form)));
     }
 
     public JComponent getComponent() {

@@ -1,6 +1,7 @@
 package platform.client.code;
 
 import platform.client.descriptor.*;
+import platform.client.descriptor.editor.base.FlatButton;
 import platform.client.descriptor.filter.*;
 import platform.client.logics.*;
 import platform.interop.ClassViewType;
@@ -50,8 +51,8 @@ public class CodeGenerator {
     }
 
     private static void addConstructorDeclaration(FormDescriptor form, StringBuilder result) {
-        result.append(intend + "public " + form.getSID() + " (NavigatorElement parent, int iID, String caption) {\n");
-        intend += "   ";
+        result.append(intend + "public " + form.getSID() + "(NavigatorElement parent, int iID, String caption) {\n");
+        intend += "    ";
         result.append(intend + "super(parent, iID, caption);\n");
     }
 
@@ -114,19 +115,19 @@ public class CodeGenerator {
             propArray.append("new LP[]{");
 
             for (PropertyDrawDescriptor prop : propCollection) {
-                propArray.append(prop.getPropertyObject().property.code + ",");
+                propArray.append(prop.getPropertyObject().property.code + ", ");
             }
-            propArray.replace(propArray.length() - 1, propArray.length(), "}");
+            propArray.replace(propArray.length() - 2, propArray.length(), "}");
 
             StringBuilder entityArray = new StringBuilder();
-            entityArray.append(",");
+            entityArray.append(", ");
             for (PropertyObjectInterfaceDescriptor objectDescriptorInt : set) {
                 if (objectDescriptorInt instanceof ObjectDescriptor) {
                     ObjectDescriptor object = (ObjectDescriptor) objectDescriptorInt;
-                    entityArray.append(object.getVariableName() + ",");
+                    entityArray.append(object.getVariableName() + ", ");
                 }
             }
-            entityArray.replace(entityArray.length() - 1, entityArray.length(), ")");
+            entityArray.replace(entityArray.length() - 2, entityArray.length(), ")");
 
             result.append(intend + "addPropertyDraw(" + propArray.toString() + entityArray.toString() + ";\n");
         }
@@ -195,7 +196,6 @@ public class CodeGenerator {
                 temp.append(addContainers(form, child, childName));
             }
         }
-        temp.append(changeIntersects(component));
         return temp.toString();
     }
 
@@ -259,6 +259,11 @@ public class CodeGenerator {
                         component.getVariableName() + ", " + single.getVariableName() + ", " + map.get(single).getConstraintCode() + ");\n");
             }
         }
+        if (component instanceof ClientContainer) {
+            for (ClientComponent child : ((ClientContainer)component).children) {
+                toReturn.append(changeIntersects(child));
+            }
+        }
         return toReturn.toString();
     }
 
@@ -266,8 +271,7 @@ public class CodeGenerator {
         StringBuilder temp = new StringBuilder();
         if(component instanceof ClientContainer) {
             for (ClientComponent child : ((ClientContainer) component).children) {
-                String childName = child.getVariableName();
-                temp.append(adjustDesign(child, childName));
+                temp.append(adjustDesign(child, child.getVariableName()));
             }
         }
         if (component.design.background != null) {
@@ -288,12 +292,13 @@ public class CodeGenerator {
     private static void addRichDesign(FormDescriptor form, StringBuilder result) {
         result.append(intend + "@Override\n");
         result.append(intend + "public FormView createDefaultRichDesign() {\n");
-        intend += "   ";
+        intend += "    ";
         result.append(intend + "CustomFormView design = new CustomFormView(this);\n");
         result.append(intend + "design.setMainContainer(design.createMainContainer(\"" + form.client.mainContainer.getSID() +
                 "\", \"" + form.client.mainContainer.getCaption() + "\"));\n");
         result.append(addContainers(form, form.client.mainContainer, "design.mainContainer"));
         result.append(changeConstraints(form.client.mainContainer, "design.mainContainer"));
+        result.append("\n" + changeIntersects(form.client.mainContainer));
 
         result.append(setEditKeys(form));
         result.append(adjustDesign(form.client.mainContainer, "design.mainContainer")).append("\n");
@@ -317,10 +322,10 @@ public class CodeGenerator {
 
     public static void addShouldProceed(StringBuilder result) {
         result.append("\n");
-        result.append("\t@Override\n");
-        result.append("\tpublic boolean shouldProceedDefaultDraw() {\n");
-        result.append("\t  return false;\n");
-        result.append("\t}\n");
+        result.append(intend + "@Override\n");
+        result.append(intend + "public boolean shouldProceedDefaultDraw() {\n");
+        result.append(intend + "    return false;\n");
+        result.append(intend + "}\n");
     }
 
     public static String formDescriptorCode(FormDescriptor form) {
@@ -328,7 +333,7 @@ public class CodeGenerator {
         StringBuilder result = new StringBuilder();
 
         addClassDeclaration(form, result);
-        intend += "\t";
+        intend += "    ";
         addInstanceVariable(form, result);
         result.append("\n");
 
@@ -350,12 +355,14 @@ public class CodeGenerator {
 
         addRegularFilterGroups(form.regularFilterGroups, result);
 
-        result.append("\t}\n");
-        intend = "\t";
+        intend = "    ";
+        result.append(intend + "}\n");
 
         result.append("\n");
         addRichDesign(form, result);
-        result.append("\t}\n");
+
+        intend = "    ";
+        result.append(intend + "}\n");
 
         addShouldProceed(result);
 
@@ -365,10 +372,19 @@ public class CodeGenerator {
     }
 
     public static Component getComponent(FormDescriptor form) {
-        Component comp = new JTextArea(formDescriptorCode(form));
-        Font font = new Font("Verdana", Font.CENTER_BASELINE, 10);
-        comp.setFont(font);
-        return new JScrollPane(comp);
+        return new CodeFlatButton(form);
     }
 
+    private static class CodeFlatButton extends FlatButton {
+        FormDescriptor form;
+
+        public CodeFlatButton(FormDescriptor form) {
+            super("Сгенерировать код");
+            this.form = form;
+        }
+
+        public void onClick() {
+            new CodeDialog(null, formDescriptorCode(form));
+        }
+    }
 }
