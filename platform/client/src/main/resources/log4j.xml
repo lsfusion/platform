@@ -52,6 +52,6 @@
         <priority value="ERROR"/>
         <appender-ref ref="stdout"/>
         <appender-ref ref="stderr"/>
-        <appender-ref ref="serverlog"/>
+        <appender-ref ref="clientlog"/>
     </root>
 </log4j:configuration>

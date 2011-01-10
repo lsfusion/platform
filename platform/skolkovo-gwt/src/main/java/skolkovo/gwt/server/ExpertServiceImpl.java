@@ -37,8 +37,8 @@ public class ExpertServiceImpl extends RemoteServiceServlet implements ExpertSer
     }
 
     private SkolkovoRemoteInterface getLogics() {
-        String serverHost = getServletContext().getInitParameter("serverHost");
-        String serverPort = getServletContext().getInitParameter("serverPort");
+        String serverHost = getServletConfig().getInitParameter("serverHost");
+        String serverPort = getServletConfig().getInitParameter("serverPort");
         return SkolkovoLogicsClient.getInstance().getLogics(serverHost, serverPort);
     }
 }
