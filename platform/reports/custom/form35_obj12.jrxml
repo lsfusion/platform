@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="obj12" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="obj12" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.3310000000000004"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="535"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -18,121 +21,134 @@
 	<field name="completeExpertVote" class="java.lang.Integer"/>
 	<field name="innovativeCommentExpertVote" class="java.lang.String"/>
 	<field name="completeCommentExpertVote" class="java.lang.String"/>
-	<pageHeader>
-		<band height="18">
-			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="0" y="0" width="102" height="18"/>
-				<textElement textAlignment="Center"/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Имя"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="102" y="0" width="102" height="18"/>
-				<textElement textAlignment="Center"/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Фамилия"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="204" y="0" width="70" height="18"/>
-				<textElement textAlignment="Center"/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Дата рез."]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="274" y="0" width="102" height="18"/>
-				<textElement textAlignment="Center"/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Результат"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="376" y="0" width="35" height="18"/>
-				<textElement textAlignment="Center"/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Соотв-ие кластеру"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="411" y="0" width="35" height="18"/>
-				<textElement textAlignment="Center"/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Инновац."]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="446" y="0" width="35" height="18"/>
-				<textElement textAlignment="Center"/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Иностр. специалист"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="481" y="0" width="56" height="18"/>
-				<textElement textAlignment="Center"/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Компет."]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="537" y="0" width="56" height="18"/>
-				<textElement textAlignment="Center"/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Полнота информ."]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="593" y="0" width="102" height="18"/>
-				<textElement textAlignment="Center"/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Инновационность (комм.)"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="695" y="0" width="107" height="18"/>
-				<textElement textAlignment="Center"/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Полнота информации (комм.)"]]></textFieldExpression>
-			</textField>
-		</band>
-	</pageHeader>
+	<field name="nameClainerProject" class="java.lang.String"/>
 	<detail>
-		<band height="18">
+		<band height="842" splitType="Immediate">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="102" height="18"/>
-				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{userFirstName}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="102" y="0" width="102" height="18"/>
-				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{userLastName}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="dd.MM.yy" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="204" y="0" width="70" height="18"/>
-				<textElement textAlignment="Right"/>
-				<textFieldExpression class="java.util.Date"><![CDATA[$F{dateExpertVote}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="274" y="0" width="102" height="18"/>
-				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameVoteResultExpertVote}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="376" y="0" width="35" height="18"/>
-				<textElement textAlignment="Center"/>
-				<textFieldExpression class="java.lang.Boolean"><![CDATA[$F{inClusterExpertVote}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="411" y="0" width="35" height="18"/>
-				<textElement textAlignment="Center"/>
-				<textFieldExpression class="java.lang.Boolean"><![CDATA[$F{innovativeExpertVote}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="446" y="0" width="35" height="18"/>
-				<textElement textAlignment="Center"/>
-				<textFieldExpression class="java.lang.Boolean"><![CDATA[$F{foreignExpertVote}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="481" y="0" width="56" height="18"/>
-				<textElement textAlignment="Right"/>
-				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{competentExpertVote}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="537" y="0" width="56" height="18"/>
-				<textElement textAlignment="Right"/>
-				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{completeExpertVote}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="593" y="0" width="102" height="18"/>
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="41" y="378" width="497" height="108"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{innovativeCommentExpertVote}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="695" y="0" width="107" height="18"/>
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="41" y="694" width="497" height="100"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{completeCommentExpertVote}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="40" y="14" width="182" height="20"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[БЮЛЛЕТЕНЬ ОЦЕНКИ ПРОЕКТА]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="40" y="40" width="47" height="20"/>
+				<textElement/>
+				<text><![CDATA[Эксперт:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="40" y="69" width="122" height="20"/>
+				<textElement/>
+				<text><![CDATA[Организация-заявитель:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="40" y="95" width="498" height="78"/>
+				<textElement/>
+				<text><![CDATA[Вы получили следующие материалы по проекту:
+ 1. Анкета проекта
+ 2. Резюме проекта
+ 3. Резюме иностранного специалиста, участвующего и/или планирующего участвовать в
+ проекте (опционально)
+ 4. Техническое описание продукта/технологии (опционально)]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="95" y="40" width="312" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{userLastName}+$F{userFirstName}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="40" y="183" width="194" height="20"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Ваша оценка по этой заявке учтена]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="40" y="204" width="33" height="20"/>
+				<textElement/>
+				<text><![CDATA[Дата:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="40" y="230" width="219" height="20"/>
+				<textElement/>
+				<text><![CDATA[Проект соответствует направлению "К1"]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="41" y="256" width="34" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{inClusterExpertVote}==null?"ДА":"НЕТ")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="74" y="204" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{dateExpertVote}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="40" y="283" width="498" height="34"/>
+				<textElement/>
+				<text><![CDATA[Проект предполагает разработку и/или коммерциализацию уникальных и/или обладающих
+ конкурентными преимуществами перед мировыми аналогами продуктов и/или технологий]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement x="40" y="324" width="34" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{innovativeExpertVote}==null?"ДА":"НЕТ")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="41" y="352" width="290" height="20"/>
+				<textElement/>
+				<text><![CDATA[Приведите обоснование Вашего ответа (800-1000 символов)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="40" y="497" width="498" height="35"/>
+				<textElement/>
+				<text><![CDATA[Проект предполагает участие иностранного (не являющегося гражданином Российской Федерации) специалиста, который имеет
+значительный авторитет в инвестиционной и/или исследовательской среде]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="41" y="535" width="205" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{foreignExpertVote}==null?"ДА":"НЕТ")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="40" y="560" width="314" height="20"/>
+				<textElement/>
+				<text><![CDATA[Оцените Вашу компетенцию по теме проекта (от 1 до 5 баллов)]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="40" y="586" width="35" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{competentExpertVote}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="40" y="613" width="457" height="20"/>
+				<textElement/>
+				<text><![CDATA[Оцените достаточность предоставленой информации для оценки проекта (от 1 до 5 баллов)]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="41" y="639" width="34" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{completeExpertVote}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="40" y="665" width="291" height="20"/>
+				<textElement/>
+				<text><![CDATA[Приведите обоснование Вашей оценки (200-300) символов)]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="168" y="69" width="299" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameClainerProject}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

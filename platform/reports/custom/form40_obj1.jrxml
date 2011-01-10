@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="obj1" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
-	<property name="ireport.zoom" value="1.0"/>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="obj1" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.1000000000000025"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.y" value="60"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -23,20 +23,29 @@
 	<group name="textGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{obj1})]]></groupExpression>
 		<groupHeader>
-			<band height="268" splitType="Prevent">
+			<band height="387" splitType="Prevent">
 				<textField isStretchWithOverflow="true">
-					<reportElement stretchType="RelativeToBandHeight" x="26" y="163" width="795" height="48"/>
-					<textElement/>
-					<textFieldExpression><![CDATA["Некоммерческая организация Фонд развития Центра разработки и коммерциализации новых технологий, рассмотрев поданную " + $F{nameClaimerVote} + " заявку на присвоение статуса участника проекта от " + $F{dateProjectVote} + ", на основании решения Фонда о направлении заявки соискателя на рассмотрение в Экспертную коллегию для проведения экспертизы заявки по существу от "+ $F{date} +", "+($F{prevDateVote}==null?"в соответствии с пунктами 4-7 Положения об Экспертных коллегиях Фонда «Сколково»":"учитывая, что заседание предыдущей Экспертной коллегии было признано несостоявшимся (протокол заседания Экспертной коллегии по вопросу о соответствии проекта, представленного соискателем, критериям, указанным в подпункте Е пункта 2 Положения о присвоении и утрате статуса участника проекта по созданию и обеспечению функционирования инновационного центра «Сколково», от "+$F{prevDateVote}+"), в соответствии с пунктом 12 Положения об Экспертных коллегиях Фонда «Сколково»")]]></textFieldExpression>
+					<reportElement stretchType="RelativeToBandHeight" x="34" y="163" width="524" height="146"/>
+					<textElement textAlignment="Justified"/>
+					<textFieldExpression class="java.lang.String"><![CDATA["Некоммерческая организация Фонд развития Центра разработки и коммерциализации новых технологий, "+
+"рассмотрев поданную " + $F{nameClaimerVote} + " заявку на присвоение статуса участника проекта от "
++ $F{dateProjectVote} + ", на основании решения Фонда о направлении заявки соискателя на рассмотрение "+
+"в Экспертную коллегию для проведения экспертизы заявки по существу от "+ $F{date} +", "+ $F{prevDateVote}==null?
+"в соответствии с пунктами 4-7 Положения об Экспертных коллегиях Фонда «Сколково»":"учитывая, что "+
+"заседание предыдущей Экспертной коллегии было признано несостоявшимся (протокол заседания "+
+"Экспертной коллегии по вопросу о соответствии проекта, представленного соискателем, критериям, "+
+"указанным в подпункте Е пункта 2 Положения о присвоении и утрате статуса участника проекта по "+
+"созданию и обеспечению функционирования инновационного центра «Сколково», от "+$F{prevDateVote}+", "+
+"в соответствии с пунктом 12 Положения об Экспертных коллегиях Фонда «Сколково»)"]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement x="101" y="87" width="151" height="26"/>
+					<reportElement x="35" y="87" width="151" height="26"/>
 					<textElement/>
 					<text><![CDATA[«      »______________ 2010 г]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="328" y="10" width="192" height="64"/>
-					<textElement/>
+					<reportElement x="188" y="10" width="192" height="64"/>
+					<textElement textAlignment="Justified"/>
 					<text><![CDATA[
 Некоммерческая организация
 Фонд развития Центра разработки и
@@ -45,7 +54,7 @@
 ]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="511" y="92" width="82" height="21"/>
+					<reportElement x="371" y="92" width="82" height="21"/>
 					<textElement/>
 					<text><![CDATA[№________
 
@@ -57,41 +66,43 @@
 					<text><![CDATA[Москва]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="398" y="77" width="62" height="18"/>
+					<reportElement x="256" y="77" width="62" height="18"/>
 					<textElement/>
 					<text><![CDATA[РЕШЕНИЕ]]></text>
 				</staticText>
 				<staticText>
-					<reportElement positionType="Float" x="50" y="211" width="670" height="56"/>
-					<textElement/>
+					<reportElement positionType="Float" x="34" y="314" width="524" height="56"/>
+					<textElement textAlignment="Justified"/>
 					<text><![CDATA[р е ш и л
 1. Созвать заседание новой Экспертной коллегии для проведения экспертизы указанной заявки по существу.
-2. Путем случайной выборки из числа экспертов по Направлению деятельности, указанному Соискателем в заявке, определить следующий состав новой Экспертной коллегии:
+2. Путем случайной выборки из числа экспертов по Направлению деятельности, указанному Соискателем в
+заявке, определить следующий состав новой Экспертной коллегии:
 ]]></text>
 				</staticText>
 				<textField>
-					<reportElement x="316" y="131" width="426" height="20"/>
+					<reportElement x="151" y="132" width="401" height="20"/>
 					<textElement/>
 					<textFieldExpression class="java.lang.String"><![CDATA["О созыве заседания "+($F{prevDateVote}==null?"":"новой")+" Экспертной коллегии"]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
 		<groupFooter>
-			<band height="98">
+			<band height="330">
 				<staticText>
-					<reportElement x="26" y="0" width="663" height="20"/>
-					<textElement/>
-					<text><![CDATA[3. Направить членам новой Экспертной коллегии материалы заявки соискателя (в электронном виде) и Бюллетень оценки.
-
-Руководитель Аппарата Президента
-и Советов Фонда                                                                                                              ФИО
-]]></text>
-				</staticText>
-				<staticText>
-					<reportElement x="26" y="44" width="596" height="31"/>
+					<reportElement x="34" y="94" width="524" height="36"/>
 					<textElement/>
 					<text><![CDATA[Руководитель Аппарата Президента
 и Советов Фонда
+]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="35" y="17" width="523" height="69"/>
+					<textElement/>
+					<text><![CDATA[3. Направить членам новой Экспертной коллегии материалы заявки соискателя (в электронном виде) и
+Бюллетень оценки.
+
+Руководитель Аппарата Президента
+и Советов Фонда                                                                                                              ФИО
 ]]></text>
 				</staticText>
 			</band>
