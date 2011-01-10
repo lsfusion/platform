@@ -305,6 +305,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public void addPropertyDraw(LP[] properties, ObjectEntity... objects) {
+        /*
         Map<ValueClass, ObjectEntity> classToObject = new HashMap<ValueClass, ObjectEntity>();
         for (ObjectEntity object : objects) {
             Object oldValue = classToObject.put(object.baseClass, object);
@@ -315,6 +316,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
             List<ObjectEntity> orderedObjects =
                     BaseUtils.mapList(property.listInterfaces, BaseUtils.join(property.property.getMapClasses(), classToObject));
             addPropertyDraw(property, null, orderedObjects.toArray(new ObjectEntity[1]));
+        }
+        */
+        for (LP property : properties) {
+            addPropertyDraw(property, objects);
         }
     }
 

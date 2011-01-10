@@ -791,7 +791,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         public LP getLP(ValueClass cls) {
-            String sid = prefix + cls.getSID();
+            String sid = prefix + cls.getBaseClass().getSID();
             if (!sidToLP.containsKey(sid)) {
                 createProperty(new ValueClass[]{cls});
             }
