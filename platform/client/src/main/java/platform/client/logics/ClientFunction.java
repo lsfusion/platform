@@ -1,5 +1,6 @@
 package platform.client.logics;
 
+import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.editor.FunctionEditor;
 import platform.client.serialization.ClientSerializationPool;
 import platform.base.context.ApplicationContext;
@@ -73,7 +74,11 @@ public class ClientFunction extends ClientComponent implements AbstractFunction<
     @Override
     public String getCodeConstructor() {
         return "design.create" + type + "Function(\"" + caption + "\")";
-        //+                "\t   design.set" + type + "Function(" + name + ");";
+    }
+
+    @Override
+    public String getVariableName(FormDescriptor form) {
+        return type.toLowerCase() + getCodeClass();
     }
 
     @Override

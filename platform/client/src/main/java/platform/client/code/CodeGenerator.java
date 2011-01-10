@@ -9,7 +9,6 @@ import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexComponentDirections;
 import platform.interop.form.layout.SimplexConstraints;
 
-import javax.swing.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -159,7 +158,7 @@ public class CodeGenerator {
         StringBuilder temp = new StringBuilder();
         if (component instanceof ClientContainer) {
             for (ClientComponent child : ((ClientContainer) component).children) {
-                String childName = child.getVariableName();
+                String childName = child.getVariableName(form);
                 String ifDefault = "";
 
                 if (!(child instanceof ClientRegularFilterGroup)) {
@@ -203,7 +202,7 @@ public class CodeGenerator {
         String result = "\n";
         for (PropertyDrawDescriptor property : form.propertyDraws) {
             if (property.client.editKey != null) {
-                result += intend + property.client.getCodeEditKey(property.client.getVariableName());
+                result += intend + property.client.getCodeEditKey(property.client.getVariableName(form));
             }
         }
         return result + "\n";
@@ -250,28 +249,28 @@ public class CodeGenerator {
         return toReturn.toString();
     }
 
-    private static String changeIntersects(ClientComponent component) {
+    private static String changeIntersects(ClientComponent component, FormDescriptor form) {
         StringBuilder toReturn = new StringBuilder();
         Map<ClientComponent, DoNotIntersectSimplexConstraint> map = component.getIntersects();
         if (!map.isEmpty()) {
             for (ClientComponent single : map.keySet()) {
                 toReturn.append(intend + "design.addIntersection(" +
-                        component.getVariableName() + ", " + single.getVariableName() + ", " + map.get(single).getConstraintCode() + ");\n");
+                        component.getVariableName(form) + ", " + single.getVariableName(form) + ", " + map.get(single).getConstraintCode() + ");\n");
             }
         }
         if (component instanceof ClientContainer) {
             for (ClientComponent child : ((ClientContainer)component).children) {
-                toReturn.append(changeIntersects(child));
+                toReturn.append(changeIntersects(child, form));
             }
         }
         return toReturn.toString();
     }
 
-    private static String adjustDesign(ClientComponent component, String name) {
+    private static String adjustDesign(ClientComponent component, String name, FormDescriptor form) {
         StringBuilder temp = new StringBuilder();
         if(component instanceof ClientContainer) {
             for (ClientComponent child : ((ClientContainer) component).children) {
-                temp.append(adjustDesign(child, child.getVariableName()));
+                temp.append(adjustDesign(child, child.getVariableName(form), form));
             }
         }
         if (component.design.background != null) {
@@ -298,20 +297,20 @@ public class CodeGenerator {
                 "\", \"" + form.client.mainContainer.getCaption() + "\"));\n");
         result.append(addContainers(form, form.client.mainContainer, "design.mainContainer"));
         result.append(changeConstraints(form.client.mainContainer, "design.mainContainer"));
-        result.append("\n" + changeIntersects(form.client.mainContainer));
+        result.append("\n" + changeIntersects(form.client.mainContainer, form));
 
         result.append(setEditKeys(form));
-        result.append(adjustDesign(form.client.mainContainer, "design.mainContainer")).append("\n");
+        result.append(adjustDesign(form.client.mainContainer, "design.mainContainer", form)).append("\n");
 
         for (GroupObjectDescriptor groupObject : form.groupObjects) {
             String name = "groupView" + groupObject.getID();
             result.append(intend + "GroupObjectView " + name + " = design.createGroupObject(" + groupObject.getVariableName() + ", " +
-                    groupObject.client.showType.getVariableName() + ", " + groupObject.client.grid.getVariableName() + ");\n");
+                    groupObject.client.showType.getVariableName(form) + ", " + groupObject.client.grid.getVariableName(form) + ");\n");
             result.append(intend + "design.groupObjects.add(" + name + ");\n");
 
             for (ObjectDescriptor object : groupObject.objects) {
                 result.append(intend + name + ".getObjectView(" + object.getVariableName() + ").changeClassChooserLocation(" +
-                        object.client.classChooser.getVariableName() + ");\n");
+                        object.client.classChooser.getVariableName(form) + ");\n");
 
             }
         }

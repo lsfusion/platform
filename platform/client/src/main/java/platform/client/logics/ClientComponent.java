@@ -1,6 +1,9 @@
 package platform.client.logics;
 
 import platform.base.context.ContextIdentityObject;
+import platform.client.descriptor.FormDescriptor;
+import platform.client.descriptor.GroupObjectDescriptor;
+import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.editor.ComponentEditor;
 import platform.base.context.ApplicationContext;
 import platform.client.descriptor.nodes.ComponentNode;
@@ -25,6 +28,7 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
 
     public ClientContainer container;
     public SimplexConstraints<ClientComponent> constraints;
+
     public SimplexConstraints<ClientComponent> getDefaultConstraints() {
         return new SimplexConstraints<ClientComponent>();
     }
@@ -98,7 +102,7 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         this.constraints = constraints;
         updateDependency(this, "constraints");
     }
-  
+
     public void setDefaultComponent(boolean defaultComponent) {
         this.defaultComponent = defaultComponent;
         updateDependency(this, "defaultComponent");
@@ -129,9 +133,22 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
 
     public abstract String getCodeClass();
 
-    public String getVariableName() {
+    public String getVariableName(FormDescriptor form) {
         String className = getCodeClass();
-        return sID != null ? sID :
-                className.substring(0, 1).toLowerCase() + className.substring(1, className.length()) + getID();
+        if (sID == null || (sID.charAt(sID.length() - 1) > '9')) {
+            return className.substring(0, 1).toLowerCase() + className.substring(1, className.length()) + getSID();
+        }
+        String temp = "";
+        int i = sID.length() - 1;
+
+        while (sID.charAt(i) >= '0' && sID.charAt(i) <= '9') {
+            temp = sID.charAt(i--) + temp;
+        }
+
+        int groupId = Integer.parseInt(temp);
+        String name = form.getGroupObject(groupId).getClassNames();
+        name = name.substring(0, 1).toUpperCase() + name.substring(1);
+
+        return sID.substring(0, i + 1) + name;
     }
 }

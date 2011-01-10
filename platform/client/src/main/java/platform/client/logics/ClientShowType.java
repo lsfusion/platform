@@ -1,5 +1,6 @@
 package platform.client.logics;
 
+import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.editor.ComponentEditor;
 import platform.client.serialization.ClientSerializationPool;
 import platform.base.context.ApplicationContext;
@@ -62,6 +63,15 @@ public class ClientShowType extends ClientComponent {
     @Override
     public String getCodeConstructor() {
         return "design.createShowType()";
+    }
+
+    @Override
+    public String getVariableName(FormDescriptor form) {
+        StringBuilder result = new StringBuilder("");
+        for (ClientObject obj : groupObject.objects) {
+            result.append(obj.baseClass.getSID());
+        }
+        return result + "ShowType";
     }
 
     @Override

@@ -1,5 +1,7 @@
 package platform.client.logics;
 
+import platform.client.descriptor.FormDescriptor;
+import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.editor.GridEditor;
 import platform.base.context.ApplicationContext;
 import platform.client.serialization.ClientSerializationPool;
@@ -126,6 +128,15 @@ public class ClientGrid extends ClientComponent {
     @Override
     public String getCodeConstructor() {
         return "design.createGrid()";
+    }
+
+    @Override
+    public String getVariableName(FormDescriptor form) {
+        StringBuilder result = new StringBuilder("");
+        for (ClientObject obj : groupObject.objects) {
+            result.append(obj.baseClass.getSID());
+        }
+        return result + "GridView";
     }
 
     @Override

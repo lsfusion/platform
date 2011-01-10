@@ -26,6 +26,7 @@ public class FormContainerSet <C extends AbstractContainer<C, T>, T extends Abst
 
         set.formButtonContainer = contFactory.createContainer();
         set.formButtonContainer.setDescription("Служебные кнопки");
+        set.formButtonContainer.setSID("serviceButtons");
         set.formButtonContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
         set.mainContainer.add((T)set.formButtonContainer);
 

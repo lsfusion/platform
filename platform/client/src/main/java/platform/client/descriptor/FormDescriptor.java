@@ -363,6 +363,15 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         return null;
     }
 
+    public GroupObjectDescriptor getGroupObject(int groupID) {
+        for (GroupObjectDescriptor group : groupObjects) {
+            if (group.getID() == groupID) {
+                return group;
+            }
+        }
+        return null;
+    }
+
     public List<PropertyObjectDescriptor> getProperties(GroupObjectDescriptor groupObject) {
         if (groupObject == null) {
             return getAllProperties();

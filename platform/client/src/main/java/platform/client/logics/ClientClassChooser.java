@@ -1,5 +1,6 @@
 package platform.client.logics;
 
+import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.editor.ComponentEditor;
 import platform.base.context.ApplicationContext;
 import platform.client.serialization.ClientSerializationPool;
@@ -71,7 +72,12 @@ public class ClientClassChooser extends ClientComponent {
     public String getCodeConstructor() {
         return "design.createClassChooser()";
     }
-    
+
+    @Override
+    public String getVariableName(FormDescriptor form) {
+        return object.baseClass.getSID() + "ClassChooser";
+    }
+
     @Override
     public SimplexConstraints<ClientComponent> getDefaultConstraints() {
         return SimplexConstraints.getClassChooserDefaultConstraints(super.getDefaultConstraints());

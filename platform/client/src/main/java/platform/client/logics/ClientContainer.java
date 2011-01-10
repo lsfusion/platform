@@ -22,7 +22,6 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
 
     private String title;
     private String description;
-    private String sID;
 
     public List<ClientComponent> children = new ArrayList<ClientComponent>();
 

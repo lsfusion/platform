@@ -10,6 +10,7 @@ public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extend
     public static final String GRID_CONTAINER = "gridContainer";
     public static final String PANEL_CONTAINER = "panelContainer";
     public static final String FILTER_CONTAINER = "filterContainer";
+    public static final String MANAGER_OBJECT = "managerObject";
 
     private C groupContainer;
     private C gridContainer;
@@ -52,29 +53,30 @@ public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extend
         set.gridContainer.setDescription("Табличная часть");
         set.gridContainer.setSID(GRID_CONTAINER + group.getID());
         set.gridContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
-        set.groupContainer.add((T)set.gridContainer);
+        set.groupContainer.add((T) set.gridContainer);
 
         set.panelContainer = factory.createContainer(); // контейнер панели
         set.panelContainer.setDescription("Панель");
         set.panelContainer.setSID(PANEL_CONTAINER + group.getID());
-        set.groupContainer.add((T)set.panelContainer);
+        set.groupContainer.add((T) set.panelContainer);
 
         set.controlsContainer = factory.createContainer(); // контейнер всех управляющих объектов
         set.controlsContainer.setDescription("Управляющие объекты");
+        set.controlsContainer.setSID(MANAGER_OBJECT + group.getID());
         set.controlsContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
-        set.controlsContainer.getConstraints().insetsInside = new Insets(0,0,0,0);
-        set.controlsContainer.getConstraints().insetsSibling = new Insets(0,0,0,0);
-        set.panelContainer.add((T)set.controlsContainer);
+        set.controlsContainer.getConstraints().insetsInside = new Insets(0, 0, 0, 0);
+        set.controlsContainer.getConstraints().insetsSibling = new Insets(0, 0, 0, 0);
+        set.panelContainer.add((T) set.controlsContainer);
 
         set.filterContainer = factory.createContainer(); // контейнер фильтров
         set.filterContainer.setDescription("Контейнер фильтров");
         set.filterContainer.setSID(FILTER_CONTAINER + group.getID());
         set.filterContainer.getConstraints().childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
-        set.controlsContainer.add((T)set.filterContainer);
+        set.controlsContainer.add((T) set.filterContainer);
 
         set.gridContainer.add(group.getGrid());
 
-        group.getShowType().getConstraints().directions = new SimplexComponentDirections(0.01,0,0,0.01);
+        group.getShowType().getConstraints().directions = new SimplexComponentDirections(0.01, 0, 0, 0.01);
         set.controlsContainer.add(group.getShowType());
 
         return set;
