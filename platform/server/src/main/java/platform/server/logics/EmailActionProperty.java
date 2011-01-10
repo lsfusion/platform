@@ -1,9 +1,13 @@
 package platform.server.logics;
 
+import net.sf.jasperreports.engine.JRAbstractExporter;
+import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRHtmlExporter;
 import net.sf.jasperreports.engine.export.JRHtmlExporterParameter;
+import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
+import net.sf.jasperreports.engine.export.ooxml.JRDocxExporter;
 import platform.base.BaseUtils;
 import platform.base.ByteArray;
 import platform.interop.action.ClientAction;
@@ -37,7 +41,16 @@ import java.util.Map;
  */
 
 public class EmailActionProperty extends ActionProperty {
+    public static enum Format {PDF, DOCX, HTML}
+    private static Map<Format, String> extensions = new HashMap<Format, String>();
+    static {
+        extensions.put(Format.PDF, ".pdf");
+        extensions.put(Format.DOCX, ".docx");
+        extensions.put(Format.HTML, ".html");
+    }
+
     private final List<FormEntity> forms;
+    private final List<Format> formats = new ArrayList<Format>();
     private final List<Map<ObjectEntity, ClassPropertyInterface>> mapObjects = new ArrayList<Map<ObjectEntity, ClassPropertyInterface>>();
 
     private final List<PropertyMapImplement<?, ClassPropertyInterface>> recepients = new ArrayList<PropertyMapImplement<?, ClassPropertyInterface>>();
@@ -60,8 +73,9 @@ public class EmailActionProperty extends ActionProperty {
         recepients.add(recepient);
     }
 
-    public void addForm(FormEntity form, Map<ObjectEntity, ClassPropertyInterface> objects) {
+    public void addForm(FormEntity form, Format format, Map<ObjectEntity, ClassPropertyInterface> objects) {
         forms.add(form);
+        formats.add(format);
         mapObjects.add(objects);
     }
 
@@ -70,12 +84,42 @@ public class EmailActionProperty extends ActionProperty {
         throw new RuntimeException("should not be");
     }
 
+    private static JRAbstractExporter createExporter(Format format) {
+        JRAbstractExporter exporter = null;
+        switch (format) {
+            case PDF: exporter = new JRPdfExporter(); break;
+            case DOCX: exporter = new JRDocxExporter(); break;
+            case HTML:
+            {
+                exporter = new JRHtmlExporter();
+                exporter.setParameter(JRHtmlExporterParameter.IS_USING_IMAGES_TO_ALIGN, false);
+                break;
+            }
+        }
+        return exporter;
+    }
+
+    private String createReportFile(JasperPrint print, Format format) {
+        print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
+        try {
+            String filePath = File.createTempFile("lsfReport", extensions.get(format)).getAbsolutePath();
+            JRAbstractExporter exporter = createExporter(format);
+
+            exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, filePath);
+            exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
+            exporter.exportReport();
+
+            return filePath;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapExecuteObjects) throws SQLException {
 
         try {
-            String embeddedFilePath = "";
-            String[] reportPaths = new String[forms.size()-1];
+            EmailSender.AttachmentProperties[] reportPaths = new EmailSender.AttachmentProperties[forms.size()];
             Map<ByteArray, String> files = new HashMap<ByteArray, String>();
             for (int i = 0; i < forms.size(); i++) {
                 Map<ObjectEntity, DataObject> formObjects = BaseUtils.join(mapObjects.get(i), keys);
@@ -87,20 +131,8 @@ public class EmailActionProperty extends ActionProperty {
 
                 ReportGenerator_tmp report = new ReportGenerator_tmp(remoteForm, false, true, files);
                 JasperPrint print = report.createReport();
-                print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
-
-                File file = File.createTempFile("lsfReport", ".html");
-                if (i == 0) {
-                    embeddedFilePath = file.getAbsolutePath();
-                } else {
-                    reportPaths[i-1] = file.getAbsolutePath();
-                }
-
-                JRHtmlExporter htmlExporter = new JRHtmlExporter();
-                htmlExporter.setParameter(JRHtmlExporterParameter.IS_USING_IMAGES_TO_ALIGN, false);
-                htmlExporter.setParameter(JRHtmlExporterParameter.OUTPUT_FILE_NAME, file.getAbsolutePath());
-                htmlExporter.setParameter(JRHtmlExporterParameter.JASPER_PRINT, print);
-                htmlExporter.exportReport();
+                reportPaths[i] = new EmailSender.AttachmentProperties(
+                        createReportFile(print, formats.get(i)), forms.get(i).caption, formats.get(i));
             }
 
             Modifier<?> modifier = executeForm!=null? executeForm.form :session.modifier;
@@ -119,7 +151,7 @@ public class EmailActionProperty extends ActionProperty {
             else {
                 try {
                     EmailSender sender = new EmailSender(smtpHost.trim(), fromAddress.trim(), recepientEmails.toArray(new String[recepientEmails.size()]));
-                    sender.sendMail(subject, embeddedFilePath, files, reportPaths);
+                    sender.sendMail(subject, files, reportPaths);
                 } catch (Exception e) {
                     actions.add(new MessageClientAction("Не удалось отправить почту","Отсылка писем"));
                 }

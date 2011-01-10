@@ -2,6 +2,7 @@ package platform.server;
 
 
 import platform.base.ByteArray;
+import platform.server.logics.EmailActionProperty;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -24,6 +25,18 @@ public class EmailSender {
     MimeMessage message;
     Multipart mp = new MimeMultipart();
     String emails[];
+
+    public static class AttachmentProperties {
+        public String fileName;
+        public String attachmentName;
+        public EmailActionProperty.Format format;
+
+        public AttachmentProperties(String fileName, String attachmentName, EmailActionProperty.Format format) {
+            this.fileName = fileName;
+            this.attachmentName = attachmentName;
+            this.format = format;
+        }
+    }
 
     public EmailSender(String smtpHost, String fromAddress, String... targets) {
         emails = targets;
@@ -75,23 +88,37 @@ public class EmailSender {
         }
     }
 
-    public void attachFile(String path) throws MessagingException {
+    private String getMimeType(EmailActionProperty.Format format) {
+        switch (format) {
+            case PDF: return "application/pdf";
+            case DOCX: return "application/msword";
+            default: return "text/html";
+        }
+    }
+
+    public void attachFile(AttachmentProperties props) throws MessagingException, IOException {
+        FileDataSource fds = new FileDataSource(props.fileName);
+        ByteArrayDataSource dataSource = new ByteArrayDataSource(fds.getInputStream(), getMimeType(props.format));
+        attachFile(dataSource, props.attachmentName);
+    }
+
+    public void attachFile(byte[] buf, String attachmentName) throws MessagingException {
+        ByteArrayDataSource dataSource = new ByteArrayDataSource(buf, getMimeType(EmailActionProperty.Format.PDF));
+        attachFile(dataSource, attachmentName);
+    }
+
+    private void attachFile(DataSource source, String attachmentName) throws MessagingException {
         MimeBodyPart filePart = new MimeBodyPart();
-        FileDataSource fds = new FileDataSource(path);
-        filePart.setDataHandler(new DataHandler(fds));
-        filePart.setFileName(fds.getName());
+        filePart.setDataHandler(new DataHandler(source));
+        filePart.setFileName(attachmentName);
         mp.addBodyPart(filePart);
     }
 
-    public void attachFile(byte[] buf, String fileName) throws MessagingException {
-        MimeBodyPart filePart = new MimeBodyPart();
-        ByteArrayDataSource fds = new ByteArrayDataSource(buf, "application/msword");
-        filePart.setDataHandler(new DataHandler(fds));
-        filePart.setFileName(fileName);
-        mp.addBodyPart(filePart);
+    public void sendMail(String subject, Map<ByteArray, String> files, AttachmentProperties... forms) {
+        sendMail(subject, null, files, forms);
     }
 
-    public void sendMail(String subject, String htmlFilePath, Map<ByteArray, String> attachments, String... filePaths) {
+    public void sendMail(String subject, String htmlFilePath, Map<ByteArray, String> files, AttachmentProperties... forms) {
         try {
             message.setFrom();
             message.setSentDate(new java.util.Date());
@@ -99,17 +126,21 @@ public class EmailSender {
             message.setSubject(subject, "utf-8");
 
             String result = "";
-            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(htmlFilePath)));
-            while (in.ready()) {
-                String s = in.readLine();
-                result += s;
+            if (htmlFilePath != null) {
+                BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(htmlFilePath), "utf-8"));
+                while (in.ready()) {
+                    String s = in.readLine();
+                    result += s;
+                }
+            } else {
+                result = "Вам пришли печатные формы";
             }
 
             setText(result);
-            for (String path : filePaths) {
-                attachFile(path);
+            for (AttachmentProperties formProps : forms) {
+                attachFile(formProps);
             }
-            for (Map.Entry<ByteArray, String> entry : attachments.entrySet()) {
+            for (Map.Entry<ByteArray, String> entry : files.entrySet()) {
                 attachFile(entry.getKey().array, entry.getValue());
             }
             message.setContent(mp);
