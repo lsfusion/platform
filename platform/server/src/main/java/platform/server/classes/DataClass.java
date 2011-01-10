@@ -137,6 +137,7 @@ public abstract class DataClass<T> implements StaticClass, Type<T>, AndClassSet,
         if (type == Data.EXCEL) return ExcelClass.instance;
         if (type == Data.TEXT) return TextClass.instance;
         if (type == Data.YEAR) return YearClass.instance;
+        if (type == Data.PDF) return PDFClass.instance;
 
         throw new IOException();
     }

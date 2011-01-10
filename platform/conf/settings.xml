@@ -5,18 +5,15 @@
            http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
 	<bean id="dataAdapter" class="platform.server.data.sql.PostgreDataAdapter">
-		<constructor-arg><value>roman</value></constructor-arg>
+		<constructor-arg><value>skolkovo</value></constructor-arg>
 		<constructor-arg><value>localhost</value></constructor-arg>
 		<constructor-arg><value>postgres</value></constructor-arg>
 		<constructor-arg><value>11111</value></constructor-arg>
 	</bean>
 
-	<bean id="businessLogics" class="roman.RomanBusinessLogics">
+	<bean id="businessLogics" class="skolkovo.SkolkovoBusinessLogics">
 		<constructor-arg><ref bean="dataAdapter"/></constructor-arg>
 		<constructor-arg type="int"><value>7652</value></constructor-arg>
-		<property name="formSets"><map>
-    	    <entry><key><value>cashregister</value></key><value>1310,1325,1345,1365</value></entry>
-		</map></property>
         <property name="requiredPassword" value="false"/>
 	</bean>
 

@@ -219,7 +219,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         projectDocument = addDProp(idGroup, "projectDocument", "Проект (ИД)", project, document);
         nameProjectDocument = addJProp(baseGroup, "nameProjectDocument", "Проект", name, projectDocument, 1);
 
-        fileDocument = addDProp(baseGroup, "fileDocument", "Файл", WordClass.instance, document);
+        fileDocument = addDProp(baseGroup, "fileDocument", "Файл", PDFClass.instance, document);
 
         inExpertVote = addDProp(baseGroup, "inExpertVote", "Вкл", LogicalClass.instance, expert, vote); // !!! нужно отослать письмо с документами и т.д
 
