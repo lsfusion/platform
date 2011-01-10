@@ -157,6 +157,7 @@ public class CodeGenerator {
     private static String addContainers(FormDescriptor form, ClientComponent component, String name) {
         StringBuilder temp = new StringBuilder();
         if (component instanceof ClientContainer) {
+            temp.append("\n");
             for (ClientComponent child : ((ClientContainer) component).children) {
                 String childName = child.getVariableName(form);
                 String ifDefault = "";

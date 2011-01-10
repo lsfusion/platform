@@ -2,6 +2,7 @@ package platform.client.logics;
 
 import platform.base.BaseUtils;
 import platform.client.SwingUtils;
+import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.PropertyDrawDescriptor;
 import platform.base.context.ApplicationContext;
@@ -470,5 +471,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String getCodeEditKey(String name) {
         String result = "design.setEditKey(" + name + ", KeyStroke.getKeyStroke(\"" + editKey + "\"));\n";
         return result;
+    }
+
+    @Override
+    public String getVariableName(FormDescriptor form) {
+        return "propertyView" + getID();
     }
 }
