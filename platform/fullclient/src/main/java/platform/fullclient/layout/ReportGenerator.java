@@ -234,44 +234,45 @@ public class ReportGenerator {
     private void transformTextField(JasperDesign design, JRDesignTextField textField,
                                     List<JRDesignElement> toAdd, List<JRDesignElement> toDelete) {
         String exprText = textField.getExpression().getText();
-        String id;
-        if (exprText.startsWith("$F{")) {
+        String id = null;
+        if (exprText.startsWith("$F{") && exprText.endsWith("}")) {
             id = exprText.substring(3, exprText.length()-1);
-        } else {
-            assert exprText.startsWith("\"");  // Текст должен содержаться в кавычках
+        } else if (exprText.startsWith("\"") && exprText.endsWith("\"")) {
             id = exprText.substring(1, exprText.length()-1);
         }
 
-        String dataId = id;
-        if (id.endsWith(ReportConstants.captionSuffix)) {
-            dataId = id.substring(0, id.length() - ReportConstants.captionSuffix.length());
-        }
-        if (compositeColumnValues.containsKey(dataId)) {
-            toDelete.add(textField);
-            design.removeField(id);
-            int newFieldsCount = compositeColumnValues.get(dataId).size();
-            List<JRDesignTextField> subFields = makeFieldPartition(textField, newFieldsCount);
-
-            for (int i = 0; i < newFieldsCount; i++) {
-                JRDesignExpression subExpr = new JRDesignExpression();
-                subExpr.setValueClassName(textField.getExpression().getValueClassName());
-                if (exprText.startsWith("\"")) {  // caption без property
-                    subExpr.setText(exprText);
-                } else {
-                    String fieldName = id + ClientReportData.beginMarker + i + ClientReportData.endMarker;
-                    subExpr.setText("$F{" + fieldName + "}");
-                    JRDesignField designField = new JRDesignField();
-                    designField.setName(fieldName);
-                    designField.setValueClassName(subExpr.getValueClassName());
-                    try {
-                        design.addField(designField);
-                    } catch (JRException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                subFields.get(i).setExpression(subExpr);
+        if (id != null) {
+            String dataId = id;
+            if (id.endsWith(ReportConstants.captionSuffix)) {
+                dataId = id.substring(0, id.length() - ReportConstants.captionSuffix.length());
             }
-            toAdd.addAll(subFields);
+            if (compositeColumnValues.containsKey(dataId)) {
+                toDelete.add(textField);
+                design.removeField(id);
+                int newFieldsCount = compositeColumnValues.get(dataId).size();
+                List<JRDesignTextField> subFields = makeFieldPartition(textField, newFieldsCount);
+
+                for (int i = 0; i < newFieldsCount; i++) {
+                    JRDesignExpression subExpr = new JRDesignExpression();
+                    subExpr.setValueClassName(textField.getExpression().getValueClassName());
+                    if (exprText.startsWith("\"")) {  // caption без property
+                        subExpr.setText(exprText);
+                    } else {
+                        String fieldName = id + ClientReportData.beginMarker + i + ClientReportData.endMarker;
+                        subExpr.setText("$F{" + fieldName + "}");
+                        JRDesignField designField = new JRDesignField();
+                        designField.setName(fieldName);
+                        designField.setValueClassName(subExpr.getValueClassName());
+                        try {
+                            design.addField(designField);
+                        } catch (JRException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    subFields.get(i).setExpression(subExpr);
+                }
+                toAdd.addAll(subFields);
+            }
         }
     }
 
