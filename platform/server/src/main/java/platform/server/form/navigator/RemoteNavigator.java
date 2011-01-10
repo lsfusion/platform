@@ -381,5 +381,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     public void addCacheObject(ConcreteCustomClass cls, int value) {
         classCache.put(cls, value);
     }
+
+    public void close() throws SQLException {
+        sql.close();
+    }
 }
+
 

@@ -1755,22 +1755,18 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public void synchronizeDB() throws SQLException, IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
 
-        DataSession session = createSession();
-
-        SQLSession sqlSession = session.sql;
-        sqlSession.startTransaction();
+        sql.startTransaction();
 
         // инициализируем таблицы
-        tableFactory.fillDB(sqlSession, baseClass);
+        tableFactory.fillDB(sql, baseClass);
 
         // "старое" состояние базы
         DataInputStream inputDB = null;
-        byte[] struct = (byte[]) sqlSession.readRecord(StructTable.instance, new HashMap<KeyField, DataObject>(), StructTable.instance.struct);
+        byte[] struct = (byte[]) sql.readRecord(StructTable.instance, new HashMap<KeyField, DataObject>(), StructTable.instance.struct);
         if (struct != null) inputDB = new DataInputStream(new ByteArrayInputStream(struct));
 
         if (struct != null && struct.length == 0) { //чисто для бага JTDS
-            sqlSession.rollbackTransaction();
-            sqlSession.close();
+            sql.rollbackTransaction();
             return;
         }
 /*        try {
@@ -1851,14 +1847,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     index.add(inputDB.readUTF());
                 ImplementTable implementTable = implementTables.get(prevTable.name);
                 if (implementTable == null || !mapIndexes.get(implementTable).remove(index))
-                    sqlSession.dropIndex(prevTable.name, index);
+                    sql.dropIndex(prevTable.name, index);
             }
         }
 
         // добавим таблицы которых не было
         for (ImplementTable table : implementTables.values()) {
             if (!prevTables.containsKey(table.name))
-                sqlSession.createTable(table.name, table.keys);
+                sql.createTable(table.name, table.keys);
         }
 
         Set<ImplementTable> packTables = new HashSet<ImplementTable>();
@@ -1883,25 +1879,25 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     }
                     if (foundInterfaces.size() == mapKeys.size()) { // если все нашли
                         if (!(keep = property.mapTable.table.name.equals(prevTable.name))) { // если в другой таблице
-                            sqlSession.addColumn(property.mapTable.table.name, property.field);
+                            sql.addColumn(property.mapTable.table.name, property.field);
                             // делаем запрос на перенос
                             logger.info("Идет перенос колонки " + property.field + " (" + property.caption + ")" + " из таблицы " + prevTable.name + " в таблицу " + property.mapTable.table.name + "... ");
                             Query<KeyField, PropertyField> moveColumn = new Query<KeyField, PropertyField>(property.mapTable.table);
                             Expr moveExpr = prevTable.joinAnd(BaseUtils.join(BaseUtils.join(foundInterfaces, ((Property<PropertyInterface>) property).mapTable.mapKeys), moveColumn.mapKeys)).getExpr(prevTable.findProperty(sID));
                             moveColumn.properties.put(property.field, moveExpr);
                             moveColumn.and(moveExpr.getWhere());
-                            sqlSession.modifyRecords(new ModifyQuery(property.mapTable.table, moveColumn));
+                            sql.modifyRecords(new ModifyQuery(property.mapTable.table, moveColumn));
                             logger.info("Done");
                         } else // надо проверить что тип не изменился
                             if (!prevTable.findProperty(sID).type.equals(property.field.type))
-                                sqlSession.modifyColumn(property.mapTable.table.name, property.field, prevTable.findProperty(sID).type);
+                                sql.modifyColumn(property.mapTable.table.name, property.field, prevTable.findProperty(sID).type);
                         is.remove();
                     }
                     break;
                 }
             }
             if (!keep) {
-                sqlSession.dropColumn(prevTable.name, sID);
+                sql.dropColumn(prevTable.name, sID);
                 ImplementTable table = implementTables.get(prevTable.name); // надо упаковать таблицу если удалили колонку
                 if (table != null) packTables.add(table);
             }
@@ -1909,7 +1905,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         Collection<AggregateProperty> recalculateProperties = new ArrayList<AggregateProperty>();
         for (Property property : storedProperties) { // добавляем оставшиеся
-            sqlSession.addColumn(property.mapTable.table.name, property.field);
+            sql.addColumn(property.mapTable.table.name, property.field);
             if (property instanceof AggregateProperty)
                 recalculateProperties.add((AggregateProperty) property);
         }
@@ -1917,27 +1913,27 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         // удаляем таблицы старые
         for (String table : prevTables.keySet())
             if (!implementTables.containsKey(table))
-                sqlSession.dropTable(table);
+                sql.dropTable(table);
 
         // упакуем таблицы
         for (ImplementTable table : packTables)
-            sqlSession.packTable(table);
+            sql.packTable(table);
 
-        recalculateAggregations(sqlSession, recalculateProperties);
+        recalculateAggregations(sql, recalculateProperties);
 
         // создадим индексы в базе
         for (Map.Entry<ImplementTable, Set<List<String>>> mapIndex : mapIndexes.entrySet())
             for (List<String> index : mapIndex.getValue())
-                sqlSession.addIndex(mapIndex.getKey().name, index);
+                sql.addIndex(mapIndex.getKey().name, index);
 
         try {
-            sqlSession.updateInsertRecord(StructTable.instance, new HashMap<KeyField, DataObject>(), Collections.singletonMap(StructTable.instance.struct, (ObjectValue) new DataObject((Object) outDBStruct.toByteArray(), ByteArrayClass.instance)));
+            sql.updateInsertRecord(StructTable.instance, new HashMap<KeyField, DataObject>(), Collections.singletonMap(StructTable.instance.struct, (ObjectValue) new DataObject((Object) outDBStruct.toByteArray(), ByteArrayClass.instance)));
         } catch (Exception e) {
             Map<PropertyField, ObjectValue> propFields = Collections.singletonMap(StructTable.instance.struct, (ObjectValue) new DataObject((Object) new byte[0], ByteArrayClass.instance));
-            sqlSession.updateInsertRecord(StructTable.instance, new HashMap<KeyField, DataObject>(), propFields);
+            sql.updateInsertRecord(StructTable.instance, new HashMap<KeyField, DataObject>(), propFields);
         }
 
-        sqlSession.commitTransaction();
+        sql.commitTransaction();
 
 /*        byte[] outBytes = outDBStruct.toByteArray();
         FileOutputStream outFileStruct = new FileOutputStream("prevstruct.str");
@@ -1949,13 +1945,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         for (ImplementTable table : implementTables.values()) {
             if (prevTables.containsKey(table.name)) {
                 try {
-                    sqlSession.addExtraIndices(table.name, table.keys);
+                    sql.addExtraIndices(table.name, table.keys);
                 } catch (SQLException e) {
                 }
             }
         }
-
-        session.close();
     }
 
     boolean checkPersistent(SQLSession session) throws SQLException {
@@ -3921,5 +3915,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void close() throws SQLException {
+        sql.close();
     }
 }

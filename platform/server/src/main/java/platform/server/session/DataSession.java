@@ -62,7 +62,6 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
     public final SQLSession sql;
 
     public void close() throws SQLException {
-        sql.close();
     }
 
     public static class UpdateChanges {
