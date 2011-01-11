@@ -9,6 +9,9 @@ public class AbstractSecurityPolicy<T> {
     private Set<T> permitted = new HashSet();
     private Set<T> denied = new HashSet();
 
+    public boolean permitAll;
+    public boolean denyAll;
+
     public boolean defaultPermission = true;
 
     public void permit(T obj) { permitted.add(obj); }
@@ -18,6 +21,20 @@ public class AbstractSecurityPolicy<T> {
     public void deny(Collection<? extends T> colObj) { denied.addAll(colObj); }
 
     protected void override(AbstractSecurityPolicy<T> policy) {
+
+        if (policy.permitAll) {
+            permitted.clear();
+            denied.clear();
+            permitAll = true;
+            defaultPermission = true;
+        }
+
+        if (policy.denyAll) {
+            permitted.clear();
+            denied.clear();
+            denyAll = true;
+            defaultPermission = false;
+        }
 
         for (T obj : policy.denied) {
             permitted.remove(obj);

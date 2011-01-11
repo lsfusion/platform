@@ -9,4 +9,8 @@ public class ClassSecurityPolicy {
         view.override(cls.view);
         edit.override(cls.edit);
     }
+
+    public void permitAll() {
+        edit.permitAll();
+    }
 }

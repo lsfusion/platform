@@ -384,8 +384,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             return null;
         }
 
-        User userObject = new User(userId);
-        policyManager.putUser(userId, userObject);
+        User userObject = policyManager.getUser(userId);
+        if (userObject == null) {
+            userObject = new User(userId);
+            policyManager.putUser(userId, userObject);
+        }
 
         List<Integer> userPoliciesIds = readUserPoliciesIds(userId);
         for (int policyId : userPoliciesIds) {
@@ -994,15 +997,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     void initBaseNavigators() {
-        NavigatorElement policy = new NavigatorElement(baseElement, 50000, "Администрирование");
-        addFormEntity(new UserPolicyFormEntity(policy, 50100));
-        addFormEntity(new AdminFormEntity(policy, 50200));        
+        adminElement = new NavigatorElement(baseElement, 50000, "Администрирование");
+        addFormEntity(new UserPolicyFormEntity(adminElement, 50100));
+        addFormEntity(new AdminFormEntity(adminElement, 50200));
     }
 
     protected SecurityPolicy permitAllPolicy, readOnlyPolicy;
 
     void initBaseAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         permitAllPolicy = addPolicy("Разрешить всё", "Политика разрешает все действия.");
+        permitAllPolicy.permitAll();
 
         readOnlyPolicy = addPolicy("Запретить редактирование всех свойств", "Режим \"только чтение\". Запрещает редактирование всех свойств на формах.");
         readOnlyPolicy.property.change.defaultPermission = false;
@@ -1266,7 +1270,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         initBaseClassForms();
 
-        baseElement.add(baseClass.getBaseClassForm(this));
+        objectElement = baseClass.getBaseClassForm(this);
+        baseElement.add(objectElement);
 
         initBaseNavigators();
         initNavigators();
@@ -1595,6 +1600,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected abstract void initIndexes();
 
     public NavigatorElement<T> baseElement;
+    public NavigatorElement<T> objectElement;
+    public NavigatorElement<T> adminElement;
 
     protected abstract void initNavigators() throws JRException, FileNotFoundException;
 

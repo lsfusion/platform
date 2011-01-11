@@ -8,6 +8,7 @@ import platform.interop.Compare;
 import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
+import platform.server.auth.PolicyManager;
 import platform.server.auth.User;
 import platform.server.classes.*;
 import platform.server.data.Union;
@@ -449,12 +450,15 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     protected void initIndexes() {
     }
 
+    FormEntity languageDocumentTypeForm;
+    FormEntity globalForm;
+
     protected void initNavigators() throws JRException, FileNotFoundException {
         addFormEntity(new ProjectFormEntity(baseElement, 10));
         addFormEntity(new VoteFormEntity(baseElement, 15));
         addFormEntity(new ExpertFormEntity(baseElement, 18));
-        addFormEntity(new LanguageDocumentTypeFormEntity(baseElement, 25));
-        addFormEntity(new GlobalFormEntity(baseElement, 20));
+        languageDocumentTypeForm = addFormEntity(new LanguageDocumentTypeFormEntity(baseElement, 25));
+        globalForm = addFormEntity(new GlobalFormEntity(baseElement, 20));
 
         NavigatorElement print = new NavigatorElement(baseElement, 60, "Печатные формы");
         addFormEntity(new VoteStartFormEntity(print, 40));
@@ -464,8 +468,14 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     }
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
+        PolicyManager.defaultSecurityPolicy.navigator.deny(adminElement);
+        PolicyManager.defaultSecurityPolicy.navigator.deny(objectElement);
+        PolicyManager.defaultSecurityPolicy.navigator.deny(languageDocumentTypeForm);
+        PolicyManager.defaultSecurityPolicy.navigator.deny(globalForm);
+
         User admin = addUser("admin", "fusion");
         admin.addSecurityPolicy(permitAllPolicy);
+
     }
 
     private class ProjectFormEntity extends FormEntity<SkolkovoBusinessLogics> {

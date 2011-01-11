@@ -9,4 +9,9 @@ public class PropertySecurityPolicy {
         view.override(policy.view);
         change.override(policy.change);
     }
+
+    public void permitAll() {
+        view.permitAll = true;
+        change.permitAll = true;
+    }
 }

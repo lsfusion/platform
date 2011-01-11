@@ -11,4 +11,10 @@ public class EditClassSecurityPolicy {
         remove.override(edit.remove);
         change.override(edit.change);
     }
+
+    public void permitAll() {
+        add.permitAll = true;
+        remove.permitAll = true;
+        change.permitAll = true;
+    }
 }

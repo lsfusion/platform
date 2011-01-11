@@ -20,4 +20,10 @@ public class SecurityPolicy {
         property.override(policy.property);
         navigator.override(policy.navigator);
     }
+
+    public void permitAll() {
+        cls.permitAll();
+        property.permitAll();
+        navigator.permitAll = true;
+    }
 }
