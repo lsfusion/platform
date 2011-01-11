@@ -14,14 +14,18 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 public class EmailSender {
-    Session mailSession;
     MimeMessage message;
     Multipart mp = new MimeMultipart();
+    Properties mailProps = new Properties();
+    String userName;
+    String password;
+    List<String> emails = new ArrayList<String>();
 
     public static class AttachmentProperties {
         public String fileName;
@@ -36,28 +40,19 @@ public class EmailSender {
     }
 
     public EmailSender(String smtpHost, String fromAddress, List<String> targets) {
-        Properties mailProps = new Properties();
+        //mailProps.setProperty("mail.debug", "true");
         mailProps.setProperty("mail.smtp.host", smtpHost);
         mailProps.setProperty("mail.from", fromAddress);
-        mailSession = Session.getInstance(mailProps, null);
-
-        try {
-            setMessageHeading(targets);
-        } catch (MessagingException e) {
-            e.printStackTrace();
-        }
+        emails = targets;
     }
 
-    public EmailSender(String smtpHost, String smtpPort , String fromAddress, final String userName, final String password, List<String> targets) {
-        Properties mailProps = new Properties();
-    //    mailProps.setProperty("mail.debug", "true");
-        mailProps.setProperty("mail.smtp.host", smtpHost);
-        mailProps.setProperty("mail.from", fromAddress);
+    public EmailSender(String smtpHost, String smtpPort, String fromAddress, String userName, String password, List<String> targets) {
+        this(smtpHost, fromAddress, targets);
 
         if (smtpPort != null) {
             mailProps.put("mail.smtp.port", smtpPort);
             mailProps.setProperty("mail.smtp.starttls.enable", "true");
-            if(smtpPort.equals("465")) {
+            if (smtpPort.equals("465")) {
                 mailProps.put("mail.smtp.socketFactory.port", smtpPort);
                 mailProps.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
             }
@@ -65,24 +60,25 @@ public class EmailSender {
 
         if (userName != null && password != null) {
             mailProps.setProperty("mail.smtp.auth", "true");
-            mailSession = Session.getInstance(mailProps, new Authenticator(){
-                protected PasswordAuthentication getPasswordAuthentication(){
-                    return(new PasswordAuthentication(userName, password));
-                }
-            });
-        } else {
-            mailSession = Session.getInstance(mailProps, null);
-        }
-
-        try {
-            setMessageHeading(targets);
-        } catch (MessagingException e) {
-            e.printStackTrace();
+            this.userName = userName;
+            this.password = password;
         }
     }
 
-    private void setMessageHeading(List<String> emails) throws MessagingException {
-        message = new MimeMessage(mailSession);
+    private Session getSession() {
+        if (mailProps.containsKey("mail.smtp.auth") && mailProps.getProperty("mail.smtp.auth").equals("true")) {
+            return Session.getInstance(mailProps, new Authenticator() {
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return (new PasswordAuthentication(userName, password));
+                }
+            });
+        } else {
+            return Session.getInstance(mailProps, null);
+        }
+    }
+
+    private void setMessageHeading() throws MessagingException {
+        message = new MimeMessage(getSession());
         message.setFrom();
         message.setSentDate(new java.util.Date());
         setRecipients(emails);
@@ -96,42 +92,20 @@ public class EmailSender {
         message.setRecipients(MimeMessage.RecipientType.TO, dests);
     }
 
-    public void setText(String text) throws MessagingException {
+    public void setText(String text) throws MessagingException, IOException {
         MimeBodyPart textPart = new MimeBodyPart();
-        textPart.setDataHandler((new DataHandler(new HTMLDataSource(text))));
+        textPart.setDataHandler(new DataHandler(new ByteArrayDataSource(text, "text/html; charset=utf-8")));
         mp.addBodyPart(textPart);
-    }
-
-    static class HTMLDataSource implements DataSource {
-        private String html;
-
-        public HTMLDataSource(String htmlString) {
-            html = htmlString;
-        }
-
-        public InputStream getInputStream() throws IOException {
-            if (html == null) throw new IOException("null html");
-            return new ByteArrayInputStream(html.getBytes());
-        }
-
-        public OutputStream getOutputStream() throws IOException {
-            throw new IOException("HTMLDataHandler cannot write HTML");
-        }
-
-        public String getContentType() {
-            return "text/html; charset=utf-8";
-        }
-
-        public String getName() {
-            return "dataSource to send text/html";
-        }
     }
 
     private String getMimeType(EmailActionProperty.Format format) {
         switch (format) {
-            case PDF: return "application/pdf";
-            case DOCX: return "application/msword";
-            default: return "text/html";
+            case PDF:
+                return "application/pdf";
+            case DOCX:
+                return "application/msword";
+            default:
+                return "text/html";
         }
     }
 
@@ -153,55 +127,45 @@ public class EmailSender {
         mp.addBodyPart(filePart);
     }
 
-    public void sendMail(String subject, Map<ByteArray, String> files, List<AttachmentProperties> forms) {
+    public void sendMail(String subject, Map<ByteArray, String> files, List<AttachmentProperties> forms) throws MessagingException, IOException {
         sendMail(subject, null, files, forms);
     }
 
-    public void sendMail(String subject, List<String> htmlFilePaths, Map<ByteArray, String> files, List<AttachmentProperties> forms) {
-        try {
-            message.setSubject(subject, "utf-8");
+    public void sendMail(String subject, List<String> htmlFilePaths, Map<ByteArray, String> files, List<AttachmentProperties> forms) throws MessagingException, IOException {
+        setMessageHeading();
+        message.setSubject(subject, "utf-8");
 
-            String result = "";
-            if (htmlFilePaths != null) {
-                for (String path : htmlFilePaths) {
-                    BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(path), "utf-8"));
-                    while (in.ready()) {
-                        String s = in.readLine();
-                        result += s;
-                    }
+        String result = "";
+        if (htmlFilePaths != null) {
+            for (String path : htmlFilePaths) {
+                BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(path), "utf-8"));
+                while (in.ready()) {
+                    String s = in.readLine();
+                    result += s;
                 }
             }
-            if (result.equals("")) {
-                result = "Вам пришли печатные формы";
-            }
-
-            setText(result);
-            for (AttachmentProperties formProps : forms) {
-                attachFile(formProps);
-            }
-            for (Map.Entry<ByteArray, String> entry : files.entrySet()) {
-                attachFile(entry.getKey().array, entry.getValue());
-            }
-            message.setContent(mp);
-
-            Transport.send(message);
-        } catch (MessagingException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+        if (result.equals("")) {
+            result = "Вам пришли печатные формы";
+        }
+        setText(result);
+
+        for (AttachmentProperties formProps : forms) {
+            attachFile(formProps);
+        }
+        for (Map.Entry<ByteArray, String> entry : files.entrySet()) {
+            attachFile(entry.getKey().array, entry.getValue());
+        }
+
+        message.setContent(mp);
+        Transport.send(message);
     }
 
-    public void sendMail(String subject, String text) {
-        try {
-            message.setSubject(subject, "utf-8");
-            setText(text);
-            message.setContent(mp);
-            Transport.send(message);
-        } catch (MessagingException e) {
-            e.printStackTrace();
-        }
+    public void sendMail(String subject, String text) throws MessagingException, IOException {
+        setMessageHeading();
+        message.setSubject(subject, "utf-8");
+        setText(text);
+        message.setContent(mp);
+        Transport.send(message);
     }
 }
