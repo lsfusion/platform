@@ -517,6 +517,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP objectByName;
     public LP seekObjectName;
 
+    protected LP webHost;
+    
     protected LP smtpHost;
     protected LP smtpPort;
     protected LP emailAccount;
@@ -956,6 +958,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         objectByName = addMGProp(idGroup, "objectByName", "Объект (Имя)", object(baseClass.named), name, 1);
         seekObjectName = addJProp(true, "Поиск объекта", addSAProp(null), objectByName, 1);
 
+        webHost = addDProp("webHost", "Web хост", StringClass.get(50));
+
         smtpHost = addDProp("smtpHost", "SMTP хост", StringClass.get(50));
         smtpPort = addDProp("smtpPort", "SMTP порт", StringClass.get(10));
         emailAccount = addDProp("emailAccount", "Имя аккаунта", StringClass.get(50));
@@ -1119,7 +1123,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         private AdminFormEntity(NavigatorElement parent, int iID) {
             super(parent, iID, "Глобальные параметры");
 
-            addPropertyDraw(new LP[]{smtpHost,smtpPort, fromAddress, emailAccount, emailPassword});
+            addPropertyDraw(new LP[]{smtpHost,smtpPort, fromAddress, emailAccount, emailPassword, webHost});
         }
     }
 

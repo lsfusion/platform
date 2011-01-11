@@ -211,6 +211,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP postfixDocument;
     LP hidePostfixDocument;
 
+    LP localeLanguage;
+
     LP quantityMinLanguageDocumentType;
     LP quantityMaxLanguageDocumentType;
     LP quantityProjectLanguageDocumentType;
@@ -221,6 +223,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP nameDocument;
 
     LP isForeignExpert;
+    LP localeExpert;
 
     protected void initProperties() {
 
@@ -269,12 +272,14 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         typeDocument = addDProp(idGroup, "typeDocument", "Тип (ИД)", documentType, document);
         nameTypeDocument = addJProp(baseGroup, "nameTypeDocument", "Тип", name, typeDocument, 1);
 
+        localeLanguage = addDProp(baseGroup, "localeLanguage", "Locale", StringClass.get(5), language);
+
         LP multipleDocument = addJProp(multipleLanguageDocumentType, languageDocument, 1, typeDocument, 1);
         postfixDocument = addJProp(and1, addDProp("postfixDocument", "Доп. описание", StringClass.get(15), document), 1, multipleDocument, 1);
         hidePostfixDocument = addJProp(and1, addCProp(StringClass.get(40), "Постфикс", document), 1, multipleDocument, 1);
 
         LP translateNameDocument = addJProp("Перевод", translateLanguageDocumentType, languageDocument, 1, typeDocument, 1);
-        nameDocument = addJProp(string2, translateNameDocument, 1, addSUProp(Union.OVERRIDE, addCProp(StringClass.get(15),"", document), postfixDocument), 1);
+        nameDocument = addJProp("nameDocument", "Заголовок", string2, translateNameDocument, 1, addSUProp(Union.OVERRIDE, addCProp(StringClass.get(15),"", document), postfixDocument), 1);
 
         quantityProjectLanguageDocumentType = addSGProp("projectLanguageDocumentType", "Кол-во док.", addCProp(IntegerClass.instance, 1, document), projectDocument, 1, languageDocument, 1, typeDocument, 1); // сколько экспертов высказалось
         LP notEnoughProjectLanguageDocumentType = addSUProp(Union.OVERRIDE, addJProp(greater2, quantityProjectLanguageDocumentType, 1, 2, 3, quantityMaxLanguageDocumentType, 2, 3),
@@ -438,7 +443,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         addEARecepient(emailProtocolVote, emailDocuments);
         emailProtocolVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), closedVote, 1);
 
-        isForeignExpert = addJProp(equals2, languageExpert, 1, addCProp(language, "english"));
+        isForeignExpert = addJProp("isForeignExpert", "Иностр.", equals2, languageExpert, 1, addCProp(language, "english"));
+        localeExpert = addJProp("localeExpert", "Locale", localeLanguage, languageExpert, 1);
+
         emailAuthExpert = addEAProp(baseGroup, "Аутентификация эксперта (e-mail)", "Аутентификация эксперта", expert);
         addEARecepient(emailAuthExpert, emailParticipant, 1);
         emailAuthExpert.setDerivedChange(addCProp(ActionClass.instance, true), userLogin, 1, userPassword, 1);
@@ -677,7 +684,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             addGroup(gobjExpertVote);
             gobjExpertVote.initClassView = ClassViewType.PANEL;
 
-            addPropertyDraw(objExpert, name);
+            addPropertyDraw(webHost, gobjExpertVote);
+            addPropertyDraw(objExpert, name, isForeignExpert, localeExpert);
             addPropertyDraw(objVote, nameClaimerVote, nameProjectVote);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
 
