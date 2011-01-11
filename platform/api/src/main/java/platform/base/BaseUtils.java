@@ -988,6 +988,13 @@ public class BaseUtils {
             return value;
     }
 
+    public static String nullTrim(String string) {
+        if(string==null)
+            return null;
+        else
+            return string.trim();
+    }
+
     public static String nullToString(Object name) {
         if(name==null)
             return "";
