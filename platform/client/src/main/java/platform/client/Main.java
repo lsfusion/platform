@@ -278,7 +278,7 @@ public class Main {
 
     private static ImageIcon loadResource(byte[] logoData, String defaultUrlSystemPropName, String defaultResourcePath) {
         ImageIcon splash = logoData != null ? new ImageIcon(logoData) : null;
-        if (splash == null || splash.getImage() == null) {
+        if (splash == null || splash.getImageLoadStatus() != MediaTracker.COMPLETE) {
             String splashUrlString = System.getProperty(defaultUrlSystemPropName);
             URL splashUrl = null;
             if (splashUrlString != null) {
@@ -287,11 +287,13 @@ public class Main {
                 } catch (MalformedURLException ignored) {
                 }
             }
-            if (splashUrl == null) {
-                splashUrl = SplashScreen.class.getResource(defaultResourcePath);
+            if (splashUrl != null) {
+                splash = new ImageIcon(splashUrl);
             }
 
-            splash = new ImageIcon(splashUrl);
+            if (splash == null || splash.getImageLoadStatus() != MediaTracker.COMPLETE) {
+                splash = new ImageIcon(SplashScreen.class.getResource(defaultResourcePath));
+            }
         }
         return splash;
     }
