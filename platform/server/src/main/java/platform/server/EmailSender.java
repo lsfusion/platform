@@ -7,10 +7,7 @@ import platform.server.logics.EmailActionProperty;
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.activation.FileDataSource;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.Session;
-import javax.mail.Transport;
+import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
@@ -25,7 +22,6 @@ public class EmailSender {
     Session mailSession;
     MimeMessage message;
     Multipart mp = new MimeMultipart();
-    String emails[];
 
     public static class AttachmentProperties {
         public String fileName;
@@ -39,21 +35,63 @@ public class EmailSender {
         }
     }
 
-    public EmailSender(String smtpHost, String fromAddress, String... targets) {
-        emails = targets;
-
+    public EmailSender(String smtpHost, String fromAddress, List<String> targets) {
         Properties mailProps = new Properties();
         mailProps.setProperty("mail.smtp.host", smtpHost);
-        mailProps.put("mail.from", fromAddress);
+        mailProps.setProperty("mail.from", fromAddress);
         mailSession = Session.getInstance(mailProps, null);
-        
-        message = new MimeMessage(mailSession);
+
+        try {
+            setMessageHeading(targets);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void setRecipients(String... targets) throws MessagingException {
-        InternetAddress dests[] = new InternetAddress[targets.length];
-        for (int i = 0; i < targets.length; i++) {
-            dests[i] = new InternetAddress(targets[i].trim().toLowerCase());
+    public EmailSender(String smtpHost, String smtpPort , String fromAddress, final String userName, final String password, List<String> targets) {
+        Properties mailProps = new Properties();
+    //    mailProps.setProperty("mail.debug", "true");
+        mailProps.setProperty("mail.smtp.host", smtpHost);
+        mailProps.setProperty("mail.from", fromAddress);
+
+        if (smtpPort != null) {
+            mailProps.put("mail.smtp.port", smtpPort);
+            mailProps.setProperty("mail.smtp.starttls.enable", "true");
+            if(smtpPort.equals("465")) {
+                mailProps.put("mail.smtp.socketFactory.port", smtpPort);
+                mailProps.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+            }
+        }
+
+        if (userName != null && password != null) {
+            mailProps.setProperty("mail.smtp.auth", "true");
+            mailSession = Session.getInstance(mailProps, new Authenticator(){
+                protected PasswordAuthentication getPasswordAuthentication(){
+                    return(new PasswordAuthentication(userName, password));
+                }
+            });
+        } else {
+            mailSession = Session.getInstance(mailProps, null);
+        }
+
+        try {
+            setMessageHeading(targets);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void setMessageHeading(List<String> emails) throws MessagingException {
+        message = new MimeMessage(mailSession);
+        message.setFrom();
+        message.setSentDate(new java.util.Date());
+        setRecipients(emails);
+    }
+
+    public void setRecipients(List<String> targets) throws MessagingException {
+        InternetAddress dests[] = new InternetAddress[targets.size()];
+        for (int i = 0; i < targets.size(); i++) {
+            dests[i] = new InternetAddress(targets.get(i).trim().toLowerCase());
         }
         message.setRecipients(MimeMessage.RecipientType.TO, dests);
     }
@@ -121,9 +159,6 @@ public class EmailSender {
 
     public void sendMail(String subject, List<String> htmlFilePaths, Map<ByteArray, String> files, List<AttachmentProperties> forms) {
         try {
-            message.setFrom();
-            message.setSentDate(new java.util.Date());
-            setRecipients(emails);
             message.setSubject(subject, "utf-8");
 
             String result = "";
@@ -155,6 +190,17 @@ public class EmailSender {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendMail(String subject, String text) {
+        try {
+            message.setSubject(subject, "utf-8");
+            setText(text);
+            message.setContent(mp);
+            Transport.send(message);
+        } catch (MessagingException e) {
             e.printStackTrace();
         }
     }

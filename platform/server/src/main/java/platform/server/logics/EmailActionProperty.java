@@ -153,13 +153,16 @@ public class EmailActionProperty extends ActionProperty {
                     recepientEmails.add(recepientEmail);
             }
 
-            String smtpHost = (String) BL.smtpHost.read(session.sql, modifier, session.env);
-            String fromAddress = (String) BL.fromAddress.read(session.sql, modifier, session.env);
+            String smtpHost = (String) BL.smtpHost.read(session);
+            String smtpPort = (String) BL.smtpPort.read(session);
+            String fromAddress = (String) BL.fromAddress.read(session);
+            String userName = (String) BL.emailAccount.read(session);
+            String password = (String) BL.emailPassword.read(session);
             if(smtpHost==null || fromAddress==null)
                 actions.add(new MessageClientAction("Не задан SMTP хост или адрес отправителя. Письма отосланы не будут.","Отсылка писем"));
             else {
                 try {
-                    EmailSender sender = new EmailSender(smtpHost.trim(), fromAddress.trim(), recepientEmails.toArray(new String[recepientEmails.size()]));
+                    EmailSender sender = new EmailSender(smtpHost.trim(), smtpPort.trim(), fromAddress.trim(), userName.trim(), password.trim(), recepientEmails);
                     sender.sendMail(subject, bodyFiles, files, reportPaths);
                 } catch (Exception e) {
                     actions.add(new MessageClientAction("Не удалось отправить почту","Отсылка писем"));
