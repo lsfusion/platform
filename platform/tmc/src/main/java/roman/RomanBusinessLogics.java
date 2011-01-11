@@ -40,6 +40,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private ConcreteCustomClass simpleShipment;
     private ConcreteCustomClass supplier;
     private AbstractCustomClass document;
+    private AbstractCustomClass priceDocument;
     private LP supplierDocument;
     private LP nameSupplierDocument;
     private LP sidDocument;
@@ -187,14 +188,16 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         document = addAbstractClass("document", "Документ", transaction);
         list = addAbstractClass("list", "Список", baseClass);
 
+        priceDocument = addAbstractClass("priceDocument", "Документ с ценами", document);
+
         boxDocument = addAbstractClass("boxDocument", "Документ по коробам", document);
         simpleDocument = addAbstractClass("simpleDocument", "Документ без коробов", document, list);
 
         supplierBox = addConcreteClass("supplierBox", "Короб поставщика", list);
 
-        order = addConcreteClass("order", "Заказ", simpleDocument);
+        order = addConcreteClass("order", "Заказ", priceDocument, simpleDocument);
 
-        invoice = addAbstractClass("invoice", "Инвойс", document);
+        invoice = addAbstractClass("invoice", "Инвойс", priceDocument);
         boxInvoice = addConcreteClass("boxInvoice", "Инвойс по коробам", invoice, boxDocument);
         simpleInvoice = addConcreteClass("simpleInvoice", "Инвойс без коробов", invoice, simpleDocument);
 
@@ -406,8 +409,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         // цены
 
-        priceDocumentArticle = addDProp(baseGroup, "priceDocumentArticle", "Цена", DoubleClass.instance, document, article);
-        priceDataDocumentItem = addDProp(baseGroup, "priceDataDocumentItem", "Цена по товару", DoubleClass.instance, document, item);
+        priceDocumentArticle = addDProp(baseGroup, "priceDocumentArticle", "Цена", DoubleClass.instance, priceDocument, article);
+        priceDataDocumentItem = addDProp(baseGroup, "priceDataDocumentItem", "Цена по товару", DoubleClass.instance, priceDocument, item);
         priceArticleDocumentItem = addJProp(baseGroup, "priceArticleDocumentItem", "Цена по артикулу", priceDocumentArticle, 1, articleItem, 2);
         priceDocumentItem = addSUProp(baseGroup, "priceDocumentItem", "Цена", Union.OVERRIDE, priceArticleDocumentItem, priceDataDocumentItem);
 
