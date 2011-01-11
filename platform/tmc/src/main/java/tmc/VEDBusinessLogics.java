@@ -769,7 +769,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         addJProp(and(false, false), changeUser, 2, is(baseClass), 1, is(baseClass), 3),
                         addSCProp(returnInnerQuantity)
                 ), 1, barcodeToObject, 3, 2);
-        seekAction = addJProp(true, "Поиск штрих-кода", addSAProp(null), barcodeToObject, 1);
         barcodeNotFoundMessage = addJProp(true, "", and(false, true), addMAProp("Штрих-код не найден!", "Ошибка"), is(StringClass.get(13)), 1, barcodeToObject, 1);
 
         LP xorCouponArticleGroup = addDProp(couponGroup, "xorCouponArticleGroup", "Вкл.", LogicalClass.instance, articleGroup);
@@ -834,7 +833,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP barcodeAddCertAction;
     LP barcodeAction2;
     LP barcodeAction3;
-    LP seekAction;
     LP barcodeNotFoundMessage;
     LP orderClientSum;
     public LP orderArticleSaleSumWithDiscount;
@@ -1283,7 +1281,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             }
 
             addAutoAction(objBarcode, addPropertyObject(barcodeAction2, objDoc, objBarcode));
-            addAutoAction(objBarcode, addPropertyObject(seekAction, objBarcode));
+            addAutoAction(objBarcode, addPropertyObject(seekBarcodeAction, objBarcode));
             addAutoAction(objBarcode, addPropertyObject(barcodeNotFoundMessage, objBarcode));
 
             if (hasExternalScreen()) {
@@ -1683,7 +1681,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addAutoAction(objBarcode, true,
                     addPropertyObject(barcodeAddClientAction, objBarcode),
                     addPropertyObject(barcodeAction2, objDoc, objBarcode),
-                    addPropertyObject(seekAction, objBarcode),
+                    addPropertyObject(seekBarcodeAction, objBarcode),
                     addPropertyObject(barcodeNotFoundMessage, objBarcode));
         }
 
@@ -2091,7 +2089,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             addAutoAction(objBarcode, true,
                     addPropertyObject(barcodeAction3, objDoc, objInner, objBarcode),
-                    addPropertyObject(seekAction, objBarcode),
+                    addPropertyObject(seekBarcodeAction, objBarcode),
                     addPropertyObject(barcodeNotFoundMessage, objBarcode));
         }
 
@@ -2495,7 +2493,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                     addPropertyObject(barcodeAddCertAction, objBarcode),
                     addPropertyObject(barcodeAddClientAction, objBarcode),
                     addPropertyObject(barcodeAction2, objDoc, objBarcode),
-                    addPropertyObject(seekAction, objBarcode),
+                    addPropertyObject(seekBarcodeAction, objBarcode),
                     addPropertyObject(barcodeNotFoundMessage, objBarcode));
         }
 

@@ -479,6 +479,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP<PropertyInterface> barcode;
     public LP barcodeToObject;
     protected LP barcodeObjectName;
+    public LP seekBarcodeAction;
     public LP reverseBarcode;
 
     public LP userLogin;
@@ -927,6 +928,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         barcode.property.setFixedCharWidth(13);
         barcodeToObject = addCGProp(null, "barcodeToObject", "Объект", object(barcodeObject), barcode, barcode, 1);
         barcodeObjectName = addJProp(baseGroup, "Объект", name, barcodeToObject, 1);
+
+        seekBarcodeAction = addJProp(true, "Поиск штрих-кода", addSAProp(null), barcodeToObject, 1);
 
         currentUserName = addJProp("Имя тек. польз.", name, currentUser);
 

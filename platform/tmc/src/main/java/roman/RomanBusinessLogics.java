@@ -1,6 +1,7 @@
 package roman;
 
 import net.sf.jasperreports.engine.JRException;
+import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
@@ -15,10 +16,12 @@ import platform.server.form.entity.filter.*;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
+import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -159,6 +162,16 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP countryOfOriginArticleSingle;
     private LP countryOfOriginSku;
     private LP nameCountryOfOriginSku;
+    private LP sidArticleSingle;
+    private LP sidArticleSku;
+    private LP originalNameArticleSingle;
+    private LP originalNameArticleItem;
+    private LP originalNameArticleSku;
+    private LP inSupplierBoxShipment;
+    private LP invoicedShipmentSku;
+    private LP quantitySupplierBoxBoxShipmentStockSku;
+    private LP quantitySimpleShipmentStockSku;
+    private LP barcodeAction4;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -193,7 +206,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         boxDocument = addAbstractClass("boxDocument", "Документ по коробам", document);
         simpleDocument = addAbstractClass("simpleDocument", "Документ без коробов", document, list);
 
-        supplierBox = addConcreteClass("supplierBox", "Короб поставщика", list);
+        supplierBox = addConcreteClass("supplierBox", "Короб поставщика", list, barcodeObject);
 
         order = addConcreteClass("order", "Заказ", priceDocument, simpleDocument);
 
@@ -246,7 +259,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         // Article
 
         sidArticle = addDProp(baseGroup, "sidArticle", "Код", StringClass.get(50), article);
+        sidArticleSingle = addJProp(baseGroup, "sidArticleSingle", "Код", and1, sidArticle, 1, is(articleSingle), 1);
+
         originalNameArticle = addDProp(baseGroup, "originalNameArticle", "Имя производителя", StringClass.get(50), article);
+        originalNameArticleSingle = addJProp(baseGroup, "originalNameArticleSingle", "Имя производителя", and1, originalNameArticle, 1, is(articleSingle), 1);
 
         countryOfOriginArticle = addDProp(idGroup, "countryOfOriginArticle", "Страна происхождения (ИД)", country, article);
         nameCountryOfOriginArticle = addJProp(baseGroup, "nameCountryOfOriginArticle", "Страна происхождения", name, countryOfOriginArticle, 1);
@@ -268,7 +284,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         // Item
 
         articleItem = addDProp(idGroup, "articleItem", "Артикул (ИД)", articleComposite, item);
+
         sidArticleItem = addJProp(baseGroup, "sidArticleItem", "Артикул", sidArticle, articleItem, 1);
+        originalNameArticleItem = addJProp(baseGroup, "originalNameArticleItem", "Имя производителя", originalNameArticle, articleItem, 1);
 
         countryOfOriginArticleItem = addJProp(idGroup, "countryOfOriginArticleItem", "Страна происхождения (ИД) (артикул)", countryOfOriginArticle, articleItem, 1);
         countryOfOriginDataItem = addDProp(idGroup, "countryOfOriginDataItem", "Страна происхождения (ИД) (первичное)", country, item);
@@ -293,6 +311,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 addJProp(supplierSizeSupplier, sizeSupplierItem, 1), 1), true);
 
         // sku
+        sidArticleSku = addCUProp(baseGroup, "sidArticleSku", "Код", sidArticleItem, sidArticleSingle);
+        originalNameArticleSku = addCUProp(baseGroup, "originalNameArticleSku", "Имя производителя", originalNameArticleItem, originalNameArticleSingle);
+
         countryOfOriginSku = addCUProp(idGroup, "countryOfOriginSku", "Страна происхождения (ИД)", countryOfOriginItem, countryOfOriginArticleSingle);
         nameCountryOfOriginSku = addJProp(baseGroup, "nameCountryOfOriginSku", "Страна происхождения", name, countryOfOriginSku, 1);
 
@@ -432,6 +453,22 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         // поставка на склад
         inInvoiceShipment = addDProp(baseGroup, "inInvoiceShipment", "Вкл", LogicalClass.instance, invoice, shipment);
+
+        inSupplierBoxShipment = addJProp(baseGroup, "inSupplierBoxShipment", "Вкл", inInvoiceShipment, boxDocumentSupplierBox, 1, 2);
+
+        invoicedShipmentSku = addSGProp(baseGroup, "invoicedShipmentSku", "Кол-во по инвойсам",
+                                              addJProp(and1, quantityListSku, 1, 2, inInvoiceShipment, 1, 3), 3, 2);
+
+        quantitySupplierBoxBoxShipmentStockSku = addDProp(baseGroup, "quantitySupplierBoxBoxShipmentStockSku", "Кол-во в коробе", DoubleClass.instance,
+                                                          supplierBox, boxShipment, stock, sku);
+
+        quantitySimpleShipmentStockSku = addDProp(baseGroup, "quantitySimpleShipmentStockSku", "Кол-во в поставке",
+                                                          simpleShipment, stock, sku);
+
+        barcodeAction4 = addJProp(true, "Ввод штрих-кода 4",
+                addCUProp(
+                        addSCProp(quantitySupplierBoxBoxShipmentStockSku)
+                ), 1, 2, 3, barcodeToObject, 4);
     }
 
     @Override
@@ -456,6 +493,51 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         User admin = addUser("admin", "fusion");
         admin.addSecurityPolicy(permitAllPolicy);
+    }
+
+    private class BarcodeFormEntity extends FormEntity<RomanBusinessLogics> {
+
+        ObjectEntity objBarcode;
+
+        protected Font getDefaultFont() {
+            return null;
+        }
+
+        private BarcodeFormEntity(NavigatorElement parent, int iID, String caption) {
+            super(parent, iID, caption);
+
+            objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", baseGroup, true);
+            objBarcode.groupTo.initClassView = ClassViewType.PANEL;
+            objBarcode.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
+
+            objBarcode.resetOnApply = true;
+
+            addPropertyDraw(reverseBarcode);
+        }
+
+        @Override
+        public DefaultFormView createDefaultRichDesign() {
+
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            if (getDefaultFont() != null)
+                design.setFont(getDefaultFont());
+
+            PropertyDrawView barcodeView = design.get(getPropertyDraw(objectValue, objBarcode));
+
+            design.getPanelContainer(design.get(objBarcode.groupTo)).add(design.get(getPropertyDraw(reverseBarcode)));
+            design.getPanelContainer(design.get(objBarcode.groupTo)).constraints.maxVariables = 0;
+
+            design.setBackground(barcodeObjectName, new Color(240, 240, 240));
+
+            design.setEditKey(barcodeView, KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0));
+            design.setEditKey(reverseBarcode, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
+
+            design.setFocusable(reverseBarcode, false);
+            design.setFocusable(false, objBarcode.groupTo);
+
+            return design;
+        }
     }
 
     private class OrderFormEntity extends FormEntity<RomanBusinessLogics> {
@@ -595,7 +677,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addPropertyDraw(objOrder, date, sidDocument, nameCurrencyDocument, sumDocument, nameStoreOrder);
 
             if (box) {
-                objSupplierBox = addSingleGroupObject(supplierBox, "Короб", sidSupplierBox);
+                objSupplierBox = addSingleGroupObject(supplierBox, "Короб", sidSupplierBox, barcode);
                 objSupplierBox.groupTo.initClassView = ClassViewType.PANEL;
                 addObjectActions(this, objSupplierBox);
             }
@@ -702,7 +784,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         }
     }
 
-    private class ShipmentFormEntity extends FormEntity<RomanBusinessLogics> {
+    private class ShipmentFormEntity extends BarcodeFormEntity {
         private boolean box;
 
         private ObjectEntity objSupplier;
@@ -729,19 +811,51 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addPropertyDraw(objInvoice, date, sidDocument, nameStoreOrder);
 
             if (box) {
-                objSupplierBox = addSingleGroupObject(supplierBox, "Короб", sidSupplierBox);
+                objSupplierBox = addSingleGroupObject(supplierBox, "Короб поставщика", sidSupplierBox, barcode);
                 objSupplierBox.groupTo.initClassView = ClassViewType.PANEL;
             }
 
-            objStock = addSingleGroupObject(stock, "Место хранения", barcode);
+            objStock = addSingleGroupObject(stock, "Место хранения", barcode, objectClassName);
             objStock.groupTo.initClassView = ClassViewType.PANEL;
 
-            objSku = addSingleGroupObject(sku, "SKU", barcode, sidColorSupplierItem, nameColorSupplierItem, nameSizeSupplierItem, sidArticle, originalNameArticle, nameCountryOfOriginSku);
+            objSku = addSingleGroupObject(sku, "SKU", barcode, sidColorSupplierItem, nameColorSupplierItem, nameSizeSupplierItem, sidArticleSku, originalNameArticleSku, nameCountryOfOriginSku);
+
+            if (box) {
+                addPropertyDraw(quantityListSku, objSupplierBox, objSku);
+                addPropertyDraw(quantitySupplierBoxBoxShipmentStockSku, objSupplierBox, objShipment, objStock, objSku);
+            } else {
+                addPropertyDraw(invoicedShipmentSku, objShipment, objSku);
+                addPropertyDraw(quantitySimpleShipmentStockSku, objShipment, objStock, objSku);
+            }
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objShipment), Compare.EQUALS, objSupplier));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objInvoice), Compare.EQUALS, objSupplier));
+
+            if (box)
+                addFixedFilter(new NotNullFilterEntity(addPropertyObject(inSupplierBoxShipment, objSupplierBox, objShipment)));
+
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            if (box) {
+                filterGroup.addFilter(new RegularFilterEntity(genID(),
+                                      new NotNullFilterEntity(addPropertyObject(quantityListSku, objSupplierBox, objSku)),
+                                      "В коробе поставщика",
+                                      KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
+            } else {
+                filterGroup.addFilter(new RegularFilterEntity(genID(),
+                                      new NotNullFilterEntity(addPropertyObject(invoicedShipmentSku, objShipment, objSku)),
+                                      "В инвойсах",
+                                      KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
+            }
+            filterGroup.defaultFilter = 0;
+            addRegularFilterGroup(filterGroup);
+
+            addAutoAction(objBarcode, addPropertyObject(barcodeAction4, objSupplierBox, objShipment, objStock, objBarcode));
+            addAutoAction(objBarcode, addPropertyObject(seekBarcodeAction, objBarcode));
         }
 
         @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
+        public DefaultFormView createDefaultRichDesign() {
+            DefaultFormView design = super.createDefaultRichDesign();
 
             design.setReadOnly(objSupplier, true);
             design.setReadOnly(barcode, true, objStock.groupTo);

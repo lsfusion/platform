@@ -74,7 +74,7 @@
 						<font size="20"/>
 					</textElement>
 					<textFieldExpression class="java.lang.String"><![CDATA["Ссылка для голосования"]]></textFieldExpression>
-					<hyperlinkReferenceExpression><![CDATA["http://81.25.47.234:9090/skolkovo/expert.html?voteId="+$F{obj3}]]></hyperlinkReferenceExpression>
+					<hyperlinkReferenceExpression><![CDATA["http://81.25.47.234/skolkovo/expert.html?voteId="+$F{obj3}]]></hyperlinkReferenceExpression>
 				</textField>
 			</band>
 		</groupFooter>
