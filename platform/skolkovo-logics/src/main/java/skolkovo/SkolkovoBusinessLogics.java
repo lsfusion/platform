@@ -761,6 +761,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             objVote = addSingleGroupObject(1, vote, date, nameClaimerVote, quantityRepliedVote, quantityDoneVote, succeededVote, quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote, acceptedForeignVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(closedVote, objVote)));
+
             objExpert = addSingleGroupObject(12, expert, userFirstName, userLastName);
 
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);

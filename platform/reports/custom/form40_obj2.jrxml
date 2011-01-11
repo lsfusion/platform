@@ -15,7 +15,7 @@
 	<detail>
 		<band height="19">
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="45" y="0" width="441" height="18"/>
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="45" y="0" width="441" height="18"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{numberExpertVote}+") "+$F{commonName}]]></textFieldExpression>
 			</textField>

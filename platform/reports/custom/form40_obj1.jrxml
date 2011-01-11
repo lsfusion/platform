@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="obj1" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.1000000000000025"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="60"/>
+	<property name="ireport.y" value="130"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -23,20 +23,20 @@
 	<group name="textGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{obj1})]]></groupExpression>
 		<groupHeader>
-			<band height="387" splitType="Prevent">
+			<band height="304" splitType="Prevent">
 				<textField isStretchWithOverflow="true">
-					<reportElement stretchType="RelativeToBandHeight" x="34" y="163" width="524" height="146"/>
+					<reportElement stretchType="RelativeToBandHeight" x="34" y="163" width="524" height="78"/>
 					<textElement textAlignment="Justified"/>
 					<textFieldExpression class="java.lang.String"><![CDATA["Некоммерческая организация Фонд развития Центра разработки и коммерциализации новых технологий, "+
 "рассмотрев поданную " + $F{nameClaimerVote} + " заявку на присвоение статуса участника проекта от "
 + $F{dateProjectVote} + ", на основании решения Фонда о направлении заявки соискателя на рассмотрение "+
-"в Экспертную коллегию для проведения экспертизы заявки по существу от "+ $F{date} +", "+ $F{prevDateVote}==null?
+"в Экспертную коллегию для проведения экспертизы заявки по существу от "+ $F{date} +", "+ ($F{prevDateVote}==null?
 "в соответствии с пунктами 4-7 Положения об Экспертных коллегиях Фонда «Сколково»":"учитывая, что "+
 "заседание предыдущей Экспертной коллегии было признано несостоявшимся (протокол заседания "+
 "Экспертной коллегии по вопросу о соответствии проекта, представленного соискателем, критериям, "+
 "указанным в подпункте Е пункта 2 Положения о присвоении и утрате статуса участника проекта по "+
 "созданию и обеспечению функционирования инновационного центра «Сколково», от "+$F{prevDateVote}+", "+
-"в соответствии с пунктом 12 Положения об Экспертных коллегиях Фонда «Сколково»)"]]></textFieldExpression>
+"в соответствии с пунктом 12 Положения об Экспертных коллегиях Фонда «Сколково»")]]></textFieldExpression>
 				</textField>
 				<staticText>
 					<reportElement x="35" y="87" width="151" height="26"/>
@@ -71,7 +71,7 @@
 					<text><![CDATA[РЕШЕНИЕ]]></text>
 				</staticText>
 				<staticText>
-					<reportElement positionType="Float" x="34" y="314" width="524" height="56"/>
+					<reportElement positionType="Float" x="34" y="241" width="524" height="56"/>
 					<textElement textAlignment="Justified"/>
 					<text><![CDATA[р е ш и л
 1. Созвать заседание новой Экспертной коллегии для проведения экспертизы указанной заявки по существу.
@@ -87,7 +87,7 @@
 			</band>
 		</groupHeader>
 		<groupFooter>
-			<band height="330">
+			<band height="137">
 				<staticText>
 					<reportElement x="34" y="94" width="524" height="36"/>
 					<textElement/>
@@ -102,7 +102,7 @@
 Бюллетень оценки.
 
 Руководитель Аппарата Президента
-и Советов Фонда                                                                                                              ФИО
+и Советов Фонда
 ]]></text>
 				</staticText>
 			</band>
