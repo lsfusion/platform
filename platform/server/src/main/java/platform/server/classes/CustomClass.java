@@ -22,8 +22,7 @@ import platform.server.data.type.Type;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
-import platform.server.form.entity.FormEntity;
-import platform.server.form.entity.ObjectEntity;
+import platform.server.form.entity.*;
 import platform.server.form.instance.CustomObjectInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.navigator.NavigatorElement;
@@ -281,7 +280,7 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
     private FormEntity baseClassForm = null;
     public FormEntity getBaseClassForm(BusinessLogics<?> BL) {
         if(baseClassForm==null) {
-            baseClassForm = BL.getClassForm(this);
+            baseClassForm = getClassForm(BL);
             for(CustomClass child : children)
                 baseClassForm.add(child.getBaseClassForm(BL));
         }
@@ -409,4 +408,77 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
         return null;
     }
 
+    private abstract class ClassFormHolder {
+        private AbstractClassFormEntity form;
+
+        public AbstractClassFormEntity getForm(BusinessLogics BL) {
+            if (form != null) {
+                return form;
+            }
+
+            form = createDefaultForm(BL);
+
+            return form;
+        }
+
+        public void setForm(AbstractClassFormEntity form) {
+            this.form = form;
+        }
+
+        protected abstract AbstractClassFormEntity createDefaultForm(BusinessLogics BL);
+    }
+
+    private ClassFormHolder classFormHolder = new ClassFormHolder() {
+        @Override
+        protected AbstractClassFormEntity createDefaultForm(BusinessLogics BL) {
+            return new DefaultClassFormEntity(BL, CustomClass.this);
+        }
+    };
+
+    private ClassFormHolder classEditFormHolder = new ClassFormHolder() {
+        @Override
+        protected AbstractClassFormEntity createDefaultForm(BusinessLogics BL) {
+            return new DefaultClassFormEntity(BL, CustomClass.this);
+        }
+    };
+
+    private ClassFormHolder objectFormHolder = new ClassFormHolder() {
+        @Override
+        protected AbstractClassFormEntity createDefaultForm(BusinessLogics BL) {
+            return new ObjectFormEntity(BL, CustomClass.this);
+        }
+    };
+
+    /**
+     * используются для классовых форм в навигаторе
+     */
+    public AbstractClassFormEntity getClassForm(BusinessLogics BL) {
+        return classFormHolder.getForm(BL);
+    }
+
+    public void setClassForm(AbstractClassFormEntity form) {
+        classFormHolder.setForm(form);
+    }
+
+    /**
+     * используются при редактировании свойства даного класса из диалога, т.е. фактически для выбора объекта данного класса
+     */
+    public AbstractClassFormEntity getClassEditForm(BusinessLogics BL) {
+        return classEditFormHolder.getForm(BL);
+    }
+
+    public void setClassEditForm(AbstractClassFormEntity form) {
+        classEditFormHolder.setForm(form);
+    }
+
+    /**
+     * используется для редактирования конкретного объекта данного класса
+     */
+    public AbstractClassFormEntity getObjectForm(BusinessLogics BL) {
+        return objectFormHolder.getForm(BL);
+    }
+
+    public void setObjectForm(AbstractClassFormEntity form) {
+        objectFormHolder.setForm(form);
+    }
 }

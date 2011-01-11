@@ -1029,72 +1029,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return;
     }
 
-    protected abstract class ClassFormsMap {
-        private Map<CustomClass, AbstractClassFormEntity<T>> forms = new HashMap<CustomClass, AbstractClassFormEntity<T>>();
-
-        public AbstractClassFormEntity<T> getForm(CustomClass customClass) {
-            AbstractClassFormEntity<T> form = forms.get(customClass);
-            if (form != null) {
-                return form;
-            }
-
-            form = createDefaultForm(BusinessLogics.this, customClass);
-            forms.put(customClass, form);
-
-            return form;
-        }
-
-        public void putForm(CustomClass customClass, AbstractClassFormEntity<T> form) {
-            forms.put(customClass, form);
-        }
-
-        protected abstract AbstractClassFormEntity<T> createDefaultForm(BusinessLogics<T> tBusinessLogics, CustomClass customClass);
-    }
-
-    protected ClassFormsMap classForms = new ClassFormsMap() {
-        @Override
-        protected AbstractClassFormEntity<T> createDefaultForm(BusinessLogics<T> tBusinessLogics, CustomClass customClass) {
-            return new DefaultClassFormEntity(BusinessLogics.this, customClass);
-        }
-    };
-
-    protected ClassFormsMap classEditForms = new ClassFormsMap() {
-        @Override
-        protected AbstractClassFormEntity<T> createDefaultForm(BusinessLogics<T> tBusinessLogics, CustomClass customClass) {
-            return new DefaultClassFormEntity(BusinessLogics.this, customClass);
-        }
-    };
-
-    protected ClassFormsMap objectForms = new ClassFormsMap() {
-        @Override
-        protected AbstractClassFormEntity<T> createDefaultForm(BusinessLogics<T> tBusinessLogics, CustomClass customClass) {
-            return new ObjectFormEntity(BusinessLogics.this, customClass);
-        }
-    };
-
-    /**
-     * используются для классовых форм в навигаторе
-     */
-    public AbstractClassFormEntity<T> getClassForm(CustomClass customClass) {
-        return classForms.getForm(customClass);
-    }
-
-    /**
-     * используются при редактировании свойства даного класса из диалога, т.е. фактически для выбора объекта данного класса
-     */
-    public AbstractClassFormEntity<T> getClassEditForm(CustomClass customClass) {
-        return classEditForms.getForm(customClass);
-    }
-
-    /**
-     * используется для редактирования конкретного объекта данного класса
-     */
-    public AbstractClassFormEntity<T> getObjectForm(CustomClass customClass) {
-        return objectForms.getForm(customClass);
-    }
-
     protected void initBaseClassForms() {
-        classForms.putForm(baseClass.named, new NamedObjectClassForm(this, baseClass.named));
+        baseClass.named.setClassForm(new NamedObjectClassForm(this, baseClass.named));
     }
 
     private class UserPolicyFormEntity extends FormEntity {
