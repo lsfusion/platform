@@ -475,14 +475,17 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     }
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-        PolicyManager.defaultSecurityPolicy.navigator.deny(adminElement);
-        PolicyManager.defaultSecurityPolicy.navigator.deny(objectElement);
-        PolicyManager.defaultSecurityPolicy.navigator.deny(languageDocumentTypeForm);
-        PolicyManager.defaultSecurityPolicy.navigator.deny(globalForm);
+        PolicyManager.defaultSecurityPolicy.navigator.deny(adminElement, objectElement, languageDocumentTypeForm, globalForm);
+
+        PolicyManager.defaultSecurityPolicy.property.view.deny(userPassword);
+
+        PolicyManager.defaultSecurityPolicy.property.change.deny(dateStartVote, dateEndVote);
+
+        for (Property property : voteResultGroup.getProperties())
+            PolicyManager.defaultSecurityPolicy.property.change.deny(property);
 
         User admin = addUser("admin", "fusion");
         admin.addSecurityPolicy(permitAllPolicy);
-
     }
 
     private class ProjectFormEntity extends FormEntity<SkolkovoBusinessLogics> {
@@ -574,7 +577,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             objVote = addSingleGroupObject(vote, objectValue, nameProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote, delete);
 
-            objExpert = addSingleGroupObject(expert, selection, objectValue, userFirstName, userLastName, userLogin, userPassword, emailParticipant, nameClusterExpert);
+            objExpert = addSingleGroupObject(expert, objectValue, userFirstName, userLastName, userLogin, userPassword, emailParticipant, nameClusterExpert);
 
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
             addPropertyDraw(objExpert, objVote, allowedEmailLetterExpertVote);
@@ -601,6 +604,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            design.readOnly = true;
 
             design.setPanelLabelAbove(voteResultCommentGroup, true);
             design.setConstraintsFillHorizontal(voteResultCommentGroup, 0.5);
@@ -633,6 +638,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            design.setReadOnly(true, objVote.groupTo);
 
             design.setPanelLabelAbove(voteResultCommentGroup, true);
             design.setConstraintsFillHorizontal(voteResultCommentGroup, 0.5);

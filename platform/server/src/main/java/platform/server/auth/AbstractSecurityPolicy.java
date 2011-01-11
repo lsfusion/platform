@@ -16,6 +16,8 @@ public class AbstractSecurityPolicy<T> {
 
     public void permit(T obj) { permitted.add(obj); }
     public void deny(T obj) { denied.add(obj); }
+    public void permit(T... objs) { for (T obj : objs) permit(obj); }
+    public void deny(T... objs) { for (T obj : objs) deny(obj); }
 
     public void permit(Collection<? extends T> colObj) { permitted.addAll(colObj); }
     public void deny(Collection<? extends T> colObj) { denied.addAll(colObj); }
