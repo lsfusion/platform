@@ -189,8 +189,8 @@ public class ExpertFrame implements EntryPoint {
 
     private void addListBoxBooleanItems(ListBox listBox, int defaultValue) {
         listBox.addItem("");
-        listBox.addItem("Да");
-        listBox.addItem("Нет");
+        listBox.addItem(getMessages().yes());
+        listBox.addItem(getMessages().no());
         listBox.setItemSelected(defaultValue, true);
     }
 

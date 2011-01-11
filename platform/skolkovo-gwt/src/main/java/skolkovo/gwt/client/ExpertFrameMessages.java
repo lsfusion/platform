@@ -39,4 +39,8 @@ public interface ExpertFrameMessages extends Messages {
     String incompletePrompt();
 
     String confirmPrompt();
+
+    String yes();
+
+    String no();
 }
