@@ -132,14 +132,13 @@ public class Main {
                         return;
                     }
 
-                    startSplashScreen();
-
                     remoteLogics = loginAction.getRemoteLogics();
                     computerId = loginAction.getComputerId();
-                    RemoteNavigatorInterface remoteNavigator = loginAction.getRemoteNavigator();
+
+                    startSplashScreen();
 
                     logger.info("Before init frame");
-                    frame = module.initFrame(remoteNavigator);
+                    frame = module.initFrame(loginAction.getRemoteNavigator());
                     logger.info("After init frame");
 
                     pingThread = new PingThread(remoteLogics, Integer.parseInt(System.getProperty("platform.client.pingTime", "1000")));
@@ -198,9 +197,17 @@ public class Main {
     }
 
     private static void startSplashScreen() {
+        byte[] splashImageData = null;
+        try {
+            splashImageData = remoteLogics.getSplashImage();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+
+        final byte[] finalSplashImageData = splashImageData;
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                SplashScreen.start();
+                SplashScreen.start(finalSplashImageData);
             }
         });
     }

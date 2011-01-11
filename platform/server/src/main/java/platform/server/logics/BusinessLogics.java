@@ -3812,6 +3812,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return getClass().getSimpleName();
     }
 
+    public byte[] getSplashImage() throws RemoteException {
+        return null;
+    }
+
     public void outputPropertyClasses() {
         for (LP lp : lproperties) {
             logger.debug(lp.property.sID + " : " + lp.property.caption + " - " + lp.getClassWhere());

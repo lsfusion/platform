@@ -3,6 +3,7 @@ package skolkovo;
 import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
 import platform.base.DateConverter;
+import platform.base.IOUtils;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.action.ClientAction;
@@ -12,9 +13,9 @@ import platform.server.auth.PolicyManager;
 import platform.server.auth.User;
 import platform.server.classes.*;
 import platform.server.data.Union;
+import platform.server.data.expr.query.OrderType;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
-import platform.server.data.expr.query.OrderType;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.GroupObjectHierarchy;
@@ -45,6 +46,7 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
@@ -965,6 +967,23 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             userLogin.execute(login, session, expertObject);
             userPassword.execute(password, session, expertObject);
+        }
+    }
+
+    @Override
+    public byte[] getSplashImage() throws RemoteException {
+        InputStream in = SkolkovoBusinessLogics.class.getResourceAsStream("/images/sk_logo.jpg");
+        try {
+            try {
+                return IOUtils.readBytesFromStream(in);
+            } finally {
+                if (in != null) {
+                    in.close();
+                }
+            }
+        } catch (IOException e) {
+            logger.error("Не могу прочитать splash-картинку.", e);
+            return null;
         }
     }
 }

@@ -45,6 +45,13 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         return result;
     }
 
+    public byte[] getSplashImage() throws RemoteException {
+        logRemoteMethodStartCall("getSplashImage");
+        byte[] result = target.getSplashImage();
+        logRemoteMethodEndCall("getSplashImage", result);
+        return result;
+    }
+
     public Integer getComputer(String hostname) throws RemoteException {
         logRemoteMethodStartCall("getComputer");
         Integer result = target.getComputer(hostname);
