@@ -4,6 +4,7 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
@@ -13,7 +14,6 @@ import skolkovo.gwt.shared.MessageException;
 import java.util.Date;
 
 public class ExpertFrame implements EntryPoint {
-
     private Label lbInCluster;
     private ListBox bxInCluster;
     private Label lbInnovative;
@@ -61,25 +61,26 @@ public class ExpertFrame implements EntryPoint {
                     return;
                 }
 
+                Date voteDate = vi.date == null ? new Date() : vi.date;
                 HTMLPanel caption = new HTMLPanel(
                         getMessages().caption(
                                 vi.expertName,
                                 vi.projectClaimer,
                                 vi.voteDone ? "" : getMessages().pleasePrompt(),
                                 "voted".equals(vi.voteResult)
-                                     ? getMessages().votedPrompt()
-                                     : "refused".equals(vi.voteResult)
-                                         ? getMessages().refusedPrompt()
-                                         : "connected".equals(vi.voteResult)
-                                             ? getMessages().connectedPrompt()
-                                             : "",
-                                // todo : надо переделать на формат в зависимости от locale
-                                DateTimeFormat.getFormat("dd.MM.yy").format(vi.date == null ? new Date() : vi.date)
+                                ? getMessages().votedPrompt()
+                                : "refused".equals(vi.voteResult)
+                                  ? getMessages().refusedPrompt()
+                                  : "connected".equals(vi.voteResult)
+                                    ? getMessages().connectedPrompt()
+                                    : "",
+                                DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_SHORT).format(voteDate)
                         ));
 
                 VerticalPanel manePane = new VerticalPanel();
                 manePane.setWidth("1024");
                 manePane.setSpacing(10);
+                manePane.add(createLocalesPanel());
                 manePane.add(caption);
 
                 if (!vi.voteDone || "voted".equals(vi.voteResult)) {
@@ -91,13 +92,13 @@ public class ExpertFrame implements EntryPoint {
 
                     bxInCluster = new ListBox();
                     bxInCluster.setWidth("10%");
-                    addListBoxBooleanItems(bxInCluster, vi.voteDone ? (vi.inCluster ? 1 : 2): 0);
+                    addListBoxBooleanItems(bxInCluster, vi.voteDone ? (vi.inCluster ? 1 : 2) : 0);
                     bxInCluster.setEnabled(!vi.voteDone);
 
                     lbInnovative = new Label(getMessages().lbInnovative());
                     bxInnovative = new ListBox();
                     bxInnovative.setWidth("10%");
-                    addListBoxBooleanItems(bxInnovative, vi.voteDone ? (vi.innovative ? 1 : 2): 0);
+                    addListBoxBooleanItems(bxInnovative, vi.voteDone ? (vi.innovative ? 1 : 2) : 0);
                     bxInnovative.setEnabled(!vi.voteDone);
 
                     lbInnovativeComment = new Label(getMessages().lbInnovativeComment());
@@ -110,7 +111,7 @@ public class ExpertFrame implements EntryPoint {
                     lbForeign = new Label(getMessages().lbForeign());
                     bxForeign = new ListBox();
                     bxForeign.setWidth("10%");
-                    addListBoxBooleanItems(bxForeign, vi.voteDone ? (vi.foreign ? 1 : 2): 0);
+                    addListBoxBooleanItems(bxForeign, vi.voteDone ? (vi.foreign ? 1 : 2) : 0);
                     bxForeign.setEnabled(!vi.voteDone);
 
                     lbCompetent = new Label(getMessages().lbCompetent());
@@ -160,6 +161,26 @@ public class ExpertFrame implements EntryPoint {
                 setManePane(manePane);
             }
         });
+    }
+
+    private VerticalPanel createLocalesPanel() {
+        HorizontalPanel localeBtnPanel = new HorizontalPanel();
+        localeBtnPanel.setHorizontalAlignment(HorizontalPanel.ALIGN_RIGHT);
+        localeBtnPanel.setSpacing(5);
+        for (final String localeName : LocaleInfo.getAvailableLocaleNames()) {
+            // пропускаем GWT-шную дефолтную локаль
+            if ("default".equals(localeName)) {
+                continue;
+            }
+            localeBtnPanel.add(new HTML("<a href=\"" + Window.Location.createUrlBuilder().setParameter("locale", localeName).buildString() + "\">" +
+                                        "  <img src=\"images/" + localeName + ".png\"/></a>"));
+        }
+
+        VerticalPanel localesPanel = new VerticalPanel();
+        localesPanel.setWidth("100%");
+        localesPanel.setHorizontalAlignment(HorizontalPanel.ALIGN_RIGHT);
+        localesPanel.add(localeBtnPanel);
+        return localesPanel;
     }
 
     private ExpertFrameMessages getMessages() {
@@ -213,15 +234,12 @@ public class ExpertFrame implements EntryPoint {
 
     private void showErrorPage(Throwable caught) {
 
-        String message = "";
-        if (caught instanceof MessageException) {
-            message = caught.getMessage();
-        } else {
-            message = getMessages().internalServerErrorMessage();
-        }
+        String message = caught instanceof MessageException
+                         ? caught.getMessage()
+                         : getMessages().internalServerErrorMessage();
 
         HTMLPanel caption = new HTMLPanel(
-                        "<h5>" + message + "</h5>");
+                "<h5>" + message + "</h5>");
 
         VerticalPanel manePane = new VerticalPanel();
         manePane.setWidth("1024");
@@ -247,9 +265,9 @@ public class ExpertFrame implements EntryPoint {
 
         public void onClick(ClickEvent event) {
             if ("voted".equals(voteResult) &&
-                    (bxInCluster.getSelectedIndex() == 0 ||
-                     bxInnovative.getSelectedIndex() == 0 ||
-                     bxForeign.getSelectedIndex() == 0)) {
+                (bxInCluster.getSelectedIndex() == 0 ||
+                 bxInnovative.getSelectedIndex() == 0 ||
+                 bxForeign.getSelectedIndex() == 0)) {
                 Window.alert(getMessages().incompletePrompt());
                 return;
             }

@@ -12,4 +12,6 @@
     <source path='shared'/>
 
     <extend-property name="locale" values="en,ru"/>
+
+    <set-property-fallback name="locale" value="ru"/>
 </module>
