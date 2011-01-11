@@ -309,7 +309,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         pool.writeObject(outStream, format);
         pool.writeObject(outStream, focusable);
-        outStream.writeBoolean(readOnly);
 
         outStream.writeBoolean(panelLabelAbove);
 

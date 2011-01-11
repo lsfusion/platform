@@ -52,8 +52,6 @@ public class PropertyDrawView extends ComponentView {
 
     public Boolean focusable;
 
-    public boolean readOnly;
-
     public boolean panelLabelAbove = false;
 
     public ExternalScreen externalScreen;
@@ -156,7 +154,7 @@ public class PropertyDrawView extends ComponentView {
 
         pool.writeObject(outStream, format);
         pool.writeObject(outStream, focusable);
-        outStream.writeBoolean(readOnly);
+        outStream.writeBoolean(entity.readOnly);
 
         outStream.writeBoolean(panelLabelAbove);
 
@@ -206,7 +204,6 @@ public class PropertyDrawView extends ComponentView {
         format = pool.readObject(inStream);
 
         focusable = pool.readObject(inStream);
-        readOnly = inStream.readBoolean();
 
         panelLabelAbove = inStream.readBoolean();
 

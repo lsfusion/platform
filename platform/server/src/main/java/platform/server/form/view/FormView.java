@@ -505,7 +505,7 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
     }
 
     public void setReadOnly(PropertyDrawView property, boolean readOnly) {
-        property.readOnly = readOnly;
+        property.entity.readOnly = readOnly;
     }
 
     public void setKeyStroke(KeyStroke keyStroke) {

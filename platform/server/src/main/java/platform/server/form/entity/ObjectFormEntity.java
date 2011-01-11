@@ -17,6 +17,8 @@ public class ObjectFormEntity<T extends BusinessLogics<T>> extends AbstractClass
         object = addSingleGroupObject(cls, BL.baseGroup, true);
         object.groupTo.setSingleClassView(ClassViewType.PANEL);
 
+        getPropertyDraw(BL.objectValue, object).readOnly = true;
+
         clsSID = cls.getSID();
     }
 
@@ -24,7 +26,6 @@ public class ObjectFormEntity<T extends BusinessLogics<T>> extends AbstractClass
     public FormView createDefaultRichDesign() {
         DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
-        design.get(getPropertyDraw(BL.objectValue, object)).readOnly = true;
         design.getNullFunction().setVisible(false);
 
         return design;

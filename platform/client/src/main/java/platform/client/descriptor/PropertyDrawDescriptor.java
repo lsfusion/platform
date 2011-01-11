@@ -23,6 +23,7 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
     public ClientPropertyDraw client;
 
     private PropertyObjectDescriptor propertyObject;
+    private boolean readOnly;
 
     public PropertyDrawDescriptor() {
     }
@@ -160,12 +161,13 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
     }
 
     public void setReadOnly(boolean readOnly) {
+        this.readOnly = readOnly;
         client.readOnly = readOnly;
         getContext().updateDependency(this, "readOnly");
     }
 
     public boolean getReadOnly() {
-        return client.readOnly;
+        return readOnly;
     }
 
     public String getCaption() {
@@ -184,6 +186,7 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
         pool.serializeObject(outStream, propertyCaption);
 
         outStream.writeBoolean(shouldBeLast);
+        outStream.writeBoolean(readOnly);
         outStream.writeBoolean(forceViewType != null);
         if (forceViewType != null) {
             pool.writeString(outStream, forceViewType.name());
@@ -197,6 +200,7 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
         propertyCaption = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
 
         shouldBeLast = inStream.readBoolean();
+        readOnly = inStream.readBoolean();
         if (inStream.readBoolean()) {
             forceViewType = ClassViewType.valueOf(pool.readString(inStream));
         }

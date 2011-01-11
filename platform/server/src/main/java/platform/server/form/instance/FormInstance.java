@@ -230,7 +230,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     public PropertyObjectInstance<?> getChangePropertyObjectInstance(PropertyDrawInstance<?> propertyDraw) throws SQLException {
         PropertyObjectInstance<?> change = propertyDraw.propertyObject.getChangeInstance();
 
-        boolean isReadOnly = entity.getRichDesign().getProperty(propertyDraw.entity).readOnly;
+        boolean isReadOnly = propertyDraw.entity.readOnly;
 
         // если readOnly свойство лежит в groupObject в виде панели с одним входом, то показываем диалог выбора объекта
         if ((isReadOnly || !change.getValueImplement().canBeChanged(this))

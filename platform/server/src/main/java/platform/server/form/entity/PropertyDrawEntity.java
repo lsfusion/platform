@@ -18,6 +18,8 @@ import java.util.List;
 
 public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObject implements Instantiable<PropertyDrawInstance>, ServerIdentitySerializable {
 
+    public boolean readOnly;
+
     public PropertyObjectEntity<P> propertyObject;
     
     public GroupObjectEntity toDraw;
@@ -66,6 +68,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         pool.serializeObject(outStream, propertyCaption);
 
         outStream.writeBoolean(shouldBeLast);
+        outStream.writeBoolean(readOnly);
         outStream.writeBoolean(forceViewType != null);
         if (forceViewType != null) {
             pool.writeString(outStream, forceViewType.name());
@@ -79,6 +82,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         propertyCaption = (PropertyObjectEntity<?>) pool.deserializeObject(inStream);
 
         shouldBeLast = inStream.readBoolean();
+        readOnly = inStream.readBoolean();
         if (inStream.readBoolean()) {
             forceViewType = ClassViewType.valueOf(pool.readString(inStream));
         }
