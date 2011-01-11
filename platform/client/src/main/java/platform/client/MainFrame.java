@@ -21,7 +21,7 @@ public abstract class MainFrame extends JFrame {
 
         this.remoteNavigator = remoteNavigator;
 
-        setIconImage(new ImageIcon(getClass().getResource("/platform/images/lsfusion.jpg")).getImage());
+        setIconImage(Main.getMainIcon().getImage());
 
         updateUser();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

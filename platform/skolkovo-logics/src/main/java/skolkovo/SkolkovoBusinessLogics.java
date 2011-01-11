@@ -974,7 +974,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     }
 
     @Override
-    public byte[] getSplashImage() throws RemoteException {
+    public byte[] getLogo() throws RemoteException {
         InputStream in = SkolkovoBusinessLogics.class.getResourceAsStream("/images/sk_logo.jpg");
         try {
             try {

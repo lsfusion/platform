@@ -3812,7 +3812,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return getClass().getSimpleName();
     }
 
-    public byte[] getSplashImage() throws RemoteException {
+    public byte[] getLogo() throws RemoteException {
         return null;
     }
 

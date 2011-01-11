@@ -34,8 +34,11 @@ public class LoginDialog extends JDialog {
     private String waitMessage = "Пожалуйста, подождите...";
     private LoginInfo defaultLoginInfo;
     private boolean autoLogin = false;
+    private JLabel imageLabel;
 
     public LoginDialog(LoginInfo defaultLoginInfo) {
+        imageLabel.setIcon(Main.getLogo());
+
         this.defaultLoginInfo = restoreLoginData(defaultLoginInfo);
         setContentPane(contentPane);
         setAlwaysOnTop(true);
@@ -326,13 +329,12 @@ public class LoginDialog extends JDialog {
         contentPane = new JPanel();
         contentPane.setLayout(new GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
         contentPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), null));
-        final JLabel label1 = new JLabel();
-        label1.setHorizontalAlignment(0);
-        label1.setHorizontalTextPosition(0);
-        label1.setIcon(new ImageIcon(getClass().getResource("/platform/images/lsfusion.jpg")));
-        label1.setRequestFocusEnabled(true);
-        label1.setText("");
-        contentPane.add(label1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        imageLabel = new JLabel();
+        imageLabel.setHorizontalAlignment(0);
+        imageLabel.setHorizontalTextPosition(0);
+        imageLabel.setRequestFocusEnabled(true);
+        imageLabel.setText("");
+        contentPane.add(imageLabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         final JPanel panel1 = new JPanel();
         panel1.setLayout(new GridLayoutManager(4, 1, new Insets(4, 4, 4, 4), -1, -1));
         contentPane.add(panel1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(24, 48), null, 0, false));

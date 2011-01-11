@@ -45,10 +45,10 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         return result;
     }
 
-    public byte[] getSplashImage() throws RemoteException {
-        logRemoteMethodStartCall("getSplashImage");
-        byte[] result = target.getSplashImage();
-        logRemoteMethodEndCall("getSplashImage", result);
+    public byte[] getLogo() throws RemoteException {
+        logRemoteMethodStartCall("getLogo");
+        byte[] result = target.getLogo();
+        logRemoteMethodEndCall("getLogo", result);
         return result;
     }
 

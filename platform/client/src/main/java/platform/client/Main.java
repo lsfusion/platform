@@ -24,6 +24,8 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClassLoader;
 import java.rmi.server.RMIFailureHandler;
@@ -197,17 +199,9 @@ public class Main {
     }
 
     private static void startSplashScreen() {
-        byte[] splashImageData = null;
-        try {
-            splashImageData = remoteLogics.getSplashImage();
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-
-        final byte[] finalSplashImageData = splashImageData;
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                SplashScreen.start(finalSplashImageData);
+                SplashScreen.start(getLogo());
             }
         });
     }
@@ -263,6 +257,43 @@ public class Main {
         } catch (RemoteException e) {
             throw new RuntimeException("Ошибка при генерации ID");
         }
+    }
+
+    public static ImageIcon getMainIcon() {
+        return getLogo();
+    }
+
+    public static ImageIcon getLogo() {
+        byte[] logoData = null;
+        if (remoteLogics != null) {
+            try {
+                logoData = remoteLogics.getLogo();
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return loadResource(logoData, PropertyConstants.PLATFORM_CLIENT_LOGO, "/platform/images/lsfusion.jpg");
+    }
+
+    private static ImageIcon loadResource(byte[] logoData, String defaultUrlSystemPropName, String defaultResourcePath) {
+        ImageIcon splash = logoData != null ? new ImageIcon(logoData) : null;
+        if (splash == null || splash.getImage() == null) {
+            String splashUrlString = System.getProperty(defaultUrlSystemPropName);
+            URL splashUrl = null;
+            if (splashUrlString != null) {
+                try {
+                    splashUrl = new URL(splashUrlString);
+                } catch (MalformedURLException ignored) {
+                }
+            }
+            if (splashUrl == null) {
+                splashUrl = SplashScreen.class.getResource(defaultResourcePath);
+            }
+
+            splash = new ImageIcon(splashUrl);
+        }
+        return splash;
     }
 
     public interface ModuleFactory {
