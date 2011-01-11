@@ -610,7 +610,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
-            design.readOnly = true;
+            design.setReadOnly(true, objVote.groupTo);
+            design.setReadOnly(true, objExpert.groupTo);
+            design.setReadOnly(allowedEmailLetterExpertVote, false);
 
             design.setPanelLabelAbove(voteResultCommentGroup, true);
             design.setConstraintsFillHorizontal(voteResultCommentGroup, 0.5);
@@ -631,7 +633,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             objExpert = addSingleGroupObject(expert, selection, objectValue, userFirstName, userLastName, userLogin, userPassword, emailParticipant, nameClusterExpert, expertResultGroup, generateLoginPasswordExpert, emailAuthExpert);
             addObjectActions(this, objExpert);
 
-            objVote = addSingleGroupObject(vote, objectValue, nameProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote, delete);
+            objVote = addSingleGroupObject(vote, objectValue, nameProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote);
 
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
             addPropertyDraw(objExpert, objVote, allowedEmailLetterExpertVote);
@@ -645,6 +647,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
             design.setReadOnly(true, objVote.groupTo);
+            design.setReadOnly(allowedEmailLetterExpertVote, false);
 
             design.setPanelLabelAbove(voteResultCommentGroup, true);
             design.setConstraintsFillHorizontal(voteResultCommentGroup, 0.5);
@@ -956,8 +959,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             String currentEmail = (String) emailParticipant.read(session, expertObject);
 
             String login;
-            int indexMail = currentEmail.indexOf("@");
-            if(indexMail>=0)
+            int indexMail;
+            if(currentEmail != null && (indexMail = currentEmail.indexOf("@"))>=0)
                 login = currentEmail.substring(0, indexMail);
             else
                 login = "login" + expertObject.object;
