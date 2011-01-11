@@ -63,6 +63,11 @@ public class SQLSession extends MutableObject {
     }
 
     private boolean inTransaction;
+
+    public boolean isInTransaction() {
+        return inTransaction;
+    }
+
     public void startTransaction() throws SQLException {
         needPrivate();
 

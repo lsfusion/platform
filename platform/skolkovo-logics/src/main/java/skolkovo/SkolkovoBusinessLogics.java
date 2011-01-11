@@ -10,6 +10,7 @@ import platform.interop.action.MessageClientAction;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.auth.User;
 import platform.server.classes.*;
+import platform.server.data.Union;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.expr.query.OrderType;
@@ -28,6 +29,7 @@ import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
+import platform.server.logics.EmailActionProperty;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
@@ -65,6 +67,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     ConcreteCustomClass vote;
 
+    ConcreteCustomClass language;
+    StaticClass documentType;
+
     StaticCustomClass voteResult;
     StaticCustomClass projectStatus;
 
@@ -98,17 +103,23 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         expert = addConcreteClass("expert", "Эксперт", customUser, participant);
         cluster = addConcreteClass("cluster", "Кластер", baseClass.named);
         claimer = addConcreteClass("claimer", "Заявитель", baseClass.named, participant);
-        document = addConcreteClass("document", "Документ", baseClass.named);
+        document = addConcreteClass("document", "Документ", baseClass);
 
         vote = addConcreteClass("vote", "Заседание", baseClass, transaction);
+
+        language = addConcreteClass("language", "Язык", baseClass.named);
 
         voteResult = addStaticClass("voteResult", "Результат заседания", 
                                     new String[]{"refused", "connected", "voted"}, 
                                     new String[]{"Отказался", "Аффилирован", "Проголосовал"});
         
         projectStatus = addStaticClass("projectStatus", "Статус проекта",
-                                       new String[]{"unknown", "needExtraVote", "inProgress", "succeeded", "accepted", "rejected"},
-                                       new String[]{"Неизвестный статус", "Требуется заседание", "Идет заседание", "Достаточно голосов", "Оценен положительно", "Оценен отрицательно"});
+                                       new String[]{"unknown", "needDocuments", "needExtraVote", "inProgress", "succeeded", "accepted", "rejected"},
+                                       new String[]{"Неизвестный статус", "Не соответствуют документы", "Требуется заседание", "Идет заседание", "Достаточно голосов", "Оценен положительно", "Оценен отрицательно"});
+
+        documentType = addStaticClass("documentType", "Тип документа",
+                                    new String[]{"application", "resume", "techdesc", "forres"},
+                                    new String[]{"Анкета", "Резюме", "Техническое описание", "Резюме иностранного специалиста "});
     }
 
     LP projectVote, nameProjectVote;
@@ -185,6 +196,23 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP dateProjectVote;
     LP numberExpertVote;
 
+    LP languageExpert;
+    LP nameLanguageExpert;
+    LP languageDocument;
+    LP nameLanguageDocument;
+    LP typeDocument;
+    LP nameTypeDocument;
+    LP postfixDocument;
+    LP hidePostfixDocument;
+
+    LP quantityMinLanguageDocumentType;
+    LP quantityMaxLanguageDocumentType;
+    LP quantityProjectLanguageDocumentType;
+    LP notEnoughProject;
+    LP autoGenerateProject;
+
+    LP nameDocument;
+
     protected void initProperties() {
 
         LP percent = addSFProp("(prm1*100/prm2)", DoubleClass.instance, 2);
@@ -218,6 +246,30 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         projectDocument = addDProp(idGroup, "projectDocument", "Проект (ИД)", project, document);
         nameProjectDocument = addJProp(baseGroup, "nameProjectDocument", "Проект", name, projectDocument, 1);
+
+        quantityMinLanguageDocumentType = addDProp(baseGroup, "quantityMinLanguageDocumentType", "Мин. док.", IntegerClass.instance, language, documentType);
+        quantityMaxLanguageDocumentType = addDProp(baseGroup, "quantityMaxLanguageDocumentType", "Макс. док.", IntegerClass.instance, language, documentType);
+        LP singleLanguageDocumentType = addJProp("Один док.", equals2, quantityMaxLanguageDocumentType, 1, 2, addCProp(IntegerClass.instance, 1));
+        LP multipleLanguageDocumentType = addJProp(andNot1, addCProp(LogicalClass.instance, true, language, documentType), 1, 2, singleLanguageDocumentType, 1, 2);
+
+        languageExpert = addDProp(idGroup, "languageExpert", "Язык (ИД)", language, expert);
+        nameLanguageExpert = addJProp(baseGroup, "nameLanguageExpert", "Язык", name, languageExpert, 1);
+        languageDocument = addDProp(idGroup, "languageDocument", "Язык (ИД)", language, document);
+        nameLanguageDocument = addJProp(baseGroup, "nameLanguageDocument", "Язык", name, languageDocument, 1);
+        typeDocument = addDProp(idGroup, "typeDocument", "Тип (ИД)", documentType, document);
+        nameTypeDocument = addJProp(baseGroup, "nameTypeDocument", "Тип", name, typeDocument, 1);
+
+        LP multipleDocument = addJProp(multipleLanguageDocumentType, languageDocument, 1, typeDocument, 1);
+        postfixDocument = addJProp(and1, addDProp("postfixDocument", "Доп. описание", StringClass.get(15), document), 1, multipleDocument, 1);
+        hidePostfixDocument = addJProp(and1, addCProp(StringClass.get(40), "Постфикс", document), 1, multipleDocument, 1);
+        nameDocument = addJProp(string2, nameTypeDocument, 1, addSUProp(Union.OVERRIDE, addCProp(StringClass.get(15),"", document), postfixDocument), 1);
+
+        quantityProjectLanguageDocumentType = addSGProp("projectLanguageDocumentType", "Кол-во док.", addCProp(IntegerClass.instance, 1, document), projectDocument, 1, languageDocument, 1, typeDocument, 1); // сколько экспертов высказалось
+        LP notEnoughProjectLanguageDocumentType = addSUProp(Union.OVERRIDE, addJProp(greater2, quantityProjectLanguageDocumentType, 1, 2, 3, quantityMaxLanguageDocumentType, 2, 3),
+                addJProp(less2, addSUProp(Union.OVERRIDE, addCProp(IntegerClass.instance, 0, project, language, documentType), quantityProjectLanguageDocumentType), 1, 2, 3, quantityMinLanguageDocumentType, 2, 3));
+        notEnoughProject = addMGProp(baseGroup, "notEnoughProject", "Недостаточно док.", notEnoughProjectLanguageDocumentType, 1);
+
+        autoGenerateProject = addDProp(baseGroup, "autoGenerateProject", "Авт. зас.", LogicalClass.instance, project);
 
         fileDocument = addDProp(baseGroup, "fileDocument", "Файл", PDFClass.instance, document);
 
@@ -295,9 +347,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         acceptedProject = addJProp(baseGroup, "acceptedProject", "Оценен положительно", acceptedVote, voteValuedProject, 1);
         voteRejectedProject = addJProp(baseGroup, "rejectedProject", "Оценен отрицательно", andNot1, voteValuedProject, 1, acceptedVote, 1);
 
-        needExtraVoteProject = addJProp("needExtraVoteProject", "Треб. заседание", and(true, true),
+        needExtraVoteProject = addJProp("needExtraVoteProject", "Треб. заседание", and(true, true, true),
                                         is(project), 1,
-                voteInProgressProject, 1,
+                                        notEnoughProject, 1,
+                                        voteInProgressProject, 1,
                                         voteSucceededProject, 1); // есть открытое заседания и есть состояшееся заседания !!! нужно создать новое заседание
 
         addConstraint(addJProp("Эксперт не соответствует необходимому кластеру", diff2,
@@ -308,7 +361,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         generateVoteProject = addAProp(actionGroup, new GenerateVoteActionProperty());
         hideGenerateVoteProject = addHideCaptionProp(privateGroup, "Сгенерировать заседание", generateVoteProject, needExtraVoteProject);
-        generateVoteProject.setDerivedChange(addCProp(ActionClass.instance, true), needExtraVoteProject, 1);
+        generateVoteProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), needExtraVoteProject, 1, autoGenerateProject, 1);
 
         expertLogin = addCGProp(baseGroup, "expertLogin", "Эксперт (ИД)", object(expert), userLogin, userLogin, 1);
 
@@ -320,8 +373,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                                                  addIfElseUProp(addCProp(projectStatus, "succeeded", project),
                                                                 addIfElseUProp(addCProp(projectStatus, "inProgress", project),
                                                                                addIfElseUProp(addCProp(projectStatus, "needExtraVote", project),
-                                                                                              addCProp(projectStatus, "unknown", project),
-                                                                                              needExtraVoteProject, 1),
+                                                                                           addIfElseUProp(addCProp(projectStatus, "needDocuments", project),
+                                                                                                 addCProp(projectStatus, "unknown", project),
+                                                                                                 notEnoughProject, 1),
+                                                                                           needExtraVoteProject, 1),
                                                                                voteInProgressProject, 1),
                                                                 voteSucceededProject, 1),
                                                  voteRejectedProject, 1),
@@ -376,6 +431,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         addFormEntity(new ProjectFormEntity(baseElement, 10));
         addFormEntity(new VoteFormEntity(baseElement, 15));
         addFormEntity(new ExpertFormEntity(baseElement, 18));
+        addFormEntity(new LanguageDocumentTypeFormEntity(baseElement, 25));
         addFormEntity(new GlobalFormEntity(baseElement, 20));
 
         NavigatorElement print = new NavigatorElement(baseElement, 60, "Печатные формы");
@@ -398,7 +454,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ProjectFormEntity(NavigatorElement parent, int iID) {
             super(parent, iID, "Реестр проектов");
 
-            objProject = addSingleGroupObject(project, objectValue, date, name, nameClusterProject, nameClaimerProject, nameStatusProject, generateVoteProject);
+            objProject = addSingleGroupObject(project, objectValue, date, name, nameClusterProject, nameClaimerProject, nameStatusProject, autoGenerateProject, generateVoteProject);
             addObjectActions(this, objProject);
 
             getPropertyDraw(generateVoteProject).forceViewType = ClassViewType.PANEL;
@@ -407,8 +463,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             objVote = addSingleGroupObject(vote, objectValue, dateStartVote, dateEndVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, delete);
             objVote.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
 
-            objDocument = addSingleGroupObject(document, objectValue, name, fileDocument);
+            objDocument = addSingleGroupObject(document, objectValue, nameTypeDocument, nameLanguageDocument, postfixDocument, fileDocument);
             addObjectActions(this, objDocument);
+            getPropertyDraw(postfixDocument).forceViewType = ClassViewType.PANEL;
+            getPropertyDraw(postfixDocument).propertyCaption = addPropertyObject(hidePostfixDocument, objDocument);
 
             objExpert = addSingleGroupObject(expert);
             addPropertyDraw(objExpert, objVote, inExpertVote);
@@ -545,6 +603,28 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         }
     }
 
+    private class LanguageDocumentTypeFormEntity extends FormEntity<SkolkovoBusinessLogics> { // письмо эксперту
+        private ObjectEntity objLanguage;
+        private ObjectEntity objDocumentType;
+
+        private GroupObjectEntity gobjLanguageDocumentType;
+
+        private LanguageDocumentTypeFormEntity(NavigatorElement parent, int iID) {
+            super(parent, iID, "Обязательные документы");
+
+            gobjLanguageDocumentType = new GroupObjectEntity(genID());
+            objLanguage = new ObjectEntity(genID(), language, "Язык");
+            objDocumentType = new ObjectEntity(genID(), documentType, "Тип документа");
+            gobjLanguageDocumentType.add(objLanguage);
+            gobjLanguageDocumentType.add(objDocumentType);
+            addGroup(gobjLanguageDocumentType);
+
+            addPropertyDraw(objLanguage, name);
+            addPropertyDraw(objDocumentType, name);
+            addPropertyDraw(objLanguage, objDocumentType, quantityMinLanguageDocumentType, quantityMaxLanguageDocumentType);
+        }
+    }
+
     private class ExpertLetterFormEntity extends FormEntity<SkolkovoBusinessLogics> { // письмо эксперту
         private ObjectEntity objExpert;
         private ObjectEntity objVote;
@@ -569,10 +649,11 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
 
             objDocument = addSingleGroupObject(8, document, fileDocument);
-            addPropertyDraw(name, objDocument).setSID("docName");
+            addPropertyDraw(nameDocument, objDocument).setSID("docName");
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectDocument, objDocument), Compare.EQUALS, addPropertyObject(projectVote, objVote)));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(languageDocument, objDocument), Compare.EQUALS, addPropertyObject(languageExpert, objExpert)));
 
-            addEAForm(emailLetterExpertVote, this, objExpert, 1, objVote, 2);
+            addEAForm(emailLetterExpertVote, EmailActionProperty.Format.HTML, this, objExpert, 1, objVote, 2);
         }
 
         @Override
@@ -597,7 +678,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             addPropertyDraw(numberExpertVote, objExpert, objVote);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
 
-            addEAForm(emailStartVote, this, objVote, 1);
+            addEAForm(emailStartVote, EmailActionProperty.Format.PDF, this, objVote, 1);
         }
 
         @Override
@@ -624,7 +705,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(doneExpertVote, objExpert, objVote)));
 
-            addEAForm(emailProtocolVote, this, objVote, 1);
+            addEAForm(emailProtocolVote, EmailActionProperty.Format.PDF, this, objVote, 1);
         }
 
         @Override
