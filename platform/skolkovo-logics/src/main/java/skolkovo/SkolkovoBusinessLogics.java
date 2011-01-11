@@ -67,7 +67,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     ConcreteCustomClass vote;
 
-    ConcreteCustomClass language;
+    StaticClass language;
     StaticClass documentType;
 
     StaticCustomClass voteResult;
@@ -107,7 +107,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         vote = addConcreteClass("vote", "Заседание", baseClass, transaction);
 
-        language = addConcreteClass("language", "Язык", baseClass.named);
+        language = addStaticClass("language", "Язык",
+                new String[]{"russian", "english"},
+                new String[]{"Русский", "Английский"});
 
         voteResult = addStaticClass("voteResult", "Результат заседания", 
                                     new String[]{"refused", "connected", "voted"}, 
@@ -176,10 +178,13 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP needExtraVoteProject;
 
     LP emailLetterExpertVote;
+    LP allowedEmailLetterExpertVote;
     LP emailStartVote;
     LP emailProtocolVote;
+    LP emailAuthExpert;
 
     LP generateVoteProject, hideGenerateVoteProject;
+    LP generateLoginPasswordExpert;
 
     LP expertLogin;
 
@@ -208,10 +213,13 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP quantityMinLanguageDocumentType;
     LP quantityMaxLanguageDocumentType;
     LP quantityProjectLanguageDocumentType;
+    LP translateLanguageDocumentType;
     LP notEnoughProject;
     LP autoGenerateProject;
 
     LP nameDocument;
+
+    LP isForeignExpert;
 
     protected void initProperties() {
 
@@ -251,6 +259,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         quantityMaxLanguageDocumentType = addDProp(baseGroup, "quantityMaxLanguageDocumentType", "Макс. док.", IntegerClass.instance, language, documentType);
         LP singleLanguageDocumentType = addJProp("Один док.", equals2, quantityMaxLanguageDocumentType, 1, 2, addCProp(IntegerClass.instance, 1));
         LP multipleLanguageDocumentType = addJProp(andNot1, addCProp(LogicalClass.instance, true, language, documentType), 1, 2, singleLanguageDocumentType, 1, 2);
+        translateLanguageDocumentType = addDProp(baseGroup, "translateLanguageDocumentType", "Перевод", StringClass.get(50), language, documentType);
 
         languageExpert = addDProp(idGroup, "languageExpert", "Язык (ИД)", language, expert);
         nameLanguageExpert = addJProp(baseGroup, "nameLanguageExpert", "Язык", name, languageExpert, 1);
@@ -262,7 +271,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         LP multipleDocument = addJProp(multipleLanguageDocumentType, languageDocument, 1, typeDocument, 1);
         postfixDocument = addJProp(and1, addDProp("postfixDocument", "Доп. описание", StringClass.get(15), document), 1, multipleDocument, 1);
         hidePostfixDocument = addJProp(and1, addCProp(StringClass.get(40), "Постфикс", document), 1, multipleDocument, 1);
-        nameDocument = addJProp(string2, nameTypeDocument, 1, addSUProp(Union.OVERRIDE, addCProp(StringClass.get(15),"", document), postfixDocument), 1);
+
+        LP translateNameDocument = addJProp("Перевод", translateLanguageDocumentType, languageDocument, 1, typeDocument, 1);
+        nameDocument = addJProp(string2, translateNameDocument, 1, addSUProp(Union.OVERRIDE, addCProp(StringClass.get(15),"", document), postfixDocument), 1);
 
         quantityProjectLanguageDocumentType = addSGProp("projectLanguageDocumentType", "Кол-во док.", addCProp(IntegerClass.instance, 1, document), projectDocument, 1, languageDocument, 1, typeDocument, 1); // сколько экспертов высказалось
         LP notEnoughProjectLanguageDocumentType = addSUProp(Union.OVERRIDE, addJProp(greater2, quantityProjectLanguageDocumentType, 1, 2, 3, quantityMaxLanguageDocumentType, 2, 3),
@@ -363,6 +374,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         hideGenerateVoteProject = addHideCaptionProp(privateGroup, "Сгенерировать заседание", generateVoteProject, needExtraVoteProject);
         generateVoteProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), needExtraVoteProject, 1, autoGenerateProject, 1);
 
+        generateLoginPasswordExpert = addAProp(actionGroup, new GenerateLoginPasswordActionProperty());
+        generateLoginPasswordExpert.setDerivedForcedChange(addCProp(ActionClass.instance, true), is(expert), 1);
+
         expertLogin = addCGProp(baseGroup, "expertLogin", "Эксперт (ИД)", object(expert), userLogin, userLogin, 1);
 
         addCUProp("userRole", true, "Роль пользователя", addCProp(StringClass.get(30), "expert", expert));
@@ -408,9 +422,12 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         emailDocuments = addDProp(baseGroup, "emailDocuments", "E-mail для документов", StringClass.get(50));
 
-        emailLetterExpertVote = addEAProp(baseGroup, "Отослать письмо", "Письмо о заседании", expert, vote);
+        emailLetterExpertVote = addEAProp(privateGroup, "Письмо о заседании (e-mail)", "Письмо о заседании", expert, vote);
         addEARecepient(emailLetterExpertVote, emailParticipant, 1);
         emailLetterExpertVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), inExpertVote, 1, 2);
+
+        allowedEmailLetterExpertVote = addJProp(baseGroup, "Письмо о заседании (e-mail)", "Письмо о заседании", andNot1, emailLetterExpertVote, 1, 2, voteResultExpertVote, 1, 2);
+        allowedEmailLetterExpertVote.property.askConfirm = true;
 
         emailStartVote = addEAProp(baseGroup, "Созыв заседания (e-mail)", "Созыв заседания", vote);
         addEARecepient(emailStartVote, emailDocuments);
@@ -419,6 +436,11 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         emailProtocolVote = addEAProp(baseGroup, "Протокол заседания (e-mail)", "Протокол заседания", vote);
         addEARecepient(emailProtocolVote, emailDocuments);
         emailProtocolVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), closedVote, 1);
+
+        isForeignExpert = addJProp(equals2, languageExpert, 1, addCProp(language, "english"));
+        emailAuthExpert = addEAProp(baseGroup, "Аутентификация эксперта (e-mail)", "Аутентификация эксперта", expert);
+        addEARecepient(emailAuthExpert, emailParticipant, 1);
+        emailAuthExpert.setDerivedChange(addCProp(ActionClass.instance, true), userLogin, 1, userPassword, 1);
     }
 
     protected void initTables() {
@@ -438,6 +460,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         addFormEntity(new VoteStartFormEntity(print, 40));
         addFormEntity(new ExpertLetterFormEntity(print, 30));
         addFormEntity(new VoteProtocolFormEntity(print, 35));
+        addFormEntity(new ExpertAuthFormEntity(print, 45));
     }
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
@@ -537,7 +560,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             objExpert = addSingleGroupObject(expert, selection, objectValue, userFirstName, userLastName, userLogin, userPassword, emailParticipant, nameClusterExpert);
 
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
-            addPropertyDraw(objExpert, objVote, emailLetterExpertVote);
+            addPropertyDraw(objExpert, objVote, allowedEmailLetterExpertVote);
             setForceViewType(voteResultCommentGroup, ClassViewType.PANEL);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
@@ -578,13 +601,13 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ExpertFormEntity(NavigatorElement parent, int iID) {
             super(parent, iID, "Реестр экспертов");
 
-            objExpert = addSingleGroupObject(expert, selection, objectValue, userFirstName, userLastName, userLogin, userPassword, emailParticipant, nameClusterExpert, expertResultGroup);
+            objExpert = addSingleGroupObject(expert, selection, objectValue, userFirstName, userLastName, userLogin, userPassword, emailParticipant, nameClusterExpert, expertResultGroup, generateLoginPasswordExpert, emailAuthExpert);
             addObjectActions(this, objExpert);
 
             objVote = addSingleGroupObject(vote, objectValue, nameProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote, delete);
 
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
-            addPropertyDraw(objExpert, objVote, emailLetterExpertVote);  
+            addPropertyDraw(objExpert, objVote, allowedEmailLetterExpertVote);
             setForceViewType(voteResultCommentGroup, ClassViewType.PANEL);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
@@ -621,7 +644,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             addPropertyDraw(objLanguage, name);
             addPropertyDraw(objDocumentType, name);
-            addPropertyDraw(objLanguage, objDocumentType, quantityMinLanguageDocumentType, quantityMaxLanguageDocumentType);
+            addPropertyDraw(objLanguage, objDocumentType, quantityMinLanguageDocumentType, quantityMaxLanguageDocumentType, translateLanguageDocumentType);
         }
     }
 
@@ -659,6 +682,19 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         @Override
         public void modifyHierarchy(GroupObjectHierarchy groupHierarchy) {
             groupHierarchy.markGroupAsNonJoinable(gobjExpertVote);
+        }
+    }
+
+    private class ExpertAuthFormEntity extends FormEntity<SkolkovoBusinessLogics> { // письмо эксперту о логине
+        private ObjectEntity objExpert;
+
+        private ExpertAuthFormEntity(NavigatorElement parent, int iID) {
+            super(parent, iID, "Аутентификация эксперта", true);
+
+            objExpert = addSingleGroupObject(1, expert, userLogin, userPassword, name, isForeignExpert);
+            objExpert.groupTo.initClassView = ClassViewType.PANEL;
+
+            addEAForm(emailAuthExpert, EmailActionProperty.Format.HTML, this, objExpert, 1);
         }
     }
 
@@ -865,4 +901,42 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         }
     }
 
+    public class GenerateLoginPasswordActionProperty extends ActionProperty {
+
+        private final ClassPropertyInterface expertInterface;
+
+        public GenerateLoginPasswordActionProperty() {
+            super(genSID(), "Сгенерировать логин и пароль", new ValueClass[]{expert});
+
+            Iterator<ClassPropertyInterface> i = interfaces.iterator();
+            expertInterface = i.next();
+        }
+
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            throw new RuntimeException("no need");
+        }
+
+        @Override
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            DataObject expertObject = keys.get(expertInterface);
+
+            String currentEmail = (String) emailParticipant.read(session, expertObject);
+
+            String login;
+            int indexMail = currentEmail.indexOf("@");
+            if(indexMail>=0)
+                login = currentEmail.substring(0, indexMail);
+            else
+                login = "login" + expertObject.object;
+
+            Random rand = new Random();
+            String chars = "0123456789abcdefghijklmnopqrstuvwxyz";
+            String password = "";
+            for(int i=0;i<8;i++)
+                password += chars.charAt(rand.nextInt(chars.length()));
+
+            userLogin.execute(login, session, expertObject);
+            userPassword.execute(password, session, expertObject);
+        }
+    }
 }
