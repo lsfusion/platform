@@ -1037,6 +1037,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
             dialog.initFilterPropertyDraw = filterPropertyDraw;
         }
 
+        dialog.readOnly = changeProperty.getDialogClass().dialogReadOnly;
+
         return dialog;
     }
 

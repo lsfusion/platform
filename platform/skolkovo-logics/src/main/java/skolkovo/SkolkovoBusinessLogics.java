@@ -105,7 +105,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         project = addConcreteClass("project", "Проект", baseClass.named, transaction);
         expert = addConcreteClass("expert", "Эксперт", customUser, participant);
         cluster = addConcreteClass("cluster", "Кластер", baseClass.named);
+
         claimer = addConcreteClass("claimer", "Заявитель", baseClass.named, participant);
+        claimer.dialogReadOnly = false;
+
         document = addConcreteClass("document", "Документ", baseClass);
 
         vote = addConcreteClass("vote", "Заседание", baseClass, transaction);

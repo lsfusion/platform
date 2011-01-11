@@ -26,4 +26,12 @@ public class RemoteDialogProxy<T extends RemoteDialogInterface>
         logRemoteMethodEndCall("getInitFilterPropertyDraw", result);
         return result;
     }
+
+    @ImmutableMethod
+    public Boolean isReadOnly() throws RemoteException {
+        logRemoteMethodStartCall("isReadOnly");
+        Boolean result = target.isReadOnly();
+        logRemoteMethodEndCall("isReadOnly", result);
+        return result;
+    }
 }

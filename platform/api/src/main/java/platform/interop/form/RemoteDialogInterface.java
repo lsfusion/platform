@@ -6,4 +6,5 @@ public interface RemoteDialogInterface extends RemoteFormInterface {
 
     Object getDialogValue() throws RemoteException;
     Integer getInitFilterPropertyDraw() throws RemoteException;
+    Boolean isReadOnly() throws RemoteException;
 }

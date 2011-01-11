@@ -17,6 +17,7 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
 
     private ObjectInstance dialogObject;
     public PropertyDrawEntity initFilterPropertyDraw;
+    public Boolean readOnly;
 
     public DialogInstance(FormEntity<T> entity,
                           T BL,

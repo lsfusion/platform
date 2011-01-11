@@ -24,4 +24,8 @@ public class RemoteDialog<T extends BusinessLogics<T>> extends RemoteForm<T, Dia
         else
             return null;
     }
+
+    public Boolean isReadOnly() throws RemoteException {
+        return form.readOnly;
+    }
 }

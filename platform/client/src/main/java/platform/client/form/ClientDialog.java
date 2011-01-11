@@ -56,14 +56,16 @@ public class ClientDialog extends JDialog {
     public int objectChosen = NOT_CHOSEN;
     public Object dialogValue;
 
+    private Boolean readOnly;
     boolean isReadOnlyMode() {
-        return true;
+        return (readOnly != null) ? readOnly : true;
     }
 
     // необходим чтобы в диалоге менять формы (панели)
     void setCurrentForm(final RemoteDialogInterface remoteDialog) throws IOException, ClassNotFoundException {
 
         if (currentForm != null) remove(currentForm.getComponent());
+        readOnly = remoteDialog.isReadOnly();
         currentForm = new ClientFormController(remoteDialog, null) {
 
             @Override

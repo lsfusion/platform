@@ -43,6 +43,8 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
         return ObjectType.instance;
     }
 
+    public Boolean dialogReadOnly;
+
     public final Collection<CustomClass> parents;
     public final List<CustomClass> children;
 
