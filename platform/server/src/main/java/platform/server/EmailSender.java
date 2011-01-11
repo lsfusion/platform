@@ -17,6 +17,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
 import java.io.*;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -114,11 +115,11 @@ public class EmailSender {
         mp.addBodyPart(filePart);
     }
 
-    public void sendMail(String subject, Map<ByteArray, String> files, AttachmentProperties... forms) {
+    public void sendMail(String subject, Map<ByteArray, String> files, List<AttachmentProperties> forms) {
         sendMail(subject, null, files, forms);
     }
 
-    public void sendMail(String subject, String htmlFilePath, Map<ByteArray, String> files, AttachmentProperties... forms) {
+    public void sendMail(String subject, List<String> htmlFilePaths, Map<ByteArray, String> files, List<AttachmentProperties> forms) {
         try {
             message.setFrom();
             message.setSentDate(new java.util.Date());
@@ -126,13 +127,16 @@ public class EmailSender {
             message.setSubject(subject, "utf-8");
 
             String result = "";
-            if (htmlFilePath != null) {
-                BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(htmlFilePath), "utf-8"));
-                while (in.ready()) {
-                    String s = in.readLine();
-                    result += s;
+            if (htmlFilePaths != null) {
+                for (String path : htmlFilePaths) {
+                    BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(path), "utf-8"));
+                    while (in.ready()) {
+                        String s = in.readLine();
+                        result += s;
+                    }
                 }
-            } else {
+            }
+            if (result.equals("")) {
                 result = "Вам пришли печатные формы";
             }
 

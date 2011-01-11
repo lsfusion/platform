@@ -49,8 +49,11 @@ public class EmailActionProperty extends ActionProperty {
         extensions.put(Format.HTML, ".html");
     }
 
+    public static enum FormStorageType {TEXT, ATTACH}
+
     private final List<FormEntity> forms;
     private final List<Format> formats = new ArrayList<Format>();
+    private final List<FormStorageType> types = new ArrayList<FormStorageType>();
     private final List<Map<ObjectEntity, ClassPropertyInterface>> mapObjects = new ArrayList<Map<ObjectEntity, ClassPropertyInterface>>();
 
     private final List<PropertyMapImplement<?, ClassPropertyInterface>> recepients = new ArrayList<PropertyMapImplement<?, ClassPropertyInterface>>();
@@ -73,12 +76,13 @@ public class EmailActionProperty extends ActionProperty {
         recepients.add(recepient);
     }
 
-    public void addForm(FormEntity form, Format format, Map<ObjectEntity, ClassPropertyInterface> objects) {
+    public void addForm(FormEntity form, Format format, FormStorageType type, Map<ObjectEntity, ClassPropertyInterface> objects) {
+        assert type == FormStorageType.ATTACH || type == FormStorageType.TEXT && format == Format.HTML;
         forms.add(form);
         formats.add(format);
+        types.add(type);
         mapObjects.add(objects);
     }
-
 
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapExecuteObjects) {
         throw new RuntimeException("should not be");
@@ -119,8 +123,9 @@ public class EmailActionProperty extends ActionProperty {
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapExecuteObjects) throws SQLException {
 
         try {
-            EmailSender.AttachmentProperties[] reportPaths = new EmailSender.AttachmentProperties[forms.size()];
+            List<EmailSender.AttachmentProperties> reportPaths = new ArrayList<EmailSender.AttachmentProperties>();
             Map<ByteArray, String> files = new HashMap<ByteArray, String>();
+            List<String> bodyFiles = new ArrayList<String>();
             for (int i = 0; i < forms.size(); i++) {
                 Map<ObjectEntity, DataObject> formObjects = BaseUtils.join(mapObjects.get(i), keys);
                 RemoteFormInterface remoteForm;
@@ -131,8 +136,12 @@ public class EmailActionProperty extends ActionProperty {
 
                 ReportGenerator_tmp report = new ReportGenerator_tmp(remoteForm, false, true, files);
                 JasperPrint print = report.createReport();
-                reportPaths[i] = new EmailSender.AttachmentProperties(
-                        createReportFile(print, formats.get(i)), forms.get(i).caption, formats.get(i));
+                String filePath = createReportFile(print, formats.get(i));
+                if (types.get(i) == FormStorageType.TEXT) {
+                    bodyFiles.add(filePath);
+                } else {
+                    reportPaths.add(new EmailSender.AttachmentProperties(filePath, forms.get(i).caption, formats.get(i)));
+                }
             }
 
             Modifier<?> modifier = executeForm!=null? executeForm.form :session.modifier;
@@ -151,7 +160,7 @@ public class EmailActionProperty extends ActionProperty {
             else {
                 try {
                     EmailSender sender = new EmailSender(smtpHost.trim(), fromAddress.trim(), recepientEmails.toArray(new String[recepientEmails.size()]));
-                    sender.sendMail(subject, files, reportPaths);
+                    sender.sendMail(subject, bodyFiles, files, reportPaths);
                 } catch (Exception e) {
                     actions.add(new MessageClientAction("Не удалось отправить почту","Отсылка писем"));
                 }
