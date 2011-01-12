@@ -130,6 +130,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public PropertyEditorComponent getEditorComponent(ClientFormController form, Object value) throws IOException, ClassNotFoundException {
+        ClientType changeType = getPropertyChangeType(form);
+        if (changeType == null) {
+            return null;
+        }
 
         if (askConfirm) {
             int n = JOptionPane.showConfirmDialog(
@@ -142,10 +146,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             }
         }
 
-        ClientType changeType = getPropertyChangeType(form);
-        if (changeType == null) {
-            return null;
-        }
         return changeType.getEditorComponent(form, this, value, getFormat(), design);
     }
 

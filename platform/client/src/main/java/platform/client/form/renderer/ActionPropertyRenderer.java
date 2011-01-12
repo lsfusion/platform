@@ -3,15 +3,18 @@ package platform.client.form.renderer;
 import platform.client.form.PropertyRendererComponent;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 
 public class ActionPropertyRenderer extends JButton
                                         implements PropertyRendererComponent {
 
     private final Color defaultBackground = getBackground();
+    private Border defaultBorder;
+    private static String defaultCaption = "...";
 
     public ActionPropertyRenderer(String caption) {
-        super(">>");
+        defaultBorder = getBorder();
     }
 
     public JComponent getComponent() {
@@ -19,6 +22,8 @@ public class ActionPropertyRenderer extends JButton
     }
 
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
+        setBorder(value == null ? BorderFactory.createEmptyBorder() : defaultBorder);
+        setText(value == null ? "" : defaultCaption);
 
         if (isSelected) {
             if (hasFocus)
