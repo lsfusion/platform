@@ -1,7 +1,6 @@
 package roman;
 
 import net.sf.jasperreports.engine.JRException;
-import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
@@ -167,7 +166,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP nameRouteFreight;
     private LP quantityPalletInvoiceFreight;
     private ConcreteCustomClass stock;
-    private ConcreteCustomClass stockBox;
+    private ConcreteCustomClass freightBox;
     private LP countryOfOriginArticleItem;
     private LP countryOfOriginDataItem;
     private LP countryOfOriginItem;
@@ -188,9 +187,18 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP seekSupplierBoxSIDSupplier;
     private LP quantityPalletInvoiceDate;
     private LP quantityPalletFreightDate;
+    private LP routeFreightBox;
+    private LP nameRouteFreightBox;
+    private LP quantityBoxShipmentStockSku;
+    private LP quantityShipmentStockSku;
+    private LP quantityShipmentRouteSku;
+    private LP quantitySupplierBoxBoxShipmentSku;
+    private LP quantitySimpleShipmentSku;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
+
+        outputPropertyClasses();
     }
 
     @Override
@@ -241,11 +249,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         stock = addConcreteClass("stock", "Место хранения", barcodeObject);
 
-        stockBox = addConcreteClass("stockBox", "Короб для транспортировки", stock);
+        freightBox = addConcreteClass("freightBox", "Короб для транспортировки", stock);
 
         freight = addConcreteClass("freight", "Фрахт", baseClass.named);
 
-        route = addConcreteClass("route", "Маршрут", baseClass.named);
+        route = addStaticClass("route", "Маршрут", new String[]{"rb", "rf"}, new String[]{"РБ", "РФ"});
     }
 
     @Override
@@ -491,8 +499,22 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         quantitySupplierBoxBoxShipmentStockSku = addDProp(baseGroup, "quantitySupplierBoxBoxShipmentStockSku", "Кол-во оприход.", DoubleClass.instance,
                                                           supplierBox, boxShipment, stock, sku);
 
-        quantitySimpleShipmentStockSku = addDProp(baseGroup, "quantitySimpleShipmentStockSku", "Кол-во оприход.",
+        quantitySupplierBoxBoxShipmentSku = addSGProp(baseGroup, "quantitySupplierBoxBoxShipmentSku", "Всего оприход.", quantitySupplierBoxBoxShipmentStockSku, 1, 2, 4);
+
+        quantitySimpleShipmentStockSku = addDProp(baseGroup, "quantitySimpleShipmentStockSku", "Кол-во оприход.", DoubleClass.instance,
                                                           simpleShipment, stock, sku);
+
+        quantitySimpleShipmentSku = addSGProp(baseGroup, "quantitySimpleShipmentSku", "Всего оприход.", quantitySimpleShipmentStockSku, 1, 3);
+
+        quantityBoxShipmentStockSku = addSGProp(baseGroup, "quantityBoxShipmentStockSku", "Кол-во оприход.", quantitySupplierBoxBoxShipmentStockSku, 2, 3, 4);
+
+        quantityShipmentStockSku = addCUProp(baseGroup, "quantityShipmentStockSku", "Кол-во оприход.", quantitySimpleShipmentStockSku, quantityBoxShipmentStockSku);
+
+        // freightBox
+        routeFreightBox = addDProp(idGroup, "routeFreightBox", "Маршрут (ИД)", route, freightBox);
+        nameRouteFreightBox = addJProp(baseGroup, "nameRouteFreightBox", "Маршрут", name, routeFreightBox, 1);
+
+        quantityShipmentRouteSku = addSGProp(baseGroup, "quantityShipmentRouteSku", "Кол-во оприход.", quantityShipmentStockSku, 1, routeFreightBox, 2, 3);
 
         // Freight
         tonnageFreight = addDProp(baseGroup, "tonnageFreight", "Тоннаж", DoubleClass.instance, freight);
@@ -834,8 +856,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objShipment;
         private ObjectEntity objInvoice;
         private ObjectEntity objSupplierBox;
+        private ObjectEntity objFreightBoxRB;
+        private ObjectEntity objFreightBoxRF;
         private ObjectEntity objStock;
         private ObjectEntity objSku;
+        private ObjectEntity objRoute;
 
         private ShipmentFormEntity(NavigatorElement parent, int iID, String caption, boolean box) {
             super(parent, iID, caption);
@@ -863,8 +888,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 objSupplierBox.groupTo.initClassView = ClassViewType.PANEL;
             }
 
-            objStock = addSingleGroupObject(stock, "Место хранения", barcode, objectClassName);
-            objStock.groupTo.initClassView = ClassViewType.PANEL;
+            objStock = addSingleGroupObject(stock, "Место хранения", barcode, objectClassName, nameRouteFreightBox);
+            objStock.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objSku = addSingleGroupObject(sku, "SKU", barcode, sidArticleSku, originalNameArticleSku, nameCountryOfOriginSku, sidColorSupplierItem, nameColorSupplierItem, nameSizeSupplierItem);
 
@@ -874,11 +899,18 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             if (box) {
                 addPropertyDraw(quantityListSku, objSupplierBox, objSku);
+                addPropertyDraw(quantitySupplierBoxBoxShipmentSku, objSupplierBox, objShipment, objSku);
                 addPropertyDraw(quantitySupplierBoxBoxShipmentStockSku, objSupplierBox, objShipment, objStock, objSku);
             } else {
                 addPropertyDraw(invoicedShipmentSku, objShipment, objSku);
+                addPropertyDraw(quantitySimpleShipmentSku, objShipment, objSku);
                 addPropertyDraw(quantitySimpleShipmentStockSku, objShipment, objStock, objSku);
             }
+
+            objRoute = addSingleGroupObject(route, "Маршрут", name);
+            objRoute.groupTo.setSingleClassView(ClassViewType.GRID);
+
+            addPropertyDraw(quantityShipmentRouteSku, objShipment, objRoute, objSku);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objShipment), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objInvoice), Compare.EQUALS, objSupplier));
@@ -922,7 +954,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addAutoAction(objBarcode, addPropertyObject(barcodeAction4, objSupplierBox, objShipment, objStock, objBarcode));
             addAutoAction(objBarcode, addPropertyObject(seekBarcodeAction, objBarcode));
             addAutoAction(objBarcode, addPropertyObject(barcodeNotFoundMessage, objBarcode));
-            addAutoAction(objBarcode, addPropertyObject(seekSupplierBoxSIDSupplier, objSIDSupplierBox, objSupplier));
+            addAutoAction(objSIDSupplierBox, addPropertyObject(seekSupplierBoxSIDSupplier, objSIDSupplierBox, objSupplier));
 
             setReadOnly(objSupplier, true);
             setReadOnly(barcode, true, objStock.groupTo);
@@ -932,12 +964,19 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         public DefaultFormView createDefaultRichDesign() {
             DefaultFormView design = super.createDefaultRichDesign();
 
+            if (box)
+                design.setEditKey(design.get(getPropertyDraw(objectValue, objSIDSupplierBox)), KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0));
+
             design.get(objShipment.groupTo).grid.constraints.fillVertical = 0.3;
             design.get(objInvoice.groupTo).grid.constraints.fillVertical = 0.3;
 
-            design.addIntersection(design.getGroupObjectContainer(objBarcode.groupTo),
-                                   design.getGroupObjectContainer(objSIDSupplierBox.groupTo),
-                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            design.get(objRoute.groupTo).grid.constraints.fillVertical = 0.2;
+            design.get(objRoute.groupTo).grid.showFilter = false;
+
+            if (box)
+                design.addIntersection(design.getGroupObjectContainer(objBarcode.groupTo),
+                                       design.getGroupObjectContainer(objSIDSupplierBox.groupTo),
+                                       DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             design.addIntersection(design.getGroupObjectContainer(objShipment.groupTo),
                                    design.getGroupObjectContainer(objInvoice.groupTo),
@@ -947,6 +986,19 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 design.addIntersection(design.getGroupObjectContainer(objSupplierBox.groupTo),
                                        design.getGroupObjectContainer(objStock.groupTo),
                                        DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            if (box)
+                design.addIntersection(design.getGroupObjectContainer(objSupplierBox.groupTo),
+                                       design.getGroupObjectContainer(objRoute.groupTo),
+                                       DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            design.addIntersection(design.getGroupObjectContainer(objStock.groupTo),
+                                   design.getGroupObjectContainer(objRoute.groupTo),
+                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            design.addIntersection(design.getGroupObjectContainer(objRoute.groupTo),
+                                   design.getGroupObjectContainer(objSku.groupTo),
+                                   DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
 
             return design;
         }
