@@ -1902,6 +1902,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 try {
                     sql.addExtraIndices(table.name, table.keys);
                 } catch (SQLException e) {
+                    System.out.println(e.getMessage());
                 }
             }
         }
