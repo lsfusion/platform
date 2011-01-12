@@ -13,6 +13,8 @@ public interface RemoteLogicsInterface extends PendingRemote, PingRemote, Remote
 
     String getName() throws RemoteException;
 
+    String getDisplayName() throws RemoteException;
+
     byte[] getLogo() throws RemoteException;
 
     byte[] findClass(String name) throws RemoteException;

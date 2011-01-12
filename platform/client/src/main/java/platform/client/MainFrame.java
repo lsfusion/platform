@@ -64,7 +64,7 @@ public abstract class MainFrame extends JFrame {
 
     public void updateUser() throws IOException, ClassNotFoundException {
         ObjectInputStream inputStream = new ObjectInputStream(new ByteArrayInputStream(remoteNavigator.getCurrentUserInfoByteArray()));
-        setTitle("LS Fusion - " + inputStream.readObject());
+        setTitle(Main.getMainTitle() + " - " + inputStream.readObject());
     }
 
     public abstract void runReport(RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException;

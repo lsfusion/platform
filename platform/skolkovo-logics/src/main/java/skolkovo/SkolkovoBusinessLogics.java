@@ -976,6 +976,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         }
     }
 
+    public String getDisplayName() throws RemoteException {
+        return "Skolkovo";
+    }
+
     @Override
     public byte[] getLogo() throws RemoteException {
         InputStream in = SkolkovoBusinessLogics.class.getResourceAsStream("/images/sk_logo.jpg");

@@ -45,6 +45,13 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         return result;
     }
 
+    public String getDisplayName() throws RemoteException {
+        logRemoteMethodStartCall("getDisplayName");
+        String result = target.getDisplayName();
+        logRemoteMethodEndCall("getDisplayName", result);
+        return result;
+    }
+
     public byte[] getLogo() throws RemoteException {
         logRemoteMethodStartCall("getLogo");
         byte[] result = target.getLogo();

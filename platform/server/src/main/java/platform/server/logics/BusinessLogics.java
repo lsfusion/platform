@@ -3748,6 +3748,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return getClass().getSimpleName();
     }
 
+    public String getDisplayName() throws RemoteException {
+        return null;
+    }
+
     public byte[] getLogo() throws RemoteException {
         return null;
     }

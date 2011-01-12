@@ -32,8 +32,13 @@ import java.rmi.server.RMIFailureHandler;
 import java.rmi.server.RMISocketFactory;
 import java.util.List;
 
+import static platform.client.PropertyConstants.*;
+
 public class Main {
     private final static Logger logger = Logger.getLogger(SimplexLayout.class);
+
+    private static final String DEFAULT_TITLE = "LS Fusion";
+    private static final String DEFAULT_SPLASH_PATH = "/platform/images/lsfusion.jpg";
 
     public static RemoteLoaderInterface remoteLoader;
     public static RemoteLogicsInterface remoteLogics;
@@ -68,9 +73,9 @@ public class Main {
         // делаем, чтобы сборщик мусора срабатывал каждую минуту - для удаления ненужных connection'ов
         System.setProperty("sun.rmi.dgc.client.gcInterval", "60000");
 
-        boolean turnOnRmiLogging = Boolean.getBoolean(PropertyConstants.PLATFORM_CLIENT_LOG_RMI);
+        boolean turnOnRmiLogging = Boolean.getBoolean(PLATFORM_CLIENT_LOG_RMI);
         if (turnOnRmiLogging) {
-            String logBaseDir = System.getProperty(PropertyConstants.PLATFORM_CLIENT_LOG_BASEDIR);
+            String logBaseDir = System.getProperty(PLATFORM_CLIENT_LOG_BASEDIR);
             if (logBaseDir != null) {
                 ClientLoggingManager.turnOnRmiLogging(logBaseDir);
             } else {
@@ -125,7 +130,7 @@ public class Main {
 
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
-                    String timeout = System.getProperty(PropertyConstants.PLATFORM_CLIENT_CONNECTION_LOST_TIMEOUT, "7200000");
+                    String timeout = System.getProperty(PLATFORM_CLIENT_CONNECTION_LOST_TIMEOUT, "7200000");
 
                     initRMISocketFactory(timeout);
 
@@ -143,7 +148,7 @@ public class Main {
                     frame = module.initFrame(loginAction.getRemoteNavigator());
                     logger.info("After init frame");
 
-                    pingThread = new PingThread(remoteLogics, Integer.parseInt(System.getProperty("platform.client.pingTime", "1000")));
+                    pingThread = new PingThread(remoteLogics, Integer.parseInt(System.getProperty(PLATFORM_CLIENT_PINGTIME, "1000")));
                     pingThread.start();
 
                     frame.addWindowListener(
@@ -273,7 +278,7 @@ public class Main {
             }
         }
 
-        return loadResource(logoData, PropertyConstants.PLATFORM_CLIENT_LOGO, "/platform/images/lsfusion.jpg");
+        return loadResource(logoData, PLATFORM_CLIENT_LOGO, DEFAULT_SPLASH_PATH);
     }
 
     private static ImageIcon loadResource(byte[] logoData, String defaultUrlSystemPropName, String defaultResourcePath) {
@@ -296,6 +301,19 @@ public class Main {
             }
         }
         return splash;
+    }
+
+    public static String getMainTitle() {
+        String title = null;
+        if (remoteLogics != null) {
+            try {
+                title = remoteLogics.getDisplayName();
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return title != null ? title : DEFAULT_TITLE;
     }
 
     public interface ModuleFactory {
