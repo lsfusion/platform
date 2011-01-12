@@ -488,7 +488,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         PolicyManager.defaultSecurityPolicy.property.view.deny(userPassword);
 
-        PolicyManager.defaultSecurityPolicy.property.change.deny(dateStartVote, dateEndVote);
+        PolicyManager.defaultSecurityPolicy.property.change.deny(dateStartVote, dateEndVote, inExpertVote, voteResultExpertVote, doneExpertVote);
 
         for (Property property : voteResultGroup.getProperties())
             PolicyManager.defaultSecurityPolicy.property.change.deny(property);
