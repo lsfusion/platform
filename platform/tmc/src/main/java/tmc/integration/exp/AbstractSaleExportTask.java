@@ -109,7 +109,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
     private FormData getDataSale(DataSession session, Map<Field, PropertyDrawInstance> map) throws Exception {
 
         // Выгружаем продажи по кассе
-        FormInstance formInstance = new FormInstance(BL.commitSaleBrowseForm, BL, session, PolicyManager.defaultSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.computer)); // здесь надо переделать на нормальный компьютер
+        FormInstance formInstance = new FormInstance(BL.commitSaleBrowseForm, BL, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.computer)); // здесь надо переделать на нормальный компьютер
 
         setRemoteFormFilter(formInstance);
 
@@ -141,7 +141,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
     private FormData getDataCert(DataSession session, Map<Field, PropertyDrawInstance> map) throws Exception {
 
         // Выгружаем продажи по кассе
-        FormInstance formInstance = new FormInstance(BL.saleCheckCertBrowseForm, BL, session, PolicyManager.defaultSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.computer)); // здесь надо переделать на нормальный компьютер
+        FormInstance formInstance = new FormInstance(BL.saleCheckCertBrowseForm, BL, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.computer)); // здесь надо переделать на нормальный компьютер
 
         setRemoteFormFilter(formInstance);
 
@@ -171,7 +171,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
     private FormData getDataReturn(DataSession session, Map<Field, PropertyDrawInstance> map) throws Exception {
 
         // Выгружаем продажи по кассе
-        FormInstance formInstance = new FormInstance(BL.returnSaleCheckRetailBrowse, BL, session, PolicyManager.defaultSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.computer)); // здесь надо переделать на нормальный компьютер
+        FormInstance formInstance = new FormInstance(BL.returnSaleCheckRetailBrowse, BL, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.computer)); // здесь надо переделать на нормальный компьютер
 
         setRemoteFormFilter(formInstance);
 

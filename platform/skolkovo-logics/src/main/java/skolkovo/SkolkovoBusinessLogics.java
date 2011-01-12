@@ -721,6 +721,11 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         public void modifyHierarchy(GroupObjectHierarchy groupHierarchy) {
             groupHierarchy.markGroupAsNonJoinable(gobjExpertVote);
         }
+
+        @Override
+        public boolean isReadOnly() {
+            return true;
+        }
     }
 
     private class ExpertAuthFormEntity extends FormEntity<SkolkovoBusinessLogics> { // письмо эксперту о логине
@@ -733,6 +738,11 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             objExpert.groupTo.initClassView = ClassViewType.PANEL;
 
             addEAForm(emailAuthExpert, EmailActionProperty.Format.HTML, EmailActionProperty.FormStorageType.TEXT, this, objExpert, 1);
+        }
+
+        @Override
+        public boolean isReadOnly() {
+            return true;
         }
     }
 
@@ -758,6 +768,11 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         @Override
         public void modifyHierarchy(GroupObjectHierarchy groupHierarchy) {
             groupHierarchy.markGroupAsNonJoinable(objVote.groupTo);
+        }
+
+        @Override
+        public boolean isReadOnly() {
+            return true;
         }
     }
 
@@ -787,6 +802,11 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         @Override
         public void modifyHierarchy(GroupObjectHierarchy groupHierarchy) {
             groupHierarchy.markGroupAsNonJoinable(objVote.groupTo);
+        }
+
+        @Override
+        public boolean isReadOnly() {
+            return true;
         }
     }
 

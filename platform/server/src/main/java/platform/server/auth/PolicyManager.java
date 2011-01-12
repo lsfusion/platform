@@ -11,6 +11,7 @@ public class PolicyManager {
 
     private Map<Integer, SecurityPolicy> policies = new HashMap<Integer, SecurityPolicy>();
 
+    public static SecurityPolicy serverSecurityPolicy = new SecurityPolicy();
     public static SecurityPolicy defaultSecurityPolicy = new SecurityPolicy();
 
     public SecurityPolicy getSecurityPolicy(User user) {

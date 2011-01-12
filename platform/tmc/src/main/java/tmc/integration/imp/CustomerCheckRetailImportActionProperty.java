@@ -39,7 +39,7 @@ public class CustomerCheckRetailImportActionProperty extends ActionProperty {
 
             FormInstance formInstance = new FormInstance(
                     new DefaultClassFormEntity(BL, BL.customerCheckRetail),
-                    BL, BL.createSession(), PolicyManager.defaultSecurityPolicy, null, null,
+                    BL, BL.createSession(), PolicyManager.serverSecurityPolicy, null, null,
                     new DataObject(executeForm.form.instanceFactory.computer, BL.computer));
 
             for (int i = 0; i < recordCount; i++) {
