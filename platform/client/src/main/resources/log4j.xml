@@ -23,14 +23,14 @@
     </appender>
 
     <appender name="clientlog" class="org.apache.log4j.FileAppender">
-        <param name="file" value="logs/server.log"/>
+        <param name="file" value="${user.home}/.fusion/client.log"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d{ABSOLUTE} %5p %t %c{1}:%M:%L - %m%n"/>
         </layout>
     </appender>
 
     <appender name="remotelog" class="org.apache.log4j.FileAppender">
-        <param name="file" value="logs/remote-client.log"/>
+        <param name="file" value="${user.home}/.fusion/logs/remote-client.log"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d{ABSOLUTE} %5p %t %c{1}:%M:%L - %m%n"/>
         </layout>
@@ -42,7 +42,7 @@
         <appender-ref ref="remotelog"/>
     </category>
 
-    <category name="log4j.logger.platform.client.remote.proxy" additivity="false">
+    <category name="platform.client.remote.proxy" additivity="false">
         <priority value="DEBUG"/>
         <appender-ref ref="remotelog"/>
     </category>
