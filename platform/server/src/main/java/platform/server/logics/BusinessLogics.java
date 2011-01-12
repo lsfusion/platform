@@ -10,10 +10,7 @@ import platform.base.identity.IDGenerator;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
-import platform.interop.action.ClientAction;
-import platform.interop.action.MessageClientAction;
-import platform.interop.action.UserChangedClientAction;
-import platform.interop.action.UserReloginClientAction;
+import platform.interop.action.*;
 import platform.interop.exceptions.LoginException;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.screen.ExternalScreen;
@@ -28,6 +25,7 @@ import platform.server.auth.User;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
 import platform.server.data.*;
+import platform.server.data.where.WhereBuilder;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.query.OrderType;
 import platform.server.data.query.Query;
@@ -63,6 +61,8 @@ import platform.server.net.ServerInstanceLocator;
 import platform.server.net.ServerInstanceLocatorSettings;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.DataSession;
+import platform.server.session.Changes;
+import platform.server.session.Modifier;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
@@ -3591,6 +3591,67 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected LP addSAProp(AbstractGroup group, String caption, LP lp) {
         return addProperty(group, new LP<ClassPropertyInterface>(new SeekActionProperty(genSID(), caption, new ValueClass[]{baseClass}, lp == null ? null : lp.property)));
+    }
+
+    protected LP addLFAProp(AbstractGroup group, String caption, LP lp) {
+        return addProperty(group, new LP<ClassPropertyInterface>(new LoadActionProperty(genSID(), caption, lp)));
+    }
+
+    protected LP addOFAProp(AbstractGroup group, String caption, LP lp) { // обернем сразу в and
+        LP<ClassPropertyInterface> openAction = new LP<ClassPropertyInterface>(new OpenActionProperty(genSID(), caption, lp));
+        return addJProp(group, caption, and1, getUParams(new LP[]{openAction, lp}, 0));
+    }
+
+    public static class LoadActionProperty extends ActionProperty {
+
+        LP fileProperty;
+
+        private LoadActionProperty(String sID, String caption, LP fileProperty) {
+            super(sID, caption, fileProperty.getMapClasses());
+
+            this.fileProperty = fileProperty;
+        }
+
+        private FileClass getFileClass() {
+            return (FileClass) fileProperty.property.getType();
+        }
+
+        @Override
+        protected DataClass getValueClass() {
+            FileClass fileClass = getFileClass();
+            return FileActionClass.getInstance(fileClass.toString(), fileClass.getExtensions());
+        }
+
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            FormInstance<?> form = executeForm.form;
+            DataObject[] objects = new DataObject[keys.size()]; int i=0; // здесь опять учитываем, что порядок тот же
+            for (ClassPropertyInterface classInterface : interfaces)
+                objects[i++] = keys.get(classInterface);
+            fileProperty.execute(new DataObject((byte[])(value.getValue()), getFileClass()), form.session, form, objects);
+        }
+    }
+
+    public static class OpenActionProperty extends ActionProperty {
+
+        LP fileProperty;
+
+        private OpenActionProperty(String sID, String caption, LP fileProperty) {
+            super(sID, caption, fileProperty.getMapClasses());
+
+            this.fileProperty = fileProperty;
+        }
+
+        private FileClass getFileClass() {
+            return (FileClass) fileProperty.property.getType();
+        }
+
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            FormInstance<?> form = executeForm.form;
+            DataObject[] objects = new DataObject[keys.size()]; int i=0; // здесь опять учитываем, что порядок тот же
+            for (ClassPropertyInterface classInterface : interfaces)
+                objects[i++] = keys.get(classInterface);
+            actions.add(new OpenFileClientAction((byte[])fileProperty.read(form.session.sql, form, form.session.env, objects), BaseUtils.firstWord(getFileClass().getExtensions(),",")));
+        }
     }
 
     // params - по каким входам группировать

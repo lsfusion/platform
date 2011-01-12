@@ -182,11 +182,15 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     };
 
     public Expr getExpr(Map<T, ? extends Expr> joinImplement) {
-        return getExpr(joinImplement, defaultModifier, null);
+        return getExpr(joinImplement, defaultModifier);
     }
 
     public Expr getClassExpr(Map<T, ? extends Expr> joinImplement) {
-        return getExpr(joinImplement, SessionDataProperty.modifier, null);
+        return getExpr(joinImplement, SessionDataProperty.modifier);
+    }
+
+    public <U extends Changes<U>> Expr getExpr(Map<T, ? extends Expr> joinImplement, Modifier<U> modifier) {
+        return getExpr(joinImplement, modifier, null);
     }
 
     public <U extends Changes<U>> Expr getExpr(Map<T, ? extends Expr> joinImplement, Modifier<U> modifier, WhereBuilder changedWhere) {
@@ -326,7 +330,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
         readQuery.putKeyWhere(keys);
 
-        readQuery.properties.put(readValue, getExpr(readQuery.mapKeys, modifier, null));
+        readQuery.properties.put(readValue, getExpr(readQuery.mapKeys, modifier));
         return BaseUtils.singleValue(readQuery.execute(session, env)).get(readValue);
     }
 

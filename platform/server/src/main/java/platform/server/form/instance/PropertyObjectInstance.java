@@ -147,7 +147,7 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
         Map<P, Expr> joinImplement = new HashMap<P, Expr>();
         for(P propertyInterface : property.interfaces)
             joinImplement.put(propertyInterface, mapping.get(propertyInterface).getExpr(classSource, modifier));
-        return property.getExpr(joinImplement,modifier,null);
+        return property.getExpr(joinImplement,modifier);
     }
 
     public Type getType() {

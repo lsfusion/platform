@@ -94,8 +94,8 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
         Map<P, Interface<P>> mapInterfaces = getMapInterfaces();
         Map<P, KeyExpr> mapKeys = BaseUtils.join(mapInterfaces, change.mapKeys);
 
-        Where reverseWhere = reverse.mapExpr(mapKeys, modifier, null).getWhere();
-        Expr propertyExpr = property.getExpr(mapKeys, modifier, null);
+        Where reverseWhere = reverse.mapExpr(mapKeys, modifier).getWhere();
+        Expr propertyExpr = property.getExpr(mapKeys, modifier);
         ValueExpr shiftExpr = new ValueExpr(1, (IntegralClass) property.getType());
 
         return property.getDataChanges(new PropertyChange<P>(mapKeys, propertyExpr.sum(shiftExpr.scale(-1)).and(propertyExpr.compare(shiftExpr, Compare.EQUALS).not()).

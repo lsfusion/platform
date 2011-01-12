@@ -117,7 +117,7 @@ public class LP<T extends PropertyInterface> {
         Map<T, Expr> mapExprs = new HashMap<T, Expr>();
         for(int i=0;i<listInterfaces.size();i++)
             mapExprs.put(listInterfaces.get(i),exprs[i]);        
-        return property.getExpr(mapExprs,modifier,null);
+        return property.getExpr(mapExprs,modifier);
     }
 
     public Expr getExpr(Expr... exprs) {

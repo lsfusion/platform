@@ -89,8 +89,8 @@ public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyIn
         Where newOldWhere = Where.FALSE;
         for(Interface<T> groupInterface : interfaces)
             newOldWhere = newOldWhere.or(groupInterface.implement.mapExpr(mapKeys,changeModifier,newOldChangedWhere).getWhere().not());
-        newOldWhere = newOldWhere.and(groupProperty.getExpr(mapKeys,modifier,null).getWhere());
+        newOldWhere = newOldWhere.and(groupProperty.getExpr(mapKeys,modifier).getWhere());
 
-        return GroupExpr.create(toChange.getChangeExprs(), ValueExpr.TRUE, newOldChangedWhere.toWhere().and(change.getWhere(getGroupImplements(mapKeys, modifier, null)).and(newOldWhere)), true, toChangeKeys).getWhere();
+        return GroupExpr.create(toChange.getChangeExprs(), ValueExpr.TRUE, newOldChangedWhere.toWhere().and(change.getWhere(getGroupImplements(mapKeys, modifier)).and(newOldWhere)), true, toChangeKeys).getWhere();
     }
 }

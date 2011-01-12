@@ -45,4 +45,6 @@ public abstract class FileClass extends DataClass<byte[]> {
     public int getBinaryLength(boolean charBinary) {
         throw new RuntimeException("not supported");
     }
+
+    public abstract String getExtensions();
 }

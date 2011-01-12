@@ -27,4 +27,8 @@ public class PDFClass extends FileClass {
     public String getSID() {
         return sid;
     }
+
+    public String getExtensions() {
+        return "pdf";
+    }
 }

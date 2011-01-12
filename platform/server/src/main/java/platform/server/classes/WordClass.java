@@ -27,4 +27,8 @@ public class WordClass extends FileClass {
     public String getSID() {
         return sid;
     }
+
+    public String getExtensions() {
+        return "doc,docx";
+    }
 }

@@ -1,5 +1,7 @@
 package platform.client.form.editor;
 
+import platform.base.BaseUtils;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -27,14 +29,8 @@ public class DocumentPropertyEditor extends FilePropertyEditor {
     }
 
     public void openDocument() throws IOException {
-        if (value != null) {
-            File file = File.createTempFile("lsf", "." + extensions[0]);
-            FileOutputStream f = new FileOutputStream(file);
-            f.write((byte[]) value);
-            f.close();
-            Desktop.getDesktop().open(file);
-        }
+        if (value != null)
+            BaseUtils.openFile((byte[]) value, extensions[0]);
         returnValue = JFileChooser.CANCEL_OPTION;
     }
-
 }

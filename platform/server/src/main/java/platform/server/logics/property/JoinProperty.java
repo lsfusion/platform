@@ -89,10 +89,10 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
     }
 
     private static MapDataChanges<Interface> getDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier, PropertyInterfaceImplement<Interface> changeImp, PropertyInterfaceImplement<Interface> valueImp) {
-        Expr toChangeExpr = valueImp.mapExpr(change.mapKeys, modifier, null);
+        Expr toChangeExpr = valueImp.mapExpr(change.mapKeys, modifier);
         Where toChangeWhere = change.expr.getWhere();
         return changeImp.mapJoinDataChanges(change.mapKeys, toChangeExpr.and(toChangeWhere), // меняем на новое значение, если надо и скидываем в null если было какое-то  
-                change.where.and(toChangeWhere.or(toChangeExpr.compare(changeImp.mapExpr(change.mapKeys, modifier, null),Compare.EQUALS))), changedWhere, modifier);
+                change.where.and(toChangeWhere.or(toChangeExpr.compare(changeImp.mapExpr(change.mapKeys, modifier),Compare.EQUALS))), changedWhere, modifier);
     }
 
     @Override
@@ -116,7 +116,7 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
             AndFormulaProperty andProperty = (AndFormulaProperty)implement.property;
             for(AndFormulaProperty.Interface andInterface : andProperty.interfaces)
                 if(andInterface != andProperty.objectInterface) {
-                    Where andWhere = implement.mapping.get(andInterface).mapExpr(change.mapKeys,modifier,null).getWhere();
+                    Where andWhere = implement.mapping.get(andInterface).mapExpr(change.mapKeys,modifier).getWhere();
                     if(((AndFormulaProperty.AndInterface)andInterface).not)
                         andWhere = andWhere.not();
                     where = where.and(andWhere);

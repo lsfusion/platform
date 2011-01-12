@@ -142,6 +142,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     LP projectDocument, nameProjectDocument;
     LP fileDocument;
+    LP loadFileDocument;
+    LP openFileDocument;
 
     LP inExpertVote;
     LP dateStartVote, dateEndVote;
@@ -294,6 +296,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         autoGenerateProject = addDProp(baseGroup, "autoGenerateProject", "Авт. зас.", LogicalClass.instance, project);
 
         fileDocument = addDProp(baseGroup, "fileDocument", "Файл", PDFClass.instance, document);
+        loadFileDocument = addLFAProp(baseGroup, "Загрузить", fileDocument);
+        openFileDocument = addOFAProp(baseGroup, "Открыть", fileDocument);
 
         inExpertVote = addDProp(baseGroup, "inExpertVote", "Вкл", LogicalClass.instance, expert, vote); // !!! нужно отослать письмо с документами и т.д
 
@@ -511,7 +515,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             objVote = addSingleGroupObject(vote, objectValue, dateStartVote, dateEndVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, delete);
             objVote.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
 
-            objDocument = addSingleGroupObject(document, objectValue, nameTypeDocument, nameLanguageDocument, postfixDocument, fileDocument);
+            objDocument = addSingleGroupObject(document, objectValue, nameTypeDocument, nameLanguageDocument, postfixDocument, loadFileDocument, openFileDocument);
             addObjectActions(this, objDocument);
             getPropertyDraw(postfixDocument).forceViewType = ClassViewType.PANEL;
             getPropertyDraw(postfixDocument).propertyCaption = addPropertyObject(hidePostfixDocument, objDocument);

@@ -44,6 +44,13 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
 
     Object groupValue = "grfield";
 
+    protected Map<Interface<T>, Expr> getGroupImplements(Map<T, KeyExpr> mapKeys, Modifier<? extends Changes> modifier) {
+        Map<Interface<T>, Expr> group = new HashMap<Interface<T>, Expr>();
+        for(Interface<T> propertyInterface : interfaces)
+            group.put(propertyInterface,propertyInterface.implement.mapExpr(mapKeys, modifier));
+        return group;
+    }
+
     protected Map<Interface<T>, Expr> getGroupImplements(Map<T, KeyExpr> mapKeys, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
         Map<Interface<T>, Expr> group = new HashMap<Interface<T>, Expr>();
         for(Interface<T> propertyInterface : interfaces)
@@ -63,7 +70,7 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
         Expr changedExpr = GroupExpr.create(getGroupImplements(mapKeys, modifier, changedGroupWhere), groupProperty.getExpr(mapKeys, modifier, changedGroupWhere), changedGroupWhere.toWhere(), operator != 1, joinImplement);
 
         // старые группировочные записи
-        Expr changedPrevExpr = GroupExpr.create(getGroupImplements(mapKeys, defaultModifier, null), groupProperty.getExpr(mapKeys), changedGroupWhere.toWhere(), operator != 1, joinImplement);
+        Expr changedPrevExpr = GroupExpr.create(getGroupImplements(mapKeys, defaultModifier), groupProperty.getExpr(mapKeys), changedGroupWhere.toWhere(), operator != 1, joinImplement);
 
         if(changedWhere!=null) changedWhere.add(changedExpr.getWhere().or(changedPrevExpr.getWhere())); // если хоть один не null
         return getChangedExpr(changedExpr, changedPrevExpr, joinImplement, modifier);
@@ -71,7 +78,7 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
 
     protected Expr calculateNewExpr(Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier) {
         Map<T, KeyExpr> mapKeys = groupProperty.getMapKeys();
-        return GroupExpr.create(getGroupImplements(mapKeys, modifier, null), groupProperty.getExpr(mapKeys, modifier, null), operator != 1, joinImplement);
+        return GroupExpr.create(getGroupImplements(mapKeys, modifier), groupProperty.getExpr(mapKeys, modifier), operator != 1, joinImplement);
     }
 
     abstract Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier);

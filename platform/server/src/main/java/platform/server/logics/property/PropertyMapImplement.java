@@ -27,9 +27,16 @@ public class PropertyMapImplement<T extends PropertyInterface,P extends Property
         super(property, mapping);
     }
 
-    // NotNull только если сессии нету
     public Expr mapExpr(Map<P, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
         return property.getExpr(BaseUtils.join(mapping, joinImplement), modifier, changedWhere);
+    }
+
+    public Expr mapExpr(Map<P, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier) {
+        return property.getExpr(BaseUtils.join(mapping, joinImplement), modifier);
+    }
+
+    public Expr mapExpr(Map<P, ? extends Expr> joinImplement) {
+        return property.getExpr(BaseUtils.join(mapping, joinImplement));
     }
 
     public void mapFillDepends(Collection<Property> depends) {

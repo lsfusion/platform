@@ -27,4 +27,8 @@ public class ImageClass extends FileClass {
     public String getSID() {
         return sid;
     }
+
+    public String getExtensions() {
+        return "jpg,jpeg,bmp,png";
+    }
 }

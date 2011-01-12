@@ -16,7 +16,7 @@ public class FileActionClass extends ActionClass {
     private String filterExtensions[];
     private final String sid;
 
-    FileActionClass(String filterDescription, String filterExtensions) {
+    private FileActionClass(String filterDescription, String filterExtensions) {
         this.filterExtensions = filterExtensions.split(" ");
         this.filterDescription = filterDescription;
         sid = "FileActionClass[" + filterDescription + "," + filterExtensions + "]";

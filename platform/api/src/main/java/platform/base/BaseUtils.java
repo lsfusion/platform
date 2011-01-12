@@ -3,6 +3,8 @@ package platform.base;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.List;
+import java.awt.*;
 
 public class BaseUtils {
     public static final String lineSeparator = System.getProperty("line.separator");
@@ -1240,4 +1242,19 @@ public class BaseUtils {
         return result;
     }
 
+    public static void openFile(byte[] data, String extension) throws IOException {
+        File file = File.createTempFile("lsf", "." + extension);
+        FileOutputStream f = new FileOutputStream(file);
+        f.write(data);
+        f.close();
+        Desktop.getDesktop().open(file);
+    }
+
+    public static String firstWord(String string, String separator) {
+        int first = string.indexOf(separator);
+        if(first>=0)
+            return string.substring(0, first);
+        else
+            return string;
+    }
 }

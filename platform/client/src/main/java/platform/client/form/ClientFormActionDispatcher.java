@@ -4,6 +4,7 @@ import platform.client.Log;
 import platform.client.Main;
 import platform.interop.action.*;
 import platform.interop.exceptions.LoginException;
+import platform.base.BaseUtils;
 
 import javax.swing.*;
 import java.awt.event.ComponentAdapter;
@@ -222,5 +223,14 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
 
     public void execute(ApplyClientAction action) {
         form.applyChanges(true);
+    }
+
+    public void execute(OpenFileClientAction action) {
+        try {
+            if(action.file!=null)
+                BaseUtils.openFile(action.file, action.extension);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -239,7 +239,8 @@ public class SQLSession extends MutableObject {
     public void dropTemporaryTable(SessionTable table, Object owner) throws SQLException {
         synchronized (sessionTablesMap) {
             assert sessionTablesMap.containsKey(table.name);
-            sessionTablesMap.remove(table.name);
+            WeakReference<Object> removed = sessionTablesMap.remove(table.name);
+            assert removed.get()==owner;
 
             dropTemporaryTableFromDB(table.name);
         }

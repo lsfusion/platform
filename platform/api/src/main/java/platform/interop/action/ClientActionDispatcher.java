@@ -26,4 +26,6 @@ public interface ClientActionDispatcher {
     public Object execute(CustomClientAction action);
 
     public void execute(ApplyClientAction action);
+
+    public void execute(OpenFileClientAction action);
 }

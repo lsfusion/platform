@@ -19,6 +19,8 @@ import java.util.Set;
 public interface PropertyInterfaceImplement<P extends PropertyInterface> {
 
     Expr mapExpr(Map<P, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere);
+    Expr mapExpr(Map<P, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier);
+    Expr mapExpr(Map<P, ? extends Expr> joinImplement);
 
     abstract void mapFillDepends(Collection<Property> depends);
 
