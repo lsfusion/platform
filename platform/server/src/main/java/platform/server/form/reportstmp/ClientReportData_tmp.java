@@ -146,7 +146,7 @@ public class ClientReportData_tmp implements JRDataSource {
             ByteArray file = new ByteArray(((byte[])value));
             String fileName = files.get(file);
             if(fileName==null) {
-                fileName = "Файл " + (files.size()+1) + ".pdf";
+                fileName = "File " + (files.size()+1) + ".pdf";
                 files.put(file, fileName);
             }
             value = fileName;

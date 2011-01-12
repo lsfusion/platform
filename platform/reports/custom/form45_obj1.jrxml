@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="obj1" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
+	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
+		<box leftPadding="2" rightPadding="2">
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+	</style>
+	<field name="obj1" class="java.lang.Integer"/>
+	<field name="userLogin" class="java.lang.String"/>
+	<field name="userPassword" class="java.lang.String"/>
+	<field name="commonName" class="java.lang.String"/>
+	<field name="isForeignExpert" class="java.lang.Boolean"/>
+	<detail>
+		<band height="398">
+			<textField>
+				<reportElement x="85" y="13" width="479" height="37"/>
+				<textElement>
+					<font size="20"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Уважаемый ":"Dear ")+$F{commonName}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="19" y="313" width="545" height="42"/>
+				<textElement>
+					<font size="20"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Логин":"Login")+" : "+$F{userLogin}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="19" y="355" width="545" height="40"/>
+				<textElement>
+					<font size="20"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Пароль":"Password")+" : "+$F{userPassword}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="19" y="56" width="545" height="247"/>
+				<textElement>
+					<font size="20"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Благодарим Вас за сотрудничество, участие в экспертном сообществе Фонда «Сколково». Данным письмом мы оповещаем Вас, что внедрена новая автоматизированная система по организации экспертизы проектов. Оценочные бюллетени теперь будут доступны в виде веб-формы, ссылка на которую будет высылаться Вам каждый раз вместе с материалами по проекту. Для доступа к системе используйте, пожалуйста, сгенерированные для Вас логин и пароль:":"Thank you for your cooperation and participation in the expert community of the Skolkovo Foundation. This letter we inform you that a new computerized system was implemented to organize assess of innovation projects. Evaluation sheets will be available as a web form, to which link every time will be sent to you with project materials. To access, please use the login and password that have been generated for you automatically:")]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

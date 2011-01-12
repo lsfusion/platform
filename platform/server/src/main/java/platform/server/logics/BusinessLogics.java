@@ -25,7 +25,6 @@ import platform.server.auth.User;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
 import platform.server.data.*;
-import platform.server.data.where.WhereBuilder;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.query.OrderType;
 import platform.server.data.query.Query;
@@ -61,8 +60,6 @@ import platform.server.net.ServerInstanceLocator;
 import platform.server.net.ServerInstanceLocatorSettings;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.DataSession;
-import platform.server.session.Changes;
-import platform.server.session.Modifier;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
@@ -3612,13 +3609,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             this.fileProperty = fileProperty;
         }
 
-        private FileClass getFileClass() {
-            return (FileClass) fileProperty.property.getType();
-        }
-
         @Override
         protected DataClass getValueClass() {
-            FileClass fileClass = getFileClass();
+            FileClass fileClass = (FileClass) fileProperty.property.getType();
             return FileActionClass.getInstance(fileClass.toString(), fileClass.getExtensions());
         }
 
@@ -3627,7 +3620,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             DataObject[] objects = new DataObject[keys.size()]; int i=0; // здесь опять учитываем, что порядок тот же
             for (ClassPropertyInterface classInterface : interfaces)
                 objects[i++] = keys.get(classInterface);
-            fileProperty.execute(new DataObject((byte[])(value.getValue()), getFileClass()), form.session, form, objects);
+            fileProperty.execute(value.getValue(), form.session, form, objects);
+        }
+
+        @Override
+        public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity form) {
+            super.proceedDefaultDraw(entity, form);
+            entity.shouldBeLast = true;
+            entity.forceViewType = ClassViewType.PANEL;
         }
     }
 
