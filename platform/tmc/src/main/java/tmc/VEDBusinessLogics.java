@@ -2140,6 +2140,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private class ReturnSaleInvoiceRetailFormEntity extends ReturnSaleRetailFormEntity {
         private ReturnSaleInvoiceRetailFormEntity(NavigatorElement parent, boolean toAdd, int ID, boolean allStores) {
             super(parent, ID, toAdd, returnSaleInvoiceRetail, commitSaleInvoiceArticleRetail, allStores);
+
+            setReadOnly(true, objInner.groupTo);
         }
 
         @Override
@@ -2149,7 +2151,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.getGroupObjectContainer(objDoc.groupTo).title = "Клиент";
             design.getGroupObjectContainer(objDoc.groupTo).design.background = new Color(192, 192, 192);
 
-            design.setReadOnly(true, objInner.groupTo);
             return design;
         }
 
@@ -2189,6 +2190,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addPropertyDraw(orderUserName, objDoc);
             getPropertyDraw(orderUserName).forceViewType = ClassViewType.HIDE;
             //addPropertyDraw(returnArticleSalePay, objArt);
+
+            setReadOnly(true, objInner.groupTo);
         }
 
         @Override
@@ -2217,8 +2220,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 design.get(returnSaleSumNavigator).externalScreen = panelScreen;
                 design.get(returnSaleSumNavigator).externalScreenConstraints.order = 4;
             }
-
-            design.setReadOnly(true, objInner.groupTo);
 
             design.setKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F4, InputEvent.SHIFT_DOWN_MASK | InputEvent.SHIFT_MASK));
 
@@ -2664,14 +2665,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                     "Не в акции",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0)));
             addRegularFilterGroup(inCouponGroup);
-        }
 
-        @Override
-        public DefaultFormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-            design.setReadOnly(objArt, true);
-            design.setReadOnly(xorCouponArticle, false);
-            return design;
+            setReadOnly(objArt, true);
+            setReadOnly(xorCouponArticle, false);
         }
     }
 

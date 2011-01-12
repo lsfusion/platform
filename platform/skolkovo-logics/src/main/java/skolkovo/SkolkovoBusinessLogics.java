@@ -608,15 +608,15 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                                                                 "Положительно",
                                                                 KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)), false);
             addRegularFilterGroup(voteFilterGroup);
+
+            setReadOnly(true, objVote.groupTo);
+            setReadOnly(true, objExpert.groupTo);
+            setReadOnly(allowedEmailLetterExpertVote, false);
         }
 
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            design.setReadOnly(true, objVote.groupTo);
-            design.setReadOnly(true, objExpert.groupTo);
-            design.setReadOnly(allowedEmailLetterExpertVote, false);
 
             design.setPanelLabelAbove(voteResultCommentGroup, true);
             design.setConstraintsFillHorizontal(voteResultCommentGroup, 0.5);
@@ -644,14 +644,14 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             setForceViewType(voteResultCommentGroup, ClassViewType.PANEL);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
+
+            setReadOnly(true, objVote.groupTo);
+            setReadOnly(allowedEmailLetterExpertVote, false);
         }
 
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            design.setReadOnly(true, objVote.groupTo);
-            design.setReadOnly(allowedEmailLetterExpertVote, false);
 
             design.setPanelLabelAbove(voteResultCommentGroup, true);
             design.setConstraintsFillHorizontal(voteResultCommentGroup, 0.5);

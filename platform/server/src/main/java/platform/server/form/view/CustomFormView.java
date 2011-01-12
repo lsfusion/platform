@@ -1,6 +1,5 @@
 package platform.server.form.view;
 
-import org.springframework.beans.factory.parsing.PropertyEntry;
 import platform.base.identity.IdentityObject;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexComponentDirections;

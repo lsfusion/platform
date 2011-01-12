@@ -650,13 +650,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                                   "Заказано",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
             addRegularFilterGroup(filterGroup);
+
+            setReadOnly(objSupplier, true);
         }
 
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
-
-            design.setReadOnly(objSupplier, true);
 
             design.defaultOrders.put(design.get(getPropertyDraw(numberListArticle)), true);
 
@@ -778,13 +778,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                                   "В инвойсе",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
             addRegularFilterGroup(filterGroup);
+
+            setReadOnly(objSupplier, true);
         }
 
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
-
-            design.setReadOnly(objSupplier, true);
 
             design.defaultOrders.put(design.get(getPropertyDraw(numberListArticle)), true);
 
@@ -888,14 +888,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             addAutoAction(objBarcode, addPropertyObject(barcodeAction4, objSupplierBox, objShipment, objStock, objBarcode));
             addAutoAction(objBarcode, addPropertyObject(seekBarcodeAction, objBarcode));
+
+            setReadOnly(objSupplier, true);
+            setReadOnly(barcode, true, objStock.groupTo);
         }
 
         @Override
         public DefaultFormView createDefaultRichDesign() {
             DefaultFormView design = super.createDefaultRichDesign();
-
-            design.setReadOnly(objSupplier, true);
-            design.setReadOnly(barcode, true, objStock.groupTo);
 
             design.addIntersection(design.getGroupObjectContainer(objShipment.groupTo),
                                    design.getGroupObjectContainer(objInvoice.groupTo),

@@ -17,6 +17,7 @@ import platform.server.form.instance.FormInstance;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
+import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
@@ -642,4 +643,107 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
     }
 
+
+
+    public List<PropertyDrawEntity> getProperties(AbstractNode group) {
+        return getProperties(group, null);
+    }
+
+    public List<PropertyDrawEntity> getProperties(AbstractNode group, GroupObjectEntity groupObject) {
+
+        List<PropertyDrawEntity> result = new ArrayList<PropertyDrawEntity>();
+
+        for (PropertyDrawEntity property : propertyDraws) {
+            if ((groupObject==null || groupObject.equals(property.getToDraw(this))) && group.hasChild(property.propertyObject.property)) {
+                result.add(property);
+            }
+        }
+
+        return result;
+    }
+
+    public List<PropertyDrawEntity> getProperties(Property prop, GroupObjectEntity groupObject) {
+
+        List<PropertyDrawEntity> result = new ArrayList<PropertyDrawEntity>();
+
+        for (PropertyDrawEntity property : propertyDraws) {
+            if (groupObject.equals(property.getToDraw(this)) && prop.equals(property.propertyObject.property)) {
+                result.add(property);
+            }
+        }
+
+        return result;
+    }
+
+    public List<PropertyDrawEntity> getProperties(Property prop) {
+
+        List<PropertyDrawEntity> result = new ArrayList<PropertyDrawEntity>();
+
+        for (PropertyDrawEntity property : propertyDraws) {
+            if (prop.equals(property.propertyObject.property)) {
+                result.add(property);
+            }
+        }
+
+        return result;
+    }
+
+    public List<PropertyDrawEntity> getProperties(GroupObjectEntity groupObject) {
+
+        List<PropertyDrawEntity> result = new ArrayList<PropertyDrawEntity>();
+
+        for (PropertyDrawEntity property : propertyDraws) {
+            if (groupObject.equals(property.getToDraw(this))) {
+                result.add(property);
+            }
+        }
+
+        return result;
+    }
+
+    public void setReadOnly(AbstractGroup group, boolean readOnly, GroupObjectEntity groupObject) {
+
+        for (PropertyDrawEntity property : getProperties(group, groupObject)) {
+            setReadOnly(property, readOnly);
+        }
+    }
+
+    public void setReadOnly(LP property, boolean readOnly) {
+        setReadOnly(property.property, readOnly);
+    }
+
+    public void setReadOnly(LP property, boolean readOnly, GroupObjectEntity groupObject) {
+        setReadOnly(property.property, readOnly, groupObject);
+    }
+
+    public void setReadOnly(Property property, boolean readOnly) {
+
+        for (PropertyDrawEntity propertyView : getProperties(property)) {
+            setReadOnly(propertyView, readOnly);
+        }
+    }
+
+    public void setReadOnly(Property property, boolean readOnly, GroupObjectEntity groupObject) {
+
+        for (PropertyDrawEntity propertyView : getProperties(property, groupObject)) {
+            setReadOnly(propertyView, readOnly);
+        }
+    }
+
+    public void setReadOnly(boolean readOnly, GroupObjectEntity groupObject) {
+
+        for (PropertyDrawEntity propertyView : getProperties(groupObject)) {
+            setReadOnly(propertyView, readOnly);
+        }
+    }
+
+    public void setReadOnly(ObjectEntity objectEntity, boolean readOnly) {
+        for (PropertyDrawEntity property : getProperties(objectEntity.groupTo)) {
+            setReadOnly(property, readOnly);
+        }
+    }
+
+    public void setReadOnly(PropertyDrawEntity property, boolean readOnly) {
+        property.readOnly = readOnly;
+    }
 }

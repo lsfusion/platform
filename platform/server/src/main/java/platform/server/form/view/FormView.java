@@ -462,52 +462,52 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         property.focusable = focusable;
     }
 
-    public void setReadOnly(AbstractGroup group, boolean readOnly, GroupObjectEntity groupObject) {
-
-        for (PropertyDrawView property : getProperties(group, groupObject)) {
-            setReadOnly(property, readOnly);
-        }
-    }
-
-    public void setReadOnly(LP property, boolean readOnly) {
-        setReadOnly(property.property, readOnly);
-    }
-
-    public void setReadOnly(LP property, boolean readOnly, GroupObjectEntity groupObject) {
-        setReadOnly(property.property, readOnly, groupObject);
-    }
-
-    public void setReadOnly(Property property, boolean readOnly) {
-
-        for (PropertyDrawView propertyView : getProperties(property)) {
-            setReadOnly(propertyView, readOnly);
-        }
-    }
-
-    public void setReadOnly(Property property, boolean readOnly, GroupObjectEntity groupObject) {
-
-        for (PropertyDrawView propertyView : getProperties(property, groupObject)) {
-            setReadOnly(propertyView, readOnly);
-        }
-    }
-
-    public void setReadOnly(boolean readOnly, GroupObjectEntity groupObject) {
-
-        for (PropertyDrawView propertyView : getProperties(groupObject)) {
-            setReadOnly(propertyView, readOnly);
-        }
-    }
-
-    public void setReadOnly(ObjectEntity objectEntity, boolean readOnly) {
-        for (PropertyDrawView property : getProperties(objectEntity.groupTo)) {
-            setReadOnly(property, readOnly);
-        }
-    }
-
-    public void setReadOnly(PropertyDrawView property, boolean readOnly) {
-        property.entity.readOnly = readOnly;
-    }
-
+//    public void setReadOnly(AbstractGroup group, boolean readOnly, GroupObjectEntity groupObject) {
+//
+//        for (PropertyDrawView property : getProperties(group, groupObject)) {
+//            setReadOnly(property, readOnly);
+//        }
+//    }
+//
+//    public void setReadOnly(LP property, boolean readOnly) {
+//        setReadOnly(property.property, readOnly);
+//    }
+//
+//    public void setReadOnly(LP property, boolean readOnly, GroupObjectEntity groupObject) {
+//        setReadOnly(property.property, readOnly, groupObject);
+//    }
+//
+//    public void setReadOnly(Property property, boolean readOnly) {
+//
+//        for (PropertyDrawView propertyView : getProperties(property)) {
+//            setReadOnly(propertyView, readOnly);
+//        }
+//    }
+//
+//    public void setReadOnly(Property property, boolean readOnly, GroupObjectEntity groupObject) {
+//
+//        for (PropertyDrawView propertyView : getProperties(property, groupObject)) {
+//            setReadOnly(propertyView, readOnly);
+//        }
+//    }
+//
+//    public void setReadOnly(boolean readOnly, GroupObjectEntity groupObject) {
+//
+//        for (PropertyDrawView propertyView : getProperties(groupObject)) {
+//            setReadOnly(propertyView, readOnly);
+//        }
+//    }
+//
+//    public void setReadOnly(ObjectEntity objectEntity, boolean readOnly) {
+//        for (PropertyDrawView property : getProperties(objectEntity.groupTo)) {
+//            setReadOnly(property, readOnly);
+//        }
+//    }
+//
+//    public void setReadOnly(PropertyDrawView property, boolean readOnly) {
+//        property.entity.readOnly = readOnly;
+//    }
+//
     public void setKeyStroke(KeyStroke keyStroke) {
         this.keyStroke = keyStroke;
     }
@@ -518,42 +518,42 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
 
     public void setEnabled(AbstractGroup group, boolean readOnly, GroupObjectEntity groupObject) {
         setFocusable(group, readOnly, groupObject);
-        setReadOnly(group, !readOnly, groupObject);
+        entity.setReadOnly(group, !readOnly, groupObject);
     }
 
     public void setEnabled(LP property, boolean readOnly) {
         setFocusable(property, readOnly);
-        setReadOnly(property, !readOnly);
+        entity.setReadOnly(property, !readOnly);
     }
 
     public void setEnabled(LP property, boolean readOnly, GroupObjectEntity groupObject) {
         setFocusable(property, readOnly, groupObject);
-        setReadOnly(property, !readOnly, groupObject);
+        entity.setReadOnly(property, !readOnly, groupObject);
     }
 
     public void setEnabled(Property property, boolean readOnly) {
         setFocusable(property, readOnly);
-        setReadOnly(property, !readOnly);
+        entity.setReadOnly(property, !readOnly);
     }
 
     public void setEnabled(Property property, boolean readOnly, GroupObjectEntity groupObject) {
         setFocusable(property, readOnly, groupObject);
-        setReadOnly(property, !readOnly, groupObject);
+        entity.setReadOnly(property, !readOnly, groupObject);
     }
 
     public void setEnabled(boolean readOnly, GroupObjectEntity groupObject) {
         setFocusable(readOnly, groupObject);
-        setReadOnly(!readOnly, groupObject);
+        entity.setReadOnly(!readOnly, groupObject);
     }
 
     public void setEnabled(ObjectEntity objectEntity, boolean readOnly) {
         setFocusable(objectEntity, readOnly);
-        setReadOnly(objectEntity, !readOnly);
+        entity.setReadOnly(objectEntity, !readOnly);
     }
 
     public void setEnabled(PropertyDrawView property, boolean readOnly) {
         setFocusable(property, readOnly);
-        setReadOnly(property, !readOnly);
+        entity.setReadOnly(property.entity, !readOnly);
     }
 
     public void setEditKey(LP property, KeyStroke keyStroke, GroupObjectEntity groupObject) {
