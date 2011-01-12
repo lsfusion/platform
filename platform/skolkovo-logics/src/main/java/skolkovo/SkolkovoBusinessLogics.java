@@ -634,7 +634,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ExpertFormEntity(NavigatorElement parent, int iID) {
             super(parent, iID, "Реестр экспертов");
 
-            objExpert = addSingleGroupObject(expert, selection, objectValue, userFirstName, userLastName, userLogin, userPassword, emailParticipant, nameClusterExpert, expertResultGroup, generateLoginPasswordExpert, emailAuthExpert);
+            objExpert = addSingleGroupObject(expert, selection, objectValue, userFirstName, userLastName, userLogin, userPassword, emailParticipant, nameClusterExpert, nameLanguageExpert, expertResultGroup, generateLoginPasswordExpert, emailAuthExpert);
             addObjectActions(this, objExpert);
 
             objVote = addSingleGroupObject(vote, objectValue, nameProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote);
