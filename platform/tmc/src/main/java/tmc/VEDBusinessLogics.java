@@ -769,7 +769,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         addJProp(and(false, false), changeUser, 2, is(baseClass), 1, is(baseClass), 3),
                         addSCProp(returnInnerQuantity)
                 ), 1, barcodeToObject, 3, 2);
-        barcodeNotFoundMessage = addJProp(true, "", and(false, true), addMAProp("Штрих-код не найден!", "Ошибка"), is(StringClass.get(13)), 1, barcodeToObject, 1);
 
         LP xorCouponArticleGroup = addDProp(couponGroup, "xorCouponArticleGroup", "Вкл.", LogicalClass.instance, articleGroup);
         xorCouponArticle = addDProp(couponGroup, "xorCouponArticle", "Вкл./искл.", LogicalClass.instance, article);
@@ -833,7 +832,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP barcodeAddCertAction;
     LP barcodeAction2;
     LP barcodeAction3;
-    LP barcodeNotFoundMessage;
     LP orderClientSum;
     public LP orderArticleSaleSumWithDiscount;
     public LP orderSaleDocPrice;

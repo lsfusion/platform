@@ -184,6 +184,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP quantitySupplierBoxBoxShipmentStockSku;
     private LP quantitySimpleShipmentStockSku;
     private LP barcodeAction4;
+    private LP supplierBoxSIDSupplier;
+    private LP seekSupplierBoxSIDSupplier;
     private LP quantityPalletInvoiceDate;
     private LP quantityPalletFreightDate;
 
@@ -350,6 +352,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         supplierSupplierBox = addJProp(idGroup, "supplierSupplierBox", "Поставщик (ИД)", supplierDocument, boxDocumentSupplierBox, 1);
 
+        supplierBoxSIDSupplier = addCGProp(idGroup, "supplierBoxSIDSupplier", "Короб поставщика (ИД)", object(supplierBox), sidSupplierBox, sidSupplierBox, 1, supplierSupplierBox, 1);
+
+        seekSupplierBoxSIDSupplier = addJProp(true, "Поиск короба поставщика", addSAProp(null), supplierBoxSIDSupplier, 1, 2);
+
         // заказ по артикулам
 
         articleSIDList = addJProp(idGroup, "articleSIDList", "Артикул (ИД)", articleSIDSupplier, 1,
@@ -482,10 +488,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         invoicedShipmentSku = addSGProp(baseGroup, "invoicedShipmentSku", "Кол-во по инвойсам",
                                               addJProp(and1, quantityListSku, 1, 2, inInvoiceShipment, 1, 3), 3, 2);
 
-        quantitySupplierBoxBoxShipmentStockSku = addDProp(baseGroup, "quantitySupplierBoxBoxShipmentStockSku", "Кол-во в коробе", DoubleClass.instance,
+        quantitySupplierBoxBoxShipmentStockSku = addDProp(baseGroup, "quantitySupplierBoxBoxShipmentStockSku", "Кол-во оприход.", DoubleClass.instance,
                                                           supplierBox, boxShipment, stock, sku);
 
-        quantitySimpleShipmentStockSku = addDProp(baseGroup, "quantitySimpleShipmentStockSku", "Кол-во в поставке",
+        quantitySimpleShipmentStockSku = addDProp(baseGroup, "quantitySimpleShipmentStockSku", "Кол-во оприход.",
                                                           simpleShipment, stock, sku);
 
         // Freight
@@ -544,8 +550,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             super(parent, iID, caption);
 
             objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", baseGroup, true);
-            objBarcode.groupTo.initClassView = ClassViewType.PANEL;
-            objBarcode.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
+            objBarcode.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objBarcode.resetOnApply = true;
 
@@ -824,6 +829,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private class ShipmentFormEntity extends BarcodeFormEntity {
         private boolean box;
 
+        private ObjectEntity objSIDSupplierBox;
         private ObjectEntity objSupplier;
         private ObjectEntity objShipment;
         private ObjectEntity objInvoice;
@@ -835,6 +841,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             super(parent, iID, caption);
 
             this.box = box;
+
+            if (box) {
+                objSIDSupplierBox = addSingleGroupObject(StringClass.get(50), "Код короба", objectValue);
+                objSIDSupplierBox.groupTo.setSingleClassView(ClassViewType.PANEL);
+            }
 
             objSupplier = addSingleGroupObject(supplier, "Поставщик", name);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
@@ -855,7 +866,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objStock = addSingleGroupObject(stock, "Место хранения", barcode, objectClassName);
             objStock.groupTo.initClassView = ClassViewType.PANEL;
 
-            objSku = addSingleGroupObject(sku, "SKU", barcode, sidColorSupplierItem, nameColorSupplierItem, nameSizeSupplierItem, sidArticleSku, originalNameArticleSku, nameCountryOfOriginSku);
+            objSku = addSingleGroupObject(sku, "SKU", barcode, sidArticleSku, originalNameArticleSku, nameCountryOfOriginSku, sidColorSupplierItem, nameColorSupplierItem, nameSizeSupplierItem);
+
+            getPropertyDraw(sidColorSupplierItem).forceViewType = ClassViewType.GRID;
+            getPropertyDraw(nameColorSupplierItem).forceViewType = ClassViewType.GRID;
+            getPropertyDraw(nameSizeSupplierItem).forceViewType = ClassViewType.GRID;
 
             if (box) {
                 addPropertyDraw(quantityListSku, objSupplierBox, objSku);
@@ -873,21 +888,41 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             if (box) {
+                FilterEntity inSupplierBox = new NotNullFilterEntity(addPropertyObject(quantityListSku, objSupplierBox, objSku));
+                FilterEntity inSupplierBoxShipmentStock = new NotNullFilterEntity(addPropertyObject(quantitySupplierBoxBoxShipmentStockSku, objSupplierBox, objShipment, objStock, objSku));
                 filterGroup.addFilter(new RegularFilterEntity(genID(),
-                                      new NotNullFilterEntity(addPropertyObject(quantityListSku, objSupplierBox, objSku)),
-                                      "В коробе поставщика",
+                                      new OrFilterEntity(inSupplierBox, inSupplierBoxShipmentStock),
+                                      "В коробе поставщика или оприходовано",
                                       KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
+                filterGroup.addFilter(new RegularFilterEntity(genID(),
+                                      inSupplierBox,
+                                      "В коробе поставщика"));
+                filterGroup.addFilter(new RegularFilterEntity(genID(),
+                                      inSupplierBoxShipmentStock,
+                                      "Оприходовано",
+                                      KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
             } else {
+                FilterEntity inInvoice = new NotNullFilterEntity(addPropertyObject(invoicedShipmentSku, objShipment, objSku));
+                FilterEntity inInvoiceShipmentStock = new NotNullFilterEntity(addPropertyObject(quantitySimpleShipmentStockSku, objShipment, objStock, objSku));
                 filterGroup.addFilter(new RegularFilterEntity(genID(),
-                                      new NotNullFilterEntity(addPropertyObject(invoicedShipmentSku, objShipment, objSku)),
-                                      "В инвойсах",
+                                      new OrFilterEntity(inInvoice, inInvoiceShipmentStock),
+                                      "В инвойсах или оприходовано",
                                       KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
+                filterGroup.addFilter(new RegularFilterEntity(genID(),
+                                      inInvoice,
+                                      "В инвойсах"));
+                filterGroup.addFilter(new RegularFilterEntity(genID(),
+                                      inInvoice,
+                                      "Оприходовано",
+                                      KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
             }
             filterGroup.defaultFilter = 0;
             addRegularFilterGroup(filterGroup);
 
             addAutoAction(objBarcode, addPropertyObject(barcodeAction4, objSupplierBox, objShipment, objStock, objBarcode));
             addAutoAction(objBarcode, addPropertyObject(seekBarcodeAction, objBarcode));
+            addAutoAction(objBarcode, addPropertyObject(barcodeNotFoundMessage, objBarcode));
+            addAutoAction(objBarcode, addPropertyObject(seekSupplierBoxSIDSupplier, objSIDSupplierBox, objSupplier));
 
             setReadOnly(objSupplier, true);
             setReadOnly(barcode, true, objStock.groupTo);
@@ -896,6 +931,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         @Override
         public DefaultFormView createDefaultRichDesign() {
             DefaultFormView design = super.createDefaultRichDesign();
+
+            design.get(objShipment.groupTo).grid.constraints.fillVertical = 0.3;
+            design.get(objInvoice.groupTo).grid.constraints.fillVertical = 0.3;
+
+            design.addIntersection(design.getGroupObjectContainer(objBarcode.groupTo),
+                                   design.getGroupObjectContainer(objSIDSupplierBox.groupTo),
+                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             design.addIntersection(design.getGroupObjectContainer(objShipment.groupTo),
                                    design.getGroupObjectContainer(objInvoice.groupTo),

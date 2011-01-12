@@ -15,6 +15,6 @@ public class ClientNavigatorDialog extends ClientDialog {
 
     @Override
     protected boolean isReadOnlyMode() {
-        return false;
+        return (readOnly != null) ? readOnly : false;
     }
 }

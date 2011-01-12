@@ -480,6 +480,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP barcodeToObject;
     protected LP barcodeObjectName;
     public LP seekBarcodeAction;
+    public LP barcodeNotFoundMessage;
     public LP reverseBarcode;
 
     public LP userLogin;
@@ -935,6 +936,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         barcodeObjectName = addJProp(baseGroup, "Объект", name, barcodeToObject, 1);
 
         seekBarcodeAction = addJProp(true, "Поиск штрих-кода", addSAProp(null), barcodeToObject, 1);
+        barcodeNotFoundMessage = addJProp(true, "", and(false, true), addMAProp("Штрих-код не найден!", "Ошибка"), is(StringClass.get(13)), 1, barcodeToObject, 1);
 
         currentUserName = addJProp("Имя тек. польз.", name, currentUser);
 
@@ -1939,6 +1941,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected StaticCustomClass addStaticClass(String sID, String caption, String[] sids, String[] names) {
         StaticCustomClass customClass = new StaticCustomClass(sID, caption, baseClass.sidClass, sids, names);
         storeCustomClass(customClass);
+        customClass.dialogReadOnly = true;
         return customClass;
     }
 

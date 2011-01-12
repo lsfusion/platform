@@ -56,7 +56,7 @@ public class ClientDialog extends JDialog {
     public int objectChosen = NOT_CHOSEN;
     public Object dialogValue;
 
-    private Boolean readOnly;
+    protected Boolean readOnly;
     boolean isReadOnlyMode() {
         return (readOnly != null) ? readOnly : true;
     }

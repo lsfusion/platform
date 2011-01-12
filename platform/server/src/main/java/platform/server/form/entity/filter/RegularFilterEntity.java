@@ -20,6 +20,10 @@ public class RegularFilterEntity extends IdentityObject implements ServerIdentit
         
     }
     
+    public RegularFilterEntity(int iID, FilterEntity ifilter, String iname) {
+        this(iID, ifilter, iname, null);
+    }
+
     public RegularFilterEntity(int iID, FilterEntity ifilter, String iname, KeyStroke ikey) {
         ID = iID;
         filter = ifilter;

@@ -70,8 +70,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     ConcreteCustomClass vote;
 
-    StaticClass language;
-    StaticClass documentType;
+    StaticCustomClass language;
+    StaticCustomClass documentType;
 
     StaticCustomClass voteResult;
     StaticCustomClass projectStatus;
@@ -120,7 +120,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         voteResult = addStaticClass("voteResult", "Результат заседания", 
                                     new String[]{"refused", "connected", "voted"}, 
                                     new String[]{"Отказался", "Аффилирован", "Проголосовал"});
-        
+
         projectStatus = addStaticClass("projectStatus", "Статус проекта",
                                        new String[]{"unknown", "needDocuments", "needExtraVote", "inProgress", "succeeded", "accepted", "rejected"},
                                        new String[]{"Неизвестный статус", "Не соответствуют документы", "Требуется заседание", "Идет заседание", "Достаточно голосов", "Оценен положительно", "Оценен отрицательно"});
