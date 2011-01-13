@@ -130,30 +130,33 @@ public class EmailSender {
         mp.addBodyPart(filePart);
     }
 
-    public void sendMail(String subject, Map<ByteArray, String> files, List<AttachmentProperties> forms) throws MessagingException, IOException {
-        sendMail(subject, null, files, forms);
+    public void sendMail(String subject, List<AttachmentProperties> attachmentForms, Map<ByteArray, String> files) throws MessagingException, IOException {
+        sendMail(subject, new ArrayList<String>(), attachmentForms, files);
     }
 
-    public void sendMail(String subject, List<String> htmlFilePaths, Map<ByteArray, String> files, List<AttachmentProperties> forms) throws MessagingException, IOException {
-        setMessageHeading();
-        message.setSubject(subject, "utf-8");
-
+    private String createInlinePart(List<String> inlineForms) throws IOException {
         String result = "";
-        if (htmlFilePaths != null) {
-            for (String path : htmlFilePaths) {
-                BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(path), "utf-8"));
-                while (in.ready()) {
-                    String s = in.readLine();
-                    result += s;
-                }
+        for (String path : inlineForms) {
+            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(path), "utf-8"));
+            while (in.ready()) {
+                result += in.readLine();
             }
         }
         if (result.equals("")) {
             result = "Вам пришли печатные формы";
         }
-        setText(result);
+        return result;
+    }
 
-        for (AttachmentProperties formProps : forms) {
+    public void sendMail(String subject, List<String> inlineForms, List<AttachmentProperties> attachmentForms, Map<ByteArray, String> files) throws MessagingException, IOException {
+        assert inlineForms != null && attachmentForms != null && files != null;
+
+        setMessageHeading();
+        message.setSubject(subject, "utf-8");
+
+        setText(createInlinePart(inlineForms));
+
+        for (AttachmentProperties formProps : attachmentForms) {
             attachFile(formProps);
         }
         for (Map.Entry<ByteArray, String> entry : files.entrySet()) {

@@ -2112,11 +2112,18 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             mapInterfaces.put(emailProp.listInterfaces.get(i), eaProp.listInterfaces.get(params[i] - 1));
         ((EmailActionProperty)eaProp.property).addRecepient(new PropertyMapImplement<X,ClassPropertyInterface>(emailProp.property, mapInterfaces));
     }
-    protected void addEAForm(LP<ClassPropertyInterface> eaProp, EmailActionProperty.Format format, EmailActionProperty.FormStorageType type, FormEntity form, Object... params) {
+    protected void addInlineEAForm(LP<ClassPropertyInterface> eaProp, FormEntity form, Object... params) {
         Map<ObjectEntity, ClassPropertyInterface> mapObjects = new HashMap<ObjectEntity, ClassPropertyInterface>();
         for(int i=0;i< params.length/2;i++)
             mapObjects.put((ObjectEntity) params[2*i], eaProp.listInterfaces.get((Integer) params[2*i+1] - 1));
-        ((EmailActionProperty)eaProp.property).addForm(form, format, type, mapObjects);
+        ((EmailActionProperty)eaProp.property).addInlineForm(form, mapObjects);
+    }
+
+    protected void addAttachEAForm(LP<ClassPropertyInterface> eaProp, FormEntity form, EmailActionProperty.Format format, Object... params) {
+        Map<ObjectEntity, ClassPropertyInterface> mapObjects = new HashMap<ObjectEntity, ClassPropertyInterface>();
+        for(int i=0;i< params.length/2;i++)
+            mapObjects.put((ObjectEntity) params[2*i], eaProp.listInterfaces.get((Integer) params[2*i+1] - 1));
+        ((EmailActionProperty)eaProp.property).addAttachmentForm(form, format, mapObjects);
     }
 
     protected <P extends PropertyInterface> LP addSCProp(LP<P> lp) {

@@ -713,8 +713,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectDocument, objDocument), Compare.EQUALS, addPropertyObject(projectVote, objVote)));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(languageDocument, objDocument), Compare.EQUALS, addPropertyObject(languageExpert, objExpert)));
 
-            addEAForm(emailLetterExpertVote, EmailActionProperty.Format.HTML, EmailActionProperty.FormStorageType.TEXT,
-                    this, objExpert, 1, objVote, 2);
+            addInlineEAForm(emailLetterExpertVote, this, objExpert, 1, objVote, 2);
         }
 
         @Override
@@ -737,7 +736,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             objExpert = addSingleGroupObject(1, expert, userLogin, userPassword, name, isForeignExpert);
             objExpert.groupTo.initClassView = ClassViewType.PANEL;
 
-            addEAForm(emailAuthExpert, EmailActionProperty.Format.HTML, EmailActionProperty.FormStorageType.TEXT, this, objExpert, 1);
+            addInlineEAForm(emailAuthExpert, this, objExpert, 1);
         }
 
         @Override
@@ -762,7 +761,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             addPropertyDraw(numberExpertVote, objExpert, objVote);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
 
-            addEAForm(emailStartVote, EmailActionProperty.Format.PDF, EmailActionProperty.FormStorageType.ATTACH, this, objVote, 1);
+            addAttachEAForm(emailStartVote, this, EmailActionProperty.Format.PDF, objVote, 1);
         }
 
         @Override
@@ -796,7 +795,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(doneExpertVote, objExpert, objVote)));
 
-            addEAForm(emailProtocolVote, EmailActionProperty.Format.PDF, EmailActionProperty.FormStorageType.ATTACH, this, objVote, 1);
+            addAttachEAForm(emailProtocolVote, this, EmailActionProperty.Format.PDF, objVote, 1);
         }
 
         @Override

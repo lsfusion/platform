@@ -19,8 +19,8 @@ import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
-import platform.server.form.reportstmp.ReportHTMLExporter;
 import platform.server.form.reportstmp.ReportGenerator_tmp;
+import platform.server.form.reportstmp.ReportHTMLExporter;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.PropertyInterface;
@@ -45,15 +45,15 @@ public class EmailActionProperty extends ActionProperty {
     public static enum Format {PDF, DOCX, HTML, RTF}
     private static Map<Format, String> extensions = new HashMap<Format, String>();
     static {
-        extensions.put(Format.PDF, ".pdf");
+        extensions.put(Format.PDF,  ".pdf");
         extensions.put(Format.DOCX, ".docx");
         extensions.put(Format.HTML, ".html");
-        extensions.put(Format.RTF, ".rtf");
+        extensions.put(Format.RTF,  ".rtf");
     }
 
-    public static enum FormStorageType {TEXT, ATTACH}
+    public static enum FormStorageType {INLINE, ATTACH}
 
-    private final List<FormEntity> forms;
+    private final List<FormEntity> forms = new ArrayList<FormEntity>();
     private final List<Format> formats = new ArrayList<Format>();
     private final List<FormStorageType> types = new ArrayList<FormStorageType>();
     private final List<Map<ObjectEntity, ClassPropertyInterface>> mapObjects = new ArrayList<Map<ObjectEntity, ClassPropertyInterface>>();
@@ -68,7 +68,6 @@ public class EmailActionProperty extends ActionProperty {
         super(sID, caption, classes);
 
         this.subject = mailSubject;
-        forms = new ArrayList<FormEntity>();
         this.BL = BL;
 
         askConfirm = true;
@@ -78,11 +77,17 @@ public class EmailActionProperty extends ActionProperty {
         recepients.add(recepient);
     }
 
-    public void addForm(FormEntity form, Format format, FormStorageType type, Map<ObjectEntity, ClassPropertyInterface> objects) {
-//        assert type == FormStorageType.ATTACH || type == FormStorageType.TEXT && format == Format.HTML;
+    public void addInlineForm(FormEntity form, Map<ObjectEntity, ClassPropertyInterface> objects) {
+        forms.add(form);
+        formats.add(Format.HTML);
+        types.add(FormStorageType.INLINE);
+        mapObjects.add(objects);
+    }
+
+    public void addAttachmentForm(FormEntity form, Format format, Map<ObjectEntity, ClassPropertyInterface> objects) {
         forms.add(form);
         formats.add(format);
-        types.add(type);
+        types.add(FormStorageType.ATTACH);
         mapObjects.add(objects);
     }
 
@@ -93,15 +98,19 @@ public class EmailActionProperty extends ActionProperty {
     private static JRAbstractExporter createExporter(Format format) {
         JRAbstractExporter exporter = null;
         switch (format) {
-            case PDF: exporter = new JRPdfExporter(); break;
-            case DOCX: exporter = new JRDocxExporter(); break;
-            case RTF: exporter = new JRRtfExporter(); break;
-            case HTML:
-            {
+            case PDF:
+                exporter = new JRPdfExporter();
+                break;
+            case DOCX:
+                exporter = new JRDocxExporter();
+                break;
+            case RTF:
+                exporter = new JRRtfExporter();
+                break;
+            default:
                 exporter = new ReportHTMLExporter();
                 exporter.setParameter(JRHtmlExporterParameter.IS_USING_IMAGES_TO_ALIGN, false);
                 break;
-            }
         }
         return exporter;
     }
@@ -126,9 +135,10 @@ public class EmailActionProperty extends ActionProperty {
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapExecuteObjects) throws SQLException {
 
         try {
-            List<EmailSender.AttachmentProperties> reportPaths = new ArrayList<EmailSender.AttachmentProperties>();
-            Map<ByteArray, String> files = new HashMap<ByteArray, String>();
-            List<String> bodyFiles = new ArrayList<String>();
+            List<EmailSender.AttachmentProperties> attachmentForms = new ArrayList<EmailSender.AttachmentProperties>();
+            List<String> inlineForms = new ArrayList<String>();
+            Map<ByteArray, String> attachmentFiles = new HashMap<ByteArray, String>();
+
             for (int i = 0; i < forms.size(); i++) {
                 Map<ObjectEntity, DataObject> formObjects = BaseUtils.join(mapObjects.get(i), keys);
                 RemoteFormInterface remoteForm;
@@ -137,13 +147,13 @@ public class EmailActionProperty extends ActionProperty {
                 else
                     remoteForm = BL.createForm(session, forms.get(i), formObjects);
 
-                ReportGenerator_tmp report = new ReportGenerator_tmp(remoteForm, false, true, files);
+                ReportGenerator_tmp report = new ReportGenerator_tmp(remoteForm, false, true, attachmentFiles);
                 JasperPrint print = report.createReport();
                 String filePath = createReportFile(print, formats.get(i));
-                if (types.get(i) == FormStorageType.TEXT) {
-                    bodyFiles.add(filePath);
+                if (types.get(i) == FormStorageType.INLINE) {
+                    inlineForms.add(filePath);
                 } else {
-                    reportPaths.add(new EmailSender.AttachmentProperties(filePath, forms.get(i).caption, formats.get(i)));
+                    attachmentForms.add(new EmailSender.AttachmentProperties(filePath, forms.get(i).caption, formats.get(i)));
                 }
             }
 
@@ -166,7 +176,7 @@ public class EmailActionProperty extends ActionProperty {
             else {
                 try {
                     EmailSender sender = new EmailSender(smtpHost.trim(), BaseUtils.nullTrim(smtpPort), fromAddress.trim(), BaseUtils.nullTrim(userName), BaseUtils.nullTrim(password), recepientEmails);
-                    sender.sendMail(subject, bodyFiles, files, reportPaths);
+                    sender.sendMail(subject, inlineForms, attachmentForms, attachmentFiles);
                 } catch (Exception e) {
                     actions.add(new MessageClientAction("Не удалось отправить почту","Отсылка писем"));
                 }
