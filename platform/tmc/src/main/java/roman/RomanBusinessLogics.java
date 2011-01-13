@@ -210,8 +210,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
-
-        outputPropertyClasses();
     }
 
     @Override
@@ -517,13 +515,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         inSupplierBoxShipment = addJProp(baseGroup, "inSupplierBoxShipment", "Вкл", inInvoiceShipment, boxDocumentSupplierBox, 1, 2);
 
-        invoicedBoxShipmentSku = addSGProp(baseGroup, "invoicedBoxShipmentSku", "Кол-во ожид.",
-                                              addJProp(and1, quantityBoxDocumentSku, 1, 2, inInvoiceShipment, 1, 3), 3, 2);
-
-        invoicedSimpleShipmentSku = addSGProp(baseGroup, "invoicedSimpleShipmentSku", "Кол-во ожид.",
-                                              addJProp(and(false, false), quantityListSku, 1, 2, inInvoiceShipment, 1, 3, is(simpleShipment), 1), 3, 2);
-
-        invoicedShipmentSku = addCUProp(baseGroup, "invoicedShipmentSku", "Кол-во ожид.", invoicedBoxShipmentSku, invoicedSimpleShipmentSku);
+        invoicedShipmentSku = addSGProp(baseGroup, "invoicedShipmentSku", "Кол-во ожид.",
+                                              addJProp(and1, quantityDocumentSku, 1, 2, inInvoiceShipment, 1, 3), 3, 2);
 
         quantitySupplierBoxBoxShipmentStockSku = addDProp(baseGroup, "quantitySupplierBoxBoxShipmentStockSku", "Кол-во оприход.", DoubleClass.instance,
                                                           supplierBox, boxShipment, stock, sku);
@@ -983,7 +976,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 addPropertyDraw(quantitySupplierBoxBoxShipmentSku, objSupplierBox, objShipment, objSku);
                 addPropertyDraw(quantitySupplierBoxBoxShipmentStockSku, objSupplierBox, objShipment, objStock, objSku);
             } else {
-                addPropertyDraw(invoicedSimpleShipmentSku, objShipment, objSku);
                 addPropertyDraw(quantitySimpleShipmentSku, objShipment, objSku);
                 addPropertyDraw(quantitySimpleShipmentStockSku, objShipment, objStock, objSku);
             }
@@ -1016,7 +1008,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                                       "Оприходовано",
                                       KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
             } else {
-                FilterEntity inInvoice = new NotNullFilterEntity(addPropertyObject(invoicedSimpleShipmentSku, objShipment, objSku));
+                FilterEntity inInvoice = new NotNullFilterEntity(addPropertyObject(invoicedShipmentSku, objShipment, objSku));
                 FilterEntity inInvoiceShipmentStock = new NotNullFilterEntity(addPropertyObject(quantitySimpleShipmentStockSku, objShipment, objStock, objSku));
                 filterGroup.addFilter(new RegularFilterEntity(genID(),
                                       new OrFilterEntity(inInvoice, inInvoiceShipmentStock),
@@ -1036,7 +1028,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addAutoAction(objBarcode, addPropertyObject(barcodeAction4, objSupplierBox, objShipment, objStock, objBarcode));
             addAutoAction(objBarcode, addPropertyObject(seekBarcodeAction, objBarcode));
             addAutoAction(objBarcode, addPropertyObject(barcodeNotFoundMessage, objBarcode));
-            addAutoAction(objSIDSupplierBox, addPropertyObject(seekSupplierBoxSIDSupplier, objSIDSupplierBox, objSupplier));
+            if (box)
+                addAutoAction(objSIDSupplierBox, addPropertyObject(seekSupplierBoxSIDSupplier, objSIDSupplierBox, objSupplier));
 
             setReadOnly(objSupplier, true);
             setReadOnly(objShipment, true);
