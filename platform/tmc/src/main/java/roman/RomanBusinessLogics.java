@@ -1063,6 +1063,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             filterGroup.defaultFilter = 0;
             addRegularFilterGroup(filterGroup);
 
+            addAutoAction(objBarcode, addPropertyObject(barcodeAction1, objBarcode));
+            addAutoAction(objBarcode, addPropertyObject(barcodeActionSetPallet, objBarcode));
             addAutoAction(objBarcode, addPropertyObject(barcodeAction3, objSupplierBox, objShipment, objBarcode));
             addAutoAction(objBarcode, addPropertyObject(barcodeAction2, objShipment, objBarcode));
             addAutoAction(objBarcode, addPropertyObject(seekBarcodeAction, objBarcode));
