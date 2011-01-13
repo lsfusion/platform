@@ -165,6 +165,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP routeFreight;
     private LP nameRouteFreight;
     private LP quantityPalletInvoiceFreight;
+    private LP freighedInvoice;
+    private LP invoicedFreight;
     private ConcreteCustomClass stock;
     private ConcreteCustomClass freightBox;
     private LP countryOfOriginArticleItem;
@@ -185,8 +187,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP barcodeAction4;
     private LP supplierBoxSIDSupplier;
     private LP seekSupplierBoxSIDSupplier;
-    private LP quantityPalletInvoiceDate;
-    private LP quantityPalletFreightDate;
+    private LP quantityPalletInvoiceBetweenDate;
+    private LP quantityPalletFreightBetweenDate;
     private LP routeFreightBox;
     private LP nameRouteFreightBox;
     private LP quantityBoxShipmentStockSku;
@@ -275,17 +277,16 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         supplierSimpleDocument = addJProp("supplierSimpleDocument", "Поставщик (ИД)", and1, supplierDocument, 1, is(simpleDocument), 1);
 
-        // Order
-
         currencyDocument = addDCProp(baseGroup, "currencyDocument", "Валюта (ИД)", currencySupplier, supplierDocument, 1);
         //currencyDocument = addDProp(idGroup, "currencyDocument", "Валюта (ИД)", currency, order);
         nameCurrencyDocument = addJProp(baseGroup, "nameCurrencyDocument", "Валюта", name, currencyDocument, 1);
-
+        
+        // Order
         storeOrder = addDProp(idGroup, "storeOrder", "Магазин (ИД)", store, order);
         nameStoreOrder = addJProp(baseGroup, "nameStoreOrder", "Магазин", name, storeOrder, 1);
 
         // Invoice
-        dateShipmentInvoice = addDProp(baseGroup, "dateInvoice", "Дата поставки", DateClass.instance, invoice);
+        dateShipmentInvoice = addDProp(baseGroup, "dateShipmentInvoice", "Дата поставки", DateClass.instance, invoice);
         quantityPalletInvoice = addDProp(baseGroup, "quantityPalletInvoice", "Кол-во паллет", IntegerClass.instance, invoice);
         netWeightInvoice = addDProp(baseGroup, "netWeightInvoice", "Вес нетто", DoubleClass.instance, invoice);
         grossWeightInvoice = addDProp(baseGroup, "grossWeightInvoice", "Вес брутто", DoubleClass.instance, invoice);
@@ -524,10 +525,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         routeFreight = addDProp(idGroup, "routeFreight", "Маршрут (ИД)", route, freight);
         nameRouteFreight = addJProp(baseGroup, "nameRouteFreight", "Маршрут", name, routeFreight, 1);
 
-        quantityPalletInvoiceDate = addSGProp(baseGroup, "quantityPalletInvoiceDate", "Кол-во паллет по инвойсам", quantityPalletInvoice, dateShipmentInvoice, 1);
-        quantityPalletFreightDate = addSGProp(baseGroup, "quantityPalletFreightDate", "Кол-во паллет по фрахтам", quantityPalletInvoice, dateFreight, 1);
+        quantityPalletInvoiceBetweenDate = addSGProp(baseGroup, "quantityPalletInvoiceDate", "Кол-во паллет по инвойсам за интервал",
+              addJProp(and1, quantityPalletInvoice, 1, addJProp(between, dateShipmentInvoice, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), 2, 3);
+        quantityPalletFreightBetweenDate = addSGProp(baseGroup, "quantityPalletFreightDate", "Кол-во паллет по фрахтам за интервал",
+              addJProp(and1, quantityPalletFreight, 1, addJProp(between, dateFreight, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), 2, 3);
 
         quantityPalletInvoiceFreight = addDProp(baseGroup, "quantityPalletInvoiceFreight", "Кол-во паллет из инвойса", IntegerClass.instance, invoice, freight);
+        freighedInvoice = addSGProp(baseGroup, "freighedInvoice", "Распределено", quantityPalletInvoiceFreight, 1);
+        invoicedFreight = addSGProp(baseGroup, "invoicedFreight", "Использовано", quantityPalletInvoiceFreight, 2);
 
         barcodeAction4 = addJProp(true, "Ввод штрих-кода 4",
                 addCUProp(
@@ -732,7 +737,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameCurrencySupplier);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс", date, sidDocument, nameCurrencyDocument, sumDocument, nameStoreOrder, quantityPalletInvoice, netWeightInvoice, grossWeightInvoice);
+            objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс", date, dateShipmentInvoice, sidDocument, nameCurrencyDocument, sumDocument, nameStoreOrder, quantityPalletInvoice, netWeightInvoice, grossWeightInvoice);
             addObjectActions(this, objInvoice);
 
             objOrder = addSingleGroupObject(order, "Заказ");
@@ -881,7 +886,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс");
             objInvoice.groupTo.setSingleClassView(ClassViewType.GRID);
             addPropertyDraw(inInvoiceShipment, objInvoice, objShipment);
-            addPropertyDraw(objInvoice, date, sidDocument, nameStoreOrder);
+            addPropertyDraw(objInvoice, date, dateShipmentInvoice, sidDocument, nameStoreOrder);
 
             if (box) {
                 objSupplierBox = addSingleGroupObject(supplierBox, "Короб поставщика", sidSupplierBox, barcode);
@@ -1009,8 +1014,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objFreight;
         private ObjectEntity objDateFrom;
         private ObjectEntity objDateTo;
-
-
+        
         private FreightFormEntity(NavigatorElement parent, int iID, String caption) {
             super(parent, iID, caption);
 
@@ -1019,21 +1023,19 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objDateFrom.groupTo.setSingleClassView(ClassViewType.PANEL);
             objDateTo.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objInvoice = addSingleGroupObject(invoice, "Инвойс", dateShipmentInvoice, date, nameSupplierDocument, sidDocument, sumDocument, nameCurrencyDocument, quantityPalletInvoice, netWeightInvoice, grossWeightInvoice);
-            addObjectActions(this, objInvoice);
-            objFreight = addSingleGroupObject(freight, "Фрахт", dateFreight, nameRouteFreight, tonnageFreight, quantityPalletFreight);
+            addPropertyDraw(quantityPalletInvoiceBetweenDate, objDateFrom, objDateTo);
+            addPropertyDraw(quantityPalletFreightBetweenDate, objDateFrom, objDateTo);
+
+            objInvoice = addSingleGroupObject(invoice, "Инвойс", dateShipmentInvoice, date, nameSupplierDocument, sidDocument, sumDocument, nameCurrencyDocument, quantityPalletInvoice, freighedInvoice, netWeightInvoice, grossWeightInvoice);
+            objFreight = addSingleGroupObject(freight, "Фрахт", dateFreight, nameRouteFreight, tonnageFreight, quantityPalletFreight, invoicedFreight);
             addObjectActions(this, objFreight);
 
-            //addPropertyDraw(quantityPalletInvoiceDate, objDateFrom, objDateTo);
-            //addPropertyDraw(quantityPalletFreightDate, objDateFrom, objDateTo);
             addPropertyDraw(quantityPalletInvoiceFreight, objInvoice, objFreight);
            
             addFixedFilter(new CompareFilterEntity(addPropertyObject(dateShipmentInvoice, objInvoice), Compare.GREATER_EQUALS, objDateFrom));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(dateShipmentInvoice, objInvoice), Compare.LESS_EQUALS, objDateTo));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(dateFreight, objFreight), Compare.GREATER_EQUALS, objDateFrom));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(dateFreight, objFreight), Compare.LESS_EQUALS, objDateTo));
-            //addFixedFilter(new NotNullFilterEntity(addPropertyObject(numberListArticle, objOrder, objArticle)));
-
+            //addFixedFilter(new CompareFilterEntity(addPropertyObject(dateFreight, objFreight), Compare.GREATER_EQUALS, objDateFrom));
+            //addFixedFilter(new CompareFilterEntity(addPropertyObject(dateFreight, objFreight), Compare.LESS_EQUALS, objDateTo));           
         }
 
         @Override
