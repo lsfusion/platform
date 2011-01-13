@@ -60,7 +60,8 @@ public class PendingExecutionAspect {
 
                 lastRemote.flushPendingInvocations();
             }
-            return thisJoinPoint.proceed();
+            //для удобства определения "подвисания" выполняем и единственный метод нового объекта через очередь
+//            return thisJoinPoint.proceed();
         }
 
         Method method = ((MethodSignature) thisJoinPoint.getSignature()).getMethod();
@@ -93,7 +94,11 @@ public class PendingExecutionAspect {
             return remoteObject.getProperty(name);
         } else {
             logger.debug("  Returning direct value: ");
-            return thisJoinPoint.proceed();
+
+            //для удобства определения "подвисания" выполняем и этот метод через очередь
+            moveInvocationToQueue(thisJoinPoint, object);
+            return remoteObject.flushPendingInvocations();
+//            return thisJoinPoint.proceed();
         }
     }
 }
