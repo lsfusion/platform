@@ -32,6 +32,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private ConcreteCustomClass articleSingle;
     private ConcreteCustomClass item;
     private AbstractCustomClass sku;
+    private ConcreteCustomClass pallet;
     private LP sidArticle;
     private LP articleItem;
     private LP sidArticleItem;
@@ -184,7 +185,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP invoicedSimpleShipmentSku;
     private LP quantitySupplierBoxBoxShipmentStockSku;
     private LP quantitySimpleShipmentStockSku;
-    private LP barcodeAction4;
+    private LP barcodeAction3;
     private LP supplierBoxSIDSupplier;
     private LP seekSupplierBoxSIDSupplier;
     private LP quantityPalletInvoiceBetweenDate;
@@ -263,6 +264,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         freightBox = addConcreteClass("freightBox", "Короб для транспортировки", stock);
 
         freight = addConcreteClass("freight", "Фрахт", baseClass.named);
+
+        pallet = addConcreteClass("pallet", "Паллета", barcodeObject);
 
         route = addStaticClass("route", "Маршрут", new String[]{"rb", "rf"}, new String[]{"РБ", "РФ"});
     }
@@ -558,11 +561,45 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         freighedInvoice = addSGProp(baseGroup, "freighedInvoice", "Распределено", quantityPalletInvoiceFreight, 1);
         invoicedFreight = addSGProp(baseGroup, "invoicedFreight", "Использовано", quantityPalletInvoiceFreight, 2);
 
-        barcodeAction4 = addJProp(true, "Ввод штрих-кода 4",
+        routeItem = addDProp(baseGroup, "routeItem", "Маршрут товара", route, item);
+        palletFreightBox = addDProp(baseGroup, "palletFreightBox", "Палета", pallet, freightBox);
+        routePallet = addDProp(baseGroup, "routePallet", "Маршрут", route, pallet);
+        currentPalletRoute = addDProp("currentPalletRoute", "Тек. палета", pallet, route);
+        currentFreightBoxRoute = addDProp("currentFreightBoxRoute", "Тек. короб", freightBox, route);
+
+        isCurrentFreightBox = addJProp(equals2, addJProp(true, currentFreightBoxRoute, routeFreightBox, 1), 1, 1);
+        isCurrentPallet = addJProp(equals2, addJProp(true, currentPalletRoute, routePallet, 1), 1, 1);
+        isCurrentPalletFreightBox = addJProp(equals2, palletFreightBox, 1, addJProp(currentPalletRoute, routeFreightBox, 1), 1);
+
+        barcodeAction1 = addJProp(true, "Ввод штрих-кода 1", addCUProp(isCurrentFreightBox, isCurrentPallet), barcodeToObject, 1);
+        barcodeActionSetPallet = addJProp(true, "Установить паллету", isCurrentPalletFreightBox, barcodeToObject, 1);
+
+        LP currentFreightBoxItem = addJProp(currentFreightBoxRoute, routeItem, 1);
+
+        quantitySupplierBoxBoxShipmentRouteSku = addJProp(baseGroup, true,  "quantitySupplierBoxBoxShipmentRouteSku", "Кол-во оприход.",
+                                                    quantitySupplierBoxBoxShipmentStockSku, 1, 2, currentFreightBoxRoute, 3, 4);
+        quantitySimpleShipmentRouteSku = addJProp(baseGroup, true,  "quantitySimpleShipmentStockSku", "Кол-во оприход.",
+                                                    quantitySimpleShipmentStockSku, 1, currentFreightBoxRoute, 2, 3);
+
+        barcodeAction3 = addJProp(true, "Ввод штрих-кода 3",
                 addCUProp(
-                        addSCProp(quantitySupplierBoxBoxShipmentStockSku)
-                ), 1, 2, 3, barcodeToObject, 4);
+                        addSCProp(addJProp(true, quantitySupplierBoxBoxShipmentStockSku, 1, 2, currentFreightBoxItem, 3, 3))
+                ), 1, 2, barcodeToObject, 3);
+        barcodeAction2 = addJProp(true, "Ввод штрих-кода 2",
+                addCUProp(
+                        addSCProp(addJProp(true, quantitySimpleShipmentStockSku, 1, currentFreightBoxItem, 2, 2))
+                ), 1, barcodeToObject, 2);
     }
+
+    LP quantitySupplierBoxBoxShipmentRouteSku;
+    LP quantitySimpleShipmentRouteSku;
+    LP routePallet, palletFreightBox;
+    LP currentPalletRoute;
+    LP currentFreightBoxRoute;
+    LP isCurrentFreightBox, isCurrentPalletFreightBox;
+    LP isCurrentPallet;
+    LP barcodeAction1, barcodeActionSetPallet, barcodeAction2;
+    LP routeItem;
 
     @Override
     protected void initTables() {
@@ -925,13 +962,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             return design;
         }
     }
-
+    
     private class ShipmentSpecFormEntity extends BarcodeFormEntity {
         private boolean box;
 
         private ObjectEntity objSIDSupplierBox;
         private ObjectEntity objSupplier;
         private ObjectEntity objShipment;
+        private ObjectEntity objInvoice;
         private ObjectEntity objSupplierBox;
         private ObjectEntity objFreightBoxRB;
         private ObjectEntity objFreightBoxRF;
@@ -960,10 +998,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 objSupplierBox.groupTo.initClassView = ClassViewType.PANEL;
             }
 
+            objRoute = addSingleGroupObject(route, "Маршрут", name, currentPalletRoute, currentFreightBoxRoute);
+            objRoute.groupTo.setSingleClassView(ClassViewType.GRID);
+
             objStock = addSingleGroupObject(stock, "Место хранения", barcode, objectClassName, nameRouteFreightBox);
             objStock.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objSku = addSingleGroupObject(sku, "SKU", barcode, sidArticleSku, originalNameArticleSku, nameArticleSku, nameCountryOfOriginSku, sidColorSupplierItem, nameColorSupplierItem, nameSizeSupplierItem);
+            objSku = addSingleGroupObject(sku, "SKU", barcode, sidArticleSku, originalNameArticleSku, nameArticleSku, nameCountryOfOriginSku, sidColorSupplierItem, nameColorSupplierItem, nameSizeSupplierItem, routeItem);
 
             getPropertyDraw(sidColorSupplierItem).forceViewType = ClassViewType.GRID;
             getPropertyDraw(nameColorSupplierItem).forceViewType = ClassViewType.GRID;
@@ -974,18 +1015,15 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             if (box) {
                 addPropertyDraw(quantityListSku, objSupplierBox, objSku);
                 addPropertyDraw(quantitySupplierBoxBoxShipmentSku, objSupplierBox, objShipment, objSku);
-                addPropertyDraw(quantitySupplierBoxBoxShipmentStockSku, objSupplierBox, objShipment, objStock, objSku);
+                addPropertyDraw(quantitySupplierBoxBoxShipmentRouteSku, objSupplierBox, objShipment, objRoute, objSku);
             } else {
                 addPropertyDraw(quantitySimpleShipmentSku, objShipment, objSku);
-                addPropertyDraw(quantitySimpleShipmentStockSku, objShipment, objStock, objSku);
+                addPropertyDraw(quantitySimpleShipmentRouteSku, objShipment, objRoute, objSku);
             }
 
-            objRoute = addSingleGroupObject(route, "Маршрут", name);
-            objRoute.groupTo.setSingleClassView(ClassViewType.GRID);
-
-            addPropertyDraw(percentShipmentRouteSku, objShipment, objRoute, objSku);
-            addPropertyDraw(invoicedShipmentRouteSku, objShipment, objRoute, objSku);
-            addPropertyDraw(quantityShipmentRouteSku, objShipment, objRoute, objSku);
+            addPropertyDraw(percentShipmentRouteSku, objShipment, objRoute, objSku).setToDraw(objRoute.groupTo);
+            addPropertyDraw(invoicedShipmentRouteSku, objShipment, objRoute, objSku).setToDraw(objRoute.groupTo);
+            addPropertyDraw(quantityShipmentRouteSku, objShipment, objRoute, objSku).setToDraw(objRoute.groupTo);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objShipment), Compare.EQUALS, objSupplier));
 
@@ -995,7 +1033,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             if (box) {
                 FilterEntity inSupplierBox = new NotNullFilterEntity(addPropertyObject(quantityListSku, objSupplierBox, objSku));
-                FilterEntity inSupplierBoxShipmentStock = new NotNullFilterEntity(addPropertyObject(quantitySupplierBoxBoxShipmentStockSku, objSupplierBox, objShipment, objStock, objSku));
+                FilterEntity inSupplierBoxShipmentStock = new NotNullFilterEntity(addPropertyObject(quantitySupplierBoxBoxShipmentRouteSku, objSupplierBox, objShipment, objRoute, objSku));
                 filterGroup.addFilter(new RegularFilterEntity(genID(),
                                       new OrFilterEntity(inSupplierBox, inSupplierBoxShipmentStock),
                                       "В коробе поставщика или оприходовано",
@@ -1009,7 +1047,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                                       KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
             } else {
                 FilterEntity inInvoice = new NotNullFilterEntity(addPropertyObject(invoicedShipmentSku, objShipment, objSku));
-                FilterEntity inInvoiceShipmentStock = new NotNullFilterEntity(addPropertyObject(quantitySimpleShipmentStockSku, objShipment, objStock, objSku));
+                FilterEntity inInvoiceShipmentStock = new NotNullFilterEntity(addPropertyObject(quantitySimpleShipmentRouteSku, objShipment, objRoute, objSku));
                 filterGroup.addFilter(new RegularFilterEntity(genID(),
                                       new OrFilterEntity(inInvoice, inInvoiceShipmentStock),
                                       "В инвойсах или оприходовано",
@@ -1025,7 +1063,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             filterGroup.defaultFilter = 0;
             addRegularFilterGroup(filterGroup);
 
-            addAutoAction(objBarcode, addPropertyObject(barcodeAction4, objSupplierBox, objShipment, objStock, objBarcode));
+            addAutoAction(objBarcode, addPropertyObject(barcodeAction3, objSupplierBox, objShipment, objBarcode));
+            addAutoAction(objBarcode, addPropertyObject(barcodeAction2, objShipment, objBarcode));
             addAutoAction(objBarcode, addPropertyObject(seekBarcodeAction, objBarcode));
             addAutoAction(objBarcode, addPropertyObject(barcodeNotFoundMessage, objBarcode));
             if (box)
