@@ -3,9 +3,9 @@ package platform.server.logics;
 import net.sf.jasperreports.engine.JRAbstractExporter;
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.export.JRHtmlExporter;
 import net.sf.jasperreports.engine.export.JRHtmlExporterParameter;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
+import net.sf.jasperreports.engine.export.JRRtfExporter;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.engine.export.ooxml.JRDocxExporter;
 import platform.base.BaseUtils;
@@ -19,6 +19,7 @@ import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
+import platform.server.form.reportstmp.ReportHTMLExporter;
 import platform.server.form.reportstmp.ReportGenerator_tmp;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -41,12 +42,13 @@ import java.util.Map;
  */
 
 public class EmailActionProperty extends ActionProperty {
-    public static enum Format {PDF, DOCX, HTML}
+    public static enum Format {PDF, DOCX, HTML, RTF}
     private static Map<Format, String> extensions = new HashMap<Format, String>();
     static {
         extensions.put(Format.PDF, ".pdf");
         extensions.put(Format.DOCX, ".docx");
         extensions.put(Format.HTML, ".html");
+        extensions.put(Format.RTF, ".rtf");
     }
 
     public static enum FormStorageType {TEXT, ATTACH}
@@ -77,7 +79,7 @@ public class EmailActionProperty extends ActionProperty {
     }
 
     public void addForm(FormEntity form, Format format, FormStorageType type, Map<ObjectEntity, ClassPropertyInterface> objects) {
-        assert type == FormStorageType.ATTACH || type == FormStorageType.TEXT && format == Format.HTML;
+//        assert type == FormStorageType.ATTACH || type == FormStorageType.TEXT && format == Format.HTML;
         forms.add(form);
         formats.add(format);
         types.add(type);
@@ -93,9 +95,10 @@ public class EmailActionProperty extends ActionProperty {
         switch (format) {
             case PDF: exporter = new JRPdfExporter(); break;
             case DOCX: exporter = new JRDocxExporter(); break;
+            case RTF: exporter = new JRRtfExporter(); break;
             case HTML:
             {
-                exporter = new JRHtmlExporter();
+                exporter = new ReportHTMLExporter();
                 exporter.setParameter(JRHtmlExporterParameter.IS_USING_IMAGES_TO_ALIGN, false);
                 break;
             }

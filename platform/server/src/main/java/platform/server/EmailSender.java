@@ -95,6 +95,7 @@ public class EmailSender {
     public void setText(String text) throws MessagingException, IOException {
         MimeBodyPart textPart = new MimeBodyPart();
         textPart.setDataHandler(new DataHandler(new ByteArrayDataSource(text, "text/html; charset=utf-8")));
+        textPart.setDisposition(Part.INLINE);
         mp.addBodyPart(textPart);
     }
 
@@ -104,6 +105,8 @@ public class EmailSender {
                 return "application/pdf";
             case DOCX:
                 return "application/msword";
+            case RTF:
+                return "text/rtf";
             default:
                 return "text/html";
         }
