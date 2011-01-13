@@ -24,7 +24,8 @@ public class RemoteExceptionManager {
         try {
             return thisJoinPoint.proceed();
         } catch (Throwable throwable) {
-            if (throwable instanceof RuntimeException && ! (throwable instanceof RemoteServerException)) {
+            if ((throwable instanceof RuntimeException || throwable instanceof AssertionError)
+                    && ! (throwable instanceof RemoteServerException)) {
                 throw createInternalServerException(throwable);
             } else
                 throw throwable;
