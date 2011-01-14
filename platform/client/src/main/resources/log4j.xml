@@ -24,7 +24,7 @@
 
     <appender name="clientlog" class="org.apache.log4j.RollingFileAppender">
         <param name="maxFileSize" value="20MB"/>
-        <param name="file" value="${user.home}/.fusion/client.log"/>
+        <param name="file" value="${user.home}/.fusion/logs/client.log"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d{ABSOLUTE} %5p %t %c{1}:%M:%L - %m%n"/>
         </layout>

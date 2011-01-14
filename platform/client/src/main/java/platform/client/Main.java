@@ -190,7 +190,7 @@ public class Main {
         }
 
         if (socketFactory == null) {
-            socketFactory = new RMITimeoutSocketFactory(factory, Integer.valueOf(timeout));
+            socketFactory = new RMITimeoutSocketFactory(Integer.valueOf(timeout));
 
             RMISocketFactory.setFailureHandler(new RMIFailureHandler() {
 

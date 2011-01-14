@@ -18,7 +18,6 @@ import java.util.List;
 
 public class ViewManager {
     private CControl control;
-    private FormRepository forms;
 
     List<FormDockable> pages = new ArrayList<FormDockable>();
 
@@ -28,16 +27,11 @@ public class ViewManager {
 
     public ViewManager(CControl control, ClientNavigator mainNavigator) {
         this.control = control;
-        forms = new FormRepository();
 
         pageFactory = new FormFactory(mainNavigator);
         control.addMultipleDockableFactory("page", pageFactory);
         gridArea = control.createGridArea("Form area");
         gridArea.setVisible(true);
-    }
-
-    public FormRepository getForms() {
-        return forms;
     }
 
     public CGridArea getGridArea() {
@@ -142,11 +136,9 @@ public class ViewManager {
         @Override
         public void visibilityChanged(CDockable dockable) {
             if (dockable.isVisible()) {
-                forms.add(page.getFormID());
                 pages.add(page);
             } else {
                 pages.remove(page);
-                forms.remove(page.getFormID());
                 control.remove(page);
                 page.closed();
             }

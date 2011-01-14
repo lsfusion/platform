@@ -537,6 +537,16 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         return executeAutoActions(object, form);
     }
 
+    public void fullRefresh() {
+        try {
+            refreshData();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        dataChanged = session.hasChanges();
+    }
+
     // транзакция для отката при exception'ах
     private class ApplyTransaction {
 
@@ -774,6 +784,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
             GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group
             for (GroupObjectInstance group : groups) {
+                if (refresh) {
+                    //обновляем classViews при refresh
+                    result.classViews.put(group, group.curClassView);
+                }
+
                 Map<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, session.env, this, BL.baseClass, refresh, result, changedProps, changedClasses);
                 if(selectObjects!=null) // то есть нужно изменять объект
                     updateGroupObject = new GroupObjectValue(group, selectObjects);

@@ -16,7 +16,7 @@ public abstract class MainFrame extends JFrame {
     public RemoteNavigatorInterface remoteNavigator;
     public JComponent statusComponent;
 
-    public MainFrame(RemoteNavigatorInterface remoteNavigator) throws ClassNotFoundException, IOException {
+    public MainFrame(final RemoteNavigatorInterface remoteNavigator) throws ClassNotFoundException, IOException {
         super();
 
         this.remoteNavigator = remoteNavigator;
@@ -55,6 +55,12 @@ public abstract class MainFrame extends JFrame {
 
                     fileWr.close();
                 } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                try {
+                    remoteNavigator.close();
+                } catch (RemoteException e) {
                     e.printStackTrace();
                 }
             }

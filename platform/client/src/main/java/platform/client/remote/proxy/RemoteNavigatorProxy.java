@@ -109,4 +109,8 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
     public void clientExceptionLog(String info) throws RemoteException {
         target.clientExceptionLog(info);
     }
+
+    public void close() throws RemoteException {
+        target.close();
+    }
 }

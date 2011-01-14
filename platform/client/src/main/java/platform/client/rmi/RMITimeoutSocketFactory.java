@@ -1,5 +1,6 @@
 package platform.client.rmi;
 
+import platform.interop.remote.CountZipServerSocket;
 import platform.interop.remote.CountZipSocket;
 import platform.interop.remote.ISocketTrafficSum;
 
@@ -10,13 +11,11 @@ import java.rmi.server.RMISocketFactory;
 
 public class RMITimeoutSocketFactory extends RMISocketFactory implements ISocketTrafficSum{
 
-    private RMISocketFactory delegateSocketFactory;
     private int timeout;
     public long inSum;
     public long outSum;
 
-    public RMITimeoutSocketFactory(RMISocketFactory delegateSocketFactory, int timeout) {
-        this.delegateSocketFactory = delegateSocketFactory;
+    public RMITimeoutSocketFactory(int timeout) {
         this.timeout = timeout;
 
         String timeoutValue = String.valueOf(timeout);
@@ -37,7 +36,7 @@ public class RMITimeoutSocketFactory extends RMISocketFactory implements ISocket
 
     @Override
     public ServerSocket createServerSocket(int port) throws IOException {
-        return delegateSocketFactory.createServerSocket(port);
+        return new CountZipServerSocket(port);
     }
 
     public void incrementIn(long in) {

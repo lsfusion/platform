@@ -1,17 +1,17 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package platform.server.form.navigator;
 
 // навигатор работает с абстрактной BL
 
+import org.apache.log4j.Logger;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.base.WeakIdentityHashSet;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
+import platform.interop.remote.ClientCallbackInterface;
 import platform.interop.remote.RemoteObject;
 import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
@@ -50,16 +50,19 @@ import java.util.*;
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
 public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject implements RemoteNavigatorInterface, FocusListener<T>, CustomClassListener, CurrentClassListener {
+    protected final static Logger logger = Logger.getLogger(RemoteNavigator.class);
 
     T BL;
+    private ClientCallbackInterface client;
     SQLSession sql;
 
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
 
-    public RemoteNavigator(T BL, User currentUser, int computer, int port) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+    public RemoteNavigator(T BL, ClientCallbackInterface client, User currentUser, int computer, int port) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
         super(port);
 
         this.BL = BL;
+        this.client = client;
         classCache = new ClassCache();
 
         securityPolicy = this.BL.policyManager.getSecurityPolicy(currentUser);
@@ -122,6 +125,26 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         }
 
         return outStream.toByteArray();
+    }
+
+    @Aspect
+    private static class RemoteNavigatorUsageAspect {
+        @Around("execution(* platform.interop.navigator.RemoteNavigatorInterface.*(..)) && target(remoteNavigator)")
+        public Object executeRemoteMethod(ProceedingJoinPoint thisJoinPoint, RemoteNavigator remoteNavigator) throws Throwable {
+            remoteNavigator.updateLastUsedTime();
+            return thisJoinPoint.proceed();
+        }
+    }
+
+    private long lastUsedTime;
+    public void updateLastUsedTime() {
+        //забиваем на синхронизацию, потому что для времени использования совсем неактуально
+        //пусть потоки меняют как хотят
+        lastUsedTime = System.currentTimeMillis();
+    }
+
+    public long getLastUsedTime() {
+        return lastUsedTime;
     }
 
     private static class WeakUserController implements UserController { // чтобы помочь сборщику мусора и устранить цикд
@@ -269,35 +292,42 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         return createForm(getFormEntity(formID), currentSession);
     }
 
+    private Map<FormEntity, RemoteForm> openForms = new HashMap<FormEntity, RemoteForm>();
+    private Map<FormEntity, RemoteForm> invalidatedForms = new HashMap<FormEntity, RemoteForm>();
     public RemoteFormInterface createForm(FormEntity<T> formEntity, boolean currentSession) {
+        RemoteForm remoteForm = invalidatedForms.remove(formEntity);
+        if (remoteForm != null) {
+            remoteForm.form.fullRefresh();
+        } else {
+            try {
+                DataSession session;
+                FormInstance<T> currentForm = getCurrentForm();
+                if (currentSession && currentForm != null)
+                    session = currentForm.session;
+                else
+                    session = createSession();
 
-        try {
-            DataSession session;
-            FormInstance<T> currentForm = getCurrentForm();
-            if (currentSession && currentForm != null)
-                session = currentForm.session;
-            else
-                session = createSession();
+                FormInstance<T> formInstance = new FormInstance<T>(formEntity, BL, session, securityPolicy, this, this, computer);
 
-            FormInstance<T> formInstance = new FormInstance<T>(formEntity, BL, session, securityPolicy, this, this, computer);
+                for (GroupObjectInstance groupObject : formInstance.groups) {
+                    Map<OrderInstance, ObjectValue> userSeeks = new HashMap<OrderInstance, ObjectValue>();
+                    for (ObjectInstance object : groupObject.objects)
+                        if (object instanceof CustomObjectInstance) {
+                            Integer objectID = classCache.getObject(((CustomObjectInstance) object).baseClass);
+                            if (objectID != null)
+                                userSeeks.put(object, session.getDataObject(objectID, ObjectType.instance));
+                        }
+                    if (!userSeeks.isEmpty())
+                        groupObject.seek(userSeeks, false);
+                }
 
-            for (GroupObjectInstance groupObject : formInstance.groups) {
-                Map<OrderInstance, ObjectValue> userSeeks = new HashMap<OrderInstance, ObjectValue>();
-                for (ObjectInstance object : groupObject.objects)
-                    if (object instanceof CustomObjectInstance) {
-                        Integer objectID = classCache.getObject(((CustomObjectInstance) object).baseClass);
-                        if (objectID != null)
-                            userSeeks.put(object, session.getDataObject(objectID, ObjectType.instance));
-                    }
-                if (!userSeeks.isEmpty())
-                    groupObject.seek(userSeeks, false);
+                remoteForm = new RemoteForm<T, FormInstance<T>>(formInstance, formEntity.getRichDesign(), exportPort, this);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-
-            return new RemoteForm<T, FormInstance<T>>(formInstance, formEntity.getRichDesign(), exportPort, this);
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
+        openForms.put(formEntity, remoteForm);
+        return remoteForm;
     }
 
     public RemoteFormInterface createForm(byte[] formState) throws RemoteException {
@@ -382,9 +412,29 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         classCache.put(cls, value);
     }
 
-    public void close() throws SQLException {
-        sql.close();
+    public void close() throws RemoteException {
+        try {
+            BL.removeNavigator(this);
+            sql.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public synchronized void invalidate(ClientCallbackInterface newClient) {
+        if (client != null) {
+            try {
+                client.disconnect();
+            } catch (RemoteException e) {
+                logger.error("RemoteException во время дисконнекта клиента: ", e);
+            }
+        }
+        client = newClient;
+
+//        invalidatedForms.clear();
+
+        invalidatedForms.putAll(openForms);
+
+        openForms.clear();
     }
 }
-
-

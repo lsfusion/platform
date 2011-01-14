@@ -65,9 +65,7 @@ public class DockableMainFrame extends MainFrame {
             public void windowClosing(WindowEvent event) {
                 super.windowClosing(event);
                 try {
-                    control.save("default");
                     DataOutputStream out = new DataOutputStream(new FileOutputStream(new File(baseDir, "layout.data")));
-                    view.getForms().write(out);
                     control.getResources().writeStream(out);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -100,7 +98,6 @@ public class DockableMainFrame extends MainFrame {
         DataInputStream in = null;
         try {
             in = new DataInputStream(new FileInputStream(new File(baseDir, "layout.data")));
-            view.getForms().read(in);
             control.getResources().readStream(in);
         } catch (Exception e) {
             e.printStackTrace();
@@ -124,17 +121,6 @@ public class DockableMainFrame extends MainFrame {
         grid.add(0, 5, 6, 0.15, createStatusDockable(statusComponent));
         control.getContentArea().deploy(grid);
 
-        for (String s : control.layouts()) {
-            if (s.equals("default")) {
-                try {
-                    control.load("default");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    control.getContentArea().deploy(grid); // иначе покажется пустая форма
-                }
-                break;
-            }
-        }
         setupMenu();
         setVisible(true);
 
@@ -143,13 +129,13 @@ public class DockableMainFrame extends MainFrame {
 
 
     void setupMenu() {
-        JMenuBar Menubar = new JMenuBar();
-        Menubar.add(createFileMenu());
-        Menubar.add(createWindowMenu());
-        Menubar.add(createViewMenu());
-        Menubar.add(createOptionsMenu());
-        Menubar.add(createHelpMenu());
-        setJMenuBar(Menubar);
+        JMenuBar menuBar = new JMenuBar();
+        menuBar.add(createFileMenu());
+        menuBar.add(createWindowMenu());
+        menuBar.add(createViewMenu());
+        menuBar.add(createOptionsMenu());
+        menuBar.add(createHelpMenu());
+        setJMenuBar(menuBar);
     }
 
     private JMenu createWindowMenu() {
@@ -169,28 +155,28 @@ public class DockableMainFrame extends MainFrame {
 
     JMenu createFileMenu() {
         JMenu Menu = new JMenu("Файл");
-        JMenuItem OpenReport = new JMenuItem("Открыть отчет...");
-        OpenReport.setToolTipText("Открывает ранее сохраненный отчет");
+        JMenuItem openReport = new JMenuItem("Открыть отчет...");
+        openReport.setToolTipText("Открывает ранее сохраненный отчет");
         final JFrame MainFrame = this;
-        OpenReport.addActionListener(new ActionListener() {
+        openReport.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                FileDialog Chooser = new FileDialog(MainFrame, "Отчет");
-                Chooser.setFilenameFilter(new FilenameFilter() {
+                FileDialog chooser = new FileDialog(MainFrame, "Отчет");
+                chooser.setFilenameFilter(new FilenameFilter() {
                     public boolean accept(File directory, String file) {
                         String filename = file.toUpperCase();
                         return filename.endsWith(".JRPRINT");
                     }
                 });
-                Chooser.setVisible(true);
+                chooser.setVisible(true);
 
                 try {
-                    view.openReport(Chooser.getFile(), Chooser.getDirectory());
+                    view.openReport(chooser.getFile(), chooser.getDirectory());
                 } catch (JRException e) {
                     throw new RuntimeException("Ошибка при открытии сохраненного отчета", e);
                 }
             }
         });
-        Menu.add(OpenReport);
+        Menu.add(openReport);
         return Menu;
     }
 
@@ -292,6 +278,8 @@ public class DockableMainFrame extends MainFrame {
         DefaultSingleCDockable dockable = new DefaultSingleCDockable("Log", "", navigator);
         dockable.setTitleShown(false);
         dockable.setResizeLockedVertically(true);
+        dockable.setExternalizable(false);
+        dockable.setCloseable(false);
         return dockable;
     }
 }

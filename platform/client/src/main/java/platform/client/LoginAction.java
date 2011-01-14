@@ -2,12 +2,16 @@ package platform.client;
 
 import platform.base.OSUtils;
 import platform.client.remote.proxy.RemoteBusinessLogicProxy;
+import platform.client.rmi.ConnectionLostManager;
 import platform.interop.RemoteLoaderInterface;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
+import platform.interop.remote.ClientCallbackInterface;
 
+import javax.swing.*;
 import java.net.MalformedURLException;
 import java.rmi.*;
+import java.rmi.server.UnicastRemoteObject;
 
 public final class LoginAction {
 
@@ -27,12 +31,21 @@ public final class LoginAction {
     final static int SERVER_ERROR = 3;
     final static int ERROR = 4;
 
+    private ClientCallBack clientCallBack;
+
     private LoginAction() {
         this.serverHost = System.getProperty(PropertyConstants.PLATFORM_CLIENT_HOSTNAME);
         this.serverPort = System.getProperty(PropertyConstants.PLATFORM_CLIENT_HOSTPORT);
         this.user = System.getProperty(PropertyConstants.PLATFORM_CLIENT_USER);
         this.password = System.getProperty(PropertyConstants.PLATFORM_CLIENT_PASSWORD);
         this.loginInfo = new LoginInfo(serverHost, serverPort, user, password);
+
+        try {
+            clientCallBack = new ClientCallBack();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
     }
 
     private static class LoginActionHolder {
@@ -97,7 +110,7 @@ public final class LoginAction {
 
             remoteLogics = new RemoteBusinessLogicProxy(remote);
             computerId = remoteLogics.getComputer(OSUtils.getLocalHostName());
-            remoteNavigator = remoteLogics.createNavigator(loginInfo.getUserName(), loginInfo.getPassword(), computerId);
+            remoteNavigator = remoteLogics.createNavigator(clientCallBack, loginInfo.getUserName(), loginInfo.getPassword(), computerId);
         } catch (UnknownHostException e) {
             System.out.println(e.getCause());
             return HOST_NAME_ERROR;
@@ -129,5 +142,18 @@ public final class LoginAction {
 
     public RemoteNavigatorInterface getRemoteNavigator() {
         return remoteNavigator;
+    }
+
+    public static class ClientCallBack extends UnicastRemoteObject implements ClientCallbackInterface {
+        public ClientCallBack() throws RemoteException {
+        }
+
+        public void disconnect() throws RemoteException {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    ConnectionLostManager.forceDisconnect();
+                }
+            });
+        }
     }
 }

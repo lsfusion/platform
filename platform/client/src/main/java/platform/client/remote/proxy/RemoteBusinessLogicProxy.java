@@ -4,10 +4,9 @@ import platform.interop.RemoteLogicsInterface;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
-import platform.interop.remote.MethodInvocation;
+import platform.interop.remote.ClientCallbackInterface;
 
 import java.rmi.RemoteException;
-import java.util.List;
 
 public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         extends RemoteObjectProxy<T>
@@ -18,24 +17,8 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
     }
 
     @NonPendingRemoteMethod
-    public RemoteNavigatorInterface createNavigator(String login, String password, int computer) throws RemoteException {
-        List<MethodInvocation> invocations = getImmutableMethodInvocations(RemoteNavigatorProxy.class);
-
-        MethodInvocation creator = MethodInvocation.create(this.getClass(), "createNavigator", login, password, computer);
-
-        Object[] result = createAndExecute(creator, invocations.toArray(new MethodInvocation[invocations.size()]));
-
-        RemoteNavigatorInterface remoteNavigator = (RemoteNavigatorInterface) result[0];
-        if (remoteNavigator == null) {
-            return null;
-        }
-
-        RemoteNavigatorProxy proxy = new RemoteNavigatorProxy(remoteNavigator);
-        for (int i = 0; i < invocations.size(); ++i) {
-            proxy.setProperty(invocations.get(i).name, result[i+1]);
-        }
-
-        return proxy;
+    public RemoteNavigatorInterface createNavigator(ClientCallbackInterface client, String login, String password, int computer) throws RemoteException {
+        return new RemoteNavigatorProxy(target.createNavigator(client, login, password, computer));
     }
 
     public String getName() throws RemoteException {

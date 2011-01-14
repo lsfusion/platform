@@ -10,12 +10,10 @@ import java.rmi.server.RMISocketFactory;
 public class ServerSocketFactory extends RMISocketFactory implements RMIServerSocketFactory, Serializable {
 
     public Socket createSocket(String host, int port) throws IOException {
-        Socket socket = new CountZipSocket(host, port);
-        return socket;
+        return new CountZipSocket(host, port);
     }
 
     public ServerSocket createServerSocket(int port) throws IOException {
-        CountZipServerSocket server = new CountZipServerSocket(port);
-        return server;
+        return new CountZipServerSocket(port);
     }
 }

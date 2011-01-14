@@ -359,12 +359,14 @@ public class ClientFormController {
                     applyChanges(false);
                 }
             });
+            buttonApply.setEnabled(false);
 
             buttonCancel = addClientFunction(form.getCancelFunction(), cancelKeyStroke, new AbstractAction() {
                 public void actionPerformed(ActionEvent ae) {
                     cancelChanges();
                 }
             });
+            buttonCancel.setEnabled(false);
         } else {
             addClientFunction(form.getNullFunction(), nullKeyStroke, new AbstractAction() {
                 public void actionPerformed(ActionEvent ae) {

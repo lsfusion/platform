@@ -16,6 +16,7 @@ import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
+import platform.interop.remote.ClientCallbackInterface;
 import platform.interop.remote.RemoteObject;
 import platform.interop.remote.ServerSocketFactory;
 import platform.server.Settings;
@@ -77,6 +78,9 @@ import java.util.*;
 
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends RemoteObject implements RemoteLogicsInterface {
     protected final static Logger logger = Logger.getLogger(BusinessLogics.class);
+
+    //время жизни неиспользуемого навигатора - 3 часа по умолчанию
+    private static final long MAX_FREE_NAVIGATOR_LIFE_TIME = Long.parseLong(System.getProperty("platform.server.navigatorMaxLifeTime", Long.toString(3L*3600L*1000L)));
 
     public byte[] findClass(String name) {
 
@@ -203,7 +207,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public final static boolean activateCaches = true;
 
-    public RemoteNavigatorInterface createNavigator(String login, String password, int computer) {
+    private Map<Pair<String, Integer>, RemoteNavigator> navigators = new HashMap<Pair<String, Integer>, RemoteNavigator>();
+    public RemoteNavigatorInterface createNavigator(ClientCallbackInterface client, String login, String password, int computer) {
+        removeExpiredNavigators();
 
         DataSession session;
         try {
@@ -223,7 +229,19 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 throw new LoginException();
             }
 
-            return new RemoteNavigator(this, user, computer, exportPort);
+            Pair<String, Integer> key = new Pair<String, Integer>(login, computer);
+            RemoteNavigator navigator = navigators.get(key);
+
+            if (navigator != null) {
+                navigator.invalidate(client);
+            } else {
+                navigator = new RemoteNavigator(this, client, user, computer, exportPort);
+                synchronized (navigators) {
+                    navigators.put(key, navigator);
+                }
+            }
+
+            return navigator;
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -231,6 +249,31 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 session.close();
             } catch (Exception e) {
                 throw new RuntimeException(e);
+            }
+        }
+    }
+
+    public void removeNavigator(RemoteNavigator remoteNavigator) {
+        removeExpiredNavigators();
+        synchronized (navigators) {
+            for (Iterator<Map.Entry<Pair<String, Integer>, RemoteNavigator>> iterator = navigators.entrySet().iterator(); iterator.hasNext();) {
+                Map.Entry<Pair<String, Integer>, RemoteNavigator> entry = iterator.next();
+                if (entry.getValue() == remoteNavigator) {
+                    iterator.remove();
+                    break;
+                }
+            }
+        }
+    }
+
+    private void removeExpiredNavigators() {
+        synchronized (navigators) {
+            for (Iterator<Map.Entry<Pair<String, Integer>, RemoteNavigator>> iterator = navigators.entrySet().iterator(); iterator.hasNext();) {
+                Map.Entry<Pair<String, Integer>, RemoteNavigator> entry = iterator.next();
+                long suspendTime = System.currentTimeMillis() - entry.getValue().getLastUsedTime();
+                if (suspendTime > MAX_FREE_NAVIGATOR_LIFE_TIME) {
+                    iterator.remove();
+                }
             }
         }
     }

@@ -23,12 +23,20 @@ public class ConnectionLostManager {
         connectionLostUI.setLocked(lost);
     }
 
+    public static void forceDisconnect() {
+        connectionLost("Вы были отключены от сервера, т.к. к нему подключился другой клиент с вашим логином.", true);
+    }
+
     public static void connectionLost(boolean fatal) {
+        connectionLost(null, fatal);
+    }
+
+    public static void connectionLost(String message, boolean fatal) {
         JFrame currentFrame = getCurrentFrame();
         if (!connectionLost && currentFrame != null) {
             setConnectionLost(true);
 
-            blockDialog = new BlockDialog(currentFrame, fatal);
+            blockDialog = new BlockDialog(message, currentFrame, fatal);
             blockDialog.setVisible(true);
         }
     }
@@ -68,7 +76,7 @@ public class ConnectionLostManager {
         private JButton okBut;
         private final boolean fatal;
 
-        public BlockDialog(JFrame owner, boolean fatal) {
+        public BlockDialog(String message, JFrame owner, boolean fatal) {
             super(owner, "Соедиение потеряно", true);
 
             this.fatal = fatal;
@@ -76,9 +84,12 @@ public class ConnectionLostManager {
             setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
             setLocationRelativeTo(owner);
 
-            String messageText = fatal
-                ? "<html>Произошла ошибка при общении с сервером, <br> попробуйте вручную перезапустить приложение.</html>"
-                : "<html>Соединение с сервером потеряно, <br> вы можете подождать пока оно восстановится <br> или вручную перезапустить приложение.</html>";
+            String messageText =
+                    message != null
+                    ? message
+                    : fatal
+                      ? "<html>Произошла ошибка при общении с сервером, <br> попробуйте вручную перезапустить приложение.</html>"
+                      : "<html>Соединение с сервером потеряно, <br> вы можете подождать пока оно восстановится <br> или вручную перезапустить приложение.</html>";
 
             okBut = new JButton("Закрыть приложение");
             okBut.addActionListener(this);
