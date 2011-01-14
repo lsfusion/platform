@@ -74,10 +74,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP nameCurrencyDocument;
     private LP storeOrder;
     private LP nameStoreOrder;
-    private LP quantityPalletInvoice;
-    private LP grossWeightInvoice;
-    private LP netWeightInvoice;
-    private LP dateShipmentInvoice;
+    private LP quantityPalletShipment;
+    private LP grossWeightShipment;
+    private LP netWeightShipment;
     private LP sidColorSupplier;
     private LP sidColorSupplierItem;
     private LP quantityDocumentSku;
@@ -162,12 +161,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP inInvoiceShipment;
     private LP tonnageFreight;
     private LP quantityPalletFreight;
-    private LP dateFreight;
+    private LP volumeFreight;
+    private LP sumFreight;
     private LP routeFreight;
     private LP nameRouteFreight;
-    private LP quantityPalletInvoiceFreight;
-    private LP freighedInvoice;
-    private LP invoicedFreight;
+    private LP quantityPalletShipmentFreight;
+    private LP freighedShipment;
+    private LP shipmentedFreight;
     private ConcreteCustomClass stock;
     private ConcreteCustomClass freightBox;
     private LP countryOfOriginArticleItem;
@@ -188,7 +188,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP barcodeAction3;
     private LP supplierBoxSIDSupplier;
     private LP seekSupplierBoxSIDSupplier;
-    private LP quantityPalletInvoiceBetweenDate;
+    private LP quantityPalletShipmentBetweenDate;
     private LP quantityPalletFreightBetweenDate;
     private LP routeFreightBox;
     private LP nameRouteFreightBox;
@@ -263,7 +263,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         freightBox = addConcreteClass("freightBox", "Короб для транспортировки", stock);
 
-        freight = addConcreteClass("freight", "Фрахт", baseClass.named);
+        freight = addConcreteClass("freight", "Фрахт", baseClass.named, transaction);
 
         pallet = addConcreteClass("pallet", "Паллета", barcodeObject);
 
@@ -298,11 +298,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         storeOrder = addDProp(idGroup, "storeOrder", "Магазин (ИД)", store, order);
         nameStoreOrder = addJProp(baseGroup, "nameStoreOrder", "Магазин", name, storeOrder, 1);
 
-        // Invoice
-        dateShipmentInvoice = addDProp(baseGroup, "dateShipmentInvoice", "Дата поставки", DateClass.instance, invoice);
-        quantityPalletInvoice = addDProp(baseGroup, "quantityPalletInvoice", "Кол-во паллет", IntegerClass.instance, invoice);
-        netWeightInvoice = addDProp(baseGroup, "netWeightInvoice", "Вес нетто", DoubleClass.instance, invoice);
-        grossWeightInvoice = addDProp(baseGroup, "grossWeightInvoice", "Вес брутто", DoubleClass.instance, invoice);
+        // Shipment
+        quantityPalletShipment = addDProp(baseGroup, "quantityPalletShipment", "Кол-во паллет", IntegerClass.instance, shipment);
+        netWeightShipment = addDProp(baseGroup, "netWeightShipment", "Вес нетто", DoubleClass.instance, shipment);
+        grossWeightShipment = addDProp(baseGroup, "grossWeightShipment", "Вес брутто", DoubleClass.instance, shipment);
 
         // Article
         sidArticle = addDProp(baseGroup, "sidArticle", "Код", StringClass.get(50), article);
@@ -547,23 +546,29 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         // Freight
         tonnageFreight = addDProp(baseGroup, "tonnageFreight", "Тоннаж", DoubleClass.instance, freight);
         quantityPalletFreight = addDProp(baseGroup, "quantityPalletFreight", "Кол-во паллет", IntegerClass.instance, freight);
-        dateFreight = addDProp(baseGroup, "dateFreight", "Дата", DateClass.instance, freight);
+        volumeFreight = addDProp(baseGroup, "volumeFreight", "Объём", DoubleClass.instance, freight);
+        sumFreight = addDProp(baseGroup, "sumFreight", "Стоимость", DoubleClass.instance, freight);
 
         routeFreight = addDProp(idGroup, "routeFreight", "Маршрут (ИД)", route, freight);
         nameRouteFreight = addJProp(baseGroup, "nameRouteFreight", "Маршрут", name, routeFreight, 1);
 
-        quantityPalletInvoiceBetweenDate = addSGProp(baseGroup, "quantityPalletInvoiceDate", "Кол-во паллет по инвойсам за интервал",
-              addJProp(and1, quantityPalletInvoice, 1, addJProp(between, dateShipmentInvoice, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), 2, 3);
-        quantityPalletFreightBetweenDate = addSGProp(baseGroup, "quantityPalletFreightDate", "Кол-во паллет по фрахтам за интервал",
-              addJProp(and1, quantityPalletFreight, 1, addJProp(between, dateFreight, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), 2, 3);
+        quantityPalletShipmentBetweenDate = addSGProp(baseGroup, "quantityPalletShipmentBetweenDate", "Кол-во паллет по поставкам за интервал",
+              addJProp(and1, quantityPalletShipment, 1, addJProp(between, date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), 2, 3);
+        quantityPalletFreightBetweenDate = addSGProp(baseGroup, "quantityPalletFreightBetweenDate", "Кол-во паллет по фрахтам за интервал",
+              addJProp(and1, quantityPalletFreight, 1, addJProp(between, date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), 2, 3);
 
-        quantityPalletInvoiceFreight = addDProp(baseGroup, "quantityPalletInvoiceFreight", "Кол-во паллет из инвойса", IntegerClass.instance, invoice, freight);
-        freighedInvoice = addSGProp(baseGroup, "freighedInvoice", "Распределено", quantityPalletInvoiceFreight, 1);
-        invoicedFreight = addSGProp(baseGroup, "invoicedFreight", "Использовано", quantityPalletInvoiceFreight, 2);
+        quantityPalletShipmentFreight = addDProp(baseGroup, "quantityPalletShipmentFreight", "Кол-во паллет из поставки", IntegerClass.instance, shipment, freight);
+        freighedShipment = addSGProp(baseGroup, "freighedShipment", "Распределено", quantityPalletShipmentFreight, 1);
+        shipmentedFreight = addSGProp(baseGroup, "shipmentedFreight", "Использовано", quantityPalletShipmentFreight, 2);
 
         routeItem = addDProp(baseGroup, "routeItem", "Маршрут товара", route, item);
         palletFreightBox = addDProp(baseGroup, "palletFreightBox", "Палета", pallet, freightBox);
         routePallet = addDProp(baseGroup, "routePallet", "Маршрут", route, pallet);
+        freightPallet = addDProp(baseGroup, "freightPallet", "Фрахт", freight, pallet);
+        nameRoutePallet = addJProp(baseGroup, "nameRoutePallet", "Маршрут", name, routePallet, 1);
+        addConstraint(addJProp("Маршрут паллеты должен совпадать с маршрутом фрахта", diff2,
+                routePallet, 1, addJProp(routeFreight, freightPallet, 1), 1), true);
+
         currentPalletRoute = addDProp("currentPalletRoute", "Тек. палета", pallet, route);
         currentFreightBoxRoute = addDProp("currentFreightBoxRoute", "Тек. короб", freightBox, route);
 
@@ -578,7 +583,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         quantitySupplierBoxBoxShipmentRouteSku = addJProp(baseGroup, true,  "quantitySupplierBoxBoxShipmentRouteSku", "Кол-во оприход.",
                                                     quantitySupplierBoxBoxShipmentStockSku, 1, 2, currentFreightBoxRoute, 3, 4);
-        quantitySimpleShipmentRouteSku = addJProp(baseGroup, true,  "quantitySimpleShipmentStockSku", "Кол-во оприход.",
+        quantitySimpleShipmentRouteSku = addJProp(baseGroup, true,  "quantitySimpleShipmentRouteSku", "Кол-во оприход.",
                                                     quantitySimpleShipmentStockSku, 1, currentFreightBoxRoute, 2, 3);
 
         barcodeAction3 = addJProp(true, "Ввод штрих-кода 3",
@@ -593,7 +598,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
     LP quantitySupplierBoxBoxShipmentRouteSku;
     LP quantitySimpleShipmentRouteSku;
-    LP routePallet, palletFreightBox;
+    LP routePallet, freightPallet, nameRoutePallet, palletFreightBox;
     LP currentPalletRoute;
     LP currentFreightBoxRoute;
     LP isCurrentFreightBox, isCurrentPalletFreightBox;
@@ -618,7 +623,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         addFormEntity(new ShipmentListFormEntity(baseElement, 40, "Поставки без коробов", false));
         addFormEntity(new ShipmentSpecFormEntity(baseElement, 50, "Прием товара по коробам", true));
         addFormEntity(new ShipmentSpecFormEntity(baseElement, 60, "Прием товара без коробов", false));
-        addFormEntity(new FreightFormEntity(baseElement, 70, "Фрахт по инвойсам"));
+        addFormEntity(new FreightFormEntity(baseElement, 70, "Фрахт по поставкам"));
     }
 
 
@@ -800,7 +805,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameCurrencySupplier);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс", date, dateShipmentInvoice, sidDocument, nameCurrencyDocument, sumDocument, nameStoreOrder, quantityPalletInvoice, netWeightInvoice, grossWeightInvoice);
+            objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс", date, sidDocument, nameCurrencyDocument, sumDocument, nameStoreOrder, quantityPalletShipment, netWeightShipment, grossWeightShipment);
             addObjectActions(this, objInvoice);
 
             objOrder = addSingleGroupObject(order, "Заказ");
@@ -938,7 +943,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс");
             objInvoice.groupTo.setSingleClassView(ClassViewType.GRID);
             addPropertyDraw(inInvoiceShipment, objInvoice, objShipment);
-            addPropertyDraw(objInvoice, date, dateShipmentInvoice, sidDocument, nameStoreOrder);
+            addPropertyDraw(objInvoice, date, sidDocument, nameStoreOrder);
 
             objRoute = addSingleGroupObject(route, "Маршрут", name);
             addPropertyDraw(percentShipmentRoute, objShipment, objRoute);
@@ -1119,8 +1124,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     }
     private class FreightFormEntity extends FormEntity<RomanBusinessLogics> {
 
-        private ObjectEntity objInvoice;
+        private ObjectEntity objShipment;
         private ObjectEntity objFreight;
+        private ObjectEntity objPallet;
         private ObjectEntity objDateFrom;
         private ObjectEntity objDateTo;
         
@@ -1132,27 +1138,27 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objDateFrom.groupTo.setSingleClassView(ClassViewType.PANEL);
             objDateTo.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            addPropertyDraw(quantityPalletInvoiceBetweenDate, objDateFrom, objDateTo);
+            addPropertyDraw(quantityPalletShipmentBetweenDate, objDateFrom, objDateTo);
             addPropertyDraw(quantityPalletFreightBetweenDate, objDateFrom, objDateTo);
 
-            objInvoice = addSingleGroupObject(invoice, "Инвойс", dateShipmentInvoice, date, nameSupplierDocument, sidDocument, sumDocument, nameCurrencyDocument, quantityPalletInvoice, freighedInvoice, netWeightInvoice, grossWeightInvoice);
-            objFreight = addSingleGroupObject(freight, "Фрахт", dateFreight, nameRouteFreight, tonnageFreight, quantityPalletFreight, invoicedFreight);
+            objShipment = addSingleGroupObject(shipment, "Поставка", date, nameSupplierDocument, sidDocument, sumDocument, nameCurrencyDocument, quantityPalletShipment, freighedShipment, netWeightShipment, grossWeightShipment);
+            objFreight = addSingleGroupObject(freight, "Фрахт", date, nameRouteFreight, tonnageFreight, quantityPalletFreight, shipmentedFreight, volumeFreight, sumFreight);
             addObjectActions(this, objFreight);
+            objPallet = addSingleGroupObject(pallet, "Паллета", barcode, nameRoutePallet, freightPallet);
 
-            addPropertyDraw(quantityPalletInvoiceFreight, objInvoice, objFreight);
+            addPropertyDraw(quantityPalletShipmentFreight, objShipment, objFreight);
            
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(dateShipmentInvoice, objInvoice), Compare.GREATER_EQUALS, objDateFrom));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(dateShipmentInvoice, objInvoice), Compare.LESS_EQUALS, objDateTo));
-            //addFixedFilter(new CompareFilterEntity(addPropertyObject(dateFreight, objFreight), Compare.GREATER_EQUALS, objDateFrom));
-            //addFixedFilter(new CompareFilterEntity(addPropertyObject(dateFreight, objFreight), Compare.LESS_EQUALS, objDateTo));           
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(date, objShipment), Compare.GREATER_EQUALS, objDateFrom));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(date, objShipment), Compare.LESS_EQUALS, objDateTo));
         }
 
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
 
-            design.get(objInvoice.groupTo).grid.constraints.fillVertical = 5;
-            design.get(objFreight.groupTo).grid.constraints.fillVertical = 5;
+            design.get(objShipment.groupTo).grid.constraints.fillVertical = 4;
+            design.get(objFreight.groupTo).grid.constraints.fillVertical = 4;
+            design.get(objPallet.groupTo).grid.constraints.fillVertical = 4;
 
             design.addIntersection(design.getGroupObjectContainer(objDateFrom.groupTo),
                                    design.getGroupObjectContainer(objDateTo.groupTo),
