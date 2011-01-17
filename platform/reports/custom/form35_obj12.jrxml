@@ -21,7 +21,7 @@
 	<field name="completeExpertVote" class="java.lang.Integer"/>
 	<field name="innovativeCommentExpertVote" class="java.lang.String"/>
 	<field name="completeCommentExpertVote" class="java.lang.String"/>
-	<field name="nameClaimerProject" class="java.lang.String"/>
+	<field name="nameClaimerVote" class="java.lang.String"/>
 	<detail>
 		<band height="842" splitType="Immediate">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
@@ -148,7 +148,7 @@
 			<textField>
 				<reportElement x="168" y="69" width="299" height="20"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameClaimerProject}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameClaimerVote}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
