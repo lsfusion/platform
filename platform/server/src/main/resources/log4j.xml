@@ -24,7 +24,7 @@
 
     <appender name="serverlog" class="org.apache.log4j.RollingFileAppender">
         <param name="maxFileSize" value="20MB"/>
-        <param name="file" value="${user.home}/.fusion/logs/server.log"/>
+        <param name="file" value="logs/server.log"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d{ABSOLUTE} %5p %t %c{1}:%M:%L - %m%n"/>
         </layout>
@@ -32,7 +32,7 @@
 
     <appender name="sqllog" class="org.apache.log4j.RollingFileAppender">
         <param name="maxFileSize" value="20MB"/>
-        <param name="file" value="${user.home}/.fusion/logs/sql.log"/>
+        <param name="file" value="logs/sql.log"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d{ABSOLUTE} %5p %t %c{1}:%M:%L - %m%n"/>
         </layout>
@@ -40,7 +40,7 @@
 
     <appender name="remotelog" class="org.apache.log4j.RollingFileAppender">
         <param name="maxFileSize" value="20MB"/>
-        <param name="file" value="${user.home}/.fusion/logs/remote-server.log"/>
+        <param name="file" value="logs/remote-server.log"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d{ABSOLUTE} %5p %t %c{1}:%M:%L - %m%n"/>
         </layout>
