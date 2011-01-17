@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="obj12" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
-	<property name="ireport.zoom" value="1.6105100000000019"/>
-	<property name="ireport.x" value="93"/>
-	<property name="ireport.y" value="3"/>
+	<property name="ireport.zoom" value="1.6105100000000023"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="723"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -28,6 +28,13 @@
 		<band height="842" splitType="Immediate">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="40" y="314" width="497" height="120"/>
+				<box leftPadding="2" rightPadding="2">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
 				<textElement textAlignment="Left">
 					<font size="8"/>
 				</textElement>
@@ -35,6 +42,13 @@
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="41" y="636" width="497" height="100"/>
+				<box leftPadding="2" rightPadding="2">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
 				<textElement textAlignment="Left">
 					<font size="8"/>
 				</textElement>
@@ -72,29 +86,57 @@
 				<textElement/>
 				<text><![CDATA[Дата заполнения:]]></text>
 			</staticText>
-			<staticText>
-				<reportElement x="40" y="211" width="440" height="20"/>
-				<textElement/>
-				<text><![CDATA["Проект соответствует направлению "+ $F{nameСluster} +"."]]></text>
-			</staticText>
 			<textField>
-				<reportElement x="480" y="211" width="58" height="20"/>
+				<reportElement mode="Opaque" x="480" y="211" width="58" height="20" backcolor="#E6EED5"/>
+				<box>
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA[($F{inClusterExpertVote}==null?"НЕТ":"ДА")]]></textFieldExpression>
 			</textField>
+			<staticText>
+				<reportElement mode="Opaque" x="40" y="211" width="440" height="20" backcolor="#E6EED5"/>
+				<box leftPadding="0">
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<text><![CDATA["Проект соответствует направлению "+ $F{nameСluster} +"."]]></text>
+			</staticText>
 			<textField>
 				<reportElement x="168" y="131" width="100" height="20"/>
 				<textElement/>
 				<textFieldExpression class="java.util.Date"><![CDATA[$F{dateExpertVote}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="40" y="260" width="440" height="34"/>
+				<reportElement mode="Opaque" x="40" y="260" width="440" height="34" backcolor="#E6EED5"/>
+				<box>
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
 				<textElement/>
 				<text><![CDATA[Проект предполагает разработку и/или коммерциализацию уникальных и/или обладающих
  конкурентными преимуществами перед мировыми аналогами продуктов и/или технологий.]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
-				<reportElement x="480" y="260" width="58" height="34"/>
+				<reportElement mode="Opaque" x="480" y="260" width="58" height="34" backcolor="#E6EED5"/>
+				<box>
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA[($F{innovativeExpertVote}==null?"НЕТ":"ДА")]]></textFieldExpression>
 			</textField>
@@ -104,34 +146,76 @@
 				<text><![CDATA[Обоснование:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="40" y="463" width="440" height="54"/>
+				<reportElement mode="Opaque" x="40" y="463" width="440" height="54" backcolor="#E6EED5"/>
+				<box>
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
 				<textElement/>
 				<text><![CDATA[Проект предполагает участие иностранного (не являющегося гражданином Российской
 Федерации) специалиста, который имеет значительный авторитет в инвестиционной и/или
 исследовательской среде.]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="481" y="463" width="57" height="54"/>
+				<reportElement mode="Opaque" x="481" y="463" width="57" height="54" backcolor="#E6EED5"/>
+				<box>
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA[($F{foreignExpertVote}==null?"НЕТ":"ДА")]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="40" y="547" width="440" height="20"/>
+				<reportElement mode="Opaque" x="40" y="547" width="440" height="20" backcolor="#E6EED5"/>
+				<box>
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
 				<textElement/>
 				<text><![CDATA[Оцените Вашу компетенцию по теме проекта (1 - низкая, 5 - высокая)]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="481" y="547" width="57" height="20"/>
+				<reportElement mode="Opaque" x="481" y="547" width="57" height="20" backcolor="#E6EED5"/>
+				<box>
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
 				<textElement/>
 				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{competentExpertVote}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="41" y="596" width="439" height="20"/>
+				<reportElement mode="Opaque" x="41" y="596" width="439" height="20" backcolor="#E6EED5"/>
+				<box>
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
 				<textElement/>
 				<text><![CDATA[Оцените достаточность представленных материалов для оценки проекта]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="480" y="596" width="57" height="20"/>
+				<reportElement mode="Opaque" x="480" y="596" width="57" height="20" backcolor="#E6EED5"/>
+				<box>
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
 				<textElement/>
 				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{completeExpertVote}]]></textFieldExpression>
 			</textField>
