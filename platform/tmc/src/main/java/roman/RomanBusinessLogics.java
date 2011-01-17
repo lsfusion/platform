@@ -495,7 +495,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         routeItem = addDProp(baseGroup, "routeItem", "Маршрут товара", route, item);
 
         palletFreightBox = addDProp(idGroup, "palletFreightBox", "Паллета (ИД)", pallet, freightBox);
-        barcodePalletFreightBox = addJProp(baseGroup, "barcodePalletFreightBox", barcode, palletFreightBox, 1);
+        barcodePalletFreightBox = addJProp(baseGroup, "barcodePalletFreightBox", "Паллета (штрих-код)", barcode, palletFreightBox, 1);
 
         freightBoxNumberPallet = addSGProp(baseGroup, "freightBoxNumberPallet", "Кол-во коробов", addCProp(IntegerClass.instance, 1, freightBox), palletFreightBox, 1);
 
@@ -511,8 +511,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         palletNumberFreight = addSGProp(baseGroup, "palletNumberFreight", "Кол-во паллет", addCProp(IntegerClass.instance, 1, pallet), freightPallet, 1);
 
-        currentPalletRoute = addDProp("currentPalletRoute", "Тек. палета (ИД)", pallet, route);
-        barcodeCurrentPalletRoute = addJProp("barcodeCurrentPalletRoute", "Тек. палета (штрих-код)", barcode, currentPalletRoute, 1);
+        currentPalletRoute = addDProp("currentPalletRoute", "Тек. паллета (ИД)", pallet, route);
+        barcodeCurrentPalletRoute = addJProp("barcodeCurrentPalletRoute", "Тек. паллета (штрих-код)", barcode, currentPalletRoute, 1);
 
         currentFreightBoxRoute = addDProp("currentFreightBoxRoute", "Тек. короб (ИД)", freightBox, route);
         barcodeCurrentFreightBoxRoute = addJProp("barcodeCurrentFreightBoxRoute", "Тек. короб (штрих-код)", barcode, currentFreightBoxRoute, 1);
