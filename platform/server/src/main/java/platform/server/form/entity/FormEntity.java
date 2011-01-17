@@ -387,16 +387,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         removePropertyDraw(property.property);
     }
 
-    protected <P extends PropertyInterface> void removePropertyDraw(Property<P> property) {
-        Iterator<PropertyDrawEntity> it = propertyDraws.iterator();
-        while (it.hasNext()) {
-            if (property.equals(it.next().propertyObject.property)) {
-                it.remove();
-            }
-        }
-    }
-
-    protected void removePropertyDraw(AbstractGroup group) {
+    protected void removePropertyDraw(AbstractNode group) {
         Iterator<PropertyDrawEntity> it = propertyDraws.iterator();
         while (it.hasNext()) {
             if (group.hasChild(it.next().propertyObject.property)) {

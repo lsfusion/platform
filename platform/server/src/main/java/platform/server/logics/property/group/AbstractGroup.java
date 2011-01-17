@@ -39,8 +39,15 @@ public class AbstractGroup extends AbstractNode implements ServerIdentitySeriali
 
     List<AbstractNode> children = new ArrayList<AbstractNode>();
     public void add(AbstractNode prop) {
+        if (prop.getParent() != null)
+            prop.getParent().remove(prop);
         children.add(prop);
         prop.parent = this;
+    }
+
+    public void remove(AbstractNode prop) {
+        children.remove(prop);
+        prop.parent = null;
     }
 
     protected void setChildOrder(LP<?> child, LP<?> childRel, boolean before) {

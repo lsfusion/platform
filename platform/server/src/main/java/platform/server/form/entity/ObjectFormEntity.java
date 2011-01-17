@@ -17,7 +17,9 @@ public class ObjectFormEntity<T extends BusinessLogics<T>> extends AbstractClass
         object = addSingleGroupObject(cls, BL.baseGroup, true);
         object.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-        getPropertyDraw(BL.objectValue, object).readOnly = true;
+        PropertyDrawEntity objectValue = getPropertyDraw(BL.objectValue, object);
+        if (objectValue != null)
+            objectValue.readOnly = true;
 
         clsSID = cls.getSID();
     }

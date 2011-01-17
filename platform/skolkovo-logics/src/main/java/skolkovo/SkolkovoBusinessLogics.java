@@ -83,6 +83,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     AbstractGroup expertResultGroup;
 
     protected void initGroups() {
+
+        idGroup.add(objectValue);
+
         voteResultGroup = new AbstractGroup("Результаты голосования");
         publicGroup.add(voteResultGroup);
 
@@ -506,23 +509,23 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ProjectFormEntity(NavigatorElement parent, int iID) {
             super(parent, iID, "Реестр проектов");
 
-            objProject = addSingleGroupObject(project, objectValue, date, name, nameClusterProject, nameClaimerProject, nameStatusProject, autoGenerateProject, generateVoteProject);
+            objProject = addSingleGroupObject(project, date, name, nameClusterProject, nameClaimerProject, nameStatusProject, autoGenerateProject, generateVoteProject);
             addObjectActions(this, objProject);
 
             getPropertyDraw(generateVoteProject).forceViewType = ClassViewType.PANEL;
             getPropertyDraw(generateVoteProject).propertyCaption = addPropertyObject(hideGenerateVoteProject, objProject);
 
-            objVote = addSingleGroupObject(vote, objectValue, dateStartVote, dateEndVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, delete);
+            objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, delete);
             objVote.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
 
-            objDocument = addSingleGroupObject(document, objectValue, nameTypeDocument, nameLanguageDocument, postfixDocument, loadFileDocument, openFileDocument);
+            objDocument = addSingleGroupObject(document, nameTypeDocument, nameLanguageDocument, postfixDocument, loadFileDocument, openFileDocument);
             addObjectActions(this, objDocument);
             getPropertyDraw(postfixDocument).forceViewType = ClassViewType.PANEL;
             getPropertyDraw(postfixDocument).propertyCaption = addPropertyObject(hidePostfixDocument, objDocument);
 
             objExpert = addSingleGroupObject(expert);
             addPropertyDraw(objExpert, objVote, inExpertVote);
-            addPropertyDraw(objExpert, objectValue, name, emailParticipant);
+            addPropertyDraw(objExpert, name, emailParticipant);
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
 
             setForceViewType(voteResultCommentGroup, ClassViewType.PANEL);
@@ -584,9 +587,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private VoteFormEntity(NavigatorElement parent, int iID) {
             super(parent, iID, "Реестр заседаний");
 
-            objVote = addSingleGroupObject(vote, objectValue, nameProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote, delete);
+            objVote = addSingleGroupObject(vote, nameProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote, delete);
 
-            objExpert = addSingleGroupObject(expert, objectValue, userFirstName, userLastName, userLogin, userPassword, emailParticipant, nameClusterExpert);
+            objExpert = addSingleGroupObject(expert, userFirstName, userLastName, userLogin, userPassword, emailParticipant, nameClusterExpert);
 
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
             addPropertyDraw(objExpert, objVote, allowedEmailLetterExpertVote);
@@ -634,10 +637,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ExpertFormEntity(NavigatorElement parent, int iID) {
             super(parent, iID, "Реестр экспертов");
 
-            objExpert = addSingleGroupObject(expert, selection, objectValue, userFirstName, userLastName, userLogin, userPassword, emailParticipant, nameClusterExpert, nameLanguageExpert, expertResultGroup, generateLoginPasswordExpert, emailAuthExpert);
+            objExpert = addSingleGroupObject(expert, selection, userFirstName, userLastName, userLogin, userPassword, emailParticipant, nameClusterExpert, nameLanguageExpert, expertResultGroup, generateLoginPasswordExpert, emailAuthExpert);
             addObjectActions(this, objExpert);
 
-            objVote = addSingleGroupObject(vote, objectValue, nameProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote);
+            objVote = addSingleGroupObject(vote, nameProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote);
 
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
             addPropertyDraw(objExpert, objVote, allowedEmailLetterExpertVote);
