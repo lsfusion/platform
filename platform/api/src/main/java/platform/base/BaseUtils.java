@@ -1262,26 +1262,26 @@ public class BaseUtils {
             return string;
     }
     
-    public String encode(int... values) {
+    public static String encode(int... values) {
 
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(baos);
-            for (int value : values)
-                dos.writeInt(value);
+            for (int i=0;i<values.length;i++)
+                dos.writeInt((values[i]*(27*(i+1))) ^ 248979893);
             return Base64.encodeBase64URLSafeString(baos.toByteArray());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public Integer[] decode(int number, String string) {
+    public static Integer[] decode(int number, String string) {
 
         try {
             Integer[] result = new Integer[number];
             DataInputStream dis = new DataInputStream(new ByteArrayInputStream(Base64.decodeBase64(string)));
             for(int i=0;i<number;i++)
-                result[i] = dis.readInt();
+                result[i] = (dis.readInt() ^ 248979893)/(27*(i+1));
             return result;
         } catch (IOException e) {
             throw new RuntimeException(e);
