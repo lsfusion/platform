@@ -7,7 +7,7 @@ public class Settings {
     // обозначает что компилятор будет проталкивать внутрь группирующих подзапросов, общее условие (если оно маленькое и сам группирующий подзапрос в нем не учавствует)
     private boolean pushGroupWhere = false;
 
-    private int innerGroupExprs = 0;
+    private int innerGroupExprs = 0; // использовать Subquery Expressions
     public int getInnerGroupExprs() {
         return innerGroupExprs;
     }
@@ -25,6 +25,9 @@ public class Settings {
     public void setMapInnerMaxIterations(int mapInnerMaxIterations) {
         this.mapInnerMaxIterations = mapInnerMaxIterations;
     }
+
+    // обозначает что если компилятор видет включающие join'ы (J1, J2, ... Jk) (J1,...J2, ... Jk,.. Jn) он будет выполнять все в первом подмножестве, предполагая что возникающий OR разберет SQL сервер что мягко говоря не так
+    private boolean compileMeans = true;
 
     // обозначает что компилятор будет проталкивать внутрь order подзапросов, общее условие
     private boolean pushOrderWhere = false;
@@ -114,6 +117,14 @@ public class Settings {
 
     public void setNoIncrementMaxGroupProperty(boolean noIncrementMaxGroupProperty) {
         this.noIncrementMaxGroupProperty = noIncrementMaxGroupProperty;
+    }
+
+    public boolean isCompileMeans() {
+        return compileMeans;
+    }
+
+    public void setCompileMeans(boolean compileMeans) {
+        this.compileMeans = compileMeans;
     }
 
     private int freeConnections = 5;

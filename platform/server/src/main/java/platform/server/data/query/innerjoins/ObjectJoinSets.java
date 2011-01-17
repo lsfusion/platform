@@ -5,6 +5,7 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.InnerJoin;
 import platform.server.data.where.DNFWheres;
 import platform.server.data.where.Where;
+import platform.server.Settings;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -34,24 +35,27 @@ public class ObjectJoinSets extends DNFWheres<ObjectJoinSet, Where, ObjectJoinSe
             ObjectJoinSet objectJoin = getKey(i);
             Where where = getValue(i);
 
-            boolean found = false;
-            // ищем кого-нибудь кого он means
-            for(Map.Entry<ObjectJoinSet,Where> resultJoin : result.entrySet())
-                if(objectJoin.means(resultJoin.getKey(), where.getClassWhere())) {
-                    resultJoin.setValue(resultJoin.getValue().or(where)); //.and(whereJoin.mean.followFalse(resultJoin.mean.not())
-                    found = true;
-                }
-            if(!found) {
-                // ищем все кто его means и удаляем
-                for(Iterator<Map.Entry<ObjectJoinSet,Where>> it = result.entrySet().iterator();it.hasNext();) {
-                    Map.Entry<ObjectJoinSet,Where> resultJoin = it.next();
-                    if(resultJoin.getKey().means(objectJoin, resultJoin.getValue().getClassWhere())) {
-                        where = where.or(resultJoin.getValue());
-                        it.remove();
+            if(Settings.instance.isCompileMeans()) {
+                boolean found = false;
+                // ищем кого-нибудь кого он means
+                for(Map.Entry<ObjectJoinSet,Where> resultJoin : result.entrySet())
+                    if(objectJoin.means(resultJoin.getKey(), where.getClassWhere())) {
+                        resultJoin.setValue(resultJoin.getValue().or(where)); //.and(whereJoin.mean.followFalse(resultJoin.mean.not())
+                        found = true;
                     }
+                if(!found) {
+                    // ищем все кто его means и удаляем
+                    for(Iterator<Map.Entry<ObjectJoinSet,Where>> it = result.entrySet().iterator();it.hasNext();) {
+                        Map.Entry<ObjectJoinSet,Where> resultJoin = it.next();
+                        if(resultJoin.getKey().means(objectJoin, resultJoin.getValue().getClassWhere())) {
+                            where = where.or(resultJoin.getValue());
+                            it.remove();
+                        }
+                    }
+                    result.put(objectJoin, where);
                 }
+            } else
                 result.put(objectJoin, where);
-            }
         }
 
 /*        // упакуем entry

@@ -22,7 +22,7 @@ public abstract class Changes<U extends Changes<U>> extends AbstractMapValues<U>
     public MapValues newClasses; //final на самом деле, но как в add и remove так как используется this() в явную это не задается
 
     public boolean hasChanges() { // newClasses - не нужен так как иначе либо add либо remove непустые
-        return !add.isEmpty() || !remove.isEmpty() || !data.isEmpty() || modifyUsed();
+        return !add.isEmpty() || !remove.isEmpty() || !data.isEmpty() || newClasses!=null || modifyUsed();
     }
 
     public Changes() {

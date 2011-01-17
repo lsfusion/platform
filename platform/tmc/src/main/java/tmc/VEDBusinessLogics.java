@@ -106,7 +106,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     CustomClass orderDelivery;
     CustomClass commitDelivery;
 
-    CustomClass move, moveInner, returnInner, returnOuter, orderInner;
+    CustomClass move, moveInner, returnInner, returnOuter, orderInner, commitInner;
 
     CustomClass supplier;
     public ConcreteCustomClass article;
@@ -199,6 +199,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         commitOut = addAbstractClass("commitOut", "Отгруженная заявка", order);
         commitInc = addAbstractClass("commitInc", "Принятая заявка", commitOut);
 
+        commitInner = addAbstractClass("commitInner", "Отгруженный заказ", commitOut, orderInner);
+
         commitWholeShopInc = addAbstractClass("commitWholeShopInc", "Принятый оптовый приход на магазин", documentShopPrice, orderShopInc, commitInc);
 
         // внутр. и внешние операции
@@ -215,11 +217,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         orderSaleWhole = addConcreteClass("orderSaleWhole", "Оптовый заказ", orderWarehouseOut, orderInner, orderWhole, orderSale);
         invoiceSaleWhole = addConcreteClass("invoiceSaleWhole", "Выписанный оптовый заказ", orderSaleWhole, invoiceDocument);
-        commitSaleWhole = addConcreteClass("commitSaleWhole", "Отгруженный оптовый заказ", invoiceSaleWhole, commitOut);
+        commitSaleWhole = addConcreteClass("commitSaleWhole", "Отгруженный оптовый заказ", invoiceSaleWhole, commitInner);
 
         orderSaleArticleRetail = addAbstractClass("orderSaleArticleRetail", "Розничный заказ товаров", orderShopOut, orderInner, orderSale);
         orderSaleInvoiceArticleRetail = addConcreteClass("orderSaleInvoiceArticleRetail", "Розничный заказ товаров по накладной", orderSaleArticleRetail, orderInvoiceRetail);
-        commitSaleInvoiceArticleRetail = addConcreteClass("commitSaleInvoiceArticleRetail", "Отгруженный розничный заказ по накладной", commitOut,
+        commitSaleInvoiceArticleRetail = addConcreteClass("commitSaleInvoiceArticleRetail", "Отгруженный розничный заказ по накладной", commitInner,
                 addConcreteClass("writtenOutSaleInvoiceArticleRetail", "Выписанный розничный заказ по накладной", orderSaleInvoiceArticleRetail, invoiceDocument));
         commitSaleCheckArticleRetail = addConcreteClass("commitSaleCheckArticleRetail", "Реализация товаров через кассу", orderSaleArticleRetail, commitOut, orderSaleCheckRetail);
 
@@ -231,11 +233,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         orderDistributeShop = addConcreteClass("orderDistributeShop", "Заказ на внутреннее перемещение на магазин", orderWarehouseOut, orderShopInc, orderInner);
         addConcreteClass("commitDistributeShop", "Принятое внутреннее перемещение на магазин", commitWholeShopInc,
-                addConcreteClass("loadedDistributeShop", "Отгруженное внутреннее перемещение на магазин", commitOut,
+                addConcreteClass("loadedDistributeShop", "Отгруженное внутреннее перемещение на магазин", commitInner,
                         addConcreteClass("writtenOutDistributeShop", "Выписанное внутреннее перемещение на магазин", orderDistributeShop, invoiceDocument)));
         orderDistributeWarehouse = addConcreteClass("orderDistributeWarehouse", "Заказ на внутреннее перемещение на распред. центр", orderStoreOut, orderWarehouseInc, orderInner);
         addConcreteClass("commitDistributeWarehouse", "Принятое внутреннее перемещение на распред. центр", commitInc,
-                addConcreteClass("loadedDistributeWarehouse", "Отгруженное внутреннее перемещение на распред. центр", commitOut,
+                addConcreteClass("loadedDistributeWarehouse", "Отгруженное внутреннее перемещение на распред. центр", commitInner,
                         addConcreteClass("writtenOutDistributeWarehouse", "Выписанное внутреннее перемещение на распред. центр", orderDistributeWarehouse, invoiceDocument)));
 
         orderLocal = addAbstractClass("orderLocal", "Операция с местным поставщиком", order);
@@ -291,6 +293,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP saleExport;
     LP articleSaleAction;
 
+    LP articleFormatMin;
+    LP articleFormatToSell;
 
     protected void initProperties() {
 
@@ -613,8 +617,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         articleStorePeriod = addJProp("articleStorePeriod", true, "Цикл поставок на склад", storeSupplierCycle, 1, articleStoreSupplier, 1, 2);
 
-        LP articleFormatToSell = addDProp(logisticsGroup, "articleFormatToSell", "В ассортименте", LogicalClass.instance, format, article);
-        LP articleFormatMin = addDProp(logisticsGroup, "articleFormatMin", "Страх. запас", DoubleClass.instance, format, article);
+        articleFormatToSell = addDProp(logisticsGroup, "articleFormatToSell", "В ассортименте", LogicalClass.instance, format, article);
+        articleFormatMin = addDProp(logisticsGroup, "articleFormatMin", "Страх. запас", DoubleClass.instance, format, article);
 
         LP articleStoreToSell = addCUProp(logisticsGroup, "articleStoreToSell", "В ассортименте", addJProp(articleFormatToSell, shopFormat, 1, 2),
                 addDProp("articleWarehouseToSell", "В ассортименте", LogicalClass.instance, warehouse, article));
@@ -805,8 +809,16 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP importCustomerCheckRetail = addProp(baseGroup, new CustomerCheckRetailImportActionProperty(this, genSID()));
 
+        quantityCheckCommitInnerArticle = addSDProp("quantityCheckCommitInnerArticle", "Кол-во свер.", DoubleClass.instance, commitInner, article);
+        barcodeActionCheck = addJProp(true, "Ввод штрих-кода (проверки)",
+                addCUProp(
+                        addSCProp(addIfElseUProp(quantityCheckCommitInnerArticle, articleOrderQuantity, is(commitInner), 1))
+                ), 1, barcodeToObject, 2);
+
+        quantityDiffCommitArticle = addDUProp(articleOrderQuantity, addCUProp("Кол-во свер.", outerCommitedQuantity, quantityCheckCommitInnerArticle));
     }
 
+    LP barcodeActionCheck, quantityCheckCommitInnerArticle, quantityDiffCommitArticle;
     LP impSumCard;
     LP impSumCash;
     LP impSumBank;
@@ -1096,8 +1108,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         NavigatorElement price = new NavigatorElement(baseElement, 2400, "Управление ценообразованием");
         FormEntity documentRevalue = addFormEntity(new DocumentRevalueFormEntity(price, true, 2650));
         addFormEntity(new DocumentRevalueFormEntity(documentRevalue, false, 2750));
-        addFormEntity(new FormatArticleFormEntity(price, 2200));
-        addFormEntity(new GlobalFormEntity(price, 5200));
+
+        NavigatorElement toSell = new NavigatorElement(baseElement, 9400, "Управление ассортиментом");
+        addFormEntity(new ArticleFormatFormEntity(toSell, 9750, true));
+        addFormEntity(new ArticleFormatFormEntity(toSell, 9850, false));
 
         NavigatorElement tax = new NavigatorElement(baseElement, 5400, "Управление налогами");
         FormEntity nds = addFormEntity(new DocumentNDSFormEntity(tax, true, 5800));
@@ -1114,6 +1128,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         NavigatorElement store = new NavigatorElement(baseElement, 2000, "Сводная информация");
         addFormEntity(new StoreArticleFormEntity(store, 2100));
+
+        addFormEntity(new GlobalFormEntity(baseElement, 5200));
 
 //        FormEntity logClient = addFormEntity(new LogClientFormEntity(actions, 9850));
 
@@ -1442,11 +1458,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         // такое дебильное множественное наследование
         public void fillExtraLogisticsFilters(RegularFilterGroupEntity filterGroup, boolean toAdd) {
             filterGroup.addFilter(new RegularFilterEntity(genID(),
-                    new NotNullFilterEntity(getPropertyObject(documentLogisticsSupplied)),
+                    new NotNullFilterEntity(addPropertyObject(documentLogisticsSupplied, objDoc, objArt)),
                     "Поставляется",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)), toAdd);
             filterGroup.addFilter(new RegularFilterEntity(genID(),
-                    new NotNullFilterEntity(getPropertyObject(documentLogisticsRequired)),
+                    new NotNullFilterEntity(addPropertyObject(documentLogisticsRequired, objDoc, objArt)),
                     "Необходимо",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0)));
         }
@@ -1516,6 +1532,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         @Override
         protected void fillExtraFilters(RegularFilterGroupEntity filterGroup, boolean toAdd) {
             fillExtraLogisticsFilters(filterGroup, toAdd);
+
+            if(!toAdd)
+                filterGroup.addFilter(new RegularFilterEntity(genID(),
+                        new CompareFilterEntity(addPropertyObject(quantityDiffCommitArticle, objDoc, objArt), Compare.NOT_EQUALS, 0.0),
+                        "Отличается от заказа",
+                        KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0)), false);
         }
     }
 
@@ -1960,23 +1982,37 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private class DistributeFormEntity extends DocumentInnerFormEntity {
         public DistributeFormEntity(NavigatorElement parent, int ID, boolean toAdd, CustomClass documentClass) {
             super(parent, ID, toAdd, documentClass, false);
+
+            addPropertyDraw(objDoc, objArt, quantityCheckCommitInnerArticle);
+
+            if(!toAdd)
+                addAutoAction(objBarcode, true,
+                        addPropertyObject(barcodeActionCheck, objDoc, objBarcode),
+                        addPropertyObject(seekBarcodeAction, objBarcode),
+                        addPropertyObject(barcodeNotFoundMessage, objBarcode));
         }
 
         @Override
         protected void fillExtraFilters(RegularFilterGroupEntity filterGroup, boolean toAdd) {
             fillExtraLogisticsFilters(filterGroup, toAdd);
+
+            if(!toAdd)
+                filterGroup.addFilter(new RegularFilterEntity(genID(),
+                        new CompareFilterEntity(addPropertyObject(quantityDiffCommitArticle, objDoc, objArt), Compare.NOT_EQUALS, 0.0),
+                        "Отличается от заказа",
+                        KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0)), false);
         }
     }
 
-    private class DistributeShopFormEntity extends DocumentInnerFormEntity {
+    private class DistributeShopFormEntity extends DistributeFormEntity {
         public DistributeShopFormEntity(NavigatorElement parent, int ID, boolean toAdd) {
-            super(parent, ID, toAdd, orderDistributeShop, false);
+            super(parent, ID, toAdd, orderDistributeShop);
         }
     }
 
-    private class DistributeWarehouseFormEntity extends DocumentInnerFormEntity {
+    private class DistributeWarehouseFormEntity extends DistributeFormEntity {
         public DistributeWarehouseFormEntity(NavigatorElement parent, int ID, boolean toAdd) {
-            super(parent, ID, toAdd, orderDistributeWarehouse, false);
+            super(parent, ID, toAdd, orderDistributeWarehouse);
         }
     }
 
@@ -2299,18 +2335,50 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
     }
 
-    private class FormatArticleFormEntity extends BarcodeFormEntity {
-        protected FormatArticleFormEntity(NavigatorElement parent, int ID) {
-            super(parent, ID, "Остатки по форматам");
+    private class ArticleFormatFormEntity extends BarcodeFormEntity {
+        protected ArticleFormatFormEntity(NavigatorElement parent, int ID, boolean splitGroup) {
+            super(parent, ID, "Определение ассортимента" + (splitGroup?"":" (в таблице)"));
 
-            ObjectEntity objFormat = addSingleGroupObject(format, publicGroup, true);
-            addObjectActions(this, objFormat);
+            ObjectEntity objFormat, objArt;
+            if(splitGroup) {
+                objArt = addSingleGroupObject(article);
+                objFormat = addSingleGroupObject(format);
+            } else {
+                GroupObjectEntity gobjFormatArt = new GroupObjectEntity(genID());
+                objFormat = new ObjectEntity(genID(), format, "Формат");
+                objArt = new ObjectEntity(genID(), article, "Товар");
+                gobjFormatArt.add(objFormat);
+                gobjFormatArt.add(objArt);
+                addGroup(gobjFormatArt);
+           }
 
-            ObjectEntity objArt = addSingleGroupObject(article, baseGroup, true);
-
+            addObjectActions(this, objArt);
+            addPropertyDraw(objFormat, publicGroup, true);
+            addPropertyDraw(objArt, baseGroup, true);
             addPropertyDraw(objFormat, objArt, publicGroup, true);
 
             addAutoAction(objBarcode, addPropertyObject(barcodeAction2, objFormat, objBarcode));
+
+            RegularFilterGroupEntity filterBalanceGroup = new RegularFilterGroupEntity(genID());
+            filterBalanceGroup.addFilter(new RegularFilterEntity(genID(),
+                    new NotNullFilterEntity(addPropertyObject(balanceFormatFreeQuantity, objFormat, objArt)),
+                    "Есть своб. кол.",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0)));
+            addRegularFilterGroup(filterBalanceGroup);
+
+            RegularFilterGroupEntity filterToSellGroup = new RegularFilterGroupEntity(genID());
+            filterToSellGroup.addFilter(new RegularFilterEntity(genID(),
+                    new NotNullFilterEntity(addPropertyObject(articleFormatToSell, objFormat, objArt)),
+                    "В ассорт.",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)), !splitGroup);
+            addRegularFilterGroup(filterToSellGroup);
+
+            RegularFilterGroupEntity filterMinGroup = new RegularFilterGroupEntity(genID());
+            filterMinGroup.addFilter(new RegularFilterEntity(genID(),
+                    new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(articleFormatMin, objFormat, objArt))),
+                    "Без страх. запаса",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)), !splitGroup);
+            addRegularFilterGroup(filterMinGroup);
         }
     }
 
