@@ -85,6 +85,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP quantityDocumentArticleCompositeSize;
     private LP quantityDocumentArticleCompositeColorSize;
     private LP originalNameArticle;
+    private LP weightArticle;
     private ConcreteCustomClass country;
     private LP countryOfOriginArticle;
     private LP nameCountryOfOriginArticle;
@@ -274,7 +275,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         netWeightShipment = addDProp(baseGroup, "netWeightShipment", "Вес нетто", DoubleClass.instance, shipment);
         grossWeightShipment = addDProp(baseGroup, "grossWeightShipment", "Вес брутто", DoubleClass.instance, shipment);
 
-
         // Item
         articleCompositeItem = addDProp(idGroup, "articleCompositeItem", "Артикул (ИД)", articleComposite, item);
         articleSku = addCUProp(idGroup, "articleSku", "Артикул (ИД)", object(articleSingle), articleCompositeItem);
@@ -289,6 +289,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         nameDataArticle = addDProp(baseGroup, "nameDataArticle", "Имя производителя (перв.)", StringClass.get(50), article);
         nameArticle = addSUProp(baseGroup, "nameArticle", "Имя производителя", Union.OVERRIDE, originalNameArticle, nameDataArticle);
         nameArticleSku = addJProp(baseGroup, "nameArticleItem", "Имя производителя", nameArticle, articleSku, 1);
+
+        weightArticle = addDProp(baseGroup, "weightArticle", "Вес", DoubleClass.instance, article);
 
         countryOfOriginArticle = addDProp(idGroup, "countryOfOriginArticle", "Страна происхождения (ИД)", country, article);
         nameCountryOfOriginArticle = addJProp(baseGroup, "nameCountryOfOriginArticle", "Страна происхождения", name, countryOfOriginArticle, 1);

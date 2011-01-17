@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="obj12" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.6105100000000019"/>
-	<property name="ireport.x" value="12"/>
-	<property name="ireport.y" value="22"/>
+	<property name="ireport.x" value="93"/>
+	<property name="ireport.y" value="3"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -60,7 +60,7 @@
 			<staticText>
 				<reportElement x="40" y="159" width="254" height="20"/>
 				<textElement/>
-				<text><![CDATA[Пожалуйста, заполните бюллитень оценки проекта:]]></text>
+				<text><![CDATA[Пожалуйста, заполните бюллетень оценки проекта:]]></text>
 			</staticText>
 			<textField>
 				<reportElement x="169" y="66" width="312" height="20"/>
@@ -201,7 +201,6 @@
 			</staticText>
 			<image>
 				<reportElement x="417" y="10" width="73" height="50"/>
-				<imageExpression class="java.lang.String"><![CDATA["C:\\Documents and Settings\\Admin\\Мои документы\\Мои рисунки\\kart.jpg"]]></imageExpression>
 			</image>
 		</band>
 	</detail>
