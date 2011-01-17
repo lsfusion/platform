@@ -5,6 +5,10 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.List;
 import java.awt.*;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+
+import org.apache.commons.codec.binary.Base64;
 
 public class BaseUtils {
     public static final String lineSeparator = System.getProperty("line.separator");
@@ -1258,14 +1262,29 @@ public class BaseUtils {
             return string;
     }
     
-    public String encode(Integer... ints) {
-        String result = "";
-        for(int i=0;i<ints.length;i++)
-            result += i;
-        return result;
+    public String encode(int... values) {
+
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(baos);
+            for (int value : values)
+                dos.writeInt(value);
+            return Base64.encodeBase64URLSafeString(baos.toByteArray());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public Integer[] decode(String string) {
-        return new Integer[0];
+    public Integer[] decode(int number, String string) {
+
+        try {
+            Integer[] result = new Integer[number];
+            DataInputStream dis = new DataInputStream(new ByteArrayInputStream(Base64.decodeBase64(string)));
+            for(int i=0;i<number;i++)
+                result[i] = dis.readInt();
+            return result;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
