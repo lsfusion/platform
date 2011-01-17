@@ -1,5 +1,6 @@
 package skolkovo.gwt.server;
 
+import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.interop.RemoteLoaderInterface;
 import platform.interop.remote.ServerSocketFactory;
@@ -11,6 +12,8 @@ import java.rmi.server.RMIFailureHandler;
 import java.rmi.server.RMISocketFactory;
 
 public class SkolkovoLogicsClient {
+    protected final static Logger logger = Logger.getLogger(SkolkovoLogicsClient.class);
+
     private static SkolkovoLogicsClient instance = new SkolkovoLogicsClient();
     private static final String DEFAULT_HOST = "localhost";
     private static final String DEFAULT_PORT = "7652";
@@ -56,6 +59,7 @@ public class SkolkovoLogicsClient {
                 RemoteLoaderInterface loader = (RemoteLoaderInterface) Naming.lookup("rmi://" + serverHost + ":" + serverPort + "/BusinessLogicsLoader");
                 logics = (SkolkovoRemoteInterface) loader.getRemoteLogics();
             } catch (Exception e) {
+                logger.error("Ошибка при получении объекта логики: ", e);
                 throw new RuntimeException("Произошла ошибка при подлючении к серверу приложения.");
             }
 //        }
