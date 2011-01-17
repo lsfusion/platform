@@ -184,6 +184,6 @@ public class EmailSender {
 //                    throw new RuntimeException(e);
                 }
             }
-        };
+        }.start();
     }
 }
