@@ -2043,14 +2043,22 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected <D extends PropertyInterface> LP addDCProp(String sID, boolean persistent, String caption, LP<D> derivedProp, Object... params) {
-        return addDCProp(null, sID, persistent, caption, derivedProp, params);
+        return addDCProp(null, sID, persistent, caption, false, derivedProp, params);
     }
 
     protected <D extends PropertyInterface> LP addDCProp(AbstractGroup group, String sID, String caption, LP<D> derivedProp, Object... params) {
-        return addDCProp(group, sID, false, caption, derivedProp, params);
+        return addDCProp(group, sID, false, caption, false, derivedProp, params);
     }
 
-    protected <D extends PropertyInterface> LP addDCProp(AbstractGroup group, String sID, boolean persistent, String caption, LP<D> derivedProp, Object... params) {
+    protected <D extends PropertyInterface> LP addDCProp(String sID, String caption, boolean forced, LP<D> derivedProp, Object... params) {
+        return addDCProp(null, sID, caption, forced, derivedProp, params);
+    }
+
+    protected <D extends PropertyInterface> LP addDCProp(AbstractGroup group, String sID, String caption, boolean forced, LP<D> derivedProp, Object... params) {
+        return addDCProp(group, sID, false, caption, forced, derivedProp, params);
+    }
+
+    protected <D extends PropertyInterface> LP addDCProp(AbstractGroup group, String sID, boolean persistent, String caption, boolean forced, LP<D> derivedProp, Object... params) {
 
         // считываем override'ы с конца
         List<ValueClass> backClasses = new ArrayList<ValueClass>();
@@ -2098,7 +2106,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         // выполняем само создание свойства
         LP derDataProp = addDProp(group, sID, persistent, caption, valueClass, overrideClasses(commonClasses, overrideClasses));
-        derDataProp.setDerivedChange(defaultChanged, derivedProp, params);
+        if(forced)
+            derDataProp.setDerivedForcedChange(defaultChanged, derivedProp, params);
+        else
+            derDataProp.setDerivedChange(defaultChanged, derivedProp, params);
         return derDataProp;
     }
 

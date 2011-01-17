@@ -570,15 +570,15 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addPersistent(currentShopPriceDate);
         addPersistent(currentShopPriceDoc);
 
-        shopPrice = addDCProp(documentPriceGroup, "shopPrice", "Цена (док.)", requiredStorePrice, priceStore, 1, 2, inDocumentPrice, 1, 2);
+        shopPrice = addDCProp(documentPriceGroup, "shopPrice", "Цена (док.)", true, requiredStorePrice, priceStore, 1, 2, inDocumentPrice, 1, 2);
 
         currentShopPrice = addJProp(priceGroup, "currentShopPrice", "Цена на складе (тек.)", shopPrice, currentShopPriceDoc, 1, 2, 2);
 
         LP outOfDatePrice = addJProp(and(false, false), vtrue, articleBalanceSklCommitedQuantity, 1, 2, addJProp(diff2, requiredStorePrice, 1, 2, currentShopPrice, 1, 2), 1, 2);
         documentRevalued.setDerivedChange(outOfDatePrice, priceStore, 1, 2);
 
-        prevPrice = addDCProp(documentPriceGroup, "prevPrice", "Цена пред.", currentShopPrice, priceStore, 1, 2, inDocumentPrice, 1, 2);
-        revalBalance = addDCProp(documentPriceGroup, "revalBalance", "Остаток переоц.", articleBalanceSklCommitedQuantity, priceStore, 1, 2, inDocumentPrice, 1, 2);
+        prevPrice = addDCProp(documentPriceGroup, "prevPrice", "Цена пред.", true, currentShopPrice, priceStore, 1, 2, inDocumentPrice, 1, 2);
+        revalBalance = addDCProp(documentPriceGroup, "revalBalance", "Остаток переоц.", true, articleBalanceSklCommitedQuantity, priceStore, 1, 2, inDocumentPrice, 1, 2);
 
         isRevalued = addJProp(diff2, shopPrice, 1, 2, prevPrice, 1, 2); // для акта переоценки
         isNewPrice = addJProp(andNot1, inDocumentPrice, 1, 2, addJProp(equals2, shopPrice, 1, 2, prevPrice, 1, 2), 1, 2); // для ценников
@@ -643,7 +643,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         changeQuantityTime = addTCProp(Time.EPOCH, "changeQuantityTime", "Время выбора", articleInnerQuantity, orderSaleArticleRetail);
         changeQuantityOrder = addOProp(documentGroup, "Номер", OrderType.SUM, addJProp(and1, addCProp(IntegerClass.instance, 1), articleInnerQuantity, 1, 2), true, true, 1, 1, changeQuantityTime, 1, 2);
 
-        orderSaleDocPrice = addDCProp("orderSalePrice", "Цена прод.", saleStorePrice, outStore, 1, 2, articleQuantity, 1, 2, orderSale);
+        orderSaleDocPrice = addDCProp("orderSalePrice", "Цена прод.", true, saleStorePrice, outStore, 1, 2, articleQuantity, 1, 2, orderSale);
         orderSalePrice = addSUProp(documentPriceGroup, "Цена прод.", Union.OVERRIDE, addJProp(and1, addJProp(saleStorePrice, outStore, 1, 2), 1, 2, is(orderSale), 1), orderSaleDocPrice);
         documentBarcodePrice = addJProp("Цена", orderSalePrice, 1, barcodeToObject, 2);
         documentBarcodePriceOv = addSUProp("Цена", Union.OVERRIDE, documentBarcodePrice, addJProp(and1, addJProp(obligationSum, barcodeToObject, 1), 2, is(order), 1));
@@ -662,7 +662,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addJProp(greater2, orderHour, 1, articleActionHourTo, 2), 1, 3);
 
         orderNoDiscount = addDProp(baseGroup, "orderNoDiscount", "Без. скидок", LogicalClass.instance, orderSaleArticleRetail);
-        orderArticleSaleDiscount = addDCProp(baseGroup, "orderArticleSaleDiscount", "Скидка", addJProp(and(true, true),
+        orderArticleSaleDiscount = addDCProp(baseGroup, "orderArticleSaleDiscount", "Скидка", true, addJProp(and(true, true),
                 addSUProp(Union.MAX,
                         addSGProp(addMGProp(addJProp(and1, actionDiscount, 3, articleActionActive, 1, 2, 3), 1, 2, articleActionToGroup, 3), 1, 2),
                         addJProp(and1, addJProp(customerCheckRetailDiscount, orderContragent, 1), 1, is(article), 2)), 1, 2,
@@ -683,7 +683,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         returnSaleDiscount = addSGProp(documentAggrPriceGroup, "Сумма скидки возвр.", returnArticleSaleDiscount, 1);
         returnSalePay = addDUProp(documentAggrPriceGroup, "Сумма к возвр.", addSGProp("Сумма возвр.", returnArticleSaleSum, 1), returnSaleDiscount);
 
-        LP orderDeliveryPrice = addDCProp("orderDeliveryPrice", "Цена закуп.", articleSupplierPrice, 2, articleQuantity, 1, 2, orderDelivery);
+        LP orderDeliveryPrice = addDCProp("orderDeliveryPrice", "Цена закуп.", true, articleSupplierPrice, 2, articleQuantity, 1, 2, orderDelivery);
         addSUProp(documentPriceGroup, "Цена закуп.", Union.OVERRIDE, addJProp(and1, articleSupplierPrice, 2, is(orderDelivery), 1), orderDeliveryPrice);
 
         orderSaleUseObligation = addDProp(documentPriceGroup, "orderSaleUseObligation", "Использовать", LogicalClass.instance, commitSaleCheckArticleRetail, obligation);
@@ -1537,7 +1537,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 filterGroup.addFilter(new RegularFilterEntity(genID(),
                         new CompareFilterEntity(addPropertyObject(quantityDiffCommitArticle, objDoc, objArt), Compare.NOT_EQUALS, 0.0),
                         "Отличается от заказа",
-                        KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0)), false);
+                        KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0)), false);
         }
     }
 
@@ -2000,7 +2000,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 filterGroup.addFilter(new RegularFilterEntity(genID(),
                         new CompareFilterEntity(addPropertyObject(quantityDiffCommitArticle, objDoc, objArt), Compare.NOT_EQUALS, 0.0),
                         "Отличается от заказа",
-                        KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0)), false);
+                        KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0)), false);
         }
     }
 
@@ -2354,7 +2354,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             addObjectActions(this, objArt);
             addPropertyDraw(objFormat, publicGroup, true);
-            addPropertyDraw(objArt, baseGroup, true);
+            addPropertyDraw(objArt, baseGroup, true, currentRRP);
             addPropertyDraw(objFormat, objArt, publicGroup, true);
 
             addAutoAction(objBarcode, addPropertyObject(barcodeAction2, objFormat, objBarcode));

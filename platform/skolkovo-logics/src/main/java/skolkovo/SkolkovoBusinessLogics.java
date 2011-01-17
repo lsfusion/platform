@@ -16,10 +16,7 @@ import platform.server.data.Union;
 import platform.server.data.expr.query.OrderType;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
-import platform.server.form.entity.FormEntity;
-import platform.server.form.entity.GroupObjectEntity;
-import platform.server.form.entity.GroupObjectHierarchy;
-import platform.server.form.entity.ObjectEntity;
+import platform.server.form.entity.*;
 import platform.server.form.entity.filter.CompareFilterEntity;
 import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
@@ -787,7 +784,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private VoteProtocolFormEntity(NavigatorElement parent, int iID) {
             super(parent, iID, "Протокол заседания", true);
 
-            objVote = addSingleGroupObject(1, vote, date, nameClaimerVote, quantityRepliedVote, quantityDoneVote, succeededVote, quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote, acceptedForeignVote);
+            objVote = addSingleGroupObject(1, vote, date, nameProjectVote, nameClaimerVote, quantityRepliedVote, quantityDoneVote, succeededVote, quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote, acceptedForeignVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(closedVote, objVote)));

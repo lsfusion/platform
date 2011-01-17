@@ -63,11 +63,11 @@ public class LP<T extends PropertyInterface> {
     }
 
     public <D extends PropertyInterface> void setDerivedForcedChange(LP<D> valueProperty, Object... params) {
-        setDerivedChange(valueProperty, true, null, params);
+        setDerivedForcedChange(false, valueProperty, params);
     }
 
-    public <D extends PropertyInterface> void setDerivedChange(LP<D> valueProperty, boolean forceChanged, BusinessLogics<?> BL, Object... params) {
-        setDerivedChange(false, forceChanged, valueProperty, BL, params);
+    public <D extends PropertyInterface> void setDerivedForcedChange(boolean defaultChanged, LP<D> valueProperty, Object... params) {
+        setDerivedChange(defaultChanged, true, valueProperty, null, params);
     }
 
     public <D extends PropertyInterface> void setDerivedChange(boolean defaultChanged, boolean forceChanged, LP<D> valueProperty, BusinessLogics<?> BL, Object... params) {
