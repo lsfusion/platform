@@ -523,7 +523,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         return new FormInstance<T>(form, BL, session, securityPolicy, getFocusListener(), getClassListener(), instanceFactory.computer, mapObjects);
     }
 
-    public List<ClientAction> changeObject(ObjectInstance object, ObjectValue value, RemoteForm form) throws SQLException {
+    // todo : временная затычка
+    public void seekObject(ObjectInstance object, ObjectValue value) throws SQLException {
 
         if(entity.autoActions.size() > 0) { // дебилизм конечно но пока так
             if(object instanceof DataObjectInstance && !(value instanceof DataObject))
@@ -532,7 +533,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 object.changeValue(session, value);
         } else
             object.groupTo.addSeek(object, value, false);
+    }
 
+    public List<ClientAction> changeObject(ObjectInstance object, ObjectValue value, RemoteForm form) throws SQLException {
+        seekObject(object, value);
         // запускаем все Action'ы, которые следят за этим объектом
         return executeAutoActions(object, form);
     }

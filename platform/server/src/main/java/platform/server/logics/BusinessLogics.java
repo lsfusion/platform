@@ -3795,8 +3795,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 if (mapObjects.get(key.getKey()) == null) {
                     for (ObjectInstance object : objects) {
                         ConcreteClass keyClass = form.session.getCurrentClass(key.getValue());
-                        if (keyClass instanceof ConcreteValueClass && object.getBaseClass().isCompatibleParent((ValueClass) keyClass))
-                            object.groupTo.addSeek(object, key.getValue(), false);
+                        if (keyClass instanceof ConcreteValueClass && object.getBaseClass().isCompatibleParent((ValueClass) keyClass)) {
+                            form.seekObject(object, key.getValue());
+                        }
                     }
                 }
             }
