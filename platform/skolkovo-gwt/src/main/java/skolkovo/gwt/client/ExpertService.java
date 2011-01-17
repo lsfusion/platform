@@ -8,8 +8,8 @@ import skolkovo.gwt.shared.MessageException;
 
 @RemoteServiceRelativePath("ProjectsService")
 public interface ExpertService extends RemoteService {
-    GwtVoteInfo getVoteInfo(int voteId) throws MessageException;
-    void setVoteInfo(GwtVoteInfo voteInfo, int voteId) throws MessageException;
+    GwtVoteInfo getVoteInfo(String voteId) throws MessageException;
+    void setVoteInfo(GwtVoteInfo voteInfo, String voteId) throws MessageException;
 
     /**
      * Utility/Convenience class.

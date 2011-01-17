@@ -35,17 +35,19 @@ public class ExpertFrame implements EntryPoint {
     }
 
 
-    public int getVoteId() {
+    public String getVoteId() {
         try {
-            return Integer.parseInt(Window.Location.getParameter("voteId"));
+            return Window.Location.getParameter("voteId");
+//            return Integer.parseInt(Window.Location.getParameter("voteId"));
         } catch (Exception nfe) {
-            return -1;
+            return null;
         }
     }
 
     private void update() {
-        int voteId = getVoteId();
-        if (voteId == -1) {
+
+        String voteId = getVoteId();
+        if (voteId == null) {
             showErrorPage(null);
             return;
         }
@@ -291,13 +293,13 @@ public class ExpertFrame implements EntryPoint {
             vi.complete = bxComplete.getSelectedIndex() + 1;
             vi.completeComment = taCompleteComment.getText();
 
-            int voteId = getVoteId();
-            if (voteId == -1) {
+            String voteId = getVoteId();
+            if (voteId == null) {
                 showErrorPage(null);
                 return;
             }
 
-            ExpertService.App.getInstance().setVoteInfo(vi, getVoteId(), new AsyncCallback<Void>() {
+            ExpertService.App.getInstance().setVoteInfo(vi, voteId, new AsyncCallback<Void>() {
                 public void onFailure(Throwable caught) {
                     showErrorPage(caught);
                 }

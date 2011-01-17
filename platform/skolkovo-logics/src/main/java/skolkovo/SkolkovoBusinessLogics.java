@@ -809,12 +809,12 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         }
     }
 
-    public VoteInfo getVoteInfo(String login, int voteId) throws RemoteException {
+    public VoteInfo getVoteInfo(String voteId) throws RemoteException {
 
         try {
             DataSession session = createSession();
             try {
-                VoteObjects vo = new VoteObjects(session, login, voteId);
+                VoteObjects vo = new VoteObjects(session, voteId);
 
                 VoteInfo voteInfo = new VoteInfo();
                 voteInfo.expertName = (String) name.read(session, vo.expertObj);
@@ -848,12 +848,12 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         }
     }
 
-    public void setVoteInfo(String login, int voteId, VoteInfo voteInfo) throws RemoteException {
+    public void setVoteInfo(String voteId, VoteInfo voteInfo) throws RemoteException {
 
         try {
             DataSession session = createSession();
             try {
-                VoteObjects vo = new VoteObjects(session, login, voteId);
+                VoteObjects vo = new VoteObjects(session, voteId);
 
                 dateExpertVote.execute(DateConverter.dateToSql(voteInfo.date), session, vo.expertObj, vo.voteObj);
                 voteResultExpertVote.execute(voteResult.getID(voteInfo.voteResult), session, vo.expertObj, vo.voteObj);
@@ -886,12 +886,15 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         DataObject voteObj;
         DataObject projectObj;
 
-        private VoteObjects(DataSession session, String login, int voteId) throws SQLException {
+        private VoteObjects(DataSession session, String svoteId) throws SQLException {
 
-            Integer expertId = (Integer) expertLogin.read(session, new DataObject(login, StringClass.get(30)));
-            if (expertId == null) {
-                throw new RuntimeException("Не удалось найти пользователя с логином " + login);
-            }
+            Integer[] ids = BaseUtils.decode(2, svoteId);
+
+            Integer voteId = ids[0], expertId = ids[1];
+//            Integer expertId = (Integer) expertLogin.read(session, new DataObject(login, StringClass.get(30)));
+//            if (expertId == null) {
+//                throw new RuntimeException("Не удалось найти пользователя с логином " + login);
+//            }
 
             voteObj = new DataObject(voteId, vote);
 
@@ -904,7 +907,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             Boolean inVote = (Boolean) inExpertVote.read(session, expertObj, voteObj);
             if (inVote == null || !inVote) {
-                throw new RuntimeException("Эксперт с логином " + login + " не назначен на заседание с идентификатором " + voteId);
+                throw new RuntimeException("Эксперт с идентификатором " + expertId + " не назначен на заседание с идентификатором " + voteId);
             }
 
             projectObj = new DataObject(projectId, project);

@@ -181,7 +181,7 @@ public class EmailSender {
                 try {
                     Transport.send(message);
                 } catch (MessagingException e) {
-//                    throw new RuntimeException(e);
+                    throw new RuntimeException(e);
                 }
             }
         }.start();
