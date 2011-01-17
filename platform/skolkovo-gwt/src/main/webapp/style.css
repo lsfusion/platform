@@ -1,7 +1,41 @@
 body {
     background-color: white;
     color: black;
-    font-family: Arial, sans-serif;
-    font-size: small;
+    font-family: "Cambria","serif";
+    font-size: 8pt;
     margin: 8px;
+}
+
+.gwt-ListBox {
+    background: none repeat scroll 0 0 #E6EED5;
+    border: 1pt solid #B3CC82;
+}
+
+.gwt-TextArea {
+    border: none;
+}
+
+.captionedListBox {
+    background: none repeat scroll 0 0 #E6EED5;
+    border: 1pt solid #B3CC82;
+    padding: 0 5pt;
+}
+
+.captionedTextArea {
+    background: none repeat scroll 0 0 #CDDDAC;
+    border: 1pt solid #B3CC82;
+    border-top: medium none;
+    padding: 5pt;
+}
+
+.optionPanel {
+    background: none repeat scroll 0 0 #CDDDAC;
+    border: 1pt solid #B3CC82;
+    border-top: medium none;
+    padding: 0 5pt;
+}
+
+img.floatRight {
+  float: right;
+  margin: 4px;
 }

@@ -6,7 +6,7 @@ public interface ExpertFrameMessages extends Messages {
     String lbInCluster(String clusterName);
     String title();
 
-    String caption(String expertName, String projectClaimer, String pleasePrompt, String resultPrompt, String date);
+    String headerCaption(String projectName, String projectClaimer, String expertName, String date);
 
     String pleasePrompt();
 
@@ -43,4 +43,8 @@ public interface ExpertFrameMessages extends Messages {
     String yes();
 
     String no();
+
+    String here();
+
+    String footerCaption();
 }

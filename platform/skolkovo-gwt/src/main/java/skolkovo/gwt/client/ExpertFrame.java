@@ -38,7 +38,6 @@ public class ExpertFrame implements EntryPoint {
     public String getVoteId() {
         try {
             return Window.Location.getParameter("voteId");
-//            return Integer.parseInt(Window.Location.getParameter("voteId"));
         } catch (Exception nfe) {
             return null;
         }
@@ -64,44 +63,56 @@ public class ExpertFrame implements EntryPoint {
                 }
 
                 Date voteDate = vi.date == null ? new Date() : vi.date;
-                HTMLPanel caption = new HTMLPanel(
-                        getMessages().caption(
-                                vi.expertName,
+                HTMLPanel headerCaption = new HTMLPanel(
+                        getMessages().headerCaption(
+                                vi.projectName,
                                 vi.projectClaimer,
-                                vi.voteDone ? "" : getMessages().pleasePrompt(),
-                                "voted".equals(vi.voteResult)
-                                ? getMessages().votedPrompt()
-                                : "refused".equals(vi.voteResult)
-                                  ? getMessages().refusedPrompt()
-                                  : "connected".equals(vi.voteResult)
-                                    ? getMessages().connectedPrompt()
-                                    : "",
+                                vi.expertName,
                                 DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_SHORT).format(voteDate)
                         ));
 
+                if (!vi.voteDone) {
+                    //вставляем ссылку для отказа...
+                    Hyperlink logoutLink = new Hyperlink(getMessages().here(), "");
+                    logoutLink.addClickHandler(new VoteClickHandler("refused", false));
+                    headerCaption.add(logoutLink, "logoutLink");
+                } else {
+                    //...или убираем примечание
+                    headerCaption.addAndReplaceElement(new Label(), headerCaption.getElementById("logoutNotice"));
+                }
+
                 VerticalPanel manePane = new VerticalPanel();
-                manePane.setWidth("1024");
-                manePane.setSpacing(10);
+                manePane.setWidth("800");
+                manePane.setSpacing(5);
                 manePane.add(createLocalesPanel());
-                manePane.add(caption);
+                manePane.add(headerCaption);
+                manePane.add(createVerticalSpacer(5));
+                manePane.add(
+                        new HTMLPanel(
+                                !vi.voteDone ? getMessages().pleasePrompt()
+                                             : "<b>" +
+                                               ("voted".equals(vi.voteResult)
+                                                ? getMessages().votedPrompt()
+                                                : "refused".equals(vi.voteResult)
+                                                  ? getMessages().refusedPrompt()
+                                                  : "connected".equals(vi.voteResult)
+                                                    ? getMessages().connectedPrompt()
+                                                    : "") +
+                                               "</b>"));
+
 
                 if (!vi.voteDone || "voted".equals(vi.voteResult)) {
-                    if (!vi.voteDone) {
-                        manePane.add(createVerticalSpacer(20));
-                    }
-
-                    lbInCluster = new Label(getMessages().lbInCluster(vi.projectCluster));
-
                     bxInCluster = new ListBox();
-                    bxInCluster.setWidth("10%");
                     addListBoxBooleanItems(bxInCluster, vi.voteDone ? (vi.inCluster ? 1 : 2) : 0);
                     bxInCluster.setEnabled(!vi.voteDone);
 
-                    lbInnovative = new Label(getMessages().lbInnovative());
+                    Widget wInCluster = createCaptionedListBox(getMessages().lbInCluster(vi.projectCluster), bxInCluster);
+
                     bxInnovative = new ListBox();
-                    bxInnovative.setWidth("10%");
                     addListBoxBooleanItems(bxInnovative, vi.voteDone ? (vi.innovative ? 1 : 2) : 0);
                     bxInnovative.setEnabled(!vi.voteDone);
+
+                    Widget wInnovative = createCaptionedListBox(getMessages().lbInnovative(), bxInnovative);
 
                     lbInnovativeComment = new Label(getMessages().lbInnovativeComment());
                     taInnovativeComment = new TextArea();
@@ -110,29 +121,32 @@ public class ExpertFrame implements EntryPoint {
                     taInnovativeComment.setText(vi.innovativeComment);
                     taInnovativeComment.setEnabled(!vi.voteDone);
 
-                    lbForeign = new Label(getMessages().lbForeign());
+                    Widget wInnovativeComment = createListBoxWithCaptionedTextArea(wInnovative, getMessages().lbInnovativeComment(), taInnovativeComment);
+
                     bxForeign = new ListBox();
-                    bxForeign.setWidth("10%");
                     addListBoxBooleanItems(bxForeign, vi.voteDone ? (vi.foreign ? 1 : 2) : 0);
                     bxForeign.setEnabled(!vi.voteDone);
 
-                    lbCompetent = new Label(getMessages().lbCompetent());
+                    Widget wForeign = createCaptionedListBox(getMessages().lbForeign(), bxForeign);
+
                     bxCompetent = new ListBox();
-                    bxCompetent.setWidth("10%");
                     for (int i = 1; i <= 5; ++i) {
                         bxCompetent.addItem("" + i);
                     }
                     bxCompetent.setItemSelected(vi.competent - 1, true);
                     bxCompetent.setEnabled(!vi.voteDone);
 
+                    Widget wCompetent = createCaptionedListBox(getMessages().lbCompetent(), bxCompetent);
+
                     lbComplete = new Label(getMessages().lbComplete());
                     bxComplete = new ListBox();
-                    bxComplete.setWidth("10%");
                     for (int i = 1; i <= 5; ++i) {
                         bxComplete.addItem("" + i);
                     }
                     bxComplete.setItemSelected(vi.complete - 1, true);
                     bxComplete.setEnabled(!vi.voteDone);
+
+                    Widget wComplete = createCaptionedListBox(getMessages().lbComplete(), bxComplete);
 
                     lbCompleteComment = new Label(getMessages().lbCompleteComment());
                     taCompleteComment = new TextArea();
@@ -141,21 +155,18 @@ public class ExpertFrame implements EntryPoint {
                     taCompleteComment.setText(vi.completeComment);
                     taCompleteComment.setEnabled(!vi.voteDone);
 
-                    manePane.add(lbInCluster);
-                    manePane.add(bxInCluster);
-                    manePane.add(lbInnovative);
-                    manePane.add(bxInnovative);
-                    manePane.add(lbInnovativeComment);
-                    manePane.add(taInnovativeComment);
-                    manePane.add(lbForeign);
-                    manePane.add(bxForeign);
-                    manePane.add(lbCompetent);
-                    manePane.add(bxCompetent);
-                    manePane.add(lbComplete);
-                    manePane.add(bxComplete);
-                    manePane.add(lbCompleteComment);
-                    manePane.add(taCompleteComment);
+                    Widget wCompleteComment = createListBoxWithCaptionedTextArea(wComplete, getMessages().lbCompleteComment(), taCompleteComment);
+
+                    manePane.add(createNumberPanel(1, wInCluster, false));
+                    manePane.add(createNumberPanel(2, wInnovativeComment, false));
+                    manePane.add(createNumberPanel(3, wForeign, false));
+                    manePane.add(createNumberPanel(4, wCompetent, false));
+                    manePane.add(createNumberPanel(5, wCompleteComment, false));
+
                     if (!vi.voteDone) {
+                        HTMLPanel footerCaption = new HTMLPanel(getMessages().footerCaption());
+                        manePane.add(createVerticalSpacer(5));
+                        manePane.add(footerCaption);
                         manePane.add(createButtonsPane());
                     }
                 }
@@ -163,6 +174,60 @@ public class ExpertFrame implements EntryPoint {
                 setManePane(manePane);
             }
         });
+    }
+
+    private Widget createNumberPanel(int n, Widget widget, boolean addSpacing) {
+        VerticalPanel pane = new VerticalPanel();
+        pane.setWidth("100%");
+
+        if (addSpacing) {
+            pane.add(createVerticalSpacer(10));
+        }
+
+        pane.add(new Label("" + n + "."));
+        pane.add(widget);
+
+        return pane;
+    }
+
+    private Widget createCaptionedListBox(String caption, ListBox listBox) {
+        Label lbCaption = new Label(caption);
+
+        HorizontalPanel pane = new HorizontalPanel();
+        pane.setWidth("100%");
+        pane.add(lbCaption);
+        pane.add(listBox);
+
+        pane.setCellWidth(lbCaption, "80%");
+        pane.setCellWidth(listBox, "20%");
+        lbCaption.setWidth("100%");
+        listBox.setWidth("100%");
+
+        pane.setStyleName("captionedListBox");
+
+        return pane;
+    }
+
+    private Widget createListBoxWithCaptionedTextArea(Widget wListBox, String caption, TextArea textArea) {
+        Label lbCaption = new Label(caption);
+
+        VerticalPanel panText = new VerticalPanel();
+        panText.setWidth("100%");
+        panText.add(lbCaption);
+        panText.add(textArea);
+
+        lbCaption.setWidth("100%");
+        textArea.setWidth("100%");
+
+        panText.setStyleName("captionedTextArea");
+
+
+        VerticalPanel pane = new VerticalPanel();
+        pane.setWidth("100%");
+        pane.add(wListBox);
+        pane.add(panText);
+
+        return pane;
     }
 
     private VerticalPanel createLocalesPanel() {
@@ -206,7 +271,9 @@ public class ExpertFrame implements EntryPoint {
         Button bConnected = new Button(getMessages().btnConnected());
         bConnected.addClickHandler(new VoteClickHandler("connected"));
 
-        HorizontalPanel btnPanel = new HorizontalPanel();
+        VerticalPanel btnPanel = new VerticalPanel();
+        btnPanel.setHorizontalAlignment(HorizontalPanel.ALIGN_CENTER);
+        btnPanel.setSpacing(3);
         btnPanel.add(bVote);
         btnPanel.add(bRefused);
         btnPanel.add(bConnected);
@@ -260,9 +327,15 @@ public class ExpertFrame implements EntryPoint {
 
     private class VoteClickHandler implements ClickHandler {
         private final String voteResult;
+        private final boolean confirm;
 
         private VoteClickHandler(String voteResult) {
+            this(voteResult, true);
+        }
+
+        private VoteClickHandler(String voteResult, boolean confirm) {
             this.voteResult = voteResult;
+            this.confirm = confirm;
         }
 
         public void onClick(ClickEvent event) {
@@ -274,7 +347,7 @@ public class ExpertFrame implements EntryPoint {
                 return;
             }
 
-            if (!Window.confirm(getMessages().confirmPrompt())) {
+            if (confirm && !Window.confirm(getMessages().confirmPrompt())) {
                 return;
             }
 
