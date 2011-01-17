@@ -457,7 +457,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         emailAuthExpert = addEAProp(baseGroup, "Аутентификация эксперта (e-mail)", "Аутентификация эксперта", expert);
         addEARecepient(emailAuthExpert, emailParticipant, 1);
-        emailAuthExpert.setDerivedChange(addCProp(ActionClass.instance, true), userLogin, 1, userPassword, 1);
+//        emailAuthExpert.setDerivedChange(addCProp(ActionClass.instance, true), userLogin, 1, userPassword, 1);
     }
 
     protected void initTables() {
@@ -996,6 +996,11 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             userLogin.execute(login, session, expertObject);
             userPassword.execute(password, session, expertObject);
+        }
+
+        @Override
+        public Set<Property> getChangeProps() {
+            return BaseUtils.toSet(userLogin.property, userPassword.property);
         }
     }
 
