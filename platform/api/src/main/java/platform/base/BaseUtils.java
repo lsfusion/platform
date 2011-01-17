@@ -1257,4 +1257,15 @@ public class BaseUtils {
         else
             return string;
     }
+    
+    public String encode(Integer... ints) {
+        String result = "";
+        for(int i=0;i<ints.length;i++)
+            result += i;
+        return result;
+    }
+
+    public Integer[] decode(String string) {
+        return new Integer[0];
+    }
 }
