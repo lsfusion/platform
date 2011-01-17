@@ -503,7 +503,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP divideDouble;
     protected LP addDate2;
     protected LP string2;
-    protected LP insensetiveString2;
+    protected LP insensitiveString2;
     protected LP concat2;
 
     protected LP vtrue, vzero;
@@ -921,7 +921,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         and1 = addAFProp(false);
         andNot1 = addAFProp(true);
         string2 = addSProp(2);
-        insensetiveString2 = addInsensetiveSProp(2);
+        insensitiveString2 = addInsensitiveSProp(2);
         concat2 = addCCProp(2);
         groeq2 = addCFProp(Compare.GREATER_EQUALS);
         greater2 = addCFProp(Compare.GREATER);
@@ -966,7 +966,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         inLoginSID = addJProp("inLoginSID", true, "Логину назначена роль", inUserRole, loginToUser, 1, sidToRole, 2);
 
         name = addCUProp(baseGroup, "commonName", "Имя", addDProp("name", "Имя", InsensitiveStringClass.get(60), baseClass.named),
-                addJProp(insensetiveString2, userFirstName, 1, userLastName, 1));
+                addJProp(insensitiveString2, userFirstName, 1, userLastName, 1));
 
         nameToPolicy = addCGProp(null, "nameToPolicy", "Политика", object(policy), name, name, 1);
         policyDescription = addDProp(baseGroup, "description", "Описание", StringClass.get(100), policy);
@@ -2239,11 +2239,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addProperty(null, new LP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), "Объед.", intNum, separator)));
     }
 
-    protected <P extends PropertyInterface> LP addInsensetiveSProp(int intNum) {
+    protected <P extends PropertyInterface> LP addInsensitiveSProp(int intNum) {
         return addProperty(null, new LP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), "Объед.", intNum, " ", false)));
     }
 
-    protected <P extends PropertyInterface> LP addInsensetiveSProp(int intNum, String separator) {
+    protected <P extends PropertyInterface> LP addInsensitiveSProp(int intNum, String separator) {
         return addProperty(null, new LP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), "Объед.", intNum, separator, false)));
     }
 
