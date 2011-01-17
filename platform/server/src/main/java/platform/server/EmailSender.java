@@ -164,7 +164,7 @@ public class EmailSender {
         }
 
         message.setContent(mp);
-        Transport.send(message);
+        sendMail(message);
     }
 
     public void sendMail(String subject, String text) throws MessagingException, IOException {
@@ -172,6 +172,18 @@ public class EmailSender {
         message.setSubject(subject, "utf-8");
         setText(text);
         message.setContent(mp);
-        Transport.send(message);
+        sendMail(message);
+    }
+
+    private void sendMail(final MimeMessage message) {
+        new Thread() {
+            public void run() {
+                try {
+                    Transport.send(message);
+                } catch (MessagingException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
     }
 }
