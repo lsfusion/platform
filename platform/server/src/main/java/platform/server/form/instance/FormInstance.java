@@ -531,8 +531,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 object.changeValue(session, ((DataObjectInstance)object).getBaseClass().getDefaultObjectValue());
             else
                 object.changeValue(session, value);
-        } else
-            object.groupTo.addSeek(object, value, false);
+        }
+
+        object.groupTo.addSeek(object, value, false);
     }
 
     public List<ClientAction> changeObject(ObjectInstance object, ObjectValue value, RemoteForm form) throws SQLException {
