@@ -122,8 +122,10 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
             setCurrentGroupObject(fc.objects.get(groupObject));
         }
 
-        if (fc.classViews.containsKey(groupObject)) {
-            setClassView(fc.classViews.get(groupObject));
+
+        ClassViewType newClassView = fc.classViews.get(groupObject);
+        if (newClassView != null && classView != newClassView) {
+            setClassView(newClassView);
             requestFocusInWindow();
         }
 
