@@ -166,7 +166,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private ConcreteCustomClass stock;
     private ConcreteCustomClass freightBox;
     private LP countryOfOriginArticleSku;
-    private LP countryOfOriginDataItem;
+    private LP countryOfOriginDataSku;
     private LP countryOfOriginSku;
     private LP nameCountryOfOriginSku;
     private LP sidArticleSku;
@@ -379,8 +379,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         countryOfOriginArticleSku = addJProp(idGroup, "countryOfOriginArticleItem", "Страна происхождения (ИД)", countryOfOriginArticle, articleSku, 1);
 
-        countryOfOriginDataItem = addDProp(idGroup, "countryOfOriginDataItem", "Страна происхождения (ИД) (первичное)", country, item);
-        countryOfOriginSku = addSUProp(idGroup, "countryOfOriginItem", "Страна происхождения (ИД)", Union.OVERRIDE, countryOfOriginArticleSku, countryOfOriginDataItem);
+        countryOfOriginDataSku = addDProp(idGroup, "countryOfOriginDataItem", "Страна происхождения (ИД) (первичное)", country, sku);
+        countryOfOriginSku = addSUProp(idGroup, "countryOfOriginItem", "Страна происхождения (ИД)", Union.OVERRIDE, countryOfOriginArticleSku, countryOfOriginDataSku);
         nameCountryOfOriginSku = addJProp(baseGroup, "nameCountryOfOriginSku", "Страна происхождения", name, countryOfOriginSku, 1);
 
         supplierArticle = addDProp(idGroup, "supplierArticle", "Поставщик (ИД)", supplier, article);
@@ -1064,7 +1064,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objRoute = addSingleGroupObject(route, "Маршрут", name, barcodeCurrentPalletRoute, barcodeCurrentFreightBoxRoute);
             objRoute.groupTo.setSingleClassView(ClassViewType.GRID);
 
-            objSku = addSingleGroupObject(sku, "SKU", barcode, sidArticleSku, originalNameArticleSku, nameArticleSku, nameCategoryArticle, sidCustomCategory10Article, netWeightArticle, grossWeightArticle, mainСompositionSku, additionalСompositionSku, nameCountryOfOriginSku, sidColorSupplierItem, nameColorSupplierItem, nameSizeSupplierItem);
+            objSku = addSingleGroupObject(sku, "SKU", barcode, sidArticleSku, nameCategoryArticle, sidCustomCategory10Article, netWeightArticle, grossWeightArticle, mainСompositionSku, additionalСompositionSku, nameCountryOfOriginSku, sidColorSupplierItem, nameColorSupplierItem, nameSizeSupplierItem);
 
             getPropertyDraw(nameCategoryArticle).forceViewType = ClassViewType.PANEL;
             getPropertyDraw(sidCustomCategory10Article).forceViewType = ClassViewType.PANEL;
