@@ -129,6 +129,8 @@ public class ClientDialog extends JDialog {
             preferredSize.height += 80;
         }
 
+        preferredSize.height += 15; // под отборы
+
         return preferredSize;
     }
 }
