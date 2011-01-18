@@ -21,9 +21,9 @@ public class SecurityPolicy {
         navigator.override(policy.navigator);
     }
 
-    public void permitAll() {
-        cls.permitAll();
-        property.permitAll();
-        navigator.permitAll = true;
+    public void setReplaceMode(boolean replaceMode) {
+        cls.setReplaceMode(replaceMode);
+        property.setReplaceMode(replaceMode);
+        navigator.replaceMode = true;
     }
 }

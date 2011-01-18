@@ -6,47 +6,45 @@ import java.util.Set;
 
 public class AbstractSecurityPolicy<T> {
 
-    private Set<T> permitted = new HashSet();
-    private Set<T> denied = new HashSet();
+    private Set<T> permitted = new HashSet<T>();
+    private Set<T> denied = new HashSet<T>();
 
-    public boolean permitAll;
-    public boolean denyAll;
-
+    public boolean replaceMode = false;
     public boolean defaultPermission = true;
 
-    public void permit(T obj) { permitted.add(obj); }
-    public void deny(T obj) { denied.add(obj); }
+    public void permit(T obj) {
+        denied.remove(obj);
+        permitted.add(obj);
+    }
+
+    public void deny(T obj) {
+        permitted.remove(obj);
+        denied.add(obj);
+    }
+
     public void permit(T... objs) { for (T obj : objs) permit(obj); }
     public void deny(T... objs) { for (T obj : objs) deny(obj); }
 
-    public void permit(Collection<? extends T> colObj) { permitted.addAll(colObj); }
-    public void deny(Collection<? extends T> colObj) { denied.addAll(colObj); }
+    public void permit(Collection<? extends T> colObj) {
+        denied.removeAll(colObj);
+        permitted.addAll(colObj);
+    }
+
+    public void deny(Collection<? extends T> colObj) {
+        permitted.removeAll(colObj);
+        denied.addAll(colObj);
+    }
 
     protected void override(AbstractSecurityPolicy<T> policy) {
 
-        if (policy.permitAll) {
+        if (policy.replaceMode) {
             permitted.clear();
             denied.clear();
-            permitAll = true;
-            defaultPermission = true;
+            replaceMode = true;
         }
 
-        if (policy.denyAll) {
-            permitted.clear();
-            denied.clear();
-            denyAll = true;
-            defaultPermission = false;
-        }
-
-        for (T obj : policy.denied) {
-            permitted.remove(obj);
-            denied.add(obj);
-        }
-
-        for (T obj : policy.permitted) {
-            denied.remove(obj);
-            permitted.add(obj);
-        }
+        deny(policy.denied);
+        permit(policy.permitted);
 
         defaultPermission = policy.defaultPermission;
     }

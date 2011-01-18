@@ -10,7 +10,7 @@ public class ClassSecurityPolicy {
         edit.override(cls.edit);
     }
 
-    public void permitAll() {
-        edit.permitAll();
+    public void setReplaceMode(boolean replaceMode) {
+        edit.setReplaceMode(replaceMode);
     }
 }

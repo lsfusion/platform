@@ -10,8 +10,8 @@ public class PropertySecurityPolicy {
         change.override(policy.change);
     }
 
-    public void permitAll() {
-        view.permitAll = true;
-        change.permitAll = true;
+    public void setReplaceMode(boolean replaceMode) {
+        view.replaceMode = replaceMode;
+        change.replaceMode = replaceMode;
     }
 }

@@ -12,9 +12,9 @@ public class EditClassSecurityPolicy {
         change.override(edit.change);
     }
 
-    public void permitAll() {
-        add.permitAll = true;
-        remove.permitAll = true;
-        change.permitAll = true;
+    public void setReplaceMode(boolean replaceMode) {
+        add.replaceMode = replaceMode;
+        remove.replaceMode = replaceMode;
+        change.replaceMode = replaceMode;
     }
 }

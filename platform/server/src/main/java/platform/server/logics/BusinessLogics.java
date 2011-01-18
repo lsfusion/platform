@@ -1058,7 +1058,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     void initBaseAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         permitAllPolicy = addPolicy("Разрешить всё", "Политика разрешает все действия.");
-        permitAllPolicy.permitAll();
+        permitAllPolicy.setReplaceMode(true);
 
         readOnlyPolicy = addPolicy("Запретить редактирование всех свойств", "Режим \"только чтение\". Запрещает редактирование всех свойств на формах.");
         readOnlyPolicy.property.change.defaultPermission = false;
