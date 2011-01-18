@@ -116,13 +116,18 @@ public class ClientDialog extends JDialog {
             currentForm.closed();
     }
 
-    public Dimension calculatePreferredSize() {
+    public Dimension calculatePreferredSize(boolean undecorated) {
         Dimension preferredSize = currentForm.calculatePreferredSize();
 
         // так как у нас есть только preferredSize самого contentPane, а нам нужен у JDialog
         // сколько будет занимать все "рюшечки" вокруг contentPane мы посчитать не можем, поскольку
-        preferredSize.width += 20;
-        preferredSize.height += 60;
+        if (undecorated) {
+            preferredSize.width += 10;
+            preferredSize.height += 40;
+        } else {
+            preferredSize.width += 20;
+            preferredSize.height += 80;
+        }
 
         return preferredSize;
     }

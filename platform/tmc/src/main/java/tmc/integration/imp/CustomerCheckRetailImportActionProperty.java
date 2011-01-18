@@ -4,7 +4,8 @@ import org.xBaseJ.DBF;
 import platform.interop.action.ClientAction;
 import platform.server.auth.PolicyManager;
 import platform.server.classes.ValueClass;
-import platform.server.form.entity.DefaultClassFormEntity;
+import platform.server.form.entity.ClassFormEntity;
+import platform.server.form.entity.DialogFormEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
@@ -38,7 +39,7 @@ public class CustomerCheckRetailImportActionProperty extends ActionProperty {
             int recordCount = impFile.getRecordCount();
 
             FormInstance formInstance = new FormInstance(
-                    new DefaultClassFormEntity(BL, BL.customerCheckRetail),
+                    new ClassFormEntity(BL, BL.customerCheckRetail),
                     BL, BL.createSession(), PolicyManager.serverSecurityPolicy, null, null,
                     new DataObject(executeForm.form.instanceFactory.computer, BL.computer));
 

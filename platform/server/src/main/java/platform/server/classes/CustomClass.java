@@ -431,21 +431,21 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
     private ClassFormHolder classFormHolder = new ClassFormHolder() {
         @Override
         protected AbstractClassFormEntity createDefaultForm(BusinessLogics BL) {
-            return new DefaultClassFormEntity(BL, CustomClass.this);
+            return new ClassFormEntity(BL, CustomClass.this);
         }
     };
 
-    private ClassFormHolder classEditFormHolder = new ClassFormHolder() {
+    private ClassFormHolder dialogFormHolder = new ClassFormHolder() {
         @Override
         protected AbstractClassFormEntity createDefaultForm(BusinessLogics BL) {
-            return new DefaultClassFormEntity(BL, CustomClass.this);
+            return new DialogFormEntity(BL, CustomClass.this);
         }
     };
 
-    private ClassFormHolder objectFormHolder = new ClassFormHolder() {
+    private ClassFormHolder editFormHolder = new ClassFormHolder() {
         @Override
         protected AbstractClassFormEntity createDefaultForm(BusinessLogics BL) {
-            return new ObjectFormEntity(BL, CustomClass.this);
+            return new EditFormEntity(BL, CustomClass.this);
         }
     };
 
@@ -463,22 +463,22 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
     /**
      * используются при редактировании свойства даного класса из диалога, т.е. фактически для выбора объекта данного класса
      */
-    public AbstractClassFormEntity getClassEditForm(BusinessLogics BL) {
-        return classEditFormHolder.getForm(BL);
+    public AbstractClassFormEntity getDialogForm(BusinessLogics BL) {
+        return dialogFormHolder.getForm(BL);
     }
 
-    public void setClassEditForm(AbstractClassFormEntity form) {
-        classEditFormHolder.setForm(form);
+    public void setDialogForm(AbstractClassFormEntity form) {
+        dialogFormHolder.setForm(form);
     }
 
     /**
      * используется для редактирования конкретного объекта данного класса
      */
-    public AbstractClassFormEntity getObjectForm(BusinessLogics BL) {
-        return objectFormHolder.getForm(BL);
+    public AbstractClassFormEntity getEditForm(BusinessLogics BL) {
+        return editFormHolder.getForm(BL);
     }
 
-    public void setObjectForm(AbstractClassFormEntity form) {
-        objectFormHolder.setForm(form);
+    public void setEditForm(AbstractClassFormEntity form) {
+        editFormHolder.setForm(form);
     }
 }
