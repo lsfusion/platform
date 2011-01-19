@@ -17,6 +17,10 @@ public class DialogFormEntity<T extends BusinessLogics<T>> extends AbstractClass
 
         BL.addObjectActions(this, object);
 
+        PropertyDrawEntity objectValue = getPropertyDraw(BL.objectValue, object);
+        if (objectValue != null)
+            objectValue.readOnly = true;
+
         clsSID = cls.getSID();
     }
 

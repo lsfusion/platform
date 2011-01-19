@@ -73,8 +73,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP nameCurrencySupplier;
     private LP currencyDocument;
     private LP nameCurrencyDocument;
-    private LP storeOrder;
-    private LP nameStoreOrder;
+    private LP destinationDestinationDocument;
+    private LP nameDestinationDestinationDocument;
     private LP quantityPalletShipment;
     private LP grossWeightShipment;
     private LP netWeightShipment;
@@ -223,6 +223,17 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP balanceStockSku;
     private LP quantityStockSku;
     private LP quantityRouteSku;
+    private AbstractCustomClass destinationDocument;
+    private LP destinationSupplierBox;
+    private LP destinationFreightBox;
+    private LP nameDestinationFreightBox;
+    private LP nameDestinationSupplierBox;
+    private LP destinationCurrentFreightBoxRoute;
+    private LP nameDestinationCurrentFreightBoxRoute;
+    private LP quantityShipDimensionStock;
+    private LP isStoreFreightBoxSupplierBox;
+    private LP barcodeActionSetStore;
+    private AbstractCustomClass destination;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -239,7 +250,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         currency = addConcreteClass("currency", "Валюта", baseClass.named);
 
-        store = addConcreteClass("store", "Магазин", baseClass.named);
+        destination = addAbstractClass("destination", "Пункт назначения", baseClass);
+
+        store = addConcreteClass("store", "Магазин", destination, baseClass.named);
 
         sku = addAbstractClass("sku", "SKU", barcodeObject);
 
@@ -253,10 +266,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         list = addAbstractClass("list", "Список", baseClass);
 
         priceDocument = addAbstractClass("priceDocument", "Документ с ценами", document);
+        destinationDocument = addAbstractClass("destinationDocument", "Документ в пункт назначения", document);
 
-        order = addConcreteClass("order", "Заказ", priceDocument, list);
+        order = addConcreteClass("order", "Заказ", priceDocument, destinationDocument, list);
 
-        invoice = addAbstractClass("invoice", "Инвойс", priceDocument);
+        invoice = addAbstractClass("invoice", "Инвойс", priceDocument, destinationDocument);
         boxInvoice = addConcreteClass("boxInvoice", "Инвойс по коробам", invoice);
         simpleInvoice = addConcreteClass("simpleInvoice", "Инвойс без коробов", invoice, list);
 
@@ -329,8 +343,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         nameCurrencyDocument = addJProp(baseGroup, "nameCurrencyDocument", "Валюта", name, currencyDocument, 1);
         
         // Order
-        storeOrder = addDProp(idGroup, "storeOrder", "Магазин (ИД)", store, order);
-        nameStoreOrder = addJProp(baseGroup, "nameStoreOrder", "Магазин", name, storeOrder, 1);
+        destinationDestinationDocument = addDProp(idGroup, "destinationDestinationDocument", "Пункт назначения (ИД)", destination, destinationDocument);
+        nameDestinationDestinationDocument = addJProp(baseGroup, "nameDestinationDestinationDocument", "Пункт назначения", name, destinationDestinationDocument, 1);
 
         // Shipment
         quantityPalletShipment = addDProp(baseGroup, "quantityPalletShipment", "Кол-во паллет", IntegerClass.instance, shipment);
@@ -422,6 +436,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         boxInvoiceSupplierBox = addDProp(idGroup, "boxInvoiceSupplierBox", "Документ по коробам (ИД)", boxInvoice, supplierBox);
         sidBoxInvoiceSupplierBox = addJProp(baseGroup, "sidBoxInvoiceSupplierBox", "Документ по коробам", sidDocument, boxInvoiceSupplierBox, 1);
 
+        destinationSupplierBox = addJProp(idGroup, "destinationSupplierBox", "Пункт назначения (ИД)", destinationDestinationDocument, boxInvoiceSupplierBox, 1);
+        nameDestinationSupplierBox = addJProp(baseGroup, "nameDestinationSupplierBox", "Пункт назначения", name, destinationSupplierBox, 1);
+
         supplierSupplierBox = addJProp(idGroup, "supplierSupplierBox", "Поставщик (ИД)", supplierDocument, boxInvoiceSupplierBox, 1);
 
         supplierBoxSIDSupplier = addCGProp(idGroup, "supplierBoxSIDSupplier", "Короб поставщика (ИД)", object(supplierBox), sidSupplierBox, sidSupplierBox, 1, supplierSupplierBox, 1);
@@ -456,6 +473,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         // связь инвойсов и заказов
         inOrderInvoice = addDProp(baseGroup, "inOrderInvoice", "Вкл", LogicalClass.instance, order, invoice);
+
+        addConstraint(addJProp("Магазин инвойса должен совпадать с магазином заказа", and1,
+                      addJProp(diff2, destinationDestinationDocument, 1, destinationDestinationDocument, 2), 1, 2,
+                      inOrderInvoice, 1, 2), true);
+
         orderedOrderInvoiceSku = addJProp(and1, quantityDocumentSku, 1, 3, inOrderInvoice, 1, 2);
 
         orderedInvoiceSku = addSGProp(baseGroup, "orderedInvoiceSku", "Кол-во заказано", orderedOrderInvoiceSku, 2, 3);
@@ -538,6 +560,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         routeFreightBox = addDProp(idGroup, "routeFreightBox", "Маршрут (ИД)", route, freightBox);
         nameRouteFreightBox = addJProp(baseGroup, "nameRouteFreightBox", "Маршрут", name, routeFreightBox, 1);
 
+        destinationFreightBox = addDProp(idGroup, "destinationFreightBox", "Пункт назначения (ИД)", destination, freightBox);
+        nameDestinationFreightBox = addJProp(baseGroup, "nameDestinationFreightBox", "Пункт назначения", name, destinationFreightBox, 1);
+
         // паллеты
         freightPallet = addDProp(idGroup, "freightPallet", "Фрахт (ИД)", freight, pallet);
         equalsPalletFreight = addJProp(baseGroup, "equalsPalletFreight", "Вкл.", equals2, freightPallet, 1, 2);
@@ -559,6 +584,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         quantityShipDimensionShipmentStockSku = addCUProp(baseGroup, "quantityShipDimensionShipmentStockSku", "Кол-во оприход.",
                 quantitySupplierBoxBoxShipmentStockSku,
                 addJProp(and1, quantitySimpleShipmentStockSku, 2, 3, 4, equals2, 1, 2));
+
+        quantityShipDimensionStock = addSGProp(baseGroup, "quantityShipDimensionStock", "Всего оприход.", quantityShipDimensionShipmentStockSku, 1, 3);
 
         quantityShipDimensionShipmentSku = addSGProp(baseGroup, "quantityShipDimensionShipmentSku", "Оприход. (короб)", quantityShipDimensionShipmentStockSku, 1, 2, 4);
 
@@ -598,6 +625,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         seekRouteToFillShipmentBarcode = addJProp(actionGroup, true, "seekRouteToFillShipmentSku", "Поиск маршрута", addSAProp(null),
                 routeToFillShipmentBarcode, 1, 2);
 
+        addConstraint(addJProp("Магазин короба для транспортировки должен совпадать с магазином короба поставщика", and1,
+                      addJProp(diff2, destinationSupplierBox, 1, destinationFreightBox, 2), 1, 2,
+                      quantityShipDimensionStock, 1, 2), true);
+
         // Freight
         tonnageFreightType = addDProp(baseGroup, "tonnageFreightType", "Тоннаж", DoubleClass.instance, freightType);
         palletCountFreightType = addDProp(baseGroup, "palletCountFreightType", "Кол-во паллет", IntegerClass.instance, freightType);
@@ -636,12 +667,17 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         currentFreightBoxRoute = addDProp("currentFreightBoxRoute", "Тек. короб (ИД)", freightBox, route);
         barcodeCurrentFreightBoxRoute = addJProp("barcodeCurrentFreightBoxRoute", "Тек. короб (штрих-код)", barcode, currentFreightBoxRoute, 1);
 
+        destinationCurrentFreightBoxRoute = addJProp(true, "destinationCurrentFreightBoxRoute", "Пункт назначения тек. короба (ИД)", destinationFreightBox, currentFreightBoxRoute, 1);
+        nameDestinationCurrentFreightBoxRoute = addJProp("nameDestinationCurrentFreightBoxRoute", "Пункт назначения тек. короба", name, destinationCurrentFreightBoxRoute, 1);
+
         isCurrentFreightBox = addJProp(equals2, addJProp(true, currentFreightBoxRoute, routeFreightBox, 1), 1, 1);
         isCurrentPallet = addJProp(equals2, addJProp(true, currentPalletRoute, routePallet, 1), 1, 1);
         isCurrentPalletFreightBox = addJProp(equals2, palletFreightBox, 1, addJProp(currentPalletRoute, routeFreightBox, 1), 1);
+        isStoreFreightBoxSupplierBox = addJProp(equals2, destinationFreightBox, 1, destinationSupplierBox, 2);
 
         barcodeAction1 = addJProp(true, "Ввод штрих-кода 1", addCUProp(isCurrentFreightBox, isCurrentPallet), barcodeToObject, 1);
         barcodeActionSetPallet = addJProp(true, "Установить паллету", isCurrentPalletFreightBox, barcodeToObject, 1);
+        barcodeActionSetStore = addJProp(true, "Установить магазин", isStoreFreightBoxSupplierBox, barcodeToObject, 1, 2);
 
         quantityRouteSku = addJProp(baseGroup, "quantityRouteSku", "Оприход. (МХ)", quantityStockSku, currentFreightBoxRoute, 1, 2);
 
@@ -756,7 +792,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameCurrencySupplier);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objOrder = addSingleGroupObject(order, "Заказ", date, sidDocument, nameCurrencyDocument, sumDocument, nameStoreOrder);
+            objOrder = addSingleGroupObject(order, "Заказ", date, sidDocument, nameCurrencyDocument, sumDocument, nameDestinationDestinationDocument);
             addObjectActions(this, objOrder);
 
             objSIDArticleComposite = addSingleGroupObject(StringClass.get(50), "Ввод составного артикула", objectValue);
@@ -868,13 +904,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameCurrencySupplier);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс", date, sidDocument, nameCurrencyDocument, sumDocument, nameStoreOrder);
+            objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс", date, sidDocument, nameCurrencyDocument, sumDocument, nameDestinationDestinationDocument);
             addObjectActions(this, objInvoice);
 
             objOrder = addSingleGroupObject(order, "Заказ");
             objOrder.groupTo.setSingleClassView(ClassViewType.GRID);
             addPropertyDraw(inOrderInvoice, objOrder, objInvoice);
-            addPropertyDraw(objOrder, date, sidDocument, nameCurrencyDocument, sumDocument, nameStoreOrder);
+            addPropertyDraw(objOrder, date, sidDocument, nameCurrencyDocument, sumDocument, nameDestinationDestinationDocument);
 
             if (box) {
                 objSupplierBox = addSingleGroupObject(supplierBox, "Короб", sidSupplierBox, barcode);
@@ -1005,7 +1041,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс");
             objInvoice.groupTo.setSingleClassView(ClassViewType.GRID);
             addPropertyDraw(inInvoiceShipment, objInvoice, objShipment);
-            addPropertyDraw(objInvoice, date, sidDocument, nameStoreOrder);
+            addPropertyDraw(objInvoice, date, sidDocument, nameDestinationDestinationDocument);
 
             objRoute = addSingleGroupObject(route, "Маршрут", name);
             addPropertyDraw(percentShipmentRoute, objShipment, objRoute);
@@ -1057,11 +1093,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objShipment.groupTo.initClassView = ClassViewType.PANEL;
 
             if (box) {
-                objSupplierBox = addSingleGroupObject(supplierBox, "Короб поставщика", sidSupplierBox, barcode);
+                objSupplierBox = addSingleGroupObject(supplierBox, "Короб поставщика", sidSupplierBox, barcode, nameDestinationSupplierBox);
                 objSupplierBox.groupTo.initClassView = ClassViewType.PANEL;
             }
 
-            objRoute = addSingleGroupObject(route, "Маршрут", name, barcodeCurrentPalletRoute, barcodeCurrentFreightBoxRoute);
+            objRoute = addSingleGroupObject(route, "Маршрут", name, barcodeCurrentPalletRoute, barcodeCurrentFreightBoxRoute, nameDestinationCurrentFreightBoxRoute);
             objRoute.groupTo.setSingleClassView(ClassViewType.GRID);
 
             objSku = addSingleGroupObject(sku, "SKU", barcode, sidArticleSku, nameCategoryArticle, sidCustomCategory10Article, netWeightArticle, grossWeightArticle, mainСompositionSku, additionalСompositionSku, nameCountryOfOriginSku, sidColorSupplierItem, nameColorSupplierItem, nameSizeSupplierItem);
@@ -1139,6 +1175,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             addAutoAction(objBarcode, addPropertyObject(barcodeAction1, objBarcode));
             addAutoAction(objBarcode, addPropertyObject(barcodeActionSetPallet, objBarcode));
+            if (box)
+                addAutoAction(objBarcode, addPropertyObject(barcodeActionSetStore, objBarcode, objSupplierBox));
             addAutoAction(objBarcode, addPropertyObject(seekRouteToFillShipmentBarcode, objShipment, objBarcode));
             if (box)
                 addAutoAction(objBarcode, addPropertyObject(barcodeAction4, objSupplierBox, objShipment, objRoute, objBarcode));

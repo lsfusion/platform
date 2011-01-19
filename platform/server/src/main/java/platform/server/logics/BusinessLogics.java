@@ -2476,6 +2476,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addJProp((AbstractGroup) null, implementChange, caption, mainProp, params);
     }
 
+    protected LP addJProp(boolean implementChange, String sID, String caption, LP mainProp, Object... params) {
+        return addJProp((AbstractGroup) null, implementChange, sID, caption, mainProp, params);
+    }
+
     protected LP addJProp(AbstractGroup group, boolean implementChange, String caption, LP mainProp, Object... params) {
         return addJProp(group, implementChange, genSID(), caption, mainProp, params);
     }
