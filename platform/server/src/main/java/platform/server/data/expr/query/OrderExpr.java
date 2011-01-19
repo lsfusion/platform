@@ -83,6 +83,11 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
         public SourceJoin[] getEnum() { // !!! Включим ValueExpr.TRUE потому как в OrderSelect.getSource - при проталкивании partition'а может создать TRUE
             return AbstractSourceJoin.merge(partitions,AbstractSourceJoin.merge(orders.keySet(), expr, ValueExpr.TRUE));
         }
+
+        @IdentityLazy
+        public Query pack() { // пока так
+            return new Query(expr.pack(), orders, partitions);
+        }
     }
 
     private OrderExpr(OrderType orderType, Map<KeyExpr,BaseExpr> group, Expr expr, OrderedMap<Expr, Boolean> orders, Set<Expr> partitions) {
@@ -142,21 +147,12 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
         return new OrderJoin(innerContext.getKeys(), innerContext.getValues(),query.getWhere(), Settings.instance.isPushOrderWhere() ?query.partitions:new HashSet<Expr>(),group);
     }
 
-    private Map<KeyExpr, BaseExpr> pushValues(Where falseWhere) {
-        Map<BaseExpr, BaseExpr> exprValues = falseWhere.not().getExprValues();
-        Map<KeyExpr, BaseExpr> pushedGroup = new HashMap<KeyExpr, BaseExpr>();
-        for(Map.Entry<KeyExpr, BaseExpr> groupExpr : group.entrySet()) { // проталкиваем values внутрь
-            BaseExpr pushValue = exprValues.get(groupExpr.getValue());
-            pushedGroup.put(groupExpr.getKey(), pushValue!=null?pushValue: groupExpr.getValue());
-        }
-        return pushedGroup;
-    }
-
     @Override
     public Expr packFollowFalse(Where falseWhere) {
-        Map<KeyExpr, Expr> packedGroup = packFollowFalse(pushValues(falseWhere), falseWhere);
-        if(!BaseUtils.hashEquals(packedGroup,group))
-            return create(orderType, query.expr, query.orders, query.partitions, packedGroup);
+        Map<KeyExpr, Expr> packedGroup = packPushFollowFalse(group, falseWhere);
+        Query packedQuery = query.pack();
+        if(!(BaseUtils.hashEquals(packedQuery, query) && BaseUtils.hashEquals(packedGroup,group)))
+            return create(orderType, packedQuery.expr, packedQuery.orders, packedQuery.partitions, packedGroup);
         else
             return this;
     }

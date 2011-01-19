@@ -338,11 +338,11 @@ public class DerivedProperty {
         // строим связное distribute св-во, узнаем все использованные интерфейсы, строим map
         PropertyMapImplement<?, T> distribute = createJoin(group);
 
-        // распр. > пред.
-        PropertyMapImplement<?, T> compare = createCompare(restriction.interfaces, distribute, previous, Compare.GREATER);
-
         // MIN(огр., распр. - пред.)
         PropertyMapImplement<?, T> min = createFormula(restriction.interfaces, "(prm1+prm2-prm3-ABS(prm1-(prm2-prm3)))/2", formulaClass, BaseUtils.toList(restImplement, distribute, previous));
+
+        // распр. > пред.
+        PropertyMapImplement<?, T> compare = createCompare(restriction.interfaces, distribute, previous, Compare.GREATER);
 
         // MIN(огр., распр. - пред.) И распр. > пред.
         return createAnd(restriction.interfaces, min, compare);

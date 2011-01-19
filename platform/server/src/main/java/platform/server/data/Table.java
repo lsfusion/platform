@@ -8,6 +8,7 @@ import platform.server.caches.ParamLazy;
 import platform.server.caches.TwinLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
+import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.*;
 import platform.server.data.expr.cases.CaseExpr;
@@ -128,6 +129,15 @@ public class Table extends ImmutableObject implements MapKeysInterface<KeyField>
 
     protected final Map<PropertyField,ClassWhere<Field>> propertyClasses;
 
+    public String outputKeys() {
+        return "Таблица : " + name + ", Ключи : " + classes.getCommonParent(keys).toString();
+    }
+
+    public String outputField(PropertyField field, boolean outputTable) {
+        Map<Field,ValueClass> commonParent = propertyClasses.get(field).getCommonParent(BaseUtils.merge(keys, Collections.singleton(field)));
+        return (outputTable?"Таблица : " + name + ", ":"") + "Поле : " + field.toString() + " - " + commonParent.get(field) + ", Ключи : " + BaseUtils.removeKey(commonParent, field);
+    }
+
     @Override
     public boolean equals(Object obj) {
         return this == obj || getClass()==obj.getClass() && name.equals(((Table)obj).name) && classes.equals(((Table)obj).classes) && propertyClasses.equals(((Table)obj).propertyClasses);
@@ -231,7 +241,7 @@ public class Table extends ImmutableObject implements MapKeysInterface<KeyField>
         }
 
         public platform.server.data.query.Join<PropertyField> packFollowFalse(Where falseWhere) {
-            Map<KeyField, platform.server.data.expr.Expr> packJoins = BaseExpr.packFollowFalse(joins, falseWhere);
+            Map<KeyField, platform.server.data.expr.Expr> packJoins = BaseExpr.packPushFollowFalse(joins, falseWhere);
             if(!BaseUtils.hashEquals(packJoins, joins))
                 return join(packJoins);
             else
@@ -423,6 +433,11 @@ public class Table extends ImmutableObject implements MapKeysInterface<KeyField>
 
                 public ObjectJoinSets groupObjectJoinSets() {
                     return new ObjectJoinSets(Join.this,this);
+                }
+
+                @Override
+                public Where packFollowFalse(Where falseWhere) {
+                    return Expr.this.packFollowFalse(falseWhere).getWhere();
                 }
 
                 @Override

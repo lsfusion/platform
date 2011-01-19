@@ -28,6 +28,15 @@ public class MapDataChanges<P extends PropertyInterface> {
         map = new HashMap<UserProperty, Map<ClassPropertyInterface,P>>();
     }
 
+    private MapDataChanges(MapDataChanges<P> mapChanges) {
+        this.changes = mapChanges.changes.pack();
+        this.map = mapChanges.map;
+    }
+
+    public MapDataChanges<P> pack() {
+        return new MapDataChanges<P>(this);
+    }
+
     public <T extends PropertyInterface> MapDataChanges<T> map(Map<P,T> interfaceMap) {
         Map<UserProperty, Map<ClassPropertyInterface,T>> transMap = new HashMap<UserProperty, Map<ClassPropertyInterface,T>>();
         for(Map.Entry<UserProperty,Map<ClassPropertyInterface,P>> entry : map.entrySet())

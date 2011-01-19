@@ -184,19 +184,13 @@ public class CaseExpr extends Expr {
 
     // получение выражений
 
+/*
     public Expr scale(int coeff) {
         if(coeff==1) return this;
         
         ExprCaseList result = new ExprCaseList();
         for(ExprCase exprCase : cases)
-            result.add(new ExprCase(exprCase.where,exprCase.data.scale(coeff)));
-        return result.getExpr();
-    }
-
-    public Expr classExpr(BaseClass baseClass) {
-        ExprCaseList result = new ExprCaseList();
-        for(ExprCase exprCase : cases)
-            result.add(exprCase.where,exprCase.data.classExpr(baseClass));
+            result.add(exprCase.where, exprCase.data.scale(coeff)); // new ExprCase(exprCase.where,exprCase.data.scale(coeff))
         return result.getExpr();
     }
 
@@ -204,7 +198,14 @@ public class CaseExpr extends Expr {
         ExprCaseList result = new ExprCaseList();
         for(ExprCase exprCase : cases)
             result.add(exprCase.where,exprCase.data.sum(expr));
-        result.add(Where.TRUE,expr); // если null то expr 
+        result.add(Where.TRUE,expr); // если null то expr
+        return result.getExpr();
+    }*/
+
+    public Expr classExpr(BaseClass baseClass) {
+        ExprCaseList result = new ExprCaseList();
+        for(ExprCase exprCase : cases)
+            result.add(exprCase.where,exprCase.data.classExpr(baseClass));
         return result.getExpr();
     }
 

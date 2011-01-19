@@ -444,6 +444,7 @@ public class MapCacheAspect {
 
             WhereBuilder cacheWheres = Property.cascadeWhere(changedWheres);
             MapDataChanges<K> changes = (MapDataChanges<K>) thisJoinPoint.proceed(new Object[]{property,property,change,cacheWheres,modifier});
+            changes = changes.pack(); // пакуем так как в кэш складываем
             hashCaches.put(implement, new DataChangesResult<K>(changes, changedWheres!=null?cacheWheres.toWhere():null));
             logger.info("getDataChanges - not cached "+property);
 
@@ -520,6 +521,8 @@ public class MapCacheAspect {
         // здесь по идее на And не надо проверять
         if(property.equals(AggregateProperty.recalculate)) return (Expr) thisJoinPoint.proceed();
 
+        property.cached = true;
+
         ExprInterfaceImplement<K,U> implement = new ExprInterfaceImplement<K,U>(property,joinExprs,modifier,changedWheres!=null);
 
         Map<ExprInterfaceImplement, ExprResult> hashCaches;
@@ -545,10 +548,12 @@ public class MapCacheAspect {
             logger.info("getExpr - not cached "+property);
             WhereBuilder cacheWheres = Property.cascadeWhere(changedWheres);
             Expr expr = (Expr) thisJoinPoint.proceed(new Object[]{property,property,joinExprs,modifier,cacheWheres});
+            expr = expr.pack(); // пакуем так как в кэш идет
             hashCaches.put(implement, new ExprResult(expr, changedWheres!=null?cacheWheres.toWhere():null));
 
-//            if(expr.getComplexity()>100)
+//            if(expr.getComplexity()>300) {
 //                System.out.println("COMPLEX" + property);
+//            }
 
             // проверим
             if(checkInfinite && !(property instanceof FormulaProperty))

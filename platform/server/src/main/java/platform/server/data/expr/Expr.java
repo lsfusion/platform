@@ -48,7 +48,11 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     // получает список ExprCase'ов
     public abstract ExprCaseList getCases();
 
+    // упрощаем зная where == false
     public abstract Expr followFalse(Where where, boolean pack);
+    public Expr pack() {
+        return followFalse(Where.FALSE, true);
+    }
 
     public abstract Expr classExpr(BaseClass baseClass);
 
@@ -60,9 +64,26 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
         return compare(data.getExpr(),compare);
     }
 
-    public abstract Expr scale(int coeff);
+//    public abstract Expr scale(int coeff);
 
-    public abstract Expr sum(Expr expr);
+//    public abstract Expr sum(Expr expr);
+    public Expr scale(int coeff) {
+        if(coeff==1) return this;
+
+        LinearOperandMap map = new LinearOperandMap();
+        map.add(this,coeff);
+        return map.getExpr();
+    }
+
+    public Expr sum(Expr expr) {
+        if(getWhere().means(expr.getWhere().not())) // если не пересекаются то возвращаем case
+            return nvl(expr);
+
+        LinearOperandMap map = new LinearOperandMap();
+        map.add(this,1);
+        map.add(expr,1);
+        return map.getExpr();
+    }
 
     public Expr and(Where where) {
         if(getWhere().means(where))
@@ -115,6 +136,10 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     // проверка на статичность, временно потом более сложный алгоритм надо будет
     public boolean isValue() {
         return enumKeys(this).isEmpty();
+    }
+
+    public VariableExprSet getExprFollows() {
+        return getCases().getExprFollows();
     }
 }
 

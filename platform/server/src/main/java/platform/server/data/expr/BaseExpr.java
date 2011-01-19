@@ -45,7 +45,6 @@ public abstract class BaseExpr extends Expr {
         return exprFollows;
     }
 
-
     public void fillJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
         fillAndJoinWheres(joins, andWhere.and(getWhere()));
     }
@@ -112,7 +111,7 @@ public abstract class BaseExpr extends Expr {
         }
     }
 
-    public BaseExpr scale(int coeff) {
+/*    public Expr scale(int coeff) {
         if(coeff==1) return this;
 
         LinearOperandMap map = new LinearOperandMap();
@@ -135,7 +134,7 @@ public abstract class BaseExpr extends Expr {
             return sum((BaseExpr)expr);
         else
             return expr.sum(this);
-    }
+    }*/
 
     public boolean hasKey(KeyExpr key) {
         return enumKeys(this).contains(key);
@@ -155,8 +154,23 @@ public abstract class BaseExpr extends Expr {
                     if(siblingExpr==null) siblingExpr = sibling.getValue();
                     siblingWhere = siblingWhere.andCheck(siblingExpr.getWhere());
                 }
-            result.put(groupExpr.getKey(), groupExpr.getValue().packFollowFalse((Where) falseWhere.andCheck(siblingWhere)));
+            result.put(groupExpr.getKey(), groupExpr.getValue().packFollowFalse((Where) falseWhere.orCheck(siblingWhere.not())));
         }
         return result;
     }
+
+    private static <K> Map<K, BaseExpr> pushValues(Map<K, BaseExpr> group, Where falseWhere) {
+        Map<BaseExpr, BaseExpr> exprValues = falseWhere.not().getExprValues();
+        Map<K, BaseExpr> pushedGroup = new HashMap<K, BaseExpr>();
+        for(Map.Entry<K, BaseExpr> groupExpr : group.entrySet()) { // проталкиваем values внутрь
+            BaseExpr pushValue = exprValues.get(groupExpr.getValue());
+            pushedGroup.put(groupExpr.getKey(), pushValue!=null?pushValue: groupExpr.getValue());
+        }
+        return pushedGroup;
+    }
+
+    public static <K> Map<K, Expr> packPushFollowFalse(Map<K, BaseExpr> mapExprs, Where falseWhere) {
+        return packFollowFalse(pushValues(mapExprs, falseWhere), falseWhere);
+    }
+
 }

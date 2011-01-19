@@ -391,7 +391,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         // для возвратных своего рода generics
         LP returnOuterQuantity = addDProp("returnDeliveryLocalQuantity", "Кол-во возврата", DoubleClass.instance, orderReturnDeliveryLocal, article, commitDeliveryLocal);
 
-        returnInnerCommitQuantity = addCUProp(documentGroup, "Кол-во возврата", // generics
+        returnInnerCommitQuantity = addCUProp(documentGroup, "returnInnerCommitQuantity", "Кол-во возврата", // generics
                 addDProp("returnSaleWholeQuantity", "Кол-во возврата", DoubleClass.instance, returnSaleWhole, article, commitDelivery, commitSaleWhole),
                 addDProp("returnSaleInvoiceRetailQuantity", "Кол-во возврата", DoubleClass.instance, returnSaleInvoiceRetail, article, commitDelivery, commitSaleInvoiceArticleRetail),
                 addDProp("returnSaleCheckRetailQuantity", "Кол-во возврата", DoubleClass.instance, returnSaleCheckRetail, article, commitDelivery, commitSaleCheckArticleRetail));
@@ -407,8 +407,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addConstraint(addJProp("Кол-во возврата должно быть не меньше кол-ва самой операции", greater2, vzero, confirmedInnerQuantity, 1, 2, 3), false);
 
         // для док. \ товара \ парт. \ док. прод.   - кол-во подтв. парт. если совпадают контрагенты
-        returnInnerFreeQuantity = addJProp(documentGroup, "Дост. кол-во по возврату парт.", and(false, true), confirmedInnerQuantity, 4, 2, 3, returnSameClasses, 1, 4, diffContragent, 1, 4);
-        returnInnerQuantity = addDGProp(documentGroup, "Кол-во возврата", 2, false, returnInnerCommitQuantity, 1, 2, 4, returnInnerFreeQuantity, 1, 2, 3, 4, date, 3, 3);
+        returnInnerFreeQuantity = addJProp(documentGroup, "returnInnerFreeQuantity", "Дост. кол-во по возврату парт.", and(false, true), confirmedInnerQuantity, 4, 2, 3, returnSameClasses, 1, 4, diffContragent, 1, 4);
+        returnInnerQuantity = addDGProp(documentGroup, "returnInnerQuantity", "Кол-во возврата", 2, false, returnInnerCommitQuantity, 1, 2, 4, returnInnerFreeQuantity, 1, 2, 3, 4, date, 3, 3);
         LP returnDocumentQuantity = addCUProp("Кол-во возврата", returnOuterQuantity, returnInnerQuantity); // возвратный документ\прямой документ
         addConstraint(addJProp("При возврате контрагент документа, по которому идет возврат, должен совпадать с контрагентом возврата", and1, diffContragent, 1, 3, returnDocumentQuantity, 1, 2, 3), false);
 
@@ -417,7 +417,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         innerBalanceCheckDB = addDProp("innerBalanceCheckDB", "Остаток (по учету)", DoubleClass.instance, balanceCheck, article, commitDelivery);
 
         innerQuantity = addCUProp(documentGroup, "innerQuantity", true, "Кол-во", returnOuterQuantity, orderInnerQuantity,
-                addDGProp(2, false, returnInnerCommitQuantity, 1, 2, 3, returnInnerFreeQuantity, 1, 2, 3, 4, date, 4, 4),
+                addDGProp(privateGroup, "returnDistrCommitQuantity", 2, false, returnInnerCommitQuantity, 1, 2, 3, returnInnerFreeQuantity, 1, 2, 3, 4, date, 4, 4),
                 addDUProp("balanceCheckQuantity", "Кол-во инв.", innerBalanceCheckDB, innerBalanceCheck));
 
         LP incSklCommitedQuantity = addSGProp(moveGroup, "Кол-во прихода парт. на скл.",
@@ -2226,6 +2226,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             //addPropertyDraw(returnArticleSalePay, objArt);
 
             setReadOnly(true, objInner.groupTo);
+
+            PropertyObjectEntity shopImplement = addPropertyObject(currentShop);
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(outStore, objInner), Compare.EQUALS, shopImplement));
         }
 
         @Override

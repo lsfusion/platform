@@ -74,7 +74,7 @@ public class FormulaExpr extends StaticClassExpr {
 
     @Override
     public Expr packFollowFalse(Where where) {
-        Map<String, Expr> packParams = packFollowFalse(params, where);
+        Map<String, Expr> packParams = packPushFollowFalse(params, where);
         if(!BaseUtils.hashEquals(packParams, params)) 
             return create(formula, valueClass, packParams);
         else

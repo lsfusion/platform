@@ -33,8 +33,9 @@ public class OrConcatenateClass extends AbstractClassWhere<Integer,OrConcatenate
         return ((OrConcatenateClass)node).means(this);
     }
 
-    public ValueClass getCommonClass() {
-        throw new RuntimeException("not supported"); // потом когда разовьется тема с конкатенацией
+    public ValueClass getCommonClass() { // временно для outputField сделал
+        return StringClass.get(100);
+//        throw new RuntimeException("not supported"); // потом когда разовьется тема с конкатенацией
 /*        assert !isFalse();
 
         int size = wheres[0].size;

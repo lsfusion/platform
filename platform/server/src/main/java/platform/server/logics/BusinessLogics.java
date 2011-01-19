@@ -3893,6 +3893,25 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
+    public void outputPersistent() {
+        String result = "";
+
+        result += '\n' + "ПО ТАБЛИЦАМ :" + '\n' + '\n';
+        for(Map.Entry<ImplementTable, Collection<Property>> groupTable : BaseUtils.group(new BaseUtils.Group<ImplementTable, Property>() {
+            public ImplementTable group(Property key) {
+                return key.mapTable.table;
+            }
+        }, getStoredProperties()).entrySet()) {
+            result += groupTable.getKey().outputKeys() + '\n';
+            for(Property property : groupTable.getValue())
+                result += '\t' + property.outputStored(false) + '\n';
+        }
+        result += '\n' + "ПО СВОЙСТВАМ :" + '\n' + '\n';
+        for (Property property : getStoredProperties())
+            result += property.outputStored(true) + '\n';
+        System.out.println(result);
+    }
+
     public int generateNewID() throws RemoteException {
         return idGenerator.idShift();
     }

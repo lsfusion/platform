@@ -106,4 +106,9 @@ public class PropertyChange<T extends PropertyInterface> extends TwinsInnerConte
             components = AbstractMapValues.getComponents(this);
         return components;
     }
+
+    public PropertyChange<T> pack() {
+        Where packWhere = where.pack();
+        return new PropertyChange<T>(mapKeys, expr.followFalse(packWhere.not(), true), packWhere);
+    }
 }

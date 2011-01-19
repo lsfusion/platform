@@ -63,7 +63,7 @@ public class LinearExpr extends StaticClassExpr {
     @Override
     public boolean equals(Object obj) {
         if(map.size()==1) {
-            Map.Entry<BaseExpr, Integer> singleEntry = BaseUtils.singleEntry(map);
+            Map.Entry<Expr, Integer> singleEntry = BaseUtils.singleEntry(map);
             if(singleEntry.getValue().equals(1)) return singleEntry.getKey().equals(obj);
         }
         return super.equals(obj);
@@ -81,7 +81,7 @@ public class LinearExpr extends StaticClassExpr {
     @ParamLazy
     public Expr translateQuery(QueryTranslator translator) {
         Expr result = null;
-        for(Map.Entry<BaseExpr,Integer> operand : map.entrySet()) {
+        for(Map.Entry<Expr, Integer> operand : map.entrySet()) {
             Expr transOperand = operand.getKey().translateQuery(translator).scale(operand.getValue());
             if(result==null)
                 result = transOperand;
@@ -95,7 +95,7 @@ public class LinearExpr extends StaticClassExpr {
     @ParamLazy
     public BaseExpr translateOuter(MapTranslate translator) {
         LinearOperandMap transMap = new LinearOperandMap();
-        for(Map.Entry<BaseExpr,Integer> operand : map.entrySet())
+        for(Map.Entry<Expr, Integer> operand : map.entrySet())
             transMap.put(operand.getKey().translateOuter(translator),operand.getValue());
         return new LinearExpr(transMap);
     }
@@ -107,7 +107,7 @@ public class LinearExpr extends StaticClassExpr {
 
     public VariableExprSet calculateExprFollows() {
         VariableExprSet[] follows = new VariableExprSet[map.size()] ; int num = 0;
-        for(BaseExpr expr : map.keySet())
+        for(Expr expr : map.keySet())
             follows[num++] = expr.getExprFollows();
         return new VariableExprSet(follows);
     }

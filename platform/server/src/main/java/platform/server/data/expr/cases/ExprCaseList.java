@@ -4,6 +4,7 @@ import platform.base.BaseUtils;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.VariableExprSet;
 import platform.server.data.where.Where;
 
 public class ExprCaseList extends AddCaseList<BaseExpr,ExprCase> {
@@ -50,7 +51,8 @@ public class ExprCaseList extends AddCaseList<BaseExpr,ExprCase> {
         if(!(followExpr instanceof BaseExpr)) {// на самом деле если не packExprs либо BaseExpr либо NULL
             add(where, followExpr);
             return;
-        }
+        } else
+            expr = (BaseExpr)followExpr;
 
         where = where.and(nullWhere.not()).followFalse(upWhere, packExprs);
         if(where.isFalse()) return;
@@ -93,5 +95,12 @@ public class ExprCaseList extends AddCaseList<BaseExpr,ExprCase> {
         for(ExprCase exprCase : this)
             complexity += exprCase.getComplexity();
         return complexity;
+    }
+
+    public VariableExprSet getExprFollows() {
+        VariableExprSet[] follows = new VariableExprSet[size()] ; int num = 0;
+        for(ExprCase expr : this)
+            follows[num++] = expr.data.getExprFollows();
+        return new VariableExprSet(follows);
     }
 }

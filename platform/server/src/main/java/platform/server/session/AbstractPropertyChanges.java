@@ -87,4 +87,11 @@ public abstract class AbstractPropertyChanges<P extends PropertyInterface, T ext
             components = AbstractMapValues.getComponents(this);
         return components;
     }
+
+    public This pack() {
+        This result = createThis();
+        for(int i=0;i<size;i++)
+            result.add(getKey(i),getValue(i).pack());
+        return result;
+    }
 }

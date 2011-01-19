@@ -94,11 +94,13 @@ public class ValueExpr extends AbstractValueExpr implements Value {
     }
 
     public static Value ZERO = new ValueExpr(0, DoubleClass.instance);
+    public static Value TRUEVAL = new ValueExpr(true, LogicalClass.instance);
 
     private static Set<Value> staticExprs;
     {
         staticExprs = new HashSet<Value>();
         staticExprs.add(ValueExpr.ZERO);
+        staticExprs.add(ValueExpr.TRUEVAL);
         staticExprs.add(null);
     }
 

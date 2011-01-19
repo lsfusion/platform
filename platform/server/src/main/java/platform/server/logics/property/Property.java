@@ -306,6 +306,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         assert !cached;
     }
 
+    public String outputStored(boolean outputTable) {
+        assert isStored() && field!=null;
+        return (this instanceof UserProperty?"Первичное":"Вычисляемое") + " свойство : " + caption+", "+mapTable.table.outputField(field, outputTable);
+    }
+
     public abstract boolean isStored();
 
     public boolean isFalse = false;
