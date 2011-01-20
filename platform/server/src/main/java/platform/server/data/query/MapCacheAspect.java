@@ -24,6 +24,7 @@ import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.property.*;
 import platform.server.session.*;
+import platform.server.Settings;
 
 import java.util.*;
 
@@ -444,7 +445,8 @@ public class MapCacheAspect {
 
             WhereBuilder cacheWheres = Property.cascadeWhere(changedWheres);
             MapDataChanges<K> changes = (MapDataChanges<K>) thisJoinPoint.proceed(new Object[]{property,property,change,cacheWheres,modifier});
-            changes = changes.pack(); // пакуем так как в кэш складываем
+            if(Settings.instance.packOnCache)
+                changes = changes.pack(); // пакуем так как в кэш складываем
             hashCaches.put(implement, new DataChangesResult<K>(changes, changedWheres!=null?cacheWheres.toWhere():null));
             logger.info("getDataChanges - not cached "+property);
 
@@ -548,7 +550,8 @@ public class MapCacheAspect {
             logger.info("getExpr - not cached "+property);
             WhereBuilder cacheWheres = Property.cascadeWhere(changedWheres);
             Expr expr = (Expr) thisJoinPoint.proceed(new Object[]{property,property,joinExprs,modifier,cacheWheres});
-            expr = expr.pack(); // пакуем так как в кэш идет
+            if(Settings.instance.packOnCache)
+                expr = expr.pack(); // пакуем так как в кэш идет
             hashCaches.put(implement, new ExprResult(expr, changedWheres!=null?cacheWheres.toWhere():null));
 
 //            if(expr.getComplexity()>300) {
