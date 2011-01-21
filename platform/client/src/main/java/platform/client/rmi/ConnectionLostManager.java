@@ -12,15 +12,15 @@ import java.lang.ref.WeakReference;
 public class ConnectionLostManager {
 
     private static boolean connectionLost = false;
-    private static ConnectionLostPainterUI connectionLostUI;
-
+    public static ConnectionLostPainterUI connectionLostUI = new ConnectionLostPainterUI();
+    public static JXLayer layer;
     private static WeakReference<JFrame> frameRef;
 
     private static BlockDialog blockDialog;
 
     private static void setConnectionLost(boolean lost) {
         connectionLost = lost;
-        connectionLostUI.setLocked(lost);
+        connectionLostUI.lockAndPing(lost);
     }
 
     public static void forceDisconnect() {
@@ -60,8 +60,8 @@ public class ConnectionLostManager {
         JFrame currentFrame = getCurrentFrame();
 
         if (currentFrame == null) {
-            JXLayer layer = new JXLayer(frame.getContentPane());
-            layer.setUI(connectionLostUI = new ConnectionLostPainterUI());
+            layer = new JXLayer(frame.getContentPane());
+            layer.setUI(connectionLostUI);
             frame.setContentPane(layer);
 
             frameRef = new WeakReference<JFrame>(frame);
@@ -86,10 +86,10 @@ public class ConnectionLostManager {
 
             String messageText =
                     message != null
-                    ? message
-                    : fatal
-                      ? "<html>Произошла ошибка при общении с сервером, <br> попробуйте вручную перезапустить приложение.</html>"
-                      : "<html>Соединение с сервером потеряно, <br> вы можете подождать пока оно восстановится <br> или вручную перезапустить приложение.</html>";
+                            ? message
+                            : fatal
+                            ? "<html>Произошла ошибка при общении с сервером, <br> попробуйте вручную перезапустить приложение.</html>"
+                            : "<html>Соединение с сервером потеряно, <br> вы можете подождать пока оно восстановится <br> или вручную перезапустить приложение.</html>";
 
             okBut = new JButton("Закрыть приложение");
             okBut.addActionListener(this);

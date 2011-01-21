@@ -19,8 +19,7 @@ public class ConnectionLostPainterUI extends LockableUI implements Runnable {
         super(new BufferedImageOpEffect(new BlurFilter()));
     }
 
-    @Override
-    public void setLocked(boolean isLocked) {
+    public void lockAndPing(boolean isLocked) {
         super.setLocked(isLocked);
         if (isLocked) {
             executorService = Executors.newSingleThreadScheduledExecutor(new DaemonThreadFactory());

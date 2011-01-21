@@ -247,7 +247,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     public void gainedFocus(FormInstance<T> form) {
         weakCurrentForm = new WeakReference<FormInstance<T>>(form);
     }
-    
+
     //используется для RelevantClassNavigator
     CustomClass currentClass;
 

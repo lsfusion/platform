@@ -1,6 +1,7 @@
 package platform.client.remote.proxy;
 
 import org.apache.log4j.Logger;
+import platform.client.WaitDialog;
 import platform.interop.remote.MethodInvocation;
 import platform.interop.remote.PendingRemote;
 
@@ -34,10 +35,16 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
                 logger.debug("  Invocation in execute: " + invocation.toString());
             }
         }
-
-        Object result = target.execute(invocations);
-        logRemoteMethodEndCall("execute", result);
-        return result;
+        RemoteExecuteSwingWorker worker = new RemoteExecuteSwingWorker(target, invocations);
+        worker.execute();
+        try {
+            WaitDialog.start();
+            Object result = worker.get();
+            logRemoteMethodEndCall("execute", result);
+            return result;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @NonFlushRemoteMethod
@@ -50,9 +57,16 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
             }
         }
 
-        Object[] result = target.createAndExecute(creator, invocations);
-        logRemoteMethodEndCall("createAndExecute", result);
-        return result;
+        RemoteCreateAndExecuteSwingWorker worker = new RemoteCreateAndExecuteSwingWorker(target, creator, invocations);
+        worker.execute();
+        try {
+            WaitDialog.start();
+            Object[] result = worker.get();
+            logRemoteMethodEndCall("createAndExecute", result);
+            return result;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @NonFlushRemoteMethod
@@ -94,7 +108,7 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
     @NonFlushRemoteMethod
     protected void logRemoteMethodStartCall(String methodName) {
         if (logger.isInfoEnabled()) {
-            startCall = System.currentTimeMillis(); 
+            startCall = System.currentTimeMillis();
             logger.info("Calling remote method: " + this.getClass().getSimpleName() + "." + methodName);
         }
     }
@@ -110,7 +124,7 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
             }
             logger.info(
                     String.format("Remote method called (time: %1$d ms.; result size: %2$d): %3$s.%4$s",
-                                  System.currentTimeMillis() - startCall, outStream.size(), this.getClass().getSimpleName(), methodName));
+                            System.currentTimeMillis() - startCall, outStream.size(), this.getClass().getSimpleName(), methodName));
         }
     }
 
@@ -121,7 +135,7 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
 
     @NonFlushRemoteMethod
     protected void logRemoteMethodEndVoidCall(String methodName) {
-        logRemoteMethodEndCall(methodName,null);
+        logRemoteMethodEndCall(methodName, null);
     }
 
     @NonFlushRemoteMethod

@@ -21,7 +21,7 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     public RemoteFormProxy(T target) {
         super(target);
     }
-    
+
     @ImmutableMethod
     public boolean hasCustomReportDesign() throws RemoteException {
         logRemoteMethodStartCall("hasCustomReportDesign");
@@ -50,7 +50,7 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         logRemoteMethodEndCall("getReportHierarchyByteArray", result);
         return result;
     }
-    
+
     public RemoteChanges getRemoteChanges() throws RemoteException {
         logRemoteMethodStartCall("getRemoteChanges");
         RemoteChanges result = target.getRemoteChanges();
