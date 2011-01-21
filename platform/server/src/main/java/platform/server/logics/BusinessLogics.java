@@ -1105,7 +1105,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    public class NamedObjectClassForm extends DialogFormEntity {
+    public class NamedObjectClassForm extends ClassFormEntity {
         public ObjectEntity objObjectName;
 
         public NamedObjectClassForm(BusinessLogics BL, CustomClass cls) {

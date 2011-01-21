@@ -19,7 +19,7 @@ import java.util.*;
 
 public class SessionTableUsage<K,V> {
 
-    protected SessionData<?> table; // в общем то final, но так как protected то ничего не поделаешь
+    protected SessionData<?> table;
     protected Map<KeyField, K> mapKeys;
     protected Map<PropertyField, V> mapProps;
 
