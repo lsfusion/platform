@@ -3,21 +3,19 @@ package platform.server.form.instance;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
-import static platform.interop.ClassViewType.GRID;
-import static platform.interop.ClassViewType.HIDE;
 import platform.interop.Compare;
 import platform.interop.Order;
 import platform.interop.form.PropertyRead;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.BaseClass;
 import platform.server.classes.CustomClass;
-import platform.server.data.SQLSession;
 import platform.server.data.QueryEnvironment;
-import platform.server.data.type.Type;
+import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.MapKeysInterface;
 import platform.server.data.query.Query;
+import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.instance.filter.FilterInstance;
@@ -27,12 +25,15 @@ import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.Property;
 import platform.server.session.Changes;
-import platform.server.session.SessionChanges;
 import platform.server.session.Modifier;
 import platform.server.session.NoPropertyTableUsage;
+import platform.server.session.SessionChanges;
 
 import java.sql.SQLException;
 import java.util.*;
+
+import static platform.interop.ClassViewType.GRID;
+import static platform.interop.ClassViewType.HIDE;
 
 public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, PropertyReadInstance {
 
@@ -514,8 +515,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         if(isInTree()) {
             if (!updateKeys && (getUpTreeGroup() != null && ((getUpTreeGroup().updated & UPDATED_EXPANDS) != 0)) ||
-                    (parent != null && (updated & UPDATED_EXPANDS) != 0))
+                    (parent != null && (updated & UPDATED_EXPANDS) != 0)) {
                 updateKeys = true;
+            }
+            orderSeeks = new SeekObjects(false);
         } else {
             if (userSeeks!=null) { // пользовательский поиск
                 orderSeeks = userSeeks;
