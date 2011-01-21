@@ -626,15 +626,17 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
     }
 
-    protected void setForceViewType(AbstractGroup group, ClassViewType type) {
+    protected void setForceViewType(AbstractGroup group, ClassViewType type, GroupObjectEntity groupObject) {
         for (PropertyDrawEntity propertyDraw : propertyDraws) {
-            if (group.hasChild(propertyDraw.propertyObject.property)) {
+            if ((groupObject==null || groupObject.equals(propertyDraw.getToDraw(this))) && group.hasChild(propertyDraw.propertyObject.property)) {
                 propertyDraw.forceViewType = type;
             }
         }
     }
 
-
+    protected void setForceViewType(AbstractGroup group, ClassViewType type) {
+        setForceViewType(group, type, null);
+    }
 
     public List<PropertyDrawEntity> getProperties(AbstractNode group) {
         return getProperties(group, null);

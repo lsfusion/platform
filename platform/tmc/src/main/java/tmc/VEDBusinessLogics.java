@@ -1347,7 +1347,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
                     if (payCash != null || payCard != null || toDo != null || toDoSum != null) {
 
-                        ContainerView payContainer = design.addContainer("Платежные средства");
+                        ContainerView payContainer = design.createContainer("Платежные средства");
                         design.mainContainer.addBack(2, payContainer);
                         payContainer.constraints.directions = new SimplexComponentDirections(0.1, -0.1, 0, 0.1);
 

@@ -42,14 +42,6 @@ public class CustomFormView extends FormView {
         return null;
     }
     */
-    public ContainerView createContainer(String title, String description, String sID) {
-        ContainerView container = new ContainerView(idGenerator.idShift());
-        container.setTitle(title);
-        container.setDescription(description);
-        container.setSID(sID);
-        return container;
-    }
-
     public FunctionView createPrintFunction(String caption) {
         FunctionView function = new FunctionView(idGenerator.idShift());
         function.setCaption(caption);

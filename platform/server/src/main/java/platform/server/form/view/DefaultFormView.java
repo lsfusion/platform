@@ -162,7 +162,7 @@ public class DefaultFormView extends FormView {
             if (groupPropertyContainers.get(groupObject).containsKey(groupAbstract))
                 groupPropertyContainer = groupPropertyContainers.get(groupObject).get(groupAbstract);
             else {
-                groupPropertyContainer = addContainer(groupAbstract.caption);
+                groupPropertyContainer = createContainer(groupAbstract.caption);
                 groupPropertyContainers.get(groupObject).put(groupAbstract, groupPropertyContainer);
             }
 

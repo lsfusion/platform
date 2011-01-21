@@ -6,6 +6,7 @@ import platform.interop.Compare;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.auth.User;
 import platform.server.classes.*;
+import platform.server.data.Time;
 import platform.server.data.Union;
 import platform.server.data.sql.DataAdapter;
 import platform.server.form.entity.FormEntity;
@@ -14,6 +15,7 @@ import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.filter.*;
 import platform.server.form.navigator.NavigatorElement;
+import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.form.view.PropertyDrawView;
@@ -29,6 +31,9 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
+
+    private static boolean USE_SHIPMENT_DETAIL = true;
+
     private AbstractCustomClass article;
     private ConcreteCustomClass articleComposite;
     private ConcreteCustomClass articleSingle;
@@ -66,8 +71,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP nameSupplierColorSupplier;
     private LP supplierSizeSupplier;
     private LP nameSupplierSizeSupplier;
-    private LP supplierItem;
-    private LP nameSupplierItem;
+    private LP supplierSku;
+    private LP nameSupplierSku;
     private ConcreteCustomClass currency;
     private ConcreteCustomClass store;
     private LP currencySupplier;
@@ -86,20 +91,20 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP quantityDocumentArticleCompositeSize;
     private LP quantityDocumentArticleCompositeColorSize;
     private LP originalNameArticle;
-    private LP netWeightArticle;
-    private LP grossWeightArticle;
+    private LP netWeightDataArticle;
+    private LP grossWeightDataArticle;
     private LP netWeightOriginArticle;
     private LP grossWeightOriginArticle;
     private LP netWeightOriginArticleSku;
     private LP grossWeightOriginArticleSku;
     private LP netWeightArticleSku;
     private LP grossWeightArticleSku;
-    private LP netWeightArticleUn;
-    private LP grossWeightArticleUn;
-    private LP mainСompositionDataSku;
-    private LP additionalСompositionDataSku;
-    private LP mainСompositionSku;
-    private LP additionalСompositionSku;
+    private LP netWeightArticle;
+    private LP grossWeightArticle;
+    private LP mainCompositionDataSku;
+    private LP additionalCompositionDataSku;
+    private LP mainCompositionSku;
+    private LP additionalCompositionSku;
     private ConcreteCustomClass country;
     private ConcreteCustomClass category;
     private ConcreteCustomClass customCategory2;
@@ -124,18 +129,18 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP nameCustomCategory2CustomCategory4;
     private LP nameCustomCategory4CustomCategory6;
     private LP nameCustomCategory6CustomCategory10;      
-    private LP customCategory10Article;
+    private LP customCategory10DataArticle;
     private LP sidCustomCategory10Article;
     private LP customCategory10OriginArticle;
     private LP sidCustomCategory10OriginArticle;
     private LP sidCustomCategory10ArticleSku;
     private LP sidCustomCategory10OriginArticleSku;
     private LP customCategory10OriginArticleSku;
-    private LP customCategory10ArticleUn;
-    private LP mainСompositionArticle;
-    private LP additionalСompositionArticle;
-    private LP mainСompositionArticleSku;
-    private LP additionalСompositionArticleSku;
+    private LP customCategory10Article;
+    private LP mainCompositionArticle;
+    private LP additionalCompositionArticle;
+    private LP mainCompositionArticleSku;
+    private LP additionalCompositionArticleSku;
     private LP countryOfOriginArticleSku;
     private LP countryOfOriginDataSku;
     private LP countryOfOriginSku;
@@ -254,17 +259,79 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP isStoreFreightBoxSupplierBox;
     private LP barcodeActionSetStore;
     private AbstractCustomClass destination;
+    private AbstractCustomClass shipmentDetail;
+    private ConcreteCustomClass boxShipmentDetail;
+    private ConcreteCustomClass simpleShipmentDetail;
+    private LP skuShipmentDetail;
+    private LP boxShipmentBoxShipmentDetail;
+    private LP simpleShipmentSimpleShipmentDetail;
+    private LP quantityShipmentDetail;
+    private LP stockShipmentDetail;
+    private LP supplierBoxShipmentDetail;
+    private LP barcodeSkuShipmentDetail;
+    private LP shipmentShipmentDetail;
+    private LP addBoxShipmentDetailSupplierBoxStockBarcode;
+    private LP addBoxShipmentDetailSupplierBoxRouteBarcode;
+    private LP articleShipmentDetail;
+    private LP sidArticleShipmentDetail;
+    private LP barcodeStockShipmentDetail;
+    private LP barcodeSupplierBoxShipmentDetail;
+    private LP sidSupplierBoxShipmentDetail;
+    private LP routeFreightBoxShipmentDetail;
+    private LP nameRouteFreightBoxShipmentDetail;
+    private LP addSimpleShipmentDetailStockBarcode;
+    private LP addSimpleShipmentDetailRouteBarcode;
+    private AbstractGroup skuAttributeGroup;
+    private AbstractGroup supplierAttributeGroup;
+    private AbstractGroup intraAttributeGroup;
+    private LP colorSupplierItemShipmentDetail;
+    private LP sidColorSupplierItemShipmentDetail;
+    private LP nameColorSupplierItemShipmentDetail;
+    private LP sizeSupplierItemShipmentDetail;
+    private LP nameSizeSupplierItemShipmentDetail;
+    private AbstractGroup itemAttributeGroup;
+    private LP originalNameArticleSkuShipmentDetail;
+    private LP categoryArticleSkuShipmentDetail;
+    private LP nameCategoryArticleSkuShipmentDetail;
+    private LP customCategory10OriginArticleSkuShipmentDetail;
+    private LP sidCustomCategory10OriginArticleSkuShipmentDetail;
+    private LP customCategory10ArticleSkuShipmentDetail;
+    private LP sidCustomCategory10ArticleSkuShipmentDetail;
+    private LP netWeightOriginArticleSkuShipmentDetail;
+    private LP grossWeightOriginArticleSkuShipmentDetail;
+    private LP netWeightArticleSkuShipmentDetail;
+    private LP grossWeightArticleSkuShipmentDetail;
+    private LP countryOfOriginArticleSkuShipmentDetail;
+    private LP nameCountryOfOriginArticleSkuShipmentDetail;
+    private LP countryOfOriginSkuShipmentDetail;
+    private LP nameCountryOfOriginSkuShipmentDetail;
+    private LP mainCompositionArticleSkuShipmentDetail;
+    private LP mainCompositionSkuShipmentDetail;
+    private LP additionalCompositionSkuShipmentDetail;
+    private LP netWeightShipmentDetail;
+    private LP userShipmentDetail;
+    private LP nameUserShipmentDetail;
+    private LP timeShipmentDetail;
+
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
     }
 
-
-    AbstractGroup supplierGroup;
-
     @Override
     protected void initGroups() {
-        supplierGroup = new AbstractGroup ("Атрибуты от поставщика");
+
+        skuAttributeGroup = new AbstractGroup("Атрибуты SKU");
+        baseGroup.add(skuAttributeGroup);
+
+        itemAttributeGroup = new AbstractGroup("Атрибуты товара");
+        baseGroup.add(itemAttributeGroup);
+
+        supplierAttributeGroup = new AbstractGroup ("Атрибуты поставщика");
+        publicGroup.add(supplierAttributeGroup);
+
+        intraAttributeGroup = new AbstractGroup("Внутренние атрибуты");
+        publicGroup.add(intraAttributeGroup);
     }
 
     @Override
@@ -305,6 +372,12 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         shipment = addAbstractClass("shipment", "Поставка", document);
         boxShipment = addConcreteClass("boxShipment", "Поставка по коробам", shipment);
         simpleShipment = addConcreteClass("simpleShipment", "Поставка без коробов", shipment, shipDimension);
+
+        if (USE_SHIPMENT_DETAIL) {
+            shipmentDetail = addAbstractClass("shipmentDetail", "Строка поставки", baseClass);
+            boxShipmentDetail = addConcreteClass("boxShipmentDetail", "Строка поставки по коробам", shipmentDetail);
+            simpleShipmentDetail = addConcreteClass("simpleShipmentDetail", "Строка поставки без коробов", shipmentDetail);
+        }
 
         supplier = addConcreteClass("supplier", "Поставщик", baseClass.named);
 
@@ -388,64 +461,66 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         sidArticle = addDProp(baseGroup, "sidArticle", "Код", StringClass.get(50), article);
         sidArticleSku = addJProp(baseGroup, "sidArticleSku", "Код", sidArticle, articleSku, 1);
 
-        originalNameArticle = addDProp(baseGroup, "originalNameArticle", "Имя производителя (ориг.)", StringClass.get(50), article);
-        originalNameArticleSku = addJProp(supplierGroup, "originalNameArticleSku", "Имя производителя (ориг.)", originalNameArticle, articleSku, 1);
+        originalNameArticle = addDProp(supplierAttributeGroup, "originalNameArticle", "Имя производителя (ориг.)", StringClass.get(50), article);
+        originalNameArticleSku = addJProp(supplierAttributeGroup, "originalNameArticleSku", "Имя производителя (ориг.)", originalNameArticle, articleSku, 1);
 
         //Category
         categoryArticle = addDProp(idGroup, "categoryArticle", "Категория товара (ИД)", category, article);
-        nameCategoryArticle = addJProp(baseGroup, "nameCategoryArticle", "Категория товара", name, categoryArticle, 1);
-        categoryArticleSku = addJProp(baseGroup, true, "categoryArticleSku", "Категория товара", categoryArticle, articleSku, 1);
-        nameCategoryArticleSku = addJProp(baseGroup, "nameCategoryArticleSku", "Категория товара", name, categoryArticleSku, 1);
+        nameCategoryArticle = addJProp(intraAttributeGroup, "nameCategoryArticle", "Категория товара", name, categoryArticle, 1);
+        categoryArticleSku = addJProp(idGroup, true, "categoryArticleSku", "Категория товара (ИД)", categoryArticle, articleSku, 1);
+        nameCategoryArticleSku = addJProp(intraAttributeGroup, "nameCategoryArticleSku", "Категория товара", name, categoryArticleSku, 1);
 
-        customCategory10OriginArticle = addDProp(idGroup, "customCategory10OriginArticle", "ТН ВЭД (ИД)", customCategory10, article);
-        sidCustomCategory10OriginArticle = addJProp(baseGroup, "sidCustomCategory10OriginArticle", "ТН ВЭД (ориг.)", sidCustomCategory10, customCategory10OriginArticle, 1);
-        customCategory10OriginArticleSku = addJProp(supplierGroup, "customCategory10OriginArticleSku", "ТН ВЭД (ориг.)", customCategory10OriginArticle, articleSku, 1);
-        sidCustomCategory10OriginArticleSku = addJProp(supplierGroup, "sidCustomCategory10OriginArticleSku", "ТН ВЭД (ориг.)", sidCustomCategory10OriginArticle, articleSku, 1);
+        customCategory10OriginArticle = addDProp(idGroup, "customCategory10OriginArticle", "ТН ВЭД (ориг.) (ИД)", customCategory10, article);
+        sidCustomCategory10OriginArticle = addJProp(supplierAttributeGroup, "sidCustomCategory10OriginArticle", "Код ТН ВЭД (ориг.)", sidCustomCategory10, customCategory10OriginArticle, 1);
+        customCategory10OriginArticleSku = addJProp(idGroup, "customCategory10OriginArticleSku", "ТН ВЭД (ориг.) (ИД)", customCategory10OriginArticle, articleSku, 1);
+        sidCustomCategory10OriginArticleSku = addJProp(supplierAttributeGroup, "sidCustomCategory10OriginArticleSku", "Код ТН ВЭД (ориг.)", sidCustomCategory10OriginArticle, articleSku, 1);
 
-        customCategory10Article = addDProp(idGroup, "customCategory10Article", "ТН ВЭД (ИД)", customCategory10, article);
-        customCategory10ArticleSku = addJProp(baseGroup, true, "customCategory10ArticleSku", "ТН ВЭД", customCategory10Article, articleSku, 1);
-        customCategory10ArticleUn = addSUProp(baseGroup, "customCategory10ArticleUn", "ТН ВЭД", Union.OVERRIDE, customCategory10OriginArticleSku, customCategory10ArticleSku);
-        sidCustomCategory10ArticleSku = addJProp(baseGroup, "sidCustomCategory10ArticleSku", "ТН ВЭД", sidCustomCategory10, customCategory10ArticleUn, 1);
+        customCategory10DataArticle = addDProp(idGroup, "customCategory10DataArticle", "ТН ВЭД (ИД)", customCategory10, article);
+        customCategory10Article = addSUProp(idGroup, "customCategory10Article", "ТН ВЭД (ИД)", Union.OVERRIDE, customCategory10OriginArticle, customCategory10DataArticle);
+
+        customCategory10ArticleSku = addJProp(idGroup, true, "customCategory10ArticleSku", "ТН ВЭД (ИД)", customCategory10Article, articleSku, 1);
+        sidCustomCategory10ArticleSku = addJProp(intraAttributeGroup, "sidCustomCategory10ArticleSku", "Код ТН ВЭД", sidCustomCategory10, customCategory10ArticleSku, 1);
 
         // Weight
-        netWeightOriginArticle = addDProp(baseGroup, "netWeightOriginArticle", "Вес нетто (ориг.)", DoubleClass.instance, article);
-        grossWeightOriginArticle = addDProp(baseGroup, "grossWeightOriginArticle", "Вес брутто (ориг.)", DoubleClass.instance, article);
+        netWeightOriginArticle = addDProp(supplierAttributeGroup, "netWeightOriginArticle", "Вес нетто (ориг.)", DoubleClass.instance, article);
+        grossWeightOriginArticle = addDProp(supplierAttributeGroup, "grossWeightOriginArticle", "Вес брутто (ориг.)", DoubleClass.instance, article);
 
-        netWeightOriginArticleSku = addJProp(supplierGroup, "netnetWeightOriginArticleSku", "Вес нетто (ориг.)", netWeightOriginArticle, articleSku, 1);
-        grossWeightOriginArticleSku = addJProp(supplierGroup, "grossWeightOriginArticleSku", "Вес брутто (ориг.)", grossWeightOriginArticle, articleSku, 1);
+        netWeightDataArticle = addDProp(intraAttributeGroup, "netWeightDataArticle", "Вес нетто", DoubleClass.instance, article);
+        grossWeightDataArticle = addDProp(intraAttributeGroup, "grossWeightDataArticle", "Вес брутто", DoubleClass.instance, article);
 
-        netWeightArticle = addDProp(baseGroup, "netWeightArticle", "Вес нетто", DoubleClass.instance, article);
-        grossWeightArticle = addDProp(baseGroup, "grossWeightArticle", "Вес брутто", DoubleClass.instance, article);
+        netWeightArticle = addSUProp(intraAttributeGroup, "netWeightArticle", "Вес нетто", Union.OVERRIDE, netWeightOriginArticle, netWeightDataArticle);
+        grossWeightArticle = addSUProp(intraAttributeGroup, "grossWeightArticle", "Вес брутто", Union.OVERRIDE, grossWeightOriginArticle, grossWeightDataArticle);
 
-        netWeightArticleSku = addJProp(baseGroup, true, "netWeightArticleSku", "Вес нетто", netWeightArticle, articleSku, 1);
-        grossWeightArticleSku = addJProp(baseGroup, true, "grossWeightArticleSku", "Вес брутто", grossWeightArticle, articleSku, 1);
+        netWeightOriginArticleSku = addJProp(supplierAttributeGroup, "netnetWeightOriginArticleSku", "Вес нетто (ориг.)", netWeightOriginArticle, articleSku, 1);
+        grossWeightOriginArticleSku = addJProp(supplierAttributeGroup, "grossWeightOriginArticleSku", "Вес брутто (ориг.)", grossWeightOriginArticle, articleSku, 1);
 
-        netWeightArticleUn = addSUProp(baseGroup, "netWeightArticleUn", "Вес нетто", Union.OVERRIDE,  netWeightOriginArticleSku, netWeightArticleSku);
-        grossWeightArticleUn = addSUProp(baseGroup, "grossWeightArticleUn", "Вес брутто", Union.OVERRIDE,  grossWeightOriginArticleSku, grossWeightArticleSku);
+        netWeightArticleSku = addJProp(intraAttributeGroup, true, "netWeightArticleSku", "Вес нетто", netWeightArticle, articleSku, 1);
+        grossWeightArticleSku = addJProp(intraAttributeGroup, true, "grossWeightArticleSku", "Вес брутто", grossWeightArticle, articleSku, 1);
 
         // Сomposition
-        mainСompositionArticle = addDProp(baseGroup, "mainСompositionArticle", "Состав", StringClass.get(100), article);
-        additionalСompositionArticle = addDProp(baseGroup, "additionalСompositionArticle", "Доп. состав", StringClass.get(100), article);
+        mainCompositionArticle = addDProp(supplierAttributeGroup, "mainCompositionArticle", "Состав", StringClass.get(100), article);
+        additionalCompositionArticle = addDProp(supplierAttributeGroup, "additionalCompositionArticle", "Доп. состав", StringClass.get(100), article);
 
-        mainСompositionArticleSku = addJProp(supplierGroup, "mainСompositionArticleSku", "Состав", mainСompositionArticle, articleSku, 1);
-        additionalСompositionArticleSku = addJProp(supplierGroup, "additionalСompositionArticleSku", "Доп. состав", additionalСompositionArticle, articleSku, 1);
+        mainCompositionArticleSku = addJProp(supplierAttributeGroup, "mainCompositionArticleSku", "Состав", mainCompositionArticle, articleSku, 1);
+        additionalCompositionArticleSku = addJProp(supplierAttributeGroup, "additionalCompositionArticleSku", "Доп. состав", additionalCompositionArticle, articleSku, 1);
 
-        mainСompositionDataSku = addDProp(baseGroup, "mainСompositionDataSku", "Состав", StringClass.get(100), sku);
-        additionalСompositionDataSku = addDProp(baseGroup, "additionalСompositionDataSku", "Доп. состав", StringClass.get(100), sku);
+        mainCompositionDataSku = addDProp(intraAttributeGroup, "mainCompositionDataSku", "Состав", StringClass.get(100), sku);
+        additionalCompositionDataSku = addDProp(intraAttributeGroup, "additionalCompositionDataSku", "Доп. состав", StringClass.get(100), sku);
 
-        mainСompositionSku = addSUProp(baseGroup, "mainСompositionSku", "Состав", Union.OVERRIDE, mainСompositionArticleSku, mainСompositionDataSku);
-        additionalСompositionSku = addSUProp(baseGroup, "additionalСompositionSku", "Доп. состав", Union.OVERRIDE, additionalСompositionArticleSku, additionalСompositionDataSku);
+        mainCompositionSku = addSUProp(intraAttributeGroup, "mainCompositionSku", "Состав", Union.OVERRIDE, mainCompositionArticleSku, mainCompositionDataSku);
+        additionalCompositionSku = addSUProp(intraAttributeGroup, "additionalCompositionSku", "Доп. состав", Union.OVERRIDE, additionalCompositionArticleSku, additionalCompositionDataSku);
 
         // Country
         countryOfOriginArticle = addDProp(idGroup, "countryOfOriginArticle", "Страна происхождения (ИД)", country, article);
-        nameCountryOfOriginArticle = addJProp(baseGroup, "nameCountryOfOriginArticle", "Страна происхождения (ориг.)", name, countryOfOriginArticle, 1);
+        nameCountryOfOriginArticle = addJProp(supplierAttributeGroup, "nameCountryOfOriginArticle", "Страна происхождения (ориг.)", name, countryOfOriginArticle, 1);
 
         countryOfOriginArticleSku = addJProp(idGroup, "countryOfOriginArticleSku", "Страна происхождения (ИД)", countryOfOriginArticle, articleSku, 1);
-        nameCountryOfOriginArticleSku = addJProp(supplierGroup, "nameCountryOfOriginArticleSku", "Страна происхождения", name, countryOfOriginArticleSku, 1);
+        nameCountryOfOriginArticleSku = addJProp(supplierAttributeGroup, "nameCountryOfOriginArticleSku", "Страна происхождения", name, countryOfOriginArticleSku, 1);
 
         countryOfOriginDataSku = addDProp(idGroup, "countryOfOriginDataSku", "Страна происхождения (ИД) (первичное)", country, sku);
+
         countryOfOriginSku = addSUProp(idGroup, "countryOfOriginSku", "Страна происхождения (ИД)", Union.OVERRIDE, countryOfOriginArticleSku, countryOfOriginDataSku);
-        nameCountryOfOriginSku = addJProp(baseGroup, "nameCountryOfOriginSku", "Страна происхождения", name, countryOfOriginSku, 1);                           
+        nameCountryOfOriginSku = addJProp(intraAttributeGroup, "nameCountryOfOriginSku", "Страна происхождения", name, countryOfOriginSku, 1);
 
         // Supplier
         supplierArticle = addDProp(idGroup, "supplierArticle", "Поставщик (ИД)", supplier, article);
@@ -461,22 +536,22 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         addArticleCompositeSIDSupplier = addJProp(true, "Ввод составного артикула", addAAProp(articleComposite, sidArticle, supplierArticle), 1, 2);
         addNEArticleCompositeSIDSupplier = addJProp(true, "Ввод составного артикула (НС)", andNot1, addArticleCompositeSIDSupplier, 1, 2, articleSIDSupplier, 1, 2);
 
-        supplierItem = addJProp(idGroup, "supplierItem", "Поставщик (ИД)", supplierArticle, articleCompositeItem, 1);
-        nameSupplierItem = addJProp(baseGroup, "nameSupplierItem", "Поставщик", name, supplierItem, 1);
+        supplierSku = addJProp(idGroup, "supplierSku", "Поставщик (ИД)", supplierArticle, articleSku, 1);
+        nameSupplierSku = addJProp(baseGroup, "nameSupplierSku", "Поставщик", name, supplierSku, 1);
 
         colorSupplierItem = addDProp(idGroup, "colorSupplierItem", "Цвет поставщика (ИД)", colorSupplier, item);
-        sidColorSupplierItem = addJProp(supplierGroup, "sidColorSupplierItem", "Код цвета", sidColorSupplier, colorSupplierItem, 1);
-        nameColorSupplierItem = addJProp(supplierGroup, "nameColorSupplierItem", "Цвет поставщика", name, colorSupplierItem, 1);
+        sidColorSupplierItem = addJProp(itemAttributeGroup, "sidColorSupplierItem", "Код цвета", sidColorSupplier, colorSupplierItem, 1);
+        nameColorSupplierItem = addJProp(itemAttributeGroup, "nameColorSupplierItem", "Цвет поставщика", name, colorSupplierItem, 1);
 
-        sizeSupplierItem = addDProp(idGroup, "sizeSupplierItem", "Размер поставщика (ИД)", sizeSupplier, item);
-        nameSizeSupplierItem = addJProp(supplierGroup, "nameSizeSupplierItem", "Размер поставщика", name, sizeSupplierItem, 1);
+        sizeSupplierItem = addDProp(itemAttributeGroup, "sizeSupplierItem", "Размер поставщика (ИД)", sizeSupplier, item);
+        nameSizeSupplierItem = addJProp(itemAttributeGroup, "nameSizeSupplierItem", "Размер поставщика", name, sizeSupplierItem, 1);
 
         addConstraint(addJProp("Поставщик товара должен соответствовать цвету поставщика", diff2,
-                supplierItem, 1,
+                supplierSku, 1,
                 addJProp(supplierColorSupplier, colorSupplierItem, 1), 1), true);
 
         addConstraint(addJProp("Поставщик товара должен соответствовать размеру поставщика", diff2,
-                supplierItem, 1,
+                supplierSku, 1,
                 addJProp(supplierSizeSupplier, sizeSupplierItem, 1), 1), true);
 
         sidDocument = addDProp(baseGroup, "sidDocument", "Код", StringClass.get(50), document);
@@ -498,7 +573,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         // заказ по артикулам
 
-        documentList = addCUProp(baseGroup, "documentList", "Документ (ИД)", object(order), object(simpleInvoice), boxInvoiceSupplierBox);
+        documentList = addCUProp(idGroup, "documentList", "Документ (ИД)", object(order), object(simpleInvoice), boxInvoiceSupplierBox);
         supplierList = addJProp(idGroup, "supplierList", "Поставщик (ИД)", supplierDocument, documentList, 1);
 
         articleSIDList = addJProp(idGroup, "articleSIDList", "Артикул (ИД)", articleSIDSupplier, 1,
@@ -547,12 +622,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                                            order, invoice, sku);
 
         invoicedOrderSku = addSGProp(baseGroup, "invoicedOrderSku", "Выставлено инвойсов", quantityOrderInvoiceSku, 1, 3);
-
-        // для заказа при вводе этого количества все кидается на первую
-        LP lp = addCUProp(addCProp(DoubleClass.instance, Double.MAX_VALUE, list, articleSingle),
-                addCProp(DoubleClass.instance, Double.MAX_VALUE, order, item),
-                addJProp(and1, orderedSimpleInvoiceSku, 1, 2, is(item), 2), // если не артикул (простой), то пропорционально заказано
-                addJProp(and1, orderedSupplierBoxSku, 1, 2, is(item), 2));
 
         // todo : не работает на инвойсе/простом товаре
         quantityListArticle = addDGProp(baseGroup, "quantityListArticle", "Кол-во",
@@ -626,11 +695,94 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         invoicedShipmentSku = addSGProp(baseGroup, "invoicedShipmentSku", "Ожид. (пост.)",
                 addJProp(and1, quantityDocumentSku, 1, 2, inInvoiceShipment, 1, 3), 3, 2);
 
-        quantitySupplierBoxBoxShipmentStockSku = addDProp(baseGroup, "quantitySupplierBoxBoxShipmentStockSku", "Кол-во оприход.", DoubleClass.instance,
-                supplierBox, boxShipment, stock, sku);
+        if (USE_SHIPMENT_DETAIL) {
 
-        quantitySimpleShipmentStockSku = addDProp(baseGroup, "quantitySimpleShipmentStockSku", "Кол-во оприход.", DoubleClass.instance,
-                simpleShipment, stock, sku);
+            //sku shipment detail
+            skuShipmentDetail = addDProp(idGroup, "skuShipmentDetail", "SKU (ИД)", sku, shipmentDetail);
+            barcodeSkuShipmentDetail = addJProp(baseGroup, "barcodeSkuShipmentDetail", "Штрих-код SKU", barcode, skuShipmentDetail, 1);
+
+            articleShipmentDetail = addJProp(idGroup, "articleShipmentDetail", "Артикул (ИД)", articleSku, skuShipmentDetail, 1);
+            sidArticleShipmentDetail = addJProp(baseGroup, "sidArticleShipmentDetail", "Артикул", sidArticle, articleShipmentDetail, 1);
+
+            colorSupplierItemShipmentDetail = addJProp(idGroup, "colorSupplierItemShipmentDetail", "Цвет поставщика (ИД)", colorSupplierItem, skuShipmentDetail, 1);
+            sidColorSupplierItemShipmentDetail = addJProp(itemAttributeGroup, "sidColorSupplierItemShipmentDetail", "Код цвета", sidColorSupplier, colorSupplierItemShipmentDetail, 1);
+            nameColorSupplierItemShipmentDetail = addJProp(itemAttributeGroup, "nameColorSupplierItemShipmentDetail", "Цвет поставщика", name, colorSupplierItemShipmentDetail, 1);
+
+            sizeSupplierItemShipmentDetail = addJProp(idGroup, "sizeSupplierItemShipmentDetail", "Размер поставщика (ИД)", sizeSupplierItem, skuShipmentDetail, 1);
+            nameSizeSupplierItemShipmentDetail = addJProp(itemAttributeGroup, "nameSizeSupplierItemShipmentDetail", "Размер поставщика", name, sizeSupplierItemShipmentDetail, 1);
+
+            originalNameArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, true, "originalNameArticleSkuShipmentDetail", "Имя производителя (ориг.)", originalNameArticleSku, skuShipmentDetail, 1);
+
+            categoryArticleSkuShipmentDetail = addJProp(idGroup, true, "categoryArticleSkuShipmentDetail", "Категория товара (ИД)", categoryArticleSku, skuShipmentDetail, 1);
+            nameCategoryArticleSkuShipmentDetail = addJProp(intraAttributeGroup, "nameCategoryArticleSkuShipmentDetail", "Категория товара", name, categoryArticleSkuShipmentDetail, 1);
+
+            customCategory10OriginArticleSkuShipmentDetail = addJProp(idGroup, true, "customCategory10OriginArticleSkuShipmentDetail", "ТН ВЭД (ориг.) (ИД)", customCategory10OriginArticleSku, skuShipmentDetail, 1);
+            sidCustomCategory10OriginArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, "sidCustomCategory10OriginArticleSkuShipmentDetail", "Код ТН ВЭД (ориг.)", sidCustomCategory10, customCategory10OriginArticleSkuShipmentDetail, 1);
+
+            customCategory10ArticleSkuShipmentDetail = addJProp(idGroup, true, "customCategory10ArticleSkuShipmentDetail", "ТН ВЭД (ИД)", customCategory10ArticleSku, skuShipmentDetail, 1);
+            sidCustomCategory10ArticleSkuShipmentDetail = addJProp(intraAttributeGroup, "sidCustomCategory10ArticleSkuShipmentDetail", "Код ТН ВЭД", sidCustomCategory10, customCategory10ArticleSkuShipmentDetail, 1);
+
+            netWeightOriginArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, true, "netWeightOriginArticleSkuShipmentDetail", "Вес нетто (ориг.)", netWeightOriginArticleSku, skuShipmentDetail, 1);
+            grossWeightOriginArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, true, "grossWeightOriginArticleSkuShipmentDetail", "Вес брутто (ориг.)", grossWeightOriginArticleSku, skuShipmentDetail, 1);
+
+            netWeightArticleSkuShipmentDetail = addJProp(intraAttributeGroup, true, "netWeightArticleSkuShipmentDetail", "Вес нетто", netWeightArticleSku, skuShipmentDetail, 1);
+            grossWeightArticleSkuShipmentDetail = addJProp(intraAttributeGroup, true, "grossWeightArticleSkuShipmentDetail", "Вес брутто", grossWeightArticleSku, skuShipmentDetail, 1);
+
+            countryOfOriginArticleSkuShipmentDetail = addJProp(idGroup, true, "countryOfOriginArticleSkuShipmentDetail", "Страна происхождения (ориг.) (ИД)", countryOfOriginArticleSku, skuShipmentDetail, 1);
+            nameCountryOfOriginArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, "nameCountryOfOriginArticleSkuShipmentDetail", "Страна происхождения", name, countryOfOriginArticleSkuShipmentDetail, 1);
+
+            countryOfOriginSkuShipmentDetail = addJProp(idGroup, true, "countryOfOriginSkuShipmentDetail", "Страна происхождения (ИД)", countryOfOriginSku, skuShipmentDetail, 1);
+            nameCountryOfOriginSkuShipmentDetail = addJProp(intraAttributeGroup, "nameCountryOfOriginSkuShipmentDetail", "Страна происхождения", name, countryOfOriginSkuShipmentDetail, 1);
+
+            mainCompositionArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, true, "mainCompositionArticleSkuShipmentDetail", "Состав (ориг.)", mainCompositionArticleSku, skuShipmentDetail, 1);
+            mainCompositionSkuShipmentDetail = addJProp(intraAttributeGroup, true, "mainCompositionSkuShipmentDetail", "Состав", mainCompositionSku, skuShipmentDetail, 1);
+
+            additionalCompositionSkuShipmentDetail = addJProp(intraAttributeGroup, true, "additionalCompositionSkuShipmentDetail", "Дополнительный состав", additionalCompositionSku, skuShipmentDetail, 1);
+
+            // stock shipment detail
+            stockShipmentDetail = addDProp(idGroup, "stockShipmentDetail", "Место хранения (ИД)", stock, shipmentDetail);
+            barcodeStockShipmentDetail = addJProp(baseGroup, "barcodeStockShipmentDetail", "Штрих-код МХ", barcode, stockShipmentDetail, 1);
+
+            routeFreightBoxShipmentDetail = addJProp(idGroup, "routeFreightBoxShipmentDetail", "Маршрут (ИД)", routeFreightBox, stockShipmentDetail, 1);
+            nameRouteFreightBoxShipmentDetail = addJProp(baseGroup, "nameRouteFreightBoxShipmentDetail", "Маршрут", name, routeFreightBoxShipmentDetail, 1);
+
+            boxShipmentBoxShipmentDetail = addDProp(idGroup, "boxShipmentBoxShipmentDetail", "Поставка (ИД)", boxShipment, boxShipmentDetail);
+            simpleShipmentSimpleShipmentDetail = addDProp(idGroup, "simpleShipmentSimpleShipmentDetail", "Поставка (ИД)", simpleShipment, simpleShipmentDetail);
+            shipmentShipmentDetail = addCUProp(idGroup, "shipmentShipmentDetail", "Поставка (ИД)", boxShipmentBoxShipmentDetail, simpleShipmentSimpleShipmentDetail);
+
+            // supplier box shipmentDetail
+            supplierBoxShipmentDetail = addDProp(idGroup, "supplierBoxShipmentDetail", "Короб поставщика (ИД)", supplierBox, boxShipmentDetail);
+            sidSupplierBoxShipmentDetail = addJProp(baseGroup, "sidSupplierBoxShipmentDetail", "Штрих-код короба поставщика", sidSupplierBox, supplierBoxShipmentDetail, 1);
+            barcodeSupplierBoxShipmentDetail = addJProp(baseGroup, "barcodeSupplierBoxShipmentDetail", "Штрих-код короба поставщика", barcode, supplierBoxShipmentDetail, 1);
+
+            quantityShipmentDetail = addDProp(baseGroup, "quantityShipmentDetail", "Кол-во", DoubleClass.instance, shipmentDetail);
+            netWeightShipmentDetail = addDCProp(baseGroup, "netWeightShipmentDetail", "Вес нетто", netWeightArticleSku, true, skuShipmentDetail, 1);
+
+            userShipmentDetail = addDCProp(idGroup, "userShipmentDetail", "Пользователь (ИД)", currentUser, true, is(shipmentDetail), 1);
+            nameUserShipmentDetail = addJProp(baseGroup, "nameUserShipmentDetail", "Пользователь", name, userShipmentDetail, 1);
+
+            // todo : сделать нормально время, сейчас время - Double Class
+            timeShipmentDetail = addTCProp(baseGroup, Time.EPOCH, "timeShipmentDetail", "Время ввода", quantityShipmentDetail, shipmentDetail);
+
+            addBoxShipmentDetailSupplierBoxStockBarcode = addJProp(true, "Добавить строку поставки",
+                    addAAProp(boxShipmentDetail, supplierBoxShipmentDetail, stockShipmentDetail, skuShipmentDetail, quantityShipmentDetail), 1, 2, barcodeToObject, 3, addCProp(DoubleClass.instance, 1));
+
+            addSimpleShipmentDetailStockBarcode = addJProp(true, "Добавить строку поставки",
+                    addAAProp(simpleShipmentDetail, stockShipmentDetail, skuShipmentDetail, quantityShipmentDetail), 1, barcodeToObject, 2, addCProp(DoubleClass.instance, 1));
+
+            quantitySupplierBoxBoxShipmentStockSku = addSGProp(baseGroup, "quantitySupplierBoxBoxShipmentStockSku", "Кол-во оприход.", quantityShipmentDetail,
+                    supplierBoxShipmentDetail, 1, boxShipmentBoxShipmentDetail, 1, stockShipmentDetail, 1, skuShipmentDetail, 1);
+
+            quantitySimpleShipmentStockSku = addSGProp(baseGroup, "quantitySimpleShipmentStockSku", "Кол-во оприход.", quantityShipmentDetail,
+                    simpleShipmentSimpleShipmentDetail, 1, stockShipmentDetail, 1, skuShipmentDetail, 1);
+        } else {
+
+            quantitySupplierBoxBoxShipmentStockSku = addDProp(baseGroup, "quantitySupplierBoxBoxShipmentStockSku", "Кол-во оприход.", DoubleClass.instance,
+                    supplierBox, boxShipment, stock, sku);
+
+            quantitySimpleShipmentStockSku = addDProp(baseGroup, "quantitySimpleShipmentStockSku", "Кол-во оприход.", DoubleClass.instance,
+                    simpleShipment, stock, sku);
+        }
 
         quantityShipDimensionShipmentStockSku = addCUProp(baseGroup, "quantityShipDimensionShipmentStockSku", "Кол-во оприход.",
                 quantitySupplierBoxBoxShipmentStockSku,
@@ -730,6 +882,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         barcodeActionSetPallet = addJProp(true, "Установить паллету", isCurrentPalletFreightBox, barcodeToObject, 1);
         barcodeActionSetStore = addJProp(true, "Установить магазин", isStoreFreightBoxSupplierBox, barcodeToObject, 1, 2);
 
+        if (USE_SHIPMENT_DETAIL) {
+            addBoxShipmentDetailSupplierBoxRouteBarcode = addJProp(true, "Добавить строку поставки",
+                    addBoxShipmentDetailSupplierBoxStockBarcode, 1, currentFreightBoxRoute, 2, 3);
+
+            addSimpleShipmentDetailRouteBarcode = addJProp(true, "Добавить строку поставки",
+                    addSimpleShipmentDetailStockBarcode, currentFreightBoxRoute, 1, 2);
+        }
+
         quantityRouteSku = addJProp(baseGroup, "quantityRouteSku", "Оприход. (МХ)", quantityStockSku, currentFreightBoxRoute, 1, 2);
 
         quantitySupplierBoxBoxShipmentRouteSku = addJProp(baseGroup, true,  "quantitySupplierBoxBoxShipmentRouteSku", "Кол-во оприход.",
@@ -813,7 +973,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             PropertyDrawView barcodeView = design.get(getPropertyDraw(objectValue, objBarcode));
 
             design.getPanelContainer(design.get(objBarcode.groupTo)).add(design.get(getPropertyDraw(reverseBarcode)));
-            design.getPanelContainer(design.get(objBarcode.groupTo)).constraints.maxVariables = 0;
+//            design.getPanelContainer(design.get(objBarcode.groupTo)).constraints.maxVariables = 0;
 
             design.setBackground(barcodeObjectName, new Color(240, 240, 240));
 
@@ -987,7 +1147,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objArticle.groupTo.setSingleClassView(ClassViewType.GRID);
 
             addPropertyDraw(numberListArticle, (box ? objSupplierBox : objInvoice), objArticle);
-            addPropertyDraw(objArticle, sidArticle, originalNameArticle, nameCountryOfOriginArticle, sidCustomCategory10OriginArticle, netWeightOriginArticle, grossWeightOriginArticle, mainСompositionArticle, additionalСompositionArticle, barcode);
+            addPropertyDraw(objArticle, sidArticle, originalNameArticle, nameCountryOfOriginArticle, sidCustomCategory10OriginArticle, netWeightOriginArticle, grossWeightOriginArticle, mainCompositionArticle, additionalCompositionArticle, barcode);
             addPropertyDraw(quantityListArticle, (box ? objSupplierBox : objInvoice), objArticle);
             addPropertyDraw(priceDocumentArticle, objInvoice, objArticle);
             addPropertyDraw(sumDocumentArticle, objInvoice, objArticle);
@@ -1126,6 +1286,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objSupplierBox;
         private ObjectEntity objSku;
         private ObjectEntity objRoute;
+        private ObjectEntity objShipmentDetail;
+
+        private PropertyDrawEntity nameRoute;
 
         private ShipmentSpecFormEntity(NavigatorElement parent, int iID, String caption, boolean box) {
             super(parent, iID, caption);
@@ -1150,32 +1313,33 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             objRoute = addSingleGroupObject(route, "Маршрут", name, barcodeCurrentPalletRoute, barcodeCurrentFreightBoxRoute, nameDestinationCurrentFreightBoxRoute);
             objRoute.groupTo.setSingleClassView(ClassViewType.GRID);
-                        
-            objSku = addSingleGroupObject(sku, "SKU", barcode, sidArticleSku, originalNameArticleSku, nameCountryOfOriginArticleSku, nameCountryOfOriginSku, sidCustomCategory10ArticleSku, sidCustomCategory10OriginArticleSku, netWeightOriginArticleSku, grossWeightOriginArticleSku, netWeightArticleUn, grossWeightArticleUn, mainСompositionArticleSku, mainСompositionSku, additionalСompositionArticleSku, additionalСompositionSku, sidColorSupplierItem, nameColorSupplierItem, nameSizeSupplierItem, nameCategoryArticleSku);
-                                                                                                       
-            getPropertyDraw(sidColorSupplierItem).forceViewType = ClassViewType.GRID;
-            getPropertyDraw(nameColorSupplierItem).forceViewType = ClassViewType.GRID;
-            getPropertyDraw(nameSizeSupplierItem).forceViewType = ClassViewType.GRID;
-            getPropertyDraw(nameCategoryArticleSku).forceViewType = ClassViewType.PANEL;
-            getPropertyDraw(nameCountryOfOriginSku).forceViewType = ClassViewType.PANEL;            
-            getPropertyDraw(sidCustomCategory10ArticleSku).forceViewType = ClassViewType.PANEL;
-            getPropertyDraw(mainСompositionSku).forceViewType = ClassViewType.PANEL;
-            getPropertyDraw(additionalСompositionSku).forceViewType = ClassViewType.PANEL;
-            getPropertyDraw(netWeightArticleUn).forceViewType = ClassViewType.PANEL;
-            getPropertyDraw(grossWeightArticleUn).forceViewType = ClassViewType.PANEL;
 
-            setReadOnly(originalNameArticleSku, true);
-            setReadOnly(nameCountryOfOriginArticleSku, true);
-            setReadOnly(sidCustomCategory10OriginArticleSku, true);
-            setReadOnly(netWeightOriginArticleSku, true);
-            setReadOnly(grossWeightOriginArticleSku, true);
-            setReadOnly(mainСompositionArticleSku, true);
-            setReadOnly(additionalСompositionArticleSku, true);
+            nameRoute = addPropertyDraw(name, objRoute);
+            nameRoute.forceViewType = ClassViewType.PANEL;
+                        
+            objSku = addSingleGroupObject(sku, "SKU", barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, nameSizeSupplierItem,
+                    originalNameArticleSku, sidCustomCategory10OriginArticleSku,
+                    netWeightOriginArticleSku, grossWeightOriginArticleSku,
+                    nameCountryOfOriginArticleSku, mainCompositionArticleSku,
+                    nameCategoryArticleSku, sidCustomCategory10ArticleSku,
+                    netWeightArticleSku, grossWeightArticleSku,
+                    nameCountryOfOriginSku, mainCompositionSku,
+                    additionalCompositionSku);
+            objSku.groupTo.setSingleClassView(ClassViewType.GRID);
+
+            setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
+            setForceViewType(intraAttributeGroup, ClassViewType.PANEL, objSku.groupTo);
+
+            setReadOnly(supplierAttributeGroup, true, objSku.groupTo);
 
             addPropertyDraw(invoicedShipmentSku, objShipment, objSku);
             addPropertyDraw(quantityShipmentSku, objShipment, objSku);
-            addPropertyDraw(oneShipmentArticleSku, objShipment, objSku);
-            addPropertyDraw(oneShipmentSku, objShipment, objSku);
+
+//            addPropertyDraw(oneShipmentArticleSku, objShipment, objSku);
+//            addPropertyDraw(oneShipmentSku, objShipment, objSku);
+//
+//            getPropertyDraw(oneShipmentArticleSku).forceViewType = ClassViewType.PANEL;
+//            getPropertyDraw(oneShipmentSku).forceViewType = ClassViewType.PANEL;
 
             PropertyDrawEntity quantityColumn;
             if (box) {
@@ -1194,6 +1358,31 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addPropertyDraw(percentShipmentRouteSku, objShipment, objRoute, objSku).setToDraw(objRoute.groupTo);
             addPropertyDraw(invoicedShipmentRouteSku, objShipment, objRoute, objSku).setToDraw(objRoute.groupTo);
             addPropertyDraw(quantityShipmentRouteSku, objShipment, objRoute, objSku).setToDraw(objRoute.groupTo);
+
+            if (USE_SHIPMENT_DETAIL) {
+                objShipmentDetail = addSingleGroupObject((box ? boxShipmentDetail : simpleShipmentDetail),
+                        selection, barcodeSkuShipmentDetail, sidArticleShipmentDetail, sidColorSupplierItemShipmentDetail, nameColorSupplierItemShipmentDetail, nameSizeSupplierItemShipmentDetail,
+                        originalNameArticleSkuShipmentDetail, sidCustomCategory10OriginArticleSkuShipmentDetail,
+                        netWeightOriginArticleSkuShipmentDetail, grossWeightOriginArticleSkuShipmentDetail,
+                        nameCountryOfOriginArticleSkuShipmentDetail, mainCompositionArticleSkuShipmentDetail,
+                        nameCategoryArticleSkuShipmentDetail, sidCustomCategory10ArticleSkuShipmentDetail,
+                        netWeightArticleSkuShipmentDetail, grossWeightArticleSkuShipmentDetail,
+                        nameCountryOfOriginSkuShipmentDetail, mainCompositionSkuShipmentDetail,
+                        additionalCompositionSkuShipmentDetail,
+                        sidSupplierBoxShipmentDetail, barcodeSupplierBoxShipmentDetail,
+                        barcodeStockShipmentDetail, nameRouteFreightBoxShipmentDetail,
+                        quantityShipmentDetail, netWeightShipmentDetail, nameUserShipmentDetail);
+
+                objShipmentDetail.groupTo.setSingleClassView(ClassViewType.GRID);
+
+                addObjectActions(this, objShipmentDetail);
+
+                setForceViewType(itemAttributeGroup, ClassViewType.GRID, objShipmentDetail.groupTo);
+                setForceViewType(supplierAttributeGroup, ClassViewType.PANEL, objShipmentDetail.groupTo);
+                setForceViewType(intraAttributeGroup, ClassViewType.PANEL, objShipmentDetail.groupTo);
+
+                addFixedFilter(new CompareFilterEntity(addPropertyObject(shipmentShipmentDetail, objShipmentDetail), Compare.EQUALS, objShipment));
+            }
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objShipment), Compare.EQUALS, objSupplier));
 
@@ -1243,13 +1432,18 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             else
                 addAutoAction(objBarcode, addPropertyObject(barcodeAction3, objShipment, objRoute, objBarcode));
             addAutoAction(objBarcode, addPropertyObject(seekBarcodeAction, objBarcode));
+
+            if (USE_SHIPMENT_DETAIL) {
+                if (box)
+                    addAutoAction(objBarcode, addPropertyObject(addBoxShipmentDetailSupplierBoxRouteBarcode, objSupplierBox, objRoute, objBarcode));
+                else
+                    addAutoAction(objBarcode, addPropertyObject(addSimpleShipmentDetailRouteBarcode, objRoute, objBarcode));
+            }
+
             addAutoAction(objBarcode, addPropertyObject(barcodeNotFoundMessage, objBarcode));
             if (box)
                 addAutoAction(objSIDSupplierBox, addPropertyObject(seekSupplierBoxSIDSupplier, objSIDSupplierBox, objSupplier));
 
-            getPropertyDraw(oneShipmentArticleSku).forceViewType = ClassViewType.PANEL;
-            getPropertyDraw(oneShipmentSku).forceViewType = ClassViewType.PANEL;
-            
             setReadOnly(objSupplier, true);
             setReadOnly(objShipment, true);
         }
@@ -1261,7 +1455,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             if (box)
                 design.setEditKey(design.get(getPropertyDraw(objectValue, objSIDSupplierBox)), KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0));
 
-            design.get(objRoute.groupTo).grid.constraints.fillVertical = 0.2;
+            design.get(objRoute.groupTo).grid.constraints.fillVertical = 0.4;
             design.get(objRoute.groupTo).grid.showFilter = false;
 
             if (box)
@@ -1280,6 +1474,19 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 design.addIntersection(design.getGroupObjectContainer(objShipment.groupTo),
                                        design.getGroupObjectContainer(objSupplierBox.groupTo),
                                        DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            if (USE_SHIPMENT_DETAIL) {
+                ContainerView specContainer = design.createContainer();
+                design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objShipmentDetail.groupTo));
+                specContainer.add(design.getGroupObjectContainer(objShipmentDetail.groupTo));
+                specContainer.add(design.getGroupObjectContainer(objSku.groupTo));
+                specContainer.tabbedPane = true;
+
+                design.get(nameRoute).minimumCharWidth = 4;
+                design.get(nameRoute).panelLabelAbove = true;
+                design.get(nameRoute).design.font = new Font("Tahoma", Font.BOLD, 64);
+                design.getGroupObjectContainer(objRoute.groupTo).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
+            }
 
             return design;
         }
