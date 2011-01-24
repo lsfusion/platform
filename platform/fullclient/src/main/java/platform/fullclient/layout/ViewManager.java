@@ -30,7 +30,7 @@ public class ViewManager {
 
         pageFactory = new FormFactory(mainNavigator);
         control.addMultipleDockableFactory("page", pageFactory);
-        gridArea = control.createGridArea("Form area");
+        gridArea = control.createWorkingArea("Form area");
         gridArea.setVisible(true);
     }
 
