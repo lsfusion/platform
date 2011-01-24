@@ -346,8 +346,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     @Override
     protected void initClasses() {
 
-        country = addConcreteClass("country", "Страна", baseClass.named);
-
         currency = addConcreteClass("currency", "Валюта", baseClass.named);
 
         destination = addAbstractClass("destination", "Пункт назначения", baseClass);

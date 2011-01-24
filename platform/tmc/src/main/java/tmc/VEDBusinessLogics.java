@@ -110,7 +110,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     CustomClass supplier;
     public ConcreteCustomClass article;
-    CustomClass store, articleGroup, localSupplier, importSupplier, orderLocal, format, brend, line, country, gender;
+    CustomClass store, articleGroup, localSupplier, importSupplier, orderLocal, format, brend, line, gender;
     CustomClass customerWhole;
     CustomClass customerInvoiceRetail;
     public ConcreteCustomClass customerCheckRetail;
@@ -161,7 +161,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         // новый классы
         brend = addConcreteClass("brend", "Бренд", baseClass.named);
-        country = addConcreteClass("country", "Страна", baseClass.named);
         line = addConcreteClass("line", "Линия", baseClass.named);
         gender = addConcreteClass("gender", "Пол", baseClass.named);
 

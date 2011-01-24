@@ -26,6 +26,7 @@ import platform.server.auth.User;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
 import platform.server.data.*;
+import platform.server.data.Time;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.query.OrderType;
 import platform.server.data.query.Query;
@@ -35,7 +36,7 @@ import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
 import platform.server.form.entity.*;
-import platform.server.form.entity.filter.CompareFilterEntity;
+import platform.server.form.entity.filter.*;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
@@ -71,8 +72,9 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.RMIFailureHandler;
 import java.rmi.server.RMISocketFactory;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
+import java.util.Date;
 
 // @GenericImmutable нельзя так как Spring валится
 
@@ -323,6 +325,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public ConcreteCustomClass policy;
     public ConcreteCustomClass session;
     public ConcreteCustomClass userRole;
+    public ConcreteCustomClass country;
 
     public Integer getComputer(String strHostName) {
         try {
@@ -565,6 +568,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP emailAccount;
     protected LP emailPassword;
     protected LP fromAddress;
+
+    protected LP countrySId;
+    protected LP sidToCountry;
+    protected LP isDayOffCountryDate;
+    LP workingDay, isWorkingDay, workingDaysQuantity, equalsWorkingDaysQuantity;
 
     private final ConcreteValueClass classSIDValueClass = StringClass.get(250);
 
@@ -903,6 +911,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         policy = addConcreteClass("policy", "Политика безопасности", baseClass.named);
         session = addConcreteClass("session", "Транзакция", baseClass);
 
+        country = addConcreteClass("country", "Страна", baseClass.named);
+
         tableFactory = new TableFactory();
         for (int i = 0; i < TableFactory.MAX_INTERFACE; i++) { // заполним базовые таблицы
             CustomClass[] baseClasses = new CustomClass[i];
@@ -940,6 +950,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         delete = addAProp(new DeleteObjectActionProperty(genSID(), baseClass));
 
         date = addDProp(baseGroup, "date", "Дата", DateClass.instance, transaction);
+
+        countrySId = addDProp(baseGroup, "countrySId", "Код страны", IntegerClass.instance, country);
+        sidToCountry = addCGProp(null, "sidToCountry", "Страна", object(country), countrySId, countrySId, 1);
+        isDayOffCountryDate = addDProp(baseGroup, "isDayOffCD", "Выходной", LogicalClass.instance, country, DateClass.instance);
+
+        workingDay = addJProp(baseGroup, "workingDay", "Рабочий", andNot1, addCProp(IntegerClass.instance, 1, country, DateClass.instance), 1, 2, isDayOffCountryDate, 1, 2);
+        isWorkingDay = addJProp(baseGroup, "isWorkingDay", "Рабочий", and(false, false), workingDay, 1, 3, groeq2, 3, 2, is(DateClass.instance), 3);
+        workingDaysQuantity = addOProp(baseGroup, "workingDaysQuantity", "Рабочих дней", OrderType.SUM, isWorkingDay, true, true, 1, 2, 1, 3);
+        equalsWorkingDaysQuantity = addJProp(baseGroup, "equalsWorkingDaysQuantity", "Совпадает количество раб. дней", equals2, object(IntegerClass.instance), 1, workingDaysQuantity, 2, 3, 4);
 
         transactionLater = addSUProp("Транзакция позже", Union.OVERRIDE, addJProp("Дата позже", greater2, date, 1, date, 2),
                 addJProp("", and1, addJProp("Дата=дата", equals2, date, 1, date, 2), 1, 2, addJProp("Код транзакции после", greater2, 1, 2), 1, 2));
@@ -1012,6 +1031,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private void initBaseTables() {
         tableFactory.include("customUser", customUser);
         tableFactory.include("loginSID", StringClass.get(30), StringClass.get(30));
+        tableFactory.include("countryDate", country, DateClass.instance);
     }
 
     /**
@@ -1052,6 +1072,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         adminElement = new NavigatorElement(baseElement, 50000, "Администрирование");
         addFormEntity(new UserPolicyFormEntity(adminElement, 50100));
         addFormEntity(new AdminFormEntity(adminElement, 50200));
+    //    addFormEntity(new DaysOffFormEntity(adminElement, 50300));
     }
 
     protected SecurityPolicy permitAllPolicy, readOnlyPolicy;
@@ -1101,7 +1122,50 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         private AdminFormEntity(NavigatorElement parent, int iID) {
             super(parent, iID, "Глобальные параметры");
 
-            addPropertyDraw(new LP[]{smtpHost,smtpPort, fromAddress, emailAccount, emailPassword, webHost});
+            addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, webHost});
+        }
+    }
+    
+    private class DaysOffFormEntity extends FormEntity {
+        ObjectEntity objDays;
+
+        public DaysOffFormEntity(NavigatorElement parent, int iID) {
+            super(parent, iID, "Выходные дни");
+
+            ObjectEntity objCountry = addSingleGroupObject(country, "Страна");
+            objCountry.groupTo.initClassView = ClassViewType.PANEL;
+            
+            objDays = addSingleGroupObject(DateClass.instance, "День");
+
+            ObjectEntity objNewDate = addSingleGroupObject(DateClass.instance, "Дата");
+            objNewDate.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            addPropertyDraw(objCountry, baseGroup);
+            addPropertyDraw(objDays, baseGroup);
+            addPropertyDraw(isDayOffCountryDate, objCountry, objDays);
+            addPropertyDraw(objNewDate, baseGroup);
+            addPropertyDraw(isDayOffCountryDate, objCountry, objNewDate);
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(isDayOffCountryDate,objCountry, objDays)));
+
+            //PropertyObjectEntity isDayOffObject = addPropertyObject(isDayOffCountryDate, objDays);
+            /*PropertyObjectEntity isDayOffObject = addPropertyObject(isDayOff, objDays);
+            RegularFilterGroupEntity isDayOffGroup = new RegularFilterGroupEntity(genID());
+            isDayOffGroup.addFilter(new RegularFilterEntity(genID(),
+                    new NotNullFilterEntity(isDayOffObject),
+                    "Выходные",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0)));
+            isDayOffGroup.addFilter(new RegularFilterEntity(genID(),
+                    new NotFilterEntity(new NotNullFilterEntity( isDayOffObject)),
+                    "Рабочие",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0)));
+            addRegularFilterGroup(isDayOffGroup);*/
+        }
+
+        public FormView createDefaultRichDesign() {
+            FormView design = super.createDefaultRichDesign();
+            design.getGroupObject(objDays.groupTo).grid.constraints.fillVertical = 3;
+            return design;
         }
     }
 
