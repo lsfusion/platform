@@ -226,6 +226,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP barcodeCurrentFreightBoxRoute;
     private LP equalsPalletFreight;
     private ConcreteCustomClass freightType;
+    private ConcreteCustomClass creationFreightBox;
+    private LP quantityCreationFreightBox;
+    private LP routeCreationFreightBox;
+    private LP nameRouteCreationFreightBox;
+    private LP creationFreightBoxFreightBox;
+    private LP routeCreationFreightBoxFreightBox;
+    private LP nameRouteCreationFreightBoxFreightBox;
     private LP tonnageFreightType;
     private LP palletCountFreightType;
     private LP volumeFreightType;
@@ -312,6 +319,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP userShipmentDetail;
     private LP nameUserShipmentDetail;
     private LP timeShipmentDetail;
+    private LP createFreightBox;
+    private LP constBarcode;
 
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
@@ -401,11 +410,15 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         customCategory6 = addConcreteClass("customCategory6", "Третий уровень", baseClass.named);
         customCategory10 = addConcreteClass("customCategory10", "Четвёртый уровень", baseClass.named);
 
+        creationFreightBox = addConcreteClass("creationFreightBox", "Операция создания", document);
+
         route = addStaticClass("route", "Маршрут", new String[]{"rb", "rf"}, new String[]{"РБ", "РФ"});
     }
 
     @Override
     protected void initProperties() {
+
+        constBarcode = addCProp(StringClass.get(13), "1234567890", creationFreightBox);
 
         sidCustomCategory2 = addDProp(baseGroup, "sidCustomCategory2", "Код(2)", StringClass.get(2), customCategory2);
         sidCustomCategory4 = addDProp(baseGroup, "sidCustomCategory4", "Код(4)", StringClass.get(4), customCategory4);
@@ -497,7 +510,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         netWeightArticleSku = addJProp(intraAttributeGroup, true, "netWeightArticleSku", "Вес нетто", netWeightArticle, articleSku, 1);
         grossWeightArticleSku = addJProp(intraAttributeGroup, true, "grossWeightArticleSku", "Вес брутто", grossWeightArticle, articleSku, 1);
 
-        // Сomposition
+        // Composition
         mainCompositionArticle = addDProp(supplierAttributeGroup, "mainCompositionArticle", "Состав", StringClass.get(100), article);
         additionalCompositionArticle = addDProp(supplierAttributeGroup, "additionalCompositionArticle", "Доп. состав", StringClass.get(100), article);
 
@@ -652,7 +665,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         invoicedOrderArticle = addSGProp(baseGroup, "invoicedOrderArticle", "Выставлено инвойсов", invoicedOrderSku, 1, articleSku, 2);
 
         // цены
-
         priceDocumentArticle = addDProp(baseGroup, "priceDocumentArticle", "Цена", DoubleClass.instance, priceDocument, article);
         priceDataDocumentItem = addDProp(baseGroup, "priceDataDocumentItem", "Цена по товару", DoubleClass.instance, priceDocument, item);
         priceArticleDocumentSku = addJProp(baseGroup, "priceArticleDocumentItem", "Цена по артикулу", priceDocumentArticle, 1, articleSku, 2);
@@ -673,12 +685,22 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         percentShipmentRouteSku = addJProp(baseGroup, "percentShipmentRouteSku", "Процент", and1, percentShipmentRoute, 1, 2, is(sku), 3);
 
+        // creation
+        quantityCreationFreightBox = addDProp(baseGroup, "quantityCreationFreightBox", "Количество", IntegerClass.instance, creationFreightBox);
+        routeCreationFreightBox = addDProp(idGroup, "routeCreationFreightBox", "Маршрут (ИД)", route, creationFreightBox);
+        nameRouteCreationFreightBox = addJProp(baseGroup, "nameRouteCreationFreightBox", "Маршрут", name, routeCreationFreightBox, 1);
+
         // freight box
+        creationFreightBoxFreightBox = addDProp(idGroup, "creationFreightBoxFreightBox", "Операция (ИД)",  creationFreightBox, freightBox);
+
         palletFreightBox = addDProp(idGroup, "palletFreightBox", "Паллета (ИД)", pallet, freightBox);
         barcodePalletFreightBox = addJProp(baseGroup, "barcodePalletFreightBox", "Паллета (штрих-код)", barcode, palletFreightBox, 1);
 
-        routeFreightBox = addDProp(idGroup, "routeFreightBox", "Маршрут (ИД)", route, freightBox);
-        nameRouteFreightBox = addJProp(baseGroup, "nameRouteFreightBox", "Маршрут", name, routeFreightBox, 1);
+        routeCreationFreightBoxFreightBox = addJProp(idGroup, "routeCreationFreightBoxFreightBox", true, "Маршрут (ИД)", routeCreationFreightBox, creationFreightBoxFreightBox, 1);
+        nameRouteCreationFreightBoxFreightBox = addJProp(baseGroup, "nameRouteCreationFreightBoxFreightBox", true, "Маршрут", name, routeCreationFreightBoxFreightBox, 1);
+
+        //routeFreightBox = addDProp(idGroup, "routeFreightBox", "Маршрут (ИД)", route, freightBox);
+        //nameRouteFreightBox = addJProp(baseGroup, "nameRouteFreightBox", "Маршрут", name, routeFreightBox, 1);
 
         destinationFreightBox = addDProp(idGroup, "destinationFreightBox", "Пункт назначения (ИД)", destination, freightBox);
         nameDestinationFreightBox = addJProp(baseGroup, "nameDestinationFreightBox", "Пункт назначения", name, destinationFreightBox, 1);
@@ -743,7 +765,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             stockShipmentDetail = addDProp(idGroup, "stockShipmentDetail", "Место хранения (ИД)", stock, shipmentDetail);
             barcodeStockShipmentDetail = addJProp(baseGroup, "barcodeStockShipmentDetail", "Штрих-код МХ", barcode, stockShipmentDetail, 1);
 
-            routeFreightBoxShipmentDetail = addJProp(idGroup, "routeFreightBoxShipmentDetail", "Маршрут (ИД)", routeFreightBox, stockShipmentDetail, 1);
+            routeFreightBoxShipmentDetail = addJProp(idGroup, "routeFreightBoxShipmentDetail", "Маршрут (ИД)", routeCreationFreightBoxFreightBox, stockShipmentDetail, 1);
             nameRouteFreightBoxShipmentDetail = addJProp(baseGroup, "nameRouteFreightBoxShipmentDetail", "Маршрут", name, routeFreightBoxShipmentDetail, 1);
 
             boxShipmentBoxShipmentDetail = addDProp(idGroup, "boxShipmentBoxShipmentDetail", "Поставка (ИД)", boxShipment, boxShipmentDetail);
@@ -813,7 +835,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         // пока так, но надо будет добавить внутреннее перемещение
         balanceStockSku = addSGProp(baseGroup, "balanceStockSku", "Тек. остаток", quantityShipmentStockSku, 2, 3);
 
-        quantityShipmentRouteSku = addSGProp(baseGroup, "quantityShipmentRouteSku", "Кол-во оприход.", quantityShipmentStockSku, 1, routeFreightBox, 2, 3);
+        quantityShipmentRouteSku = addSGProp(baseGroup, "quantityShipmentRouteSku", "Кол-во оприход.", quantityShipmentStockSku, 1, routeCreationFreightBoxFreightBox, 2, 3);
         invoicedShipmentRouteSku = addPGProp(baseGroup, "invoicedShipmentRouteSku", false, 0, "Кол-во ожид.",
                 percentShipmentRouteSku,
                 invoicedShipmentSku, 1, 3);
@@ -873,9 +895,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         destinationCurrentFreightBoxRoute = addJProp(true, "destinationCurrentFreightBoxRoute", "Пункт назначения тек. короба (ИД)", destinationFreightBox, currentFreightBoxRoute, 1);
         nameDestinationCurrentFreightBoxRoute = addJProp("nameDestinationCurrentFreightBoxRoute", "Пункт назначения тек. короба", name, destinationCurrentFreightBoxRoute, 1);
 
-        isCurrentFreightBox = addJProp(equals2, addJProp(true, currentFreightBoxRoute, routeFreightBox, 1), 1, 1);
+        isCurrentFreightBox = addJProp(equals2, addJProp(true, currentFreightBoxRoute, routeCreationFreightBoxFreightBox, 1), 1, 1);
         isCurrentPallet = addJProp(equals2, addJProp(true, currentPalletRoute, routePallet, 1), 1, 1);
-        isCurrentPalletFreightBox = addJProp(equals2, palletFreightBox, 1, addJProp(currentPalletRoute, routeFreightBox, 1), 1);
+        isCurrentPalletFreightBox = addJProp(equals2, palletFreightBox, 1, addJProp(currentPalletRoute, routeCreationFreightBoxFreightBox, 1), 1);
         isStoreFreightBoxSupplierBox = addJProp(equals2, destinationFreightBox, 1, destinationSupplierBox, 2);
 
         barcodeAction1 = addJProp(true, "Ввод штрих-кода 1", addCUProp(isCurrentFreightBox, isCurrentPallet), barcodeToObject, 1);
@@ -896,6 +918,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                                                     quantitySupplierBoxBoxShipmentStockSku, 1, 2, currentFreightBoxRoute, 3, 4);
         quantitySimpleShipmentRouteSku = addJProp(baseGroup, true,  "quantitySimpleShipmentRouteSku", "Кол-во оприход.",
                                                     quantitySimpleShipmentStockSku, 1, currentFreightBoxRoute, 2, 3);
+
+        createFreightBox = addJProp(true, "Создание коробов", addAAProp(freightBox, barcode), constBarcode, 1);
 
         barcodeAction4 = addJProp(true, "Ввод штрих-кода 4",
                 addCUProp(
@@ -934,6 +958,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         addFormEntity(new ShipmentSpecFormEntity(baseElement, 50, "Прием товара по коробам", true));
         addFormEntity(new ShipmentSpecFormEntity(baseElement, 60, "Прием товара без коробов", false));
         addFormEntity(new FreightFormEntity(baseElement, 70, "Фрахт по поставкам"));
+        addFormEntity(new CreateFreightBoxFormEntity(baseElement, 80, "Подготовка этикеток"));
     }
 
 
@@ -1498,7 +1523,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objPallet;
         private ObjectEntity objDateFrom;
         private ObjectEntity objDateTo;
-        
+
         private FreightFormEntity(NavigatorElement parent, int iID, String caption) {
             super(parent, iID, caption);
 
@@ -1559,4 +1584,32 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             return design;
         }
     }
+    private class CreateFreightBoxFormEntity extends FormEntity<RomanBusinessLogics> {
+
+        private ObjectEntity objCreate;
+        private ObjectEntity objFreightBox;
+
+        private CreateFreightBoxFormEntity(NavigatorElement parent, int iID, String caption) {
+            super(parent, iID, caption);
+
+            objCreate = addSingleGroupObject(creationFreightBox, "Операция создания", quantityCreationFreightBox, nameRouteCreationFreightBox);
+            addObjectActions(this, objCreate);
+            objFreightBox = addSingleGroupObject(freightBox, "Короба для транспортировки", barcode, nameRouteCreationFreightBoxFreightBox);
+            addObjectActions(this, objFreightBox);
+
+            addPropertyDraw(createFreightBox, objCreate);
+            
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(creationFreightBoxFreightBox, objFreightBox), Compare.EQUALS, objCreate));
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
+
+            design.get(objCreate.groupTo).grid.constraints.fillVertical = 1;
+            design.get(objFreightBox.groupTo).grid.constraints.fillVertical = 3;
+            return design;
+        }  
+    }
+
 }
