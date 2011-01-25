@@ -18,7 +18,11 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
 
     @NonPendingRemoteMethod
     public RemoteNavigatorInterface createNavigator(ClientCallbackInterface client, String login, String password, int computer) throws RemoteException {
-        return new RemoteNavigatorProxy(target.createNavigator(client, login, password, computer));
+        RemoteNavigatorInterface remote = target.createNavigator(client, login, password, computer);
+        if (remote == null) {
+            return null;
+        }
+        return new RemoteNavigatorProxy(remote);
     }
 
     public String getName() throws RemoteException {

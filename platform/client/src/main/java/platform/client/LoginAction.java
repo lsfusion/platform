@@ -2,13 +2,10 @@ package platform.client;
 
 import platform.base.OSUtils;
 import platform.client.remote.proxy.RemoteBusinessLogicProxy;
-import platform.client.rmi.ConnectionLostManager;
 import platform.interop.RemoteLoaderInterface;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
-import platform.interop.remote.ClientCallbackInterface;
 
-import javax.swing.*;
 import java.net.MalformedURLException;
 import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
@@ -29,9 +26,8 @@ public final class LoginAction {
     final static int HOST_NAME_ERROR = 1;
     final static int CONNECT_ERROR = 2;
     final static int SERVER_ERROR = 3;
-    final static int ERROR = 4;
-
-    private ClientCallBack clientCallBack;
+    final static int PENDING_RESTART_WARNING = 4;
+    final static int ERROR = 5;
 
     private LoginAction() {
         this.serverHost = System.getProperty(PropertyConstants.PLATFORM_CLIENT_HOSTNAME);
@@ -39,13 +35,6 @@ public final class LoginAction {
         this.user = System.getProperty(PropertyConstants.PLATFORM_CLIENT_USER);
         this.password = System.getProperty(PropertyConstants.PLATFORM_CLIENT_PASSWORD);
         this.loginInfo = new LoginInfo(serverHost, serverPort, user, password);
-
-        try {
-            clientCallBack = new ClientCallBack();
-        } catch (RemoteException e) {
-            e.printStackTrace();
-            System.exit(-1);
-        }
     }
 
     private static class LoginActionHolder {
@@ -83,6 +72,9 @@ public final class LoginAction {
                 case SERVER_ERROR:
                     loginDialog.setWarningMsg("Проверьте имя пользователя и пароль.");
                     break;
+                case PENDING_RESTART_WARNING:
+                    loginDialog.setWarningMsg("Сервер перезагружается.");
+                    break;
                 case ERROR:
                     loginDialog.setWarningMsg("Ошибка подключения.");
                     break;
@@ -110,7 +102,14 @@ public final class LoginAction {
 
             remoteLogics = new RemoteBusinessLogicProxy(remote);
             computerId = remoteLogics.getComputer(OSUtils.getLocalHostName());
-            remoteNavigator = remoteLogics.createNavigator(clientCallBack, loginInfo.getUserName(), loginInfo.getPassword(), computerId);
+
+            ClientCallBack client = new ClientCallBack();
+            remoteNavigator = remoteLogics.createNavigator(client, loginInfo.getUserName(), loginInfo.getPassword(), computerId);
+            if (remoteNavigator == null) {
+                UnicastRemoteObject.unexportObject(client, true);
+                Main.remoteLoader = null;
+                return PENDING_RESTART_WARNING;
+            }
         } catch (UnknownHostException e) {
             System.out.println(e.getCause());
             return HOST_NAME_ERROR;
@@ -126,8 +125,8 @@ public final class LoginAction {
         }
 
         this.remoteLogics = remoteLogics;
-        this.computerId = computerId;
         this.remoteNavigator = remoteNavigator;
+        this.computerId = computerId;
 
         return OK;
     }
@@ -144,16 +143,4 @@ public final class LoginAction {
         return remoteNavigator;
     }
 
-    public static class ClientCallBack extends UnicastRemoteObject implements ClientCallbackInterface {
-        public ClientCallBack() throws RemoteException {
-        }
-
-        public void disconnect() throws RemoteException {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    ConnectionLostManager.forceDisconnect();
-                }
-            });
-        }
-    }
 }

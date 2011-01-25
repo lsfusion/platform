@@ -756,6 +756,7 @@ public class CompiledQuery<K,V> {
         mapValues.put(SQLSession.userParam, env.getSQLUser());
         mapValues.put(SQLSession.computerParam, env.getSQLComputer());
         mapValues.put(SQLSession.sessionParam, env.getID());
+        mapValues.put(SQLSession.isServerRestartingParam, env.getIsServerRestarting());
 
         return mapValues;
     }

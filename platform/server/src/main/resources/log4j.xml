@@ -46,7 +46,7 @@
         </layout>
     </appender>
 
-    <category name="platform.server.logics.BusinessLogics">
+    <category name="platform.server.logics">
         <priority value="INFO"/>
     </category>
 

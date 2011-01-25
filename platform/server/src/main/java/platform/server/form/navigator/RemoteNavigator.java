@@ -18,11 +18,11 @@ import platform.server.auth.User;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.StringClass;
+import platform.server.data.SQLSession;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
 import platform.server.data.type.ObjectType;
 import platform.server.data.where.Where;
-import platform.server.data.SQLSession;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.instance.*;
 import platform.server.form.instance.listener.CurrentClassListener;
@@ -53,8 +53,42 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     protected final static Logger logger = Logger.getLogger(RemoteNavigator.class);
 
     T BL;
-    private ClientCallbackInterface client;
     SQLSession sql;
+
+    private static class ClientCallBackWrapper implements ClientCallbackInterface {
+        private final ClientCallbackInterface client;
+        private Boolean deniedRestart;
+
+        public ClientCallBackWrapper(ClientCallbackInterface client) {
+            this.client = client;
+
+            deniedRestart = null;
+        }
+
+        public synchronized void disconnect() throws RemoteException {
+            client.disconnect();
+        }
+
+        public synchronized void notifyServerRestart() throws RemoteException {
+            deniedRestart = false;
+            client.notifyServerRestart();
+        }
+
+        public synchronized void notifyServerRestartCanceled() throws RemoteException {
+            deniedRestart = null;
+        }
+
+        public synchronized void denyRestart() {
+            deniedRestart = true;
+        }
+
+        public synchronized boolean isRestartAllowed() {
+            //если не спрашивали, либо если отказался
+            return deniedRestart!=null && !deniedRestart;
+        }
+    }
+
+    private ClientCallBackWrapper client;
 
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
 
@@ -62,7 +96,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         super(port);
 
         this.BL = BL;
-        this.client = client;
+        this.client = new ClientCallBackWrapper(client);
         classCache = new ClassCache();
 
         securityPolicy = this.BL.policyManager.getSecurityPolicy(currentUser);
@@ -78,8 +112,12 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     public void changeCurrentUser(DataObject user) {
         this.user = user;
 
+        updateEnvironmentProperty(BL.currentUser.property, user);
+    }
+
+    public void updateEnvironmentProperty(Property property, ObjectValue value) {
         Modifier<? extends Changes> userModifier = new PropertyChangesModifier(Property.defaultModifier, new PropertyChanges(
-                BL.currentUser.property, new PropertyChange<PropertyInterface>(new HashMap<PropertyInterface, KeyExpr>(), user.getExpr(), Where.TRUE)));
+                property, new PropertyChange<PropertyInterface>(new HashMap<PropertyInterface, KeyExpr>(), value.getExpr(), Where.TRUE)));
         for (DataSession session : sessions)
             session.updateProperties(userModifier);
     }
@@ -426,15 +464,31 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
             try {
                 client.disconnect();
             } catch (RemoteException e) {
-                logger.error("RemoteException во время дисконнекта клиента: ", e);
+                logger.debug("RemoteException во время дисконнекта клиента: ", e);
             }
         }
-        client = newClient;
+        client = new ClientCallBackWrapper(newClient);
 
 //        invalidatedForms.clear();
 
         invalidatedForms.putAll(openForms);
 
         openForms.clear();
+    }
+
+    public void denyRestart()  throws RemoteException {
+        client.denyRestart();
+    }
+
+    public boolean isRestartAllowed() {
+        return client.isRestartAllowed();
+    }
+
+    public synchronized void notifyServerRestart() throws RemoteException {
+        client.notifyServerRestart();
+    }
+
+    public void notifyServerRestartCanceled() throws RemoteException {
+        client.notifyServerRestartCanceled();
     }
 }

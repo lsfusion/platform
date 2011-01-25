@@ -318,7 +318,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     // -------------------------------------- Изменение данных ----------------------------------- //
 
     // пометка что изменились данные
-    private boolean dataChanged = false;
+    private boolean dataChanged = true;
 
     private DataObject createObject(ConcreteCustomClass cls) throws SQLException {
 
@@ -798,7 +798,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 if(selectObjects!=null) // то есть нужно изменять объект
                     updateGroupObject = new GroupObjectValue(group, selectObjects);
 
-                if(group.getDownTreeGroups().size()==0 && updateGroupObject !=null) { // так как в tree группе currentObject друг на друга никак не влияют, то можно и нужно делать updateGroupObject в конце
+                if (group.getDownTreeGroups().size() == 0 && updateGroupObject != null) {
+                    // так как в tree группе currentObject друг на друга никак не влияют, то можно и нужно делать updateGroupObject в конце
                     updateGroupObject.group.update(session, result, updateGroupObject.value);
                     updateGroupObject = null;
                 }

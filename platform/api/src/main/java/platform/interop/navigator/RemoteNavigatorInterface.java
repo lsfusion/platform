@@ -29,4 +29,6 @@ public interface RemoteNavigatorInterface extends PendingRemote {
     final static int NAVIGATORGROUP_RELEVANTCLASS = -3;
 
     void close() throws RemoteException;
+
+    public void denyRestart()  throws RemoteException;
 }

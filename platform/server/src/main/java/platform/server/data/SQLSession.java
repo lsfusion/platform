@@ -41,6 +41,7 @@ public class SQLSession extends MutableObject {
     private Connection privateConnection = null;
 
     public final static String userParam = "adsadaweewuser";
+    public final static String isServerRestartingParam = "sdfisserverrestartingpdfdf";
     public final static String sessionParam = "dsfreerewrewrsf";
     public final static String computerParam = "fjruwidskldsor";
 

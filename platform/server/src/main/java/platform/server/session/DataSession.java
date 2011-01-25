@@ -1,23 +1,25 @@
 package platform.server.session;
 
 import platform.base.BaseUtils;
-import platform.base.DateConverter;
-import platform.base.OrderedMap;
 import platform.base.MutableObject;
+import platform.base.OrderedMap;
 import platform.interop.action.ClientAction;
+import platform.server.caches.MapValues;
 import platform.server.classes.*;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
+import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.*;
-import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.Where;
+import platform.server.data.where.WhereBuilder;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.ComputerController;
+import platform.server.form.navigator.IsServerRestartingController;
 import platform.server.form.navigator.UserController;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
@@ -27,7 +29,6 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.table.IDTable;
 import platform.server.logics.table.ImplementTable;
-import platform.server.caches.MapValues;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -112,13 +113,15 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
 
     private final List<DerivedChange<?,?>> notDeterministic;
 
+    private final IsServerRestartingController isServerRestarting;
     public final UserController user;
     public final ComputerController computer;
 
     public DataObject applyObject = null;
 
-    public DataSession(SQLSession sql, final UserController user, final ComputerController computer, BaseClass baseClass, CustomClass namedObject, ConcreteCustomClass sessionClass, LP<?> name, CustomClass transaction, LP<?> date, LP<?> currentDate, List<DerivedChange<?,?>> notDeterministic) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+    public DataSession(SQLSession sql, final UserController user, final ComputerController computer, IsServerRestartingController isServerRestarting, BaseClass baseClass, CustomClass namedObject, ConcreteCustomClass sessionClass, LP<?> name, CustomClass transaction, LP<?> date, LP<?> currentDate, List<DerivedChange<?,?>> notDeterministic) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         this.sql = sql;
+        this.isServerRestarting = isServerRestarting;
 
         this.baseClass = baseClass;
         this.namedObject = namedObject;
@@ -421,6 +424,16 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
 
         public ParseInterface getSQLComputer() {
             return new TypeObject(computer.getCurrentComputer().object, ObjectType.instance);
+        }
+
+        public ParseInterface getIsServerRestarting() {
+            return new StringParseInterface() {
+                public String getString(SQLSyntax syntax) {
+                    return isServerRestarting.isServerRestarting()
+                           ? LogicalClass.instance.getString(true, syntax)
+                           : SQLSyntax.NULL;
+                }
+            };
         }
     };
 

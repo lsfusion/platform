@@ -113,4 +113,8 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
     public void close() throws RemoteException {
         target.close();
     }
+
+    public void denyRestart() throws RemoteException {
+        target.denyRestart();
+    }
 }

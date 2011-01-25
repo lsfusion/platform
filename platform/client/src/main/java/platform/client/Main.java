@@ -42,6 +42,8 @@ public class Main {
 
     public static RemoteLoaderInterface remoteLoader;
     public static RemoteLogicsInterface remoteLogics;
+    public static RemoteNavigatorInterface remoteNavigator;
+
     public static MainFrame frame;
     public static int computerId;
 
@@ -140,6 +142,7 @@ public class Main {
                     }
 
                     remoteLogics = loginAction.getRemoteLogics();
+                    remoteNavigator = loginAction.getRemoteNavigator();
                     computerId = loginAction.getComputerId();
 
                     startSplashScreen();

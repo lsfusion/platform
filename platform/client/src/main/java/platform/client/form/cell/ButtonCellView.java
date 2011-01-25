@@ -67,8 +67,8 @@ public class ButtonCellView extends ClientButton implements CellView {
         this.listener = listener;
     }
 
-    public void setValue(Object ivalue) {
-        // собственно, а как в Button нужно устанавливать value
+    public void setValue(Object value) {
+        setEnabled(value != null);
     }
 
     public void startEditing(KeyEvent e) {

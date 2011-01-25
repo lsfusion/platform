@@ -26,7 +26,6 @@ import platform.server.auth.User;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
 import platform.server.data.*;
-import platform.server.data.Time;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.query.OrderType;
 import platform.server.data.query.Query;
@@ -36,15 +35,13 @@ import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
 import platform.server.form.entity.*;
-import platform.server.form.entity.filter.*;
+import platform.server.form.entity.filter.CompareFilterEntity;
+import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
-import platform.server.form.navigator.ComputerController;
-import platform.server.form.navigator.NavigatorElement;
-import platform.server.form.navigator.RemoteNavigator;
-import platform.server.form.navigator.UserController;
+import platform.server.form.navigator.*;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.logics.linear.LP;
@@ -72,9 +69,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.RMIFailureHandler;
 import java.rmi.server.RMISocketFactory;
-import java.sql.*;
+import java.sql.SQLException;
 import java.util.*;
-import java.util.Date;
 
 // @GenericImmutable нельзя так как Spring валится
 
@@ -184,7 +180,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         logger.info("Server is stopping...");
 
-        registry.unbind("BusinessLogics");
+        registry.unbind("BusinessLogicsLoader");
 
         registry = null;
         BL = null;
@@ -209,8 +205,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public final static boolean activateCaches = true;
 
-    private Map<Pair<String, Integer>, RemoteNavigator> navigators = new HashMap<Pair<String, Integer>, RemoteNavigator>();
+    final Map<Pair<String, Integer>, RemoteNavigator> navigators = new HashMap<Pair<String, Integer>, RemoteNavigator>();
     public RemoteNavigatorInterface createNavigator(ClientCallbackInterface client, String login, String password, int computer) {
+        if (getRestartController().isPendingRestart()) {
+            return null;
+        }
+
         removeExpiredNavigators();
 
         DataSession session;
@@ -265,6 +265,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     break;
                 }
             }
+            getRestartController().forcedRestartIfAllowed();
         }
     }
 
@@ -277,6 +278,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     iterator.remove();
                 }
             }
+            getRestartController().forcedRestartIfAllowed();
         }
     }
 
@@ -522,12 +524,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP currentSession;
     public LP currentComputer;
     protected LP changeUser;
+    protected LP isServerRestarting;
     public LP<PropertyInterface> barcode;
     public LP barcodeToObject;
     protected LP barcodeObjectName;
     public LP barcodePrefix;
     public LP seekBarcodeAction;
     public LP barcodeNotFoundMessage;
+    public LP restartServerAction;
+    public LP cancelRestartServerAction;
     public LP reverseBarcode;
 
     public LP userLogin;
@@ -972,6 +977,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         currentUser = addProperty(null, new LP<PropertyInterface>(new CurrentUserFormulaProperty(genSID(), user)));
         currentSession = addProperty(null, new LP<PropertyInterface>(new CurrentSessionFormulaProperty(genSID(), session)));
         currentComputer = addProperty(null, new LP<PropertyInterface>(new CurrentComputerFormulaProperty(genSID(), computer)));
+        isServerRestarting = addProperty(null, new LP<PropertyInterface>(new IsServerRestartingFormulaProperty(genSID())));
         changeUser = addProperty(null, new LP<ClassPropertyInterface>(new ChangeUserActionProperty(genSID(), customUser)));
 
         userLogin = addDProp(baseGroup, "userLogin", "Логин", StringClass.get(30), customUser);
@@ -1002,6 +1008,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         seekBarcodeAction = addJProp(true, "Поиск штрих-кода", addSAProp(null), barcodeToObject, 1);
         barcodeNotFoundMessage = addJProp(true, "", and(false, true), addMAProp("Штрих-код не найден!", "Ошибка"), is(StringClass.get(13)), 1, barcodeToObject, 1);
+
+        restartServerAction = addJProp("Остановить сервер", andNot1, addRestartActionProp(), isServerRestarting);
+        cancelRestartServerAction = addJProp("Отменить остановку сервера", and1, addCancelRestartActionProp(), isServerRestarting);
 
         currentUserName = addJProp("Имя тек. польз.", name, currentUser);
 
@@ -1125,7 +1134,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         private AdminFormEntity(NavigatorElement parent, int iID) {
             super(parent, iID, "Глобальные параметры");
 
-            addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, webHost, barcodePrefix});
+            addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, webHost, barcodePrefix, restartServerAction, cancelRestartServerAction});
         }
     }
     
@@ -1713,7 +1722,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public DataSession createSession(SQLSession sql, UserController userController, ComputerController computerController) throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        return new DataSession(sql, userController, computerController, baseClass, baseClass.named, session, name, transaction, date, currentDate, notDeterministic);
+        return new DataSession(sql, userController, computerController,
+                               new IsServerRestartingController() {
+                                   public boolean isServerRestarting() {
+                                       return getRestartController().isPendingRestart();
+                                   }
+                               },
+                               baseClass, baseClass.named, session, name, transaction, date, currentDate, notDeterministic);
     }
 
     public List<DerivedChange<?, ?>> notDeterministic = new ArrayList<DerivedChange<?, ?>>();
@@ -3845,6 +3860,27 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addProperty(group, new LP<ClassPropertyInterface>(new MessageActionProperty(message, genSID(), caption)));
     }
 
+    protected LP addRestartActionProp() {
+        return addProperty(null, new LP<ClassPropertyInterface>(new RestartActionProperty(genSID(), "")));
+    }
+
+    protected LP addCancelRestartActionProp() {
+        return addProperty(null, new LP<ClassPropertyInterface>(new CancelRestartActionProperty(genSID(), "")));
+    }
+
+    public void updateEnvironmentProperty(Property property, ObjectValue value) {
+        synchronized (navigators) {
+            for (RemoteNavigator remoteNavigator : navigators.values()) {
+                remoteNavigator.updateEnvironmentProperty(property, value);
+            }
+        }
+    }
+
+    private void updateRestartProperty() {
+        Boolean isRestarting = getRestartController().isPendingRestart() ? Boolean.TRUE : null;
+        updateEnvironmentProperty(isServerRestarting.property, ObjectValue.getValue(isRestarting, LogicalClass.instance));
+    }
+
     public static class SeekActionProperty extends ActionProperty {
 
         Property property;
@@ -3885,6 +3921,33 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
             actions.add(new MessageClientAction(message, caption));
         }
+    }
+
+    public class RestartActionProperty extends ActionProperty {
+        private RestartActionProperty(String sID, String caption) {
+            super(sID, caption, new ValueClass[]{});
+        }
+
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            getRestartController().initRestart();
+            updateRestartProperty();
+        }
+    }
+
+    public class CancelRestartActionProperty extends ActionProperty {
+        private CancelRestartActionProperty(String sID, String caption) {
+            super(sID, caption, new ValueClass[]{});
+        }
+
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            getRestartController().cancelRestart();
+            updateRestartProperty();
+        }
+    }
+
+    @IdentityLazy
+    private synchronized RestartController getRestartController() {
+        return new RestartController(this);
     }
 
     protected LP addAProp(ActionProperty property) {
@@ -3930,8 +3993,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected LP addAAProp(CustomClass customClass, LP barcode, LP barcodePrefix, boolean quantity, LP... properties) {
         return addAProp(new AddObjectActionProperty(genSID(),
-                (barcode != null) ? barcode.property : null, (barcodePrefix != null) ? barcodePrefix.property : null,
-                quantity, customClass, LP.toPropertyArray(properties)));
+                                                    (barcode != null) ? barcode.property : null, (barcodePrefix != null) ? barcodePrefix.property : null,
+                                                    quantity, customClass, LP.toPropertyArray(properties)));
     }
 
     private Map<String, String> formSets;
