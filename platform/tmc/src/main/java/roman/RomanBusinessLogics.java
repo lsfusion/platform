@@ -772,7 +772,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             // supplier box shipmentDetail
             supplierBoxShipmentDetail = addDProp(idGroup, "supplierBoxShipmentDetail", "Короб поставщика (ИД)", supplierBox, boxShipmentDetail);
-            sidSupplierBoxShipmentDetail = addJProp(baseGroup, "sidSupplierBoxShipmentDetail", "Штрих-код короба поставщика", sidSupplierBox, supplierBoxShipmentDetail, 1);
+            sidSupplierBoxShipmentDetail = addJProp(baseGroup, "sidSupplierBoxShipmentDetail", "Код короба поставщика", sidSupplierBox, supplierBoxShipmentDetail, 1);
             barcodeSupplierBoxShipmentDetail = addJProp(baseGroup, "barcodeSupplierBoxShipmentDetail", "Штрих-код короба поставщика", barcode, supplierBoxShipmentDetail, 1);
 
             quantityShipmentDetail = addDProp(baseGroup, "quantityShipmentDetail", "Кол-во", DoubleClass.instance, shipmentDetail);
@@ -957,8 +957,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         addFormEntity(new ShipmentSpecFormEntity(baseElement, 60, "Прием товара без коробов", false));
         addFormEntity(new FreightFormEntity(baseElement, 70, "Фрахт по поставкам"));
         addFormEntity(new CreateFreightBoxFormEntity(baseElement, 80, "Подготовка этикеток"));
+        addFormEntity(new CustomCategoryFormEntity(baseElement, 90, "Справочник ТН ВЭД"));
     }
-
 
     @Override
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
@@ -1445,6 +1445,37 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             filterGroup.defaultFilter = 0;
             addRegularFilterGroup(filterGroup);
 
+
+            if (box)
+            {
+            RegularFilterGroupEntity filterGroup2 = new RegularFilterGroupEntity(genID());
+            filterGroup2.addFilter(new RegularFilterEntity(genID(),
+                                  new CompareFilterEntity(addPropertyObject(supplierBoxShipmentDetail, objShipmentDetail), Compare.EQUALS, objSupplierBox),
+                                  "В текущем коробе поставщика",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
+            addRegularFilterGroup(filterGroup2);
+            }
+
+            if (box)
+            {
+            RegularFilterGroupEntity filterGroup3 = new RegularFilterGroupEntity(genID());
+            filterGroup3.addFilter(new RegularFilterEntity(genID(),
+                                  new CompareFilterEntity(addPropertyObject(userShipmentDetail, objShipmentDetail), Compare.EQUALS, addPropertyObject(currentUser)),
+                                  "Текущего пользователя",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
+            addRegularFilterGroup(filterGroup3);
+            }
+
+            if (box)
+            {
+            RegularFilterGroupEntity filterGroup4 = new RegularFilterGroupEntity(genID());
+            filterGroup4.addFilter(new RegularFilterEntity(genID(),
+                                  new CompareFilterEntity(addPropertyObject(stockShipmentDetail, objShipmentDetail), Compare.EQUALS, addPropertyObject(currentFreightBoxRoute, objRoute)),
+                                  "В текущем коробе для транспортировки",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
+            addRegularFilterGroup(filterGroup4);
+            }
+
             addAutoAction(objBarcode, addPropertyObject(barcodeAction1, objBarcode));
             addAutoAction(objBarcode, addPropertyObject(barcodeActionSetPallet, objBarcode));
             if (box)
@@ -1591,12 +1622,15 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             super(parent, iID, caption);
 
             objCreate = addSingleGroupObject(creationFreightBox, "Операция создания", quantityCreationFreightBox, nameRouteCreationFreightBox);
-            addObjectActions(this, objCreate);
+            addObjectActions(this, objCreate);            
+            objCreate.groupTo.initClassView = ClassViewType.PANEL;
+
             objFreightBox = addSingleGroupObject(freightBox, "Короба для транспортировки", barcode, nameRouteCreationFreightBoxFreightBox);
-            addObjectActions(this, objFreightBox);
+            //addObjectActions(this, objFreightBox);
+            setReadOnly(objFreightBox, true);
 
             addPropertyDraw(createFreightBox, objCreate);
-            
+
             addFixedFilter(new CompareFilterEntity(addPropertyObject(creationFreightBoxFreightBox, objFreightBox), Compare.EQUALS, objCreate));
         }
 
@@ -1608,6 +1642,49 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             design.get(objFreightBox.groupTo).grid.constraints.fillVertical = 3;
             return design;
         }  
+    }
+
+    private class CustomCategoryFormEntity extends FormEntity<RomanBusinessLogics> {
+
+        private ObjectEntity objCustomCategory2;
+        private ObjectEntity objCustomCategory4;
+        private ObjectEntity objCustomCategory6;
+        private ObjectEntity objCustomCategory10;
+
+        private CustomCategoryFormEntity(NavigatorElement parent, int iID, String caption) {
+            super(parent, iID, caption);
+
+            objCustomCategory2 = addSingleGroupObject(customCategory2, "Первый уровень", sidCustomCategory2, name);
+            addObjectActions(this, objCustomCategory2);
+            objCustomCategory2.groupTo.initClassView = ClassViewType.GRID;
+
+            objCustomCategory4 = addSingleGroupObject(customCategory4, "Второй уровень", sidCustomCategory4, name);
+            addObjectActions(this, objCustomCategory4);
+            objCustomCategory4.groupTo.initClassView = ClassViewType.GRID;
+
+            objCustomCategory6 = addSingleGroupObject(customCategory6, "Третий уровень", sidCustomCategory6, name);
+            addObjectActions(this, objCustomCategory6);
+            objCustomCategory6.groupTo.initClassView = ClassViewType.GRID;
+
+            objCustomCategory10 = addSingleGroupObject(customCategory10, "Четвёртый уровень", sidCustomCategory10, name);
+            addObjectActions(this, objCustomCategory10);
+            objCustomCategory10.groupTo.initClassView = ClassViewType.GRID;
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory2CustomCategory4, objCustomCategory4), Compare.EQUALS, objCustomCategory2));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory4CustomCategory6, objCustomCategory6), Compare.EQUALS, objCustomCategory4));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory6CustomCategory10, objCustomCategory10), Compare.EQUALS, objCustomCategory6));
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
+
+            design.get(objCustomCategory2.groupTo).grid.constraints.fillVertical = 2;
+            design.get(objCustomCategory4.groupTo).grid.constraints.fillVertical = 2;
+            design.get(objCustomCategory6.groupTo).grid.constraints.fillVertical = 2;
+            design.get(objCustomCategory10.groupTo).grid.constraints.fillVertical = 2;
+            return design;
+        }
     }
 
 }
