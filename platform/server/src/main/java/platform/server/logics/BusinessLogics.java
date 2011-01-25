@@ -2187,7 +2187,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             ValueClass overrideClass;
             if (ic < overrideClasses.length && ((overrideClass = overrideClasses[ic]) != null)) {
                 classes[ic++] = overrideClass;
-                assert overrideClass.isCompatibleParent(common);
+                assert !overrideClass.isCompatibleParent(common);
             } else
                 classes[ic++] = common;
         }

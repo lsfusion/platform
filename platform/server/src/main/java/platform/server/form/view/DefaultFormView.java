@@ -94,7 +94,9 @@ public class DefaultFormView extends FormView {
             treeGroups.add(treeGroupView);
 
             TreeGroupContainerSet<ContainerView, ComponentView> treeSet = TreeGroupContainerSet.create(treeGroupView, containerFactory);
-            mainContainer.add(treeSet.getContainer());
+
+            //вставляем перед первым groupObject в данной treeGroup
+            mainContainer.addBefore(treeSet.getContainer(), groupContainers.get(mgroupObjects.get(treeGroup.groups.get(0))));
 
             treeContainers.put(treeGroupView, treeSet.getContainer());
         }

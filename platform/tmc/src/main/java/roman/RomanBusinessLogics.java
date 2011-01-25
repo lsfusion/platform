@@ -781,7 +781,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             nameUserShipmentDetail = addJProp(baseGroup, "nameUserShipmentDetail", "Пользователь", name, userShipmentDetail, 1);
 
             // todo : сделать нормально время, сейчас время - Double Class
-            timeShipmentDetail = addTCProp(baseGroup, Time.EPOCH, "timeShipmentDetail", "Время ввода", quantityShipmentDetail, shipmentDetail);
+            timeShipmentDetail = addTCProp(baseGroup, Time.EPOCH, "timeShipmentDetail", "Время ввода", quantityShipmentDetail);
 
             addBoxShipmentDetailSupplierBoxStockBarcode = addJProp(true, "Добавить строку поставки",
                     addAAProp(boxShipmentDetail, supplierBoxShipmentDetail, stockShipmentDetail, skuShipmentDetail, quantityShipmentDetail), 1, 2, barcodeToObject, 3, addCProp(DoubleClass.instance, 1));

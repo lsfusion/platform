@@ -19,8 +19,10 @@ public class RemoteExecuteSwingWorker extends SwingWorker<Object, Void> {
 
     @Override
     protected Object doInBackground() throws Exception {
-        Object result = remote.execute(invocations);
-        WaitDialog.finish();
-        return result;
+        try {
+            return remote.execute(invocations);
+        } finally {
+            WaitDialog.finish();
+        }
     }
 }
