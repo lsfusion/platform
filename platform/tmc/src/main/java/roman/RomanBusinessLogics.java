@@ -223,6 +223,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP equalsPalletFreight;
     private ConcreteCustomClass freightType;
     private ConcreteCustomClass creationFreightBox;
+    private ConcreteCustomClass creationPallet;
+    private LP quantityCreationPallet;
+    private LP routeCreationPallet;
+    private LP nameRouteCreationPallet;
+    private LP creationPalletPallet;
+    private LP routeCreationPalletPallet;
+    private LP nameRouteCreationPalletPallet;
+
     private LP quantityCreationFreightBox;
     private LP routeCreationFreightBox;
     private LP nameRouteCreationFreightBox;
@@ -316,8 +324,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP nameUserShipmentDetail;
     private LP timeShipmentDetail;
     private LP createFreightBox;
-    private LP constBarcode;
-
+    private LP createPallet;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -404,15 +411,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         customCategory6 = addConcreteClass("customCategory6", "Третий уровень", baseClass.named);
         customCategory10 = addConcreteClass("customCategory10", "Четвёртый уровень", baseClass.named);
 
-        creationFreightBox = addConcreteClass("creationFreightBox", "Операция создания", document);
+        creationFreightBox = addConcreteClass("creationFreightBox", "Операция создания коробов", document);
+        creationPallet = addConcreteClass("creationPallet", "Операция создания паллет", document);
 
         route = addStaticClass("route", "Маршрут", new String[]{"rb", "rf"}, new String[]{"РБ", "РФ"});
     }
 
     @Override
     protected void initProperties() {
-
-        constBarcode = addCProp(StringClass.get(13), "1234567890", creationFreightBox);
 
         sidCustomCategory2 = addDProp(baseGroup, "sidCustomCategory2", "Код(2)", StringClass.get(2), customCategory2);
         sidCustomCategory2.setFixedCharWidth(2);
@@ -691,6 +697,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         routeCreationFreightBox = addDProp(idGroup, "routeCreationFreightBox", "Маршрут (ИД)", route, creationFreightBox);
         nameRouteCreationFreightBox = addJProp(baseGroup, "nameRouteCreationFreightBox", "Маршрут", name, routeCreationFreightBox, 1);
 
+        quantityCreationPallet = addDProp(baseGroup, "quantityCreationPallet", "Количество", IntegerClass.instance, creationPallet);
+        routeCreationPallet = addDProp(idGroup, "routeCreationPallet", "Маршрут (ИД)", route, creationPallet);
+        nameRouteCreationPallet = addJProp(baseGroup, "nameRouteCreationPallet", "Маршрут", name, routeCreationPallet, 1);
+
         // freight box
         creationFreightBoxFreightBox = addDProp(idGroup, "creationFreightBoxFreightBox", "Операция (ИД)",  creationFreightBox, freightBox);
 
@@ -707,6 +717,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         nameDestinationFreightBox = addJProp(baseGroup, "nameDestinationFreightBox", "Пункт назначения", name, destinationFreightBox, 1);
 
         // паллеты
+        creationPalletPallet = addDProp(idGroup, "creationPalletPallet", "Операция (ИД)",  creationPallet, pallet);
+        routeCreationPalletPallet = addJProp(idGroup, "routeCreationPalletPallet", true, "Маршрут (ИД)", routeCreationPallet, creationPalletPallet, 1);
+        nameRouteCreationPalletPallet = addJProp(baseGroup, "nameRouteCreationPalletPallet", true, "Маршрут", name, routeCreationPalletPallet, 1);
+
         freightPallet = addDProp(idGroup, "freightPallet", "Фрахт (ИД)", freight, pallet);
         equalsPalletFreight = addJProp(baseGroup, "equalsPalletFreight", "Вкл.", equals2, freightPallet, 1, 2);
 
@@ -879,11 +893,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         freightBoxNumberPallet = addSGProp(baseGroup, "freightBoxNumberPallet", "Кол-во коробов", addCProp(IntegerClass.instance, 1, freightBox), palletFreightBox, 1);
 
-        routePallet = addSDProp(idGroup, "routePallet", "Маршрут (ИД)", route, pallet);
-        nameRoutePallet = addJProp(baseGroup, "nameRoutePallet", "Маршрут", name, routePallet, 1);
+        //routePallet = addSDProp(idGroup, "routePallet", "Маршрут (ИД)", route, pallet);
+        //nameRoutePallet = addJProp(baseGroup, "nameRoutePallet", "Маршрут", name, routePallet, 1);
 
         addConstraint(addJProp("Маршрут паллеты должен совпадать с маршрутом фрахта", diff2,
-                routePallet, 1, addJProp(routeFreight, freightPallet, 1), 1), true);
+                routeCreationPalletPallet, 1, addJProp(routeFreight, freightPallet, 1), 1), true);
 
         palletNumberFreight = addSGProp(baseGroup, "palletNumberFreight", "Кол-во паллет", addCProp(IntegerClass.instance, 1, pallet), freightPallet, 1);
 
@@ -897,7 +911,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         nameDestinationCurrentFreightBoxRoute = addJProp("nameDestinationCurrentFreightBoxRoute", "Пункт назначения тек. короба", name, destinationCurrentFreightBoxRoute, 1);
 
         isCurrentFreightBox = addJProp(equals2, addJProp(true, currentFreightBoxRoute, routeCreationFreightBoxFreightBox, 1), 1, 1);
-        isCurrentPallet = addJProp(equals2, addJProp(true, currentPalletRoute, routePallet, 1), 1, 1);
+        isCurrentPallet = addJProp(equals2, addJProp(true, currentPalletRoute, routeCreationPalletPallet, 1), 1, 1);
         isCurrentPalletFreightBox = addJProp(equals2, palletFreightBox, 1, addJProp(currentPalletRoute, routeCreationFreightBoxFreightBox, 1), 1);
         isStoreFreightBoxSupplierBox = addJProp(equals2, destinationFreightBox, 1, destinationSupplierBox, 2);
 
@@ -921,6 +935,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                                                     quantitySimpleShipmentStockSku, 1, currentFreightBoxRoute, 2, 3);
 
         createFreightBox = addJProp(true, "Сгенерировать короба", addAAProp(freightBox, barcode, barcodePrefix, true), quantityCreationFreightBox, 1);
+        createPallet = addJProp(true, "Сгенерировать паллеты", addAAProp(pallet, barcode, barcodePrefix, true), quantityCreationPallet, 1);
 
         barcodeAction4 = addJProp(true, "Ввод штрих-кода 4",
                 addCUProp(
@@ -951,17 +966,28 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
     @Override
     protected void initNavigators() throws JRException, FileNotFoundException {
-        addFormEntity(new OrderFormEntity(baseElement, 10, "Заказы"));
-        addFormEntity(new InvoiceFormEntity(baseElement, 20, "Инвойсы по коробам", true));
-        addFormEntity(new InvoiceFormEntity(baseElement, 25, "Инвойсы без коробов", false));
-        addFormEntity(new ShipmentListFormEntity(baseElement, 30, "Поставки по коробам", true));
-        addFormEntity(new ShipmentListFormEntity(baseElement, 40, "Поставки без коробов", false));
-        addFormEntity(new ShipmentSpecFormEntity(baseElement, 50, "Прием товара по коробам", true));
-        addFormEntity(new ShipmentSpecFormEntity(baseElement, 60, "Прием товара без коробов", false));
-        addFormEntity(new FreightFormEntity(baseElement, 70, "Фрахт по поставкам"));
-        addFormEntity(new CreateFreightBoxFormEntity(baseElement, 80, "Подготовка этикеток"));
-        addFormEntity(new CustomCategoryFormEntity(baseElement, 85, "Справочник ТН ВЭД (изменение)", false));
-        addFormEntity(new CustomCategoryFormEntity(baseElement, 90, "Справочник ТН ВЭД (дерево)", true));
+        NavigatorElement classifier = new NavigatorElement(baseElement, 400, "Справочники");
+        addFormEntity(new CustomCategoryFormEntity(classifier, 411, "ТН ВЭД (изменения)", false));
+        addFormEntity(new CustomCategoryFormEntity(classifier, 412, "ТН ВЭД (дерево)", true));
+        classifier.add(category.getClassForm(this));
+        classifier.add(currency.getClassForm(this));
+        classifier.add(store.getClassForm(this));
+        classifier.add(country.getClassForm(this));
+        classifier.add(freightType.getClassForm(this));
+        addFormEntity(new ColorSizeSupplierFormEntity(classifier, 450, "Цвета и размеры поставщика"));
+        NavigatorElement purchase = new NavigatorElement(baseElement, 100, "Управление закупками");
+        addFormEntity(new OrderFormEntity(purchase, 110, "Заказы"));
+        addFormEntity(new InvoiceFormEntity(purchase, 121, "Инвойсы по коробам", true));
+        addFormEntity(new InvoiceFormEntity(purchase, 122, "Инвойсы без коробов", false));
+        NavigatorElement shipment = new NavigatorElement(baseElement, 200, "Управление поставками");
+        addFormEntity(new ShipmentListFormEntity(shipment, 211, "Поставки по коробам", true));
+        addFormEntity(new ShipmentListFormEntity(shipment, 212, "Поставки без коробов", false));
+        addFormEntity(new FreightFormEntity(shipment, 220, "Фрахт по поставкам"));
+        NavigatorElement distribution = new NavigatorElement(baseElement, 300, "Управление логистикой на складе");
+        addFormEntity(new ShipmentSpecFormEntity(distribution, 311, "Прием товара по коробам", true));
+        addFormEntity(new ShipmentSpecFormEntity(distribution, 312, "Прием товара без коробов", false));
+        addFormEntity(new CreateFreightBoxFormEntity(distribution, 320, "Генерация коробов"));
+        addFormEntity(new CreatePalletFormEntity(distribution, 330, "Генерация паллет"));
     }
 
     @Override
@@ -1549,6 +1575,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             return design;
         }
     }
+
     private class FreightFormEntity extends FormEntity<RomanBusinessLogics> {
 
         private ObjectEntity objShipment;
@@ -1588,7 +1615,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(date, objShipment), Compare.GREATER_EQUALS, objDateFrom));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(date, objShipment), Compare.LESS_EQUALS, objDateTo));
 
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(routePallet, objPallet), Compare.EQUALS, addPropertyObject(routeFreight, objFreight)));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(routeCreationPalletPallet, objPallet), Compare.EQUALS, addPropertyObject(routeFreight, objFreight)));
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(new RegularFilterEntity(genID(),
@@ -1617,6 +1644,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             return design;
         }
     }
+
     private class CreateFreightBoxFormEntity extends FormEntity<RomanBusinessLogics> {
 
         private ObjectEntity objCreate;
@@ -1636,15 +1664,27 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(creationFreightBoxFreightBox, objFreightBox), Compare.EQUALS, objCreate));
         }
+    }
 
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
+    private class CreatePalletFormEntity extends FormEntity<RomanBusinessLogics> {
 
-            design.get(objCreate.groupTo).grid.constraints.fillVertical = 1;
-            design.get(objFreightBox.groupTo).grid.constraints.fillVertical = 3;
-            return design;
-        }  
+        private ObjectEntity objCreate;
+        private ObjectEntity objPallet;
+
+        private CreatePalletFormEntity(NavigatorElement parent, int iID, String caption) {
+            super(parent, iID, caption);
+
+            objCreate = addSingleGroupObject(creationPallet, "Операция создания", nameRouteCreationPallet, quantityCreationPallet);
+            addObjectActions(this, objCreate);
+            objCreate.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            objPallet = addSingleGroupObject(pallet, "Паллеты для транспортировки", barcode);
+            setReadOnly(objPallet, true);
+
+            addPropertyDraw(createPallet, objCreate);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(creationPalletPallet, objPallet), Compare.EQUALS, objCreate));
+        }
     }
 
     private class CustomCategoryFormEntity extends FormEntity<RomanBusinessLogics> {
@@ -1699,6 +1739,42 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 design.addIntersection(design.getGroupObjectContainer(objCustomCategory6.groupTo), design.getGroupObjectContainer(objCustomCategory10.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             }
 
+            return design;
+        }
+    }
+
+    private class ColorSizeSupplierFormEntity extends FormEntity<RomanBusinessLogics> {
+
+        private ObjectEntity objSupplier;
+        private ObjectEntity objColor;
+        private ObjectEntity objSize;
+
+        private ColorSizeSupplierFormEntity(NavigatorElement parent, int iID, String caption) {
+            super(parent, iID, caption);
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameCurrencySupplier);
+            addObjectActions(this, objSupplier);
+
+            objColor = addSingleGroupObject(colorSupplier, "Цвет", sidColorSupplier, name);
+            addObjectActions(this, objColor);
+
+            objSize = addSingleGroupObject(sizeSupplier, "Размер", name);
+            addObjectActions(this, objSize);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierColorSupplier, objColor), Compare.EQUALS, objSupplier));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierSizeSupplier, objSize), Compare.EQUALS, objSupplier));
+        }
+        
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
+
+            design.get(objSupplier.groupTo).grid.constraints.fillVertical = 0.5;
+            design.get(objColor.groupTo).grid.constraints.fillHorizontal = 3;
+            design.get(objSize.groupTo).grid.constraints.fillHorizontal = 2;
+
+            design.addIntersection(design.getGroupObjectContainer(objColor.groupTo),
+                                   design.getGroupObjectContainer(objSize.groupTo),
+                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             return design;
         }
     }
