@@ -329,6 +329,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return null;
     }
 
+    public Object read(DataSession session) throws SQLException {
+        return read(session.sql, new HashMap(), session.modifier, session.env);
+    }
+
     public Object read(SQLSession session, Map<T, DataObject> keys, Modifier<? extends Changes> modifier, QueryEnvironment env) throws SQLException {
         String readValue = "readvalue";
         Query<T, Object> readQuery = new Query<T, Object>(this);

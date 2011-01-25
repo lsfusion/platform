@@ -525,6 +525,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP<PropertyInterface> barcode;
     public LP barcodeToObject;
     protected LP barcodeObjectName;
+    public LP barcodePrefix;
     public LP seekBarcodeAction;
     public LP barcodeNotFoundMessage;
     public LP reverseBarcode;
@@ -997,6 +998,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         barcodeToObject = addCGProp(null, "barcodeToObject", "Объект", object(barcodeObject), barcode, barcode, 1);
         barcodeObjectName = addJProp(baseGroup, "Объект", name, barcodeToObject, 1);
 
+        barcodePrefix = addDProp(baseGroup, "barcodePrefix", "Префикс штрих-кодов", StringClass.get(13));
+
         seekBarcodeAction = addJProp(true, "Поиск штрих-кода", addSAProp(null), barcodeToObject, 1);
         barcodeNotFoundMessage = addJProp(true, "", and(false, true), addMAProp("Штрих-код не найден!", "Ошибка"), is(StringClass.get(13)), 1, barcodeToObject, 1);
 
@@ -1122,7 +1125,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         private AdminFormEntity(NavigatorElement parent, int iID) {
             super(parent, iID, "Глобальные параметры");
 
-            addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, webHost});
+            addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, webHost, barcodePrefix});
         }
     }
     
@@ -2184,7 +2187,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             ValueClass overrideClass;
             if (ic < overrideClasses.length && ((overrideClass = overrideClasses[ic]) != null)) {
                 classes[ic++] = overrideClass;
-                assert !overrideClass.isCompatibleParent(common);
+                assert overrideClass.isCompatibleParent(common);
             } else
                 classes[ic++] = common;
         }
@@ -2253,23 +2256,21 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addCProp(StaticClass valueClass, Object value, ValueClass... params) {
-        return addCProp(privateGroup, genSID(), "sys", valueClass, value, params);
+        return addCProp("sys", valueClass, value, params);
     }
 
     protected LP addCProp(String caption, StaticClass valueClass, Object value, ValueClass... params) {
-        return addCProp(genSID(), caption, valueClass, value, params);
+        return addCProp(null, false, caption, valueClass, value, params);
     }
 
-    protected LP addCProp(String sID, String caption, StaticClass valueClass, Object value, ValueClass... params) {
-        return addCProp(null, sID, caption, valueClass, value, params);
+    protected LP addCProp(AbstractGroup group, boolean persistent, String caption, StaticClass valueClass, Object value, ValueClass... params) {
+        return addCProp(group, persistent, caption, valueClass, value, Arrays.asList(params));
     }
 
-    protected LP addCProp(String sID, boolean persistent, String caption, StaticClass valueClass, Object value, ValueClass... params) {
-        return addCProp(null, sID, persistent, caption, valueClass, value, params);
-    }
-
-    protected LP addCProp(AbstractGroup group, String sID, String caption, StaticClass valueClass, Object value, ValueClass... params) {
-        return addCProp(group, sID, false, caption, valueClass, value, params);
+    // только для того, чтобы обернуть все в IdentityLazy, так как только для List нормально сделан equals
+    @IdentityLazy
+    protected LP addCProp(AbstractGroup group, boolean persistent, String caption, StaticClass valueClass, Object value, List<ValueClass> params) {
+        return addCProp(group, genSID(), persistent, caption, valueClass, value, params.toArray(new ValueClass[] {}));
     }
 
     protected LP addCProp(AbstractGroup group, String sID, boolean persistent, String caption, StaticClass valueClass, Object value, ValueClass... params) {
@@ -3923,7 +3924,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addAAProp(CustomClass customClass, LP... properties) {
-        return addAProp(new AddObjectActionProperty(genSID(), customClass, LP.toPropertyArray(properties)));
+        return addAAProp(customClass, null, null, false, properties);
+    }
+
+    protected LP addAAProp(CustomClass customClass, LP barcode, LP barcodePrefix, boolean quantity, LP... properties) {
+        return addAProp(new AddObjectActionProperty(genSID(),
+                (barcode != null) ? barcode.property : null, (barcodePrefix != null) ? barcodePrefix.property : null,
+                quantity, customClass, LP.toPropertyArray(properties)));
     }
 
     private Map<String, String> formSets;

@@ -105,7 +105,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP additionalCompositionDataSku;
     private LP mainCompositionSku;
     private LP additionalCompositionSku;
-    private ConcreteCustomClass country;
     private ConcreteCustomClass category;
     private ConcreteCustomClass customCategory2;
     private ConcreteCustomClass customCategory4;
@@ -876,7 +875,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         freightBoxNumberPallet = addSGProp(baseGroup, "freightBoxNumberPallet", "Кол-во коробов", addCProp(IntegerClass.instance, 1, freightBox), palletFreightBox, 1);
 
-        routePallet = addDProp(idGroup, "routePallet", "Маршрут (ИД)", route, pallet);
+        routePallet = addSDProp(idGroup, "routePallet", "Маршрут (ИД)", route, pallet);
         nameRoutePallet = addJProp(baseGroup, "nameRoutePallet", "Маршрут", name, routePallet, 1);
 
         addConstraint(addJProp("Маршрут паллеты должен совпадать с маршрутом фрахта", diff2,
@@ -917,7 +916,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         quantitySimpleShipmentRouteSku = addJProp(baseGroup, true,  "quantitySimpleShipmentRouteSku", "Кол-во оприход.",
                                                     quantitySimpleShipmentStockSku, 1, currentFreightBoxRoute, 2, 3);
 
-        createFreightBox = addJProp(true, "Создание коробов", addAAProp(freightBox, barcode), constBarcode, 1);
+        createFreightBox = addJProp(true, "Сгенерировать короба", addAAProp(freightBox, barcode, barcodePrefix, true), quantityCreationFreightBox, 1);
 
         barcodeAction4 = addJProp(true, "Ввод штрих-кода 4",
                 addCUProp(
@@ -1621,12 +1620,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private CreateFreightBoxFormEntity(NavigatorElement parent, int iID, String caption) {
             super(parent, iID, caption);
 
-            objCreate = addSingleGroupObject(creationFreightBox, "Операция создания", quantityCreationFreightBox, nameRouteCreationFreightBox);
-            addObjectActions(this, objCreate);            
-            objCreate.groupTo.initClassView = ClassViewType.PANEL;
+            objCreate = addSingleGroupObject(creationFreightBox, "Операция создания", nameRouteCreationFreightBox, quantityCreationFreightBox);
+            addObjectActions(this, objCreate);
+            objCreate.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objFreightBox = addSingleGroupObject(freightBox, "Короба для транспортировки", barcode, nameRouteCreationFreightBoxFreightBox);
-            //addObjectActions(this, objFreightBox);
+            objFreightBox = addSingleGroupObject(freightBox, "Короба для транспортировки", barcode);
             setReadOnly(objFreightBox, true);
 
             addPropertyDraw(createFreightBox, objCreate);
