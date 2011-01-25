@@ -66,6 +66,5 @@ public class TreeGroupController {
                 view.getTree().updateUI();
            }
         });
-
     }
 }

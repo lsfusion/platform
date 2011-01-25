@@ -372,15 +372,12 @@ public class ClientTree extends JTree {
         public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected,
                                                       boolean expanded, boolean leaf, int row,
                                                       boolean hasFocus) {
-
-            Component comp = super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
-
             ClientTreeNode node = (ClientTreeNode) value;
             if (node != null && node.getIcon() != null) {
                 setIcon(node.getIcon());
             }
 
-            return comp;
+            return super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
         }
     }
 }

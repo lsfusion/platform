@@ -84,6 +84,7 @@ public class GroupTree extends ClientTree {
                         TreeGroupNode node = (TreeGroupNode) path.getLastPathComponent();
                         if (node.group != null) {
                             try {
+                                currentPath = node.key;
                                 form.changeGroupObject(node.group, node.key);
                             } catch (IOException e) {
                                 throw new RuntimeException("Ошибка при выборе узла.");
@@ -322,8 +323,6 @@ public class GroupTree extends ClientTree {
 
         @Override
         public Component getTreeCellRendererComponent(JTree iTree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-            Component renderer = super.getTreeCellRendererComponent(iTree, value, sel, expanded, leaf, row, hasFocus);
-
             setBackgroundSelectionColor(backgroundSelectionColor);
             setBackgroundNonSelectionColor(backgroundNonSelectionColor);
 
@@ -335,7 +334,7 @@ public class GroupTree extends ClientTree {
                 }
             }
 
-            return renderer;
+            return super.getTreeCellRendererComponent(iTree, value, sel, expanded, leaf, row, hasFocus);
         }
     }
 }

@@ -11,10 +11,7 @@ import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TreeGroupInstance {
     public TreeGroupEntity entity;
@@ -23,9 +20,11 @@ public class TreeGroupInstance {
     @IdentityLazy
     public List<GroupObjectInstance> getDownTreeGroups(GroupObjectInstance group) {
         List<GroupObjectInstance> downGroups = new ArrayList<GroupObjectInstance>();
-        for(GroupObjectInstance downGroup : groups) {
-            if(downGroup.equals(group))
+        for (int i = groups.size() - 1; i >= 0; i--) {
+            GroupObjectInstance downGroup = groups.get(i);
+            if (downGroup.equals(group)) {
                 return downGroups;
+            }
             downGroups.add(downGroup);
         }
         throw new RuntimeException("should not be");
