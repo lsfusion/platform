@@ -1653,20 +1653,18 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             super(parent, iID, caption);
 
             objCustomCategory2 = addSingleGroupObject(customCategory2, "Первый уровень", sidCustomCategory2, name);
-            addObjectActions(this, objCustomCategory2);
-            objCustomCategory2.groupTo.initClassView = ClassViewType.GRID;
+//            addObjectActions(this, objCustomCategory2);
 
             objCustomCategory4 = addSingleGroupObject(customCategory4, "Второй уровень", sidCustomCategory4, name);
-            addObjectActions(this, objCustomCategory4);
-            objCustomCategory4.groupTo.initClassView = ClassViewType.GRID;
+//            addObjectActions(this, objCustomCategory4);
 
             objCustomCategory6 = addSingleGroupObject(customCategory6, "Третий уровень", sidCustomCategory6, name);
-            addObjectActions(this, objCustomCategory6);
-            objCustomCategory6.groupTo.initClassView = ClassViewType.GRID;
+//            addObjectActions(this, objCustomCategory6);
+
+            addTreeGroupObject(objCustomCategory2.groupTo, objCustomCategory4.groupTo, objCustomCategory6.groupTo);
 
             objCustomCategory10 = addSingleGroupObject(customCategory10, "Четвёртый уровень", sidCustomCategory10, name);
             addObjectActions(this, objCustomCategory10);
-            objCustomCategory10.groupTo.initClassView = ClassViewType.GRID;
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory2CustomCategory4, objCustomCategory4), Compare.EQUALS, objCustomCategory2));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory4CustomCategory6, objCustomCategory6), Compare.EQUALS, objCustomCategory4));
@@ -1677,10 +1675,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
 
-            design.get(objCustomCategory2.groupTo).grid.constraints.fillVertical = 2;
-            design.get(objCustomCategory4.groupTo).grid.constraints.fillVertical = 2;
-            design.get(objCustomCategory6.groupTo).grid.constraints.fillVertical = 2;
-            design.get(objCustomCategory10.groupTo).grid.constraints.fillVertical = 2;
             return design;
         }
     }

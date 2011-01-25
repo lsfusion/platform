@@ -497,9 +497,10 @@ public class ClientFormController {
         if (objectValue == null) {
             return;
         }
-        
+
         if (group.parent != null || !objectValue.equals(controllers.get(group).getCurrentObject())) {
-            controllers.get(group).setCurrentGroupObject(objectValue);
+            if (group.parent == null) // если ClientGroupObject в дереве, то вызывать не надо изменение объекта
+                controllers.get(group).setCurrentGroupObject(objectValue);
             remoteForm.changeGroupObject(group.getID(), objectValue.serialize(group));
 
             applyRemoteChanges();
