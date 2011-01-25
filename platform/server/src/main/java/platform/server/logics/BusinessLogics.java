@@ -2586,6 +2586,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP addJProp(AbstractGroup group, boolean implementChange, String sID, boolean persistent, String caption, LP mainProp, Object... params) {
 
         JoinProperty<?> property = new JoinProperty(sID, caption, getIntNum(params), implementChange);
+        property.inheritFixedCharWidth(mainProp.property);
 
         LP listProperty = new LP<JoinProperty.Interface>(property);
         property.implement = mapImplement(mainProp, readImplements(listProperty.listInterfaces, params));

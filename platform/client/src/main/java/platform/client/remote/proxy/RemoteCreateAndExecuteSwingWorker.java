@@ -21,8 +21,10 @@ public class RemoteCreateAndExecuteSwingWorker extends SwingWorker<Object[], Voi
 
     @Override
     protected Object[] doInBackground() throws Exception {
-        Object[] result = remote.createAndExecute(creator, invocations);
-        WaitDialog.finish();
-        return result;
+        try {
+            return remote.createAndExecute(creator, invocations);
+        } finally {
+            WaitDialog.finish();
+        }
     }
 }

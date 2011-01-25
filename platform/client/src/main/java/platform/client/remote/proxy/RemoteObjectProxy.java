@@ -35,16 +35,21 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
                 logger.debug("  Invocation in execute: " + invocation.toString());
             }
         }
-        RemoteExecuteSwingWorker worker = new RemoteExecuteSwingWorker(target, invocations);
-        worker.execute();
-        try {
-            WaitDialog.start();
-            Object result = worker.get();
-            logRemoteMethodEndCall("execute", result);
-            return result;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+
+        Object result = target.execute(invocations);
+        logRemoteMethodEndCall("execute", result);
+        return result;
+
+//        RemoteExecuteSwingWorker worker = new RemoteExecuteSwingWorker(target, invocations);
+//        worker.execute();
+//        try {
+//            WaitDialog.start();
+//            Object result = worker.get();
+//            logRemoteMethodEndCall("execute", result);
+//            return result;
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
     }
 
     @NonFlushRemoteMethod
@@ -57,16 +62,20 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
             }
         }
 
-        RemoteCreateAndExecuteSwingWorker worker = new RemoteCreateAndExecuteSwingWorker(target, creator, invocations);
-        worker.execute();
-        try {
-            WaitDialog.start();
-            Object[] result = worker.get();
-            logRemoteMethodEndCall("createAndExecute", result);
-            return result;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        Object[] result = target.createAndExecute(creator, invocations);
+        logRemoteMethodEndCall("createAndExecute", result);
+        return result;
+
+//        RemoteCreateAndExecuteSwingWorker worker = new RemoteCreateAndExecuteSwingWorker(target, creator, invocations);
+//        worker.execute();
+//        try {
+//            WaitDialog.start();
+//            Object[] result = worker.get();
+//            logRemoteMethodEndCall("createAndExecute", result);
+//            return result;
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
     }
 
     @NonFlushRemoteMethod
