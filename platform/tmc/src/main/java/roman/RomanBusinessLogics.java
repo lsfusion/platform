@@ -956,7 +956,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         addFormEntity(new ShipmentSpecFormEntity(baseElement, 60, "Прием товара без коробов", false));
         addFormEntity(new FreightFormEntity(baseElement, 70, "Фрахт по поставкам"));
         addFormEntity(new CreateFreightBoxFormEntity(baseElement, 80, "Подготовка этикеток"));
-        addFormEntity(new CustomCategoryFormEntity(baseElement, 90, "Справочник ТН ВЭД"));
+        addFormEntity(new CustomCategoryFormEntity(baseElement, 85, "Справочник ТН ВЭД (изменение)", false));
+        addFormEntity(new CustomCategoryFormEntity(baseElement, 90, "Справочник ТН ВЭД (дерево)", true));
     }
 
     @Override
@@ -1649,19 +1650,23 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objCustomCategory6;
         private ObjectEntity objCustomCategory10;
 
-        private CustomCategoryFormEntity(NavigatorElement parent, int iID, String caption) {
+        private CustomCategoryFormEntity(NavigatorElement parent, int iID, String caption, boolean tree) {
             super(parent, iID, caption);
 
             objCustomCategory2 = addSingleGroupObject(customCategory2, "Первый уровень", sidCustomCategory2, name);
-//            addObjectActions(this, objCustomCategory2);
+            if (!tree)
+                addObjectActions(this, objCustomCategory2);
 
             objCustomCategory4 = addSingleGroupObject(customCategory4, "Второй уровень", sidCustomCategory4, name);
-//            addObjectActions(this, objCustomCategory4);
+            if (!tree)
+                addObjectActions(this, objCustomCategory4);
 
             objCustomCategory6 = addSingleGroupObject(customCategory6, "Третий уровень", sidCustomCategory6, name);
-//            addObjectActions(this, objCustomCategory6);
+            if (!tree)
+                addObjectActions(this, objCustomCategory6);
 
-            addTreeGroupObject(objCustomCategory2.groupTo, objCustomCategory4.groupTo, objCustomCategory6.groupTo);
+            if (tree)
+                addTreeGroupObject(objCustomCategory2.groupTo, objCustomCategory4.groupTo, objCustomCategory6.groupTo);
 
             objCustomCategory10 = addSingleGroupObject(customCategory10, "Четвёртый уровень", sidCustomCategory10, name);
             addObjectActions(this, objCustomCategory10);
