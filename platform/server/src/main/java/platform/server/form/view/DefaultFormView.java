@@ -13,6 +13,9 @@ import java.util.Set;
 
 public class DefaultFormView extends FormView {
 
+    private transient Map<TreeGroupEntity, TreeGroupView> mtreeGroups = new HashMap<TreeGroupEntity, TreeGroupView>();
+    public TreeGroupView get(TreeGroupEntity treeGroup) { return mtreeGroups.get(treeGroup); }
+
     private transient Map<GroupObjectEntity, GroupObjectView> mgroupObjects = new HashMap<GroupObjectEntity, GroupObjectView>();
     public GroupObjectView get(GroupObjectEntity groupObject) { return mgroupObjects.get(groupObject); }
 
@@ -32,6 +35,7 @@ public class DefaultFormView extends FormView {
 
     private transient Map<TreeGroupView, ContainerView> treeContainers = new HashMap<TreeGroupView, ContainerView>();
     public ContainerView getTreeContainer(TreeGroupView treeGroup) { return treeContainers.get(treeGroup); }
+    public ContainerView getTreeContainer(TreeGroupEntity treeGroup) { return getTreeContainer(get(treeGroup)); }
 
     private transient Map<GroupObjectView, ContainerView> controlsContainers = new HashMap<GroupObjectView, ContainerView>();
 
@@ -91,6 +95,8 @@ public class DefaultFormView extends FormView {
         for (TreeGroupEntity treeGroup : formEntity.treeGroups) {
 
             TreeGroupView treeGroupView = new TreeGroupView(this, treeGroup);
+
+            mtreeGroups.put(treeGroup, treeGroupView);
             treeGroups.add(treeGroupView);
 
             TreeGroupContainerSet<ContainerView, ComponentView> treeSet = TreeGroupContainerSet.create(treeGroupView, containerFactory);

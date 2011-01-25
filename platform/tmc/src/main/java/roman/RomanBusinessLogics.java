@@ -9,10 +9,7 @@ import platform.server.classes.*;
 import platform.server.data.Time;
 import platform.server.data.Union;
 import platform.server.data.sql.DataAdapter;
-import platform.server.form.entity.FormEntity;
-import platform.server.form.entity.GroupObjectEntity;
-import platform.server.form.entity.ObjectEntity;
-import platform.server.form.entity.PropertyDrawEntity;
+import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.ContainerView;
@@ -418,9 +415,16 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         constBarcode = addCProp(StringClass.get(13), "1234567890", creationFreightBox);
 
         sidCustomCategory2 = addDProp(baseGroup, "sidCustomCategory2", "Код(2)", StringClass.get(2), customCategory2);
+        sidCustomCategory2.setFixedCharWidth(2);
+
         sidCustomCategory4 = addDProp(baseGroup, "sidCustomCategory4", "Код(4)", StringClass.get(4), customCategory4);
+        sidCustomCategory4.setFixedCharWidth(4);
+
         sidCustomCategory6 = addDProp(baseGroup, "sidCustomCategory6", "Код(6)", StringClass.get(6), customCategory6);
+        sidCustomCategory6.setFixedCharWidth(6);
+
         sidCustomCategory10 = addDProp(baseGroup, "sidCustomCategory10", "Код(10)", StringClass.get(10), customCategory10);
+        sidCustomCategory10.setFixedCharWidth(10);
 
         customCategory2CustomCategory4 = addDProp(idGroup, "customCategory2CustomCategory4", "Код(2)", customCategory2, customCategory4);
         customCategory4CustomCategory6 = addDProp(idGroup, "customCategory4CustomCategory6", "Код(4)", customCategory4, customCategory6);
@@ -1645,13 +1649,20 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
     private class CustomCategoryFormEntity extends FormEntity<RomanBusinessLogics> {
 
+        private boolean tree = false;
+
         private ObjectEntity objCustomCategory2;
         private ObjectEntity objCustomCategory4;
         private ObjectEntity objCustomCategory6;
+
+        private TreeGroupEntity treeCustomCategory;
+
         private ObjectEntity objCustomCategory10;
 
         private CustomCategoryFormEntity(NavigatorElement parent, int iID, String caption, boolean tree) {
             super(parent, iID, caption);
+
+            this.tree = tree;
 
             objCustomCategory2 = addSingleGroupObject(customCategory2, "Первый уровень", sidCustomCategory2, name);
             if (!tree)
@@ -1666,7 +1677,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 addObjectActions(this, objCustomCategory6);
 
             if (tree)
-                addTreeGroupObject(objCustomCategory2.groupTo, objCustomCategory4.groupTo, objCustomCategory6.groupTo);
+                 treeCustomCategory = addTreeGroupObject(objCustomCategory2.groupTo, objCustomCategory4.groupTo, objCustomCategory6.groupTo);
 
             objCustomCategory10 = addSingleGroupObject(customCategory10, "Четвёртый уровень", sidCustomCategory10, name);
             addObjectActions(this, objCustomCategory10);
@@ -1679,6 +1690,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
+
+            if (tree)
+                design.addIntersection(design.getTreeContainer(treeCustomCategory), design.getGroupObjectContainer(objCustomCategory10.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            else {
+                design.addIntersection(design.getGroupObjectContainer(objCustomCategory2.groupTo), design.getGroupObjectContainer(objCustomCategory4.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                design.addIntersection(design.getGroupObjectContainer(objCustomCategory4.groupTo), design.getGroupObjectContainer(objCustomCategory6.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                design.addIntersection(design.getGroupObjectContainer(objCustomCategory6.groupTo), design.getGroupObjectContainer(objCustomCategory10.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            }
 
             return design;
         }

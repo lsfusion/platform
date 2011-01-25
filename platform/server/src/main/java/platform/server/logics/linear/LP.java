@@ -156,4 +156,8 @@ public class LP<T extends PropertyInterface> {
             result.add(property.property);
         return result;
     }
+
+    public void setFixedCharWidth(int charWidth) {
+        property.setFixedCharWidth(charWidth);
+    }
 }

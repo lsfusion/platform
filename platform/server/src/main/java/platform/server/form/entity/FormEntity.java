@@ -189,7 +189,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return addSingleGroupObject(ID, baseClass, null, groups);
     }
 
-    protected void addTreeGroupObject(GroupObjectEntity... tGroups) {
+    protected TreeGroupEntity addTreeGroupObject(GroupObjectEntity... tGroups) {
         TreeGroupEntity treeGroup = new TreeGroupEntity();
         for (GroupObjectEntity group : tGroups) {
             if (!groups.contains(group)) {
@@ -199,6 +199,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
 
         treeGroups.add(treeGroup);
+        return treeGroup;
     }
 
     protected void addGroup(GroupObjectEntity group) {

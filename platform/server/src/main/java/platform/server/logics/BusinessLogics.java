@@ -994,7 +994,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         userPolicyOrder = addDProp(baseGroup, "userPolicyOrder", "Порядок политики", IntegerClass.instance, customUser, policy);
 
         barcode = addDProp(baseGroup, "barcode", "Штрих-код", StringClass.get(13), barcodeObject);
-        barcode.property.setFixedCharWidth(13);
+        barcode.setFixedCharWidth(13);
         barcodeToObject = addCGProp(null, "barcodeToObject", "Объект", object(barcodeObject), barcode, barcode, 1);
         barcodeObjectName = addJProp(baseGroup, "Объект", name, barcodeToObject, 1);
 
