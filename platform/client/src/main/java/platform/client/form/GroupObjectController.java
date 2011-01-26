@@ -111,6 +111,12 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
             }
         }
 
+        ClassViewType newClassView = fc.classViews.get(groupObject);
+        if (newClassView != null && classView != newClassView) {
+            setClassView(newClassView);
+            requestFocusInWindow();
+        }
+
         // Затем подгружаем новые данные
 
         // Сначала новые объекты
@@ -120,12 +126,6 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
         if (fc.objects.containsKey(groupObject)) {
             setCurrentGroupObject(fc.objects.get(groupObject));
-        }
-
-        ClassViewType newClassView = fc.classViews.get(groupObject);
-        if (newClassView != null && classView != newClassView) {
-            setClassView(newClassView);
-            requestFocusInWindow();
         }
 
         // Затем их свойства

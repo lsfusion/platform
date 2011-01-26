@@ -18,6 +18,14 @@ public class Settings {
 
     public boolean packOnCache = false;
 
+    public boolean isPackOnCache() {
+        return packOnCache;
+    }
+
+    public void setPackOnCache(boolean packOnCache) {
+        this.packOnCache = packOnCache;
+    }
+
     private int mapInnerMaxIterations = 4;
 
     public int getMapInnerMaxIterations() {

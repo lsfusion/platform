@@ -3,6 +3,7 @@ package platform.server.data.expr.query;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.QuickMap;
+import platform.interop.Compare;
 import platform.server.Settings;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.DataClass;
@@ -14,10 +15,7 @@ import platform.server.data.expr.*;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.expr.cases.MapCase;
-import platform.server.data.query.AbstractSourceJoin;
-import platform.server.data.query.CompileSource;
-import platform.server.data.query.JoinData;
-import platform.server.data.query.SourceJoin;
+import platform.server.data.query.*;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.translator.QueryTranslator;
@@ -145,6 +143,18 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
     @Override
     public OrderJoin getGroupJoin() {
         return new OrderJoin(innerContext.getKeys(), innerContext.getValues(),query.getWhere(), Settings.instance.isPushOrderWhere() ?query.partitions:new HashSet<Expr>(),group);
+    }
+
+    // проталкивает внутрь partition'а Where
+    public static Where getPartitionWhere(boolean cached, Where trueWhere, Map<KeyExpr, BaseExpr> group, Set<Expr> partitions) {
+        Map<Object, Expr> partitionMap = BaseUtils.toObjectMap(partitions);
+        if(cached) {
+            platform.server.data.query.Query<KeyExpr,Object> mapQuery = new platform.server.data.query.Query<KeyExpr,Object>(BaseUtils.toMap(group.keySet())); // для кэша через Query
+            mapQuery.properties.putAll(partitionMap);
+            Join<Object> joinQuery = mapQuery.join(group);
+            return GroupExpr.create(joinQuery.getExprs(),ValueExpr.TRUE,trueWhere,true,partitionMap).getWhere();
+        } else
+            return GroupExpr.create(new QueryTranslator(group).translate(partitionMap),ValueExpr.TRUE,trueWhere,true,partitionMap).getWhere();
     }
 
     @Override

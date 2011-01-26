@@ -444,14 +444,6 @@ public class CompiledQuery<K,V> {
                 mapKeys = orderJoin.group;
             }
 
-            private Where getPartitionWhere(Set<Expr> partitions) {
-                Map<Expr, Expr> partitionMap = BaseUtils.toMap(partitions);
-                Query<KeyExpr,Expr> mapQuery = new Query<KeyExpr,Expr>(BaseUtils.toMap(mapKeys.keySet())); // для кэша через Query
-                mapQuery.properties.putAll(partitionMap);
-                Join<Expr> joinQuery = mapQuery.join(mapKeys);
-                return GroupExpr.create(joinQuery.getExprs(),ValueExpr.TRUE,getInnerWhere(),true,partitionMap).getWhere();
-            }
-
             public String getSource() {
 
                 Set<Expr> queryExprs = new HashSet<Expr>();
@@ -469,7 +461,7 @@ public class CompiledQuery<K,V> {
                     if(Settings.instance.isPushOrderWhere()) {
                         partitionWhere = cachedPartitions.get(query.partitions);
                         if(partitionWhere==null) {
-                            partitionWhere = getPartitionWhere(query.partitions);
+                            partitionWhere = OrderExpr.getPartitionWhere(true, getInnerWhere(), mapKeys, query.partitions);
                             cachedPartitions.put(query.partitions,partitionWhere);
                         }
                     } else

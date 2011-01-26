@@ -24,6 +24,8 @@ import platform.server.data.query.Query;
 import platform.server.data.type.ObjectType;
 import platform.server.data.where.Where;
 import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.GroupObjectEntity;
+import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.*;
 import platform.server.form.instance.listener.CurrentClassListener;
 import platform.server.form.instance.listener.CustomClassListener;
@@ -342,19 +344,17 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
                 else
                     session = createSession();
 
-                FormInstance<T> formInstance = new FormInstance<T>(formEntity, BL, session, securityPolicy, this, this, computer);
-
-                for (GroupObjectInstance groupObject : formInstance.groups) {
-                    Map<OrderInstance, ObjectValue> userSeeks = new HashMap<OrderInstance, ObjectValue>();
-                    for (ObjectInstance object : groupObject.objects)
-                        if (object instanceof CustomObjectInstance) {
-                            Integer objectID = classCache.getObject(((CustomObjectInstance) object).baseClass);
+                Map<ObjectEntity, ObjectValue> cacheSeeks = new HashMap<ObjectEntity, ObjectValue>();
+                for (GroupObjectEntity groupObject : formEntity.groups) {
+                    for (ObjectEntity object : groupObject.objects)
+                        if (object.baseClass instanceof CustomClass) {
+                            Integer objectID = classCache.getObject((CustomClass) object.baseClass);
                             if (objectID != null)
-                                userSeeks.put(object, session.getDataObject(objectID, ObjectType.instance));
+                                cacheSeeks.put(object, session.getDataObject(objectID, ObjectType.instance));
                         }
-                    if (!userSeeks.isEmpty())
-                        groupObject.seek(userSeeks, false);
                 }
+
+                FormInstance<T> formInstance = new FormInstance<T>(formEntity, BL, session, securityPolicy, this, this, computer, cacheSeeks);
 
                 remoteForm = new RemoteForm<T, FormInstance<T>>(formInstance, formEntity.getRichDesign(), exportPort, this);
             } catch (Exception e) {

@@ -151,12 +151,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
             orderInstance.getApplyObject().fixedOrders.put(orderInstance, orderEntity.getValue());
         }
 
-        addObjectOnTransaction();
-
         for (Entry<ObjectEntity, ? extends ObjectValue> mapObject : mapObjects.entrySet()) {
             ObjectInstance instance = instanceFactory.getInstance(mapObject.getKey());
             instance.groupTo.addSeek(instance, mapObject.getValue(), false);
         }
+
+        addObjectOnTransaction();
     }
 
     public List<GroupObjectInstance> groups = new ArrayList<GroupObjectInstance>();

@@ -236,10 +236,17 @@ public class BaseUtils {
         return result;
     }
 
-    public static <K, V> Map<K, V> toMap(Collection<K> collection, V value) {
-        Map<K, V> result = new HashMap<K, V>();
-        for (K object : collection)
-            result.put(object, value);
+    public static <K> Map<Object,K> toObjectMap(Set<K> collection) {
+        Map<Object,K> result = new HashMap<Object, K>();
+        for(K object : collection)
+            result.put(new Object(),object);
+        return result;
+    }
+
+    public static <K,V> Map<K,V> toMap(Collection<K> collection, V value) {
+        Map<K,V> result = new HashMap<K, V>();
+        for(K object : collection)
+            result.put(object,value);
         return result;
     }
 

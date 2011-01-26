@@ -73,7 +73,6 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyI
         String propertySID = inStream.readUTF();
 
         property = pool.context.BL.getProperty(propertySID);
-        assert property != null;
         mapping = new HashMap<P, PropertyObjectInterfaceEntity>();
 
         int size = inStream.readInt();
