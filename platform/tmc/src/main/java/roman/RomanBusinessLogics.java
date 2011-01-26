@@ -111,6 +111,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private ConcreteCustomClass customCategory2;
     private ConcreteCustomClass customCategory4;
     private ConcreteCustomClass customCategory6;
+    private ConcreteCustomClass customCategory9;
     private ConcreteCustomClass customCategory10;
     private ConcreteCustomClass customCategoryAdditional;
     private LP categoryArticle;
@@ -121,22 +122,33 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP sidCustomCategory2;
     private LP sidCustomCategory4;
     private LP sidCustomCategory6;
+    private LP sidCustomCategory9;
     private LP sidCustomCategory10;
     private LP sidCustomCategoryAdditional;
+    private LP nameCustomCategory2;
+    private LP nameCustomCategory4;
+    private LP nameCustomCategory6;
+    private LP nameCustomCategory9;
+    private LP nameCustomCategory10;
+
     private LP customCategory2CustomCategory4;
     private LP customCategory4CustomCategory6;
-    private LP customCategory6CustomCategory10;
+    private LP customCategory6CustomCategory9;
+    private LP customCategory9CustomCategory10;
     private LP customCategory10CustomCategoryAdditional;
     private LP sidCustomCategory2CustomCategory4;
     private LP sidCustomCategory4CustomCategory6;
-    private LP sidCustomCategory6CustomCategory10;
-    private LP sidCustomCategory6CustomCategoryAdditional;
+    private LP sidCustomCategory6CustomCategory9;
+    private LP sidCustomCategory9CustomCategory10;
+    private LP sidCustomCategory10CustomCategoryAdditional;
     private LP nameCustomCategory2CustomCategory4;
     private LP nameCustomCategory4CustomCategory6;
-    private LP nameCustomCategory6CustomCategory10;
+    private LP nameCustomCategory6CustomCategory9;
+    private LP nameCustomCategory9CustomCategory10;
     private LP nameCustomCategory10CustomCategoryAdditional;
 
     private LP customCategory10DataArticle;
+    private LP customCategoryAdditionalDataArticle;
     private LP sidCustomCategory10Article;
     private LP customCategory10OriginArticle;
     private LP sidCustomCategory10OriginArticle;
@@ -418,12 +430,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         category = addConcreteClass("category", "Категория", baseClass.named);
 
-        customCategory2 = addConcreteClass("customCategory2", "Первый уровень", baseClass.named);
-        customCategory4 = addConcreteClass("customCategory4", "Второй уровень", baseClass.named);
-        customCategory6 = addConcreteClass("customCategory6", "Третий уровень", baseClass.named);
-        customCategory10 = addConcreteClass("customCategory10", "Четвёртый уровень", baseClass.named);
+        customCategory2 = addConcreteClass("customCategory2", "Первый уровень", baseClass);
+        customCategory4 = addConcreteClass("customCategory4", "Второй уровень", baseClass);
+        customCategory6 = addConcreteClass("customCategory6", "Третий уровень", baseClass);
+        customCategory9 = addConcreteClass("customCategory9", "Четвёртый уровень", baseClass);
+        customCategory10 = addConcreteClass("customCategory10", "Пятый уровень", baseClass);
 
-        customCategoryAdditional = addConcreteClass("customCategoryAdditional", "Дополнительный уровень", baseClass.named);
+        //customCategoryAdditional = addConcreteClass("customCategoryAdditional", "Дополнительный уровень", baseClass);
 
         creationFreightBox = addConcreteClass("creationFreightBox", "Операция создания коробов", document);
         creationPallet = addConcreteClass("creationPallet", "Операция создания паллет", document);
@@ -438,33 +451,43 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         sidCustomCategory2 = addDProp(baseGroup, "sidCustomCategory2", "Код(2)", StringClass.get(2), customCategory2);
         sidCustomCategory2.setFixedCharWidth(2);
+        nameCustomCategory2 = addDProp(baseGroup, "nameCustomCategory2", "Наименование", StringClass.get(500), customCategory2);
 
         sidCustomCategory4 = addDProp(baseGroup, "sidCustomCategory4", "Код(4)", StringClass.get(4), customCategory4);
         sidCustomCategory4.setFixedCharWidth(4);
+        nameCustomCategory4 = addDProp(baseGroup, "nameCustomCategory4", "Наименование", StringClass.get(500), customCategory4);
 
         sidCustomCategory6 = addDProp(baseGroup, "sidCustomCategory6", "Код(6)", StringClass.get(6), customCategory6);
         sidCustomCategory6.setFixedCharWidth(6);
+        nameCustomCategory6 = addDProp(baseGroup, "nameCustomCategory6", "Наименование", StringClass.get(500), customCategory6);
+
+        sidCustomCategory9 = addDProp(baseGroup, "sidCustomCategory9", "Код(9)", StringClass.get(9), customCategory9);
+        sidCustomCategory9.setFixedCharWidth(9);
+        nameCustomCategory9 = addDProp(baseGroup, "nameCustomCategory9", "Наименование", StringClass.get(500), customCategory9);
 
         sidCustomCategory10 = addDProp(baseGroup, "sidCustomCategory10", "Код(10)", StringClass.get(10), customCategory10);
         sidCustomCategory10.setFixedCharWidth(10);
+        nameCustomCategory10 = addDProp(baseGroup, "nameCustomCategory10", "Наименование", StringClass.get(500), customCategory10);
 
-        sidCustomCategoryAdditional = addDProp(baseGroup, "sidCustomCategory14", "Код(14)", StringClass.get(14), customCategoryAdditional);
-        sidCustomCategoryAdditional.setFixedCharWidth(14);
+        //sidCustomCategoryAdditional = addDProp(baseGroup, "sidCustomCategoryAdditional", "Код(14)", StringClass.get(14), customCategoryAdditional);
+        //sidCustomCategoryAdditional.setFixedCharWidth(14);
 
         customCategory2CustomCategory4 = addDProp(idGroup, "customCategory2CustomCategory4", "Код(2)", customCategory2, customCategory4);
         customCategory4CustomCategory6 = addDProp(idGroup, "customCategory4CustomCategory6", "Код(4)", customCategory4, customCategory6);
-        customCategory6CustomCategory10 = addDProp(idGroup, "customCategory6CustomCategory10", "Код(6)", customCategory6, customCategory10);
-        customCategory10CustomCategoryAdditional = addDProp(idGroup, "customCategory10CustomCategoryAdditional", "Код(10)", customCategory10, customCategoryAdditional);
+        customCategory6CustomCategory9 = addDProp(idGroup, "customCategory6CustomCategory9", "Код(6)", customCategory6, customCategory9);
+        customCategory9CustomCategory10 = addDProp(idGroup, "customCategory9CustomCategory10", "Код(9)", customCategory9, customCategory10);
+        //customCategory10CustomCategoryAdditional = addDProp(idGroup, "customCategory10CustomCategoryAdditional", "Код(10)", customCategory10, customCategoryAdditional);
 
         sidCustomCategory2CustomCategory4 = addJProp(baseGroup, "sidCustomCategory2CustomCategory4", "Код(2)", sidCustomCategory2, customCategory2CustomCategory4, 1);
         sidCustomCategory4CustomCategory6 = addJProp(baseGroup, "sidCustomCategory4CustomCategory6", "Код(4)", sidCustomCategory4, customCategory4CustomCategory6, 1);
-        sidCustomCategory6CustomCategory10 = addJProp(baseGroup, "sidCustomCategory6CustomCategory10", "Код(6)", sidCustomCategory6, customCategory6CustomCategory10, 1);
-        sidCustomCategory6CustomCategoryAdditional = addJProp(baseGroup, "sidCustomCategory6CustomCategoryAdditional", "Код(10)", sidCustomCategory10, customCategory10CustomCategoryAdditional, 1);
+        sidCustomCategory6CustomCategory9 = addJProp(baseGroup, "sidCustomCategory6CustomCategory9", "Код(6)", sidCustomCategory6, customCategory6CustomCategory9, 1);
+        sidCustomCategory9CustomCategory10 = addJProp(baseGroup, "sidCustomCategory9CustomCategory10", "Код(9)", sidCustomCategory9, customCategory9CustomCategory10, 1);
+        //sidCustomCategory6CustomCategoryAdditional = addJProp(baseGroup, "sidCustomCategory6CustomCategoryAdditional", "Код(10)", sidCustomCategory10, customCategory10CustomCategoryAdditional, 1);
 
-        nameCustomCategory2CustomCategory4 = addJProp(baseGroup, "nameCustomCategory2CustomCategory4", "Наименование(2)", name, customCategory2CustomCategory4, 1);
-        nameCustomCategory4CustomCategory6 = addJProp(baseGroup, "nameCustomCategory4CustomCategory6", "Наименование(4)", name, customCategory4CustomCategory6, 1);
-        nameCustomCategory6CustomCategory10 = addJProp(baseGroup, "nameCustomCategory6CustomCategory10", "Наименование(6)", name, customCategory6CustomCategory10, 1);
-        nameCustomCategory10CustomCategoryAdditional = addJProp(baseGroup, "nameCustomCategory10CustomCategoryAdditional", "Наименование(10)", name, customCategory10CustomCategoryAdditional, 1);
+        nameCustomCategory2CustomCategory4 = addJProp(baseGroup, "nameCustomCategory2CustomCategory4", "Наименование(2)", nameCustomCategory2, customCategory2CustomCategory4, 1);
+        nameCustomCategory4CustomCategory6 = addJProp(baseGroup, "nameCustomCategory4CustomCategory6", "Наименование(4)", nameCustomCategory4, customCategory4CustomCategory6, 1);
+        nameCustomCategory6CustomCategory9 = addJProp(baseGroup, "nameCustomCategory6CustomCategory9", "Наименование(6)", nameCustomCategory6, customCategory6CustomCategory9, 1);
+        nameCustomCategory9CustomCategory10 = addJProp(baseGroup, "nameCustomCategory9CustomCategory10", "Наименование(9)", nameCustomCategory9, customCategory9CustomCategory10, 1);
 
         currencySupplier = addDProp(idGroup, "currencySupplier", "Валюта (ИД)", currency, supplier);
         nameCurrencySupplier = addJProp(baseGroup, "nameCurrencySupplier", "Валюта", name, currencySupplier, 1);
@@ -523,6 +546,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         sidCustomCategory10OriginArticleSku = addJProp(supplierAttributeGroup, "sidCustomCategory10OriginArticleSku", "Код ТН ВЭД (ориг.)", sidCustomCategory10OriginArticle, articleSku, 1);
 
         customCategory10DataArticle = addDProp(idGroup, "customCategory10DataArticle", "ТН ВЭД (ИД)", customCategory10, article);
+                
         customCategory10Article = addSUProp(idGroup, "customCategory10Article", "ТН ВЭД (ИД)", Union.OVERRIDE, customCategory10OriginArticle, customCategory10DataArticle);
 
         customCategory10ArticleSku = addJProp(idGroup, true, "customCategory10ArticleSku", "ТН ВЭД (ИД)", customCategory10Article, articleSku, 1);
@@ -1728,6 +1752,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objCustomCategory2;
         private ObjectEntity objCustomCategory4;
         private ObjectEntity objCustomCategory6;
+        private ObjectEntity objCustomCategory9;
 
         private TreeGroupEntity treeCustomCategory;
 
@@ -1738,27 +1763,32 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             this.tree = tree;
 
-            objCustomCategory2 = addSingleGroupObject(customCategory2, "Первый уровень", sidCustomCategory2, name);
+            objCustomCategory2 = addSingleGroupObject(customCategory2, "Первый уровень", sidCustomCategory2, nameCustomCategory2);
             if (!tree)
                 addObjectActions(this, objCustomCategory2);
 
-            objCustomCategory4 = addSingleGroupObject(customCategory4, "Второй уровень", sidCustomCategory4, name);
+            objCustomCategory4 = addSingleGroupObject(customCategory4, "Второй уровень", sidCustomCategory4, nameCustomCategory4);
             if (!tree)
                 addObjectActions(this, objCustomCategory4);
 
-            objCustomCategory6 = addSingleGroupObject(customCategory6, "Третий уровень", sidCustomCategory6, name);
+            objCustomCategory6 = addSingleGroupObject(customCategory6, "Третий уровень", sidCustomCategory6, nameCustomCategory6);
             if (!tree)
                 addObjectActions(this, objCustomCategory6);
 
-            if (tree)
-                 treeCustomCategory = addTreeGroupObject(objCustomCategory2.groupTo, objCustomCategory4.groupTo, objCustomCategory6.groupTo);
+            objCustomCategory9 = addSingleGroupObject(customCategory9, "Четвёртый уровень", sidCustomCategory9, nameCustomCategory9);
+            if (!tree)
+                addObjectActions(this, objCustomCategory9);
 
-            objCustomCategory10 = addSingleGroupObject(customCategory10, "Четвёртый уровень", sidCustomCategory10, name);
+            if (tree)
+                 treeCustomCategory = addTreeGroupObject(objCustomCategory2.groupTo, objCustomCategory4.groupTo, objCustomCategory6.groupTo, objCustomCategory9.groupTo);
+
+            objCustomCategory10 = addSingleGroupObject(customCategory10, "Пятый уровень", sidCustomCategory10, nameCustomCategory10);
             addObjectActions(this, objCustomCategory10);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory2CustomCategory4, objCustomCategory4), Compare.EQUALS, objCustomCategory2));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory4CustomCategory6, objCustomCategory6), Compare.EQUALS, objCustomCategory4));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory6CustomCategory10, objCustomCategory10), Compare.EQUALS, objCustomCategory6));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory6CustomCategory9, objCustomCategory9), Compare.EQUALS, objCustomCategory6));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory9CustomCategory10, objCustomCategory10), Compare.EQUALS, objCustomCategory9));
         }
 
         @Override
@@ -1770,7 +1800,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             else {
                 design.addIntersection(design.getGroupObjectContainer(objCustomCategory2.groupTo), design.getGroupObjectContainer(objCustomCategory4.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
                 design.addIntersection(design.getGroupObjectContainer(objCustomCategory4.groupTo), design.getGroupObjectContainer(objCustomCategory6.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-                design.addIntersection(design.getGroupObjectContainer(objCustomCategory6.groupTo), design.getGroupObjectContainer(objCustomCategory10.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                design.addIntersection(design.getGroupObjectContainer(objCustomCategory6.groupTo), design.getGroupObjectContainer(objCustomCategory9.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                design.addIntersection(design.getGroupObjectContainer(objCustomCategory9.groupTo), design.getGroupObjectContainer(objCustomCategory10.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             }
 
             return design;
