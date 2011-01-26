@@ -448,8 +448,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         //customCategoryAdditional = addConcreteClass("customCategoryAdditional", "Дополнительный уровень", baseClass);
 
-        creationFreightBox = addConcreteClass("creationFreightBox", "Операция создания коробов", document);
-        creationPallet = addConcreteClass("creationPallet", "Операция создания паллет", document);
+        creationFreightBox = addConcreteClass("creationFreightBox", "Операция создания коробов", transaction);
+        creationPallet = addConcreteClass("creationPallet", "Операция создания паллет", transaction);
 
         transfer = addConcreteClass("transfer", "Внутреннее перемещение", baseClass);
 
@@ -1740,7 +1740,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private CreateFreightBoxFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objCreate = addSingleGroupObject(creationFreightBox, "Операция создания", nameRouteCreationFreightBox, quantityCreationFreightBox);
+            objCreate = addSingleGroupObject(creationFreightBox, "Операция создания", objectValue, nameRouteCreationFreightBox, quantityCreationFreightBox);
             addObjectActions(this, objCreate);
             objCreate.groupTo.setSingleClassView(ClassViewType.PANEL);
 
@@ -1761,7 +1761,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private CreatePalletFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objCreate = addSingleGroupObject(creationPallet, "Операция создания", nameRouteCreationPallet, quantityCreationPallet);
+            objCreate = addSingleGroupObject(creationPallet, "Операция создания", objectValue, nameRouteCreationPallet, quantityCreationPallet);
             addObjectActions(this, objCreate);
             objCreate.groupTo.setSingleClassView(ClassViewType.PANEL);
 

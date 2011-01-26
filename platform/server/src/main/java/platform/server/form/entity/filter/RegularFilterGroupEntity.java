@@ -12,6 +12,10 @@ import java.util.List;
 
 public class RegularFilterGroupEntity extends IdentityObject implements ServerIdentitySerializable {
 
+    // конструктор нельзя удалять - нужен для сериализации
+    public RegularFilterGroupEntity() {
+    }
+
     public RegularFilterGroupEntity(int iID) {
         ID = iID;
     }
