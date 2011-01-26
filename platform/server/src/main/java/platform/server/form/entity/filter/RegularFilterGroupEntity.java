@@ -12,10 +12,6 @@ import java.util.List;
 
 public class RegularFilterGroupEntity extends IdentityObject implements ServerIdentitySerializable {
 
-    public RegularFilterGroupEntity() {
-        
-    }
-    
     public RegularFilterGroupEntity(int iID) {
         ID = iID;
     }

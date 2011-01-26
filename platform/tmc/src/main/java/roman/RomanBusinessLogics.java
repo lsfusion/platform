@@ -125,11 +125,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP sidCustomCategory9;
     private LP sidCustomCategory10;
     private LP sidCustomCategoryAdditional;
-    private LP nameCustomCategory2;
-    private LP nameCustomCategory4;
-    private LP nameCustomCategory6;
-    private LP nameCustomCategory9;
-    private LP nameCustomCategory10;
 
     private LP customCategory2CustomCategory4;
     private LP customCategory4CustomCategory6;
@@ -349,6 +344,20 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP timeShipmentDetail;
     private LP createFreightBox;
     private LP createPallet;
+    private ConcreteCustomClass transfer;
+    private LP stockFromTransfer;
+    private LP barcodeStockFromTransfer;
+    private LP stockToTransfer;
+    private LP barcodeStockToTransfer;
+    private LP balanceStockFromTransferSku;
+    private LP balanceStockToTransferSku;
+    private LP quantityTransferSku;
+    private LP outcomeTransferStockSku;
+    private LP incomeTransferStockSku;
+    private LP incomeStockSku;
+    private LP outcomeStockSku;
+    private AbstractCustomClass customCategory;
+    private LP nameCustomCategory;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -430,16 +439,19 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         category = addConcreteClass("category", "Категория", baseClass.named);
 
-        customCategory2 = addConcreteClass("customCategory2", "Первый уровень", baseClass);
-        customCategory4 = addConcreteClass("customCategory4", "Второй уровень", baseClass);
-        customCategory6 = addConcreteClass("customCategory6", "Третий уровень", baseClass);
-        customCategory9 = addConcreteClass("customCategory9", "Четвёртый уровень", baseClass);
-        customCategory10 = addConcreteClass("customCategory10", "Пятый уровень", baseClass);
+        customCategory = addAbstractClass("customCategory", "Уровень ТН ВЭД", baseClass);
+        customCategory2 = addConcreteClass("customCategory2", "Первый уровень", customCategory);
+        customCategory4 = addConcreteClass("customCategory4", "Второй уровень", customCategory);
+        customCategory6 = addConcreteClass("customCategory6", "Третий уровень", customCategory);
+        customCategory9 = addConcreteClass("customCategory9", "Четвёртый уровень", customCategory);
+        customCategory10 = addConcreteClass("customCategory10", "Пятый уровень", customCategory);
 
         //customCategoryAdditional = addConcreteClass("customCategoryAdditional", "Дополнительный уровень", baseClass);
 
         creationFreightBox = addConcreteClass("creationFreightBox", "Операция создания коробов", document);
         creationPallet = addConcreteClass("creationPallet", "Операция создания паллет", document);
+
+        transfer = addConcreteClass("transfer", "Внутреннее перемещение", baseClass);
 
         unitOfMeasure = addConcreteClass("unitOfMeasure", "Единица измерения", baseClass.named);
 
@@ -449,25 +461,24 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     @Override
     protected void initProperties() {
 
+        // CustomCategory
+
+        nameCustomCategory = addDProp(baseGroup, "nameCustomCategory2", "Наименование", StringClass.get(500), customCategory);
+
         sidCustomCategory2 = addDProp(baseGroup, "sidCustomCategory2", "Код(2)", StringClass.get(2), customCategory2);
         sidCustomCategory2.setFixedCharWidth(2);
-        nameCustomCategory2 = addDProp(baseGroup, "nameCustomCategory2", "Наименование", StringClass.get(500), customCategory2);
 
         sidCustomCategory4 = addDProp(baseGroup, "sidCustomCategory4", "Код(4)", StringClass.get(4), customCategory4);
         sidCustomCategory4.setFixedCharWidth(4);
-        nameCustomCategory4 = addDProp(baseGroup, "nameCustomCategory4", "Наименование", StringClass.get(500), customCategory4);
 
         sidCustomCategory6 = addDProp(baseGroup, "sidCustomCategory6", "Код(6)", StringClass.get(6), customCategory6);
         sidCustomCategory6.setFixedCharWidth(6);
-        nameCustomCategory6 = addDProp(baseGroup, "nameCustomCategory6", "Наименование", StringClass.get(500), customCategory6);
 
         sidCustomCategory9 = addDProp(baseGroup, "sidCustomCategory9", "Код(9)", StringClass.get(9), customCategory9);
         sidCustomCategory9.setFixedCharWidth(9);
-        nameCustomCategory9 = addDProp(baseGroup, "nameCustomCategory9", "Наименование", StringClass.get(500), customCategory9);
 
         sidCustomCategory10 = addDProp(baseGroup, "sidCustomCategory10", "Код(10)", StringClass.get(10), customCategory10);
         sidCustomCategory10.setFixedCharWidth(10);
-        nameCustomCategory10 = addDProp(baseGroup, "nameCustomCategory10", "Наименование", StringClass.get(500), customCategory10);
 
         //sidCustomCategoryAdditional = addDProp(baseGroup, "sidCustomCategoryAdditional", "Код(14)", StringClass.get(14), customCategoryAdditional);
         //sidCustomCategoryAdditional.setFixedCharWidth(14);
@@ -484,10 +495,12 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         sidCustomCategory9CustomCategory10 = addJProp(baseGroup, "sidCustomCategory9CustomCategory10", "Код(9)", sidCustomCategory9, customCategory9CustomCategory10, 1);
         //sidCustomCategory6CustomCategoryAdditional = addJProp(baseGroup, "sidCustomCategory6CustomCategoryAdditional", "Код(10)", sidCustomCategory10, customCategory10CustomCategoryAdditional, 1);
 
-        nameCustomCategory2CustomCategory4 = addJProp(baseGroup, "nameCustomCategory2CustomCategory4", "Наименование(2)", nameCustomCategory2, customCategory2CustomCategory4, 1);
-        nameCustomCategory4CustomCategory6 = addJProp(baseGroup, "nameCustomCategory4CustomCategory6", "Наименование(4)", nameCustomCategory4, customCategory4CustomCategory6, 1);
-        nameCustomCategory6CustomCategory9 = addJProp(baseGroup, "nameCustomCategory6CustomCategory9", "Наименование(6)", nameCustomCategory6, customCategory6CustomCategory9, 1);
-        nameCustomCategory9CustomCategory10 = addJProp(baseGroup, "nameCustomCategory9CustomCategory10", "Наименование(9)", nameCustomCategory9, customCategory9CustomCategory10, 1);
+        nameCustomCategory2CustomCategory4 = addJProp(baseGroup, "nameCustomCategory2CustomCategory4", "Наименование(2)", nameCustomCategory, customCategory2CustomCategory4, 1);
+        nameCustomCategory4CustomCategory6 = addJProp(baseGroup, "nameCustomCategory4CustomCategory6", "Наименование(4)", nameCustomCategory, customCategory4CustomCategory6, 1);
+        nameCustomCategory6CustomCategory9 = addJProp(baseGroup, "nameCustomCategory6CustomCategory9", "Наименование(6)", nameCustomCategory, customCategory6CustomCategory9, 1);
+        nameCustomCategory9CustomCategory10 = addJProp(baseGroup, "nameCustomCategory9CustomCategory10", "Наименование(9)", nameCustomCategory, customCategory9CustomCategory10, 1);
+
+        // Supplier
 
         currencySupplier = addDProp(idGroup, "currencySupplier", "Валюта (ИД)", currency, supplier);
         nameCurrencySupplier = addJProp(baseGroup, "nameCurrencySupplier", "Валюта", name, currencySupplier, 1);
@@ -901,8 +914,24 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         oneShipmentArticleSku = addJProp(baseGroup, "oneShipmentArticleSku", "Первый артикул", oneShipmentArticle, 1, articleSku, 2);
         oneShipmentSku = addJProp(baseGroup, "oneShipmentSku", "Первый SKU", equals2, quantityShipmentSku, 1, 2, addCProp(DoubleClass.instance, 1));
 
-        // пока так, но надо будет добавить внутреннее перемещение
-        balanceStockSku = addSGProp(baseGroup, "balanceStockSku", "Тек. остаток", quantityShipmentStockSku, 2, 3);
+        stockFromTransfer = addDProp(idGroup, "stockFromTransfer", "Место хранения (с) (ИД)", stock, transfer);
+        barcodeStockFromTransfer = addJProp(baseGroup, "barcodeStockFromTransfer", "Штрих-код МХ (с)", barcode, stockFromTransfer, 1);
+
+        stockToTransfer = addDProp(idGroup, "stockToTransfer", "Место хранения (на) (ИД)", stock, transfer);
+        barcodeStockToTransfer = addJProp(baseGroup, "barcodeStockToTransfer", "Штрих-код МХ (на)", barcode, stockToTransfer, 1);
+
+        quantityTransferSku = addDProp(baseGroup, "quantityTransferStockSku", "Кол-во перемещения", DoubleClass.instance, transfer, sku);
+
+        outcomeTransferStockSku = addSGProp(baseGroup, "outcomeTransferStockSku", "Расход по ВП", quantityTransferSku, stockFromTransfer, 1, 2);
+        incomeTransferStockSku = addSGProp(baseGroup, "incomeTransferStockSku", "Приход по ВП", quantityTransferSku, stockToTransfer, 1, 2);
+
+        incomeStockSku = addSUProp(baseGroup, "incomeStockSku", "Приход", Union.SUM, quantityStockSku, incomeTransferStockSku);
+        outcomeStockSku = outcomeTransferStockSku;
+
+        balanceStockSku = addDUProp(baseGroup, "balanceStockSku", "Тек. остаток", incomeStockSku, outcomeStockSku);
+
+        balanceStockFromTransferSku = addJProp(baseGroup, "balanceStockFromTransferSku", "Тек. остаток на МХ (с)", balanceStockSku, stockFromTransfer, 1, 2);
+        balanceStockToTransferSku = addJProp(baseGroup, "balanceStockToTransferSku", "Тек. остаток на МХ (на)", balanceStockSku, stockToTransfer, 1, 2);
 
         quantityShipmentRouteSku = addSGProp(baseGroup, "quantityShipmentRouteSku", "Кол-во оприход.", quantityShipmentStockSku, 1, routeCreationFreightBoxFreightBox, 2, 3);
         invoicedShipmentRouteSku = addPGProp(baseGroup, "invoicedShipmentRouteSku", false, 0, "Кол-во ожид.",
@@ -1033,19 +1062,20 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         NavigatorElement purchase = new NavigatorElement(baseElement, "purchase", "Управление закупками");
         addFormEntity(new OrderFormEntity(purchase, "orderForm", "Заказы"));
-        addFormEntity(new InvoiceFormEntity(purchase, "invoiceForm", "Инвойсы по коробам", true));
-        addFormEntity(new InvoiceFormEntity(purchase, "invoiceForm2", "Инвойсы без коробов", false));
+        addFormEntity(new InvoiceFormEntity(purchase, "boxInvoiceForm", "Инвойсы по коробам", true));
+        addFormEntity(new InvoiceFormEntity(purchase, "simpleInvoiceForm", "Инвойсы без коробов", false));
 
         NavigatorElement shipment = new NavigatorElement(baseElement, "shipment", "Управление поставками");
-        addFormEntity(new ShipmentListFormEntity(shipment, "shipmentListForm", "Поставки по коробам", true));
-        addFormEntity(new ShipmentListFormEntity(shipment, "shipmentListForm2", "Поставки без коробов", false));
+        addFormEntity(new ShipmentListFormEntity(shipment, "boxShipmentListForm", "Поставки по коробам", true));
+        addFormEntity(new ShipmentListFormEntity(shipment, "simpleShipmentListForm", "Поставки без коробов", false));
         addFormEntity(new FreightFormEntity(shipment, "freightForm", "Фрахт по поставкам"));
 
         NavigatorElement distribution = new NavigatorElement(baseElement, "distribution", "Управление логистикой на складе");
-        addFormEntity(new ShipmentSpecFormEntity(distribution, "shipmentSpecForm", "Прием товара по коробам", true));
-        addFormEntity(new ShipmentSpecFormEntity(distribution, "shipmentSpecForm2", "Прием товара без коробов", false));
-        addFormEntity(new CreateFreightBoxFormEntity(distribution, "createFreightBoxForm", "Генерация коробов"));
         addFormEntity(new CreatePalletFormEntity(distribution, "createPalletForm", "Генерация паллет"));
+        addFormEntity(new CreateFreightBoxFormEntity(distribution, "createFreightBoxForm", "Генерация коробов"));
+        addFormEntity(new ShipmentSpecFormEntity(distribution, "boxShipmentSpecForm", "Прием товара по коробам", true));
+        addFormEntity(new ShipmentSpecFormEntity(distribution, "simpleShipmentSpecForm", "Прием товара без коробов", false));
+        addFormEntity(new StockTransferFormEntity(distribution, "stockTransferForm", "Внутреннее перемещение"));
     }
 
     @Override
@@ -1763,26 +1793,26 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             this.tree = tree;
 
-            objCustomCategory2 = addSingleGroupObject(customCategory2, "Первый уровень", sidCustomCategory2, nameCustomCategory2);
+            objCustomCategory2 = addSingleGroupObject(customCategory2, "Первый уровень", sidCustomCategory2, nameCustomCategory);
             if (!tree)
                 addObjectActions(this, objCustomCategory2);
 
-            objCustomCategory4 = addSingleGroupObject(customCategory4, "Второй уровень", sidCustomCategory4, nameCustomCategory4);
+            objCustomCategory4 = addSingleGroupObject(customCategory4, "Второй уровень", sidCustomCategory4, nameCustomCategory);
             if (!tree)
                 addObjectActions(this, objCustomCategory4);
 
-            objCustomCategory6 = addSingleGroupObject(customCategory6, "Третий уровень", sidCustomCategory6, nameCustomCategory6);
+            objCustomCategory6 = addSingleGroupObject(customCategory6, "Третий уровень", sidCustomCategory6, nameCustomCategory);
             if (!tree)
                 addObjectActions(this, objCustomCategory6);
 
-            objCustomCategory9 = addSingleGroupObject(customCategory9, "Четвёртый уровень", sidCustomCategory9, nameCustomCategory9);
+            objCustomCategory9 = addSingleGroupObject(customCategory9, "Четвёртый уровень", sidCustomCategory9, nameCustomCategory);
             if (!tree)
                 addObjectActions(this, objCustomCategory9);
 
             if (tree)
                  treeCustomCategory = addTreeGroupObject(objCustomCategory2.groupTo, objCustomCategory4.groupTo, objCustomCategory6.groupTo, objCustomCategory9.groupTo);
 
-            objCustomCategory10 = addSingleGroupObject(customCategory10, "Пятый уровень", sidCustomCategory10, nameCustomCategory10);
+            objCustomCategory10 = addSingleGroupObject(customCategory10, "Пятый уровень", sidCustomCategory10, nameCustomCategory);
             addObjectActions(this, objCustomCategory10);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory2CustomCategory4, objCustomCategory4), Compare.EQUALS, objCustomCategory2));
@@ -1844,4 +1874,48 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         }
     }
 
+    private class StockTransferFormEntity extends FormEntity<RomanBusinessLogics> {
+
+        private ObjectEntity objTransfer;
+        private ObjectEntity objSku;
+
+        private StockTransferFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
+
+            objTransfer = addSingleGroupObject(transfer, "Внутреннее перемещение", objectValue, barcodeStockFromTransfer, barcodeStockToTransfer);
+            addObjectActions(this, objTransfer);
+
+            objSku = addSingleGroupObject(sku, "SKU", barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, nameSizeSupplierItem,
+                    nameCategoryArticleSku, sidCustomCategory10ArticleSku,
+                    nameCountryOfOriginSku, mainCompositionSku,
+                    additionalCompositionSku);
+
+            setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
+
+            addPropertyDraw(balanceStockFromTransferSku, objTransfer, objSku);
+            addPropertyDraw(quantityTransferSku, objTransfer, objSku);
+            addPropertyDraw(balanceStockToTransferSku, objTransfer, objSku);
+
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
+                                  new NotNullFilterEntity(addPropertyObject(balanceStockFromTransferSku, objTransfer, objSku)),
+                                  "Есть на остатке",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
+                                  new NotNullFilterEntity(addPropertyObject(quantityTransferSku, objTransfer, objSku)),
+                                  "В документе",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
+            filterGroup.defaultFilter = 0;
+            addRegularFilterGroup(filterGroup);
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
+
+            design.get(objTransfer.groupTo).grid.constraints.fillVertical = 0.4;
+
+            return design;
+        }
+    }
 }
