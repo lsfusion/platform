@@ -26,7 +26,9 @@ import platform.server.auth.User;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
 import platform.server.data.*;
+import platform.server.data.Time;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.OrderType;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
@@ -69,8 +71,9 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.RMIFailureHandler;
 import java.rmi.server.RMISocketFactory;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
+import java.util.Date;
 
 // @GenericImmutable нельзя так как Spring валится
 
@@ -574,8 +577,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP emailAccount;
     protected LP emailPassword;
     protected LP fromAddress;
+    protected LP defaultCountry;
 
     protected LP countrySId;
+    protected LP generateDatesCountry;
     protected LP sidToCountry;
     protected LP isDayOffCountryDate;
     LP workingDay, isWorkingDay, workingDaysQuantity, equalsWorkingDaysQuantity;
@@ -958,6 +963,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         date = addDProp(baseGroup, "date", "Дата", DateClass.instance, transaction);
 
         countrySId = addDProp(baseGroup, "countrySId", "Код страны", IntegerClass.instance, country);
+        generateDatesCountry = addDProp(privateGroup, "generateDatesCountry", "Генерировать выходные", LogicalClass.instance, country);
         sidToCountry = addCGProp(null, "sidToCountry", "Страна", object(country), countrySId, countrySId, 1);
         isDayOffCountryDate = addDProp(baseGroup, "isDayOffCD", "Выходной", LogicalClass.instance, country, DateClass.instance);
 
@@ -1038,6 +1044,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         emailAccount = addDProp("emailAccount", "Имя аккаунта", StringClass.get(50));
         emailPassword = addDProp("emailPassword", "Пароль", StringClass.get(50));
         fromAddress = addDProp("fromAddress", "Адрес отправителя", StringClass.get(50));
+        defaultCountry = addDProp("defaultCountry", "Страна по умолчанию", country);
     }
 
     private void initBaseTables() {
@@ -1084,7 +1091,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         adminElement = new NavigatorElement(baseElement, 50000, "Администрирование");
         addFormEntity(new UserPolicyFormEntity(adminElement, 50100));
         addFormEntity(new AdminFormEntity(adminElement, 50200));
-    //    addFormEntity(new DaysOffFormEntity(adminElement, 50300));
+        addFormEntity(new DaysOffFormEntity(adminElement, 50300));
     }
 
     protected SecurityPolicy permitAllPolicy, readOnlyPolicy;
@@ -1134,7 +1141,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         private AdminFormEntity(NavigatorElement parent, int iID) {
             super(parent, iID, "Глобальные параметры");
 
-            addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, webHost, barcodePrefix, restartServerAction, cancelRestartServerAction});
+            addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, webHost, defaultCountry, barcodePrefix, restartServerAction, cancelRestartServerAction});
         }
     }
     
@@ -1159,19 +1166,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             addPropertyDraw(isDayOffCountryDate, objCountry, objNewDate);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(isDayOffCountryDate,objCountry, objDays)));
-
-            //PropertyObjectEntity isDayOffObject = addPropertyObject(isDayOffCountryDate, objDays);
-            /*PropertyObjectEntity isDayOffObject = addPropertyObject(isDayOff, objDays);
-            RegularFilterGroupEntity isDayOffGroup = new RegularFilterGroupEntity(genID());
-            isDayOffGroup.addFilter(new RegularFilterEntity(genID(),
-                    new NotNullFilterEntity(isDayOffObject),
-                    "Выходные",
-                    KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0)));
-            isDayOffGroup.addFilter(new RegularFilterEntity(genID(),
-                    new NotFilterEntity(new NotNullFilterEntity( isDayOffObject)),
-                    "Рабочие",
-                    KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0)));
-            addRegularFilterGroup(isDayOffGroup);*/
         }
 
         public FormView createDefaultRichDesign() {
@@ -1387,6 +1381,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         // запишем текущую дату
         changeCurrentDate();
 
+        fillDaysOff();
+
         Thread thread = new Thread(new Runnable() {
             long time = 1000;
             boolean first = true;
@@ -1440,6 +1436,59 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 inStream.close();
             }
         }
+    }
+
+    private void fillDaysOff() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
+        DataSession session = createSession();
+
+        LP generateOrDefaultCountry = addSUProp(Union.OVERRIDE, generateDatesCountry, addJProp(equals2, defaultCountry, 1));
+
+        Map<Object, KeyExpr> keys = generateOrDefaultCountry.getMapKeys();
+
+        Query<Object, Object> query = new Query<Object, Object>(keys);
+        query.properties.put("id", generateOrDefaultCountry.property.getExpr(keys));
+
+        query.and(generateOrDefaultCountry.property.getExpr(keys).getWhere());
+
+        OrderedMap<Map<Object,Object>,Map<Object,Object>> result = query.execute(session.sql);
+        for (Map<Object, Object> key : result.keyList()) {
+            Integer id = (Integer)BaseUtils.singleValue(key);
+            generateDates(id);
+        }
+        session.close();
+    }
+
+    private void generateDates(int countryId) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
+        DataSession session = createSession();
+        Date date = new Date();
+        int currentYear = date.getYear();
+        //если проставлен выходной 1 января через 2 года, пропускаем генерацию
+        DataObject countryObject = new DataObject(countryId, this.country);
+        if ((Boolean) isDayOffCountryDate.read(session, countryObject, new DataObject(new java.sql.Date(new Date(currentYear + 2, 0, 1).getTime()), DateClass.instance))) {
+            return;
+        }
+
+        long wholeYearMillisecs = new Date(currentYear + 3, 0, 1).getTime() - new Date(currentYear, 0, 1).getTime();
+        long wholeYearDays = wholeYearMillisecs / 1000 / 60 / 60 / 24;
+        for (int i = 0; i < wholeYearDays; i++) {
+            Date newDate = new Date(currentYear, 0, 1 + i);
+            int day = newDate.getDay();
+            if(day == 5 || day == 6) {
+                addDayOff(session, countryId, newDate);
+            }
+        }
+
+        for (int i = 0; i < 3; i++) {
+            addDayOff(session, countryId, new Date(currentYear + i + "/01/01"));
+        }
+
+        session.apply(this);
+        session.close();
+    }
+
+    private void addDayOff(DataSession session, int countryId, Date dayOff) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
+        DataObject countryObject = new DataObject(countryId, country);
+        isDayOffCountryDate.execute(true, session, countryObject, new DataObject(new java.sql.Date(dayOff.getTime()), DateClass.instance));
     }
 
     public void mergeNavigatorTree(DataInputStream inStream) throws IOException {
