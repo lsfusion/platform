@@ -33,6 +33,11 @@ public class OrFilterEntity extends FilterEntity {
         op2.fillObjects(objects);
     }
 
+    @Override
+    public FilterEntity getRemappedFilter(ObjectEntity object, InstanceFactory instanceFactory) {
+        return new OrFilterEntity(op1.getRemappedFilter(object, instanceFactory), op2.getRemappedFilter(object, instanceFactory));
+    }
+
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, op1);
         pool.serializeObject(outStream, op2);

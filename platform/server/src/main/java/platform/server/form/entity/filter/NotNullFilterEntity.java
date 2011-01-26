@@ -1,5 +1,6 @@
 package platform.server.form.entity.filter;
 
+import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyObjectEntity;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.filter.FilterInstance;
@@ -17,5 +18,10 @@ public class NotNullFilterEntity<P extends PropertyInterface> extends PropertyFi
 
     public FilterInstance getInstance(InstanceFactory instanceFactory) {
         return instanceFactory.getInstance(this);
+    }
+
+    @Override
+    public FilterEntity getRemappedFilter(ObjectEntity object, InstanceFactory instanceFactory) {
+        return new NotNullFilterEntity<P>(property);
     }
 }

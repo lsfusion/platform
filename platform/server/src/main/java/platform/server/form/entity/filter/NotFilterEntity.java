@@ -30,6 +30,11 @@ public class NotFilterEntity extends FilterEntity {
         filter.fillObjects(objects);
     }
 
+    @Override
+    public FilterEntity getRemappedFilter(ObjectEntity object, InstanceFactory instanceFactory) {
+        return new NotFilterEntity(filter.getRemappedFilter(object, instanceFactory));
+    }
+
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, filter);
     }

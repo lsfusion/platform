@@ -994,7 +994,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         return result;
     }
 
-    public <P extends PropertyInterface> AbstractClassFormEntity<T> getDataChangeFormEntity(PropertyObjectInstance<P> changeProperty) {
+    public <P extends PropertyInterface> AbstractClassFormEntity<T> getDataChangeFormEntity(PropertyObjectInstance<P> changeProperty, GroupObjectInstance selectionGroupObject) {
         PropertyValueImplement<P> implement = changeProperty.getValueImplement();
         AbstractClassFormEntity<T> formEntity = changeProperty.getDialogClass().getDialogForm(BL).createCopy();
         formEntity.caption = implement.toString();
@@ -1006,6 +1006,20 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                             )
                     )
             );
+        }
+
+        ObjectEntity object = formEntity.getObject();
+        for (FilterEntity filterEntity : entity.fixedFilters) {
+            FilterInstance filter = filterEntity.getInstance(instanceFactory);
+            if (filter.getApplyObject() == selectionGroupObject) {
+                for (ObjectEntity filterObject : filterEntity.getObjects()) {
+                    //добавляем фильтр только, если есть хотя бы один объект который не будет заменён на константу
+                    if (filterObject.baseClass == object.baseClass) {
+                        formEntity.addFixedFilter(filterEntity.getRemappedFilter(object, instanceFactory));
+                        break;
+                    }
+                }
+            }
         }
         return formEntity;
     }
@@ -1039,7 +1053,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         PropertyObjectInstance<?> changeProperty = getChangePropertyObjectInstance(propertyDraw);
         assert changeProperty != null;
 
-        AbstractClassFormEntity<T> formEntity = getDataChangeFormEntity(changeProperty);
+        AbstractClassFormEntity<T> formEntity = getDataChangeFormEntity(changeProperty, propertyDraw.toDraw);
 
         ObjectEntity dialogObject = formEntity.getObject();
         DialogInstance<T> dialog = new DialogInstance<T>(formEntity, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, changeProperty.read(session.sql, this, session.env), instanceFactory.computer);

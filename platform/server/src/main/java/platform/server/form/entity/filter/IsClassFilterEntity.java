@@ -1,6 +1,7 @@
 package platform.server.form.entity.filter;
 
 import platform.server.classes.CustomClass;
+import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyObjectEntity;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.filter.FilterInstance;
@@ -40,5 +41,10 @@ public class IsClassFilterEntity<P extends PropertyInterface> extends PropertyFi
         super.customDeserialize(pool, inStream);
 
         isClass = pool.context.BL.baseClass.findClassID(inStream.readInt());
+    }
+
+    @Override
+    public FilterEntity getRemappedFilter(ObjectEntity object, InstanceFactory instanceFactory) {
+        return new IsClassFilterEntity<P>(property.getRemappedEntity(object, instanceFactory), isClass);
     }
 }

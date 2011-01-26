@@ -55,4 +55,10 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
         baseClass = TypeSerializer.deserializeValueClass(pool.context.BL, inStream);
         caption = pool.readString(inStream);
     }
+
+    public PropertyObjectInterfaceEntity getRemappedEntity(ObjectEntity object, InstanceFactory instanceFactory) {
+        return object.baseClass == baseClass
+                ? object
+                : getInstance(instanceFactory).getDataObject();
+    }
 }

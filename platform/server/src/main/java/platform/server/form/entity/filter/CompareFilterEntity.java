@@ -37,13 +37,18 @@ public class CompareFilterEntity<P extends PropertyInterface> extends PropertyFi
     }
 
     public FilterInstance getInstance(InstanceFactory instanceFactory) {
-        return instanceFactory.getInstance(this);
+         return instanceFactory.getInstance(this);
     }
 
     @Override
     protected void fillObjects(Set<ObjectEntity> objects) {
         super.fillObjects(objects);
         value.fillObjects(objects);
+    }
+
+    @Override
+    public FilterEntity getRemappedFilter(ObjectEntity object, InstanceFactory instanceFactory) {
+        return new CompareFilterEntity<P>(property.getRemappedEntity(object, instanceFactory), compare, value.getRemappedEntity(object, instanceFactory));
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

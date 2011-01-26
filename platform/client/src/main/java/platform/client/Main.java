@@ -179,6 +179,7 @@ public class Main {
 
                 } catch (Exception e) {
                     closeSplashScreen();
+                    logger.error("Ошибка при инициализации приложения", e);
                     throw new RuntimeException("Ошибка при инициализации приложения", e);
                 }
 

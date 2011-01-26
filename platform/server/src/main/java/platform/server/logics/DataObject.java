@@ -180,4 +180,8 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     public Collection<ObjectInstance> getObjectInstances() {
         return new ArrayList<ObjectInstance>();
     }
+
+    public DataObject getRemappedEntity(ObjectEntity object, InstanceFactory instanceFactory) {
+        return this;
+    }
 }
