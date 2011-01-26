@@ -72,6 +72,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP nameSupplierSku;
     private ConcreteCustomClass currency;
     private ConcreteCustomClass store;
+    private ConcreteCustomClass unitOfMeasure;
+    private LP unitOfMeasureArticle;
+    private LP nameUnitOfMeasureArticle;
+    private LP unitOfMeasureArticleSku;
+    private LP nameUnitOfMeasureArticleSku;
     private LP currencySupplier;
     private LP nameCurrencySupplier;
     private LP currencyDocument;
@@ -107,6 +112,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private ConcreteCustomClass customCategory4;
     private ConcreteCustomClass customCategory6;
     private ConcreteCustomClass customCategory10;
+    private ConcreteCustomClass customCategoryAdditional;
     private LP categoryArticle;
     private LP nameCategoryArticle;
     private LP categoryArticleSku;
@@ -116,15 +122,20 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP sidCustomCategory4;
     private LP sidCustomCategory6;
     private LP sidCustomCategory10;
+    private LP sidCustomCategoryAdditional;
     private LP customCategory2CustomCategory4;
     private LP customCategory4CustomCategory6;
     private LP customCategory6CustomCategory10;
+    private LP customCategory10CustomCategoryAdditional;
     private LP sidCustomCategory2CustomCategory4;
     private LP sidCustomCategory4CustomCategory6;
     private LP sidCustomCategory6CustomCategory10;
+    private LP sidCustomCategory6CustomCategoryAdditional;
     private LP nameCustomCategory2CustomCategory4;
     private LP nameCustomCategory4CustomCategory6;
-    private LP nameCustomCategory6CustomCategory10;      
+    private LP nameCustomCategory6CustomCategory10;
+    private LP nameCustomCategory10CustomCategoryAdditional;
+
     private LP customCategory10DataArticle;
     private LP sidCustomCategory10Article;
     private LP customCategory10OriginArticle;
@@ -230,7 +241,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP creationPalletPallet;
     private LP routeCreationPalletPallet;
     private LP nameRouteCreationPalletPallet;
-
     private LP quantityCreationFreightBox;
     private LP routeCreationFreightBox;
     private LP nameRouteCreationFreightBox;
@@ -319,6 +329,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP mainCompositionArticleSkuShipmentDetail;
     private LP mainCompositionSkuShipmentDetail;
     private LP additionalCompositionSkuShipmentDetail;
+    private LP unitOfMeasureArticleSkuShipmentDetail;
+    private LP nameUnitOfMeasureArticleSkuShipmentDetail;
     private LP netWeightShipmentDetail;
     private LP userShipmentDetail;
     private LP nameUserShipmentDetail;
@@ -411,8 +423,12 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         customCategory6 = addConcreteClass("customCategory6", "Третий уровень", baseClass.named);
         customCategory10 = addConcreteClass("customCategory10", "Четвёртый уровень", baseClass.named);
 
+        customCategoryAdditional = addConcreteClass("customCategoryAdditional", "Дополнительный уровень", baseClass.named);
+
         creationFreightBox = addConcreteClass("creationFreightBox", "Операция создания коробов", document);
         creationPallet = addConcreteClass("creationPallet", "Операция создания паллет", document);
+
+        unitOfMeasure = addConcreteClass("unitOfMeasure", "Единица измерения", baseClass.named);
 
         route = addStaticClass("route", "Маршрут", new String[]{"rb", "rf"}, new String[]{"РБ", "РФ"});
     }
@@ -432,17 +448,23 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         sidCustomCategory10 = addDProp(baseGroup, "sidCustomCategory10", "Код(10)", StringClass.get(10), customCategory10);
         sidCustomCategory10.setFixedCharWidth(10);
 
+        sidCustomCategoryAdditional = addDProp(baseGroup, "sidCustomCategory14", "Код(14)", StringClass.get(14), customCategoryAdditional);
+        sidCustomCategoryAdditional.setFixedCharWidth(14);
+
         customCategory2CustomCategory4 = addDProp(idGroup, "customCategory2CustomCategory4", "Код(2)", customCategory2, customCategory4);
         customCategory4CustomCategory6 = addDProp(idGroup, "customCategory4CustomCategory6", "Код(4)", customCategory4, customCategory6);
         customCategory6CustomCategory10 = addDProp(idGroup, "customCategory6CustomCategory10", "Код(6)", customCategory6, customCategory10);
+        customCategory10CustomCategoryAdditional = addDProp(idGroup, "customCategory10CustomCategoryAdditional", "Код(10)", customCategory10, customCategoryAdditional);
 
         sidCustomCategory2CustomCategory4 = addJProp(baseGroup, "sidCustomCategory2CustomCategory4", "Код(2)", sidCustomCategory2, customCategory2CustomCategory4, 1);
         sidCustomCategory4CustomCategory6 = addJProp(baseGroup, "sidCustomCategory4CustomCategory6", "Код(4)", sidCustomCategory4, customCategory4CustomCategory6, 1);
         sidCustomCategory6CustomCategory10 = addJProp(baseGroup, "sidCustomCategory6CustomCategory10", "Код(6)", sidCustomCategory6, customCategory6CustomCategory10, 1);
+        sidCustomCategory6CustomCategoryAdditional = addJProp(baseGroup, "sidCustomCategory6CustomCategoryAdditional", "Код(10)", sidCustomCategory10, customCategory10CustomCategoryAdditional, 1);
 
         nameCustomCategory2CustomCategory4 = addJProp(baseGroup, "nameCustomCategory2CustomCategory4", "Наименование(2)", name, customCategory2CustomCategory4, 1);
         nameCustomCategory4CustomCategory6 = addJProp(baseGroup, "nameCustomCategory4CustomCategory6", "Наименование(4)", name, customCategory4CustomCategory6, 1);
         nameCustomCategory6CustomCategory10 = addJProp(baseGroup, "nameCustomCategory6CustomCategory10", "Наименование(6)", name, customCategory6CustomCategory10, 1);
+        nameCustomCategory10CustomCategoryAdditional = addJProp(baseGroup, "nameCustomCategory10CustomCategoryAdditional", "Наименование(10)", name, customCategory10CustomCategoryAdditional, 1);
 
         currencySupplier = addDProp(idGroup, "currencySupplier", "Валюта (ИД)", currency, supplier);
         nameCurrencySupplier = addJProp(baseGroup, "nameCurrencySupplier", "Валюта", name, currencySupplier, 1);
@@ -483,6 +505,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         originalNameArticle = addDProp(supplierAttributeGroup, "originalNameArticle", "Имя производителя (ориг.)", StringClass.get(50), article);
         originalNameArticleSku = addJProp(supplierAttributeGroup, "originalNameArticleSku", "Имя производителя (ориг.)", originalNameArticle, articleSku, 1);
+
+        unitOfMeasureArticle = addDProp(idGroup, "unitOfMeasureArticle", "Единица измерения (ИД)", unitOfMeasure, article);
+        nameUnitOfMeasureArticle = addJProp(intraAttributeGroup, "nameUnitOfMeasureArticle", "Единица измерения", name, unitOfMeasureArticle, 1);
+        unitOfMeasureArticleSku = addJProp(idGroup, true, "unitOfMeasureArticleSku", "Ед. изм. товара (ИД)", unitOfMeasureArticle, articleSku, 1);
+        nameUnitOfMeasureArticleSku = addJProp(intraAttributeGroup, "nameUnitOfMeasureArticleSku", "Ед. изм. товара", name, unitOfMeasureArticleSku, 1);
 
         //Category
         categoryArticle = addDProp(idGroup, "categoryArticle", "Категория товара (ИД)", category, article);
@@ -776,6 +803,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             additionalCompositionSkuShipmentDetail = addJProp(intraAttributeGroup, true, "additionalCompositionSkuShipmentDetail", "Дополнительный состав", additionalCompositionSku, skuShipmentDetail, 1);
 
+            unitOfMeasureArticleSkuShipmentDetail = addJProp(idGroup, true, "unitOfMeasureArticleSkuShipmentDetail", "Ед. изм. товара (ИД)", unitOfMeasureArticleSku, skuShipmentDetail, 1);
+            nameUnitOfMeasureArticleSkuShipmentDetail = addJProp(intraAttributeGroup, "nameUnitOfMeasureArticleSkuShipmentDetail", "Ед. изм. товара", name, unitOfMeasureArticleSkuShipmentDetail, 1);
+
             // stock shipment detail
             stockShipmentDetail = addDProp(idGroup, "stockShipmentDetail", "Место хранения (ИД)", stock, shipmentDetail);
             barcodeStockShipmentDetail = addJProp(baseGroup, "barcodeStockShipmentDetail", "Штрих-код МХ", barcode, stockShipmentDetail, 1);
@@ -973,6 +1003,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         classifier.add(currency.getClassForm(this));
         classifier.add(store.getClassForm(this));
         classifier.add(country.getClassForm(this));
+        classifier.add(unitOfMeasure.getClassForm(this));
         classifier.add(freightType.getClassForm(this));
         addFormEntity(new ColorSizeSupplierFormEntity(classifier, 450, "Цвета и размеры поставщика"));
         NavigatorElement purchase = new NavigatorElement(baseElement, 100, "Управление закупками");
@@ -1377,7 +1408,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                     nameCategoryArticleSku, sidCustomCategory10ArticleSku,
                     netWeightArticleSku, grossWeightArticleSku,
                     nameCountryOfOriginSku, mainCompositionSku,
-                    additionalCompositionSku);
+                    additionalCompositionSku, nameUnitOfMeasureArticleSku);
             objSku.groupTo.setSingleClassView(ClassViewType.GRID);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
@@ -1421,7 +1452,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                         nameCategoryArticleSkuShipmentDetail, sidCustomCategory10ArticleSkuShipmentDetail,
                         netWeightArticleSkuShipmentDetail, grossWeightArticleSkuShipmentDetail,
                         nameCountryOfOriginSkuShipmentDetail, mainCompositionSkuShipmentDetail,
-                        additionalCompositionSkuShipmentDetail,
+                        additionalCompositionSkuShipmentDetail, nameUnitOfMeasureArticleSkuShipmentDetail,
                         sidSupplierBoxShipmentDetail, barcodeSupplierBoxShipmentDetail,
                         barcodeStockShipmentDetail, nameRouteFreightBoxShipmentDetail,
                         quantityShipmentDetail, netWeightShipmentDetail, nameUserShipmentDetail);
