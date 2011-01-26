@@ -22,17 +22,31 @@
         </filter>
     </appender>
 
-    <appender name="clientlog" class="org.apache.log4j.RollingFileAppender">
-        <param name="maxFileSize" value="20MB"/>
-        <param name="file" value="${user.home}/.fusion/logs/client.log"/>
+    <appender name="clientlog" class="org.apache.log4j.rolling.RollingFileAppender">
+        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
+            <param name="minIndex" value="1"/>
+            <param name="maxIndex" value="5"/>
+            <param name="activeFileName" value="${user.home}/.fusion/logs/client.log"/>
+            <param name="fileNamePattern" value="${user.home}/.fusion/logs/client-%i.log.zip"/>
+        </rollingPolicy>
+        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
+            <param name="maxFileSize" value="10485760"/> <!-- 10MB -->
+        </triggeringPolicy>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d{ABSOLUTE} %5p %t %c{1}:%M:%L - %m%n"/>
         </layout>
     </appender>
 
-    <appender name="remotelog" class="org.apache.log4j.RollingFileAppender">
-        <param name="maxFileSize" value="20MB"/>
-        <param name="file" value="${user.home}/.fusion/logs/remote-client.log"/>
+    <appender name="remotelog" class="org.apache.log4j.rolling.RollingFileAppender">
+        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
+            <param name="minIndex" value="1"/>
+            <param name="maxIndex" value="5"/>
+            <param name="activeFileName" value="${user.home}/.fusion/logs/client-remote.log"/>
+            <param name="fileNamePattern" value="${user.home}/.fusion/logs/client-remote-%i.log.zip"/>
+        </rollingPolicy>
+        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
+            <param name="maxFileSize" value="10485760"/> <!-- 10MB -->
+        </triggeringPolicy>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d{ABSOLUTE} %5p %t %c{1}:%M:%L - %m%n"/>
         </layout>

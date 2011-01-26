@@ -22,9 +22,16 @@
         </filter>
     </appender>
 
-    <appender name="gwtlog" class="org.apache.log4j.RollingFileAppender">
-        <param name="maxFileSize" value="20MB"/>
-        <param name="file" value="log/gwtlog.log"/>
+    <appender name="gwtlog" class="org.apache.log4j.rolling.RollingFileAppender">
+        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
+            <param name="minIndex" value="1"/>
+            <param name="maxIndex" value="5"/>
+            <param name="activeFileName" value="log/gwtlog.log"/>
+            <param name="fileNamePattern" value="log/gwtlog-%i.log.zip"/>
+        </rollingPolicy>
+        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
+            <param name="maxFileSize" value="10485760"/> <!-- 10MB -->
+        </triggeringPolicy>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d{ABSOLUTE} %5p %t %c{1}:%M:%L - %m%n"/>
         </layout>
