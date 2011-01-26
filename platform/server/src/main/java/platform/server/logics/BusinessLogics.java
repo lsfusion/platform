@@ -1464,7 +1464,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         int currentYear = date.getYear();
         //если проставлен выходной 1 января через 2 года, пропускаем генерацию
         DataObject countryObject = new DataObject(countryId, this.country);
-        if ((Boolean) isDayOffCountryDate.read(session, countryObject, new DataObject(new java.sql.Date(new Date(currentYear + 2, 0, 1).getTime()), DateClass.instance))) {
+        if (isDayOffCountryDate.read(session, countryObject, new DataObject(new java.sql.Date(new Date(currentYear + 2, 0, 1).getTime()), DateClass.instance)) != null) {
             return;
         }
 
