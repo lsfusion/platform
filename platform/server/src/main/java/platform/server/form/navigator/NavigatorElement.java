@@ -1,7 +1,6 @@
 package platform.server.form.navigator;
 
 import platform.base.BaseUtils;
-import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IdentityObject;
 import platform.server.logics.BusinessLogics;
 
@@ -12,7 +11,6 @@ import java.io.IOException;
 import java.util.*;
 
 public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObject {
-    private static DefaultIDGenerator idGenerator = new DefaultIDGenerator();
 //    private static Set<String> elementsSIDs = new HashSet<String>();
 
     public String caption = "";
@@ -24,7 +22,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
     public NavigatorElement(NavigatorElement<T> parent, String sID, String caption) {
         this.sID = sID;
 //        assert elementsSIDs.add(sID); // проверка уникальности sID
-        setID(idGenerator.idShift());
+        setID(BusinessLogics.generateStaticNewID());
         this.caption = caption;
 
         if (parent != null) {

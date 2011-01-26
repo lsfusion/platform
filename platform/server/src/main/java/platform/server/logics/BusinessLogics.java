@@ -315,7 +315,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     // счетчик идентификаторов
-    IDGenerator idGenerator = new DefaultIDGenerator();
+    static private IDGenerator idGenerator = new DefaultIDGenerator();
 
     int idShift(int offs) {
         return idGenerator.idShift(offs);
@@ -1146,7 +1146,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, webHost, defaultCountry, barcodePrefix, restartServerAction, cancelRestartServerAction});
         }
     }
-    
+
     private class DaysOffFormEntity extends FormEntity {
         ObjectEntity objDays;
 
@@ -4103,8 +4103,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         System.out.println(result);
     }
 
-    public int generateNewID() throws RemoteException {
+    public static int generateStaticNewID() {
         return idGenerator.idShift();
+    }
+
+    public int generateNewID() throws RemoteException {
+        return generateStaticNewID();
     }
 
     public byte[] getBaseClassByteArray() throws RemoteException {
