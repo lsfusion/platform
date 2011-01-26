@@ -31,11 +31,11 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     }
 
     public String getStringType(int length) {
-        return "char("+length+")";
+        return "char(" + length + ")";
     }
 
-    public String getNumericType(int length,int precision) {
-        return "numeric("+length+","+precision+")";
+    public String getNumericType(int length, int precision) {
+        return "numeric(" + length + "," + precision + ")";
     }
 
     public String getIntegerType() {
@@ -44,6 +44,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
 
     public String getDateType() {
         return "date";
+    }
+
+    public String getDateTimeType() {
+        return "timestamp";
     }
 
     public String getLongType() {
@@ -65,6 +69,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     public boolean isBinaryString() {
         return false;
     }
+
     public String getBinaryType(int length) {
         return "binary(" + length + ")";
     }
@@ -74,7 +79,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     }
 
     public String getBitString(Boolean value) {
-        return (value ?"1":"0");
+        return (value ? "1" : "0");
     }
 
     public int updateModel() {
@@ -96,7 +101,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     }
 
     public String getCreateSessionTable(String tableName, String declareString) {
-        return "CREATE TEMPORARY TABLE "+ tableName +" ("+ declareString + ")";
+        return "CREATE TEMPORARY TABLE " + tableName + " (" + declareString + ")";
     }
 
     public String getSessionTableName(String tableName) {
@@ -112,11 +117,11 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     }
 
     public String getDropSessionTable(String tableName) {
-        return "DROP TABLE "+getSessionTableName(tableName);
+        return "DROP TABLE " + getSessionTableName(tableName);
     }
 
     public String getOrderDirection(boolean descending) {
-        return descending?"DESC":"ASC";
+        return descending ? "DESC" : "ASC";
     }
 
     public String getBinaryConcatenate() {
@@ -139,7 +144,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return "EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)";
     }
 
-    public String typeConvertSuffix(Type oldType, Type newType, String name){
+    public String typeConvertSuffix(Type oldType, Type newType, String name) {
         return "";
     }
 

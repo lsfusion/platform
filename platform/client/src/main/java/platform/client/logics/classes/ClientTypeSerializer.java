@@ -48,6 +48,7 @@ public class ClientTypeSerializer {
         if (type == Data.TEXT) return ClientTextClass.instance;
         if (type == Data.YEAR) return ClientIntegerClass.instance;
         if (type == Data.PDF) return ClientPDFClass.instance;
+        if (type == Data.DATETIME) return ClientDateTimeClass.instance;
 
         if (type == Data.ACTION) return new ClientActionClass(inStream);
         if (type == Data.CLASSACTION) return new ClientClassActionClass(inStream);

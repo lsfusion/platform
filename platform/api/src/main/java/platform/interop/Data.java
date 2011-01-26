@@ -22,4 +22,5 @@ public class Data {
     public final static byte YEAR = 17;
     public final static byte INSENSITIVESTRING = 18;
     public final static byte PDF = 19;
+    public final static byte DATETIME = 20;
 }

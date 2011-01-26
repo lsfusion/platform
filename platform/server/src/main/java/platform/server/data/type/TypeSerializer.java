@@ -53,6 +53,7 @@ public class TypeSerializer {
         if (type == Data.OBJECT) return context.baseClass.findClassID(inStream.readInt());
         if (type == Data.ACTION) return ActionClass.instance;
         if (type == Data.PDF) return PDFClass.instance;
+        if (type == Data.DATETIME) return DateTimeClass.instance;
 
         //todo:!!
         if (type == Data.FILEACTION) return FileActionClass.getInstance("", "");

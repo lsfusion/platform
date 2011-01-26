@@ -41,6 +41,8 @@ public interface SQLSyntax {
 
     String getDateType();
 
+    String getDateTimeType();
+
     String getLongType();
 
     String getDoubleType();
