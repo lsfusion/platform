@@ -61,14 +61,14 @@ public class ClientNavigatorElement {
 
     @Override
     public int hashCode() {
-        return new Integer(ID).hashCode();
+        return sID.hashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof ClientNavigatorElement) {
             ClientNavigatorElement element = (ClientNavigatorElement) obj;
-            return element.ID == ID;
+            return element.sID.equals(sID);
         }
         return false;
     }
