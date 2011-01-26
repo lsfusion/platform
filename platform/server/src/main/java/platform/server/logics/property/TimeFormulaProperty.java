@@ -1,5 +1,6 @@
 package platform.server.logics.property;
 
+import platform.server.classes.DateTimeClass;
 import platform.server.classes.DoubleClass;
 import platform.server.data.Time;
 import platform.server.data.expr.Expr;
@@ -16,7 +17,7 @@ public class TimeFormulaProperty extends ValueFormulaProperty<PropertyInterface>
     private final Time time;
 
     public TimeFormulaProperty(String sID, Time time) {
-        super(sID, time.toString(), new ArrayList<PropertyInterface>(), DoubleClass.instance);
+        super(sID, time.toString(), new ArrayList<PropertyInterface>(), time.getConcreteValueClass());
 
         this.time = time;
     }

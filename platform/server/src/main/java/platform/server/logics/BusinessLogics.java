@@ -523,6 +523,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP currentDate;
     protected LP currentHour;
     protected LP currentEpoch;
+    protected LP currentDateTime;
     public LP currentUser;
     public LP currentSession;
     public LP currentComputer;
@@ -980,6 +981,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         currentDate = addDProp(baseGroup, "currentDate", "Тек. дата", DateClass.instance);
         currentHour = addTProp(Time.HOUR);
         currentEpoch = addTProp(Time.EPOCH);
+        currentDateTime = addTProp(Time.DATETIME);
         currentUser = addProperty(null, new LP<PropertyInterface>(new CurrentUserFormulaProperty(genSID(), user)));
         currentSession = addProperty(null, new LP<PropertyInterface>(new CurrentSessionFormulaProperty(genSID(), session)));
         currentComputer = addProperty(null, new LP<PropertyInterface>(new CurrentComputerFormulaProperty(genSID(), computer)));
@@ -2363,7 +2365,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected <P extends PropertyInterface> LP addTCProp(AbstractGroup group, Time time, String sID, boolean persistent, String caption, LP<P> changeProp, ValueClass... classes) {
-        TimeChangeDataProperty<P> timeProperty = new TimeChangeDataProperty<P>(sID, caption, overrideClasses(changeProp.getMapClasses(), classes), changeProp.listInterfaces);
+        TimeChangeDataProperty<P> timeProperty = new TimeChangeDataProperty<P>(time, sID, caption, overrideClasses(changeProp.getMapClasses(), classes), changeProp.listInterfaces);
         changeProp.property.timeChanges.put(time, timeProperty);
         return addProperty(group, persistent, new LP<ClassPropertyInterface>(timeProperty));
     }

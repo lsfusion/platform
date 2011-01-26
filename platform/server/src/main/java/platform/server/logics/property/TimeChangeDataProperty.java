@@ -2,6 +2,7 @@ package platform.server.logics.property;
 
 import platform.server.classes.DoubleClass;
 import platform.server.classes.ValueClass;
+import platform.server.data.Time;
 import platform.server.logics.SessionDataProperty;
 
 import java.util.HashMap;
@@ -12,8 +13,8 @@ public class TimeChangeDataProperty<T extends PropertyInterface> extends Session
 
     public final Map<ClassPropertyInterface, T> mapInterfaces = new HashMap<ClassPropertyInterface, T>();
 
-    public TimeChangeDataProperty(String sID, String caption, ValueClass[] classes, List<T> propInterfaces) {
-        super(sID, caption, classes, DoubleClass.instance);
+    public TimeChangeDataProperty(Time time, String sID, String caption, ValueClass[] classes, List<T> propInterfaces) {
+        super(sID, caption, classes, time.getConcreteValueClass());
 
         int i=0;
         for(ClassPropertyInterface propertyInterface : interfaces)

@@ -865,8 +865,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             userShipmentDetail = addDCProp(idGroup, "userShipmentDetail", "Пользователь (ИД)", currentUser, true, is(shipmentDetail), 1);
             nameUserShipmentDetail = addJProp(baseGroup, "nameUserShipmentDetail", "Пользователь", name, userShipmentDetail, 1);
 
-            // todo : сделать нормально время, сейчас время - Double Class
-            timeShipmentDetail = addTCProp(baseGroup, Time.EPOCH, "timeShipmentDetail", "Время ввода", quantityShipmentDetail);
+            timeShipmentDetail = addDCProp(baseGroup, "timeShipmentDetail", "Время ввода", currentDateTime, true, is(shipmentDetail), 1);
 
             addBoxShipmentDetailSupplierBoxStockBarcode = addJProp(true, "Добавить строку поставки",
                     addAAProp(boxShipmentDetail, supplierBoxShipmentDetail, stockShipmentDetail, skuShipmentDetail, quantityShipmentDetail), 1, 2, barcodeToObject, 3, addCProp(DoubleClass.instance, 1));
@@ -1512,7 +1511,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                         additionalCompositionSkuShipmentDetail, nameUnitOfMeasureArticleSkuShipmentDetail,
                         sidSupplierBoxShipmentDetail, barcodeSupplierBoxShipmentDetail,
                         barcodeStockShipmentDetail, nameRouteFreightBoxShipmentDetail,
-                        quantityShipmentDetail, netWeightShipmentDetail, nameUserShipmentDetail);
+                        quantityShipmentDetail, netWeightShipmentDetail, nameUserShipmentDetail, timeShipmentDetail);
 
                 objShipmentDetail.groupTo.setSingleClassView(ClassViewType.GRID);
 

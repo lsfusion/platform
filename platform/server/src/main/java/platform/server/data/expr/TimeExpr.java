@@ -23,7 +23,7 @@ public class TimeExpr extends StaticClassExpr {
     }
 
     public ConcreteClass getStaticClass() {
-        return DoubleClass.instance;
+        return time.getConcreteValueClass();
     }
 
     public VariableExprSet calculateExprFollows() {
@@ -58,13 +58,7 @@ public class TimeExpr extends StaticClassExpr {
     }
 
     public String getSource(CompileSource compile) {
-        switch(time) {
-            case HOUR:
-                return compile.syntax.getHour();
-            case EPOCH:
-                return compile.syntax.getEpoch();
-        }
-        throw new RuntimeException("Unknown time");
+        return time.getSource(compile);
     }
 
     public void enumDepends(ExprEnumerator enumerator) {

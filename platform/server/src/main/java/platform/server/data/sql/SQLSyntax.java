@@ -71,6 +71,7 @@ public interface SQLSyntax {
 
     String getHour();
     String getEpoch();
+    String getDateTime();
     String typeConvertSuffix(Type oldType, Type newType, String name);
 
     String getInsensitiveLike();

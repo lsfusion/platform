@@ -144,6 +144,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return "EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)";
     }
 
+    public String getDateTime() {
+        return "CURRENT_TIMESTAMP";
+    }
+
     public String typeConvertSuffix(Type oldType, Type newType, String name) {
         return "";
     }
