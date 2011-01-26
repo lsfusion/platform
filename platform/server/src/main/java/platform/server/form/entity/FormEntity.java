@@ -7,7 +7,6 @@ import platform.base.Subsets;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
 import platform.interop.ClassViewType;
-import platform.interop.Constants;
 import platform.interop.action.ClientResultAction;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.filter.FilterEntity;
@@ -17,7 +16,6 @@ import platform.server.form.instance.FormInstance;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
-import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
@@ -61,20 +59,20 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public FormEntity() {
     }
 
-    protected FormEntity(int ID, String caption) {
-        this(ID, caption, false);
+    protected FormEntity(String sID, String caption) {
+        this(sID, caption, false);
     }
 
-    FormEntity(int iID, String caption, boolean iisPrintForm) {
-        this(null, iID, caption, iisPrintForm);
+    FormEntity(String sID, String caption, boolean iisPrintForm) {
+        this(null, sID, caption, iisPrintForm);
     }
 
-    protected FormEntity(NavigatorElement parent, int iID, String caption) {
-        this(parent, iID, caption, false);
+    protected FormEntity(NavigatorElement<T> parent, String sID, String caption) {
+        this(parent, sID, caption, false);
     }
 
-    protected FormEntity(NavigatorElement parent, int iID, String caption, boolean iisPrintForm) {
-        super(parent, iID, caption);
+    protected FormEntity(NavigatorElement<T> parent, String sID, String caption, boolean iisPrintForm) {
+        super(parent, sID, caption);
         logger.info("Initializing form " + caption + "...");
 
         isPrintForm = iisPrintForm;
@@ -494,11 +492,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     protected void addHintsNoUpdate(Property prop) {
         hintsNoUpdate.add(prop);
-    }
-
-    @Override
-    public String getSID() {
-        return Constants.getDefaultFormSID(ID);
     }
 
     public Map<PropertyDrawEntity, GroupObjectEntity> forceDefaultDraw = new HashMap<PropertyDrawEntity, GroupObjectEntity>();

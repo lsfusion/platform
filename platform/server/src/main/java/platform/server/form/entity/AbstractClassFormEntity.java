@@ -6,17 +6,16 @@ import platform.server.logics.BusinessLogics;
 public abstract class AbstractClassFormEntity <T extends BusinessLogics<T>> extends FormEntity<T> {
     protected final T BL;
     protected final CustomClass cls;
+    protected int copies = 0;
 
-    protected AbstractClassFormEntity(T BL, CustomClass cls, int ID, String caption) {
-        super(ID, caption);
+    protected AbstractClassFormEntity(T BL, CustomClass cls, String sID, String caption) {
+        super(sID, caption);
         this.BL = BL;
         this.cls = cls;
     }
 
     public AbstractClassFormEntity createCopy() {
-        AbstractClassFormEntity form = copy();
-        form.setID(form.ID + 10000);
-        return form;
+        return copy();
     }
 
     public abstract ObjectEntity getObject();

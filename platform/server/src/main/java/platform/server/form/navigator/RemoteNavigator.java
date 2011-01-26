@@ -219,25 +219,22 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         return session;
     }
 
-    List<NavigatorElement> getElements(int elementID) {
+    List<NavigatorElement> getElements(String elementSID) {
 
         List<NavigatorElement> navigatorElements;
-        switch (elementID) {
-            case (RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTFORM):
-                FormInstance<T> currentForm = getCurrentForm();
-                if (currentForm == null)
-                    navigatorElements = new ArrayList<NavigatorElement>();
-                else
-                    navigatorElements = new ArrayList<NavigatorElement>(currentForm.entity.relevantElements);
-                break;
-            case (RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTCLASS):
-                if (currentClass == null)
-                    navigatorElements = new ArrayList();
-                else
-                    return currentClass.getRelevantElements(BL, securityPolicy);
-                break;
-            default:
-                navigatorElements = getElements(BL.baseElement.getNavigatorElement(elementID));
+        if (elementSID.equals(RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTFORM)) {
+            FormInstance<T> currentForm = getCurrentForm();
+            if (currentForm == null)
+                navigatorElements = new ArrayList<NavigatorElement>();
+            else
+                navigatorElements = new ArrayList<NavigatorElement>(currentForm.entity.relevantElements);
+        } else if (elementSID.equals(RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTCLASS)) {
+            if (currentClass == null)
+                navigatorElements = new ArrayList();
+            else
+                return currentClass.getRelevantElements(BL, securityPolicy);
+        } else {
+            navigatorElements = getElements(BL.baseElement.getNavigatorElement(elementSID));
         }
 
         List<NavigatorElement> resultElements = new ArrayList();
@@ -255,9 +252,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         return new ArrayList(element.getChildren());
     }
 
-    public byte[] getElementsByteArray(int groupID) {
+    public byte[] getElementsByteArray(String groupSID) {
 
-        List<NavigatorElement> listElements = getElements(groupID);
+        List<NavigatorElement> listElements = getElements(groupSID);
 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         DataOutputStream dataStream = new DataOutputStream(outStream);
@@ -300,8 +297,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         addCacheObject(cls, objectID);
     }
 
-    private FormEntity<T> getFormEntity(int formID) {
-        FormEntity<T> formEntity = (FormEntity<T>) BL.baseElement.getNavigatorElement(formID);
+    private FormEntity<T> getFormEntity(String formSID) {
+        FormEntity<T> formEntity = (FormEntity<T>) BL.baseElement.getNavigatorElement(formSID);
 
         if (formEntity == null) {
             throw new RuntimeException("Форма с заданным идентификатором не найдена");
@@ -314,8 +311,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         return formEntity;
     }
 
-    private void setFormEntity(int formID, FormEntity<T> formEntity) {
-        FormEntity<T> prevEntity = (FormEntity) BL.baseElement.getNavigatorElement(formID);
+    private void setFormEntity(String formSID, FormEntity<T> formEntity) {
+        FormEntity<T> prevEntity = (FormEntity) BL.baseElement.getNavigatorElement(formSID);
         if (prevEntity == null)
             throw new RuntimeException("Форма с заданным идентификатором не найдена");
 
@@ -326,8 +323,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         return BL.getForms(formSet);
     }
 
-    public RemoteFormInterface createForm(int formID, boolean currentSession) {
-        return createForm(getFormEntity(formID), currentSession);
+    public RemoteFormInterface createForm(String formSID, boolean currentSession) {
+        return createForm(getFormEntity(formSID), currentSession);
     }
 
     private Map<FormEntity, RemoteForm> openForms = new HashMap<FormEntity, RemoteForm>();
@@ -373,9 +370,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         return createForm(newFormEntity, false);
     }
 
-    public void saveForm(int formID, byte[] formState) throws RemoteException {
+    public void saveForm(String formSID, byte[] formState) throws RemoteException {
         FormEntity<T> form = (FormEntity<T>) FormEntity.deserialize(BL, formState);
-        setFormEntity(formID, form);
+        setFormEntity(formSID, form);
 
         try {
             IOUtils.putFileBytes(new File(BL.getFormSerializationPath(form.getSID())), formState);
@@ -421,11 +418,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         }
     }
 
-    public byte[] getRichDesignByteArray(int formID) throws RemoteException {
+    public byte[] getRichDesignByteArray(String formSID) throws RemoteException {
         try {
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
             DataOutputStream dataStream = new DataOutputStream(outStream);
-            FormView view = getFormEntity(formID).getRichDesign();
+            FormView view = getFormEntity(formSID).getRichDesign();
             new ServerSerializationPool(new ServerContext(view)).serializeObject(dataStream, view, SerializationType.VISUAL_SETUP);
             return outStream.toByteArray();
         } catch (IOException e) {
@@ -433,11 +430,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         }
     }
 
-    public byte[] getFormEntityByteArray(int formID) throws RemoteException {
+    public byte[] getFormEntityByteArray(String formSID) throws RemoteException {
         try {
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
             DataOutputStream dataStream = new DataOutputStream(outStream);
-            new ServerSerializationPool().serializeObject(dataStream, getFormEntity(formID));
+            new ServerSerializationPool().serializeObject(dataStream, getFormEntity(formSID));
             return outStream.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException(e);

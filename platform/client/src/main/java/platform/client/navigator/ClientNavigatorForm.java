@@ -1,7 +1,5 @@
 package platform.client.navigator;
 
-import platform.interop.Constants;
-
 import java.io.DataInputStream;
 import java.io.IOException;
 
@@ -13,10 +11,8 @@ public class ClientNavigatorForm extends ClientNavigatorElement {
 
     }
 
-    public ClientNavigatorForm(int ID, String caption) {
-        super(ID, caption, false);
-
-        sID = Constants.getDefaultFormSID(ID);
+    public ClientNavigatorForm(int ID, String sID, String caption) {
+        super(ID, sID, caption, false);
     }
 
     public ClientNavigatorForm(DataInputStream inStream) throws IOException {

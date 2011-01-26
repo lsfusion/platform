@@ -16,7 +16,7 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         extends RemoteObjectProxy<T>
         implements RemoteFormInterface {
 
-    public static final Map<Integer, byte[]> cachedRichDesign = new HashMap<Integer, byte[]>();
+    public static final Map<String, byte[]> cachedRichDesign = new HashMap<String, byte[]>();
 
     public RemoteFormProxy(T target) {
         super(target);
@@ -158,10 +158,10 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     }
 
     @ImmutableMethod
-    public int getID() throws RemoteException {
-        logRemoteMethodStartCall("getID");
-        int result = target.getID();
-        logRemoteMethodEndCall("getID", result);
+    public String getSID() throws RemoteException {
+        logRemoteMethodStartCall("getSID");
+        String result = target.getSID();
+        logRemoteMethodEndCall("getSID", result);
         return result;
     }
 

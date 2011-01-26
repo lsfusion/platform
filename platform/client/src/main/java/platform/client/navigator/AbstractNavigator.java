@@ -11,7 +11,7 @@ public abstract class AbstractNavigator extends JPanel {
     public final RemoteNavigatorInterface remoteNavigator;
 
     protected final NavigatorTree tree;
-    public static final int BASE_ELEMENT_ID = 0;
+    public static final String BASE_ELEMENT_SID = "BASE_SID";
 
     public AbstractNavigator(RemoteNavigatorInterface iremoteNavigator) {
 
@@ -29,9 +29,9 @@ public abstract class AbstractNavigator extends JPanel {
 
     public abstract void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException;
 
-    protected java.util.List<ClientNavigatorElement> getNodeElements(int elementID) throws IOException {
+    protected java.util.List<ClientNavigatorElement> getNodeElements(String elementSID) throws IOException {
         return DeSerializer.deserializeListClientNavigatorElement(
-                                                remoteNavigator.getElementsByteArray(elementID));
+                                                remoteNavigator.getElementsByteArray(elementSID));
     }
 
     public void nodeChanged(NavigatorTreeNode node) {

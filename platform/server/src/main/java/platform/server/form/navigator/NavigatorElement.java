@@ -1,28 +1,30 @@
 package platform.server.form.navigator;
 
 import platform.base.BaseUtils;
+import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IdentityObject;
-import platform.interop.Constants;
 import platform.server.logics.BusinessLogics;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObject {
+    private static DefaultIDGenerator idGenerator = new DefaultIDGenerator();
+//    private static Set<String> elementsSIDs = new HashSet<String>();
 
     public String caption = "";
 
     public NavigatorElement() {
 
     }
-    public NavigatorElement(int iID, String icaption) { this(null, iID, icaption); }
-    public NavigatorElement(NavigatorElement<T> parent, int ID, String caption) {
-        this.ID = ID;
+    public NavigatorElement(String sID, String caption) { this(null, sID, caption); }
+    public NavigatorElement(NavigatorElement<T> parent, String sID, String caption) {
+        this.sID = sID;
+//        assert elementsSIDs.add(sID); // проверка уникальности sID
+        setID(idGenerator.idShift());
         this.caption = caption;
 
         if (parent != null) {
@@ -72,12 +74,12 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
         return !children.isEmpty();
     }
 
-    public NavigatorElement<T> getNavigatorElement(int elementID) {
+    public NavigatorElement<T> getNavigatorElement(String elementSID) {
 
-        if (getID() == elementID) return this;
+        if (sID.equals(elementSID)) return this;
 
         for(NavigatorElement<T> child : children) {
-            NavigatorElement<T> element = child.getNavigatorElement(elementID);
+            NavigatorElement<T> element = child.getNavigatorElement(elementSID);
             if (element != null) return element;
         }
 
@@ -109,18 +111,13 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
 
     @Override
     public String toString() {
-        return ID + ": " + (caption != null ? caption : "");
+        return sID + ": " + (caption != null ? caption : "");
     }
 
     public static NavigatorElement<?> deserialize(DataInputStream inStream) throws IOException {
-        int ID = inStream.readInt();
+        String sID = inStream.readUTF();
         String caption = inStream.readUTF();
 
-        return new NavigatorElement(ID, caption);
-    }
-
-    @Override
-    public String getSID() {
-        return Constants.getDefaultNavigatorElementSID(ID);
+        return new NavigatorElement(sID, caption);
     }
 }

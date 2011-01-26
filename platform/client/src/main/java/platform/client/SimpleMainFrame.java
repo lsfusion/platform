@@ -29,15 +29,15 @@ public class SimpleMainFrame extends MainFrame {
 
         StringTokenizer st = new StringTokenizer(forms, ",");
         while (st.hasMoreTokens()) {
-            Integer formID = Integer.parseInt(st.nextToken());
-            final ClientFormController form = new ClientFormController(remoteNavigator.createForm(formID, false), null);
+            String formSID = st.nextToken();
+            final ClientFormController form = new ClientFormController(remoteNavigator.createForm(formSID, false), null);
             form.getComponent().setFocusTraversalPolicyProvider(true);
             mainPane.addTab(form.getFullCaption(), form.getComponent());
 
             KeyStroke keyStroke = form.getKeyStroke();
             if (keyStroke != null) {
-                mainPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyStroke, formID);
-                mainPane.getActionMap().put(formID, new AbstractAction() {
+                mainPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyStroke, formSID);
+                mainPane.getActionMap().put(formSID, new AbstractAction() {
                     public void actionPerformed(ActionEvent e) {
                         mainPane.setSelectedComponent(form.getComponent());
                     }

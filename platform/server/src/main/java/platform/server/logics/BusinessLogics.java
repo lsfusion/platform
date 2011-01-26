@@ -932,7 +932,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             tableFactory.include("base_" + i, baseClasses);
         }
 
-        baseElement = new NavigatorElement<T>(0, "Base Group");
+        baseElement = new NavigatorElement<T>("baseElement", "Base Group");
     }
 
     void initBaseProperties() {
@@ -1088,10 +1088,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     void initBaseNavigators() {
-        adminElement = new NavigatorElement(baseElement, 50000, "Администрирование");
-        addFormEntity(new UserPolicyFormEntity(adminElement, 50100));
-        addFormEntity(new AdminFormEntity(adminElement, 50200));
-        addFormEntity(new DaysOffFormEntity(adminElement, 50300));
+        adminElement = new NavigatorElement(baseElement, "adminElement", "Администрирование");
+        addFormEntity(new UserPolicyFormEntity(adminElement, "userPolicyForm"));
+        addFormEntity(new AdminFormEntity(adminElement, "adminForm"));
+        addFormEntity(new DaysOffFormEntity(adminElement, "daysOffForm"));
     }
 
     protected SecurityPolicy permitAllPolicy, readOnlyPolicy;
@@ -1116,8 +1116,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     private class UserPolicyFormEntity extends FormEntity {
-        protected UserPolicyFormEntity(NavigatorElement parent, int ID) {
-            super(parent, ID, "Политики пользователей");
+        protected UserPolicyFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Политики пользователей");
 
             ObjectEntity objUser = addSingleGroupObject(customUser, selection, baseGroup, true);
             ObjectEntity objRole = addSingleGroupObject(userRole, baseGroup, true);
@@ -1138,8 +1138,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     private class AdminFormEntity extends FormEntity {
 
-        private AdminFormEntity(NavigatorElement parent, int iID) {
-            super(parent, iID, "Глобальные параметры");
+        private AdminFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Глобальные параметры");
 
             addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, webHost, defaultCountry, barcodePrefix, restartServerAction, cancelRestartServerAction});
         }
@@ -1148,8 +1148,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private class DaysOffFormEntity extends FormEntity {
         ObjectEntity objDays;
 
-        public DaysOffFormEntity(NavigatorElement parent, int iID) {
-            super(parent, iID, "Выходные дни");
+        public DaysOffFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Выходные дни");
 
             ObjectEntity objCountry = addSingleGroupObject(country, "Страна");
             objCountry.groupTo.initClassView = ClassViewType.PANEL;
@@ -1178,8 +1178,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public class NamedObjectClassForm extends ClassFormEntity {
         public ObjectEntity objObjectName;
 
-        public NamedObjectClassForm(BusinessLogics BL, CustomClass cls) {
-            super(BL, cls);
+
+        public NamedObjectClassForm(BusinessLogics BL, CustomClass cls, String sID, String caption) {
+            super(BL, cls, sID, caption);
 
             objObjectName = addSingleGroupObject(StringClass.get(50), "Поиск по началу имени", objectValue);
             objObjectName.groupTo.setSingleClassView(ClassViewType.PANEL);
@@ -1191,6 +1192,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             addFixedFilter(new CompareFilterEntity(addPropertyObject(name, object), Compare.START_WITH, objObjectName));
         }
 
+        public NamedObjectClassForm(BusinessLogics BL, CustomClass cls) {
+            this(BL, cls, "namedObjectForm" + cls.getSID(), cls.caption);
+        }
+
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
@@ -1200,7 +1205,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         @Override
         public AbstractClassFormEntity copy() {
-            return new NamedObjectClassForm(BL, cls);
+            return new NamedObjectClassForm(BL, cls, getSID() + "_copy" + copies++, caption);
         }
     }
 

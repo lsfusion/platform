@@ -40,7 +40,7 @@ public class DockableMainFrame extends MainFrame {
 
             public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
                 try {
-                    view.openClient(element.ID, this, false);
+                    view.openClient(element.getSID(), this, false);
                 } catch (JRException e) {
                     throw new RuntimeException(e);
                 }
@@ -48,10 +48,10 @@ public class DockableMainFrame extends MainFrame {
 
             public void openRelevantForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
                 if (element.isPrintForm) {
-                    view.openReport(element.ID, this, true);
+                    view.openReport(element.getSID(), this, true);
                 } else {
                     try {
-                        view.openClient(element.ID, this, true);
+                        view.openClient(element.getSID(), this, true);
                     } catch (JRException e) {
                         throw new RuntimeException(e);
                     }

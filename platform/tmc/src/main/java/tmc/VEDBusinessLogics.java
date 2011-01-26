@@ -1052,85 +1052,85 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     protected void initNavigators() throws JRException, FileNotFoundException {
 
-        NavigatorElement print = new NavigatorElement(baseElement, 4000, "Печатные формы");
-        FormEntity incomePrice = addFormEntity(new IncomePriceFormEntity(print, 4100));
-        FormEntity revalueAct = addFormEntity(new RevalueActFormEntity(print, 4200));
-        FormEntity pricers = addFormEntity(new PricersFormEntity(print, 4300));
+        NavigatorElement print = new NavigatorElement(baseElement, "print", "Печатные формы");
+        FormEntity incomePrice = addFormEntity(new IncomePriceFormEntity(print, "incomePrice"));
+        FormEntity revalueAct = addFormEntity(new RevalueActFormEntity(print, "revalueAct"));
+        FormEntity pricers = addFormEntity(new PricersFormEntity(print, "pricers"));
 
-        NavigatorElement delivery = new NavigatorElement(baseElement, 1000, "Управление закупками");
-        addFormEntity(new SupplierArticleFormEntity(delivery, 1050));
-        FormEntity deliveryShopLocal = addFormEntity(new DeliveryShopLocalFormEntity(delivery, true, 1100));
-        FormEntity deliveryShopLocalBrowse = addFormEntity(new DeliveryShopLocalFormEntity(deliveryShopLocal, false, 1125));
-        FormEntity deliveryWarehouseLocal = addFormEntity(new DeliveryWarehouseLocalFormEntity(delivery, true, 1130));
-        FormEntity deliveryWarehouseLocalBrowse = addFormEntity(new DeliveryWarehouseLocalFormEntity(deliveryWarehouseLocal, false, 1135));
-        FormEntity deliveryImport = addFormEntity(new DeliveryImportFormEntity(delivery, true, 1150));
-        FormEntity deliveryImportBrowse = addFormEntity(new DeliveryImportFormEntity(deliveryImport, false, 1175));
-        FormEntity returnDelivery = addFormEntity(new ReturnDeliveryLocalFormEntity(delivery, 1190, true));
-        addFormEntity(new ReturnDeliveryLocalFormEntity(returnDelivery, 1195, false));
+        NavigatorElement delivery = new NavigatorElement(baseElement, "delivery", "Управление закупками");
+        addFormEntity(new SupplierArticleFormEntity(delivery, "supplierArticleForm"));
+        FormEntity deliveryShopLocal = addFormEntity(new DeliveryShopLocalFormEntity(delivery, true, "deliveryShopLocal"));
+        FormEntity deliveryShopLocalBrowse = addFormEntity(new DeliveryShopLocalFormEntity(deliveryShopLocal, false, "deliveryShopLocalBrowse"));
+        FormEntity deliveryWarehouseLocal = addFormEntity(new DeliveryWarehouseLocalFormEntity(delivery, true, "deliveryWarehouseLocal"));
+        FormEntity deliveryWarehouseLocalBrowse = addFormEntity(new DeliveryWarehouseLocalFormEntity(deliveryWarehouseLocal, false, "deliveryWarehouseLocalBrowse"));
+        FormEntity deliveryImport = addFormEntity(new DeliveryImportFormEntity(delivery, true, "deliveryImport"));
+        FormEntity deliveryImportBrowse = addFormEntity(new DeliveryImportFormEntity(deliveryImport, false, "deliveryImportBrowse"));
+        FormEntity returnDelivery = addFormEntity(new ReturnDeliveryLocalFormEntity(delivery, "returnDelivery", true));
+        addFormEntity(new ReturnDeliveryLocalFormEntity(returnDelivery, "returnDelivery2", false));
 
-        NavigatorElement sale = new NavigatorElement(baseElement, 1200, "Управление продажами");
-        NavigatorElement saleRetailElement = new NavigatorElement(sale, 1250, "Управление розничными продажами");
-        saleRetailCashRegisterElement = new NavigatorElement(saleRetailElement, 1300, "Касса");
-        commitSaleForm = addFormEntity(new CommitSaleCheckRetailFormEntity(saleRetailCashRegisterElement, 1310, true, false));
-        addFormEntity(new CommitSaleCheckRetailFormEntity(commitSaleForm, 1320, false, false));
-        commitSaleBrowseForm = addFormEntity(new CommitSaleCheckRetailFormEntity(commitSaleForm, 1322, false, true));
-        addFormEntity(new CommitSaleCheckRetailExcelFormEntity(commitSaleForm, 1323, "Выгрузка в Excel"));
-        saleCheckCertForm = addFormEntity(new SaleCheckCertFormEntity(saleRetailCashRegisterElement, 1325, true, false));
-        addFormEntity(new SaleCheckCertFormEntity(saleCheckCertForm, 1327, false, false));
-        saleCheckCertBrowseForm = addFormEntity(new SaleCheckCertFormEntity(saleCheckCertForm, 1335, false, true));
-        returnSaleCheckRetailArticleForm = addFormEntity(new ReturnSaleCheckRetailFormEntity(saleRetailCashRegisterElement, true, 1345, false));
-        addFormEntity(new ReturnSaleCheckRetailFormEntity(returnSaleCheckRetailArticleForm, false, 1347, false));
-        returnSaleCheckRetailBrowse = addFormEntity(new ReturnSaleCheckRetailFormEntity(returnSaleCheckRetailArticleForm, false, 1355, true));
-        cachRegManagementForm = addFormEntity(cashRegController.createCashRegManagementFormEntity(saleRetailCashRegisterElement, 1365));
-        addFormEntity(new ShopMoneyFormEntity(saleRetailCashRegisterElement, 1330, "Данные из касс"));
-        addFormEntity(new ClientFormEntity(saleRetailCashRegisterElement, 1370, "Редактирование клиентов"));
-        NavigatorElement saleRetailInvoice = new NavigatorElement(saleRetailElement, 1400, "Безналичный расчет");
-        FormEntity saleRetailInvoiceForm = addFormEntity(new OrderSaleInvoiceRetailFormEntity(saleRetailInvoice, 1410, true, false));
-        addFormEntity(new OrderSaleInvoiceRetailFormEntity(saleRetailInvoiceForm, 1420, false, false));
-        FormEntity saleInvoiceCert = addFormEntity(new SaleInvoiceCertFormEntity(saleRetailInvoice, 1440, true, false));
-        addFormEntity(new SaleInvoiceCertFormEntity(saleInvoiceCert, 1445, false, false));
-        FormEntity returnSaleInvoiceRetailArticle = addFormEntity(new ReturnSaleInvoiceRetailFormEntity(saleRetailInvoice, true, 1477, false));
-        addFormEntity(new ReturnSaleInvoiceRetailFormEntity(returnSaleInvoiceRetailArticle, false, 1487, false));
-        addFormEntity(new ReturnSaleInvoiceRetailFormEntity(returnSaleInvoiceRetailArticle, false, 1492, true));
-        NavigatorElement saleWhole = new NavigatorElement(sale, 1500, "Управление оптовыми продажами");
-        FormEntity saleWholeForm = addFormEntity(new SaleWholeFormEntity(saleWhole, 1520, true));
-        addFormEntity(new SaleWholeFormEntity(saleWholeForm, 1540, false));
-        FormEntity returnSaleWholeArticle = addFormEntity(new ReturnSaleWholeFormEntity(saleWhole, 1560, true));
-        addFormEntity(new ReturnSaleWholeFormEntity(returnSaleWholeArticle, 1580, false));
+        NavigatorElement sale = new NavigatorElement(baseElement, "sale", "Управление продажами");
+        NavigatorElement saleRetailElement = new NavigatorElement(sale, "saleRetailElement", "Управление розничными продажами");
+        saleRetailCashRegisterElement = new NavigatorElement(saleRetailElement, "saleRetailCashRegisterElement", "Касса");
+        commitSaleForm = addFormEntity(new CommitSaleCheckRetailFormEntity(saleRetailCashRegisterElement, "commitSaleForm", true, false));
+        addFormEntity(new CommitSaleCheckRetailFormEntity(commitSaleForm, "commitSaleCheckRetailForm", false, false));
+        commitSaleBrowseForm = addFormEntity(new CommitSaleCheckRetailFormEntity(commitSaleForm, "commitSaleBrowseForm", false, true));
+        addFormEntity(new CommitSaleCheckRetailExcelFormEntity(commitSaleForm, "commitSaleCheckRetailExcelForm", "Выгрузка в Excel"));
+        saleCheckCertForm = addFormEntity(new SaleCheckCertFormEntity(saleRetailCashRegisterElement, "saleCheckCertForm", true, false));
+        addFormEntity(new SaleCheckCertFormEntity(saleCheckCertForm, "saleCheckCertForm2", false, false));
+        saleCheckCertBrowseForm = addFormEntity(new SaleCheckCertFormEntity(saleCheckCertForm, "saleCheckCertBrowseForm", false, true));
+        returnSaleCheckRetailArticleForm = addFormEntity(new ReturnSaleCheckRetailFormEntity(saleRetailCashRegisterElement, true, "returnSaleCheckRetailArticleForm", false));
+        addFormEntity(new ReturnSaleCheckRetailFormEntity(returnSaleCheckRetailArticleForm, false, "returnSaleCheckRetailArticleForm2", false));
+        returnSaleCheckRetailBrowse = addFormEntity(new ReturnSaleCheckRetailFormEntity(returnSaleCheckRetailArticleForm, false, "returnSaleCheckRetailBrowse", true));
+        cachRegManagementForm = addFormEntity(cashRegController.createCashRegManagementFormEntity(saleRetailCashRegisterElement, "cachRegManagementForm"));
+        addFormEntity(new ShopMoneyFormEntity(saleRetailCashRegisterElement, "shopMoneyForm", "Данные из касс"));
+        addFormEntity(new ClientFormEntity(saleRetailCashRegisterElement, "clientForm", "Редактирование клиентов"));
+        NavigatorElement saleRetailInvoice = new NavigatorElement(saleRetailElement, "saleRetailInvoice", "Безналичный расчет");
+        FormEntity saleRetailInvoiceForm = addFormEntity(new OrderSaleInvoiceRetailFormEntity(saleRetailInvoice, "saleRetailInvoiceForm", true, false));
+        addFormEntity(new OrderSaleInvoiceRetailFormEntity(saleRetailInvoiceForm, "orderSaleInvoiceRetailForm", false, false));
+        FormEntity saleInvoiceCert = addFormEntity(new SaleInvoiceCertFormEntity(saleRetailInvoice, "saleInvoiceCert", true, false));
+        addFormEntity(new SaleInvoiceCertFormEntity(saleInvoiceCert, "saleInvoiceCert2", false, false));
+        FormEntity returnSaleInvoiceRetailArticle = addFormEntity(new ReturnSaleInvoiceRetailFormEntity(saleRetailInvoice, true, "returnSaleInvoiceRetailArticle", false));
+        addFormEntity(new ReturnSaleInvoiceRetailFormEntity(returnSaleInvoiceRetailArticle, false, "returnSaleInvoiceRetailArticle2", false));
+        addFormEntity(new ReturnSaleInvoiceRetailFormEntity(returnSaleInvoiceRetailArticle, false, "returnSaleInvoiceRetailArticle3", true));
+        NavigatorElement saleWhole = new NavigatorElement(sale, "saleWhole", "Управление оптовыми продажами");
+        FormEntity saleWholeForm = addFormEntity(new SaleWholeFormEntity(saleWhole, "saleWholeForm", true));
+        addFormEntity(new SaleWholeFormEntity(saleWholeForm, "saleWholeForm2", false));
+        FormEntity returnSaleWholeArticle = addFormEntity(new ReturnSaleWholeFormEntity(saleWhole, "returnSaleWholeArticle", true));
+        addFormEntity(new ReturnSaleWholeFormEntity(returnSaleWholeArticle, "returnSaleWholeArticle2", false));
 
-        NavigatorElement distribute = new NavigatorElement(baseElement, 3000, "Управление распределением");
-        FormEntity distributeShopForm = addFormEntity(new DistributeShopFormEntity(distribute, 3100, true));
-        FormEntity distributeShopBrowseForm = addFormEntity(new DistributeShopFormEntity(distributeShopForm, 3200, false));
-        FormEntity distributeWarehouseForm = addFormEntity(new DistributeWarehouseFormEntity(distribute, 3110, true));
-        FormEntity distributeWarehouseBrowseForm = addFormEntity(new DistributeWarehouseFormEntity(distributeWarehouseForm, 3210, false));
+        NavigatorElement distribute = new NavigatorElement(baseElement, "distribute", "Управление распределением");
+        FormEntity distributeShopForm = addFormEntity(new DistributeShopFormEntity(distribute, "distributeShopForm", true));
+        FormEntity distributeShopBrowseForm = addFormEntity(new DistributeShopFormEntity(distributeShopForm, "distributeShopBrowseForm", false));
+        FormEntity distributeWarehouseForm = addFormEntity(new DistributeWarehouseFormEntity(distribute, "distributeWarehouseForm", true));
+        FormEntity distributeWarehouseBrowseForm = addFormEntity(new DistributeWarehouseFormEntity(distributeWarehouseForm, "distributeWarehouseBrowseForm", false));
 
-        NavigatorElement price = new NavigatorElement(baseElement, 2400, "Управление ценообразованием");
-        FormEntity documentRevalue = addFormEntity(new DocumentRevalueFormEntity(price, true, 2650));
-        addFormEntity(new DocumentRevalueFormEntity(documentRevalue, false, 2750));
+        NavigatorElement price = new NavigatorElement(baseElement, "price", "Управление ценообразованием");
+        FormEntity documentRevalue = addFormEntity(new DocumentRevalueFormEntity(price, true, "documentRevalue"));
+        addFormEntity(new DocumentRevalueFormEntity(documentRevalue, false, "documentRevalue2"));
 
-        NavigatorElement toSell = new NavigatorElement(baseElement, 9400, "Управление ассортиментом");
-        addFormEntity(new ArticleFormatFormEntity(toSell, 9750, true));
-        addFormEntity(new ArticleFormatFormEntity(toSell, 9850, false));
+        NavigatorElement toSell = new NavigatorElement(baseElement, "toSell", "Управление ассортиментом");
+        addFormEntity(new ArticleFormatFormEntity(toSell, "articleFormatForm", true));
+        addFormEntity(new ArticleFormatFormEntity(toSell, "articleFormatForm2", false));
 
-        NavigatorElement tax = new NavigatorElement(baseElement, 5400, "Управление налогами");
-        FormEntity nds = addFormEntity(new DocumentNDSFormEntity(tax, true, 5800));
-        addFormEntity(new DocumentNDSFormEntity(nds, false, 5850));
+        NavigatorElement tax = new NavigatorElement(baseElement, "tax", "Управление налогами");
+        FormEntity nds = addFormEntity(new DocumentNDSFormEntity(tax, true, "nds"));
+        addFormEntity(new DocumentNDSFormEntity(nds, false, "nds2"));
 
-        NavigatorElement actions = new NavigatorElement(baseElement, 7400, "Управление акциями");
-        FormEntity saleAction = addFormEntity(new ActionFormEntity(actions, 7800));
-        FormEntity couponInterval = addFormEntity(new CouponIntervalFormEntity(actions, 7825));
-        FormEntity couponArticle = addFormEntity(new CouponArticleFormEntity(actions, 7850));
+        NavigatorElement actions = new NavigatorElement(baseElement, "actions", "Управление акциями");
+        FormEntity saleAction = addFormEntity(new ActionFormEntity(actions, "saleAction"));
+        FormEntity couponInterval = addFormEntity(new CouponIntervalFormEntity(actions, "couponInterval"));
+        FormEntity couponArticle = addFormEntity(new CouponArticleFormEntity(actions, "couponArticle"));
 
-        NavigatorElement balance = new NavigatorElement(baseElement, 6500, "Управление хранением");
-        FormEntity balanceCheck = addFormEntity(new BalanceCheckFormEntity(balance, 6350, true));
-        addFormEntity(new BalanceCheckFormEntity(balanceCheck, 6375, false));
+        NavigatorElement balance = new NavigatorElement(baseElement, "balance", "Управление хранением");
+        FormEntity balanceCheck = addFormEntity(new BalanceCheckFormEntity(balance, "balanceCheck", true));
+        addFormEntity(new BalanceCheckFormEntity(balanceCheck, "balanceCheck2", false));
 
-        NavigatorElement store = new NavigatorElement(baseElement, 2000, "Сводная информация");
-        addFormEntity(new StoreArticleFormEntity(store, 2100));
+        NavigatorElement store = new NavigatorElement(baseElement, "store", "Сводная информация");
+        addFormEntity(new StoreArticleFormEntity(store, "storeArticleForm"));
 
-        addFormEntity(new GlobalFormEntity(baseElement, 5200));
+        addFormEntity(new GlobalFormEntity(baseElement, "globalForm"));
 
-//        FormEntity logClient = addFormEntity(new LogClientFormEntity(actions, 9850));
+//        FormEntity logClient = addFormEntity(new LogClientFormEntity(actions, "logClientForm"));
 
         commitWholeShopInc.addRelevant(incomePrice);
         documentShopPrice.addRelevant(revalueAct);
@@ -1145,8 +1145,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     public static Font FONT_HUGE_BOLD = new Font("Tahoma", Font.BOLD, 23);
 
     private class GlobalFormEntity extends FormEntity {
-        protected GlobalFormEntity(NavigatorElement parent, int ID) {
-            super(parent, ID, "Глобальные параметры");
+        protected GlobalFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Глобальные параметры");
             addPropertyDraw(publicGroup, true);
 
         }
@@ -1154,8 +1154,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     private class ClientFormEntity extends FormEntity {
 
-        private ClientFormEntity(NavigatorElement parent, int iID, String caption) {
-            super(parent, iID, caption);
+        private ClientFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             GroupObjectEntity gobjFindClient = new GroupObjectEntity(genID());
             ObjectEntity barcodeClient = new ObjectEntity(genID(), StringClass.get(13), "Введите штрих код");
@@ -1207,8 +1207,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             return null;
         }
 
-        private BarcodeFormEntity(NavigatorElement parent, int iID, String caption) {
-            super(parent, iID, caption);
+        private BarcodeFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", baseGroup, true);
             objBarcode.groupTo.initClassView = ClassViewType.PANEL;
@@ -1275,8 +1275,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             return true;
         }
 
-        protected DocumentFormEntity(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd) {
-            super(parent, ID, (toAdd ? documentClass.caption : "Документы"));
+        protected DocumentFormEntity(NavigatorElement parent, String sID, CustomClass documentClass, boolean toAdd) {
+            super(parent, sID, (toAdd ? documentClass.caption : "Документы"));
 
             this.toAdd = toAdd;
 
@@ -1415,8 +1415,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             return new Object[]{baseGroup, true, documentGroup, true};
         }
 
-        protected ArticleFormEntity(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd, boolean filled) {
-            super(parent, ID, documentClass, toAdd);
+        protected ArticleFormEntity(NavigatorElement parent, String sID, CustomClass documentClass, boolean toAdd, boolean filled) {
+            super(parent, sID, documentClass, toAdd);
 
             objArt = addSingleGroupObject(article, getArticleProps());
 
@@ -1445,8 +1445,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             return design;
         }
 
-        protected ArticleFormEntity(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd) {
-            this(parent, ID, documentClass, toAdd, false);
+        protected ArticleFormEntity(NavigatorElement parent, String sID, CustomClass documentClass, boolean toAdd) {
+            this(parent, sID, documentClass, toAdd, false);
         }
 
         protected abstract FilterEntity getDocumentArticleFilter();
@@ -1474,12 +1474,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             return new NotNullFilterEntity(getCommitedQuantity());
         }
 
-        protected ArticleNoCheckFormEntity(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd) {
-            super(parent, ID, documentClass, toAdd);
+        protected ArticleNoCheckFormEntity(NavigatorElement parent, String sID, CustomClass documentClass, boolean toAdd) {
+            super(parent, sID, documentClass, toAdd);
         }
 
-        protected ArticleNoCheckFormEntity(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd, boolean filled) {
-            super(parent, ID, documentClass, toAdd, filled);
+        protected ArticleNoCheckFormEntity(NavigatorElement parent, String sID, CustomClass documentClass, boolean toAdd, boolean filled) {
+            super(parent, sID, documentClass, toAdd, filled);
         }
     }
 
@@ -1502,8 +1502,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             }
         }
 
-        protected InnerFormEntity(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd, boolean filled) {
-            super(parent, ID, documentClass, toAdd, filled);
+        protected InnerFormEntity(NavigatorElement parent, String sID, CustomClass documentClass, boolean toAdd, boolean filled) {
+            super(parent, sID, documentClass, toAdd, filled);
 
             if (fixFilters)
                 addFixedFilter(new OrFilterEntity(getDocumentArticleFilter(), new NotNullFilterEntity(addPropertyObject(documentFreeQuantity, objDoc, objArt))));
@@ -1524,8 +1524,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             return new OrFilterEntity(new NotNullFilterEntity(getOrderQuantity()), new NotNullFilterEntity(getCommitedQuantity()));
         }
 
-        protected OuterFormEntity(NavigatorElement parent, int ID, boolean toAdd, CustomClass documentClass) {
-            super(parent, ID, documentClass, toAdd);
+        protected OuterFormEntity(NavigatorElement parent, String sID, boolean toAdd, CustomClass documentClass) {
+            super(parent, sID, documentClass, toAdd);
         }
 
         @Override
@@ -1541,28 +1541,28 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private class DeliveryShopLocalFormEntity extends OuterFormEntity {
-        public DeliveryShopLocalFormEntity(NavigatorElement parent, boolean toAdd, int ID) {
-            super(parent, ID, toAdd, orderDeliveryShopLocal);
+        public DeliveryShopLocalFormEntity(NavigatorElement parent, boolean toAdd, String sID) {
+            super(parent, sID, toAdd, orderDeliveryShopLocal);
         }
     }
 
     private class DeliveryWarehouseLocalFormEntity extends OuterFormEntity {
-        public DeliveryWarehouseLocalFormEntity(NavigatorElement parent, boolean toAdd, int ID) {
-            super(parent, ID, toAdd, orderDeliveryWarehouseLocal);
+        public DeliveryWarehouseLocalFormEntity(NavigatorElement parent, boolean toAdd, String sID) {
+            super(parent, sID, toAdd, orderDeliveryWarehouseLocal);
         }
     }
 
     private class DeliveryImportFormEntity extends OuterFormEntity {
-        public DeliveryImportFormEntity(NavigatorElement parent, boolean toAdd, int ID) {
-            super(parent, ID, toAdd, orderDeliveryImport);
+        public DeliveryImportFormEntity(NavigatorElement parent, boolean toAdd, String sID) {
+            super(parent, sID, toAdd, orderDeliveryImport);
         }
     }
 
     private class ArticleOuterFormEntity extends InnerFormEntity {
         ObjectEntity objOuter;
 
-        protected ArticleOuterFormEntity(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd, CustomClass commitClass, boolean filled) {
-            super(parent, ID, documentClass, toAdd, filled);
+        protected ArticleOuterFormEntity(NavigatorElement parent, String sID, CustomClass documentClass, boolean toAdd, CustomClass commitClass, boolean filled) {
+            super(parent, sID, documentClass, toAdd, filled);
 
             if (!noOuters) {
                 objOuter = addSingleGroupObject(commitClass, baseGroup, true);
@@ -1590,34 +1590,34 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private class ReturnDeliveryLocalFormEntity extends ArticleOuterFormEntity {
-        public ReturnDeliveryLocalFormEntity(NavigatorElement parent, int ID, boolean toAdd) {
-            super(parent, ID, orderReturnDeliveryLocal, toAdd, commitDeliveryLocal, false);
+        public ReturnDeliveryLocalFormEntity(NavigatorElement parent, String sID, boolean toAdd) {
+            super(parent, sID, orderReturnDeliveryLocal, toAdd, commitDeliveryLocal, false);
         }
     }
 
     private class ArticleInnerFormEntity extends ArticleOuterFormEntity {
 
-        protected ArticleInnerFormEntity(NavigatorElement parent, int ID, boolean toAdd, CustomClass documentClass, boolean filled) {
-            super(parent, ID, documentClass, toAdd, commitDelivery, filled);
+        protected ArticleInnerFormEntity(NavigatorElement parent, String sID, boolean toAdd, CustomClass documentClass, boolean filled) {
+            super(parent, sID, documentClass, toAdd, commitDelivery, filled);
         }
     }
 
     private class DocumentInnerFormEntity extends ArticleInnerFormEntity {
 
-        protected DocumentInnerFormEntity(NavigatorElement parent, int ID, boolean toAdd, CustomClass documentClass, boolean filled) {
-            super(parent, ID, toAdd, documentClass, filled);
+        protected DocumentInnerFormEntity(NavigatorElement parent, String sID, boolean toAdd, CustomClass documentClass, boolean filled) {
+            super(parent, sID, toAdd, documentClass, filled);
         }
     }
 
     private class SaleWholeFormEntity extends DocumentInnerFormEntity {
-        public SaleWholeFormEntity(NavigatorElement parent, int ID, boolean toAdd) {
-            super(parent, ID, toAdd, orderSaleWhole, false);
+        public SaleWholeFormEntity(NavigatorElement parent, String sID, boolean toAdd) {
+            super(parent, sID, toAdd, orderSaleWhole, false);
         }
     }
 
     public class ShopMoneyFormEntity extends FormEntity {
-        public ShopMoneyFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public ShopMoneyFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             ObjectEntity objShop = addSingleGroupObject(shop, baseGroup);
 
@@ -1660,8 +1660,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             return FONT_SMALL_PLAIN;
         }
 
-        protected SaleRetailFormEntity(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd, boolean allStores) {
-            super(parent, ID, toAdd, documentClass, true);
+        protected SaleRetailFormEntity(NavigatorElement parent, String sID, CustomClass documentClass, boolean toAdd, boolean allStores) {
+            super(parent, sID, toAdd, documentClass, true);
 
             if (!toAdd)
                 addPropertyDraw(date, objDoc);
@@ -1750,8 +1750,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 //            return !toAdd;
         }
 
-        private CommitSaleCheckRetailFormEntity(NavigatorElement parent, int ID, boolean toAdd, boolean allStores) {
-            super(parent, ID, commitSaleCheckArticleRetail, toAdd, allStores);
+        private CommitSaleCheckRetailFormEntity(NavigatorElement parent, String sID, boolean toAdd, boolean allStores) {
+            super(parent, sID, commitSaleCheckArticleRetail, toAdd, allStores);
 
             objDoc.caption = "Чек";
 
@@ -1918,8 +1918,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     public class CommitSaleCheckRetailExcelFormEntity extends FormEntity {
 
-        public CommitSaleCheckRetailExcelFormEntity(NavigatorElement parent, int iID, String caption) {
-            super(parent, iID, caption);
+        public CommitSaleCheckRetailExcelFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
             // форма по проданным товарам (цена, стоимость, скидки, данные по продаже)
             GroupObjectEntity gobjDates = new GroupObjectEntity(genID());
             ObjectEntity dateFrom = new ObjectEntity(genID(), DateClass.instance, "Дата (с)");
@@ -1967,8 +1967,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     private class OrderSaleInvoiceRetailFormEntity extends SaleRetailFormEntity {
 
-        private OrderSaleInvoiceRetailFormEntity(NavigatorElement parent, int ID, boolean toAdd, boolean allStores) {
-            super(parent, ID, orderSaleInvoiceArticleRetail, toAdd, allStores);
+        private OrderSaleInvoiceRetailFormEntity(NavigatorElement parent, String sID, boolean toAdd, boolean allStores) {
+            super(parent, sID, orderSaleInvoiceArticleRetail, toAdd, allStores);
         }
 
         @Override
@@ -1979,8 +1979,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private class DistributeFormEntity extends DocumentInnerFormEntity {
-        public DistributeFormEntity(NavigatorElement parent, int ID, boolean toAdd, CustomClass documentClass) {
-            super(parent, ID, toAdd, documentClass, false);
+        public DistributeFormEntity(NavigatorElement parent, String sID, boolean toAdd, CustomClass documentClass) {
+            super(parent, sID, toAdd, documentClass, false);
 
             addPropertyDraw(objDoc, objArt, quantityCheckCommitInnerArticle);
 
@@ -2004,20 +2004,20 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private class DistributeShopFormEntity extends DistributeFormEntity {
-        public DistributeShopFormEntity(NavigatorElement parent, int ID, boolean toAdd) {
-            super(parent, ID, toAdd, orderDistributeShop);
+        public DistributeShopFormEntity(NavigatorElement parent, String sID, boolean toAdd) {
+            super(parent, sID, toAdd, orderDistributeShop);
         }
     }
 
     private class DistributeWarehouseFormEntity extends DistributeFormEntity {
-        public DistributeWarehouseFormEntity(NavigatorElement parent, int ID, boolean toAdd) {
-            super(parent, ID, toAdd, orderDistributeWarehouse);
+        public DistributeWarehouseFormEntity(NavigatorElement parent, String sID, boolean toAdd) {
+            super(parent, sID, toAdd, orderDistributeWarehouse);
         }
     }
 
     private class BalanceCheckFormEntity extends DocumentInnerFormEntity {
-        public BalanceCheckFormEntity(NavigatorElement parent, int ID, boolean toAdd) {
-            super(parent, ID, toAdd, balanceCheck, false);
+        public BalanceCheckFormEntity(NavigatorElement parent, String sID, boolean toAdd) {
+            super(parent, sID, toAdd, balanceCheck, false);
         }
     }
 
@@ -2041,8 +2041,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             return "Документ к возврату";
         }
 
-        protected ReturnSaleFormEntity(NavigatorElement parent, int ID, boolean toAdd, CustomClass documentClass, CustomClass commitClass) {
-            super(parent, ID, documentClass, toAdd);
+        protected ReturnSaleFormEntity(NavigatorElement parent, String sID, boolean toAdd, CustomClass documentClass, CustomClass commitClass) {
+            super(parent, sID, documentClass, toAdd);
 
             objInner = addSingleGroupObject(commitClass, getReturnCaption(), baseGroup, true);
 
@@ -2150,15 +2150,15 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private class ReturnSaleWholeFormEntity extends ReturnSaleFormEntity {
-        private ReturnSaleWholeFormEntity(NavigatorElement parent, int ID, boolean toAdd) {
-            super(parent, ID, toAdd, returnSaleWhole, commitSaleWhole);
+        private ReturnSaleWholeFormEntity(NavigatorElement parent, String sID, boolean toAdd) {
+            super(parent, sID, toAdd, returnSaleWhole, commitSaleWhole);
         }
     }
 
     public class ReturnSaleRetailFormEntity extends ReturnSaleFormEntity {
 
-        public ReturnSaleRetailFormEntity(NavigatorElement parent, int ID, boolean toAdd, CustomClass documentClass, CustomClass commitClass, boolean allStores) {
-            super(parent, ID, toAdd, documentClass, commitClass);
+        public ReturnSaleRetailFormEntity(NavigatorElement parent, String sID, boolean toAdd, CustomClass documentClass, CustomClass commitClass, boolean allStores) {
+            super(parent, sID, toAdd, documentClass, commitClass);
 
             if (allStores) {
                 addPropertyDraw(objDoc, incStore, incStoreName);
@@ -2171,8 +2171,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private class ReturnSaleInvoiceRetailFormEntity extends ReturnSaleRetailFormEntity {
-        private ReturnSaleInvoiceRetailFormEntity(NavigatorElement parent, boolean toAdd, int ID, boolean allStores) {
-            super(parent, ID, toAdd, returnSaleInvoiceRetail, commitSaleInvoiceArticleRetail, allStores);
+        private ReturnSaleInvoiceRetailFormEntity(NavigatorElement parent, boolean toAdd, String sID, boolean allStores) {
+            super(parent, sID, toAdd, returnSaleInvoiceRetail, commitSaleInvoiceArticleRetail, allStores);
 
             setReadOnly(true, objInner.groupTo);
         }
@@ -2207,8 +2207,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             return "Номер чека";
         }
 
-        private ReturnSaleCheckRetailFormEntity(NavigatorElement parent, boolean toAdd, int ID, boolean allStores) {
-            super(parent, ID, toAdd, returnSaleCheckRetail, commitSaleCheckArticleRetail, allStores);
+        private ReturnSaleCheckRetailFormEntity(NavigatorElement parent, boolean toAdd, String sID, boolean allStores) {
+            super(parent, sID, toAdd, returnSaleCheckRetail, commitSaleCheckArticleRetail, allStores);
 
             objDoc.caption = "Возвратный чек";
 
@@ -2297,8 +2297,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private class SupplierArticleFormEntity extends FormEntity {
-        protected SupplierArticleFormEntity(NavigatorElement parent, int ID) {
-            super(parent, ID, "Ассортимент поставщиков");
+        protected SupplierArticleFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Ассортимент поставщиков");
 
             ObjectEntity objSupplier = addSingleGroupObject(supplier, publicGroup, true);
             addObjectActions(this, objSupplier);
@@ -2315,8 +2315,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private class StoreArticleFormEntity extends BarcodeFormEntity {
         private ObjectEntity objArt;
 
-        protected StoreArticleFormEntity(NavigatorElement parent, int ID) {
-            super(parent, ID, "Остатки по складу");
+        protected StoreArticleFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Остатки по складу");
 
             ObjectEntity objStore = addSingleGroupObject(store, publicGroup, true);
             objArt = addSingleGroupObject(article, publicGroup, true);
@@ -2338,8 +2338,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private class ArticleFormatFormEntity extends BarcodeFormEntity {
-        protected ArticleFormatFormEntity(NavigatorElement parent, int ID, boolean splitGroup) {
-            super(parent, ID, "Определение ассортимента" + (splitGroup?"":" (в таблице)"));
+        protected ArticleFormatFormEntity(NavigatorElement parent, String sID, boolean splitGroup) {
+            super(parent, sID, "Определение ассортимента" + (splitGroup?"":" (в таблице)"));
 
             ObjectEntity objFormat, objArt;
             if(splitGroup) {
@@ -2390,8 +2390,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             return getPropertyObject(documentRevalued);
         }
 
-        protected DocumentRevalueFormEntity(NavigatorElement parent, boolean toAdd, int ID) {
-            super(parent, ID, documentRevalue, toAdd, true);
+        protected DocumentRevalueFormEntity(NavigatorElement parent, boolean toAdd, String sID) {
+            super(parent, sID, documentRevalue, toAdd, true);
         }
     }
 
@@ -2409,8 +2409,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                     KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)), toAdd);
         }
 
-        protected DocumentNDSFormEntity(NavigatorElement parent, boolean toAdd, int ID) {
-            super(parent, ID, documentNDS, toAdd);
+        protected DocumentNDSFormEntity(NavigatorElement parent, boolean toAdd, String sID) {
+            super(parent, sID, documentNDS, toAdd);
 
             addHintsNoUpdate(currentNDSDoc);
             addHintsNoUpdate(currentNDSDate);
@@ -2419,8 +2419,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     private class IncomePriceFormEntity extends FormEntity {
 
-        protected IncomePriceFormEntity(NavigatorElement parent, int ID) {
-            super(parent, ID, "Реестр цен", true);
+        protected IncomePriceFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Реестр цен", true);
 
             ObjectEntity objDoc = addSingleGroupObject(commitWholeShopInc, "Документ", baseGroup, true);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
@@ -2436,8 +2436,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     private class RevalueActFormEntity extends FormEntity {
 
-        protected RevalueActFormEntity(NavigatorElement parent, int ID) {
-            super(parent, ID, "Акт переоценки", true);
+        protected RevalueActFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Акт переоценки", true);
 
             ObjectEntity objDoc = addSingleGroupObject(documentShopPrice, "Документ", baseGroup, true);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
@@ -2452,8 +2452,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private class ActionFormEntity extends BarcodeFormEntity {
-        protected ActionFormEntity(NavigatorElement parent, int ID) {
-            super(parent, ID, "Акции");
+        protected ActionFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Акции");
 
             ObjectEntity objAction = addSingleGroupObject(action, publicGroup, true);
             addObjectActions(this, objAction);
@@ -2492,8 +2492,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     private class PricersFormEntity extends FormEntity {
 
-        protected PricersFormEntity(NavigatorElement parent, int ID) {
-            super(parent, ID, "Ценники", true);
+        protected PricersFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Ценники", true);
 
             ObjectEntity objDoc = addSingleGroupObject(documentShopPrice, "Документ", baseGroup, true);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
@@ -2523,8 +2523,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             return FONT_SMALL_PLAIN;
         }
 
-        protected SaleCertFormEntity(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd, boolean allStores) {
-            super(parent, ID, documentClass, toAdd);
+        protected SaleCertFormEntity(NavigatorElement parent, String sID, CustomClass documentClass, boolean toAdd, boolean allStores) {
+            super(parent, sID, documentClass, toAdd);
 
             if (!toAdd)
                 addPropertyDraw(date, objDoc);
@@ -2602,8 +2602,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 //            return !toAdd;
         }
 
-        protected SaleCheckCertFormEntity(NavigatorElement parent, int ID, boolean toAdd, boolean allStores) {
-            super(parent, ID, saleCheckCert, toAdd, allStores);
+        protected SaleCheckCertFormEntity(NavigatorElement parent, String sID, boolean toAdd, boolean allStores) {
+            super(parent, sID, saleCheckCert, toAdd, allStores);
 
             objDoc.caption = "Чек";
 
@@ -2678,8 +2678,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private class SaleInvoiceCertFormEntity extends SaleCertFormEntity {
-        protected SaleInvoiceCertFormEntity(NavigatorElement parent, int ID, boolean toAdd, boolean allStores) {
-            super(parent, ID, saleInvoiceCert, toAdd, allStores);
+        protected SaleInvoiceCertFormEntity(NavigatorElement parent, String sID, boolean toAdd, boolean allStores) {
+            super(parent, sID, saleInvoiceCert, toAdd, allStores);
         }
 
         @Override
@@ -2690,8 +2690,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private class CouponIntervalFormEntity extends FormEntity {
-        protected CouponIntervalFormEntity(NavigatorElement parent, int ID) {
-            super(parent, ID, "Интервалы цен по купонам");
+        protected CouponIntervalFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Интервалы цен по купонам");
 
             ObjectEntity objIntervalAdd = addSingleGroupObject(DoubleClass.instance, "Цена товара от", objectValue, couponGroup, true);
             objIntervalAdd.groupTo.initClassView = ClassViewType.PANEL;
@@ -2706,8 +2706,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private class CouponArticleFormEntity extends FormEntity {
         private ObjectEntity objArt;
 
-        protected CouponArticleFormEntity(NavigatorElement parent, int ID) {
-            super(parent, ID, "Товары по купонам");
+        protected CouponArticleFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Товары по купонам");
 
             ObjectEntity objArtGroup = addSingleGroupObject(articleGroup, baseGroup, true, couponGroup, true);
             objArt = addSingleGroupObject(article, baseGroup, true, couponGroup, true);

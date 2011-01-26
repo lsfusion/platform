@@ -9,8 +9,8 @@ public class DialogFormEntity<T extends BusinessLogics<T>> extends AbstractClass
     protected final ObjectEntity object;
     protected final String clsSID;
 
-    protected DialogFormEntity(T BL, CustomClass cls, int ID, String caption) {
-        super(BL, cls, ID, caption);
+    protected DialogFormEntity(T BL, CustomClass cls, String sID, String caption) {
+        super(BL, cls, sID, caption);
 
         object = addSingleGroupObject(cls, BL.baseGroup, true);
         object.groupTo.setSingleClassView(ClassViewType.GRID);
@@ -25,12 +25,7 @@ public class DialogFormEntity<T extends BusinessLogics<T>> extends AbstractClass
     }
 
     public DialogFormEntity(T BL, CustomClass cls) {
-        this(BL, cls, cls.ID + 53132, cls.caption);
-    }
-
-    @Override
-    public String getSID() {
-        return "dialogForm" + clsSID;
+        this(BL, cls, "dialogForm" + cls.getSID(), cls.caption);
     }
 
     public ObjectEntity getObject() {
@@ -39,6 +34,6 @@ public class DialogFormEntity<T extends BusinessLogics<T>> extends AbstractClass
 
     @Override
     public AbstractClassFormEntity copy() {
-        return new DialogFormEntity(BL, cls);
+        return new DialogFormEntity(BL, cls, getSID() + "_copy" + copies++, caption);
     }
 }

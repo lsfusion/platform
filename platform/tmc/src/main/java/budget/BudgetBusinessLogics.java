@@ -393,27 +393,27 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
     protected void initNavigators() throws JRException, FileNotFoundException {
 
-        NavigatorElement primaryData = new NavigatorElement(baseElement, 100, "Первичные данные");
-        FormEntity incomeForm = addFormEntity(new IncomeFormEntity(primaryData, 119, "Приход"));
-        FormEntity specialRecordForm = addFormEntity(new SpecialRecordFormEntity(primaryData, 113, "Затраты по сотрудникам"));
-        FormEntity salaryForm = addFormEntity(new ExtraFormEntity(primaryData, 115, "Дополнительные затраты"));
-        FormEntity recordForm = addFormEntity(new RecordFormEntity(primaryData, 114, "Прочие операции"));
-        FormEntity missionForm = new MissionFormEntity(primaryData, 116, "Командировка");
-        FormEntity vacationForm = addFormEntity(new VacationFormEntity(primaryData, 118, "Отпуск сотрудников"));
-        FormEntity exchangeRatesForm = new ExchangeRatesFormEntity(primaryData, 117, "Курсы валют");
+        NavigatorElement primaryData = new NavigatorElement(baseElement, "primaryData", "Первичные данные");
+        FormEntity incomeForm = addFormEntity(new IncomeFormEntity(primaryData, "incomeForm", "Приход"));
+        FormEntity specialRecordForm = addFormEntity(new SpecialRecordFormEntity(primaryData, "specialRecordForm", "Затраты по сотрудникам"));
+        FormEntity salaryForm = addFormEntity(new ExtraFormEntity(primaryData, "salaryForm", "Дополнительные затраты"));
+        FormEntity recordForm = addFormEntity(new RecordFormEntity(primaryData, "recordForm", "Прочие операции"));
+        FormEntity missionForm = new MissionFormEntity(primaryData, "missionForm", "Командировка");
+        FormEntity vacationForm = addFormEntity(new VacationFormEntity(primaryData, "vacationForm", "Отпуск сотрудников"));
+        FormEntity exchangeRatesForm = new ExchangeRatesFormEntity(primaryData, "exchangeRatesForm", "Курсы валют");
 
 
-        NavigatorElement aggregateData = new NavigatorElement(baseElement, 200, "Сводная информация");
-        FormEntity departmentBalance = new DepartmentBalanceFormEntity(aggregateData, 214, "Баланс по отделам");
-        FormEntity employeeExtraSum = addFormEntity(new DepartmentRevenueFormEntity(aggregateData, 218, "Обороты по отделам"));
-        FormEntity reimbursement = addFormEntity(new ReimbursementFormEntity(aggregateData, 215, "Компенсация"));
+        NavigatorElement aggregateData = new NavigatorElement(baseElement, "aggregateData", "Сводная информация");
+        FormEntity departmentBalance = new DepartmentBalanceFormEntity(aggregateData, "departmentBalance", "Баланс по отделам");
+        FormEntity employeeExtraSum = addFormEntity(new DepartmentRevenueFormEntity(aggregateData, "employeeExtraSum", "Обороты по отделам"));
+        FormEntity reimbursement = addFormEntity(new ReimbursementFormEntity(aggregateData, "reimbursement", "Компенсация"));
     }
 
 
     private class RecordFormEntity extends FormEntity {
 
-        public RecordFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public RecordFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
@@ -436,8 +436,8 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         private ObjectEntity objIncNotCash;
         private ObjectEntity objOutcome;
 
-        public IncomeFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public IncomeFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
@@ -472,8 +472,8 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         private ObjectEntity objMonthOp;
         private ObjectEntity objCur;
 
-        public ExtraFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public ExtraFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
@@ -520,8 +520,8 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         private ObjectEntity objMonthOp;
         private ObjectEntity objCur;
 
-        public SpecialRecordFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public SpecialRecordFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
             ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
             objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
@@ -573,8 +573,8 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
     private class MissionFormEntity extends FormEntity {
 
-        public MissionFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public MissionFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
             ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
             objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
@@ -596,8 +596,8 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
     private class VacationFormEntity extends FormEntity {
 
-        public VacationFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public VacationFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
             ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
             objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
@@ -616,8 +616,8 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
     private class DepartmentBalanceFormEntity extends FormEntity {
 
-        public DepartmentBalanceFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public DepartmentBalanceFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
@@ -643,8 +643,8 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         private ObjectEntity objOutOp;
         private ObjectEntity objReimbursement;
 
-        public ReimbursementFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public ReimbursementFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             ObjectEntity objPayer = addSingleGroupObject(payer, baseGroup);
             objCurrency = addSingleGroupObject(currency, baseGroup);
@@ -683,8 +683,8 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
     private class DepartmentRevenueFormEntity extends FormEntity {
 
-        public DepartmentRevenueFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public DepartmentRevenueFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
             ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
             objDepartment.groupTo.initClassView = ClassViewType.PANEL;
             objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
@@ -707,8 +707,8 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
     private class ExchangeRatesFormEntity extends FormEntity {
 
-        public ExchangeRatesFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public ExchangeRatesFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
 //            ObjectEntity objYearOp = addSingleGroupObject(IntegerClass.instance, "Год", properties, baseGroup);
 //                        objYearOp.groupTo.initClassView = ClassViewType.PANEL;

@@ -23,9 +23,9 @@ public class NavigatorDescriptorView extends JPanel {
     private FormDescriptorView formView;
     private VisualSetupNavigator visualNavigator;
 
-    private Map<Integer, FormDescriptor> newForms = new HashMap<Integer, FormDescriptor>();
-    private Map<Integer, ClientNavigatorElement> newElements = new HashMap<Integer, ClientNavigatorElement>();
-    private Map<Integer, FormDescriptor> changedForms = new HashMap<Integer, FormDescriptor>();
+    private Map<String, FormDescriptor> newForms = new HashMap<String, FormDescriptor>();
+    private Map<String, ClientNavigatorElement> newElements = new HashMap<String, ClientNavigatorElement>();
+    private Map<String, FormDescriptor> changedForms = new HashMap<String, FormDescriptor>();
 
     private JButton previewBtn;
     private JButton saveBtn;
@@ -65,7 +65,7 @@ public class NavigatorDescriptorView extends JPanel {
             if (formView.getUpdated()) {
                 FormDescriptor currentForm = formView.getForm();
                 if (currentForm != null) {
-                    changedForms.put(currentForm.getID(), currentForm);
+                    changedForms.put(currentForm.getSID(), currentForm);
                     updateTree();
                     setupActionButtons();
                 }
@@ -129,8 +129,8 @@ public class NavigatorDescriptorView extends JPanel {
 
             while (newForms.size() > 0) {
                 FormDescriptor form = newForms.values().iterator().next();
-                removeElement(form.ID);
-                newForms.remove(form.ID);
+                removeElement(form.getSID());
+                newForms.remove(form.getSID());
             }
 
             formView.setUpdated(false);
@@ -138,7 +138,7 @@ public class NavigatorDescriptorView extends JPanel {
 
             FormDescriptor currentForm = formView.getForm();
             if (currentForm != null) {
-                openForm(currentForm.ID);
+                openForm(currentForm.getSID());
             }
         } catch (IOException e) {
             throw new RuntimeException("Не могу открыть форму.", e);
@@ -192,7 +192,7 @@ public class NavigatorDescriptorView extends JPanel {
             newElements.clear();
             FormDescriptor currentForm = formView.getForm();
             if (currentForm != null) {
-                openForm(currentForm.ID);
+                openForm(currentForm.getSID());
             }
         } catch (IOException e) {
             throw new RuntimeException("Не могу сохранить форму.", e);
@@ -228,14 +228,14 @@ public class NavigatorDescriptorView extends JPanel {
         return result;
     }
 
-    public void openForm(int ID) throws IOException {
-        FormDescriptor form = changedForms.get(ID);
+    public void openForm(String sID) throws IOException {
+        FormDescriptor form = changedForms.get(sID);
         if (form == null) {
-            if (newForms.containsKey(ID)) {
-                form = newForms.get(ID);
+            if (newForms.containsKey(sID)) {
+                form = newForms.get(sID);
             } else {
-                form = FormDescriptor.deserialize(visualNavigator.remoteNavigator.getRichDesignByteArray(ID),
-                                                  visualNavigator.remoteNavigator.getFormEntityByteArray(ID));
+                form = FormDescriptor.deserialize(visualNavigator.remoteNavigator.getRichDesignByteArray(sID),
+                                                  visualNavigator.remoteNavigator.getFormEntityByteArray(sID));
             }
         }
 
@@ -248,14 +248,14 @@ public class NavigatorDescriptorView extends JPanel {
         setupActionButtons();
     }
 
-    public void removeElement(int elementID) {
+    public void removeElement(String elementSID) {
         FormDescriptor currentForm = formView.getForm();
-        if (currentForm != null && currentForm.ID == elementID) {
+        if (currentForm != null && currentForm.getSID().equals(elementSID)) {
             currentForm.getContext().setProperty(Lookup.DELETED_OBJECT_PROPERTY, currentForm);
         }
-        changedForms.remove(elementID);
-        newForms.remove(elementID);
-        newElements.remove(elementID);
+        changedForms.remove(elementSID);
+        newForms.remove(elementSID);
+        newElements.remove(elementSID);
     }
 
     private void setupActionButtons() {
@@ -268,17 +268,17 @@ public class NavigatorDescriptorView extends JPanel {
         updateUI();
     }
 
-    public boolean isFormChanged(int formID) {
-        return changedForms.containsKey(formID);
+    public boolean isFormChanged(String formSID) {
+        return changedForms.containsKey(formSID);
     }
 
     public FormDescriptor createAndOpenNewForm() {
-        FormDescriptor newForm = new FormDescriptor(Main.generateNewID());
+        FormDescriptor newForm = new FormDescriptor(null);
 
-        newForms.put(newForm.ID, newForm);
+        newForms.put(newForm.getSID(), newForm);
 
         try {
-            openForm(newForm.ID);
+            openForm(newForm.getSID());
         } catch (IOException e) {
             throw new RuntimeException("Ошибка при открытии формы.", e);
         }
@@ -287,26 +287,26 @@ public class NavigatorDescriptorView extends JPanel {
     }
 
     public ClientNavigatorElement createNewNavigatorElement(String caption) {
-        ClientNavigatorElement newElement = new ClientNavigatorElement(Main.generateNewID(), caption, false);
+        ClientNavigatorElement newElement = new ClientNavigatorElement(Main.generateNewID(), caption, caption, false);
 
-        newElements.put(newElement.ID, newElement);
+        newElements.put(newElement.getSID(), newElement);
 
         return newElement;
     }
 
-    public void cancelForm(int formID) {
-        FormDescriptor form = changedForms.get(formID);
+    public void cancelForm(String formSID) {
+        FormDescriptor form = changedForms.get(formSID);
         if (form != null) {
-            if (newForms.containsKey(formID)) {
-                form = new FormDescriptor(formID);
-                newForms.put(formID, form);
+            if (newForms.containsKey(formSID)) {
+                form = new FormDescriptor(formSID);
+                newForms.put(formSID, form);
             }
 
-            changedForms.remove(formID);
+            changedForms.remove(formSID);
             FormDescriptor currentForm = formView.getForm();
-            if (currentForm != null && currentForm.ID == formID) {
+            if (currentForm != null && currentForm.getSID().equals(formSID)) {
                 try {
-                    openForm(formID);
+                    openForm(formSID);
                 } catch (IOException e) {
                     throw new RuntimeException("Ошибка при отмене формы.", e);
                 }

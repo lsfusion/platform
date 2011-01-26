@@ -23,11 +23,11 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
     }
 
     @NonPendingRemoteMethod
-    public RemoteFormInterface createForm(int formID, boolean currentSession) throws RemoteException {
+    public RemoteFormInterface createForm(String formSID, boolean currentSession) throws RemoteException {
         List<MethodInvocation> invocations = getImmutableMethodInvocations(RemoteFormProxy.class);
 
         boolean hasCachedRichDesignByteArray = false;
-        if (RemoteFormProxy.cachedRichDesign.get(formID) != null) {
+        if (RemoteFormProxy.cachedRichDesign.get(formSID) != null) {
             hasCachedRichDesignByteArray = true;
             for (int i = 0; i < invocations.size(); ++i) {
                 if (invocations.get(i).name.equals("getRichDesignByteArray")) {
@@ -37,12 +37,12 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
             }
         }
 
-        RemoteFormProxy proxy = createForm(invocations, MethodInvocation.create(this.getClass(), "createForm", formID, currentSession));
+        RemoteFormProxy proxy = createForm(invocations, MethodInvocation.create(this.getClass(), "createForm", formSID, currentSession));
 
         if (hasCachedRichDesignByteArray) {
-            proxy.setProperty("getRichDesignByteArray", RemoteFormProxy.cachedRichDesign.get(formID));
+            proxy.setProperty("getRichDesignByteArray", RemoteFormProxy.cachedRichDesign.get(formSID));
         } else {
-            RemoteFormProxy.cachedRichDesign.put(formID, (byte[]) proxy.getProperty("getRichDesignByteArray"));
+            RemoteFormProxy.cachedRichDesign.put(formSID, (byte[]) proxy.getProperty("getRichDesignByteArray"));
         }
 
         return proxy;
@@ -72,20 +72,20 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
         return proxy;
     }
 
-    public void saveForm(int formID, byte[] formState) throws RemoteException {
-        target.saveForm(formID, formState);
+    public void saveForm(String formSID, byte[] formState) throws RemoteException {
+        target.saveForm(formSID, formState);
     }
 
     public void saveVisualSetup(byte[] data) throws RemoteException {
         target.saveVisualSetup(data);
     }
 
-    public byte[] getRichDesignByteArray(int formID) throws RemoteException {
-        return target.getRichDesignByteArray(formID);
+    public byte[] getRichDesignByteArray(String formSID) throws RemoteException {
+        return target.getRichDesignByteArray(formSID);
     }
 
-    public byte[] getFormEntityByteArray(int formID) throws RemoteException {
-        return target.getFormEntityByteArray(formID);
+    public byte[] getFormEntityByteArray(String formSID) throws RemoteException {
+        return target.getFormEntityByteArray(formSID);
     }
 
     public byte[] getCurrentUserInfoByteArray() throws RemoteException {
@@ -95,9 +95,9 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
         return result;
     }
 
-    public byte[] getElementsByteArray(int groupID) throws RemoteException {
+    public byte[] getElementsByteArray(String groupSID) throws RemoteException {
         logRemoteMethodStartCall("getElementsByteArray");
-        byte[] result = target.getElementsByteArray(groupID);
+        byte[] result = target.getElementsByteArray(groupSID);
         logRemoteMethodEndCall("getElementsByteArray", result);
         return result;
     }

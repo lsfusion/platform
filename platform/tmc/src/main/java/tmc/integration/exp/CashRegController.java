@@ -422,14 +422,14 @@ public class CashRegController {
         }
     }
 
-    public FormEntity createCashRegManagementFormEntity(NavigatorElement parent, int iID) {
-        return new CashRegManagementFormEntity(parent, iID);
+    public FormEntity createCashRegManagementFormEntity(NavigatorElement parent, String sID) {
+        return new CashRegManagementFormEntity(parent, sID);
     }
 
     private class CashRegManagementFormEntity extends FormEntity {
 
-        private CashRegManagementFormEntity(NavigatorElement parent, int iID) {
-            super(parent, iID, "Операции с ФР");
+        private CashRegManagementFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Операции с ФР");
             addPropertyDraw(BL.cashRegGroup, true);
         }
 

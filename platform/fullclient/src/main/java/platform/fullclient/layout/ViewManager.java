@@ -47,16 +47,16 @@ public class ViewManager {
         page.comp.requestFocusInWindow();
     }
 
-    public void openClient(int formID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException, JRException {
-        openForm(new ClientFormDockable(formID, navigator, currentSession, pageFactory));
+    public void openClient(String formSID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException, JRException {
+        openForm(new ClientFormDockable(formSID, navigator, currentSession, pageFactory));
     }
 
     public void openClient(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException, JRException {
         openForm(new ClientFormDockable(navigator, remoteForm, pageFactory));
     }
 
-    public void openReport(int formID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException {
-        openForm(new ReportDockable(formID, navigator, currentSession, pageFactory));
+    public void openReport(String formSID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException {
+        openForm(new ReportDockable(formSID, navigator, currentSession, pageFactory));
     }
 
     public void openReport(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
@@ -102,7 +102,7 @@ public class ViewManager {
 
         public FormDockable read(FormLayout layout) {
             try {
-                ClientFormDockable page = new ClientFormDockable(layout.getFormID(), this, mainNavigator);
+                ClientFormDockable page = new ClientFormDockable(layout.getFormSID(), this, mainNavigator);
                 page.addCDockableStateListener(new CDockableStateAdapter(page));
                 changeCloseAction(page);
 
@@ -117,7 +117,7 @@ public class ViewManager {
 
         public FormLayout write(FormDockable dockable) {
             FormLayout layout = new FormLayout();
-            layout.setFormID(dockable.getFormID());
+            layout.setFormID(dockable.getFormSID());
             return layout;
         }
 

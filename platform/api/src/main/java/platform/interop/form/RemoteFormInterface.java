@@ -18,7 +18,7 @@ public interface RemoteFormInterface extends PendingRemote {
 
     public RemoteChanges getRemoteChanges() throws RemoteException;
 
-    int getID() throws RemoteException;
+    String getSID() throws RemoteException;
 
     // синхронная проверка на то можно ли менять свойство
     byte[] getPropertyChangeType(int propertyID) throws RemoteException;

@@ -1,12 +1,12 @@
 package platform.client.navigator;
 
+import platform.client.Main;
 import platform.client.tree.ClientTree;
 import platform.client.tree.ClientTreeAction;
 import platform.client.tree.ClientTreeActionEvent;
 import platform.client.tree.ExpandingTreeNode;
 
 import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -46,7 +46,7 @@ public class NavigatorTree extends ClientTree {
     }
 
     public void createRootNode() {
-        rootNode = new NavigatorTreeNode(this, new ClientNavigatorElement(AbstractNavigator.BASE_ELEMENT_ID, "", true));
+        rootNode = new NavigatorTreeNode(this, new ClientNavigatorElement(Main.generateNewID(), AbstractNavigator.BASE_ELEMENT_SID, "", true));
         model.setRoot(rootNode);
 
         rootNode.add(new ExpandingTreeNode());
@@ -108,7 +108,7 @@ public class NavigatorTree extends ClientTree {
 
         if (!element.hasChildren()) return;
 
-        java.util.List<ClientNavigatorElement> elements = navigator.getNodeElements(element.ID);
+        java.util.List<ClientNavigatorElement> elements = navigator.getNodeElements(element.getSID());
 
         for (ClientNavigatorElement child : elements) {
 

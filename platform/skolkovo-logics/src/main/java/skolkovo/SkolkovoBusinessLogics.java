@@ -470,17 +470,17 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     FormEntity globalForm;
 
     protected void initNavigators() throws JRException, FileNotFoundException {
-        addFormEntity(new ProjectFormEntity(baseElement, 10));
-        addFormEntity(new VoteFormEntity(baseElement, 15));
-        addFormEntity(new ExpertFormEntity(baseElement, 18));
-        languageDocumentTypeForm = addFormEntity(new LanguageDocumentTypeFormEntity(baseElement, 25));
-        globalForm = addFormEntity(new GlobalFormEntity(baseElement, 20));
+        addFormEntity(new ProjectFormEntity(baseElement, "form10"));
+        addFormEntity(new VoteFormEntity(baseElement, "form15"));
+        addFormEntity(new ExpertFormEntity(baseElement, "form18"));
+        languageDocumentTypeForm = addFormEntity(new LanguageDocumentTypeFormEntity(baseElement, "form25"));
+        globalForm = addFormEntity(new GlobalFormEntity(baseElement, "form20"));
 
-        NavigatorElement print = new NavigatorElement(baseElement, 60, "Печатные формы");
-        addFormEntity(new VoteStartFormEntity(print, 40));
-        addFormEntity(new ExpertLetterFormEntity(print, 30));
-        addFormEntity(new VoteProtocolFormEntity(print, 35));
-        addFormEntity(new ExpertAuthFormEntity(print, 45));
+        NavigatorElement print = new NavigatorElement(baseElement, "form60", "Печатные формы");
+        addFormEntity(new VoteStartFormEntity(print, "form40"));
+        addFormEntity(new ExpertLetterFormEntity(print, "form30"));
+        addFormEntity(new VoteProtocolFormEntity(print, "form35"));
+        addFormEntity(new ExpertAuthFormEntity(print, "form45"));
     }
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
@@ -503,8 +503,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ObjectEntity objDocument;
         private ObjectEntity objExpert;
 
-        private ProjectFormEntity(NavigatorElement parent, int iID) {
-            super(parent, iID, "Реестр проектов");
+        private ProjectFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Реестр проектов");
 
             objProject = addSingleGroupObject(project, date, name, nameClusterProject, nameClaimerProject, nameStatusProject, autoGenerateProject, generateVoteProject);
             addObjectActions(this, objProject);
@@ -570,8 +570,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     private class GlobalFormEntity extends FormEntity<SkolkovoBusinessLogics> {
 
-        private GlobalFormEntity(NavigatorElement parent, int iID) {
-            super(parent, iID, "Глобальные параметры");
+        private GlobalFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Глобальные параметры");
 
             addPropertyDraw(new LP[]{currentDate, requiredPeriod, requiredQuantity, limitExperts, emailDocuments});
         }
@@ -581,8 +581,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ObjectEntity objVote;
         private ObjectEntity objExpert;
 
-        private VoteFormEntity(NavigatorElement parent, int iID) {
-            super(parent, iID, "Реестр заседаний");
+        private VoteFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Реестр заседаний");
 
             objVote = addSingleGroupObject(vote, nameProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote, delete);
 
@@ -631,8 +631,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ObjectEntity objExpert;
         private ObjectEntity objVote;
 
-        private ExpertFormEntity(NavigatorElement parent, int iID) {
-            super(parent, iID, "Реестр экспертов");
+        private ExpertFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Реестр экспертов");
 
             objExpert = addSingleGroupObject(expert, selection, userFirstName, userLastName, userLogin, userPassword, emailParticipant, nameClusterExpert, nameLanguageExpert, expertResultGroup, generateLoginPasswordExpert, emailAuthExpert);
             addObjectActions(this, objExpert);
@@ -668,8 +668,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         private GroupObjectEntity gobjLanguageDocumentType;
 
-        private LanguageDocumentTypeFormEntity(NavigatorElement parent, int iID) {
-            super(parent, iID, "Обязательные документы");
+        private LanguageDocumentTypeFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Обязательные документы");
 
             gobjLanguageDocumentType = new GroupObjectEntity(genID());
             objLanguage = new ObjectEntity(genID(), language, "Язык");
@@ -692,8 +692,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         private GroupObjectEntity gobjExpertVote;
 
-        private ExpertLetterFormEntity(NavigatorElement parent, int iID) {
-            super(parent, iID, "Письмо о заседании", true);
+        private ExpertLetterFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Письмо о заседании", true);
 
             gobjExpertVote = new GroupObjectEntity(2);
             objExpert = new ObjectEntity(2, expert, "Эксперт");
@@ -730,8 +730,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     private class ExpertAuthFormEntity extends FormEntity<SkolkovoBusinessLogics> { // письмо эксперту о логине
         private ObjectEntity objExpert;
 
-        private ExpertAuthFormEntity(NavigatorElement parent, int iID) {
-            super(parent, iID, "Аутентификация эксперта", true);
+        private ExpertAuthFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Аутентификация эксперта", true);
 
             objExpert = addSingleGroupObject(1, expert, userLogin, userPassword, name, isForeignExpert);
             objExpert.groupTo.initClassView = ClassViewType.PANEL;
@@ -751,8 +751,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         private ObjectEntity objExpert;
 
-        private VoteStartFormEntity(NavigatorElement parent, int iID) {
-            super(parent, iID, "Созыв заседания", true);
+        private VoteStartFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Созыв заседания", true);
 
             objVote = addSingleGroupObject(1, vote, date, dateProjectVote, nameClaimerVote, datePrevVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
@@ -781,8 +781,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         
         private ObjectEntity objExpert;
 
-        private VoteProtocolFormEntity(NavigatorElement parent, int iID) {
-            super(parent, iID, "Протокол заседания", true);
+        private VoteProtocolFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Протокол заседания", true);
 
             objVote = addSingleGroupObject(1, vote, date, nameProjectVote, nameClaimerVote, quantityRepliedVote, quantityDoneVote, succeededVote, quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote, acceptedForeignVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;

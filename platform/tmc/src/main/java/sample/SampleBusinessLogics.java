@@ -102,21 +102,21 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
     protected void initNavigators() throws JRException, FileNotFoundException {
 
-        NavigatorElement primaryData = new NavigatorElement(baseElement, 100, "Первичные данные");
-            FormEntity documentForm = new DocumentFormEntity(primaryData, 110, "Документ");
+        NavigatorElement primaryData = new NavigatorElement(baseElement, "primaryData", "Первичные данные");
+            FormEntity documentForm = new DocumentFormEntity(primaryData, "documentForm", "Документ");
 
-        NavigatorElement aggregateData = new NavigatorElement(baseElement, 200, "Сводная информация");
-            FormEntity storeArticleForm = new StoreArticleFormEntity(aggregateData, 211, "Товары по складам");
-            FormEntity systemForm = new SystemFormEntity(aggregateData, 212, "Движение (документ*товар)");
-            FormEntity treeStoreArticleForm = new TreeStoreArticleFormEntity(aggregateData, 213, "Товары по складам (дерево)");
+        NavigatorElement aggregateData = new NavigatorElement(baseElement, "aggregateData", "Сводная информация");
+            FormEntity storeArticleForm = new StoreArticleFormEntity(aggregateData, "storeArticleForm", "Товары по складам");
+            FormEntity systemForm = new SystemFormEntity(aggregateData, "systemForm", "Движение (документ*товар)");
+            FormEntity treeStoreArticleForm = new TreeStoreArticleFormEntity(aggregateData, "treeStoreArticleForm", "Товары по складам (дерево)");
 
 //        extIncomeDocument.relevantElements.set(0, extIncDetailForm);
     }
 
     private class DocumentFormEntity extends FormEntity {
 
-        public DocumentFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public DocumentFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             ObjectEntity objDoc = addSingleGroupObject(document, "Документ", baseGroup);
             addObjectActions(this, objDoc);
@@ -136,8 +136,8 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
     private class StoreArticleFormEntity extends FormEntity {
 
-        public StoreArticleFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public StoreArticleFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup);
 //            objArt.groupTo.initClassView = false; //objArt.groupTo.singleViewType = true;
@@ -155,8 +155,8 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
     private class TreeStoreArticleFormEntity extends FormEntity {
 
-        public TreeStoreArticleFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public TreeStoreArticleFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             ObjectEntity objStore = addSingleGroupObject(store, name);
             ObjectEntity objArtGroup = addSingleGroupObject(articleGroup, name);
@@ -189,8 +189,8 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
     private class SystemFormEntity extends FormEntity {
 
-        public SystemFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public SystemFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             GroupObjectEntity group = new GroupObjectEntity(genID());
 

@@ -20,8 +20,8 @@ public class ReportDockable extends FormDockable {
 
     private String reportCaption;
 
-    public ReportDockable(int formID, ClientNavigator navigator, boolean currentSession, MultipleCDockableFactory<FormDockable,?> factory) throws IOException, ClassNotFoundException {
-        super(formID, navigator, currentSession, factory);
+    public ReportDockable(String formSID, ClientNavigator navigator, boolean currentSession, MultipleCDockableFactory<FormDockable,?> factory) throws IOException, ClassNotFoundException {
+        super(formSID, navigator, currentSession, factory);
     }
 
     public ReportDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, MultipleCDockableFactory<FormDockable,?> factory) throws ClassNotFoundException, IOException {
@@ -30,7 +30,7 @@ public class ReportDockable extends FormDockable {
 
     // из файла
     ReportDockable(String fileName,String directory, MultipleCDockableFactory<FormDockable,?> factory) throws JRException {
-        super(0, factory);
+        super("", factory);
 
         setActiveComponent(prepareViewer(new JRViewer((JasperPrint) JRLoader.loadObject(directory+fileName))),fileName);
     }

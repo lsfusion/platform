@@ -80,15 +80,15 @@ public class DistrTmcBusinessLogics extends BusinessLogics<DistrTmcBusinessLogic
 
     protected void initNavigators() throws JRException, FileNotFoundException {
 
-        new InDocumentArticleFormEntity(baseElement, 100, "Прих. документы");
-        new OutDocumentArticleFormEntity(baseElement, 101, "Расх. документы");
-        new SystemFormEntity(baseElement, 102, "Движение (документ*товар)");
+        new InDocumentArticleFormEntity(baseElement, "inDocArticleForm", "Прих. документы");
+        new OutDocumentArticleFormEntity(baseElement, "outDocArticleForm", "Расх. документы");
+        new SystemFormEntity(baseElement, "systemForm", "Движение (документ*товар)");
     }
 
     private class InDocumentArticleFormEntity extends FormEntity {
 
-        public InDocumentArticleFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public InDocumentArticleFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             ObjectEntity objDoc = addSingleGroupObject(inDocument, "Документ",
                     baseGroup);
@@ -101,8 +101,8 @@ public class DistrTmcBusinessLogics extends BusinessLogics<DistrTmcBusinessLogic
 
     private class OutDocumentArticleFormEntity extends FormEntity {
 
-        public OutDocumentArticleFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public OutDocumentArticleFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             ObjectEntity objOutDoc = addSingleGroupObject(outDocument, "Расх. документ",
                     baseGroup);
@@ -125,8 +125,8 @@ public class DistrTmcBusinessLogics extends BusinessLogics<DistrTmcBusinessLogic
 
     private class SystemFormEntity extends FormEntity {
 
-        public SystemFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public SystemFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             GroupObjectEntity group = new GroupObjectEntity(genID());
 

@@ -506,46 +506,46 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
     protected void initNavigators() throws JRException, FileNotFoundException {
 
-        NavigatorElement supplyManagement = new NavigatorElement(baseElement, 1000, "Управление поставками");
-            NavigatorElement suppliers = new StoreSupplierSpecFormEntity(supplyManagement, 1100, "Поставщики");
-            FormEntity extIncOrderForm = new ExtIncOrderFormEntity(supplyManagement, 1200, "Заказы поставщику");
-            FormEntity extIncForm = new ExtIncFormEntity(supplyManagement, 1300, "Приходы от поставщика");
-            FormEntity returnForm = new ReturnFormEntity(supplyManagement, 1400, "Возврат поставщику");
-            FormEntity supplierStoreArticleForm = new SupplierStoreArticleFormEntity(supplyManagement, 1500, "Товары поставщика");
-            FormEntity supplyRangeForm = new SupplyRangeFormEntity(supplyManagement, 1600, "Обеспечение ассортимента");
+        NavigatorElement supplyManagement = new NavigatorElement(baseElement, "supplyManagement", "Управление поставками");
+            NavigatorElement suppliers = new StoreSupplierSpecFormEntity(supplyManagement, "suppliers", "Поставщики");
+            FormEntity extIncOrderForm = new ExtIncOrderFormEntity(supplyManagement, "extIncOrderForm", "Заказы поставщику");
+            FormEntity extIncForm = new ExtIncFormEntity(supplyManagement, "extIncForm", "Приходы от поставщика");
+            FormEntity returnForm = new ReturnFormEntity(supplyManagement, "returnForm", "Возврат поставщику");
+            FormEntity supplierStoreArticleForm = new SupplierStoreArticleFormEntity(supplyManagement, "supplierStoreArticleForm", "Товары поставщика");
+            FormEntity supplyRangeForm = new SupplyRangeFormEntity(supplyManagement, "supplyRangeForm", "Обеспечение ассортимента");
 
-        NavigatorElement rangeManagement = new NavigatorElement(baseElement, 2000, "Управление ассортиментом");
-            FormEntity rangeGroupForm = new RangeGroupFormEntity(rangeManagement, 2100, "Ассортимент по группам");
-            FormEntity rangeFormatForm = new RangeFormEntity(rangeManagement, 2200, "Ассортимент по форматам", true);
-            FormEntity rangeArticleForm = new RangeFormEntity(rangeManagement, 2300, "Ассортимент по товарам", false);
-            FormEntity remainRangeForm = new RemainRangeFormEntity(rangeManagement, 2400, "Активные товары на складах");
+        NavigatorElement rangeManagement = new NavigatorElement(baseElement, "rangeManagement", "Управление ассортиментом");
+            FormEntity rangeGroupForm = new RangeGroupFormEntity(rangeManagement, "rangeGroupForm", "Ассортимент по группам");
+            FormEntity rangeFormatForm = new RangeFormEntity(rangeManagement, "rangeFormatForm", "Ассортимент по форматам", true);
+            FormEntity rangeArticleForm = new RangeFormEntity(rangeManagement, "rangeArticleForm", "Ассортимент по товарам", false);
+            FormEntity remainRangeForm = new RemainRangeFormEntity(rangeManagement, "remainRangeForm", "Активные товары на складах");
 
-        NavigatorElement distrManagement = new NavigatorElement(baseElement, 3000, "Управление распределением");
-            FormEntity intraForm = new IntraFormEntity(distrManagement, 3100, "Внутреннее перемещение");
-            FormEntity storeArticleForm = new StoreArticleFormEntity(distrManagement, 3200, "Товары по складам");
+        NavigatorElement distrManagement = new NavigatorElement(baseElement, "distrManagement", "Управление распределением");
+            FormEntity intraForm = new IntraFormEntity(distrManagement, "intraForm", "Внутреннее перемещение");
+            FormEntity storeArticleForm = new StoreArticleFormEntity(distrManagement, "storeArticleForm", "Товары по складам");
 
-        NavigatorElement storeManagement = new NavigatorElement(baseElement, 4000, "Управление хранением");
-            FormEntity invForm = new InvFormEntity(storeManagement, 4100, "Инвентаризация", false);
-            FormEntity exchangeForm = new ExchangeFormEntity(storeManagement, 4200, "Пересорт");
-                FormEntity exchangeMForm = new ExchangeMFormEntity(exchangeForm, 4210, "Сводный пересорт");
+        NavigatorElement storeManagement = new NavigatorElement(baseElement, "storeManagement", "Управление хранением");
+            FormEntity invForm = new InvFormEntity(storeManagement, "invForm", "Инвентаризация", false);
+            FormEntity exchangeForm = new ExchangeFormEntity(storeManagement, "exchangeForm", "Пересорт");
+                FormEntity exchangeMForm = new ExchangeMFormEntity(exchangeForm, "exchangeMForm", "Сводный пересорт");
 
-        NavigatorElement saleManagement = new NavigatorElement(baseElement, 5000, "Управление продажами");
-            FormEntity cashSaleForm = new CashSaleFormEntity(saleManagement, 5100, "Реализация по кассе");
-            FormEntity clearingSaleForm = new ClearingSaleFormEntity(saleManagement, 5200, "Реализация по б/н расчету");
-            FormEntity salesArticleStoreForm = new SalesArticleStoreFormEntity(saleManagement, 5300, "Реализация товара по складам");
+        NavigatorElement saleManagement = new NavigatorElement(baseElement, "saleManagement", "Управление продажами");
+            FormEntity cashSaleForm = new CashSaleFormEntity(saleManagement, "cashSaleForm", "Реализация по кассе");
+            FormEntity clearingSaleForm = new ClearingSaleFormEntity(saleManagement, "clearingSaleForm", "Реализация по б/н расчету");
+            FormEntity salesArticleStoreForm = new SalesArticleStoreFormEntity(saleManagement, "salesArticleStoreForm", "Реализация товара по складам");
 
-        NavigatorElement valueManagement = new NavigatorElement(baseElement, 6000, "Управление ценообразованием");
-            FormEntity revalueForm = new RevalueFormEntity(valueManagement, 6100, "Изменение наценок");
-            FormEntity storeArticlePrimDocForm = new StoreArticlePrimDocFormEntity(valueManagement, 6200, "Изменение цен по товарам");
+        NavigatorElement valueManagement = new NavigatorElement(baseElement, "valueManagement", "Управление ценообразованием");
+            FormEntity revalueForm = new RevalueFormEntity(valueManagement, "revalueForm", "Изменение наценок");
+            FormEntity storeArticlePrimDocForm = new StoreArticlePrimDocFormEntity(valueManagement, "storeArticlePrimDocForm", "Изменение цен по товарам");
 
-        NavigatorElement taxManagement = new NavigatorElement(baseElement, 7000, "Управление налогами");
-            FormEntity taxForm = new TaxFormEntity(taxManagement, 7100, "Изменение НДС");
-            FormEntity locTaxForm = new LocTaxFormEntity(taxManagement, 7200, "Изменение местн. нал.");
+        NavigatorElement taxManagement = new NavigatorElement(baseElement, "taxManagement", "Управление налогами");
+            FormEntity taxForm = new TaxFormEntity(taxManagement, "taxForm", "Изменение НДС");
+            FormEntity locTaxForm = new LocTaxFormEntity(taxManagement, "locTaxForm", "Изменение местн. нал.");
 
-        NavigatorElement aggregateData = new NavigatorElement(baseElement, 8000, "Сводная информация");
-            FormEntity storeArticleDocForm = new StoreArticleDocFormEntity(aggregateData, 8100, "Движение товара");
-            FormEntity articleMStoreForm = new ArticleMStoreFormEntity(aggregateData, 8200, "Сводные остатки");
-        FormEntity articleStoreForm = new ArticleStoreFormEntity(aggrArticleData, 8300, "Склады по товарам");
+        NavigatorElement aggregateData = new NavigatorElement(baseElement, "aggregateData", "Сводная информация");
+            FormEntity storeArticleDocForm = new StoreArticleDocFormEntity(aggregateData, "storeArticleDocForm", "Движение товара");
+            FormEntity articleMStoreForm = new ArticleMStoreFormEntity(aggregateData, "articleMStoreForm", "Сводные остатки");
+        FormEntity articleStoreForm = new ArticleStoreFormEntity(aggrArticleData, "articleStoreForm", "Склады по товарам");
 
         intraDocument.addRelevant(intraForm);
         clearingSaleDocument.addRelevant(clearingSaleForm);
@@ -558,12 +558,12 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
     private class TmcFormEntity extends FormEntity {
 
-        TmcFormEntity(NavigatorElement parent, int iID, String caption) {
-            super(parent, iID, caption);
+        TmcFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
         }
 
-        TmcFormEntity(NavigatorElement parent, int iID, String caption, boolean isPrintForm) {
-            super(parent, iID, caption, isPrintForm);
+        TmcFormEntity(NavigatorElement parent, String sID, String caption, boolean isPrintForm) {
+            super(parent, sID, caption, isPrintForm);
         }
 
         void addArticleRegularFilterGroup(PropertyObjectEntity documentProp, PropertyObjectEntity... extraProps) {
@@ -588,8 +588,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
     private class ExtIncOrderFormEntity extends TmcFormEntity {
 
-        public ExtIncOrderFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption, false);
+        public ExtIncOrderFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption, false);
 
             ObjectEntity objDoc = addSingleGroupObject(extIncomeOrder, "Заказ", baseGroup);
 
@@ -606,8 +606,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
     private class ExtIncFormEntity extends TmcFormEntity {
 
-        public ExtIncFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption, false);
+        public ExtIncFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption, false);
 
             ObjectEntity objDoc = addSingleGroupObject(extIncomeDocument, "Документ", baseGroup);
 
@@ -621,8 +621,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 /*
     private class ExtIncPrintNavigatorForm extends ExtIncFormEntity {
 
-        public ExtIncPrintNavigatorForm(NavigatorElement parent, int ID, String title) throws JRException, FileNotFoundException {
-            super(parent, ID, title, true);
+        public ExtIncPrintNavigatorForm(NavigatorElement parent, String sID, String title) throws JRException, FileNotFoundException {
+            super(parent, sID, title, true);
 
             objDoc.groupTo.initClassView = false;
             objDoc.groupTo.singleViewType = true;
@@ -640,8 +640,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
   */
     private class IntraFormEntity extends TmcFormEntity {
 
-        public IntraFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public IntraFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             ObjectEntity objDoc = addSingleGroupObject(intraDocument, "Документ", baseGroup);
             ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup);
@@ -657,8 +657,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
     private class CashSaleFormEntity extends TmcFormEntity {
 
-        public CashSaleFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public CashSaleFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             ObjectEntity objDoc = addSingleGroupObject(cashSaleDocument, "Документ", baseGroup);
             ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup, true);
@@ -671,8 +671,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
     private class ClearingSaleFormEntity extends TmcFormEntity {
 
-        public ClearingSaleFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public ClearingSaleFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             ObjectEntity objDoc = addSingleGroupObject(clearingSaleDocument, "Документ", baseGroup);
             ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup, true);
@@ -685,8 +685,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
     private class InvFormEntity extends TmcFormEntity {
 
-        public InvFormEntity(NavigatorElement parent, int ID, String caption, boolean groupStore) {
-            super(parent, ID, caption);
+        public InvFormEntity(NavigatorElement parent, String sID, String caption, boolean groupStore) {
+            super(parent, sID, caption);
 
             ObjectEntity objDoc = addSingleGroupObject(invDocument, "Документ", baseGroup);
             ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup, true);
@@ -699,8 +699,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
     private class ReturnFormEntity extends TmcFormEntity {
 
-        public ReturnFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public ReturnFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             ObjectEntity objDoc = addSingleGroupObject(returnDocument, "Документ", baseGroup);
             ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup, true);
@@ -728,8 +728,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
     private class ExchangeFormEntity extends TmcFormEntity {
 
-        public ExchangeFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public ExchangeFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             ObjectEntity objDoc = addSingleGroupObject(exchangeDocument, "Документ", baseGroup);
             ObjectEntity objArtTo = addSingleGroupObject(article, "Товар (на)",
@@ -792,8 +792,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
     private class ExchangeMFormEntity extends TmcFormEntity {
 
-        public ExchangeMFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public ExchangeMFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             ObjectEntity objDoc = addSingleGroupObject(exchangeDocument, "Документ", baseGroup);
 
@@ -816,8 +816,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
     private class RevalueFormEntity extends TmcFormEntity {
 
-        public RevalueFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public RevalueFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             ObjectEntity objDoc = addSingleGroupObject(revalDocument, "Документ", baseGroup);
             ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup);
@@ -842,8 +842,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
     private class TaxFormEntity extends TmcFormEntity {
 
-        public TaxFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public TaxFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             ObjectEntity objDoc = addSingleGroupObject(taxDocument, "Документ", baseGroup);
             ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup, currentVatOut);
@@ -868,8 +868,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
     private class LocTaxFormEntity extends TmcFormEntity {
 
-        public LocTaxFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public LocTaxFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             ObjectEntity objDoc = addSingleGroupObject(locTaxDocument, "Документ", baseGroup);
             ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup);
@@ -896,8 +896,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
         ObjectEntity objStore, objArt;
 
-        public StoreArticleFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public StoreArticleFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             objStore = addSingleGroupObject(store, "Склад", baseGroup);
             objStore.groupTo.initClassView = ClassViewType.PANEL;
@@ -911,8 +911,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
     private class StoreArticlePrimDocFormEntity extends StoreArticleFormEntity {
 
-        public StoreArticlePrimDocFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public StoreArticlePrimDocFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             ObjectEntity objPrimDoc = addSingleGroupObject(priceOutDocument, "Документ", baseGroup);
 
@@ -935,8 +935,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
     private class StoreArticleDocFormEntity extends StoreArticleFormEntity {
 
-        public StoreArticleDocFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public StoreArticleDocFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             ObjectEntity objDoc = addSingleGroupObject(quantityDocument, "Товарный документ", baseGroup, date, incStore, outStore);
 
@@ -958,8 +958,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
         ObjectEntity objStore, objArt;
 
-        public ArticleStoreFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public ArticleStoreFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             objArt = addSingleGroupObject(article, "Товар", baseGroup);
             objStore = addSingleGroupObject(store, "Склад", baseGroup);
@@ -971,8 +971,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
     private class ArticleMStoreFormEntity extends TmcFormEntity {
 
-        public ArticleMStoreFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public ArticleMStoreFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             GroupObjectEntity gobjArtStore = new GroupObjectEntity(genID());
 
@@ -992,8 +992,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
     private class SupplierStoreArticleFormEntity extends TmcFormEntity {
 
-        SupplierStoreArticleFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        SupplierStoreArticleFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             ObjectEntity objSupplier = addSingleGroupObject(supplier, "Поставщик", baseGroup);
             objSupplier.groupTo.initClassView = ClassViewType.PANEL;
@@ -1039,8 +1039,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         GroupObjectEntity gobjInterval;
         ObjectEntity objDateFrom, objDateTo;
 
-        public DateIntervalFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public DateIntervalFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             gobjInterval = new GroupObjectEntity(genID());
             gobjInterval.initClassView = ClassViewType.PANEL;
@@ -1057,8 +1057,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
     private class SupplyRangeFormEntity extends FormEntity {
 
-        public SupplyRangeFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public SupplyRangeFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             ObjectEntity objStore = addSingleGroupObject(store, "Склад", baseGroup, currentGroup);
             ObjectEntity objArticle = addSingleGroupObject(article, "Товар", baseGroup, currentGroup);
@@ -1079,8 +1079,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
     private class RemainRangeFormEntity extends FormEntity {
 
-        public RemainRangeFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public RemainRangeFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             GroupObjectEntity gobjArtStore = new GroupObjectEntity(genID());
 
@@ -1103,8 +1103,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
   // Benderamania
     private class RangeFormEntity extends DateIntervalFormEntity {
 
-        public RangeFormEntity(NavigatorElement parent, int ID, String caption, boolean upFormat) {
-            super(parent, ID, caption);
+        public RangeFormEntity(NavigatorElement parent, String sID, String caption, boolean upFormat) {
+            super(parent, sID, caption);
 
             ObjectEntity objFormat, objArticle;
             if(upFormat) {
@@ -1129,8 +1129,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
     private class RangeGroupFormEntity extends DateIntervalFormEntity {
 
-        public RangeGroupFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public RangeGroupFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             ObjectEntity objFormat, objArticle, objGroup;
             objFormat = addSingleGroupObject(format, "Формат", baseGroup, currentGroup);
@@ -1155,8 +1155,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
     private class SalesArticleStoreFormEntity extends DateIntervalFormEntity {
 
-        public SalesArticleStoreFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public SalesArticleStoreFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             ObjectEntity objArticle = addSingleGroupObject(article, "Товар",
                     baseGroup);
@@ -1175,8 +1175,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
     private class StoreSupplierSpecFormEntity extends FormEntity {
 
-        public StoreSupplierSpecFormEntity(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
+        public StoreSupplierSpecFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             ObjectEntity objSupplier = addSingleGroupObject(supplier, "Поставщик", baseGroup);
             ObjectEntity objContract = addSingleGroupObject(contract, "Договор", baseGroup, supplierGroup);

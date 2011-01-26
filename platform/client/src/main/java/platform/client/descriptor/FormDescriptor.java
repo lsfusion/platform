@@ -17,6 +17,7 @@ import platform.client.logics.ClientFunction;
 import platform.client.logics.classes.ClientClass;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
+import platform.interop.Constants;
 import platform.interop.form.layout.*;
 
 import java.io.*;
@@ -60,8 +61,13 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
     }
 
     // будем считать, что именно этот конструктор используется для создания новых форм
-    public FormDescriptor(int ID) {
-        super(ID);
+    public FormDescriptor(String sID) {
+        super(Main.generateNewID());
+        if (sID == null) {
+            setSID(Constants.getDefaultFormSID(ID));
+        } else {
+            setSID(sID);
+        }
 
         context = new ApplicationContext();
         client = new ClientForm(ID, context);

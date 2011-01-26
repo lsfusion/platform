@@ -8,29 +8,29 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public  class FormLayout implements MultipleCDockableLayout {
-        private Integer formID;
+        private String formSID;
 
-        public Integer getFormID() {
-            return formID;
+        public String getFormSID() {
+            return formSID;
         }
 
-        public void setFormID(Integer formID) {
-            this.formID = formID;
+        public void setFormID(String formSID) {
+            this.formSID = formSID;
         }
 
         public void readStream(DataInputStream in) throws IOException {
-            formID = in.readInt();
+            formSID = in.readUTF();
         }
 
         public void readXML(XElement element) {
-            formID = element.getInt();
+            formSID = element.getString();
         }
 
         public void writeStream(DataOutputStream out) throws IOException {
-            out.writeInt(formID);
+            out.writeUTF(formSID);
         }
 
         public void writeXML(XElement element) {
-            element.setInt(formID);
+            element.setString(formSID);
         }
     }

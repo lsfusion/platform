@@ -11,8 +11,8 @@ public class EditFormEntity<T extends BusinessLogics<T>> extends AbstractClassFo
     protected final ObjectEntity object;
     protected final String clsSID;
 
-    protected EditFormEntity(T BL, CustomClass cls, int ID, String caption) {
-        super(BL, cls, ID, caption);
+    protected EditFormEntity(T BL, CustomClass cls, String sID, String caption) {
+        super(BL, cls, sID, caption);
 
         object = addSingleGroupObject(cls, BL.baseGroup, true);
         object.groupTo.setSingleClassView(ClassViewType.PANEL);
@@ -34,12 +34,7 @@ public class EditFormEntity<T extends BusinessLogics<T>> extends AbstractClassFo
     }
 
     public EditFormEntity(T BL, CustomClass cls) {
-        this(BL, cls, cls.ID + 63132, cls.caption);
-    }
-
-    @Override
-    public String getSID() {
-        return "objectForm" + clsSID;
+        this(BL, cls, "objectForm" + cls.getSID(), cls.caption);
     }
 
     public ObjectEntity getObject() {
@@ -48,6 +43,6 @@ public class EditFormEntity<T extends BusinessLogics<T>> extends AbstractClassFo
 
     @Override
     public AbstractClassFormEntity copy() {
-        return new EditFormEntity(BL, cls);
+        return new EditFormEntity(BL, cls, getSID() + "_copy" + copies++, caption);
     }
 }

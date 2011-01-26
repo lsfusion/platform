@@ -996,29 +996,32 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
     @Override
     protected void initNavigators() throws JRException, FileNotFoundException {
-        NavigatorElement classifier = new NavigatorElement(baseElement, 400, "Справочники");
-        addFormEntity(new CustomCategoryFormEntity(classifier, 411, "ТН ВЭД (изменения)", false));
-        addFormEntity(new CustomCategoryFormEntity(classifier, 412, "ТН ВЭД (дерево)", true));
+        NavigatorElement classifier = new NavigatorElement(baseElement, "classifier", "Справочники");
+        addFormEntity(new CustomCategoryFormEntity(classifier, "customCategoryForm", "ТН ВЭД (изменения)", false));
+        addFormEntity(new CustomCategoryFormEntity(classifier, "customCategoryForm2", "ТН ВЭД (дерево)", true));
         classifier.add(category.getClassForm(this));
         classifier.add(currency.getClassForm(this));
         classifier.add(store.getClassForm(this));
         classifier.add(country.getClassForm(this));
         classifier.add(unitOfMeasure.getClassForm(this));
         classifier.add(freightType.getClassForm(this));
-        addFormEntity(new ColorSizeSupplierFormEntity(classifier, 450, "Цвета и размеры поставщика"));
-        NavigatorElement purchase = new NavigatorElement(baseElement, 100, "Управление закупками");
-        addFormEntity(new OrderFormEntity(purchase, 110, "Заказы"));
-        addFormEntity(new InvoiceFormEntity(purchase, 121, "Инвойсы по коробам", true));
-        addFormEntity(new InvoiceFormEntity(purchase, 122, "Инвойсы без коробов", false));
-        NavigatorElement shipment = new NavigatorElement(baseElement, 200, "Управление поставками");
-        addFormEntity(new ShipmentListFormEntity(shipment, 211, "Поставки по коробам", true));
-        addFormEntity(new ShipmentListFormEntity(shipment, 212, "Поставки без коробов", false));
-        addFormEntity(new FreightFormEntity(shipment, 220, "Фрахт по поставкам"));
-        NavigatorElement distribution = new NavigatorElement(baseElement, 300, "Управление логистикой на складе");
-        addFormEntity(new ShipmentSpecFormEntity(distribution, 311, "Прием товара по коробам", true));
-        addFormEntity(new ShipmentSpecFormEntity(distribution, 312, "Прием товара без коробов", false));
-        addFormEntity(new CreateFreightBoxFormEntity(distribution, 320, "Генерация коробов"));
-        addFormEntity(new CreatePalletFormEntity(distribution, 330, "Генерация паллет"));
+        addFormEntity(new ColorSizeSupplierFormEntity(classifier, "сolorSizeSupplierForm", "Цвета и размеры поставщика"));
+
+        NavigatorElement purchase = new NavigatorElement(baseElement, "purchase", "Управление закупками");
+        addFormEntity(new OrderFormEntity(purchase, "orderForm", "Заказы"));
+        addFormEntity(new InvoiceFormEntity(purchase, "invoiceForm", "Инвойсы по коробам", true));
+        addFormEntity(new InvoiceFormEntity(purchase, "invoiceForm2", "Инвойсы без коробов", false));
+
+        NavigatorElement shipment = new NavigatorElement(baseElement, "shipment", "Управление поставками");
+        addFormEntity(new ShipmentListFormEntity(shipment, "shipmentListForm", "Поставки по коробам", true));
+        addFormEntity(new ShipmentListFormEntity(shipment, "shipmentListForm2", "Поставки без коробов", false));
+        addFormEntity(new FreightFormEntity(shipment, "freightForm", "Фрахт по поставкам"));
+
+        NavigatorElement distribution = new NavigatorElement(baseElement, "distribution", "Управление логистикой на складе");
+        addFormEntity(new ShipmentSpecFormEntity(distribution, "shipmentSpecForm", "Прием товара по коробам", true));
+        addFormEntity(new ShipmentSpecFormEntity(distribution, "shipmentSpecForm2", "Прием товара без коробов", false));
+        addFormEntity(new CreateFreightBoxFormEntity(distribution, "createFreightBoxForm", "Генерация коробов"));
+        addFormEntity(new CreatePalletFormEntity(distribution, "createPalletForm", "Генерация паллет"));
     }
 
     @Override
@@ -1035,8 +1038,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             return null;
         }
 
-        private BarcodeFormEntity(NavigatorElement parent, int iID, String caption) {
-            super(parent, iID, caption);
+        private BarcodeFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", baseGroup, true);
             objBarcode.groupTo.setSingleClassView(ClassViewType.PANEL);
@@ -1081,8 +1084,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objSizeSupplier;
         private ObjectEntity objColorSupplier;
 
-        private OrderFormEntity(NavigatorElement parent, int iID, String caption) {
-            super(parent, iID, caption);
+        private OrderFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameCurrencySupplier);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
@@ -1193,8 +1196,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objSizeSupplier;
         private ObjectEntity objColorSupplier;
 
-        private InvoiceFormEntity(NavigatorElement parent, int iID, String caption, boolean box) {
-            super(parent, iID, caption);
+        private InvoiceFormEntity(NavigatorElement parent, String sID, String caption, boolean box) {
+            super(parent, sID, caption);
 
             objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameCurrencySupplier);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
@@ -1322,8 +1325,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objInvoice;
         private ObjectEntity objRoute;
 
-        private ShipmentListFormEntity(NavigatorElement parent, int iID, String caption, boolean box) {
-            super(parent, iID, caption);
+        private ShipmentListFormEntity(NavigatorElement parent, String sID, String caption, boolean box) {
+            super(parent, sID, caption);
 
             this.box = box;
 
@@ -1374,8 +1377,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         private PropertyDrawEntity nameRoute;
 
-        private ShipmentSpecFormEntity(NavigatorElement parent, int iID, String caption, boolean box) {
-            super(parent, iID, caption);
+        private ShipmentSpecFormEntity(NavigatorElement parent, String sID, String caption, boolean box) {
+            super(parent, sID, caption);
 
             this.box = box;
 
@@ -1615,8 +1618,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objDateFrom;
         private ObjectEntity objDateTo;
 
-        private FreightFormEntity(NavigatorElement parent, int iID, String caption) {
-            super(parent, iID, caption);
+        private FreightFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             GroupObjectEntity gobjDates = new GroupObjectEntity(genID());
             objDateFrom = new ObjectEntity(genID(), DateClass.instance, "Дата (с)");
@@ -1681,8 +1684,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objCreate;
         private ObjectEntity objFreightBox;
 
-        private CreateFreightBoxFormEntity(NavigatorElement parent, int iID, String caption) {
-            super(parent, iID, caption);
+        private CreateFreightBoxFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             objCreate = addSingleGroupObject(creationFreightBox, "Операция создания", nameRouteCreationFreightBox, quantityCreationFreightBox);
             addObjectActions(this, objCreate);
@@ -1702,8 +1705,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objCreate;
         private ObjectEntity objPallet;
 
-        private CreatePalletFormEntity(NavigatorElement parent, int iID, String caption) {
-            super(parent, iID, caption);
+        private CreatePalletFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
 
             objCreate = addSingleGroupObject(creationPallet, "Операция создания", nameRouteCreationPallet, quantityCreationPallet);
             addObjectActions(this, objCreate);
@@ -1730,8 +1733,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         private ObjectEntity objCustomCategory10;
 
-        private CustomCategoryFormEntity(NavigatorElement parent, int iID, String caption, boolean tree) {
-            super(parent, iID, caption);
+        private CustomCategoryFormEntity(NavigatorElement parent, String sID, String caption, boolean tree) {
+            super(parent, sID, caption);
 
             this.tree = tree;
 
@@ -1780,8 +1783,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objColor;
         private ObjectEntity objSize;
 
-        private ColorSizeSupplierFormEntity(NavigatorElement parent, int iID, String caption) {
-            super(parent, iID, caption);
+        private ColorSizeSupplierFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
             objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameCurrencySupplier);
             addObjectActions(this, objSupplier);
 

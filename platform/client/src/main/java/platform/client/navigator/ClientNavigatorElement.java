@@ -1,7 +1,5 @@
 package platform.client.navigator;
 
-import platform.interop.Constants;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -29,9 +27,9 @@ public class ClientNavigatorElement {
     public ClientNavigatorElement() {
     }
 
-    public ClientNavigatorElement(int ID, String caption, boolean hasChildren) {
+    public ClientNavigatorElement(int ID, String sID, String caption, boolean hasChildren) {
         this.ID = ID;
-        this.sID = Constants.getDefaultNavigatorElementSID(ID);
+        this.sID = sID;
         this.caption = caption;
         this.hasChildren = hasChildren;
     }
@@ -57,7 +55,7 @@ public class ClientNavigatorElement {
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
-        outStream.writeInt(ID);
+        outStream.writeUTF(sID);
         outStream.writeUTF(caption);
     }
 

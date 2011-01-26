@@ -8,8 +8,8 @@ public class ClassFormEntity<T extends BusinessLogics<T>> extends AbstractClassF
     protected final ObjectEntity object;
     protected final String clsSID;
 
-    protected ClassFormEntity(T BL, CustomClass cls, int ID, String caption) {
-        super(BL, cls, ID, caption);
+    protected ClassFormEntity(T BL, CustomClass cls, String sID, String caption) {
+        super(BL, cls, sID, caption);
 
         object = addSingleGroupObject(cls, BL.baseGroup, true);
         BL.addObjectActions(this, object);
@@ -18,12 +18,7 @@ public class ClassFormEntity<T extends BusinessLogics<T>> extends AbstractClassF
     }
 
     public ClassFormEntity(T BL, CustomClass cls) {
-        this(BL, cls, cls.ID + 43132, cls.caption);
-    }
-
-    @Override
-    public String getSID() {
-        return "classForm" + clsSID;
+        this(BL, cls, "classForm" + cls.getSID(), cls.caption);
     }
 
     public ObjectEntity getObject() {
@@ -32,6 +27,6 @@ public class ClassFormEntity<T extends BusinessLogics<T>> extends AbstractClassF
 
     @Override
     public AbstractClassFormEntity copy() {
-        return new ClassFormEntity(BL, cls);
+        return new ClassFormEntity(BL, cls, getSID() + "_copy" + copies++, caption);
     }
 }
