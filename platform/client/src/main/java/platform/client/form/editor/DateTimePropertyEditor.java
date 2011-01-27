@@ -126,14 +126,7 @@ class DateTimePropertyEditorComponent extends JTextFieldDateEditor {
         try {
             return dateFormatter.parse(getText());
         } catch (ParseException e) {
-            throw new RuntimeException(e);
+            return null;
         }
     }
-
-
-/*    @Override
-public void focusLost(FocusEvent focusEvent) {
-    super.focusLost(focusEvent);
-}*/
-
 }

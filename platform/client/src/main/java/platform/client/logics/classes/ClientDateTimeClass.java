@@ -35,7 +35,7 @@ public class ClientDateTimeClass extends ClientDataClass implements ClientTypeCl
     }
 
     public Format getDefaultFormat() {
-        return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
+        return new SimpleDateFormat("dd.MM.yy HH:mm:ss");
     }
 
     public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) {
