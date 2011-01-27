@@ -46,6 +46,10 @@ import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.*;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
+import platform.server.integration.ImportField;
+import platform.server.integration.ImportKey;
+import platform.server.integration.ImportTable;
+import platform.server.integration.IntegrationService;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.AddObjectActionProperty;
@@ -332,6 +336,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public ConcreteCustomClass session;
     public ConcreteCustomClass userRole;
     public ConcreteCustomClass country;
+    public ConcreteCustomClass navigatorElement;
+    public ConcreteCustomClass form;
 
     public Integer getComputer(String strHostName) {
         try {
@@ -447,6 +453,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
         }
 
+        setAvailableForms(userObject);
         return userObject;
     }
 
@@ -473,6 +480,30 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             session.close();
 
             return result;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void setAvailableForms(User user) {
+        SecurityPolicy policy = new SecurityPolicy(-1);
+        policy.navigator.replaceMode = true;
+        try {
+            DataSession session = createSession();
+
+            Query<String, String> q = new Query<String, String>(BaseUtils.toList("userId", "formId"));
+            Expr expr = formPermission.getExpr(session.modifier, q.mapKeys.get("userId"), q.mapKeys.get("formId"));
+            q.and(expr.getWhere());
+            q.and(q.mapKeys.get("userId").compare(new DataObject(user.ID, customUser), Compare.EQUALS));
+
+            q.properties.put("sid", navigatorElementSID.getExpr(session.modifier, q.mapKeys.get("formId")));
+
+            Collection<Map<String, Object>> values = q.execute(session.sql).values();
+            for (Map<String, Object> valueMap : values) {
+                String sid = (String) valueMap.get("sid");
+                policy.navigator.deny(baseElement.getNavigatorElement(sid.trim()));
+            }
+            user.addSecurityPolicy(policy);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -563,6 +594,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP objectClass;
     public LP objectClassName;
     public LP classSID;
+    public LP navigatorElementSID;
+    public LP navigatorElementCaption;
+
+    public LP SIDToNavigatorElement;
+    public LP formPermission;
 
     public LP customID;
     public LP stringID;
@@ -588,6 +624,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     LP workingDay, isWorkingDay, workingDaysQuantity, equalsWorkingDaysQuantity;
 
     private final ConcreteValueClass classSIDValueClass = StringClass.get(250);
+    private final StringClass formSIDValueClass = StringClass.get(50);
+    private final StringClass formCaptionValueClass = StringClass.get(250);
 
     public static int genSystemClassID(int id) {
         return 9999976 - id;
@@ -926,6 +964,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         country = addConcreteClass("country", "Страна", baseClass.named);
 
+        navigatorElement = addConcreteClass("navigatorElement", "Элемент навигатора", baseClass);
+        form = addConcreteClass("form", "Форма", navigatorElement);
+
         tableFactory = new TableFactory();
         for (int i = 0; i < TableFactory.MAX_INTERFACE; i++) { // заполним базовые таблицы
             CustomClass[] baseClasses = new CustomClass[i];
@@ -1029,6 +1070,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         objectClass = addProperty(null, new LP<ClassPropertyInterface>(new ObjectClassProperty(genSID(), baseClass)));
         objectClassName = addJProp(baseGroup, "objectClassName", "Класс объекта", name, objectClass, 1);
 
+        navigatorElementSID = addDProp(baseGroup, "navigatorElementSID", "Код формы", formSIDValueClass, navigatorElement);
+        navigatorElementCaption = addDProp(baseGroup, "navigatorElementCaption", "Название формы", formCaptionValueClass, navigatorElement);
+        SIDToNavigatorElement = addCGProp(null, "SIDToNavigatorElement", "Форма", object(navigatorElement), navigatorElementSID, navigatorElementSID, 1);
+
+        formPermission = addDProp(baseGroup, "formPermission", "Запретить форму", LogicalClass.instance, user, navigatorElement);
+
         // заполним сессии
         LP sessionUser = addDProp("sessionUser", "Пользователь сессии", user, session);
         sessionUser.setDerivedChange(currentUser, true, is(session), 1);
@@ -1094,6 +1141,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         adminElement = new NavigatorElement(baseElement, "adminElement", "Администрирование");
         addFormEntity(new UserPolicyFormEntity(adminElement, "userPolicyForm"));
         addFormEntity(new AdminFormEntity(adminElement, "adminForm"));
+        addFormEntity(new UserFormPermissionsFormEntity(adminElement, "userFormPermissionsForm"));
         addFormEntity(new DaysOffFormEntity(adminElement, "daysOffForm"));
     }
 
@@ -1148,6 +1196,22 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
+    private class UserFormPermissionsFormEntity extends FormEntity {
+        protected UserFormPermissionsFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Доступность форм пользователям");
+
+            ObjectEntity objUser = addSingleGroupObject(customUser, baseGroup, true);
+            ObjectEntity objForm = addSingleGroupObject(navigatorElement, baseGroup, true);
+
+            addObjectActions(this, objUser);
+
+            addPropertyDraw(objUser, objForm, formPermission);
+
+            setReadOnly(navigatorElementSID, true);
+            setReadOnly(navigatorElementCaption, true);
+        }
+    }
+    
     private class DaysOffFormEntity extends FormEntity {
         ObjectEntity objDays;
 
@@ -1345,6 +1409,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         initBaseAuthentication();
         initAuthentication();
 
+        synchronizeForms();
+
         // считаем системного пользователя
         try {
             DataSession session = createSession(sql, new UserController() {
@@ -1431,6 +1497,38 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         thread.start();
 
         reloadNavigatorTree();
+    }
+
+    protected <P extends PropertyInterface> void synchronizeForms() {
+        ImportField sidField = new ImportField(formSIDValueClass);
+        ImportField captionField = new ImportField(formCaptionValueClass);
+
+        Map<P, ImportField> keyImplMap = Collections.singletonMap((P) BaseUtils.single(SIDToNavigatorElement.property.interfaces), sidField);
+        PropertyImplement<ImportField, P> keyPropImpl = new PropertyImplement<ImportField, P>(SIDToNavigatorElement.property, keyImplMap);
+        ImportKey<P> key = new ImportKey<P>(navigatorElement, keyPropImpl);
+
+        List<List<Object>> data = new ArrayList<List<Object>>();
+        for (NavigatorElement<T> navElement : baseElement.getChildren(true)) {
+            data.add(Arrays.asList((Object)navElement.getSID(), navElement.caption, navElement.ID));
+        }
+
+        Map<P, ImportKey<P>> propImplMap = Collections.singletonMap((P) BaseUtils.single(navigatorElementCaption.property.interfaces), key);
+        PropertyImplement<ImportKey<P>, P> propImpl = new PropertyImplement<ImportKey<P>, P>(navigatorElementCaption.property, propImplMap);
+
+        Map<ImportField, PropertyImplement<ImportKey<P>, P>> props = new HashMap<ImportField, PropertyImplement<ImportKey<P>,P>>();
+        props.put(captionField, propImpl);
+
+        ImportTable table = new ImportTable(Arrays.asList(sidField, captionField), data);
+
+        try {
+            DataSession session = createSession();
+            IntegrationService<P> service = new IntegrationService<P>(session, table, Collections.singletonList(key), props);
+            service.synchronize(true, true, true);
+            session.apply(this);
+            session.close();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private final String navigatorTreeFilePath = "conf/" + getName() + "/navigatorTree.data";
