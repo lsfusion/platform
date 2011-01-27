@@ -21,7 +21,7 @@ public class CashRegPrintReceiptAction extends AbstractClientAction {
         this.type = type;
         this.comPort = comPort;
 
-        String disposeProperty = System.getProperty("tmc.integration.exp.FiscalRegister.dispose"); 
+        String disposeProperty = System.getProperty("tmc.integration.exp.FiscalRegister.dispose");
         dispose = disposeProperty != null && disposeProperty.equals("true");
     }
 
@@ -40,7 +40,7 @@ public class CashRegPrintReceiptAction extends AbstractClientAction {
             int k = FiscalReg.printHeaderAndNumbers(cashDispatch, receipt);
 
             //печать товаров
-            for (ReceiptItem item : receipt.list) {
+            for (ReceiptItem item : receipt.receiptList) {
                 Dispatch.call(cashDispatch, "AddCustom", item.barCode, FONT, 0, k++);
                 String name = item.name.substring(0, Math.min(item.name.length(), FiscalReg.WIDTH));
                 Dispatch.call(cashDispatch, "AddCustom", name, FONT, 0, k++);
@@ -52,6 +52,23 @@ public class CashRegPrintReceiptAction extends AbstractClientAction {
                     String msg = "Скидка " + item.articleDisc + "%, всего " + item.articleDiscSum;
                     Dispatch.call(cashDispatch, "AddCustom", msg, FONT, 0, k++);
                 }
+            }
+
+            Dispatch.call(cashDispatch, "AddCustom", "Всего: " + receipt.sumTotal, FONT, 0, k++);
+            if (receipt.clientDiscount != null) {
+                Dispatch.call(cashDispatch, "AddCustom", "Скидка: " + receipt.clientDiscount, FONT, 0, k++);
+            }
+
+            //печать сертификатов
+            if (!receipt.obligationList.isEmpty()) {
+                Dispatch.call(cashDispatch, "AddCustom", FiscalReg.delimetr, FONT, 0, k++);
+            }
+            for (ObligationItem obligation : receipt.obligationList) {
+                String name = obligation.name.substring(0, Math.min(obligation.name.length(), FiscalReg.WIDTH));
+                String price = obligation.barcode + ": " + obligation.sum.intValue();
+                String sum = price.substring(0, Math.min(price.length(), FiscalReg.WIDTH));
+                Dispatch.call(cashDispatch, "AddCustom", name, FONT, 0, k++);
+                Dispatch.call(cashDispatch, "AddCustom", sum, FONT, 0, k++);
             }
 
             //Общая информация

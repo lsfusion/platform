@@ -81,7 +81,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected final static Logger logger = Logger.getLogger(BusinessLogics.class);
 
     //время жизни неиспользуемого навигатора - 3 часа по умолчанию
-    private static final long MAX_FREE_NAVIGATOR_LIFE_TIME = Long.parseLong(System.getProperty("platform.server.navigatorMaxLifeTime", Long.toString(3L*3600L*1000L)));
+    private static final long MAX_FREE_NAVIGATOR_LIFE_TIME = Long.parseLong(System.getProperty("platform.server.navigatorMaxLifeTime", Long.toString(3L * 3600L * 1000L)));
 
     public byte[] findClass(String name) {
 
@@ -209,6 +209,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public final static boolean activateCaches = true;
 
     final Map<Pair<String, Integer>, RemoteNavigator> navigators = new HashMap<Pair<String, Integer>, RemoteNavigator>();
+
     public RemoteNavigatorInterface createNavigator(ClientCallbackInterface client, String login, String password, int computer) {
         if (getRestartController().isPendingRestart()) {
             return null;
@@ -572,7 +573,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP seekObjectName;
 
     protected LP webHost;
-    
+
     protected LP smtpHost;
     protected LP smtpPort;
     protected LP emailAccount;
@@ -1026,7 +1027,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         classSID = addDProp("classSID", "Стат. код", classSIDValueClass, baseClass.sidClass);
         objectClass = addProperty(null, new LP<ClassPropertyInterface>(new ObjectClassProperty(genSID(), baseClass)));
-        objectClassName = addJProp(baseGroup, "Класс объекта", name, objectClass, 1);
+        objectClassName = addJProp(baseGroup, "objectClassName", "Класс объекта", name, objectClass, 1);
 
         // заполним сессии
         LP sessionUser = addDProp("sessionUser", "Пользователь сессии", user, session);
@@ -1155,7 +1156,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             ObjectEntity objCountry = addSingleGroupObject(country, "Страна");
             objCountry.groupTo.initClassView = ClassViewType.PANEL;
-            
+
             objDays = addSingleGroupObject(DateClass.instance, "День");
 
             ObjectEntity objNewDate = addSingleGroupObject(DateClass.instance, "Дата");
@@ -1167,7 +1168,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             addPropertyDraw(objNewDate, baseGroup);
             addPropertyDraw(isDayOffCountryDate, objCountry, objNewDate);
 
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(isDayOffCountryDate,objCountry, objDays)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(isDayOffCountryDate, objCountry, objDays)));
         }
 
         public FormView createDefaultRichDesign() {
@@ -1305,7 +1306,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         initClasses();
         checkClasses(); //проверка на то, что у каждого абстрактного класса есть конкретный потомок
         baseClass.initObjectClass();
-        storeCustomClass(baseClass.objectClass);        
+        storeCustomClass(baseClass.objectClass);
 
         // после classes и до properties, чтобы можно было бы создать таблицы и использовать persistent таблицы в частности для определения классов
         initBaseTables();
@@ -1457,9 +1458,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         query.and(generateOrDefaultCountry.property.getExpr(keys).getWhere());
 
-        OrderedMap<Map<Object,Object>,Map<Object,Object>> result = query.execute(session.sql);
+        OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
         for (Map<Object, Object> key : result.keyList()) {
-            Integer id = (Integer)BaseUtils.singleValue(key);
+            Integer id = (Integer) BaseUtils.singleValue(key);
             generateDates(id);
         }
         session.close();
@@ -1480,7 +1481,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         for (int i = 0; i < wholeYearDays; i++) {
             Date newDate = new Date(currentYear, 0, 1 + i);
             int day = newDate.getDay();
-            if(day == 5 || day == 6) {
+            if (day == 5 || day == 6) {
                 addDayOff(session, countryId, newDate);
             }
         }
@@ -1779,12 +1780,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public DataSession createSession(SQLSession sql, UserController userController, ComputerController computerController) throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         return new DataSession(sql, userController, computerController,
-                               new IsServerRestartingController() {
-                                   public boolean isServerRestarting() {
-                                       return getRestartController().isPendingRestart();
-                                   }
-                               },
-                               baseClass, baseClass.named, session, name, transaction, date, currentDate, notDeterministic);
+                new IsServerRestartingController() {
+                    public boolean isServerRestarting() {
+                        return getRestartController().isPendingRestart();
+                    }
+                },
+                baseClass, baseClass.named, session, name, transaction, date, currentDate, notDeterministic);
     }
 
     public List<DerivedChange<?, ?>> notDeterministic = new ArrayList<DerivedChange<?, ?>>();
@@ -1839,14 +1840,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         for (Property property : getPropertyList()) {
             Integer minChange = null;
             if (property instanceof ExecuteProperty) {
-                ExecuteProperty executeProperty = (ExecuteProperty)property;
-                for(Property changeProp : executeProperty.getChangeProps()) {
+                ExecuteProperty executeProperty = (ExecuteProperty) property;
+                for (Property changeProp : executeProperty.getChangeProps()) {
                     int index = result.indexOf(changeProp);
-                    if(index>=0 && (minChange==null || index<minChange))
+                    if (index >= 0 && (minChange == null || index < minChange))
                         minChange = index;
                 }
             }
-            if(minChange!=null)
+            if (minChange != null)
                 result.add(minChange, property);
             else
                 result.add(property);
@@ -1859,7 +1860,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public List<ExecuteProperty> getExecuteDerivedProperties() {
         List<ExecuteProperty> result = new ArrayList<ExecuteProperty>();
         for (Property property : getDerivedPropertyList())
-            if (property instanceof ExecuteProperty && ((ExecuteProperty)property).derivedChange!=null)
+            if (property instanceof ExecuteProperty && ((ExecuteProperty) property).derivedChange != null)
                 result.add((ExecuteProperty) property);
         return result;
     }
@@ -2244,7 +2245,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         // выполняем само создание свойства
         LP derDataProp = addDProp(group, sID, persistent, caption, valueClass, overrideClasses(commonClasses, overrideClasses));
-        if(forced)
+        if (forced)
             derDataProp.setDerivedForcedChange(defaultChanged, derivedProp, params);
         else
             derDataProp.setDerivedChange(defaultChanged, derivedProp, params);
@@ -2298,24 +2299,26 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP addEAProp(AbstractGroup group, String caption, String mailSubject, ValueClass... params) {
         return addProperty(group, new LP<ClassPropertyInterface>(new EmailActionProperty(genSID(), caption, mailSubject, this, params)));
     }
+
     protected <X extends PropertyInterface> void addEARecepient(LP<ClassPropertyInterface> eaProp, LP<X> emailProp, Integer... params) {
         Map<X, ClassPropertyInterface> mapInterfaces = new HashMap<X, ClassPropertyInterface>();
-        for(int i=0;i<emailProp.listInterfaces.size();i++)
+        for (int i = 0; i < emailProp.listInterfaces.size(); i++)
             mapInterfaces.put(emailProp.listInterfaces.get(i), eaProp.listInterfaces.get(params[i] - 1));
-        ((EmailActionProperty)eaProp.property).addRecepient(new PropertyMapImplement<X,ClassPropertyInterface>(emailProp.property, mapInterfaces));
+        ((EmailActionProperty) eaProp.property).addRecepient(new PropertyMapImplement<X, ClassPropertyInterface>(emailProp.property, mapInterfaces));
     }
+
     protected void addInlineEAForm(LP<ClassPropertyInterface> eaProp, FormEntity form, Object... params) {
         Map<ObjectEntity, ClassPropertyInterface> mapObjects = new HashMap<ObjectEntity, ClassPropertyInterface>();
-        for(int i=0;i< params.length/2;i++)
-            mapObjects.put((ObjectEntity) params[2*i], eaProp.listInterfaces.get((Integer) params[2*i+1] - 1));
-        ((EmailActionProperty)eaProp.property).addInlineForm(form, mapObjects);
+        for (int i = 0; i < params.length / 2; i++)
+            mapObjects.put((ObjectEntity) params[2 * i], eaProp.listInterfaces.get((Integer) params[2 * i + 1] - 1));
+        ((EmailActionProperty) eaProp.property).addInlineForm(form, mapObjects);
     }
 
     protected void addAttachEAForm(LP<ClassPropertyInterface> eaProp, FormEntity form, EmailActionProperty.Format format, Object... params) {
         Map<ObjectEntity, ClassPropertyInterface> mapObjects = new HashMap<ObjectEntity, ClassPropertyInterface>();
-        for(int i=0;i< params.length/2;i++)
-            mapObjects.put((ObjectEntity) params[2*i], eaProp.listInterfaces.get((Integer) params[2*i+1] - 1));
-        ((EmailActionProperty)eaProp.property).addAttachmentForm(form, format, mapObjects);
+        for (int i = 0; i < params.length / 2; i++)
+            mapObjects.put((ObjectEntity) params[2 * i], eaProp.listInterfaces.get((Integer) params[2 * i + 1] - 1));
+        ((EmailActionProperty) eaProp.property).addAttachmentForm(form, format, mapObjects);
     }
 
     protected <P extends PropertyInterface> LP addSCProp(LP<P> lp) {
@@ -2341,7 +2344,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     // только для того, чтобы обернуть все в IdentityLazy, так как только для List нормально сделан equals
     @IdentityLazy
     protected LP addCProp(AbstractGroup group, boolean persistent, String caption, StaticClass valueClass, Object value, List<ValueClass> params) {
-        return addCProp(group, genSID(), persistent, caption, valueClass, value, params.toArray(new ValueClass[] {}));
+        return addCProp(group, genSID(), persistent, caption, valueClass, value, params.toArray(new ValueClass[]{}));
     }
 
     protected LP addCProp(AbstractGroup group, String sID, boolean persistent, String caption, StaticClass valueClass, Object value, ValueClass... params) {
@@ -3823,7 +3826,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
             FormInstance<?> form = executeForm.form;
-            DataObject[] objects = new DataObject[keys.size()]; int i=0; // здесь опять учитываем, что порядок тот же
+            DataObject[] objects = new DataObject[keys.size()];
+            int i = 0; // здесь опять учитываем, что порядок тот же
             for (ClassPropertyInterface classInterface : interfaces)
                 objects[i++] = keys.get(classInterface);
             fileProperty.execute(value.getValue(), form.session, form, objects);
@@ -3853,10 +3857,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
             FormInstance<?> form = executeForm.form;
-            DataObject[] objects = new DataObject[keys.size()]; int i=0; // здесь опять учитываем, что порядок тот же
+            DataObject[] objects = new DataObject[keys.size()];
+            int i = 0; // здесь опять учитываем, что порядок тот же
             for (ClassPropertyInterface classInterface : interfaces)
                 objects[i++] = keys.get(classInterface);
-            actions.add(new OpenFileClientAction((byte[])fileProperty.read(form.session.sql, form, form.session.env, objects), BaseUtils.firstWord(getFileClass().getExtensions(),",")));
+            actions.add(new OpenFileClientAction((byte[]) fileProperty.read(form.session.sql, form, form.session.env, objects), BaseUtils.firstWord(getFileClass().getExtensions(), ",")));
         }
     }
 
@@ -4049,8 +4054,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected LP addAAProp(CustomClass customClass, LP barcode, LP barcodePrefix, boolean quantity, LP... properties) {
         return addAProp(new AddObjectActionProperty(genSID(),
-                                                    (barcode != null) ? barcode.property : null, (barcodePrefix != null) ? barcodePrefix.property : null,
-                                                    quantity, customClass, LP.toPropertyArray(properties)));
+                (barcode != null) ? barcode.property : null, (barcodePrefix != null) ? barcodePrefix.property : null,
+                quantity, customClass, LP.toPropertyArray(properties)));
     }
 
     private Map<String, String> formSets;
@@ -4088,13 +4093,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         String result = "";
 
         result += '\n' + "ПО ТАБЛИЦАМ :" + '\n' + '\n';
-        for(Map.Entry<ImplementTable, Collection<Property>> groupTable : BaseUtils.group(new BaseUtils.Group<ImplementTable, Property>() {
+        for (Map.Entry<ImplementTable, Collection<Property>> groupTable : BaseUtils.group(new BaseUtils.Group<ImplementTable, Property>() {
             public ImplementTable group(Property key) {
                 return key.mapTable.table;
             }
         }, getStoredProperties()).entrySet()) {
             result += groupTable.getKey().outputKeys() + '\n';
-            for(Property property : groupTable.getValue())
+            for (Property property : groupTable.getValue())
                 result += '\t' + property.outputStored(false) + '\n';
         }
         result += '\n' + "ПО СВОЙСТВАМ :" + '\n' + '\n';
@@ -4219,7 +4224,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public RemoteFormInterface createForm(DataSession session, FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects) {
         try {
-            FormInstance<T> formInstance = new FormInstance<T>(formEntity, (T)this, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(getServerComputer(), computer), mapObjects);
+            FormInstance<T> formInstance = new FormInstance<T>(formEntity, (T) this, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(getServerComputer(), computer), mapObjects);
             return new RemoteForm<T, FormInstance<T>>(formInstance, formEntity.getRichDesign(), exportPort, null);
         } catch (Exception e) {
             throw new RuntimeException(e);

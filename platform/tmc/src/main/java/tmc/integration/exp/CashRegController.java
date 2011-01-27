@@ -42,7 +42,7 @@ public class CashRegController {
     public int getCashRegComPort(FormInstance formInstance) {
         try {
             Integer result = (Integer) BL.cashRegComPort.read(formInstance.session.sql, formInstance, formInstance.session.env, formInstance.instanceFactory.computer.getDataObject());
-            if(result==null)
+            if (result == null)
                 return 0;
             else
                 return result;
@@ -59,7 +59,8 @@ public class CashRegController {
                                                      PropertyDrawEntity<?> sumCardProp, PropertyDrawEntity<?> sumCashProp,
                                                      PropertyDrawEntity<?> orderArticleSaleDiscount, PropertyDrawEntity<?> orderArticleSaleDiscountSum,
                                                      PropertyDrawEntity<?> cashierProp, PropertyDrawEntity<?> clientNameProp,
-                                                     PropertyDrawEntity<?> clientSumProp) {
+                                                     PropertyDrawEntity<?> clientSumProp, PropertyDrawEntity<?> discountProp, Set<GroupObjectInstance> obligationGrObj,
+                                                     PropertyDrawEntity<?> obligationName, PropertyDrawEntity<?> obligationSum, PropertyDrawEntity<?> obligationBarcode) {
 
         List<ClientResultAction> actions = new ArrayList<ClientResultAction>();
 
@@ -68,7 +69,8 @@ public class CashRegController {
             actions.add(new CashRegPrintReceiptAction(payType, cashRegComPort, createReceipt(formInstance, payType,
                     classGroups, priceProp, quantityProp, nameProp,
                     sumProp, toPayProp, barcodeProp, sumCardProp, sumCashProp,
-                    orderArticleSaleDiscount, orderArticleSaleDiscountSum, cashierProp, clientNameProp, clientSumProp)));
+                    orderArticleSaleDiscount, orderArticleSaleDiscountSum, cashierProp, clientNameProp,
+                    clientSumProp, discountProp, obligationGrObj, obligationName, obligationSum, obligationBarcode)));
 
         }
         return new ListClientResultAction(actions);
@@ -83,12 +85,15 @@ public class CashRegController {
                                          PropertyDrawEntity<?> sumCardProp, PropertyDrawEntity<?> sumCashProp,
                                          PropertyDrawEntity<?> orderArticleSaleDiscountProp,
                                          PropertyDrawEntity<?> orderArticleSaleDiscountSumProp, PropertyDrawEntity<?> cashierProp,
-                                         PropertyDrawEntity<?> clientNameProp, PropertyDrawEntity<?> clientSumProp) {
+                                         PropertyDrawEntity<?> clientNameProp, PropertyDrawEntity<?> clientSumProp, PropertyDrawEntity<?> discountProp, Set<GroupObjectInstance> obligationGr,
+                                         PropertyDrawEntity<?> obligationName, PropertyDrawEntity<?> obligationSum, PropertyDrawEntity<?> obligationBarcode) {
 
         ReceiptInstance result = new ReceiptInstance(payType);
         FormData data;
+        FormData obligationData = null;
 
         Set<PropertyDrawInstance> formProperties = new HashSet<PropertyDrawInstance>();
+        Set<PropertyDrawInstance> obligationProperties = new HashSet<PropertyDrawInstance>();
         PropertyDrawInstance quantityDraw = formInstance.instanceFactory.getInstance(quantityProp);
         PropertyDrawInstance priceDraw = formInstance.instanceFactory.getInstance(priceProp);
         PropertyDrawInstance nameDraw = formInstance.instanceFactory.getInstance(nameProp);
@@ -110,6 +115,12 @@ public class CashRegController {
         if (clientSumProp != null) {
             clientSumDraw = formInstance.instanceFactory.getInstance(clientSumProp);
             formProperties.add(clientSumDraw);
+        }
+
+        PropertyDrawInstance clientDiscountDraw = null;
+        if (discountProp != null) {
+            clientDiscountDraw = formInstance.instanceFactory.getInstance(discountProp);
+            formProperties.add(clientDiscountDraw);
         }
 
         PropertyDrawInstance sumCardDraw = null;
@@ -136,10 +147,31 @@ public class CashRegController {
             formProperties.add(orderArticleDiscountSumDraw);
         }
 
+        PropertyDrawInstance obligationNameDraw = null;
+        if (obligationName != null) {
+            obligationNameDraw = formInstance.instanceFactory.getInstance(obligationName);
+            obligationProperties.add(obligationNameDraw);
+        }
+
+        PropertyDrawInstance obligationSumDraw = null;
+        if (obligationSum != null) {
+            obligationSumDraw = formInstance.instanceFactory.getInstance(obligationSum);
+            obligationProperties.add(obligationSumDraw);
+        }
+
+        PropertyDrawInstance obligationBarcodeDraw = null;
+        if (obligationBarcode != null) {
+            obligationBarcodeDraw = formInstance.instanceFactory.getInstance(obligationBarcode);
+            obligationProperties.add(obligationBarcodeDraw);
+        }
+
         quantityDraw.toDraw.addTempFilter(new NotNullFilterInstance(quantityDraw.propertyObject));
 
         try {
             data = formInstance.getFormData(formProperties, classGroups);
+            if (obligationGr != null) {
+                obligationData = formInstance.getFormData(obligationProperties, obligationGr);
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
@@ -164,10 +196,20 @@ public class CashRegController {
                 Double articleDisc = (Double) row.values.get(orderArticleDiscountDraw);
                 Integer articleDiscSum = (Integer) row.values.get(orderArticleDiscountSumDraw);
 
-                result.add(new ReceiptItem(price, quantity, barcodeName, artName, sumPos,
+                result.addReceipt(new ReceiptItem(price, quantity, barcodeName, artName, sumPos,
                         articleDisc == null ? 0.0 : articleDisc, articleDiscSum == null ? 0 : articleDiscSum));
 
                 sumDoc += price * quantity;
+            }
+        }
+        result.sumTotal = sumDoc;
+
+        if (obligationData != null) {
+            for (FormRow row : obligationData.rows) {
+                String nameObj = (String) row.values.get(obligationNameDraw);
+                String barcodeObj = (String) row.values.get(obligationBarcodeDraw);
+                Double sumObj = (Double) row.values.get(obligationSumDraw);
+                result.addObligation(new ObligationItem(nameObj, barcodeObj, sumObj));
             }
         }
 
@@ -201,6 +243,7 @@ public class CashRegController {
         result.cashierName = (String) data.rows.get(0).values.get(cashierNameDraw);
         result.clientName = (String) data.rows.get(0).values.get(clientNameDraw);
         result.clientSum = (Double) data.rows.get(0).values.get(clientSumDraw);
+        result.clientDiscount = (Integer) data.rows.get(0).values.get(clientDiscountDraw);
 
         return result;
     }

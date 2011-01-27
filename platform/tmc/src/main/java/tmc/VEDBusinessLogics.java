@@ -1272,7 +1272,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         @Override
         public DefaultFormView createDefaultRichDesign() {
 
-            DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
             design.setKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F6, InputEvent.SHIFT_DOWN_MASK | InputEvent.SHIFT_MASK));
 
@@ -1613,7 +1613,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected void fillExtraFilters(RegularFilterGroupEntity filterGroup, boolean toAdd) {
             fillExtraLogisticsFilters(filterGroup, toAdd);
 
-            if(!toAdd)
+            if (!toAdd)
                 filterGroup.addFilter(new RegularFilterEntity(genID(),
                         new CompareFilterEntity(addPropertyObject(quantityDiffCommitArticle, objDoc, objArt), Compare.NOT_EQUALS, 0.0),
                         "Отличается от заказа",
@@ -1826,7 +1826,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     public class CommitSaleCheckRetailFormEntity extends SaleRetailFormEntity {
 
-        private ObjectEntity objObligation;
+        public ObjectEntity objObligation;
         private ObjectEntity objCoupon;
         private ObjectEntity objIssue;
 
@@ -1850,7 +1850,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addPropertyDraw(obligationToIssued, objObligation);
             addPropertyDraw(orderSaleUseObligation, objDoc, objObligation);
 
-            if(toAdd) {
+            if (toAdd) {
                 objArt.groupTo.propertyHighlight = addPropertyObject(articleSaleAction, objArt);
 
                 objObligation.groupTo.propertyHighlight = addPropertyObject(orderSaleObligationCanNotBeUsed, objDoc, objObligation);
@@ -1913,7 +1913,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
                 design.get(getPropertyDraw(printOrderCheck)).constraints.insetsSibling.right = 100;
 
-                design.get(objObligation.groupTo).highlightColor = new Color(255,0,0);
+                design.get(objObligation.groupTo).highlightColor = new Color(255, 0, 0);
             }
 
             design.get(objCoupon.groupTo).grid.minRowCount = 2;
@@ -1959,6 +1959,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             if (toAdd) {
 
                 ObjectInstance art = formInstance.instanceFactory.getInstance(objArt);
+                ObjectInstance obligation = formInstance.instanceFactory.getInstance(objObligation);
 
                 return cashRegController.getCashRegApplyActions(formInstance, 1,
                         BaseUtils.toSet(art.groupTo),
@@ -1967,7 +1968,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         getPropertyDraw(orderSalePayNoObligation, objDoc), getPropertyDraw(barcode, objArt),
                         getPropertyDraw(orderSalePayCard, objDoc), getPropertyDraw(orderSalePayCash, objDoc),
                         getPropertyDraw(orderArticleSaleDiscount), getPropertyDraw(orderArticleSaleDiscountSum), getPropertyDraw(orderUserName),
-                        getPropertyDraw(nameContragentImpl), getPropertyDraw(accumulatedClientSum));
+                        getPropertyDraw(nameContragentImpl), getPropertyDraw(accumulatedClientSum), getPropertyDraw(orderSaleDiscountSum, objDoc),
+                        BaseUtils.toSet(obligation.groupTo),getPropertyDraw(objectClassName, objObligation), getPropertyDraw(obligationSum, objObligation), getPropertyDraw(barcode, objObligation));
             } else
                 return super.getClientApply(formInstance);
         }
@@ -2070,7 +2072,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             addPropertyDraw(objDoc, objArt, quantityCheckCommitInnerArticle);
 
-            if(!toAdd)
+            if (!toAdd)
                 addAutoAction(objBarcode, true,
                         addPropertyObject(barcodeActionCheck, objDoc, objBarcode),
                         addPropertyObject(seekBarcodeAction, objBarcode),
@@ -2081,7 +2083,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected void fillExtraFilters(RegularFilterGroupEntity filterGroup, boolean toAdd) {
             fillExtraLogisticsFilters(filterGroup, toAdd);
 
-            if(!toAdd)
+            if (!toAdd)
                 filterGroup.addFilter(new RegularFilterEntity(genID(),
                         new CompareFilterEntity(addPropertyObject(quantityDiffCommitArticle, objDoc, objArt), Compare.NOT_EQUALS, 0.0),
                         "Отличается от заказа",
@@ -2367,7 +2369,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         getPropertyDraw(name, objArt), getPropertyDraw(returnArticleSalePay, objArt),
                         getPropertyDraw(returnSalePay, objDoc), getPropertyDraw(barcode, objArt), null, null,
                         getPropertyDraw(orderArticleSaleDiscount), getPropertyDraw(returnArticleSaleDiscount),
-                        getPropertyDraw(orderUserName), null, null);
+                        getPropertyDraw(orderUserName), null, null, null, null, null, null, null);
             } else
                 return super.getClientApply(formInstance);
         }
@@ -2428,7 +2430,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             super(parent, sID, "Определение ассортимента" + (splitGroup?"":" (в таблице)"));
 
             ObjectEntity objFormat, objArt;
-            if(splitGroup) {
+            if (splitGroup) {
                 objArt = addSingleGroupObject(article);
                 objFormat = addSingleGroupObject(format);
             } else {
@@ -2438,7 +2440,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 gobjFormatArt.add(objFormat);
                 gobjFormatArt.add(objArt);
                 addGroup(gobjFormatArt);
-           }
+            }
 
             addObjectActions(this, objArt);
             addPropertyDraw(objFormat, publicGroup, true);
@@ -2685,7 +2687,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     }
 
-       public class SaleCheckCertFormEntity extends SaleCertFormEntity {
+    public class SaleCheckCertFormEntity extends SaleCertFormEntity {
 
         @Override
         public boolean isReadOnly() {
@@ -2732,7 +2734,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         getPropertyDraw(name, objObligation), getPropertyDraw(obligationSum, objObligation),
                         getPropertyDraw(orderSalePay, objDoc), getPropertyDraw(barcode, objObligation),
                         getPropertyDraw(orderSalePayCard, objDoc), getPropertyDraw(orderSalePayCash, objDoc), null, null,
-                        getPropertyDraw(orderUserName), getPropertyDraw(nameContragentImpl), getPropertyDraw(accumulatedClientSum));
+                        getPropertyDraw(orderUserName), getPropertyDraw(nameContragentImpl), getPropertyDraw(accumulatedClientSum),
+                        null, null, null, null, null);
 
             } else
                 return super.getClientApply(formInstance);
