@@ -585,7 +585,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addJProp(currentFormatDiscount, shopFormat, 1));    // берётся скидка формата, если её нет - оптовая скидка
 
         LP actionPrice = addJProp(priceGroup, "Акц. цена", removePercent, currentPrice, 1, articleDiscount, 1);
-        LP requiredStorePrice = addJProp(priceGroup, "Необх. цена", removePercent, actionPrice, 2, currentStoreDiscount, 1);
+        LP requiredStorePrice = addJProp(priceGroup, "requiredStorePrice", true, "Необх. цена", removePercent, actionPrice, 2, currentStoreDiscount, 1);
 
         balanceFormatFreeQuantity = addSGProp(moveGroup, "Своб. кол-во по форм.", articleFreeQuantity, shopFormat, 1, 2);
 
@@ -745,7 +745,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addvOrder = addJProp(documentPriceGroup, "addvOrder", "Наценка", round0, addJProp(calcPercent, sumAddvOrder, 1, sumDeliveryOrder, 1), 1);
 
         // переоценка
-        revalChangeBalance = addJProp("revalChangeBalance", "Остаток (изм.)", andNot1, revalBalance, 1, 2, addJProp(equals2, shopPrice, 1, 2, prevPrice, 1, 2), 1, 2);
+        revalChangeBalance = addJProp("revalChangeBalance", "Остаток (изм.)", and1, revalBalance, 1, 2, addJProp(diff2, shopPrice, 1, 2, prevPrice, 1, 2), 1, 2);
         sumNewPrevRetailOrderArticle = addJProp("sumNewPrevRetailOrderArticle", "Сумма розн. (нов.)", multiplyDouble2, shopPrice, 1, 2, revalChangeBalance, 1, 2);
         sumPrevRetailOrderArticle = addJProp("sumPrevRetailOrderArticle", "Сумма розн. (пред.)", multiplyDouble2, prevPrice, 1, 2, revalChangeBalance, 1, 2);
         sumPriceChangeOrderArticle = addJProp("sumPriceChangeOrderArticle", "Сумма переоц.", diff, sumNewPrevRetailOrderArticle, 1, 2, sumPrevRetailOrderArticle, 1, 2);
