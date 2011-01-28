@@ -22,6 +22,6 @@ public class NotNullFilterEntity<P extends PropertyInterface> extends PropertyFi
 
     @Override
     public FilterEntity getRemappedFilter(ObjectEntity object, InstanceFactory instanceFactory) {
-        return new NotNullFilterEntity<P>(property);
+        return new NotNullFilterEntity<P>(property.getRemappedEntity(object, instanceFactory));
     }
 }
