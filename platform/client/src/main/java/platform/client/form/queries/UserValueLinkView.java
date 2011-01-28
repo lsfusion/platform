@@ -8,7 +8,6 @@ import platform.client.logics.ClientUserValueLink;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
 
 class UserValueLinkView extends ValueLinkView {
 
@@ -50,11 +49,11 @@ class UserValueLinkView extends ValueLinkView {
                 return property;
             }
 
-            public Object getHighlightValue(int row) {
-                return null;
+            public boolean isCellHighlighted(int row, int column) {
+                return false;
             }
 
-            public Color getHighlightColor() {
+            public Color getHighlightColor(int row, int column) {
                 return null;
             }
 

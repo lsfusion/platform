@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class ClientGroupObject extends IdentityObject implements ClientPropertyRead, ClientIdentitySerializable, AbstractGroupObject<ClientComponent> {
+public class ClientGroupObject extends IdentityObject implements ClientPropertyReader, ClientIdentitySerializable, AbstractGroupObject<ClientComponent> {
 
     public ClientPropertyDraw filterProperty;
 
@@ -64,20 +64,21 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
         return result;        
     }
 
-    public List<ClientGroupObject> getDeserializeList(Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
+    public List<ClientObject> getKeysObjectsList(Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
         List<ClientGroupObject> result = new ArrayList<ClientGroupObject>();
         ClassViewType newType = classViews.get(this);
-        if((newType!=null?newType:controllers.get(this).classView) == ClassViewType.GRID)
+        if ((newType != null ? newType : controllers.get(this).classView) == ClassViewType.GRID) {
             result.add(this);
-        return result;
+        }
+        return ClientGroupObject.getObjects(result);
     }
 
-    public List<ClientObject> getDeserializeList(Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
-        return ClientGroupObject.getObjects(getDeserializeList(classViews, controllers));
+    public List<ClientObject> getKeysObjectsList(Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
+        return getKeysObjectsList(classViews, controllers);
     }
 
     public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectController controller) {
-        controller.updateDrawHighlightValues(readKeys);
+        controller.updateRowHighlightValues(readKeys);
     }
 
     public ClientGroupObject getGroupObject() {

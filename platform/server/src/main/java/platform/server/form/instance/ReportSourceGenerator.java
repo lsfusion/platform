@@ -131,17 +131,17 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
             try {
                 OrderedMap<Map<ObjectInstance, Object>, Map<Pair<Object, PropertyType>, Object>> resultData = reportTable.read(form.session.sql, form.session.env, orders);
 
-                List<Pair<String, PropertyReadInstance>> propertyList = new ArrayList<Pair<String, PropertyReadInstance>>();
+                List<Pair<String, PropertyReaderInstance>> propertyList = new ArrayList<Pair<String, PropertyReaderInstance>>();
                 for(PropertyDrawInstance property : filterProperties(groups)) {
-                    propertyList.add(new Pair<String, PropertyReadInstance>(property.getsID(), property));
+                    propertyList.add(new Pair<String, PropertyReaderInstance>(property.getsID(), property));
                     if (property.propertyCaption != null) {
-                        propertyList.add(new Pair<String, PropertyReadInstance>(property.getsID(), property.caption));
+                        propertyList.add(new Pair<String, PropertyReaderInstance>(property.getsID(), property.captionReader));
                     }
                 }
 
                 for (GroupObjectInstance group : groups) {
                     if (group.propertyHighlight != null) {
-                        propertyList.add(new Pair<String, PropertyReadInstance>(group.propertyHighlight.property.sID, group));
+                        propertyList.add(new Pair<String, PropertyReaderInstance>(group.propertyHighlight.property.sID, group));
                     }
                 }
 

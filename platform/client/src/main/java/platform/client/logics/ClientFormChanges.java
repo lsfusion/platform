@@ -3,7 +3,7 @@ package platform.client.logics;
 import platform.base.BaseUtils;
 import platform.client.form.GroupObjectController;
 import platform.interop.ClassViewType;
-import platform.interop.form.PropertyRead;
+import platform.interop.form.PropertyReadType;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -25,7 +25,7 @@ public class ClientFormChanges {
     // так же может быть ObjectInstance из этого ключа если GroupObject - отображается рекурсивно (тогда надо цеплять к этому GroupObjectValue, иначе к верхнему)
     public Map<ClientGroupObject, List<ClientGroupObjectValue>> parentObjects;
 
-    public final Map<ClientPropertyRead, Map<ClientGroupObjectValue, Object>> properties;
+    public final Map<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> properties;
     public final Set<ClientPropertyDraw> panelProperties;
     public final Set<ClientPropertyDraw> dropProperties;
 
@@ -54,19 +54,22 @@ public class ClientFormChanges {
             panelProperties.add(clientForm.getProperty(inStream.readInt()));
         }
 
-        properties = new HashMap<ClientPropertyRead, Map<ClientGroupObjectValue, Object>>();
+        properties = new HashMap<ClientPropertyReader, Map<ClientGroupObjectValue, Object>>();
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
 
-            ClientPropertyRead clientPropertyRead;
+            ClientPropertyReader clientPropertyRead;
             switch (inStream.readByte()) {
-                case PropertyRead.DRAW:
+                case PropertyReadType.DRAW:
                     clientPropertyRead = clientForm.getProperty(inStream.readInt());
                     break;
-                case PropertyRead.CAPTION:
-                    clientPropertyRead = clientForm.getProperty(inStream.readInt()).captionRead;
+                case PropertyReadType.CAPTION:
+                    clientPropertyRead = clientForm.getProperty(inStream.readInt()).captionReader;
                     break;
-                case PropertyRead.HIGHLIGHT:
+                case PropertyReadType.CELL_HIGHLIGHT:
+                    clientPropertyRead = clientForm.getProperty(inStream.readInt()).highlightReader;
+                    break;
+                case PropertyReadType.ROW_HIGHLIGHT:
                     clientPropertyRead = clientForm.getGroupObject(inStream.readInt());
                     break;
                 default:

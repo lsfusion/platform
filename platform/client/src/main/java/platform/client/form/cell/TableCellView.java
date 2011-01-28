@@ -67,11 +67,11 @@ public class TableCellView extends JPanel implements CellView {
                 return TableCellView.this.key;
             }
 
-            public Object getHighlightValue(int row) {
-                return TableCellView.this.highlight;
+            public boolean isCellHighlighted(int row, int column) {
+                return TableCellView.this.highlight != null;
             }
 
-            public Color getHighlightColor() {
+            public Color getHighlightColor(int row, int column) {
                 return highlightColor;
             }
 
@@ -125,17 +125,17 @@ public class TableCellView extends JPanel implements CellView {
         table.setValue(ivalue);
     }
 
-    public void setHighlight(Object highlight) {
-        if(BaseUtils.nullEquals(this.highlight,highlight)) return;
+    public void setHighlight(Object highlight, Color highlightColor) {
+        if (BaseUtils.nullEquals(this.highlight, highlight) &&
+            BaseUtils.nullEquals(this.highlightColor, highlightColor)) {
+            return;
+        }
 
         this.highlight = highlight;
+        this.highlightColor = highlightColor;
 
         revalidate();
-        repaint();        
-    }
-
-    public void setHighlightColor(Color highlightColor) {
-        this.highlightColor = highlightColor;
+        repaint();
     }
 
     public void startEditing(KeyEvent e) {

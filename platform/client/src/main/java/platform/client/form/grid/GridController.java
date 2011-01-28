@@ -11,7 +11,6 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.interop.Order;
 import platform.interop.form.screen.ExternalScreenComponent;
 
-import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.util.HashMap;
@@ -130,8 +129,12 @@ public class GridController {
         table.updateColumnCaptions(property, captions);
     }
 
-    public void updateHighlightValues(Map<ClientGroupObjectValue, Object> highlights) {
-        table.updateHighlightValues(highlights);
+    public void updateCellHighlightValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellHighlights) {
+        table.updateCellHighlightValues(property, cellHighlights);
+    }
+
+    public void updateRowHighlightValues(Map<ClientGroupObjectValue, Object> rowHighlights) {
+        table.updateRowHighlightValues(rowHighlights);
     }
 
     public void selectObject(ClientGroupObjectValue currentObject) {

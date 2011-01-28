@@ -506,14 +506,19 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     public Collection<Property> getUpdateProperties() {
 
         Set<Property> result = new HashSet<Property>();
-        for (PropertyDrawInstance<?> propView : properties) {
-            result.add(propView.propertyObject.property);
-            if (propView.propertyCaption != null)
-                result.add(propView.propertyCaption.property);
+        for (PropertyDrawInstance<?> propertyDraw : properties) {
+            result.add(propertyDraw.propertyObject.property);
+            if (propertyDraw.propertyCaption != null) {
+                result.add(propertyDraw.propertyCaption.property);
+            }
+            if (propertyDraw.propertyHighlight != null) {
+                result.add(propertyDraw.propertyHighlight.property);
+            }
         }
         for (GroupObjectInstance group : groups) {
-            if (group.propertyHighlight != null)
+            if (group.propertyHighlight != null) {
                 result.add(group.propertyHighlight.property);
+            }
             group.fillUpdateProperties(result);
         }
         return result;
@@ -805,7 +810,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 }
             }
 
-            final Map<PropertyReadInstance, Set<GroupObjectInstance>> readProperties = new HashMap<PropertyReadInstance, Set<GroupObjectInstance>>();
+            final Map<PropertyReaderInstance, Set<GroupObjectInstance>> readProperties = new HashMap<PropertyReaderInstance, Set<GroupObjectInstance>>();
 
             for (PropertyDrawInstance<?> drawProperty : properties) {
                 if (drawProperty.toDraw != null && drawProperty.toDraw.curClassView == HIDE) continue;
@@ -836,7 +841,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                     }
 
                     if (drawProperty.propertyCaption != null && (read || propertyUpdated(drawProperty.propertyCaption, columnGroupGrids, changedProps)))
-                        readProperties.put(drawProperty.caption, columnGroupGrids);
+                        readProperties.put(drawProperty.captionReader, columnGroupGrids);
+                    if (drawProperty.propertyHighlight != null && (read || propertyUpdated(drawProperty.propertyHighlight, drawGridObjects, changedProps)))
+                        readProperties.put(drawProperty.highlightReader, drawGridObjects);
                 } else if (previous!=null) // говорим клиенту что свойство надо удалить
                     result.dropProperties.add(drawProperty);
             }
@@ -848,24 +855,24 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                         readProperties.put(group, gridGroups);
                 }
 
-            for (Entry<Set<GroupObjectInstance>, Set<PropertyReadInstance>> entry : BaseUtils.groupSet(readProperties).entrySet()) {
+            for (Entry<Set<GroupObjectInstance>, Set<PropertyReaderInstance>> entry : BaseUtils.groupSet(readProperties).entrySet()) {
                 Set<GroupObjectInstance> keyGroupObjects = entry.getKey();
-                Set<PropertyReadInstance> propertyList = entry.getValue();
+                Set<PropertyReaderInstance> propertyList = entry.getValue();
 
-                Query<ObjectInstance, PropertyReadInstance> selectProps = new Query<ObjectInstance, PropertyReadInstance>(GroupObjectInstance.getObjects(getUpTreeGroups(keyGroupObjects)));
+                Query<ObjectInstance, PropertyReaderInstance> selectProps = new Query<ObjectInstance, PropertyReaderInstance>(GroupObjectInstance.getObjects(getUpTreeGroups(keyGroupObjects)));
                 for (GroupObjectInstance keyGroup : keyGroupObjects) {
                     NoPropertyTableUsage<ObjectInstance> groupTable = keyGroup.keyTable;
                     selectProps.and(groupTable.getWhere(selectProps.mapKeys));
                 }
 
-                for (PropertyReadInstance propertyDraw : propertyList) {
-                    selectProps.properties.put(propertyDraw, propertyDraw.getPropertyObject().getExpr(selectProps.mapKeys, this));
+                for (PropertyReaderInstance propertyReader : propertyList) {
+                    selectProps.properties.put(propertyReader, propertyReader.getPropertyObjectInstance().getExpr(selectProps.mapKeys, this));
                 }
 
-                OrderedMap<Map<ObjectInstance, Object>, Map<PropertyReadInstance, Object>> queryResult = selectProps.execute(session.sql, session.env);
-                for (PropertyReadInstance propertyDraw : propertyList) {
+                OrderedMap<Map<ObjectInstance, Object>, Map<PropertyReaderInstance, Object>> queryResult = selectProps.execute(session.sql, session.env);
+                for (PropertyReaderInstance propertyReader : propertyList) {
                     Map<Map<ObjectInstance, DataObject>, Object> propertyValues = new HashMap<Map<ObjectInstance, DataObject>, Object>();
-                    for (Entry<Map<ObjectInstance, Object>, Map<PropertyReadInstance, Object>> resultRow : queryResult.entrySet()) {
+                    for (Entry<Map<ObjectInstance, Object>, Map<PropertyReaderInstance, Object>> resultRow : queryResult.entrySet()) {
                         Map<ObjectInstance, Object> keyRow = resultRow.getKey();
 
                         Map<ObjectInstance, DataObject> row = new HashMap<ObjectInstance, DataObject>();
@@ -873,10 +880,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                             row.putAll(keyGroup.findGroupObjectValue(keyRow));
                         }
 
-                        propertyValues.put(row, resultRow.getValue().get(propertyDraw));
+                        propertyValues.put(row, resultRow.getValue().get(propertyReader));
                     }
 
-                    result.properties.put(propertyDraw, propertyValues);
+                    result.properties.put(propertyReader, propertyValues);
                 }
             }
 

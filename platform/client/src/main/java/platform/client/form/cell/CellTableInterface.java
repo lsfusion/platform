@@ -10,8 +10,8 @@ public interface CellTableInterface {
     boolean isDataChanging();
 
     ClientPropertyDraw getProperty(int col);
-    Object getHighlightValue(int row);
-    Color getHighlightColor();
+    boolean isCellHighlighted(int row, int column);
+    Color getHighlightColor(int row, int column);
 
     ClientFormController getForm();
 }

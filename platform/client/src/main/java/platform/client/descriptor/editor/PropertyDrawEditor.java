@@ -60,6 +60,12 @@ public class PropertyDrawEditor extends GroupElementEditor {
             }
         });
 
+        TitledPanel propertyHighlightPanel = new TitledPanel("Свойство выделения", new IncrementDialogEditor(descriptor, "propertyHighlight") {
+            protected Object dialogValue(Object currentValue) {
+                return new ListGroupObjectEditor(descriptor.getColumnGroupObjects()).getPropertyObject();
+            }
+        });
+
         TitledPanel shouldBeLastPanel = new TitledPanel(null, new IncrementCheckBox("Должно быть последним", descriptor, "shouldBeLast"));
         TitledPanel readOnlyPanel = new TitledPanel(null, new IncrementCheckBox("Только для чтения", descriptor, "readOnly"));
         TitledPanel focusablePanel = new TitledPanel(null, new IncrementTristateCheckBox("Может иметь фокус", descriptor, "focusable"));
@@ -81,6 +87,7 @@ public class PropertyDrawEditor extends GroupElementEditor {
                 groupObjectPanel,
                 columnGroupObjectsPanel,
                 propertyCaptionPanel,
+                propertyHighlightPanel,
                 shouldBeLastPanel,
                 readOnlyPanel,
                 focusablePanel,
@@ -88,6 +95,7 @@ public class PropertyDrawEditor extends GroupElementEditor {
                 editKeyPanel));
 
         addTab("Отображение", new NorthBoxPanel(defaultComponent,
+                new TitledPanel(null, new IncrementColorEditor("Цвет подсветки", descriptor, "highlightColor")),
                 new ComponentDesignEditor("Дизайн", descriptor.client.design)));
 
         addTab("Расположение", new NorthBoxPanel(new ComponentConstraintsEditor(descriptor.client.constraints)));

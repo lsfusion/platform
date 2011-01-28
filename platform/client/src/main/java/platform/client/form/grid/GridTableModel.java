@@ -1,10 +1,12 @@
 package platform.client.form.grid;
 
 import platform.base.BaseUtils;
+import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.table.AbstractTableModel;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -16,14 +18,17 @@ public class GridTableModel extends AbstractTableModel {
     private ClientPropertyDraw[] columnProps = new ClientPropertyDraw[0];
     private ClientGroupObjectValue[] columnKeys = new ClientGroupObjectValue[0];
     private String[] columnNames = new String[0];
-    private Object[] rowHighlights = new Object[0];
+    private Object[][] highlightData = new Object[0][];
+    private Color[][] highlightColor = new Color[0][];
 
-    public void update(List<ClientPropertyDraw> columnProperties,
-                             List<ClientGroupObjectValue> rowKeys,
-                             Map<ClientPropertyDraw, List<ClientGroupObjectValue>> mapColumnKeys,
-                             Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> columnCaptions,
-                             Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values,
-                             Map<ClientGroupObjectValue,Object> highlights) {
+    public void update(ClientGroupObject groupObject,
+                       List<ClientPropertyDraw> columnProperties,
+                       List<ClientGroupObjectValue> rowKeys,
+                       Map<ClientPropertyDraw, List<ClientGroupObjectValue>> mapColumnKeys,
+                       Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> columnCaptions,
+                       Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values,
+                       Map<ClientGroupObjectValue, Object> mapRowHighlights,
+                       Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> mapHighlightValues) {
 
         List<ClientPropertyDraw> columnPropsList = new ArrayList<ClientPropertyDraw>();
         List<ClientGroupObjectValue> columnKeysList = new ArrayList<ClientGroupObjectValue>();
@@ -33,7 +38,7 @@ public class GridTableModel extends AbstractTableModel {
                 Map<ClientGroupObjectValue, Object> columnCaption = columnCaptions.get(property);
                 for (ClientGroupObjectValue key : mapColumnKeys.get(property)) {
                     //не показываем колонку, если propertyCaption равно null
-                    if (columnCaption==null || columnCaption.get(key) != null) {
+                    if (columnCaption == null || columnCaption.get(key) != null) {
                         columnKeysList.add(key);
                         columnPropsList.add(property);
                     }
@@ -52,28 +57,35 @@ public class GridTableModel extends AbstractTableModel {
         columnProps = columnPropsList.toArray(columnProps);
         columnKeys = columnKeysList.toArray(columnKeys);
 
-        if (data.length==0 || data[0].length != columnProps.length || data.length != rowKeys.size()) {
+        if (data.length == 0 || data[0].length != columnProps.length || data.length != rowKeys.size()) {
             data = new Object[rowKeys.size()][columnProps.length];
+            highlightData = new Object[rowKeys.size()][columnProps.length];
+            highlightColor = new Color[rowKeys.size()][columnProps.length];
         }
 
-        if(rowHighlights.length != rowKeys.size())
-            rowHighlights = new Object[rowKeys.size()];
-        
         for (int i = 0; i < rowKeys.size(); ++i) {
             ClientGroupObjectValue rowKey = rowKeys.get(i);
+            Object rowHighlight = mapRowHighlights.get(rowKey);
 
             for (int j = 0; j < columnProps.length; ++j) {
+                ClientGroupObjectValue cellKey = new ClientGroupObjectValue(rowKey, columnKeys[j]);
+
                 Map<ClientGroupObjectValue, Object> propValues = values.get(columnProps[j]);
-                if (propValues != null) {
-                    ClientGroupObjectValue columnKey = columnKeys[j];
-                    ClientGroupObjectValue key = new ClientGroupObjectValue(rowKey, columnKey);
-                    data[i][j] = propValues.get(key);
+                Map<ClientGroupObjectValue, Object> highlightValues = mapHighlightValues.get(columnProps[j]);
+
+                data[i][j] = propValues != null ? propValues.get(cellKey) : null;
+
+                if (rowHighlight != null) {
+                    highlightData[i][j] = rowHighlight;
+                    highlightColor[i][j] = groupObject.highlightColor;
+                } else if (highlightValues != null) {
+                    highlightData[i][j] = highlightValues.get(cellKey);
+                    highlightColor[i][j] = highlightData[i][j] != null ? columnProps[j].highlightColor : null;
                 } else {
-                    data[i][j] = null;
+                    highlightData[i][j] = null;
+                    highlightColor[i][j] = null;
                 }
             }
-
-            rowHighlights[i] = highlights.get(rowKey);
         }
 
         //заполняем имена колонок
@@ -130,7 +142,9 @@ public class GridTableModel extends AbstractTableModel {
     }
 
     public void setValueAt(Object value, int row, int col) {
-        if (columnProps[col].checkEquals && BaseUtils.nullEquals(value, data[row][col])) return;
+        if (columnProps[col].checkEquals && BaseUtils.nullEquals(value, data[row][col])) {
+            return;
+        }
 
         data[row][col] = value;
         fireTableCellUpdated(row, col);
@@ -153,7 +167,11 @@ public class GridTableModel extends AbstractTableModel {
         return columnKeys[index];
     }
 
-    public Object getHighlightValue(int index) {
-        return rowHighlights[index];
+    public boolean isCellHighlighted(int row, int column) {
+        return highlightData[row][column] != null;
+    }
+
+    public Color getHighlightColor(int row, int column) {
+        return highlightColor[row][column];
     }
 }

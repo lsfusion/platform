@@ -32,6 +32,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     // предполагается что propertyCaption ссылается на все из propertyObject но без toDraw (хотя опять таки не обязательно)
     public PropertyObjectEntity<?> propertyCaption;
+    public PropertyObjectEntity<?> propertyHighlight;
 
     public boolean shouldBeLast = false;
     public ClassViewType forceViewType = null;
@@ -57,6 +58,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         this.propertyCaption = propertyCaption;
     }
 
+    public void setPropertyHighlight(PropertyObjectEntity propertyHighlight) {
+        this.propertyHighlight = propertyHighlight;
+    }
+
     public void proceedDefaultDesign(DefaultFormView defaultView) {
         propertyObject.property.proceedDefaultDesign(defaultView, this);
     }
@@ -66,6 +71,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         pool.serializeObject(outStream, toDraw);
         pool.serializeCollection(outStream, columnGroupObjects);
         pool.serializeObject(outStream, propertyCaption);
+        pool.serializeObject(outStream, propertyHighlight);
 
         outStream.writeBoolean(shouldBeLast);
         outStream.writeBoolean(readOnly);
@@ -80,6 +86,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         toDraw = (GroupObjectEntity) pool.deserializeObject(inStream);
         columnGroupObjects = pool.deserializeList(inStream);
         propertyCaption = (PropertyObjectEntity<?>) pool.deserializeObject(inStream);
+        propertyHighlight = (PropertyObjectEntity<?>) pool.deserializeObject(inStream);
 
         shouldBeLast = inStream.readBoolean();
         readOnly = inStream.readBoolean();

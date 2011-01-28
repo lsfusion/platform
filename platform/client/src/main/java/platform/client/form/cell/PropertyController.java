@@ -8,6 +8,7 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.interop.form.screen.ExternalScreenComponent;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
@@ -39,7 +40,6 @@ public class PropertyController implements CellViewListener {
         this.columnKey = columnKey;
 
         view = key.getPanelComponent(form, columnKey);
-        view.setHighlightColor(groupObject != null ? groupObject.highlightColor : null);
         view.setCaption(key.getFullCaption());
 
         if (key.focusable != null)
@@ -114,8 +114,7 @@ public class PropertyController implements CellViewListener {
         view.setCaption(caption);
     }
 
-    public void setHighlight(Object highlight) {
-        view.setHighlight(highlight);
+    public void setHighlight(Object highlight, Color highlightColor) {
+        view.setHighlight(highlight, highlightColor);
     }
-
 }

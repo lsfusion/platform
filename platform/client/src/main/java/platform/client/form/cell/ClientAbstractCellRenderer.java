@@ -26,8 +26,8 @@ public class ClientAbstractCellRenderer extends JComponent
 
         JComponent comp = currentComp.getComponent();
 
-        if (cellTable.getHighlightValue(row) != null) {
-            Color highlightColor = cellTable.getHighlightColor();
+        if (cellTable.isCellHighlighted(row, column)) {
+            Color highlightColor = cellTable.getHighlightColor(row, column);
             if (highlightColor == null) {
                 highlightColor = Color.yellow;
             }

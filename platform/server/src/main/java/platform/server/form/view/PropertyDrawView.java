@@ -37,6 +37,8 @@ public class PropertyDrawView extends ComponentView {
      */
     public boolean autoHide = false;
 
+    public Color highlightColor;
+
     public Dimension minimumSize;
     public Dimension maximumSize;
     public Dimension preferredSize;
@@ -166,6 +168,8 @@ public class PropertyDrawView extends ComponentView {
 
         outStream.writeBoolean(autoHide);
 
+        pool.writeObject(outStream, highlightColor);
+
         pool.serializeObject(outStream, pool.context.view.getGroupObject(keyBindingGroup));
 
         //entity часть
@@ -214,6 +218,8 @@ public class PropertyDrawView extends ComponentView {
         externalScreenConstraints = pool.readObject(inStream);
 
         autoHide = inStream.readBoolean();
+
+        highlightColor = pool.readObject(inStream);
 
         GroupObjectView keyBindingGroupView = pool.deserializeObject(inStream);
         if (keyBindingGroupView != null) {

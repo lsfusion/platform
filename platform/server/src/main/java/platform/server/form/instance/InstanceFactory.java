@@ -93,7 +93,9 @@ public class InstanceFactory {
                 columnGroupObjects.add(getInstance(columnGroupObject));
             }
 
-            propertyDrawInstances.put(entity, new PropertyDrawInstance<T>(entity, getInstance(entity.propertyObject), getInstance(entity.toDraw), columnGroupObjects, entity.propertyCaption == null ? null : getInstance(entity.propertyCaption)));
+            propertyDrawInstances.put(entity, new PropertyDrawInstance<T>(entity, getInstance(entity.propertyObject), getInstance(entity.toDraw), columnGroupObjects,
+                                                                          entity.propertyCaption == null ? null : getInstance(entity.propertyCaption),
+                                                                          entity.propertyHighlight == null ? null : getInstance(entity.propertyHighlight)));
         }
 
         return propertyDrawInstances.get(entity);

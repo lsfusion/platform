@@ -31,7 +31,7 @@ public class TreeGroupController {
             }
 
             // добавляем новые свойства
-            for (ClientPropertyRead read : fc.properties.keySet()) {
+            for (ClientPropertyReader read : fc.properties.keySet()) {
                 if (read instanceof ClientPropertyDraw) {
                     ClientPropertyDraw property = (ClientPropertyDraw) read;
                     if (property.groupObject == group && property.shouldBeDrawn(form)) {
@@ -48,8 +48,8 @@ public class TreeGroupController {
             }
 
             // обновляем значения свойств
-            for (Map.Entry<ClientPropertyRead, Map<ClientGroupObjectValue, Object>> readProperty : fc.properties.entrySet()) {
-                ClientPropertyRead propertyRead = readProperty.getKey();
+            for (Map.Entry<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> readProperty : fc.properties.entrySet()) {
+                ClientPropertyReader propertyRead = readProperty.getKey();
                 if (propertyRead instanceof ClientPropertyDraw) {
                     ClientPropertyDraw propertyDraw = (ClientPropertyDraw) propertyRead;
                     if (propertyDraw.groupObject == group) {

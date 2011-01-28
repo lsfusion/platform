@@ -7,7 +7,7 @@ import platform.base.BaseUtils;
 import platform.base.DateConverter;
 import platform.base.Pair;
 import platform.base.ByteArray;
-import platform.interop.form.PropertyRead;
+import platform.interop.form.PropertyReadType;
 import platform.interop.form.ReportConstants;
 
 import java.io.DataInputStream;
@@ -56,7 +56,7 @@ public class ClientReportData_tmp implements JRDataSource {
             for (int i = 0; i < propCnt; i++) {
                 String name = inStream.readUTF();
                 int type = inStream.readInt();
-                if (type == PropertyRead.CAPTION) {
+                if (type == PropertyReadType.CAPTION) {
                     name += ReportConstants.captionSuffix;
                 }
                 propertyNames.add(name);

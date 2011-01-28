@@ -27,7 +27,7 @@ public class FormChanges {
     // value.keySet() из key, или пустой если root
     public Map<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> parentObjects = new HashMap<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>>();
 
-    public Map<PropertyReadInstance, Map<Map<ObjectInstance, DataObject>, Object>> properties = new HashMap<PropertyReadInstance, Map<Map<ObjectInstance, DataObject>, Object>>();
+    public Map<PropertyReaderInstance, Map<Map<ObjectInstance, DataObject>, Object>> properties = new HashMap<PropertyReaderInstance, Map<Map<ObjectInstance, DataObject>, Object>>();
 
     public Set<PropertyDrawInstance> panelProperties = new HashSet<PropertyDrawInstance>();
     public Set<PropertyDrawInstance> dropProperties = new HashSet<PropertyDrawInstance>();
@@ -49,7 +49,7 @@ public class FormChanges {
 
         System.out.println(" ------- PROPERTIES ---------------");
         System.out.println(" ------- Group ---------------");
-        for (PropertyReadInstance property : properties.keySet()) {
+        for (PropertyReaderInstance property : properties.keySet()) {
             Map<Map<ObjectInstance, DataObject>, Object> propertyValues = properties.get(property);
             System.out.println(property + " ---- property");
             for (Map<ObjectInstance, DataObject> gov : propertyValues.keySet())
@@ -95,29 +95,14 @@ public class FormChanges {
         serializeKeyObjectsMap(outStream, gridObjects, false);
         serializeKeyObjectsMap(outStream, parentObjects, true);
 
-        //todo: remove
-//        outStream.writeInt(gridObjects.size());
-//        for (Map.Entry<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> gridObject : gridObjects.entrySet()) {
-//
-//            outStream.writeInt(gridObject.getKey().getID());
-//
-//            outStream.writeInt(gridObject.getValue().size());
-//            for (Map<ObjectInstance, DataObject> groupObjectValue : gridObject.getValue()) {
-//                // именно так чтобы гарантировано в том же порядке
-//                for (ObjectInstance object : gridObject.getKey().objects) {
-//                    BaseUtils.serializeObject(outStream, groupObjectValue.get(object).object);
-//                }
-//            }
-//        }
-
         outStream.writeInt(panelProperties.size());
         for (PropertyDrawInstance propertyView : panelProperties) {
             outStream.writeInt(propertyView.getID());
         }
 
         outStream.writeInt(properties.size());
-        for (Map.Entry<PropertyReadInstance,Map<Map<ObjectInstance,DataObject>,Object>> gridProperty : properties.entrySet()) {
-            PropertyReadInstance propertyReadInstance = gridProperty.getKey();
+        for (Map.Entry<PropertyReaderInstance,Map<Map<ObjectInstance,DataObject>,Object>> gridProperty : properties.entrySet()) {
+            PropertyReaderInstance propertyReadInstance = gridProperty.getKey();
 
             // сериализация PropertyReadInterface
             outStream.writeByte(propertyReadInstance.getTypeID());
@@ -128,7 +113,7 @@ public class FormChanges {
                 Map<ObjectInstance, DataObject> objectValues = gridPropertyValue.getKey();
 
                 // именно так чтобы гарантировано в том же порядке
-                for (ObjectInstance object : propertyReadInstance.getSerializeList(panelProperties)) {
+                for (ObjectInstance object : propertyReadInstance.getKeysObjectsList(panelProperties)) {
                     BaseUtils.serializeObject(outStream, objectValues.get(object).getValue());
                 }
 

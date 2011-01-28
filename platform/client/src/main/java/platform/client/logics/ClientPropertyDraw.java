@@ -32,11 +32,14 @@ import java.util.*;
 import java.util.List;
 
 @SuppressWarnings({"UnusedDeclaration"})
-public class ClientPropertyDraw extends ClientComponent implements ClientPropertyRead, ClientIdentitySerializable {
-    public Caption captionRead = new Caption();
+public class ClientPropertyDraw extends ClientComponent implements ClientPropertyReader, ClientIdentitySerializable {
+    public CaptionReader captionReader = new CaptionReader();
+    public HighlightReader highlightReader = new HighlightReader();
 
     // символьный идентификатор, нужен для обращению к свойствам в печатных формах
     public ClientType baseType;
+
+    public Color highlightColor;
 
     public String caption;
 
@@ -232,6 +235,14 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return new Dimension(getMaximumWidth(comp), getMaximumHeight(comp));
     }
 
+    public Color getHighlightColor() {
+        return highlightColor;
+    }
+
+    public void setHighlightColor(Color highlightColor) {
+        this.highlightColor = highlightColor;
+    }
+
     public PropertyRendererComponent getRendererComponent() {
         if (renderer == null) {
             renderer = baseType.getRendererComponent(getFormat(), caption, design);
@@ -320,6 +331,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         outStream.writeBoolean(autoHide);
 
+        pool.writeObject(outStream, highlightColor);
+
         pool.serializeObject(outStream, keyBindingGroup);
 
         outStream.writeInt(ID);
@@ -356,6 +369,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         autoHide = inStream.readBoolean();
 
+        highlightColor = pool.readObject(inStream);
+
         keyBindingGroup = pool.deserializeObject(inStream);
 
         baseType = ClientTypeSerializer.deserialize(inStream);
@@ -370,15 +385,16 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         askConfirm = inStream.readBoolean();
     }
 
-    public List<ClientObject> getDeserializeGroupList(Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
+    public List<ClientObject> getKeysObjectsList(Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
         List<ClientObject> result = new ArrayList<ClientObject>();
-        for (ClientGroupObject columnGroupObject : columnGroupObjects)
-            result.addAll(ClientGroupObject.getObjects(columnGroupObject.getDeserializeList(classViews, controllers)));
+        for (ClientGroupObject columnGroupObject : columnGroupObjects) {
+            result.addAll(columnGroupObject.getKeysObjectsList(classViews, controllers));
+        }
         return result;
     }
 
-    public List<ClientObject> getDeserializeList(Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
-        List<ClientObject> result = getDeserializeGroupList(classViews, controllers);
+    public List<ClientObject> getKeysObjectsList(Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
+        List<ClientObject> result = getKeysObjectsList(classViews, controllers);
         if (!panelProperties.contains(this)) {
             result = BaseUtils.mergeList(ClientGroupObject.getObjects(groupObject.getUpTreeGroups()), result);
         }
@@ -387,24 +403,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectController controller) {
         controller.updateDrawPropertyValues(this, readKeys);
-    }
-
-    public class Caption implements ClientPropertyRead {
-        public List<ClientObject> getDeserializeList(Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
-            return getDeserializeGroupList(classViews, controllers);
-        }
-
-        public ClientGroupObject getGroupObject() {
-            return ClientPropertyDraw.this.getGroupObject();
-        }
-
-        public boolean shouldBeDrawn(ClientFormController form) {
-            return ClientPropertyDraw.this.shouldBeDrawn(form);
-        }
-
-        public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectController controller) {
-            controller.updateDrawPropertyCaptions(ClientPropertyDraw.this, readKeys);
-        }
     }
 
     @Override
@@ -448,7 +446,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             result.append("prop").append(descriptor.getSID());
         } else {
             if (getCaption() != null) {
-                result.append("\"" + getCaption() + "\", ");
+                result.append("\"").append(getCaption()).append("\", ");
             }
             String grObject = groupObject == null ? "" : "grObj" + groupObject.getSID() + ", ";
 
@@ -468,12 +466,47 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public String getCodeEditKey(String name) {
-        String result = "design.setEditKey(" + name + ", KeyStroke.getKeyStroke(\"" + editKey + "\"));\n";
-        return result;
+        return "design.setEditKey(" + name + ", KeyStroke.getKeyStroke(\"" + editKey + "\"));\n";
     }
 
     @Override
     public String getVariableName(FormDescriptor form) {
         return "propertyView" + getID();
+    }
+
+    public class CaptionReader implements ClientPropertyReader {
+        public List<ClientObject> getKeysObjectsList(Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
+            return ClientPropertyDraw.this.getKeysObjectsList(classViews, controllers);
+        }
+
+        public ClientGroupObject getGroupObject() {
+            return ClientPropertyDraw.this.getGroupObject();
+        }
+
+        public boolean shouldBeDrawn(ClientFormController form) {
+            return ClientPropertyDraw.this.shouldBeDrawn(form);
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectController controller) {
+            controller.updateDrawPropertyCaptions(ClientPropertyDraw.this, readKeys);
+        }
+    }
+
+    public class HighlightReader implements ClientPropertyReader {
+        public List<ClientObject> getKeysObjectsList(Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
+            return ClientPropertyDraw.this.getKeysObjectsList(panelProperties, classViews, controllers);
+        }
+
+        public ClientGroupObject getGroupObject() {
+            return ClientPropertyDraw.this.getGroupObject();
+        }
+
+        public boolean shouldBeDrawn(ClientFormController form) {
+            return ClientPropertyDraw.this.shouldBeDrawn(form);
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectController controller) {
+            controller.updateCellHighlightValues(ClientPropertyDraw.this, readKeys);
+        }
     }
 }

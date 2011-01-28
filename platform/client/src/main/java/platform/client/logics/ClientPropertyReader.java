@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public interface ClientPropertyRead {
+public interface ClientPropertyReader {
 
-    List<ClientObject> getDeserializeList(Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers);
+    List<ClientObject> getKeysObjectsList(Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers);
 
     void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectController controller);
 

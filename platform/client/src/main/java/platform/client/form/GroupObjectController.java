@@ -86,7 +86,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
     ) {
 
         // Сначала меняем виды объектов
-        for (ClientPropertyRead read : fc.properties.keySet()) // интересуют только свойства
+        for (ClientPropertyReader read : fc.properties.keySet()) // интересуют только свойства
         {
             if (read instanceof ClientPropertyDraw) {
                 ClientPropertyDraw property = (ClientPropertyDraw) read;
@@ -129,8 +129,8 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         }
 
         // Затем их свойства
-        for (Map.Entry<ClientPropertyRead, Map<ClientGroupObjectValue, Object>> readProperty : fc.properties.entrySet()) {
-            ClientPropertyRead propertyRead = readProperty.getKey();
+        for (Map.Entry<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> readProperty : fc.properties.entrySet()) {
+            ClientPropertyReader propertyRead = readProperty.getKey();
             if (propertyRead.getGroupObject() == groupObject && propertyRead.shouldBeDrawn(form)) {
                 propertyRead.update(readProperty.getValue(), this);
             }
@@ -283,6 +283,14 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         }
     }
 
+    public void updateCellHighlightValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellHighlights) {
+        if (panelProperties.contains(property)) {
+            panel.updateCellHighlightValue(property, cellHighlights);
+        } else {
+            grid.updateCellHighlightValues(property, cellHighlights);
+        }
+    }
+
     public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
         if (panelProperties.contains(property)) {
             panel.updatePropertyValues(property, values);
@@ -291,14 +299,13 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         }
     }
 
-    public void updateDrawHighlightValues(Map<ClientGroupObjectValue, Object> highlights) {
+    public void updateRowHighlightValues(Map<ClientGroupObjectValue, Object> rowHighlights) {
         if (classView == ClassViewType.GRID) {
-            grid.updateHighlightValues(highlights);
+            grid.updateRowHighlightValues(rowHighlights);
         } else {
-            panel.updateHighlightValue(BaseUtils.singleValue(highlights));
+            panel.updateRowHighlightValue(BaseUtils.singleValue(rowHighlights));
         }
     }
-
 
     public void changeGridOrder(ClientPropertyDraw property, Order modiType) throws IOException {
         if (grid != null) {

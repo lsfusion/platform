@@ -12,6 +12,7 @@ import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ClassViewType;
 import platform.interop.form.layout.GroupObjectContainerSet;
 
+import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -23,6 +24,9 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
     public ClientPropertyDraw client;
 
     private PropertyObjectDescriptor propertyObject;
+    private PropertyObjectDescriptor propertyCaption;
+    private PropertyObjectDescriptor propertyHighlight;
+
     private boolean readOnly;
 
     public PropertyDrawDescriptor() {
@@ -39,8 +43,6 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
     public GroupObjectDescriptor toDraw;
     private boolean shouldBeLast;
     private ClassViewType forceViewType;
-
-    private PropertyObjectDescriptor propertyCaption;
 
     private List<GroupObjectDescriptor> columnGroupObjects = new ArrayList<GroupObjectDescriptor>();
 
@@ -146,6 +148,24 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
         updateDependency(this, "propertyCaption");
     }
 
+    public PropertyObjectDescriptor getPropertyHighlight() { // usage через reflection
+        return propertyHighlight;
+    }
+
+    public void setPropertyHighlight(PropertyObjectDescriptor propertyHighlight) {
+        this.propertyHighlight= propertyHighlight;
+        updateDependency(this, "propertyHighlight");
+    }
+
+    public Color getHighlightColor() {
+        return client.getHighlightColor();
+    }
+
+    public void setHighlightColor(Color highlightColor) {
+        client.setHighlightColor(highlightColor);
+        updateDependency(this, "highlightColor");
+    }
+
     public void setCaption(String caption) { // usage через reflection
         client.caption = caption;
         updateDependency(this, "caption");
@@ -184,6 +204,7 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
         pool.serializeObject(outStream, toDraw);
         pool.serializeCollection(outStream, columnGroupObjects);
         pool.serializeObject(outStream, propertyCaption);
+        pool.serializeObject(outStream, propertyHighlight);
 
         outStream.writeBoolean(shouldBeLast);
         outStream.writeBoolean(readOnly);
@@ -198,6 +219,7 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
         toDraw = (GroupObjectDescriptor) pool.deserializeObject(inStream);
         columnGroupObjects = pool.deserializeList(inStream);
         propertyCaption = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
+        propertyHighlight = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
 
         shouldBeLast = inStream.readBoolean();
         readOnly = inStream.readBoolean();

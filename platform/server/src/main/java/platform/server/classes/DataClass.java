@@ -5,10 +5,7 @@ import platform.interop.Data;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrClassSet;
 import platform.server.data.SQLSession;
-import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyType;
-import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.*;
 import platform.server.data.query.Query;
 import platform.server.data.type.ParseException;
 import platform.server.data.type.Type;
@@ -148,7 +145,9 @@ public abstract class DataClass<T> implements StaticClass, Type<T>, AndClassSet,
     }
 
     public Expr getStaticExpr(Object value) {
-        return new ValueExpr(value, this);
+        return getType().isSafeString(value)
+               ? new SystemValueExpr(value, this)
+               : new ValueExpr(value, this);
     }
 
     protected abstract Class getReportJavaClass();

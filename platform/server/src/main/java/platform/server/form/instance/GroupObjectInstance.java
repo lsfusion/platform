@@ -5,7 +5,7 @@ import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.Order;
-import platform.interop.form.PropertyRead;
+import platform.interop.form.PropertyReadType;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.BaseClass;
 import platform.server.classes.CustomClass;
@@ -35,22 +35,22 @@ import java.util.*;
 import static platform.interop.ClassViewType.GRID;
 import static platform.interop.ClassViewType.HIDE;
 
-public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, PropertyReadInstance {
+public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, PropertyReaderInstance {
 
     public final PropertyObjectInstance propertyHighlight;
     final static int DIRECTION_DOWN = 1;
     final static int DIRECTION_UP = 2;
     final static int DIRECTION_CENTER = 3;
 
-    public PropertyObjectInstance getPropertyObject() {
+    public PropertyObjectInstance getPropertyObjectInstance() {
         return propertyHighlight;
     }
 
     public byte getTypeID() {
-        return PropertyRead.HIGHLIGHT;
+        return PropertyReadType.ROW_HIGHLIGHT;
     }
 
-    public List<ObjectInstance> getSerializeList(Set<PropertyDrawInstance> panelProperties) {
+    public List<ObjectInstance> getKeysObjectsList(Set<PropertyDrawInstance> panelProperties) {
         return curClassView == ClassViewType.GRID ? GroupObjectInstance.getObjects(getUpTreeGroups()) : new ArrayList<ObjectInstance>();
     }
 

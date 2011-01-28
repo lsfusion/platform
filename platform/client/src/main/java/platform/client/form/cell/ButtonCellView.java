@@ -79,11 +79,7 @@ public class ButtonCellView extends ClientButton implements CellView {
         setText(caption);
     }
 
-    public void setHighlight(Object highlight) {
-        // пока не highlight'им
-    }
-
-    public void setHighlightColor(Color highlightColor) {
+    public void setHighlight(Object highlight, Color highlightColor) {
         // пока не highlight'им
     }
 }

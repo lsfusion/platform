@@ -18,12 +18,12 @@ import java.util.Map;
 
 public class ReportData {
     private final List<ObjectInstance> keys;
-    private final List<Pair<String, PropertyReadInstance>> properties;
+    private final List<Pair<String, PropertyReaderInstance>> properties;
     private final Map<ObjectInstance, Integer> keyToIndex;
     private final List<List<Object>> keyRows = new ArrayList<List<Object>>();
     private final List<List<Object>> propRows = new ArrayList<List<Object>>();
 
-    public ReportData(List<ObjectInstance> keys, List<Pair<String, PropertyReadInstance>> properties) {
+    public ReportData(List<ObjectInstance> keys, List<Pair<String, PropertyReaderInstance>> properties) {
         this.keys = keys;
         keyToIndex = new HashMap<ObjectInstance, Integer>();
         for (int i = 0; i < keys.size(); i++) {
@@ -61,7 +61,7 @@ public class ReportData {
         }
 
         outStream.writeInt(properties.size());
-        for(Pair<String, PropertyReadInstance> propertyData : properties) {
+        for(Pair<String, PropertyReaderInstance> propertyData : properties) {
             outStream.writeUTF(propertyData.first);
             outStream.writeInt(propertyData.second.getTypeID());
             outStream.writeInt(propertyData.second.getID());
