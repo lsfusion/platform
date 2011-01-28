@@ -148,7 +148,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP customCategory6CustomCategory10;
     private LP customCategory6CustomCategoryOrigin;
     private LP customCategory10CustomCategoryOrigin;
-    private LP nameCustomCategory10CustomCategoryOrigin;
+    private LP sidCustomCategory10CustomCategoryOrigin;
     private LP sidCustomCategory2CustomCategory4;
     private LP sidCustomCategory4CustomCategory6;
     private LP sidCustomCategory6CustomCategory9;
@@ -534,7 +534,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         customCategory6CustomCategoryOrigin = addDProp(idGroup, "customCategory6CustomCategoryOrigin", "Код(6)", customCategory6, customCategoryOrigin);
 
         customCategory10CustomCategoryOrigin = addDProp(idGroup, "customCategory10CustomCategoryOrigin", "Код по умолчанию(ИД)", customCategory10, customCategoryOrigin);
-        nameCustomCategory10CustomCategoryOrigin = addJProp(baseGroup, "nameCustomCategory10CustomCategoryOrigin", "Код по умолчанию", name, customCategory10CustomCategoryOrigin, 1);
+        sidCustomCategory10CustomCategoryOrigin = addJProp(baseGroup, "sidCustomCategory10CustomCategoryOrigin", "Код по умолчанию", sidCustomCategory10, customCategory10CustomCategoryOrigin, 1);
 
         sidCustomCategory4CustomCategory6 = addJProp(baseGroup, "sidCustomCategory4CustomCategory6", "Код(4)", sidCustomCategory4, customCategory4CustomCategory6, 1);
         sidCustomCategory6CustomCategory9 = addJProp(baseGroup, "sidCustomCategory6CustomCategory9", "Код(6)", sidCustomCategory6, customCategory6CustomCategory9, 1);
@@ -548,8 +548,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         relationCustomCategory10CustomCategoryOrigin = addDProp(baseGroup, "relationCustomCategory10CustomCategoryOrigin", "Связь ТН ВЭД", LogicalClass.instance, customCategory10, customCategoryOrigin);
 
-        relationCustomCategory10 = addJProp(idGroup, "relationCustomCategory10", "Связь ТН ВЭД", and1, 1, relationCustomCategory10CustomCategoryOrigin, 1, 2);
-        relationCustomCategoryOrigin = addJProp(idGroup, "relationCustomCategoryOrigin", "Связь ТН ВЭД", and1, 2, relationCustomCategory10CustomCategoryOrigin, 1, 2);
+        //relationCustomCategory10 = addJProp(idGroup, "relationCustomCategory10", "Связь ТН ВЭД", and1, 1, relationCustomCategory10CustomCategoryOrigin, 1, 2);
+        //relationCustomCategoryOrigin = addJProp(idGroup, "relationCustomCategoryOrigin", "Связь ТН ВЭД", and1, 2, relationCustomCategory10CustomCategoryOrigin, 1, 2);
 
         /*addConstraint(addJProp("Третий уровень для ЕС должен соответствовать третьему уровню для Бел", diff2,
                 addJProp(customCategory6CustomCategoryOrigin, relationCustomCategoryOrigin, 1, 2),
@@ -1404,7 +1404,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objArticle.groupTo.setSingleClassView(ClassViewType.GRID);
 
             addPropertyDraw(numberListArticle, (box ? objSupplierBox : objInvoice), objArticle);
-            addPropertyDraw(objArticle, sidArticle, nameBrandSupplierArticle, originalNameArticle, nameCountryOfOriginArticle, sidCustomCategory10OriginArticle, netWeightArticle, mainCompositionArticle, additionalCompositionArticle, barcode);
+            addPropertyDraw(objArticle, sidArticle, nameBrandSupplierArticle, originalNameArticle, sidCustomCategoryOriginArticle, nameCountryOfOriginArticle, sidCustomCategory10OriginArticle, netWeightArticle, mainCompositionArticle, additionalCompositionArticle, barcode);
             addPropertyDraw(quantityListArticle, (box ? objSupplierBox : objInvoice), objArticle);
             addPropertyDraw(priceDocumentArticle, objInvoice, objArticle);
             addPropertyDraw(sumDocumentArticle, objInvoice, objArticle);
@@ -1576,7 +1576,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             nameRoute.forceViewType = ClassViewType.PANEL;
                         
             objSku = addSingleGroupObject(sku, "SKU", barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, nameSizeSupplierItem,
-                    nameBrandSupplierArticleSku, originalNameArticleSku, sidCustomCategory10OriginArticleSku,
+                    nameBrandSupplierArticleSku, originalNameArticleSku, 
                     netWeightArticleSku, nameCountryOfOriginArticleSku, mainCompositionArticleSku,
                     nameCategoryArticleSku, netWeightSku,
                     nameCountryOfOriginSku, mainCompositionSku,
@@ -1618,11 +1618,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             if (USE_SHIPMENT_DETAIL) {
                 objShipmentDetail = addSingleGroupObject((box ? boxShipmentDetail : simpleShipmentDetail),
                         selection, barcodeSkuShipmentDetail, sidArticleShipmentDetail, sidColorSupplierItemShipmentDetail, nameColorSupplierItemShipmentDetail, nameSizeSupplierItemShipmentDetail,
-                        nameBrandSupplierArticleSkuShipmentDetail, originalNameArticleSkuShipmentDetail, sidCustomCategory10OriginArticleSkuShipmentDetail,
+                        nameBrandSupplierArticleSkuShipmentDetail, originalNameArticleSkuShipmentDetail, 
                         netWeightArticleSkuShipmentDetail,
                         nameCountryOfOriginArticleSkuShipmentDetail, mainCompositionArticleSkuShipmentDetail,
-                        nameCategoryArticleSkuShipmentDetail, sidCustomCategory10ArticleSkuShipmentDetail,
-                        netWeightSkuShipmentDetail,
+                        nameCategoryArticleSkuShipmentDetail, netWeightSkuShipmentDetail,
                         nameCountryOfOriginSkuShipmentDetail, mainCompositionSkuShipmentDetail,
                         additionalCompositionSkuShipmentDetail, nameUnitOfMeasureArticleSkuShipmentDetail,
                         sidSupplierBoxShipmentDetail, barcodeSupplierBoxShipmentDetail,
@@ -1977,8 +1976,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objCustomCategory10 = addSingleGroupObject(customCategory10, "Четвёртый уровень", sidCustomCategory10, nameCustomCategory);
             addObjectActions(this, objCustomCategory10);
 
-            objCustomCategoryOrigin = addSingleGroupObject(customCategoryOrigin, "ЕС уровень", sidCustomCategoryOrigin, nameCustomCategory, nameCustomCategory10CustomCategoryOrigin);
+            objCustomCategoryOrigin = addSingleGroupObject(customCategoryOrigin, "ЕС уровень", sidCustomCategoryOrigin, nameCustomCategory, sidCustomCategory10CustomCategoryOrigin);
             addObjectActions(this, objCustomCategoryOrigin);
+            //, nameCustomCategory10CustomCategoryOrigin
 
             addPropertyDraw(relationCustomCategory10CustomCategoryOrigin, objCustomCategory10, objCustomCategoryOrigin);
 
@@ -1992,9 +1992,17 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
 
+            design.get(objCustomCategory4.groupTo).grid.constraints.fillVertical = 1;
+            design.get(objCustomCategory4.groupTo).grid.constraints.fillHorizontal = 1;
+            design.get(objCustomCategory6.groupTo).grid.constraints.fillHorizontal = 2;
+            design.get(objCustomCategory9.groupTo).grid.constraints.fillHorizontal = 1;
+            design.get(objCustomCategory10.groupTo).grid.constraints.fillVertical = 1;
+            design.get(objCustomCategory10.groupTo).grid.constraints.fillHorizontal = 2;
+            design.get(objCustomCategoryOrigin.groupTo).grid.constraints.fillHorizontal = 2;
+
             design.addIntersection(design.getGroupObjectContainer(objCustomCategory4.groupTo), design.getGroupObjectContainer(objCustomCategory6.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             design.addIntersection(design.getGroupObjectContainer(objCustomCategory6.groupTo), design.getGroupObjectContainer(objCustomCategory9.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-            design.addIntersection(design.getGroupObjectContainer(objCustomCategory9.groupTo), design.getGroupObjectContainer(objCustomCategory10.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            //design.addIntersection(design.getGroupObjectContainer(objCustomCategory9.groupTo), design.getGroupObjectContainer(objCustomCategory10.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             design.addIntersection(design.getGroupObjectContainer(objCustomCategory10.groupTo), design.getGroupObjectContainer(objCustomCategoryOrigin.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             return design;
