@@ -118,7 +118,7 @@ public class DockableMainFrame extends MainFrame {
         grid.add(0, 3, 1, 1, createDockable("Классовые формы", mainNavigator.relevantClassNavigator));
         grid.add(0, 4, 1, 1, createDockable("Лог", Log.getPanel()));
         grid.add(1, 0, 5, 5, view.getGridArea());
-        grid.add(0, 5, 6, 0.15, createStatusDockable(statusComponent));
+        grid.add(0, 5, 6, 0.15, createStatusDockable(status));
         control.getContentArea().deploy(grid);
 
         setupMenu();

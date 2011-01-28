@@ -524,9 +524,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     public RemoteDialogInterface createObjectEditorDialog(int viewID) throws RemoteException {
         try {
             DialogInstance<T> dialogForm = form.createObjectEditorDialog(viewID);
-            return dialogForm  == null
-                   ? null
-                   : new RemoteDialog<T>(dialogForm, dialogForm.entity.getRichDesign(), exportPort, getCurrentClassListener());
+            return dialogForm == null
+                    ? null
+                    : new RemoteDialog<T>(dialogForm, dialogForm.entity.getRichDesign(), exportPort, getCurrentClassListener());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

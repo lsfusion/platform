@@ -1,10 +1,16 @@
 package platform.client.remote.proxy;
 
+import foxtrot.Job;
+import foxtrot.Worker;
 import org.apache.log4j.Logger;
+import platform.client.Main;
 import platform.client.WaitDialog;
+import platform.client.rmi.ConnectionLostManager;
 import platform.interop.remote.MethodInvocation;
 import platform.interop.remote.PendingRemote;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -26,8 +32,8 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
         this.target = target;
     }
 
-@NonFlushRemoteMethod
-    public Object execute(MethodInvocation[] invocations) throws RemoteException {
+    @NonFlushRemoteMethod
+    public Object execute(final MethodInvocation[] invocations) throws RemoteException {
         logRemoteMethodStartCall("execute");
 
         if (logger.isDebugEnabled()) {
@@ -36,24 +42,34 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
             }
         }
 
-        Object result = target.execute(invocations);
+        Object result = null;
+        if (Thread.currentThread().getName().equals("Init thread")) {
+            result = target.execute(invocations);
+        } else {
+            if (Main.frame != null && Main.frame.statusProgress != null) {
+                Main.frame.statusProgress.setVisible(true);
+                Main.frame.statusProgress.setIndeterminate(true);
+                Main.frame.setCursor(Cursor.WAIT_CURSOR);
+            }
+            result = Worker.post(new Job() {
+                public Object run() {
+                    Object result = null;
+                    try {
+                        result = target.execute(invocations);
+                    } catch (RemoteException e) {
+                    }
+                    return result;
+                }
+            });
+            Main.frame.statusProgress.setVisible(false);
+            Main.frame.setCursor(Cursor.DEFAULT_CURSOR);
+        }
         logRemoteMethodEndCall("execute", result);
         return result;
-
-//        RemoteExecuteSwingWorker worker = new RemoteExecuteSwingWorker(target, invocations);
-//        worker.execute();
-//        try {
-//            WaitDialog.start();
-//            Object result = worker.get();
-//            logRemoteMethodEndCall("execute", result);
-//            return result;
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
     }
 
     @NonFlushRemoteMethod
-    public Object[] createAndExecute(MethodInvocation creator, MethodInvocation[] invocations) throws RemoteException {
+    public Object[] createAndExecute(final MethodInvocation creator, final MethodInvocation[] invocations) throws RemoteException {
         logRemoteMethodStartCall("createAndExecute");
         if (logger.isDebugEnabled()) {
             logger.debug("  Creator   in  createAndExecute: " + creator.toString());
@@ -62,20 +78,29 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
             }
         }
 
-        Object[] result = target.createAndExecute(creator, invocations);
+        Object[] result;
+        if (Thread.currentThread().getName().equals("Init thread")) {
+            result = target.createAndExecute(creator, invocations);
+        } else {
+            if (Main.frame != null && Main.frame.statusComponent != null) {
+                Main.frame.statusProgress.setVisible(true);
+                Main.frame.setCursor(Cursor.WAIT_CURSOR);
+            }
+            result = (Object[]) Worker.post(new Job() {
+                public Object run() {
+                    Object result = null;
+                    try {
+                        result = target.createAndExecute(creator, invocations);
+                    } catch (RemoteException e) {
+                    }
+                    return result;
+                }
+            });
+            Main.frame.statusProgress.setVisible(false);
+            Main.frame.setCursor(Cursor.DEFAULT_CURSOR);
+        }
         logRemoteMethodEndCall("createAndExecute", result);
         return result;
-
-//        RemoteCreateAndExecuteSwingWorker worker = new RemoteCreateAndExecuteSwingWorker(target, creator, invocations);
-//        worker.execute();
-//        try {
-//            WaitDialog.start();
-//            Object[] result = worker.get();
-//            logRemoteMethodEndCall("createAndExecute", result);
-//            return result;
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
     }
 
     @NonFlushRemoteMethod
