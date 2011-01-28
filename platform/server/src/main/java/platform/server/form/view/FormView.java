@@ -399,6 +399,17 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         property.design.headerFont = font;
     }
 
+    public void setHighlightColor(Color highlight) {
+
+        for (PropertyDrawView property : getProperties()) {
+            setHighlightColor(property, highlight);
+        }
+    }
+
+    public void setHighlightColor(PropertyDrawView property, Color highlight) {
+        property.highlightColor = highlight;
+    }
+
     public void setBackground(AbstractGroup group, Color background, GroupObjectEntity groupObject) {
 
         for (PropertyDrawView property : getProperties(group, groupObject)) {

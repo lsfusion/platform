@@ -402,6 +402,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP priceInImporterFreightSku;
     private LP netWeightImporterFreightSku;
     private LP priceFreightImporterFreightSku;
+    private LP oneArticleSkuShipmentDetail;
+    private LP oneSkuShipmentDetail;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -1006,6 +1008,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         oneShipmentArticle = addJProp(baseGroup, "oneShipmentArticle", "Первый артикул", equals2, quantityShipmentArticle, 1, 2, addCProp(DoubleClass.instance, 1));
         oneShipmentArticleSku = addJProp(baseGroup, "oneShipmentArticleSku", "Первый артикул", oneShipmentArticle, 1, articleSku, 2);
         oneShipmentSku = addJProp(baseGroup, "oneShipmentSku", "Первый SKU", equals2, quantityShipmentSku, 1, 2, addCProp(DoubleClass.instance, 1));
+
+        if (USE_SHIPMENT_DETAIL) {
+            oneArticleSkuShipmentDetail = addJProp(baseGroup, "oneArticleSkuShipmentDetail", "Первый артикул", oneShipmentArticleSku, shipmentShipmentDetail, 1, skuShipmentDetail, 1);
+            oneSkuShipmentDetail = addJProp(baseGroup, "oneSkuShipmentDetail", "Первый SKU", oneShipmentSku, shipmentShipmentDetail, 1, skuShipmentDetail, 1);
+        }
 
         // Transfer
         stockFromTransfer = addDProp(idGroup, "stockFromTransfer", "Место хранения (с) (ИД)", stock, transfer);
@@ -1621,9 +1628,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                         nameBrandSupplierArticleSkuShipmentDetail, originalNameArticleSkuShipmentDetail, 
                         netWeightArticleSkuShipmentDetail,
                         nameCountryOfOriginArticleSkuShipmentDetail, mainCompositionArticleSkuShipmentDetail,
-                        nameCategoryArticleSkuShipmentDetail, netWeightSkuShipmentDetail,
-                        nameCountryOfOriginSkuShipmentDetail, mainCompositionSkuShipmentDetail,
-                        additionalCompositionSkuShipmentDetail, nameUnitOfMeasureArticleSkuShipmentDetail,
+                        nameCategoryArticleSkuShipmentDetail, nameUnitOfMeasureArticleSkuShipmentDetail,
+                        netWeightSkuShipmentDetail, nameCountryOfOriginSkuShipmentDetail,
+                        mainCompositionSkuShipmentDetail, additionalCompositionSkuShipmentDetail,
                         sidSupplierBoxShipmentDetail, barcodeSupplierBoxShipmentDetail,
                         barcodeStockShipmentDetail, nameRouteFreightBoxShipmentDetail,
                         quantityShipmentDetail, netWeightShipmentDetail, nameUserShipmentDetail, timeShipmentDetail);
@@ -1635,6 +1642,16 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 setForceViewType(itemAttributeGroup, ClassViewType.GRID, objShipmentDetail.groupTo);
                 setForceViewType(supplierAttributeGroup, ClassViewType.PANEL, objShipmentDetail.groupTo);
                 setForceViewType(intraAttributeGroup, ClassViewType.PANEL, objShipmentDetail.groupTo);
+
+                PropertyObjectEntity oneArticleProperty = addPropertyObject(oneArticleSkuShipmentDetail, objShipmentDetail);
+                PropertyObjectEntity oneSkuProperty = addPropertyObject(oneSkuShipmentDetail, objShipmentDetail);
+
+                getPropertyDraw(nameCategoryArticleSkuShipmentDetail).setPropertyHighlight(oneArticleProperty);
+                getPropertyDraw(nameUnitOfMeasureArticleSkuShipmentDetail).setPropertyHighlight(oneArticleProperty);
+                getPropertyDraw(netWeightSkuShipmentDetail).setPropertyHighlight(oneSkuProperty);
+                getPropertyDraw(nameCountryOfOriginSkuShipmentDetail).setPropertyHighlight(oneSkuProperty);
+                getPropertyDraw(mainCompositionSkuShipmentDetail).setPropertyHighlight(oneSkuProperty);
+                getPropertyDraw(additionalCompositionSkuShipmentDetail).setPropertyHighlight(oneSkuProperty);
 
                 addFixedFilter(new CompareFilterEntity(addPropertyObject(shipmentShipmentDetail, objShipmentDetail), Compare.EQUALS, objShipment));
             }
@@ -1772,6 +1789,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 design.get(nameRoute).design.font = new Font("Tahoma", Font.BOLD, 64);
                 design.getGroupObjectContainer(objRoute.groupTo).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
             }
+
+            design.setHighlightColor(new Color(255,128,128));
 
             return design;
         }
@@ -1925,7 +1944,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             if (tree)
                  treeCustomCategory = addTreeGroupObject(objCustomCategory4.groupTo, objCustomCategory6.groupTo, objCustomCategory9.groupTo, objCustomCategory10.groupTo);
 
-            objCustomCategoryAdditional = addSingleGroupObject(customCategoryOrigin, "Дополнительный уровень", sidCustomCategoryOrigin, nameCustomCategory);
+            objCustomCategoryAdditional = addSingleGroupObject(customCategoryOrigin, "ЕС уровень", sidCustomCategoryOrigin, nameCustomCategory);
             addObjectActions(this, objCustomCategoryAdditional);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory4CustomCategory6, objCustomCategory6), Compare.EQUALS, objCustomCategory4));

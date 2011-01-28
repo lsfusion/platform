@@ -137,8 +137,8 @@ public class SwingUtils {
     // запрашивает положение объекта, чтобы он не вылезал за экран
     public static void requestLocation(Component comp, Point point) {
         Container parent = comp.getParent();
-        point.x = Math.min(point.x, parent.getX() + parent.getWidth() - comp.getWidth() - 20);
-        point.y = Math.min(point.y, parent.getY() + parent.getHeight() - comp.getHeight() - 20);
+        point.x = Math.max(Math.min(point.x, parent.getX() + parent.getWidth() - comp.getWidth() - 20), 0);
+        point.y = Math.max(Math.min(point.y, parent.getY() + parent.getHeight() - comp.getHeight() - 20), 0);
         comp.setLocation(point);
     }
 
