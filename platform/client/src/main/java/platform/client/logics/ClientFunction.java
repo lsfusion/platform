@@ -16,7 +16,7 @@ public class ClientFunction extends ClientComponent implements AbstractFunction<
 
     public String caption;
     public String type;
-    public boolean visible;
+    public boolean visible = true;
 
     public void setCaption(String caption) {
         this.caption = caption;

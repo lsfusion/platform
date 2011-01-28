@@ -2954,8 +2954,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected LP addSGProp(AbstractGroup group, String sID, boolean persistent, String caption, LP groupProp, Object... params) {
         if (persistent) {
-            LP property = addGProp(group, genSID(), false, caption, groupProp, true, params);
-            return addJProp(sID, persistent, caption, onlyNotZero, directLI(property));
+            LP property = addGProp(null, genSID(), false, caption, groupProp, true, params);
+            return addJProp(group, sID, persistent, caption, onlyNotZero, directLI(property));
         } else {
             return addGProp(group, sID, false, caption, groupProp, true, params);
         }
