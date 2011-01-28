@@ -1083,6 +1083,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         LP sessionDate = addDProp(baseGroup, "sessionDate", "Дата сессии", DateClass.instance, session);
         sessionDate.setDerivedChange(currentDate, true, is(session), 1);
         onlyNotZero = addJProp(andNot1, 1, addJProp(equals2, 1, vzero), 1);
+        onlyNotZero.property.isOnlyNotZero = true;
 
         objectByName = addMGProp(idGroup, "objectByName", "Объект (Имя)", object(baseClass.named), name, 1);
         seekObjectName = addJProp(true, "Поиск объекта", addSAProp(null), objectByName, 1);
@@ -1933,6 +1934,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return result;
     }
 
+    public List<AggregateProperty> getAggregateStoredProperties() {
+        List<AggregateProperty> result = new ArrayList<AggregateProperty>();
+        for (Property property : getPropertyList())
+            if (property.isStored() && property instanceof AggregateProperty)
+                result.add((AggregateProperty) property);
+        return result;
+    }
+
     private List<Property> getDerivedPropertyList() { // переставляет execute'ы заведомо до changeProps, чтобы разрешать циклы
         List<Property> result = new ArrayList<Property>();
         for (Property property : getPropertyList()) {
@@ -2155,6 +2164,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             sql.packTable(table);
 
         recalculateAggregations(sql, recalculateProperties);
+//        recalculateAggregations(sql, getAggregateStoredProperties());
+
 
         // создадим индексы в базе
         for (Map.Entry<ImplementTable, Set<List<String>>> mapIndex : mapIndexes.entrySet())
@@ -2794,10 +2805,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addProperty(group, persistent, new LP<L>(implement.property, BaseUtils.mapList(listImplements, BaseUtils.reverse(implement.mapping))));
     }
 
-    private <P extends PropertyInterface> LP mapLGProp(AbstractGroup group, GroupProperty<P> property, List<PropertyInterfaceImplement<P>> listImplements) {
-        return mapLGProp(group, false, property, listImplements);
-    }
-
     private <P extends PropertyInterface> LP mapLGProp(AbstractGroup group, boolean persistent, GroupProperty<P> property, List<PropertyInterfaceImplement<P>> listImplements) {
         return mapLGProp(group, persistent, new PropertyImplement<PropertyInterfaceImplement<P>, GroupProperty.Interface<P>>(property, property.getMapInterfaces()), listImplements);
     }
@@ -3051,12 +3058,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         // читаем groupProp, implements его для группировки, restriction с map'ом и orders с map'ом на restriction
         List<PropertyInterfaceImplement<T>> groupImplements = listImplements.subList(0, intNum - orders - 1);
-        DistrGroupProperty<T, P> property = new DistrGroupProperty<T, P>(sID, caption, groupImplements, groupProp.property,
+        DistrGroupProperty<T, P> property = new DistrGroupProperty<T, P>(persistent?genSID():sID, caption, groupImplements, groupProp.property,
                 new OrderedMap<PropertyInterfaceImplement<T>, Boolean>(listImplements.subList(intNum - orders, intNum), ascending),
                 (PropertyMapImplement<P, T>) listImplements.get(intNum - orders - 1));
 
         // нужно добавить ограничение на уникальность
-        return mapLGProp(group, persistent, property, groupImplements);
+        if (persistent) {
+            LP groupProperty = mapLGProp(null, false, property, groupImplements);
+            return addJProp(group, sID, persistent, caption, onlyNotZero, directLI(groupProperty));
+        }
+            return mapLGProp(group, false, property, groupImplements);
     }
 
     protected LP addUProp(AbstractGroup group, String sID, String caption, Union unionType, Object... params) {

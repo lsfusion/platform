@@ -535,4 +535,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
                 return getInterfaceType(key);
             }}, getType());
     }
+
+    // дебилизм конечно, но это самый простой обход DistrGroupProperty
+    public boolean isOnlyNotZero = false;
 }

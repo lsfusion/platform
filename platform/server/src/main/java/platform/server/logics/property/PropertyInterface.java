@@ -65,6 +65,10 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     // для того чтобы "попробовать" изменения (на самом деле для кэша)
     public Expr changeExpr;
 
+    public MapDataChanges<P> mapDataChanges(Map<P, KeyExpr> joinImplement, Expr expr, Where where, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
+        return new MapDataChanges<P>();
+    }
+
     public MapDataChanges<P> mapJoinDataChanges(Map<P, KeyExpr> joinImplement, Expr expr, Where where, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
         return new MapDataChanges<P>();
     }

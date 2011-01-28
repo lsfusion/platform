@@ -1,5 +1,8 @@
 package tmc;
 
+import jxl.Cell;
+import jxl.Sheet;
+import jxl.Workbook;
 import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
@@ -15,6 +18,7 @@ import platform.server.data.Time;
 import platform.server.data.Union;
 import platform.server.data.expr.query.OrderType;
 import platform.server.data.sql.DataAdapter;
+import platform.server.data.type.Type;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.instance.FormInstance;
@@ -25,12 +29,15 @@ import platform.server.form.instance.filter.CompareFilterInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.*;
+import platform.server.integration.ImportField;
+import platform.server.integration.ImportKey;
+import platform.server.integration.ImportTable;
+import platform.server.integration.IntegrationService;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.ActionProperty;
-import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.*;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.DataSession;
 import tmc.integration.PanelExternalScreen;
@@ -44,15 +51,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 
 public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
@@ -80,9 +86,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     CustomClass orderDeliveryLocal;
     CustomClass commitDeliveryLocal;
     CustomClass orderDeliveryShopLocal;
+    CustomClass commitDeliveryShopLocal;
     CustomClass orderDeliveryWarehouseLocal;
+    CustomClass commitDeliveryWarehouseLocal;
     // закупка у импортного поставщика
     CustomClass orderDeliveryImport;
+    CustomClass commitDeliveryImport;
 
     // внутреннее перемещение
     CustomClass orderDistributeShop;
@@ -250,13 +259,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         commitDeliveryLocal = addAbstractClass("commitDeliveryLocal", "Приход от местного поставщика", orderDeliveryLocal, commitDelivery);
 
         orderDeliveryShopLocal = addConcreteClass("orderDeliveryShopLocal", "Закупка у местного поставщика на магазин", orderDeliveryLocal, orderShopInc);
-        addConcreteClass("commitDeliveryShopLocal", "Приход от местного поставщика на магазин", orderDeliveryShopLocal, commitDeliveryLocal, commitWholeShopInc);
+        commitDeliveryShopLocal = addConcreteClass("commitDeliveryShopLocal", "Приход от местного поставщика на магазин", orderDeliveryShopLocal, commitDeliveryLocal, commitWholeShopInc);
 
         orderDeliveryWarehouseLocal = addConcreteClass("orderDeliveryWarehouseLocal", "Закупка у местного поставщика на распред. центр", orderDeliveryLocal, orderWarehouseInc);
-        addConcreteClass("commitDeliveryWarehouseLocal", "Приход от местного поставщика на распред. центр", orderDeliveryWarehouseLocal, commitDeliveryLocal);
+        commitDeliveryWarehouseLocal = addConcreteClass("commitDeliveryWarehouseLocal", "Приход от местного поставщика на распред. центр", orderDeliveryWarehouseLocal, commitDeliveryLocal);
 
         orderDeliveryImport = addConcreteClass("orderDeliveryImport", "Закупка у импортного поставщика", orderDelivery, orderWarehouseInc);
-        addConcreteClass("commitDeliveryImport", "Приход от импортного поставщика", orderDeliveryImport, commitDelivery);
+        commitDeliveryImport = addConcreteClass("commitDeliveryImport", "Приход от импортного поставщика", orderDeliveryImport, commitDelivery);
 
         orderReturnDeliveryLocal = addConcreteClass("orderReturnDeliveryLocal", "Заявка на возврат местному поставщику", orderStoreOut, documentInner, orderLocal);
         invoiceReturnDeliveryLocal = addConcreteClass("invoiceReturnDeliveryLocal", "Выписанная заявка на возврат местному поставщику", orderReturnDeliveryLocal, invoiceDocument);
@@ -295,6 +304,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP orderUserBarcode;
     LP orderComputer;
     LP saleExport;
+    LP importOrder;
     LP articleSaleAction;
 
     LP articleFormatMin;
@@ -360,6 +370,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         payWithCard = addAProp(new PayWithCardActionProperty());
         printOrderCheck = addAProp(new PrintOrderCheckActionProperty());
         saleExport = addAProp(new SaleExportActionProperty());
+        importOrder = addAProp(new ImportOrderActionProperty());
 
         computerShop = addDProp("computerShop", "Магазин рабочего места", shop, computer);
         currentShop = addJProp("Текущий магазин", computerShop, currentComputer);
@@ -411,8 +422,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP sameContragent = addJProp(equals2, orderContragent, 1, orderContragent, 2);
         LP diffContragent = addJProp(diff2, orderContragent, 1, orderContragent, 2);
 
-        invoiceNumber = addDProp(baseGroup, "invoiceNumber", "Накладная", StringClass.get(7), invoiceDocument);
-        invoiceSeries = addDProp(baseGroup, "invoiceSeries", "Серия", StringClass.get(2), invoiceDocument);
+        invoiceNumber = addDProp(baseGroup, "invoiceNumber", "Накладная", StringClass.get(15), invoiceDocument);
+        invoiceSeries = addDProp(baseGroup, "invoiceSeries", "Серия", StringClass.get(4), invoiceDocument);
 
         outerOrderQuantity = addDProp(documentGroup, "extIncOrderQuantity", "Кол-во заяв.", DoubleClass.instance, orderDelivery, article);
         outerCommitedQuantity = addDProp(documentGroup, "extIncCommitedQuantity", "Кол-во принятое", DoubleClass.instance, commitDelivery, article);
@@ -741,7 +752,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         // без округлений
         sumWithNDSDeliveryOrder = addSUProp(documentPriceGroup, "sumWithNDSDeliveryOrder", "Сумма пост. с НДС", Union.SUM, sumDeliveryOrder, sumNDSDeliveryOrder);
         sumWithoutNDSRetailOrder = addDUProp(documentPriceGroup, "sumWithoutNDSRetailOrder", "Сумма розн. без НДС", sumRetailOrder, sumNDSRetailOrder);
-        sumAddvOrder = addDUProp(documentPriceGroup, "sumAddvOrder", "Сумма нацен.", sumWithoutNDSRetailOrder, sumDeliveryOrder);
+        sumAddvOrder = addJProp(documentPriceGroup, "sumAddvOrder", "Сумма нацен.", diff, sumWithoutNDSRetailOrder, 1, sumDeliveryOrder, 1);
         addvOrder = addJProp(documentPriceGroup, "addvOrder", "Наценка", round0, addJProp(calcPercent, sumAddvOrder, 1, sumDeliveryOrder, 1), 1);
 
         // переоценка
@@ -1139,75 +1150,96 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         FormEntity pricers = addFormEntity(new PricersFormEntity(print, "pricers"));
 
         NavigatorElement delivery = new NavigatorElement(baseElement, "delivery", "Управление закупками");
-        addFormEntity(new SupplierArticleFormEntity(delivery, "supplierArticleForm"));
-        FormEntity deliveryShopLocal = addFormEntity(new DeliveryShopLocalFormEntity(delivery, true, "deliveryShopLocal"));
-        FormEntity deliveryShopLocalBrowse = addFormEntity(new DeliveryShopLocalFormEntity(deliveryShopLocal, false, "deliveryShopLocalBrowse"));
-        FormEntity deliveryWarehouseLocal = addFormEntity(new DeliveryWarehouseLocalFormEntity(delivery, true, "deliveryWarehouseLocal"));
-        FormEntity deliveryWarehouseLocalBrowse = addFormEntity(new DeliveryWarehouseLocalFormEntity(deliveryWarehouseLocal, false, "deliveryWarehouseLocalBrowse"));
-        FormEntity deliveryImport = addFormEntity(new DeliveryImportFormEntity(delivery, true, "deliveryImport"));
-        FormEntity deliveryImportBrowse = addFormEntity(new DeliveryImportFormEntity(deliveryImport, false, "deliveryImportBrowse"));
-        FormEntity returnDelivery = addFormEntity(new ReturnDeliveryLocalFormEntity(delivery, "returnDelivery", true));
-        addFormEntity(new ReturnDeliveryLocalFormEntity(returnDelivery, "returnDelivery2", false));
+            addFormEntity(new SupplierArticleFormEntity(delivery, "supplierArticleForm"));
+            NavigatorElement deliveryLocal = new NavigatorElement(delivery, "deliveryLocal", "Закупки у местных поставщиков");
+                NavigatorElement deliveryShopLocal = new NavigatorElement(deliveryLocal, "deliveryShopLocal", "Закупки на магазин");
+                    FormEntity deliveryCommitShopLocal = addFormEntity(new DeliveryShopLocalFormEntity(deliveryShopLocal, true, "deliveryCommitShopLocal", 1));
+                    deliveryCommitShopLocal.caption = "Ввод прихода";
+                    FormEntity deliveryOrderShopLocal = addFormEntity(new DeliveryShopLocalFormEntity(deliveryShopLocal, true, "deliveryOrderShopLocal", 0));
+                    deliveryOrderShopLocal.caption = "Ввод заявки";
+                    FormEntity deliveryShopLocalBrowse = addFormEntity(new DeliveryShopLocalFormEntity(deliveryShopLocal, false, "deliveryShopLocalBrowse", 0));
+                    deliveryShopLocalBrowse.caption = "Список документов";
+                NavigatorElement deliveryWarehouseLocal = new NavigatorElement(deliveryLocal, "deliveryWarehouseLocal", "Закупки на распред. центр");
+                    FormEntity deliveryWarehouseShopLocal = addFormEntity(new DeliveryWarehouseLocalFormEntity(deliveryWarehouseLocal, true, "deliveryWarehouseShopLocal", 1));
+                    deliveryWarehouseShopLocal.caption = "Ввод прихода";
+                    FormEntity deliveryOrderWarehouseLocal = addFormEntity(new DeliveryWarehouseLocalFormEntity(deliveryWarehouseLocal, true, "deliveryOrderWarehouseLocal", 0));
+                    deliveryOrderWarehouseLocal.caption = "Ввод заявки";
+                    FormEntity deliveryCommitWarehouseLocal = addFormEntity(new DeliveryWarehouseLocalFormEntity(deliveryWarehouseLocal, false, "deliveryCommitWarehouseLocal", 0));
+                    deliveryCommitWarehouseLocal.caption = "Список документов";
+                NavigatorElement returnDeliveryLocal = new NavigatorElement(deliveryLocal, "returnDeliveryLocal", "Возвраты поставщику");
+                    FormEntity returnCommitDeliveryLocal = addFormEntity(new ReturnDeliveryLocalFormEntity(returnDeliveryLocal, true, "returnCommitDeliveryLocal", 1));
+                    returnCommitDeliveryLocal.caption = "Ввод отгрузки";
+                    FormEntity returnOrderDeliveryLocal = addFormEntity(new ReturnDeliveryLocalFormEntity(returnDeliveryLocal, true, "returnOrderDeliveryLocal", 0));
+                    returnOrderDeliveryLocal.caption = "Ввод заявки";
+                    FormEntity returnDeliveryLocalBrowse = addFormEntity(new ReturnDeliveryLocalFormEntity(returnDeliveryLocal, false, "returnDeliveryLocalBrowse", 0));
+                    returnDeliveryLocalBrowse.caption = "Список документов";
+            NavigatorElement deliveryImport = new NavigatorElement(delivery, "deliveryImport", "Закупки у импортных поставщиков");
+                FormEntity deliveryCommitImport = addFormEntity(new DeliveryImportFormEntity(deliveryImport, true, "deliveryCommitImport", 1));
+                deliveryCommitImport.caption = "Ввод прихода";
+                FormEntity deliveryOrderImport = addFormEntity(new DeliveryImportFormEntity(deliveryImport, true, "deliveryOrderImport", 0));
+                deliveryOrderImport.caption = "Ввод заявки";
+                FormEntity deliveryImportBrowse = addFormEntity(new DeliveryImportFormEntity(deliveryImport, false, "deliveryImportBrowse", 0));
+                deliveryImportBrowse.caption = "Список документов";
 
         NavigatorElement sale = new NavigatorElement(baseElement, "sale", "Управление продажами");
-        NavigatorElement saleRetailElement = new NavigatorElement(sale, "saleRetailElement", "Управление розничными продажами");
-        saleRetailCashRegisterElement = new NavigatorElement(saleRetailElement, "saleRetailCashRegisterElement", "Касса");
-        commitSaleForm = addFormEntity(new CommitSaleCheckRetailFormEntity(saleRetailCashRegisterElement, "commitSaleForm", true, false));
-        addFormEntity(new CommitSaleCheckRetailFormEntity(commitSaleForm, "commitSaleCheckRetailForm", false, false));
-        commitSaleBrowseForm = addFormEntity(new CommitSaleCheckRetailFormEntity(commitSaleForm, "commitSaleBrowseForm", false, true));
-        addFormEntity(new CommitSaleCheckRetailExcelFormEntity(commitSaleForm, "commitSaleCheckRetailExcelForm", "Выгрузка в Excel"));
-        saleCheckCertForm = addFormEntity(new SaleCheckCertFormEntity(saleRetailCashRegisterElement, "saleCheckCertForm", true, false));
-        addFormEntity(new SaleCheckCertFormEntity(saleCheckCertForm, "saleCheckCertForm2", false, false));
-        saleCheckCertBrowseForm = addFormEntity(new SaleCheckCertFormEntity(saleCheckCertForm, "saleCheckCertBrowseForm", false, true));
-        returnSaleCheckRetailArticleForm = addFormEntity(new ReturnSaleCheckRetailFormEntity(saleRetailCashRegisterElement, true, "returnSaleCheckRetailArticleForm", false));
-        addFormEntity(new ReturnSaleCheckRetailFormEntity(returnSaleCheckRetailArticleForm, false, "returnSaleCheckRetailArticleForm2", false));
-        returnSaleCheckRetailBrowse = addFormEntity(new ReturnSaleCheckRetailFormEntity(returnSaleCheckRetailArticleForm, false, "returnSaleCheckRetailBrowse", true));
-        cachRegManagementForm = addFormEntity(cashRegController.createCashRegManagementFormEntity(saleRetailCashRegisterElement, "cachRegManagementForm"));
-        addFormEntity(new ShopMoneyFormEntity(saleRetailCashRegisterElement, "shopMoneyForm", "Данные из касс"));
-        addFormEntity(new ClientFormEntity(saleRetailCashRegisterElement, "clientForm", "Редактирование клиентов"));
-        NavigatorElement saleRetailInvoice = new NavigatorElement(saleRetailElement, "saleRetailInvoice", "Безналичный расчет");
-        FormEntity saleRetailInvoiceForm = addFormEntity(new OrderSaleInvoiceRetailFormEntity(saleRetailInvoice, "saleRetailInvoiceForm", true, false));
-        addFormEntity(new OrderSaleInvoiceRetailFormEntity(saleRetailInvoiceForm, "orderSaleInvoiceRetailForm", false, false));
-        FormEntity saleInvoiceCert = addFormEntity(new SaleInvoiceCertFormEntity(saleRetailInvoice, "saleInvoiceCert", true, false));
-        addFormEntity(new SaleInvoiceCertFormEntity(saleInvoiceCert, "saleInvoiceCert2", false, false));
-        FormEntity returnSaleInvoiceRetailArticle = addFormEntity(new ReturnSaleInvoiceRetailFormEntity(saleRetailInvoice, true, "returnSaleInvoiceRetailArticle", false));
-        addFormEntity(new ReturnSaleInvoiceRetailFormEntity(returnSaleInvoiceRetailArticle, false, "returnSaleInvoiceRetailArticle2", false));
-        addFormEntity(new ReturnSaleInvoiceRetailFormEntity(returnSaleInvoiceRetailArticle, false, "returnSaleInvoiceRetailArticle3", true));
-        NavigatorElement saleWhole = new NavigatorElement(sale, "saleWhole", "Управление оптовыми продажами");
-        FormEntity saleWholeForm = addFormEntity(new SaleWholeFormEntity(saleWhole, "saleWholeForm", true));
-        addFormEntity(new SaleWholeFormEntity(saleWholeForm, "saleWholeForm2", false));
-        FormEntity returnSaleWholeArticle = addFormEntity(new ReturnSaleWholeFormEntity(saleWhole, "returnSaleWholeArticle", true));
-        addFormEntity(new ReturnSaleWholeFormEntity(returnSaleWholeArticle, "returnSaleWholeArticle2", false));
+            NavigatorElement saleRetailElement = new NavigatorElement(sale, "saleRetailElement", "Управление розничными продажами");
+                saleRetailCashRegisterElement = new NavigatorElement(saleRetailElement, "saleRetailCashRegisterElement", "Касса");
+                    commitSaleForm = addFormEntity(new CommitSaleCheckRetailFormEntity(saleRetailCashRegisterElement, "commitSaleForm", true, false));
+                        addFormEntity(new CommitSaleCheckRetailFormEntity(commitSaleForm, "commitSaleCheckRetailForm", false, false));
+                        commitSaleBrowseForm = addFormEntity(new CommitSaleCheckRetailFormEntity(commitSaleForm, "commitSaleBrowseForm", false, true));
+                        addFormEntity(new CommitSaleCheckRetailExcelFormEntity(commitSaleForm, "commitSaleCheckRetailExcelForm", "Выгрузка в Excel"));
+                    saleCheckCertForm = addFormEntity(new SaleCheckCertFormEntity(saleRetailCashRegisterElement, "saleCheckCertForm", true, false));
+                        addFormEntity(new SaleCheckCertFormEntity(saleCheckCertForm, "saleCheckCertForm2", false, false));
+                        saleCheckCertBrowseForm = addFormEntity(new SaleCheckCertFormEntity(saleCheckCertForm, "saleCheckCertBrowseForm", false, true));
+                    returnSaleCheckRetailArticleForm = addFormEntity(new ReturnSaleCheckRetailFormEntity(saleRetailCashRegisterElement, true, "returnSaleCheckRetailArticleForm", false));
+                        addFormEntity(new ReturnSaleCheckRetailFormEntity(returnSaleCheckRetailArticleForm, false, "returnSaleCheckRetailArticleForm2", false));
+                        returnSaleCheckRetailBrowse = addFormEntity(new ReturnSaleCheckRetailFormEntity(returnSaleCheckRetailArticleForm, false, "returnSaleCheckRetailBrowse", true));
+                    cachRegManagementForm = addFormEntity(cashRegController.createCashRegManagementFormEntity(saleRetailCashRegisterElement, "cachRegManagementForm"));
+                    addFormEntity(new ShopMoneyFormEntity(saleRetailCashRegisterElement, "shopMoneyForm", "Данные из касс"));
+                    addFormEntity(new ClientFormEntity(saleRetailCashRegisterElement, "clientForm", "Редактирование клиентов"));
+                NavigatorElement saleRetailInvoice = new NavigatorElement(saleRetailElement, "saleRetailInvoice", "Безналичный расчет");
+                    FormEntity saleRetailInvoiceForm = addFormEntity(new OrderSaleInvoiceRetailFormEntity(saleRetailInvoice, "saleRetailInvoiceForm", true, false));
+                        addFormEntity(new OrderSaleInvoiceRetailFormEntity(saleRetailInvoiceForm, "orderSaleInvoiceRetailForm", false, false));
+                    FormEntity saleInvoiceCert = addFormEntity(new SaleInvoiceCertFormEntity(saleRetailInvoice, "saleInvoiceCert", true, false));
+                        addFormEntity(new SaleInvoiceCertFormEntity(saleInvoiceCert, "saleInvoiceCert2", false, false));
+                    FormEntity returnSaleInvoiceRetailArticle = addFormEntity(new ReturnSaleInvoiceRetailFormEntity(saleRetailInvoice, true, "returnSaleInvoiceRetailArticle", false));
+                        addFormEntity(new ReturnSaleInvoiceRetailFormEntity(returnSaleInvoiceRetailArticle, false, "returnSaleInvoiceRetailArticle2", false));
+                        addFormEntity(new ReturnSaleInvoiceRetailFormEntity(returnSaleInvoiceRetailArticle, false, "returnSaleInvoiceRetailArticle3", true));
+            NavigatorElement saleWhole = new NavigatorElement(sale, "saleWhole", "Управление оптовыми продажами");
+                FormEntity saleWholeForm = addFormEntity(new SaleWholeFormEntity(saleWhole, "saleWholeForm", true));
+                    addFormEntity(new SaleWholeFormEntity(saleWholeForm, "saleWholeForm2", false));
+                FormEntity returnSaleWholeArticle = addFormEntity(new ReturnSaleWholeFormEntity(saleWhole, "returnSaleWholeArticle", true));
+                    addFormEntity(new ReturnSaleWholeFormEntity(returnSaleWholeArticle, "returnSaleWholeArticle2", false));
 
         NavigatorElement distribute = new NavigatorElement(baseElement, "distribute", "Управление распределением");
-        FormEntity distributeShopForm = addFormEntity(new DistributeShopFormEntity(distribute, "distributeShopForm", true));
-        FormEntity distributeShopBrowseForm = addFormEntity(new DistributeShopFormEntity(distributeShopForm, "distributeShopBrowseForm", false));
-        FormEntity distributeWarehouseForm = addFormEntity(new DistributeWarehouseFormEntity(distribute, "distributeWarehouseForm", true));
-        FormEntity distributeWarehouseBrowseForm = addFormEntity(new DistributeWarehouseFormEntity(distributeWarehouseForm, "distributeWarehouseBrowseForm", false));
+            FormEntity distributeShopForm = addFormEntity(new DistributeShopFormEntity(distribute, "distributeShopForm", true));
+                FormEntity distributeShopBrowseForm = addFormEntity(new DistributeShopFormEntity(distributeShopForm, "distributeShopBrowseForm", false));
+            FormEntity distributeWarehouseForm = addFormEntity(new DistributeWarehouseFormEntity(distribute, "distributeWarehouseForm", true));
+                FormEntity distributeWarehouseBrowseForm = addFormEntity(new DistributeWarehouseFormEntity(distributeWarehouseForm, "distributeWarehouseBrowseForm", false));
 
         NavigatorElement price = new NavigatorElement(baseElement, "price", "Управление ценообразованием");
-        FormEntity documentRevalue = addFormEntity(new DocumentRevalueFormEntity(price, true, "documentRevalue"));
-        addFormEntity(new DocumentRevalueFormEntity(documentRevalue, false, "documentRevalue2"));
+            FormEntity documentRevalue = addFormEntity(new DocumentRevalueFormEntity(price, true, "documentRevalue"));
+                addFormEntity(new DocumentRevalueFormEntity(documentRevalue, false, "documentRevalue2"));
 
         NavigatorElement toSell = new NavigatorElement(baseElement, "toSell", "Управление ассортиментом");
-        addFormEntity(new ArticleFormatFormEntity(toSell, "articleFormatForm", true));
-        addFormEntity(new ArticleFormatFormEntity(toSell, "articleFormatForm2", false));
+            addFormEntity(new ArticleFormatFormEntity(toSell, "articleFormatForm", true));
+            addFormEntity(new ArticleFormatFormEntity(toSell, "articleFormatForm2", false));
 
         NavigatorElement tax = new NavigatorElement(baseElement, "tax", "Управление налогами");
-        FormEntity nds = addFormEntity(new DocumentNDSFormEntity(tax, true, "nds"));
-        addFormEntity(new DocumentNDSFormEntity(nds, false, "nds2"));
+            FormEntity nds = addFormEntity(new DocumentNDSFormEntity(tax, true, "nds"));
+                addFormEntity(new DocumentNDSFormEntity(nds, false, "nds2"));
 
         NavigatorElement actions = new NavigatorElement(baseElement, "actions", "Управление акциями");
-        FormEntity saleAction = addFormEntity(new ActionFormEntity(actions, "saleAction"));
-        FormEntity couponInterval = addFormEntity(new CouponIntervalFormEntity(actions, "couponInterval"));
-        FormEntity couponArticle = addFormEntity(new CouponArticleFormEntity(actions, "couponArticle"));
+            FormEntity saleAction = addFormEntity(new ActionFormEntity(actions, "saleAction"));
+            FormEntity couponInterval = addFormEntity(new CouponIntervalFormEntity(actions, "couponInterval"));
+            FormEntity couponArticle = addFormEntity(new CouponArticleFormEntity(actions, "couponArticle"));
 
         NavigatorElement balance = new NavigatorElement(baseElement, "balance", "Управление хранением");
-        FormEntity balanceCheck = addFormEntity(new BalanceCheckFormEntity(balance, "balanceCheck", true));
-        addFormEntity(new BalanceCheckFormEntity(balanceCheck, "balanceCheck2", false));
+            FormEntity balanceCheck = addFormEntity(new BalanceCheckFormEntity(balance, "balanceCheck", true));
+                addFormEntity(new BalanceCheckFormEntity(balanceCheck, "balanceCheck2", false));
 
         NavigatorElement store = new NavigatorElement(baseElement, "store", "Сводная информация");
-        addFormEntity(new StoreArticleFormEntity(store, "storeArticleForm"));
+            addFormEntity(new StoreArticleFormEntity(store, "storeArticleForm"));
 
         addFormEntity(new GlobalFormEntity(baseElement, "globalForm"));
 
@@ -1546,6 +1578,19 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                     "Необходимо",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0)));
         }
+
+        protected void addCheckFilter(RegularFilterGroupEntity filterGroup, boolean setDefault) {
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
+                    new CompareFilterEntity(addPropertyObject(quantityDiffCommitArticle, objDoc, objArt), Compare.NOT_EQUALS, 0.0),
+                    "Отличается от заказа",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0)), setDefault);
+        }
+
+        protected void fillExtraCheckFilters(RegularFilterGroupEntity filterGroup, boolean toAdd) {
+            if(!toAdd)
+                addCheckFilter(filterGroup, false);
+        }
+
     }
 
     // для те которые не различают заказано и выполнено
@@ -1605,25 +1650,25 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             return new OrFilterEntity(new NotNullFilterEntity(getOrderQuantity()), new NotNullFilterEntity(getCommitedQuantity()));
         }
 
-        protected OuterFormEntity(NavigatorElement parent, String sID, boolean toAdd, CustomClass documentClass) {
-            super(parent, sID, documentClass, toAdd);
+        protected OuterFormEntity(NavigatorElement parent, String sID, boolean toAdd, int concrete, CustomClass orderClass, CustomClass commitClass) {
+            super(parent, sID, concrete==0?orderClass:commitClass, toAdd);
+
+            if(toAdd && concrete!=0)
+                addCheckFilter(articleFilterGroup, true);
+
+            addPropertyDraw(importOrder, objDoc);
         }
 
         @Override
         protected void fillExtraFilters(RegularFilterGroupEntity filterGroup, boolean toAdd) {
             fillExtraLogisticsFilters(filterGroup, toAdd);
 
-            if (!toAdd)
-                filterGroup.addFilter(new RegularFilterEntity(genID(),
-                        new CompareFilterEntity(addPropertyObject(quantityDiffCommitArticle, objDoc, objArt), Compare.NOT_EQUALS, 0.0),
-                        "Отличается от заказа",
-                        KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0)), false);
+            fillExtraCheckFilters(filterGroup, toAdd);
         }
-    }
 
-    private class DeliveryShopLocalFormEntity extends OuterFormEntity {
-        public DeliveryShopLocalFormEntity(NavigatorElement parent, boolean toAdd, String sID) {
-            super(parent, sID, toAdd, orderDeliveryShopLocal);
+        @Override
+        protected Object[] getDocumentProps() {
+            return BaseUtils.add(super.getDocumentProps(), importOrder);
         }
 
         @Override
@@ -1632,15 +1677,21 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
     }
 
+    private class DeliveryShopLocalFormEntity extends OuterFormEntity {
+        public DeliveryShopLocalFormEntity(NavigatorElement parent, boolean toAdd, String sID, int concrete) {
+            super(parent, sID, toAdd, concrete, orderDeliveryShopLocal, commitDeliveryShopLocal);
+        }
+    }
+
     private class DeliveryWarehouseLocalFormEntity extends OuterFormEntity {
-        public DeliveryWarehouseLocalFormEntity(NavigatorElement parent, boolean toAdd, String sID) {
-            super(parent, sID, toAdd, orderDeliveryWarehouseLocal);
+        public DeliveryWarehouseLocalFormEntity(NavigatorElement parent, boolean toAdd, String sID, int concrete) {
+            super(parent, sID, toAdd, concrete, orderDeliveryWarehouseLocal, commitDeliveryWarehouseLocal);
         }
     }
 
     private class DeliveryImportFormEntity extends OuterFormEntity {
-        public DeliveryImportFormEntity(NavigatorElement parent, boolean toAdd, String sID) {
-            super(parent, sID, toAdd, orderDeliveryImport);
+        public DeliveryImportFormEntity(NavigatorElement parent, boolean toAdd, String sID, int concrete) {
+            super(parent, sID, toAdd, concrete, orderDeliveryImport, commitDeliveryImport);
         }
     }
 
@@ -1676,8 +1727,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private class ReturnDeliveryLocalFormEntity extends ArticleOuterFormEntity {
-        public ReturnDeliveryLocalFormEntity(NavigatorElement parent, String sID, boolean toAdd) {
-            super(parent, sID, orderReturnDeliveryLocal, toAdd, commitDeliveryLocal, false);
+        public ReturnDeliveryLocalFormEntity(NavigatorElement parent, boolean toAdd, String sID, int concrete) {
+            super(parent, sID, concrete==0?orderReturnDeliveryLocal:commitReturnDeliveryLocal, toAdd, commitDeliveryLocal, false);
         }
     }
 
@@ -2083,11 +2134,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected void fillExtraFilters(RegularFilterGroupEntity filterGroup, boolean toAdd) {
             fillExtraLogisticsFilters(filterGroup, toAdd);
 
-            if (!toAdd)
-                filterGroup.addFilter(new RegularFilterEntity(genID(),
-                        new CompareFilterEntity(addPropertyObject(quantityDiffCommitArticle, objDoc, objArt), Compare.NOT_EQUALS, 0.0),
-                        "Отличается от заказа",
-                        KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0)), false);
+            fillExtraCheckFilters(filterGroup, toAdd);
         }
     }
 
@@ -2921,7 +2968,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
             Integer shopID = (Integer) keys.get(shopInterface).object;
             try {
-                new AbstractSaleExportTask(VEDBusinessLogics.this, ((SaleExportTask) scheduler.getTask("saleExport")).getPath(shopID), shopID) {
+//                ((SaleExportTask) scheduler.getTask("saleExport")).getPath(shopID)
+                new AbstractSaleExportTask(VEDBusinessLogics.this, "exp2", shopID) {
                     protected String getDbfName() {
                         return "datadat.dbf";
                     }
@@ -2943,4 +2991,80 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
     }
 
+    public class ImportOrderActionProperty extends ActionProperty {
+
+        private final ClassPropertyInterface documentInterface;
+
+        public ImportOrderActionProperty() {
+            super(genSID(), "Импортировать заявку", new ValueClass[]{orderDelivery});
+
+            Iterator<ClassPropertyInterface> i = interfaces.iterator();
+            documentInterface = i.next();
+        }
+
+        public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            DataObject document = keys.get(documentInterface);
+            FormInstance remoteForm = executeForm.form;
+            DataSession session = remoteForm.session;
+
+            Sheet sh;
+            try {
+                ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
+                sh = Workbook.getWorkbook(inFile).getSheet(0);
+            } catch (Exception e) {
+                logger.fatal("Не могу прочитать .xsl файл.");
+                return;
+            }
+
+            List<ImportField> fields = new ArrayList<ImportField>();
+            Map<ImportField, PropertyImplement<ImportKey<PropertyInterface>, PropertyInterface>> properties = new HashMap<ImportField, PropertyImplement<ImportKey<PropertyInterface>, PropertyInterface>>();
+
+            ImportField barcodeField = new ImportField(StringClass.get(13)); fields.add(barcodeField);
+            ImportKey articleKey = new ImportKey(article, barcodeToObject.getMapping(barcodeField));
+            properties.put(barcodeField, (PropertyImplement<ImportKey<PropertyInterface>, PropertyInterface>) ((LP)barcode).getMapping(articleKey));
+
+            ImportField nameField = new ImportField(StringClass.get(100)); fields.add(nameField);
+            properties.put(nameField, (PropertyImplement<ImportKey<PropertyInterface>, PropertyInterface>) ((LP)name).getMapping(articleKey));
+            ImportField priceField = new ImportField(DoubleClass.instance); fields.add(priceField);
+            properties.put(priceField, (PropertyImplement<ImportKey<PropertyInterface>, PropertyInterface>) orderAllDeliveryPrice.getMapping(document, articleKey));
+            ImportField quantityField = new ImportField(DoubleClass.instance); fields.add(quantityField);
+            properties.put(priceField, (PropertyImplement<ImportKey<PropertyInterface>, PropertyInterface>) articleOrderQuantity.getMapping(document, articleKey));
+            ImportField ndsField = new ImportField(DoubleClass.instance); fields.add(ndsField);
+            properties.put(ndsField, (PropertyImplement<ImportKey<PropertyInterface>, PropertyInterface>) ndsOrderArticle.getMapping(document, articleKey));
+
+            List<List<Object>> rows = new ArrayList<List<Object>>();
+
+            for (int i = 0; i < sh.getRows(); ++i) {
+                List<Object> row = new ArrayList<Object>();
+
+                for (int j = 0; j < fields.size(); j++) {
+                    try {
+                        row.add(fields.get(j).getFieldClass().parseString(sh.getCell(j, i).getContents()));
+                    } catch (platform.server.data.type.ParseException e) {
+                        logger.warn("Не конвертировано значение совйства", e);
+                    }
+                }
+
+                rows.add(row);
+            }
+
+
+            new IntegrationService<PropertyInterface>(session, new ImportTable(fields, rows), Collections.<ImportKey<PropertyInterface>>singleton(articleKey), properties).synchronize(true, true, false);
+
+
+            actions.add(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+        }
+
+        @Override
+        protected DataClass getValueClass() {
+            return FileActionClass.getInstance("Файлы таблиц", "xls");
+        }
+
+        @Override
+        public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity form) {
+            super.proceedDefaultDraw(entity, form);
+            entity.shouldBeLast = true;
+            entity.forceViewType = ClassViewType.PANEL;
+        }
+    }
 }

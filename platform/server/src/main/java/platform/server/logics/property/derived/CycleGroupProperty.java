@@ -42,7 +42,7 @@ public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyIn
 
     @Override
     protected <U extends Changes<U>> U calculateUsedDataChanges(Modifier<U> modifier) {
-        return MaxChangeProperty.getUsedChanges(this,toChange,modifier);
+        return MaxChangeProperty.getUsedChanges(this,toChange,modifier).addChanges(toChange.getUsedDataChanges(modifier));
     }
 
     @Override

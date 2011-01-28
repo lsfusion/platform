@@ -66,6 +66,11 @@ public class IntegrationService<P extends PropertyInterface> {
             if (processRow) {
                 for (Map.Entry<ImportField, PropertyImplement<ImportKey<P>, P>> entry : properties.entrySet()) {
                     Map<P, DataObject> mapping = BaseUtils.join(entry.getValue().mapping, keyValues);
+
+                    for(Map.Entry<P, DataObject> mapEntry : mapping.entrySet())
+                        if(mapEntry.getValue()==null)
+                            mapEntry.setValue((DataObject)(Object)entry.getValue().mapping.get(mapEntry.getKey()));
+
                     entry.getValue().property.execute(mapping, session, row.getValue(entry.getKey()), session.modifier);
                 }
             }

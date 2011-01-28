@@ -112,8 +112,8 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
         }
 
         if(implement.property instanceof AndFormulaProperty) {
-            Where where = Where.TRUE;
             AndFormulaProperty andProperty = (AndFormulaProperty)implement.property;
+            Where where = Where.TRUE;
             for(AndFormulaProperty.Interface andInterface : andProperty.interfaces)
                 if(andInterface != andProperty.objectInterface) {
                     Where andWhere = implement.mapping.get(andInterface).mapExpr(change.mapKeys,modifier).getWhere();
@@ -123,6 +123,9 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
                 }
             return implement.mapping.get(andProperty.objectInterface).mapJoinDataChanges(change.mapKeys, change.expr, change.where.and(where), changedWhere, modifier);
         }
+
+        if(implement.property.isOnlyNotZero)
+            return ((PropertyMapImplement<?,Interface>)BaseUtils.singleValue(implement.mapping)).mapDataChanges(change, changedWhere, modifier);
 
         if(implementChange) { // groupBy'им выбирая max
             Map<T, Interface> mapInterfaces = new HashMap<T, Interface>();

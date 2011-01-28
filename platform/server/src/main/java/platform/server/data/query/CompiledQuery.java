@@ -84,9 +84,9 @@ public class CompiledQuery<K,V> {
         assert checkQuery();
     }
 
-    static class FullSelect extends CompileSource {
+    private static class FullSelect extends CompileSource {
 
-        FullSelect(KeyType keyType, Map<Value, String> params, SQLSyntax syntax) {
+        private FullSelect(KeyType keyType, Map<Value, String> params, SQLSyntax syntax) {
             super(keyType, params, syntax);
         }
 
@@ -622,7 +622,7 @@ public class CompiledQuery<K,V> {
     }
 
     private static <K,AV> String fillFullSelect(Map<K, KeyExpr> mapKeys, Collection<InnerSelectJoin> innerSelects, Map<AV, Expr> compiledProps, OrderedMap<AV,Boolean> orders, int top, Map<K, String> keySelect, Map<AV, String> propertySelect, Map<Value,String> params, SQLSyntax syntax, String prefix) {
-        FullSelect FJSelect = new FullSelect(innerSelects.iterator().next().where, params,syntax); // для keyType'а берем первый where
+        FullSelect FJSelect = new FullSelect(innerSelects.iterator().next().fullWhere, params,syntax); // для keyType'а берем первый where
 
         // создаем And подзапросыs
         Collection<AndJoinQuery> andProps = new ArrayList<AndJoinQuery>();
