@@ -70,9 +70,16 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP nameSupplierSizeSupplier;
     private LP supplierBrandSupplier;
     private LP nameSupplierBrandSupplier;
+    private LP brandSupplierSupplier;
+    private LP nameBrandSupplierSupplier;
     private LP brandSupplierArticle;
     private LP nameBrandSupplierArticle;
     private LP supplierBrandSupplierArticle;
+    private LP brandSupplierDataArticle;
+    private LP brandSupplierSupplierArticle;
+    private LP brandSupplierArticleSku;
+    private LP nameBrandSupplierArticleSku;
+    private LP nameBrandSupplierArticleSkuShipmentDetail;
 
     private LP supplierSku;
     private LP nameSupplierSku;
@@ -122,7 +129,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private ConcreteCustomClass customCategory6;
     private ConcreteCustomClass customCategory9;
     private ConcreteCustomClass customCategory10;
-    private ConcreteCustomClass customCategoryAdditional;
+    private ConcreteCustomClass customCategoryOrigin;
     private LP categoryArticle;
     private LP nameCategoryArticle;
     private LP categoryArticleSku;
@@ -133,24 +140,30 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP sidCustomCategory6;
     private LP sidCustomCategory9;
     private LP sidCustomCategory10;
-    private LP sidCustomCategoryAdditional;
+    private LP sidCustomCategoryOrigin;
     private LP customCategory2CustomCategory4;
     private LP customCategory4CustomCategory6;
     private LP customCategory6CustomCategory9;
     private LP customCategory9CustomCategory10;
-    private LP customCategory10CustomCategoryAdditional;
+    private LP customCategory6CustomCategory10;
+    private LP customCategory6CustomCategoryOrigin;
+    private LP customCategory10CustomCategoryOrigin;
+    private LP nameCustomCategory10CustomCategoryOrigin;
     private LP sidCustomCategory2CustomCategory4;
     private LP sidCustomCategory4CustomCategory6;
     private LP sidCustomCategory6CustomCategory9;
     private LP sidCustomCategory9CustomCategory10;
-    private LP sidCustomCategory10CustomCategoryAdditional;
+    private LP sidCustomCategory6CustomCategoryOrigin;
     private LP nameCustomCategory2CustomCategory4;
     private LP nameCustomCategory4CustomCategory6;
     private LP nameCustomCategory6CustomCategory9;
     private LP nameCustomCategory9CustomCategory10;
-    private LP nameCustomCategory10CustomCategoryAdditional;
+    private LP nameCustomCategory6CustomCategoryOrigin;
+    private LP relationCustomCategory10CustomCategoryOrigin;
+    private LP relationCustomCategory10;
+    private LP relationCustomCategoryOrigin;
     private LP customCategory10DataArticle;
-    private LP customCategoryAdditionalDataArticle;
+    private LP customCategoryOriginDataArticle;
     private LP sidCustomCategory10Article;
     private LP customCategory10OriginArticle;
     private LP sidCustomCategory10OriginArticle;
@@ -365,12 +378,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP outcomeStockSku;
     private AbstractCustomClass customCategory;
     private LP nameCustomCategory;
-    private LP customCategoryAdditionalArticle;
-    private LP customCategoryAdditionalArticleSku;
-    private LP sidCustomCategoryAdditionalArticleSku;
-    private LP customCategoryAdditionalCustomCategory10;
-    private LP customCategoryAdditionalOriginArticle;
-    private LP sidCustomCategoryAdditionalCustomCategory10;
+    private LP customCategoryOriginArticle;
+    private LP customCategoryOriginArticleSku;
+    private LP sidCustomCategoryOriginArticle;
+    private LP sidCustomCategoryOriginArticleSku;
+    private LP customCategoryOriginCustomCategory10;
+    private LP customCategoryOriginOriginArticle;
+    private LP sidCustomCategoryOriginCustomCategory10;
     private LP quantityBoxInvoiceBoxShipmentStockSku;
     private LP quantityInvoiceShipmentStockSku;
     private LP invoicedSimpleInvoiceSimpleShipmentStockSku;
@@ -474,7 +488,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         customCategory9 = addConcreteClass("customCategory9", "Третий уровень", customCategory);
         customCategory10 = addConcreteClass("customCategory10", "Четвёртый уровень", customCategory);
 
-        customCategoryAdditional = addConcreteClass("customCategoryAdditional", "Дополнительный уровень", customCategory);
+        customCategoryOrigin = addConcreteClass("customCategoryOrigin", "ЕС уровень", customCategory);
 
         creationFreightBox = addConcreteClass("creationFreightBox", "Операция создания коробов", transaction);
         creationPallet = addConcreteClass("creationPallet", "Операция создания паллет", transaction);
@@ -506,27 +520,36 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         sidCustomCategory10 = addDProp(baseGroup, "sidCustomCategory10", "Код(10)", StringClass.get(10), customCategory10);
         sidCustomCategory10.setFixedCharWidth(10);
 
-        sidCustomCategoryAdditional = addDProp(baseGroup, "sidCustomCategoryAdditionalDate", "Код(14)", StringClass.get(14), customCategoryAdditional);
-        sidCustomCategoryAdditional.setFixedCharWidth(14);
+        sidCustomCategoryOrigin = addDProp(baseGroup, "sidCustomCategoryOrigin", "Код ЕС(10)", StringClass.get(10), customCategoryOrigin);
+        sidCustomCategoryOrigin.setFixedCharWidth(10);
 
         customCategory4CustomCategory6 = addDProp(idGroup, "customCategory4CustomCategory6", "Код(4)", customCategory4, customCategory6);
         customCategory6CustomCategory9 = addDProp(idGroup, "customCategory6CustomCategory9", "Код(6)", customCategory6, customCategory9);
         customCategory9CustomCategory10 = addDProp(idGroup, "customCategory9CustomCategory10", "Код(9)", customCategory9, customCategory10);
-        customCategory10CustomCategoryAdditional = addDProp(idGroup, "customCategory10CustomCategoryAdditional", "Код(10)", customCategory10, customCategoryAdditional);
+        customCategory6CustomCategory10 = addJProp(idGroup, "customCategory6CustomCategory10", "Код(6)", customCategory6CustomCategory9, customCategory9CustomCategory10, 1);
+        customCategory6CustomCategoryOrigin = addDProp(idGroup, "customCategory6CustomCategoryOrigin", "Код(6)", customCategory6, customCategoryOrigin);
 
-        customCategoryAdditionalCustomCategory10 = addDProp(idGroup, "customCategoryAdditionalCustomCategory10", "Код(14)", customCategoryAdditional, customCategory10);
-                
+        customCategory10CustomCategoryOrigin = addDProp(idGroup, "customCategory10CustomCategoryOrigin", "Код по умолчанию(ИД)", customCategory10, customCategoryOrigin);
+        nameCustomCategory10CustomCategoryOrigin = addJProp(baseGroup, "nameCustomCategory10CustomCategoryOrigin", "Код по умолчанию", name, customCategory10CustomCategoryOrigin, 1);
+
         sidCustomCategory4CustomCategory6 = addJProp(baseGroup, "sidCustomCategory4CustomCategory6", "Код(4)", sidCustomCategory4, customCategory4CustomCategory6, 1);
         sidCustomCategory6CustomCategory9 = addJProp(baseGroup, "sidCustomCategory6CustomCategory9", "Код(6)", sidCustomCategory6, customCategory6CustomCategory9, 1);
         sidCustomCategory9CustomCategory10 = addJProp(baseGroup, "sidCustomCategory9CustomCategory10", "Код(9)", sidCustomCategory9, customCategory9CustomCategory10, 1);
-        sidCustomCategory10CustomCategoryAdditional = addJProp(baseGroup, "sidCustomCategory10CustomCategoryAdditional", "Код(10)", sidCustomCategory10, customCategory10CustomCategoryAdditional, 1);
-
-        sidCustomCategoryAdditionalCustomCategory10 = addJProp(baseGroup, "sidCustomCategoryAdditionalCustomCategory10", "Код(14)", sidCustomCategoryAdditional, customCategoryAdditionalCustomCategory10, 1);
+        sidCustomCategory6CustomCategoryOrigin = addJProp(baseGroup, "sidCustomCategory6CustomCategoryOrigin", "Код(6)", sidCustomCategory6, customCategory6CustomCategoryOrigin, 1);
 
         nameCustomCategory4CustomCategory6 = addJProp(baseGroup, "nameCustomCategory4CustomCategory6", "Наименование(4)", nameCustomCategory, customCategory4CustomCategory6, 1);
         nameCustomCategory6CustomCategory9 = addJProp(baseGroup, "nameCustomCategory6CustomCategory9", "Наименование(6)", nameCustomCategory, customCategory6CustomCategory9, 1);
         nameCustomCategory9CustomCategory10 = addJProp(baseGroup, "nameCustomCategory9CustomCategory10", "Наименование(9)", nameCustomCategory, customCategory9CustomCategory10, 1);
-        nameCustomCategory10CustomCategoryAdditional = addJProp(baseGroup, "nameCustomCategory10CustomCategoryAdditional", "Наименование(10)", nameCustomCategory, customCategory10CustomCategoryAdditional, 1);
+        nameCustomCategory6CustomCategoryOrigin = addJProp(baseGroup, "nameCustomCategory6CustomCategoryOrigin", "Наименование(6)", nameCustomCategory, customCategory6CustomCategoryOrigin, 1);
+
+        relationCustomCategory10CustomCategoryOrigin = addDProp(baseGroup, "relationCustomCategory10CustomCategoryOrigin", "Связь ТН ВЭД", LogicalClass.instance, customCategory10, customCategoryOrigin);
+
+        relationCustomCategory10 = addJProp(idGroup, "relationCustomCategory10", "Связь ТН ВЭД", and1, 1, relationCustomCategory10CustomCategoryOrigin, 1, 2);
+        relationCustomCategoryOrigin = addJProp(idGroup, "relationCustomCategoryOrigin", "Связь ТН ВЭД", and1, 2, relationCustomCategory10CustomCategoryOrigin, 1, 2);
+
+        /*addConstraint(addJProp("Третий уровень для ЕС должен соответствовать третьему уровню для Бел", diff2,
+                addJProp(customCategory6CustomCategoryOrigin, relationCustomCategoryOrigin, 1, 2),
+                addJProp(customCategory6CustomCategory10, relationCustomCategory10, 1, 2), 1, 2), true);*/
 
         // Supplier
         currencySupplier = addDProp(idGroup, "currencySupplier", "Валюта (ИД)", currency, supplier);
@@ -543,6 +566,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         supplierBrandSupplier = addDProp(idGroup, "supplierBrandSupplier", "Поставщик (ИД)", supplier, brandSupplier);
         nameSupplierBrandSupplier = addJProp(baseGroup, "nameSupplierBrandSupplier", "Поставщик", name, supplierBrandSupplier, 1);
 
+        brandSupplierSupplier = addDProp(idGroup, "brandSupplierSupplier", "Бренд (ИД)", brandSupplier, supplier);
+        nameBrandSupplierSupplier = addJProp(baseGroup, "nameBrandSupplierSupplier", "Бренд по умолчанию", name, brandSupplierSupplier, 1);
+
+        addConstraint(addJProp("Бренд по умолчанию для поставщика должен соответствовать брендам поставщика", diff2, 1, addJProp(supplierBrandSupplier, brandSupplierSupplier, 1), 1), true);
+
         supplierDocument = addDProp(idGroup, "supplierDocument", "Поставщик (ИД)", supplier, document);
         supplierPriceDocument = addJProp(idGroup, "supplierPricedDocument", "Поставщик(ИД)", and1, supplierDocument, 1, is(priceDocument), 1);
         nameSupplierDocument = addJProp(baseGroup, "nameSupplierDocument", "Поставщик", name, supplierDocument, 1);
@@ -556,7 +584,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         nameDestinationDestinationDocument = addJProp(baseGroup, "nameDestinationDestinationDocument", "Пункт назначения", name, destinationDestinationDocument, 1);
 
         // Invoice
-
         importerInvoice = addDProp(idGroup, "importerDocument", "Импортер (ИД)", importer, invoice);
         nameImporterInvoice = addJProp(baseGroup, "nameImporterInvoice", "Импортер", name, importerInvoice, 1);
 
@@ -577,9 +604,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         originalNameArticle = addDProp(supplierAttributeGroup, "originalNameArticle", "Имя производителя (ориг.)", StringClass.get(50), article);
         originalNameArticleSku = addJProp(supplierAttributeGroup, "originalNameArticleSku", "Имя производителя (ориг.)", originalNameArticle, articleSku, 1);
 
-        brandSupplierArticle = addDProp(idGroup, "brandSupplierArticle", "Бренд (ИД)", brandSupplier, article);
-        nameBrandSupplierArticle = addJProp(supplierAttributeGroup, "nameBrandSupplierArticle", "Бренд", name, brandSupplierArticle, 1);
-
         unitOfMeasureArticle = addDProp(idGroup, "unitOfMeasureArticle", "Единица измерения (ИД)", unitOfMeasure, article);
         nameUnitOfMeasureArticle = addJProp(intraAttributeGroup, "nameUnitOfMeasureArticle", "Единица измерения", name, unitOfMeasureArticle, 1);
         unitOfMeasureArticleSku = addJProp(idGroup, true, "unitOfMeasureArticleSku", "Ед. изм. товара (ИД)", unitOfMeasureArticle, articleSku, 1);
@@ -591,18 +615,17 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         categoryArticleSku = addJProp(idGroup, true, "categoryArticleSku", "Категория товара (ИД)", categoryArticle, articleSku, 1);
         nameCategoryArticleSku = addJProp(intraAttributeGroup, "nameCategoryArticleSku", "Категория товара", name, categoryArticleSku, 1);
 
-        customCategory10OriginArticle = addDProp(idGroup, "customCategory10OriginArticle", "ТН ВЭД (ориг.) (ИД)", customCategory10, article);
-        sidCustomCategory10OriginArticle = addJProp(supplierAttributeGroup, "sidCustomCategory10OriginArticle", "Код ТН ВЭД (ориг.)", sidCustomCategory10, customCategory10OriginArticle, 1);
-        customCategory10OriginArticleSku = addJProp(idGroup, "customCategory10OriginArticleSku", "ТН ВЭД (ориг.) (ИД)", customCategory10OriginArticle, articleSku, 1);
-        sidCustomCategory10OriginArticleSku = addJProp(supplierAttributeGroup, "sidCustomCategory10OriginArticleSku", "Код ТН ВЭД (ориг.)", sidCustomCategory10OriginArticle, articleSku, 1);
+        customCategoryOriginArticle = addDProp(idGroup, "customCategoryOriginArticle", "ТН ВЭД (ориг.) (ИД)", customCategoryOrigin, article);
+        sidCustomCategoryOriginArticle = addJProp(supplierAttributeGroup, "sidCustomCategoryOriginArticle", "Код ТН ВЭД (ориг.)", sidCustomCategoryOrigin, customCategoryOriginArticle, 1);
+        customCategoryOriginArticleSku = addJProp(idGroup, "customCategoryOriginArticleSku", "ТН ВЭД (ориг.) (ИД)", customCategoryOriginArticle, articleSku, 1);
+        sidCustomCategoryOriginArticleSku = addJProp(supplierAttributeGroup, "sidCustomCategoryOriginArticleSku", "Код ТН ВЭД (ориг.)", sidCustomCategoryOriginArticle, articleSku, 1);
 
-        customCategoryAdditionalDataArticle = addDProp(idGroup, "customCategoryAdditionalDataArticle", "ТН ВЭД (ИД)", customCategoryAdditional, article);
-        customCategoryAdditionalOriginArticle = addJProp(idGroup, "customCategoryAdditionalOriginArticle", "Код ТН ВЭД (ИД)", customCategoryAdditionalCustomCategory10, customCategory10OriginArticle, 1);
-        //customCategoryAdditionalCustomCategory10
-        customCategoryAdditionalArticle = addSUProp(idGroup, "customCategoryAdditionalArticle", "ТН ВЭД (ИД)", Union.OVERRIDE, customCategoryAdditionalOriginArticle, customCategoryAdditionalDataArticle);
+        customCategory10DataArticle = addDProp(idGroup, "customCategory10DataArticle", "ТН ВЭД (ИД)", customCategory10, article);
+        //customCategory10OriginArticle = addJProp(idGroup, "customCategoryAdditionalOriginArticle", "Код ТН ВЭД (ИД)", customCategoryAdditionalCustomCategory10, customCategory10OriginArticle, 1);
+        //customCategory10Article = addSUProp(idGroup, "customCategoryAdditionalArticle", "ТН ВЭД (ИД)", Union.OVERRIDE, customCategoryAdditionalOriginArticle, customCategoryAdditionalDataArticle);
 
-        customCategoryAdditionalArticleSku = addJProp(idGroup, true, "customCategoryAdditionalArticleSku", "ТН ВЭД (ИД)", customCategoryAdditionalArticle, articleSku, 1);
-        sidCustomCategoryAdditionalArticleSku = addJProp(intraAttributeGroup, "sidCustomCategoryAdditionalArticleSku", "Код ТН ВЭД", sidCustomCategoryAdditional, customCategoryAdditionalArticleSku, 1);
+        customCategory10ArticleSku = addJProp(idGroup, true, "customCategoryAdditionalArticleSku", "ТН ВЭД (ИД)", customCategory10DataArticle, articleSku, 1);
+        sidCustomCategory10ArticleSku = addJProp(intraAttributeGroup, "sidCustomCategoryAdditionalArticleSku", "Код ТН ВЭД", sidCustomCategory10, customCategory10ArticleSku, 1);
 
         // Weight
         netWeightArticle = addDProp(supplierAttributeGroup, "netWeightOriginArticle", "Вес нетто (ориг.)", DoubleClass.instance, article);
@@ -645,7 +668,17 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         supplierArticle = addDProp(idGroup, "supplierArticle", "Поставщик (ИД)", supplier, article);
         nameSupplierArticle = addJProp(baseGroup, "nameSupplierArticle", "Поставщик", name, supplierArticle, 1);
 
+        brandSupplierDataArticle = addDProp(idGroup, "brandSupplierDataArticle", "Бренд (ИД)", brandSupplier, article);
+        brandSupplierSupplierArticle = addJProp(idGroup, "brandSupplierSupplierArticle", "Бренд (ИД)", brandSupplierSupplier, supplierArticle, 1);
+        brandSupplierArticle = addSUProp(idGroup, "brandSupplierArticle", "Бренд (ИД)", Union.OVERRIDE, brandSupplierSupplierArticle, brandSupplierDataArticle);
+        nameBrandSupplierArticle = addJProp(supplierAttributeGroup, "nameBrandSupplierArticle", "Бренд", name, brandSupplierArticle, 1);
+
         supplierBrandSupplierArticle = addJProp(idGroup, "supplierBrandSupplierArticle", "Поставщик", supplierBrandSupplier , brandSupplierArticle, 1);
+        addConstraint(addJProp("Поставщик артикула должен соответствовать поставщику бренда артикула", diff2,
+                supplierArticle, 1, addJProp(supplierBrandSupplier, brandSupplierArticle, 1), 1), true);
+
+        brandSupplierArticleSku = addJProp(idGroup, "brandSupplierArticleSku", "Бренд (ИД)", brandSupplierArticle, articleSku, 1);
+        nameBrandSupplierArticleSku = addJProp(supplierAttributeGroup, "nameBrandSupplierArticleSku", "Бренд", name, brandSupplierArticleSku, 1);
 
         articleSIDSupplier = addCGProp(idGroup, "articleSIDSupplier", "Артикул (ИД)", object(article), sidArticle, sidArticle, 1, supplierArticle, 1);
 
@@ -656,10 +689,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         addArticleCompositeSIDSupplier = addJProp(true, "Ввод составного артикула", addAAProp(articleComposite, sidArticle, supplierArticle), 1, 2);
         addNEArticleCompositeSIDSupplier = addJProp(true, "Ввод составного артикула (НС)", andNot1, addArticleCompositeSIDSupplier, 1, 2, articleSIDSupplier, 1, 2);
-
-        addConstraint(addJProp("Поставщик артикула должен соответствовать поставщику бренда артикула", diff2,
-                supplierArticle, 1, addJProp(supplierBrandSupplier, brandSupplierArticle, 1), 1), true);
-
+        
         supplierSku = addJProp(idGroup, "supplierSku", "Поставщик (ИД)", supplierArticle, articleSku, 1);
         nameSupplierSku = addJProp(baseGroup, "nameSupplierSku", "Поставщик", name, supplierSku, 1);
 
@@ -854,20 +884,20 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             sizeSupplierItemShipmentDetail = addJProp(idGroup, "sizeSupplierItemShipmentDetail", "Размер поставщика (ИД)", sizeSupplierItem, skuShipmentDetail, 1);
             nameSizeSupplierItemShipmentDetail = addJProp(itemAttributeGroup, "nameSizeSupplierItemShipmentDetail", "Размер поставщика", name, sizeSupplierItemShipmentDetail, 1);
 
+            nameBrandSupplierArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, true, "nameBrandSupplierArticleSkuShipmentDetail", "Бренд", nameBrandSupplierArticleSku, skuShipmentDetail, 1);
             originalNameArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, true, "originalNameArticleSkuShipmentDetail", "Имя производителя (ориг.)", originalNameArticleSku, skuShipmentDetail, 1);
 
             categoryArticleSkuShipmentDetail = addJProp(idGroup, true, "categoryArticleSkuShipmentDetail", "Категория товара (ИД)", categoryArticleSku, skuShipmentDetail, 1);
             nameCategoryArticleSkuShipmentDetail = addJProp(intraAttributeGroup, "nameCategoryArticleSkuShipmentDetail", "Категория товара", name, categoryArticleSkuShipmentDetail, 1);
 
-            customCategory10OriginArticleSkuShipmentDetail = addJProp(idGroup, true, "customCategory10OriginArticleSkuShipmentDetail", "ТН ВЭД (ориг.) (ИД)", customCategory10OriginArticleSku, skuShipmentDetail, 1);
-            sidCustomCategory10OriginArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, "sidCustomCategory10OriginArticleSkuShipmentDetail", "Код ТН ВЭД (ориг.)", sidCustomCategory10, customCategory10OriginArticleSkuShipmentDetail, 1);
+            //customCategory10OriginArticleSkuShipmentDetail = addJProp(idGroup, true, "customCategory10OriginArticleSkuShipmentDetail", "ТН ВЭД (ориг.) (ИД)", customCategory10OriginArticleSku, skuShipmentDetail, 1);
+            //sidCustomCategory10OriginArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, "sidCustomCategory10OriginArticleSkuShipmentDetail", "Код ТН ВЭД (ориг.)", sidCustomCategory10, customCategory10OriginArticleSkuShipmentDetail, 1);
 
-            customCategory10ArticleSkuShipmentDetail = addJProp(idGroup, true, "customCategory10ArticleSkuShipmentDetail", "ТН ВЭД (ИД)", customCategoryAdditionalArticleSku, skuShipmentDetail, 1);
-            sidCustomCategory10ArticleSkuShipmentDetail = addJProp(intraAttributeGroup, "sidCustomCategory10ArticleSkuShipmentDetail", "Код ТН ВЭД", sidCustomCategoryAdditional, customCategory10ArticleSkuShipmentDetail, 1);
+            customCategory10ArticleSkuShipmentDetail = addJProp(idGroup, true, "customCategory10ArticleSkuShipmentDetail", "ТН ВЭД (ИД)", customCategory10ArticleSku, skuShipmentDetail, 1);
+            sidCustomCategory10ArticleSkuShipmentDetail = addJProp(intraAttributeGroup, "sidCustomCategory10ArticleSkuShipmentDetail", "Код ТН ВЭД", sidCustomCategory10, customCategory10ArticleSkuShipmentDetail, 1);
 
             //grossWeightOriginArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, true, "grossWeightOriginArticleSkuShipmentDetail", "Вес брутто (ориг.)", grossWeightOriginArticleSku, skuShipmentDetail, 1);
             //grossWeightArticleSkuShipmentDetail = addJProp(intraAttributeGroup, true, "grossWeightArticleSkuShipmentDetail", "Вес брутто", grossWeightArticleSku, skuShipmentDetail, 1);
-
             netWeightArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, true, "netWeightArticleSkuShipmentDetail", "Вес нетто (ориг.)", netWeightArticleSku, skuShipmentDetail, 1);
             netWeightSkuShipmentDetail = addJProp(intraAttributeGroup, true, "netWeightSkuShipmentDetail", "Вес нетто", netWeightSku, skuShipmentDetail, 1);
 
@@ -974,7 +1004,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         oneShipmentSku = addJProp(baseGroup, "oneShipmentSku", "Первый SKU", equals2, quantityShipmentSku, 1, 2, addCProp(DoubleClass.instance, 1));
 
         // Transfer
-
         stockFromTransfer = addDProp(idGroup, "stockFromTransfer", "Место хранения (с) (ИД)", stock, transfer);
         barcodeStockFromTransfer = addJProp(baseGroup, "barcodeStockFromTransfer", "Штрих-код МХ (с)", barcode, stockFromTransfer, 1);
 
@@ -995,7 +1024,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         balanceStockToTransferSku = addJProp(baseGroup, "balanceStockToTransferSku", "Тек. остаток на МХ (на)", balanceStockSku, stockToTransfer, 1, 2);
 
         // Кол-во импортеров
-
         quantityImporterStockSku = addSGProp(baseGroup, "quantityImporterStockSku", "Кол-во оприход.", quantityInvoiceStockSku,
                 importerInvoice, 1, 2, 3);
 
@@ -1123,6 +1151,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         NavigatorElement classifier = new NavigatorElement(baseElement, "classifier", "Справочники");
         addFormEntity(new CustomCategoryFormEntity(classifier, "customCategoryForm", "ТН ВЭД (изменения)", false));
         addFormEntity(new CustomCategoryFormEntity(classifier, "customCategoryForm2", "ТН ВЭД (дерево)", true));
+        addFormEntity(new NewCustomCategoryFormEntity(classifier, "customCategoryForm3", "ТН ВЭД"));
         classifier.add(category.getClassForm(this));
         classifier.add(currency.getClassForm(this));
         classifier.add(store.getClassForm(this));
@@ -1532,7 +1561,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             nameRoute.forceViewType = ClassViewType.PANEL;
                         
             objSku = addSingleGroupObject(sku, "SKU", barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, nameSizeSupplierItem,
-                    originalNameArticleSku, sidCustomCategory10OriginArticleSku,
+                    nameBrandSupplierArticleSku, originalNameArticleSku, sidCustomCategory10OriginArticleSku,
                     netWeightArticleSku, nameCountryOfOriginArticleSku, mainCompositionArticleSku,
                     nameCategoryArticleSku, netWeightSku,
                     nameCountryOfOriginSku, mainCompositionSku,
@@ -1574,7 +1603,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             if (USE_SHIPMENT_DETAIL) {
                 objShipmentDetail = addSingleGroupObject((box ? boxShipmentDetail : simpleShipmentDetail),
                         selection, barcodeSkuShipmentDetail, sidArticleShipmentDetail, sidColorSupplierItemShipmentDetail, nameColorSupplierItemShipmentDetail, nameSizeSupplierItemShipmentDetail,
-                        originalNameArticleSkuShipmentDetail, sidCustomCategory10OriginArticleSkuShipmentDetail,
+                        nameBrandSupplierArticleSkuShipmentDetail, originalNameArticleSkuShipmentDetail, sidCustomCategory10OriginArticleSkuShipmentDetail,
                         netWeightArticleSkuShipmentDetail,
                         nameCountryOfOriginArticleSkuShipmentDetail, mainCompositionArticleSkuShipmentDetail,
                         nameCategoryArticleSkuShipmentDetail, sidCustomCategory10ArticleSkuShipmentDetail,
@@ -1875,20 +1904,20 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             if (!tree)
                 addObjectActions(this, objCustomCategory9);
 
-            objCustomCategory10 = addSingleGroupObject(customCategory10, "Четвёртый уровень", sidCustomCategory10, nameCustomCategory, sidCustomCategoryAdditionalCustomCategory10);
+            objCustomCategory10 = addSingleGroupObject(customCategory10, "Четвёртый уровень", sidCustomCategory10, nameCustomCategory);
             if (!tree)
                 addObjectActions(this, objCustomCategory10);
 
             if (tree)
                  treeCustomCategory = addTreeGroupObject(objCustomCategory4.groupTo, objCustomCategory6.groupTo, objCustomCategory9.groupTo, objCustomCategory10.groupTo);
 
-            objCustomCategoryAdditional = addSingleGroupObject(customCategoryAdditional, "Дополнительный уровень", sidCustomCategoryAdditional, nameCustomCategory);
+            objCustomCategoryAdditional = addSingleGroupObject(customCategoryOrigin, "Дополнительный уровень", sidCustomCategoryOrigin, nameCustomCategory);
             addObjectActions(this, objCustomCategoryAdditional);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory4CustomCategory6, objCustomCategory6), Compare.EQUALS, objCustomCategory4));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory6CustomCategory9, objCustomCategory9), Compare.EQUALS, objCustomCategory6));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory9CustomCategory10, objCustomCategory10), Compare.EQUALS, objCustomCategory9));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory10CustomCategoryAdditional, objCustomCategoryAdditional), Compare.EQUALS, objCustomCategory10));
+            //addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory10CustomCategoryAdditional, objCustomCategoryAdditional), Compare.EQUALS, objCustomCategory10));
         }
 
         @Override
@@ -1909,6 +1938,54 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         }
     }
 
+    private class NewCustomCategoryFormEntity extends FormEntity<RomanBusinessLogics> {
+
+
+        private ObjectEntity objCustomCategory4;
+        private ObjectEntity objCustomCategory6;
+        private ObjectEntity objCustomCategory9;
+        private ObjectEntity objCustomCategory10;
+        private ObjectEntity objCustomCategoryOrigin;
+
+        private NewCustomCategoryFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
+
+            objCustomCategory4 = addSingleGroupObject(customCategory4, "Первый уровень", sidCustomCategory4, nameCustomCategory);
+            addObjectActions(this, objCustomCategory4);
+
+            objCustomCategory6 = addSingleGroupObject(customCategory6, "Второй уровень", sidCustomCategory6, nameCustomCategory);
+            addObjectActions(this, objCustomCategory6);
+
+            objCustomCategory9 = addSingleGroupObject(customCategory9, "Третий уровень", sidCustomCategory9, nameCustomCategory);
+            addObjectActions(this, objCustomCategory9);
+
+            objCustomCategory10 = addSingleGroupObject(customCategory10, "Четвёртый уровень", sidCustomCategory10, nameCustomCategory);
+            addObjectActions(this, objCustomCategory10);
+
+            objCustomCategoryOrigin = addSingleGroupObject(customCategoryOrigin, "ЕС уровень", sidCustomCategoryOrigin, nameCustomCategory, nameCustomCategory10CustomCategoryOrigin);
+            addObjectActions(this, objCustomCategoryOrigin);
+
+            addPropertyDraw(relationCustomCategory10CustomCategoryOrigin, objCustomCategory10, objCustomCategoryOrigin);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory4CustomCategory6, objCustomCategory6), Compare.EQUALS, objCustomCategory4));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory6CustomCategory9, objCustomCategory9), Compare.EQUALS, objCustomCategory6));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory9CustomCategory10, objCustomCategory10), Compare.EQUALS, objCustomCategory9));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory6CustomCategoryOrigin, objCustomCategoryOrigin), Compare.EQUALS, objCustomCategory6));
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
+
+            design.addIntersection(design.getGroupObjectContainer(objCustomCategory4.groupTo), design.getGroupObjectContainer(objCustomCategory6.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            design.addIntersection(design.getGroupObjectContainer(objCustomCategory6.groupTo), design.getGroupObjectContainer(objCustomCategory9.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            design.addIntersection(design.getGroupObjectContainer(objCustomCategory9.groupTo), design.getGroupObjectContainer(objCustomCategory10.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            design.addIntersection(design.getGroupObjectContainer(objCustomCategory10.groupTo), design.getGroupObjectContainer(objCustomCategoryOrigin.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            return design;
+        }
+    }
+
     private class ColorSizeSupplierFormEntity extends FormEntity<RomanBusinessLogics> {
 
         private ObjectEntity objSupplier;
@@ -1918,7 +1995,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         private ColorSizeSupplierFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
-            objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameCurrencySupplier);
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameBrandSupplierSupplier, nameCurrencySupplier);
             addObjectActions(this, objSupplier);
 
             objColor = addSingleGroupObject(colorSupplier, "Цвет", sidColorSupplier, name);
@@ -1967,7 +2044,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addObjectActions(this, objTransfer);
 
             objSku = addSingleGroupObject(sku, "SKU", barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, nameSizeSupplierItem,
-                    nameCategoryArticleSku, sidCustomCategoryAdditionalArticleSku,
+                    nameCategoryArticleSku, sidCustomCategory10ArticleSku,
                     nameCountryOfOriginSku, netWeightSku, mainCompositionSku,
                     additionalCompositionSku);
 
