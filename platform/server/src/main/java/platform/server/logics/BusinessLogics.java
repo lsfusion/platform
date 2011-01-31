@@ -533,13 +533,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP between;
     protected LP object1, and1, andNot1;
     protected LP equals2, diff2;
+    protected LP sumDouble2;
     protected LP multiplyDouble2;
     protected LP multiplyIntegerBy2;
     protected LP divideDouble;
+    protected LP divideDouble2;
     protected LP addDate2;
     protected LP string2;
     protected LP insensitiveString2;
     protected LP concat2;
+    protected LP percent;
+    protected LP percent2;
 
     protected LP vtrue, vzero;
 
@@ -988,10 +992,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         greater22 = addJProp(greater2, concat2, 1, 2, concat2, 3, 4);
         less22 = addJProp(less2, concat2, 1, 2, concat2, 3, 4);
         diff2 = addCFProp(Compare.NOT_EQUALS);
+        sumDouble2 = addSFProp("((prm1)+(prm2))", DoubleClass.instance, 2);
         multiplyDouble2 = addMFProp(DoubleClass.instance, 2);
         multiplyIntegerBy2 = addSFProp("((prm1)*2)", IntegerClass.instance, 1);
         divideDouble = addSFProp("((prm1)/(prm2))", DoubleClass.instance, 2);
-        addDate2 = addSFProp("prm1+prm2", DateClass.instance, 2);
+        divideDouble2 = addSFProp("round(CAST(((prm1)/(prm2)) as numeric),2)", DoubleClass.instance, 2);
+        addDate2 = addSFProp("((prm1)+(prm2))", DateClass.instance, 2);
+        percent = addSFProp("((prm1)*(prm2)/100)", DoubleClass.instance, 2);
+        percent2 = addSFProp("round(CAST(((prm1)*(prm2)/100) as numeric), 2)", DoubleClass.instance, 2);
         between = addJProp("Между", and1, groeq2, 1, 2, groeq2, 3, 1);
         vtrue = addCProp("Истина", LogicalClass.instance, true);
         vzero = addCProp("0", DoubleClass.instance, 0);

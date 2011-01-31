@@ -329,7 +329,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     protected void initProperties() {
 
         LP removePercent = addSFProp("((prm1*(100-prm2))/100)", DoubleClass.instance, 2);
-        LP percent = addSFProp("(prm1*prm2/100)", DoubleClass.instance, 2);
         LP backPercent = addSFProp("prm1*prm2/(100+prm2)", DoubleClass.instance, 2);
         LP calcPercent = addSFProp("prm1*100/prm2", DoubleClass.instance, 2);
         LP diff = addSFProp("prm1-prm2", DoubleClass.instance, 2);
