@@ -11,6 +11,7 @@
           <exclude>commons-beanutils:commons-beanutils</exclude>
           <exclude>org.bouncycastle:bcmail-jdk14</exclude>
           <exclude>org.bouncycastle:bcprov-jdk14</exclude>
+          <exclude>log4j:apache-log4j-extras</exclude>
       </excludes>
       <unpack>true</unpack>
       <unpackOptions>
@@ -33,5 +34,55 @@
            </excludes>
        </unpackOptions>
     </dependencySet>
+      <dependencySet>
+         <includes>
+             <include>log4j:apache-log4j-extras</include>
+         </includes>
+         <unpack>true</unpack>
+         <unpackOptions>
+             <excludes>
+                 <exclude>org/apache/log4j/xml/UnrecognizedElementHandler.class</exclude>
+                 <exclude>org/apache/log4j/pattern/NameAbbreviator$NOPAbbreviator.class</exclude>
+                 <exclude>org/apache/log4j/pattern/NameAbbreviator$MaxElementAbbreviator.class</exclude>
+                 <exclude>org/apache/log4j/pattern/NameAbbreviator$PatternAbbreviatorFragment.class</exclude>
+                 <exclude>org/apache/log4j/pattern/NameAbbreviator$PatternAbbreviator.class</exclude>
+                 <exclude>org/apache/log4j/pattern/NameAbbreviator.class</exclude>
+                 <exclude>org/apache/log4j/pattern/PatternConverter.class</exclude>
+                 <exclude>org/apache/log4j/pattern/LoggingEventPatternConverter.class</exclude>
+                 <exclude>org/apache/log4j/pattern/ThrowableInformationPatternConverter.class</exclude>
+                 <exclude>org/apache/log4j/pattern/LogEvent.class</exclude>
+                 <exclude>org/apache/log4j/pattern/MessagePatternConverter.class</exclude>
+                 <exclude>org/apache/log4j/pattern/PatternParser$ReadOnlyMap.class</exclude>
+                 <exclude>org/apache/log4j/pattern/PatternParser.class</exclude>
+                 <exclude>org/apache/log4j/pattern/FormattingInfo.class</exclude>
+                 <exclude>org/apache/log4j/pattern/CachedDateFormat.class</exclude>
+                 <exclude>org/apache/log4j/pattern/LineSeparatorPatternConverter.class</exclude>
+                 <exclude>org/apache/log4j/pattern/FileLocationPatternConverter.class</exclude>
+                 <exclude>org/apache/log4j/pattern/MethodLocationPatternConverter.class</exclude>
+                 <exclude>org/apache/log4j/pattern/FileDatePatternConverter.class</exclude>
+                 <exclude>org/apache/log4j/pattern/NamePatternConverter.class</exclude>
+                 <exclude>org/apache/log4j/pattern/ClassNamePatternConverter.class</exclude>
+                 <exclude>org/apache/log4j/pattern/LiteralPatternConverter.class</exclude>
+                 <exclude>org/apache/log4j/pattern/BridgePatternParser.class</exclude>
+                 <exclude>org/apache/log4j/pattern/NDCPatternConverter.class</exclude>
+                 <exclude>org/apache/log4j/pattern/BridgePatternConverter.class</exclude>
+                 <exclude>org/apache/log4j/pattern/DatePatternConverter.class</exclude>
+                 <exclude>org/apache/log4j/pattern/LineLocationPatternConverter.class</exclude>
+                 <exclude>org/apache/log4j/pattern/ThreadPatternConverter.class</exclude>
+                 <exclude>org/apache/log4j/pattern/RelativeTimePatternConverter$CachedTimestamp.class</exclude>
+                 <exclude>org/apache/log4j/pattern/RelativeTimePatternConverter.class</exclude>
+                 <exclude>org/apache/log4j/pattern/FullLocationPatternConverter.class</exclude>
+                 <exclude>org/apache/log4j/pattern/SequenceNumberPatternConverter.class</exclude>
+                 <exclude>org/apache/log4j/pattern/LevelPatternConverter.class</exclude>
+                 <exclude>org/apache/log4j/pattern/PropertiesPatternConverter.class</exclude>
+                 <exclude>org/apache/log4j/pattern/IntegerPatternConverter.class</exclude>
+                 <exclude>org/apache/log4j/pattern/LoggerPatternConverter.class</exclude>
+                 <exclude>org/apache/log4j/EnhancedPatternLayout.class</exclude>
+                 <exclude>org/apache/log4j/helpers/MDCKeySetExtractor.class</exclude>
+                 <exclude>org/apache/log4j/LogSF.class</exclude>
+                 <exclude>org/apache/log4j/LogMF.class</exclude>
+             </excludes>
+         </unpackOptions>
+      </dependencySet>
   </dependencySets>
 </assembly>
