@@ -1,12 +1,9 @@
 package platform.server.integration;
 
-import platform.base.BaseUtils;
 import platform.server.data.query.Query;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.property.PropertyImplement;
-import platform.server.logics.property.PropertyInterface;
 import platform.server.session.DataSession;
 import platform.server.session.SessionTableUsage;
 
@@ -19,14 +16,14 @@ import java.util.*;
  * Time: 14:54:28
  */
 
-public class IntegrationService<P extends PropertyInterface> {
+public class IntegrationService {
     private ImportTable table;
-    private Map<ImportField, PropertyImplement<ImportKey<P>, P>> properties;
-    private Collection<ImportKey<P>> keys;
+    private Map<ImportField, ImportProperty<?>> properties;
+    private Collection<? extends ImportKey<?>> keys;
     private DataSession session;
 
-    public IntegrationService(DataSession session, ImportTable table, Collection<ImportKey<P>> keys,
-                              Map<ImportField, PropertyImplement<ImportKey<P>, P>> properties) {
+    public IntegrationService(DataSession session, ImportTable table, Collection<? extends ImportKey<?>> keys,
+                              Map<ImportField, ImportProperty<?>> properties) {
         this.session = session;
         this.table = table;
         this.properties = properties;
@@ -35,15 +32,14 @@ public class IntegrationService<P extends PropertyInterface> {
 
     public void synchronize(boolean addNew, boolean updateExisting, boolean deleteOld) throws SQLException {
         Map<ImportKey, List<DataObject>> keyValueLists = new HashMap<ImportKey, List<DataObject>>();
-        for (ImportKey<P> key : keys) {
+        for (ImportKey<?> key : keys) {
             keyValueLists.put(key, new ArrayList<DataObject>());
         }
         for (ImportTable.Row row : table) {
             Map<ImportKey, DataObject> keyValues = new HashMap<ImportKey, DataObject>();
             boolean processRow = true;
-            for (ImportKey<P> key : keys) {
-                Map<P, DataObject> map = mapObjects(key, row);
-                Object value = key.getProperty().read(session.sql, map, session.modifier, session.env);
+            for (ImportKey<?> key : keys) {
+                Object value = key.readValue(session, row);
                 if (value != null) {
                     if (!updateExisting) {
                         processRow = false;
@@ -56,7 +52,7 @@ public class IntegrationService<P extends PropertyInterface> {
                         break;
                     } else {
                         DataObject newObject = session.addObject(key.getCustomClass(), session.modifier);
-                        key.getProperty().execute(map, session, newObject.object, session.modifier);
+                        key.writeValue(session, row, newObject);
                         keyValues.put(key, newObject);
                     }
                 }
@@ -64,14 +60,15 @@ public class IntegrationService<P extends PropertyInterface> {
             }
 
             if (processRow) {
-                for (Map.Entry<ImportField, PropertyImplement<ImportKey<P>, P>> entry : properties.entrySet()) {
-                    Map<P, DataObject> mapping = BaseUtils.join(entry.getValue().mapping, keyValues);
+                for (Map.Entry<ImportField, ImportProperty<?>> entry : properties.entrySet()) {
+                    ImportProperty<?> property = entry.getValue();
+                    Object value = row.getValue(entry.getKey());
 
-                    for(Map.Entry<P, DataObject> mapEntry : mapping.entrySet())
-                        if(mapEntry.getValue()==null)
-                            mapEntry.setValue((DataObject)(Object)entry.getValue().mapping.get(mapEntry.getKey()));
+                    if (property.getConverter() != null) {
+                        value = property.convertValue(session, keyValues);
+                    }
 
-                    entry.getValue().property.execute(mapping, session, row.getValue(entry.getKey()), session.modifier);
+                    property.writeValue(session, keyValues, value);
                 }
             }
         }
@@ -82,7 +79,7 @@ public class IntegrationService<P extends PropertyInterface> {
     }
 
     private void deleteOldObjects(Map<ImportKey, List<DataObject>> keyValueLists) throws SQLException {
-        for (final ImportKey<P> key : keys) {
+        for (final ImportKey<?> key : keys) {
             SessionTableUsage<String, Object> table = new SessionTableUsage<String, Object>(Arrays.asList("key"), new ArrayList<Object>(),
                     new Type.Getter<String>() {
                         public Type getType(String k) {
@@ -106,14 +103,5 @@ public class IntegrationService<P extends PropertyInterface> {
                 session.changeClass(new DataObject(keyMap.get("key"), key.getCustomClass()), null);
             }
         }
-    }
-
-    private Map<P, DataObject> mapObjects(ImportKey<P> key, ImportTable.Row row) {
-        Map<P, DataObject> map = new HashMap<P, DataObject>();
-        for (Map.Entry<P, ImportField> entry : key.getMapping().entrySet()) {
-            DataObject obj = new DataObject(row.getValue(entry.getValue()), entry.getValue().getFieldClass());
-            map.put(entry.getKey(), obj);
-        }
-        return map;
     }
 }

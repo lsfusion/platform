@@ -26,7 +26,6 @@ import platform.server.auth.User;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
 import platform.server.data.*;
-import platform.server.data.Time;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.OrderType;
@@ -46,10 +45,7 @@ import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.*;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
-import platform.server.integration.ImportField;
-import platform.server.integration.ImportKey;
-import platform.server.integration.ImportTable;
-import platform.server.integration.IntegrationService;
+import platform.server.integration.*;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.AddObjectActionProperty;
@@ -75,9 +71,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.RMIFailureHandler;
 import java.rmi.server.RMISocketFactory;
-import java.sql.*;
+import java.sql.SQLException;
 import java.util.*;
-import java.util.Date;
 
 // @GenericImmutable нельзя так как Spring валится
 
@@ -1500,30 +1495,25 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         reloadNavigatorTree();
     }
 
-    protected <P extends PropertyInterface> void synchronizeForms() {
+    protected void synchronizeForms() {
         ImportField sidField = new ImportField(formSIDValueClass);
         ImportField captionField = new ImportField(formCaptionValueClass);
 
-        Map<P, ImportField> keyImplMap = Collections.singletonMap((P) BaseUtils.single(SIDToNavigatorElement.property.interfaces), sidField);
-        PropertyImplement<ImportField, P> keyPropImpl = new PropertyImplement<ImportField, P>(SIDToNavigatorElement.property, keyImplMap);
-        ImportKey<P> key = new ImportKey<P>(navigatorElement, keyPropImpl);
+        ImportKey<?> key = new ImportKey(navigatorElement, SIDToNavigatorElement.getMapping(sidField));
 
         List<List<Object>> data = new ArrayList<List<Object>>();
         for (NavigatorElement<T> navElement : baseElement.getChildren(true)) {
-            data.add(Arrays.asList((Object)navElement.getSID(), navElement.caption, navElement.ID));
+            data.add(Arrays.asList((Object)navElement.getSID(), navElement.caption));
         }
 
-        Map<P, ImportKey<P>> propImplMap = Collections.singletonMap((P) BaseUtils.single(navigatorElementCaption.property.interfaces), key);
-        PropertyImplement<ImportKey<P>, P> propImpl = new PropertyImplement<ImportKey<P>, P>(navigatorElementCaption.property, propImplMap);
-
-        Map<ImportField, PropertyImplement<ImportKey<P>, P>> props = new HashMap<ImportField, PropertyImplement<ImportKey<P>,P>>();
-        props.put(captionField, propImpl);
+        Map<ImportField, ImportProperty<?>> props = new HashMap<ImportField, ImportProperty<?>>();
+        props.put(captionField, new ImportProperty(navigatorElementCaption.getMapping(key)));
 
         ImportTable table = new ImportTable(Arrays.asList(sidField, captionField), data);
 
         try {
             DataSession session = createSession();
-            IntegrationService<P> service = new IntegrationService<P>(session, table, Collections.singletonList(key), props);
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(key), props);
             service.synchronize(true, true, true);
             session.apply(this);
             session.close();

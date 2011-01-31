@@ -1,6 +1,5 @@
 package tmc;
 
-import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 import net.sf.jasperreports.engine.JRException;
@@ -18,7 +17,6 @@ import platform.server.data.Time;
 import platform.server.data.Union;
 import platform.server.data.expr.query.OrderType;
 import platform.server.data.sql.DataAdapter;
-import platform.server.data.type.Type;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.instance.FormInstance;
@@ -29,22 +27,19 @@ import platform.server.form.instance.filter.CompareFilterInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.*;
-import platform.server.integration.ImportField;
-import platform.server.integration.ImportKey;
-import platform.server.integration.ImportTable;
-import platform.server.integration.IntegrationService;
+import platform.server.integration.*;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.*;
+import platform.server.logics.property.ActionProperty;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.DataSession;
 import tmc.integration.PanelExternalScreen;
 import tmc.integration.PanelExternalScreenParameters;
 import tmc.integration.exp.AbstractSaleExportTask;
 import tmc.integration.exp.CashRegController;
-import tmc.integration.exp.SaleExportTask;
 import tmc.integration.imp.CustomerCheckRetailImportActionProperty;
 
 import javax.swing.*;
@@ -3017,20 +3012,20 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             }
 
             List<ImportField> fields = new ArrayList<ImportField>();
-            Map<ImportField, PropertyImplement<ImportKey<PropertyInterface>, PropertyInterface>> properties = new HashMap<ImportField, PropertyImplement<ImportKey<PropertyInterface>, PropertyInterface>>();
+            Map<ImportField, ImportProperty<?>> properties = new HashMap<ImportField, ImportProperty<?>>();
 
             ImportField barcodeField = new ImportField(StringClass.get(13)); fields.add(barcodeField);
-            ImportKey articleKey = new ImportKey(article, barcodeToObject.getMapping(barcodeField));
-            properties.put(barcodeField, (PropertyImplement<ImportKey<PropertyInterface>, PropertyInterface>) ((LP)barcode).getMapping(articleKey));
+            ImportKey<?> articleKey = new ImportKey(article, barcodeToObject.getMapping(barcodeField));
+            properties.put(barcodeField, new ImportProperty(barcode.getMapping(articleKey)));
 
             ImportField nameField = new ImportField(StringClass.get(100)); fields.add(nameField);
-            properties.put(nameField, (PropertyImplement<ImportKey<PropertyInterface>, PropertyInterface>) ((LP)name).getMapping(articleKey));
+            properties.put(nameField, new ImportProperty(name.getMapping(articleKey)));
             ImportField priceField = new ImportField(DoubleClass.instance); fields.add(priceField);
-            properties.put(priceField, (PropertyImplement<ImportKey<PropertyInterface>, PropertyInterface>) orderAllDeliveryPrice.getMapping(document, articleKey));
+            properties.put(priceField, new ImportProperty(orderAllDeliveryPrice.getMapping(document, articleKey)));
             ImportField quantityField = new ImportField(DoubleClass.instance); fields.add(quantityField);
-            properties.put(priceField, (PropertyImplement<ImportKey<PropertyInterface>, PropertyInterface>) articleOrderQuantity.getMapping(document, articleKey));
+            properties.put(priceField, new ImportProperty(articleOrderQuantity.getMapping(document, articleKey)));
             ImportField ndsField = new ImportField(DoubleClass.instance); fields.add(ndsField);
-            properties.put(ndsField, (PropertyImplement<ImportKey<PropertyInterface>, PropertyInterface>) ndsOrderArticle.getMapping(document, articleKey));
+            properties.put(ndsField, new ImportProperty(ndsOrderArticle.getMapping(document, articleKey)));
 
             List<List<Object>> rows = new ArrayList<List<Object>>();
 
@@ -3049,7 +3044,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             }
 
 
-            new IntegrationService<PropertyInterface>(session, new ImportTable(fields, rows), Collections.<ImportKey<PropertyInterface>>singleton(articleKey), properties).synchronize(true, true, false);
+            new IntegrationService(session, new ImportTable(fields, rows), Arrays.asList(articleKey), properties).synchronize(true, true, false);
 
 
             actions.add(new MessageClientAction("Данные были успешно приняты", "Импорт"));
