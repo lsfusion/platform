@@ -188,7 +188,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     protected TreeGroupEntity addTreeGroupObject(GroupObjectEntity... tGroups) {
-        TreeGroupEntity treeGroup = new TreeGroupEntity();
+        TreeGroupEntity treeGroup = new TreeGroupEntity(genID());
         for (GroupObjectEntity group : tGroups) {
             if (!groups.contains(group)) {
                 groups.add(group);
