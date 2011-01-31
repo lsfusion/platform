@@ -532,7 +532,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         //**************************************************************************************************************
         currentRRP = addDProp(priceGroup, "currentRRP", "RRP", DoubleClass.instance, article);
         currencyArticle = addDProp(priceGroup, "currencyArticle", "Валюта", currency, article);
-        unitOfMeasureArticle = addDProp(baseGroup, "unitOfMeasureArticle", "Ед. изм.", unitOfMeasure, article);
+        unitOfMeasureArticle = addDProp("unitOfMeasureArticle", "Ед. изм.", unitOfMeasure, article);
+        nameUnitOfMeasureArticle = addJProp(baseGroup, "nameUnitOfMeasureArticle", "Ед. изм.", name, unitOfMeasureArticle, 1);
         LP currentCurrencyRate = addDProp(baseGroup, "currentCurrencyRate", "Курс", DoubleClass.instance, currency);
         LP currentFormatDiscount = addDProp(priceGroup, "currentFormatDiscount", "Скидка на формат", DoubleClass.instance, format);
         LP currentWarehouseDiscount = addDProp(priceGroup, "currentWarehouseDiscount", "Опт. скидка", DoubleClass.instance);
@@ -1000,6 +1001,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP currentRRP;
     LP currencyArticle;
     LP unitOfMeasureArticle;
+    LP nameUnitOfMeasureArticle;
     LP returnInnerFreeQuantity;
     LP sumReturnedQuantity;
     LP sumReturnedQuantityFree;
@@ -1649,8 +1651,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             if(toAdd && concrete!=0)
                 addCheckFilter(articleFilterGroup, true);
-
-            addPropertyDraw(importOrder, objDoc);
         }
 
         @Override
@@ -1667,7 +1667,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         protected Object[] getDocumentArticleProps() {
-            return new Object[]{outerOrderQuantity, outerCommitedQuantity, orderAllDeliveryPrice, shopPrice, prevPrice, revalBalance, sumDeliveryOrderArticle, sumNDSDeliveryOrderArticle, sumWithNDSDeliveryOrderArticle, addvOrderArticle, sumAddvOrderArticle, sumWithoutNDSRetailOrderArticle, sumNDSRetailOrderArticle, sumRetailOrderArticle, documentLogisticsGroup, true};
+            return new Object[]{outerOrderQuantity, outerCommitedQuantity, orderAllDeliveryPrice, shopPrice, prevPrice, revalBalance, sumDeliveryOrderArticle, ndsOrderArticle, sumNDSDeliveryOrderArticle, sumWithNDSDeliveryOrderArticle, addvOrderArticle, sumAddvOrderArticle, sumWithoutNDSRetailOrderArticle, sumNDSRetailOrderArticle, sumRetailOrderArticle, documentLogisticsGroup, true};
         }
     }
 
@@ -2558,7 +2558,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             ObjectEntity objDoc = addSingleGroupObject(commitWholeShopInc, "Документ", date, nameContragent, invoiceNumber, invoiceSeries, sumNDSDeliveryOrder, sumDeliveryOrder, sumWithNDSDeliveryOrder, sumNDSRetailOrder, sumAddvOrder, sumRetailOrder);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
-            ObjectEntity objArt = addSingleGroupObject(article, name, objectValue, barcode, unitOfMeasureArticle);
+            ObjectEntity objArt = addSingleGroupObject(article, name, objectValue, barcode, nameUnitOfMeasureArticle);
 
             addPropertyDraw(objDoc, objArt, articleQuantity, orderAllDeliveryPrice, addvOrderArticle, ndsOrderArticle, shopPrice, sumRetailOrderArticle);
 
@@ -3022,7 +3022,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             ImportField priceField = new ImportField(DoubleClass.instance); fields.add(priceField);
             properties.put(priceField, new ImportProperty(orderAllDeliveryPrice.getMapping(document, articleKey)));
             ImportField quantityField = new ImportField(DoubleClass.instance); fields.add(quantityField);
-            properties.put(priceField, new ImportProperty(articleOrderQuantity.getMapping(document, articleKey)));
+            properties.put(quantityField, new ImportProperty(articleOrderQuantity.getMapping(document, articleKey)));
             ImportField ndsField = new ImportField(DoubleClass.instance); fields.add(ndsField);
             properties.put(ndsField, new ImportProperty(ndsOrderArticle.getMapping(document, articleKey)));
 
