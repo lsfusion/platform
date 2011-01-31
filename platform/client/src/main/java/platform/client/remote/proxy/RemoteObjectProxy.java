@@ -43,7 +43,7 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
         }
 
         Object result = null;
-        if (Thread.currentThread().getName().equals("Init thread")) {
+        if (Thread.currentThread().getName().equals("Init thread") || ((invocations.length == 1) && invocations[0].name.equals("getPropertyChangeType"))) {
             result = target.execute(invocations);
         } else {
             if (Main.frame != null && Main.frame.statusProgress != null) {
