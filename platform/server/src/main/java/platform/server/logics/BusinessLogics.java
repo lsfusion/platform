@@ -4147,7 +4147,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             DataSession session = remoteForm.session;
             if (addProperty.read(session.sql, new HashMap(), remoteForm, session.env) != null) {
                 String barString = (String) BaseUtils.singleValue(keys).object;
-                if (barString.trim().length() == 0) {
+                if (barString.trim().length() != 0) {
                     addProperty.execute(new HashMap(), session, null, remoteForm);
                     barcode.execute(barString, session, remoteForm, session.addObject(customClass, remoteForm));
                 }
