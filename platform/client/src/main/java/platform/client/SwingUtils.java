@@ -24,23 +24,23 @@ public class SwingUtils {
         for (Component comp : container.getComponents()) {
             comp.setFocusable(false);
             if (comp instanceof Container) {
-                removeFocusable((Container)comp);
+                removeFocusable((Container) comp);
             }
         }
     }
 
     public static Window getWindow(Component comp) {
 
-        while (comp != null && !(comp instanceof Window) ) comp = comp.getParent();
+        while (comp != null && !(comp instanceof Window)) comp = comp.getParent();
 
-        return (Window)comp;
+        return (Window) comp;
     }
 
     public static JTable getJTable(Component comp) {
 
-        while (comp != null && !(comp instanceof JTable) ) comp = comp.getParent();
+        while (comp != null && !(comp instanceof JTable)) comp = comp.getParent();
 
-        return (JTable)comp;
+        return (JTable) comp;
     }
 
     public static void commitEditing(JTable table) {
@@ -62,12 +62,13 @@ public class SwingUtils {
     }
 
     public static Point computeAbsoluteLocation(Component comp) {
-        Point result = comp.getLocation();
+        Point result = new Point(0, 0);
         SwingUtilities.convertPointToScreen(result, comp);
         return result;
     }
 
     private final static WeakHashMap<String, Timer> timers = new WeakHashMap<String, Timer>();
+
     public static void invokeLaterSingleAction(final String actionID, final ActionListener actionListener, int delay) {
 
         stopSingleAction(actionID, false);
@@ -108,12 +109,12 @@ public class SwingUtils {
     public static int showConfirmDialog(JComponent parentComponent, Object message, String title, int messageType, int initialValue) {
 
         Object[] options = {UIManager.getString("OptionPane.yesButtonText"),
-                            UIManager.getString("OptionPane.noButtonText")};
+                UIManager.getString("OptionPane.noButtonText")};
 
         JOptionPane dialogPane = new JOptionPane(message,
-                                                 messageType,
-                                                 JOptionPane.YES_NO_OPTION,
-                                                 null, options, options[initialValue]);
+                messageType,
+                JOptionPane.YES_NO_OPTION,
+                null, options, options[initialValue]);
 
         addFocusTraversalKey(dialogPane, KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, KeyStroke.getKeyStroke("RIGHT"));
         addFocusTraversalKey(dialogPane, KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, KeyStroke.getKeyStroke("UP"));
@@ -145,7 +146,7 @@ public class SwingUtils {
     public static Dimension clipDimension(Dimension toClip, Dimension min, Dimension max) {
 
         return new Dimension(Math.max(min.width, Math.min(max.width, toClip.width)),
-                             Math.max(min.height, Math.min(max.height, toClip.height))
-                            );
+                Math.max(min.height, Math.min(max.height, toClip.height))
+        );
     }
 }
