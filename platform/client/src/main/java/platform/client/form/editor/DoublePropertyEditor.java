@@ -41,11 +41,13 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
                 if (isMinus) {
                     return 0.0;
                 }
+                lastZero = 0;
                 if (text != null && text.length() > 0) {
                     text = text.replace(',', separator).replace('.', separator);
-                    lastZero = 0;
-                    while (lastZero < text.length() - 1 && text.charAt(text.length() - 1 - lastZero) == '0') {
-                        lastZero++;
+                    if (text.indexOf(separator) != -1) {
+                        while (lastZero < text.length() - 1 && text.charAt(text.length() - 1 - lastZero) == '0') {
+                            lastZero++;
+                        }
                     }
                     lastTextEndsWithSeparator = text.indexOf(separator) == text.length() - 1 - lastZero;
                 } else {
