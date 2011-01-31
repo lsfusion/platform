@@ -536,6 +536,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         // CustomCategory
         nameCustomCategory = addDProp(baseGroup, "nameCustomCategory", "Наименование", StringClass.get(500), customCategory);
+        nameCustomCategory.property.preferredCharWidth = 50;
+        nameCustomCategory.property.minimumCharWidth = 20;        
 
         sidCustomCategory4 = addDProp(baseGroup, "sidCustomCategory4", "Код(4)", StringClass.get(4), customCategory4);
         sidCustomCategory4.setFixedCharWidth(4);
@@ -559,7 +561,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         customCategory6CustomCategoryOrigin = addDProp(idGroup, "customCategory6CustomCategoryOrigin", "Код(6)", customCategory6, customCategoryOrigin);
 
         customCategory10CustomCategoryOrigin = addDProp(idGroup, "customCategory10CustomCategoryOrigin", "Код по умолчанию(ИД)", customCategory10, customCategoryOrigin);
-        sidCustomCategory10CustomCategoryOrigin = addJProp(baseGroup, "sidCustomCategory10CustomCategoryOrigin", "Код по умолчанию", sidCustomCategory10, customCategory10CustomCategoryOrigin, 1);
+        sidCustomCategory10CustomCategoryOrigin = addJProp(idGroup, "sidCustomCategory10CustomCategoryOrigin", "Код по умолчанию", sidCustomCategory10, customCategory10CustomCategoryOrigin, 1);
+        sidCustomCategory10CustomCategoryOrigin.property.preferredCharWidth = 10;
+        sidCustomCategory10CustomCategoryOrigin.property.minimumCharWidth = 10;
 
         sidCustomCategory4CustomCategory6 = addJProp(baseGroup, "sidCustomCategory4CustomCategory6", "Код(4)", sidCustomCategory4, customCategory4CustomCategory6, 1);
         sidCustomCategory6CustomCategory9 = addJProp(baseGroup, "sidCustomCategory6CustomCategory9", "Код(6)", sidCustomCategory6, customCategory6CustomCategory9, 1);
@@ -573,12 +577,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         relationCustomCategory10CustomCategoryOrigin = addDProp(baseGroup, "relationCustomCategory10CustomCategoryOrigin", "Связь ТН ВЭД", LogicalClass.instance, customCategory10, customCategoryOrigin);
 
-        //relationCustomCategory10 = addJProp(idGroup, "relationCustomCategory10", "Связь ТН ВЭД", and1, 1, relationCustomCategory10CustomCategoryOrigin, 1, 2);
-        //relationCustomCategoryOrigin = addJProp(idGroup, "relationCustomCategoryOrigin", "Связь ТН ВЭД", and1, 2, relationCustomCategory10CustomCategoryOrigin, 1, 2);
-
-        /*addConstraint(addJProp("Третий уровень для ЕС должен соответствовать третьему уровню для Бел", diff2,
-                addJProp(customCategory6CustomCategoryOrigin, relationCustomCategoryOrigin, 1, 2),
-                addJProp(customCategory6CustomCategory10, relationCustomCategory10, 1, 2), 1, 2), true);*/
+        addConstraint(addJProp("По умолчанию должен быть среди связанных", and(true, false),
+                addCProp(LogicalClass.instance, true, customCategoryOrigin), 1,
+                addJProp(relationCustomCategory10CustomCategoryOrigin, customCategory10CustomCategoryOrigin, 1, 1), 1,
+                addJProp(is(customCategory10), customCategory10CustomCategoryOrigin, 1), 1), true); 
 
         // Supplier
         currencySupplier = addDProp(idGroup, "currencySupplier", "Валюта (ИД)", currency, supplier);
@@ -1220,7 +1222,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         NavigatorElement classifier = new NavigatorElement(baseElement, "classifier", "Справочники");
         addFormEntity(new CustomCategoryFormEntity(classifier, "customCategoryForm", "ТН ВЭД (изменения)", false));
         addFormEntity(new CustomCategoryFormEntity(classifier, "customCategoryForm2", "ТН ВЭД (дерево)", true));
-        addFormEntity(new NewCustomCategoryFormEntity(classifier, "customCategoryForm3", "ТН ВЭД"));
+        //addFormEntity(new NewCustomCategoryFormEntity(classifier, "customCategoryForm3", "ТН ВЭД"));
         classifier.add(category.getClassForm(this));
         classifier.add(currency.getClassForm(this));
         classifier.add(store.getClassForm(this));
@@ -1962,12 +1964,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 
         private ObjectEntity objCustomCategory4;
         private ObjectEntity objCustomCategory6;
+        private ObjectEntity objCustomCategory4Origin;
+        private ObjectEntity objCustomCategory6Origin;
         private ObjectEntity objCustomCategory9;
         private ObjectEntity objCustomCategory10;
+        private ObjectEntity objCustomCategoryOrigin;
 
         private TreeGroupEntity treeCustomCategory;
-
-        private ObjectEntity objCustomCategoryAdditional;
+        private TreeGroupEntity treeCustomCategoryOrigin;
 
         private CustomCategoryFormEntity(NavigatorElement parent, String sID, String caption, boolean tree) {
             super(parent, sID, caption);
@@ -1987,19 +1991,32 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 addObjectActions(this, objCustomCategory9);
 
             objCustomCategory10 = addSingleGroupObject(customCategory10, "Четвёртый уровень", sidCustomCategory10, nameCustomCategory);
+            addObjectActions(this, objCustomCategory10);
+
+            objCustomCategory4Origin = addSingleGroupObject(customCategory4, "Первый уровень", sidCustomCategory4, nameCustomCategory);
             if (!tree)
-                addObjectActions(this, objCustomCategory10);
+                addObjectActions(this, objCustomCategory4Origin);
+
+            objCustomCategory6Origin = addSingleGroupObject(customCategory6, "Второй уровень", sidCustomCategory6, nameCustomCategory);
+            if (!tree)
+                addObjectActions(this, objCustomCategory6Origin);
+
+            objCustomCategoryOrigin = addSingleGroupObject(customCategoryOrigin, "ЕС уровень", sidCustomCategoryOrigin, nameCustomCategory, sidCustomCategory10CustomCategoryOrigin);
+            addObjectActions(this, objCustomCategoryOrigin);
+
+            addPropertyDraw(relationCustomCategory10CustomCategoryOrigin, objCustomCategory10, objCustomCategoryOrigin);
 
             if (tree)
-                 treeCustomCategory = addTreeGroupObject(objCustomCategory4.groupTo, objCustomCategory6.groupTo, objCustomCategory9.groupTo, objCustomCategory10.groupTo);
-
-            objCustomCategoryAdditional = addSingleGroupObject(customCategoryOrigin, "ЕС уровень", sidCustomCategoryOrigin, nameCustomCategory);
-            addObjectActions(this, objCustomCategoryAdditional);
+            {   treeCustomCategory = addTreeGroupObject(objCustomCategory4.groupTo, objCustomCategory6.groupTo, objCustomCategory9.groupTo);
+                treeCustomCategoryOrigin = addTreeGroupObject(objCustomCategory4Origin.groupTo, objCustomCategory6Origin.groupTo);
+            }
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory4CustomCategory6, objCustomCategory6), Compare.EQUALS, objCustomCategory4));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory6CustomCategory9, objCustomCategory9), Compare.EQUALS, objCustomCategory6));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory9CustomCategory10, objCustomCategory10), Compare.EQUALS, objCustomCategory9));
-            //addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory10CustomCategoryAdditional, objCustomCategoryAdditional), Compare.EQUALS, objCustomCategory10));
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory4CustomCategory6, objCustomCategory6Origin), Compare.EQUALS, objCustomCategory4Origin));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory6CustomCategoryOrigin, objCustomCategoryOrigin), Compare.EQUALS, objCustomCategory6Origin));
         }
 
         @Override
@@ -2007,21 +2024,32 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
 
             if (tree)
-                design.addIntersection(design.getTreeContainer(treeCustomCategory), design.getGroupObjectContainer(objCustomCategoryAdditional.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            {
+                //design.addIntersection(design.getTreeContainer(treeCustomCategory), design.getGroupObjectContainer(objCustomCategory10.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                //design.addIntersection(design.getGroupObjectContainer(treeCustomCategoryOrigin), design.getGroupObjectContainer(objCustomCategoryOrigin.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                //design.get(treeCustomCategoryOrigin).constraints.fillVertical = 0.5;
+                //design.get(treeCustomCategory).constraints.fillHorizontal = 3;
+                //design.get(objCustomCategory10.groupTo).grid.constraints.fillHorizontal = 5;
+                //design.get(objCustomCategoryOrigin.groupTo).grid.constraints.fillHorizontal = 7;
+            }
             else {
 
                 design.addIntersection(design.getGroupObjectContainer(objCustomCategory4.groupTo), design.getGroupObjectContainer(objCustomCategory6.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
                 design.addIntersection(design.getGroupObjectContainer(objCustomCategory6.groupTo), design.getGroupObjectContainer(objCustomCategory9.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
                 design.addIntersection(design.getGroupObjectContainer(objCustomCategory9.groupTo), design.getGroupObjectContainer(objCustomCategory10.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-                design.addIntersection(design.getGroupObjectContainer(objCustomCategory10.groupTo), design.getGroupObjectContainer(objCustomCategoryAdditional.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-            }
 
+                design.addIntersection(design.getGroupObjectContainer(objCustomCategory4Origin.groupTo), design.getGroupObjectContainer(objCustomCategory6Origin.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                design.addIntersection(design.getGroupObjectContainer(objCustomCategory6Origin.groupTo), design.getGroupObjectContainer(objCustomCategoryOrigin.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                design.get(objCustomCategory4Origin.groupTo).grid.constraints.fillHorizontal = 1;
+                design.get(objCustomCategory6Origin.groupTo).grid.constraints.fillHorizontal = 1;
+                design.get(objCustomCategoryOrigin.groupTo).grid.constraints.fillHorizontal = 2;
+            }
+               
             return design;
         }
     }
 
-    private class NewCustomCategoryFormEntity extends FormEntity<RomanBusinessLogics> {
-
+    /*private class NewCustomCategoryFormEntity extends FormEntity<RomanBusinessLogics> {
 
         private ObjectEntity objCustomCategory4;
         private ObjectEntity objCustomCategory6;
@@ -2046,14 +2074,22 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             objCustomCategoryOrigin = addSingleGroupObject(customCategoryOrigin, "ЕС уровень", sidCustomCategoryOrigin, nameCustomCategory, sidCustomCategory10CustomCategoryOrigin);
             addObjectActions(this, objCustomCategoryOrigin);
-            //, nameCustomCategory10CustomCategoryOrigin
 
             addPropertyDraw(relationCustomCategory10CustomCategoryOrigin, objCustomCategory10, objCustomCategoryOrigin);
+
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
+                                      new CompareFilterEntity(addPropertyObject(customCategory6CustomCategoryOrigin, objCustomCategoryOrigin), Compare.EQUALS, objCustomCategory6),
+                                      "В текущем втором уровне",
+                                      KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
+            
+            filterGroup.defaultFilter = 0;
+            addRegularFilterGroup(filterGroup);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory4CustomCategory6, objCustomCategory6), Compare.EQUALS, objCustomCategory4));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory6CustomCategory9, objCustomCategory9), Compare.EQUALS, objCustomCategory6));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory9CustomCategory10, objCustomCategory10), Compare.EQUALS, objCustomCategory9));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory6CustomCategoryOrigin, objCustomCategoryOrigin), Compare.EQUALS, objCustomCategory6));
+            //addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory6CustomCategoryOrigin, objCustomCategoryOrigin), Compare.EQUALS, objCustomCategory6));
         }
 
         @Override
@@ -2075,7 +2111,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             return design;
         }
-    }
+    } */
 
     private class ColorSizeSupplierFormEntity extends FormEntity<RomanBusinessLogics> {
 
