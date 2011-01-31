@@ -1,5 +1,5 @@
 body {
-    background-color: white;
+    background-color: #d3d3d3;
     color: black;
     font-family: "Cambria","serif";
     font-size: 8pt;
@@ -13,6 +13,10 @@ body {
 
 .gwt-TextArea {
     border: none;
+}
+
+.manePane {
+    background-color: #ffffff;
 }
 
 .captionedListBox {

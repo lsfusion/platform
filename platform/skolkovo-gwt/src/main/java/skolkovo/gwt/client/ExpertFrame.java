@@ -14,19 +14,12 @@ import skolkovo.gwt.shared.MessageException;
 import java.util.Date;
 
 public class ExpertFrame implements EntryPoint {
-    private Label lbInCluster;
     private ListBox bxInCluster;
-    private Label lbInnovative;
     private ListBox bxInnovative;
-    private Label lbInnovativeComment;
     private TextArea taInnovativeComment;
-    private Label lbForeign;
     private ListBox bxForeign;
-    private Label lbCompetent;
     private ListBox bxCompetent;
-    private Label lbComplete;
     private ListBox bxComplete;
-    private Label lbCompleteComment;
     private TextArea taCompleteComment;
 
     public void onModuleLoad() {
@@ -114,7 +107,6 @@ public class ExpertFrame implements EntryPoint {
 
                     Widget wInnovative = createCaptionedListBox(getMessages().lbInnovative(), bxInnovative);
 
-                    lbInnovativeComment = new Label(getMessages().lbInnovativeComment());
                     taInnovativeComment = new TextArea();
                     taInnovativeComment.setSize("100%", "");
                     taInnovativeComment.setVisibleLines(8);
@@ -138,7 +130,6 @@ public class ExpertFrame implements EntryPoint {
 
                     Widget wCompetent = createCaptionedListBox(getMessages().lbCompetent(), bxCompetent);
 
-                    lbComplete = new Label(getMessages().lbComplete());
                     bxComplete = new ListBox();
                     for (int i = 1; i <= 5; ++i) {
                         bxComplete.addItem("" + i);
@@ -148,7 +139,6 @@ public class ExpertFrame implements EntryPoint {
 
                     Widget wComplete = createCaptionedListBox(getMessages().lbComplete(), bxComplete);
 
-                    lbCompleteComment = new Label(getMessages().lbCompleteComment());
                     taCompleteComment = new TextArea();
                     taCompleteComment.setSize("100%", "");
                     taCompleteComment.setVisibleLines(8);
@@ -287,6 +277,8 @@ public class ExpertFrame implements EntryPoint {
     }
 
     private void setManePane(VerticalPanel manePane) {
+        manePane.setStyleName("manePane");
+
         VerticalPanel contentPane = new VerticalPanel();
         contentPane.setWidth("100%");
         contentPane.setHorizontalAlignment(HorizontalPanel.ALIGN_CENTER);
