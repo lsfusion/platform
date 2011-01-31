@@ -36,7 +36,7 @@ public class IntegrationService {
             keyValueLists.put(key, new ArrayList<DataObject>());
         }
         for (ImportTable.Row row : table) {
-            Map<ImportKey, DataObject> keyValues = new HashMap<ImportKey, DataObject>();
+            Map<ImportKeyInterface, DataObject> keyValues = new HashMap<ImportKeyInterface, DataObject>();
             boolean processRow = true;
             for (ImportKey<?> key : keys) {
                 Object value = key.readValue(session, row);

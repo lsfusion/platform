@@ -17,7 +17,7 @@ import java.util.Map;
  * Time: 16:33
  */
 
-public class ImportKey <P extends PropertyInterface> {
+public class ImportKey <P extends PropertyInterface> implements ImportKeyInterface {
     private ConcreteCustomClass keyClass;
     private PropertyImplement<ImportField, P> property;
 

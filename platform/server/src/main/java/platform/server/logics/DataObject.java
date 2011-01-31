@@ -23,6 +23,7 @@ import platform.server.form.instance.GroupObjectInstance;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.integration.ImportKeyInterface;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.SessionChanges;
 
@@ -32,7 +33,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
-public class DataObject extends ObjectValue<DataObject> implements PropertyObjectInterfaceInstance, PropertyObjectInterfaceEntity {
+public class DataObject extends ObjectValue<DataObject> implements PropertyObjectInterfaceInstance, PropertyObjectInterfaceEntity, ImportKeyInterface {
 
     public Object object;
     public ConcreteClass objectClass;
