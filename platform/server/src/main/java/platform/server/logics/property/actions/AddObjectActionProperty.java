@@ -93,8 +93,19 @@ public class AddObjectActionProperty extends ActionProperty {
 
                 String id = object.getValue().toString();
 
+                String barcode12 = prefix + BaseUtils.replicate('0', Math.max(12 - prefix.length() - id.length(), 0)) + id;
+                int evenSum = 0;
+                int oddSum = 0;
+                for (int i = 0; i < barcode12.length(); i++) {
+                    if ((i + 1) % 2 == 0)
+                        evenSum += Integer.parseInt(barcode12.substring(i, i + 1));
+                    else
+                        oddSum += Integer.parseInt(barcode12.substring(i, i + 1));
+                }
+                int checkDigit = (evenSum * 3 + oddSum) % 10 == 0 ? 0 : 10 - (evenSum * 3 + oddSum) % 10;
+
                 barcode.execute(Collections.singletonMap(BaseUtils.single(barcode.interfaces), object), session,
-                                prefix + BaseUtils.replicate('0', Math.max(13 - prefix.length() - id.length(), 0)) + id, form);
+                                barcode12 + checkDigit, form);
             }
 
             // меняем все свойства на значения входов
