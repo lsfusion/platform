@@ -18,6 +18,7 @@ import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.group.AbstractGroup;
+import tmc.integration.imp.ClassifierTNVEDImportActionProperty;
 
 import javax.swing.*;
 import java.awt.*;
@@ -124,28 +125,37 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP mainCompositionSku;
     private LP additionalCompositionSku;
     private ConcreteCustomClass category;
-    private ConcreteCustomClass customCategory4;
-    private ConcreteCustomClass customCategory6;
-    private ConcreteCustomClass customCategory9;
-    private ConcreteCustomClass customCategory10;
-    private ConcreteCustomClass customCategoryOrigin;
+    public ConcreteCustomClass customCategory4;
+    public ConcreteCustomClass customCategory6;
+    public ConcreteCustomClass customCategory9;
+    public ConcreteCustomClass customCategory10;
+    public ConcreteCustomClass customCategoryOrigin;
     private LP categoryArticle;
     private LP nameCategoryArticle;
     private LP categoryArticleSku;
     private LP nameCategoryArticleSku;
     private LP customCategory10ArticleSku;
-    private LP sidCustomCategory4;
-    private LP sidCustomCategory6;
-    private LP sidCustomCategory9;
-    private LP sidCustomCategory10;
-    private LP sidCustomCategoryOrigin;
-    private LP customCategory4CustomCategory6;
-    private LP customCategory6CustomCategory9;
-    private LP customCategory9CustomCategory10;
-    private LP customCategory6CustomCategory10;
-    private LP customCategory6CustomCategoryOrigin;
-    private LP customCategory10CustomCategoryOrigin;
-    private LP sidCustomCategory10CustomCategoryOrigin;
+    public LP sidCustomCategory4;
+    public LP sidCustomCategory6;
+    public LP sidCustomCategory9;
+    public LP sidCustomCategory10;
+    public LP sidCustomCategoryOrigin;
+    
+    public LP sidToCustomCategory4;
+    public LP sidToCustomCategory6;
+    public LP sidToCustomCategory9;
+    public LP sidToCustomCategory10;
+    public LP sidToCustomCategoryOrigin;
+    private LP importBelTnved;
+    private LP importEuTnved;
+    
+    public LP customCategory4CustomCategory6;
+    public LP customCategory6CustomCategory9;
+    public LP customCategory9CustomCategory10;
+    public LP customCategory6CustomCategory10;
+    public LP customCategory6CustomCategoryOrigin;
+    public LP customCategory10CustomCategoryOrigin;
+    public LP sidCustomCategory10CustomCategoryOrigin;
     private LP sidCustomCategory4CustomCategory6;
     private LP sidCustomCategory6CustomCategory9;
     private LP sidCustomCategory9CustomCategory10;
@@ -154,7 +164,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP nameCustomCategory6CustomCategory9;
     private LP nameCustomCategory9CustomCategory10;
     private LP nameCustomCategory6CustomCategoryOrigin;
-    private LP relationCustomCategory10CustomCategoryOrigin;
+    public LP relationCustomCategory10CustomCategoryOrigin;
     private LP relationCustomCategory10;
     private LP relationCustomCategoryOrigin;
     private LP customCategory10DataArticle;
@@ -375,7 +385,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP incomeStockSku;
     private LP outcomeStockSku;
     private AbstractCustomClass customCategory;
-    private LP nameCustomCategory;
+    public LP nameCustomCategory;
     private LP customCategoryOriginArticle;
     private LP customCategoryOriginArticleSku;
     private LP sidCustomCategoryOriginArticle;
@@ -547,6 +557,15 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         sidCustomCategoryOrigin = addDProp(baseGroup, "sidCustomCategoryOrigin", "Код ЕС(10)", StringClass.get(10), customCategoryOrigin);
         sidCustomCategoryOrigin.setFixedCharWidth(10);
+
+        sidToCustomCategory4 = addCGProp(null, "sidToCustomCategory4", "Код(4)", object(customCategory4), sidCustomCategory4, sidCustomCategory4, 1);
+        sidToCustomCategory6 = addCGProp(null, "sidToCustomCategory6", "Код(6)", object(customCategory6), sidCustomCategory6, sidCustomCategory6, 1);
+        sidToCustomCategory9 = addCGProp(null, "sidToCustomCategory9", "Код(9)", object(customCategory9), sidCustomCategory9, sidCustomCategory9, 1);
+        sidToCustomCategory10 = addCGProp(null, "sidToCustomCategory10", "Код(10)", object(customCategory10), sidCustomCategory10, sidCustomCategory10, 1);
+        sidToCustomCategoryOrigin = addCGProp(null, "sidToCustomCategoryOrigin", "Код ЕС (10)", object(customCategoryOrigin), sidCustomCategoryOrigin, sidCustomCategoryOrigin, 1);
+
+        importBelTnved = addAProp(new ClassifierTNVEDImportActionProperty(genSID(), "Импортировать (РБ)", this, "belarusian"));
+        importEuTnved = addAProp(new ClassifierTNVEDImportActionProperty(genSID(), "Импортировать (ЕС)", this, "origin"));
 
         customCategory4CustomCategory6 = addDProp(idGroup, "customCategory4CustomCategory6", "Код(4)", customCategory4, customCategory6);
         customCategory6CustomCategory9 = addDProp(idGroup, "customCategory6CustomCategory9", "Код(6)", customCategory6, customCategory9);
@@ -1966,6 +1985,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objCustomCategory10;
         private ObjectEntity objCustomCategoryOrigin;
 
+        private PropertyDrawEntity import1;
+        private PropertyDrawEntity import2;
+
         private TreeGroupEntity treeCustomCategory;
         private TreeGroupEntity treeCustomCategoryOrigin;
 
@@ -1996,6 +2018,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objCustomCategory6Origin = addSingleGroupObject(customCategory6, "Второй уровень", sidCustomCategory6, nameCustomCategory);
             if (!tree)
                 addObjectActions(this, objCustomCategory6Origin);
+
+            import1 = addPropertyDraw(importBelTnved);
+            import2 = addPropertyDraw(importEuTnved);
 
             objCustomCategoryOrigin = addSingleGroupObject(customCategoryOrigin, "ЕС уровень", sidCustomCategoryOrigin, nameCustomCategory, sidCustomCategory10CustomCategoryOrigin);
             addObjectActions(this, objCustomCategoryOrigin);
@@ -2040,6 +2065,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 design.get(objCustomCategory6Origin.groupTo).grid.constraints.fillHorizontal = 1;
                 design.get(objCustomCategoryOrigin.groupTo).grid.constraints.fillHorizontal = 2;
             }
+            design.addIntersection(design.get(import1), design.get(import2), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
                
             return design;
         }

@@ -1584,7 +1584,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         for (int i = 0; i < 3; i++) {
-            addDayOff(session, countryId, new Date(currentYear + i + "/01/01"));
+            Date newYear = new Date(currentYear + i + "/01/01");
+            if(newYear.getDay() != 5 && newYear.getDay() != 6)
+                addDayOff(session, countryId, newYear);
         }
 
         session.apply(this);
