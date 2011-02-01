@@ -54,7 +54,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return GroupObjectInstance.getObjects(result);
     }
 
-    public List<ObjectInstance> getKeysObjectsList(Set<PropertyDrawInstance> panelProperties) {
+    public List<ObjectInstance> getKeysObjectsList(Set<PropertyReaderInstance> panelProperties) {
         List<ObjectInstance> result = getKeysObjectsList();
         if (!panelProperties.contains(this)) {
             result = BaseUtils.mergeList(GroupObjectInstance.getObjects(toDraw.getUpTreeGroups()), result);
@@ -83,7 +83,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             return PropertyDrawInstance.this.getID();
         }
 
-        public List<ObjectInstance> getKeysObjectsList(Set<PropertyDrawInstance> panelProperties) {
+        public List<ObjectInstance> getKeysObjectsList(Set<PropertyReaderInstance> panelProperties) {
             return PropertyDrawInstance.this.getKeysObjectsList();
         }
     }
@@ -101,8 +101,12 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             return PropertyDrawInstance.this.getID();
         }
 
-        public List<ObjectInstance> getKeysObjectsList(Set<PropertyDrawInstance> panelProperties) {
-            return PropertyDrawInstance.this.getKeysObjectsList(panelProperties);
+        public List<ObjectInstance> getKeysObjectsList(Set<PropertyReaderInstance> panelProperties) {
+            List<ObjectInstance> result = PropertyDrawInstance.this.getKeysObjectsList();
+            if (!panelProperties.contains(this)) {
+                result = BaseUtils.mergeList(GroupObjectInstance.getObjects(toDraw.getUpTreeGroups()), result);
+            }
+            return result;
         }
     }
 }

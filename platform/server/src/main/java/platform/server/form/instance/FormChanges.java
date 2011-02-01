@@ -29,7 +29,7 @@ public class FormChanges {
 
     public Map<PropertyReaderInstance, Map<Map<ObjectInstance, DataObject>, Object>> properties = new HashMap<PropertyReaderInstance, Map<Map<ObjectInstance, DataObject>, Object>>();
 
-    public Set<PropertyDrawInstance> panelProperties = new HashSet<PropertyDrawInstance>();
+    public Set<PropertyReaderInstance> panelProperties = new HashSet<PropertyReaderInstance>();
     public Set<PropertyDrawInstance> dropProperties = new HashSet<PropertyDrawInstance>();
 
     void out(FormInstance<?> bv) {
@@ -57,7 +57,7 @@ public class FormChanges {
         }
 
         System.out.println(" ------- PANEL ---------------");
-        for (PropertyDrawInstance property : panelProperties)
+        for (PropertyReaderInstance property : panelProperties)
             System.out.println(property);
 
         System.out.println(" ------- Drop ---------------");
@@ -96,8 +96,9 @@ public class FormChanges {
         serializeKeyObjectsMap(outStream, parentObjects, true);
 
         outStream.writeInt(panelProperties.size());
-        for (PropertyDrawInstance propertyView : panelProperties) {
-            outStream.writeInt(propertyView.getID());
+        for (PropertyReaderInstance propertyReader : panelProperties) {
+            outStream.writeByte(propertyReader.getTypeID());
+            outStream.writeInt(propertyReader.getID());
         }
 
         outStream.writeInt(properties.size());

@@ -19,7 +19,7 @@ public class ClientGroupObjectValue extends OrderedMap<ClientObject, Object>
         }
     }
 
-    public ClientGroupObjectValue(DataInputStream inStream, ClientPropertyReader clientPropertyDraw, Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) throws IOException {
+    public ClientGroupObjectValue(DataInputStream inStream, ClientPropertyReader clientPropertyDraw, Set<ClientPropertyReader> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) throws IOException {
         for (ClientObject clientObject : clientPropertyDraw.getKeysObjectsList(panelProperties, classViews, controllers)) {
             put(clientObject, deserializeObject(inStream));
         }

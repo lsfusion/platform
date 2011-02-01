@@ -11,5 +11,5 @@ public interface PropertyReaderInstance {
 
     public int getID(); // ID в рамках Type
 
-    public List<ObjectInstance> getKeysObjectsList(Set<PropertyDrawInstance> panelProperties);
+    public List<ObjectInstance> getKeysObjectsList(Set<PropertyReaderInstance> panelProperties);
 }

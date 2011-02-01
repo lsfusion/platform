@@ -26,7 +26,7 @@ public class ClientFormChanges {
     public Map<ClientGroupObject, List<ClientGroupObjectValue>> parentObjects;
 
     public final Map<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> properties;
-    public final Set<ClientPropertyDraw> panelProperties;
+    public final Set<ClientPropertyReader> panelProperties;
     public final Set<ClientPropertyDraw> dropProperties;
 
     public ClientFormChanges(DataInputStream inStream, ClientForm clientForm, Map<ClientGroupObject, GroupObjectController> controllers) throws IOException {
@@ -48,33 +48,17 @@ public class ClientFormChanges {
         parentObjects = readGridObjectsMap(inStream, clientForm, true);
 
         //DropProperties
-        panelProperties = new HashSet<ClientPropertyDraw>();
+        panelProperties = new HashSet<ClientPropertyReader>();
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
-            panelProperties.add(clientForm.getProperty(inStream.readInt()));
+            panelProperties.add(deserializePropertyReader(clientForm, inStream));
         }
 
         properties = new HashMap<ClientPropertyReader, Map<ClientGroupObjectValue, Object>>();
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
 
-            ClientPropertyReader clientPropertyRead;
-            switch (inStream.readByte()) {
-                case PropertyReadType.DRAW:
-                    clientPropertyRead = clientForm.getProperty(inStream.readInt());
-                    break;
-                case PropertyReadType.CAPTION:
-                    clientPropertyRead = clientForm.getProperty(inStream.readInt()).captionReader;
-                    break;
-                case PropertyReadType.CELL_HIGHLIGHT:
-                    clientPropertyRead = clientForm.getProperty(inStream.readInt()).highlightReader;
-                    break;
-                case PropertyReadType.ROW_HIGHLIGHT:
-                    clientPropertyRead = clientForm.getGroupObject(inStream.readInt());
-                    break;
-                default:
-                    throw new IOException();
-            }
+            ClientPropertyReader clientPropertyRead = deserializePropertyReader(clientForm, inStream);
 
             Map<ClientGroupObjectValue, Object> propertyValues = new HashMap<ClientGroupObjectValue, Object>();
             int mapCount = inStream.readInt();
@@ -95,6 +79,21 @@ public class ClientFormChanges {
 
         message = inStream.readUTF();
         dataChanged = (Boolean) BaseUtils.deserializeObject(inStream);
+    }
+
+    private ClientPropertyReader deserializePropertyReader(ClientForm clientForm, DataInputStream inStream) throws IOException {
+        switch (inStream.readByte()) {
+            case PropertyReadType.DRAW:
+                return clientForm.getProperty(inStream.readInt());
+            case PropertyReadType.CAPTION:
+                return clientForm.getProperty(inStream.readInt()).captionReader;
+            case PropertyReadType.CELL_HIGHLIGHT:
+                return clientForm.getProperty(inStream.readInt()).highlightReader;
+            case PropertyReadType.ROW_HIGHLIGHT:
+                return clientForm.getGroupObject(inStream.readInt());
+            default:
+                throw new IOException();
+        }
     }
 
     private Map<ClientGroupObject, List<ClientGroupObjectValue>> readGridObjectsMap(DataInputStream inStream, ClientForm clientForm, boolean parents) throws IOException {

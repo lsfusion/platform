@@ -393,7 +393,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return result;
     }
 
-    public List<ClientObject> getKeysObjectsList(Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
+    public List<ClientObject> getKeysObjectsList(Set<ClientPropertyReader> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
         List<ClientObject> result = getKeysObjectsList(classViews, controllers);
         if (!panelProperties.contains(this)) {
             result = BaseUtils.mergeList(ClientGroupObject.getObjects(groupObject.getUpTreeGroups()), result);
@@ -475,7 +475,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public class CaptionReader implements ClientPropertyReader {
-        public List<ClientObject> getKeysObjectsList(Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
+        public List<ClientObject> getKeysObjectsList(Set<ClientPropertyReader> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
             return ClientPropertyDraw.this.getKeysObjectsList(classViews, controllers);
         }
 
@@ -493,8 +493,12 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public class HighlightReader implements ClientPropertyReader {
-        public List<ClientObject> getKeysObjectsList(Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
-            return ClientPropertyDraw.this.getKeysObjectsList(panelProperties, classViews, controllers);
+        public List<ClientObject> getKeysObjectsList(Set<ClientPropertyReader> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
+            List<ClientObject> result = ClientPropertyDraw.this.getKeysObjectsList(classViews, controllers);
+            if (!panelProperties.contains(this)) {
+                result = BaseUtils.mergeList(ClientGroupObject.getObjects(groupObject.getUpTreeGroups()), result);
+            }
+            return result;
         }
 
         public ClientGroupObject getGroupObject() {

@@ -842,8 +842,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
                     if (drawProperty.propertyCaption != null && (read || propertyUpdated(drawProperty.propertyCaption, columnGroupGrids, changedProps)))
                         readProperties.put(drawProperty.captionReader, columnGroupGrids);
-                    if (drawProperty.propertyHighlight != null && (read || propertyUpdated(drawProperty.propertyHighlight, drawGridObjects, changedProps)))
+                    if (drawProperty.propertyHighlight != null && (read || propertyUpdated(drawProperty.propertyHighlight, drawGridObjects, changedProps))) {
                         readProperties.put(drawProperty.highlightReader, drawGridObjects);
+                        if (!inInterface) {
+                            result.panelProperties.add(drawProperty.highlightReader);
+                        }
+                    }
                 } else if (previous!=null) // говорим клиенту что свойство надо удалить
                     result.dropProperties.add(drawProperty);
             }

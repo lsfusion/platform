@@ -73,7 +73,7 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
         return ClientGroupObject.getObjects(result);
     }
 
-    public List<ClientObject> getKeysObjectsList(Set<ClientPropertyDraw> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
+    public List<ClientObject> getKeysObjectsList(Set<ClientPropertyReader> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
         return getKeysObjectsList(classViews, controllers);
     }
 

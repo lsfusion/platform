@@ -50,7 +50,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return PropertyReadType.ROW_HIGHLIGHT;
     }
 
-    public List<ObjectInstance> getKeysObjectsList(Set<PropertyDrawInstance> panelProperties) {
+    public List<ObjectInstance> getKeysObjectsList(Set<PropertyReaderInstance> panelProperties) {
         return curClassView == ClassViewType.GRID ? GroupObjectInstance.getObjects(getUpTreeGroups()) : new ArrayList<ObjectInstance>();
     }
 
