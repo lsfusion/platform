@@ -305,6 +305,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP articleFormatMin;
     LP articleFormatToSell;
 
+    LP articleCountry;
+
     LP orderAllDeliveryPrice;
     LP sumNDSRetailOrderArticle;
     LP sumDeliveryOrderArticle;
@@ -521,7 +523,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP articleBrend = addDProp("articleBrend", "Бренд товара", brend, article);
         addJProp(artExtraGroup, "Бренд товара", name, articleBrend, 1);
 
-        LP articleCountry = addDProp("articleCountry", "Страна товара", country, article);
+        articleCountry = addDProp("articleCountry", "Страна товара", country, article);
         addJProp(artExtraGroup, "Страна товара", name, articleCountry, 1);
 
         LP articleLine = addDProp("articleLine", "Линия товара", line, article);
@@ -3026,6 +3028,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             ImportField ndsField = new ImportField(DoubleClass.instance); fields.add(ndsField);
             properties.put(ndsField, new ImportProperty(ndsOrderArticle.getMapping(document, articleKey)));
 
+            ImportField countryField = new ImportField(InsensitiveStringClass.get(60)); fields.add(countryField);
+            ImportKey<?> countryKey = new ImportKey(country, nameToCountry.getMapping(countryField));
+            properties.put(countryField, new ImportProperty(articleCountry.getMapping(articleKey), object(country).getMapping(countryKey)));
+
             List<List<Object>> rows = new ArrayList<List<Object>>();
 
             for (int i = 0; i < sh.getRows(); ++i) {
@@ -3043,7 +3049,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             }
 
 
-            new IntegrationService(session, new ImportTable(fields, rows), Arrays.asList(articleKey), properties).synchronize(true, true, false);
+            new IntegrationService(session, new ImportTable(fields, rows), Arrays.asList(articleKey, countryKey), properties).synchronize(true, true, false);
 
 
             actions.add(new MessageClientAction("Данные были успешно приняты", "Импорт"));

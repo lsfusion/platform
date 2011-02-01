@@ -619,6 +619,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP countrySId;
     protected LP generateDatesCountry;
     protected LP sidToCountry;
+    protected LP nameToCountry;
     protected LP isDayOffCountryDate;
     LP workingDay, isWorkingDay, workingDaysQuantity, equalsWorkingDaysQuantity;
 
@@ -1046,6 +1047,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         name = addCUProp(baseGroup, "commonName", "Имя", addDProp("name", "Имя", InsensitiveStringClass.get(60), baseClass.named),
                 addJProp(insensitiveString2, userFirstName, 1, userLastName, 1));
+
+        nameToCountry = addCGProp(null, "nameToCountry", "Страна", object(country), name, name, 1);
 
         nameToPolicy = addCGProp(null, "nameToPolicy", "Политика", object(policy), name, name, 1);
         policyDescription = addDProp(baseGroup, "description", "Описание", StringClass.get(100), policy);
