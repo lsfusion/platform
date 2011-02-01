@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="obj2" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isIgnorePagination="true">
 	<property name="ireport.zoom" value="1.0"/>
-	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="140"/>
+	<property name="ireport.x" value="10"/>
+	<property name="ireport.y" value="163"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -15,8 +15,10 @@
 	<field name="obj2" class="java.lang.Integer"/>
 	<field name="obj3" class="java.lang.Integer"/>
 	<field name="commonName" class="java.lang.String"/>
-	<field name="nameClaimerVote" class="java.lang.String"/>
-	<field name="nameProjectVote" class="java.lang.String"/>
+	<field name="nameNativeClaimerVote" class="java.lang.String"/>
+	<field name="nameForeignClaimerVote" class="java.lang.String"/>
+	<field name="nameNativeProjectVote" class="java.lang.String"/>
+	<field name="nameForeignProjectVote" class="java.lang.String"/>
 	<field name="isForeignExpert" class="java.lang.Boolean"/>
 	<field name="localeExpert" class="java.lang.String"/>
 	<field name="webHost" class="java.lang.String"/>
@@ -32,7 +34,7 @@
 					<textElement>
 						<font size="20"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Вы приглашаетесь к участию в заочном заседании экспертной коллегии по вопросу рассмотрения предоставления статуса участника Инновационного Центра Сколково организации ":"You are invited to participate in the absentee meeting of the Expert Board on the consideration of obtainment of the status of a participant of the Skolkovo project ") +$F{nameClaimerVote}+", "+($F{isForeignExpert}==null?"заявляющей проект ":"represents the project ")+$F{nameProjectVote} + "."]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Вы приглашаетесь к участию в заочном заседании экспертной коллегии по вопросу рассмотрения предоставления статуса участника Инновационного Центра Сколково организации ":"You are invited to participate in the absentee meeting of the Expert Board on the consideration of obtainment of the status of a participant of the Skolkovo project ")+($F{isForeignExpert}==null?$F{nameNativeClaimerVote}+", заявляющей проект "+$F{nameNativeProjectVote}:$F{nameForeignClaimerVote}+", represents the project "+$F{nameForeignProjectVote}) + "."]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="31" y="23" width="767" height="49"/>

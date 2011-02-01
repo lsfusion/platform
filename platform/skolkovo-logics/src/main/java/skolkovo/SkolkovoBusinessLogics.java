@@ -59,6 +59,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     AbstractCustomClass participant;
 
+    AbstractCustomClass multiLanguageNamed;
+
     ConcreteCustomClass project;
     ConcreteCustomClass expert;
     ConcreteCustomClass cluster;
@@ -102,11 +104,13 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         participant = addAbstractClass("participant", "Участник", baseClass);
 
-        project = addConcreteClass("project", "Проект", baseClass.named, transaction);
-        expert = addConcreteClass("expert", "Эксперт", customUser, participant);
-        cluster = addConcreteClass("cluster", "Кластер", baseClass.named);
+        multiLanguageNamed = addAbstractClass("multiLanguageNamed", "Многоязычный объект", baseClass);
 
-        claimer = addConcreteClass("claimer", "Заявитель", baseClass.named, participant);
+        project = addConcreteClass("project", "Проект", multiLanguageNamed, transaction);
+        expert = addConcreteClass("expert", "Эксперт", customUser, participant);
+        cluster = addConcreteClass("cluster", "Кластер", multiLanguageNamed);
+
+        claimer = addConcreteClass("claimer", "Заявитель", multiLanguageNamed, participant);
         claimer.dialogReadOnly = false;
 
         document = addConcreteClass("document", "Документ", baseClass);
@@ -130,17 +134,19 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                                     new String[]{"Анкета", "Резюме", "Техническое описание", "Резюме иностранного специалиста "});
     }
 
-    LP projectVote, nameProjectVote;
-    LP clusterExpert, nameClusterExpert;
-    LP clusterProject, nameClusterProject;
-    LP clusterVote, nameClusterVote;
-    LP claimerProject, nameClaimerProject;
+    LP nameNative, nameForeign;
+
+    LP projectVote, nameNativeProjectVote, nameForeignProjectVote;
+    LP clusterExpert, nameNativeClusterExpert;
+    LP clusterProject, nameNativeClusterProject, nameForeignClusterProject;
+    LP clusterVote, nameNativeClusterVote;
+    LP claimerProject, nameNativeClaimerProject, nameForeignClaimerProject;
     LP emailParticipant;
     LP emailDocuments;
 
-    LP claimerVote, nameClaimerVote;
+    LP claimerVote, nameNativeClaimerVote, nameForeignClaimerVote;
 
-    LP projectDocument, nameProjectDocument;
+    LP projectDocument, nameNativeProjectDocument;
     LP fileDocument;
     LP loadFileDocument;
     LP openFileDocument;
@@ -234,6 +240,11 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     protected void initProperties() {
 
+        nameNative = addDProp(baseGroup, "nameNative", "Имя", InsensitiveStringClass.get(2000), multiLanguageNamed);
+        nameNative.setMinimumWidth(10); nameNative.setPreferredWidth(50);
+        nameForeign = addDProp(baseGroup, "nameForeign", "Имя (иностр.)", InsensitiveStringClass.get(2000), multiLanguageNamed);
+        nameForeign.setMinimumWidth(10); nameForeign.setPreferredWidth(50);
+
         LP percent = addSFProp("(prm1*100/prm2)", DoubleClass.instance, 2);
 
         // глобальные свойства
@@ -242,29 +253,33 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         limitExperts = addDProp(baseGroup, "limitExperts", "Кол-во прогол. экспертов", IntegerClass.instance);
 
         projectVote = addDProp(idGroup, "projectVote", "Проект (ИД)", project, vote);
-        nameProjectVote = addJProp(baseGroup, "nameProjectVote", "Проект", name, projectVote, 1);
+        nameNativeProjectVote = addJProp(baseGroup, "nameNativeProjectVote", "Проект", nameNative, projectVote, 1);
+        nameForeignProjectVote = addJProp(baseGroup, "nameForeignProjectVote", "Проект (иностр.)", nameForeign, projectVote, 1);
 
         dateProjectVote = addJProp("dateProjectVote", "Дата проекта", date, projectVote, 1);
 
         clusterExpert = addDProp(idGroup, "clusterExpert", "Кластер (ИД)", cluster, expert);
-        nameClusterExpert = addJProp(baseGroup, "nameClusterExpert", "Кластер", name, clusterExpert, 1);
+        nameNativeClusterExpert = addJProp(baseGroup, "nameNativeClusterExpert", "Кластер", nameNative, clusterExpert, 1);
 
         clusterProject = addDProp(idGroup, "clusterProject", "Кластер (ИД)", cluster, project);
-        nameClusterProject = addJProp(baseGroup, "nameClusterProject", "Кластер", name, clusterProject, 1);
+        nameNativeClusterProject = addJProp(baseGroup, "nameNativeClusterProject", "Кластер", nameNative, clusterProject, 1);
+        nameForeignClusterProject = addJProp(baseGroup, "nameForeignClusterProject", "Кластер (иностр.)", nameForeign, clusterProject, 1);
 
         clusterVote = addJProp(idGroup, "clusterVote", "Кластер (ИД)", clusterProject, projectVote, 1);
-        nameClusterVote = addJProp(baseGroup, "nameClusterVote", "Кластер", name, clusterVote, 1);
+        nameNativeClusterVote = addJProp(baseGroup, "nameNativeClusterVote", "Кластер", nameNative, clusterVote, 1);
 
         claimerProject = addDProp(idGroup, "claimerProject", "Заявитель (ИД)", claimer, project);
-        nameClaimerProject = addJProp(baseGroup, "nameClaimerProject", "Заявитель", name, claimerProject, 1);
+        nameNativeClaimerProject = addJProp(baseGroup, "nameNativeClaimerProject", "Заявитель", nameNative, claimerProject, 1);
+        nameForeignClaimerProject = addJProp(baseGroup, "nameForeignClaimerProject", "Заявитель (иностр.)", nameForeign, claimerProject, 1);
 
         claimerVote = addJProp(idGroup, "claimerVote", "Заявитель (ИД)", claimerProject, projectVote, 1);
-        nameClaimerVote = addJProp(idGroup, "nameClaimerVote", "Заявитель", name, claimerVote, 1);
+        nameNativeClaimerVote = addJProp(baseGroup, "nameNativeClaimerVote", "Заявитель", nameNative, claimerVote, 1);
+        nameForeignClaimerVote = addJProp(baseGroup, "nameForeignClaimerVote", "Заявитель (иностр.)", nameForeign, claimerVote, 1);
 
         emailParticipant = addDProp(baseGroup, "emailParticipant", "E-mail", StringClass.get(50), participant);
 
         projectDocument = addDProp(idGroup, "projectDocument", "Проект (ИД)", project, document);
-        nameProjectDocument = addJProp(baseGroup, "nameProjectDocument", "Проект", name, projectDocument, 1);
+        nameNativeProjectDocument = addJProp(baseGroup, "nameNativeProjectDocument", "Проект", nameNative, projectDocument, 1);
 
         quantityMinLanguageDocumentType = addDProp(baseGroup, "quantityMinLanguageDocumentType", "Мин. док.", IntegerClass.instance, language, documentType);
         quantityMaxLanguageDocumentType = addDProp(baseGroup, "quantityMaxLanguageDocumentType", "Макс. док.", IntegerClass.instance, language, documentType);
@@ -387,7 +402,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         generateVoteProject = addAProp(actionGroup, new GenerateVoteActionProperty());
         hideGenerateVoteProject = addHideCaptionProp(privateGroup, "Сгенерировать заседание", generateVoteProject, needExtraVoteProject);
-        generateVoteProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), needExtraVoteProject, 1, autoGenerateProject, 1);
+//        generateVoteProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), needExtraVoteProject, 1, autoGenerateProject, 1);
 
         generateLoginPasswordExpert = addAProp(actionGroup, new GenerateLoginPasswordActionProperty());
         generateLoginPasswordExpert.setDerivedForcedChange(addCProp(ActionClass.instance, true), is(expert), 1);
@@ -506,7 +521,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ProjectFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр проектов");
 
-            objProject = addSingleGroupObject(project, date, name, nameClusterProject, nameClaimerProject, nameStatusProject, autoGenerateProject, generateVoteProject);
+            objProject = addSingleGroupObject(project, date, nameNative, nameForeign,  nameNativeClusterProject, nameNativeClaimerProject, nameStatusProject, autoGenerateProject, generateVoteProject);
             addObjectActions(this, objProject);
 
             getPropertyDraw(generateVoteProject).forceViewType = ClassViewType.PANEL;
@@ -584,9 +599,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private VoteFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр заседаний");
 
-            objVote = addSingleGroupObject(vote, nameProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote, delete);
+            objVote = addSingleGroupObject(vote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote, delete);
 
-            objExpert = addSingleGroupObject(expert, userFirstName, userLastName, userLogin, userPassword, emailParticipant, nameClusterExpert);
+            objExpert = addSingleGroupObject(expert, userFirstName, userLastName, userLogin, userPassword, emailParticipant, nameNativeClusterExpert);
 
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
             addPropertyDraw(objExpert, objVote, allowedEmailLetterExpertVote);
@@ -634,10 +649,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ExpertFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр экспертов");
 
-            objExpert = addSingleGroupObject(expert, selection, userFirstName, userLastName, userLogin, userPassword, emailParticipant, nameClusterExpert, nameLanguageExpert, expertResultGroup, generateLoginPasswordExpert, emailAuthExpert);
+            objExpert = addSingleGroupObject(expert, selection, userFirstName, userLastName, userLogin, userPassword, emailParticipant, nameNativeClusterExpert, nameLanguageExpert, expertResultGroup, generateLoginPasswordExpert, emailAuthExpert);
             addObjectActions(this, objExpert);
 
-            objVote = addSingleGroupObject(vote, nameProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote);
+            objVote = addSingleGroupObject(vote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote);
 
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
             addPropertyDraw(objExpert, objVote, allowedEmailLetterExpertVote);
@@ -705,7 +720,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             addPropertyDraw(webHost, gobjExpertVote);
             addPropertyDraw(objExpert, name, isForeignExpert, localeExpert);
-            addPropertyDraw(objVote, nameClaimerVote, nameProjectVote);
+            addPropertyDraw(objVote, nameNativeClaimerVote, nameForeignClaimerVote, nameNativeProjectVote, nameForeignProjectVote);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
 
             objDocument = addSingleGroupObject(8, document, fileDocument);
@@ -754,7 +769,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private VoteStartFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Созыв заседания", true);
 
-            objVote = addSingleGroupObject(1, vote, date, dateProjectVote, nameClaimerVote, datePrevVote);
+            objVote = addSingleGroupObject(1, vote, date, dateProjectVote, nameNativeClaimerVote, datePrevVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
             objExpert = addSingleGroupObject(2, expert, name);
@@ -784,7 +799,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private VoteProtocolFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Протокол заседания", true);
 
-            objVote = addSingleGroupObject(1, vote, date, nameProjectVote, nameClaimerVote, quantityRepliedVote, quantityDoneVote, succeededVote, quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote, acceptedForeignVote);
+            objVote = addSingleGroupObject(1, vote, date, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, quantityRepliedVote, quantityDoneVote, succeededVote, quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote, acceptedForeignVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(closedVote, objVote)));
@@ -818,9 +833,18 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
                 VoteInfo voteInfo = new VoteInfo();
                 voteInfo.expertName = (String) name.read(session, vo.expertObj);
-                voteInfo.projectName = (String) name.read(session, vo.projectObj);
-                voteInfo.projectClaimer = (String) nameClaimerProject.read(session, vo.projectObj);
-                voteInfo.projectCluster = (String) nameClusterProject.read(session, vo.projectObj);
+
+                Boolean isForeign = (Boolean) isForeignExpert.read(session, vo.expertObj);
+                if (isForeign == null) {
+                    voteInfo.projectName = (String) nameNative.read(session, vo.projectObj);
+                    voteInfo.projectClaimer = (String) nameNativeClaimerProject.read(session, vo.projectObj);
+                    voteInfo.projectCluster = (String) nameNativeClusterProject.read(session, vo.projectObj);
+                } else {
+                    voteInfo.projectName = (String) nameForeign.read(session, vo.projectObj);
+                    voteInfo.projectClaimer = (String) nameForeignClaimerProject.read(session, vo.projectObj);
+                    voteInfo.projectCluster = (String) nameForeignClusterProject.read(session, vo.projectObj);
+
+                }
 
                 voteInfo.inCluster = nvl((Boolean) inClusterExpertVote.read(session, vo.expertObj, vo.voteObj), false);
                 voteInfo.innovative = nvl((Boolean) innovativeExpertVote.read(session, vo.expertObj, vo.voteObj), false);

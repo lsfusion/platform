@@ -157,6 +157,18 @@ public class LP<T extends PropertyInterface> {
         return result;
     }
 
+    public void setMinimumWidth(int charWidth) {
+        property.minimumCharWidth = charWidth;
+    }
+
+    public void setPreferredWidth(int charWidth) {
+        property.preferredCharWidth = charWidth;
+    }
+
+    public void setMaximumWidth(int charWidth) {
+        property.maximumCharWidth = charWidth;
+    }
+
     public void setFixedCharWidth(int charWidth) {
         property.setFixedCharWidth(charWidth);
     }

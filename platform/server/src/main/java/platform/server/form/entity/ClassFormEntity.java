@@ -12,7 +12,7 @@ public class ClassFormEntity<T extends BusinessLogics<T>> extends AbstractClassF
         super(BL, cls, sID, caption);
 
         object = addSingleGroupObject(cls, BL.baseGroup, true);
-        BL.addObjectActions(this, object);
+        BL.addObjectActions(this, object, true);
 
         clsSID = cls.getSID();
     }

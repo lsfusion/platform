@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="obj1" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.1000000000000025"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="130"/>
+	<property name="ireport.y" value="40"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -15,7 +15,7 @@
 	<field name="obj1" class="java.lang.Integer"/>
 	<field name="date" class="java.util.Date"/>
 	<field name="dateProjectVote" class="java.util.Date"/>
-	<field name="nameClaimerVote" class="java.lang.String"/>
+	<field name="nameNativeClaimerVote" class="java.lang.String"/>
 	<field name="prevDateVote" class="java.util.Date"/>
 	<group name="captionGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{obj1})]]></groupExpression>
@@ -28,7 +28,7 @@
 					<reportElement stretchType="RelativeToBandHeight" x="34" y="163" width="524" height="78"/>
 					<textElement textAlignment="Justified"/>
 					<textFieldExpression class="java.lang.String"><![CDATA["Некоммерческая организация Фонд развития Центра разработки и коммерциализации новых технологий, "+
-"рассмотрев поданную " + $F{nameClaimerVote} + " заявку на присвоение статуса участника проекта от "
+"рассмотрев поданную " + $F{nameNativeClaimerVote} + " заявку на присвоение статуса участника проекта от "
 + $F{dateProjectVote} + ", на основании решения Фонда о направлении заявки соискателя на рассмотрение "+
 "в Экспертную коллегию для проведения экспертизы заявки по существу от "+ $F{date} +", "+ ($F{prevDateVote}==null?
 "в соответствии с пунктами 4-7 Положения об Экспертных коллегиях Фонда «Сколково»":"учитывая, что "+

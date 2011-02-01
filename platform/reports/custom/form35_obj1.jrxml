@@ -15,7 +15,7 @@
 	<field name="obj1" class="java.lang.Integer"/>
 	<field name="date" class="java.util.Date"/>
 	<field name="succeededVote" class="java.lang.Boolean"/>
-	<field name="nameClaimerVote" class="java.lang.String"/>
+	<field name="nameNativeClaimerVote" class="java.lang.String"/>
 	<field name="quantityRepliedVote" class="java.lang.Integer">
 		<fieldDescription><![CDATA[@Z]]></fieldDescription>
 	</field>
@@ -86,7 +86,7 @@
  '\n' + "1) решения Фонда о направлении заявки соискателя на рассмотрение в Экспертную коллегию для " +
 "проведения экспертизы заявки по существу от " + $F{date} + " ;"+'\n'+"2) решения Руководителя Аппарата " +
 "Президента и Советов Фонда о созыве заседания Экспертной коллегии от " + $F{date} + " для проведения " +
-"экспертизы заявки " + $F{nameClaimerVote} + " по существу было созвано заседание Экспертной коллегии, " +
+"экспертизы заявки " + $F{nameNativeClaimerVote} + " по существу было созвано заседание Экспертной коллегии, " +
 "для чего был определен ее состав в количестве 10 членов и направлены членам Экспертной коллегии" +
 "материалы заявки соискателя (в электронном виде), а также Бюллетень оценки."]]></textFieldExpression>
 				</textField>
