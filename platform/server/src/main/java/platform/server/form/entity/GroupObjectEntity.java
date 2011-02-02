@@ -52,6 +52,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public ClassViewType initClassView = ClassViewType.GRID;
     public List<ClassViewType> banClassView = new ArrayList<ClassViewType>();
     public Integer pageSize;
+    public Boolean needHorizontalScroll;
+    public Integer tableRowsCount;
 
     public PropertyObjectEntity<?> propertyHighlight;
 
@@ -71,6 +73,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
             pool.serializeMap(outStream, isParent);
         }
         pool.writeObject(outStream, pageSize);
+        pool.writeObject(outStream, needHorizontalScroll);
+        pool.writeInt(outStream, tableRowsCount);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -84,6 +88,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
             isParent = pool.deserializeMap(inStream);
         }
         pageSize = pool.readObject(inStream);
+        needHorizontalScroll = pool.readObject(inStream);
+        tableRowsCount = pool.readInt(inStream);
     }
 
     public Map<ObjectEntity, PropertyObjectEntity> isParent = null;

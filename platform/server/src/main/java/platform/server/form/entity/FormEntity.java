@@ -622,7 +622,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     protected void setForceViewType(AbstractGroup group, ClassViewType type, GroupObjectEntity groupObject) {
         for (PropertyDrawEntity propertyDraw : propertyDraws) {
-            if ((groupObject==null || groupObject.equals(propertyDraw.getToDraw(this))) && group.hasChild(propertyDraw.propertyObject.property)) {
+            if ((groupObject == null || groupObject.equals(propertyDraw.getToDraw(this))) && group.hasChild(propertyDraw.propertyObject.property)) {
                 propertyDraw.forceViewType = type;
             }
         }
@@ -641,7 +641,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         List<PropertyDrawEntity> result = new ArrayList<PropertyDrawEntity>();
 
         for (PropertyDrawEntity property : propertyDraws) {
-            if ((groupObject==null || groupObject.equals(property.getToDraw(this))) && group.hasChild(property.propertyObject.property)) {
+            if ((groupObject == null || groupObject.equals(property.getToDraw(this))) && group.hasChild(property.propertyObject.property)) {
                 result.add(property);
             }
         }
@@ -732,5 +732,11 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public void setReadOnly(PropertyDrawEntity property, boolean readOnly) {
         property.readOnly = readOnly;
+    }
+
+    public void setNeedHorizontalScroll(boolean scroll) {
+        for (GroupObjectEntity entity : groups) {
+            entity.needHorizontalScroll = scroll;
+        }
     }
 }

@@ -40,7 +40,7 @@ public abstract class GridTable extends ClientFormTable
     private Map<ClientPropertyDraw, List<ClientGroupObjectValue>> columnKeys = new HashMap<ClientPropertyDraw, List<ClientGroupObjectValue>>();
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> captions = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
-    private Map<ClientGroupObjectValue,Object> rowHighlights = new HashMap<ClientGroupObjectValue,Object>();
+    private Map<ClientGroupObjectValue, Object> rowHighlights = new HashMap<ClientGroupObjectValue, Object>();
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellHighlights = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
 
     private ClientGroupObjectValue currentObject;
@@ -227,6 +227,12 @@ public abstract class GridTable extends ClientFormTable
         // так делается, потому что почему-то сам JTable ну ни в какую не хочет изменять свою высоту (getHeight())
         // приходится это делать за него, а то JViewPort смотрит именно на getHeight()
 //        setSize(getWidth(), getRowHeight() * getRowCount());
+        if (logicsSupplier.getGroupObject().tableRowsCount >= 0) {
+            int count = logicsSupplier.getGroupObject().tableRowsCount == 0 ? getRowCount() : logicsSupplier.getGroupObject().tableRowsCount;
+            int height = count * (getRowHeight() + 1) + getTableHeader().getPreferredSize().height;
+            gridView.pane.setMinimumSize(new Dimension(getMinimumSize().width, height));
+            gridView.pane.setMaximumSize(new Dimension(getMaximumSize().width, height + 5));
+        }
     }
 
     public void changeCurrentObject() {
@@ -393,8 +399,8 @@ public abstract class GridTable extends ClientFormTable
     @Override
     public void doLayout() {
         int newAutoResizeMode = fitWidth()
-                                ? JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS
-                                : JTable.AUTO_RESIZE_OFF;
+                ? JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS
+                : JTable.AUTO_RESIZE_OFF;
         if (newAutoResizeMode != autoResizeMode) {
             autoResizeMode = newAutoResizeMode;
             setAutoResizeMode(newAutoResizeMode);
@@ -469,10 +475,10 @@ public abstract class GridTable extends ClientFormTable
     public ClientPropertyDraw getCurrentProperty() {
         ClientPropertyDraw selectedProperty = getSelectedProperty();
         return selectedProperty != null
-               ? selectedProperty
-               : model.getColumnCount() > 0
-                 ? model.getColumnProperty(0)
-                 : null;
+                ? selectedProperty
+                : model.getColumnCount() > 0
+                ? model.getColumnProperty(0)
+                : null;
     }
 
     @Override
@@ -508,7 +514,7 @@ public abstract class GridTable extends ClientFormTable
 
         ClientAbstractCellEditor cellEditor = getAbstractCellEditor(row, column);
         if (cellEditor != null) {
-            cellEditor.editPerformed  = false;
+            cellEditor.editPerformed = false;
         }
 
         if (super.editCellAt(row, column, editEvent)) {
@@ -530,8 +536,8 @@ public abstract class GridTable extends ClientFormTable
     public ClientAbstractCellEditor getAbstractCellEditor(int row, int column) {
         TableCellEditor editor = getCellEditor(row, column);
         return editor instanceof ClientAbstractCellEditor
-               ? (ClientAbstractCellEditor) editor
-               : null;
+                ? (ClientAbstractCellEditor) editor
+                : null;
     }
 
     private void moveToFocusableCellIfNeeded() {
@@ -663,7 +669,7 @@ public abstract class GridTable extends ClientFormTable
     public void changeGridOrder(ClientPropertyDraw property, int col, Order modiType) throws IOException {
         ClientGroupObjectValue columnKey = new ClientGroupObjectValue();
 
-        if(col >= 0 && col < model.getColumnCount()) {
+        if (col >= 0 && col < model.getColumnCount()) {
             columnKey = model.getColumnKey(col);
             int ordNum;
             switch (modiType) {
@@ -789,7 +795,7 @@ public abstract class GridTable extends ClientFormTable
                     column = next % getColumnCount();
                 }
                 if (((row == 0 && column == 0 && isNext) || (row == getRowCount() - 1 && column == getColumnCount() - 1 && (!isNext)))
-                    && isCellFocusable(initRow, initColumn)) {
+                        && isCellFocusable(initRow, initColumn)) {
                     row = initRow;
                     column = initColumn;
                     break;

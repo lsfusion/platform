@@ -92,6 +92,15 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         pool.serializeObject(outStream, pool.context.view.getProperty(entity.filterProperty));
 
         outStream.writeBoolean(entity.isParent != null);
+
+        boolean needHorizontalScroll;
+        if (entity.needHorizontalScroll == null) {
+            needHorizontalScroll = (entity.pageSize != null && entity.pageSize == 0) ? true : false;
+        } else {
+            needHorizontalScroll = entity.needHorizontalScroll;
+        }
+        outStream.writeBoolean(needHorizontalScroll);
+        outStream.writeInt(entity.tableRowsCount == null ? -1 : entity.tableRowsCount);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {

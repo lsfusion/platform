@@ -29,6 +29,8 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
 
     public ClientTreeGroup parent;
     public boolean isRecursive;
+    public boolean needVerticalScroll;
+    public int tableRowsCount;
 
     public List<ClassViewType> banClassView = new ArrayList<ClassViewType>();
 
@@ -40,7 +42,7 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
     public List<ClientObject> objects = new ArrayList<ClientObject>();
 
     public boolean mayHaveChildren() {
-        return isRecursive || (parent!= null && parent.groups.indexOf(this) != parent.groups.size() - 1);
+        return isRecursive || (parent != null && parent.groups.indexOf(this) != parent.groups.size() - 1);
     }
 
     public ClientGroupObject() {
@@ -59,9 +61,9 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
 
     public static List<ClientObject> getObjects(List<ClientGroupObject> groups) {
         List<ClientObject> result = new ArrayList<ClientObject>();
-        for(ClientGroupObject group : groups)
+        for (ClientGroupObject group : groups)
             result.addAll(group.objects);
-        return result;        
+        return result;
     }
 
     public List<ClientObject> getKeysObjectsList(Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
@@ -91,8 +93,9 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
 
     private static IDGenerator idGenerator = new DefaultIDGenerator();
     private String actionID = null;
+
     public String getActionID() {
-        if(actionID==null)
+        if (actionID == null)
             actionID = "changeGroupObject" + idGenerator.idShift();
         return actionID;
     }
@@ -128,7 +131,7 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
-        banClassView = (List<ClassViewType>)pool.readObject(inStream);
+        banClassView = (List<ClassViewType>) pool.readObject(inStream);
 
         pool.deserializeCollection(objects, inStream);
 
@@ -142,6 +145,8 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
         filterProperty = pool.deserializeObject(inStream);
 
         isRecursive = inStream.readBoolean();
+        needVerticalScroll = inStream.readBoolean();
+        tableRowsCount = inStream.readInt();
     }
 
     public static List<ClientGroupObjectValue> mergeGroupValues(OrderedMap<ClientGroupObject, List<ClientGroupObjectValue>> groupColumnKeys) {
@@ -164,7 +169,7 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
 
     @Override
     public String toString() {
-         return getCaption() + " (" + getID() + ")";
+        return getCaption() + " (" + getID() + ")";
     }
 
     public ClientContainer getClientComponent(ClientContainer parent) {
@@ -175,9 +180,11 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
     public ClientGroupObject getUpTreeGroup() {
         return BaseUtils.last(upTreeGroups);
     }
+
     public List<ClientGroupObject> upTreeGroups = new ArrayList<ClientGroupObject>();
+
     public List<ClientGroupObject> getUpTreeGroups() {
-        return BaseUtils.add(upTreeGroups,this);
+        return BaseUtils.add(upTreeGroups, this);
     }
 
     public Color getHighlightColor() {

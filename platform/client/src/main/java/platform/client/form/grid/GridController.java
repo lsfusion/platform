@@ -69,7 +69,8 @@ public class GridController {
             }
         };
 
-        view = new GridView(logicsSupplier, form, GridController.this.key.showFind ? findController : null, GridController.this.key.showFilter ? filterController : null, GridController.this.key.tabVertical) {
+        view = new GridView(logicsSupplier, form, GridController.this.key.showFind ? findController : null, GridController.this.key.showFilter ? filterController : null,
+                GridController.this.key.tabVertical, key.groupObject.needVerticalScroll) {
             protected void needToBeShown() {
                 if (!hidden && !view.isVisible()) {
                     view.setVisible(true);

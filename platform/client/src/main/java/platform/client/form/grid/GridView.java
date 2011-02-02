@@ -14,7 +14,6 @@ public abstract class GridView extends JPanel {
     final JPanel queriesContainer;
 
     final JScrollPane pane;
-    final GridBagConstraints paneConstraints;
 
     private final GridTable gridTable;
     public final FilterController filterController;
@@ -23,7 +22,8 @@ public abstract class GridView extends JPanel {
         return gridTable;
     }
 
-    public GridView(GroupObjectLogicsSupplier logicsSupplier, ClientFormController form, FindController findController, FilterController filterController, boolean tabVertical) {
+    public GridView(GroupObjectLogicsSupplier logicsSupplier, ClientFormController form, FindController findController,
+                    FilterController filterController, boolean tabVertical, boolean verticalScroll) {
         this.filterController = filterController;
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -41,16 +41,11 @@ public abstract class GridView extends JPanel {
         gridTable.setTabVertical(tabVertical);
 
         pane = new JScrollPane(gridTable);
-        pane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        int verticalConst = verticalScroll ? ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED : ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER;
+        pane.setVerticalScrollBarPolicy(verticalConst );
         pane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
         gridTable.setFillsViewportHeight(true);
-
-        paneConstraints = new GridBagConstraints();
-        paneConstraints.fill = GridBagConstraints.BOTH;
-        paneConstraints.weightx = 1;
-        paneConstraints.weighty = 1;
-        paneConstraints.insets = new Insets(4, 4, 4, 4);
 
         queriesContainer = new JPanel();
         queriesContainer.setLayout(new BoxLayout(queriesContainer, BoxLayout.X_AXIS));
