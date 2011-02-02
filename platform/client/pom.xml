@@ -140,10 +140,5 @@
             <artifactId>apache-log4j-extras</artifactId>
             <version>1.0</version>
         </dependency>
-        <dependency>
-            <groupId>foxtrot</groupId>
-            <artifactId>foxtrot</artifactId>
-            <version>3.0</version>
-        </dependency>
     </dependencies>
 </project>

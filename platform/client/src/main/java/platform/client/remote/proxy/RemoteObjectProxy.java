@@ -1,7 +1,5 @@
 package platform.client.remote.proxy;
 
-import foxtrot.Job;
-import foxtrot.Worker;
 import org.apache.log4j.Logger;
 import platform.client.Main;
 import platform.client.WaitDialog;
@@ -42,28 +40,14 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
             }
         }
 
-        Object result = null;
-        if (Thread.currentThread().getName().equals("Init thread") || ((invocations.length == 1) && invocations[0].name.equals("getPropertyChangeType"))) {
-            result = target.execute(invocations);
-        } else {
-            if (Main.frame != null && Main.frame.statusProgress != null) {
-                Main.frame.statusProgress.setVisible(true);
-                Main.frame.statusProgress.setIndeterminate(true);
-                Main.frame.setCursor(Cursor.WAIT_CURSOR);
-            }
-            result = Worker.post(new Job() {
-                public Object run() {
-                    Object result = null;
-                    try {
-                        result = target.execute(invocations);
-                    } catch (RemoteException e) {
-                    }
-                    return result;
-                }
-            });
-            Main.frame.statusProgress.setVisible(false);
+        if (Main.frame != null) {
+            Main.frame.setCursor(Cursor.WAIT_CURSOR);
+        }
+        Object result = target.execute(invocations);
+        if (Main.frame != null) {
             Main.frame.setCursor(Cursor.DEFAULT_CURSOR);
         }
+
         logRemoteMethodEndCall("execute", result);
         return result;
     }
@@ -77,26 +61,11 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
                 logger.debug("  Invocation in createAndExecute: " + invocation.toString());
             }
         }
-
-        Object[] result;
-        if (Thread.currentThread().getName().equals("Init thread")) {
-            result = target.createAndExecute(creator, invocations);
-        } else {
-            if (Main.frame != null && Main.frame.statusComponent != null) {
-                Main.frame.statusProgress.setVisible(true);
-                Main.frame.setCursor(Cursor.WAIT_CURSOR);
-            }
-            result = (Object[]) Worker.post(new Job() {
-                public Object run() {
-                    Object result = null;
-                    try {
-                        result = target.createAndExecute(creator, invocations);
-                    } catch (RemoteException e) {
-                    }
-                    return result;
-                }
-            });
-            Main.frame.statusProgress.setVisible(false);
+        if (Main.frame != null) {
+            Main.frame.setCursor(Cursor.WAIT_CURSOR);
+        }
+        Object[] result = target.createAndExecute(creator, invocations);
+        if (Main.frame != null) {
             Main.frame.setCursor(Cursor.DEFAULT_CURSOR);
         }
         logRemoteMethodEndCall("createAndExecute", result);
