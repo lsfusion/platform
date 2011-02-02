@@ -83,7 +83,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     protected void initGroups() {
 
-        idGroup.add(objectValue);
+//        idGroup.add(objectValue);
 
         voteResultGroup = new AbstractGroup("Результаты голосования");
         publicGroup.add(voteResultGroup);
@@ -559,6 +559,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                                                                  "Оценен",
                                                                  KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
             addRegularFilterGroup(projectFilterGroup);
+
+            setPageSize(0);
         }
 
         @Override
@@ -627,6 +629,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             setReadOnly(true, objVote.groupTo);
             setReadOnly(true, objExpert.groupTo);
             setReadOnly(allowedEmailLetterExpertVote, false);
+
+            setPageSize(0);
         }
 
         @Override
@@ -662,6 +666,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             setReadOnly(true, objVote.groupTo);
             setReadOnly(allowedEmailLetterExpertVote, false);
+
+            setPageSize(0);
         }
 
         @Override

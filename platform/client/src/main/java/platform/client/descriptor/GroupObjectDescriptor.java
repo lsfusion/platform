@@ -34,7 +34,7 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
     private Map<ObjectDescriptor, PropertyObjectDescriptor> isParent = new HashMap<ObjectDescriptor, PropertyObjectDescriptor>();
     private TreeGroupDescriptor parent;
     private Integer pageSize;
-    private Boolean needHorizontalScroll;
+    private Boolean needVerticalScroll;
     private Integer tableRowsCount;
 
     public void setIsParent(Map<ObjectDescriptor, PropertyObjectDescriptor> isParent) {
@@ -132,7 +132,7 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
             pool.serializeMap(outStream, isParent);
         }
         pool.writeObject(outStream, pageSize);
-        pool.writeObject(outStream, needHorizontalScroll);
+        pool.writeObject(outStream, needVerticalScroll);
         pool.writeInt(outStream, tableRowsCount);
     }
 
@@ -147,7 +147,7 @@ public class GroupObjectDescriptor extends ContextIdentityObject implements Clie
             isParent = pool.deserializeMap(inStream);
         }
         pageSize = pool.readObject(inStream);
-        needHorizontalScroll = pool.readObject(inStream);
+        needVerticalScroll = pool.readObject(inStream);
         tableRowsCount = pool.readInt(inStream);
 
         client = pool.context.getGroupObject(ID);

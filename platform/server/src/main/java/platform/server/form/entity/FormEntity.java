@@ -734,9 +734,14 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         property.readOnly = readOnly;
     }
 
-    public void setNeedHorizontalScroll(boolean scroll) {
+    public void setPageSize(int pageSize) {
+        for (GroupObjectEntity group : groups)
+            group.pageSize = pageSize;
+    }
+
+    public void setNeedVerticalScroll(boolean scroll) {
         for (GroupObjectEntity entity : groups) {
-            entity.needHorizontalScroll = scroll;
+            entity.needVerticalScroll = scroll;
         }
     }
 }

@@ -334,6 +334,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
             if (!FilterInstance.ignoreInInterface || filter.isInInterface(object.groupTo)) // если ignoreInInterface проверить что в интерфейсе
                 filter.resolveAdd(session, this, object, addObject);
 
+        // todo : теоретически надо переделывать
+        // нужно менять текущий объект, иначе не будет работать ImportFromExcelActionProperty
+        object.changeValue(session, addObject);
+
         object.groupTo.addSeek(object, addObject, false);
 
         // меняем вид, если при добавлении может получиться, что фильтр не выполнится, нужно как-то проверить в общем случае

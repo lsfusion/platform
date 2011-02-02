@@ -94,10 +94,10 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         outStream.writeBoolean(entity.isParent != null);
 
         boolean needHorizontalScroll;
-        if (entity.needHorizontalScroll == null) {
+        if (entity.needVerticalScroll == null) {
             needHorizontalScroll = (entity.pageSize != null && entity.pageSize == 0) ? true : false;
         } else {
-            needHorizontalScroll = entity.needHorizontalScroll;
+            needHorizontalScroll = entity.needVerticalScroll;
         }
         outStream.writeBoolean(needHorizontalScroll);
         outStream.writeInt(entity.tableRowsCount == null ? -1 : entity.tableRowsCount);

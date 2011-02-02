@@ -1427,6 +1427,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     }
 
     private class InvoiceFormEntity extends FormEntity<RomanBusinessLogics> {
+
+        private boolean box;
+
         private ObjectEntity objSupplier;
         private ObjectEntity objOrder;
         private ObjectEntity objInvoice;
@@ -1440,6 +1443,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         private InvoiceFormEntity(NavigatorElement parent, String sID, String caption, boolean box) {
             super(parent, sID, caption);
+
+            this.box = box;
 
             objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameCurrencySupplier);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
@@ -1526,32 +1531,40 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             design.defaultOrders.put(design.get(getPropertyDraw(numberListArticle)), true);
 
-            design.get(objOrder.groupTo).grid.constraints.fillVertical = 0.5;
-            design.get(objInvoice.groupTo).grid.constraints.fillVertical = 0.5;
-            design.get(objInvoice.groupTo).grid.constraints.fillHorizontal = 3;
-            design.get(objArticle.groupTo).grid.constraints.fillHorizontal = 4;
-            design.get(objItem.groupTo).grid.constraints.fillHorizontal = 3;
+            design.get(objOrder.groupTo).grid.constraints.fillVertical = 0.7;
+            design.get(objInvoice.groupTo).grid.constraints.fillVertical = 0.7;
+            design.get(objItem.groupTo).grid.constraints.fillHorizontal = 6;
 
             design.get(getPropertyDraw(objectValue, objSIDArticleComposite)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0);
             design.get(getPropertyDraw(objectValue, objSIDArticleSingle)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0);
 
-            design.addIntersection(design.getGroupObjectContainer(objInvoice.groupTo),
-                                   design.getGroupObjectContainer(objOrder.groupTo),
-                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            ContainerView specContainer = design.createContainer("Спецификация");
+            specContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            if (box)
+                specContainer.add(design.getGroupObjectContainer(objSupplierBox.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objSIDArticleComposite.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objSIDArticleSingle.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objArticle.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objSizeSupplier.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objItem.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objColorSupplier.groupTo));
+
+            ContainerView detContainer = design.createContainer();
+            design.getMainContainer().addAfter(detContainer, design.getGroupObjectContainer(objInvoice.groupTo));
+            detContainer.add(design.getGroupObjectContainer(objOrder.groupTo));
+            detContainer.add(specContainer);
+
+            detContainer.tabbedPane = true;
 
             design.addIntersection(design.getGroupObjectContainer(objSIDArticleComposite.groupTo),
                                    design.getGroupObjectContainer(objSIDArticleSingle.groupTo),
                                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
-            design.addIntersection(design.getGroupObjectContainer(objArticle.groupTo),
-                                   design.getGroupObjectContainer(objSizeSupplier.groupTo),
-                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-
             design.addIntersection(design.getGroupObjectContainer(objItem.groupTo),
                                    design.getGroupObjectContainer(objSizeSupplier.groupTo),
                                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
-            design.addIntersection(design.getGroupObjectContainer(objItem.groupTo),
+            design.addIntersection(design.getGroupObjectContainer(objSizeSupplier.groupTo),
                                    design.getGroupObjectContainer(objColorSupplier.groupTo),
                                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
