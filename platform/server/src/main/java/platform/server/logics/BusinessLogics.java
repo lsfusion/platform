@@ -43,6 +43,7 @@ import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.*;
+import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.integration.*;
@@ -489,7 +490,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             DataSession session = createSession();
 
             Query<String, String> q = new Query<String, String>(BaseUtils.toList("userId", "formId"));
-            Expr expr = formPermission.getExpr(session.modifier, q.mapKeys.get("userId"), q.mapKeys.get("formId"));
+            Expr expr = permissionUserForm.getExpr(session.modifier, q.mapKeys.get("userId"), q.mapKeys.get("formId"));
             q.and(expr.getWhere());
             q.and(q.mapKeys.get("userId").compare(new DataObject(user.ID, customUser), Compare.EQUALS));
 
@@ -576,6 +577,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP userPassword;
     public LP userFirstName;
     public LP userLastName;
+    public LP userMainRole;
+    public LP nameUserMainRole;
     public LP userRoleSID;
     public LP sidToRole;
     public LP inUserRole;
@@ -585,6 +588,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public LP policyDescription;
     protected LP<?> nameToPolicy;
+    public LP userRolePolicyOrder;
     public LP userPolicyOrder;
 
     public LP hostname;
@@ -599,7 +603,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP navigatorElementCaption;
 
     public LP SIDToNavigatorElement;
-    public LP formPermission;
+    public LP permissionUserRoleForm;
+    public LP permissionUserForm;
 
     public LP customID;
     public LP stringID;
@@ -964,7 +969,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         customUser = addConcreteClass("customUser", "Обычный пользователь", user, barcodeObject);
         systemUser = addConcreteClass("systemUser", "Системный пользователь", user);
         computer = addConcreteClass("computer", "Рабочее место", baseClass);
-        userRole = addConcreteClass("userRole", "Роль", baseClass);
+        userRole = addConcreteClass("userRole", "Роль", baseClass.named);
 
         policy = addConcreteClass("policy", "Политика безопасности", baseClass.named);
         session = addConcreteClass("session", "Транзакция", baseClass);
@@ -1057,12 +1062,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         name = addCUProp(baseGroup, "commonName", "Имя", addDProp("name", "Имя", InsensitiveStringClass.get(60), baseClass.named),
                 addJProp(insensitiveString2, userFirstName, 1, userLastName, 1));
 
+        userMainRole = addDProp(idGroup, "userMainRole", "Главная роль (ИД)", userRole, user);
+        nameUserMainRole = addJProp(baseGroup, "nameUserMainRole", "Главная роль", name, userMainRole, 1);
+
         nameToCountry = addCGProp(null, "nameToCountry", "Страна", object(country), name, name, 1);
 
         nameToPolicy = addCGProp(null, "nameToPolicy", "Политика", object(policy), name, name, 1);
         policyDescription = addDProp(baseGroup, "description", "Описание", StringClass.get(100), policy);
 
-        userPolicyOrder = addDProp(baseGroup, "userPolicyOrder", "Порядок политики", IntegerClass.instance, customUser, policy);
+        userRolePolicyOrder = addDProp(baseGroup, "userRolePolicyOrder", "Порядок политики", IntegerClass.instance, userRole, policy);
+        userPolicyOrder = addJProp(baseGroup, "userPolicyOrder", "Порядок политики", userRolePolicyOrder, userMainRole, 1, 2);
 
         barcode = addDProp(baseGroup, "barcode", "Штрих-код", StringClass.get(13), barcodeObject);
         barcode.setFixedCharWidth(13);
@@ -1089,7 +1098,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         navigatorElementCaption = addDProp(baseGroup, "navigatorElementCaption", "Название формы", formCaptionValueClass, navigatorElement);
         SIDToNavigatorElement = addCGProp(null, "SIDToNavigatorElement", "Форма", object(navigatorElement), navigatorElementSID, navigatorElementSID, 1);
 
-        formPermission = addDProp(baseGroup, "formPermission", "Запретить форму", LogicalClass.instance, user, navigatorElement);
+        permissionUserRoleForm = addDProp(baseGroup, "permissionUserRoleForm", "Запретить форму", LogicalClass.instance, userRole, navigatorElement);
+        permissionUserForm = addJProp(baseGroup, "permissionUserForm", "Запретить форму", permissionUserRoleForm, userMainRole, 1, 2);
+//        permissionUserForm = addDProp(baseGroup, "permissionUserForm", "Запретить форму", LogicalClass.instance, user, navigatorElement);
 
         // заполним сессии
         LP sessionUser = addDProp("sessionUser", "Пользователь сессии", user, session);
@@ -1160,9 +1171,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     void initBaseNavigators() {
         adminElement = new NavigatorElement(baseElement, "adminElement", "Администрирование");
-        addFormEntity(new UserPolicyFormEntity(adminElement, "userPolicyForm"));
+        NavigatorElement policyElement = new NavigatorElement(adminElement, "policyElement", "Политика безопасности");
+            addFormEntity(new UserPolicyFormEntity(policyElement, "userPolicyForm"));
+            addFormEntity(new RolePolicyFormEntity(policyElement, "rolePolicyForm"));
         addFormEntity(new AdminFormEntity(adminElement, "adminForm"));
-        addFormEntity(new UserFormPermissionsFormEntity(adminElement, "userFormPermissionsForm"));
         addFormEntity(new DaysOffFormEntity(adminElement, "daysOffForm"));
         addFormEntity(new DictionariesFormEntity(adminElement, "dictionariesForm"));
     }
@@ -1190,22 +1202,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     private class UserPolicyFormEntity extends FormEntity {
         protected UserPolicyFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, "Политики пользователей");
+            super(parent, sID, "Пользователи");
 
             ObjectEntity objUser = addSingleGroupObject(customUser, selection, baseGroup, true);
             ObjectEntity objRole = addSingleGroupObject(userRole, baseGroup, true);
-            ObjectEntity objPolicy = addSingleGroupObject(policy, baseGroup, true);
 
             addObjectActions(this, objUser);
-            addObjectActions(this, objRole);
 
-            addPropertyDraw(objUser, objPolicy, baseGroup, true);
             addPropertyDraw(objUser, objRole, baseGroup, true);
-
-            PropertyDrawEntity balanceDraw = getPropertyDraw(userPolicyOrder, objPolicy.groupTo);
-            PropertyDrawEntity loginDraw = getPropertyDraw(userLogin, objUser.groupTo);
-            balanceDraw.addColumnGroupObject(objUser.groupTo);
-            balanceDraw.setPropertyCaption(loginDraw.propertyObject);
         }
     }
 
@@ -1218,19 +1222,45 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    private class UserFormPermissionsFormEntity extends FormEntity {
-        protected UserFormPermissionsFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, "Доступность форм пользователям");
+    private class RolePolicyFormEntity extends FormEntity {
 
-            ObjectEntity objUser = addSingleGroupObject(customUser, baseGroup, true);
-            ObjectEntity objForm = addSingleGroupObject(navigatorElement, baseGroup, true);
+        private ObjectEntity objUserRole;
+        private ObjectEntity objPolicy;
+        private ObjectEntity objForm;
 
-            addObjectActions(this, objUser);
+        protected RolePolicyFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Роли");
 
-            addPropertyDraw(objUser, objForm, formPermission);
+            objUserRole = addSingleGroupObject(userRole, baseGroup, true);
+            objPolicy = addSingleGroupObject(policy, "Политики безопасности", baseGroup, true);
+            objForm = addSingleGroupObject(navigatorElement, "Формы", baseGroup, true);
+
+            addObjectActions(this, objUserRole);
+
+            addPropertyDraw(objUserRole, objPolicy, baseGroup, true);
+            addPropertyDraw(objUserRole, objForm, permissionUserRoleForm);
 
             setReadOnly(navigatorElementSID, true);
             setReadOnly(navigatorElementCaption, true);
+
+            PropertyDrawEntity balanceDraw = getPropertyDraw(userRolePolicyOrder, objPolicy.groupTo);
+            PropertyDrawEntity sidDraw = getPropertyDraw(userRoleSID, objUserRole.groupTo);
+            balanceDraw.addColumnGroupObject(objUserRole.groupTo);
+            balanceDraw.setPropertyCaption(sidDraw.propertyObject);
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            ContainerView container = design.createContainer();
+            container.tabbedPane = true;
+
+            design.getMainContainer().addAfter(container, design.getGroupObjectContainer(objUserRole.groupTo));
+            container.add(design.getGroupObjectContainer(objPolicy.groupTo));
+            container.add(design.getGroupObjectContainer(objForm.groupTo));
+
+            return design;
         }
     }
     
