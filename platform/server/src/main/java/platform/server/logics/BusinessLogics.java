@@ -333,6 +333,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public ConcreteCustomClass country;
     public ConcreteCustomClass navigatorElement;
     public ConcreteCustomClass form;
+    public ConcreteCustomClass dictionary;
+    public ConcreteCustomClass dictionaryEntry;
 
     public Integer getComputer(String strHostName) {
         try {
@@ -622,6 +624,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP nameToCountry;
     protected LP isDayOffCountryDate;
     LP workingDay, isWorkingDay, workingDaysQuantity, equalsWorkingDaysQuantity;
+
+    protected LP termDictionary;
+    protected LP translationDictionary;
+    protected LP entryDictionary;
+    protected LP translationDictionaryTerm;
 
     private final ConcreteValueClass classSIDValueClass = StringClass.get(250);
     private final StringClass formSIDValueClass = StringClass.get(50);
@@ -966,6 +973,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         navigatorElement = addConcreteClass("navigatorElement", "Элемент навигатора", baseClass);
         form = addConcreteClass("form", "Форма", navigatorElement);
+        dictionary = addConcreteClass("dictionary", "Словарь", baseClass.named);
+        dictionaryEntry = addConcreteClass("dictionaryEntry", "Слова", baseClass);
 
         tableFactory = new TableFactory();
         for (int i = 0; i < TableFactory.MAX_INTERFACE; i++) { // заполним базовые таблицы
@@ -1102,6 +1111,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         emailPassword = addDProp("emailPassword", "Пароль", StringClass.get(50));
         fromAddress = addDProp("fromAddress", "Адрес отправителя", StringClass.get(50));
         defaultCountry = addDProp("defaultCountry", "Страна по умолчанию", country);
+
+        entryDictionary = addDProp("entryDictionary", "Словарь", dictionary, dictionaryEntry);
+        termDictionary = addDProp(baseGroup, "termDictionary", "Термин", StringClass.get(50), dictionaryEntry);
+        translationDictionary = addDProp(baseGroup, "translationDictionary", "Перевод", StringClass.get(50), dictionaryEntry);
+        translationDictionaryTerm = addCGProp(null, "translationDictionayTerm", "Перевод", translationDictionary, termDictionary, entryDictionary , 1, termDictionary, 1);
     }
 
     private void initBaseTables() {
@@ -1150,6 +1164,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         addFormEntity(new AdminFormEntity(adminElement, "adminForm"));
         addFormEntity(new UserFormPermissionsFormEntity(adminElement, "userFormPermissionsForm"));
         addFormEntity(new DaysOffFormEntity(adminElement, "daysOffForm"));
+        addFormEntity(new DictionariesFormEntity(adminElement, "dictionariesForm"));
     }
 
     protected SecurityPolicy permitAllPolicy, readOnlyPolicy;
@@ -1246,6 +1261,24 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             FormView design = super.createDefaultRichDesign();
             design.getGroupObject(objDays.groupTo).grid.constraints.fillVertical = 3;
             return design;
+        }
+    }
+
+    public class DictionariesFormEntity extends FormEntity {
+
+        public DictionariesFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Словари");
+
+            ObjectEntity objDict = addSingleGroupObject(dictionary, "Словарь");
+            objDict.groupTo.initClassView = ClassViewType.PANEL;
+            ObjectEntity objDictEntry = addSingleGroupObject(dictionaryEntry, "Слова");
+
+            addPropertyDraw(objDict, baseGroup);
+            addPropertyDraw(objDictEntry, baseGroup);
+
+            addObjectActions(this, objDict);
+            addObjectActions(this, objDictEntry);
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(entryDictionary, objDictEntry), Compare.EQUALS, objDict));
         }
     }
 
@@ -2431,6 +2464,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         for (int i = 0; i < params.length / 2; i++)
             mapObjects.put((ObjectEntity) params[2 * i], eaProp.listInterfaces.get((Integer) params[2 * i + 1] - 1));
         ((EmailActionProperty) eaProp.property).addAttachmentForm(form, format, mapObjects);
+    }
+
+    protected LP addTAProp(LP sourceProperty, LP targetProperty) {
+        return addProperty(null, new LP<ClassPropertyInterface>(new TranslateActionProperty(genSID(), "translate", this, sourceProperty, targetProperty, dictionary)));
     }
 
     protected <P extends PropertyInterface> LP addSCProp(LP<P> lp) {
