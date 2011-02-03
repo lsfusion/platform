@@ -36,6 +36,11 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         this.ID = ID;
     }
 
+    public GroupObjectEntity(int ID, String sID) {
+        this.ID = ID;
+        this.sID = sID;
+    }
+
     public int getID() {
         return ID;
     }

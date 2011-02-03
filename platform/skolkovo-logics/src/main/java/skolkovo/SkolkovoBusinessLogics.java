@@ -83,7 +83,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     protected void initGroups() {
 
-//        idGroup.add(objectValue);
+        idGroup.add(objectValue);
 
         voteResultGroup = new AbstractGroup("Результаты голосования");
         publicGroup.add(voteResultGroup);
@@ -485,17 +485,17 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     FormEntity globalForm;
 
     protected void initNavigators() throws JRException, FileNotFoundException {
-        addFormEntity(new ProjectFormEntity(baseElement, "form10"));
-        addFormEntity(new VoteFormEntity(baseElement, "form15"));
-        addFormEntity(new ExpertFormEntity(baseElement, "form18"));
-        languageDocumentTypeForm = addFormEntity(new LanguageDocumentTypeFormEntity(baseElement, "form25"));
-        globalForm = addFormEntity(new GlobalFormEntity(baseElement, "form20"));
+        addFormEntity(new ProjectFormEntity(baseElement, "project"));
+        addFormEntity(new VoteFormEntity(baseElement, "vote"));
+        addFormEntity(new ExpertFormEntity(baseElement, "expert"));
+        languageDocumentTypeForm = addFormEntity(new LanguageDocumentTypeFormEntity(baseElement, "languageDocumentType"));
+        globalForm = addFormEntity(new GlobalFormEntity(baseElement, "global"));
 
-        NavigatorElement print = new NavigatorElement(baseElement, "form60", "Печатные формы");
-        addFormEntity(new VoteStartFormEntity(print, "form40"));
-        addFormEntity(new ExpertLetterFormEntity(print, "form30"));
-        addFormEntity(new VoteProtocolFormEntity(print, "form35"));
-        addFormEntity(new ExpertAuthFormEntity(print, "form45"));
+        NavigatorElement print = new NavigatorElement(baseElement, "print", "Печатные формы");
+        addFormEntity(new VoteStartFormEntity(print, "voteStart"));
+        addFormEntity(new ExpertLetterFormEntity(print, "expertLetter"));
+        addFormEntity(new VoteProtocolFormEntity(print, "voteProtocol"));
+        addFormEntity(new ExpertAuthFormEntity(print, "expertAuth"));
     }
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
@@ -716,9 +716,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ExpertLetterFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Письмо о заседании", true);
 
-            gobjExpertVote = new GroupObjectEntity(2);
-            objExpert = new ObjectEntity(2, expert, "Эксперт");
-            objVote = new ObjectEntity(3, vote, "Заседание");
+            gobjExpertVote = new GroupObjectEntity(2, "expertVote");
+            objExpert = new ObjectEntity(2, "expert", expert, "Эксперт");
+            objVote = new ObjectEntity(3, "vote", vote, "Заседание");
             gobjExpertVote.add(objExpert);
             gobjExpertVote.add(objVote);
             addGroup(gobjExpertVote);
@@ -729,7 +729,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             addPropertyDraw(objVote, nameNativeClaimerVote, nameForeignClaimerVote, nameNativeProjectVote, nameForeignProjectVote);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
 
-            objDocument = addSingleGroupObject(8, document, fileDocument);
+            objDocument = addSingleGroupObject(8, "document", document, fileDocument);
             addPropertyDraw(nameDocument, objDocument).setSID("docName");
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectDocument, objDocument), Compare.EQUALS, addPropertyObject(projectVote, objVote)));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(languageDocument, objDocument), Compare.EQUALS, addPropertyObject(languageExpert, objExpert)));
@@ -754,7 +754,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ExpertAuthFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Аутентификация эксперта", true);
 
-            objExpert = addSingleGroupObject(1, expert, userLogin, userPassword, name, isForeignExpert);
+            objExpert = addSingleGroupObject(1, "expert", expert, userLogin, userPassword, name, isForeignExpert);
             objExpert.groupTo.initClassView = ClassViewType.PANEL;
 
             addInlineEAForm(emailAuthExpert, this, objExpert, 1);
@@ -775,10 +775,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private VoteStartFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Созыв заседания", true);
 
-            objVote = addSingleGroupObject(1, vote, date, dateProjectVote, nameNativeClaimerVote, datePrevVote);
+            objVote = addSingleGroupObject(1, "vote", vote, date, dateProjectVote, nameNativeClaimerVote, datePrevVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
-            objExpert = addSingleGroupObject(2, expert, name);
+            objExpert = addSingleGroupObject(2, "expert", expert, name);
             addPropertyDraw(numberExpertVote, objExpert, objVote);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
 
@@ -805,12 +805,12 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private VoteProtocolFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Протокол заседания", true);
 
-            objVote = addSingleGroupObject(1, vote, date, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, quantityRepliedVote, quantityDoneVote, succeededVote, quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote, acceptedForeignVote);
+            objVote = addSingleGroupObject(1, "vote", vote, date, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, quantityRepliedVote, quantityDoneVote, succeededVote, quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote, acceptedForeignVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(closedVote, objVote)));
 
-            objExpert = addSingleGroupObject(12, expert, userFirstName, userLastName);
+            objExpert = addSingleGroupObject(12, "expert", expert, userFirstName, userLastName);
 
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
 

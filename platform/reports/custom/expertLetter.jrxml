@@ -4,16 +4,16 @@
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
-	<parameter name="obj2_report" class="net.sf.jasperreports.engine.JasperReport"/>
-	<parameter name="obj2_source" class="net.sf.jasperreports.engine.JRDataSource"/>
-	<parameter name="obj2_params" class="java.util.Map"/>
+	<parameter name="expertVote_report" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="expertVote_source" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="expertVote_params" class="java.util.Map"/>
 	<detail>
 		<band>
 			<subreport>
 				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
-				<parametersMapExpression><![CDATA[$P{obj2_params}]]></parametersMapExpression>
-				<dataSourceExpression><![CDATA[$P{obj2_source}]]></dataSourceExpression>
-				<subreportExpression class="net.sf.jasperreports.engine.JasperReport"><![CDATA[$P{obj2_report}]]></subreportExpression>
+				<parametersMapExpression><![CDATA[$P{expertVote_params}]]></parametersMapExpression>
+				<dataSourceExpression><![CDATA[$P{expertVote_source}]]></dataSourceExpression>
+				<subreportExpression class="net.sf.jasperreports.engine.JasperReport"><![CDATA[$P{expertVote_report}]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>

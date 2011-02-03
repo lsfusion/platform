@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="obj12" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="expert" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.6105100000000045"/>
 	<property name="ireport.x" value="23"/>
 	<property name="ireport.y" value="0"/>
@@ -9,7 +9,7 @@
 			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 		</box>
 	</style>
-	<field name="obj12" class="java.lang.Integer"/>
+	<field name="expert" class="java.lang.Integer"/>
 	<field name="userFirstName" class="java.lang.String"/>
 	<field name="userLastName" class="java.lang.String"/>
 	<field name="dateExpertVote" class="java.util.Date"/>
@@ -98,18 +98,6 @@
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA[($F{inClusterExpertVote}==null?"НЕТ":"ДА")]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement mode="Opaque" x="40" y="211" width="440" height="20" backcolor="#E6EED5"/>
-				<box leftPadding="0">
-					<pen lineWidth="1.0" lineColor="#B3CC82"/>
-					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
-					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
-					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
-					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
-				</box>
-				<textElement/>
-				<text><![CDATA["Проект соответствует направлению "+ $F{nameNativeСlusterVote} +"."]]></text>
-			</staticText>
 			<textField>
 				<reportElement x="168" y="131" width="100" height="20"/>
 				<textElement/>
@@ -290,6 +278,18 @@
 				</textElement>
 				<text><![CDATA[*если Вы НЕ являетесь лицом, указанным в данной графе – нажмите здесь]]></text>
 			</staticText>
+			<textField>
+				<reportElement mode="Opaque" x="40" y="211" width="439" height="20" backcolor="#E6EED5"/>
+				<box>
+					<pen lineWidth="1.0" lineColor="#B3CC82"/>
+					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<bottomPen lineWidth="1.0" lineColor="#B3CC82"/>
+					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
+				</box>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Проект соответствует направлению "+ $F{nameNativeСlusterVote} +"."]]></textFieldExpression>
+			</textField>
 		</band>
 	</detail>
 </jasperReport>
