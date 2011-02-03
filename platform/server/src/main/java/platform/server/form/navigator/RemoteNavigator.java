@@ -68,12 +68,14 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         }
 
         public synchronized void disconnect() throws RemoteException {
-            client.disconnect();
+            //todo: не работает, если клиент и сервер не в одной сети... временно отрубаем
+//            client.disconnect();
         }
 
         public synchronized void notifyServerRestart() throws RemoteException {
             deniedRestart = false;
-            client.notifyServerRestart();
+            //todo: не работает, если клиент и сервер не в одной сети... временно отрубаем
+//            client.notifyServerRestart();
         }
 
         public synchronized void notifyServerRestartCanceled() throws RemoteException {

@@ -8,7 +8,6 @@ import platform.interop.navigator.RemoteNavigatorInterface;
 
 import java.net.MalformedURLException;
 import java.rmi.*;
-import java.rmi.server.UnicastRemoteObject;
 
 public final class LoginAction {
 
@@ -103,10 +102,18 @@ public final class LoginAction {
             remoteLogics = new RemoteBusinessLogicProxy(remote);
             computerId = remoteLogics.getComputer(OSUtils.getLocalHostName());
 
-            ClientCallBack client = new ClientCallBack();
-            remoteNavigator = remoteLogics.createNavigator(client, loginInfo.getUserName(), loginInfo.getPassword(), computerId);
+            //todo {{{: не работает, если клиент и сервер не в одной сети... временно отрубаем
+//            ClientCallBack client = new ClientCallBack();
+//            remoteNavigator = remoteLogics.createNavigator(client, loginInfo.getUserName(), loginInfo.getPassword(), computerId);
+//            if (remoteNavigator == null) {
+//                UnicastRemoteObject.unexportObject(client, true);
+//                Main.remoteLoader = null;
+//                return PENDING_RESTART_WARNING;
+//            }
+            //todo }}}
+
+            remoteNavigator = remoteLogics.createNavigator(null, loginInfo.getUserName(), loginInfo.getPassword(), computerId);
             if (remoteNavigator == null) {
-                UnicastRemoteObject.unexportObject(client, true);
                 Main.remoteLoader = null;
                 return PENDING_RESTART_WARNING;
             }
