@@ -2,7 +2,7 @@ package platform.client.remote.proxy;
 
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
-import platform.interop.remote.CallbackMessage;
+import platform.interop.remote.ClientCallBackInterface;
 import platform.interop.remote.MethodInvocation;
 
 import java.rmi.RemoteException;
@@ -115,12 +115,7 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
         target.close();
     }
 
-    public void denyRestart() throws RemoteException {
-        target.denyRestart();
-    }
-
-    @NonFlushRemoteMethod
-    public List<CallbackMessage> pullMessages() throws RemoteException {
-        return target.pullMessages();
+    public ClientCallBackInterface getClientCallBack() throws RemoteException {
+        return target.getClientCallBack();
     }
 }

@@ -12,6 +12,7 @@ import platform.base.WeakIdentityHashSet;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.CallbackMessage;
+import platform.interop.remote.ClientCallBackInterface;
 import platform.interop.remote.RemoteObject;
 import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
@@ -58,13 +59,14 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     T BL;
     SQLSession sql;
 
-    private ClientCallBackController client = new ClientCallBackController();
+    private ClientCallBackController client;
 
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
 
     public RemoteNavigator(T BL, User currentUser, int computer, int port) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
         super(port);
 
+        client = new ClientCallBackController(port);
         this.BL = BL;
         classCache = new ClassCache();
 
@@ -424,7 +426,15 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     }
 
     public synchronized void invalidate() {
-        client.invalidate();
+        if (client != null) {
+            client.disconnect();
+        }
+
+        try {
+            client = new ClientCallBackController(getExportPort());
+        } catch (RemoteException ignore) {
+            client = null;
+        }
 
 //        invalidatedForms.clear();
 
@@ -433,8 +443,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         openForms.clear();
     }
 
-    public void denyRestart()  throws RemoteException {
-        client.denyRestart();
+    public synchronized ClientCallBackController getClientCallBack() throws RemoteException {
+        return client;
     }
 
     public boolean isRestartAllowed() {
@@ -449,14 +459,13 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         client.notifyServerRestartCanceled();
     }
 
-    public List<CallbackMessage> pullMessages() throws RemoteException {
-        List<CallbackMessage> result = client.pullMessages();
-        return result.isEmpty() ? null : result;
-    }
-
-    private static class ClientCallBackController {
+    private static class ClientCallBackController extends RemoteObject implements ClientCallBackInterface {
         private List<CallbackMessage> messages = new ArrayList<CallbackMessage>();
         private Boolean deniedRestart = null;
+
+        public ClientCallBackController(int port) throws RemoteException {
+            super(port);
+        }
 
         public synchronized void disconnect() {
             addMessage(CallbackMessage.DISCONNECTED);
@@ -480,11 +489,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
             return deniedRestart!=null && !deniedRestart;
         }
 
-        public void invalidate() {
-            deniedRestart = null;
-            disconnect();
-        }
-
         public synchronized void addMessage(CallbackMessage message) {
             messages.add(message);
         }
@@ -492,7 +496,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         public synchronized List<CallbackMessage> pullMessages() {
             ArrayList result = new ArrayList(messages);
             messages.clear();
-            return result;
+            return result.isEmpty() ? null : result;
         }
     }
 }

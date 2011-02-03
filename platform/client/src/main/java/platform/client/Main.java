@@ -151,7 +151,7 @@ public class Main {
                     frame = module.initFrame(loginAction.getRemoteNavigator());
                     logger.info("After init frame");
 
-                    pingThread = new PingThread(remoteNavigator, Integer.parseInt(System.getProperty(PLATFORM_CLIENT_PINGTIME, "1000")));
+                    pingThread = new PingThread(remoteNavigator.getClientCallBack(), Integer.parseInt(System.getProperty(PLATFORM_CLIENT_PINGTIME, "1000")));
                     pingThread.start();
 
                     frame.addWindowListener(

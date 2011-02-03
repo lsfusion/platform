@@ -2,12 +2,19 @@ package platform.client;
 
 import platform.client.rmi.ConnectionLostManager;
 import platform.interop.remote.CallbackMessage;
+import platform.interop.remote.ClientCallBackInterface;
 
 import javax.swing.*;
 import java.rmi.RemoteException;
 import java.util.List;
 
-public class ClientCallBack {
+public class ClientCallBackProcessor {
+    private final ClientCallBackInterface remoteClient;
+
+    public ClientCallBackProcessor(ClientCallBackInterface remoteClient) {
+        this.remoteClient = remoteClient;
+    }
+
     public void processMessages(List<CallbackMessage> messages) {
         if (messages != null) {
             for (CallbackMessage message : messages) {
@@ -48,7 +55,7 @@ public class ClientCallBack {
                         JOptionPane.WARNING_MESSAGE);
                 if (result == JOptionPane.CANCEL_OPTION) {
                     try {
-                        Main.remoteNavigator.denyRestart();
+                        remoteClient.denyRestart();
                     } catch (RemoteException e) {
                         throw new RuntimeException("Ошибка при посыле отказа от остановки сервера.", e);
                     }

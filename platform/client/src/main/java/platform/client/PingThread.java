@@ -1,6 +1,6 @@
 package platform.client;
 
-import platform.interop.navigator.RemoteNavigatorInterface;
+import platform.interop.remote.ClientCallBackInterface;
 
 import java.rmi.RemoteException;
 import java.util.LinkedList;
@@ -8,16 +8,17 @@ import java.util.Queue;
 
 
 public class PingThread extends Thread {
-    private RemoteNavigatorInterface remoteNavigator;
     int time;
     long sum;
     int counter;
     Queue<Long> queue = new LinkedList<Long>();
     long oldIn, oldOut;
-    private ClientCallBack client = new ClientCallBack();
+    private ClientCallBackProcessor clientProcessor;
+    private ClientCallBackInterface remoteClient;
 
-    public PingThread(RemoteNavigatorInterface remoteNavigator, int time) {
-        this.remoteNavigator = remoteNavigator;
+    public PingThread(ClientCallBackInterface remoteClient, int time) {
+        this.remoteClient = remoteClient;
+        clientProcessor = new ClientCallBackProcessor(remoteClient);
         this.time = time;
     }
 
@@ -27,7 +28,9 @@ public class PingThread extends Thread {
             while (true) {
                 counter++;
                 long curTime = System.currentTimeMillis();
-                client.processMessages(remoteNavigator.pullMessages());
+                if (remoteClient != null) {
+                    clientProcessor.processMessages(remoteClient.pullMessages());
+                }
 
                 long pingTime = System.currentTimeMillis() - curTime;
                 queue.add(pingTime);
@@ -54,5 +57,4 @@ public class PingThread extends Thread {
         } catch (InterruptedException ignored) {
         }
     }
-
 }
