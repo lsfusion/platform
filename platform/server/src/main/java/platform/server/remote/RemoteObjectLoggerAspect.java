@@ -13,7 +13,9 @@ public class RemoteObjectLoggerAspect {
             " || execution(* platform.interop.form.RemoteFormInterface.*(..))" +
             " || execution(* platform.interop.form.RemoteDialogInterface.*(..))" +
             " || execution(* platform.interop.navigator.RemoteNavigatorInterface.*(..)))" +
-            " && !execution(* *.ping(..))")
+            " && !execution(* *.ping(..))" +
+            " && !execution(* *.pullMessages(..))" +
+            "")
     public Object executeRemoteMethod(ProceedingJoinPoint thisJoinPoint) throws Throwable {
         long startTime = System.currentTimeMillis();
         Object result = thisJoinPoint.proceed();

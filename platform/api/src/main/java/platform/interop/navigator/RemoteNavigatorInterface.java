@@ -1,9 +1,11 @@
 package platform.interop.navigator;
 
 import platform.interop.form.RemoteFormInterface;
+import platform.interop.remote.CallbackMessage;
 import platform.interop.remote.PendingRemote;
 
 import java.rmi.RemoteException;
+import java.util.List;
 
 public interface RemoteNavigatorInterface extends PendingRemote {
 
@@ -30,5 +32,7 @@ public interface RemoteNavigatorInterface extends PendingRemote {
 
     void close() throws RemoteException;
 
-    public void denyRestart()  throws RemoteException;
+    void denyRestart() throws RemoteException;
+
+    List<CallbackMessage> pullMessages() throws RemoteException;
 }

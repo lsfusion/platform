@@ -16,7 +16,6 @@ import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
-import platform.interop.remote.ClientCallbackInterface;
 import platform.interop.remote.RemoteObject;
 import platform.interop.remote.ServerSocketFactory;
 import platform.server.Settings;
@@ -72,6 +71,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.RMIFailureHandler;
 import java.rmi.server.RMISocketFactory;
+import java.rmi.server.ServerNotActiveException;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -210,7 +210,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     final Map<Pair<String, Integer>, RemoteNavigator> navigators = new HashMap<Pair<String, Integer>, RemoteNavigator>();
 
-    public RemoteNavigatorInterface createNavigator(ClientCallbackInterface client, String login, String password, int computer) {
+    public RemoteNavigatorInterface createNavigator(String login, String password, int computer) {
         if (getRestartController().isPendingRestart()) {
             return null;
         }
@@ -239,9 +239,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             RemoteNavigator navigator = navigators.get(key);
 
             if (navigator != null) {
-                navigator.invalidate(client);
+                navigator.invalidate();
             } else {
-                navigator = new RemoteNavigator(this, client, user, computer, exportPort);
+                navigator = new RemoteNavigator(this, user, computer, exportPort);
                 synchronized (navigators) {
                     navigators.put(key, navigator);
                 }

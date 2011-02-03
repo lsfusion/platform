@@ -11,7 +11,7 @@ import platform.base.IOUtils;
 import platform.base.WeakIdentityHashSet;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
-import platform.interop.remote.ClientCallbackInterface;
+import platform.interop.remote.CallbackMessage;
 import platform.interop.remote.RemoteObject;
 import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
@@ -26,7 +26,8 @@ import platform.server.data.where.Where;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.ObjectEntity;
-import platform.server.form.instance.*;
+import platform.server.form.instance.FormInstance;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.listener.CurrentClassListener;
 import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.listener.FocusListener;
@@ -57,50 +58,14 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     T BL;
     SQLSession sql;
 
-    private static class ClientCallBackWrapper implements ClientCallbackInterface {
-        private final ClientCallbackInterface client;
-        private Boolean deniedRestart;
-
-        public ClientCallBackWrapper(ClientCallbackInterface client) {
-            this.client = client;
-
-            deniedRestart = null;
-        }
-
-        public synchronized void disconnect() throws RemoteException {
-            //todo: не работает, если клиент и сервер не в одной сети... временно отрубаем
-//            client.disconnect();
-        }
-
-        public synchronized void notifyServerRestart() throws RemoteException {
-            deniedRestart = false;
-            //todo: не работает, если клиент и сервер не в одной сети... временно отрубаем
-//            client.notifyServerRestart();
-        }
-
-        public synchronized void notifyServerRestartCanceled() throws RemoteException {
-            deniedRestart = null;
-        }
-
-        public synchronized void denyRestart() {
-            deniedRestart = true;
-        }
-
-        public synchronized boolean isRestartAllowed() {
-            //если не спрашивали, либо если отказался
-            return deniedRestart!=null && !deniedRestart;
-        }
-    }
-
-    private ClientCallBackWrapper client;
+    private ClientCallBackController client = new ClientCallBackController();
 
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
 
-    public RemoteNavigator(T BL, ClientCallbackInterface client, User currentUser, int computer, int port) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+    public RemoteNavigator(T BL, User currentUser, int computer, int port) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
         super(port);
 
         this.BL = BL;
-        this.client = new ClientCallBackWrapper(client);
         classCache = new ClassCache();
 
         securityPolicy = this.BL.policyManager.getSecurityPolicy(currentUser);
@@ -458,15 +423,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         }
     }
 
-    public synchronized void invalidate(ClientCallbackInterface newClient) {
-        if (client != null) {
-            try {
-                client.disconnect();
-            } catch (RemoteException e) {
-                logger.debug("RemoteException во время дисконнекта клиента: ", e);
-            }
-        }
-        client = new ClientCallBackWrapper(newClient);
+    public synchronized void invalidate() {
+        client.invalidate();
 
 //        invalidatedForms.clear();
 
@@ -489,5 +447,52 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
 
     public void notifyServerRestartCanceled() throws RemoteException {
         client.notifyServerRestartCanceled();
+    }
+
+    public List<CallbackMessage> pullMessages() throws RemoteException {
+        List<CallbackMessage> result = client.pullMessages();
+        return result.isEmpty() ? null : result;
+    }
+
+    private static class ClientCallBackController {
+        private List<CallbackMessage> messages = new ArrayList<CallbackMessage>();
+        private Boolean deniedRestart = null;
+
+        public synchronized void disconnect() {
+            addMessage(CallbackMessage.DISCONNECTED);
+        }
+
+        public synchronized void notifyServerRestart() {
+            deniedRestart = false;
+            addMessage(CallbackMessage.SERVER_RESTARTED);
+        }
+
+        public synchronized void notifyServerRestartCanceled() {
+            deniedRestart = null;
+        }
+
+        public synchronized void denyRestart() {
+            deniedRestart = true;
+        }
+
+        public synchronized boolean isRestartAllowed() {
+            //если не спрашивали, либо если отказался
+            return deniedRestart!=null && !deniedRestart;
+        }
+
+        public void invalidate() {
+            deniedRestart = null;
+            disconnect();
+        }
+
+        public synchronized void addMessage(CallbackMessage message) {
+            messages.add(message);
+        }
+
+        public synchronized List<CallbackMessage> pullMessages() {
+            ArrayList result = new ArrayList(messages);
+            messages.clear();
+            return result;
+        }
     }
 }

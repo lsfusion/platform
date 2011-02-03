@@ -4,7 +4,6 @@ import platform.interop.RemoteLogicsInterface;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
-import platform.interop.remote.ClientCallbackInterface;
 
 import java.rmi.RemoteException;
 
@@ -17,8 +16,8 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
     }
 
     @NonPendingRemoteMethod
-    public RemoteNavigatorInterface createNavigator(ClientCallbackInterface client, String login, String password, int computer) throws RemoteException {
-        RemoteNavigatorInterface remote = target.createNavigator(client, login, password, computer);
+    public RemoteNavigatorInterface createNavigator(String login, String password, int computer) throws RemoteException {
+        RemoteNavigatorInterface remote = target.createNavigator(login, password, computer);
         if (remote == null) {
             return null;
         }

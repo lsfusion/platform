@@ -1,17 +1,33 @@
 package platform.client;
 
 import platform.client.rmi.ConnectionLostManager;
-import platform.interop.remote.ClientCallbackInterface;
+import platform.interop.remote.CallbackMessage;
 
 import javax.swing.*;
 import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
+import java.util.List;
 
-public class ClientCallBack extends UnicastRemoteObject implements ClientCallbackInterface {
-    public ClientCallBack() throws RemoteException {
+public class ClientCallBack {
+    public void processMessages(List<CallbackMessage> messages) {
+        if (messages != null) {
+            for (CallbackMessage message : messages) {
+                processMessage(message);
+            }
+        }
     }
 
-    public void disconnect() throws RemoteException {
+    private void processMessage(CallbackMessage message) {
+        switch (message) {
+            case DISCONNECTED:
+                disconnect();
+                break;
+            case SERVER_RESTARTED:
+                notifyServerRestart();
+                break;
+        }
+    }
+
+    public void disconnect() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 ConnectionLostManager.forceDisconnect();
@@ -19,7 +35,7 @@ public class ClientCallBack extends UnicastRemoteObject implements ClientCallbac
         });
     }
 
-    public void notifyServerRestart() throws RemoteException {
+    public void notifyServerRestart() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 int result = JOptionPane.showConfirmDialog(

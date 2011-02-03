@@ -1,12 +1,11 @@
 package platform.interop;
 
+import platform.base.serialization.RemoteDescriptorInterface;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
-import platform.interop.remote.ClientCallbackInterface;
 import platform.interop.remote.PendingRemote;
 import platform.interop.remote.PingRemote;
-import platform.base.serialization.RemoteDescriptorInterface;
 
 import java.rmi.RemoteException;
 
@@ -20,7 +19,7 @@ public interface RemoteLogicsInterface extends PendingRemote, PingRemote, Remote
 
     byte[] findClass(String name) throws RemoteException;
 
-    RemoteNavigatorInterface createNavigator(ClientCallbackInterface client, String login, String password, int computer) throws RemoteException;
+    RemoteNavigatorInterface createNavigator(String login, String password, int computer) throws RemoteException;
 
     Integer getComputer(String hostname) throws RemoteException;
 

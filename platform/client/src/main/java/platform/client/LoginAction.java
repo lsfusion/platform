@@ -102,17 +102,7 @@ public final class LoginAction {
             remoteLogics = new RemoteBusinessLogicProxy(remote);
             computerId = remoteLogics.getComputer(OSUtils.getLocalHostName());
 
-            //todo {{{: не работает, если клиент и сервер не в одной сети... временно отрубаем
-//            ClientCallBack client = new ClientCallBack();
-//            remoteNavigator = remoteLogics.createNavigator(client, loginInfo.getUserName(), loginInfo.getPassword(), computerId);
-//            if (remoteNavigator == null) {
-//                UnicastRemoteObject.unexportObject(client, true);
-//                Main.remoteLoader = null;
-//                return PENDING_RESTART_WARNING;
-//            }
-            //todo }}}
-
-            remoteNavigator = remoteLogics.createNavigator(null, loginInfo.getUserName(), loginInfo.getPassword(), computerId);
+            remoteNavigator = remoteLogics.createNavigator(loginInfo.getUserName(), loginInfo.getPassword(), computerId);
             if (remoteNavigator == null) {
                 Main.remoteLoader = null;
                 return PENDING_RESTART_WARNING;

@@ -1,32 +1,33 @@
 package platform.client;
 
-import platform.interop.RemoteLogicsInterface;
+import platform.interop.navigator.RemoteNavigatorInterface;
 
-import javax.swing.*;
 import java.rmi.RemoteException;
 import java.util.LinkedList;
 import java.util.Queue;
 
 
 public class PingThread extends Thread {
-    private RemoteLogicsInterface remoteLogics;
+    private RemoteNavigatorInterface remoteNavigator;
     int time;
     long sum;
     int counter;
     Queue<Long> queue = new LinkedList<Long>();
     long oldIn, oldOut;
+    private ClientCallBack client = new ClientCallBack();
 
-    public PingThread(RemoteLogicsInterface remoteLogics, int time) {
-        this.remoteLogics = remoteLogics;
+    public PingThread(RemoteNavigatorInterface remoteNavigator, int time) {
+        this.remoteNavigator = remoteNavigator;
         this.time = time;
     }
 
     public void run() {
         try {
+            //noinspection InfiniteLoopStatement
             while (true) {
                 counter++;
                 long curTime = System.currentTimeMillis();
-                remoteLogics.ping();
+                client.processMessages(remoteNavigator.pullMessages());
 
                 long pingTime = System.currentTimeMillis() - curTime;
                 queue.add(pingTime);
@@ -39,8 +40,9 @@ public class PingThread extends Thread {
                     long newIn = Main.socketFactory.inSum;
                     long newOut = Main.socketFactory.outSum;
 
-                    ((JLabel) Main.frame.statusComponent).setText(" Пинг:" + sum / queue.size() + " мс, отправлено: " + (newOut - oldOut) +
-                            "байт, получено: " + (newIn - oldIn) + " байт, всего отправлено: " + newOut + " байт, всего получено: " + newIn + " байт");
+                    Main.frame.statusComponent
+                            .setText(" Пинг:" + sum / queue.size() + " мс, отправлено: " + (newOut - oldOut) +
+                                     "байт, получено: " + (newIn - oldIn) + " байт, всего отправлено: " + newOut + " байт, всего получено: " + newIn + " байт");
                     counter = 0;
                     oldIn = newIn;
                     oldOut = newOut;
