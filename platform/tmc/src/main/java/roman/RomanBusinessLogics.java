@@ -459,6 +459,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP dictionaryArticle;
     private LP translationMainCompositionArticle;
     private LP translationAdditionalCompositionArticle;
+    private LP sidShipmentShipmentDetail;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
