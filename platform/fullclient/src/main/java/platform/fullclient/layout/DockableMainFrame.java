@@ -122,7 +122,7 @@ public class DockableMainFrame extends MainFrame {
         control.getContentArea().deploy(grid);
 
         setupMenu();
-        setVisible(true);
+//        setVisible(true);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }

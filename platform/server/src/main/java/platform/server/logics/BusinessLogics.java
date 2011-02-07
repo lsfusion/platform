@@ -2471,8 +2471,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addProperty(group, new LP<ClassPropertyInterface>(new FormActionProperty(genSID(), caption, form, params)));
     }
 
-    protected LP addEAProp(AbstractGroup group, String caption, String mailSubject, ValueClass... params) {
-        return addProperty(group, new LP<ClassPropertyInterface>(new EmailActionProperty(genSID(), caption, mailSubject, this, params)));
+    protected LP addEAProp(ValueClass... params) {
+        return addEAProp(null, genSID(), "email", null, params);
+    }
+
+    protected LP addEAProp(AbstractGroup group, String sID, String caption, String subject, ValueClass... params) {
+        return addProperty(group, new LP<ClassPropertyInterface>(new EmailActionProperty(sID, caption, subject, this, params)));
     }
 
     protected <X extends PropertyInterface> void addEARecepient(LP<ClassPropertyInterface> eaProp, LP<X> emailProp, Integer... params) {

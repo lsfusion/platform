@@ -14,6 +14,7 @@ import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.interop.form.RemoteFormInterface;
 import platform.server.EmailSender;
+import platform.server.classes.StringClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
@@ -30,10 +31,7 @@ import platform.server.session.Modifier;
 
 import java.io.File;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * User: DAle
@@ -65,12 +63,21 @@ public class EmailActionProperty extends ActionProperty {
     private final BusinessLogics<?> BL; // для возможности работы с формами в автоматическом режиме
 
     public EmailActionProperty(String sID, String caption, String mailSubject, BusinessLogics<?> BL, ValueClass[] classes) {
-        super(sID, caption, classes);
+        super(sID, caption, getValueClassList(mailSubject, classes));
 
         this.subject = mailSubject;
         this.BL = BL;
 
         askConfirm = true;
+    }
+
+    private static ValueClass[] getValueClassList(String mailSubject, ValueClass[] classes) {
+        boolean subjectInterface = mailSubject == null;
+        ValueClass[] result = new ValueClass[classes.length + (subjectInterface ? 1 : 0)];
+        System.arraycopy(classes, 0, result, 0, classes.length);
+        if (subjectInterface)
+            result[classes.length] = StringClass.get(100);
+        return result;
     }
 
     public <R extends PropertyInterface> void addRecepient(PropertyMapImplement<R, ClassPropertyInterface> recepient) {
@@ -165,6 +172,10 @@ public class EmailActionProperty extends ActionProperty {
                 if(recepientEmail!=null)
                     recepientEmails.add(recepientEmail);
             }
+
+            List<ClassPropertyInterface> listInterfaces = (List<ClassPropertyInterface>)interfaces;
+
+            String subject = (this.subject == null ? (String)keys.get(listInterfaces.get(listInterfaces.size()-1)).getValue() : this.subject);
 
             String smtpHost = (String) BL.smtpHost.read(session);
             String smtpPort = (String) BL.smtpPort.read(session);

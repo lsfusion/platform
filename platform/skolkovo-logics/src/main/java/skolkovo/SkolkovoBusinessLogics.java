@@ -191,11 +191,13 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP voteRejectedProject;
     LP needExtraVoteProject;
 
-    LP emailLetterExpertVote;
+    LP emailLetterExpertVoteEA, emailLetterExpertVote;
     LP allowedEmailLetterExpertVote;
-    LP emailStartVote;
-    LP emailProtocolVote;
-    LP emailAuthExpert;
+    LP emailStartVoteEA, emailStartVote;
+    LP emailProtocolVoteEA, emailProtocolVote;
+    LP emailAuthExpertEA, emailAuthExpert;
+    LP authExpertSubjectLanguage, letterExpertSubjectLanguage;
+
 
     LP generateVoteProject, hideGenerateVoteProject;
     LP generateLoginPasswordExpert;
@@ -295,6 +297,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         nameTypeDocument = addJProp(baseGroup, "nameTypeDocument", "Тип", name, typeDocument, 1);
 
         localeLanguage = addDProp(baseGroup, "localeLanguage", "Locale", StringClass.get(5), language);
+        authExpertSubjectLanguage = addDProp(baseGroup, "authExpertSubjectLanguage", "Заголовок аутентификации эксперта", StringClass.get(100), language);
+        letterExpertSubjectLanguage = addDProp(baseGroup, "letterExpertSubjectLanguage", "Заголовок письма о заседании", StringClass.get(100), language);
 
         LP multipleDocument = addJProp(multipleLanguageDocumentType, languageDocument, 1, typeDocument, 1);
         postfixDocument = addJProp(and1, addDProp("postfixDocument", "Доп. описание", StringClass.get(15), document), 1, multipleDocument, 1);
@@ -452,26 +456,40 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         emailDocuments = addDProp(baseGroup, "emailDocuments", "E-mail для документов", StringClass.get(50));
 
-        emailLetterExpertVote = addEAProp(privateGroup, "Письмо о заседании (e-mail)", "Письмо о заседании", expert, vote);
-        addEARecepient(emailLetterExpertVote, emailParticipant, 1);
+        emailLetterExpertVoteEA = addEAProp(expert, vote);
+        addEARecepient(emailLetterExpertVoteEA, emailParticipant, 1);
+
+        emailLetterExpertVote = addJProp(baseGroup, true, "emailLetterExpertVote", "Письмо о заседании (e-mail)",
+                emailLetterExpertVoteEA, 1, 2, addJProp(letterExpertSubjectLanguage, languageExpert, 1), 1);
+        emailLetterExpertVote.property.askConfirm = true;
         emailLetterExpertVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), inExpertVote, 1, 2);
 
         allowedEmailLetterExpertVote = addJProp(baseGroup, "Письмо о заседании (e-mail)", "Письмо о заседании", andNot1, emailLetterExpertVote, 1, 2, voteResultExpertVote, 1, 2);
         allowedEmailLetterExpertVote.property.askConfirm = true;
 
-        emailStartVote = addEAProp(baseGroup, "Созыв заседания (e-mail)", "Созыв заседания", vote);
-        addEARecepient(emailStartVote, emailDocuments);
+        emailStartVoteEA = addEAProp(vote);
+        addEARecepient(emailStartVoteEA, emailDocuments);
+
+        emailStartVote = addJProp(baseGroup, true, "emailStartVote", "Созыв заседания (e-mail)", emailStartVoteEA, 1, addCProp(StringClass.get(100), "Созыв заседания"));
+        emailStartVote.property.askConfirm = true;
         emailStartVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), openedVote, 1);
 
-        emailProtocolVote = addEAProp(baseGroup, "Протокол заседания (e-mail)", "Протокол заседания", vote);
-        addEARecepient(emailProtocolVote, emailDocuments);
+        emailProtocolVoteEA = addEAProp(vote);
+        addEARecepient(emailProtocolVoteEA, emailDocuments);
+
+        emailProtocolVote = addJProp(baseGroup, true, "emailProtocolVote", "Протокол заседания (e-mail)", emailProtocolVoteEA, 1, addCProp(StringClass.get(100), "Протокол заседания"));
+        emailProtocolVote.property.askConfirm = true;
         emailProtocolVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), closedVote, 1);
 
         isForeignExpert = addJProp("isForeignExpert", "Иностр.", equals2, languageExpert, 1, addCProp(language, "english"));
         localeExpert = addJProp("localeExpert", "Locale", localeLanguage, languageExpert, 1);
 
-        emailAuthExpert = addEAProp(baseGroup, "Аутентификация эксперта (e-mail)", "Аутентификация эксперта", expert);
-        addEARecepient(emailAuthExpert, emailParticipant, 1);
+        emailAuthExpertEA = addEAProp(expert);
+        addEARecepient(emailAuthExpertEA, emailParticipant, 1);
+
+        emailAuthExpert = addJProp(baseGroup, true, "emailAuthExpert", "Аутентификация эксперта (e-mail)",
+                emailAuthExpertEA, 1, addJProp(authExpertSubjectLanguage, languageExpert, 1), 1);
+        emailAuthExpert.property.askConfirm = true;
 //        emailAuthExpert.setDerivedChange(addCProp(ActionClass.instance, true), userLogin, 1, userPassword, 1);
     }
 
@@ -734,7 +752,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectDocument, objDocument), Compare.EQUALS, addPropertyObject(projectVote, objVote)));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(languageDocument, objDocument), Compare.EQUALS, addPropertyObject(languageExpert, objExpert)));
 
-            addInlineEAForm(emailLetterExpertVote, this, objExpert, 1, objVote, 2);
+            addInlineEAForm(emailLetterExpertVoteEA, this, objExpert, 1, objVote, 2);
         }
 
         @Override
@@ -757,7 +775,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             objExpert = addSingleGroupObject(1, "expert", expert, userLogin, userPassword, name, isForeignExpert);
             objExpert.groupTo.initClassView = ClassViewType.PANEL;
 
-            addInlineEAForm(emailAuthExpert, this, objExpert, 1);
+            addInlineEAForm(emailAuthExpertEA, this, objExpert, 1);
         }
 
         @Override
@@ -782,7 +800,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             addPropertyDraw(numberExpertVote, objExpert, objVote);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
 
-            addAttachEAForm(emailStartVote, this, EmailActionProperty.Format.PDF, objVote, 1);
+            addAttachEAForm(emailStartVoteEA, this, EmailActionProperty.Format.PDF, objVote, 1);
         }
 
         @Override
@@ -816,7 +834,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(doneExpertVote, objExpert, objVote)));
 
-            addAttachEAForm(emailProtocolVote, this, EmailActionProperty.Format.PDF, objVote, 1);
+            addAttachEAForm(emailProtocolVoteEA, this, EmailActionProperty.Format.PDF, objVote, 1);
         }
 
         @Override

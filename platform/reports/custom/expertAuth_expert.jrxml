@@ -15,34 +15,75 @@
 	<field name="commonName" class="java.lang.String"/>
 	<field name="isForeignExpert" class="java.lang.Boolean"/>
 	<detail>
-		<band height="398">
+		<band height="598">
 			<textField>
-				<reportElement x="85" y="13" width="479" height="37"/>
-				<textElement>
-					<font size="20"/>
+				<reportElement x="19" y="13" width="545" height="31"/>
+				<textElement verticalAlignment="Top">
+					<font fontName="Arial" size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Уважаемый ":"Dear ")+$F{commonName}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Уважаемый ":"Dear ")+$F{commonName}+","]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="19" y="313" width="545" height="42"/>
-				<textElement>
-					<font size="20"/>
+				<reportElement x="19" y="56" width="545" height="86"/>
+				<textElement verticalAlignment="Top">
+					<font fontName="Arial" size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Логин":"Login")+" : "+$F{userLogin}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Вы получили это письмо, потому что являетесь аккредитованным экспертом Фонда развития Центра разработки и коммерциализации новых технологий и участвовали в экспертизе проектов соискателей статуса участника инновационного центра <<Сколково>>. ":"You have received this e-mail because you are an certified expert of Skolkovo Foundation. ")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="19" y="355" width="545" height="40"/>
-				<textElement>
-					<font size="20"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Пароль":"Password")+" : "+$F{userPassword}]]></textFieldExpression>
+				<reportElement x="19" y="575" width="545" height="16"/>
+				<textElement verticalAlignment="Bottom"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Спасибо.":"Thank You.")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="19" y="56" width="545" height="247"/>
-				<textElement>
-					<font size="20"/>
+				<reportElement x="19" y="384" width="545" height="52"/>
+				<textElement verticalAlignment="Top">
+					<font fontName="Arial" size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Благодарим Вас за сотрудничество, участие в экспертном сообществе Фонда «Сколково». Данным письмом мы оповещаем Вас, что внедрена новая автоматизированная система по организации экспертизы проектов. Оценочные бюллетени теперь будут доступны в виде веб-формы, ссылка на которую будет высылаться Вам каждый раз вместе с материалами по проекту. Для доступа к системе используйте, пожалуйста, сгенерированные для Вас логин и пароль:":"Thank you for your cooperation and participation in the expert community of the Skolkovo Foundation. This letter we inform you that a new computerized system was implemented to organize assess of innovation projects. Evaluation sheets will be available as a web form, to which link every time will be sent to you with project materials. To access, please use the login and password that have been generated for you automatically:")]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Спасибо, что Вы участвуете в проекте создания инновационного центра <<Сколково>>! ":"Thank you for participating in Skolkovo application process! ")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="19" y="449" width="545" height="21"/>
+				<textElement verticalAlignment="Top">
+					<font fontName="Arial" size="14"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"С уважением, ":"Faithfully Yours, ")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="19" y="470" width="545" height="39"/>
+				<textElement verticalAlignment="Top">
+					<font fontName="Arial" size="14"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Команда экспертного портала Фонда <<Сколково>> ":"The Skolkovo Foundation expert portal team.")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="19" y="155" width="545" height="68"/>
+				<textElement verticalAlignment="Top">
+					<font fontName="Arial" size="14"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Мы рады сообщить Вам, что с этого момента процедура оценки проекта станет для Вас значительно удобнее. ":"We are pleased to inform you that from this moment the estimation of the project procedure will be much more convenient for you. ")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="19" y="237" width="545" height="134"/>
+				<textElement verticalAlignment="Top">
+					<font fontName="Arial" size="14"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Бюллетени в формате Excel остались в прошлом. С этого момента Вы сможете оценивать проект, используя веб-интерфейс нашей информационной системы. Ссылку на бюллетень оценки Вы будете получать в письме вместе с материалами проекта.":"You will be able to evaluate the project using the web interface of our Expert Information System. On a regular basis, you will receive links to the projects evaluation ballots by email together with the project materials. Please, beware that project materials are confidential and intended only for review purposes. ")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="19" y="537" width="545" height="18"/>
+				<textElement verticalAlignment="Bottom"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"- получили данное письмо по ошибке":"Please inform us if you received this email by mistake.")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="19" y="555" width="545" height="20"/>
+				<textElement verticalAlignment="Bottom"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"- хотите задать вопрос или высказать пожелание":"Please contact us in case you have any questions or suggestions. ")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="19" y="521" width="545" height="16"/>
+				<textElement verticalAlignment="Bottom"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"P.S. Пожалуйста, проинформируйте нас, если Вы ":"P.S. ")]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

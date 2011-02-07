@@ -13,20 +13,13 @@
 	<field name="docName" class="java.lang.String"/>
 	<field name="fileDocument" class="java.lang.String"/>
 	<detail>
-		<band height="45">
+		<band height="20">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="398" height="45"/>
-				<textElement textAlignment="Left">
-					<font size="20"/>
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="72" y="0" width="338" height="20"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial" size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{docName}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="398" y="0" width="201" height="45"/>
-				<textElement textAlignment="Left">
-					<font size="20"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{fileDocument}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{fileDocument}+" - "+$F{docName}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

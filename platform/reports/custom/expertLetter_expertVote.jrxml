@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="expertVote" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isIgnorePagination="true">
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="10"/>
-	<property name="ireport.y" value="163"/>
+	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -28,60 +28,67 @@
 	<group name="textGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{expert})+" "+String.valueOf($F{vote})]]></groupExpression>
 		<groupHeader>
-			<band height="261" splitType="Prevent">
+			<band height="146" splitType="Prevent">
 				<textField>
-					<reportElement x="31" y="95" width="712" height="100"/>
-					<textElement>
-						<font size="20"/>
+					<reportElement x="31" y="99" width="712" height="36"/>
+					<textElement verticalAlignment="Top">
+						<font fontName="Arial" size="14"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Вы приглашаетесь к участию в заочном заседании экспертной коллегии по вопросу рассмотрения предоставления статуса участника Инновационного Центра Сколково организации ":"You are invited to participate in the absentee meeting of the Expert Board on the consideration of obtainment of the status of a participant of the Skolkovo project ")+($F{isForeignExpert}==null?$F{nameNativeClaimerVote}+", заявляющей проект "+$F{nameNativeProjectVote}:$F{nameForeignClaimerVote}+", represents the project "+$F{nameForeignProjectVote}) + "."]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Вашему вниманию предлагается проект "+$F{nameNativeProjectVote}:"For your attention is the project "+$F{nameForeignProjectVote}) + ($F{isForeignExpert}==null?". Во вложении находятся следующие материалы по проекту:":". You can find the following documents in the attachment:")]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="31" y="23" width="767" height="49"/>
-					<textElement>
-						<font size="20"/>
+					<reportElement x="31" y="23" width="712" height="20"/>
+					<textElement verticalAlignment="Top">
+						<font fontName="Arial" size="14"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Уважаемый член экспертной коллегии ":"Dear ") + $F{commonName}]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Уважаемый эксперт,":"Dear expert,")]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="31" y="211" width="712" height="50"/>
-					<textElement>
-						<font size="20"/>
+					<reportElement x="31" y="53" width="712" height="36"/>
+					<textElement verticalAlignment="Top">
+						<font fontName="Arial" size="14"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Для проведения экспертизы Вам предоставляются следующие документы:":"For the assessment available to you the following documents:")]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"благодарим Вас за участие в оценке проектов будущих резидентов инновационного центра “Сколково”.":"thank you for taking part in the assessment procedure of Skolkovo Innovation Centre.")]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
 		<groupFooter>
 			<band height="332">
 				<textField hyperlinkType="Reference" hyperlinkTarget="Blank">
-					<reportElement x="31" y="137" width="712" height="48" forecolor="#3399FF"/>
-					<textElement>
-						<font size="20"/>
+					<reportElement x="31" y="46" width="712" height="31" forecolor="#3399FF"/>
+					<textElement verticalAlignment="Top">
+						<font fontName="Arial" size="14"/>
 					</textElement>
 					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Ссылка для голосования":"Link")]]></textFieldExpression>
 					<hyperlinkReferenceExpression><![CDATA["http://"+$F{webHost}+"/expert.html?voteId="+platform.base.BaseUtils.encode($F{vote}, $F{expert})+"&locale="+$F{localeExpert}]]></hyperlinkReferenceExpression>
 				</textField>
 				<textField>
-					<reportElement x="31" y="25" width="712" height="112"/>
-					<textElement>
-						<font size="20"/>
+					<reportElement x="31" y="88" width="712" height="38"/>
+					<textElement verticalAlignment="Top">
+						<font fontName="Arial" size="14"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Согласно положению об экспертных коллегиях Фонда, установленный срок проведения заочного заседания экспертной коллегии – 5 дней. Для голосования по проекту, или отказа от участия в заседании, пожалуйста перейдите по ссылке : ":"According to the Charter of the Experts Boards of the Skolkovo Foundation, the absentee meeting of the expert board runs for 5 days. To vote or refusal to participate in the meeting, please go to :")]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Вы можете оценить проект в течение 5 дней. Через 5 дней голосование по проекту будет прекращено.":"You are to assess the project within 5 days. At the end of this time link will be automatically terminated.")]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="31" y="185" width="712" height="114"/>
-					<textElement>
-						<font size="20"/>
+					<reportElement x="31" y="136" width="712" height="18"/>
+					<textElement verticalAlignment="Top">
+						<font fontName="Arial" size="14"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Во время голосования Вам понадобиться приложить комментарии, согласно положению, время сессии приложения для голосования эксперта ограничено 1 час. Пожалуйста подготовьте Ваши комментарии заранее. ":"During the vote you need to make comments. Session for voting in the application limited to 1 hour. Prepare your comments in advance, please.")]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"С уважением,":"Faithfully yours,")]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="31" y="299" width="712" height="31"/>
-					<textElement>
-						<font size="20"/>
+					<reportElement x="31" y="15" width="712" height="31"/>
+					<textElement verticalAlignment="Top">
+						<font fontName="Arial" size="14"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"С уважением, Вице – президент, руководитель аппарата Фонда. ":"Yours respectfully, Skolkovo Foundation.")]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Пожалуйста, заполните бюллетень оценки проекта по адресу : ":"Please, fill the assessment ballot of the project at ")]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="31" y="154" width="712" height="45"/>
+					<textElement verticalAlignment="Top">
+						<font fontName="Arial" size="14"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Команда экспертного портала Фонда “Сколково”":"The Skolkovo Foundation expert portal team")]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
