@@ -66,7 +66,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP colorSupplierItem;
     private LP nameColorSupplierItem;
     private LP sizeSupplierItem;
-    private LP nameSizeSupplierItem;
+    private LP sidSizeSupplierItem;
     private LP supplierColorSupplier;
     private LP nameSupplierColorSupplier;
     private LP supplierSizeSupplier;
@@ -373,7 +373,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP sidColorSupplierItemShipmentDetail;
     private LP nameColorSupplierItemShipmentDetail;
     private LP sizeSupplierItemShipmentDetail;
-    private LP nameSizeSupplierItemShipmentDetail;
+    private LP sidSizeSupplierItemShipmentDetail;
     private AbstractGroup itemAttributeGroup;
     private LP originalNameArticleSkuShipmentDetail;
     private LP categoryArticleSkuShipmentDetail;
@@ -471,6 +471,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP translationMainCompositionArticle;
     private LP translationAdditionalCompositionArticle;
     private LP sidShipmentShipmentDetail;
+    private LP colorSIDSupplier;
+    private LP sidSizeSupplier;
+    private LP sizeSIDSupplier;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -658,8 +661,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         supplierColorSupplier = addDProp(idGroup, "supplierColorSupplier", "Поставщик (ИД)", supplier, colorSupplier);
         nameSupplierColorSupplier = addJProp(baseGroup, "nameSupplierColorSupplier", "Поставщик", name, supplierColorSupplier, 1);
 
+        colorSIDSupplier = addCGProp(idGroup, "colorSIDSupplier", "Цвет поставщика (ИД)", object(colorSupplier), sidColorSupplier, sidColorSupplier, 1, supplierColorSupplier, 1);
+
+        sidSizeSupplier = addDProp(baseGroup, "sidSizeSupplier", "Код", StringClass.get(50), sizeSupplier);
+
         supplierSizeSupplier = addDProp(idGroup, "supplierSizeSupplier", "Поставщик (ИД)", supplier, sizeSupplier);
         nameSupplierSizeSupplier = addJProp(baseGroup, "nameSupplierSizeSupplier", "Поставщик", name, supplierSizeSupplier, 1);
+
+        sizeSIDSupplier = addCGProp(idGroup, "sizeSIDSupplier", "Размер поставщика (ИД)", object(sizeSupplier), sidSizeSupplier, sidSizeSupplier, 1, supplierSizeSupplier, 1);
 
         supplierBrandSupplier = addDProp(idGroup, "supplierBrandSupplier", "Поставщик (ИД)", supplier, brandSupplier);
         nameSupplierBrandSupplier = addJProp(baseGroup, "nameSupplierBrandSupplier", "Поставщик", name, supplierBrandSupplier, 1);
@@ -825,7 +834,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         nameColorSupplierItem = addJProp(itemAttributeGroup, "nameColorSupplierItem", "Цвет поставщика", name, colorSupplierItem, 1);
 
         sizeSupplierItem = addDProp(itemAttributeGroup, "sizeSupplierItem", "Размер поставщика (ИД)", sizeSupplier, item);
-        nameSizeSupplierItem = addJProp(itemAttributeGroup, "nameSizeSupplierItem", "Размер поставщика", name, sizeSupplierItem, 1);
+        sidSizeSupplierItem = addJProp(itemAttributeGroup, "sidSizeSupplierItem", "Размер поставщика", sidSizeSupplier, sizeSupplierItem, 1);
 
         addConstraint(addJProp("Поставщик товара должен соответствовать цвету поставщика", diff2,
                 supplierSku, 1,
@@ -1008,7 +1017,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             nameColorSupplierItemShipmentDetail = addJProp(itemAttributeGroup, "nameColorSupplierItemShipmentDetail", "Цвет поставщика", name, colorSupplierItemShipmentDetail, 1);
 
             sizeSupplierItemShipmentDetail = addJProp(idGroup, "sizeSupplierItemShipmentDetail", "Размер поставщика (ИД)", sizeSupplierItem, skuShipmentDetail, 1);
-            nameSizeSupplierItemShipmentDetail = addJProp(itemAttributeGroup, "nameSizeSupplierItemShipmentDetail", "Размер поставщика", name, sizeSupplierItemShipmentDetail, 1);
+            sidSizeSupplierItemShipmentDetail = addJProp(itemAttributeGroup, "sidSizeSupplierItemShipmentDetail", "Размер поставщика", sidSizeSupplier, sizeSupplierItemShipmentDetail, 1);
 
             nameBrandSupplierArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, true, "nameBrandSupplierArticleSkuShipmentDetail", "Бренд", nameBrandSupplierArticleSku, skuShipmentDetail, 1);
             originalNameArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, true, "originalNameArticleSkuShipmentDetail", "Имя производителя (ориг.)", originalNameArticleSku, skuShipmentDetail, 1);
@@ -1473,15 +1482,15 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addPropertyDraw(invoicedOrderArticle, objOrder, objArticle);
             addPropertyDraw(delete, objArticle);
 
-            objItem = addSingleGroupObject(item, "Товар", barcode, sidColorSupplierItem, nameColorSupplierItem, nameSizeSupplierItem);
+            objItem = addSingleGroupObject(item, "Товар", barcode, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
             addObjectActions(this, objItem);
 
-            objSizeSupplier = addSingleGroupObject(sizeSupplier, "Размер", selection, name);
+            objSizeSupplier = addSingleGroupObject(sizeSupplier, "Размер", selection, sidSizeSupplier);
             objColorSupplier = addSingleGroupObject(colorSupplier, "Цвет", selection, sidColorSupplier, name);
 
             PropertyDrawEntity quantityColumn = addPropertyDraw(quantityDocumentArticleCompositeColorSize, objOrder, objArticle, objColorSupplier, objSizeSupplier);
             quantityColumn.columnGroupObjects.add(objSizeSupplier.groupTo);
-            quantityColumn.propertyCaption = addPropertyObject(name, objSizeSupplier);
+            quantityColumn.propertyCaption = addPropertyObject(sidSizeSupplier, objSizeSupplier);
 
             addPropertyDraw(quantityListSku, objOrder, objItem);
             addPropertyDraw(priceDocumentSku, objOrder, objItem);
@@ -1602,10 +1611,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addPropertyDraw(priceOrderedInvoiceArticle, objInvoice, objArticle);
             addPropertyDraw(delete, objArticle);
 
-            objItem = addSingleGroupObject(item, "Товар", barcode, sidColorSupplierItem, nameColorSupplierItem, nameSizeSupplierItem);
+            objItem = addSingleGroupObject(item, "Товар", barcode, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
             addObjectActions(this, objItem);
 
-            objSizeSupplier = addSingleGroupObject(sizeSupplier, "Размер", selection, name);
+            objSizeSupplier = addSingleGroupObject(sizeSupplier, "Размер", selection, sidSizeSupplier);
             objColorSupplier = addSingleGroupObject(colorSupplier, "Цвет", selection, sidColorSupplier, name);
 
             PropertyDrawEntity quantityColumn = addPropertyDraw(quantityDocumentArticleCompositeColorSize, objInvoice, objArticle, objColorSupplier, objSizeSupplier);
@@ -1773,7 +1782,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             nameRoute = addPropertyDraw(name, objRoute);
             nameRoute.forceViewType = ClassViewType.PANEL;
 
-            objSku = addSingleGroupObject(sku, "SKU", barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, nameSizeSupplierItem,
+            objSku = addSingleGroupObject(sku, "SKU", barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                     nameBrandSupplierArticleSku, originalNameArticleSku, nameOriginCategoryArticleSku, nameOriginUnitOfMeasureArticleSku,
                     netWeightArticleSku, nameCountryOfOriginArticleSku, mainCompositionOriginArticleSku,
                     netWeightSku, nameCountryOfOriginSku, mainCompositionOriginSku, additionalCompositionOriginSku);
@@ -1813,7 +1822,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             if (USE_SHIPMENT_DETAIL) {
                 objShipmentDetail = addSingleGroupObject((box ? boxShipmentDetail : simpleShipmentDetail),
-                        selection, barcodeSkuShipmentDetail, sidArticleShipmentDetail, sidColorSupplierItemShipmentDetail, nameColorSupplierItemShipmentDetail, nameSizeSupplierItemShipmentDetail,
+                        selection, barcodeSkuShipmentDetail, sidArticleShipmentDetail, sidColorSupplierItemShipmentDetail, nameColorSupplierItemShipmentDetail, sidSizeSupplierItemShipmentDetail,
                         nameBrandSupplierArticleSkuShipmentDetail, originalNameArticleSkuShipmentDetail, nameOriginCategoryArticleSkuShipmentDetail, nameOriginUnitOfMeasureArticleSkuShipmentDetail,
                         netWeightArticleSkuShipmentDetail,
                         nameCountryOfOriginArticleSkuShipmentDetail, mainCompositionOriginArticleSkuShipmentDetail,
@@ -2206,14 +2215,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objFreight = addSingleGroupObject(freight, "Фрахт", date, objectClassName, nameRouteFreight, nameFreightTypeFreight, grossWeightFreight, tonnageFreight, palletCountFreight, volumeFreight, palletNumberFreight);
 
             objArticle = addSingleGroupObject(article, "Артикул", selection, sidArticle, nameBrandSupplierArticle, originalNameArticle, nameCountryOfOriginArticle,
-                    mainCompositionOriginArticle, mainCompositionArticle, additionalCompositionOriginArticle, additionalCompositionArticle, nameCategoryArticle, nameUnitOfMeasureArticle,
+                    mainCompositionOriginArticle, translationMainCompositionArticle, mainCompositionArticle,
+                    additionalCompositionOriginArticle, translationAdditionalCompositionArticle, additionalCompositionArticle,
+                    nameCategoryArticle, nameUnitOfMeasureArticle,
                     sidCustomCategoryOriginArticle, sidCustomCategory10Article);
 
             addPropertyDraw(quantityFreightArticle, objFreight, objArticle);
-            addPropertyDraw(translationMainCompositionArticle, objArticle);
-            addPropertyDraw(translationAdditionalCompositionArticle, objArticle);
 
-            objSku = addSingleGroupObject(sku, "SKU", selection, barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, nameSizeSupplierItem,
+            objSku = addSingleGroupObject(sku, "SKU", selection, barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                     nameBrandSupplierArticleSku, nameCountryOfOriginSku, netWeightSku, mainCompositionOriginSku, mainCompositionSku,
                     additionalCompositionOriginSku, additionalCompositionSku);
 
@@ -2441,7 +2450,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objTransfer = addSingleGroupObject(transfer, "Внутреннее перемещение", objectValue, barcodeStockFromTransfer, barcodeStockToTransfer);
             addObjectActions(this, objTransfer);
 
-            objSku = addSingleGroupObject(sku, "SKU", barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, nameSizeSupplierItem,
+            objSku = addSingleGroupObject(sku, "SKU", barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                     nameCategoryArticleSku, sidCustomCategoryOriginArticleSku,
                     nameCountryOfOriginSku, netWeightSku, mainCompositionOriginSku,
                     additionalCompositionOriginSku);
@@ -2499,7 +2508,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addPropertyDraw(quantityImporterFreightBrandSupplier, objImporter, objFreight, objBrandSupplier);
             addPropertyDraw(markupPercentImporterFreightBrandSupplier, objImporter, objFreight, objBrandSupplier);
 
-            objSku = addSingleGroupObject(sku, "SKU", barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, nameSizeSupplierItem,
+            objSku = addSingleGroupObject(sku, "SKU", barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                     nameBrandSupplierArticleSku, nameCategoryArticleSku, sidCustomCategoryOriginArticleSku,
                     nameCountryOfOriginSku, netWeightSku, mainCompositionOriginSku,
                     additionalCompositionOriginSku);
