@@ -79,6 +79,9 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
             return modifier.getUsedDataChanges(implementDepends).add(modifier.getUsedChanges(depends));
         }
 
+        if(implement.property.isOnlyNotZero)
+            return ((PropertyMapImplement<?,Interface>)BaseUtils.singleValue(implement.mapping)).property.getUsedDataChanges(modifier);
+
         if(implementChange) {
             Set<Property> implementProps = new HashSet<Property>();
             fillDepends(implementProps,implement.mapping.values());
