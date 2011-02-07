@@ -1,29 +1,33 @@
 package platform.server.data;
 
 import platform.base.BaseUtils;
-import platform.base.Pair;
 import platform.base.GlobalObject;
+import platform.base.Pair;
 import platform.interop.Compare;
 import platform.server.caches.AbstractMapValues;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
-import platform.server.caches.hash.HashValues;
 import platform.server.caches.hash.HashContext;
+import platform.server.caches.hash.HashValues;
 import platform.server.classes.BaseClass;
+import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.Expr;
-import platform.server.data.query.Query;
 import platform.server.data.query.CompileSource;
+import platform.server.data.query.Query;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.translator.MapTranslate;
-import platform.server.data.where.classes.ClassWhere;
+import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.type.ParseInterface;
 import platform.server.data.type.StringParseInterface;
+import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 
 import java.sql.SQLException;
 import java.util.*;
+
+import static java.util.Collections.singletonMap;
+import static platform.base.BaseUtils.merge;
 
 public class SessionTable extends Table implements SessionData<SessionTable>, Value {// в явную хранимые ряды
 
@@ -31,8 +35,12 @@ public class SessionTable extends Table implements SessionData<SessionTable>, Va
         this(session, keys, properties, classes, propertyClasses, new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>(), owner);
     }
 
-    public SessionTable(String name, List<KeyField> keys, Set<PropertyField> properties, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses) {
-        super(name, keys, properties, classes, propertyClasses);
+    public SessionTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows, Object owner) throws SQLException {
+        this(session, keys, properties, getFieldsClassWheres(rows), rows, owner);
+    }
+
+    private SessionTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> filedsWheres, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows, Object owner) throws SQLException {
+        this(session, keys, properties, filedsWheres.first, filedsWheres.second, rows, owner);
     }
 
     public SessionTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows, Object owner) throws SQLException {
@@ -40,6 +48,10 @@ public class SessionTable extends Table implements SessionData<SessionTable>, Va
         for (Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> row : rows.entrySet()) {
             session.insertRecord(this, row.getKey(), row.getValue());
         }
+    }
+
+    public SessionTable(String name, List<KeyField> keys, Set<PropertyField> properties, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses) {
+        super(name, keys, properties, classes, propertyClasses);
     }
 
     public List<KeyField> getKeys() {
@@ -68,7 +80,7 @@ public class SessionTable extends Table implements SessionData<SessionTable>, Va
 
     @Override
     public Table translateOuter(MapTranslate translator) {
-        return translate(translator.mapValues()); 
+        return translate(translator.mapValues());
     }
 
     @Override
@@ -82,7 +94,7 @@ public class SessionTable extends Table implements SessionData<SessionTable>, Va
     }
 
     public Set<Value> getValues() {
-        return Collections.singleton((Value)this);
+        return Collections.singleton((Value) this);
     }
 
     public SessionTable translate(MapValuesTranslate mapValues) {
@@ -103,7 +115,7 @@ public class SessionTable extends Table implements SessionData<SessionTable>, Va
         public final List<KeyField> keys; // List потому как в таком порядке индексы будут строиться
         public final Collection<PropertyField> properties;
         protected final ClassWhere<KeyField> classes; // по сути условия на null'ы в том числе
-        protected final Map<PropertyField,ClassWhere<Field>> propertyClasses;
+        protected final Map<PropertyField, ClassWhere<Field>> propertyClasses;
 
         private Struct(List<KeyField> keys, Collection<PropertyField> properties, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses) {
             this.keys = keys;
@@ -124,10 +136,12 @@ public class SessionTable extends Table implements SessionData<SessionTable>, Va
     }
 
     private Struct struct = null;
+
     @ManualLazy
     public GlobalObject getValueClass() {
-        if(struct==null)
+        if (struct == null) {
             struct = new Struct(keys, properties, classes, propertyClasses);
+        }
         return struct;
     }
 
@@ -141,14 +155,72 @@ public class SessionTable extends Table implements SessionData<SessionTable>, Va
         return name.hashCode() * 31 + getValueClass().hashCode();
     }
 
+    public static Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> updateFieldsClassWheres(ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields) {
+
+        Map<KeyField, ConcreteClass> insertKeyClasses = DataObject.getMapClasses(keyFields);
+        Map<PropertyField, ClassWhere<Field>> orPropertyClasses = new HashMap<PropertyField, ClassWhere<Field>>();
+
+        for (Map.Entry<PropertyField, ObjectValue> propertyField : propFields.entrySet()) {
+            PropertyField propeField = propertyField.getKey();
+            ObjectValue propValue = propertyField.getValue();
+
+            ClassWhere<Field> existedPropertyClasses = propertyClasses.get(propeField);
+            assert existedPropertyClasses != null;
+
+            if (propValue instanceof DataObject) {
+                orPropertyClasses.put(
+                        propeField,
+                        existedPropertyClasses.or(
+                                new ClassWhere<Field>(merge(insertKeyClasses, singletonMap(propeField, ((DataObject) propValue).objectClass)))
+                        )
+                );
+            } else {
+                orPropertyClasses.put(propeField, existedPropertyClasses);
+            }
+        }
+        return new Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>>(
+                classes.or(new ClassWhere<KeyField>(insertKeyClasses)), orPropertyClasses);
+    }
+
+    public static Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> getFieldsClassWheres(Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> data) {
+        ClassWhere<KeyField> keysClassWhere = new ClassWhere<KeyField>();
+        Map<PropertyField, ClassWhere<Field>> propertiesClassWheres = new HashMap<PropertyField, ClassWhere<Field>>();
+        for (Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> row : data.entrySet()) {
+            Map<KeyField, DataObject> rowKeys = row.getKey();
+            Map<PropertyField, ObjectValue> rowProps = row.getValue();
+
+            Map<KeyField, ConcreteClass> rowKeyClasses = DataObject.getMapClasses(rowKeys);
+
+            keysClassWhere = keysClassWhere.or(new ClassWhere(rowKeyClasses));
+
+            for (Map.Entry<PropertyField, ObjectValue> entry : rowProps.entrySet()) {
+                PropertyField propField = entry.getKey();
+                ObjectValue propValue = entry.getValue();
+
+                ClassWhere<Field> propClassWhere = propertiesClassWheres.containsKey(propField) ? propertiesClassWheres.get(propField) : new ClassWhere<Field>();
+                if (propValue instanceof DataObject) {
+                    propClassWhere = propClassWhere.or(
+                            new ClassWhere<Field>(
+                                    merge(rowKeyClasses, singletonMap(propField, ((DataObject) propValue).objectClass))
+                            )
+                    );
+                }
+
+                propertiesClassWheres.put(propField, propClassWhere);
+            }
+        }
+        return new Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>>(keysClassWhere, propertiesClassWheres);
+    }
+
     public SessionTable insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, Object owner) throws SQLException {
 
-        Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orClasses = SessionRows.updateFieldsClassWheres(classes, propertyClasses, keyFields, propFields);
+        Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orClasses = updateFieldsClassWheres(classes, propertyClasses, keyFields, propFields);
 
-        if(update)
-            session.updateInsertRecord(this,keyFields,propFields);
-        else
-            session.insertRecord(this,keyFields,propFields);
+        if (update) {
+            session.updateInsertRecord(this, keyFields, propFields);
+        } else {
+            session.insertRecord(this, keyFields, propFields);
+        }
 
         return new SessionTable(name, keys, properties, orClasses.first, orClasses.second);
     }
@@ -162,7 +234,7 @@ public class SessionTable extends Table implements SessionData<SessionTable>, Va
         return SessionRows.rewrite(this, session, query, baseClass, env, owner);
     }
 
-    public SessionTable deleteRecords(SQLSession session, Map<KeyField,DataObject> keys) throws SQLException {
+    public SessionTable deleteRecords(SQLSession session, Map<KeyField, DataObject> keys) throws SQLException {
         session.deleteKeyRecords(this, DataObject.getMapValues(keys));
         return this;
     }
@@ -173,24 +245,26 @@ public class SessionTable extends Table implements SessionData<SessionTable>, Va
     }
 
     public SessionTable deleteKey(SQLSession session, KeyField mapField, DataObject object) throws SQLException {
-        session.deleteKeyRecords(this, Collections.singletonMap(mapField,object.object));
+        session.deleteKeyRecords(this, Collections.singletonMap(mapField, object.object));
         return this;
     }
 
     public SessionTable deleteProperty(SQLSession session, PropertyField property, DataObject object) throws SQLException {
-        Query<KeyField,PropertyField> dropValues = new Query<KeyField, PropertyField>(this);
+        Query<KeyField, PropertyField> dropValues = new Query<KeyField, PropertyField>(this);
         platform.server.data.query.Join<PropertyField> dataJoin = joinAnd(dropValues.mapKeys);
         dropValues.and(dataJoin.getExpr(property).compare(object, Compare.EQUALS));
         dropValues.properties.put(property, Expr.NULL);
-        session.updateRecords(new ModifyQuery(this,dropValues));
+        session.updateRecords(new ModifyQuery(this, dropValues));
         return this;
     }
 
     private BaseUtils.HashComponents<Value> components = null;
+
     @ManualLazy
     public BaseUtils.HashComponents<Value> getComponents() {
-        if(components==null)
+        if (components == null) {
             components = AbstractMapValues.getComponents(this);
+        }
         return components;
     }
 

@@ -1,15 +1,13 @@
 package platform.base;
 
+import org.apache.commons.codec.binary.Base64;
+
+import java.awt.*;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.List;
-import java.awt.*;
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-
-import org.apache.commons.codec.binary.Base64;
 
 public class BaseUtils {
     public static final String lineSeparator = System.getProperty("line.separator");
@@ -153,6 +151,22 @@ public class BaseUtils {
     public static <K> List<K> filterNotList(List<K> list, Collection<K> filter) {
         List<K> result = new ArrayList<K>();
         for (K element : list)
+            if (!filter.contains(element))
+                result.add(element);
+        return result;
+    }
+
+    public static <K> Set<K> filterSet(Set<K> set, Collection<K> filter) {
+        Set<K> result = new HashSet<K>();
+        for (K element : set)
+            if (filter.contains(element))
+                result.add(element);
+        return result;
+    }
+
+    public static <K> Set<K> filterNotSet(Set<K> set, Collection<K> filter) {
+        Set<K> result = new HashSet<K>();
+        for (K element : set)
             if (!filter.contains(element))
                 result.add(element);
         return result;

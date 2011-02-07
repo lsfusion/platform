@@ -17,8 +17,8 @@ public class CaseJoin<U> extends Join<U> {
         this.cases = cases;
     }
 
-    public CaseJoin(Where where,Join<U> join) {
-        this(new JoinCaseList<U>(where,join), join.getExprs().keySet());
+    public CaseJoin(Where where, Join<U> join) {
+        this(new JoinCaseList<U>(where, join), join.getProperties());
     }
 
     @IdentityLazy
