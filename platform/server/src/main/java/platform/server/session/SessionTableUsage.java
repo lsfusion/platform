@@ -39,6 +39,21 @@ public class SessionTableUsage<K,V> {
         table = new SessionRows(keyList, mapProps.keySet());
     }
 
+
+    public SessionTableUsage(SQLSession sql, final Query<K,V> query, BaseClass baseClass, QueryEnvironment env,
+                             final Map<K, Type> keyTypes, final Map<V, Type> propertyTypes) throws SQLException { // здесь порядок особо не важен, так как assert что getUsage'а не будет
+        this(new ArrayList<K>(query.mapKeys.keySet()), new ArrayList<V>(query.properties.keySet()), new Type.Getter<K>() {
+            public Type getType(K key) {
+                return keyTypes.get(key);
+            }
+        }, new Type.Getter<V>() {
+            public Type getType(V key) {
+                return propertyTypes.get(key);
+            }
+        });
+        writeRows(sql, query, baseClass, env);
+    }
+
     public Join<V> join(Map<K, ? extends Expr> joinImplement) {
         return new MapJoin<V, PropertyField>(table.join(BaseUtils.join(mapKeys, joinImplement)), BaseUtils.reverse(mapProps));
     }
@@ -87,19 +102,5 @@ public class SessionTableUsage<K,V> {
     // assert что ни вызывается при нижнем конструкторе пока
     public MapValues getUsage() { // IMMUTABLE
         return table;
-    }
-
-    public SessionTableUsage(SQLSession sql, final Query<K,V> query, BaseClass baseClass, QueryEnvironment env,
-                             final Map<K, Type> keyTypes, final Map<V, Type> propertyTypes) throws SQLException { // здесь порядок особо не важен, так как assert что getUsage'а не будет
-        this(new ArrayList<K>(query.mapKeys.keySet()), new ArrayList<V>(query.properties.keySet()), new Type.Getter<K>() {
-            public Type getType(K key) {
-                return keyTypes.get(key);
-            }
-        }, new Type.Getter<V>() {
-            public Type getType(V key) {
-                return propertyTypes.get(key);
-            }
-        });
-        writeRows(sql, query, baseClass, env);
     }
 }

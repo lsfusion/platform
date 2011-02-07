@@ -367,8 +367,9 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
 
     public void write(final BusinessLogics<?> BL, List<ClientAction> actions) throws SQLException {
         // до start transaction
-        if(applyObject==null)
+        if (applyObject == null) {
             applyObject = addObject(sessionClass, modifier);
+        }
 
         executeDerived(BL, actions);
 
@@ -379,34 +380,45 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
         IncrementApply increment = new IncrementApply(DataSession.this);
 
         // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
-        for(Property<?> property : BL.getAppliedProperties())
-            if (property.isStored() && property.hasChanges(increment))
+        for (Property<?> property : BL.getAppliedProperties()) {
+            if (property.isStored() && property.hasChanges(increment)) {
                 temporary.add(increment.read(property.mapTable.table, Collections.<Property>singleton(property), baseClass));
+            }
+        }
 
         // записываем в базу
-        for(Map.Entry<ImplementTable,Collection<Property>> groupTable : BaseUtils.group(new BaseUtils.Group<ImplementTable,Property>(){public ImplementTable group(Property key) {return key.mapTable.table;}},
-                increment.tables.keySet()).entrySet()) {
+        for (Map.Entry<ImplementTable, Collection<Property>> groupTable : BaseUtils.group(
+                new BaseUtils.Group<ImplementTable, Property>() {
+                    public ImplementTable group(Property key) {
+                        return key.mapTable.table;
+                    }
+                }, increment.tables.keySet()).entrySet()) {
+
             SessionTableUsage<KeyField, Property> changeTable;
-            if(groupTable.getValue().size()==1) // временно так - если одна берем старую иначе группой
+            // временно так - если одна берем старую, иначе группой
+            if (groupTable.getValue().size() == 1) {
                 changeTable = increment.tables.get(BaseUtils.single(groupTable.getValue()));
-            else {
+            } else {
                 changeTable = increment.read(groupTable.getKey(), groupTable.getValue(), baseClass);
                 temporary.add(changeTable);
             }
 
             Query<KeyField, PropertyField> modifyQuery = new Query<KeyField, PropertyField>(groupTable.getKey());
             Join<Property> join = changeTable.join(modifyQuery.mapKeys);
-            for(Property property : groupTable.getValue())
-                modifyQuery.properties.put(property.field,join.getExpr(property));
+            for (Property property : groupTable.getValue()) {
+                modifyQuery.properties.put(property.field, join.getExpr(property));
+            }
             modifyQuery.and(join.getWhere());
             sql.modifyRecords(new ModifyQuery(groupTable.getKey(), modifyQuery, env));
         }
 
-        for(Map.Entry<DataObject, ConcreteObjectClass> newClass : newClasses.entrySet())
-            newClass.getValue().saveClassChanges(sql,newClass.getKey());
+        for (Map.Entry<DataObject, ConcreteObjectClass> newClass : newClasses.entrySet()) {
+            newClass.getValue().saveClassChanges(sql, newClass.getKey());
+        }
 
-        for(SessionTableUsage<KeyField, Property> addTable : temporary)
+        for (SessionTableUsage<KeyField, Property> addTable : temporary) {
             addTable.drop(sql);
+        }
 
         sql.commitTransaction();
 

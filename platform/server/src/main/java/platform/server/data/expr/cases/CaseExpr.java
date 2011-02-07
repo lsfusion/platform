@@ -46,28 +46,32 @@ public class CaseExpr extends Expr {
 
     public String getSource(CompileSource compile) {
 
-        if(compile instanceof ToString) {
+        if (compile instanceof ToString) {
             String result = "";
-            for(ExprCase exprCase : cases)
-                result = (result.length()==0?"":result+",")+exprCase.toString();
+            for (ExprCase exprCase : cases) {
+                result = (result.length() == 0 ? "" : result + ",") + exprCase.toString();
+            }
             return "CE(" + result + ")";
         }
 
-        if(cases.size()==0) return SQLSyntax.NULL;
+        if (cases.size() == 0) {
+            return SQLSyntax.NULL;
+        }
 
         String source = "CASE";
-        boolean noElse = false;
-        for(int i=0;i<cases.size();i++) {
+        boolean hasElse = true;
+        for (int i = 0; i < cases.size(); i++) {
             ExprCase exprCase = cases.get(i);
             String caseSource = exprCase.data.getSource(compile);
 
-            if(i== cases.size()-1 && exprCase.where.isTrue()) {
+            if (i == cases.size() - 1 && exprCase.where.isTrue()) {
                 source = source + " ELSE " + caseSource;
-                noElse = true;
-            } else
+                hasElse = false;
+            } else {
                 source = source + " WHEN " + exprCase.where.getSource(compile) + " THEN " + caseSource;
+            }
         }
-        return source + (noElse?"":" ELSE "+ SQLSyntax.NULL)+" END";
+        return source + (hasElse ? " ELSE " + SQLSyntax.NULL : "") + " END";
     }
 
     public Type getType(KeyType keyType) {

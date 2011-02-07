@@ -451,6 +451,10 @@ public class SQLSession extends MutableObject {
         execute("DELETE FROM " + table.getName(syntax) + (deleteWhere.length() == 0 ? "" : " WHERE " + deleteWhere));
     }
 
+    public void deleteAllRecords(Table table) throws SQLException {
+        execute("DELETE FROM " + table.getName(syntax));
+    }
+
     public int updateRecords(ModifyQuery modify) throws SQLException {
         return executeDML(modify.getUpdate(syntax));
     }

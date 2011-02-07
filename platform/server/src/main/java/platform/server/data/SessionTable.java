@@ -27,8 +27,19 @@ import java.util.*;
 
 public class SessionTable extends Table implements SessionData<SessionTable>, Value {// в явную хранимые ряды
 
+    public SessionTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Object owner) throws SQLException {
+        this(session, keys, properties, classes, propertyClasses, new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>(), owner);
+    }
+
     public SessionTable(String name, List<KeyField> keys, Set<PropertyField> properties, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses) {
         super(name, keys, properties, classes, propertyClasses);
+    }
+
+    public SessionTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows, Object owner) throws SQLException {
+        super(session.createTemporaryTable(keys, properties, owner), keys, properties, classes, propertyClasses);
+        for (Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> row : rows.entrySet()) {
+            session.insertRecord(this, row.getKey(), row.getValue());
+        }
     }
 
     public List<KeyField> getKeys() {
@@ -132,7 +143,7 @@ public class SessionTable extends Table implements SessionData<SessionTable>, Va
 
     public SessionTable insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, Object owner) throws SQLException {
 
-        Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orClasses = SessionRows.insertRecord(classes, propertyClasses, keyFields, propFields);
+        Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orClasses = SessionRows.updateFieldsClassWheres(classes, propertyClasses, keyFields, propFields);
 
         if(update)
             session.updateInsertRecord(this,keyFields,propFields);
@@ -156,6 +167,11 @@ public class SessionTable extends Table implements SessionData<SessionTable>, Va
         return this;
     }
 
+    public SessionTable deleteAllRecords(SQLSession session) throws SQLException {
+        session.deleteAllRecords(this);
+        return this;
+    }
+
     public SessionTable deleteKey(SQLSession session, KeyField mapField, DataObject object) throws SQLException {
         session.deleteKeyRecords(this, Collections.singletonMap(mapField,object.object));
         return this;
@@ -176,12 +192,6 @@ public class SessionTable extends Table implements SessionData<SessionTable>, Va
         if(components==null)
             components = AbstractMapValues.getComponents(this);
         return components;
-    }
-
-    public SessionTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows, Object owner) throws SQLException {
-        super(session.createTemporaryTable(keys, properties, owner), keys, properties, classes, propertyClasses);
-        for(Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> row : rows.entrySet())
-            session.insertRecord(this,row.getKey(),row.getValue());
     }
 
     public void drop(SQLSession session, Object owner) throws SQLException {

@@ -28,20 +28,10 @@ import java.sql.SQLException;
 
 public class SessionRows implements SessionData<SessionRows> {
 
+    public final static int MAX_ROWS = 1;
+
     private List<KeyField> keys;
     private Set<PropertyField> properties;
-
-    public List<KeyField> getKeys() {
-        return keys;
-    }
-
-    public Set<PropertyField> getProperties() {
-        return properties;
-    }
-
-    public Map<KeyField, KeyExpr> getMapKeys() {
-        return KeyExpr.getMapKeys(keys);
-    }
 
     protected ClassWhere<KeyField> classes; // по сути условия на null'ы в том числе
     protected Map<PropertyField,ClassWhere<Field>> propertyClasses;
@@ -62,6 +52,18 @@ public class SessionRows implements SessionData<SessionRows> {
         this.classes = classes;
         this.propertyClasses = propertyClasses;
         this.rows = rows;
+    }
+
+    public List<KeyField> getKeys() {
+        return keys;
+    }
+
+    public Set<PropertyField> getProperties() {
+        return properties;
+    }
+
+    public Map<KeyField, KeyExpr> getMapKeys() {
+        return KeyExpr.getMapKeys(keys);
     }
 
     public Join<PropertyField> join(final Map<KeyField, ? extends Expr> joinImplement) {
@@ -128,34 +130,45 @@ public class SessionRows implements SessionData<SessionRows> {
         return hashCode;
     }
 
-    public final static int MAX_ROWS = 1;
-
-    public static Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> insertRecord(ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields) {
+    public static Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> updateFieldsClassWheres(ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields) {
         Map<KeyField, ConcreteClass> insertKeyClasses = DataObject.getMapClasses(keyFields);
         Map<PropertyField, ClassWhere<Field>> orPropertyClasses = new HashMap<PropertyField, ClassWhere<Field>>();
-        for(Map.Entry<PropertyField,ObjectValue> propertyField : propFields.entrySet()) {
+        for (Map.Entry<PropertyField, ObjectValue> propertyField : propFields.entrySet()) {
             ClassWhere<Field> existedPropertyClasses = propertyClasses.get(propertyField.getKey());
-            assert existedPropertyClasses!=null;
-            if(propertyField.getValue() instanceof DataObject)
-                orPropertyClasses.put(propertyField.getKey(), existedPropertyClasses.or(new ClassWhere<Field>(BaseUtils.merge(insertKeyClasses,
-                                Collections.singletonMap(propertyField.getKey(),((DataObject)propertyField.getValue()).objectClass)))));
-            else
+            assert existedPropertyClasses != null;
+            if (propertyField.getValue() instanceof DataObject) {
+                orPropertyClasses.put(
+                        propertyField.getKey(),
+                        existedPropertyClasses.or(
+                                new ClassWhere<Field>(
+                                        BaseUtils.merge(
+                                                insertKeyClasses,
+                                                Collections.singletonMap(
+                                                        propertyField.getKey(),
+                                                        ((DataObject) propertyField.getValue()).objectClass
+                                                )
+                                        )
+                                )
+                        )
+                );
+            } else {
                 orPropertyClasses.put(propertyField.getKey(), existedPropertyClasses);
+            }
         }
         return new Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>>(
                 classes.or(new ClassWhere<KeyField>(insertKeyClasses)), orPropertyClasses);
     }
-    
+
     public SessionData insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, Object owner) throws SQLException {
 
         Map<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> orRows = new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>(rows);
         Map<PropertyField, ObjectValue> prevValue = orRows.put(keyFields,propFields);
         assert update || prevValue==null;
 
-        Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orClasses = insertRecord(classes, propertyClasses, keyFields, propFields);
+        Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orClasses = updateFieldsClassWheres(classes, propertyClasses, keyFields, propFields);
         
         if(orRows.size()>MAX_ROWS) // если превысили количество рядов "переходим" в таблицу
-            return new SessionTable(session, keys, properties, orClasses.first, orClasses.second, orRows, owner);
+            return createSessionTable(session, keys, properties, orClasses.first, orClasses.second, orRows, owner);
         else
             return new SessionRows(keys, properties, orClasses.first, orClasses.second, orRows);
     }
@@ -167,10 +180,33 @@ public class SessionRows implements SessionData<SessionRows> {
 
         Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> propRows = BaseUtils.toMap(writeRows, (Map<PropertyField, ObjectValue>) new HashMap<PropertyField, ObjectValue>());
         if(writeRows.size()>MAX_ROWS)
-            return new SessionTable(session, keys, new HashSet<PropertyField>(), writeClasses, new HashMap<PropertyField, ClassWhere<Field>>(), propRows, owner);
+            return createSessionTable(session, keys, new HashSet<PropertyField>(), writeClasses, new HashMap<PropertyField, ClassWhere<Field>>(), propRows, owner);
         else
             return new SessionRows(keys, new HashSet<PropertyField>(), writeClasses, new HashMap<PropertyField, ClassWhere<Field>>(), propRows);
 
+    }
+
+    private static SessionData createSessionTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows, Object owner) throws SQLException {
+        if (!rows.isEmpty()) {
+            Map<KeyField, DataObject> constantRowKey = new HashMap<KeyField, DataObject>(rows.keySet().iterator().next());
+            for (Map<KeyField, DataObject> rowKey : rows.keySet()) {
+                for (Map.Entry<KeyField, DataObject> entry : rowKey.entrySet()) {
+                    KeyField keyField = entry.getKey();
+                    if (!entry.getValue().equals(constantRowKey.get(keyField))) {
+                        constantRowKey.remove(keyField);
+                    }
+                }
+                if (constantRowKey.isEmpty()) {
+                    break;
+                }
+            }
+
+            if (!constantRowKey.isEmpty()) {
+                return new SessionFixedKeysTable(session, keys, properties, propertyClasses, rows, constantRowKey, owner);
+            }
+        }
+
+        return new SessionTable(session, keys, properties, classes, propertyClasses, rows, owner);
     }
 
     public static SessionData rewrite(SessionData<?> data, SQLSession session, Collection<Map<KeyField, DataObject>> writeRows, Object owner) throws SQLException {
@@ -194,7 +230,7 @@ public class SessionRows implements SessionData<SessionRows> {
         for(PropertyField field : query.properties.keySet())
             insertClasses.put(field,query.<Field>getClassWhere(Collections.singleton(field)));
 
-        SessionTable table = new SessionTable(session, keys, properties, query.<KeyField>getClassWhere(new ArrayList<PropertyField>()), insertClasses, new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>(), owner);
+        SessionTable table = new SessionTable(session, keys, properties, query.<KeyField>getClassWhere(new ArrayList<PropertyField>()), insertClasses, owner);
         // нужно прочитать то что записано
         if(session.insertSelect(new ModifyQuery(table,query,env)) > MAX_ROWS)
             return table;
@@ -249,5 +285,4 @@ public class SessionRows implements SessionData<SessionRows> {
             components = AbstractMapValues.getComponents(this);
         return components;
     }
-
 }
