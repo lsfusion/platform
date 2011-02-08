@@ -20,6 +20,8 @@ public class TextPropertyRenderer extends JTextArea implements PropertyRendererC
         format = iformat;
         setBorder(new EmptyBorder(1, 3, 2, 2));
         setOpaque(true);
+        setLineWrap(true);
+        setFont(new Font("Tahoma", Font.PLAIN, 12));
 
         if (design != null)
             design.designCell(this);
