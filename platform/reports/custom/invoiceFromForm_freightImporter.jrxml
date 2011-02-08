@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="freight" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.3310000000000013"/>
-	<property name="ireport.x" value="0"/>
+	<property name="ireport.x" value="12"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#D4D4D4" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
@@ -44,6 +44,7 @@
 	<field name="priceOutImporterFreightSku" class="java.lang.Double"/>
 	<field name="nameCountryOfOriginSku" class="java.lang.String"/>
 	<field name="sumOutImporterFreightSku" class="java.lang.Double"/>
+	<field name="grossWeightImporterFreight" class="java.lang.Double"/>
 	<pageHeader>
 		<band height="120">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
@@ -167,16 +168,11 @@
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["BETRAG"]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement x="389" y="12" width="100" height="20"/>
-				<textElement/>
-				<text><![CDATA[Static text]]></text>
-			</staticText>
 		</band>
 	</pageHeader>
 	<detail>
 		<band height="18">
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="752" y="0" width="61" height="18"/>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumOutImporterFreightSku}]]></textFieldExpression>
@@ -186,12 +182,12 @@
 				<textElement textAlignment="Left"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameCountryOfOriginSku}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="613" y="0" width="53" height="18"/>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{priceOutImporterFreightSku}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="560" y="0" width="53" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{quantityImporterFreightSku}]]></textFieldExpression>
@@ -235,7 +231,7 @@
 	</detail>
 	<lastPageFooter>
 		<band height="30">
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="752" y="0" width="61" height="18" backcolor="#D4D4D4"/>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumOutImporterFreight}]]></textFieldExpression>
@@ -246,14 +242,24 @@
 				<textFieldExpression class="java.lang.String"><![CDATA["Gesamtbetrag"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="240" y="0" width="160" height="18" backcolor="#D4D4D4"/>
+				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="0" y="0" width="160" height="18" backcolor="#D4D4D4"/>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Gewicht kg netto:"]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="400" y="0" width="80" height="18" backcolor="#D4D4D4"/>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="160" y="0" width="80" height="18" backcolor="#D4D4D4"/>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{netWeightImporterFreight}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.###">
+				<reportElement style="GroupCellStyle0" mode="Opaque" x="480" y="0" width="80" height="18" backcolor="#D4D4D4"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{grossWeightImporterFreight}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" mode="Opaque" x="320" y="0" width="160" height="18" backcolor="#D4D4D4"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Gewicht kg brutto:"]]></textFieldExpression>
 			</textField>
 		</band>
 	</lastPageFooter>
