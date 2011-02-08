@@ -4,6 +4,7 @@ import platform.base.BaseUtils;
 import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
+import platform.client.logics.classes.ClientObjectType;
 
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
@@ -116,8 +117,12 @@ public class GridTableModel extends AbstractTableModel {
         return columnProps.length;
     }
 
-    public boolean isCellEditable(int row, int column) {
-        return !isCellReadOnly(row, column);
+    public boolean isCellEditable(int row, int col) {
+        if (row < 0 || row >= getRowCount() || col < 0 || col >= getColumnCount()) {
+            return true;
+        }
+
+        return !columnProps[col].readOnly && !(columnProps[col].baseType instanceof ClientObjectType);
     }
 
     public boolean isCellFocusable(int row, int col) {
@@ -127,14 +132,6 @@ public class GridTableModel extends AbstractTableModel {
 
         Boolean focusable = columnProps[col].focusable;
         return focusable == null || focusable;
-    }
-
-    private boolean isCellReadOnly(int row, int col) {
-        if (row < 0 || row >= getRowCount() || col < 0 || col >= getColumnCount()) {
-            return false;
-        }
-
-        return columnProps[col].readOnly;
     }
 
     public Object getValueAt(int row, int col) {

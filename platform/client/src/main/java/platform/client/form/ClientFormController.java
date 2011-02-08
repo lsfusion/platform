@@ -421,10 +421,12 @@ public class ClientFormController {
         }
     }
 
-    private void applyActions(List<ClientAction> actions, boolean before) throws IOException {
-        for(ClientAction action : actions)
-            if(action.isBeforeApply()==before)
+    private void applyActions(List<ClientAction> actions, boolean beforeApply) throws IOException {
+        for (ClientAction action : actions) {
+            if (action.isBeforeApply() == beforeApply) {
                 action.dispatch(actionDispatcher);
+            }
+        }
     }
 
     private void applyRemoteChanges() throws IOException {

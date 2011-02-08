@@ -5,6 +5,7 @@ import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.cell.CellView;
 import platform.client.form.cell.TableCellView;
+import platform.client.form.editor.IntegerPropertyEditor;
 import platform.client.form.editor.ObjectPropertyEditor;
 import platform.client.form.renderer.IntegerPropertyRenderer;
 import platform.client.logics.ClientGroupObjectValue;
@@ -74,7 +75,8 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
     }
 
     public PropertyEditorComponent getClassComponent(ClientFormController form, ClientPropertyDraw property, Object value, Format format) throws IOException, ClassNotFoundException {
-        return new ObjectPropertyEditor(form.getComponent(), property.createClassForm(form.remoteForm, (Integer) value));
+        return new IntegerPropertyEditor(value, (NumberFormat) ClientIntegerClass.instance.getDefaultFormat(), null, Integer.class);
+//        return new ObjectPropertyEditor(form.getComponent(), property.createClassForm(form.remoteForm, (Integer) value));
     }
 
     public boolean shouldBeDrawn(ClientFormController form) {
