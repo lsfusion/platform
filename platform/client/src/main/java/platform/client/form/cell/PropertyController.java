@@ -112,6 +112,7 @@ public class PropertyController implements CellViewListener {
 
     public void setCaption(String caption) {
         view.setCaption(caption);
+        view.setToolTip(caption);
     }
 
     public void setHighlight(Object highlight, Color highlightColor) {

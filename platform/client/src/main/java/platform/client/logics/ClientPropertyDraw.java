@@ -73,6 +73,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     protected String sID;
 
+    public String toolTip;
+
     ClientGroupObject keyBindingGroup = null;
 
     public ClientGroupObject groupObject;
@@ -376,6 +378,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         baseType = ClientTypeSerializer.deserialize(inStream);
 
         sID = pool.readString(inStream);
+
+        toolTip = pool.readString(inStream);
 
         groupObject = pool.deserializeObject(inStream);
 

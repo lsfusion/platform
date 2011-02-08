@@ -11,5 +11,6 @@ public interface CellView {
     void setValue(Object ivalue);
     void startEditing(KeyEvent e);
     void setCaption(String caption);
+    void setToolTip(String caption);
     void setHighlight(Object highlight, Color highlightColor);
 }

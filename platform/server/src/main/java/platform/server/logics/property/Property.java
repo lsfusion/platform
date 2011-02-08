@@ -48,6 +48,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public final String sID;
 
     public String caption;
+    public String toolTip;
 
     public int minimumCharWidth;
     public int maximumCharWidth;
@@ -518,6 +519,9 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         outStream.writeUTF(sID);
         outStream.writeUTF(caption);
+        outStream.writeBoolean(toolTip != null);
+        if (toolTip != null)
+            outStream.writeUTF(toolTip);
         outStream.writeUTF(getCode());
         outStream.writeBoolean(isField());
 

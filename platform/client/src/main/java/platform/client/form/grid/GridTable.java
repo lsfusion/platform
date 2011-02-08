@@ -1,5 +1,6 @@
 package platform.client.form.grid;
 
+import platform.base.BaseUtils;
 import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormTable;
@@ -852,12 +853,10 @@ public abstract class GridTable extends ClientFormTable
                 return super.getToolTipText(e);
             }
             int modelIndex = columnModel.getColumn(index).getModelIndex();
-
-            String toolTip = (String) columnModel.getColumn(index).getHeaderValue();
-
             ClientPropertyDraw cellView = model.getColumnProperty(modelIndex);
+            String toolTip = !BaseUtils.isRedundantString(cellView.toolTip) ? cellView.toolTip : (String) columnModel.getColumn(index).getHeaderValue();
             toolTip += " (sID: " + cellView.getSID() + ")";
-            return toolTip;
+            return toolTip; 
         }
 
         @Override

@@ -92,6 +92,8 @@ public class TableCellView extends JPanel implements CellView {
 
         table.keyChanged(key);
 
+        setToolTip(key.caption);
+
         add(table);
 
     }
@@ -163,5 +165,12 @@ public class TableCellView extends JPanel implements CellView {
     @Override
     public String toString() {
         return key.toString();
+    }
+
+    public void setToolTip(String caption) {
+        String toolTip = !BaseUtils.isRedundantString(key.toolTip) ? key.toolTip : caption;
+        toolTip += " (sID: " + key.getSID() + ")";
+        table.setToolTipText(toolTip);
+        label.setToolTipText(toolTip);
     }
 }

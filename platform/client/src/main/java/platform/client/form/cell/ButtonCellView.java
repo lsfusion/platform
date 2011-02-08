@@ -1,5 +1,6 @@
 package platform.client.form.cell;
 
+import platform.base.BaseUtils;
 import platform.client.ClientButton;
 import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
@@ -31,6 +32,8 @@ public class ButtonCellView extends ClientButton implements CellView {
         super(key.getFullCaption());
         this.key = key;
         this.columnKey = columnKey;
+
+        setToolTip(key.caption);
 
         if (key.readOnly) {
             setEnabled(false);
@@ -81,5 +84,11 @@ public class ButtonCellView extends ClientButton implements CellView {
 
     public void setHighlight(Object highlight, Color highlightColor) {
         // пока не highlight'им
+    }
+
+    public void setToolTip(String caption) {
+        String toolTip = !BaseUtils.isRedundantString(key.toolTip) ? key.toolTip : caption;
+        toolTip += " (sID: " + key.getSID() + ")";
+        setToolTipText(toolTip);
     }
 }
