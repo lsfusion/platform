@@ -21,6 +21,7 @@ public class TextPropertyRenderer extends JTextArea implements PropertyRendererC
         setBorder(new EmptyBorder(1, 3, 2, 2));
         setOpaque(true);
         setLineWrap(true);
+        setWrapStyleWord(true);
         setFont(new Font("Tahoma", Font.PLAIN, 12));
 
         if (design != null)
