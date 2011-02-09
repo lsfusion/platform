@@ -72,6 +72,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP supplierDocument;
     private LP nameSupplierDocument;
     private LP sidDocument;
+    private LP documentSIDSupplier;
     private LP sumDocument;
     private ConcreteCustomClass colorSupplier;
     private ConcreteCustomClass sizeSupplier;
@@ -882,6 +883,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 addJProp(supplierSizeSupplier, sizeSupplierItem, 1), 1), true);
 
         sidDocument = addDProp(baseGroup, "sidDocument", "Код", StringClass.get(50), document);
+        documentSIDSupplier = addCGProp(idGroup, "documentSIDSupplier", "Документ поставщика (ИД)", object(document), sidDocument, sidDocument, 1, supplierDocument, 1);
 
         // коробки
         sidSupplierBox = addDProp(baseGroup, "sidSupplierBox", "Код", StringClass.get(50), supplierBox);
@@ -1638,10 +1640,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             this.box = box;
 
-            objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameCurrencySupplier);
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameCurrencySupplier, importInvoice);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс", date, sidDocument, nameCurrencyDocument, sumDocument, nameImporterInvoice, nameDestinationDestinationDocument, importInvoice);
+            objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс", date, sidDocument, nameCurrencyDocument, sumDocument, nameImporterInvoice, nameDestinationDestinationDocument);
             addObjectActions(this, objInvoice);
 
             objOrder = addSingleGroupObject(order, "Заказ");
@@ -1743,6 +1745,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addRegularFilterGroup(filterGroup);
 
             setReadOnly(objSupplier, true);
+            setReadOnly(importInvoice, false);
         }
 
         @Override
@@ -2636,13 +2639,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
     public class ImportInvoiceActionProperty extends ActionProperty {
 
-        private final ClassPropertyInterface invoiceInterface;
+        private final ClassPropertyInterface supplierInterface;
 
         public ImportInvoiceActionProperty() {
-            super(genSID(), "Импортировать инвойс", new ValueClass[]{boxInvoice});
+            super(genSID(), "Импортировать инвойс", new ValueClass[]{supplier});
 
             Iterator<ClassPropertyInterface> i = interfaces.iterator();
-            invoiceInterface = i.next();
+            supplierInterface = i.next();
         }
 
         private List<List<Object>> getInvoiceData(ObjectValue value) {
@@ -2654,6 +2657,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
                 for (int i = 1; i < sh.getRows(); ++i) {
                     List<Object> row = new ArrayList<Object>();
+                    row.add(sh.getCell(0, i).getContents());
                     row.add(sh.getCell(1, i).getContents());
                     row.add(sh.getCell(2, i).getContents().substring(1).trim());
                     row.add(sh.getCell(3, i).getContents());
@@ -2676,13 +2680,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         }
 
         public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            DataObject invoice = keys.get(invoiceInterface);
+            DataObject supplier = keys.get(supplierInterface);
             FormInstance remoteForm = executeForm.form;
             DataSession session = remoteForm.session;
-            DataObject supplier = new DataObject(supplierDocument.read(session, invoice), RomanBusinessLogics.this.supplier);
 
             List<List<Object>> rows = getInvoiceData(value);
 
+            ImportField invoiceSIDField = new ImportField(sidDocument);
             ImportField boxNumberField = new ImportField(sidSupplierBox);
             ImportField barCodeField = new ImportField(barcode);
             ImportField colorCodeField = new ImportField(sidColorSupplier);
@@ -2695,15 +2699,18 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             ImportField unitPriceField = new ImportField(quantityDataListSku);
             ImportField unitQuantityField = new ImportField(priceDataDocumentItem);
 
-
-            List<ImportField> fields = new ArrayList<ImportField>(Arrays.asList(boxNumberField, barCodeField, colorCodeField,
-                    sidField, colorNameField, sizeField, compositionField, countryField, customCodeField,
+            List<ImportField> fields = new ArrayList<ImportField>(Arrays.asList(invoiceSIDField, boxNumberField, barCodeField,
+                    colorCodeField, sidField, colorNameField, sizeField, compositionField, countryField, customCodeField,
                     unitPriceField, unitQuantityField));
 
             List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 
+            ImportKey<?> invoiceKey = new ImportKey(boxInvoice, documentSIDSupplier.getMapping(invoiceSIDField, supplier));
+            properties.add(new ImportProperty(invoiceSIDField, sidDocument.getMapping(invoiceKey)));
+            properties.add(new ImportProperty(supplier, supplierDocument.getMapping(invoiceKey)));
+
             ImportKey<?> boxKey = new ImportKey(supplierBox, supplierBoxSIDSupplier.getMapping(boxNumberField, supplier));
-            properties.add(new ImportProperty(invoice, boxInvoiceSupplierBox.getMapping(boxKey)));
+            properties.add(new ImportProperty(invoiceSIDField, boxInvoiceSupplierBox.getMapping(boxKey), object(boxInvoice).getMapping(invoiceKey)));
             properties.add(new ImportProperty(boxNumberField, sidSupplierBox.getMapping(boxKey)));
 
             ImportKey<?> articleKey = new ImportKey(articleComposite, articleSIDSupplier.getMapping(sidField, supplier));
@@ -2736,10 +2743,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             properties.add(new ImportProperty(sizeField, sizeSupplierItem.getMapping(itemKey), object(sizeSupplier).getMapping(sizeKey)));
 
             properties.add(new ImportProperty(unitQuantityField, quantityDataListSku.getMapping(boxKey, itemKey)));
-            properties.add(new ImportProperty(unitPriceField, priceDataDocumentItem.getMapping(invoice, itemKey)));
-            properties.add(new ImportProperty(unitPriceField, priceDocumentArticle.getMapping(invoice, articleKey)));
+            properties.add(new ImportProperty(unitPriceField, priceDataDocumentItem.getMapping(invoiceKey, itemKey)));
+            properties.add(new ImportProperty(unitPriceField, priceDocumentArticle.getMapping(invoiceKey, articleKey)));
 
-            new IntegrationService(session, new ImportTable(fields, rows), Arrays.<ImportKey<?>>asList(boxKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey), properties).synchronize(true, true, false);
+            ImportKey<?>[] keysArray = {invoiceKey, boxKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey};
+            new IntegrationService(session, new ImportTable(fields, rows), Arrays.asList(keysArray), properties).synchronize(true, true, false);
 
             actions.add(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         }
