@@ -71,7 +71,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.RMIFailureHandler;
 import java.rmi.server.RMISocketFactory;
-import java.rmi.server.ServerNotActiveException;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -1580,8 +1579,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             data.add(Arrays.asList((Object)navElement.getSID(), navElement.caption));
         }
 
-        Map<ImportField, ImportProperty<?>> props = new HashMap<ImportField, ImportProperty<?>>();
-        props.put(captionField, new ImportProperty(navigatorElementCaption.getMapping(key)));
+        List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
+        props.add(new ImportProperty(captionField, navigatorElementCaption.getMapping(key)));
 
         ImportTable table = new ImportTable(Arrays.asList(sidField, captionField), data);
 

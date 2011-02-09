@@ -1,8 +1,12 @@
 package roman;
 
+import jxl.Sheet;
+import jxl.Workbook;
 import net.sf.jasperreports.engine.JRException;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
+import platform.interop.action.ClientAction;
+import platform.interop.action.MessageClientAction;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.auth.User;
 import platform.server.classes.*;
@@ -10,22 +14,34 @@ import platform.server.data.Union;
 import platform.server.data.sql.DataAdapter;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
+import platform.server.form.instance.FormInstance;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.form.view.PropertyDrawView;
+import platform.server.integration.*;
 import platform.server.logics.BusinessLogics;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
+import platform.server.logics.property.ActionProperty;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
+import platform.server.session.DataSession;
 import tmc.integration.imp.ClassifierTNVEDImportActionProperty;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.*;
+import java.util.List;
 
 public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
@@ -170,7 +186,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     public LP sidToCustomCategoryOrigin;
     private LP importBelTnved;
     private LP importEuTnved;
-
+    private LP importInvoice;
+    
     public LP customCategory4CustomCategory6;
     public LP customCategory6CustomCategory9;
     public LP customCategory9CustomCategory10;
@@ -627,6 +644,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         importBelTnved = addAProp(new ClassifierTNVEDImportActionProperty(genSID(), "Импортировать (РБ)", this, "belarusian"));
         importEuTnved = addAProp(new ClassifierTNVEDImportActionProperty(genSID(), "Импортировать (ЕС)", this, "origin"));
+        importInvoice = addAProp(new ImportInvoiceActionProperty());
 
         customCategory4CustomCategory6 = addDProp(idGroup, "customCategory4CustomCategory6", "Код(4)", customCategory4, customCategory6);
         customCategory6CustomCategory9 = addDProp(idGroup, "customCategory6CustomCategory9", "Код(6)", customCategory6, customCategory9);
@@ -1582,7 +1600,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameCurrencySupplier);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс", date, sidDocument, nameCurrencyDocument, sumDocument, nameImporterInvoice, nameDestinationDestinationDocument);
+            objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс", date, sidDocument, nameCurrencyDocument, sumDocument, nameImporterInvoice, nameDestinationDestinationDocument, importInvoice);
             addObjectActions(this, objInvoice);
 
             objOrder = addSingleGroupObject(order, "Заказ");
@@ -2551,4 +2569,128 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             return design;
         }
     }
+
+    public class ImportInvoiceActionProperty extends ActionProperty {
+
+        private final ClassPropertyInterface invoiceInterface;
+
+        public ImportInvoiceActionProperty() {
+            super(genSID(), "Импортировать инвойс", new ValueClass[]{boxInvoice});
+
+            Iterator<ClassPropertyInterface> i = interfaces.iterator();
+            invoiceInterface = i.next();
+        }
+
+        private List<List<Object>> getInvoiceData(ObjectValue value) {
+            List<List<Object>> data = new ArrayList<List<Object>>();
+            Sheet sh;
+            try {
+                ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
+                sh = Workbook.getWorkbook(inFile).getSheet(0);
+
+                for (int i = 1; i < sh.getRows(); ++i) {
+                    List<Object> row = new ArrayList<Object>();
+                    row.add(sh.getCell(1, i).getContents());
+                    row.add(sh.getCell(2, i).getContents().substring(1).trim());
+                    row.add(sh.getCell(3, i).getContents());
+                    String ref = sh.getCell(4, i).getContents().trim();
+                    row.add(ref.substring(0, ref.indexOf(' '))); // sid
+                    row.add(ref.substring(ref.indexOf(' ') + 1, ref.lastIndexOf(' '))); // color
+                    row.add(ref.substring(ref.lastIndexOf(' ') + 1)); // size
+                    row.add(sh.getCell(6, i).getContents());
+                    row.add(sh.getCell(9, i).getContents());
+                    row.add(sh.getCell(10, i).getContents().trim().substring(0, 10));
+                    row.add(Double.parseDouble(sh.getCell(13, i).getContents().trim().replace(',', '.')));
+                    row.add(Double.parseDouble(sh.getCell(14, i).getContents().trim().replace(',', '.')));
+                    data.add(row);
+                }
+            } catch (Exception e) {
+                logger.fatal("Ошибка чтения инвойса");
+            }
+
+            return data;
+        }
+
+        public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            DataObject invoice = keys.get(invoiceInterface);
+            FormInstance remoteForm = executeForm.form;
+            DataSession session = remoteForm.session;
+            DataObject supplier = new DataObject(supplierDocument.read(session, invoice), RomanBusinessLogics.this.supplier);
+
+            List<List<Object>> rows = getInvoiceData(value);
+
+            ImportField boxNumberField = new ImportField(sidSupplierBox);
+            ImportField barCodeField = new ImportField(barcode);
+            ImportField colorCodeField = new ImportField(sidColorSupplier);
+            ImportField sidField = new ImportField(sidArticle);
+            ImportField colorNameField = new ImportField(name);
+            ImportField sizeField = new ImportField(sidSizeSupplier);
+            ImportField compositionField = new ImportField(mainCompositionOriginArticle);
+            ImportField countryField = new ImportField(nameCountryOfOriginArticle);
+            ImportField customCodeField = new ImportField(sidCustomCategoryOrigin);
+            ImportField unitPriceField = new ImportField(quantityDataListSku);
+            ImportField unitQuantityField = new ImportField(priceDataDocumentItem);
+
+
+            List<ImportField> fields = new ArrayList<ImportField>(Arrays.asList(boxNumberField, barCodeField, colorCodeField,
+                    sidField, colorNameField, sizeField, compositionField, countryField, customCodeField,
+                    unitPriceField, unitQuantityField));
+
+            List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
+
+            ImportKey<?> boxKey = new ImportKey(supplierBox, supplierBoxSIDSupplier.getMapping(boxNumberField, supplier));
+            properties.add(new ImportProperty(invoice, boxInvoiceSupplierBox.getMapping(boxKey)));
+            properties.add(new ImportProperty(boxNumberField, sidSupplierBox.getMapping(boxKey)));
+
+            ImportKey<?> articleKey = new ImportKey(articleComposite, articleSIDSupplier.getMapping(sidField, supplier));
+            properties.add(new ImportProperty(sidField, sidArticle.getMapping(articleKey)));
+            properties.add(new ImportProperty(supplier, supplierArticle.getMapping(articleKey)));
+            properties.add(new ImportProperty(new DataObject(1, IntegerClass.instance), numberListArticle.getMapping(boxKey, articleKey)));
+            properties.add(new ImportProperty(compositionField, mainCompositionOriginArticle.getMapping(articleKey)));
+
+            ImportKey<?> itemKey = new ImportKey(item, barcodeToObject.getMapping(barCodeField));
+            properties.add(new ImportProperty(barCodeField, barcode.getMapping(itemKey)));
+            properties.add(new ImportProperty(sidField, articleCompositeItem.getMapping(itemKey), object(articleComposite).getMapping(articleKey)));
+
+            ImportKey<?> countryKey = new ImportKey(country, nameToCountry.getMapping(countryField));
+            properties.add(new ImportProperty(countryField, name.getMapping(countryKey)));
+            properties.add(new ImportProperty(countryField, countryOfOriginArticle.getMapping(articleKey), object(country).getMapping(countryKey)));
+
+            ImportKey<?> customCategoryKey = new ImportKey(customCategoryOrigin, sidToCustomCategoryOrigin.getMapping(customCodeField));
+            properties.add(new ImportProperty(customCodeField, sidCustomCategoryOrigin.getMapping(customCategoryKey)));
+            properties.add(new ImportProperty(customCodeField, customCategoryOriginArticle.getMapping(articleKey), object(customCategoryOrigin).getMapping(customCategoryKey)));
+
+            ImportKey<?> colorKey = new ImportKey(colorSupplier, colorSIDSupplier.getMapping(colorCodeField, supplier));
+            properties.add(new ImportProperty(colorCodeField, sidColorSupplier.getMapping(colorKey)));
+            properties.add(new ImportProperty(supplier, supplierColorSupplier.getMapping(colorKey)));
+            properties.add(new ImportProperty(colorNameField, name.getMapping(colorKey)));
+            properties.add(new ImportProperty(colorCodeField, colorSupplierItem.getMapping(itemKey), object(colorSupplier).getMapping(colorKey)));
+
+            ImportKey<?> sizeKey = new ImportKey(sizeSupplier, sizeSIDSupplier.getMapping(sizeField, supplier));
+            properties.add(new ImportProperty(sizeField, sidSizeSupplier.getMapping(sizeKey)));
+            properties.add(new ImportProperty(supplier, supplierSizeSupplier.getMapping(sizeKey)));
+            properties.add(new ImportProperty(sizeField, sizeSupplierItem.getMapping(itemKey), object(sizeSupplier).getMapping(sizeKey)));
+
+            properties.add(new ImportProperty(unitQuantityField, quantityDataListSku.getMapping(boxKey, itemKey)));
+            properties.add(new ImportProperty(unitPriceField, priceDataDocumentItem.getMapping(invoice, itemKey)));
+            properties.add(new ImportProperty(unitPriceField, priceDocumentArticle.getMapping(invoice, articleKey)));
+
+            new IntegrationService(session, new ImportTable(fields, rows), Arrays.<ImportKey<?>>asList(boxKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey), properties).synchronize(true, true, false);
+
+            actions.add(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+        }
+
+        @Override
+        protected DataClass getValueClass() {
+            return FileActionClass.getInstance("Файлы таблиц", "xls");
+        }
+
+        @Override
+        public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity form) {
+            super.proceedDefaultDraw(entity, form);
+            entity.shouldBeLast = true;
+            entity.forceViewType = ClassViewType.PANEL;
+        }
+    }
+
 }

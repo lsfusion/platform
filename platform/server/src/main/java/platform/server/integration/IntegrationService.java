@@ -1,6 +1,7 @@
 package platform.server.integration;
 
 import platform.server.data.query.Query;
+import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -18,12 +19,12 @@ import java.util.*;
 
 public class IntegrationService {
     private ImportTable table;
-    private Map<ImportField, ImportProperty<?>> properties;
+    private Collection<ImportProperty<?>> properties;
     private Collection<? extends ImportKey<?>> keys;
     private DataSession session;
 
     public IntegrationService(DataSession session, ImportTable table, Collection<? extends ImportKey<?>> keys,
-                              Map<ImportField, ImportProperty<?>> properties) {
+                              Collection<ImportProperty<?>> properties) {
         this.session = session;
         this.table = table;
         this.properties = properties;
@@ -45,7 +46,7 @@ public class IntegrationService {
                         processRow = false;
                         break;
                     }
-                    keyValues.put(key, new DataObject(value, key.getCustomClass()));
+                    keyValues.put(key, session.getDataObject(value, ObjectType.instance));
                 } else {
                     if (!addNew) {
                         processRow = false;
@@ -60,9 +61,8 @@ public class IntegrationService {
             }
 
             if (processRow) {
-                for (Map.Entry<ImportField, ImportProperty<?>> entry : properties.entrySet()) {
-                    ImportProperty<?> property = entry.getValue();
-                    Object value = row.getValue(entry.getKey());
+                for (ImportProperty<?> property : properties) {
+                    Object value = property.getImportField().getDataObject(row).object;
 
                     if (property.getConverter() != null) {
                         value = property.convertValue(session, keyValues);

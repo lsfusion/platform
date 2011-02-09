@@ -23,7 +23,9 @@ import platform.server.form.instance.GroupObjectInstance;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.integration.ImportFieldInterface;
 import platform.server.integration.ImportKeyInterface;
+import platform.server.integration.ImportTable;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.SessionChanges;
 
@@ -33,7 +35,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
-public class DataObject extends ObjectValue<DataObject> implements PropertyObjectInterfaceInstance, PropertyObjectInterfaceEntity, ImportKeyInterface {
+public class DataObject extends ObjectValue<DataObject> implements PropertyObjectInterfaceInstance, PropertyObjectInterfaceEntity, ImportKeyInterface, ImportFieldInterface {
 
     public Object object;
     public ConcreteClass objectClass;
@@ -184,5 +186,9 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
 
     public DataObject getRemappedEntity(ObjectEntity object, InstanceFactory instanceFactory) {
         return this;
+    }
+
+    public DataObject getDataObject(ImportTable.Row row) {
+        return getDataObject();
     }
 }

@@ -3013,24 +3013,24 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             }
 
             List<ImportField> fields = new ArrayList<ImportField>();
-            Map<ImportField, ImportProperty<?>> properties = new HashMap<ImportField, ImportProperty<?>>();
+            List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 
             ImportField barcodeField = new ImportField(StringClass.get(13)); fields.add(barcodeField);
             ImportKey<?> articleKey = new ImportKey(article, barcodeToObject.getMapping(barcodeField));
-            properties.put(barcodeField, new ImportProperty(barcode.getMapping(articleKey)));
+            properties.add(new ImportProperty(barcodeField, barcode.getMapping(articleKey)));
 
             ImportField nameField = new ImportField(StringClass.get(100)); fields.add(nameField);
-            properties.put(nameField, new ImportProperty(name.getMapping(articleKey)));
+            properties.add(new ImportProperty(nameField, name.getMapping(articleKey)));
             ImportField priceField = new ImportField(DoubleClass.instance); fields.add(priceField);
-            properties.put(priceField, new ImportProperty(orderAllDeliveryPrice.getMapping(document, articleKey)));
+            properties.add(new ImportProperty(priceField, orderAllDeliveryPrice.getMapping(document, articleKey)));
             ImportField quantityField = new ImportField(DoubleClass.instance); fields.add(quantityField);
-            properties.put(quantityField, new ImportProperty(articleOrderQuantity.getMapping(document, articleKey)));
+            properties.add(new ImportProperty(quantityField, articleOrderQuantity.getMapping(document, articleKey)));
             ImportField ndsField = new ImportField(DoubleClass.instance); fields.add(ndsField);
-            properties.put(ndsField, new ImportProperty(ndsOrderArticle.getMapping(document, articleKey)));
+            properties.add(new ImportProperty(ndsField, ndsOrderArticle.getMapping(document, articleKey)));
 
             ImportField countryField = new ImportField(InsensitiveStringClass.get(60)); fields.add(countryField);
             ImportKey<?> countryKey = new ImportKey(country, nameToCountry.getMapping(countryField));
-            properties.put(countryField, new ImportProperty(articleCountry.getMapping(articleKey), object(country).getMapping(countryKey)));
+            properties.add(new ImportProperty(countryField, articleCountry.getMapping(articleKey), object(country).getMapping(countryKey)));
 
             List<List<Object>> rows = new ArrayList<List<Object>>();
 

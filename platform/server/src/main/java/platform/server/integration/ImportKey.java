@@ -19,9 +19,9 @@ import java.util.Map;
 
 public class ImportKey <P extends PropertyInterface> implements ImportKeyInterface {
     private ConcreteCustomClass keyClass;
-    private PropertyImplement<ImportField, P> property;
+    private PropertyImplement<ImportFieldInterface, P> property;
 
-    public ImportKey(ConcreteCustomClass keyClass, PropertyImplement<ImportField, P> property) {
+    public ImportKey(ConcreteCustomClass keyClass, PropertyImplement<ImportFieldInterface, P> property) {
         this.keyClass = keyClass;
         this.property = property;
     }
@@ -30,7 +30,7 @@ public class ImportKey <P extends PropertyInterface> implements ImportKeyInterfa
         return keyClass;
     }
 
-    public Map<P, ImportField> getMapping() {
+    public Map<P, ImportFieldInterface> getMapping() {
         return property.mapping;
     }
 
@@ -40,8 +40,8 @@ public class ImportKey <P extends PropertyInterface> implements ImportKeyInterfa
 
     public Map<P, DataObject> mapObjects(ImportTable.Row row) {
         Map<P, DataObject> map = new HashMap<P, DataObject>();
-        for (Map.Entry<P, ImportField> entry : getMapping().entrySet()) {
-            DataObject obj = new DataObject(row.getValue(entry.getValue()), entry.getValue().getFieldClass());
+        for (Map.Entry<P, ImportFieldInterface> entry : getMapping().entrySet()) {
+            DataObject obj = entry.getValue().getDataObject(row);
             map.put(entry.getKey(), obj);
         }
         return map;

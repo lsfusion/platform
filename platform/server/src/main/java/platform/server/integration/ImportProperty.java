@@ -20,13 +20,15 @@ import java.util.Map;
 public class ImportProperty <P extends PropertyInterface> {
     private PropertyImplement<ImportKeyInterface, P> property;
     private PropertyImplement<ImportKeyInterface, P> converter;
+    private ImportFieldInterface importField;
 
-    public ImportProperty(PropertyImplement<ImportKeyInterface, P> property) {
+    public ImportProperty(ImportFieldInterface importField, PropertyImplement<ImportKeyInterface, P> property) {
+        this.importField = importField;
         this.property = property;
     }
 
-    public ImportProperty(PropertyImplement<ImportKeyInterface, P> property, PropertyImplement<ImportKeyInterface, P> converter) {
-        this.property = property;
+    public ImportProperty(ImportFieldInterface importField, PropertyImplement<ImportKeyInterface, P> property, PropertyImplement<ImportKeyInterface, P> converter) {
+        this(importField, property);
         this.converter = converter;
     }
 
@@ -36,6 +38,10 @@ public class ImportProperty <P extends PropertyInterface> {
 
     public PropertyImplement<ImportKeyInterface, P> getConverter() {
         return converter;
+    }
+
+    public ImportFieldInterface getImportField() {
+        return importField;
     }
 
     Object convertValue(DataSession session, Map<ImportKeyInterface, DataObject> keyValues) throws SQLException {
