@@ -1,5 +1,6 @@
 package platform.client.exceptions;
 
+import org.apache.log4j.Logger;
 import platform.base.OSUtils;
 import platform.client.Log;
 import platform.client.Main;
@@ -19,6 +20,7 @@ import java.util.ConcurrentModificationException;
 import static platform.base.BaseUtils.lineSeparator;
 
 public class ClientExceptionManager {
+    private final static Logger logger = Logger.getLogger(ClientExceptionManager.class);
 
     public static void handle(Throwable e) {
         handle(e, null);
@@ -31,6 +33,7 @@ public class ClientExceptionManager {
         if (remote instanceof ConnectIOException || remote instanceof ConnectException) {
             //при этих RemoteException'ах возможно продолжение работы
             ConnectionLostManager.connectionLost(false);
+            logger.error("Ошибка при общении с сервером: ", e);
             return;
         }
 
@@ -42,6 +45,7 @@ public class ClientExceptionManager {
             } else {
                 //при остальных RemoteException'ах нужно релогиниться
                 ConnectionLostManager.connectionLost(true);
+                logger.error("Ошибка при общении с сервером: ", e);
                 return;
             }
         }

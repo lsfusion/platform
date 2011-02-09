@@ -77,7 +77,7 @@ public class ConnectionLostManager {
         private final boolean fatal;
 
         public BlockDialog(String message, JFrame owner, boolean fatal) {
-            super(owner, "Соедиение потеряно", true);
+            super(owner, "Соединение потеряно", true);
 
             this.fatal = fatal;
 

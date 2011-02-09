@@ -35,7 +35,7 @@ import java.util.List;
 import static platform.client.PropertyConstants.*;
 
 public class Main {
-    private final static Logger logger = Logger.getLogger(SimplexLayout.class);
+    private final static Logger logger = Logger.getLogger(Main.class);
 
     private static final String DEFAULT_TITLE = "LS Fusion";
     private static final String DEFAULT_SPLASH_PATH = "/platform/images/lsfusion.jpg";
