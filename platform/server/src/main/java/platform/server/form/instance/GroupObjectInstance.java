@@ -242,8 +242,11 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public boolean isNull() {
-        assert assertNull();
-        return objects.iterator().next().getObjectValue() instanceof NullValue;
+//        assert assertNull();
+//        return objects.iterator().next().getObjectValue() instanceof NullValue;
+        for (ObjectInstance object : objects)
+            if (object.getObjectValue() instanceof NullValue) return true;
+        return false;
     }
 
     public Map<ObjectInstance,DataObject> getGroupObjectValue() {

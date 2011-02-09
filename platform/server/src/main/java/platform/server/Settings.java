@@ -166,4 +166,14 @@ public class Settings {
     public void setDisablePoolConnections(boolean disablePoolConnections) {
         this.disablePoolConnections = disablePoolConnections;
     }
+
+    private boolean disableSumGroupNotZero = false;
+
+    public boolean isDisableSumGroupNotZero() {
+        return disableSumGroupNotZero;
+    }
+
+    public void setDisableSumGroupNotZero(boolean disableSumGroupNotZero) {
+        this.disableSumGroupNotZero = disableSumGroupNotZero;
+    }
 }

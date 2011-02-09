@@ -379,7 +379,7 @@ public class DerivedProperty {
         return createCompare(property.interfaces, andImplement, maxPartition, Compare.EQUALS);
     }
 
-    public static <L extends PropertyInterface, T extends PropertyInterface<T>> PropertyMapImplement<?,T> createPGProp(String sID, String caption, int roundlen, BaseClass baseClass, PropertyImplement<PropertyInterfaceImplement<T>,L> group, Property<T> proportion) {
+    public static <L extends PropertyInterface, T extends PropertyInterface<T>> PropertyMapImplement<?,T> createPGProp(String sID, String caption, int roundlen, boolean roundfirst, BaseClass baseClass, PropertyImplement<PropertyInterfaceImplement<T>,L> group, Property<T> proportion) {
 
         // общая сумма по пропорции в partition'е
         PropertyMapImplement<?, T> propSum = createPProp(proportion, group.mapping.values(), true);
@@ -387,8 +387,12 @@ public class DerivedProperty {
         // строим partition distribute св-во
         PropertyMapImplement<?, T> distribute = createJoin(group);
 
+        String distrSID = !roundfirst ? sID : genID();
+        String distrCaption = !roundfirst ? caption : "sys";
         // округляем
-        PropertyMapImplement<?, T> distrRound = createFormula(proportion.interfaces, "ROUND(CAST((prm1*prm2/prm3) as NUMERIC(15,3)),"+roundlen+")", formulaClass, BaseUtils.toList(distribute, proportion.getImplement(), propSum));
+        PropertyMapImplement<?, T> distrRound = createFormula(distrSID, distrCaption, proportion.interfaces, "ROUND(CAST((prm1*prm2/prm3) as NUMERIC(15,3)),"+roundlen+")", formulaClass, BaseUtils.toList(distribute, proportion.getImplement(), propSum));
+
+        if (!roundfirst) return distrRound;
 
         // строим partition полученного округления
         PropertyMapImplement<?, T> totRound = createPProp(distrRound, group.mapping.values(), true);

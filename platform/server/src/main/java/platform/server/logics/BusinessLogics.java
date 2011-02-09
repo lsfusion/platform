@@ -2940,13 +2940,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return mapLProp(group, persistent, DerivedProperty.createUGProp(sID, caption, new PropertyImplement<PropertyInterfaceImplement<R>, L>(ungroup.property, groupImplement), orders, restriction.property), restriction);
     }
 
-    protected <R extends PropertyInterface, L extends PropertyInterface> LP addPGProp(AbstractGroup group, String sID, boolean persistent, int roundlen, String caption, LP<R> proportion, LP<L> ungroup, Object... params) {
+    protected <R extends PropertyInterface, L extends PropertyInterface> LP addPGProp(AbstractGroup group, String sID, boolean persistent, int roundlen, boolean roundfirst, String caption, LP<R> proportion, LP<L> ungroup, Object... params) {
         List<LI> li = readLI(params);
 
         Map<L, PropertyInterfaceImplement<R>> groupImplement = new HashMap<L, PropertyInterfaceImplement<R>>();
         for (int i = 0; i < ungroup.listInterfaces.size(); i++)
             groupImplement.put(ungroup.listInterfaces.get(i), li.get(i).map(proportion.listInterfaces));
-        return mapLProp(group, persistent, DerivedProperty.createPGProp(sID, caption, roundlen, baseClass, new PropertyImplement<PropertyInterfaceImplement<R>, L>(ungroup.property, groupImplement), proportion.property), proportion);
+        return mapLProp(group, persistent, DerivedProperty.createPGProp(sID, caption, roundlen, roundfirst, baseClass, new PropertyImplement<PropertyInterfaceImplement<R>, L>(ungroup.property, groupImplement), proportion.property), proportion);
     }
 
     /*
@@ -3033,11 +3033,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addSGProp(AbstractGroup group, String sID, boolean persistent, String caption, LP groupProp, Object... params) {
-        if (persistent) {
+        if (persistent && !Settings.instance.isDisableSumGroupNotZero()) {
             LP property = addGProp(null, genSID(), false, caption, groupProp, true, params);
             return addJProp(group, sID, persistent, caption, onlyNotZero, directLI(property));
         } else {
-            return addGProp(group, sID, false, caption, groupProp, true, params);
+            return addGProp(group, sID, persistent, caption, groupProp, true, params);
         }
     }
 

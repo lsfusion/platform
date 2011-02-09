@@ -795,7 +795,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         orderSalePayObligation = addSUProp(documentAggrPriceGroup, "Сумма серт.", Union.SUM, orderSalePayGiftObligation, orderSalePayCoupon);
 
         orderSalePayNoObligation = addJProp(documentAggrPriceGroup, "Сумма к опл.", onlyPositive, addDUProp(orderSalePay, orderSalePayObligation), 1);
-        orderArticleSaleSumCoeff = addPGProp(documentPriceGroup, "orderArticleSaleSumCoeff", false, -1, "Сумма со скидкой", orderArticleSaleSumWithDiscount, orderSalePayNoObligation, 1);
+        orderArticleSaleSumCoeff = addPGProp(documentPriceGroup, "orderArticleSaleSumCoeff", false, -1, true, "Сумма со скидкой", orderArticleSaleSumWithDiscount, orderSalePayNoObligation, 1);
 
         LP clientSaleSum = addSGProp(orderSalePayNoObligation, orderContragent, 1);
         orderClientSaleSum.setDerivedChange(clientSaleSum, orderContragent, 1);

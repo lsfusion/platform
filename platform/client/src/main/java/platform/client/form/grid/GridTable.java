@@ -277,7 +277,10 @@ public abstract class GridTable extends ClientFormTable
 
             TableColumn column = getColumnModel().getColumn(i);
             if (newColumnCount != oldColumnCount) {
-                column.setPreferredWidth(cell.getPreferredWidth(this));
+                if (autoResizeMode == JTable.AUTO_RESIZE_OFF)
+                    column.setPreferredWidth(cell.getMinimumWidth(this));
+                else
+                    column.setPreferredWidth(cell.getPreferredWidth(this));
                 column.setMinWidth(cell.getMinimumWidth(this));
                 column.setMaxWidth(cell.getMaximumWidth(this));
             }
