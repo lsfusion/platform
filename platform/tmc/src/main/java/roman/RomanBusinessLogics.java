@@ -914,7 +914,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         numberDataListSku = addDProp(baseGroup, "numberDataListSku", "Номер", IntegerClass.instance, list, sku);
         numberArticleListSku = addJProp(baseGroup, "numberArticleListSku", "Номер (артикула)", numberListArticle, 1, articleSku, 2);
 
-        numberListSku = addSUProp("numberListSku", "Вкл", Union.OVERRIDE, numberArticleListSku, numberDataListSku);
+        numberListSku = addSUProp("numberListSku", "Номер", Union.OVERRIDE, numberArticleListSku, numberDataListSku);
 
         numberDocumentArticle = addSGProp(baseGroup, "inDocumentArticle", numberListArticle, documentList, 1, 2);
 
@@ -1699,31 +1699,31 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addPropertyDraw(quantityDocumentArticleCompositeColor, objInvoice, objArticle, objColorSupplier);
             addPropertyDraw(quantityDocumentArticleCompositeSize, objInvoice, objArticle, objSizeSupplier);
 
-//            GroupObjectEntity gobjSpec = new GroupObjectEntity(genID());
-//
-//            objSku = new ObjectEntity(genID(), sku, "SKU");
-//            gobjSpec.add(objSku);
-//
-//            ObjectEntity objSupplierBoxSpec = null;
-//            if (box) {
-//                objSupplierBoxSpec = new ObjectEntity(genID(), supplierBox, "Короб поставщика");
-//                gobjSpec.add(objSupplierBoxSpec);
-//            }
-//
-//            addGroup(gobjSpec);
-//
-//            addPropertyDraw(numberListSku, (box ? objSupplierBoxSpec : objInvoice), objSku);
-//            if (box)
-//                addPropertyDraw(sidSupplierBox, objSupplierBoxSpec);
-//            addPropertyDraw(new LP[] {barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
-//                                      nameBrandSupplierArticleSku, nameCountryOfOriginSku, netWeightSku,
-//                                      mainCompositionOriginSku, additionalCompositionOriginSku}, objSku);
-//            addPropertyDraw(quantityListSku, (box ? objSupplierBoxSpec : objInvoice), objSku);
-//            addPropertyDraw(priceDocumentSku, objInvoice, objSku);
-//            addPropertyDraw(sumDocumentSku, objInvoice, objSku);
-//
-//            setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
-//
+            GroupObjectEntity gobjSpec = new GroupObjectEntity(genID());
+
+            objSku = new ObjectEntity(genID(), sku, "SKU");
+            gobjSpec.add(objSku);
+
+            ObjectEntity objSupplierBoxSpec = null;
+            if (box) {
+                objSupplierBoxSpec = new ObjectEntity(genID(), supplierBox, "Короб поставщика");
+                gobjSpec.add(objSupplierBoxSpec);
+            }
+
+            addGroup(gobjSpec);
+
+            addPropertyDraw(numberListSku, (box ? objSupplierBoxSpec : objInvoice), objSku);
+            if (box)
+                addPropertyDraw(sidSupplierBox, objSupplierBoxSpec);
+            addPropertyDraw(new LP[] {barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
+                                      nameBrandSupplierArticleSku, nameCountryOfOriginSku, netWeightSku,
+                                      mainCompositionOriginSku, additionalCompositionOriginSku}, objSku);
+            addPropertyDraw(quantityListSku, (box ? objSupplierBoxSpec : objInvoice), objSku);
+            addPropertyDraw(priceDocumentSku, objInvoice, objSku);
+            addPropertyDraw(sumDocumentSku, objInvoice, objSku);
+
+            setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
+
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objOrder), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objInvoice), Compare.EQUALS, objSupplier));
             if (box)
@@ -1733,9 +1733,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierSizeSupplier, objSizeSupplier), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(articleCompositeItem, objItem), Compare.EQUALS, objArticle));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(numberListArticle, (box ? objSupplierBox : objInvoice), objArticle)));
-//            if (box)
-//                addFixedFilter(new CompareFilterEntity(addPropertyObject(boxInvoiceSupplierBox, objSupplierBoxSpec), Compare.EQUALS, objInvoice));
-//            addFixedFilter(new NotNullFilterEntity(addPropertyObject(numberListSku, (box ? objSupplierBoxSpec : objInvoice), objSku)));
+            if (box)
+                addFixedFilter(new CompareFilterEntity(addPropertyObject(boxInvoiceSupplierBox, objSupplierBoxSpec), Compare.EQUALS, objInvoice));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(numberListSku, (box ? objSupplierBoxSpec : objInvoice), objSku)));
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(new RegularFilterEntity(genID(),
@@ -1753,7 +1753,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
 
             design.defaultOrders.put(design.get(getPropertyDraw(numberListArticle)), true);
-//            design.defaultOrders.put(design.get(getPropertyDraw(numberListSku)), true);
+            design.defaultOrders.put(design.get(getPropertyDraw(numberListSku)), true);
 
             design.get(objOrder.groupTo).grid.constraints.fillVertical = 0.7;
             design.get(objInvoice.groupTo).grid.constraints.fillVertical = 0.7;
@@ -1776,7 +1776,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             ContainerView detContainer = design.createContainer();
             design.getMainContainer().addAfter(detContainer, design.getGroupObjectContainer(objInvoice.groupTo));
             detContainer.add(design.getGroupObjectContainer(objOrder.groupTo));
-//            detContainer.add(design.getGroupObjectContainer(objSku.groupTo));
+            detContainer.add(design.getGroupObjectContainer(objSku.groupTo));
             detContainer.add(specContainer);
 
             detContainer.tabbedPane = true;

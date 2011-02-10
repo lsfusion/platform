@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="expertVote" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isIgnorePagination="true">
-	<property name="ireport.zoom" value="1.0"/>
-	<property name="ireport.x" value="10"/>
+	<property name="ireport.zoom" value="0.9090909090909093"/>
+	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
-	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
+	<style name="GroupCellStyle0" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
 			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 		</box>
@@ -28,13 +28,13 @@
 	<group name="textGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{expert})+" "+String.valueOf($F{vote})]]></groupExpression>
 		<groupHeader>
-			<band height="146" splitType="Prevent">
+			<band height="162" splitType="Prevent">
 				<textField>
-					<reportElement x="31" y="99" width="712" height="36"/>
+					<reportElement x="31" y="110" width="712" height="51"/>
 					<textElement verticalAlignment="Top">
 						<font fontName="Arial" size="14"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Вашему вниманию предлагается проект "+$F{nameNativeProjectVote}:"For your attention is the project "+$F{nameForeignProjectVote}) + ($F{isForeignExpert}==null?". Во вложении находятся следующие материалы по проекту:":". You can find the following documents in the attachment:")]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Вашему вниманию предлагается проект "+$F{nameNativeProjectVote}:"For your attention is a "+$F{nameForeignProjectVote}) + ($F{isForeignExpert}==null?". Во вложении находятся следующие материалы по проекту:":". Please find the following documents attached:")]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="31" y="23" width="712" height="20"/>
@@ -44,7 +44,7 @@
 					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Уважаемый эксперт,":"Dear expert,")]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="31" y="53" width="712" height="36"/>
+					<reportElement x="31" y="54" width="712" height="45"/>
 					<textElement verticalAlignment="Top">
 						<font fontName="Arial" size="14"/>
 					</textElement>
@@ -55,7 +55,7 @@
 		<groupFooter>
 			<band height="332">
 				<textField hyperlinkType="Reference" hyperlinkTarget="Blank">
-					<reportElement x="31" y="46" width="712" height="31" forecolor="#3399FF"/>
+					<reportElement x="31" y="68" width="712" height="31" forecolor="#3399FF"/>
 					<textElement verticalAlignment="Top">
 						<font fontName="Arial" size="14"/>
 					</textElement>
@@ -63,28 +63,28 @@
 					<hyperlinkReferenceExpression><![CDATA["http://"+$F{webHost}+"/expert.html?voteId="+platform.base.BaseUtils.encode($F{vote}, $F{expert})+"&locale="+$F{localeExpert}]]></hyperlinkReferenceExpression>
 				</textField>
 				<textField>
-					<reportElement x="31" y="88" width="712" height="38"/>
+					<reportElement x="31" y="109" width="712" height="42"/>
 					<textElement verticalAlignment="Top">
 						<font fontName="Arial" size="14"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Вы можете оценить проект в течение 5 дней. Через 5 дней голосование по проекту будет прекращено.":"You are to assess the project within 5 days. At the end of this time link will be automatically terminated.")]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Вы можете оценить проект в течение 5 дней. Через 5 дней голосование по проекту будет прекращено.":"We kindly ask you to fill out the assessment form within 5 daysas after this time the link will be automatically terminated. ")]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="31" y="136" width="712" height="18"/>
+					<reportElement x="31" y="162" width="712" height="18"/>
 					<textElement verticalAlignment="Top">
 						<font fontName="Arial" size="14"/>
 					</textElement>
 					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"С уважением,":"Faithfully yours,")]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="31" y="15" width="712" height="31"/>
+					<reportElement x="31" y="14" width="712" height="43"/>
 					<textElement verticalAlignment="Top">
 						<font fontName="Arial" size="14"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Пожалуйста, заполните бюллетень оценки проекта по адресу : ":"Please, fill the assessment ballot of the project at ")]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Пожалуйста, заполните бюллетень оценки проекта по адресу : ":"Please, fill out the assessment ballot of the project at ")]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="31" y="154" width="712" height="45"/>
+					<reportElement x="31" y="191" width="712" height="45"/>
 					<textElement verticalAlignment="Top">
 						<font fontName="Arial" size="14"/>
 					</textElement>

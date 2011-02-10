@@ -91,6 +91,17 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
         if(compare!=Compare.EQUALS)
             return;
 
+        // проверка на то, что в фильтре есть в качестве ключа свойства нужны ObjectInstance
+        boolean inInterface = false;
+        for (PropertyObjectInterfaceInstance interfaceInstance : property.mapping.values()) {
+            if (interfaceInstance == object) {
+                inInterface = true;
+                break;
+            }
+        }
+        if (!inInterface)
+            return;
+
         Map<P, KeyExpr> mapKeys = property.property.getMapKeys();
         Map<PropertyObjectInterfaceInstance, KeyExpr> mapObjects = BaseUtils.crossJoin(property.mapping, mapKeys);
         Where changeWhere = Where.TRUE;

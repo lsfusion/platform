@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="vote" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.1000000000000025"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="40"/>
+	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -39,12 +39,12 @@
 "в соответствии с пунктом 12 Положения об Экспертных коллегиях Фонда «Сколково»")]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement x="35" y="87" width="151" height="26"/>
+					<reportElement x="35" y="87" width="153" height="26"/>
 					<textElement/>
-					<text><![CDATA[«      »______________ 2010 г]]></text>
+					<text><![CDATA[«      »______________ 2011 г]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="188" y="10" width="192" height="64"/>
+					<reportElement x="188" y="10" width="216" height="64"/>
 					<textElement textAlignment="Justified"/>
 					<text><![CDATA[
 Некоммерческая организация
@@ -54,19 +54,12 @@
 ]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="371" y="92" width="82" height="21"/>
-					<textElement/>
-					<text><![CDATA[№________
-
-]]></text>
-				</staticText>
-				<staticText>
 					<reportElement x="404" y="113" width="45" height="18"/>
 					<textElement/>
 					<text><![CDATA[Москва]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="256" y="77" width="62" height="18"/>
+					<reportElement x="256" y="87" width="62" height="18"/>
 					<textElement/>
 					<text><![CDATA[РЕШЕНИЕ]]></text>
 				</staticText>
@@ -80,21 +73,14 @@
 ]]></text>
 				</staticText>
 				<textField>
-					<reportElement x="151" y="132" width="401" height="20"/>
+					<reportElement x="188" y="131" width="216" height="20"/>
 					<textElement/>
-					<textFieldExpression class="java.lang.String"><![CDATA["О созыве заседания "+($F{prevDateVote}==null?"":"новой")+" Экспертной коллегии"]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["О созыве заседания Экспертной коллегии"]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
 		<groupFooter>
-			<band height="137">
-				<staticText>
-					<reportElement x="34" y="94" width="524" height="36"/>
-					<textElement/>
-					<text><![CDATA[Руководитель Аппарата Президента
-и Советов Фонда
-]]></text>
-				</staticText>
+			<band height="96">
 				<staticText>
 					<reportElement x="35" y="17" width="523" height="69"/>
 					<textElement/>
