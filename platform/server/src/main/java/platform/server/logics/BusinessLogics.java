@@ -621,7 +621,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP emailPassword;
     protected LP fromAddress;
     protected LP defaultCountry;
-    protected LP defaultDictionary;
 
     protected LP countrySId;
     protected LP generateDatesCountry;
@@ -1122,7 +1121,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         emailPassword = addDProp("emailPassword", "Пароль", StringClass.get(50));
         fromAddress = addDProp("fromAddress", "Адрес отправителя", StringClass.get(50));
         defaultCountry = addDProp("defaultCountry", "Страна по умолчанию", country);
-        defaultDictionary = addDProp("defaultDictionary", "Словарь", dictionary);
 
         entryDictionary = addDProp("entryDictionary", "Словарь", dictionary, dictionaryEntry);
         termDictionary = addDProp(baseGroup, "termDictionary", "Термин", StringClass.get(50), dictionaryEntry);
@@ -1219,7 +1217,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         private AdminFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Глобальные параметры");
 
-            addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, webHost, defaultCountry, defaultDictionary, barcodePrefix, restartServerAction, cancelRestartServerAction});
+            addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, webHost, defaultCountry, barcodePrefix, restartServerAction, cancelRestartServerAction});
         }
     }
 
