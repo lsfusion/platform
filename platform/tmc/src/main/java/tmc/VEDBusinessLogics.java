@@ -132,6 +132,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     CustomClass subject;
 
     CustomClass shop, warehouse;
+    CustomClass legalEntity;
 
     CustomClass orderShopInc, orderShopOut;
     CustomClass orderWarehouseInc, orderWarehouseOut;
@@ -164,6 +165,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         warehouse = addConcreteClass("warehouse", "Распред. центр", store);
         article = addConcreteClass("article", "Товар", baseClass.named, barcodeObject);
         articleGroup = addConcreteClass("articleGroup", "Группа товаров", baseClass.named);
+        legalEntity = addConcreteClass("legalEntity", "Юр.лицо", baseClass.named);
 
         currency = addConcreteClass("currency", "Валюта", baseClass.named);
         unitOfMeasure = addConcreteClass("unitOfMeasure", "Единица измерения", baseClass.named);
@@ -326,6 +328,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP sumAddvOrder;
     LP sumPriceChangeOrder;
     LP addvOrder;
+    LP legalEntityShop;
+    LP legalEntityOrderShopInc;
+    LP nameLegalEntityOrderShopInc;
 
 
     protected void initProperties() {
@@ -375,6 +380,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         cashRegComPort = addDProp(baseGroup, "cashRegComPort", "COM-порт фискального регистратора", IntegerClass.instance, computer);
         addJProp(baseGroup, "Магазин рабочего места", name, computerShop, 1);
 
+        // для магазина
+        legalEntityShop = addDProp("legalEntityShop", "Юр.лицо", legalEntity, shop);
+        addJProp(baseGroup, "Юр.лицо", name, legalEntityShop, 1);
+        legalEntityOrderShopInc = addJProp("legalEntityOrderShopInc", "Юр.лицо (прих.)", legalEntityShop, incStore, 1);
+        nameLegalEntityOrderShopInc = addJProp("nameLegalEntityOrderShopInc", "Юр.лицо (прих.)", name, legalEntityOrderShopInc, 1);
         // новые свойства поставщика
         LP supplierDogovor = addDProp(baseGroup, "supplierDogovor", "Номер договора", StringClass.get(20), supplier);
         LP supplierDogovorDate = addDProp(baseGroup, "supplierDogovorDate", "Дата начала договора", DateClass.instance, supplier);
@@ -2558,7 +2568,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected IncomePriceFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр цен", true);
 
-            ObjectEntity objDoc = addSingleGroupObject(commitWholeShopInc, "Документ", date, nameContragent, invoiceNumber, invoiceSeries, sumNDSDeliveryOrder, sumDeliveryOrder, sumWithNDSDeliveryOrder, sumNDSRetailOrder, sumAddvOrder, sumRetailOrder);
+            ObjectEntity objDoc = addSingleGroupObject(commitWholeShopInc, "Документ", date, nameContragent, nameLegalEntityOrderShopInc, invoiceNumber, invoiceSeries, sumNDSDeliveryOrder, sumDeliveryOrder, sumWithNDSDeliveryOrder, sumNDSRetailOrder, sumAddvOrder, sumRetailOrder);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
             ObjectEntity objArt = addSingleGroupObject(article, name, objectValue, barcode, nameUnitOfMeasureArticle);
 
