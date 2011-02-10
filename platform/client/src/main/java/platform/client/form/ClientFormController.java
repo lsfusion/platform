@@ -496,9 +496,8 @@ public class ClientFormController {
     }
 
     public void changeGroupObject(ClientGroupObject group, ClientGroupObjectValue objectValue) throws IOException {
-        if (objectValue == null) {
+        if (objectValue == null || remoteForm == null)// remoteForm может равняться null, если к моменту вызова форму уже закрыли
             return;
-        }
 
         if (group.parent != null || !objectValue.equals(controllers.get(group).getCurrentObject())) {
             // если ClientGroupObject в дереве, то вызывать не надо изменение объекта
