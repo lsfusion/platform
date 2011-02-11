@@ -200,8 +200,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP nameCustomCategory9CustomCategory10;
     private LP nameCustomCategory6CustomCategoryOrigin;
     public LP relationCustomCategory10CustomCategoryOrigin;
-    private LP relationCustomCategory10;
-    private LP relationCustomCategoryOrigin;
     private LP customCategory10DataArticle;
     private LP customCategoryOriginDataArticle;
     private LP sidCustomCategory10Article;
@@ -397,8 +395,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP originalNameArticleSkuShipmentDetail;
     private LP categoryArticleSkuShipmentDetail;
     private LP nameOriginCategoryArticleSkuShipmentDetail;
-    private LP customCategory10OriginArticleSkuShipmentDetail;
-    private LP sidCustomCategory10OriginArticleSkuShipmentDetail;
     private LP customCategoryOriginArticleSkuShipmentDetail;
     private LP sidCustomCategoryOriginArticleSkuShipmentDetail;
     private LP netWeightOriginArticleSkuShipmentDetail;
@@ -451,6 +447,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP quantityImporterFreightSku;
     private LP netWeightImporterStockSku;
     private LP netWeightImporterStock;
+    private LP grossWeightImporterStockSku;
+    private LP grossWeightImporterStock;
     private LP priceInInvoiceStockSku;
     private LP priceInImporterFreightSku;
     private LP netWeightImporterFreightSku;
@@ -464,7 +462,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP quantityImporterFreightBrandSupplier;
     private LP markupPercentImporterFreightBrandSupplier;
     private LP markupInImporterFreightSku;
-
     private LP priceExpenseImporterFreightSku;
     private LP markupPercentImporterFreightSku;
     private LP markupImporterFreightSku;
@@ -480,7 +477,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP sumMarkupInImporterFreightSku;
     private LP sumInOutImporterFreightSku;
     private LP sumImporterStockSku;
-    private LP sumMarkupInFreight;    
+    private LP sumMarkupInFreight;
+    private LP sumImporterFreight;
     private LP sumOutImporterFreight;
     private LP sumInOutImporterFreight;
     private LP sumInOutFreight;
@@ -491,7 +489,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP quantityFreightArticle;
     private LP quantityFreightSku;
     private LP quantityImporterFreightCategoryCountry;
-    private LP quantityImporterFreightArticleCompositionCountry;
     private LP quantityImporterFreightArticleCompositionCountryCategory;
     private LP netWeightImporterFreightArticleCompositionCountryCategory;
     private LP grossWeightImporterFreightArticleCompositionCountryCategory;
@@ -507,10 +504,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP dictionaryComposition;
     private LP nameDictionaryComposition;
 
-    private LP translationMainCompositionArticle;
-    private LP translationAdditionalCompositionArticle;
-    private LP translationMainCompositionSku;
-    private LP translationAdditionalCompositionSku;
+    private LP translationMainCompositionFreightSku;
+    private LP translationAdditionalCompositionFreightSku;
     private LP sidShipmentShipmentDetail;
     private LP colorSIDSupplier;
     private LP sidSizeSupplier;
@@ -520,6 +515,15 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP barcodeFreightBox;
     private LP grossWeightFreightSku;
     private LP netWeightFreightSku;
+    private LP customCategory10FreightSku;
+    private LP sidCustomCategory10FreightSku;
+    private LP mainCompositionOriginFreightSku;
+    private LP mainCompositionFreightSku;
+    private LP additionalCompositionOriginFreightSku;
+    private LP additionalCompositionFreightSku;
+    private LP countryOfOriginFreightSku;
+    private LP sidCountryOfOriginFreightSku;
+    private LP nameCountryOfOriginFreightSku;
     
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -788,7 +792,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         customCategory10CustomCategoryOriginArticleSku = addJProp(idGroup, "customCategory10CustomCategoryOriginArticleSku", "ТН ВЭД (ИД)", customCategory10CustomCategoryOriginArticle, articleSku, 1);
         customCategory10Sku = addSUProp(idGroup, "customCategory10Sku", "ТН ВЭД (ИД)", Union.OVERRIDE, customCategory10CustomCategoryOriginArticleSku, customCategory10DataSku);
         sidCustomCategory10Sku = addJProp(baseGroup, "sidCustomCategory10Sku", "ТН ВЭД", sidCustomCategory10, customCategory10Sku, 1);
-        
+
         /*addConstraint(addJProp("Выбранный должен быть среди связанных кодов", andNot1, addCProp(LogicalClass.instance, true, article), 1,
                    addJProp(relationCustomCategory10CustomCategoryOrigin, customCategory10Article, 1, customCategoryOriginArticle, 1), 1), true);*/
 
@@ -845,11 +849,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         // Supplier
         supplierArticle = addDProp(idGroup, "supplierArticle", "Поставщик (ИД)", supplier, article);
         nameSupplierArticle = addJProp(baseGroup, "nameSupplierArticle", "Поставщик", name, supplierArticle, 1);
-
-        //translationMainCompositionArticle = addJProp(intraAttributeGroup, true, "translationMainCompositionArticle", "Перевод состава", addTAProp(mainCompositionOriginArticle, mainCompositionArticle), defaultDictionary, 1);
-        //translationAdditionalCompositionArticle = addJProp(intraAttributeGroup, true, "translationAdditionalCompositionArticle", "Перевод доп. состава", addTAProp(additionalCompositionOriginArticle, additionalCompositionArticle), defaultDictionary, 1);
-        translationMainCompositionSku = addJProp(actionGroup, true, "translationMainCompositionSku", "Перевод состава", addTAProp(mainCompositionOriginSku, mainCompositionSku), dictionaryComposition, 1);
-        translationAdditionalCompositionSku = addJProp(actionGroup, true, "translationAdditionalCompositionSku", "Перевод доп. состава", addTAProp(additionalCompositionOriginSku, additionalCompositionSku), dictionaryComposition, 1);
 
         brandSupplierDataArticle = addDProp(idGroup, "brandSupplierDataArticle", "Бренд (ИД)", brandSupplier, article);
         brandSupplierSupplierArticle = addJProp(idGroup, "brandSupplierSupplierArticle", "Бренд (ИД)", brandSupplierSupplier, supplierArticle, 1);
@@ -1277,26 +1276,48 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 importerInvoice, 1, 2, 3);
 
         quantityImporterFreightSku = addSGProp(baseGroup, "quantityImporterFreightSku", true, "Кол-во", quantityImporterStockSku, 1, freightFreightBox, 2, 3);
-        quantityImporterFreightArticleCompositionCountryCategory = addSGProp(baseGroup, "quantityImporterFreightArticleCompositionCountryCategory", "Кол-во",
-                quantityImporterFreightSku, 1, 2, articleSku, 3, mainCompositionSku, 3, countryOfOriginSku, 3, customCategory10Sku, 3);
-        quantityImporterFreightCategoryCountry = addSGProp(baseGroup, "quantityImporterFreightCategoryCountry", true, "Кол-во", quantityImporterFreightSku, 1, 2, customCategoryOriginArticleSku, 3, countryOfOriginSku, 3);
+        //quantityImporterFreightCategoryCountry = addSGProp(baseGroup, "quantityImporterFreightCategoryCountry", true, "Кол-во", quantityImporterFreightSku, 1, 2, customCategoryOriginArticleSku, 3, countryOfOriginSku, 3);
 
         quantityFreightArticle = addSGProp(baseGroup, "quantityFreightArticle", "Кол-во", quantityImporterFreightSku, 2, articleSku, 3);
         quantityFreightSku = addSGProp(baseGroup, "quantityFreightSku", true, "Кол-во", quantityImporterFreightSku, 2, 3);
 
+        customCategory10FreightSku = addDProp(idGroup, "customCategory10FreightSku", "ТН ВЭД (ИД)", customCategory10, freight, sku);
+        customCategory10FreightSku.setDerivedForcedChange(addJProp(and1, customCategory10Sku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+        sidCustomCategory10FreightSku = addJProp(baseGroup, "sidCustomCategory10FreightSku", "ТН ВЭД", sidCustomCategory10, customCategory10FreightSku, 1, 2);
+
+        mainCompositionOriginFreightSku = addDProp(baseGroup, "mainCompositionOriginFreightSku", "Состав", StringClass.get(100), freight, sku);
+        mainCompositionOriginFreightSku.setDerivedForcedChange(addJProp(and1, mainCompositionOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+
+        additionalCompositionOriginFreightSku = addDProp(baseGroup, "additionalCompositionOriginFreightSku", "Доп. состав", StringClass.get(100), freight, sku);
+        additionalCompositionOriginFreightSku.setDerivedForcedChange(addJProp(and1, additionalCompositionOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+
+        mainCompositionFreightSku = addDProp(baseGroup, "mainCompositionFreightSku", "Состав (перевод)", StringClass.get(100), freight, sku);
+        additionalCompositionFreightSku = addDProp(baseGroup, "additionalCompositionFreightSku", "Доп. состав (перевод)", StringClass.get(100), freight, sku);
+
+        translationMainCompositionFreightSku = addJProp(actionGroup, true, "translationMainCompositionFreightSku", "Перевод состава", addTAProp(mainCompositionOriginFreightSku, mainCompositionFreightSku), dictionaryComposition, 1, 2);
+        translationAdditionalCompositionFreightSku = addJProp(actionGroup, true, "translationAdditionalCompositionFreightSku", "Перевод доп. состава", addTAProp(additionalCompositionOriginFreightSku, additionalCompositionFreightSku), dictionaryComposition, 1, 2);
+
+        countryOfOriginFreightSku = addDProp(idGroup, "countryOfOriginFreightSku", "Страна (ИД)", country, freight, sku);
+        countryOfOriginFreightSku.setDerivedForcedChange(addJProp(and1, countryOfOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+        sidCountryOfOriginFreightSku = addJProp(baseGroup, "sidCountryOfOriginFreightSku", "Код страны", sidCountry, countryOfOriginFreightSku, 1, 2);
+        nameCountryOfOriginFreightSku = addJProp(baseGroup, "nameCountryOfOriginFreightSku", "Страна", name, countryOfOriginFreightSku, 1, 2);
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        quantityImporterFreightArticleCompositionCountryCategory = addSGProp(baseGroup, "quantityImporterFreightArticleCompositionCountryCategory", "Кол-во",
+                quantityImporterFreightSku, 1, 2, articleSku, 3, mainCompositionFreightSku, 2, 3, countryOfOriginFreightSku, 2, 3, customCategory10FreightSku, 2, 3);
+
         netWeightFreightSku = addDProp(baseGroup, "netWeightFreightSku", "Вес нетто", DoubleClass.instance, freight, sku);
         netWeightFreightSku.setDerivedForcedChange(addJProp(and1, netWeightSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
-        netWeightImporterStockSku = addJProp(baseGroup, "netWeightImporterStockSku", "Вес нетто", multiplyDouble2, quantityImporterStockSku, 1, 2, 3, netWeightSku, 3);
+        netWeightImporterStockSku = addJProp(baseGroup, "netWeightImporterStockSku", "Вес нетто", multiplyDouble2, quantityImporterStockSku, 1, 2, 3, addJProp(netWeightFreightSku, freightFreightBox, 2, 3), 1, 2, 3);
         netWeightImporterStock = addSGProp(baseGroup, "netWeightImporterStock", "Вес нетто", netWeightImporterStockSku, 1, 2);
 
         netWeightImporterFreightSku = addJProp(baseGroup, "netWeightImporterFreightSku", "Вес нетто", multiplyDouble2, quantityImporterFreightSku, 1, 2, 3, netWeightFreightSku, 2, 3);
         netWeightImporterFreightArticleCompositionCountryCategory = addSGProp(baseGroup, "netWeightImporterFreightArticleCompositionCountryCategory", "Вес нетто",
-                netWeightImporterFreightSku, 1, 2, articleSku, 3, mainCompositionSku, 3, countryOfOriginSku, 3, customCategory10Sku, 3);
+                netWeightImporterFreightSku, 1, 2, articleSku, 3, mainCompositionFreightSku, 2, 3, countryOfOriginFreightSku, 2, 3, customCategory10FreightSku, 2, 3);
 
         netWeightImporterFreight = addSGProp(baseGroup, "netWeightImporterFreight", "Вес нетто", netWeightImporterFreightSku, 1, 2);
         //netWeightImporterFreightBox = addSGProp(baseGroup, "netWeightImporterFreight", "Вес нетто", netWeightImporterFreightSku, 1, 2);
-        netWeightImporterFreightCategoryCountry = addSGProp(baseGroup, "netWeightImporterFreightCategoryCountry", "Вес нетто", netWeightImporterFreightSku, 1, 2, customCategoryOriginArticleSku, 3, countryOfOriginSku, 3);
+        //netWeightImporterFreightCategoryCountry = addSGProp(baseGroup, "netWeightImporterFreightCategoryCountry", "Вес нетто", netWeightImporterFreightSku, 1, 2, customCategoryOriginArticleSku, 3, countryOfOriginSku, 3);
 
         priceInImporterFreightSku = addMGProp(baseGroup, "priceInImporterFreightSku", true, "Цена входная", priceInInvoiceStockSku, importerInvoice, 1, freightFreightBox, 2, 3);
         sumInImporterFreightSku = addJProp(baseGroup, "sumInImporterFreightSku", "Сумма входная", multiplyDouble2, quantityImporterFreightSku, 1, 2, 3, priceInImporterFreightSku, 1, 2, 3);
@@ -1321,7 +1342,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         priceInOutImporterFreightSku = addJProp(baseGroup, "priceInOutImporterFreightSku", "Цена выходная", sumDouble2, priceInImporterFreightSku, 1, 2, 3, markupInImporterFreightSku, 1, 2, 3);
 
         priceImporterFreightArticleCompositionCountryCategory = addMGProp(baseGroup, "priceImporterFreightArticleCompositionCountryCategory", true, "Цена",
-                priceInOutImporterFreightSku, 1, 2, articleSku, 3, mainCompositionSku, 3, countryOfOriginSku, 3, customCategory10Sku, 3);
+                priceInOutImporterFreightSku, 1, 2, articleSku, 3, mainCompositionFreightSku, 2, 3, countryOfOriginFreightSku, 2, 3, customCategory10FreightSku, 2, 3);
 
         //priceInOutImporterStockSku = addJProp(baseGroup, "priceInOutImporterStockSku", "Цена", priceInOutImporterFreightSku, 1, freightFreightBox, 2, 3);
         sumImporterStockSku = addJProp(baseGroup, "sumImporterStockSku", "Сумма", multiplyDouble2, quantityImporterStockSku, 1, 2, 3, addJProp(priceInOutImporterFreightSku, 1, freightFreightBox, 2, 3), 1, 2, 3);
@@ -1329,6 +1350,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         sumImporterFreightArticleCompositionCountryCategory = addJProp(baseGroup, "sumImporterFreightArticleCompositionCountryCategory", "Сумма", multiplyDouble2,
                 quantityImporterFreightArticleCompositionCountryCategory, 1, 2, 3, 4, 5, 6,
                 priceImporterFreightArticleCompositionCountryCategory, 1, 2, 3, 4, 5, 6);
+
+        sumImporterFreight = addSGProp(baseGroup, "sumImporterFreight", "Сумма выходная", sumImporterFreightArticleCompositionCountryCategory, 1, 2);
 
         sumMarkupInImporterFreightSku = addJProp(baseGroup, "sumMarkupInImporterFreightSku", "Сумма надбавки", multiplyDouble2, quantityImporterFreightSku, 1, 2, 3, markupInImporterFreightSku, 1, 2, 3);
         sumInOutImporterFreightSku = addJProp(baseGroup, "sumInOutImporterFreightSku", "Сумма выходная", multiplyDouble2, quantityImporterFreightSku, 1, 2, 3, priceInOutImporterFreightSku, 1, 2, 3);
@@ -1350,7 +1373,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         sumMarkupImporterFreight = addSGProp(baseGroup, "sumMarkupImporterFreight", "Сумма надбавки", sumMarkupImporterFreightSku, 1, 2);
 
         sumOutImporterFreight = addSGProp(baseGroup, "sumOutImporterFreight", "Сумма выходная", sumOutImporterFreightSku, 1, 2);
-        sumOutImporterFreightCategoryCountry = addSGProp(baseGroup, "sumOutImporterFreightCategoryCountry", "Сумма выходная", sumOutImporterFreightSku, 1, 2, customCategoryOriginArticleSku, 3, countryOfOriginSku, 3);
+        //sumOutImporterFreightCategoryCountry = addSGProp(baseGroup, "sumOutImporterFreightCategoryCountry", "Сумма выходная", sumOutImporterFreightSku, 1, 2, customCategoryOriginArticleSku, 3, countryOfOriginSku, 3);
 
         sumInFreight = addSGProp(baseGroup, "sumInFreight", "Сумма входная", sumInImporterFreight, 2);
         sumMarkupFreight = addSGProp(baseGroup, "sumMarkupFreight", "Сумма надбавки", sumMarkupImporterFreight, 2);
@@ -1379,9 +1402,12 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         grossWeightImporterFreightSku = addJProp(baseGroup, "grossWeightImporterFreightSku", "Вес брутто", multiplyDouble2, quantityImporterFreightSku, 1, 2, 3, grossWeightFreightSku, 2, 3);
         grossWeightImporterFreight = addSGProp(baseGroup, "grossWeightImporterFreight", "Вес брутто", grossWeightImporterFreightSku, 1, 2);
+        grossWeightImporterStockSku = addJProp(baseGroup, "grossWeightImporterStockSku", "Вес брутто", multiplyDouble2, quantityImporterStockSku, 1, 2, 3, addJProp(grossWeightFreightSku, freightFreightBox, 2, 3), 1, 2, 3);
+        grossWeightImporterStock = addSGProp(baseGroup, "grossWeightImporterStock", "Вес брутто", grossWeightImporterStockSku, 1, 2);
+
         grossWeightImporterFreightArticleCompositionCountryCategory = addSGProp(baseGroup, "grossWeightImporterFreightArticleCompositionCountryCategory", "Вес брутто",
-                grossWeightImporterFreightSku, 1, 2, articleSku, 3, mainCompositionSku, 3, countryOfOriginSku, 3, customCategory10Sku, 3);
-        grossWeightImporterFreightCategoryCountry = addSGProp(baseGroup, "grossWeightImporterFreightCategoryCountry", "Вес брутто", grossWeightImporterFreightSku, 1, 2, customCategoryOriginArticleSku, 3, countryOfOriginSku, 3);
+                grossWeightImporterFreightSku, 1, 2, articleSku, 3, mainCompositionFreightSku, 2, 3, countryOfOriginFreightSku, 2, 3, customCategory10FreightSku, 2, 3);
+        //grossWeightImporterFreightCategoryCountry = addSGProp(baseGroup, "grossWeightImporterFreightCategoryCountry", "Вес брутто", grossWeightImporterFreightSku, 1, 2, customCategoryOriginArticleSku, 3, countryOfOriginSku, 3);
 
         currentFreightBoxRoute = addDProp("currentFreightBoxRoute", "Тек. короб (ИД)", freightBox, route);
         barcodeCurrentFreightBoxRoute = addJProp("barcodeCurrentFreightBoxRoute", "Тек. короб (штрих-код)", barcode, currentFreightBoxRoute, 1);
@@ -2350,11 +2376,18 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addPropertyDraw(quantityFreightArticle, objFreight, objArticle);
 
             objSku = addSingleGroupObject(sku, "SKU", selection, barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
-                    nameBrandSupplierArticleSku, nameCountryOfOriginSku, netWeightSku, mainCompositionOriginSku, translationMainCompositionSku, mainCompositionSku,
-                    additionalCompositionOriginSku, translationAdditionalCompositionSku, additionalCompositionSku, sidCustomCategoryOriginArticleSku, sidCustomCategory10Sku);
+                    nameBrandSupplierArticleSku, nameCountryOfOriginSku, netWeightSku, sidCustomCategoryOriginArticleSku, sidCustomCategory10Sku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
 
+            addPropertyDraw(nameCountryOfOriginFreightSku, objFreight, objSku);
+            addPropertyDraw(mainCompositionOriginFreightSku, objFreight, objSku);
+            addPropertyDraw(translationMainCompositionFreightSku, objFreight, objSku);
+            addPropertyDraw(mainCompositionFreightSku, objFreight, objSku);
+            addPropertyDraw(additionalCompositionOriginFreightSku, objFreight, objSku);
+            addPropertyDraw(translationAdditionalCompositionFreightSku, objFreight, objSku);
+            addPropertyDraw(additionalCompositionFreightSku, objFreight, objSku);            
+            addPropertyDraw(sidCustomCategory10FreightSku, objFreight, objSku);
             addPropertyDraw(quantityFreightSku, objFreight, objSku);
             addPropertyDraw(netWeightFreightSku, objFreight, objSku);
             addPropertyDraw(grossWeightFreightSku, objFreight, objSku);
@@ -2364,7 +2397,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(new RegularFilterEntity(genID(),
-                                  new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(sidCustomCategory10Sku, objSku))),
+                                  new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(sidCustomCategory10FreightSku, objFreight, objSku))),
                                   "Только без ТН ВЭД",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
             addRegularFilterGroup(filterGroup);
@@ -2414,7 +2447,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             addPropertyDraw(objFreight, date, objectClassName, nameExporterFreight, addressExporterFreight, nameCurrencyFreight);
             addPropertyDraw(objImporter, name, addressSubject, contractImporter);
-            addPropertyDraw(objImporter, objFreight, netWeightImporterFreight, grossWeightImporterFreight, sumInOutImporterFreight);
+            addPropertyDraw(objImporter, objFreight, netWeightImporterFreight, grossWeightImporterFreight, sumImporterFreight);
 
             gobjFreightImporter.initClassView = ClassViewType.PANEL;
 
@@ -2476,12 +2509,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addPropertyDraw(netWeightImporterStock, objImporter, objBox);
 
             objSku = addSingleGroupObject(5, "sku", sku, "SKU", barcode, sidArticleSku, nameBrandSupplierArticleSku, nameOriginCategoryArticleSku,
-                    mainCompositionOriginSku, additionalCompositionOriginSku, sidCustomCategoryOriginArticleSku, sidCustomCategory10Sku);
+                    mainCompositionOriginSku, additionalCompositionOriginSku, sidCustomCategoryOriginArticleSku);
 
-            addPropertyDraw(nameCountryOfOriginSku, objSku);
+            addPropertyDraw(mainCompositionFreightSku, objFreight, objSku);
+            addPropertyDraw(sidCustomCategory10FreightSku, objFreight, objSku);
+            addPropertyDraw(nameCountryOfOriginFreightSku, objFreight, objSku);
             addPropertyDraw(quantityImporterStockSku, objImporter, objBox, objSku);
             addPropertyDraw(netWeightImporterStockSku, objImporter, objBox, objSku);
-            addPropertyDraw(grossWeightImporterFreightSku, objImporter, objFreight, objSku);
+            addPropertyDraw(grossWeightImporterStockSku, objImporter, objBox, objSku);
             addPropertyDraw(sumImporterStockSku, objImporter, objBox, objSku);             
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreight, objImporter, objFreight)));

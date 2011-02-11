@@ -17,18 +17,14 @@
 	<field name="freight" class="java.lang.Integer"/>
 	<field name="importer" class="java.lang.Integer"/>
 	<field name="date" class="java.util.Date"/>
-	<field name="objectClassName" class="java.lang.String"/>
 	<field name="nameExporterFreight" class="java.lang.String"/>
 	<field name="addressExporterFreight" class="java.lang.String"/>
 	<field name="nameCurrencyFreight" class="java.lang.String"/>
-	<field name="commonName" class="java.lang.String"/>
 	<field name="addressSubject" class="java.lang.String"/>
 	<field name="contractImporter" class="java.lang.String"/>
 	<field name="netWeightImporterFreight" class="java.lang.Double"/>
 	<field name="grossWeightImporterFreight" class="java.lang.Double"/>
-	<field name="sumInOutImporterFreight" class="java.lang.Double"/>
 	<field name="article" class="java.lang.Integer"/>
-	<field name="composition" class="java.lang.String"/>
 	<field name="country" class="java.lang.Integer"/>
 	<field name="category" class="java.lang.Integer"/>
 	<field name="sidArticle" class="java.lang.String"/>
@@ -41,6 +37,8 @@
 	<field name="grossWeightImporterFreightArticleCompositionCountryCategory" class="java.lang.Double"/>
 	<field name="priceImporterFreightArticleCompositionCountryCategory" class="java.lang.Double"/>
 	<field name="sumImporterFreightArticleCompositionCountryCategory" class="java.lang.Double"/>
+	<field name="sumImporterFreight" class="java.lang.Double"/>
+	<field name="commonName" class="java.lang.String"/>
 	<pageHeader>
 		<band height="100">
 			<textField isStretchWithOverflow="true" pattern="dd.MM.yy" isBlankWhenNull="true">
@@ -62,11 +60,6 @@
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="683" y="46" width="119" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameCurrencyFreight}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="28" width="170" height="18"/>
-				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{commonName}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="46" width="170" height="18"/>
@@ -152,6 +145,11 @@
 				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="739" y="82" width="63" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["BETRAG"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" x="0" y="28" width="170" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{commonName}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
@@ -239,7 +237,7 @@
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="739" y="16" width="63" height="18"/>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumInOutImporterFreight}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumImporterFreight}]]></textFieldExpression>
 			</textField>
 		</band>
 	</lastPageFooter>
