@@ -406,12 +406,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         customerCheckRetailAddress = addDProp(baseGroup, "checkRetailCustomerAddress", "Адрес", StringClass.get(40), customerCheckRetail);
         clientInitialSum = addDProp(baseGroup, "clientInitialSum", "Начальная сумма", DoubleClass.instance, customerCheckRetail);
 
-        orderContragent = addCUProp("Контрагент", // generics
+        orderContragent = addCUProp("orderContragent", "Контрагент", // generics
                 orderSupplier,
                 addDProp("wholeCustomer", "Оптовый покупатель", customerWhole, orderWhole),
                 addDProp("invoiceRetailCustomer", "Розничный покупатель", customerInvoiceRetail, orderInvoiceRetail),
                 addDProp("checkRetailCustomer", "Розничный покупатель", customerCheckRetail, orderSaleCheckRetail));
-        nameContragent = addJProp(baseGroup, "Контрагент", name, orderContragent, 1);
+        nameContragent = addJProp(baseGroup, "nameContragent", "Контрагент", name, orderContragent, 1);
         phoneContragent = addJProp(baseGroup, "Телефон", customerCheckRetailPhone, orderContragent, 1);
         bornContragent = addJProp(baseGroup, "Дата рождения", customerCheckRetailBorn, orderContragent, 1);
         addressContragent = addJProp(baseGroup, "Адрес", customerCheckRetailAddress, orderContragent, 1);
@@ -506,7 +506,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP saleCertGiftObligation = addDProp("saleCertGiftObligation", "Выдать", LogicalClass.instance, saleCert, giftObligation);
 
-        articleQuantity = addCUProp("Кол-во", outerCommitedQuantity, articleInnerQuantity);
+        articleQuantity = addCUProp("articleQuantity", "Кол-во", outerCommitedQuantity, articleInnerQuantity);
         articleOrderQuantity = addCUProp("Заяв. кол-во", outerOrderQuantity, articleInnerQuantity);
         LP articleDocQuantity = addCUProp("Кол-во док.", addSUProp(Union.OVERRIDE, outerCommitedQuantity, outerOrderQuantity), articleInnerQuantity);
         LP absQuantity = addSGProp("Всего тов.", addCUProp(addJProp(abs, articleDocQuantity, 1, 2), addJProp(and1, addCProp(DoubleClass.instance, 1), saleCertGiftObligation, 1, 2)), 1);
@@ -534,7 +534,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addJProp(artExtraGroup, "Бренд товара", name, articleBrend, 1);
 
         articleCountry = addDProp("articleCountry", "Страна товара", country, article);
-        addJProp(artExtraGroup, "Страна товара", name, articleCountry, 1);
+        addJProp(baseGroup, "Страна товара", name, articleCountry, 1);
 
         LP articleLine = addDProp("articleLine", "Линия товара", line, article);
         addJProp(artExtraGroup, "Линия товара", name, articleLine, 1);
