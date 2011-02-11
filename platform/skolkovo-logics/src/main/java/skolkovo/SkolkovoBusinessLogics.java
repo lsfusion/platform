@@ -239,6 +239,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     LP isForeignExpert;
     LP localeExpert;
+    LP disableExpert;
 
     protected void initProperties() {
 
@@ -412,6 +413,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         generateLoginPasswordExpert.setDerivedForcedChange(addCProp(ActionClass.instance, true), is(expert), 1);
 
         expertLogin = addCGProp(baseGroup, "expertLogin", "Эксперт (ИД)", object(expert), userLogin, userLogin, 1);
+        disableExpert = addDProp(baseGroup, "disableExpert", "Не акт.", LogicalClass.instance, expert);
 
         addCUProp("userRole", true, "Роль пользователя", addCProp(StringClass.get(30), "expert", expert));
 
@@ -671,7 +673,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ExpertFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр экспертов");
 
-            objExpert = addSingleGroupObject(expert, selection, userFirstName, userLastName, userLogin, userPassword, emailParticipant, nameNativeClusterExpert, nameLanguageExpert, expertResultGroup, generateLoginPasswordExpert, emailAuthExpert);
+            objExpert = addSingleGroupObject(expert, selection, userFirstName, userLastName, userLogin, userPassword, emailParticipant, disableExpert, nameNativeClusterExpert, nameLanguageExpert, expertResultGroup, generateLoginPasswordExpert, emailAuthExpert);
             addObjectActions(this, objExpert);
 
             objVote = addSingleGroupObject(vote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote);
@@ -984,6 +986,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             // нужно выбрать случайных экспертов из того же кластера
             Query<String, Object> query = new Query<String, Object>(Collections.singleton("key"));
             query.and(clusterExpert.getExpr(session.modifier, query.mapKeys.get("key")).compare(clusterProject.getExpr(session.modifier, projectObject.getExpr()), Compare.EQUALS));
+            query.and(disableExpert.getExpr(session.modifier, query.mapKeys.get("key")).getWhere().not());
 
             List<DataObject> experts = new ArrayList<DataObject>();
             for (Map<String, DataObject> row : query.executeClasses(session.sql, session.env, baseClass).keySet()) {
