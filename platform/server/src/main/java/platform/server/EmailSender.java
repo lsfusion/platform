@@ -164,24 +164,16 @@ public class EmailSender {
         }
 
         message.setContent(mp);
-        sendMail(message);
+        sendMail(message, subject);
     }
 
-    public void sendMail(String subject, String text) throws MessagingException, IOException {
-        setMessageHeading();
-        message.setSubject(subject, "utf-8");
-        setText(text);
-        message.setContent(mp);
-        sendMail(message);
-    }
-
-    private void sendMail(final MimeMessage message) {
+    private void sendMail(final MimeMessage message, final String subject) {
         new Thread() {
             public void run() {
                 try {
                     Transport.send(message);
                 } catch (MessagingException e) {
-                    throw new RuntimeException(e);
+                    throw new RuntimeException("Ошибка при отсылке почты " + subject, e);
                 }
             }
         }.start();
