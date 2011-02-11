@@ -1,5 +1,6 @@
 package platform.server.data.expr;
 
+import org.eclipse.core.internal.utils.ObjectMap;
 import platform.base.BaseUtils;
 import platform.interop.Compare;
 import platform.server.caches.IdentityLazy;
@@ -7,6 +8,8 @@ import platform.server.caches.ManualLazy;
 import platform.server.classes.BaseClass;
 import platform.server.classes.DataClass;
 import platform.server.classes.sets.AndClassSet;
+import platform.server.data.QueryEnvironment;
+import platform.server.data.SQLSession;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.query.AbstractSourceJoin;
@@ -18,7 +21,9 @@ import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 
+import java.sql.SQLException;
 import java.util.*;
 
 // абстрактный класс выражений
@@ -136,6 +141,9 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     // проверка на статичность, временно потом более сложный алгоритм надо будет
     public boolean isValue() {
         return enumKeys(this).isEmpty();
+    }
+    public static <K> Map<K, ObjectValue> readValues(SQLSession session, BaseClass baseClass, Map<K,Expr> mapExprs, QueryEnvironment env) throws SQLException { // assert что в mapExprs только values
+        return new Query<Object, K>(new HashMap<Object, KeyExpr>(), mapExprs, Where.TRUE).executeClasses(session, env, baseClass).singleValue();
     }
 
     public VariableExprSet getExprFollows() {

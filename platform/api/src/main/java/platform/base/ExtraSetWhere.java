@@ -1,7 +1,7 @@
 package platform.base;
 
 // расширенный AddSet который также подразумевает "слияние" элементов если это возможно
-public abstract class ExtraSetWhere<T, This extends ExtraSetWhere<T,This>> {
+public abstract class ExtraSetWhere<T, This extends ExtraSetWhere<T,This>> extends TwinImmutableObject {
 
     public final T[] wheres;
 
@@ -31,13 +31,11 @@ public abstract class ExtraSetWhere<T, This extends ExtraSetWhere<T,This>> {
         return false;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        return this == o || o instanceof ExtraSetWhere && BaseUtils.equalArraySets(wheres,(((ExtraSetWhere)o).wheres)) && getClass()==o.getClass();
+    public boolean twins(TwinImmutableInterface o) {
+        return BaseUtils.equalArraySets(wheres,(((ExtraSetWhere)o).wheres));
     }
 
-    @Override
-    public int hashCode() {
+    public int immutableHashCode() {
         return BaseUtils.hashSet(wheres) * 31;
     }
 

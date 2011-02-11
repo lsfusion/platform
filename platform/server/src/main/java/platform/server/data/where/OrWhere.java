@@ -1,14 +1,10 @@
 package platform.server.data.where;
 
-import platform.base.ArrayInstancer;
-import platform.base.BaseUtils;
-import platform.base.QuickSet;
-import platform.base.SimpleMap;
+import platform.base.*;
 import platform.server.Settings;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.data.expr.where.*;
-import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.query.innerjoins.ObjectJoinSets;
@@ -463,7 +459,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         return wheres.length != 0 && checkTrue(wheres, wheres.length, check);
     }
 
-    public boolean twins(AbstractSourceJoin o) {
+    public boolean twins(TwinImmutableInterface o) {
         return BaseUtils.equalArraySets(wheres, ((OrWhere) o).wheres);
     }
 

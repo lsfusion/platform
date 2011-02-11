@@ -1,8 +1,6 @@
 package platform.server.data;
 
-import platform.base.BaseUtils;
-import platform.base.GlobalObject;
-import platform.base.Pair;
+import platform.base.*;
 import platform.interop.Compare;
 import platform.server.caches.AbstractMapValues;
 import platform.server.caches.IdentityLazy;
@@ -33,6 +31,11 @@ public class SessionTable extends Table implements SessionData<SessionTable>, Va
 
     public SessionTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Object owner) throws SQLException {
         this(session, keys, properties, classes, propertyClasses, new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>(), owner);
+    }
+
+    public SessionTable(SQLSession session, Object owner) throws SQLException { // создает пустую таблицу с одной записью
+        this(session, new ArrayList<KeyField>(), new HashSet<PropertyField>(),
+                Collections.<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>singletonMap(new HashMap<KeyField, DataObject>(), new HashMap<PropertyField, ObjectValue>()), owner);
     }
 
     public SessionTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows, Object owner) throws SQLException {
@@ -110,7 +113,7 @@ public class SessionTable extends Table implements SessionData<SessionTable>, Va
     }
 
     // теоретически достаточно только
-    private static class Struct implements GlobalObject {
+    private static class Struct extends TwinImmutableObject implements GlobalObject {
 
         public final List<KeyField> keys; // List потому как в таком порядке индексы будут строиться
         public final Collection<PropertyField> properties;
@@ -124,13 +127,11 @@ public class SessionTable extends Table implements SessionData<SessionTable>, Va
             this.propertyClasses = propertyClasses;
         }
 
-        @Override
-        public boolean equals(Object o) {
-            return this == o || o instanceof Struct && classes.equals(((Struct) o).classes) && keys.equals(((Struct) o).keys) && properties.equals(((Struct) o).properties) && propertyClasses.equals(((Struct) o).propertyClasses);
+        public boolean twins(TwinImmutableInterface o) {
+            return classes.equals(((Struct) o).classes) && keys.equals(((Struct) o).keys) && properties.equals(((Struct) o).properties) && propertyClasses.equals(((Struct) o).propertyClasses);
         }
 
-        @Override
-        public int hashCode() {
+        public int immutableHashCode() {
             return 31 * (31 * (31 * keys.hashCode() + properties.hashCode()) + classes.hashCode()) + propertyClasses.hashCode();
         }
     }
@@ -145,41 +146,54 @@ public class SessionTable extends Table implements SessionData<SessionTable>, Va
         return struct;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        return this == o || o instanceof SessionTable && name.equals(((SessionTable) o).name) && getValueClass().equals(((SessionTable) o).getValueClass());
+    public boolean twins(TwinImmutableInterface o) {
+        return name.equals(((SessionTable) o).name) && getValueClass().equals(((SessionTable) o).getValueClass());
     }
 
-    @Override
-    public int hashCode() { // можно было бы взять из AbstractMapValues но без мн-го наследования
+    public int immutableHashCode() {
         return name.hashCode() * 31 + getValueClass().hashCode();
     }
 
-    public static Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> updateFieldsClassWheres(ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields) {
+    public static Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orFieldsClassWheres(ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields) {
 
         Map<KeyField, ConcreteClass> insertKeyClasses = DataObject.getMapClasses(keyFields);
         Map<PropertyField, ClassWhere<Field>> orPropertyClasses = new HashMap<PropertyField, ClassWhere<Field>>();
 
         for (Map.Entry<PropertyField, ObjectValue> propertyField : propFields.entrySet()) {
-            PropertyField propeField = propertyField.getKey();
+            PropertyField propField = propertyField.getKey();
             ObjectValue propValue = propertyField.getValue();
 
-            ClassWhere<Field> existedPropertyClasses = propertyClasses.get(propeField);
+            ClassWhere<Field> existedPropertyClasses = propertyClasses.get(propField);
             assert existedPropertyClasses != null;
 
             if (propValue instanceof DataObject) {
                 orPropertyClasses.put(
-                        propeField,
+                        propField,
                         existedPropertyClasses.or(
-                                new ClassWhere<Field>(merge(insertKeyClasses, singletonMap(propeField, ((DataObject) propValue).objectClass)))
+                                new ClassWhere<Field>(merge(insertKeyClasses, singletonMap(propField, ((DataObject) propValue).objectClass)))
                         )
                 );
             } else {
-                orPropertyClasses.put(propeField, existedPropertyClasses);
+                orPropertyClasses.put(propField, existedPropertyClasses);
             }
         }
         return new Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>>(
                 classes.or(new ClassWhere<KeyField>(insertKeyClasses)), orPropertyClasses);
+    }
+
+    public static Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> andFieldsClassWheres(ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields) {
+        // определяем новые классы чтобы создать таблицу
+        ClassWhere<KeyField> addKeyClasses = new ClassWhere<KeyField>(DataObject.getMapClasses(keyFields));
+
+        ClassWhere<KeyField> andKeyClasses = classes.and(addKeyClasses);
+        Map<PropertyField, ClassWhere<Field>> andPropertyClasses = new HashMap<PropertyField, ClassWhere<Field>>();
+        for(Map.Entry<PropertyField, ClassWhere<Field>> propertyClass : propertyClasses.entrySet()) // добавляем старые
+            andPropertyClasses.put(propertyClass.getKey(), propertyClass.getValue().and(BaseUtils.<ClassWhere<KeyField>,ClassWhere<Field>>immutableCast(addKeyClasses)));
+        for(Map.Entry<PropertyField, ObjectValue> addProp : propFields.entrySet()) // добавляем новые
+            andPropertyClasses.put(addProp.getKey(), !(addProp.getValue() instanceof DataObject)?ClassWhere.<Field>STATIC(false):
+                        new ClassWhere<Field>(Collections.<Field, ConcreteClass>singletonMap(addProp.getKey(), ((DataObject) addProp.getValue()).objectClass)).
+                                and(BaseUtils.<ClassWhere<KeyField>,ClassWhere<Field>>immutableCast(andKeyClasses)));
+        return new Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>>(andKeyClasses, andPropertyClasses);
     }
 
     public static Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> getFieldsClassWheres(Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> data) {
@@ -214,7 +228,7 @@ public class SessionTable extends Table implements SessionData<SessionTable>, Va
 
     public SessionTable insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, Object owner) throws SQLException {
 
-        Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orClasses = updateFieldsClassWheres(classes, propertyClasses, keyFields, propFields);
+        Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orClasses = orFieldsClassWheres(classes, propertyClasses, keyFields, propFields);
 
         if (update) {
             session.updateInsertRecord(this, keyFields, propFields);
@@ -256,6 +270,27 @@ public class SessionTable extends Table implements SessionData<SessionTable>, Va
         dropValues.properties.put(property, Expr.NULL);
         session.updateRecords(new ModifyQuery(this, dropValues));
         return this;
+    }
+
+    public SessionTable addFields(SQLSession session, List<KeyField> keys, Map<KeyField, DataObject> addKeys, Map<PropertyField, ObjectValue> addProps) throws SQLException {
+        if(addKeys.isEmpty() && addProps.isEmpty())
+            return this;
+
+        Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> andClasses = andFieldsClassWheres(classes, propertyClasses, addKeys, addProps);
+        SessionTable newTable = new SessionTable(name, keys, BaseUtils.mergeSet(properties, addProps.keySet()), andClasses.first, andClasses.second);
+
+        session.addKeyColumns(name, DataObject.getMapValues(addKeys), keys);
+        for(Map.Entry<PropertyField, ObjectValue> addProp : addProps.entrySet())
+            session.addColumn(getName(session.syntax), addProp.getKey());
+
+        if(!addProps.isEmpty()) { // для assertion'а
+            Query<KeyField, PropertyField> updateProps = new Query<KeyField, PropertyField>(newTable);
+            updateProps.and(newTable.join(updateProps.mapKeys).getWhere());
+            updateProps.properties.putAll(DataObject.getMapExprs(addProps));
+            session.updateRecords(new ModifyQuery(newTable, updateProps));
+        }
+
+        return newTable;
     }
 
     private BaseUtils.HashComponents<Value> components = null;

@@ -1,6 +1,7 @@
 package platform.server.data.expr;
 
 import platform.base.BaseUtils;
+import platform.base.TwinImmutableInterface;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.ConcreteClass;
@@ -10,7 +11,6 @@ import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.expr.cases.MapCase;
 import platform.server.data.expr.where.MapWhere;
-import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
@@ -74,7 +74,7 @@ public class StringConcatenateExpr extends StaticClassExpr {
         return create(translator.translate(exprs), separator, caseSensitive);
     }
 
-    public boolean twins(AbstractSourceJoin obj) {
+    public boolean twins(TwinImmutableInterface obj) {
         return exprs.equals(((StringConcatenateExpr)obj).exprs);
     }
 

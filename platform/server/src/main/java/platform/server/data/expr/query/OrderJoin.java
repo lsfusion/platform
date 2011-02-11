@@ -1,5 +1,6 @@
 package platform.server.data.expr.query;
 
+import platform.base.TwinImmutableInterface;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
@@ -25,6 +26,10 @@ public class OrderJoin extends QueryJoin<KeyExpr, OrderJoin.Query> {
             this.partitions = partitions;
         }
 
+        public boolean twins(TwinImmutableInterface o) {
+            return partitions.equals(((Query) o).partitions) && where.equals(((Query) o).where);
+        }
+
         @IdentityLazy
         public int hashOuter(HashContext hashContext) {
             int hash = 0;
@@ -39,11 +44,6 @@ public class OrderJoin extends QueryJoin<KeyExpr, OrderJoin.Query> {
 
         public SourceJoin[] getEnum() {
             throw new RuntimeException("not supported");
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            return this == o || o instanceof Query && partitions.equals(((Query) o).partitions) && where.equals(((Query) o).where);
         }
     }
 

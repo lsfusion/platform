@@ -37,7 +37,7 @@ public class CacheAspect {
     private ImmutableInterface immutable;
   */
 
-    static class Invocation {
+    static class Invocation extends TwinImmutableObject {
         final Method method;
         final Object[] args;
 
@@ -51,20 +51,18 @@ public class CacheAspect {
             return method +"(" + Arrays.asList(args) + ')';
         }
 
-        @Override
-        public boolean equals(Object o) { // не проверяем на вхождение и класс потому как повторятся не могут
+        public boolean twins(TwinImmutableInterface o) {
             return method.equals(((Invocation)o).method) && Arrays.equals(args,((Invocation)o).args);
         }
 
-        @Override
-        public int hashCode() {
+        public int immutableHashCode() {
             return 31* method.hashCode() + Arrays.hashCode(args);
         }
     }
 
     private Object lazyExecute(ImmutableObject object,ProceedingJoinPoint thisJoinPoint,Object[] args) throws Throwable {
         Invocation invoke = new Invocation(thisJoinPoint,args);
-        Map caches = ((ImmutableObject)object).getCaches();
+        Map caches = object.getCaches();
         Object result = caches.get(invoke);
         if(result==null) {
             result = thisJoinPoint.proceed();
@@ -356,7 +354,7 @@ public class CacheAspect {
 
     public static TwinsMap cacheTwins = new TwinsMap();
 
-    @Around("execution(boolean platform.server.data.query.AbstractSourceJoin.twins(platform.server.data.query.AbstractSourceJoin)) && target(object) && args(twin)")
+    @Around("execution(boolean platform.base.TwinImmutableInterface.twins(platform.base.TwinImmutableInterface)) && target(object) && args(twin)")
     // с call'ом есть баги
     public Object callTwins(ProceedingJoinPoint thisJoinPoint, GroupExpr object, AbstractSourceJoin twin) throws Throwable {
         return cacheTwins.call(thisJoinPoint, object, twin);

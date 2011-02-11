@@ -148,6 +148,6 @@ public class ModifyQuery {
         for(PropertyField propertyField : changeCompile.propertyOrder)
             insertString = (insertString.length()==0?"":insertString+",") + propertyField.name;
 
-        return new SQLExecute("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") " + getInsertCastSelect(changeCompile, syntax),changeCompile.getQueryParams(env));
+        return new SQLExecute("INSERT INTO " + table.getName(syntax) + " (" + (insertString.length()==0?"dumb":insertString) + ") " + getInsertCastSelect(changeCompile, syntax),changeCompile.getQueryParams(env));
     }
 }

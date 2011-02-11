@@ -1,5 +1,6 @@
 package platform.server.data.expr;
 
+import platform.base.TwinImmutableInterface;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.TwinLazy;
 import platform.server.caches.hash.HashContext;
@@ -7,7 +8,6 @@ import platform.server.classes.BaseClass;
 import platform.server.classes.StaticCustomClass;
 import platform.server.data.Table;
 import platform.server.data.expr.where.MapWhere;
-import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
@@ -86,7 +86,7 @@ public class IsClassExpr extends StaticClassExpr {
         expr.enumerate(enumerator);
     }
 
-    public boolean twins(AbstractSourceJoin obj) {
+    public boolean twins(TwinImmutableInterface obj) {
         return expr.equals(((IsClassExpr)obj).expr) && baseClass.equals(((IsClassExpr)obj).baseClass);
     }
 

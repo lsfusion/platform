@@ -1,5 +1,6 @@
 package platform.server.logics;
 
+import platform.base.TwinImmutableInterface;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.Value;
 import platform.server.data.expr.Expr;
@@ -36,16 +37,16 @@ public class NullValue extends ObjectValue<NullValue> {
         return null;
     }
 
-    public boolean equals(Object o) {
-        return this==o || o instanceof NullValue;
-    }
-
     public Where order(Expr expr, boolean desc, Where orderWhere) {
         Where greater = expr.getWhere();
         if(desc)
             return greater.not().and(orderWhere);
         else
             return greater.or(orderWhere);
+    }
+
+    public boolean twins(TwinImmutableInterface o) {
+        return true;
     }
 
     public int hashValues(HashValues hashValues) {

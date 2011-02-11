@@ -9,6 +9,7 @@ import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.classes.ClassWhere;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,5 +45,14 @@ public class MapParsedQuery<K,V,MK,MV> implements ParsedQuery<K,V> {
     public Join<V> join(Map<K, ? extends Expr> joinImplement, MapValuesTranslate joinValues) {
         assert joinValues.assertValuesEquals(getValues());
         return new MapJoin<V,MV>(query.join(BaseUtils.crossJoin(mapKeys,joinImplement),mapValues.map(joinValues)),mapProps);
+    }
+
+    public Query<K, V> pullValues(Map<K, Expr> pullKeys, Map<V, Expr> pullProps) {
+        Map<MK, Expr> mapPullKeys = new HashMap<MK, Expr>();
+        Map<MV, Expr> mapPullProps = new HashMap<MV, Expr>();
+        Query<MK, MV> mapQuery = query.pullValues(mapPullKeys, mapPullProps);
+        pullKeys.putAll(BaseUtils.rightJoin(mapKeys, mapValues.mapKeys().translate(mapPullKeys)));
+        pullProps.putAll(BaseUtils.rightJoin(mapProps, mapValues.mapKeys().translate(mapPullProps)));
+        return new Query<K,V>(mapQuery.translateInner(mapValues.mapKeys()), BaseUtils.filterValues(mapKeys, mapQuery.mapKeys.keySet()), BaseUtils.filterValues(mapProps, mapQuery.properties.keySet()));
     }
 }

@@ -1,6 +1,7 @@
 package platform.server.data.expr;
 
 import platform.base.QuickMap;
+import platform.base.TwinImmutableInterface;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
@@ -9,7 +10,6 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.cases.ExprCase;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.expr.where.MapWhere;
-import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
@@ -81,7 +81,7 @@ public class DeconcatenateExpr extends SingleClassExpr {
         return create(expr.translateQuery(translator),part,baseClass);
     }
 
-    public boolean twins(AbstractSourceJoin obj) {
+    public boolean twins(TwinImmutableInterface obj) {
         return expr.equals(((DeconcatenateExpr)obj).expr) && part == ((DeconcatenateExpr)obj).part && baseClass.equals(((DeconcatenateExpr)obj).baseClass);  
     }
 

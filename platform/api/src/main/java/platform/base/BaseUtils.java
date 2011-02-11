@@ -57,6 +57,14 @@ public class BaseUtils {
         return result;
     }
 
+    public static <K, E, V> Map<K, V> rightJoin(Map<K, ? extends E> map, Map<E, V> joinMap) {
+        return BaseUtils.join(BaseUtils.filterValues(map, joinMap.keySet()), joinMap);
+    }
+
+    public static <K, VA, VB> Map<VA, VB> rightCrossJoin(Map<K, VA> map, Map<K, VB> joinMap) {
+        return BaseUtils.rightJoin(BaseUtils.reverse(map), joinMap);
+    }
+
     public static <K, E, V> List<Map<K, V>> joinCol(Map<K, ? extends E> map, Collection<Map<E, V>> list) {
         List<Map<K, V>> result = new ArrayList<Map<K, V>>();
         for (Map<E, V> joinMap : list)
@@ -96,9 +104,9 @@ public class BaseUtils {
         return result;
     }
 
-    public static <K, V> Map<K, V> filterValues(Map<K, V> map, Collection<V> values) {
+    public static <K, V> Map<K, V> filterValues(Map<K, ? extends V> map, Collection<V> values) {
         Map<K, V> result = new HashMap<K, V>();
-        for (Map.Entry<K, V> entry : map.entrySet())
+        for (Map.Entry<K, ? extends V> entry : map.entrySet())
             if (values.contains(entry.getValue()))
                 result.put(entry.getKey(), entry.getValue());
         return result;
@@ -192,6 +200,16 @@ public class BaseUtils {
         return result;
     }
 
+    public static <K,V> Map<K,V> mergeEquals(Map<K, V> full, Map<K, V> part) {
+        assert full.keySet().containsAll(part.keySet());
+        
+        Map<K,V> result = new HashMap<K, V>();
+        for(Map.Entry<K, V> partEntry : part.entrySet())
+            if(full.get(partEntry.getKey()).equals(partEntry.getValue()))
+                result.put(partEntry.getKey(), partEntry.getValue());
+        return result;
+    }
+
     public static <K, V> Map<V, K> reverse(Map<K, V> map) {
         Map<V, K> result = new HashMap<V, K>();
         for (Map.Entry<K, V> entry : map.entrySet()) {
@@ -247,6 +265,14 @@ public class BaseUtils {
         Map<K, K> result = new HashMap<K, K>();
         for (K object : collection)
             result.put(object, object);
+        return result;
+    }
+
+    public static <K,V> Map<K, V> toMap(List<K> from, List<V> to) {
+        assert from.size() == to.size();
+        Map<K, V> result = new HashMap<K, V>();
+        for (int i=0;i<from.size();i++)
+            result.put(from.get(i), to.get(i));
         return result;
     }
 
@@ -1187,7 +1213,7 @@ public class BaseUtils {
         return result;
     }
 
-    public static class HashClass<C extends GlobalObject> implements GlobalObject {
+    public static class HashClass<C extends GlobalObject> extends TwinImmutableObject implements GlobalObject {
         private C valueClass;
         private int hash;
 
@@ -1200,13 +1226,11 @@ public class BaseUtils {
             this(valueClass, 0);
         }
 
-        @Override
-        public boolean equals(Object o) {
-            return this == o || o instanceof HashClass && hash == ((HashClass) o).hash && valueClass.equals(((HashClass) o).valueClass);
+        public boolean twins(TwinImmutableInterface o) {
+            return hash == ((HashClass) o).hash && valueClass.equals(((HashClass) o).valueClass);
         }
 
-        @Override
-        public int hashCode() {
+        public int immutableHashCode() {
             return 31 * valueClass.hashCode() + hash;
         }
     }

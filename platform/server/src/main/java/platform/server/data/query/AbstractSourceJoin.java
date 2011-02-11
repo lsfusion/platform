@@ -2,6 +2,7 @@ package platform.server.data.query;
 
 import platform.base.ArrayInstancer;
 import platform.base.BaseUtils;
+import platform.base.TwinImmutableInterface;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.OuterContext;
@@ -25,13 +26,6 @@ abstract public class AbstractSourceJoin<T extends OuterContext<T>> extends Abst
         return new SourceJoin[]{this};
     }
    
-    @Override
-    public boolean equals(Object obj) {
-        return this == obj || obj!=null && getClass() == obj.getClass() && twins((AbstractSourceJoin) obj);
-    }
-
-    public abstract boolean twins(AbstractSourceJoin obj);
-
     protected static class ToString extends CompileSource  {
         public ToString(Set<Value> values, Set<KeyExpr> keys) {
             super(new KeyType() {

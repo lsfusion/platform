@@ -1,9 +1,9 @@
 package platform.server.data.expr;
 
+import platform.base.TwinImmutableInterface;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.where.MapWhere;
-import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
@@ -47,7 +47,7 @@ public class CurrentEnvironmentExpr extends NotNullExpr {
         return this;
     }
 
-    public boolean twins(AbstractSourceJoin obj) {
+    public boolean twins(TwinImmutableInterface obj) {
         return paramString.equals(((CurrentEnvironmentExpr)obj).paramString);
     }
 

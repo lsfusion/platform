@@ -1,6 +1,7 @@
 package platform.server.logics;
 
 import platform.base.BaseUtils;
+import platform.base.TwinImmutableInterface;
 import platform.interop.Compare;
 import platform.server.caches.hash.HashValues;
 import platform.server.classes.ConcreteClass;
@@ -43,10 +44,6 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     @Override
     public String toString() {
         return object + " - " + objectClass;
-    }
-
-    public boolean equals(Object o) {
-        return this==o || o instanceof DataObject && object.equals(((DataObject)o).object) && objectClass.equals(((DataObject)o).objectClass);
     }
 
     public DataObject() {
@@ -142,6 +139,10 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     }
 
     public void fillObjects(Set<ObjectEntity> objects) {
+    }
+
+    public boolean twins(TwinImmutableInterface o) {
+        return getExpr().equals(((DataObject)o).getExpr());
     }
 
     public int hashValues(HashValues hashValues) {

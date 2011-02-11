@@ -2,9 +2,9 @@ package platform.server.data.where;
 
 import platform.base.ArrayInstancer;
 import platform.base.BaseUtils;
+import platform.base.TwinImmutableInterface;
 import platform.server.caches.ManualLazy;
 import platform.server.data.expr.where.MapWhere;
-import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.query.innerjoins.ObjectJoinSets;
@@ -203,7 +203,7 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
     }
 
 
-    public boolean twins(AbstractSourceJoin o) {
+    public boolean twins(TwinImmutableInterface o) {
         return BaseUtils.equalArraySets(wheres, ((AndWhere) o).wheres);
     }
 }

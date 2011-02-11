@@ -2,6 +2,8 @@ package platform.server.data.translator;
 
 import platform.base.ImmutableObject;
 import platform.base.OrderedMap;
+import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.PullExpr;
@@ -9,7 +11,7 @@ import platform.server.data.expr.PullExpr;
 import java.util.*;
 
 // в отдельный класс для allKeys и для аспектов
-public class QueryTranslator extends ImmutableObject {
+public class QueryTranslator extends TwinImmutableObject {
 
     public final Map<KeyExpr,? extends Expr> keys;
 
@@ -37,7 +39,7 @@ public class QueryTranslator extends ImmutableObject {
     public <K> OrderedMap<Expr, K> translate(OrderedMap<? extends Expr, K> map) {
         OrderedMap<Expr, K> transMap = new OrderedMap<Expr, K>();
         for(Map.Entry<? extends Expr,K> entry : map.entrySet())
-            transMap.put(entry.getKey().translateQuery(this),entry.getValue());
+            transMap.put(entry.getKey().translateQuery(this), entry.getValue());
         return transMap;
     }
 
@@ -65,11 +67,11 @@ public class QueryTranslator extends ImmutableObject {
             return transExpr;
     }
 
-    public int hashCode() {
-        return keys.hashCode();
+    public boolean twins(TwinImmutableInterface o) {
+        return keys.equals(((QueryTranslator)o).keys);
     }
 
-    public boolean equals(Object obj) {
-        return obj==this || (obj instanceof QueryTranslator && keys.equals(((QueryTranslator)obj).keys));
+    public int immutableHashCode() {
+        return keys.hashCode();
     }
 }

@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Comparator;
 
-public class ImmutableObject {
+public abstract class ImmutableObject {
     
     private Map caches = null;
     public Map getCaches() {

@@ -1,6 +1,7 @@
 package platform.server.data.translator;
 
 import platform.base.BaseUtils;
+import platform.base.TwinImmutableInterface;
 import platform.server.caches.MapValues;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.Value;
@@ -69,7 +70,7 @@ public class MapValuesTranslator extends AbstractMapTranslator implements MapVal
     public <K,U extends MapValues<U>> Map<K,U> translateValues(Map<K,U> map) {
         Map<K,U> result = new HashMap<K,U>();
         for(Map.Entry<K,U> entry : map.entrySet())
-            result.put(entry.getKey(),entry.getValue().translate(this));
+            result.put(entry.getKey(), entry.getValue().translate(this));
         return result;
     }
 
@@ -84,13 +85,11 @@ public class MapValuesTranslator extends AbstractMapTranslator implements MapVal
         return this==noTranslate || ValueExpr.noStaticEquals(mapValues.keySet(), values); 
     }
 
-    @Override
-    public boolean equals(Object o) {
-        return this == o || o instanceof MapValuesTranslator && mapValues.equals(((MapValuesTranslator) o).mapValues);
+    public boolean twins(TwinImmutableInterface o) {
+        return mapValues.equals(((MapValuesTranslator) o).mapValues);
     }
 
-    @Override
-    public int hashCode() {
+    public int immutableHashCode() {
         return mapValues.hashCode();
     }
 

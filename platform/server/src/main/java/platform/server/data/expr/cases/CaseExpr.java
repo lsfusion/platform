@@ -1,5 +1,6 @@
 package platform.server.data.expr.cases;
 
+import platform.base.TwinImmutableInterface;
 import platform.interop.Compare;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ParamLazy;
@@ -10,7 +11,6 @@ import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyType;
 import platform.server.data.expr.where.MapWhere;
-import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
@@ -151,7 +151,7 @@ public class CaseExpr extends Expr {
         }
     }
 
-    public boolean twins(AbstractSourceJoin obj) {
+    public boolean twins(TwinImmutableInterface obj) {
         return cases.equals(((CaseExpr)obj).cases);
     }
 

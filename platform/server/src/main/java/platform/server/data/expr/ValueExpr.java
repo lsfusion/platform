@@ -2,13 +2,13 @@ package platform.server.data.expr;
 
 import platform.base.BaseUtils;
 import platform.base.GlobalObject;
+import platform.base.TwinImmutableInterface;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.DoubleClass;
 import platform.server.classes.LogicalClass;
 import platform.server.data.Value;
 import platform.server.data.expr.where.MapWhere;
-import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
@@ -57,12 +57,12 @@ public class ValueExpr extends AbstractValueExpr implements Value {
         return Where.TRUE;
     }
 
-    public boolean twins(AbstractSourceJoin o) {
+    public boolean twins(TwinImmutableInterface o) {
         return object.equals(((ValueExpr)o).object) && objectClass.equals(((ValueExpr)o).objectClass);
     }
 
     @Override
-    public int hashCode() {
+    public int immutableHashCode() {
         return object.hashCode()*31+objectClass.hashCode();
     }
 

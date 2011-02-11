@@ -116,18 +116,26 @@ public class SQLSession extends MutableObject {
             addIndex(table, keyStrings.subList(i, keys.size()));
     }
 
+    private String getConstraintName(String table) {
+        return "PK_" + table;
+    }
+
+    private String getConstraintDeclare(String table, List<KeyField> keys) {
+        String keyString = "";
+        for (KeyField key : keys)
+            keyString = (keyString.length() == 0 ? "" : keyString + ',') + key.name;
+        return "CONSTRAINT " + getConstraintName(table) + " PRIMARY KEY " + syntax.getClustered() + " (" + keyString + ")";
+    }
+
     public void createTable(String table, List<KeyField> keys) throws SQLException {
         logger.info("Идет создание таблицы " + table + "... ");
         String createString = "";
-        String keyString = "";
-        for (KeyField key : keys) {
+        for (KeyField key : keys)
             createString = (createString.length() == 0 ? "" : createString + ',') + key.getDeclare(syntax);
-            keyString = (keyString.length() == 0 ? "" : keyString + ',') + key.name;
-        }
         if (createString.length() == 0)
-            createString = "dumb bit";
+            createString = "dumb integer";
         else
-            createString = createString + ",CONSTRAINT PK_" + table + " PRIMARY KEY " + syntax.getClustered() + " (" + keyString + ")";
+            createString = createString + "," + getConstraintDeclare(table, keys);
 
 //        System.out.println("CREATE TABLE "+Table.Name+" ("+CreateString+")");
         execute("CREATE TABLE " + table + " (" + createString + ")");
@@ -161,6 +169,27 @@ public class SQLSession extends MutableObject {
     public void dropIndex(String table, Collection<String> fields) throws SQLException {
         logger.info("Идет удаление индекса " + getIndexName(table, fields) + "... ");
         execute("DROP INDEX " + getIndexName(table, fields));
+        logger.info(" Done");
+    }
+
+    public void addKeyColumns(String table, Map<KeyField, Object> fields, List<KeyField> keys) throws SQLException {
+        if(fields.isEmpty())
+            return;
+
+        logger.info("Идет добавление ключа " + table + "." + fields + "... ");
+
+        String constraintName = getConstraintName(table);
+        String tableName = syntax.getSessionTableName(table);
+        String addCommand = ""; String dropDefaultCommand = "";
+        for(Map.Entry<KeyField, Object> field : fields.entrySet()) {
+            addCommand = addCommand + "ADD COLUMN " + field.getKey().getDeclare(syntax) + " DEFAULT " + field.getKey().type.getString(field.getValue(), syntax) + ",";
+            dropDefaultCommand = (dropDefaultCommand.length()==0?"":dropDefaultCommand + ",") + " ALTER COLUMN " + field.getKey().name + " DROP DEFAULT";
+        }
+
+        execute("ALTER TABLE " + tableName + " " + addCommand + " ADD " + getConstraintDeclare(table, keys) +
+                (keys.size()==fields.size()?"":", DROP CONSTRAINT " + constraintName));
+        execute("ALTER TABLE " + tableName + " " + dropDefaultCommand);
+
         logger.info(" Done");
     }
 
@@ -204,16 +233,14 @@ public class SQLSession extends MutableObject {
             String name = "t_" + (sessionCounter++);
 
             String createString = "";
-            String keyString = "";
-            for (KeyField key : keys) {
+            for (KeyField key : keys)
                 createString = (createString.length() == 0 ? "" : createString + ',') + key.getDeclare(syntax);
-                keyString = (keyString.length() == 0 ? "" : keyString + ',') + key.name;
-            }
             for (PropertyField prop : properties)
                 createString = (createString.length() == 0 ? "" : createString + ',') + prop.getDeclare(syntax);
-
-            if (keyString.length() != 0)
-                createString = createString + ", PRIMARY KEY " + syntax.getClustered() + " (" + keyString + ")";
+            if (keys.size()>0)
+                createString = createString + "," + getConstraintDeclare(name, keys);
+            if (createString.length() == 0)
+                createString = "dumb integer";
             execute(syntax.getCreateSessionTable(name, createString));
 
             sessionTablesMap.put(name, new WeakReference<Object>(owner));
@@ -354,6 +381,12 @@ public class SQLSession extends MutableObject {
             }
         }
 
+        if(insertString.length()==0) {
+            assert valueString.length()==0;
+            insertString = "dumb";
+            valueString = "0";
+        }
+
         executeDML("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") VALUES (" + valueString + ")", params);
     }
 
@@ -389,6 +422,12 @@ public class SQLSession extends MutableObject {
         for (PropertyField prop : propFields.keySet()) {
             insertString = (insertString.length() == 0 ? "" : insertString + ',') + prop.name;
             valueString = (valueString.length() == 0 ? "" : valueString + ',') + propFields.get(prop).getString(syntax);
+        }
+
+        if(insertString.length()==0) {
+            assert valueString.length()==0;
+            insertString = "dumb";
+            valueString = "0";
         }
 
         execute("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") VALUES (" + valueString + ")");

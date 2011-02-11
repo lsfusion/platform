@@ -1,6 +1,7 @@
 package platform.server.data.expr;
 
 import platform.base.BaseUtils;
+import platform.base.TwinImmutableInterface;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
@@ -9,7 +10,6 @@ import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.expr.cases.MapCase;
 import platform.server.data.expr.where.MapWhere;
-import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
@@ -90,7 +90,7 @@ public class FormulaExpr extends StaticClassExpr {
         return InnerExpr.getExprFollows(params);
     }
 
-    public boolean twins(AbstractSourceJoin o) {
+    public boolean twins(TwinImmutableInterface o) {
         return formula.equals(((FormulaExpr) o).formula) && params.equals(((FormulaExpr) o).params) && valueClass.equals(((FormulaExpr) o).valueClass);
     }
 

@@ -1,5 +1,6 @@
 package platform.server.data.expr.query;
 
+import platform.base.TwinImmutableInterface;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
@@ -25,6 +26,10 @@ public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> implements I
             this.joins = joins;
         }
 
+        public boolean twins(TwinImmutableInterface o) {
+            return joins.equals(((Query) o).joins) && where.equals(((Query) o).where);
+        }
+
         @IdentityLazy
         public int hashOuter(HashContext hashContext) {
             return where.hashOuter(hashContext) * 31 + joins.hashContext(hashContext);
@@ -36,11 +41,6 @@ public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> implements I
 
         public SourceJoin[] getEnum() {
             throw new RuntimeException("not supported");
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            return this == o || o instanceof Query && joins.equals(((Query) o).joins) && where.equals(((Query) o).where);
         }
     }
 

@@ -3,6 +3,7 @@ package platform.server.data.expr.query;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.QuickMap;
+import platform.base.TwinImmutableInterface;
 import platform.interop.Compare;
 import platform.server.Settings;
 import platform.server.classes.sets.AndClassSet;
@@ -47,6 +48,10 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
             return new Query(expr.translateOuter(translator),translator.translate(orders),translator.translate(partitions));
         }
 
+        public boolean twins(TwinImmutableInterface o) {
+            return expr.equals(((Query) o).expr) && orders.equals(((Query) o).orders) && partitions.equals(((Query) o).partitions);
+        }
+
         @IdentityLazy
         public int hashOuter(HashContext hashContext) {
             int hash = 0;
@@ -66,11 +71,6 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
         @IdentityLazy
         public Type getType() {
             return expr.getType(getWhere());
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            return this==obj || obj instanceof Query && expr.equals(((Query) obj).expr) && orders.equals(((Query) obj).orders) && partitions.equals(((Query) obj).partitions);
         }
 
         @Override

@@ -141,6 +141,14 @@ public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInter
         return parse().getClassWhere(properties);
     }
 
+    public Query<K,V> pullValues(Map<K, Expr> pullKeys, Map<V, Expr> pullProps) throws SQLException {
+        Query<K, V> result = parse().pullValues(pullKeys, pullProps);
+        if(pullKeys.isEmpty() && pullProps.isEmpty())
+            return this;
+        else
+            return result;
+    }
+
     public CompiledQuery<K,V> compile(SQLSyntax syntax) {
         return compile(syntax, new OrderedMap<V, Boolean>(), 0);
     }

@@ -1,6 +1,8 @@
 package platform.server.data.query.innerjoins;
 
 import platform.base.ImmutableObject;
+import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
 import platform.server.caches.IdentityLazy;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
@@ -14,7 +16,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class KeyEqual extends ImmutableObject implements DNFWheres.Interface<KeyEqual> {
+public class KeyEqual extends TwinImmutableObject implements DNFWheres.Interface<KeyEqual> {
 
     public final Map<KeyExpr, BaseExpr> keyExprs;
 
@@ -60,13 +62,11 @@ public class KeyEqual extends ImmutableObject implements DNFWheres.Interface<Key
         return equalsWhere;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        return this == o || o instanceof KeyEqual && keyExprs.equals(((KeyEqual) o).keyExprs);
+    public boolean twins(TwinImmutableInterface o) {
+        return keyExprs.equals(((KeyEqual) o).keyExprs);
     }
 
-    @Override
-    public int hashCode() {
+    public int immutableHashCode() {
         return keyExprs.hashCode();
     }
 

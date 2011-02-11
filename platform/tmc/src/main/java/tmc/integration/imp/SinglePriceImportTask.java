@@ -175,7 +175,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
 
             // сначала execute'им чтобы возврату были только созданные партии
             session.execute(actionChanges.add(priceChanges.add(quantityChanges.add(nameChanges))), null, null);
-
+/*
             // импорт количества возврата
             ObjectValue returnDocValue = session.getObjectValue(impReturnDocID, ObjectType.instance);
 
@@ -204,7 +204,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
                                                 priceImpJoin.getWhere().and(mapReturnPriceKeys.getValue(0).compare(returnDocValue.getExpr(), Compare.EQUALS)))),
                                                 null, session.modifier);
 
-            session.execute(returnPriceChanges.add(returnChanges), null, null);
+            session.execute(returnPriceChanges.add(returnChanges), null, null);*/
 
             System.out.println(session.apply(BL));
 

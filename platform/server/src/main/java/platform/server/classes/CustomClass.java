@@ -1,5 +1,6 @@
 package platform.server.classes;
 
+import platform.base.TwinImmutableInterface;
 import platform.interop.Data;
 import platform.server.auth.SecurityPolicy;
 import platform.server.caches.IdentityLazy;
@@ -10,7 +11,6 @@ import platform.server.classes.sets.CustomClassSet;
 import platform.server.classes.sets.UpClassSet;
 import platform.server.data.expr.*;
 import platform.server.data.expr.where.MapWhere;
-import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
@@ -360,7 +360,7 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
             return this;
         }
 
-        public boolean twins(AbstractSourceJoin obj) {
+        public boolean twins(TwinImmutableInterface obj) {
             return valueClass.equals(((ClassExpr)obj).valueClass);
         }
 

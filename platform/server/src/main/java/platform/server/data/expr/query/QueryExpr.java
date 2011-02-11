@@ -1,6 +1,7 @@
 package platform.server.data.expr.query;
 
 import platform.base.BaseUtils;
+import platform.base.TwinImmutableInterface;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.InnerHashContext;
 import platform.server.caches.OuterContext;
@@ -11,7 +12,6 @@ import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.InnerExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.VariableExprSet;
-import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
@@ -143,7 +143,7 @@ public abstract class QueryExpr<K extends BaseExpr,I extends OuterContext<I>,J e
         return InnerExpr.getExprFollows(group);
     }
 
-    public boolean twins(AbstractSourceJoin obj) {
+    public boolean twins(TwinImmutableInterface obj) {
         QueryExpr<K,I,J> groupExpr = (QueryExpr)obj;
 
         assert hashCode()==groupExpr.hashCode();

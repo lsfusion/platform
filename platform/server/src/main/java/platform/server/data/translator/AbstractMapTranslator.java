@@ -2,6 +2,7 @@ package platform.server.data.translator;
 
 import platform.base.ImmutableObject;
 import platform.base.OrderedMap;
+import platform.base.TwinImmutableObject;
 import platform.server.data.Value;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
@@ -10,7 +11,7 @@ import platform.server.data.expr.VariableClassExpr;
 
 import java.util.*;
 
-public abstract class AbstractMapTranslator extends ImmutableObject implements MapTranslate  {
+public abstract class AbstractMapTranslator extends TwinImmutableObject implements MapTranslate  {
 
     public <K> Map<K, BaseExpr> translateDirect(Map<K, ? extends BaseExpr> map) {
         Map<K, BaseExpr> transMap = new HashMap<K, BaseExpr>();

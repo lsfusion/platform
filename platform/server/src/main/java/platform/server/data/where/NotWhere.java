@@ -1,8 +1,8 @@
 package platform.server.data.where;
 
+import platform.base.TwinImmutableInterface;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.where.MapWhere;
-import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
@@ -33,7 +33,7 @@ public class NotWhere extends ObjectWhere {
 
     final static String PREFIX = "NOT ";
 
-    public boolean twins(AbstractSourceJoin o) {
+    public boolean twins(TwinImmutableInterface o) {
         return where.equals(((NotWhere)o).where);
     }
 

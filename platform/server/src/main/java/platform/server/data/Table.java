@@ -1,8 +1,6 @@
 package platform.server.data;
 
-import platform.base.BaseUtils;
-import platform.base.ImmutableObject;
-import platform.base.OrderedMap;
+import platform.base.*;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.TwinLazy;
@@ -34,7 +32,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
-public class Table extends ImmutableObject implements MapKeysInterface<KeyField> {
+public class Table extends TwinImmutableObject implements MapKeysInterface<KeyField> {
     public final String name;
     public final List<KeyField> keys; // List потому как в таком порядке индексы будут строиться
     public final Set<PropertyField> properties;
@@ -138,13 +136,11 @@ public class Table extends ImmutableObject implements MapKeysInterface<KeyField>
         return (outputTable?"Таблица : " + name + ", ":"") + "Поле : " + field.toString() + " - " + commonParent.get(field) + ", Ключи : " + BaseUtils.removeKey(commonParent, field);
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        return this == obj || getClass()==obj.getClass() && name.equals(((Table)obj).name) && classes.equals(((Table)obj).classes) && propertyClasses.equals(((Table)obj).propertyClasses);
+    public boolean twins(TwinImmutableInterface o) {
+        return name.equals(((Table)o).name) && classes.equals(((Table)o).classes) && propertyClasses.equals(((Table)o).propertyClasses);
     }
 
-    @Override
-    public int hashCode() {
+    public int immutableHashCode() {
         return (name.hashCode() * 31 + classes.hashCode()) * 31 + propertyClasses.hashCode();
     }
 
@@ -178,7 +174,7 @@ public class Table extends ImmutableObject implements MapKeysInterface<KeyField>
     public void enumInnerValues(Set<Value> values) {
     }
 
-    public class Join extends platform.server.data.query.Join<PropertyField> implements InnerJoin {
+    public class Join extends platform.server.data.query.Join<PropertyField> implements InnerJoin, TwinImmutableInterface {
 
         public final Map<KeyField, BaseExpr> joins;
 
@@ -216,6 +212,35 @@ public class Table extends ImmutableObject implements MapKeysInterface<KeyField>
         public Collection<PropertyField> getProperties() {
             return Table.this.properties;
         }
+
+        // множественное наследование TwinImmutableObject {
+
+        @Override
+        public boolean equals(Object o) {
+            return TwinImmutableObject.equals(this, o);
+        }
+
+        boolean hashCoded = false;
+        int hashCode;
+        @Override
+        public int hashCode() {
+            if(!hashCoded) {
+                hashCode = immutableHashCode();
+                hashCoded = true;
+            }
+            return hashCode;
+        }
+
+        // }
+
+        public boolean twins(TwinImmutableInterface o) {
+            return Table.this.equals(((Join) o).getTable()) && joins.equals(((Join) o).joins);
+        }
+
+        public int immutableHashCode() {
+            return hashOuter(HashContext.hashCode);
+        }
+
 
         @IdentityLazy
         public int hashOuter(HashContext hashContext) {
@@ -256,11 +281,6 @@ public class Table extends ImmutableObject implements MapKeysInterface<KeyField>
             return Table.this;
         }
 
-        @Override
-        public boolean equals(Object o) {
-            return this == o || o instanceof Join && Table.this.equals(((Join) o).getTable()) && joins.equals(((Join) o).joins);
-        }
-
         public boolean isIn(VariableExprSet set) {
             for(int i=0;i<set.size;i++) {
                 VariableClassExpr expr = set.get(i);
@@ -272,11 +292,6 @@ public class Table extends ImmutableObject implements MapKeysInterface<KeyField>
 
         private long getComplexity() {
             return AbstractSourceJoin.getComplexity(joins.values()); 
-        }
-
-        @Override
-        public int hashCode() {
-            return hashOuter(HashContext.hashCode);
         }
 
         public class IsIn extends DataWhere implements JoinData {
@@ -341,7 +356,7 @@ public class Table extends ImmutableObject implements MapKeysInterface<KeyField>
                 return classes.map(joins).and(getJoinsWhere().getClassWhere());
             }
 
-            public boolean twins(AbstractSourceJoin o) {
+            public boolean twins(TwinImmutableInterface o) {
                 return Join.this.equals(((IsIn) o).getJoin());
             }
 
@@ -411,8 +426,7 @@ public class Table extends ImmutableObject implements MapKeysInterface<KeyField>
                 return new NotNull();
             }
 
-            @Override
-            public boolean twins(AbstractSourceJoin o) {
+            public boolean twins(TwinImmutableInterface o) {
                 return Join.this.equals(((Expr) o).getJoin()) && property.equals(((Expr) o).property);
             }
 

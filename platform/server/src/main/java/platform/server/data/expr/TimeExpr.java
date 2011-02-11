@@ -1,11 +1,10 @@
 package platform.server.data.expr;
 
+import platform.base.TwinImmutableInterface;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.ConcreteClass;
-import platform.server.classes.DoubleClass;
 import platform.server.data.Time;
 import platform.server.data.expr.where.MapWhere;
-import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
@@ -49,7 +48,7 @@ public class TimeExpr extends StaticClassExpr {
         return this;
     }
 
-    public boolean twins(AbstractSourceJoin obj) {
+    public boolean twins(TwinImmutableInterface obj) {
         return time.equals(((TimeExpr)obj).time);
     }
 

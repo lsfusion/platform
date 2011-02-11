@@ -3,6 +3,7 @@ package platform.server.caches;
 import platform.base.BaseUtils;
 import platform.base.ImmutableObject;
 import platform.base.GlobalObject;
+import platform.base.TwinImmutableObject;
 import platform.server.caches.hash.HashCodeValues;
 import platform.server.caches.hash.HashMapValues;
 import platform.server.data.Value;
@@ -11,17 +12,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
 
-public abstract class AbstractMapValues<U extends AbstractMapValues<U>> extends ImmutableObject implements MapValues<U>  {
+public abstract class AbstractMapValues<U extends AbstractMapValues<U>> extends TwinImmutableObject implements MapValues<U>  {
 
-    boolean hashCoded = false;
-    int hashCode;
-    @Override
-    public int hashCode() {
-        if(!hashCoded) {
-            hashCode = hashValues(HashCodeValues.instance);
-            hashCoded = true;
-        }
-        return hashCode;
+    public int immutableHashCode() {
+        return hashValues(HashCodeValues.instance);
     }
 
     public static Map<Value, GlobalObject> getParamClasses(Set<Value> values) {

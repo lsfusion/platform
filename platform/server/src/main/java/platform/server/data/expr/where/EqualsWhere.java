@@ -1,11 +1,11 @@
 package platform.server.data.expr.where;
 
 import platform.base.BaseUtils;
+import platform.base.TwinImmutableInterface;
 import platform.interop.Compare;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.*;
-import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.where.EqualMap;
@@ -54,7 +54,7 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
     }
 
     @Override
-    public boolean twins(AbstractSourceJoin o) {
+    public boolean twins(TwinImmutableInterface o) {
         return (BaseUtils.hashEquals(operator1,((EqualsWhere)o).operator1) && BaseUtils.hashEquals(operator2,((EqualsWhere)o).operator2) ||
                (BaseUtils.hashEquals(operator1,((EqualsWhere)o).operator2) && BaseUtils.hashEquals(operator2,((EqualsWhere)o).operator1)));
     }

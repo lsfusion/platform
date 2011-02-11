@@ -19,6 +19,7 @@ public class UsedSimpleChanges implements ExprChanges {
     }
 
     // предполагается что все до getUsedChanges вызывается только для IncrementUpdate в FormInstance при проходе через MaxChange и Cycle
+    // проблема в том что кэшингу мешает
     public Where getIsClassWhere(Expr expr, ValueClass isClass, WhereBuilder changedWheres) {
         return expr.isClass(isClass.getUpSet());
     }

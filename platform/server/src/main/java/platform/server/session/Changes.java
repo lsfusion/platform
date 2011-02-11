@@ -1,6 +1,7 @@
 package platform.server.session;
 
 import platform.base.BaseUtils;
+import platform.base.TwinImmutableInterface;
 import platform.server.caches.AbstractMapValues;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.MapValues;
@@ -58,7 +59,7 @@ public abstract class Changes<U extends Changes<U>> extends AbstractMapValues<U>
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(Object o) { // здесь перегрузка потому как equals может быть и без twins
         if(this == o) return true;
         if(!(o instanceof Changes && add.equals(((Changes) o).add) && remove.equals(((Changes) o).remove)  && data.equals(((Changes) o).data) && BaseUtils.nullEquals(newClasses, ((Changes) o).newClasses))) return false;
 
@@ -66,6 +67,10 @@ public abstract class Changes<U extends Changes<U>> extends AbstractMapValues<U>
             return modifyEquals((U)o);
 
         return !modifyUsed() && !((Changes)o).modifyUsed();
+    }
+
+    public boolean twins(TwinImmutableInterface o) {
+        throw new RuntimeException("overrided");
     }
 
     protected Changes(U changes, Changes<?> merge, boolean cast) {

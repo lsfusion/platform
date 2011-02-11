@@ -1,8 +1,8 @@
 package platform.server.data.expr;
 
+import platform.base.TwinImmutableInterface;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.where.MapWhere;
-import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
@@ -68,7 +68,7 @@ public class KeyExpr extends VariableClassExpr {
     }
 
     @Override
-    public int hashCode() {
+    public int immutableHashCode() {
         return System.identityHashCode(this);
     }
 
@@ -76,7 +76,7 @@ public class KeyExpr extends VariableClassExpr {
         return hashContext.keys.hash(this);
     }
 
-    public boolean twins(AbstractSourceJoin obj) {
+    public boolean twins(TwinImmutableInterface obj) {
         return false;
     }
 

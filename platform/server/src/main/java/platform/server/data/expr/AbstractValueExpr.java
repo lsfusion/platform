@@ -1,9 +1,9 @@
 package platform.server.data.expr;
 
+import platform.base.TwinImmutableInterface;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.LogicalClass;
 import platform.server.data.expr.where.MapWhere;
-import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.JoinData;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
@@ -41,7 +41,7 @@ public abstract class AbstractValueExpr extends StaticClassExpr {
         return Where.TRUE;
     }
 
-    public boolean twins(AbstractSourceJoin o) {
+    public boolean twins(TwinImmutableInterface o) {
         return object.equals(((AbstractValueExpr)o).object) && objectClass.equals(((AbstractValueExpr)o).objectClass);
     }
 

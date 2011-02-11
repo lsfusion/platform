@@ -1,5 +1,8 @@
 package platform.server.logics.property;
 
+import platform.base.BaseUtils;
+
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -10,18 +13,12 @@ import java.util.List;
  */
 
 public class PropertyClassImplement<P extends PropertyInterface> extends PropertyImplement<ValueClassWrapper, P> {
+
     public PropertyClassImplement(Property<P> property, List<ValueClassWrapper> classes, List<P> interfaces) {
-        assert classes.size() == interfaces.size();
-        this.property = property;
-        this.mapping = new HashMap<P, ValueClassWrapper>();
-        for (int i = 0; i < classes.size(); i++) {
-            this.mapping.put(interfaces.get(i), classes.get(i));
-        }
+        super(property, BaseUtils.toMap(interfaces, classes));
     }
 
     public PropertyClassImplement(Property<P> property, ValueClassWrapper vClass, P iFace) {
-        this.property = property;
-        this.mapping = new HashMap<P, ValueClassWrapper>();
-        this.mapping.put(iFace, vClass);
+        super(property, Collections.singletonMap(iFace, vClass));
     }
 }

@@ -1,5 +1,6 @@
 package platform.server.data.expr.where;
 
+import platform.base.TwinImmutableInterface;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
@@ -10,7 +11,6 @@ import platform.server.classes.sets.ObjectClassSet;
 import platform.server.data.expr.IsClassExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.SingleClassExpr;
-import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
@@ -96,7 +96,7 @@ public class IsClassWhere extends DataWhere {
         return expr.hashOuter(hashContext) ^ classes.hashCode()*31;
     }
 
-    public boolean twins(AbstractSourceJoin obj) {
+    public boolean twins(TwinImmutableInterface obj) {
         return expr.equals(((IsClassWhere)obj).expr) && classes.equals(((IsClassWhere)obj).classes);
     }
 

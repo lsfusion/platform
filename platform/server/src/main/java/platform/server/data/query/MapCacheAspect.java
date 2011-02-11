@@ -7,6 +7,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.DeclareParents;
 import platform.base.BaseUtils;
 import platform.base.Result;
+import platform.base.TwinImmutableInterface;
 import platform.server.caches.AbstractMapValues;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.InnerContext;
@@ -279,8 +280,8 @@ public class MapCacheAspect {
             this.changed = changed;
         }
 
-        public boolean equals(Object o) {
-            return this == o || o instanceof JoinExprInterfaceImplement && changed == ((JoinExprInterfaceImplement) o).changed && usedChanges.equals(((JoinExprInterfaceImplement) o).usedChanges);
+        public boolean twins(TwinImmutableInterface o) {
+            return changed == ((JoinExprInterfaceImplement) o).changed && usedChanges.equals(((JoinExprInterfaceImplement) o).usedChanges);
         }
 
         @IdentityLazy
@@ -518,10 +519,12 @@ public class MapCacheAspect {
         }
     }
 
+    public static boolean disableCaches = false;
+
     public <K extends PropertyInterface,U extends Changes<U>> Expr getExpr(Property<K> property, Map<K, Expr> joinExprs, Modifier<U> modifier, WhereBuilder changedWheres, Map<Integer, Map<ExprInterfaceImplement, ExprResult>> exprCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
         // здесь по идее на And не надо проверять
-        if(property.equals(AggregateProperty.recalculate)) return (Expr) thisJoinPoint.proceed();
+        if(disableCaches || property.equals(AggregateProperty.recalculate)) return (Expr) thisJoinPoint.proceed();
 
         property.cached = true;
 

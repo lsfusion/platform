@@ -1,5 +1,9 @@
 package platform.server.data;
 
+import net.jcip.annotations.Immutable;
+import platform.base.ImmutableObject;
+import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
@@ -8,7 +12,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public abstract class Field {
+public abstract class Field extends TwinImmutableObject {
     public String name;
     public Type type;
 
@@ -46,13 +50,11 @@ public abstract class Field {
 
     abstract byte getType();
 
-    @Override
-    public boolean equals(Object obj) {
-        return this==obj || getClass()==obj.getClass() && name.equals(((Field)obj).name) && type.equals(((Field)obj).type);
+    public boolean twins(TwinImmutableInterface o) {
+        return name.equals(((Field)o).name) && type.equals(((Field)o).type);
     }
 
-    @Override
-    public int hashCode() {
+    public int immutableHashCode() {
         return (getClass().hashCode() * 31 + name.hashCode()) * 31 + type.hashCode();
     }
 }

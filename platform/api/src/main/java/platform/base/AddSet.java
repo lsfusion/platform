@@ -1,6 +1,6 @@
 package platform.base;
 
-public abstract class AddSet<T,This extends AddSet<T,This>> extends ImmutableObject {
+public abstract class AddSet<T,This extends AddSet<T,This>> extends TwinImmutableObject {
 
     public final T[] wheres;
 
@@ -68,13 +68,11 @@ public abstract class AddSet<T,This extends AddSet<T,This>> extends ImmutableObj
         return createThis(results);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        return this == o || o instanceof AddSet && BaseUtils.equalArraySets(wheres,(((AddSet)o).wheres)) && getClass()==o.getClass();
+    public boolean twins(TwinImmutableInterface o) {
+        return BaseUtils.equalArraySets(wheres,(((AddSet) o).wheres));
     }
 
-    @Override
-    public int hashCode() {
+    public int immutableHashCode() {
         return BaseUtils.hashSet(wheres) * 31;
     }
 

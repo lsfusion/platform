@@ -1,10 +1,10 @@
 package platform.server.data.expr.where;
 
+import platform.base.TwinImmutableInterface;
 import platform.interop.Compare;
 import platform.server.caches.ParamLazy;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.VariableExprSet;
-import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
@@ -73,7 +73,7 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
         return getOperandWhere().getClassWhere();
     }
 
-    public boolean twins(AbstractSourceJoin obj) {
+    public boolean twins(TwinImmutableInterface obj) {
         return operator1.equals(((BinaryWhere)obj).operator1) && operator2.equals(((BinaryWhere)obj).operator2);
     }
 

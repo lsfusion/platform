@@ -10,12 +10,16 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.MapCase;
+import platform.server.data.query.innerjoins.KeyEqual;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapTranslator;
 import platform.server.data.translator.MapValuesTranslate;
+import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -107,4 +111,24 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
         return where;
     }
 
+    private static <K> void pullValues(Map<K, ? extends Expr> map, Where where, Map<K, Expr> result) {
+        Map<BaseExpr, BaseExpr> exprValues = where.getExprValues();
+        for(Map.Entry<K, ? extends Expr> entry : map.entrySet()) {
+            Expr exprValue = exprValues.get(entry.getValue());
+            if(exprValue==null && entry.getValue().isValue())
+                exprValue = entry.getValue();
+            if(exprValue!=null)
+                result.put(entry.getKey(), exprValue);
+        }
+    }
+
+    // жестковатая эвристика, но не страшно
+    public Query<K,V> pullValues(Map<K, Expr> pullKeys, Map<V, Expr> pullProps) {
+        pullValues(mapKeys, where, pullKeys);
+        QueryTranslator keyTranslator = new PartialQueryTranslator(BaseUtils.rightCrossJoin(mapKeys, pullKeys));
+        Where transWhere = where.translateQuery(keyTranslator);
+        Map<V, Expr> transProps = keyTranslator.translate(properties);
+        pullValues(transProps, transWhere, pullProps);
+        return new Query<K,V>(BaseUtils.filterNotKeys(mapKeys, pullKeys.keySet()), BaseUtils.filterNotKeys(transProps, pullProps.keySet()), transWhere);
+    }
 }

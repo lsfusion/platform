@@ -141,39 +141,16 @@ public class SessionRows implements SessionData<SessionRows> {
 
     }
 
-    private static SessionData createSessionTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows, Object owner) throws SQLException {
-        if (!rows.isEmpty()) {
-            Map<KeyField, DataObject> constantKeyValues = new HashMap<KeyField, DataObject>(rows.keySet().iterator().next());
-            HashMap<PropertyField, ObjectValue> constantPropertyValues = new HashMap<PropertyField, ObjectValue>(rows.values().iterator().next());
-
-            for (Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> entry : rows.entrySet()) {
-                Map<KeyField, DataObject> rowKeys = entry.getKey();
-                Map<PropertyField, ObjectValue> rowProperties = entry.getValue();
-
-                for (Map.Entry<KeyField, DataObject> key : rowKeys.entrySet()) {
-                    KeyField keyField = key.getKey();
-                    if (!key.getValue().equals(constantKeyValues.get(keyField))) {
-                        constantKeyValues.remove(keyField);
-                    }
-                }
-
-                for (Map.Entry<PropertyField, ObjectValue> property : rowProperties.entrySet()) {
-                    PropertyField propertyField = property.getKey();
-                    if (!property.getValue().equals(constantPropertyValues.get(propertyField))) {
-                        constantPropertyValues.remove(propertyField);
-                    }
-                }
-                if (constantKeyValues.isEmpty() && constantPropertyValues.isEmpty()) {
-                    break;
-                }
-            }
-
-            if (!constantKeyValues.isEmpty() || !constantPropertyValues.isEmpty()) {
-                return new SessionFixedFieldsTable(session, keys, properties, rows, constantKeyValues, constantPropertyValues, owner);
-            }
+    private static SessionDataTable createSessionTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows, Object owner) throws SQLException {
+        Iterator<Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>> ir = rows.entrySet().iterator();
+        Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> first = ir.next();
+        SessionDataTable result = new SessionDataTable(new SessionTable(session, owner), keys, first.getKey(), first.getValue());
+        while(ir.hasNext()) {
+            Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> row = ir.next();
+            result = result.insertRecord(session, row.getKey(), row.getValue(), false, owner);
         }
 
-        return new SessionTable(session, keys, properties, rows, owner);
+        return result;
     }
 
     public static SessionData rewrite(SessionData<?> data, SQLSession session, Collection<Map<KeyField, DataObject>> writeRows, Object owner) throws SQLException {
@@ -192,15 +169,29 @@ public class SessionRows implements SessionData<SessionRows> {
 
     public static SessionData write(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, Query<KeyField, PropertyField> query, BaseClass baseClass, QueryEnvironment env, Object owner) throws SQLException {
 
+        assert properties.equals(query.properties.keySet());
+
+        Map<KeyField, Expr> keyExprValues = new HashMap<KeyField, Expr>();
+        Map<PropertyField, Expr> propExprValues = new HashMap<PropertyField, Expr>();
+        query = query.pullValues(keyExprValues, propExprValues);
+
+        Map<KeyField, DataObject> keyValues = new HashMap<KeyField, DataObject>();
+        for(Map.Entry<KeyField, ObjectValue> keyValue : Expr.readValues(session, baseClass, keyExprValues, env).entrySet())
+            if(keyValue.getValue() instanceof DataObject)
+                keyValues.put(keyValue.getKey(), (DataObject) keyValue.getValue());
+            else
+                return new SessionRows(keys, properties); // если null в ключах можно валить
+        Map<PropertyField, ObjectValue> propValues = Expr.readValues(session, baseClass, propExprValues, env);
+
         // читаем классы не считывая данные
         Map<PropertyField,ClassWhere<Field>> insertClasses = new HashMap<PropertyField, ClassWhere<Field>>();
         for(PropertyField field : query.properties.keySet())
             insertClasses.put(field,query.<Field>getClassWhere(Collections.singleton(field)));
 
-        SessionTable table = new SessionTable(session, keys, properties, query.<KeyField>getClassWhere(new ArrayList<PropertyField>()), insertClasses, owner);
+        SessionTable table = new SessionTable(session, BaseUtils.filterList(keys, query.mapKeys.keySet()), query.properties.keySet(), query.<KeyField>getClassWhere(new ArrayList<PropertyField>()), insertClasses, owner);
         // нужно прочитать то что записано
         if(session.insertSelect(new ModifyQuery(table,query,env)) > MAX_ROWS)
-            return table;
+            return new SessionDataTable(table, keys, keyValues, propValues);
         else {
             OrderedMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> readRows = table.read(session, baseClass);
 
@@ -209,7 +200,7 @@ public class SessionRows implements SessionData<SessionRows> {
             // надо бы batch update сделать, то есть зная уже сколько запискй
             SessionData sessionRows = new SessionRows(keys, properties);
             for(Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> writeRow : readRows.entrySet())
-                sessionRows = sessionRows.insertRecord(session, writeRow.getKey(), writeRow.getValue(), false, owner);
+                sessionRows = sessionRows.insertRecord(session, BaseUtils.merge(writeRow.getKey(), keyValues), BaseUtils.merge(writeRow.getValue(), propValues), false, owner);
             return sessionRows;
         }
     }

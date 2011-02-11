@@ -1,6 +1,7 @@
 package platform.server.data.translator;
 
 import platform.base.BaseUtils;
+import platform.base.TwinImmutableInterface;
 import platform.server.data.Value;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.PullExpr;
@@ -34,12 +35,12 @@ public class MapTranslator extends AbstractMapTranslator {
         return values.translate(expr);
     }
 
-    public int hashCode() {
-        return keys.hashCode()*31+values.hashCode();
+    public boolean twins(TwinImmutableInterface o) {
+        return keys.equals(((MapTranslator)o).keys) && values.equals(((MapTranslator)o).values);
     }
 
-    public boolean equals(Object obj) {
-        return obj==this || (obj instanceof MapTranslator && keys.equals(((MapTranslator)obj).keys) && values.equals(((MapTranslator)obj).values));
+    public int immutableHashCode() {
+        return keys.hashCode()*31+values.hashCode();
     }
 
     public <K> Map<K, KeyExpr> translateKey(Map<K, KeyExpr> map) {
