@@ -23,7 +23,7 @@
 	<field name="completeCommentExpertVote" class="java.lang.String"/>
 	<field name="nameNativeClaimerVote" class="java.lang.String"/>
 	<field name="nameNativeProjectVote" class="java.lang.String"/>
-	<field name="nameNativeСlusterVote" class="java.lang.String"/>
+	<field name="nameNativeClusterVote" class="java.lang.String"/>
 	<detail>
 		<band height="753" splitType="Immediate">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
@@ -278,7 +278,7 @@
 					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
 				</box>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Проект соответствует направлению "+ $F{nameNativeСlusterVote} +"."]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["Проект соответствует направлению "+ $F{nameNativeClusterVote} +"."]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
