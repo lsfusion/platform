@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="obj1" columnCount="4" pageWidth="595" pageHeight="842" columnWidth="148" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
+	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
+		<box leftPadding="2" rightPadding="2">
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="GroupCellStyle1" isDefault="false" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
+		<box leftPadding="2" rightPadding="2">
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+	</style>
+	<field name="obj1" class="java.lang.Integer"/>
+	<field name="objectValueProperty_object" class="java.lang.Integer"/>
+	<field name="date" class="java.util.Date"/>
+	<field name="objectClassName" class="java.lang.String"/>
+	<field name="property91" class="java.lang.String"/>
+	<field name="property92" class="java.lang.String"/>
+	<field name="property103" class="java.lang.String"/>
+	<field name="invoiceNumber" class="java.lang.String"/>
+	<field name="invoiceSeries" class="java.lang.String"/>
+	<field name="property205" class="java.lang.String"/>
+	<field name="obj11" class="java.lang.Integer"/>
+	<field name="objectValueProperty_object12" class="java.lang.Integer"/>
+	<field name="commonName" class="java.lang.String"/>
+	<field name="barcode" class="java.lang.String"/>
+	<field name="objectClassName15" class="java.lang.String"/>
+	<field name="property90" class="java.lang.String"/>
+	<field name="nameUnitOfMeasureArticle" class="java.lang.String"/>
+	<field name="shopPrice" class="java.lang.Double"/>
+	<group name="captionGroup1">
+		<groupExpression><![CDATA[String.valueOf($F{obj1})]]></groupExpression>
+	</group>
+	<group name="textGroup1">
+		<groupExpression><![CDATA[String.valueOf($F{obj1})]]></groupExpression>
+	</group>
+	<detail>
+		<band height="89">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="2" y="29" width="138" height="18"/>
+				<textElement textAlignment="Left">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{commonName}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle1" positionType="FixRelativeToBottom" stretchType="RelativeToBandHeight" x="5" y="70" width="69" height="11"/>
+				<textElement textAlignment="Left">
+					<font size="6" isBold="true" isItalic="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{barcode}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="2" y="3" width="138" height="25"/>
+				<textElement textAlignment="Right">
+					<font size="16" isBold="true" isItalic="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{shopPrice}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="1" y="0" width="139" height="1"/>
+			</line>
+			<line>
+				<reportElement x="0" y="0" width="1" height="88"/>
+			</line>
+			<line>
+				<reportElement x="1" y="88" width="139" height="1"/>
+			</line>
+			<line>
+				<reportElement x="141" y="0" width="1" height="88"/>
+			</line>
+		</band>
+	</detail>
+</jasperReport>
