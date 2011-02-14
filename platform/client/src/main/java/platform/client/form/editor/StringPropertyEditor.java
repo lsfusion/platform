@@ -23,7 +23,7 @@ public class StringPropertyEditor extends TextFieldPropertyEditor {
         });
 
         if (value != null) {
-            setText(value.toString());
+            setText(value.toString().trim());
         }
     }
 

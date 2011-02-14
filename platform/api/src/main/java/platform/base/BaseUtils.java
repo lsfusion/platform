@@ -389,7 +389,7 @@ public class BaseUtils {
 
         if (object instanceof String) {
             outStream.writeByte(2);
-            outStream.writeUTF(((String) object).trim());
+            outStream.writeUTF((String) object);
             return;
         }
 

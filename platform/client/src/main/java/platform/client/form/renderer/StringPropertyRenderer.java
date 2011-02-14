@@ -29,7 +29,7 @@ public class StringPropertyRenderer extends LabelPropertyRenderer
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
         if (value != null) {
             setForeground(normalForeground);
-            setText(value.toString());
+            setText(value.toString().trim());
         } else {
             setForeground(inactiveForeground);
             setText(EMPTY_STRING);
