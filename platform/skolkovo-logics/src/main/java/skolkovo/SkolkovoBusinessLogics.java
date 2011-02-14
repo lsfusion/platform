@@ -798,7 +798,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             objVote = addSingleGroupObject(1, "vote", vote, date, dateProjectVote, nameNativeClaimerVote, datePrevVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
-            objExpert = addSingleGroupObject(2, "expert", expert, name);
+            objExpert = addSingleGroupObject(2, "expert", expert, userLastName, userFirstName);
             addPropertyDraw(numberExpertVote, objExpert, objVote);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
 
@@ -958,6 +958,11 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             Boolean inVote = (Boolean) inExpertVote.read(session, expertObj, voteObj);
             if (inVote == null || !inVote) {
                 throw new RuntimeException("Эксперт с идентификатором " + expertId + " не назначен на заседание с идентификатором " + voteId);
+            }
+
+            Boolean opVote = (Boolean) openedVote.read(session, voteObj);
+            if (opVote == null || !opVote) {
+                throw new RuntimeException("Голосование по заседанию с идентификатором " + voteId + " завершено");
             }
 
             projectObj = new DataObject(projectId, project);

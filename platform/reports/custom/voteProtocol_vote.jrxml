@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="vote" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.3310000000000024"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="525"/>
+	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -57,13 +57,6 @@
 					<text><![CDATA[«      »______________ 2010 г]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="447" y="87" width="82" height="21"/>
-					<textElement/>
-					<text><![CDATA[№________
-
-]]></text>
-				</staticText>
-				<staticText>
 					<reportElement x="292" y="108" width="45" height="18"/>
 					<textElement/>
 					<text><![CDATA[Москва]]></text>
@@ -84,8 +77,8 @@
 					<textElement textAlignment="Justified"/>
 					<textFieldExpression class="java.lang.String"><![CDATA["1. В соответствии с пунктами 6-16 Положения об Экспертных коллегиях Фонда «Сколково» и на основании:" +
  '\n' + "1) решения Фонда о направлении заявки соискателя на рассмотрение в Экспертную коллегию для " +
-"проведения экспертизы заявки по существу от " + $F{date} + " ;"+'\n'+"2) решения Руководителя Аппарата " +
-"Президента и Советов Фонда о созыве заседания Экспертной коллегии от " + $F{date} + " для проведения " +
+"проведения экспертизы заявки по существу от " + (DateFormat.getDateInstance(DateFormat.MEDIUM).format($F{date})) + " ;"+'\n'+"2) решения Руководителя Аппарата " +
+"Президента и Советов Фонда о созыве заседания Экспертной коллегии от " + (DateFormat.getDateInstance(DateFormat.MEDIUM).format($F{date})) + " для проведения " +
 "экспертизы заявки " + $F{nameNativeClaimerVote} + " по существу было созвано заседание Экспертной коллегии, " +
 "для чего был определен ее состав в количестве 10 членов и направлены членам Экспертной коллегии" +
 "материалы заявки соискателя (в электронном виде), а также Бюллетень оценки."]]></textFieldExpression>
@@ -95,10 +88,10 @@
 					<textElement textAlignment="Justified"/>
 					<textFieldExpression class="java.lang.String"><![CDATA["2. В срок, указанный в пункте 8 Положения об Экспертных коллегиях Фонда «Сколково», в Фонд направлены " +
  $F{quantityRepliedVote} + " заполненных Бюллетеней оценки. Из них в " + $F{quantityDoneVote} +
-"Бюллетенях оценки члены Экспертной коллегии указали на то, что они не являются заинтересованными " +
+" бюллетенях оценки члены Экспертной коллегии указали на то, что они не являются заинтересованными " +
 "лицами по отношению к соискателю. Таким образом, в соответствии с абзацем 5 пункта 7, пунктами 10, 11 " +
 "Положения об Экспертных коллегиях Фонда «Сколково» в заседании приняло участие " + $F{quantityDoneVote} +
-"членов Экспертной коллегии, в связи с чем заседание Экспертной коллегии признается "
+" членов Экспертной коллегии, в связи с чем заседание Экспертной коллегии признается "
 +($F{succeededVote}==null?"не":"")+" состоявшимся "]]></textFieldExpression>
 				</textField>
 			</band>

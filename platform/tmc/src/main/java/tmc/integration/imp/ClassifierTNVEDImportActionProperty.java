@@ -103,29 +103,33 @@ public class ClassifierTNVEDImportActionProperty extends ActionProperty {
             }
         }
 
-        private int add4Item(String field1, String field2) throws SQLException {
-            Integer item = (Integer) read(BL.sidToCustomCategory4, field1);
+        private int add4Item(String sID, String name) throws SQLException {
+            Integer item = (Integer) read(BL.sidToCustomCategory4, sID);
             if (item == null) {
                 DataObject category4Object = session.addObject(BL.customCategory4, session.modifier);
-                BL.sidCustomCategory4.execute(field1, session, category4Object);
-                BL.nameCustomCategory.execute(field2, session, category4Object);
-                return (Integer) read(BL.sidToCustomCategory4, field1);
+                BL.sidCustomCategory4.execute(sID, session, category4Object);
+                BL.nameCustomCategory.execute(name, session, category4Object);
+                int catID = (Integer)category4Object.getValue();
+                map.put(sID, catID);
+                return catID;
             } else {
                 return item;
             }
         }
 
-        private int add6Item(String field1, String field2) throws SQLException {
-            Integer item = (Integer) read(BL.sidToCustomCategory6, field1);
+        private int add6Item(String sID, String name) throws SQLException {
+            Integer item = (Integer) read(BL.sidToCustomCategory6, sID);
             if (item == null) {
                 DataObject category6Object = session.addObject(BL.customCategory6, session.modifier);
-                BL.sidCustomCategory6.execute(field1, session, category6Object);
-                BL.nameCustomCategory.execute(field2, session, category6Object);
-                int category4Id = add4Item(field1.substring(0, 4), field2);
+                BL.sidCustomCategory6.execute(sID, session, category6Object);
+                BL.nameCustomCategory.execute(name, session, category6Object);
+                int category4Id = add4Item(sID.substring(0, 4), name);
                 BL.customCategory4CustomCategory6.execute(category4Id, session, category6Object);
-                return (Integer) read(BL.sidToCustomCategory6, field1);
+                int catID = (Integer)category6Object.getValue();
+                map.put(sID, catID);
+                return catID;
             } else {
-                int category4Id = add4Item(field1.substring(0, 4), field2);
+                int category4Id = add4Item(sID.substring(0, 4), name);
                 DataObject category6Object = session.getDataObject(item, BL.customCategory6.getType());
                 Integer category4IdIn6 = (Integer)BL.customCategory4CustomCategory6.read(session, category6Object);
                 if(category4IdIn6 == null || category4IdIn6 != category4Id) {
@@ -143,7 +147,9 @@ public class ClassifierTNVEDImportActionProperty extends ActionProperty {
                 BL.nameCustomCategory.execute(field2, session, category9Object);
                 int category6Id = add6Item(field1.substring(0, 6), field2);
                 BL.customCategory6CustomCategory9.execute(category6Id, session, category9Object);
-                return (Integer) read(BL.sidToCustomCategory9, field1);
+                int catID = (Integer)category9Object.getValue();
+                map.put(sID, catID);
+                return catID;
             } else {
                 int category6Id = add6Item(field1.substring(0, 6), field2);
                 DataObject category9Object = session.getDataObject(item, BL.customCategory9.getType());
@@ -163,7 +169,9 @@ public class ClassifierTNVEDImportActionProperty extends ActionProperty {
                 BL.nameCustomCategory.execute(field2, session, category10Object);
                 int category9Id = add9Item(field1.substring(0, 9), field2);
                 BL.customCategory9CustomCategory10.execute(category9Id, session, category10Object);
-                return (Integer) read(BL.sidToCustomCategory10, field1);
+                int catID = (Integer)category10Object.getValue();
+                map.put(sID, catID);
+                return (Integer)category10Object.getValue();
             } else {
                 int category9Id = add9Item(field1.substring(0, 9), field2);
                 DataObject category10Object = session.getDataObject(item, BL.customCategory10.getType());
