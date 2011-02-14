@@ -38,16 +38,16 @@
 	<field name="sidArticleSku" class="java.lang.String"/>
 	<field name="nameBrandSupplierArticleSku" class="java.lang.String"/>
 	<field name="nameOriginCategoryArticleSku" class="java.lang.String"/>
-	<field name="mainCompositionOriginSku" class="java.lang.String"/>
-	<field name="additionalCompositionOriginSku" class="java.lang.String"/>
-	<field name="sidCustomCategoryOriginArticleSku" class="java.lang.String"/>
+	<field name="mainCompositionFreightSku" class="java.lang.String"/>
+	<field name="additionalCompositionFreightSku" class="java.lang.String"/>
+	<field name="sidCustomCategory10FreightSku" class="java.lang.String"/>
 	<field name="quantityImporterStockSku" class="java.lang.Double"/>
-	<field name="nameCountryOfOriginSku" class="java.lang.String"/>
+	<field name="nameCountryOfOriginFreightSku" class="java.lang.String"/>
 	<field name="netWeightSku" class="java.lang.Double"/>
 	<field name="sumImporterStockSku" class="java.lang.Double"/>
 	<field name="netWeightImporterStockSku" class="java.lang.Double"/>
 	<field name="grossWeightImporterFreight" class="java.lang.Double"/>
-	<field name="grossWeightImporterFreightSku" class="java.lang.Double"/>
+	<field name="grossWeightImporterStockSku" class="java.lang.Double"/>
 	<field name="netWeightImporterStock" class="java.lang.Double"/>
 	<field name="barcodeFreightBox" class="java.lang.String"/>
 	<group name="captionGroup4">
@@ -58,7 +58,7 @@
 		<groupFooter>
 			<band height="18">
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
-					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="693" y="0" width="53" height="18"/>
+					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="635" y="0" width="53" height="18"/>
 					<textElement textAlignment="Right"/>
 					<textFieldExpression class="java.lang.Double"><![CDATA[$F{netWeightImporterStock}]]></textFieldExpression>
 				</textField>
@@ -118,7 +118,7 @@
 				<textFieldExpression class="java.lang.String"><![CDATA["Ursprungsland"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle2" stretchType="RelativeToBandHeight" x="693" y="102" width="53" height="18"/>
+				<reportElement style="GroupCellStyle2" stretchType="RelativeToBandHeight" x="635" y="102" width="53" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Netto,kg"]]></textFieldExpression>
 			</textField>
@@ -192,7 +192,7 @@
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{contractImporter}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle2" stretchType="RelativeToBandHeight" x="635" y="102" width="58" height="18" backcolor="#FFFCFF"/>
+				<reportElement style="GroupCellStyle2" stretchType="RelativeToBandHeight" x="688" y="102" width="58" height="18" backcolor="#FFFCFF"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Brutto,kg"]]></textFieldExpression>
 			</textField>
@@ -218,17 +218,17 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="303" y="0" width="68" height="18"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{mainCompositionOriginSku}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{mainCompositionFreightSku}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="371" y="0" width="80" height="18"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{additionalCompositionOriginSku}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{additionalCompositionFreightSku}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="451" y="0" width="61" height="18"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{sidCustomCategoryOriginArticleSku}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{sidCustomCategory10FreightSku}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="512" y="0" width="43" height="18"/>
@@ -238,10 +238,10 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="555" y="0" width="80" height="18"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameCountryOfOriginSku}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameCountryOfOriginFreightSku}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="693" y="0" width="53" height="18"/>
+				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="635" y="0" width="53" height="18"/>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{netWeightImporterStockSku}]]></textFieldExpression>
 			</textField>
@@ -251,9 +251,9 @@
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumImporterStockSku}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.###">
-				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" mode="Opaque" x="635" y="0" width="58" height="18" backcolor="#FFFFFF"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.Double"><![CDATA[$F{grossWeightImporterFreightSku}]]></textFieldExpression>
+				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" mode="Opaque" x="688" y="0" width="58" height="18" backcolor="#FFFFFF"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{grossWeightImporterStockSku}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="80" height="18"/>
