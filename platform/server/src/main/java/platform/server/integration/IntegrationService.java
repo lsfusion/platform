@@ -53,7 +53,7 @@ public class IntegrationService {
                         break;
                     } else {
                         DataObject newObject = session.addObject(key.getCustomClass(), session.modifier);
-                        key.writeValue(session, row, newObject);
+//                        key.writeValue(session, row, newObject);
                         keyValues.put(key, newObject);
                     }
                 }
@@ -62,7 +62,8 @@ public class IntegrationService {
 
             if (processRow) {
                 for (ImportProperty<?> property : properties) {
-                    Object value = property.getImportField().getDataObject(row).object;
+                    DataObject dataObject = property.getImportField().getDataObject(row);
+                    Object value = (dataObject == null ? null : dataObject.object);
 
                     if (property.getConverter() != null) {
                         value = property.convertValue(session, keyValues);

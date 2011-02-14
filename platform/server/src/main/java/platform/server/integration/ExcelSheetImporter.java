@@ -17,9 +17,8 @@ public abstract class ExcelSheetImporter {
 
     protected jxl.Sheet sheet;
     private OrderedMap<ImportField, Pair<Integer, Integer>> fieldPosition = new OrderedMap<ImportField, Pair<Integer, Integer>>();
-    public static final ImportField _ = null;
 
-    public ExcelSheetImporter(jxl.Sheet sheet, Object... fields) {
+    public ExcelSheetImporter(jxl.Sheet sheet, List<ImportField> nullFields, Object... fields) {
         this.sheet = sheet;
         for (int i = 0; i < fields.length; i++) {
             if (fields[i] instanceof ImportField[]) {
@@ -29,6 +28,12 @@ public abstract class ExcelSheetImporter {
                 }
             } else if (fields[i] instanceof ImportField) {
                 fieldPosition.put((ImportField) fields[i], new Pair<Integer, Integer>(i, 0));
+            }
+        }
+
+        if (nullFields != null) {
+            for (ImportField field : nullFields) {
+                fieldPosition.put(field, null);
             }
         }
     }
@@ -45,13 +50,15 @@ public abstract class ExcelSheetImporter {
                 List<Object> row = new ArrayList<Object>();
                 for (Map.Entry<ImportField, Pair<Integer, Integer>> entry : fieldPosition.entrySet()) {
                     ImportField field = entry.getKey();
-                    String value = sheet.getCell(entry.getValue().first, i).getContents();
-                    if (!value.trim().equals("")) {
-                        value = transformValue(entry.getValue().first, entry.getValue().second, value);
-                        row.add(field.getFieldClass().parseString(value));
-                    } else {
-                        row.add(null);
+                    Object rowValue = null;
+                    if (entry.getValue() != null) {
+                        String cellValue = sheet.getCell(entry.getValue().first, i).getContents();
+                        if (!cellValue.trim().equals("")) {
+                            cellValue = transformValue(entry.getValue().first, entry.getValue().second, cellValue);
+                            rowValue = field.getFieldClass().parseString(cellValue);
+                        }
                     }
+                    row.add(rowValue);
                 }
                 data.add(row);
             }

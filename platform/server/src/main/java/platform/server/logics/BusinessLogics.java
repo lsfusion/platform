@@ -1580,6 +1580,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
+        props.add(new ImportProperty(sidField, navigatorElementSID.getMapping(key)));
         props.add(new ImportProperty(captionField, navigatorElementCaption.getMapping(key)));
 
         ImportTable table = new ImportTable(Arrays.asList(sidField, captionField), data);

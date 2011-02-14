@@ -31,6 +31,10 @@ public class ImportField implements ImportFieldInterface {
     }
 
     public DataObject getDataObject(ImportTable.Row row) {
-        return new DataObject(row.getValue(this), getFieldClass());
+        if (row.getValue(this) != null) {
+            return new DataObject(row.getValue(this), getFieldClass());
+        } else {
+            return null;
+        }
     }
 }

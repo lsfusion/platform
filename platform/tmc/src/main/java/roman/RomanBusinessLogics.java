@@ -65,6 +65,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private ConcreteCustomClass freight;
     private ConcreteCustomClass route;
     private ConcreteCustomClass supplier;
+    private StaticCustomClass supplierType;
     private AbstractCustomClass document;
     private AbstractCustomClass priceDocument;
     private AbstractCustomClass subject;
@@ -113,6 +114,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP nameUnitOfMeasureArticle;
     private LP unitOfMeasureArticleSku;
     private LP nameUnitOfMeasureArticleSku;
+    private LP supplierTypeSupplier;
+    private LP nameSupplierTypeSupplier;
     private LP currencySupplier;
     private LP nameCurrencySupplier;
     private LP currencyDocument;
@@ -592,6 +595,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         supplier = addConcreteClass("supplier", "Поставщик", baseClass.named);
 
+        supplierType = addStaticClass("suppierType", "Тип поставщика",
+                new String[] {"jennyfer", "tally_weijl"}, new String[] {"Jennyfer", "Tally Weijl"});
+
         subject = addAbstractClass("subject", "Субъект", baseClass.named);
         importer = addConcreteClass("importer", "Импортер", subject);
         exporter = addConcreteClass("exporter", "Экспортер", subject);
@@ -713,6 +719,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 addJProp(is(customCategory10), customCategory10CustomCategoryOrigin, 1), 1), true);
 
         // Supplier
+        supplierTypeSupplier = addDProp(baseGroup, "supplierTypeSupplier", "Тип поставщика", supplierType, supplier);
+        nameSupplierTypeSupplier = addJProp(baseGroup, "nameSupplierTypeSupplier", "Название типа поставщика", name, supplierTypeSupplier, 1);
+
         currencySupplier = addDProp(idGroup, "currencySupplier", "Валюта (ИД)", currency, supplier);
         nameCurrencySupplier = addJProp(baseGroup, "nameCurrencySupplier", "Валюта", name, currencySupplier, 1);
 
@@ -2601,7 +2610,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         private ColorSizeSupplierFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
-            objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameBrandSupplierSupplier, nameCurrencySupplier, nameDictionaryComposition);
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameSupplierTypeSupplier, nameBrandSupplierSupplier, nameCurrencySupplier, nameDictionaryComposition);
             addObjectActions(this, objSupplier);
 
             objColor = addSingleGroupObject(colorSupplier, "Цвет", sidColorSupplier, name);
@@ -2738,14 +2747,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
     public static class JennyferInvoiceImporter extends ExcelSheetImporter {
 
-        public JennyferInvoiceImporter(jxl.Sheet sheet, Object... fields) {
-            super(sheet, fields);
+        public JennyferInvoiceImporter(jxl.Sheet sheet, List<ImportField> nullFields, Object... fields) {
+            super(sheet, nullFields, fields);
         }
 
         @Override
         protected boolean isCorrectRow(int rowNum) {
             String barcodeText = sheet.getCell(2, rowNum).getContents().trim();
-            return barcodeText.startsWith("'") && barcodeText.length() == 14;
+            return barcodeText.matches("^'\\d{13}$");
         }
 
         @Override
@@ -2753,25 +2762,48 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             value = value.trim();
 
             switch (column) {
-                case 2:
-                    return value.substring(1); // barcode
-                case 10:
-                    return value.substring(0, 10); // customs code
-                case 13:
-                case 14:
-                    return value.replace(',', '.'); // todo [dale]: надо подумать, что делать с локалями
+                case 2:  return value.substring(1); // barcode
+                case 10: return value.substring(0, 10); // customs code
+                case 13: case 14: return value.replace(',', '.'); // todo [dale]: надо подумать, что делать с локалями
                 case 4:
                     switch (part) {
                         case 0: return value.substring(0, value.indexOf(' ')); // sid
                         case 1: return value.substring(value.indexOf(' ') + 1, value.lastIndexOf(' ')).trim(); // color
                         case 2: return value.substring(value.lastIndexOf(' ') + 1); // size
                     }
-                default:
-                    return value;
+                default: return value;
             }
         }
     }
 
+    public static class TallyWeijlInvoiceImporter extends ExcelSheetImporter {
+
+        public TallyWeijlInvoiceImporter(jxl.Sheet sheet, Object... fields) {
+            super(sheet, null, fields);
+        }
+
+        @Override
+        protected boolean isCorrectRow(int rowNum) {
+            String barcodeText = sheet.getCell(12, rowNum).getContents().trim();
+            return barcodeText.matches("^\\d{13}$");
+        }
+
+        @Override
+        protected String transformValue(int column, int part, String value) {
+            value = value.trim();
+
+            switch (column) {
+                case 11: return value.substring(0, 10); // customs code
+                case 23: case 29: return value.replace(',', '.'); // todo [dale]: надо подумать, что делать с локалями
+                case 17:
+                    switch (part) {
+                        case 0: return value.substring(0, value.indexOf(',')).trim(); // original name
+                        case 1: return value.substring(value.indexOf(',') + 1, value.lastIndexOf(',')).trim(); // color
+                    }
+                default: return value;
+            }
+        }
+    }
 
     public class ImportInvoiceActionProperty extends ActionProperty {
 
@@ -2801,15 +2833,30 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             ImportField customCodeField = new ImportField(sidCustomCategoryOrigin);
             ImportField unitPriceField = new ImportField(quantityDataListSku);
             ImportField unitQuantityField = new ImportField(priceDataDocumentItem);
+            ImportField unitNetWeightField = new ImportField(netWeightArticle);
+            ImportField originalNameField = new ImportField(originalNameArticle);
 
             ImportTable table;
             try {
+                Integer type = (Integer) supplierTypeSupplier.read(session, supplier);
                 ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
                 Sheet sheet = Workbook.getWorkbook(inFile).getSheet(0);
 
-                JennyferInvoiceImporter importer = new JennyferInvoiceImporter(sheet, invoiceSIDField, boxNumberField,
-                        barCodeField, colorCodeField, new ImportField[] {sidField, colorNameField, sizeField}, null,
-                        compositionField, null, null, countryField, customCodeField, null, null, unitPriceField, unitQuantityField);
+                ExcelSheetImporter importer = null;
+
+                if (supplierType.getSID(type).equals("jennyfer")) {
+                    importer = new JennyferInvoiceImporter(sheet, Arrays.asList(unitNetWeightField, originalNameField),
+                            invoiceSIDField, boxNumberField, barCodeField, colorCodeField, new ImportField[] {sidField, colorNameField, sizeField},
+                            null, compositionField, null, null, countryField, customCodeField, null, null, unitPriceField, unitQuantityField);
+                } else if (supplierType.getSID(type).equals("tally_weijl")) {
+                    importer = new TallyWeijlInvoiceImporter(sheet, null, null, invoiceSIDField, null, null, null,
+                            null, null, compositionField, countryField, boxNumberField, customCodeField, barCodeField, null,
+                            sizeField, colorCodeField, sidField, new ImportField[] {originalNameField, colorNameField},
+                            null, null, null, null, unitQuantityField, unitNetWeightField, null, null, null, null, null, unitPriceField);
+                } else {
+                    actions.add(new MessageClientAction("Неподдерживаемый формат импорта", "Импорт"));
+                    return;
+                }
 
                 table = importer.getTable();
             } catch (Exception e) {
@@ -2831,6 +2878,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             properties.add(new ImportProperty(supplier, supplierArticle.getMapping(articleKey)));
             properties.add(new ImportProperty(new DataObject(1, IntegerClass.instance), numberListArticle.getMapping(boxKey, articleKey)));
             properties.add(new ImportProperty(compositionField, mainCompositionOriginArticle.getMapping(articleKey)));
+            properties.add(new ImportProperty(unitNetWeightField, netWeightArticle.getMapping(articleKey)));
+            properties.add(new ImportProperty(originalNameField, originalNameArticle.getMapping(articleKey)));
 
             ImportKey<?> itemKey = new ImportKey(item, barcodeToObject.getMapping(barCodeField));
             properties.add(new ImportProperty(barCodeField, barcode.getMapping(itemKey)));
@@ -2858,6 +2907,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             properties.add(new ImportProperty(unitQuantityField, quantityDataListSku.getMapping(boxKey, itemKey)));
             properties.add(new ImportProperty(unitPriceField, priceDataDocumentItem.getMapping(invoiceKey, itemKey)));
             properties.add(new ImportProperty(unitPriceField, priceDocumentArticle.getMapping(invoiceKey, articleKey)));
+
 
             ImportKey<?>[] keysArray = {invoiceKey, boxKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey};
             new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
