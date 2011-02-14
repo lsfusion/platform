@@ -1050,7 +1050,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         inSupplierBoxShipment = addJProp(baseGroup, "inSupplierBoxShipment", "Вкл", inInvoiceShipment, boxInvoiceSupplierBox, 1, 2);
 
-        invoicedShipmentSku = addSGProp(baseGroup, "invoicedShipmentSku", "Ожид. (пост.)",
+        invoicedShipmentSku = addSGProp(baseGroup, "invoicedShipmentSku", true, "Ожид. (пост.)",
                 addJProp(and1, quantityDocumentSku, 1, 2, inInvoiceShipment, 1, 3), 3, 2);
 
         if (USE_SHIPMENT_DETAIL) {

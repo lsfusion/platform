@@ -1029,6 +1029,13 @@ public class BaseUtils {
         return col.iterator().next();
     }
 
+    public static <I> I single(Iterable<I> col) {
+        Iterator<I> it = col.iterator();
+        I result = it.next();
+        assert !it.hasNext();
+        return result;
+    }
+
     public static <I> I singleKey(Map<I, ?> map) {
         return BaseUtils.single(map.keySet());
     }

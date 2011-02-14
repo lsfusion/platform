@@ -309,6 +309,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     LP articleCountry;
 
+    LP deliveryPriceDocArticle;
     LP orderAllDeliveryPrice;
     LP sumNDSRetailOrderArticle;
     LP sumDeliveryOrderArticle;
@@ -332,10 +333,18 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP legalEntityOrderShopInc;
     LP nameLegalEntityOrderShopInc;
 
+    LP removePercent;
+    LP addPercent;
+    LP addvArticle;
+    LP currentRRPPriceStoreArticle;
+    LP articleDiscount;
+    LP currentStoreDiscount;
+
 
     protected void initProperties() {
 
-        LP removePercent = addSFProp("((prm1*(100-prm2))/100)", DoubleClass.instance, 2);
+        removePercent = addSFProp("((prm1*(100-prm2))/100)", DoubleClass.instance, 2);
+        addPercent = addSFProp("((prm1*(100+prm2))/100)", DoubleClass.instance, 2);
         LP backPercent = addSFProp("prm1*prm2/(100+prm2)", DoubleClass.instance, 2);
         LP calcPercent = addSFProp("prm1*100/prm2", DoubleClass.instance, 2);
         LP diff = addSFProp("prm1-prm2", DoubleClass.instance, 2);
@@ -544,12 +553,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         //**************************************************************************************************************
         currentRRP = addDProp(priceGroup, "currentRRP", "RRP", DoubleClass.instance, article);
         currencyArticle = addDProp(priceGroup, "currencyArticle", "Валюта", currency, article);
+        addvArticle = addDProp(priceGroup, "addvArticle", "Наценка", DoubleClass.instance, article);
         unitOfMeasureArticle = addDProp("unitOfMeasureArticle", "Ед. изм.", unitOfMeasure, article);
         nameUnitOfMeasureArticle = addJProp(baseGroup, "nameUnitOfMeasureArticle", "Ед. изм.", name, unitOfMeasureArticle, 1);
         LP currentCurrencyRate = addDProp(baseGroup, "currentCurrencyRate", "Курс", DoubleClass.instance, currency);
         LP currentFormatDiscount = addDProp(priceGroup, "currentFormatDiscount", "Скидка на формат", DoubleClass.instance, format);
         LP currentWarehouseDiscount = addDProp(priceGroup, "currentWarehouseDiscount", "Опт. скидка", DoubleClass.instance);
-        LP currentPrice = addJProp(priceGroup, "Необх. цена", multiplyDouble2, currentRRP, 1, addJProp(currentCurrencyRate, currencyArticle, 1), 1);
 
         // простые акции
         LP actionFrom = addDProp(baseGroup, "actionFrom", "От", DateClass.instance, action);
@@ -570,7 +579,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         articleSaleAction = addCGProp(priceGroup, false, "articleAction", "Дейст. распродажа",
                 addJProp(and1, 1, addJProp(and1, inAction, 1, 2, addJProp(and1, isStarted, 1, is(saleAction), 1), 1), 1, 2), inAction, 2);
-        LP articleDiscount = addSUProp(Union.OVERRIDE, addCProp(DoubleClass.instance, 0, article), addJProp(priceGroup, "Тек. скидка", actionDiscount, articleSaleAction, 1));
+        articleDiscount = addSUProp(Union.OVERRIDE, addCProp(DoubleClass.instance, 0, article), addJProp(priceGroup, "Тек. скидка", actionDiscount, articleSaleAction, 1));
         LP actionNoExtraDiscount = addDProp(baseGroup, "actionNoExtraDiscount", "Без доп. скидок", LogicalClass.instance, saleAction);
 
         LP articleActionToGroup = addDProp("articleActionToGroup", "Группа акций", groupArticleAction, articleAction);
@@ -598,30 +607,64 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP couponMaxPercent = addDProp(baseGroup, "couponMaxPercent", "Макс. процент по купонам", DoubleClass.instance);
 
-        LP currentStoreDiscount = addCUProp(priceGroup, "Скидка на складе",
+        NDS = addDProp(documentGroup, "NDS", "НДС", DoubleClass.instance, documentNDS, article);
+        LP[] maxNDSProps = addMGProp((AbstractGroup) null, true, new String[]{"currentNDSDate", "currentNDSDoc"}, new String[]{"Дата посл. НДС", "Посл. док. НДС"}, 1,
+                addJProp(and1, date, 1, NDS, 1, 2), 1, 2);
+        currentNDSDate = maxNDSProps[0];
+        currentNDSDoc = maxNDSProps[1];
+        addPersistent(currentNDSDate);
+        addPersistent(currentNDSDoc);
+        currentNDS = addJProp("Тек. НДС", NDS, currentNDSDoc, 1, 1);
+        
+        currentStoreDiscount = addCUProp(priceGroup, "Скидка на складе",
                 addJProp(and1, currentWarehouseDiscount, is(warehouse), 1),
                 addJProp(currentFormatDiscount, shopFormat, 1));    // берётся скидка формата, если её нет - оптовая скидка
 
-        LP actionPrice = addJProp(priceGroup, "Акц. цена", removePercent, currentPrice, 1, articleDiscount, 1);
-        LP requiredStorePrice = addJProp(priceGroup, "requiredStorePrice", true, "Необх. цена", removePercent, actionPrice, 2, currentStoreDiscount, 1);
-
         balanceFormatFreeQuantity = addSGProp(moveGroup, "Своб. кол-во по форм.", articleFreeQuantity, shopFormat, 1, 2);
+
+        // текущая схема
+        articleSupplier = addDProp("articleSupplier", "Поставщик товара", supplier, article);
+        addJProp(logisticsGroup, "Поставщик товара", name, articleSupplier, 1);
+        LP shopWarehouse = addDProp("storeWarehouse", "Распред. центр", warehouse, shop); // магазин может числиться не более чем в одном распределяющем центре
+        addJProp(logisticsGroup, "Распред. центр", name, shopWarehouse, 1);
+        LP articleSupplierPrice = addDProp(logisticsGroup, "articleSupplierPrice", "Цена поставок", DoubleClass.instance, article);
 
         LP revalueShop = addDProp("revalueShop", "Магазин", shop, documentRevalue);
         addJProp(baseGroup, "Магазин", name, revalueShop, 1);
-        priceStore = addCUProp("priceStore", true, "Склад (цены)", incStore, revalueShop);
 
         documentRevalued = addDProp(documentGroup, "isRevalued", "Переоц.", LogicalClass.instance, documentRevalue, article);
-        inDocumentPrice = addCUProp("inDocumentPrice", true, "Изм. цены", documentRevalued, addJProp(and1, is(commitWholeShopInc), 1, articleQuantity, 1, 2));
+
+        LP commitArticleQuantity = addJProp(and1, is(commitWholeShopInc), 1, articleQuantity, 1, 2);
+
+        priceStore = addCUProp("priceStore", true, "Склад (цены)", incStore, revalueShop);
+        inDocumentPrice = addCUProp("inDocumentPrice", true, "Изм. цены", documentRevalued, commitArticleQuantity);
+
+        LP[] maxCommitIncProps = addMGProp((AbstractGroup) null, true, new String[]{"currentCommitIncDate", "currentCommitIncDoc"}, new String[]{"Дата посл. прих. в маг.", "Посл. док. прих. в маг."}, 1,
+                addJProp(and1, date, 1, commitArticleQuantity, 1, 2), 1, incStore, 1, 2);
+        LP currentCommitIncDate = maxCommitIncProps[0]; addPersistent(currentCommitIncDate);
+        LP currentCommitIncDoc = maxCommitIncProps[1]; addPersistent(currentCommitIncDoc);
 
         LP[] maxShopPriceProps = addMGProp((AbstractGroup) null, true, new String[]{"currentShopPriceDate", "currentShopPriceDoc"}, new String[]{"Дата посл. цены в маг.", "Посл. док. цены в маг."}, 1,
                 addJProp(and1, date, 1, inDocumentPrice, 1, 2), 1, priceStore, 1, 2);
-        currentShopPriceDate = maxShopPriceProps[0];
-        currentShopPriceDoc = maxShopPriceProps[1];
-        addPersistent(currentShopPriceDate);
-        addPersistent(currentShopPriceDoc);
+        currentShopPriceDate = maxShopPriceProps[0]; addPersistent(currentShopPriceDate);
+        currentShopPriceDoc = maxShopPriceProps[1]; addPersistent(currentShopPriceDoc);
 
-        shopPrice = addDCProp(documentPriceGroup, "shopPrice", "Цена (док.)", true, requiredStorePrice, priceStore, 1, 2, inDocumentPrice, 1, 2);
+        LP orderDeliveryPrice = addDCProp("orderDeliveryPrice", "Цена закуп.", true, articleSupplierPrice, 2, articleQuantity, 1, 2, is(orderDelivery), 1);
+        orderAllDeliveryPrice = addSUProp(documentPriceGroup, "orderAllDeliveryPrice", "Цена закуп.", Union.OVERRIDE, addJProp(and1, articleSupplierPrice, 2, is(orderDelivery), 1), orderDeliveryPrice);
+
+        LP maxPriceInnerArticle = addMGProp(documentPriceGroup, "maxPriceInnerArticle", "Макс. цена закуп.", addJProp(and1, orderDeliveryPrice, 1, 2, innerQuantity, 3, 2, 1), 1, 2);
+        deliveryPriceDocArticle = addCUProp(maxPriceInnerArticle, orderDeliveryPrice);
+        LP deliveryPriceStoreArticle = addJProp(priceGroup, "Посл. цена прихода", deliveryPriceDocArticle, currentCommitIncDoc, 1, 2, 2);
+
+        LP currentRRPPriceArticle = addJProp(priceGroup, "Необх. цена RRP", multiplyDouble2, currentRRP, 1, addJProp(currentCurrencyRate, currencyArticle, 1), 1);
+        currentRRPPriceStoreArticle = addJProp(and1, currentRRPPriceArticle, 2, is(store), 1);
+
+        // чтобы не делать defaultChanged true
+        LP requiredStorePrice = initRequiredStorePrice(priceGroup, "requiredStorePrice", true, "Необх. цена", deliveryPriceStoreArticle, object(store));
+        LP revalueShopPrice = addDCProp("revaluePrice", "Цена (переоц.)", true, requiredStorePrice, revalueShop, 1, 2, documentRevalued, 1, 2);
+        LP incomeShopPrice = addDCProp("shopPrice", "Цена (прих.)", true, initRequiredStorePrice(privateGroup, genSID(), false, "Необх. цена (прих.)", deliveryPriceDocArticle, incStore), true, 1, 2, commitArticleQuantity, 1, 2);
+
+        shopPrice = addCUProp(documentPriceGroup, "Цена (док.)", revalueShopPrice, incomeShopPrice);
 
         currentShopPrice = addJProp(priceGroup, "currentShopPrice", "Цена на складе (тек.)", shopPrice, currentShopPriceDoc, 1, 2, 2);
 
@@ -636,23 +679,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP saleStorePrice = addCUProp(priceGroup, "Цена прод.", addJProp(and1, requiredStorePrice, 1, 2, is(warehouse), 1), currentShopPrice);
 
-        NDS = addDProp(documentGroup, "NDS", "НДС", DoubleClass.instance, documentNDS, article);
-        LP[] maxNDSProps = addMGProp((AbstractGroup) null, true, new String[]{"currentNDSDate", "currentNDSDoc"}, new String[]{"Дата посл. НДС", "Посл. док. НДС"}, 1,
-                addJProp(and1, date, 1, NDS, 1, 2), 1, 2);
-        currentNDSDate = maxNDSProps[0];
-        currentNDSDoc = maxNDSProps[1];
-        addPersistent(currentNDSDate);
-        addPersistent(currentNDSDoc);
-        currentNDS = addJProp("Тек. НДС", NDS, currentNDSDoc, 1, 1);
-
-        // блок с логистикой\управленческими характеристиками
-
-        // текущая схема
-        articleSupplier = addDProp("articleSupplier", "Поставщик товара", supplier, article);
-        addJProp(logisticsGroup, "Поставщик товара", name, articleSupplier, 1);
-        LP shopWarehouse = addDProp("storeWarehouse", "Распред. центр", warehouse, shop); // магазин может числиться не более чем в одном распределяющем центре
-        addJProp(logisticsGroup, "Распред. центр", name, shopWarehouse, 1);
-        LP articleSupplierPrice = addDProp(logisticsGroup, "articleSupplierPrice", "Цена поставок", DoubleClass.instance, article);
         LP supplierCycle = addDProp(logisticsGroup, "supplierCycle", "Цикл поставок", DoubleClass.instance, supplier);
         LP shopCycle = addDProp(logisticsGroup, "shopCycle", "Цикл распределения", DoubleClass.instance, shop);
 
@@ -734,9 +760,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         returnArticleSalePay = addDUProp(documentPriceGroup, "Сумма к возвр.", returnArticleSaleSum, returnArticleSaleDiscount);
         returnSaleDiscount = addSGProp(documentAggrPriceGroup, "Сумма скидки возвр.", returnArticleSaleDiscount, 1);
         returnSalePay = addDUProp(documentAggrPriceGroup, "Сумма к возвр.", addSGProp("Сумма возвр.", returnArticleSaleSum, 1), returnSaleDiscount);
-
-        LP orderDeliveryPrice = addDCProp("orderDeliveryPrice", "Цена закуп.", true, articleSupplierPrice, 2, articleQuantity, 1, 2, is(orderDelivery), 1);
-        orderAllDeliveryPrice = addSUProp(documentPriceGroup, "orderAllDeliveryPrice", "Цена закуп.", Union.OVERRIDE, addJProp(and1, articleSupplierPrice, 2, is(orderDelivery), 1), orderDeliveryPrice);
 
         // с округлениями
         sumRetailOrderArticle = addJProp(documentPriceGroup, "sumRetailOrderArticle", "Сумма розн.", multiplyDouble2, shopPrice, 1, 2, articleQuantity, 1, 2);
@@ -902,6 +925,16 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 ), 1, barcodeToObject, 2);
 
         quantityDiffCommitArticle = addDUProp(articleOrderQuantity, addCUProp("Кол-во свер.", outerCommitedQuantity, quantityCheckCommitInnerArticle));
+    }
+
+    private LP initRequiredStorePrice(AbstractGroup group, String sID, boolean persistent, String caption, LP deliveryPriceStoreArticle, LP storeProp) {
+        LP currentRRPPriceObjectArticle = addJProp(currentRRPPriceStoreArticle, storeProp, 1, 2);
+        LP currentObjectDiscount = addJProp(currentStoreDiscount, storeProp, 1);
+
+        LP addDeliveryObjectArticle = addJProp(group, "Необх. цена с нац.", addPercent, addJProp(addPercent, deliveryPriceStoreArticle, 1, 2, addvArticle, 2), 1, 2, currentNDS, 2);
+        LP currentPriceObjectArticle = addSUProp(group, "Необх. цена", Union.MAX, addDeliveryObjectArticle, currentRRPPriceObjectArticle);
+        LP actionPriceObjectArticle = addJProp(group, "Акц. цена", removePercent, currentPriceObjectArticle, 1, 2, articleDiscount, 2);
+        return addJProp(group, sID, persistent, caption, removePercent, actionPriceObjectArticle, 1, 2, currentObjectDiscount, 1);
     }
 
     LP barcodeActionCheck, quantityCheckCommitInnerArticle, quantityDiffCommitArticle;

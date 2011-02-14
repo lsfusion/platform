@@ -2,6 +2,7 @@ package platform.server.data.expr;
 
 import platform.base.QuickMap;
 import platform.base.TwinImmutableInterface;
+import platform.base.BaseUtils;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
@@ -99,13 +100,15 @@ public class DeconcatenateExpr extends SingleClassExpr {
 
         ConcatenateType type = (ConcatenateType) expr.getSelfType();
         for(List<AndClassSet> list : type.getUniversal(baseClass,part,classes))
-            result = result.or(expr.getClassWhere(new ConcatenateClassSet(list.toArray(new AndClassSet[1]))));
+            result = result.or(expr.getClassWhere(new ConcatenateClassSet(list.toArray(new AndClassSet[list.size()]))));
 
         return result;
     }
 
     public boolean addAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and, AndClassSet add) {
-        throw new RuntimeException("not supported");
+        ConcatenateType type = (ConcatenateType) expr.getSelfType();
+        List<AndClassSet> list = BaseUtils.single(type.getUniversal(baseClass,part,add));
+        return expr.addAndClassSet(and, new ConcatenateClassSet(list.toArray(new AndClassSet[list.size()])));
     }
 
     public String getSource(CompileSource compile) {
