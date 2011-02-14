@@ -2,9 +2,9 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="expert" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.6105100000000045"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.y" value="720"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
-	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
+	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#FFFFFF" fill="Solid" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
 			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 		</box>
@@ -25,24 +25,24 @@
 	<field name="nameNativeProjectVote" class="java.lang.String"/>
 	<field name="nameNativeClusterVote" class="java.lang.String"/>
 	<detail>
-		<band height="753" splitType="Immediate">
+		<band height="842" splitType="Immediate">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="41" y="312" width="497" height="120"/>
-				<box leftPadding="0" rightPadding="0">
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="39" y="326" width="500" height="120"/>
+				<box topPadding="4" leftPadding="4" bottomPadding="4" rightPadding="4">
 					<pen lineWidth="4.0" lineColor="#B3CC82"/>
 					<topPen lineWidth="4.0" lineColor="#B3CC82"/>
 					<leftPen lineWidth="4.0" lineColor="#B3CC82"/>
 					<bottomPen lineWidth="4.0" lineColor="#B3CC82"/>
 					<rightPen lineWidth="4.0" lineColor="#B3CC82"/>
 				</box>
-				<textElement textAlignment="Left">
+				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{innovativeCommentExpertVote}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" mode="Transparent" x="41" y="634" width="496" height="100" backcolor="#FFFFFF"/>
-				<box leftPadding="0" rightPadding="0">
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" mode="Transparent" x="39" y="648" width="499" height="100" backcolor="#FFFFFF"/>
+				<box topPadding="4" leftPadding="4" bottomPadding="4" rightPadding="4">
 					<pen lineWidth="4.0" lineColor="#B3CC82"/>
 					<topPen lineWidth="4.0" lineColor="#B3CC82"/>
 					<leftPen lineWidth="4.0" lineColor="#B3CC82"/>
@@ -62,17 +62,17 @@
 				<text><![CDATA[БЮЛЛЕТЕНЬ ОЦЕНКИ ПРОЕКТА]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="40" y="66" width="47" height="20"/>
+				<reportElement x="39" y="66" width="47" height="20"/>
 				<textElement/>
 				<text><![CDATA[Эксперт:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="40" y="106" width="122" height="20"/>
+				<reportElement x="39" y="106" width="122" height="20"/>
 				<textElement/>
 				<text><![CDATA[Организация-заявитель:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="40" y="159" width="254" height="20"/>
+				<reportElement x="39" y="161" width="254" height="20"/>
 				<textElement/>
 				<text><![CDATA[Пожалуйста, заполните бюллетень оценки проекта:]]></text>
 			</staticText>
@@ -82,13 +82,13 @@
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{userLastName}+" "+$F{userFirstName}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="41" y="131" width="90" height="20"/>
+				<reportElement x="39" y="131" width="90" height="20"/>
 				<textElement/>
 				<text><![CDATA[Дата заполнения:]]></text>
 			</staticText>
 			<textField>
-				<reportElement mode="Opaque" x="480" y="211" width="58" height="20" backcolor="#E6EED5"/>
-				<box>
+				<reportElement mode="Opaque" x="500" y="211" width="40" height="34" backcolor="#E6EED5"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
 					<pen lineWidth="1.0" lineColor="#B3CC82"/>
 					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
 					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
@@ -104,8 +104,8 @@
 				<textFieldExpression class="java.util.Date"><![CDATA[$F{dateExpertVote}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement mode="Opaque" x="40" y="260" width="441" height="34" backcolor="#E6EED5"/>
-				<box>
+				<reportElement mode="Opaque" x="39" y="274" width="461" height="34" backcolor="#E6EED5"/>
+				<box topPadding="1" leftPadding="1" bottomPadding="1" rightPadding="1">
 					<pen lineWidth="1.0" lineColor="#B3CC82"/>
 					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
 					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
@@ -117,8 +117,8 @@
  конкурентными преимуществами перед мировыми аналогами продуктов и/или технологий.]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
-				<reportElement mode="Opaque" x="480" y="260" width="59" height="34" backcolor="#E6EED5"/>
-				<box>
+				<reportElement mode="Opaque" x="500" y="274" width="42" height="34" backcolor="#E6EED5"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
 					<pen lineWidth="1.0" lineColor="#B3CC82"/>
 					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
 					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
@@ -129,7 +129,7 @@
 				<textFieldExpression class="java.lang.String"><![CDATA[($F{innovativeExpertVote}==null?"НЕТ":"ДА")]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement mode="Opaque" x="40" y="294" width="499" height="20" backcolor="#B2CC82"/>
+				<reportElement mode="Opaque" x="39" y="308" width="501" height="20" backcolor="#B2CC82"/>
 				<box>
 					<pen lineWidth="2.0" lineColor="#B3CC82"/>
 					<topPen lineWidth="2.0" lineColor="#B3CC82"/>
@@ -141,8 +141,8 @@
 				<text><![CDATA[ Обоснование:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="40" y="463" width="440" height="54" backcolor="#E6EED5"/>
-				<box>
+				<reportElement mode="Opaque" x="39" y="477" width="461" height="54" backcolor="#E6EED5"/>
+				<box topPadding="1" leftPadding="1" bottomPadding="1" rightPadding="1">
 					<pen lineWidth="1.0" lineColor="#B3CC82"/>
 					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
 					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
@@ -155,8 +155,8 @@
 исследовательской среде.]]></text>
 			</staticText>
 			<textField>
-				<reportElement mode="Opaque" x="481" y="463" width="57" height="54" backcolor="#E6EED5"/>
-				<box>
+				<reportElement mode="Opaque" x="500" y="477" width="40" height="54" backcolor="#E6EED5"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
 					<pen lineWidth="1.0" lineColor="#B3CC82"/>
 					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
 					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
@@ -167,8 +167,8 @@
 				<textFieldExpression class="java.lang.String"><![CDATA[($F{foreignExpertVote}==null?"НЕТ":"ДА")]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement mode="Opaque" x="40" y="547" width="440" height="20" backcolor="#E6EED5"/>
-				<box>
+				<reportElement mode="Opaque" x="39" y="561" width="461" height="20" backcolor="#E6EED5"/>
+				<box topPadding="1" leftPadding="1" bottomPadding="1" rightPadding="1">
 					<pen lineWidth="1.0" lineColor="#B3CC82"/>
 					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
 					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
@@ -179,8 +179,8 @@
 				<text><![CDATA[Оцените Вашу компетенцию по теме проекта (1 - низкая, 5 - высокая)]]></text>
 			</staticText>
 			<textField>
-				<reportElement mode="Opaque" x="481" y="547" width="57" height="20" backcolor="#E6EED5"/>
-				<box>
+				<reportElement mode="Opaque" x="500" y="561" width="40" height="20" backcolor="#E6EED5"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
 					<pen lineWidth="1.0" lineColor="#B3CC82"/>
 					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
 					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
@@ -191,8 +191,8 @@
 				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{competentExpertVote}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement mode="Opaque" x="40" y="596" width="439" height="20" backcolor="#E6EED5"/>
-				<box>
+				<reportElement mode="Opaque" x="39" y="610" width="461" height="20" backcolor="#E6EED5"/>
+				<box topPadding="1" leftPadding="1" bottomPadding="1" rightPadding="1">
 					<pen lineWidth="1.0" lineColor="#B3CC82"/>
 					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
 					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
@@ -203,8 +203,8 @@
 				<text><![CDATA[Оцените достаточность представленных материалов для оценки проекта]]></text>
 			</staticText>
 			<textField>
-				<reportElement mode="Opaque" x="480" y="596" width="58" height="20" backcolor="#E6EED5"/>
-				<box>
+				<reportElement mode="Opaque" x="500" y="610" width="40" height="20" backcolor="#E6EED5"/>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
 					<pen lineWidth="1.0" lineColor="#B3CC82"/>
 					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
 					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
@@ -215,7 +215,7 @@
 				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{completeExpertVote}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement mode="Opaque" x="39" y="616" width="500" height="20" backcolor="#B3CC82"/>
+				<reportElement mode="Opaque" x="39" y="630" width="501" height="20" backcolor="#B3CC82"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
@@ -227,32 +227,32 @@
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameNativeClaimerVote}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="40" y="40" width="44" height="20"/>
+				<reportElement x="39" y="40" width="44" height="20"/>
 				<textElement/>
 				<text><![CDATA[Проект:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="41" y="191" width="12" height="20"/>
+				<reportElement x="39" y="191" width="13" height="20"/>
 				<textElement/>
 				<text><![CDATA[1.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="39" y="240" width="12" height="20"/>
+				<reportElement x="39" y="254" width="13" height="20"/>
 				<textElement/>
 				<text><![CDATA[2.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="40" y="443" width="13" height="20"/>
+				<reportElement x="39" y="457" width="13" height="20"/>
 				<textElement/>
 				<text><![CDATA[3.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="41" y="527" width="13" height="20"/>
+				<reportElement x="39" y="541" width="13" height="20"/>
 				<textElement/>
 				<text><![CDATA[4.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="41" y="576" width="12" height="20"/>
+				<reportElement x="39" y="590" width="13" height="20"/>
 				<textElement/>
 				<text><![CDATA[5.]]></text>
 			</staticText>
@@ -269,8 +269,8 @@
 				<text><![CDATA[*если Вы НЕ являетесь лицом, указанным в данной графе – нажмите здесь]]></text>
 			</staticText>
 			<textField>
-				<reportElement mode="Opaque" x="40" y="211" width="439" height="20" backcolor="#E6EED5"/>
-				<box>
+				<reportElement mode="Opaque" x="39" y="211" width="461" height="34" backcolor="#E6EED5"/>
+				<box topPadding="1" leftPadding="1" bottomPadding="1" rightPadding="1">
 					<pen lineWidth="1.0" lineColor="#B3CC82"/>
 					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
 					<leftPen lineWidth="1.0" lineColor="#B3CC82"/>
