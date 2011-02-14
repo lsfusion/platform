@@ -13,6 +13,7 @@ public class ClientModalForm extends JDialog {
 
     protected ClientFormController currentForm;
     protected final RemoteFormInterface remoteForm;
+    private boolean activatedFirstTime = true;
 
     public ClientModalForm(Component owner, final RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
         super(SwingUtils.getWindow(owner), ModalityType.DOCUMENT_MODAL); // обозначаем parent'а и модальность
@@ -33,7 +34,8 @@ public class ClientModalForm extends JDialog {
     protected void createListeners() {
         addWindowListener(new WindowAdapter() {
             public void windowActivated(WindowEvent e) {
-                if (currentForm != null) {
+                if (activatedFirstTime && currentForm != null) {
+                    activatedFirstTime = false;
                     KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(currentForm.getComponent());
                 }
             }
