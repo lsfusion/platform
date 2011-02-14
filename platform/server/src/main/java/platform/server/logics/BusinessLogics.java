@@ -1925,7 +1925,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return new SQLSession(adapter);
     }
 
-    public DataSession createSession() throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+    public DataSession createSession() throws SQLException {
         return createSession(sql, new UserController() {
             public void changeCurrentUser(DataObject user) {
                 throw new RuntimeException("not supported");
@@ -1942,7 +1942,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         });
     }
 
-    public DataSession createSession(SQLSession sql, UserController userController, ComputerController computerController) throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+    public DataSession createSession(SQLSession sql, UserController userController, ComputerController computerController) throws SQLException {
         return new DataSession(sql, userController, computerController,
                 new IsServerRestartingController() {
                     public boolean isServerRestarting() {
@@ -2467,7 +2467,24 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity... params) {
-        return addProperty(group, new LP<ClassPropertyInterface>(new FormActionProperty(genSID(), caption, form, params)));
+        return addFormActionProperty(group, caption, form, params, new PropertyObjectEntity[0], new PropertyObjectEntity[0], false, false);
+    }
+
+    protected LP addModalFormActionProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity... setProperties) {
+        // во все setProperties просто будут записаны null'ы
+        return addModalFormActionProp(group, caption, form, objectsToSet, setProperties, new PropertyObjectEntity[setProperties.length], true);
+    }
+
+    protected LP addModalFormActionProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, PropertyObjectEntity[] getProperties) {
+        return addModalFormActionProp(group, caption, form, objectsToSet, setProperties, getProperties, true);
+    }
+
+    protected LP addModalFormActionProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, PropertyObjectEntity[] getProperties, boolean newSession) {
+        return addFormActionProperty(group, caption, form, objectsToSet, setProperties, getProperties, newSession, true);
+    }
+
+    protected LP addFormActionProperty(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, PropertyObjectEntity[] getProperties, boolean newSession, boolean isModal) {
+        return addProperty(group, new LP<ClassPropertyInterface>(new FormActionProperty(genSID(), caption, form, objectsToSet, setProperties, getProperties, newSession, isModal)));
     }
 
     protected LP addEAProp(ValueClass... params) {

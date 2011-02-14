@@ -35,7 +35,7 @@ public class RemoteExceptionManager {
 
     public static InternalServerException createInternalServerException(Throwable e) {
         e.printStackTrace();
-        logger.error("Error: " + e.getLocalizedMessage());
+        logger.error("Internal server error: ", e);
         OutputStream os = new ByteArrayOutputStream();
         e.printStackTrace(new PrintStream(os));
         return new InternalServerException(0, e.getLocalizedMessage(), os.toString());

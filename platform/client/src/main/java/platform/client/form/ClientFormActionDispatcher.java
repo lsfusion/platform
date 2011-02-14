@@ -1,10 +1,10 @@
 package platform.client.form;
 
+import platform.base.BaseUtils;
 import platform.client.Log;
 import platform.client.Main;
 import platform.interop.action.*;
 import platform.interop.exceptions.LoginException;
-import platform.base.BaseUtils;
 
 import javax.swing.*;
 import java.awt.event.ComponentAdapter;
@@ -21,10 +21,19 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
 
     public void execute(FormClientAction action) {
         try {
-            if (action.isPrintForm)
-                Main.frame.runReport(action.remoteForm);
-            else
-                Main.frame.runForm(action.remoteForm);
+            if (!action.isModal) {
+                if (action.isPrintForm)
+                    Main.frame.runReport(action.remoteForm);
+                else
+                    Main.frame.runForm(action.remoteForm);
+            } else {
+                ClientModalForm modalForm = new ClientModalForm(Main.frame, action.remoteForm);
+                modalForm.setDefaultSize();
+                modalForm.setLocationRelativeTo(null);
+                modalForm.setVisible(true);
+                modalForm.dispose();
+                modalForm.closed();
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

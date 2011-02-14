@@ -1,37 +1,39 @@
 package platform.client.form;
 
-import platform.client.SwingUtils;
 import platform.interop.form.RemoteDialogInterface;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.rmi.RemoteException;
 
-public class ClientDialog extends JDialog {
+public class ClientDialog extends ClientModalForm {
+    public final static int NOT_CHOSEN = 0;
+    public final static int CHOSEN_VALUE = 1;
 
-    private ClientFormController currentForm;
+    public int objectChosen = NOT_CHOSEN;
+    public Object dialogValue;
+
     public boolean showQuickFilterOnStartup = true;
+    private RemoteDialogInterface remoteDialog;
 
     public ClientDialog(Component owner, final RemoteDialogInterface dialog) throws IOException, ClassNotFoundException {
-        super(SwingUtils.getWindow(owner), Dialog.ModalityType.DOCUMENT_MODAL); // обозначаем parent'а и модальность
-
-        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        setLayout(new BorderLayout());
+        super(owner, dialog); // обозначаем parent'а и модальность
 
         // делаем, чтобы не выглядел как диалог
         setUndecorated(true);
-        getRootPane().setBorder(BorderFactory.createLineBorder(Color.gray, 1));
+    }
 
+    @Override
+    protected void createListeners() {
         addWindowListener(new WindowAdapter() {
             public void windowActivated(WindowEvent e) {
                 int initialFilterPropertyDrawID = -1;
                 if (showQuickFilterOnStartup) {
                     showQuickFilterOnStartup = false;
                     try {
-                        Integer filterPropertyDraw = dialog.getInitFilterPropertyDraw();
+                        Integer filterPropertyDraw = remoteDialog.getInitFilterPropertyDraw();
                         if (filterPropertyDraw != null) {
                             initialFilterPropertyDrawID = filterPropertyDraw;
                         }
@@ -46,15 +48,7 @@ public class ClientDialog extends JDialog {
                 }
             }
         });
-
-        setCurrentForm(dialog);
     }
-
-    public static int NOT_CHOSEN = 0;
-    public static int CHOSEN_VALUE = 1;
-
-    public int objectChosen = NOT_CHOSEN;
-    public Object dialogValue;
 
     protected Boolean readOnly;
     boolean isReadOnlyMode() {
@@ -62,11 +56,11 @@ public class ClientDialog extends JDialog {
     }
 
     // необходим чтобы в диалоге менять формы (панели)
-    void setCurrentForm(final RemoteDialogInterface remoteDialog) throws IOException, ClassNotFoundException {
-
-        if (currentForm != null) remove(currentForm.getComponent());
+    protected ClientFormController createFormController() throws IOException, ClassNotFoundException {
+        remoteDialog = (RemoteDialogInterface) remoteForm;
         readOnly = remoteDialog.isReadOnly();
-        currentForm = new ClientFormController(remoteDialog, null) {
+
+        return new ClientFormController(remoteDialog, null) {
 
             @Override
             public boolean isDialogMode() {
@@ -106,31 +100,5 @@ public class ClientDialog extends JDialog {
                 return true;
             }
         };
-        add(currentForm.getComponent(), BorderLayout.CENTER);
-
-        validate();
-    }
-
-    public void closed() {
-        if (currentForm != null)
-            currentForm.closed();
-    }
-
-    public Dimension calculatePreferredSize(boolean undecorated) {
-        Dimension preferredSize = currentForm.calculatePreferredSize();
-
-        // так как у нас есть только preferredSize самого contentPane, а нам нужен у JDialog
-        // сколько будет занимать все "рюшечки" вокруг contentPane мы посчитать не можем, поскольку
-        if (undecorated) {
-            preferredSize.width += 10;
-            preferredSize.height += 40;
-        } else {
-            preferredSize.width += 20;
-            preferredSize.height += 80;
-        }
-
-        preferredSize.height += 15; // под отборы
-
-        return preferredSize;
     }
 }

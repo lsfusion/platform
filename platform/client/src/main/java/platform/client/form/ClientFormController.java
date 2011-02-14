@@ -18,10 +18,7 @@ import platform.interop.ClassViewType;
 import platform.interop.KeyStrokes;
 import platform.interop.Order;
 import platform.interop.Scroll;
-import platform.interop.action.CheckFailed;
-import platform.interop.action.ClientAction;
-import platform.interop.action.ClientApply;
-import platform.interop.action.ClientResultAction;
+import platform.interop.action.*;
 import platform.interop.form.RemoteChanges;
 import platform.interop.form.RemoteFormInterface;
 
@@ -442,17 +439,32 @@ public class ClientFormController {
         if (clientNavigator != null) {
             clientNavigator.changeCurrentClass(remoteChanges.classID);
         }
+
+
+        List<ClientAction> actions = remoteChanges.actions;
+        ClientAction lastAction = BaseUtils.last(actions);
+        while (lastAction instanceof ContinueAutoActionsClientAction) {
+            actions = remoteForm.continueAutoActions();
+
+            for (ClientAction action : actions) {
+                action.dispatch(actionDispatcher);
+            }
+
+            lastAction = BaseUtils.last(actions);
+            refreshData();
+        }
     }
 
     private void applyFormChanges(ClientFormChanges formChanges) {
-        if (formChanges.dataChanged != null && buttonApply != null) {
+        if (formChanges.dataChanged != null) {
             dataChanged = formChanges.dataChanged;
-
-            Color defaultBackGround = getDefaultApplyBackground();
-            buttonApply.setBackground(dataChanged ? Color.green : defaultBackGround);
-            buttonApply.setEnabled(dataChanged);
-            if (buttonCancel != null) {
-                buttonCancel.setEnabled(dataChanged);
+            if (buttonApply != null) {
+                Color defaultBackGround = getDefaultApplyBackground();
+                buttonApply.setBackground(dataChanged ? Color.green : defaultBackGround);
+                buttonApply.setEnabled(dataChanged);
+                if (buttonCancel != null) {
+                    buttonCancel.setEnabled(dataChanged);
+                }
             }
         }
 

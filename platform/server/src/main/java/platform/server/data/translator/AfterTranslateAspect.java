@@ -148,8 +148,8 @@ public class AfterTranslateAspect {
             return result;
     } */
 
-    @AfterReturning(pointcut="call(* platform.server.data.where.DataWhere.not()) && target(where)",returning="notWhere")
-    public void afterDataWhereTranslate(DataWhere where, NotWhere notWhere) {
-//        notWhere.not = where; 
-    }
+//    @AfterReturning(pointcut="call(* platform.server.data.where.CheckWhere+.not()) && this(DataWhere) && target(where)",returning="notWhere")
+//    public void afterDataWhereTranslate(Where where, NotWhere notWhere) {
+////        notWhere.not = where;
+//    }
 }

@@ -38,9 +38,8 @@ public class ObjectPropertyEditor extends JDialog implements PropertyEditorCompo
             }
         }
 
-        clientDialog.setSize(SwingUtils.clipDimension(clientDialog.calculatePreferredSize(clientDialog.isUndecorated()),
-                                                      new Dimension(200, 100),
-                                                      new Dimension(1000, 700)));
+        clientDialog.setDefaultSize();
+
         SwingUtils.requestLocation(clientDialog, new Point((int)(tableLocation.getX() + cellRectangle.getX()), (int)(tableLocation.getY() + cellRectangle.getMaxY())));
 
         dialog = null; // лучше сбрасывать ссылку, чтобы раньше начал отрабатывать сборщик мусора

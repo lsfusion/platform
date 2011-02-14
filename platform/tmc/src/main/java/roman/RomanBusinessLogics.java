@@ -2087,10 +2087,25 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addAutoAction(objBarcode, addPropertyObject(seekBarcodeAction, objBarcode));
 
             if (USE_SHIPMENT_DETAIL) {
-                if (box)
+                if (box) {
                     addAutoAction(objBarcode, addPropertyObject(addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode, objShipment, objSupplierBox, objRoute, objBarcode));
-                else
+//                    EditShipmentDetailFormEntity addAndEditForm = new EditShipmentDetailFormEntity();
+//                    addAutoAction(objBarcode,
+//                                  addPropertyObject(
+//                                          addJProp(true, "", and1,
+//                                                   addModalFormActionProp(
+//                                                           null,
+//                                                           "Редактирование строки документа",
+//                                                           addAndEditForm,
+//                                                           new ObjectEntity[]{addAndEditForm.objShipment, addAndEditForm.objSupplierBox, addAndEditForm.objRoute, addAndEditForm.objBarcode},
+//                                                           addAndEditForm.addNewShipmentDetailsProperty
+//                                                   ), 1, 2, 3, 4,
+//                                                   barcodeToObject, 4
+//                                          ),
+//                                          objShipment, objSupplierBox, objRoute, objBarcode));
+                } else {
                     addAutoAction(objBarcode, addPropertyObject(addSimpleShipmentDetailSimpleShipmentRouteBarcode, objShipment, objRoute, objBarcode));
+                }
             }
 
             addAutoAction(objBarcode, addPropertyObject(barcodeNotFoundMessage, objBarcode));
@@ -2101,6 +2116,50 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             setReadOnly(objShipment, true);
             if (box)
                 setReadOnly(objSupplierBox, true);
+        }
+
+        private class EditShipmentDetailFormEntity extends FormEntity<RomanBusinessLogics> {
+            ObjectEntity objShipment;
+            ObjectEntity objSupplierBox;
+            ObjectEntity objRoute;
+            ObjectEntity objBarcode;
+            ObjectEntity objShipmentDetail;
+            PropertyObjectEntity addNewShipmentDetailsProperty;
+
+            public EditShipmentDetailFormEntity() {
+                super(genSID(), "Редактирование строки поставки");
+
+                objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", objectValue);
+                objBarcode.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+                objShipment = addSingleGroupObject((box ? boxShipment : simpleShipment), "Поставка", date, sidDocument);
+                objShipment.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+                if (box) {
+                    objSupplierBox = addSingleGroupObject(supplierBox, "Короб поставщика", sidSupplierBox, barcode, nameDestinationSupplierBox);
+                    objSupplierBox.groupTo.setSingleClassView(ClassViewType.PANEL);
+                }
+
+                objRoute = addSingleGroupObject(route, "Маршрут", name, barcodeCurrentPalletRoute, grossWeightCurrentPalletRoute, barcodeCurrentFreightBoxRoute, nameDestinationCurrentFreightBoxRoute);
+                objRoute.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+                objShipmentDetail = addSingleGroupObject((box ? boxShipmentDetail : simpleShipmentDetail),
+//                        selection, barcodeSkuShipmentDetail, sidArticleShipmentDetail, sidColorSupplierItemShipmentDetail, nameColorSupplierItemShipmentDetail, sidSizeSupplierItemShipmentDetail,
+//                        nameBrandSupplierArticleSkuShipmentDetail, originalNameArticleSkuShipmentDetail,
+//                        nameOriginCategoryArticleSkuShipmentDetail, nameOriginUnitOfMeasureArticleSkuShipmentDetail,
+//                        netWeightArticleSkuShipmentDetail,
+//                        nameCountryOfOriginArticleSkuShipmentDetail, mainCompositionOriginArticleSkuShipmentDetail,
+//                        netWeightSkuShipmentDetail, nameCountryOfOriginSkuShipmentDetail,
+//                        mainCompositionOriginSkuShipmentDetail, additionalCompositionOriginSkuShipmentDetail,
+//                        sidShipmentShipmentDetail,
+//                        sidSupplierBoxShipmentDetail, barcodeSupplierBoxShipmentDetail,
+//                        barcodeStockShipmentDetail, nameRouteFreightBoxShipmentDetail,
+                        quantityShipmentDetail, nameUserShipmentDetail, timeShipmentDetail);
+
+                objShipmentDetail.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+                addNewShipmentDetailsProperty = addPropertyObject(addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode, objShipment, objSupplierBox, objRoute, objBarcode);
+            }
         }
 
         @Override

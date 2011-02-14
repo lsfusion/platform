@@ -1,6 +1,7 @@
 package platform.client.remote.proxy;
 
 import platform.interop.ClassViewType;
+import platform.interop.action.ClientAction;
 import platform.interop.action.ClientApply;
 import platform.interop.form.RemoteChanges;
 import platform.interop.form.RemoteDialogInterface;
@@ -194,6 +195,11 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         logRemoteMethodStartVoidCall("applyChanges");
         target.applyChanges();
         logRemoteMethodEndVoidCall("applyChanges");
+    }
+
+    @NonPendingRemoteMethod
+    public List<ClientAction> continueAutoActions() throws RemoteException {
+        return target.continueAutoActions();
     }
 
     @PendingRemoteMethod

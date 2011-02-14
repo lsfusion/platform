@@ -1,10 +1,12 @@
 package platform.server.form.instance;
 
 import platform.base.BaseUtils;
+import platform.base.EmptyIterator;
 import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Scroll;
 import platform.interop.action.ClientAction;
+import platform.interop.action.ContinueAutoActionsClientAction;
 import platform.interop.action.ResultClientAction;
 import platform.interop.exceptions.ComplexQueryException;
 import platform.server.auth.SecurityPolicy;
@@ -529,20 +531,35 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     public FormInstance<T> createForm(FormEntity<T> form, Map<ObjectEntity, DataObject> mapObjects) throws SQLException {
-        return new FormInstance<T>(form, BL, session, securityPolicy, getFocusListener(), getClassListener(), instanceFactory.computer, mapObjects);
+        return createForm(form, mapObjects, false);
+    }
+
+    public FormInstance<T> createForm(FormEntity<T> form, Map<ObjectEntity, DataObject> mapObjects, boolean newSession) throws SQLException {
+        DataSession formSession = newSession
+                              ? BL.createSession(session.sql, session.user, session.computer)
+                              : session;
+
+        return new FormInstance<T>(form, BL, formSession, securityPolicy, getFocusListener(), getClassListener(), instanceFactory.computer, mapObjects);
+    }
+
+    public void forceChangeObject(ObjectInstance object, ObjectValue value) throws SQLException {
+
+        if(object instanceof DataObjectInstance && !(value instanceof DataObject))
+            object.changeValue(session, ((DataObjectInstance)object).getBaseClass().getDefaultObjectValue());
+        else
+            object.changeValue(session, value);
+
+        object.groupTo.addSeek(object, value, false);
     }
 
     // todo : временная затычка
     public void seekObject(ObjectInstance object, ObjectValue value) throws SQLException {
 
         if(entity.autoActions.size() > 0) { // дебилизм конечно но пока так
-            if(object instanceof DataObjectInstance && !(value instanceof DataObject))
-                object.changeValue(session, ((DataObjectInstance)object).getBaseClass().getDefaultObjectValue());
-            else
-                object.changeValue(session, value);
+            forceChangeObject(object, value);
+        } else {
+            object.groupTo.addSeek(object, value, false);
         }
-
-        object.groupTo.addSeek(object, value, false);
     }
 
     public List<ClientAction> changeObject(ObjectInstance object, ObjectValue value, RemoteForm form) throws SQLException {
@@ -1092,20 +1109,73 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         return dialog;
     }
 
-    private List<ClientAction> executeAutoActions(ObjectInstance object, RemoteForm form) throws SQLException {
+    private class AutoActionsRunner {
+        private final RemoteForm form;
+        private Iterator<PropertyObjectEntity> autoActionsIt;
+        private Iterator<ClientAction> actionsIt;
 
-        List<ClientAction> actions = new ArrayList<ClientAction>();
-        for (Entry<ObjectEntity, List<PropertyObjectEntity>> autoActions : entity.autoActions.entrySet())
-            if (object.equals(instanceFactory.getInstance(autoActions.getKey())))
-                for (PropertyObjectEntity autoAction : autoActions.getValue()) {
-                    PropertyObjectInstance action = instanceFactory.getInstance(autoAction);
-                    if (action.isInInterface(null)) {
-                        List<ClientAction> change = changeProperty(action, action.getChangeInstance().read(session.sql, this, session.env) == null ? true : null, form);
-                        if (change != null) {
-                            actions.addAll(change);
-                        }
-                    }
+        public AutoActionsRunner(RemoteForm form, List<PropertyObjectEntity> autoActions) {
+            this.form = form;
+            autoActionsIt = autoActions.iterator();
+            actionsIt = new EmptyIterator<ClientAction>();
+        }
+
+        private void prepareNext() throws SQLException {
+            while (autoActionsIt.hasNext() && !actionsIt.hasNext()) {
+                PropertyObjectEntity autoAction = autoActionsIt.next();
+                PropertyObjectInstance action = instanceFactory.getInstance(autoAction);
+                if (action.isInInterface(null)) {
+                    List<ClientAction> change
+                            = changeProperty(action,
+                                             action.getChangeInstance().read(session.sql, FormInstance.this, session.env) == null ? true : null,
+                                             form);
+                    actionsIt = change.iterator();
                 }
-        return actions;
+            }
+        }
+
+        private boolean hasNext() throws SQLException {
+            prepareNext();
+            return actionsIt.hasNext();
+        }
+
+        private ClientAction next() throws SQLException {
+            if (hasNext()) {
+                return actionsIt.next();
+            }
+            return null;
+        }
+
+        public List<ClientAction> run() throws SQLException {
+            List<ClientAction> actions = new ArrayList<ClientAction>();
+            while (hasNext()) {
+                ClientAction action = next();
+                actions.add(action);
+                if (action instanceof ContinueAutoActionsClientAction) {
+                    break;
+                }
+            }
+
+            return actions;
+        }
+    }
+
+    private AutoActionsRunner autoActionsRunner;
+    public List<ClientAction> continueAutoActions() throws SQLException {
+        if (autoActionsRunner != null) {
+            return autoActionsRunner.run();
+        }
+
+        return new ArrayList<ClientAction>();
+    }
+
+    private List<ClientAction> executeAutoActions(ObjectInstance object, RemoteForm form) throws SQLException {
+        for (Entry<ObjectEntity, List<PropertyObjectEntity>> autoActions : entity.autoActions.entrySet()) {
+            if (object.equals(instanceFactory.getInstance(autoActions.getKey()))) {
+                autoActionsRunner = new AutoActionsRunner(form, autoActions.getValue());
+                return autoActionsRunner.run();
+            }
+        }
+        return new ArrayList<ClientAction>();
     }
 }

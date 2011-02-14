@@ -12,7 +12,6 @@ import platform.interop.Scroll;
 import platform.interop.action.CheckFailed;
 import platform.interop.action.ClientAction;
 import platform.interop.action.ClientApply;
-import platform.interop.action.ResultClientAction;
 import platform.interop.form.RemoteChanges;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
@@ -463,6 +462,14 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
+    public List<ClientAction> continueAutoActions() throws RemoteException {
+        try {
+            return form.continueAutoActions();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void cancelChanges() {
         try {
             form.cancelChanges();
@@ -545,6 +552,14 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         try {
             FormInstance<T> formInstance = form.createForm(formEntity, mapObjects);
             return new RemoteForm<T, FormInstance<T>>(formInstance, formEntity.getRichDesign(), exportPort, getCurrentClassListener());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public RemoteForm createForm(FormInstance formInstance) {
+        try {
+            return new RemoteForm<T, FormInstance<T>>(formInstance, formInstance.entity.getRichDesign(), exportPort, getCurrentClassListener());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

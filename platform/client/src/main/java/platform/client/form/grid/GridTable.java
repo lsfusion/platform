@@ -537,7 +537,7 @@ public abstract class GridTable extends ClientFormTable
         return false;
     }
 
-    public ClientAbstractCellEditor getAbstractCellEditor(int row, int column) {
+    private ClientAbstractCellEditor getAbstractCellEditor(int row, int column) {
         TableCellEditor editor = getCellEditor(row, column);
         return editor instanceof ClientAbstractCellEditor
                 ? (ClientAbstractCellEditor) editor
