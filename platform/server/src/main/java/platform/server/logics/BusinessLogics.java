@@ -1460,7 +1460,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         assert checkProps();
 
-//        synchronizeDB();
+        synchronizeDB();
 
         fillIDs();
 
