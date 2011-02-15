@@ -1368,4 +1368,18 @@ public class BaseUtils {
             throw new RuntimeException("Ошибка при декодировании ссылки (" + string + ")", e);
         }
     }
+
+    public static String[] months = new String[] {"января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"};
+
+    // приходится складывать в baseUtils, потому что должна быть единая функция и для сервера и для клиента
+    // так как отчеты формируются и на сервере
+    public static String formatRussian(Date date) {
+
+        // todo : сделать форматирование по timeZone сервера
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+
+        return "" + calendar.get(Calendar.DAY_OF_MONTH) + " " + months[calendar.get(Calendar.MONTH)] + " " + calendar.get(Calendar.YEAR);
+    }
 }
