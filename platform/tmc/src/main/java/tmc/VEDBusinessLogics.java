@@ -1200,6 +1200,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         FormEntity incomePrice = addFormEntity(new IncomePriceFormEntity(print, "incomePrice"));
         FormEntity revalueAct = addFormEntity(new RevalueActFormEntity(print, "revalueAct"));
         FormEntity pricers = addFormEntity(new PricersFormEntity(print, "pricers"));
+        FormEntity stickers = addFormEntity(new StickersFormEntity(print, "stickers"));
 
         NavigatorElement delivery = new NavigatorElement(baseElement, "delivery", "Управление закупками");
             addFormEntity(new SupplierArticleFormEntity(delivery, "supplierArticleForm"));
@@ -2695,6 +2696,24 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addFixedFilter(new NotFilterEntity(new CompareFilterEntity(getPropertyObject(shopPrice), Compare.EQUALS, addPropertyObject(prevPrice, objDoc, objArt))));
 
             addFAProp(documentPriceGroup, "Ценники", this, objDoc);
+        }
+    }
+
+        private class StickersFormEntity extends FormEntity {
+
+        protected StickersFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Стикеры", true);
+
+            ObjectEntity objDoc = addSingleGroupObject(documentShopPrice, "Документ", baseGroup, true);
+            objDoc.groupTo.initClassView = ClassViewType.PANEL;
+            ObjectEntity objArt = addSingleGroupObject(article, baseGroup, true);
+
+            addPropertyDraw(objDoc, objArt, shopPrice);
+
+            addFixedFilter(new NotNullFilterEntity(getPropertyObject(shopPrice)));
+            addFixedFilter(new NotFilterEntity(new CompareFilterEntity(getPropertyObject(shopPrice), Compare.EQUALS, addPropertyObject(prevPrice, objDoc, objArt))));
+
+            addFAProp(documentPriceGroup, "Стикеры", this, objDoc);
         }
     }
 
