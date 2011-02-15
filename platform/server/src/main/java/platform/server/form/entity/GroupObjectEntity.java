@@ -106,8 +106,12 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         }
     }
 
-    public void setSingleClassView(ClassViewType type) {
+    public void setInitClassView(ClassViewType type) {
         initClassView = type;
+    }
+
+    public void setSingleClassView(ClassViewType type) {
+        setInitClassView(type);
         banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.GRID, ClassViewType.HIDE));
         banClassView.remove(type);
     }

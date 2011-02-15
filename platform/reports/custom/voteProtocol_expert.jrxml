@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="expert" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.6105100000000045"/>
-	<property name="ireport.x" value="0"/>
+	<property name="ireport.x" value="169"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#FFFFFF" fill="Solid" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
@@ -25,7 +25,7 @@
 	<field name="nameNativeProjectVote" class="java.lang.String"/>
 	<field name="nameNativeClusterVote" class="java.lang.String"/>
 	<detail>
-		<band height="842" splitType="Immediate">
+		<band height="780" splitType="Immediate">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="39" y="326" width="500" height="120"/>
 				<box topPadding="4" leftPadding="4" bottomPadding="4" rightPadding="4">
@@ -62,27 +62,27 @@
 				<text><![CDATA[БЮЛЛЕТЕНЬ ОЦЕНКИ ПРОЕКТА]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="39" y="66" width="47" height="20"/>
+				<reportElement x="39" y="78" width="47" height="20"/>
 				<textElement/>
 				<text><![CDATA[Эксперт:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="39" y="106" width="122" height="20"/>
+				<reportElement x="39" y="118" width="122" height="20"/>
 				<textElement/>
 				<text><![CDATA[Организация-заявитель:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="39" y="161" width="254" height="20"/>
+				<reportElement x="39" y="168" width="254" height="20"/>
 				<textElement/>
 				<text><![CDATA[Пожалуйста, заполните бюллетень оценки проекта:]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="169" y="66" width="312" height="20"/>
+				<reportElement x="169" y="78" width="312" height="20"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{userLastName}+" "+$F{userFirstName}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="39" y="131" width="90" height="20"/>
+				<reportElement x="39" y="143" width="90" height="20"/>
 				<textElement/>
 				<text><![CDATA[Дата заполнения:]]></text>
 			</staticText>
@@ -99,7 +99,7 @@
 				<textFieldExpression class="java.lang.String"><![CDATA[($F{inClusterExpertVote}==null?"НЕТ":"ДА")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="169" y="131" width="100" height="20"/>
+				<reportElement x="169" y="143" width="100" height="20"/>
 				<textElement/>
 				<textFieldExpression class="java.util.Date"><![CDATA[$F{dateExpertVote}]]></textFieldExpression>
 			</textField>
@@ -222,12 +222,12 @@
 				<text><![CDATA[ Укажите, какая информация по проекту не была предоставлена, но была необходима для оценки проекта]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="169" y="106" width="312" height="20"/>
+				<reportElement x="169" y="118" width="312" height="20"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameNativeClaimerVote}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="39" y="40" width="44" height="20"/>
+				<reportElement x="39" y="46" width="44" height="20"/>
 				<textElement/>
 				<text><![CDATA[Проект:]]></text>
 			</staticText>
@@ -257,7 +257,7 @@
 				<text><![CDATA[5.]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="168" y="40" width="311" height="20"/>
+				<reportElement x="169" y="40" width="369" height="33"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameNativeProjectVote}]]></textFieldExpression>
 			</textField>
@@ -273,6 +273,13 @@
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Проект соответствует направлению "+ $F{nameNativeClusterVote} +"."]]></textFieldExpression>
 			</textField>
+			<staticText>
+				<reportElement x="169" y="98" width="369" height="16"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[Подтверждаю, что не являюсь заинтересованным лицом по отношению к Соискателю]]></text>
+			</staticText>
 		</band>
 	</detail>
 </jasperReport>

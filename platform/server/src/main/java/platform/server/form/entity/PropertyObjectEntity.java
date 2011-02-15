@@ -16,6 +16,9 @@ import java.util.*;
 
 public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyImplement<PropertyObjectInterfaceEntity,P> implements OrderEntity<PropertyObjectInstance>, ServerCustomSerializable {
 
+    public PropertyObjectEntity() {
+    }
+
     public PropertyObjectEntity(LP<P> property, PropertyObjectInterfaceEntity... objects) {
         super(property.property);
         for(int i=0;i<property.listInterfaces.size();i++)

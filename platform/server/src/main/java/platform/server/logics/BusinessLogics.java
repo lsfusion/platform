@@ -50,6 +50,7 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.AddObjectActionProperty;
 import platform.server.logics.property.actions.DeleteObjectActionProperty;
+import platform.server.logics.property.actions.ExecutePropertyActionProperty;
 import platform.server.logics.property.actions.ImportFromExcelActionProperty;
 import platform.server.logics.property.derived.*;
 import platform.server.logics.property.group.AbstractGroup;
@@ -1459,7 +1460,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         assert checkProps();
 
-        synchronizeDB();
+//        synchronizeDB();
 
         fillIDs();
 
@@ -3997,6 +3998,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected LP addSAProp(AbstractGroup group, String caption, LP lp) {
         return addProperty(group, new LP<ClassPropertyInterface>(new SeekActionProperty(genSID(), caption, new ValueClass[]{baseClass}, lp == null ? null : lp.property)));
+    }
+
+    protected LP addEPAProp(LP lp) {
+        return addAProp(new ExecutePropertyActionProperty(genSID(), "sys", lp));
     }
 
     protected LP addLFAProp(AbstractGroup group, String caption, LP lp) {

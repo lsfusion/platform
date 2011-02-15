@@ -17,6 +17,9 @@ public class PropertyImplement<T,P extends PropertyInterface> extends TwinImmuta
         return property.toString();
     }
 
+    public PropertyImplement() {
+    }
+
     public PropertyImplement(Property<P> property,Map<P,T> mapping) {
         this.property = property;
         this.mapping = mapping;

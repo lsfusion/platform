@@ -527,15 +527,19 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP countryOfOriginFreightSku;
     private LP sidCountryOfOriginFreightSku;
     private LP nameCountryOfOriginFreightSku;
-    
+    private LP equalsItemArticleComposite;
+    private LP executeArticleCompositeItemSIDSupplier;
+    private CreateItemFormEntity createItemForm;
+    private LP addItemBarcode;
+
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
-
-        Settings.instance.setDisableSumGroupNotZero(true);
     }
 
     @Override
     protected void initGroups() {
+
+        Settings.instance.setDisableSumGroupNotZero(true);
 
         skuAttributeGroup = new AbstractGroup("Атрибуты SKU");
         baseGroup.add(skuAttributeGroup);
@@ -774,7 +778,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         // Item
         articleCompositeItem = addDProp(idGroup, "articleCompositeItem", "Артикул (ИД)", articleComposite, item);
+        equalsItemArticleComposite = addJProp(baseGroup, "equalsItemArticleComposite", "Вкл.", equals2, articleCompositeItem, 1, 2);
+
         articleSku = addCUProp(idGroup, "articleSku", "Артикул (ИД)", object(articleSingle), articleCompositeItem);
+
+        addItemBarcode = addJProp(true, "Ввод товара по штрих-коду", addAAProp(item, barcode), 1);
 
         // Article
         sidArticle = addDProp(baseGroup, "sidArticle", "Код", StringClass.get(50), article);
@@ -880,6 +888,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         addArticleCompositeSIDSupplier = addJProp(true, "Ввод составного артикула", addAAProp(articleComposite, sidArticle, supplierArticle), 1, 2);
         addNEArticleCompositeSIDSupplier = addJProp(true, "Ввод составного артикула (НС)", andNot1, addArticleCompositeSIDSupplier, 1, 2, articleSIDSupplier, 1, 2);
+
+        executeArticleCompositeItemSIDSupplier = addJProp(true, "Замена артикула", addEPAProp(articleCompositeItem), articleSIDSupplier, 2, 3, 1);
 
         supplierSku = addJProp(idGroup, "supplierSku", "Поставщик (ИД)", supplierArticle, articleSku, 1);
         nameSupplierSku = addJProp(baseGroup, "nameSupplierSku", "Поставщик", name, supplierSku, 1);
@@ -1496,6 +1506,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         classifier.add(unitOfMeasure.getClassForm(this));
         classifier.add(freightType.getClassForm(this));
 
+        createItemForm = addFormEntity(new CreateItemFormEntity(classifier, "createItemForm", "Ввод товара"));
+
         NavigatorElement purchase = new NavigatorElement(baseElement, "purchase", "Управление закупками");
         addFormEntity(new OrderFormEntity(purchase, "orderForm", "Заказы"));
         addFormEntity(new InvoiceFormEntity(purchase, "boxInvoiceForm", "Инвойсы по коробам", true));
@@ -2099,22 +2111,22 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addAutoAction(objBarcode, addPropertyObject(seekBarcodeAction, objBarcode));
 
             if (USE_SHIPMENT_DETAIL) {
+
+                addAutoAction(objBarcode,
+                              addPropertyObject(
+                                      addJProp(true, "", andNot1,
+                                              addModalFormActionProp(
+                                                      null,
+                                                      "Ввод нового товара",
+                                                      createItemForm,
+                                                      new ObjectEntity[]{createItemForm.objSupplier, createItemForm.objBarcode},
+                                                      createItemForm.addPropertyObject(addItemBarcode, createItemForm.objBarcode)
+                                              ), 1, 2,
+                                              barcodeToObject, 2
+                                      ),
+                                      objSupplier, objBarcode));
                 if (box) {
                     addAutoAction(objBarcode, addPropertyObject(addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode, objShipment, objSupplierBox, objRoute, objBarcode));
-//                    EditShipmentDetailFormEntity addAndEditForm = new EditShipmentDetailFormEntity();
-//                    addAutoAction(objBarcode,
-//                                  addPropertyObject(
-//                                          addJProp(true, "", and1,
-//                                                   addModalFormActionProp(
-//                                                           null,
-//                                                           "Редактирование строки документа",
-//                                                           addAndEditForm,
-//                                                           new ObjectEntity[]{addAndEditForm.objShipment, addAndEditForm.objSupplierBox, addAndEditForm.objRoute, addAndEditForm.objBarcode},
-//                                                           addAndEditForm.addNewShipmentDetailsProperty
-//                                                   ), 1, 2, 3, 4,
-//                                                   barcodeToObject, 4
-//                                          ),
-//                                          objShipment, objSupplierBox, objRoute, objBarcode));
                 } else {
                     addAutoAction(objBarcode, addPropertyObject(addSimpleShipmentDetailSimpleShipmentRouteBarcode, objShipment, objRoute, objBarcode));
                 }
@@ -2748,6 +2760,45 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         }
     }
 
+    private class CreateItemFormEntity extends FormEntity<RomanBusinessLogics> {
+
+        ObjectEntity objSupplier;
+        ObjectEntity objBarcode;
+        ObjectEntity objSIDArticleComposite;
+        ObjectEntity objArticleComposite;
+        ObjectEntity objItem;
+
+        public CreateItemFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
+
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", name);
+            objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", objectValue);
+            objBarcode.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            objSIDArticleComposite = addSingleGroupObject(StringClass.get(50), "Артикул", objectValue);
+            objSIDArticleComposite.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            objItem = addSingleGroupObject(item, "Товар", sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
+            objItem.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+//            objItem.addOnTransaction = true;
+//            addObjectActions(this, objItem);
+
+            addAutoAction(objSIDArticleComposite, addPropertyObject(addNEArticleCompositeSIDSupplier, objSIDArticleComposite, objSupplier));
+            addAutoAction(objSIDArticleComposite, addPropertyObject(executeArticleCompositeItemSIDSupplier, objItem, objSIDArticleComposite, objSupplier));
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+            design.setEnabled(objSupplier, false);
+            design.setEnabled(objBarcode, false);
+            return design;
+        }
+    }
+
     public static class JennyferInvoiceImporter extends ExcelSheetImporter {
 
         public JennyferInvoiceImporter(jxl.Sheet sheet, List<ImportField> nullFields, Object... fields) {
@@ -2930,5 +2981,4 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             entity.forceViewType = ClassViewType.PANEL;
         }
     }
-
 }

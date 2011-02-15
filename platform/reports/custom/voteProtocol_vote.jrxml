@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="vote" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.3310000000000024"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.y" value="480"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -40,7 +40,7 @@
 	<group name="textGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{vote})]]></groupExpression>
 		<groupHeader>
-			<band height="427" splitType="Immediate">
+			<band height="389" splitType="Immediate">
 				<staticText>
 					<reportElement x="255" y="18" width="192" height="64"/>
 					<textElement/>
@@ -95,15 +95,15 @@
 +($F{succeededVote}==null?"не":"")+" состоявшимся "]]></textFieldExpression>
 				</textField>
 			</band>
-			<band height="364" splitType="Immediate">
+			<band height="391" splitType="Immediate">
 				<printWhenExpression><![CDATA[$F{succeededVote} != null]]></printWhenExpression>
 				<staticText>
-					<reportElement positionType="Float" x="29" y="302" width="382" height="20"/>
+					<reportElement positionType="Float" x="29" y="271" width="382" height="20"/>
 					<textElement/>
 					<text><![CDATA[6. Заполненные Бюллетени оценки прилагаются к настоящему протоколу.]]></text>
 				</staticText>
 				<textField>
-					<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="29" y="202" width="520" height="91"/>
+					<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="29" y="176" width="520" height="91"/>
 					<textElement textAlignment="Justified"/>
 					<textFieldExpression class="java.lang.String"><![CDATA["5. Решение по вопросу о том, предполагает ли проект, представленный соискателем, участие в проекте " +
 "иностранного специалиста, который имеет значительный авторитет в инвестиционной и (или) исследовательской " +
@@ -113,7 +113,7 @@
 "соответствии проекта, представленного соискателем, данному Критерию."]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="29" y="98" width="520" height="83"/>
+					<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="29" y="87" width="520" height="83"/>
 					<textElement textAlignment="Justified"/>
 					<textFieldExpression class="java.lang.String"><![CDATA["4. Решение по вопросу о том, предполагает ли проект, представленный соискателем, разработку и (или) " +
 "коммерциализацию уникальных и (или) обладающих конкурентными преимуществами перед мировыми аналогами "+
@@ -123,7 +123,7 @@
 "соответствии проекта, представленного соискателем, данному Критерию."]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="29" y="14" width="520" height="76"/>
+					<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="29" y="6" width="520" height="76"/>
 					<textElement textAlignment="Justified"/>
 					<textFieldExpression class="java.lang.String"><![CDATA["3. Решение по вопросу о том, соответствует ли проект, представленный соискателем, направлению" +
 "деятельности, указанному соискателем в заявке:"+'\n'+"ДА - "+$F{quantityInClusterVote}+" голосов. "+ '\n' +
@@ -131,12 +131,8 @@
 "Результат: Экспертной коллегией принято решение о "+ ($F{acceptedInClusterVote}==null?"не":"") +
 "соответствии проекта, представленного соискателем, данному Критерию."]]></textFieldExpression>
 				</textField>
-			</band>
-		</groupHeader>
-		<groupFooter>
-			<band height="283">
 				<staticText>
-					<reportElement x="31" y="165" width="247" height="86"/>
+					<reportElement x="29" y="296" width="247" height="86"/>
 					<textElement/>
 					<text><![CDATA[Руководитель Аппарата Президента
 и Советов Фонда
@@ -148,6 +144,9 @@
 ]]></text>
 				</staticText>
 			</band>
+		</groupHeader>
+		<groupFooter>
+			<band/>
 		</groupFooter>
 	</group>
 	<detail>
