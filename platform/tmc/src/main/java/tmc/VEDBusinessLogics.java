@@ -116,7 +116,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     public ConcreteCustomClass article;
     public ConcreteCustomClass currency;
     public ConcreteCustomClass unitOfMeasure;
-    CustomClass store, articleGroup, localSupplier, importSupplier, orderLocal, format, brend, line, gender;
+    CustomClass store, localSupplier, importSupplier, orderLocal, format, line, gender;
+    ConcreteCustomClass articleGroup, brend;
     CustomClass customerWhole;
     CustomClass customerInvoiceRetail;
     public ConcreteCustomClass customerCheckRetail;
@@ -302,12 +303,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP orderComputer;
     LP saleExport;
     LP importOrder;
+    LP importArticles;
     LP articleSaleAction;
 
     LP articleFormatMin;
     LP articleFormatToSell;
 
-    LP articleCountry;
+    LP countryArticle;
 
     LP deliveryPriceDocArticle;
     LP orderAllDeliveryPrice;
@@ -340,6 +342,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP articleDiscount;
     LP currentStoreDiscount;
 
+    LP fullNameArticle;
+    LP gigienaArticle;
+    LP statusArticle;
+    LP brendArticle;
+    LP nameBrendArticle;
+    LP nameCountryArticle;
 
     protected void initProperties() {
 
@@ -364,7 +372,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP groupParentName = addJProp(baseGroup, "Родительская группа", name, groupParent, 1);
 
         articleToGroup = addDProp("articleToGroup", "Группа товаров", articleGroup, article); // принадлежность товара группе
-        articleToGroupName = addJProp(baseGroup, "Группа товаров", name, articleToGroup, 1);
+        nameArticleGroupArticle = addJProp(baseGroup, "Группа товаров", name, articleToGroup, 1);
 
         incStore = addCUProp("incStore", true, "Склад (прих.)", // generics
                 addDProp("incShop", "Магазин (прих.)", shop, orderShopInc),
@@ -381,6 +389,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         printOrderCheck = addAProp(new PrintOrderCheckActionProperty());
         saleExport = addAProp(new SaleExportActionProperty());
         importOrder = addAProp(new ImportOrderActionProperty());
+        importArticles = addAProp(new ImportArticlesActionProperty());
 
         computerShop = addDProp("computerShop", "Магазин рабочего места", shop, computer);
         currentShop = addJProp("Текущий магазин", computerShop, currentComputer);
@@ -535,15 +544,15 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addJProp(baseGroup, "Формат", name, shopFormat, 1);
 
         // новые свойства товара
-        LP fullName = addDProp(artExtraGroup, "fullName", "Полное наименование", StringClass.get(100), article);
-        LP gigiena = addDProp(artExtraGroup, "gigiena", "Гигиеническое разрешение", StringClass.get(50), article);
-        LP articleStatus = addDProp(artExtraGroup, "articleStatus", "Собственный/несобственный", LogicalClass.instance, article);
+        fullNameArticle = addDProp(artExtraGroup, "fullNameArticle", "Полное наименование", StringClass.get(100), article);
+        gigienaArticle = addDProp(artExtraGroup, "gigienaArticle", "Гигиеническое разрешение", StringClass.get(50), article);
+        statusArticle = addDProp(artExtraGroup, "statusArticle", "Собственный/несобственный", LogicalClass.instance, article);
 
-        LP articleBrend = addDProp("articleBrend", "Бренд товара", brend, article);
-        addJProp(artExtraGroup, "Бренд товара", name, articleBrend, 1);
+        brendArticle = addDProp("brendArticle", "Бренд товара (ИД)", brend, article);
+        nameBrendArticle = addJProp(artExtraGroup, "Бренд товара", name, brendArticle, 1);
 
-        articleCountry = addDProp("articleCountry", "Страна товара", country, article);
-        addJProp(baseGroup, "Страна товара", name, articleCountry, 1);
+        countryArticle = addDProp("countryArticle", "Страна товара", country, article);
+        nameCountryArticle = addJProp(baseGroup, "Страна товара", name, countryArticle, 1);
 
         LP articleLine = addDProp("articleLine", "Линия товара", line, article);
         addJProp(artExtraGroup, "Линия товара", name, articleLine, 1);
@@ -553,7 +562,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         //**************************************************************************************************************
         currentRRP = addDProp(priceGroup, "currentRRP", "RRP", DoubleClass.instance, article);
         currencyArticle = addDProp("currencyArticle", "Валюта (ИД)", currency, article);
-        currencyArticleName = addJProp(priceGroup, "currencyArticleName", "Валюта", name, currencyArticle, 1);
+        nameCurrencyArticle = addJProp(priceGroup, "nameCurrencyArticle", "Валюта", name, currencyArticle, 1);
         unitOfMeasureArticle = addDProp("unitOfMeasureArticle", "Ед. изм.", unitOfMeasure, article);
         nameUnitOfMeasureArticle = addJProp(baseGroup, "nameUnitOfMeasureArticle", "Ед. изм.", name, unitOfMeasureArticle, 1);
         LP currentCurrencyRate = addDProp(baseGroup, "currentCurrencyRate", "Курс", DoubleClass.instance, currency);
@@ -562,7 +571,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP addvBrend = addDProp(baseGroup, "addvBrend", "Наценка", DoubleClass.instance, brend);
         LP addvSetArticle = addDProp(priceGroup, "addvSetArticle", "Наценка по тов.", DoubleClass.instance, article);
-        LP addvBrendArticle = addJProp("addvBrendArticle", "Наценка по бренду", addvBrend, articleBrend, 1);
+        LP addvBrendArticle = addJProp("addvBrendArticle", "Наценка по бренду", addvBrend, brendArticle, 1);
         addvArticle = addSUProp(priceGroup, "addvArticle", true, "Дейст. наценка", Union.OVERRIDE, addvBrendArticle, addvSetArticle);
 
         // простые акции
@@ -935,7 +944,18 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 ), 1, barcodeToObject, 2);
 
         quantityDiffCommitArticle = addDUProp(articleOrderQuantity, addCUProp("Кол-во свер.", outerCommitedQuantity, quantityCheckCommitInnerArticle));
+
+        // для импорта
+        nameToCurrency = addCGProp(null, "nameToCurrency", "Валюта", object(currency), name, name, 1);
+        nameToArticleGroup = addCGProp(null, "nameToArticleGroup", "Гр. тов.", object(articleGroup), name, name, 1);
+        nameToUnitOfMeasure = addCGProp(null, "nameToUnitOfMeasure", "Ед. изм.", object(unitOfMeasure), name, name, 1);
+        nameToBrend = addCGProp(null, "nameToBrend", "Бренд", object(brend), name, name, 1);
     }
+
+    LP nameToCurrency;
+    LP nameToArticleGroup;
+    LP nameToUnitOfMeasure;
+    LP nameToBrend;
 
     private LP initRequiredStorePrice(AbstractGroup group, String sID, boolean persistent, String caption, LP deliveryPriceStoreArticle, LP storeProp) {
         LP currentRRPPriceObjectArticle = addJProp(currentRRPPriceStoreArticle, storeProp, 1, 2);
@@ -1009,7 +1029,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     LP articleFreeOrderQuantity;
 
-    LP articleToGroupName;
+    LP nameArticleGroupArticle;
 
     LP articleSupplier;
     LP articleStoreSupplier;
@@ -1055,7 +1075,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP currentShopPrice;
     LP currentRRP;
     LP currencyArticle;
-    LP currencyArticleName;
+    LP nameCurrencyArticle;
     LP unitOfMeasureArticle;
     LP nameUnitOfMeasureArticle;
     LP returnInnerFreeQuantity;
@@ -1201,6 +1221,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         FormEntity revalueAct = addFormEntity(new RevalueActFormEntity(print, "revalueAct"));
         FormEntity pricers = addFormEntity(new PricersFormEntity(print, "pricers"));
         FormEntity stickers = addFormEntity(new StickersFormEntity(print, "stickers"));
+
+        NavigatorElement classifier = new NavigatorElement(baseElement, "classifier", "Справочники");
+            addFormEntity(new ArticleInfoFormEntity(classifier, "articleInfoForm"));
 
         NavigatorElement delivery = new NavigatorElement(baseElement, "delivery", "Управление закупками");
             addFormEntity(new SupplierArticleFormEntity(delivery, "supplierArticleForm"));
@@ -2944,6 +2967,17 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
     }
 
+    private class ArticleInfoFormEntity extends FormEntity {
+        public final ObjectEntity objArt;
+
+        protected ArticleInfoFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Справочник товаров");
+
+            objArt = addSingleGroupObject(article, objectValue, name, barcode, currentRRP, nameCurrencyArticle, nameArticleGroupArticle, fullNameArticle, nameUnitOfMeasureArticle, nameBrendArticle, nameCountryArticle, gigienaArticle, statusArticle);
+            addPropertyDraw(importArticles);
+        }
+    }
+
 /*    private class LogClientFormEntity extends FormEntity {
         protected LogClientFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Изменения клиентов");
@@ -3098,7 +3132,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             ImportField countryField = new ImportField(InsensitiveStringClass.get(60)); fields.add(countryField);
             ImportKey<?> countryKey = new ImportKey(country, nameToCountry.getMapping(countryField));
-            properties.add(new ImportProperty(countryField, articleCountry.getMapping(articleKey), object(country).getMapping(countryKey)));
+            properties.add(new ImportProperty(countryField, countryArticle.getMapping(articleKey), object(country).getMapping(countryKey)));
 
             List<List<Object>> rows = new ArrayList<List<Object>>();
 
@@ -3133,6 +3167,83 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             super.proceedDefaultDraw(entity, form);
             entity.shouldBeLast = true;
             entity.forceViewType = ClassViewType.PANEL;
+        }
+    }
+
+    public class ImportArticlesActionProperty extends ActionProperty {
+
+        public ImportArticlesActionProperty() {
+            super(genSID(), "Импортировать товары", new ValueClass[]{});
+        }
+
+        private void addArticleImportField(List<ImportField> fields, List<ImportProperty<?>> properties, List<ImportKey<?>> keys, ImportKey articleKey, LP nameToObject, LP articleProp, ConcreteCustomClass customClass) {
+            ImportField importField = new ImportField(name); fields.add(importField);
+            ImportKey<?> importKey = new ImportKey(customClass, nameToObject.getMapping(importField));
+            keys.add(importKey);
+            properties.add(new ImportProperty(importField, name.getMapping(importKey)));
+            properties.add(new ImportProperty(importField, articleProp.getMapping(articleKey), object(customClass).getMapping(importKey)));
+        }
+
+        private void addArticleField(List<ImportField> fields, List<ImportProperty<?>> properties, ImportKey articleKey, LP articleProp) {
+            ImportField nameField = new ImportField(articleProp); fields.add(nameField);
+            properties.add(new ImportProperty(nameField, articleProp.getMapping(articleKey)));
+        }
+
+        public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            FormInstance remoteForm = executeForm.form;
+            DataSession session = remoteForm.session;
+
+            Sheet sh;
+            try {
+                ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
+                sh = Workbook.getWorkbook(inFile).getSheet(0);
+            } catch (Exception e) {
+                logger.fatal("Не могу прочитать .xsl файл.");
+                return;
+            }
+
+            List<ImportField> fields = new ArrayList<ImportField>();
+            List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
+            List<ImportKey<?>> importKeys = new ArrayList<ImportKey<?>>();
+
+            ImportField barcodeField = new ImportField(barcode); fields.add(barcodeField);
+            ImportKey<?> articleKey = new ImportKey(article, barcodeToObject.getMapping(barcodeField)); importKeys.add(articleKey);
+            properties.add(new ImportProperty(barcodeField, barcode.getMapping(articleKey)));
+
+            addArticleField(fields, properties, articleKey, name);
+            addArticleField(fields, properties, articleKey, currentRRP);
+            addArticleImportField(fields, properties, importKeys, articleKey, nameToCurrency, currencyArticle, currency);
+            addArticleImportField(fields, properties, importKeys, articleKey, nameToArticleGroup, articleToGroup, articleGroup);
+            addArticleField(fields, properties, articleKey, fullNameArticle);
+            addArticleImportField(fields, properties, importKeys, articleKey, nameToUnitOfMeasure, unitOfMeasureArticle, unitOfMeasure);
+            addArticleImportField(fields, properties, importKeys, articleKey, nameToBrend, brendArticle, brend);
+            addArticleImportField(fields, properties, importKeys, articleKey, nameToCountry, countryArticle, country);
+            addArticleField(fields, properties, articleKey, gigienaArticle);
+
+            List<List<Object>> rows = new ArrayList<List<Object>>();
+
+            for (int i = 0; i < sh.getRows(); ++i) {
+                List<Object> row = new ArrayList<Object>();
+
+                for (int j = 0; j < fields.size(); j++) {
+                    try {
+                        row.add(fields.get(j).getFieldClass().parseString(sh.getCell(j, i).getContents()));
+                    } catch (platform.server.data.type.ParseException e) {
+                        logger.warn("Не конвертировано значение совйства", e);
+                    }
+                }
+
+                rows.add(row);
+            }
+
+            new IntegrationService(session, new ImportTable(fields, rows), importKeys, properties).synchronize(true, true, false);
+
+            actions.add(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+        }
+
+        @Override
+        protected DataClass getValueClass() {
+            return FileActionClass.getInstance("Файлы таблиц", "xls");
         }
     }
 }

@@ -1,5 +1,11 @@
 package platform.server.integration;
 
+import platform.base.BaseUtils;
+import platform.server.classes.IntegerClass;
+import platform.server.data.KeyField;
+import platform.server.data.SessionTable;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.query.Query;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
@@ -7,6 +13,8 @@ import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.session.DataSession;
 import platform.server.session.SessionTableUsage;
+import platform.server.session.SingleKeyTableUsage;
+import platform.server.session.SinglePropertyTableUsage;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -31,7 +39,32 @@ public class IntegrationService {
         this.keys = keys;
     }
 
+    public void synchronizeQuery(boolean addNew, boolean updateExisting, boolean deleteOld) throws SQLException {
+
+        SingleKeyTableUsage<ImportField> importTable = new SingleKeyTableUsage<ImportField>(IntegerClass.instance, table.fields, ImportField.typeGetter);
+
+        int counter = 0;
+        for(ImportTable.Row row : table) {
+            Map<ImportField, ObjectValue> insertRow = new HashMap<ImportField, ObjectValue>();
+            for(ImportField field : table.fields)
+                insertRow.put(field, ObjectValue.getValue(row.getValue(field), field.getFieldClass()));
+            importTable.insertRecord(session.sql, new DataObject(counter++), insertRow, false);
+        }
+
+        // приходится через addKeys, так как synchronize сам не может resolv'ить сессию на добавление
+        Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys = new HashMap<ImportKey<?>, SinglePropertyTableUsage<?>>();
+        for (ImportKey<?> key : keys)
+            addedKeys.put(key, key.synchronize(session, importTable));
+
+        for (ImportProperty<?> property : properties)
+            property.synchronize(session, importTable, addedKeys);
+    }
+
     public void synchronize(boolean addNew, boolean updateExisting, boolean deleteOld) throws SQLException {
+
+        synchronizeQuery(addNew, updateExisting, deleteOld);
+        if(1==1) return;
+
         Map<ImportKey, List<DataObject>> keyValueLists = new HashMap<ImportKey, List<DataObject>>();
         for (ImportKey<?> key : keys) {
             keyValueLists.put(key, new ArrayList<DataObject>());
@@ -53,7 +86,7 @@ public class IntegrationService {
                         break;
                     } else {
                         DataObject newObject = session.addObject(key.getCustomClass(), session.modifier);
-//                        key.writeValue(session, row, newObject);
+                        key.writeValue(session, row, newObject);
                         keyValues.put(key, newObject);
                     }
                 }

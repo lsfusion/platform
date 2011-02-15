@@ -70,7 +70,7 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
         return false;
     }
 
-    public abstract void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException;
+    public abstract void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException;
 
     @Override
     protected void fillDepends(Set<Property> depends, boolean derived) {

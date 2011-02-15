@@ -57,7 +57,7 @@ public class BaseUtils {
         return result;
     }
 
-    public static <K, E, V> Map<K, V> rightJoin(Map<K, ? extends E> map, Map<E, V> joinMap) {
+    public static <K, E, V, R extends E> Map<K, V> rightJoin(Map<K, E> map, Map<R, V> joinMap) {
         return BaseUtils.join(BaseUtils.filterValues(map, joinMap.keySet()), joinMap);
     }
 
@@ -104,11 +104,11 @@ public class BaseUtils {
         return result;
     }
 
-    public static <K, V> Map<K, V> filterValues(Map<K, ? extends V> map, Collection<V> values) {
-        Map<K, V> result = new HashMap<K, V>();
-        for (Map.Entry<K, ? extends V> entry : map.entrySet())
+    public static <K, V, F> Map<K, F> filterValues(Map<K, V> map, Collection<F> values) {
+        Map<K, F> result = new HashMap<K, F>();
+        for (Map.Entry<K, V> entry : map.entrySet())
             if (values.contains(entry.getValue()))
-                result.put(entry.getKey(), entry.getValue());
+                result.put(entry.getKey(), (F) entry.getValue());
         return result;
     }
 

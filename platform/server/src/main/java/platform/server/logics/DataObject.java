@@ -4,10 +4,7 @@ import platform.base.BaseUtils;
 import platform.base.TwinImmutableInterface;
 import platform.interop.Compare;
 import platform.server.caches.hash.HashValues;
-import platform.server.classes.ConcreteClass;
-import platform.server.classes.DoubleClass;
-import platform.server.classes.LogicalClass;
-import platform.server.classes.StringClass;
+import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.Value;
 import platform.server.data.expr.Expr;
@@ -24,11 +21,10 @@ import platform.server.form.instance.GroupObjectInstance;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.integration.ImportFieldInterface;
-import platform.server.integration.ImportKeyInterface;
-import platform.server.integration.ImportTable;
+import platform.server.integration.*;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.SessionChanges;
+import platform.server.session.SinglePropertyTableUsage;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -68,6 +64,10 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
 
     public DataObject(Boolean bl) {
         this(bl, LogicalClass.instance);
+    }
+
+    public DataObject(Integer ig) {
+        this(ig, IntegerClass.instance);
     }
 
     public boolean isString(SQLSyntax syntax) {
@@ -191,5 +191,13 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
 
     public DataObject getDataObject(ImportTable.Row row) {
         return getDataObject();
+    }
+
+    public Expr getExpr(Map<ImportField, ? extends Expr> importKeys) {
+        return getExpr();
+    }
+
+    public Expr getExpr(Map<ImportField, ? extends Expr> importKeys, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys) {
+        return getExpr(importKeys);
     }
 }

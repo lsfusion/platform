@@ -31,6 +31,10 @@ public class PropertyChange<T extends PropertyInterface> extends TwinsInnerConte
         this.where = where;
     }
 
+    public PropertyChange(Map<T, KeyExpr> mapKeys, Expr expr) {
+        this(mapKeys, expr, expr.getWhere());
+    }
+
     public Set<KeyExpr> getKeys() {
         return new HashSet<KeyExpr>(mapKeys.values());
     }

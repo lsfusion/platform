@@ -1,6 +1,7 @@
 package platform.server.logics.table;
 
 import platform.base.BaseUtils;
+import platform.server.caches.IdentityLazy;
 import platform.server.classes.SystemClass;
 import platform.server.data.*;
 import platform.server.data.expr.ValueExpr;
@@ -46,17 +47,23 @@ public class IDTable extends GlobalTable {
         return result;
     }
 
+    @IdentityLazy
+    private Query<KeyField, PropertyField> getGenerateQuery(int idType) {
+        Query<KeyField, PropertyField> query = new Query<KeyField, PropertyField>(this);
+        platform.server.data.query.Join<PropertyField> joinTable = joinAnd(Collections.singletonMap(key, query.mapKeys.get(key)));
+        query.and(joinTable.getWhere());
+        query.properties.put(value, joinTable.getExpr(value));
+
+        query.and(new EqualsWhere(query.mapKeys.get(key),new ValueExpr(idType, SystemClass.instance)));
+        return query;
+    }
+
     public Integer generateID(SQLSession dataSession, int idType) throws SQLException {
 
         assert !dataSession.isInTransaction();
 
         // читаем
-        Query<KeyField, PropertyField> query = new Query<KeyField, PropertyField>(this);
-        platform.server.data.query.Join<PropertyField> joinTable = joinAnd(Collections.singletonMap(key,query.mapKeys.get(key)));
-        query.and(joinTable.getWhere());
-        query.properties.put(value, joinTable.getExpr(value));
-
-        query.and(new EqualsWhere(query.mapKeys.get(key),new ValueExpr(idType, SystemClass.instance)));
+        Query<KeyField, PropertyField> query = getGenerateQuery(idType);
 
         Integer freeID = (Integer) BaseUtils.singleValue(query.execute(dataSession)).get(value);
 
@@ -66,9 +73,15 @@ public class IDTable extends GlobalTable {
     }
 
     public void reserveID(SQLSession session, int idType, Integer ID) throws SQLException {
-        Query<KeyField, PropertyField> updateQuery = new Query<KeyField, PropertyField>(this);
-        updateQuery.putKeyWhere(Collections.singletonMap(key,new DataObject(idType, SystemClass.instance)));
-        updateQuery.properties.put(value,new ValueExpr(ID+1, SystemClass.instance));
+        Query<KeyField, PropertyField> updateQuery = getReserveQuery(idType, ID);
         session.updateRecords(new ModifyQuery(this,updateQuery));
+    }
+
+    @IdentityLazy
+    private Query<KeyField, PropertyField> getReserveQuery(int idType, Integer ID) {
+        Query<KeyField, PropertyField> updateQuery = new Query<KeyField, PropertyField>(this);
+        updateQuery.putKeyWhere(Collections.singletonMap(key, new DataObject(idType, SystemClass.instance)));
+        updateQuery.properties.put(value,new ValueExpr(ID+1, SystemClass.instance));
+        return updateQuery;
     }
 }

@@ -323,6 +323,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected AbstractCustomClass transaction, barcodeObject;
+    protected AbstractCustomClass namedUniqueObject;
 
     public AbstractCustomClass user;
     public ConcreteCustomClass systemUser;
@@ -627,6 +628,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP generateDatesCountry;
     protected LP sidToCountry;
     protected LP nameToCountry;
+    protected LP nameToObject;
     protected LP isDayOffCountryDate;
     LP workingDay, isWorkingDay, workingDaysQuantity, equalsWorkingDaysQuantity;
 

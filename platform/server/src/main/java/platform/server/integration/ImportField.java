@@ -1,9 +1,13 @@
 package platform.server.integration;
 
 import platform.server.classes.DataClass;
+import platform.server.data.expr.Expr;
+import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
+
+import java.util.Map;
 
 /**
  * User: DAle
@@ -13,6 +17,11 @@ import platform.server.logics.property.Property;
 
 public class ImportField implements ImportFieldInterface {
     private DataClass fieldClass;
+
+    public static final Type.Getter<ImportField> typeGetter = new Type.Getter<ImportField>() {
+        public Type getType(ImportField key) {
+            return key.getFieldClass();
+        }};
 
     public ImportField(DataClass fieldClass) {
         this.fieldClass = fieldClass;
@@ -36,5 +45,9 @@ public class ImportField implements ImportFieldInterface {
         } else {
             return null;
         }
+    }
+
+    public Expr getExpr(Map<ImportField, ? extends Expr> importKeys) {
+        return importKeys.get(this);
     }
 }

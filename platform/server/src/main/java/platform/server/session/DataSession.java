@@ -162,17 +162,23 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
     }
 
     public DataObject addObject(ConcreteCustomClass customClass, Modifier<? extends Changes> modifier) throws SQLException {
+        return addObject(customClass, modifier, true, true);
+    }
+
+    public DataObject addObject(ConcreteCustomClass customClass, Modifier<? extends Changes> modifier, boolean fillDefault, boolean groupLast) throws SQLException {
 
         DataObject object = new DataObject(IDTable.instance.generateID(sql, IDTable.OBJECT),baseClass.unknown);
 
         // запишем объекты, которые надо будет сохранять
-        changeClass(object, customClass);
+        changeClass(object, customClass, groupLast);
 
-        if(customClass.isChild(namedObject))
-            name.execute(customClass.caption+" "+object.object, this, modifier, object);
+        if(fillDefault) {
+            if(customClass.isChild(namedObject))
+                name.execute(customClass.caption+" "+object.object, this, modifier, object);
 
-        if(customClass.isChild(transaction))
-            date.execute(currentDate.read(sql, modifier, env), DataSession.this, modifier, object);
+            if(customClass.isChild(transaction))
+                date.execute(currentDate.read(sql, modifier, env), DataSession.this, modifier, object);
+        }
 
         return object;
     }
@@ -180,6 +186,10 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
     Map<DataObject, ConcreteObjectClass> newClasses = new HashMap<DataObject, ConcreteObjectClass>();
 
     public void changeClass(DataObject change, ConcreteObjectClass toClass) throws SQLException {
+        changeClass(change, toClass, true);
+    }
+
+    public void changeClass(DataObject change, ConcreteObjectClass toClass, boolean groupLast) throws SQLException {
         if(toClass==null) toClass = baseClass.unknown;
 
         Set<CustomClass> addClasses = new HashSet<CustomClass>();
@@ -193,19 +203,21 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
 
         newClasses.put(change,toClass);
 
-        // по тем по кому не было restart'а new -> to
-        updateProperties(new UsedSimpleChanges(new SimpleChanges(getUsedChanges(), addClasses, removeClasses, true)));
-        for(UpdateChanges incrementChange : incrementChanges.values()) {
-            incrementChange.addClasses.addAll(addClasses);
-            incrementChange.removeClasses.addAll(removeClasses);
+        if(groupLast) {
+            // по тем по кому не было restart'а new -> to
+            updateProperties(new UsedSimpleChanges(new SimpleChanges(getUsedChanges(), addClasses, removeClasses, true)));
+            for(UpdateChanges incrementChange : incrementChanges.values()) {
+                incrementChange.addClasses.addAll(addClasses);
+                incrementChange.removeClasses.addAll(removeClasses);
+            }
         }
     }
 
-    public void changeProperty(DataProperty property, Map<ClassPropertyInterface, DataObject> keys, ObjectValue newValue) throws SQLException {
+    public void changeProperty(DataProperty property, Map<ClassPropertyInterface, DataObject> keys, ObjectValue newValue, boolean groupLast) throws SQLException {
         changeProperty(property, keys, newValue, sql);
 
-        // по тем по кому не было restart'а new -> to
-        updateProperties(new UsedSimpleChanges(new SimpleChanges(getUsedChanges(), property)));
+        if(groupLast) // по тем по кому не было restart'а new -> to
+            updateProperties(new UsedSimpleChanges(new SimpleChanges(getUsedChanges(), property)));
     }
 
     private void updateProperties(ExprChanges changes) {
@@ -241,12 +253,14 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
 
         // потом изменяем
         List<ClientAction> actions = new ArrayList<ClientAction>();
-        for(Map.Entry<UserProperty,Map<Map<ClassPropertyInterface,DataObject>,Map<String,ObjectValue>>> propRow : propRows.entrySet()) 
-            for(Map.Entry<Map<ClassPropertyInterface,DataObject>,Map<String,ObjectValue>> row : propRow.getValue().entrySet()) {
+        for(Map.Entry<UserProperty,Map<Map<ClassPropertyInterface,DataObject>,Map<String,ObjectValue>>> propRow : propRows.entrySet()) {
+            for (Iterator<Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>> iterator = propRow.getValue().entrySet().iterator(); iterator.hasNext();) {
+                Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>> row = iterator.next();
                 UserProperty property = propRow.getKey();
                 Map<ClassPropertyInterface, P> mapInterfaces = mapChanges.map.get(property);
-                property.execute(row.getKey(), row.getValue().get("value"), DataSession.this, actions, executeForm, mapInterfaces==null?null:BaseUtils.nullJoin(mapInterfaces, mapObjects));
+                property.execute(row.getKey(), row.getValue().get("value"), DataSession.this, actions, executeForm, mapInterfaces == null ? null : BaseUtils.nullJoin(mapInterfaces, mapObjects), !iterator.hasNext());
             }
+        }
         return actions;
     }
 
@@ -359,9 +373,10 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
         for(ExecuteProperty property : BL.getExecuteDerivedProperties()) {
             PropertyChange<ClassPropertyInterface> propertyChange = property.derivedChange.getDataChanges(modifier).get(property);
             if(propertyChange!=null)
-                for(Map.Entry<Map<ClassPropertyInterface,DataObject>,Map<String,ObjectValue>> executeRow :
-                        propertyChange.getQuery().executeClasses(sql, env, baseClass).entrySet())
-                    property.execute(executeRow.getKey(), executeRow.getValue().get("value"), this, actions, null, null);
+                for (Iterator<Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>> iterator = propertyChange.getQuery().executeClasses(sql, env, baseClass).entrySet().iterator(); iterator.hasNext();) {
+                    Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>> executeRow = iterator.next();
+                    property.execute(executeRow.getKey(), executeRow.getValue().get("value"), this, actions, null, null, !iterator.hasNext());
+                }
         }        
     }
 

@@ -6,8 +6,10 @@ import platform.server.caches.MapValues;
 import platform.server.classes.BaseClass;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Join;
 import platform.server.data.query.MapJoin;
+import platform.server.data.query.MapKeysInterface;
 import platform.server.data.query.Query;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
@@ -17,11 +19,15 @@ import platform.server.logics.ObjectValue;
 import java.sql.SQLException;
 import java.util.*;
 
-public class SessionTableUsage<K,V> {
+public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
 
     protected SessionData<?> table;
     protected Map<KeyField, K> mapKeys;
     protected Map<PropertyField, V> mapProps;
+
+    public Map<K, KeyExpr> getMapKeys() {
+        return KeyExpr.getMapKeys(mapKeys.values());
+    }
 
     public SessionTableUsage(List<K> keys, List<V> properties, Type.Getter<K> keyType, Type.Getter<V> propertyType) {
         List<KeyField> keyList = new ArrayList<KeyField>();
