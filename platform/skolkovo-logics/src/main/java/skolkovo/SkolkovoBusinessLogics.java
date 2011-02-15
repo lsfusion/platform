@@ -17,10 +17,7 @@ import platform.server.data.expr.query.OrderType;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
 import platform.server.form.entity.*;
-import platform.server.form.entity.filter.CompareFilterEntity;
-import platform.server.form.entity.filter.NotNullFilterEntity;
-import platform.server.form.entity.filter.RegularFilterEntity;
-import platform.server.form.entity.filter.RegularFilterGroupEntity;
+import platform.server.form.entity.filter.*;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;
@@ -164,6 +161,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP dateExpertVote;
     LP voteResultExpertVote, nameVoteResultExpertVote;
     LP doneExpertVote;
+    LP connectedExpertVote;
     LP expertVoteConnected;
     LP inClusterExpertVote;
     LP innovativeExpertVote;
@@ -337,6 +335,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         doneExpertVote = addJProp(baseGroup, "doneExpertVote", "Проголосовал", equals2,
                                   voteResultExpertVote, 1, 2, addCProp(voteResult, "voted"));
+
+        connectedExpertVote = addJProp(baseGroup, "connectedExpertVote", "Аффилирован", equals2,
+                                  voteResultExpertVote, 1, 2, addCProp(voteResult, "connected"));
 
         nameVoteResultExpertVote = addJProp(voteResultCheckGroup, "nameVoteResultExpertVote", "Результат", name, voteResultExpertVote, 1, 2);
 
@@ -834,7 +835,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
 
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(doneExpertVote, objExpert, objVote)));
+            addPropertyDraw(connectedExpertVote, objExpert, objVote);
+
+            addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(doneExpertVote, objExpert, objVote)),
+                                              new NotNullFilterEntity(addPropertyObject(connectedExpertVote, objExpert, objVote))));
 
             addAttachEAForm(emailProtocolVoteEA, this, EmailActionProperty.Format.PDF, objVote, 1);
         }
