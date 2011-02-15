@@ -603,7 +603,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         supplier = addConcreteClass("supplier", "Поставщик", baseClass.named);
 
-        supplierType = addStaticClass("supplierType", "Формат импорта",
+        supplierType = addStaticClass("supplierType", "Тип поставщика",
                 new String[] {"jennyfer", "tally_weijl"}, new String[] {"Jennyfer", "Tally Weijl"});
 
         subject = addAbstractClass("subject", "Субъект", baseClass.named);
@@ -728,7 +728,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         // Supplier
         supplierTypeSupplier = addDProp(baseGroup, "supplierTypeSupplier", "Тип поставщика", supplierType, supplier);
-        nameSupplierTypeSupplier = addJProp(baseGroup, "nameSupplierTypeSupplier", "Название типа поставщика", name, supplierTypeSupplier, 1);
+        nameSupplierTypeSupplier = addJProp(baseGroup, "nameSupplierTypeSupplier", "Формат импорта", name, supplierTypeSupplier, 1);
 
         currencySupplier = addDProp(idGroup, "currencySupplier", "Валюта (ИД)", currency, supplier);
         nameCurrencySupplier = addJProp(baseGroup, "nameCurrencySupplier", "Валюта", name, currencySupplier, 1);
@@ -2892,7 +2892,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             switch (column) {
                 case C: return value.substring(1); // barcode
-                case K: return value.substring(0, 10); // customs code
+                case K: return value.substring(0, Math.min(10, value.length())); // customs code
                 case N: case O: return value.replace(',', '.'); // todo [dale]: надо подумать, что делать с локалями
                 case E:
                     switch (part) {
@@ -2930,7 +2930,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             value = value.trim();
 
             switch (column) {
-                case L: return value.substring(0, 10); // customs code
+                case L: return value.substring(0, Math.min(10, value.length())); // customs code
                 case X: case AD: return value.replace(',', '.'); // todo [dale]: надо подумать, что делать с локалями
                 case R:
                     switch (part) {
