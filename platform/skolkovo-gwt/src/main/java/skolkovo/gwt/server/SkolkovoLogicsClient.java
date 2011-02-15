@@ -28,7 +28,7 @@ public class SkolkovoLogicsClient {
     private RMISocketFactory socketFactory;
     private SkolkovoRemoteInterface logics;
 
-    private void initRMISocketFactory() throws IOException {
+    private synchronized void initRMISocketFactory() throws IOException {
         if (socketFactory == null) {
             socketFactory = RMISocketFactory.getSocketFactory();
             if (socketFactory == null) {
