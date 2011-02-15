@@ -3,6 +3,7 @@ package roman;
 import jxl.Sheet;
 import jxl.Workbook;
 import net.sf.jasperreports.engine.JRException;
+import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.action.ClientAction;
@@ -16,6 +17,7 @@ import platform.server.data.sql.DataAdapter;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.instance.FormInstance;
+import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;
@@ -52,18 +54,18 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private ConcreteCustomClass articleComposite;
     private ConcreteCustomClass articleSingle;
     private ConcreteCustomClass item;
-    private AbstractCustomClass sku;
+    protected AbstractCustomClass sku;
     private ConcreteCustomClass pallet;
     private LP sidArticle;
     private LP articleCompositeItem;
     private LP articleSku;
     private ConcreteCustomClass order;
     private AbstractCustomClass invoice;
-    private AbstractCustomClass shipment;
+    protected AbstractCustomClass shipment;
     private ConcreteCustomClass boxShipment;
     private ConcreteCustomClass simpleShipment;
     private ConcreteCustomClass freight;
-    private ConcreteCustomClass route;
+    private StaticCustomClass route;
     private ConcreteCustomClass supplier;
     private StaticCustomClass supplierType;
     private AbstractCustomClass document;
@@ -1239,15 +1241,15 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 percentShipmentRouteSku,
                 invoicedShipmentSku, 1, 3);
 
-        notFilledShipmentRouteSku = addJProp(baseGroup, "notFilledShipmentRouteSku", "Не заполнен", greater2, invoicedShipmentRouteSku, 1, 2, 3,
-                addSUProp(Union.OVERRIDE, addCProp(DoubleClass.instance, 0, shipment, route, sku), quantityShipmentRouteSku), 1, 2, 3);
-
-        routeToFillShipmentSku = addMGProp(idGroup, "routeToFillShipmentSku", "Маршрут (ИД)",
-                addJProp(and1, object(route), 2, notFilledShipmentRouteSku, 1, 2, 3), 1, 3);
-
-        LP routeToFillShipmentBarcode = addJProp(routeToFillShipmentSku, 1, barcodeToObject, 2);
-        seekRouteToFillShipmentBarcode = addJProp(actionGroup, true, "seekRouteToFillShipmentSku", "Поиск маршрута", addSAProp(null),
-                routeToFillShipmentBarcode, 1, 2);
+//        notFilledShipmentRouteSku = addJProp(baseGroup, "notFilledShipmentRouteSku", "Не заполнен", greater2, invoicedShipmentRouteSku, 1, 2, 3,
+//                addSUProp(Union.OVERRIDE, addCProp(DoubleClass.instance, 0, shipment, route, sku), quantityShipmentRouteSku), 1, 2, 3);
+//
+//        routeToFillShipmentSku = addMGProp(idGroup, "routeToFillShipmentSku", "Маршрут (ИД)",
+//                addJProp(and1, object(route), 2, notFilledShipmentRouteSku, 1, 2, 3), 1, 3);
+//
+//        LP routeToFillShipmentBarcode = addJProp(routeToFillShipmentSku, 1, barcodeToObject, 2);
+//        seekRouteToFillShipmentBarcode = addJProp(actionGroup, true, "seekRouteToFillShipmentSku", "Поиск маршрута", addSAProp(null),
+//                routeToFillShipmentBarcode, 1, 2);
 
         addConstraint(addJProp("Магазин короба для транспортировки должен совпадать с магазином короба поставщика", and1,
                       addJProp(diff2, destinationSupplierBox, 1, destinationFreightBox, 2), 1, 2,
@@ -2103,7 +2105,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addAutoAction(objBarcode, addPropertyObject(barcodeActionSetPallet, objBarcode));
             if (box)
                 addAutoAction(objBarcode, addPropertyObject(barcodeActionSetStore, objBarcode, objSupplierBox));
-            addAutoAction(objBarcode, addPropertyObject(seekRouteToFillShipmentBarcode, objShipment, objBarcode));
+
+            addAutoAction(objBarcode, addPropertyObject(
+                          addJProp(true, addAProp(new SeekRouteActionProperty()),
+                                   1, barcodeToObject, 2, 3),
+                          objShipment, objBarcode, objRoute));
+
+//            addAutoAction(objBarcode, addPropertyObject(seekRouteToFillShipmentBarcode, objShipment, objBarcode));
             if (box)
                 addAutoAction(objBarcode, addPropertyObject(barcodeAction4, objSupplierBox, objShipment, objRoute, objBarcode));
             else
@@ -2114,7 +2122,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
                 addAutoAction(objBarcode,
                               addPropertyObject(
-                                      addJProp(true, "", andNot1,
+                                      addJProp(true, andNot1,
                                               addModalFormActionProp(
                                                       null,
                                                       "Ввод нового товара",
@@ -2796,6 +2804,50 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             design.setEnabled(objSupplier, false);
             design.setEnabled(objBarcode, false);
             return design;
+        }
+    }
+
+    public class SeekRouteActionProperty extends ActionProperty {
+
+        private ClassPropertyInterface shipmentInterface;
+        private ClassPropertyInterface skuInterface;
+        private ClassPropertyInterface routeInterface;
+
+        // route в интерфейсе нужен только, чтобы найти нужный ObjectInstance (не хочется бегать и искать его по массиву ObjectInstance)
+        public SeekRouteActionProperty() {
+            super(genSID(), "Поиск маршрута", new ValueClass[] {shipment, sku, route});
+
+            Iterator<ClassPropertyInterface> i = interfaces.iterator();
+            shipmentInterface = i.next();
+            skuInterface = i.next();
+            routeInterface = i.next();
+        }
+
+        @Override
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            FormInstance<?> form = (FormInstance<?>)executeForm.form;
+            DataSession session = form.session;
+
+            DataObject objShipment = keys.get(shipmentInterface);
+            DataObject objSku = keys.get(skuInterface);
+
+            DataObject objRouteRB = route.getDataObject("rb");
+            DataObject objRouteRF = route.getDataObject("rf");
+
+            Double invoiced = (Double) invoicedShipmentSku.read(session, objShipment, objSku);
+
+            DataObject objRouteResult = null;
+            if (invoiced == null) {
+                objRouteResult = objRouteRF;
+            } else {
+
+                Double invoicedRF = (Double)BaseUtils.nvl(invoicedShipmentRouteSku.read(session, objShipment, objRouteRF, objSku), 0.0);
+                Double quantityRF = (Double)BaseUtils.nvl(quantityShipmentRouteSku.read(session, objShipment, objRouteRF, objSku), 0.0);
+
+                objRouteResult = (quantityRF + 1E-9 < invoicedRF) ? objRouteRF : objRouteRB;
+            }
+
+            form.seekObject((ObjectInstance)mapObjects.get(routeInterface), objRouteResult);
         }
     }
 
