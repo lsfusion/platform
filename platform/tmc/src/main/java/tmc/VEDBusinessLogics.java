@@ -2708,11 +2708,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
             ObjectEntity objArt = addSingleGroupObject(article, baseGroup, true);
 
-            addPropertyDraw(objDoc, objArt, shopPrice);
-
-            addFixedFilter(new NotNullFilterEntity(getPropertyObject(shopPrice)));
-            addFixedFilter(new NotFilterEntity(new CompareFilterEntity(getPropertyObject(shopPrice), Compare.EQUALS, addPropertyObject(prevPrice, objDoc, objArt))));
-
             addFAProp(documentPriceGroup, "Стикеры", this, objDoc);
         }
     }
