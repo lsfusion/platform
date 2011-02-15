@@ -671,7 +671,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP revalueShopPrice = addDCProp("revaluePrice", "Цена (переоц.)", true, requiredStorePrice, revalueShop, 1, 2, documentRevalued, 1, 2);
         LP incomeShopPrice = addDCProp("shopPrice", "Цена (прих.)", true, initRequiredStorePrice(privateGroup, genSID(), false, "Необх. цена (прих.)", deliveryPriceDocArticle, incStore), true, 1, 2, commitArticleQuantity, 1, 2);
 
-        shopPrice = addCUProp(documentPriceGroup, "Цена (док.)", revalueShopPrice, incomeShopPrice);
+        shopPrice = addCUProp(documentPriceGroup, "priceDocument", "Цена (док.)", revalueShopPrice, incomeShopPrice);
 
         currentShopPrice = addJProp(priceGroup, "currentShopPrice", "Цена на складе (тек.)", shopPrice, currentShopPriceDoc, 1, 2, 2);
 
