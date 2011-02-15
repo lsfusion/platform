@@ -29,8 +29,8 @@
 					<textElement textAlignment="Justified"/>
 					<textFieldExpression class="java.lang.String"><![CDATA["Некоммерческая организация Фонд развития Центра разработки и коммерциализации новых технологий, "+
 "рассмотрев поданную " + $F{nameNativeClaimerVote} + " заявку на присвоение статуса участника проекта от "
-+ (DateFormat.getDateInstance(DateFormat.MEDIUM).format($F{dateProjectVote})) + ", на основании решения Фонда о направлении заявки соискателя на рассмотрение "+
-"в Экспертную коллегию для проведения экспертизы заявки по существу от "+ (DateFormat.getDateInstance(DateFormat.MEDIUM).format($F{date})) +", "+ ($F{prevDateVote}==null?
++ (platform.client.DateUtils.formatRussian($F{dateProjectVote})) + " года, на основании решения Фонда о направлении заявки соискателя на рассмотрение "+
+"в Экспертную коллегию для проведения экспертизы заявки по существу от "+ (platform.client.DateUtils.formatRussian($F{date})) +", "+ ($F{prevDateVote}==null?
 "в соответствии с пунктами 4-7 Положения об Экспертных коллегиях Фонда «Сколково»":"учитывая, что "+
 "заседание предыдущей Экспертной коллегии было признано несостоявшимся (протокол заседания "+
 "Экспертной коллегии по вопросу о соответствии проекта, представленного соискателем, критериям, "+
@@ -63,34 +63,30 @@
 					<textElement/>
 					<text><![CDATA[РЕШЕНИЕ]]></text>
 				</staticText>
-				<staticText>
-					<reportElement positionType="Float" x="34" y="241" width="524" height="56"/>
-					<textElement textAlignment="Justified"/>
-					<text><![CDATA[р е ш и л
-1. Созвать заседание новой Экспертной коллегии для проведения экспертизы указанной заявки по существу.
-2. Путем случайной выборки из числа экспертов по Направлению деятельности, указанному Соискателем в
-заявке, определить следующий состав новой Экспертной коллегии:
-]]></text>
-				</staticText>
 				<textField>
 					<reportElement x="188" y="131" width="216" height="20"/>
 					<textElement/>
-					<textFieldExpression class="java.lang.String"><![CDATA["О созыве заседания Экспертной коллегии"]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["О созыве заседания " + ($F{prevDateVote}==null?"":"новой ") + "Экспертной коллегии"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="34" y="241" width="523" height="56"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.String"><![CDATA["р е ш и л\n" +
+"1. Созвать заседание " + ($F{prevDateVote}==null?"":"новой ") + "Экспертной коллегии для проведения экспертизы указанной заявки по существу.\n" +
+"2. Путем случайной выборки из числа экспертов по Направлению деятельности, указанному Соискателем в заявке, определить следующий состав " + ($F{prevDateVote}==null?"":"новой ") + "Экспертной коллегии:"]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
 		<groupFooter>
 			<band height="96">
-				<staticText>
-					<reportElement x="35" y="17" width="523" height="69"/>
+				<textField>
+					<reportElement x="34" y="12" width="523" height="69"/>
 					<textElement/>
-					<text><![CDATA[3. Направить членам новой Экспертной коллегии материалы заявки соискателя (в электронном виде) и
-Бюллетень оценки.
-
-Руководитель Аппарата Президента
-и Советов Фонда
-]]></text>
-				</staticText>
+					<textFieldExpression class="java.lang.String"><![CDATA["3. Направить членам " + ($F{prevDateVote}==null?"":"новой ") + "Экспертной коллегии материалы заявки соискателя (в электронном виде) и Бюллетень оценки.\n" +
+"\n" +
+"Руководитель Аппарата Президента\n"+
+"и Советов Фонда"]]></textFieldExpression>
+				</textField>
 			</band>
 		</groupFooter>
 	</group>

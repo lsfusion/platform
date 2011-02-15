@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="vote" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.3310000000000024"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="480"/>
+	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -77,8 +77,8 @@
 					<textElement textAlignment="Justified"/>
 					<textFieldExpression class="java.lang.String"><![CDATA["1. В соответствии с пунктами 6-16 Положения об Экспертных коллегиях Фонда «Сколково» и на основании:" +
  '\n' + "1) решения Фонда о направлении заявки соискателя на рассмотрение в Экспертную коллегию для " +
-"проведения экспертизы заявки по существу от " + (DateFormat.getDateInstance(DateFormat.MEDIUM).format($F{date})) + " ;"+'\n'+"2) решения Руководителя Аппарата " +
-"Президента и Советов Фонда о созыве заседания Экспертной коллегии от " + (DateFormat.getDateInstance(DateFormat.MEDIUM).format($F{date})) + " для проведения " +
+"проведения экспертизы заявки по существу от " + (platform.client.DateUtils.formatRussian($F{date})) + " ;"+'\n'+"2) решения Руководителя Аппарата " +
+"Президента и Советов Фонда о созыве заседания Экспертной коллегии от " + (platform.client.DateUtils.formatRussian($F{date})) + " для проведения " +
 "экспертизы заявки " + $F{nameNativeClaimerVote} + " по существу было созвано заседание Экспертной коллегии, " +
 "для чего был определен ее состав в количестве 10 членов и направлены членам Экспертной коллегии" +
 "материалы заявки соискателя (в электронном виде), а также Бюллетень оценки."]]></textFieldExpression>
