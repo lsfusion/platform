@@ -601,7 +601,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         supplier = addConcreteClass("supplier", "Поставщик", baseClass.named);
 
-        supplierType = addStaticClass("suppierType", "Тип поставщика",
+        supplierType = addStaticClass("supplierType", "Формат импорта",
                 new String[] {"jennyfer", "tally_weijl"}, new String[] {"Jennyfer", "Tally Weijl"});
 
         subject = addAbstractClass("subject", "Субъект", baseClass.named);
@@ -1912,8 +1912,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             design.get(objRoute.groupTo).grid.constraints.fillHorizontal = 0.3;
 
             design.addIntersection(design.getGroupObjectContainer(objInvoice.groupTo),
-                                   design.getGroupObjectContainer(objRoute.groupTo),
-                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                    design.getGroupObjectContainer(objRoute.groupTo),
+                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             return design;
         }
@@ -2234,7 +2234,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 design.getGroupObjectContainer(objRoute.groupTo).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
             }
 
-            design.setHighlightColor(new Color(255,128,128));
+            design.setHighlightColor(new Color(255, 128, 128));
 
             return design;
         }
@@ -2852,26 +2852,37 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     }
 
     public static class JennyferInvoiceImporter extends ExcelSheetImporter {
+        private static final int LAST_COLUMN = P;
 
-        public JennyferInvoiceImporter(jxl.Sheet sheet, List<ImportField> nullFields, Object... fields) {
-            super(sheet, nullFields, fields);
+        public JennyferInvoiceImporter(jxl.Sheet sheet, Object... fields) {
+            super(sheet, fields);
         }
 
         @Override
         protected boolean isCorrectRow(int rowNum) {
-            String barcodeText = sheet.getCell(2, rowNum).getContents().trim();
-            return barcodeText.matches("^'\\d{13}$");
+            return sheet.getCell(C, rowNum).getContents().trim().matches("^'(\\d{13}|\\d{12}|\\d{8})$");
         }
 
         @Override
-        protected String transformValue(int column, int part, String value) {
+        protected String getCellString(int row, int column) {
+            if (column <= LAST_COLUMN) {
+                return super.getCellString(row, column);
+            } else if (column == LAST_COLUMN + 1) {
+                return String.valueOf(currentRow + 1);
+            } else {
+                return "";
+            }
+        }
+
+        @Override
+        protected String transformValue(int row, int column, int part, String value) {
             value = value.trim();
 
             switch (column) {
-                case 2:  return value.substring(1); // barcode
-                case 10: return value.substring(0, 10); // customs code
-                case 13: case 14: return value.replace(',', '.'); // todo [dale]: надо подумать, что делать с локалями
-                case 4:
+                case C: return value.substring(1); // barcode
+                case K: return value.substring(0, 10); // customs code
+                case N: case O: return value.replace(',', '.'); // todo [dale]: надо подумать, что делать с локалями
+                case E:
                     switch (part) {
                         case 0: return value.substring(0, value.indexOf(' ')); // sid
                         case 1: return value.substring(value.indexOf(' ') + 1, value.lastIndexOf(' ')).trim(); // color
@@ -2883,25 +2894,33 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     }
 
     public static class TallyWeijlInvoiceImporter extends ExcelSheetImporter {
+        private static final int LAST_COLUMN = AF;
 
         public TallyWeijlInvoiceImporter(jxl.Sheet sheet, Object... fields) {
-            super(sheet, null, fields);
+            super(sheet, fields);
         }
 
         @Override
         protected boolean isCorrectRow(int rowNum) {
-            String barcodeText = sheet.getCell(12, rowNum).getContents().trim();
-            return barcodeText.matches("^\\d{13}$");
+            return sheet.getCell(M, rowNum).getContents().trim().matches("^(\\d{13}|\\d{12}|\\d{8})$");
         }
 
         @Override
-        protected String transformValue(int column, int part, String value) {
+        protected String getCellString(int row, int column) {
+            if (column == LAST_COLUMN + 1) {
+                return String.valueOf(currentRow + 1);
+            }
+            return super.getCellString(row, column);
+        }
+
+        @Override
+        protected String transformValue(int row, int column, int part, String value) {
             value = value.trim();
 
             switch (column) {
-                case 11: return value.substring(0, 10); // customs code
-                case 23: case 29: return value.replace(',', '.'); // todo [dale]: надо подумать, что делать с локалями
-                case 17:
+                case L: return value.substring(0, 10); // customs code
+                case X: case AD: return value.replace(',', '.'); // todo [dale]: надо подумать, что делать с локалями
+                case R:
                     switch (part) {
                         case 0: return value.substring(0, value.indexOf(',')).trim(); // original name
                         case 1: return value.substring(value.indexOf(',') + 1, value.lastIndexOf(',')).trim(); // color
@@ -2913,6 +2932,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
     public class ImportInvoiceActionProperty extends ActionProperty {
 
+        private ImportField invoiceSIDField, boxNumberField, barCodeField, colorCodeField, sidField,
+        colorNameField, sizeField, compositionField, countryField, customCodeField, unitPriceField,
+        unitQuantityField, unitNetWeightField, originalNameField, numberSkuField;
+
         private final ClassPropertyInterface supplierInterface;
 
         public ImportInvoiceActionProperty() {
@@ -2922,25 +2945,52 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             supplierInterface = i.next();
         }
 
+        private ExcelSheetImporter createExporter(Sheet sheet, int type) {
+            Object[] jennyferParams = new Object[] {invoiceSIDField, boxNumberField, barCodeField, colorCodeField,
+                    new ImportField[] {sidField, colorNameField, sizeField}, null, compositionField, null, null,
+                    countryField, customCodeField, null, null, unitPriceField, unitQuantityField, null,
+                    numberSkuField, unitNetWeightField, originalNameField};
+
+            Object[] tallyWeijlParams = new Object[] {null, null, invoiceSIDField, null, null, null, null, null,
+                        compositionField, countryField, boxNumberField, customCodeField, barCodeField, null,
+                        sizeField, colorCodeField, sidField, new ImportField[] {originalNameField, colorNameField},
+                        null, null, null, null, unitQuantityField, unitNetWeightField, null, null, null, null, null,
+                        unitPriceField, null, null, numberSkuField};
+
+            String supplierTypeId = supplierType.getSID(type);
+            if (supplierTypeId.equals("jennyfer")) {
+                return new JennyferInvoiceImporter(sheet, jennyferParams);
+            } else if (supplierTypeId.equals("tally_weijl")) {
+                return new TallyWeijlInvoiceImporter(sheet, tallyWeijlParams);
+            }
+            return null;
+        }
+
+        private void initFields() {
+            invoiceSIDField = new ImportField(sidDocument);
+            boxNumberField = new ImportField(sidSupplierBox);
+            barCodeField = new ImportField(barcode);
+            colorCodeField = new ImportField(sidColorSupplier);
+            sidField = new ImportField(sidArticle);
+            colorNameField = new ImportField(name);
+            sizeField = new ImportField(sidSizeSupplier);
+            compositionField = new ImportField(mainCompositionOriginArticle);
+            countryField = new ImportField(nameCountryOfOriginArticle);
+            customCodeField = new ImportField(sidCustomCategoryOrigin);
+            unitPriceField = new ImportField(quantityDataListSku);
+            unitQuantityField = new ImportField(priceDataDocumentItem);
+            unitNetWeightField = new ImportField(netWeightArticle);
+            originalNameField = new ImportField(originalNameArticle);
+            numberSkuField = new ImportField(numberDataListSku);
+        }
+
+
         public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
             DataObject supplier = keys.get(supplierInterface);
             FormInstance remoteForm = executeForm.form;
             DataSession session = remoteForm.session;
 
-            ImportField invoiceSIDField = new ImportField(sidDocument);
-            ImportField boxNumberField = new ImportField(sidSupplierBox);
-            ImportField barCodeField = new ImportField(barcode);
-            ImportField colorCodeField = new ImportField(sidColorSupplier);
-            ImportField sidField = new ImportField(sidArticle);
-            ImportField colorNameField = new ImportField(name);
-            ImportField sizeField = new ImportField(sidSizeSupplier);
-            ImportField compositionField = new ImportField(mainCompositionOriginArticle);
-            ImportField countryField = new ImportField(nameCountryOfOriginArticle);
-            ImportField customCodeField = new ImportField(sidCustomCategoryOrigin);
-            ImportField unitPriceField = new ImportField(quantityDataListSku);
-            ImportField unitQuantityField = new ImportField(priceDataDocumentItem);
-            ImportField unitNetWeightField = new ImportField(netWeightArticle);
-            ImportField originalNameField = new ImportField(originalNameArticle);
+            initFields();
 
             ImportTable table;
             try {
@@ -2948,18 +2998,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
                 Sheet sheet = Workbook.getWorkbook(inFile).getSheet(0);
 
-                ExcelSheetImporter importer = null;
+                ExcelSheetImporter importer = createExporter(sheet, type);
 
-                if (supplierType.getSID(type).equals("jennyfer")) {
-                    importer = new JennyferInvoiceImporter(sheet, Arrays.asList(unitNetWeightField, originalNameField),
-                            invoiceSIDField, boxNumberField, barCodeField, colorCodeField, new ImportField[] {sidField, colorNameField, sizeField},
-                            null, compositionField, null, null, countryField, customCodeField, null, null, unitPriceField, unitQuantityField);
-                } else if (supplierType.getSID(type).equals("tally_weijl")) {
-                    importer = new TallyWeijlInvoiceImporter(sheet, null, null, invoiceSIDField, null, null, null,
-                            null, null, compositionField, countryField, boxNumberField, customCodeField, barCodeField, null,
-                            sizeField, colorCodeField, sidField, new ImportField[] {originalNameField, colorNameField},
-                            null, null, null, null, unitQuantityField, unitNetWeightField, null, null, null, null, null, unitPriceField);
-                } else {
+                if (importer == null) {
                     actions.add(new MessageClientAction("Неподдерживаемый формат импорта", "Импорт"));
                     return;
                 }
@@ -2982,7 +3023,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             ImportKey<?> articleKey = new ImportKey(articleComposite, articleSIDSupplier.getMapping(sidField, supplier));
             properties.add(new ImportProperty(sidField, sidArticle.getMapping(articleKey)));
             properties.add(new ImportProperty(supplier, supplierArticle.getMapping(articleKey)));
-            properties.add(new ImportProperty(new DataObject(1, IntegerClass.instance), numberListArticle.getMapping(boxKey, articleKey)));
             properties.add(new ImportProperty(compositionField, mainCompositionOriginArticle.getMapping(articleKey)));
             properties.add(new ImportProperty(unitNetWeightField, netWeightArticle.getMapping(articleKey)));
             properties.add(new ImportProperty(originalNameField, originalNameArticle.getMapping(articleKey)));
@@ -3010,6 +3050,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             properties.add(new ImportProperty(supplier, supplierSizeSupplier.getMapping(sizeKey)));
             properties.add(new ImportProperty(sizeField, sizeSupplierItem.getMapping(itemKey), object(sizeSupplier).getMapping(sizeKey)));
 
+            properties.add(new ImportProperty(numberSkuField, numberListArticle.getMapping(boxKey, articleKey)));
+            properties.add(new ImportProperty(numberSkuField, numberDataListSku.getMapping(boxKey, itemKey)));
             properties.add(new ImportProperty(unitQuantityField, quantityDataListSku.getMapping(boxKey, itemKey)));
             properties.add(new ImportProperty(unitPriceField, priceDataDocumentItem.getMapping(invoiceKey, itemKey)));
             properties.add(new ImportProperty(unitPriceField, priceDocumentArticle.getMapping(invoiceKey, articleKey)));
