@@ -1789,7 +1789,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             PropertyDrawEntity quantityColumn = addPropertyDraw(quantityDocumentArticleCompositeColorSize, objInvoice, objArticle, objColorSupplier, objSizeSupplier);
             quantityColumn.columnGroupObjects.add(objSizeSupplier.groupTo);
-            quantityColumn.propertyCaption = addPropertyObject(name, objSizeSupplier);
+            quantityColumn.propertyCaption = addPropertyObject(sidSizeSupplier, objSizeSupplier);
 
             addPropertyDraw(quantityListSku, (box ? objSupplierBox : objInvoice), objItem);
             addPropertyDraw(priceDocumentSku, objInvoice, objItem);
