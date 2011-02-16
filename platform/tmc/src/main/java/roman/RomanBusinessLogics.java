@@ -2923,7 +2923,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             switch (column) {
                 case C: return value.substring(1); // barcode
                 case K: return value.substring(0, Math.min(10, value.length())); // customs code
-                case N: case O: return value.replace(',', '.'); // todo [dale]: надо подумать, что делать с локалями
+                case N: case O: return value.replace(',', '.');
                 case E:
                     switch (part) {
                         case 0: return value.substring(0, value.indexOf(' ')); // sid
@@ -2961,7 +2961,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             switch (column) {
                 case L: return value.substring(0, Math.min(10, value.length())); // customs code
-                case X: case AD: return value.replace(',', '.'); // todo [dale]: надо подумать, что делать с локалями
+                case X: case AD: return value.replace(',', '.');
+                case Q:
+                    int lastBackslashPos = value.lastIndexOf('\\');
+                    return (lastBackslashPos == -1 ? value : value.substring(0, lastBackslashPos));
                 case R:
                     switch (part) {
                         case 0: return value.substring(0, value.indexOf(',')).trim(); // original name
