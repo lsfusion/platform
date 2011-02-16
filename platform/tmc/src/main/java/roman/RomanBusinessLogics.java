@@ -2465,6 +2465,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objArticle;
         private ObjectEntity objSku;
 
+        private GroupObjectEntity gobjFreightSku;
+
         private FreightChangeFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
@@ -2482,6 +2484,12 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                      additionalCompositionOriginSku, translationAdditionalCompositionSku, additionalCompositionSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
+
+            /*gobjFreightSku = new GroupObjectEntity(genID());
+
+            gobjFreightSku.add(objFreight);
+            gobjFreightSku.add(objSku);
+            addGroup(gobjFreightSku);*/
 
             addPropertyDraw(quantityFreightSku, objFreight, objSku);
             addPropertyDraw(sidCustomCategory10FreightSku, objFreight, objSku);
@@ -2511,7 +2519,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             design.get(objFreight.groupTo).grid.constraints.fillVertical = 1;
             design.get(objArticle.groupTo).grid.constraints.fillVertical = 4;
             design.get(objSku.groupTo).grid.constraints.fillVertical = 4;
-            
+
             ContainerView specContainer = design.createContainer();
             design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objArticle.groupTo));
             specContainer.add(design.getGroupObjectContainer(objArticle.groupTo));
@@ -2567,9 +2575,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addPropertyDraw(objArticle, sidArticle, nameOriginCategoryArticle);
             addPropertyDraw(objComposition, objectValue);
             addPropertyDraw(objCountry, sidCountry, name);
-            addPropertyDraw(objCategory, sidCustomCategory10);
-
+            addPropertyDraw(objCategory, sidCustomCategory10);                            
             addPropertyDraw(quantityImporterFreightArticleCompositionCountryCategory, objImporter, objFreight, objArticle, objComposition, objCountry, objCategory);
+            addPropertyDraw(objArticle, nameUnitOfMeasureArticle);
             addPropertyDraw(netWeightImporterFreightArticleCompositionCountryCategory, objImporter, objFreight, objArticle, objComposition, objCountry, objCategory);
             addPropertyDraw(grossWeightImporterFreightArticleCompositionCountryCategory, objImporter, objFreight, objArticle, objComposition, objCountry, objCategory);
             addPropertyDraw(priceImporterFreightArticleCompositionCountryCategory, objImporter, objFreight, objArticle, objComposition, objCountry, objCategory);
