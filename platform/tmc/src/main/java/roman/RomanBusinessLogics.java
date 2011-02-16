@@ -48,8 +48,6 @@ import java.util.List;
 
 public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
-    private static boolean USE_SHIPMENT_DETAIL = true;
-
     private static StringClass COMPOSITION_CLASS = StringClass.get(200);
 
     private AbstractCustomClass article;
@@ -601,11 +599,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         boxShipment = addConcreteClass("boxShipment", "Поставка по коробам", shipment);
         simpleShipment = addConcreteClass("simpleShipment", "Поставка без коробов", shipment, shipDimension);
 
-        if (USE_SHIPMENT_DETAIL) {
-            shipmentDetail = addAbstractClass("shipmentDetail", "Строка поставки", baseClass);
-            boxShipmentDetail = addConcreteClass("boxShipmentDetail", "Строка поставки по коробам", shipmentDetail);
-            simpleShipmentDetail = addConcreteClass("simpleShipmentDetail", "Строка поставки без коробов", shipmentDetail);
-        }
+        shipmentDetail = addAbstractClass("shipmentDetail", "Строка поставки", baseClass);
+        boxShipmentDetail = addConcreteClass("boxShipmentDetail", "Строка поставки по коробам", shipmentDetail);
+        simpleShipmentDetail = addConcreteClass("simpleShipmentDetail", "Строка поставки без коробов", shipmentDetail);
 
         supplier = addConcreteClass("supplier", "Поставщик", baseClass.named);
 
@@ -1079,93 +1075,83 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         invoicedShipmentSku = addSGProp(baseGroup, "invoicedShipmentSku", true, "Ожид. (пост.)",
                 addJProp(and1, quantityDocumentSku, 1, 2, inInvoiceShipment, 1, 3), 3, 2);
 
-        if (USE_SHIPMENT_DETAIL) {
+        //sku shipment detail
+        skuShipmentDetail = addDProp(idGroup, "skuShipmentDetail", "SKU (ИД)", sku, shipmentDetail);
+        barcodeSkuShipmentDetail = addJProp(baseGroup, "barcodeSkuShipmentDetail", "Штрих-код SKU", barcode, skuShipmentDetail, 1);
 
-            //sku shipment detail
-            skuShipmentDetail = addDProp(idGroup, "skuShipmentDetail", "SKU (ИД)", sku, shipmentDetail);
-            barcodeSkuShipmentDetail = addJProp(baseGroup, "barcodeSkuShipmentDetail", "Штрих-код SKU", barcode, skuShipmentDetail, 1);
+        articleShipmentDetail = addJProp(idGroup, "articleShipmentDetail", "Артикул (ИД)", articleSku, skuShipmentDetail, 1);
+        sidArticleShipmentDetail = addJProp(baseGroup, "sidArticleShipmentDetail", "Артикул", sidArticle, articleShipmentDetail, 1);
 
-            articleShipmentDetail = addJProp(idGroup, "articleShipmentDetail", "Артикул (ИД)", articleSku, skuShipmentDetail, 1);
-            sidArticleShipmentDetail = addJProp(baseGroup, "sidArticleShipmentDetail", "Артикул", sidArticle, articleShipmentDetail, 1);
+        colorSupplierItemShipmentDetail = addJProp(idGroup, "colorSupplierItemShipmentDetail", "Цвет поставщика (ИД)", colorSupplierItem, skuShipmentDetail, 1);
+        sidColorSupplierItemShipmentDetail = addJProp(itemAttributeGroup, "sidColorSupplierItemShipmentDetail", "Код цвета", sidColorSupplier, colorSupplierItemShipmentDetail, 1);
+        nameColorSupplierItemShipmentDetail = addJProp(itemAttributeGroup, "nameColorSupplierItemShipmentDetail", "Цвет поставщика", name, colorSupplierItemShipmentDetail, 1);
 
-            colorSupplierItemShipmentDetail = addJProp(idGroup, "colorSupplierItemShipmentDetail", "Цвет поставщика (ИД)", colorSupplierItem, skuShipmentDetail, 1);
-            sidColorSupplierItemShipmentDetail = addJProp(itemAttributeGroup, "sidColorSupplierItemShipmentDetail", "Код цвета", sidColorSupplier, colorSupplierItemShipmentDetail, 1);
-            nameColorSupplierItemShipmentDetail = addJProp(itemAttributeGroup, "nameColorSupplierItemShipmentDetail", "Цвет поставщика", name, colorSupplierItemShipmentDetail, 1);
+        sizeSupplierItemShipmentDetail = addJProp(idGroup, "sizeSupplierItemShipmentDetail", "Размер поставщика (ИД)", sizeSupplierItem, skuShipmentDetail, 1);
+        sidSizeSupplierItemShipmentDetail = addJProp(itemAttributeGroup, "sidSizeSupplierItemShipmentDetail", "Размер поставщика", sidSizeSupplier, sizeSupplierItemShipmentDetail, 1);
 
-            sizeSupplierItemShipmentDetail = addJProp(idGroup, "sizeSupplierItemShipmentDetail", "Размер поставщика (ИД)", sizeSupplierItem, skuShipmentDetail, 1);
-            sidSizeSupplierItemShipmentDetail = addJProp(itemAttributeGroup, "sidSizeSupplierItemShipmentDetail", "Размер поставщика", sidSizeSupplier, sizeSupplierItemShipmentDetail, 1);
+        nameBrandSupplierArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, true, "nameBrandSupplierArticleSkuShipmentDetail", "Бренд", nameBrandSupplierArticleSku, skuShipmentDetail, 1);
+        originalNameArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, true, "originalNameArticleSkuShipmentDetail", "Имя производителя (ориг.)", originalNameArticleSku, skuShipmentDetail, 1);
 
-            nameBrandSupplierArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, true, "nameBrandSupplierArticleSkuShipmentDetail", "Бренд", nameBrandSupplierArticleSku, skuShipmentDetail, 1);
-            originalNameArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, true, "originalNameArticleSkuShipmentDetail", "Имя производителя (ориг.)", originalNameArticleSku, skuShipmentDetail, 1);
+        categoryArticleSkuShipmentDetail = addJProp(idGroup, true, "categoryArticleSkuShipmentDetail", "Категория товара (ИД)", categoryArticleSku, skuShipmentDetail, 1);
+        nameOriginCategoryArticleSkuShipmentDetail = addJProp(intraAttributeGroup, "nameOriginCategoryArticleSkuShipmentDetail", "Категория товара", nameOrigin, categoryArticleSkuShipmentDetail, 1);
 
-            categoryArticleSkuShipmentDetail = addJProp(idGroup, true, "categoryArticleSkuShipmentDetail", "Категория товара (ИД)", categoryArticleSku, skuShipmentDetail, 1);
-            nameOriginCategoryArticleSkuShipmentDetail = addJProp(intraAttributeGroup, "nameOriginCategoryArticleSkuShipmentDetail", "Категория товара", nameOrigin, categoryArticleSkuShipmentDetail, 1);
+        customCategoryOriginArticleSkuShipmentDetail = addJProp(idGroup, true, "customCategoryOriginArticleSkuShipmentDetail", "ТН ВЭД (ИД)", customCategoryOriginArticleSku, skuShipmentDetail, 1);
+        sidCustomCategoryOriginArticleSkuShipmentDetail = addJProp(intraAttributeGroup, "sidCustomCategoryOriginArticleSkuShipmentDetail", "Код ТН ВЭД", sidCustomCategoryOrigin, customCategoryOriginArticleSkuShipmentDetail, 1);
 
-            customCategoryOriginArticleSkuShipmentDetail = addJProp(idGroup, true, "customCategoryOriginArticleSkuShipmentDetail", "ТН ВЭД (ИД)", customCategoryOriginArticleSku, skuShipmentDetail, 1);
-            sidCustomCategoryOriginArticleSkuShipmentDetail = addJProp(intraAttributeGroup, "sidCustomCategoryOriginArticleSkuShipmentDetail", "Код ТН ВЭД", sidCustomCategoryOrigin, customCategoryOriginArticleSkuShipmentDetail, 1);
-            
-            netWeightArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, true, "netWeightArticleSkuShipmentDetail", "Вес нетто (ориг.)", netWeightArticleSku, skuShipmentDetail, 1);
-            netWeightSkuShipmentDetail = addJProp(intraAttributeGroup, true, "netWeightSkuShipmentDetail", "Вес нетто", netWeightSku, skuShipmentDetail, 1);
+        netWeightArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, true, "netWeightArticleSkuShipmentDetail", "Вес нетто (ориг.)", netWeightArticleSku, skuShipmentDetail, 1);
+        netWeightSkuShipmentDetail = addJProp(intraAttributeGroup, true, "netWeightSkuShipmentDetail", "Вес нетто", netWeightSku, skuShipmentDetail, 1);
 
-            countryOfOriginArticleSkuShipmentDetail = addJProp(idGroup, true, "countryOfOriginArticleSkuShipmentDetail", "Страна происхождения (ориг.) (ИД)", countryOfOriginArticleSku, skuShipmentDetail, 1);
-            nameCountryOfOriginArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, "nameCountryOfOriginArticleSkuShipmentDetail", "Страна происхождения", name, countryOfOriginArticleSkuShipmentDetail, 1);
+        countryOfOriginArticleSkuShipmentDetail = addJProp(idGroup, true, "countryOfOriginArticleSkuShipmentDetail", "Страна происхождения (ориг.) (ИД)", countryOfOriginArticleSku, skuShipmentDetail, 1);
+        nameCountryOfOriginArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, "nameCountryOfOriginArticleSkuShipmentDetail", "Страна происхождения", name, countryOfOriginArticleSkuShipmentDetail, 1);
 
-            countryOfOriginSkuShipmentDetail = addJProp(idGroup, true, "countryOfOriginSkuShipmentDetail", "Страна происхождения (ИД)", countryOfOriginSku, skuShipmentDetail, 1);
-            nameCountryOfOriginSkuShipmentDetail = addJProp(intraAttributeGroup, "nameCountryOfOriginSkuShipmentDetail", "Страна происхождения", name, countryOfOriginSkuShipmentDetail, 1);
+        countryOfOriginSkuShipmentDetail = addJProp(idGroup, true, "countryOfOriginSkuShipmentDetail", "Страна происхождения (ИД)", countryOfOriginSku, skuShipmentDetail, 1);
+        nameCountryOfOriginSkuShipmentDetail = addJProp(intraAttributeGroup, "nameCountryOfOriginSkuShipmentDetail", "Страна происхождения", name, countryOfOriginSkuShipmentDetail, 1);
 
-            mainCompositionOriginArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, true, "mainCompositionOriginArticleSkuShipmentDetail", "Состав", mainCompositionOriginArticleSku, skuShipmentDetail, 1);
-            mainCompositionOriginSkuShipmentDetail = addJProp(intraAttributeGroup, true, "mainCompositionOriginSkuShipmentDetail", "Состав", mainCompositionOriginSku, skuShipmentDetail, 1);
+        mainCompositionOriginArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, true, "mainCompositionOriginArticleSkuShipmentDetail", "Состав", mainCompositionOriginArticleSku, skuShipmentDetail, 1);
+        mainCompositionOriginSkuShipmentDetail = addJProp(intraAttributeGroup, true, "mainCompositionOriginSkuShipmentDetail", "Состав", mainCompositionOriginSku, skuShipmentDetail, 1);
 
-            additionalCompositionOriginSkuShipmentDetail = addJProp(intraAttributeGroup, true, "additionalCompositionOriginSkuShipmentDetail", "Дополнительный состав", additionalCompositionOriginSku, skuShipmentDetail, 1);
+        additionalCompositionOriginSkuShipmentDetail = addJProp(intraAttributeGroup, true, "additionalCompositionOriginSkuShipmentDetail", "Дополнительный состав", additionalCompositionOriginSku, skuShipmentDetail, 1);
 
-            unitOfMeasureArticleSkuShipmentDetail = addJProp(idGroup, true, "unitOfMeasureArticleSkuShipmentDetail", "Ед. изм. товара (ИД)", unitOfMeasureArticleSku, skuShipmentDetail, 1);
-            nameOriginUnitOfMeasureArticleSkuShipmentDetail = addJProp(intraAttributeGroup, "nameOriginUnitOfMeasureArticleSkuShipmentDetail", "Ед. изм. товара", nameOrigin, unitOfMeasureArticleSkuShipmentDetail, 1);
+        unitOfMeasureArticleSkuShipmentDetail = addJProp(idGroup, true, "unitOfMeasureArticleSkuShipmentDetail", "Ед. изм. товара (ИД)", unitOfMeasureArticleSku, skuShipmentDetail, 1);
+        nameOriginUnitOfMeasureArticleSkuShipmentDetail = addJProp(intraAttributeGroup, "nameOriginUnitOfMeasureArticleSkuShipmentDetail", "Ед. изм. товара", nameOrigin, unitOfMeasureArticleSkuShipmentDetail, 1);
 
-            // stock shipment detail
-            stockShipmentDetail = addDProp(idGroup, "stockShipmentDetail", "Место хранения (ИД)", stock, shipmentDetail);
-            barcodeStockShipmentDetail = addJProp(baseGroup, "barcodeStockShipmentDetail", "Штрих-код МХ", barcode, stockShipmentDetail, 1);
+        // stock shipment detail
+        stockShipmentDetail = addDProp(idGroup, "stockShipmentDetail", "Место хранения (ИД)", stock, shipmentDetail);
+        barcodeStockShipmentDetail = addJProp(baseGroup, "barcodeStockShipmentDetail", "Штрих-код МХ", barcode, stockShipmentDetail, 1);
 
-            routeFreightBoxShipmentDetail = addJProp(idGroup, "routeFreightBoxShipmentDetail", "Маршрут (ИД)", routeCreationFreightBoxFreightBox, stockShipmentDetail, 1);
-            nameRouteFreightBoxShipmentDetail = addJProp(baseGroup, "nameRouteFreightBoxShipmentDetail", "Маршрут", name, routeFreightBoxShipmentDetail, 1);
+        routeFreightBoxShipmentDetail = addJProp(idGroup, "routeFreightBoxShipmentDetail", "Маршрут (ИД)", routeCreationFreightBoxFreightBox, stockShipmentDetail, 1);
+        nameRouteFreightBoxShipmentDetail = addJProp(baseGroup, "nameRouteFreightBoxShipmentDetail", "Маршрут", name, routeFreightBoxShipmentDetail, 1);
 
-            boxShipmentBoxShipmentDetail = addDProp(idGroup, "boxShipmentBoxShipmentDetail", "Поставка (ИД)", boxShipment, boxShipmentDetail);
-            simpleShipmentSimpleShipmentDetail = addDProp(idGroup, "simpleShipmentSimpleShipmentDetail", "Поставка (ИД)", simpleShipment, simpleShipmentDetail);
-            shipmentShipmentDetail = addCUProp(idGroup, "shipmentShipmentDetail", "Поставка (ИД)", boxShipmentBoxShipmentDetail, simpleShipmentSimpleShipmentDetail);
-            sidShipmentShipmentDetail = addJProp(baseGroup, "sidShipmentShipmentDetail", "Поставка", sidDocument, shipmentShipmentDetail, 1);
+        boxShipmentBoxShipmentDetail = addDProp(idGroup, "boxShipmentBoxShipmentDetail", "Поставка (ИД)", boxShipment, boxShipmentDetail);
+        simpleShipmentSimpleShipmentDetail = addDProp(idGroup, "simpleShipmentSimpleShipmentDetail", "Поставка (ИД)", simpleShipment, simpleShipmentDetail);
+        shipmentShipmentDetail = addCUProp(idGroup, "shipmentShipmentDetail", "Поставка (ИД)", boxShipmentBoxShipmentDetail, simpleShipmentSimpleShipmentDetail);
+        sidShipmentShipmentDetail = addJProp(baseGroup, "sidShipmentShipmentDetail", "Поставка", sidDocument, shipmentShipmentDetail, 1);
 
-            // supplier box shipmentDetail
-            supplierBoxShipmentDetail = addDProp(idGroup, "supplierBoxShipmentDetail", "Короб поставщика (ИД)", supplierBox, boxShipmentDetail);
-            sidSupplierBoxShipmentDetail = addJProp(baseGroup, "sidSupplierBoxShipmentDetail", "Код короба поставщика", sidSupplierBox, supplierBoxShipmentDetail, 1);
-            barcodeSupplierBoxShipmentDetail = addJProp(baseGroup, "barcodeSupplierBoxShipmentDetail", "Штрих-код короба поставщика", barcode, supplierBoxShipmentDetail, 1);
+        // supplier box shipmentDetail
+        supplierBoxShipmentDetail = addDProp(idGroup, "supplierBoxShipmentDetail", "Короб поставщика (ИД)", supplierBox, boxShipmentDetail);
+        sidSupplierBoxShipmentDetail = addJProp(baseGroup, "sidSupplierBoxShipmentDetail", "Код короба поставщика", sidSupplierBox, supplierBoxShipmentDetail, 1);
+        barcodeSupplierBoxShipmentDetail = addJProp(baseGroup, "barcodeSupplierBoxShipmentDetail", "Штрих-код короба поставщика", barcode, supplierBoxShipmentDetail, 1);
 
-            quantityShipmentDetail = addDProp(baseGroup, "quantityShipmentDetail", "Кол-во", DoubleClass.instance, shipmentDetail);
-            
-            userShipmentDetail = addDCProp(idGroup, "userShipmentDetail", "Пользователь (ИД)", currentUser, true, is(shipmentDetail), 1);
-            nameUserShipmentDetail = addJProp(baseGroup, "nameUserShipmentDetail", "Пользователь", name, userShipmentDetail, 1);
+        quantityShipmentDetail = addDProp(baseGroup, "quantityShipmentDetail", "Кол-во", DoubleClass.instance, shipmentDetail);
 
-            timeShipmentDetail = addDCProp(baseGroup, "timeShipmentDetail", "Время ввода", currentDateTime, true, is(shipmentDetail), 1);
+        userShipmentDetail = addDCProp(idGroup, "userShipmentDetail", "Пользователь (ИД)", currentUser, true, is(shipmentDetail), 1);
+        nameUserShipmentDetail = addJProp(baseGroup, "nameUserShipmentDetail", "Пользователь", name, userShipmentDetail, 1);
 
-            addBoxShipmentDetailBoxShipmentSupplierBoxStockBarcode = addJProp(true, "Добавить строку поставки",
-                    addAAProp(boxShipmentDetail, boxShipmentBoxShipmentDetail, supplierBoxShipmentDetail, stockShipmentDetail, skuShipmentDetail, quantityShipmentDetail),
-                    1, 2, 3, barcodeToObject, 4, addCProp(DoubleClass.instance, 1));
+        timeShipmentDetail = addDCProp(baseGroup, "timeShipmentDetail", "Время ввода", currentDateTime, true, is(shipmentDetail), 1);
 
-            addSimpleShipmentSimpleShipmentDetailStockBarcode = addJProp(true, "Добавить строку поставки",
-                    addAAProp(simpleShipmentDetail, simpleShipmentSimpleShipmentDetail, stockShipmentDetail, skuShipmentDetail, quantityShipmentDetail),
-                    1, 2, barcodeToObject, 3, addCProp(DoubleClass.instance, 1));
+        addBoxShipmentDetailBoxShipmentSupplierBoxStockBarcode = addJProp(true, "Добавить строку поставки",
+                addAAProp(boxShipmentDetail, boxShipmentBoxShipmentDetail, supplierBoxShipmentDetail, stockShipmentDetail, skuShipmentDetail, quantityShipmentDetail),
+                1, 2, 3, barcodeToObject, 4, addCProp(DoubleClass.instance, 1));
 
-            quantitySupplierBoxBoxShipmentStockSku = addSGProp(baseGroup, "quantitySupplierBoxBoxShipmentStockSku", "Кол-во оприход.", quantityShipmentDetail,
-                    supplierBoxShipmentDetail, 1, boxShipmentBoxShipmentDetail, 1, stockShipmentDetail, 1, skuShipmentDetail, 1);
+        addSimpleShipmentSimpleShipmentDetailStockBarcode = addJProp(true, "Добавить строку поставки",
+                addAAProp(simpleShipmentDetail, simpleShipmentSimpleShipmentDetail, stockShipmentDetail, skuShipmentDetail, quantityShipmentDetail),
+                1, 2, barcodeToObject, 3, addCProp(DoubleClass.instance, 1));
 
-            quantitySimpleShipmentStockSku = addSGProp(baseGroup, "quantitySimpleShipmentStockSku", "Кол-во оприход.", quantityShipmentDetail,
-                    simpleShipmentSimpleShipmentDetail, 1, stockShipmentDetail, 1, skuShipmentDetail, 1);
-        } else {
+        quantitySupplierBoxBoxShipmentStockSku = addSGProp(baseGroup, "quantitySupplierBoxBoxShipmentStockSku", "Кол-во оприход.", quantityShipmentDetail,
+                supplierBoxShipmentDetail, 1, boxShipmentBoxShipmentDetail, 1, stockShipmentDetail, 1, skuShipmentDetail, 1);
 
-            quantitySupplierBoxBoxShipmentStockSku = addDProp(baseGroup, "quantitySupplierBoxBoxShipmentStockSku", "Кол-во оприход.", DoubleClass.instance,
-                    supplierBox, boxShipment, stock, sku);
-
-            quantitySimpleShipmentStockSku = addDProp(baseGroup, "quantitySimpleShipmentStockSku", "Кол-во оприход.", DoubleClass.instance,
-                    simpleShipment, stock, sku);
-        }
+        quantitySimpleShipmentStockSku = addSGProp(baseGroup, "quantitySimpleShipmentStockSku", "Кол-во оприход.", quantityShipmentDetail,
+                simpleShipmentSimpleShipmentDetail, 1, stockShipmentDetail, 1, skuShipmentDetail, 1);
 
         quantityShipDimensionShipmentStockSku = addCUProp(baseGroup, "quantityShipDimensionShipmentStockSku", "Кол-во оприход.",
                 quantitySupplierBoxBoxShipmentStockSku,
@@ -1215,10 +1201,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         oneShipmentArticleSku = addJProp(baseGroup, "oneShipmentArticleSku", "Первый артикул", oneShipmentArticle, 1, articleSku, 2);
         oneShipmentSku = addJProp(baseGroup, "oneShipmentSku", "Первый SKU", equals2, quantityShipmentSku, 1, 2, addCProp(DoubleClass.instance, 1));
 
-        if (USE_SHIPMENT_DETAIL) {
-            oneArticleSkuShipmentDetail = addJProp(baseGroup, "oneArticleSkuShipmentDetail", "Первый артикул", oneShipmentArticleSku, shipmentShipmentDetail, 1, skuShipmentDetail, 1);
-            oneSkuShipmentDetail = addJProp(baseGroup, "oneSkuShipmentDetail", "Первый SKU", oneShipmentSku, shipmentShipmentDetail, 1, skuShipmentDetail, 1);
-        }
+        oneArticleSkuShipmentDetail = addJProp(baseGroup, "oneArticleSkuShipmentDetail", "Первый артикул", oneShipmentArticleSku, shipmentShipmentDetail, 1, skuShipmentDetail, 1);
+        oneSkuShipmentDetail = addJProp(baseGroup, "oneSkuShipmentDetail", "Первый SKU", oneShipmentSku, shipmentShipmentDetail, 1, skuShipmentDetail, 1);
 
         // Transfer
         stockFromTransfer = addDProp(idGroup, "stockFromTransfer", "Место хранения (с) (ИД)", stock, transfer);
@@ -1424,7 +1408,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         sumNetWeightFreightSku = addJProp(baseGroup, "sumNetWeightFreightSku", "Вес нетто (всего)", multiplyDouble2, quantityFreightSku, 1, 2, netWeightSku, 2);
 
-        grossWeightCurrentPalletRoute = addJProp(baseGroup, true, "grossWeightCurrentPalletRoute", "Вес брутто", grossWeightPallet, currentPalletRoute, 1);
+        grossWeightCurrentPalletRoute = addJProp(true, "grossWeightCurrentPalletRoute", "Вес брутто", grossWeightPallet, currentPalletRoute, 1);
         grossWeightFreight = addSGProp(baseGroup, "freightGrossWeight", "Вес брутто (фрахт)", grossWeightPallet, freightPallet, 1);
 
         sumGrossWeightFreightSku = addPGProp(baseGroup, "sumGrossWeightFreightSku", false, 1, false, "Вес брутто",
@@ -1466,13 +1450,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         barcodeActionSetPallet = addJProp(true, "Установить паллету", isCurrentPalletFreightBox, barcodeToObject, 1);
         barcodeActionSetStore = addJProp(true, "Установить магазин", isStoreFreightBoxSupplierBox, barcodeToObject, 1, 2);
 
-        if (USE_SHIPMENT_DETAIL) {
-            addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode = addJProp(true, "Добавить строку поставки",
-                    addBoxShipmentDetailBoxShipmentSupplierBoxStockBarcode, 1, 2, currentFreightBoxRoute, 3, 4);
+        addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode = addJProp(true, "Добавить строку поставки",
+                addBoxShipmentDetailBoxShipmentSupplierBoxStockBarcode, 1, 2, currentFreightBoxRoute, 3, 4);
 
-            addSimpleShipmentDetailSimpleShipmentRouteBarcode = addJProp(true, "Добавить строку поставки",
-                    addSimpleShipmentSimpleShipmentDetailStockBarcode, 1, currentFreightBoxRoute, 2, 3);
-        }
+        addSimpleShipmentDetailSimpleShipmentRouteBarcode = addJProp(true, "Добавить строку поставки",
+                addSimpleShipmentSimpleShipmentDetailStockBarcode, 1, currentFreightBoxRoute, 2, 3);
 
         quantityRouteSku = addJProp(baseGroup, "quantityRouteSku", "Оприход. (МХ)", quantityStockSku, currentFreightBoxRoute, 1, 2);
 
@@ -2030,38 +2012,36 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addPropertyDraw(invoicedShipmentRouteSku, objShipment, objRoute, objSku).setToDraw(objRoute.groupTo);
             addPropertyDraw(quantityShipmentRouteSku, objShipment, objRoute, objSku).setToDraw(objRoute.groupTo);
 
-            if (USE_SHIPMENT_DETAIL) {
-                objShipmentDetail = addSingleGroupObject((box ? boxShipmentDetail : simpleShipmentDetail),
-                        selection, barcodeSkuShipmentDetail, sidArticleShipmentDetail, sidColorSupplierItemShipmentDetail, nameColorSupplierItemShipmentDetail, sidSizeSupplierItemShipmentDetail,
-                        nameBrandSupplierArticleSkuShipmentDetail, originalNameArticleSkuShipmentDetail,
-                        nameOriginCategoryArticleSkuShipmentDetail, nameOriginUnitOfMeasureArticleSkuShipmentDetail,
-                        netWeightArticleSkuShipmentDetail,
-                        nameCountryOfOriginArticleSkuShipmentDetail, mainCompositionOriginArticleSkuShipmentDetail,
-                        netWeightSkuShipmentDetail, nameCountryOfOriginSkuShipmentDetail,
-                        mainCompositionOriginSkuShipmentDetail, additionalCompositionOriginSkuShipmentDetail,
-                        sidShipmentShipmentDetail,
-                        sidSupplierBoxShipmentDetail, barcodeSupplierBoxShipmentDetail,
-                        barcodeStockShipmentDetail, nameRouteFreightBoxShipmentDetail,
-                        quantityShipmentDetail, nameUserShipmentDetail, timeShipmentDetail, delete);
+            objShipmentDetail = addSingleGroupObject((box ? boxShipmentDetail : simpleShipmentDetail),
+                    selection, barcodeSkuShipmentDetail, sidArticleShipmentDetail, sidColorSupplierItemShipmentDetail, nameColorSupplierItemShipmentDetail, sidSizeSupplierItemShipmentDetail,
+                    nameBrandSupplierArticleSkuShipmentDetail, originalNameArticleSkuShipmentDetail,
+                    nameOriginCategoryArticleSkuShipmentDetail, nameOriginUnitOfMeasureArticleSkuShipmentDetail,
+                    netWeightArticleSkuShipmentDetail,
+                    nameCountryOfOriginArticleSkuShipmentDetail, mainCompositionOriginArticleSkuShipmentDetail,
+                    netWeightSkuShipmentDetail, nameCountryOfOriginSkuShipmentDetail,
+                    mainCompositionOriginSkuShipmentDetail, additionalCompositionOriginSkuShipmentDetail,
+                    sidShipmentShipmentDetail,
+                    sidSupplierBoxShipmentDetail, barcodeSupplierBoxShipmentDetail,
+                    barcodeStockShipmentDetail, nameRouteFreightBoxShipmentDetail,
+                    quantityShipmentDetail, nameUserShipmentDetail, timeShipmentDetail, delete);
 
-                objShipmentDetail.groupTo.setSingleClassView(ClassViewType.GRID);
+            objShipmentDetail.groupTo.setSingleClassView(ClassViewType.GRID);
 
-                setForceViewType(itemAttributeGroup, ClassViewType.GRID, objShipmentDetail.groupTo);
-                setForceViewType(supplierAttributeGroup, ClassViewType.PANEL, objShipmentDetail.groupTo);
-                setForceViewType(intraAttributeGroup, ClassViewType.PANEL, objShipmentDetail.groupTo);
+            setForceViewType(itemAttributeGroup, ClassViewType.GRID, objShipmentDetail.groupTo);
+            setForceViewType(supplierAttributeGroup, ClassViewType.PANEL, objShipmentDetail.groupTo);
+            setForceViewType(intraAttributeGroup, ClassViewType.PANEL, objShipmentDetail.groupTo);
 
-                PropertyObjectEntity oneArticleProperty = addPropertyObject(oneArticleSkuShipmentDetail, objShipmentDetail);
-                PropertyObjectEntity oneSkuProperty = addPropertyObject(oneSkuShipmentDetail, objShipmentDetail);
-                                
-                getPropertyDraw(nameOriginCategoryArticleSkuShipmentDetail).setPropertyHighlight(oneArticleProperty);
-                getPropertyDraw(nameOriginUnitOfMeasureArticleSkuShipmentDetail).setPropertyHighlight(oneArticleProperty);
-                getPropertyDraw(netWeightSkuShipmentDetail).setPropertyHighlight(oneSkuProperty);
-                getPropertyDraw(nameCountryOfOriginSkuShipmentDetail).setPropertyHighlight(oneSkuProperty);
-                getPropertyDraw(mainCompositionOriginSkuShipmentDetail).setPropertyHighlight(oneSkuProperty);
-                getPropertyDraw(additionalCompositionOriginSkuShipmentDetail).setPropertyHighlight(oneSkuProperty);
+            PropertyObjectEntity oneArticleProperty = addPropertyObject(oneArticleSkuShipmentDetail, objShipmentDetail);
+            PropertyObjectEntity oneSkuProperty = addPropertyObject(oneSkuShipmentDetail, objShipmentDetail);
 
-                addFixedFilter(new CompareFilterEntity(addPropertyObject(shipmentShipmentDetail, objShipmentDetail), Compare.EQUALS, objShipment));
-            }
+            getPropertyDraw(nameOriginCategoryArticleSkuShipmentDetail).setPropertyHighlight(oneArticleProperty);
+            getPropertyDraw(nameOriginUnitOfMeasureArticleSkuShipmentDetail).setPropertyHighlight(oneArticleProperty);
+            getPropertyDraw(netWeightSkuShipmentDetail).setPropertyHighlight(oneSkuProperty);
+            getPropertyDraw(nameCountryOfOriginSkuShipmentDetail).setPropertyHighlight(oneSkuProperty);
+            getPropertyDraw(mainCompositionOriginSkuShipmentDetail).setPropertyHighlight(oneSkuProperty);
+            getPropertyDraw(additionalCompositionOriginSkuShipmentDetail).setPropertyHighlight(oneSkuProperty);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(shipmentShipmentDetail, objShipmentDetail), Compare.EQUALS, objShipment));
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objShipment), Compare.EQUALS, objSupplier));
 
@@ -2138,11 +2118,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             if (box)
                 addAutoAction(objBarcode, addPropertyObject(barcodeActionSetStore, objBarcode, objSupplierBox));
 
-            addAutoAction(objBarcode, addPropertyObject(
-                          addJProp(true, addAProp(new SeekRouteActionProperty()),
-                                   1, barcodeToObject, 2, 3),
-                          objShipment, objBarcode, objRoute));
-
 //            addAutoAction(objBarcode, addPropertyObject(seekRouteToFillShipmentBarcode, objShipment, objBarcode));
 //            if (box)
 //                addAutoAction(objBarcode, addPropertyObject(barcodeAction4, objSupplierBox, objShipment, objRoute, objBarcode));
@@ -2150,32 +2125,34 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 //                addAutoAction(objBarcode, addPropertyObject(barcodeAction3, objShipment, objRoute, objBarcode));
             addAutoAction(objBarcode, addPropertyObject(seekBarcodeAction, objBarcode));
 
-            if (USE_SHIPMENT_DETAIL) {
+            addAutoAction(objBarcode, addPropertyObject(barcodeActionCheckFreightBox, objRoute, objBarcode));
 
-                addAutoAction(objBarcode, addPropertyObject(barcodeActionCheckFreightBox, objRoute, objBarcode));
+            addAutoAction(objBarcode,
+                          addPropertyObject(
+                                  addJProp(true, andNot1,
+                                          addModalFormActionProp(
+                                                  null,
+                                                  "Ввод нового товара",
+                                                  createItemForm,
+                                                  new ObjectEntity[]{createItemForm.objSupplier, createItemForm.objBarcode},
+                                                  createItemForm.addPropertyObject(addItemBarcode, createItemForm.objBarcode)
+                                          ), 1, 2,
+                                          barcodeToObject, 2
+                                  ),
+                                  objSupplier, objBarcode));
 
-                addAutoAction(objBarcode,
-                              addPropertyObject(
-                                      addJProp(true, andNot1,
-                                              addModalFormActionProp(
-                                                      null,
-                                                      "Ввод нового товара",
-                                                      createItemForm,
-                                                      new ObjectEntity[]{createItemForm.objSupplier, createItemForm.objBarcode},
-                                                      createItemForm.addPropertyObject(addItemBarcode, createItemForm.objBarcode)
-                                              ), 1, 2,
-                                              barcodeToObject, 2
-                                      ),
-                                      objSupplier, objBarcode));
+            addAutoAction(objBarcode, addPropertyObject(
+                          addJProp(true, addAProp(new SeekRouteActionProperty()),
+                                   1, barcodeToObject, 2, 3),
+                          objShipment, objBarcode, objRoute));
 
-                if (box) {
-                    addAutoAction(objBarcode, addPropertyObject(addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode, objShipment, objSupplierBox, objRoute, objBarcode));
-                } else {
-                    addAutoAction(objBarcode, addPropertyObject(addSimpleShipmentDetailSimpleShipmentRouteBarcode, objShipment, objRoute, objBarcode));
-                }
+            if (box) {
+                addAutoAction(objBarcode, addPropertyObject(addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode, objShipment, objSupplierBox, objRoute, objBarcode));
+            } else {
+                addAutoAction(objBarcode, addPropertyObject(addSimpleShipmentDetailSimpleShipmentRouteBarcode, objShipment, objRoute, objBarcode));
             }
 
-            addAutoAction(objBarcode, addPropertyObject(barcodeNotFoundMessage, objBarcode));
+//            addAutoAction(objBarcode, addPropertyObject(barcodeNotFoundMessage, objBarcode));
             if (box)
                 addAutoAction(objSIDSupplierBox, addPropertyObject(seekSupplierBoxSIDSupplier, objSIDSupplierBox, objSupplier));
 
@@ -2256,18 +2233,16 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                                        design.getGroupObjectContainer(objSupplierBox.groupTo),
                                        DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
-            if (USE_SHIPMENT_DETAIL) {
-                ContainerView specContainer = design.createContainer();
-                design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objShipmentDetail.groupTo));
-                specContainer.add(design.getGroupObjectContainer(objShipmentDetail.groupTo));
-                specContainer.add(design.getGroupObjectContainer(objSku.groupTo));
-                specContainer.tabbedPane = true;
+            ContainerView specContainer = design.createContainer();
+            design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objShipmentDetail.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objShipmentDetail.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objSku.groupTo));
+            specContainer.tabbedPane = true;
 
-                design.get(nameRoute).minimumCharWidth = 4;
-                design.get(nameRoute).panelLabelAbove = true;
-                design.get(nameRoute).design.font = new Font("Tahoma", Font.BOLD, 48);
-                design.getGroupObjectContainer(objRoute.groupTo).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
-            }
+            design.get(nameRoute).minimumCharWidth = 4;
+            design.get(nameRoute).panelLabelAbove = true;
+            design.get(nameRoute).design.font = new Font("Tahoma", Font.BOLD, 48);
+            design.getGroupObjectContainer(objRoute.groupTo).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
 
             design.setHighlightColor(new Color(255, 128, 128));
 
