@@ -50,6 +50,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
     private static boolean USE_SHIPMENT_DETAIL = true;
 
+    private static StringClass COMPOSITION_CLASS = StringClass.get(200);
+
     private AbstractCustomClass article;
     private ConcreteCustomClass articleComposite;
     private ConcreteCustomClass articleSingle;
@@ -535,6 +537,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP executeArticleCompositeItemSIDSupplier;
     private CreateItemFormEntity createItemForm;
     private LP addItemBarcode;
+    private LP barcodeActionSeekFreightBox;
+    private LP currentPalletFreightBox;
+    private LP barcodeActionCheckPallet;
+    private LP barcodeActionCheckFreightBox;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -659,10 +665,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         sidCountry = addDProp(baseGroup, "sidCountry", "Код страны", StringClass.get(10), country);
 
-        barcodeFreightBox = addJProp(baseGroup, "barcodeFreightBox", "Штрих-код", and1, barcode, 1, is(freightBox), 1);
+        barcodeFreightBox = addJProp("barcodeFreightBox", "Штрих-код", and1, barcode, 1, is(freightBox), 1);
 
-        dictionaryComposition = addDProp("dictionaryComposition", "Словарь для составов(ИД)", dictionary);
-        nameDictionaryComposition = addJProp("nameDictionaryComposition", "Словарь для составов", name, dictionaryComposition);
+        dictionaryComposition = addDProp(idGroup, "dictionaryComposition", "Словарь для составов (ИД)", dictionary);
+        nameDictionaryComposition = addJProp(baseGroup, "nameDictionaryComposition", "Словарь для составов", name, dictionaryComposition);
 
         // Subject
         addressSubject = addDProp(baseGroup, "addressSubject", "Адрес", StringClass.get(200), subject);
@@ -835,23 +841,23 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         netWeightSku = addSUProp(intraAttributeGroup, "netWeightSku", true, "Вес нетто", Union.OVERRIDE, netWeightArticleSku, netWeightDataSku);
 
         // Composition
-        mainCompositionOriginArticle = addDProp(supplierAttributeGroup, "mainCompositionOriginArticle", "Состав", StringClass.get(100), article);
-        additionalCompositionOriginArticle = addDProp(supplierAttributeGroup, "additionalCompositionOriginArticle", "Доп. состав", StringClass.get(100), article);
+        mainCompositionOriginArticle = addDProp(supplierAttributeGroup, "mainCompositionOriginArticle", "Состав", COMPOSITION_CLASS, article);
+        additionalCompositionOriginArticle = addDProp(supplierAttributeGroup, "additionalCompositionOriginArticle", "Доп. состав", COMPOSITION_CLASS, article);
 
         mainCompositionOriginArticleSku = addJProp(supplierAttributeGroup, "mainCompositionOriginArticleSku", "Состав", mainCompositionOriginArticle, articleSku, 1);
         additionalCompositionOriginArticleSku = addJProp(supplierAttributeGroup, "additionalCompositionOriginArticleSku", "Доп. состав", additionalCompositionOriginArticle, articleSku, 1);
 
-        mainCompositionOriginDataSku = addDProp(intraAttributeGroup, "mainCompositionOriginDataSku", "Состав", StringClass.get(100), sku);
-        additionalCompositionOriginDataSku = addDProp(intraAttributeGroup, "additionalCompositionOriginDataSku", "Доп. состав", StringClass.get(100), sku);
+        mainCompositionOriginDataSku = addDProp(intraAttributeGroup, "mainCompositionOriginDataSku", "Состав", COMPOSITION_CLASS, sku);
+        additionalCompositionOriginDataSku = addDProp(intraAttributeGroup, "additionalCompositionOriginDataSku", "Доп. состав", COMPOSITION_CLASS, sku);
 
         mainCompositionOriginSku = addSUProp(intraAttributeGroup, "mainCompositionOriginSku", "Состав", Union.OVERRIDE, mainCompositionOriginArticleSku, mainCompositionOriginDataSku);
         additionalCompositionOriginSku = addSUProp(intraAttributeGroup, "additionalCompositionOriginSku", "Доп. состав", Union.OVERRIDE, additionalCompositionOriginArticleSku, additionalCompositionOriginDataSku);
 
-        mainCompositionArticle = addDProp(intraAttributeGroup, "mainCompositionArticle", "Состав (перевод)", StringClass.get(100), article);
-        additionalCompositionArticle = addDProp(intraAttributeGroup, "additionalCompositionArticle", "Доп. состав (перевод)", StringClass.get(100), article);
+        mainCompositionArticle = addDProp(intraAttributeGroup, "mainCompositionArticle", "Состав (перевод)", COMPOSITION_CLASS, article);
+        additionalCompositionArticle = addDProp(intraAttributeGroup, "additionalCompositionArticle", "Доп. состав (перевод)", COMPOSITION_CLASS, article);
 
-        mainCompositionSku = addDProp(intraAttributeGroup, "mainCompositionSku", "Состав (перевод)", StringClass.get(100), sku);
-        additionalCompositionSku = addDProp(intraAttributeGroup, "additionalCompositionSku", "Доп. состав (перевод)", StringClass.get(100), sku);
+        mainCompositionSku = addDProp(intraAttributeGroup, "mainCompositionSku", "Состав (перевод)", COMPOSITION_CLASS, sku);
+        additionalCompositionSku = addDProp(intraAttributeGroup, "additionalCompositionSku", "Доп. состав (перевод)", COMPOSITION_CLASS, sku);
 
         // Country
         countryOfOriginArticle = addDProp(idGroup, "countryOfOriginArticle", "Страна происхождения (ИД)", country, article);
@@ -1305,19 +1311,19 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         customCategory10FreightSku.setDerivedForcedChange(addJProp(and1, customCategory10Sku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
         sidCustomCategory10FreightSku = addJProp(baseGroup, "sidCustomCategory10FreightSku", "ТН ВЭД", sidCustomCategory10, customCategory10FreightSku, 1, 2);
 
-        mainCompositionOriginFreightSku = addDProp(baseGroup, "mainCompositionOriginFreightSku", "Состав", StringClass.get(100), freight, sku);
+        mainCompositionOriginFreightSku = addDProp(baseGroup, "mainCompositionOriginFreightSku", "Состав", COMPOSITION_CLASS, freight, sku);
         mainCompositionOriginFreightSku.setDerivedForcedChange(addJProp(and1, mainCompositionOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
-        additionalCompositionOriginFreightSku = addDProp(baseGroup, "additionalCompositionOriginFreightSku", "Доп. состав", StringClass.get(100), freight, sku);
+        additionalCompositionOriginFreightSku = addDProp(baseGroup, "additionalCompositionOriginFreightSku", "Доп. состав", COMPOSITION_CLASS, freight, sku);
         additionalCompositionOriginFreightSku.setDerivedForcedChange(addJProp(and1, additionalCompositionOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
         translationMainCompositionSku = addJProp(actionGroup, true, "translationMainCompositionSku", "Перевод состава", addTAProp(mainCompositionOriginSku, mainCompositionSku), dictionaryComposition, 1);
         translationAdditionalCompositionSku = addJProp(actionGroup, true, "translationAdditionalCompositionSku", "Перевод доп. состава", addTAProp(additionalCompositionOriginSku, additionalCompositionSku), dictionaryComposition, 1);
 
-        mainCompositionFreightSku = addDProp(baseGroup, "mainCompositionFreightSku", "Состав (перевод)", StringClass.get(100), freight, sku);
+        mainCompositionFreightSku = addDProp(baseGroup, "mainCompositionFreightSku", "Состав (перевод)", COMPOSITION_CLASS, freight, sku);
         mainCompositionFreightSku.setDerivedForcedChange(addJProp(and1, mainCompositionSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
-        additionalCompositionFreightSku = addDProp(baseGroup, "additionalCompositionFreightSku", "Доп. состав (перевод)", StringClass.get(100), freight, sku);
+        additionalCompositionFreightSku = addDProp(baseGroup, "additionalCompositionFreightSku", "Доп. состав (перевод)", COMPOSITION_CLASS, freight, sku);
         additionalCompositionFreightSku.setDerivedForcedChange(addJProp(and1, additionalCompositionSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
         countryOfOriginFreightSku = addDProp(idGroup, "countryOfOriginFreightSku", "Страна (ИД)", country, freight, sku);
@@ -1446,10 +1452,17 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         isCurrentFreightBox = addJProp(equals2, addJProp(true, currentFreightBoxRoute, routeCreationFreightBoxFreightBox, 1), 1, 1);
         isCurrentPallet = addJProp(equals2, addJProp(true, currentPalletRoute, routeCreationPalletPallet, 1), 1, 1);
-        isCurrentPalletFreightBox = addJProp(equals2, palletFreightBox, 1, addJProp(currentPalletRoute, routeCreationFreightBoxFreightBox, 1), 1);
+        currentPalletFreightBox = addJProp(currentPalletRoute, routeCreationFreightBoxFreightBox, 1);
+        isCurrentPalletFreightBox = addJProp(equals2, palletFreightBox, 1, currentPalletFreightBox, 1);
         isStoreFreightBoxSupplierBox = addJProp(equals2, destinationFreightBox, 1, destinationSupplierBox, 2);
 
-        barcodeAction1 = addJProp(true, "Ввод штрих-кода 1", addCUProp(isCurrentFreightBox, isCurrentPallet), barcodeToObject, 1);
+        barcodeActionSeekPallet = addJProp(true, "Найти палету", isCurrentPallet, barcodeToObject, 1);
+        barcodeActionCheckPallet = addJProp(true, "Проверка паллеты",
+                                            addJProp(true, and(false, true),
+                                                           addStopActionProp("Для маршрута выбранного короба не задана паллета", "Поиск по штрих-коду"),
+                                                           is(freightBox), 1,
+                                                           currentPalletFreightBox, 1), barcodeToObject, 1);
+        barcodeActionSeekFreightBox = addJProp(true, "Найти короб для транспортировки", isCurrentFreightBox, barcodeToObject, 1);
         barcodeActionSetPallet = addJProp(true, "Установить паллету", isCurrentPalletFreightBox, barcodeToObject, 1);
         barcodeActionSetStore = addJProp(true, "Установить магазин", isStoreFreightBoxSupplierBox, barcodeToObject, 1, 2);
 
@@ -1471,6 +1484,12 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         createFreightBox = addJProp(true, "Сгенерировать короба", addAAProp(freightBox, barcode, barcodePrefix, true), quantityCreationFreightBox, 1);
         createPallet = addJProp(true, "Сгенерировать паллеты", addAAProp(pallet, barcode, barcodePrefix, true), quantityCreationPallet, 1);
 
+        barcodeActionCheckFreightBox = addJProp(true, "Проверка паллеты",
+                                            addJProp(true, and(false, false, true),
+                                                           addStopActionProp("Для выбранного маршрута не задан короб для транспортировки", "Поиск по штрих-коду"),
+                                                           is(sku), 2,
+                                                           is(route), 1,
+                                                           currentFreightBoxRoute, 1), 1, barcodeToObject, 2);
         barcodeAction4 = addJProp(true, "Ввод штрих-кода 4",
                 addCUProp(
                         addSCProp(addJProp(true, quantitySupplierBoxBoxShipmentStockSku, 1, 2, currentFreightBoxRoute, 3, 4))
@@ -1488,7 +1507,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     LP currentFreightBoxRoute;
     LP isCurrentFreightBox, isCurrentPalletFreightBox;
     LP isCurrentPallet;
-    LP barcodeAction1, barcodeActionSetPallet, barcodeAction3;
+    LP barcodeActionSeekPallet, barcodeActionSetPallet, barcodeAction3;
 
     @Override
     protected void initTables() {
@@ -2023,11 +2042,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                         sidShipmentShipmentDetail,
                         sidSupplierBoxShipmentDetail, barcodeSupplierBoxShipmentDetail,
                         barcodeStockShipmentDetail, nameRouteFreightBoxShipmentDetail,
-                        quantityShipmentDetail, nameUserShipmentDetail, timeShipmentDetail);
+                        quantityShipmentDetail, nameUserShipmentDetail, timeShipmentDetail, delete);
 
                 objShipmentDetail.groupTo.setSingleClassView(ClassViewType.GRID);
-
-                addObjectActions(this, objShipmentDetail);
 
                 setForceViewType(itemAttributeGroup, ClassViewType.GRID, objShipmentDetail.groupTo);
                 setForceViewType(supplierAttributeGroup, ClassViewType.PANEL, objShipmentDetail.groupTo);
@@ -2114,7 +2131,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                     KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
             addRegularFilterGroup(filterGroup5);
 
-            addAutoAction(objBarcode, addPropertyObject(barcodeAction1, objBarcode));
+            addAutoAction(objBarcode, addPropertyObject(barcodeActionSeekPallet, objBarcode));
+            addAutoAction(objBarcode, addPropertyObject(barcodeActionCheckPallet, objBarcode));
+            addAutoAction(objBarcode, addPropertyObject(barcodeActionSeekFreightBox, objBarcode));
             addAutoAction(objBarcode, addPropertyObject(barcodeActionSetPallet, objBarcode));
             if (box)
                 addAutoAction(objBarcode, addPropertyObject(barcodeActionSetStore, objBarcode, objSupplierBox));
@@ -2125,13 +2144,15 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                           objShipment, objBarcode, objRoute));
 
 //            addAutoAction(objBarcode, addPropertyObject(seekRouteToFillShipmentBarcode, objShipment, objBarcode));
-            if (box)
-                addAutoAction(objBarcode, addPropertyObject(barcodeAction4, objSupplierBox, objShipment, objRoute, objBarcode));
-            else
-                addAutoAction(objBarcode, addPropertyObject(barcodeAction3, objShipment, objRoute, objBarcode));
+//            if (box)
+//                addAutoAction(objBarcode, addPropertyObject(barcodeAction4, objSupplierBox, objShipment, objRoute, objBarcode));
+//            else
+//                addAutoAction(objBarcode, addPropertyObject(barcodeAction3, objShipment, objRoute, objBarcode));
             addAutoAction(objBarcode, addPropertyObject(seekBarcodeAction, objBarcode));
 
             if (USE_SHIPMENT_DETAIL) {
+
+                addAutoAction(objBarcode, addPropertyObject(barcodeActionCheckFreightBox, objRoute, objBarcode));
 
                 addAutoAction(objBarcode,
                               addPropertyObject(
@@ -2146,6 +2167,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                                               barcodeToObject, 2
                                       ),
                                       objSupplier, objBarcode));
+
                 if (box) {
                     addAutoAction(objBarcode, addPropertyObject(addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode, objShipment, objSupplierBox, objRoute, objBarcode));
                 } else {
@@ -2557,7 +2579,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             gobjArticleCompositionCountryCategory = new GroupObjectEntity(4, "gobjArticleCompositionCountryCategory");
             objArticle = new ObjectEntity(5, "article", article, "Артикул");
-            objComposition = new ObjectEntity(6, "composition", StringClass.get(100), "Состав");
+            objComposition = new ObjectEntity(6, "composition", COMPOSITION_CLASS, "Состав");
             objCountry = new ObjectEntity(7, "country", country, "Страна");
             objCategory = new ObjectEntity(8, "category", customCategory10, "ТН ВЭД");
 

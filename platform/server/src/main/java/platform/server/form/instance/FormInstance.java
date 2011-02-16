@@ -8,6 +8,7 @@ import platform.interop.Scroll;
 import platform.interop.action.ClientAction;
 import platform.interop.action.ContinueAutoActionsClientAction;
 import platform.interop.action.ResultClientAction;
+import platform.interop.action.StopAutoActionsClientAction;
 import platform.interop.exceptions.ComplexQueryException;
 import platform.server.auth.SecurityPolicy;
 import platform.server.caches.ManualLazy;
@@ -1155,7 +1156,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
             while (hasNext()) {
                 ClientAction action = next();
                 actions.add(action);
-                if (action instanceof ContinueAutoActionsClientAction) {
+                if (action instanceof ContinueAutoActionsClientAction || action instanceof StopAutoActionsClientAction) {
                     break;
                 }
             }

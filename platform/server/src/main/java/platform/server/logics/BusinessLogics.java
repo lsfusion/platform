@@ -47,10 +47,7 @@ import platform.server.form.view.FormView;
 import platform.server.integration.*;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
-import platform.server.logics.property.actions.AddObjectActionProperty;
-import platform.server.logics.property.actions.DeleteObjectActionProperty;
-import platform.server.logics.property.actions.ExecutePropertyActionProperty;
-import platform.server.logics.property.actions.ImportFromExcelActionProperty;
+import platform.server.logics.property.actions.*;
 import platform.server.logics.property.derived.*;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.PropertySet;
@@ -2542,7 +2539,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity... params) {
-        return addFormActionProperty(group, caption, form, params, new PropertyObjectEntity[0], new PropertyObjectEntity[0], false, false);
+        return addFormActionProp(group, caption, form, params, new PropertyObjectEntity[0], new PropertyObjectEntity[0], false, false);
     }
 
     protected LP addModalFormActionProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity... setProperties) {
@@ -2559,10 +2556,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addModalFormActionProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, PropertyObjectEntity[] getProperties, boolean newSession) {
-        return addFormActionProperty(group, caption, form, objectsToSet, setProperties, getProperties, newSession, true);
+        return addFormActionProp(group, caption, form, objectsToSet, setProperties, getProperties, newSession, true);
     }
 
-    protected LP addFormActionProperty(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, PropertyObjectEntity[] getProperties, boolean newSession, boolean isModal) {
+    protected LP addFormActionProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, PropertyObjectEntity[] getProperties, boolean newSession, boolean isModal) {
         return addProperty(group, new LP<ClassPropertyInterface>(new FormActionProperty(genSID(), caption, form, objectsToSet, setProperties, getProperties, newSession, isModal)));
     }
 
@@ -2577,6 +2574,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP addSelectFromListAction(AbstractGroup group, String caption, ObjectEntity remapObject, FilterEntity[] remapFilters, LP selectionProperty, boolean isSelectionClassFirstParam, ValueClass selectionClass, ValueClass... baseClasses) {
         SelectFromListFormEntity selectFromListForm = new SelectFromListFormEntity(remapObject, remapFilters, selectionProperty, isSelectionClassFirstParam, selectionClass, baseClasses);
         return addModalFormActionProp(group, caption, selectFromListForm, selectFromListForm.mainObjects, false);
+    }
+    
+    protected LP addStopActionProp(String caption, String header) {
+        return addAProp(new StopActionProperty(genSID(), caption, header));
     }
 
     protected LP addEAProp(ValueClass... params) {
