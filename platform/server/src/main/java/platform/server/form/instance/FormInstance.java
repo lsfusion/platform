@@ -138,7 +138,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 properties.add(propertyDrawInstance);
             }
 
-
         for (FilterEntity filterEntity : entity.fixedFilters) {
             FilterInstance filter = filterEntity.getInstance(instanceFactory);
             filter.getApplyObject().fixedFilters.add(filter);
@@ -180,8 +179,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         return objects;
     }
 
-    // ----------------------------------- Поиск объектов по ID ------------------------------ //
+    public void addFixedFilter(FilterEntity newFilter) {
+        FilterInstance newFilterInstance = newFilter.getInstance(instanceFactory);
+        newFilterInstance.getApplyObject().fixedFilters.add(newFilterInstance);
+    }
 
+    // ----------------------------------- Поиск объектов по ID ------------------------------ //
     public GroupObjectInstance getGroupObjectInstance(int groupID) {
         for (GroupObjectInstance groupObject : groups)
             if (groupObject.getID() == groupID)
@@ -418,6 +421,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
             if (object instanceof CustomObjectInstance)
                 ((CustomObjectInstance) object).refreshValueClass(session);
         refresh = true;
+        dataChanged = session.hasChanges();
     }
 
     void addObjectOnTransaction() throws SQLException {
@@ -1047,7 +1051,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 for (ObjectEntity filterObject : filterEntity.getObjects()) {
                     //добавляем фильтр только, если есть хотя бы один объект который не будет заменён на константу
                     if (filterObject.baseClass == object.baseClass) {
-                        formEntity.addFixedFilter(filterEntity.getRemappedFilter(object, instanceFactory));
+                        formEntity.addFixedFilter(filterEntity.getRemappedFilter(filterObject, object, instanceFactory));
                         break;
                     }
                 }

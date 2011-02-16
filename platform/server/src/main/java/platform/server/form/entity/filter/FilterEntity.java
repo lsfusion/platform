@@ -13,7 +13,7 @@ public abstract class FilterEntity implements Instantiable<FilterInstance>, Serv
 
     protected abstract void fillObjects(Set<ObjectEntity> objects);
 
-    public abstract FilterEntity getRemappedFilter(ObjectEntity object, InstanceFactory instanceFactory);
+    public abstract FilterEntity getRemappedFilter(ObjectEntity oldObject, ObjectEntity newObject, InstanceFactory instanceFactory);
 
     public Set<ObjectEntity> getObjects() {
         Set<ObjectEntity> objects = new HashSet<ObjectEntity>();

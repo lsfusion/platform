@@ -42,7 +42,7 @@ public class FormActionProperty extends ActionProperty {
     //assert getProperties и setProperties одинаковой длины
     //setProperties привязаны к созадаваемой форме
     //getProperties привязаны к форме, содержащей свойство...
-    public FormActionProperty(String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, PropertyObjectEntity[] getProperties, boolean isModal, boolean newSession) {
+    public FormActionProperty(String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, PropertyObjectEntity[] getProperties, boolean newSession, boolean isModal) {
         super(sID, caption, getValueClasses(objectsToSet));
 
         assert setProperties.length == getProperties.length;
@@ -68,6 +68,10 @@ public class FormActionProperty extends ActionProperty {
                 newFormInstance.forceChangeObject(newFormInstance.instanceFactory.getInstance(entry.getKey()), keys.get(entry.getValue()));
             }
 
+            if (form instanceof SelfInstancePostProcessor) {
+                ((SelfInstancePostProcessor) form).postProcessSelfInstance(keys, thisRemoteForm, newFormInstance);
+            }
+
             RemoteForm newRemoteForm = thisRemoteForm.createForm(newFormInstance);
 
             for (int i = 0; i < setProperties.length; i++) {
@@ -82,10 +86,14 @@ public class FormActionProperty extends ActionProperty {
                 newFormInstance.changeProperty(setPropInstance, readenValue, newRemoteForm);
             }
 
-            actions.add(new FormClientAction(form.isPrintForm, isModal, newRemoteForm));
+            actions.add(new FormClientAction(form.isPrintForm, newSession, isModal, newRemoteForm));
             actions.add(new ContinueAutoActionsClientAction());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static interface SelfInstancePostProcessor {
+        public void postProcessSelfInstance(Map<ClassPropertyInterface, DataObject> keys, RemoteForm executeForm, FormInstance selfFormInstance);
     }
 }

@@ -47,8 +47,8 @@ public class CompareFilterEntity<P extends PropertyInterface> extends PropertyFi
     }
 
     @Override
-    public FilterEntity getRemappedFilter(ObjectEntity object, InstanceFactory instanceFactory) {
-        return new CompareFilterEntity<P>(property.getRemappedEntity(object, instanceFactory), compare, value.getRemappedEntity(object, instanceFactory));
+    public FilterEntity getRemappedFilter(ObjectEntity oldObject, ObjectEntity newObject, InstanceFactory instanceFactory) {
+        return new CompareFilterEntity<P>(property.getRemappedEntity(oldObject, newObject, instanceFactory), compare, value.getRemappedEntity(oldObject, newObject, instanceFactory));
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

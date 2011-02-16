@@ -1803,7 +1803,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
 
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objOrder), Compare.EQUALS, objSupplier));
+            CompareFilterEntity orderSupplierFilter = new CompareFilterEntity(addPropertyObject(supplierDocument, objOrder), Compare.EQUALS, objSupplier);
+            addFixedFilter(orderSupplierFilter);
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objInvoice), Compare.EQUALS, objSupplier));
             if (box)
                 addFixedFilter(new CompareFilterEntity(addPropertyObject(boxInvoiceSupplierBox, objSupplierBox), Compare.EQUALS, objInvoice));
@@ -1816,6 +1817,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 addFixedFilter(new CompareFilterEntity(addPropertyObject(boxInvoiceSupplierBox, objSupplierBoxSpec), Compare.EQUALS, objInvoice));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(numberListSku, (box ? objSupplierBoxSpec : objInvoice), objSku)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityListSku, (box ? objSupplierBoxSpec : objInvoice), objSku)));
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(inOrderInvoice, objOrder, objInvoice), Compare.EQUALS, true));
+            addPropertyDraw(
+                    addSelectFromListAction(null, "Выбрать заказы", objOrder, new FilterEntity[]{orderSupplierFilter}, inOrderInvoice, true, order, invoice),
+                    objOrder.groupTo,
+                    objInvoice
+            ).forceViewType = ClassViewType.PANEL;
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(new RegularFilterEntity(genID(),
@@ -2762,9 +2770,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(new RegularFilterEntity(genID(),
-                                  new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(priceInImporterFreightSku, objImporter, objFreight, objSku))),
-                                  "Только без цены",
-                                  KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
+                                                          new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(priceInImporterFreightSku, objImporter, objFreight, objSku))),
+                                                          "Только без цены",
+                                                          KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
             addRegularFilterGroup(filterGroup);
         }
 

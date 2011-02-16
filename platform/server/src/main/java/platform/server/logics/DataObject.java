@@ -185,7 +185,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return new ArrayList<ObjectInstance>();
     }
 
-    public DataObject getRemappedEntity(ObjectEntity object, InstanceFactory instanceFactory) {
+    public DataObject getRemappedEntity(ObjectEntity oldObject, ObjectEntity newObject, InstanceFactory instanceFactory) {
         return this;
     }
 

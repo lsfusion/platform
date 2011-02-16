@@ -34,8 +34,8 @@ public class OrFilterEntity extends FilterEntity {
     }
 
     @Override
-    public FilterEntity getRemappedFilter(ObjectEntity object, InstanceFactory instanceFactory) {
-        return new OrFilterEntity(op1.getRemappedFilter(object, instanceFactory), op2.getRemappedFilter(object, instanceFactory));
+    public FilterEntity getRemappedFilter(ObjectEntity oldObject, ObjectEntity newObject, InstanceFactory instanceFactory) {
+        return new OrFilterEntity(op1.getRemappedFilter(oldObject, newObject, instanceFactory), op2.getRemappedFilter(oldObject, newObject, instanceFactory));
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

@@ -31,8 +31,8 @@ public class NotFilterEntity extends FilterEntity {
     }
 
     @Override
-    public FilterEntity getRemappedFilter(ObjectEntity object, InstanceFactory instanceFactory) {
-        return new NotFilterEntity(filter.getRemappedFilter(object, instanceFactory));
+    public FilterEntity getRemappedFilter(ObjectEntity oldObject, ObjectEntity newObject, InstanceFactory instanceFactory) {
+        return new NotFilterEntity(filter.getRemappedFilter(oldObject, newObject, instanceFactory));
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

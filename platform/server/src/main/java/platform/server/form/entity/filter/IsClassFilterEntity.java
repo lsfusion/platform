@@ -44,7 +44,7 @@ public class IsClassFilterEntity<P extends PropertyInterface> extends PropertyFi
     }
 
     @Override
-    public FilterEntity getRemappedFilter(ObjectEntity object, InstanceFactory instanceFactory) {
-        return new IsClassFilterEntity<P>(property.getRemappedEntity(object, instanceFactory), isClass);
+    public FilterEntity getRemappedFilter(ObjectEntity oldObject, ObjectEntity newObject, InstanceFactory instanceFactory) {
+        return new IsClassFilterEntity<P>(property.getRemappedEntity(oldObject, newObject, instanceFactory), isClass);
     }
 }

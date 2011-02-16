@@ -84,11 +84,11 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyI
         }
     }
 
-    public PropertyObjectEntity<P> getRemappedEntity(ObjectEntity object, InstanceFactory instanceFactory) {
+    public PropertyObjectEntity<P> getRemappedEntity(ObjectEntity oldObject, ObjectEntity newObject, InstanceFactory instanceFactory) {
         Map<P, PropertyObjectInterfaceEntity> nmapping = new HashMap<P, PropertyObjectInterfaceEntity>();
 
         for (P iFace : property.interfaces) {
-            nmapping.put(iFace, mapping.get(iFace).getRemappedEntity(object, instanceFactory));
+            nmapping.put(iFace, mapping.get(iFace).getRemappedEntity(oldObject, newObject, instanceFactory));
         }
 
         return new PropertyObjectEntity<P>(property, nmapping);

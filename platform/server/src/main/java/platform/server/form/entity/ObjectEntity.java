@@ -61,9 +61,9 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
         caption = pool.readString(inStream);
     }
 
-    public PropertyObjectInterfaceEntity getRemappedEntity(ObjectEntity object, InstanceFactory instanceFactory) {
-        return object.baseClass == baseClass
-                ? object
+    public PropertyObjectInterfaceEntity getRemappedEntity(ObjectEntity oldObject, ObjectEntity newObject, InstanceFactory instanceFactory) {
+        return this == oldObject
+                ? newObject
                 : getInstance(instanceFactory).getDataObject();
     }
 }

@@ -19,7 +19,7 @@ public class ClientDialog extends ClientModalForm {
     private RemoteDialogInterface remoteDialog;
 
     public ClientDialog(Component owner, final RemoteDialogInterface dialog) throws IOException, ClassNotFoundException {
-        super(owner, dialog); // обозначаем parent'а и модальность
+        super(owner, dialog, false); // обозначаем parent'а и модальность
 
         // делаем, чтобы не выглядел как диалог
         setUndecorated(true);

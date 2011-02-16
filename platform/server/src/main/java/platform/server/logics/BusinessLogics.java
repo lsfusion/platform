@@ -35,8 +35,7 @@ import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
 import platform.server.form.entity.*;
-import platform.server.form.entity.filter.CompareFilterEntity;
-import platform.server.form.entity.filter.NotNullFilterEntity;
+import platform.server.form.entity.filter.*;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
@@ -637,6 +636,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP entryDictionary;
     protected LP translationDictionaryTerm;
 
+    private LP selectRoleForms;
+    private LP selectUserRoles;
+
     private final ConcreteValueClass classSIDValueClass = StringClass.get(250);
     private final StringClass formSIDValueClass = StringClass.get(50);
     private final StringClass formCaptionValueClass = StringClass.get(250);
@@ -1104,6 +1106,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         permissionUserForm = addJProp(baseGroup, "permissionUserForm", "Запретить форму", permissionUserRoleForm, userMainRole, 1, 2);
 //        permissionUserForm = addDProp(baseGroup, "permissionUserForm", "Запретить форму", LogicalClass.instance, user, navigatorElement);
 
+        selectUserRoles = addSelectFromListAction(null, "Редактировать роли", inUserRole, userRole, customUser);
+        selectRoleForms = addSelectFromListAction(null, "Редактировать формы", permissionUserRoleForm, navigatorElement, userRole);
+
         // заполним сессии
         LP sessionUser = addDProp("sessionUser", "Пользователь сессии", user, session);
         sessionUser.setDerivedChange(currentUser, true, is(session), 1);
@@ -1212,15 +1217,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             addObjectActions(this, objUser);
 
             addPropertyDraw(objUser, objRole, baseGroup, true);
-        }
-    }
 
-    private class AdminFormEntity extends FormEntity {
+            addPropertyDraw(selectUserRoles, objRole.groupTo, objUser).forceViewType = ClassViewType.PANEL;
 
-        private AdminFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, "Глобальные параметры");
-
-            addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, webHost, defaultCountry, barcodePrefix, restartServerAction, cancelRestartServerAction});
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(inUserRole, objUser, objRole), Compare.EQUALS, true));
         }
     }
 
@@ -1242,6 +1242,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             addPropertyDraw(objUserRole, objPolicy, baseGroup, true);
             addPropertyDraw(objUserRole, objForm, permissionUserRoleForm);
 
+            addPropertyDraw(selectRoleForms, objForm.groupTo, objUserRole).forceViewType = ClassViewType.PANEL;
+
             setReadOnly(navigatorElementSID, true);
             setReadOnly(navigatorElementCaption, true);
 
@@ -1249,6 +1251,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             PropertyDrawEntity sidDraw = getPropertyDraw(userRoleSID, objUserRole.groupTo);
             balanceDraw.addColumnGroupObject(objUserRole.groupTo);
             balanceDraw.setPropertyCaption(sidDraw.propertyObject);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(permissionUserRoleForm, objUserRole, objForm), Compare.EQUALS, true));
         }
 
         @Override
@@ -1265,7 +1269,74 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             return design;
         }
     }
-    
+
+    private class SelectFromListFormEntity extends FormEntity implements FormActionProperty.SelfInstancePostProcessor {
+        private ObjectEntity[] mainObjects;
+        private ObjectEntity selectionObject;
+        private ObjectEntity remapObject;
+        private final FilterEntity[] remapFilters;
+
+        private SelectFromListFormEntity(ObjectEntity remapObject, FilterEntity[] remapFilters, LP selectionProperty, boolean isSelectionClassFirstParam, ValueClass selectionClass, ValueClass... baseClasses) {
+            this.remapObject = remapObject;
+            this.remapFilters = remapFilters;
+
+            mainObjects = new ObjectEntity[baseClasses.length];
+            for (int i = 0; i < baseClasses.length; i++) {
+                ValueClass baseClass = baseClasses[i];
+                mainObjects[i] = addSingleGroupObject(baseClass, baseGroup);
+                mainObjects[i].groupTo.setSingleClassView(ClassViewType.PANEL);
+                getPropertyDraw(objectValue, mainObjects[i]).readOnly = true;
+            }
+
+            selectionObject = addSingleGroupObject(selectionClass, baseGroup);
+            selectionObject.groupTo.setSingleClassView(ClassViewType.GRID);
+
+            ObjectEntity[] selectionObjects = new ObjectEntity[mainObjects.length + 1];
+            if (isSelectionClassFirstParam) {
+                System.arraycopy(mainObjects, 0, selectionObjects, 1, mainObjects.length);
+                selectionObjects[0] = selectionObject;
+            } else {
+                System.arraycopy(mainObjects, 0, selectionObjects, 0, mainObjects.length);
+                selectionObjects[mainObjects.length] = selectionObject;
+            }
+
+            PropertyDrawEntity selectionPropertyDraw = addPropertyDraw(selectionProperty, selectionObjects);
+            PropertyObjectEntity selectionPropertyObject = selectionPropertyDraw.propertyObject;
+
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            filterGroup.addFilter(
+                    new RegularFilterEntity(genID(),
+                                            new NotFilterEntity(
+                                                    new CompareFilterEntity(selectionPropertyObject, Compare.EQUALS, true)),
+                                            "Невыбранные объекты",
+                                            KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)
+                    ), true);
+            filterGroup.addFilter(
+                    new RegularFilterEntity(genID(),
+                                            new CompareFilterEntity(selectionPropertyObject, Compare.EQUALS, true),
+                                            "Выбранные объекты",
+                                            KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)
+                    ));
+            addRegularFilterGroup(filterGroup);
+        }
+
+        public void postProcessSelfInstance(Map<ClassPropertyInterface, DataObject> keys, RemoteForm executeForm, FormInstance selfFormInstance) {
+            for (FilterEntity filterEntity : remapFilters) {
+                selfFormInstance.addFixedFilter(
+                        filterEntity.getRemappedFilter(remapObject, selectionObject, executeForm.form.instanceFactory)
+                );
+            }
+        }
+    }
+
+    private class AdminFormEntity extends FormEntity {
+        private AdminFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Глобальные параметры");
+
+            addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, webHost, defaultCountry, barcodePrefix, restartServerAction, cancelRestartServerAction});
+        }
+    }
+
     private class DaysOffFormEntity extends FormEntity {
         ObjectEntity objDays;
 
@@ -2475,8 +2546,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addModalFormActionProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity... setProperties) {
+        return addModalFormActionProp(group, caption, form, objectsToSet, true, setProperties);
+    }
+
+    protected LP addModalFormActionProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession, PropertyObjectEntity... setProperties) {
         // во все setProperties просто будут записаны null'ы
-        return addModalFormActionProp(group, caption, form, objectsToSet, setProperties, new PropertyObjectEntity[setProperties.length], true);
+        return addModalFormActionProp(group, caption, form, objectsToSet, setProperties, new PropertyObjectEntity[setProperties.length], newSession);
     }
 
     protected LP addModalFormActionProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, PropertyObjectEntity[] getProperties) {
@@ -2489,6 +2564,19 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected LP addFormActionProperty(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, PropertyObjectEntity[] getProperties, boolean newSession, boolean isModal) {
         return addProperty(group, new LP<ClassPropertyInterface>(new FormActionProperty(genSID(), caption, form, objectsToSet, setProperties, getProperties, newSession, isModal)));
+    }
+
+    public LP addSelectFromListAction(AbstractGroup group, String caption, LP selectionProperty, ValueClass selectionClass, ValueClass... baseClasses) {
+        return addSelectFromListAction(group, caption, null, new FilterEntity[0], selectionProperty, selectionClass, baseClasses);
+    }
+
+    public LP addSelectFromListAction(AbstractGroup group, String caption, ObjectEntity remapObject, FilterEntity[] remapFilters, LP selectionProperty, ValueClass selectionClass, ValueClass... baseClasses) {
+        return addSelectFromListAction(group, caption, remapObject, remapFilters, selectionProperty, false, selectionClass, baseClasses);
+    }
+
+    public LP addSelectFromListAction(AbstractGroup group, String caption, ObjectEntity remapObject, FilterEntity[] remapFilters, LP selectionProperty, boolean isSelectionClassFirstParam, ValueClass selectionClass, ValueClass... baseClasses) {
+        SelectFromListFormEntity selectFromListForm = new SelectFromListFormEntity(remapObject, remapFilters, selectionProperty, isSelectionClassFirstParam, selectionClass, baseClasses);
+        return addModalFormActionProp(group, caption, selectFromListForm, selectFromListForm.mainObjects, false);
     }
 
     protected LP addEAProp(ValueClass... params) {

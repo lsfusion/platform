@@ -209,16 +209,6 @@ public class ClientFormController {
             comboBox.addItem(new ClientRegularFilterWrapped(filter));
         }
 
-        if (filterGroup.defaultFilter >= 0) {
-            ClientRegularFilter defaultFilter = filterGroup.filters.get(filterGroup.defaultFilter);
-            comboBox.setSelectedItem(new ClientRegularFilterWrapped(defaultFilter));
-            try {
-                setRemoteRegularFilter(filterGroup, defaultFilter);
-            } catch (IOException e) {
-                throw new RuntimeException("Ошибка при инициализации регулярного фильтра", e);
-            }
-        }
-
         comboBox.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent ie) {
                 try {
@@ -230,6 +220,11 @@ public class ClientFormController {
                 }
             }
         });
+
+        if (filterGroup.defaultFilter >= 0) {
+            ClientRegularFilter defaultFilter = filterGroup.filters.get(filterGroup.defaultFilter);
+            comboBox.setSelectedItem(new ClientRegularFilterWrapped(defaultFilter));
+        }
         formLayout.add(filterGroup, comboBox);
 
         for (final ClientRegularFilter filter : filterGroup.filters) {
@@ -439,7 +434,6 @@ public class ClientFormController {
         if (clientNavigator != null) {
             clientNavigator.changeCurrentClass(remoteChanges.classID);
         }
-
 
         List<ClientAction> actions = remoteChanges.actions;
         ClientAction lastAction = BaseUtils.last(actions);

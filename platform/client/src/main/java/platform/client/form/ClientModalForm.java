@@ -13,11 +13,13 @@ public class ClientModalForm extends JDialog {
 
     protected ClientFormController currentForm;
     protected final RemoteFormInterface remoteForm;
+    private final boolean newSession;
     private boolean activatedFirstTime = true;
 
-    public ClientModalForm(Component owner, final RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
+    public ClientModalForm(Component owner, final RemoteFormInterface remoteForm, boolean newSession) throws IOException, ClassNotFoundException {
         super(SwingUtils.getWindow(owner), ModalityType.DOCUMENT_MODAL); // обозначаем parent'а и модальность
         this.remoteForm = remoteForm;
+        this.newSession = newSession;
 
         setResizable(false);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -69,7 +71,9 @@ public class ClientModalForm extends JDialog {
 
             @Override
             public void okPressed() {
-                super.okPressed();
+                if (newSession) {
+                    super.okPressed();
+                }
                 hideDialog();
             }
 

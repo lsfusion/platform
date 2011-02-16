@@ -11,10 +11,10 @@ public interface OrderEntity<T extends OrderInstance> extends Instantiable<T>, S
     void fillObjects(Set<ObjectEntity> objects);
 
     /**
-     * Возвращает OrderEntity, которая заменяет все ObjectEntity, на их текущие значения, взятые из instanceFactory,
-     * кроме objectEntity, у которых baseClass равен baseClass'у object'a. В последнем случае возвращается сам object.
+     * Возвращает OrderEntity, которая заменяет все старые ObjectEntities, на их текущие значения, взятые из instanceFactory,
+     * кроме oldObject, который заменяется на newObject.
      *
-     * По сути фиксирует текущие значения всех ObjectEntities, кроме тех, чей класс равен классу object
+     * По сути фиксирует текущие значения всех ObjectEntities, кроме oldObject.
      */
-    OrderEntity<T> getRemappedEntity(ObjectEntity object, InstanceFactory instanceFactory);
+    OrderEntity<T> getRemappedEntity(ObjectEntity oldObject, ObjectEntity newObject, InstanceFactory instanceFactory);
 }
