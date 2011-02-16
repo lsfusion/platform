@@ -1282,7 +1282,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 ValueClass baseClass = baseClasses[i];
                 mainObjects[i] = addSingleGroupObject(baseClass, baseGroup);
                 mainObjects[i].groupTo.setSingleClassView(ClassViewType.PANEL);
-                getPropertyDraw(objectValue, mainObjects[i]).readOnly = true;
+                PropertyDrawEntity objectValue = getPropertyDraw(BusinessLogics.this.objectValue, mainObjects[i]);
+                if (objectValue != null) {
+                    objectValue.readOnly = true;
+                }
             }
 
             selectionObject = addSingleGroupObject(selectionClass, baseGroup);
