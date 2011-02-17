@@ -362,7 +362,7 @@ public class SQLSession extends MutableObject {
             insertString = (insertString.length() == 0 ? "" : insertString + ',') + key.name;
             DataObject keyValue = keyFields.get(key);
             if (keyValue.isString(syntax))
-                valueString = (valueString.length() == 0 ? "" : valueString + ',') + keyValue.object;
+                valueString = (valueString.length() == 0 ? "" : valueString + ',') + keyValue.getString(syntax);
             else {
                 String prm = "qxprm" + (paramNum++) + "nx";
                 valueString = (valueString.length() == 0 ? "" : valueString + ',') + prm;
@@ -415,7 +415,7 @@ public class SQLSession extends MutableObject {
         // пробежим по KeyFields'ам
         for (KeyField key : table.keys) {
             insertString = (insertString.length() == 0 ? "" : insertString + ',') + key.name;
-            valueString = (valueString.length() == 0 ? "" : valueString + ',') + keyFields.get(key).object;
+            valueString = (valueString.length() == 0 ? "" : valueString + ',') + keyFields.get(key).getString(syntax);
         }
 
         // пробежим по Fields'ам

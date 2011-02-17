@@ -28,6 +28,7 @@ import platform.server.session.MapDataChanges;
 import platform.server.session.PropertyChange;
 import tmc.VEDBusinessLogics;
 
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -205,6 +206,12 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
                                                 null, session.modifier);
 
             session.execute(returnPriceChanges.add(returnChanges), null, null);*/
+
+            try {
+                Object importStore = BL.incStore.read(session, (DataObject) docValue);
+                BL.dateLastImportShop.execute(BL.currentDate.read(session), session, session.getDataObject(importStore, ObjectType.instance));
+            } catch (SQLException e) {
+            }
 
             System.out.println(session.apply(BL));
 

@@ -349,6 +349,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP nameBrendArticle;
     LP nameCountryArticle;
 
+    public LP dateLastImportShop;
+    public LP dateLastImport;
+
+    LP padl;
+
     protected void initProperties() {
 
         removePercent = addSFProp("((prm1*(100-prm2))/100)", DoubleClass.instance, 2);
@@ -359,6 +364,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP round1 = addSFProp("(ROUND(CAST((prm1) as NUMERIC(15,3)),-1))", IntegerClass.instance, 1);
         LP round0 = addSFProp("(ROUND(CAST((prm1) as NUMERIC(15,3)),0))", IntegerClass.instance, 1);
+        padl = addSFProp("lpad(prm1,12,'0')", StringClass.get(12), 1);
 
         LP multiplyDouble2 = addMFProp(DoubleClass.instance, 2);
 
@@ -950,8 +956,15 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         nameToArticleGroup = addCGProp(null, "nameToArticleGroup", "Гр. тов.", object(articleGroup), name, name, 1);
         nameToUnitOfMeasure = addCGProp(null, "nameToUnitOfMeasure", "Ед. изм.", object(unitOfMeasure), name, name, 1);
         nameToBrend = addCGProp(null, "nameToBrend", "Бренд", object(brend), name, name, 1);
+
+        dateLastImportShop = addDProp(cashRegGroup, "dateLastImportSh", "Дата прайса", DateClass.instance, shop);
+        dateLastImport = addJProp(cashRegGroup, "dateLastImport", "Дата прайса", dateLastImportShop, currentShop);
+
+        padlBarcodeToObject = addJProp(privateGroup, true, "Объект (до 12)", barcodeToObject, padl, 1);
+        padlBarcode = addJProp(privateGroup, true, "Штрих-код (до 12)", barcode, padl, 1);
     }
 
+    LP padlBarcodeToObject, padlBarcode;
     LP nameToCurrency;
     LP nameToArticleGroup;
     LP nameToUnitOfMeasure;
@@ -3118,8 +3131,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 
             ImportField barcodeField = new ImportField(StringClass.get(13)); fields.add(barcodeField);
-            ImportKey<?> articleKey = new ImportKey(article, barcodeToObject.getMapping(barcodeField));
-            properties.add(new ImportProperty(barcodeField, barcode.getMapping(articleKey)));
+            ImportKey<?> articleKey = new ImportKey(article, padlBarcodeToObject.getMapping(barcodeField));
+            properties.add(new ImportProperty(barcodeField, padlBarcode.getMapping(articleKey)));
 
             ImportField nameField = new ImportField(StringClass.get(100)); fields.add(nameField);
             properties.add(new ImportProperty(nameField, name.getMapping(articleKey)));

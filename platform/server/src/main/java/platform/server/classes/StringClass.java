@@ -59,7 +59,7 @@ public class StringClass extends DataClass<String> {
     }
 
     public boolean isSafeString(Object value) {
-        return false;
+        return !value.toString().contains("'");
     }
     public String getString(Object value, SQLSyntax syntax) {
         return "'" + value + "'";

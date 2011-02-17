@@ -551,7 +551,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP<?> date;
 
     protected LP transactionLater;
-    protected LP currentDate;
+    public LP currentDate;
     protected LP currentHour;
     protected LP currentEpoch;
     protected LP currentDateTime;
