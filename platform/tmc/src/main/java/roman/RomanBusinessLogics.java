@@ -3033,7 +3033,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             colorNameField = new ImportField(name);
             sizeField = new ImportField(sidSizeSupplier);
             compositionField = new ImportField(mainCompositionOriginArticle);
-            countryField = new ImportField(nameCountryOfOriginArticle);
+            countryField = new ImportField(name);
             customCodeField = new ImportField(sidCustomCategoryOrigin);
             unitPriceField = new ImportField(quantityDataListSku);
             unitQuantityField = new ImportField(priceDataDocumentItem);
@@ -3089,9 +3089,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             properties.add(new ImportProperty(barCodeField, barcode.getMapping(itemKey)));
             properties.add(new ImportProperty(sidField, articleCompositeItem.getMapping(itemKey), object(articleComposite).getMapping(articleKey)));
 
-            ImportKey<?> countryKey = new ImportKey(country, nameToCountry.getMapping(countryField));
+            ImportKey<?> countryKey = new ImportKey(countrySupplier, countryNameSupplier.getMapping(countryField, supplier));
             properties.add(new ImportProperty(countryField, name.getMapping(countryKey)));
-            properties.add(new ImportProperty(countryField, countryOfOriginArticle.getMapping(articleKey), object(country).getMapping(countryKey)));
+            properties.add(new ImportProperty(supplier, supplierCountrySupplier.getMapping(countryKey)));
+            properties.add(new ImportProperty(countryField, countrySupplierOfOriginArticle.getMapping(articleKey), object(countrySupplier).getMapping(countryKey)));
 
             ImportKey<?> customCategoryKey = new ImportKey(customCategoryOrigin, sidToCustomCategoryOrigin.getMapping(customCodeField));
             properties.add(new ImportProperty(customCodeField, sidCustomCategoryOrigin.getMapping(customCategoryKey)));
