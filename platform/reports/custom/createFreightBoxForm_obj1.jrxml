@@ -26,14 +26,14 @@
 	<detail>
 		<band height="40">
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="156" height="20"/>
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="200" height="20"/>
 				<textElement textAlignment="Left">
-					<font fontName="EAN-13" size="20" isStrikeThrough="false" isPdfEmbedded="false"/>
+					<font fontName="EAN-13" size="24" isStrikeThrough="false" isPdfEmbedded="false"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{barcode}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="0" y="20" width="156" height="20"/>
+				<reportElement x="0" y="20" width="200" height="20"/>
 				<textElement>
 					<font size="11"/>
 				</textElement>
