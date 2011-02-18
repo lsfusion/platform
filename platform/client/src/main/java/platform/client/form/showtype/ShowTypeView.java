@@ -4,6 +4,7 @@ import platform.client.form.GroupObjectLogicsSupplier;
 import platform.interop.ClassViewType;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Enumeration;
@@ -11,40 +12,43 @@ import java.util.List;
 
 public abstract class ShowTypeView extends JPanel implements ActionListener {
 
-    JRadioButton gridButton;
-    JRadioButton panelButton;
-    JRadioButton hideButton;
+    JButton gridButton;
+    JButton panelButton;
+    JButton hideButton;
 
     GroupObjectLogicsSupplier logicsSupplier;
+    final private Dimension buttonSize = new Dimension(18, 18);
 
     public ShowTypeView(GroupObjectLogicsSupplier ilogicsSupplier) {
 
         logicsSupplier = ilogicsSupplier;
 
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-        
-        gridButton = new JRadioButton("Таблица");
+
+        gridButton = new JButton("");
+        gridButton.setIcon(new ImageIcon(ShowTypeView.class.getResource("/platform/images/table.png")));
         gridButton.setActionCommand("grid");
 
-        panelButton = new JRadioButton("Панель");
+        panelButton = new JButton("");
+        panelButton.setIcon(new ImageIcon(ShowTypeView.class.getResource("/platform/images/list.png")));
         panelButton.setActionCommand("panel");
 
-        hideButton = new JRadioButton("Скрыть");
+        hideButton = new JButton("");
+        hideButton.setIcon(new ImageIcon(ShowTypeView.class.getResource("/platform/images/close.png")));
         hideButton.setActionCommand("hide");
 
-        ButtonGroup showType = new ButtonGroup();
-        showType.add(gridButton);
-        showType.add(panelButton);
-        showType.add(hideButton);
+        add(gridButton);
+        add(panelButton);
+        add(hideButton);
 
-        for (Enumeration<AbstractButton> e = showType.getElements() ; e.hasMoreElements() ;) {
-
-            AbstractButton button = e.nextElement();
+        for (Component c : getComponents()) {
+            AbstractButton button = (AbstractButton) c;
+            button.setMinimumSize(buttonSize);
             button.setMaximumSize(button.getMinimumSize());
             button.addActionListener(this);
             button.setFocusable(false);
-            add(button);
         }
+        setPreferredSize(new Dimension((buttonSize.width + 1) * 3, buttonSize.height));
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -53,9 +57,9 @@ public abstract class ShowTypeView extends JPanel implements ActionListener {
 
     public void changeClassView(ClassViewType classView, List<ClassViewType> banClassView) {
 
-        if(classView == ClassViewType.PANEL) panelButton.setSelected(true);
-        if(classView == ClassViewType.GRID) gridButton.setSelected(true);
-        if(classView == ClassViewType.HIDE) hideButton.setSelected(true);
+        panelButton.setBorderPainted(classView == ClassViewType.PANEL ? false : true);
+        gridButton.setBorderPainted(classView == ClassViewType.GRID ? false : true);
+        hideButton.setBorderPainted(classView == ClassViewType.HIDE ? false : true);
 
         int visibleCount = 0;
 

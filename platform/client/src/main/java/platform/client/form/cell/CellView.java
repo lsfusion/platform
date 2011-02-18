@@ -1,5 +1,7 @@
 package platform.client.form.cell;
 
+import platform.interop.ClassViewType;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -13,4 +15,5 @@ public interface CellView {
     void setCaption(String caption);
     void setToolTip(String caption);
     void setHighlight(Object highlight, Color highlightColor);
+    void changeViewType(ClassViewType type);
 }

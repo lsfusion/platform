@@ -7,17 +7,20 @@ import platform.client.form.queries.FindController;
 import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public abstract class GridView extends JPanel {
 
     final JPanel queriesContainer;
 
+    public final JPanel movingPropertiesContainer;
+
     final JScrollPane pane;
 
     private final GridTable gridTable;
     public final FilterController filterController;
-
+    public JPanel bottomContainer = new JPanel();
     public GridTable getTable() {
         return gridTable;
     }
@@ -26,7 +29,7 @@ public abstract class GridView extends JPanel {
                     FilterController filterController, boolean tabVertical, boolean verticalScroll) {
         this.filterController = filterController;
 
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setLayout(new BorderLayout());
 
         gridTable = new GridTable(this, logicsSupplier, form) {
             protected void needToBeShown() {
@@ -42,17 +45,22 @@ public abstract class GridView extends JPanel {
 
         pane = new JScrollPane(gridTable);
         int verticalConst = verticalScroll ? ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED : ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER;
-        pane.setVerticalScrollBarPolicy(verticalConst );
+        pane.setVerticalScrollBarPolicy(verticalConst);
         pane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
         gridTable.setFillsViewportHeight(true);
 
+
+        bottomContainer.setLayout(new BoxLayout(bottomContainer, BoxLayout.X_AXIS));
+
         queriesContainer = new JPanel();
-        queriesContainer.setLayout(new BoxLayout(queriesContainer, BoxLayout.X_AXIS));
+        queriesContainer.setBorder(new EmptyBorder(0, 0, 0, 0));
+        queriesContainer.setLayout(new BoxLayout(queriesContainer, BoxLayout.Y_AXIS));
+        movingPropertiesContainer = new JPanel();
+        movingPropertiesContainer.setLayout(new BoxLayout(movingPropertiesContainer, BoxLayout.X_AXIS));
 
         if (findController != null) {
             queriesContainer.add(findController.getView());
-            queriesContainer.add(Box.createRigidArea(new Dimension(4, 0)));
             findController.getView().addActions(gridTable);
         }
 
@@ -61,11 +69,11 @@ public abstract class GridView extends JPanel {
             filterController.getView().addActions(gridTable);
         }
 
-        queriesContainer.add(Box.createHorizontalGlue());
+        bottomContainer.add(queriesContainer);
+        bottomContainer.add(movingPropertiesContainer);
 
-        add(pane);
-        add(queriesContainer);
-
+        add(pane, BorderLayout.CENTER);
+        add(bottomContainer, BorderLayout.SOUTH);
     }
 
     protected abstract void needToBeShown();

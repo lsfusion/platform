@@ -18,7 +18,7 @@ public class PropertyController implements CellViewListener {
     protected ClientGroupObjectValue columnKey;
     protected ClientPropertyDraw key;
 
-    protected ClientPropertyDraw getKey() {
+    public ClientPropertyDraw getKey() {
         return key;
     }
 
@@ -28,6 +28,10 @@ public class PropertyController implements CellViewListener {
     // возвращаем только как компоненту, большего пока не надо
     public JComponent getView() {
         return view.getComponent();
+    }
+
+    public CellView getCellView() {
+        return view;
     }
 
     protected final ClientFormController form;

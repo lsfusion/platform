@@ -7,6 +7,7 @@ import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
+import platform.interop.ClassViewType;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,6 +18,8 @@ import java.awt.event.KeyEvent;
 public class ButtonCellView extends ClientButton implements CellView {
     private ClientPropertyDraw key;
     private ClientGroupObjectValue columnKey; // чисто для кэширования
+    public boolean toToolbar;
+    private String caption;
 
     @Override
     public int hashCode() {
@@ -59,6 +62,8 @@ public class ButtonCellView extends ClientButton implements CellView {
                 }
             }
         });
+        setMinimumSize(new Dimension(0, 14));
+        setMaximumSize(new Dimension(32767, 16));
     }
 
     public JComponent getComponent() {
@@ -66,6 +71,7 @@ public class ButtonCellView extends ClientButton implements CellView {
     }
 
     private CellViewListener listener;
+
     public void addListener(CellViewListener listener) {
         this.listener = listener;
     }
@@ -79,7 +85,12 @@ public class ButtonCellView extends ClientButton implements CellView {
     }
 
     public void setCaption(String caption) {
-        setText(caption);
+        this.caption = caption;
+        if (!toToolbar || getIcon() == null) {
+            setText(caption);
+        } else {
+            setText("");
+        }
     }
 
     public void setHighlight(Object highlight, Color highlightColor) {
@@ -89,6 +100,22 @@ public class ButtonCellView extends ClientButton implements CellView {
     public void setToolTip(String caption) {
         String toolTip = !BaseUtils.isRedundantString(key.toolTip) ? key.toolTip : caption;
         toolTip += " (sID: " + key.getSID() + ")";
+        if (key.editKey != null) {
+            toolTip += "(" + SwingUtils.getKeyStrokeCaption(key.editKey) + ")";
+        }
         setToolTipText(toolTip);
+    }
+
+    public void changeViewType(ClassViewType type) {
+        toToolbar = (type == ClassViewType.GRID);
+        setCaption(caption);
+        if (toToolbar) {
+            setPreferredSize(new Dimension(key.design.image.getIconWidth() + 2, key.design.image.getIconHeight() + 2));
+            setMaximumSize(new Dimension(key.design.image.getIconWidth() + 2, key.design.image.getIconHeight() + 2));
+        } else {
+            setPreferredSize(null);
+            setMinimumSize(new Dimension(0, 14));
+            setMaximumSize(new Dimension(32767, 16));
+        }
     }
 }

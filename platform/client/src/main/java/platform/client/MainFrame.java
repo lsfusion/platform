@@ -16,7 +16,6 @@ public abstract class MainFrame extends JFrame {
     public RemoteNavigatorInterface remoteNavigator;
     public JLabel statusComponent;
     public JComponent status;
-    public JProgressBar statusProgress;
 
     public MainFrame(final RemoteNavigatorInterface remoteNavigator) throws ClassNotFoundException, IOException {
         super();
@@ -69,10 +68,7 @@ public abstract class MainFrame extends JFrame {
         });
         status = new JPanel(new BorderLayout());
         statusComponent = new JLabel();
-        statusProgress = new JProgressBar(JProgressBar.HORIZONTAL);
         status.add(statusComponent, BorderLayout.LINE_START);
-        status.add(statusProgress, BorderLayout.CENTER);
-
     }
 
     public void updateUser() throws IOException, ClassNotFoundException {

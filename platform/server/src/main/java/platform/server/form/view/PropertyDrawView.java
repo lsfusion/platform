@@ -63,6 +63,8 @@ public class PropertyDrawView extends ComponentView {
 
     public GroupObjectEntity keyBindingGroup = null;
 
+    public boolean drawToToolbar = true;
+
     @SuppressWarnings({"UnusedDeclaration"})
     public PropertyDrawView() {
 
@@ -92,10 +94,10 @@ public class PropertyDrawView extends ComponentView {
 
     private String getCaption() {
         return caption != null
-               ? caption
-               : entity.propertyCaption == null
-                 ? getDefaultCaption()
-                 : null;
+                ? caption
+                : entity.propertyCaption == null
+                ? getDefaultCaption()
+                : null;
     }
 
     public ReportDrawField getReportDrawField() {
@@ -114,7 +116,7 @@ public class PropertyDrawView extends ComponentView {
         if (format instanceof SimpleDateFormat) {
             reportField.pattern = ((SimpleDateFormat) format).toPattern();
         }
-        
+
         reportField.hasColumnGroupObjects = !entity.columnGroupObjects.isEmpty();
         reportField.hasCaptionProperty = (entity.propertyCaption != null);
 
@@ -122,8 +124,8 @@ public class PropertyDrawView extends ComponentView {
         if (reportField.hasCaptionProperty) {
             ReportDrawField captionField = new ReportDrawField(getSID() + ReportConstants.captionSuffix, "");
             entity.propertyCaption.property.getType().fillReportDrawField(captionField);
-            reportField.captionClass = captionField.valueClass;        
-        }  else {
+            reportField.captionClass = captionField.valueClass;
+        } else {
             reportField.captionClass = java.lang.String.class;
         }
 
@@ -139,8 +141,8 @@ public class PropertyDrawView extends ComponentView {
         super.customSerialize(pool, outStream, serializationType);
 
         pool.writeString(outStream, SerializationType.VISUAL_SETUP.equals(serializationType)
-                                    ? caption
-                                    : getCaption());
+                ? caption
+                : getCaption());
 
         pool.writeObject(outStream, minimumSize);
         pool.writeObject(outStream, maximumSize);
@@ -187,6 +189,7 @@ public class PropertyDrawView extends ComponentView {
 
         outStream.writeBoolean(!(entity.propertyObject.property instanceof ExecuteProperty)); //checkEquals
         outStream.writeBoolean(entity.propertyObject.property.askConfirm);
+        outStream.writeBoolean(drawToToolbar);
     }
 
     @Override

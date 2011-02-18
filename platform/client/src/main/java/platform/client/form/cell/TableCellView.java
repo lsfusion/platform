@@ -4,6 +4,7 @@ import platform.base.BaseUtils;
 import platform.client.form.ClientFormController;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
+import platform.interop.ClassViewType;
 
 import javax.swing.*;
 import java.awt.*;
@@ -172,5 +173,9 @@ public class TableCellView extends JPanel implements CellView {
         toolTip += " (sID: " + key.getSID() + ")";
         table.setToolTipText(toolTip);
         label.setToolTipText(toolTip);
+    }
+
+    public void changeViewType(ClassViewType type) {
+        //пока тут ничего не делаем
     }
 }

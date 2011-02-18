@@ -75,12 +75,13 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public String toolTip;
 
-    ClientGroupObject keyBindingGroup = null;
+    public ClientGroupObject keyBindingGroup = null;
 
     public ClientGroupObject groupObject;
     public List<ClientGroupObject> columnGroupObjects = new ArrayList<ClientGroupObject>();
 
     public boolean autoHide = false;
+    public boolean drawToToolbar;
 
     public ClientPropertyDraw() {
     }
@@ -157,8 +158,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public PropertyEditorComponent getObjectEditorComponent(ClientFormController form, Object value) throws IOException, ClassNotFoundException {
         ClientType changeType = getPropertyChangeType(form);
         return changeType == null
-               ? null
-               : changeType.getObjectEditorComponent(form, this, value, getFormat(), design);
+                ? null
+                : changeType.getObjectEditorComponent(form, this, value, getFormat(), design);
     }
 
     public PropertyEditorComponent getClassComponent(ClientFormController form, Object value) throws IOException, ClassNotFoundException {
@@ -387,6 +388,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         checkEquals = inStream.readBoolean();
         askConfirm = inStream.readBoolean();
+        drawToToolbar = inStream.readBoolean();
     }
 
     public List<ClientObject> getKeysObjectsList(Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {

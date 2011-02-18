@@ -18,7 +18,7 @@ import java.util.Map;
 public abstract class QueryView extends JPanel {
     public static final String REMOVE_ALL_ACTION = "removeAll";
 
-    private final static Dimension iconButtonDimension = new Dimension(22,22);
+    private final static Dimension iconButtonDimension = new Dimension(20, 20);
 
     private final JPanel condContainer;
 
@@ -40,7 +40,7 @@ public abstract class QueryView extends JPanel {
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        setBorder(new EmptyBorder(0,0,0,0));
+        setBorder(new EmptyBorder(0, 0, 0, 0));
 
         JPanel buttons = new JPanel();
         buttons.setLayout(new BoxLayout(buttons, BoxLayout.X_AXIS));
@@ -49,6 +49,7 @@ public abstract class QueryView extends JPanel {
 
         applyButton = new ClientButton("");
         applyButton.setFocusable(false);
+        applyButton.setMinimumSize(iconButtonDimension);
         applyButton.setPreferredSize(iconButtonDimension);
         applyButton.setMaximumSize(iconButtonDimension);
         applyButton.setIcon(getApplyIcon());
@@ -66,6 +67,7 @@ public abstract class QueryView extends JPanel {
 
         addCondition = new ClientButton("");
         addCondition.setFocusable(false);
+        addCondition.setMinimumSize(iconButtonDimension);
         addCondition.setPreferredSize(iconButtonDimension);
         addCondition.setMaximumSize(iconButtonDimension);
         addCondition.setIcon(getAddConditionIcon());
@@ -245,7 +247,9 @@ public abstract class QueryView extends JPanel {
     }
 
     protected abstract Icon getApplyIcon();
+
     protected abstract Icon getAddConditionIcon();
+
     protected abstract KeyStroke getKeyStroke(int modifier);
 
     public void startEditing(ClientPropertyDraw propertyDraw) {

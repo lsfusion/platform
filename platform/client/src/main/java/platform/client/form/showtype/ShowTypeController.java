@@ -13,7 +13,7 @@ public abstract class ShowTypeController {
 
     ClientShowType key;
 
-    ShowTypeView view;
+    public ShowTypeView view;
 
     public ShowTypeController(ClientShowType iview, GroupObjectLogicsSupplier logicsSupplier, final ClientFormController form) {
 
@@ -38,6 +38,10 @@ public abstract class ShowTypeController {
         formLayout.add(key, view);
     }
 
+    public void removeView(ClientFormLayout formLayout) {
+        formLayout.remove(key, view);
+    }
+
     ClassViewType classView = ClassViewType.HIDE;
 
     public void changeClassView(ClassViewType classView) {
@@ -55,6 +59,7 @@ public abstract class ShowTypeController {
     }
 
     protected abstract void needToBeShown();
+
     protected abstract void needToBeHidden();
 
     public void hideViews() {
@@ -64,6 +69,7 @@ public abstract class ShowTypeController {
     }
 
     List<ClassViewType> banClassView;
+
     public void setBanClassView(List<ClassViewType> banClassView) {
         this.banClassView = banClassView;
         view.changeClassView(classView, banClassView);

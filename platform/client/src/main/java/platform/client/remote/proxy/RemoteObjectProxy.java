@@ -2,12 +2,9 @@ package platform.client.remote.proxy;
 
 import org.apache.log4j.Logger;
 import platform.client.Main;
-import platform.client.WaitDialog;
-import platform.client.rmi.ConnectionLostManager;
 import platform.interop.remote.MethodInvocation;
 import platform.interop.remote.PendingRemote;
 
-import javax.swing.*;
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

@@ -22,9 +22,11 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 
+import javax.swing.*;
 import java.io.ByteArrayInputStream;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.List;
 
 public class ImportFromExcelActionProperty extends ActionProperty {
     private static Logger logger = Logger.getLogger(ImportFromExcelActionProperty.class);
@@ -57,7 +59,7 @@ public class ImportFromExcelActionProperty extends ActionProperty {
 
         // находим используемые свойства
         Map<String, PropertyDrawInstance> definedProperties = new HashMap<String, PropertyDrawInstance>();
-        for (PropertyDrawInstance<?> property : ((RemoteForm<?,?>)executeForm).form.properties)
+        for (PropertyDrawInstance<?> property : ((RemoteForm<?, ?>) executeForm).form.properties)
             if (definedPropertiesSIDs.contains(property.propertyObject.property.sID)) {
                 definedProperties.put(property.propertyObject.property.sID, property);
             }
@@ -65,7 +67,7 @@ public class ImportFromExcelActionProperty extends ActionProperty {
         for (int i = 1; i < sh.getRows(); ++i) {
             FormInstance<?> form = (FormInstance<?>) executeForm.form;
             form.addObject((ConcreteCustomClass) valueClass);
-            
+
             for (int j = 0; j < sh.getColumns(); ++j) {
                 Cell cell = sh.getCell(j, i);
                 String cellValue = cell.getContents();
@@ -95,10 +97,13 @@ public class ImportFromExcelActionProperty extends ActionProperty {
         entity.shouldBeLast = true;
         entity.forceViewType = ClassViewType.PANEL;
     }
+
     @Override
     public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
         super.proceedDefaultDesign(view, entity);
         view.get(entity).editKey = KeyStrokes.getImportActionPropertyKeyStroke();
+        view.get(entity).design.image = new ImageIcon(AddObjectActionProperty.class.getResource("/images/import.png"));
+        view.get(entity).showEditKey = false;
     }
 
 }

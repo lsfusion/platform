@@ -18,8 +18,10 @@ import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.Property;
 import platform.server.session.DataSession;
 
+import javax.swing.*;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.List;
 
 public class AddObjectActionProperty extends ActionProperty {
 
@@ -67,7 +69,7 @@ public class AddObjectActionProperty extends ActionProperty {
     }
 
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-        FormInstance<?> form = (FormInstance<?>)executeForm.form;
+        FormInstance<?> form = (FormInstance<?>) executeForm.form;
         DataSession session = form.session;
 
         Integer quantityAdd = 1;
@@ -79,15 +81,15 @@ public class AddObjectActionProperty extends ActionProperty {
         for (int k = 0; k < quantityAdd; k++) {
             DataObject object;
             if (valueClass.hasChildren())
-                object = form.addObject((ConcreteCustomClass)form.getCustomClass((Integer)value.getValue()));
+                object = form.addObject((ConcreteCustomClass) form.getCustomClass((Integer) value.getValue()));
             else
-                object = form.addObject((ConcreteCustomClass)valueClass);
+                object = form.addObject((ConcreteCustomClass) valueClass);
 
             if (barcode != null) {
 
                 String prefix = null;
                 if (barcodePrefix != null)
-                    prefix = (String)barcodePrefix.read(session);
+                    prefix = (String) barcodePrefix.read(session);
                 if (prefix == null) prefix = "";
                 prefix = prefix.trim();
 
@@ -105,7 +107,7 @@ public class AddObjectActionProperty extends ActionProperty {
                 int checkDigit = (evenSum * 3 + oddSum) % 10 == 0 ? 0 : 10 - (evenSum * 3 + oddSum) % 10;
 
                 barcode.execute(Collections.singletonMap(BaseUtils.single(barcode.interfaces), object), session,
-                                barcode12 + checkDigit, form);
+                        barcode12 + checkDigit, form);
             }
 
             // меняем все свойства на значения входов
@@ -120,7 +122,7 @@ public class AddObjectActionProperty extends ActionProperty {
                     }
                     Property property = properties.get(i++);
                     property.execute(Collections.singletonMap(BaseUtils.single(property.interfaces), object),
-                                     session, keys.get(classInterface).getValue(), form);
+                            session, keys.get(classInterface).getValue(), form);
                 }
             }
         }
@@ -145,6 +147,8 @@ public class AddObjectActionProperty extends ActionProperty {
     public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
         super.proceedDefaultDesign(view, entity);
         view.get(entity).editKey = KeyStrokes.getAddActionPropertyKeyStroke();
+        view.get(entity).design.image = new ImageIcon(AddObjectActionProperty.class.getResource("/images/add.png"));
+        view.get(entity).showEditKey = false;
     }
 
 }

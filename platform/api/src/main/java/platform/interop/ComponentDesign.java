@@ -10,6 +10,7 @@ import java.io.Serializable;
 public class ComponentDesign extends ContextObject implements Serializable {
 
     public Font font;
+
     public Font getFont(JComponent comp) {
         return (font == null ? comp.getFont() : font);
     }
@@ -18,11 +19,12 @@ public class ComponentDesign extends ContextObject implements Serializable {
 
     public Color background;
     public Color foreground;
+    public ImageIcon image;
 
-    public ComponentDesign(){
+    public ComponentDesign() {
     }
 
-    public ComponentDesign(ApplicationContext context){
+    public ComponentDesign(ApplicationContext context) {
         this.context = context;
     }
 
@@ -32,10 +34,14 @@ public class ComponentDesign extends ContextObject implements Serializable {
 
     public void designComponent(JComponent comp) {
         designComponent(comp, null);
+        if (image != null && comp instanceof AbstractButton) {
+            AbstractButton button = (AbstractButton) comp;
+            button.setIcon(image);
+        }
     }
 
     public void designComponent(JComponent comp, Color defaultBackground) {
-        
+
         if (font != null) {
             comp.setFont(font);
         }
@@ -43,8 +49,7 @@ public class ComponentDesign extends ContextObject implements Serializable {
         if (background != null) {
             comp.setBackground(background);
             comp.setOpaque(true);
-        }
-        else if (defaultBackground != null)
+        } else if (defaultBackground != null)
             comp.setBackground(defaultBackground);
 
         if (foreground != null)
@@ -87,11 +92,11 @@ public class ComponentDesign extends ContextObject implements Serializable {
         updateDependency(this, "font");
     }
 
-    public Font getHeaderFont(){
+    public Font getHeaderFont() {
         return headerFont;
     }
 
-    public void setHeaderFont(Font font){
+    public void setHeaderFont(Font font) {
         this.headerFont = font;
         updateDependency(this, "headerFont");
     }
@@ -121,7 +126,7 @@ public class ComponentDesign extends ContextObject implements Serializable {
             if ((style & Font.BOLD) != 0) {
                 strStyle += "Font.BOLD";
             }
-            if((style & Font.ITALIC) != 0) strStyle += (((style & Font.BOLD) != 0) ? " | " : "") + "Font.ITALIC";
+            if ((style & Font.ITALIC) != 0) strStyle += (((style & Font.BOLD) != 0) ? " | " : "") + "Font.ITALIC";
         }
         return strStyle;
     }

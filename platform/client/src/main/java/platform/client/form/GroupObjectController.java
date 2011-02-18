@@ -23,8 +23,8 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
     private final ClientFormController form;
 
     private final PanelController panel;
-    private GridController grid;
-    private ShowTypeController showType;
+    public GridController grid;
+    public ShowTypeController showType;
     private final Map<ClientObject, ObjectController> objects = new HashMap<ClientObject, ObjectController>();
 
     private ClientGroupObjectValue currentObject;
@@ -360,8 +360,8 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
     public ClientPropertyDraw getDefaultProperty() {
         ClientPropertyDraw defaultProperty = groupObject.filterProperty;
         return defaultProperty != null
-               ? defaultProperty
-               : grid.getCurrentProperty();
+                ? defaultProperty
+                : grid.getCurrentProperty();
     }
 
     public Object getSelectedValue(ClientPropertyDraw cell) {
@@ -386,5 +386,13 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
     public GridView getGridView() {
         return grid.getView();
+    }
+
+    public ClassViewType getClassView() {
+        return classView;
+    }
+
+    public PanelController getPanel() {
+        return panel;
     }
 }

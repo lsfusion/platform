@@ -49,7 +49,9 @@ public class ClientActionClass extends ClientDataClass implements ClientTypeClas
     }
 
     public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) {
-        return new ActionPropertyRenderer(caption);
+        ActionPropertyRenderer renderer = new ActionPropertyRenderer(caption);
+        design.designComponent(renderer);
+        return renderer;
     }
 
     public CellView getPanelComponent(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {

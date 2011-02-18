@@ -52,7 +52,7 @@ public class ClientFormController {
 
     private ClientFormLayout formLayout;
 
-    private Map<ClientGroupObject, GroupObjectController> controllers;
+    public Map<ClientGroupObject, GroupObjectController> controllers;
     private Map<ClientTreeGroup, TreeGroupController> treeControllers;
 
     private JButton buttonApply;

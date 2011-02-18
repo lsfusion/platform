@@ -2,6 +2,7 @@ package platform.client.form;
 
 import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientPropertyDraw;
+import platform.interop.ClassViewType;
 
 import java.util.List;
 
@@ -16,4 +17,6 @@ public interface GroupObjectLogicsSupplier extends LogicsSupplier {
     Object getSelectedValue(ClientPropertyDraw property);
     
     ClientFormController getForm();
+
+    ClassViewType getClassView();
 }
