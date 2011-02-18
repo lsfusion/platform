@@ -245,7 +245,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
             && propertyDraw.toDraw.curClassView == ClassViewType.PANEL
             && propertyDraw.toDraw.objects.size() == 1
             && propertyDraw.propertyObject.mapping.values().size() == 1
-            && propertyDraw.propertyObject.mapping.values().iterator().next() == propertyDraw.toDraw.objects.iterator().next()) {
+            && propertyDraw.propertyObject.mapping.values().iterator().next() == propertyDraw.toDraw.objects.iterator().next()
+            && !propertyDraw.toDraw.objects.iterator().next().entity.addOnTransaction) {
 
             ObjectInstance singleObject = BaseUtils.single(propertyDraw.toDraw.objects);
             ObjectValueProperty objectValueProperty = BL.getObjectValueProperty(singleObject.getBaseClass());
