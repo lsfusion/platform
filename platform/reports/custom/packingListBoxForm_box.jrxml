@@ -33,12 +33,12 @@
 	<title>
 		<band height="36">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="105" y="0" width="210" height="18"/>
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="93" y="0" width="152" height="18"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{barcodeFreightBox}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="0" y="0" width="105" height="18"/>
+				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="0" y="0" width="93" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Штрих-код"]]></textFieldExpression>
 			</textField>
@@ -47,32 +47,32 @@
 	<pageHeader>
 		<band height="18">
 			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="0" y="0" width="105" height="18"/>
+				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="0" y="0" width="93" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Штрих-код"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="105" y="0" width="105" height="18"/>
+				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="93" y="0" width="80" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Код"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="210" y="0" width="105" height="18"/>
+				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="173" y="0" width="72" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Бренд"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="315" y="0" width="105" height="18"/>
+				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="245" y="0" width="95" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Категория товара"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="420" y="0" width="105" height="18"/>
+				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="340" y="0" width="211" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Состав (перевод)"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="525" y="0" width="105" height="18"/>
+				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="551" y="0" width="79" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Доп. состав (перевод)"]]></textFieldExpression>
 			</textField>
@@ -96,32 +96,32 @@
 	<detail>
 		<band height="18">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="105" height="18"/>
+				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="93" height="18"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{barcode}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="105" y="0" width="105" height="18"/>
+				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="93" y="0" width="80" height="18"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{sidArticleSku}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="210" y="0" width="105" height="18"/>
+				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="173" y="0" width="72" height="18"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameBrandSupplierArticleSku}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="315" y="0" width="105" height="18"/>
+				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="245" y="0" width="95" height="18"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameOriginCategoryArticleSku}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="420" y="0" width="105" height="18"/>
+				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="340" y="0" width="211" height="18"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{mainCompositionSku}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="525" y="0" width="105" height="18"/>
+				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="551" y="0" width="79" height="18"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{additionalCompositionSku}]]></textFieldExpression>
 			</textField>
