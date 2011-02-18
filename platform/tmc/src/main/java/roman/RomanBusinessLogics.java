@@ -120,6 +120,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP supplierTypeSupplier;
     private LP nameSupplierTypeSupplier;
     private LP supplierCountrySupplier;
+    private LP nameSupplierCountrySupplier;
     private LP countryCountrySupplier;
     private LP nameCountryCountrySupplier;
     private LP currencySupplier;
@@ -229,7 +230,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP additionalCompositionOriginArticleSku;
     private LP mainCompositionSku;
     private LP additionalCompositionSku;
-    private LP sidCountry;
+    //private LP sidCountry;
     private LP countrySupplierOfOriginArticle;
     private LP countryOfOriginArticle;
     private LP nameCountryOfOriginArticle;
@@ -457,6 +458,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP freightFreightBox;
     private LP quantityImporterStockSku;
     private LP quantityImporterFreightSku;
+    private LP netWeightStockSku;
+    private LP netWeightStock;
     private LP netWeightImporterStockSku;
     private LP netWeightImporterStock;
     private LP grossWeightImporterStockSku;
@@ -545,6 +548,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP currentPalletFreightBox;
     private LP barcodeActionCheckPallet;
     private LP barcodeActionCheckFreightBox;
+    private LP printBox;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -666,10 +670,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     protected void initProperties() {
 
         nameOrigin = addDProp(baseGroup, "nameOrigin", "Наименование", StringClass.get(50), secondNameClass);
+        //sidCountry = addDProp(baseGroup, "sidCountry", "Код страны", StringClass.get(10), country);
 
-        sidCountry = addDProp(baseGroup, "sidCountry", "Код страны", StringClass.get(10), country);
-
-        barcodeFreightBox = addJProp("barcodeFreightBox", "Штрих-код", and1, barcode, 1, is(freightBox), 1);
+        barcodeFreightBox = addJProp(baseGroup, "barcodeFreightBox", "Штрих-код", and1, barcode, 1, is(freightBox), 1);
 
         dictionaryComposition = addDProp(idGroup, "dictionaryComposition", "Словарь для составов (ИД)", dictionary);
         nameDictionaryComposition = addJProp(baseGroup, "nameDictionaryComposition", "Словарь для составов", name, dictionaryComposition);
@@ -758,6 +761,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         sizeSIDSupplier = addCGProp(idGroup, "sizeSIDSupplier", "Размер поставщика (ИД)", object(sizeSupplier), sidSizeSupplier, sidSizeSupplier, 1, supplierSizeSupplier, 1);
 
         supplierCountrySupplier = addDProp(idGroup, "supplierCountrySupplier", "Поставщик (ИД)", supplier, countrySupplier);
+        nameSupplierCountrySupplier = addJProp(baseGroup, "nameSupplierCountrySupplier", "Поставщик", name, supplierCountrySupplier, 1);
+
         countryCountrySupplier = addDProp(idGroup, "countryCountrySupplier", "Страна (ИД)", country, countrySupplier);
         nameCountryCountrySupplier = addJProp(baseGroup, "nameCountryCountrySupplier", "Страна", name, countryCountrySupplier, 1);
 
@@ -1337,11 +1342,15 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         quantityImporterFreightArticleCompositionCountryCategory = addSGProp(baseGroup, "quantityImporterFreightArticleCompositionCountryCategory", "Кол-во",
                 quantityImporterFreightSku, 1, 2, articleSku, 3, mainCompositionFreightSku, 2, 3, countryOfOriginFreightSku, 2, 3, customCategory10FreightSku, 2, 3);
 
+        netWeightStockSku = addJProp(baseGroup, "netWeightStockSku", "Вес нетто", multiplyDouble2, quantityStockSku, 1, 2, netWeightSku, 2);
+        netWeightStock = addSGProp(baseGroup, "netWeightStock", "Вес нетто", netWeightStockSku, 1);
+
         netWeightFreightSku = addDProp(baseGroup, "netWeightFreightSku", "Вес нетто", DoubleClass.instance, freight, sku);
         netWeightFreightSku.setDerivedForcedChange(addJProp(and1, netWeightSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
         netWeightImporterStockSku = addJProp(baseGroup, "netWeightImporterStockSku", "Вес нетто", multiplyDouble2, quantityImporterStockSku, 1, 2, 3, addJProp(netWeightFreightSku, freightFreightBox, 2, 3), 1, 2, 3);
         netWeightImporterStock = addSGProp(baseGroup, "netWeightImporterStock", "Вес нетто", netWeightImporterStockSku, 1, 2);
+        //netWeightStock = addSGProp(baseGroup, "netWeightStock", "Вес нетто", netWeightImporterStock, 2);
 
         netWeightImporterFreightSku = addJProp(baseGroup, "netWeightImporterFreightSku", "Вес нетто", multiplyDouble2, quantityImporterFreightSku, 1, 2, 3, netWeightFreightSku, 2, 3);
         netWeightImporterFreightArticleCompositionCountryCategory = addSGProp(baseGroup, "netWeightImporterFreightArticleCompositionCountryCategory", "Вес нетто",
@@ -1548,6 +1557,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         addFormEntity(new FreightChangeFormEntity(shipment, "freightChangeForm", "Обработка фрахта"));
         addFormEntity(new InvoiceFromFormEntity(shipment, "invoiceFromForm", "Исходящие инвойсы"));
         addFormEntity(new PackingListFormEntity(shipment, "packingListForm", "Исходящие упаковочные листы"));
+        addFormEntity(new PackingListBoxFormEntity(shipment, "packingListBoxForm", "Упаковочные листы коробов"));
 
         NavigatorElement distribution = new NavigatorElement(baseElement, "distribution", "Управление складом");
         addFormEntity(new CreatePalletFormEntity(distribution, "createPalletForm", "Генерация паллет"));
@@ -1607,6 +1617,39 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             return design;
         }
     }
+
+     private class PackingListBoxFormEntity extends FormEntity<RomanBusinessLogics> {
+
+        private ObjectEntity objBox;
+        private ObjectEntity objSku;
+
+        private PackingListBoxFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
+
+            objBox = addSingleGroupObject(1, "box", freightBox, "Короб", barcodeFreightBox, netWeightStock);
+            objBox.groupTo.initClassView = ClassViewType.PANEL;
+
+            objSku = addSingleGroupObject(2, "sku", sku, "SKU", barcode, sidArticleSku, nameBrandSupplierArticleSku, nameOriginCategoryArticleSku, mainCompositionSku, additionalCompositionSku);
+
+            addPropertyDraw(quantityStockSku, objBox, objSku);
+            addPropertyDraw(netWeightSku, objSku);
+            addPropertyDraw(netWeightStockSku, objBox, objSku);
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityStockSku, objBox, objSku)));
+
+            printBox = addFAProp(baseGroup, "Упаковочный лист", this, objBox);
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
+
+            design.get(objBox.groupTo).grid.constraints.fillVertical = 2;
+            design.get(objSku.groupTo).grid.constraints.fillVertical = 3;
+            return design;
+        }
+    }
+
 
     private class OrderFormEntity extends FormEntity<RomanBusinessLogics> {
         private ObjectEntity objSupplier;
@@ -1991,7 +2034,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objRoute.groupTo.tableRowsCount = 0;
 
             nameRoute = addPropertyDraw(name, objRoute);
-            nameRoute.forceViewType = ClassViewType.PANEL;
+            nameRoute.forceViewType = ClassViewType.PANEL;            
 
             objSku = addSingleGroupObject(sku, "SKU", barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                     nameBrandSupplierArticleSku, originalNameArticleSku, nameOriginCategoryArticleSku, nameOriginUnitOfMeasureArticleSku,
@@ -2503,7 +2546,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
 
-            objSkuFreight = addSingleGroupObject(sku, "SKU во фрахте", selection, barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem,
+            objSkuFreight = addSingleGroupObject(sku, "Позиции фрахта", selection, barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem,
                     sidSizeSupplierItem, nameBrandSupplierArticleSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSkuFreight.groupTo);
@@ -2516,7 +2559,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addPropertyDraw(mainCompositionOriginFreightSku, objFreight, objSkuFreight);
             addPropertyDraw(mainCompositionFreightSku, objFreight, objSkuFreight);
             addPropertyDraw(additionalCompositionOriginFreightSku, objFreight, objSkuFreight);
-            addPropertyDraw(additionalCompositionFreightSku, objFreight, objSkuFreight);
+            addPropertyDraw(additionalCompositionFreightSku, objFreight, objSkuFreight);            
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightSku, objFreight, objSku)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightSku, objFreight, objSkuFreight)));
@@ -2524,7 +2567,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(new RegularFilterEntity(genID(),
-                                  new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(sidCustomCategory10FreightSku, objFreight, objSkuFreight))),
+                                  new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(sidCustomCategory10FreightSku, objFreight, objSku))),
                                   "Только без ТН ВЭД",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
             addRegularFilterGroup(filterGroup);
@@ -2662,6 +2705,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             return design;
         }
     }
+
     private class ColorSizeSupplierFormEntity extends FormEntity<RomanBusinessLogics> {
 
         private ObjectEntity objSupplier;

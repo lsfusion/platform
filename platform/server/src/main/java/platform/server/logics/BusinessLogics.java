@@ -620,7 +620,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP fromAddress;
     protected LP defaultCountry;
 
-    protected LP countrySId;
+    protected LP sidCountry;
     protected LP generateDatesCountry;
     protected LP sidToCountry;
     protected LP nameToCountry;
@@ -1024,9 +1024,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         date = addDProp(baseGroup, "date", "Дата", DateClass.instance, transaction);
 
-        countrySId = addDProp(baseGroup, "countrySId", "Код страны", IntegerClass.instance, country);
+        sidCountry = addDProp(baseGroup, "sidCountry", "Код страны", IntegerClass.instance, country);
         generateDatesCountry = addDProp(privateGroup, "generateDatesCountry", "Генерировать выходные", LogicalClass.instance, country);
-        sidToCountry = addCGProp(null, "sidToCountry", "Страна", object(country), countrySId, countrySId, 1);
+        sidToCountry = addCGProp(null, "sidToCountry", "Страна", object(country), sidCountry, sidCountry, 1);
         isDayOffCountryDate = addDProp(baseGroup, "isDayOffCD", "Выходной", LogicalClass.instance, country, DateClass.instance);
 
         workingDay = addJProp(baseGroup, "workingDay", "Рабочий", andNot1, addCProp(IntegerClass.instance, 1, country, DateClass.instance), 1, 2, isDayOffCountryDate, 1, 2);
