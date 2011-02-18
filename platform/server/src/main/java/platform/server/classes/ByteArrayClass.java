@@ -2,6 +2,7 @@ package platform.server.classes;
 
 import platform.interop.Data;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.type.ParseException;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -63,6 +64,10 @@ public class ByteArrayClass extends DataClass<byte[]> {
 
     @Override
     public int getBinaryLength(boolean charBinary) {
+        throw new RuntimeException("not supported");
+    }
+
+    public Object parseString(String s) throws ParseException {
         throw new RuntimeException("not supported");
     }
 

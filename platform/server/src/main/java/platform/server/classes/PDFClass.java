@@ -1,6 +1,7 @@
 package platform.server.classes;
 
 import platform.interop.Data;
+import platform.server.data.type.ParseException;
 
 public class PDFClass extends FileClass {
 

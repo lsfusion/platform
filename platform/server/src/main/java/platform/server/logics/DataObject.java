@@ -23,6 +23,8 @@ import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.integration.*;
 import platform.server.serialization.ServerSerializationPool;
+import platform.server.session.Changes;
+import platform.server.session.Modifier;
 import platform.server.session.SessionChanges;
 import platform.server.session.SinglePropertyTableUsage;
 
@@ -197,7 +199,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return getExpr();
     }
 
-    public Expr getExpr(Map<ImportField, ? extends Expr> importKeys, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys) {
+    public Expr getExpr(Map<ImportField, ? extends Expr> importKeys, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, Modifier<? extends Changes> modifier) {
         return getExpr(importKeys);
     }
 }

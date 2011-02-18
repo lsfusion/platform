@@ -216,10 +216,6 @@ public abstract class DataClass<T> implements StaticClass, Type<T>, AndClassSet,
         return this;
     }
 
-    public Object parseString(String s) throws ParseException {
-        throw new RuntimeException("Parsing values from string is not supported");
-    }
-
     public static DataClass findDataClass(String sid) {
         return sidToClass.get(sid);        
     }

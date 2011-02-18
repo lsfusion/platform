@@ -1,6 +1,7 @@
 package platform.server.classes;
 
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.type.ParseException;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -47,4 +48,8 @@ public abstract class FileClass extends DataClass<byte[]> {
     }
 
     public abstract String getExtensions();
+
+    public Object parseString(String s) throws ParseException {
+        throw new RuntimeException("not supported");
+    }
 }

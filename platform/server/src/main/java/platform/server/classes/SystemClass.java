@@ -1,6 +1,7 @@
 package platform.server.classes;
 
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.type.ParseException;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -63,6 +64,10 @@ public class SystemClass extends DataClass<Integer> {
 
     public int getBinaryLength(boolean charBinary) {
         throw new RuntimeException("not supported yet");
+    }
+
+    public Object parseString(String s) throws ParseException {
+        throw new RuntimeException("not supported");
     }
 
     public String getSID() {

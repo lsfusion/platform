@@ -303,7 +303,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP orderComputer;
     LP saleExport;
     LP importOrder;
-    LP importArticles;
+    LP importArticlesRRP;
+    LP importArticlesInfo;
     LP articleSaleAction;
 
     LP articleFormatMin;
@@ -344,6 +345,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     LP fullNameArticle;
     LP gigienaArticle;
+    LP spirtArticle;
     LP statusArticle;
     LP brendArticle;
     LP nameBrendArticle;
@@ -353,6 +355,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     public LP dateLastImport;
 
     LP padl;
+    LP val;
 
     protected void initProperties() {
 
@@ -395,7 +398,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         printOrderCheck = addAProp(new PrintOrderCheckActionProperty());
         saleExport = addAProp(new SaleExportActionProperty());
         importOrder = addAProp(new ImportOrderActionProperty());
-        importArticles = addAProp(new ImportArticlesActionProperty());
+        importArticlesRRP = addAProp(new ImportArticlesRRPActionProperty());
+        importArticlesInfo = addAProp(new ImportArticlesInfoActionProperty());
 
         computerShop = addDProp("computerShop", "Магазин рабочего места", shop, computer);
         currentShop = addJProp("Текущий магазин", computerShop, currentComputer);
@@ -552,6 +556,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         // новые свойства товара
         fullNameArticle = addDProp(artExtraGroup, "fullNameArticle", "Полное наименование", StringClass.get(100), article);
         gigienaArticle = addDProp(artExtraGroup, "gigienaArticle", "Гигиеническое разрешение", StringClass.get(50), article);
+        spirtArticle = addDProp(artExtraGroup, "spirtArticle", "Содержание спирта", DoubleClass.instance, article);
         statusArticle = addDProp(artExtraGroup, "statusArticle", "Собственный/несобственный", LogicalClass.instance, article);
 
         brendArticle = addDProp("brendArticle", "Бренд товара (ИД)", brend, article);
@@ -961,10 +966,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         dateLastImport = addJProp(cashRegGroup, "dateLastImport", "Дата прайса", dateLastImportShop, currentShop);
 
         padlBarcodeToObject = addJProp(privateGroup, true, "Объект (до 12)", barcodeToObject, padl, 1);
-        padlBarcode = addJProp(privateGroup, true, "Штрих-код (до 12)", barcode, padl, 1);
     }
 
-    LP padlBarcodeToObject, padlBarcode;
+    LP padlBarcodeToObject;
     LP nameToCurrency;
     LP nameToArticleGroup;
     LP nameToUnitOfMeasure;
@@ -1460,7 +1464,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
     }
 
-    private class DocumentFormEntity extends BarcodeFormEntity {
+    private abstract class DocumentFormEntity extends BarcodeFormEntity {
 
         public final ObjectEntity objDoc;
 
@@ -1505,12 +1509,14 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             }
         }
 
+        protected abstract boolean isSaleForm();
+
         @Override
         public DefaultFormView createDefaultRichDesign() {
 
             DefaultFormView design = super.createDefaultRichDesign();
 
-            if (toAdd) {
+            if (toAdd && isSaleForm()) {
                 design.setFont(FONT_MEDIUM_BOLD, objDoc.groupTo);
 
                 // устанавливаем дизайн
@@ -1608,6 +1614,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         public RegularFilterEntity documentFilter;
 
         protected abstract PropertyObjectEntity getCommitedQuantity();
+
+        @Override
+        protected boolean isSaleForm() {
+            return false;
+        }
 
         protected Object[] getArticleProps() {
             return new Object[]{baseGroup, true};
@@ -1744,6 +1755,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             if(toAdd && concrete!=0)
                 addCheckFilter(articleFilterGroup, true);
+
+            addPropertyDraw(objArt, nameCountryArticle, nameUnitOfMeasureArticle);
         }
 
         @Override
@@ -1759,8 +1772,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
 
         @Override
+        protected Object[] getArticleProps() {
+            return new Object[]{name, barcode, currentRRP, nameCurrencyArticle};
+        }
+
+        @Override
         protected Object[] getDocumentArticleProps() {
-            return new Object[]{outerOrderQuantity, outerCommitedQuantity, orderAllDeliveryPrice, shopPrice, prevPrice, revalBalance, sumDeliveryOrderArticle, ndsOrderArticle, sumNDSDeliveryOrderArticle, sumWithNDSDeliveryOrderArticle, addvOrderArticle, sumAddvOrderArticle, sumWithoutNDSRetailOrderArticle, sumNDSRetailOrderArticle, sumRetailOrderArticle, documentLogisticsGroup, true};
+            return new Object[]{outerOrderQuantity, outerCommitedQuantity, orderAllDeliveryPrice, addvOrderArticle, ndsOrderArticle, shopPrice, prevPrice, revalBalance, sumDeliveryOrderArticle, sumNDSDeliveryOrderArticle, sumWithNDSDeliveryOrderArticle, sumAddvOrderArticle, sumWithoutNDSRetailOrderArticle, sumNDSRetailOrderArticle, sumRetailOrderArticle, nameArticleGroupArticle, documentLogisticsGroup, true};
         }
     }
 
@@ -1834,6 +1852,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private class SaleWholeFormEntity extends DocumentInnerFormEntity {
+
+        @Override
+        protected boolean isSaleForm() {
+            return true;
+        }
+
         public SaleWholeFormEntity(NavigatorElement parent, String sID, boolean toAdd) {
             super(parent, sID, toAdd, orderSaleWhole, false);
         }
@@ -1862,6 +1886,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private abstract class SaleRetailFormEntity extends DocumentInnerFormEntity {
+
+        @Override
+        protected boolean isSaleForm() {
+            return true;
+        }
 
         @Override
         protected Object[] getDocumentProps() {
@@ -2244,6 +2273,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private class ReturnSaleFormEntity extends DocumentFormEntity {
+
+        @Override
+        protected boolean isSaleForm() {
+            return true;
+        }
 
         @Override
         protected Object[] getDocumentProps() {
@@ -2750,6 +2784,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     private class SaleCertFormEntity extends DocumentFormEntity {
 
+        @Override
+        protected boolean isSaleForm() {
+            return true;
+        }
+
         public ObjectEntity objObligation;
 
         @Override
@@ -2986,8 +3025,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected ArticleInfoFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Справочник товаров");
 
-            objArt = addSingleGroupObject(article, objectValue, name, barcode, currentRRP, nameCurrencyArticle, nameArticleGroupArticle, fullNameArticle, nameUnitOfMeasureArticle, nameBrendArticle, nameCountryArticle, gigienaArticle, statusArticle);
-            addPropertyDraw(importArticles);
+            objArt = addSingleGroupObject(article, objectValue, name, barcode, currentRRP, nameCurrencyArticle, nameArticleGroupArticle, fullNameArticle, nameUnitOfMeasureArticle, nameBrendArticle, nameCountryArticle, gigienaArticle, spirtArticle, statusArticle);
+            addPropertyDraw(importArticlesRRP);
+            addPropertyDraw(importArticlesInfo);
         }
     }
 
@@ -3132,7 +3172,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             ImportField barcodeField = new ImportField(StringClass.get(13)); fields.add(barcodeField);
             ImportKey<?> articleKey = new ImportKey(article, padlBarcodeToObject.getMapping(barcodeField));
-            properties.add(new ImportProperty(barcodeField, padlBarcode.getMapping(articleKey)));
+            properties.add(new ImportProperty(barcodeField, barcode.getMapping(articleKey), padl.getMapping(barcodeField)));
 
             ImportField nameField = new ImportField(StringClass.get(100)); fields.add(nameField);
             properties.add(new ImportProperty(nameField, name.getMapping(articleKey)));
@@ -3183,23 +3223,36 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
     }
 
-    public class ImportArticlesActionProperty extends ActionProperty {
+    public abstract class ImportArticlesActionProperty extends ActionProperty {
 
-        public ImportArticlesActionProperty() {
-            super(genSID(), "Импортировать товары", new ValueClass[]{});
+        protected ImportArticlesActionProperty(String sID, String caption) {
+            super(sID, caption, new ValueClass[]{});
         }
 
-        private void addArticleImportField(List<ImportField> fields, List<ImportProperty<?>> properties, List<ImportKey<?>> keys, ImportKey articleKey, LP nameToObject, LP articleProp, ConcreteCustomClass customClass) {
+        protected void addArticleImportField(List<ImportField> fields, List<ImportProperty<?>> properties, List<ImportKey<?>> keys, ImportKey articleKey, LP nameToObject, LP articleProp, ConcreteCustomClass customClass) {
             ImportField importField = new ImportField(name); fields.add(importField);
             ImportKey<?> importKey = new ImportKey(customClass, nameToObject.getMapping(importField));
             keys.add(importKey);
-            properties.add(new ImportProperty(importField, name.getMapping(importKey)));
             properties.add(new ImportProperty(importField, articleProp.getMapping(articleKey), object(customClass).getMapping(importKey)));
+            properties.add(new ImportProperty(importField, name.getMapping(importKey)));
         }
 
-        private void addArticleField(List<ImportField> fields, List<ImportProperty<?>> properties, ImportKey articleKey, LP articleProp) {
+        protected void addArticleField(List<ImportField> fields, List<ImportProperty<?>> properties, ImportKey articleKey, LP articleProp) {
             ImportField nameField = new ImportField(articleProp); fields.add(nameField);
             properties.add(new ImportProperty(nameField, articleProp.getMapping(articleKey)));
+        }
+
+        protected void addArticleConvertField(List<ImportField> fields, List<ImportProperty<?>> properties, ImportKey articleKey, LP articleProp, LP converter, DataClass fieldClass) {
+            ImportField nameField = new ImportField(fieldClass); fields.add(nameField);
+            properties.add(new ImportProperty(nameField, articleProp.getMapping(articleKey), converter.getMapping(nameField)));
+        }
+
+    }
+
+    public class ImportArticlesRRPActionProperty extends ImportArticlesActionProperty {
+
+        public ImportArticlesRRPActionProperty() {
+            super(genSID(), "Импортировать RRP");
         }
 
         public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
@@ -3220,18 +3273,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             List<ImportKey<?>> importKeys = new ArrayList<ImportKey<?>>();
 
             ImportField barcodeField = new ImportField(barcode); fields.add(barcodeField);
-            ImportKey<?> articleKey = new ImportKey(article, barcodeToObject.getMapping(barcodeField)); importKeys.add(articleKey);
-            properties.add(new ImportProperty(barcodeField, barcode.getMapping(articleKey)));
+            ImportKey<?> articleKey = new ImportKey(article, padlBarcodeToObject.getMapping(barcodeField)); importKeys.add(articleKey);
+            properties.add(new ImportProperty(barcodeField, barcode.getMapping(articleKey), padl.getMapping(barcodeField)));
 
             addArticleField(fields, properties, articleKey, name);
             addArticleField(fields, properties, articleKey, currentRRP);
             addArticleImportField(fields, properties, importKeys, articleKey, nameToCurrency, currencyArticle, currency);
-            addArticleImportField(fields, properties, importKeys, articleKey, nameToArticleGroup, articleToGroup, articleGroup);
-            addArticleField(fields, properties, articleKey, fullNameArticle);
-            addArticleImportField(fields, properties, importKeys, articleKey, nameToUnitOfMeasure, unitOfMeasureArticle, unitOfMeasure);
-            addArticleImportField(fields, properties, importKeys, articleKey, nameToBrend, brendArticle, brend);
-            addArticleImportField(fields, properties, importKeys, articleKey, nameToCountry, countryArticle, country);
-            addArticleField(fields, properties, articleKey, gigienaArticle);
 
             List<List<Object>> rows = new ArrayList<List<Object>>();
 
@@ -3259,4 +3306,68 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             return FileActionClass.getInstance("Файлы таблиц", "xls");
         }
     }
+
+    public class ImportArticlesInfoActionProperty extends ImportArticlesActionProperty {
+
+        public ImportArticlesInfoActionProperty() {
+            super(genSID(), "Импортировать справочн.");
+        }
+
+        public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            FormInstance remoteForm = executeForm.form;
+            DataSession session = remoteForm.session;
+
+            Sheet sh;
+            try {
+                ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
+                sh = Workbook.getWorkbook(inFile).getSheet(0);
+            } catch (Exception e) {
+                logger.fatal("Не могу прочитать .xls файл.");
+                return;
+            }
+
+            List<ImportField> fields = new ArrayList<ImportField>();
+            List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
+            List<ImportKey<?>> importKeys = new ArrayList<ImportKey<?>>();
+
+            ImportField barcodeField = new ImportField(barcode); fields.add(barcodeField);
+            ImportKey<?> articleKey = new ImportKey(article, padlBarcodeToObject.getMapping(barcodeField)); importKeys.add(articleKey);
+            properties.add(new ImportProperty(barcodeField, barcode.getMapping(articleKey), padl.getMapping(barcodeField)));
+
+            addArticleField(fields, properties, articleKey, name);
+            addArticleImportField(fields, properties, importKeys, articleKey, nameToArticleGroup, articleToGroup, articleGroup);
+            addArticleField(fields, properties, articleKey, fullNameArticle);
+            addArticleImportField(fields, properties, importKeys, articleKey, nameToUnitOfMeasure, unitOfMeasureArticle, unitOfMeasure);
+            addArticleImportField(fields, properties, importKeys, articleKey, nameToBrend, brendArticle, brend);
+            addArticleImportField(fields, properties, importKeys, articleKey, nameToCountry, countryArticle, country);
+            addArticleField(fields, properties, articleKey, gigienaArticle);
+            addArticleField(fields, properties, articleKey, spirtArticle);
+
+            List<List<Object>> rows = new ArrayList<List<Object>>();
+
+            for (int i = 0; i < sh.getRows(); ++i) {
+                List<Object> row = new ArrayList<Object>();
+
+                for (int j = 0; j < fields.size(); j++) {
+                    try {
+                        row.add(fields.get(j).getFieldClass().parseString(sh.getCell(j, i).getContents()));
+                    } catch (platform.server.data.type.ParseException e) {
+                        logger.warn("Не конвертировано значение совйства", e);
+                    }
+                }
+
+                rows.add(row);
+            }
+
+            new IntegrationService(session, new ImportTable(fields, rows), importKeys, properties).synchronize(true, true, false);
+
+            actions.add(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+        }
+
+        @Override
+        protected DataClass getValueClass() {
+            return FileActionClass.getInstance("Файлы таблиц", "xls");
+        }
+    }
+
 }

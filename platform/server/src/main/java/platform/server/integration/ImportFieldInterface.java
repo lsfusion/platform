@@ -1,6 +1,7 @@
 package platform.server.integration;
 
 import platform.server.data.expr.Expr;
+import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
 
 import java.util.Map;
@@ -15,4 +16,6 @@ public interface ImportFieldInterface {
     DataObject getDataObject(ImportTable.Row row);
 
     Expr getExpr(Map<ImportField, ? extends Expr> importKeys);
+
+    Type getType();
 }

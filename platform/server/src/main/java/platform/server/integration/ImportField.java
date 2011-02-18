@@ -6,6 +6,9 @@ import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
+import platform.server.session.Changes;
+import platform.server.session.Modifier;
+import platform.server.session.SinglePropertyTableUsage;
 
 import java.util.Map;
 
@@ -15,7 +18,7 @@ import java.util.Map;
  * Time: 14:27:14
  */
 
-public class ImportField implements ImportFieldInterface {
+public class ImportField implements ImportFieldInterface, ImportKeyInterface {
     private DataClass fieldClass;
 
     public static final Type.Getter<ImportField> typeGetter = new Type.Getter<ImportField>() {
@@ -49,5 +52,13 @@ public class ImportField implements ImportFieldInterface {
 
     public Expr getExpr(Map<ImportField, ? extends Expr> importKeys) {
         return importKeys.get(this);
+    }
+
+    public Expr getExpr(Map<ImportField, ? extends Expr> importKeys, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, Modifier<? extends Changes> modifier) {
+        return getExpr(importKeys);
+    }
+
+    public Type getType() {
+        return fieldClass;
     }
 }

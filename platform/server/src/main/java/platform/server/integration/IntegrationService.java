@@ -11,10 +11,8 @@ import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.session.DataSession;
-import platform.server.session.SessionTableUsage;
-import platform.server.session.SingleKeyTableUsage;
-import platform.server.session.SinglePropertyTableUsage;
+import platform.server.logics.property.PropertyInterface;
+import platform.server.session.*;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -56,8 +54,10 @@ public class IntegrationService {
         for (ImportKey<?> key : keys)
             addedKeys.put(key, key.synchronize(session, importTable));
 
+        MapDataChanges<PropertyInterface> propertyChanges = new MapDataChanges<PropertyInterface>();
         for (ImportProperty<?> property : properties)
-            property.synchronize(session, importTable, addedKeys);
+            propertyChanges = propertyChanges.add((MapDataChanges<PropertyInterface>) property.synchronize(session, importTable, addedKeys));
+        session.execute(propertyChanges, null, null);
     }
 
     public void synchronize(boolean addNew, boolean updateExisting, boolean deleteOld) throws SQLException {

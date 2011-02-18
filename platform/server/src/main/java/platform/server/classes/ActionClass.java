@@ -2,6 +2,7 @@ package platform.server.classes;
 
 import platform.interop.Data;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.type.ParseException;
 import platform.server.form.view.report.ReportDrawField;
 
 import java.sql.PreparedStatement;
@@ -72,6 +73,10 @@ public class ActionClass extends DataClass<Object> {
     @Override
     public boolean fillReportDrawField(ReportDrawField reportField) {
         return false;
+    }
+
+    public Object parseString(String s) throws ParseException {
+        throw new RuntimeException("not supported");
     }
 
     public String getSID() {

@@ -56,9 +56,10 @@ public class DoubleClass extends IntegralClass<Double> {
 
     public Object parseString(String s) throws ParseException {
         try {
-            return Double.parseDouble(s);
+            return Double.parseDouble(s.replace(',','.'));
         } catch (Exception e) {
-            throw new ParseException("error parsing double", e);
+            return 0.0;
+//            throw new ParseException("error parsing double", e);
         }
     }
 
