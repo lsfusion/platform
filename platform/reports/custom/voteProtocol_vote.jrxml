@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="vote" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.3310000000000024"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.y" value="54"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -54,7 +54,7 @@
 				<staticText>
 					<reportElement x="37" y="82" width="151" height="26"/>
 					<textElement/>
-					<text><![CDATA[«      »______________ 2010 г]]></text>
+					<text><![CDATA[«      »______________ 2011 г]]></text>
 				</staticText>
 				<staticText>
 					<reportElement x="292" y="108" width="45" height="18"/>
@@ -87,11 +87,11 @@
 					<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="29" y="282" width="520" height="101"/>
 					<textElement textAlignment="Justified"/>
 					<textFieldExpression class="java.lang.String"><![CDATA["2. В срок, указанный в пункте 8 Положения об Экспертных коллегиях Фонда «Сколково», в Фонд направлены " +
- $F{quantityRepliedVote} + " заполненных Бюллетеней оценки. Из них в " + $F{quantityDoneVote} +
-" бюллетенях оценки члены Экспертной коллегии указали на то, что они не являются заинтересованными " +
+ $F{quantityRepliedVote} + " " + new ChoiceFormat("0#заполненных Бюллетеней|1#заполненный Бюллетень|1<заполненных Бюллетеня|4<заполненных Бюллетеней").format($F{quantityRepliedVote}) + " оценки. Из них в " + $F{quantityDoneVote} + " " + new ChoiceFormat("0#бюллетенях|1#бюллетене|1<бюллетенях").format($F{quantityDoneVote}) +
+" оценки члены Экспертной коллегии указали на то, что они не являются заинтересованными " +
 "лицами по отношению к соискателю. Таким образом, в соответствии с абзацем 5 пункта 7, пунктами 10, 11 " +
-"Положения об Экспертных коллегиях Фонда «Сколково» в заседании приняло участие " + $F{quantityDoneVote} +
-" членов Экспертной коллегии, в связи с чем заседание Экспертной коллегии признается "
+"Положения об Экспертных коллегиях Фонда «Сколково» в заседании приняло участие " + $F{quantityDoneVote} + " " + new ChoiceFormat("0#членов|1#член|1<члена|4<членов").format($F{quantityDoneVote}) +
+" Экспертной коллегии, в связи с чем заседание Экспертной коллегии признается "
 +($F{succeededVote}==null?"не":"")+" состоявшимся "]]></textFieldExpression>
 				</textField>
 			</band>
@@ -107,8 +107,8 @@
 					<textElement textAlignment="Justified"/>
 					<textFieldExpression class="java.lang.String"><![CDATA["5. Решение по вопросу о том, предполагает ли проект, представленный соискателем, участие в проекте " +
 "иностранного специалиста, который имеет значительный авторитет в инвестиционной и (или) исследовательской " +
-"среде:"+'\n'+"ДА - "+$F{quantityForeignVote}+" голосов."+'\n'+
-"НЕТ - "+($F{quantityDoneVote}-$F{quantityForeignVote})+" голосов."+'\n'+
+"среде:"+'\n'+"ДА - "+$F{quantityForeignVote}+" "+new ChoiceFormat("0#голосов|1#голос|1<голоса|4<голосов").format($F{quantityForeignVote})+"."+'\n'+
+"НЕТ - "+($F{quantityDoneVote}-$F{quantityForeignVote})+" "+new ChoiceFormat("0#голосов|1#голос|1<голоса|4<голосов").format($F{quantityDoneVote}-$F{quantityForeignVote})+"."+'\n'+
 "Результат: Экспертной коллегией принято решение о "+ ($F{acceptedForeignVote}==null?"не":"") +
 "соответствии проекта, представленного соискателем, данному Критерию."]]></textFieldExpression>
 				</textField>
@@ -117,8 +117,8 @@
 					<textElement textAlignment="Justified"/>
 					<textFieldExpression class="java.lang.String"><![CDATA["4. Решение по вопросу о том, предполагает ли проект, представленный соискателем, разработку и (или) " +
 "коммерциализацию уникальных и (или) обладающих конкурентными преимуществами перед мировыми аналогами "+
-"продуктов и (или) технологий: "+'\n'+"ДА - "+$F{quantityInnovativeVote}+" голосов."+'\n'+
-"НЕТ - "+($F{quantityDoneVote}-$F{quantityInnovativeVote})+" голосов."+'\n'+
+"продуктов и (или) технологий: "+'\n'+"ДА - "+$F{quantityInnovativeVote}+" "+new ChoiceFormat("0#голосов|1#голос|1<голоса|4<голосов").format($F{quantityInnovativeVote})+"."+'\n'+
+"НЕТ - "+($F{quantityDoneVote}-$F{quantityInnovativeVote})+" "+new ChoiceFormat("0#голосов|1#голос|1<голоса|4<голосов").format($F{quantityDoneVote}-$F{quantityInnovativeVote})+"."+'\n'+
 "Результат: Экспертной коллегией принято решение о "+ ($F{acceptedInnovativeVote}==null?"не":"") +
 "соответствии проекта, представленного соискателем, данному Критерию."]]></textFieldExpression>
 				</textField>
@@ -126,8 +126,8 @@
 					<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="29" y="6" width="520" height="76"/>
 					<textElement textAlignment="Justified"/>
 					<textFieldExpression class="java.lang.String"><![CDATA["3. Решение по вопросу о том, соответствует ли проект, представленный соискателем, направлению" +
-"деятельности, указанному соискателем в заявке:"+'\n'+"ДА - "+$F{quantityInClusterVote}+" голосов. "+ '\n' +
-"НЕТ - "+($F{quantityDoneVote}-$F{quantityInClusterVote})+" голосов."+'\n'+
+"деятельности, указанному соискателем в заявке:"+'\n'+"ДА - "+$F{quantityInClusterVote}+" "+new ChoiceFormat("0#голосов|1#голос|1<голоса|4<голосов").format($F{quantityInClusterVote})+". "+ '\n' +
+"НЕТ - "+($F{quantityDoneVote}-$F{quantityInClusterVote})+" "+new ChoiceFormat("0#голосов|1#голос|1<голоса|4<голосов").format($F{quantityDoneVote}-$F{quantityInClusterVote})+"."+'\n'+
 "Результат: Экспертной коллегией принято решение о "+ ($F{acceptedInClusterVote}==null?"не":"") +
 "соответствии проекта, представленного соискателем, данному Критерию."]]></textFieldExpression>
 				</textField>
