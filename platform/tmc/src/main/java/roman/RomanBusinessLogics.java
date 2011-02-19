@@ -1519,8 +1519,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         addFormEntity(new PackingListBoxFormEntity(shipment, "packingListBoxForm", "Упаковочные листы коробов"));
 
         NavigatorElement distribution = new NavigatorElement(baseElement, "distribution", "Управление складом");
-        addFormEntity(new CreatePalletFormEntity(distribution, "createPalletForm", "Генерация паллет"));
-        addFormEntity(new CreateFreightBoxFormEntity(distribution, "createFreightBoxForm", "Генерация коробов"));
+        FormEntity createPalletForm = addFormEntity(new CreatePalletFormEntity(distribution, "createPalletForm", "Сгенерировать паллеты", true));
+        addFormEntity(new CreatePalletFormEntity(createPalletForm, "createPalletFormList", "Документы генерации паллет", false));
+        FormEntity createFreightBoxForm = addFormEntity(new CreateFreightBoxFormEntity(distribution, "createFreightBoxForm", "Сгенерировать короба", true));
+        addFormEntity(new CreateFreightBoxFormEntity(createFreightBoxForm, "createFreightBoxFormList", "Документы генерации коробов", false));
         addFormEntity(new ShipmentSpecFormEntity(distribution, "boxShipmentSpecForm", "Прием товара по коробам", true));
         addFormEntity(new ShipmentSpecFormEntity(distribution, "simpleShipmentSpecForm", "Прием товара без коробов", false));
         // пока не поддерживается из-за того, что пока нет расчета себестоимости для внутреннего перемещения
@@ -1847,12 +1849,19 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                     objInvoice
             ).forceViewType = ClassViewType.PANEL;
 
-            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
-            filterGroup.addFilter(new RegularFilterEntity(genID(),
-                                  new NotNullFilterEntity(addPropertyObject(quantityDocumentArticleCompositeColor, objInvoice, objArticle, objColorSupplier)),
-                                  "В инвойсе",
-                                  KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
-            addRegularFilterGroup(filterGroup);
+            RegularFilterGroupEntity filterGroupSize = new RegularFilterGroupEntity(genID());
+            filterGroupSize.addFilter(new RegularFilterEntity(genID(),
+                    new NotNullFilterEntity(addPropertyObject(quantityDocumentArticleCompositeSize, objInvoice, objArticle, objSizeSupplier)),
+                    "В инвойсе",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
+            addRegularFilterGroup(filterGroupSize);
+
+            RegularFilterGroupEntity filterGroupColor = new RegularFilterGroupEntity(genID());
+            filterGroupColor.addFilter(new RegularFilterEntity(genID(),
+                    new NotNullFilterEntity(addPropertyObject(quantityDocumentArticleCompositeColor, objInvoice, objArticle, objColorSupplier)),
+                    "В инвойсе",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
+            addRegularFilterGroup(filterGroupColor);
 
             setReadOnly(objSupplier, true);
             setReadOnly(importInvoice, false);
@@ -1867,7 +1876,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             design.get(objOrder.groupTo).grid.constraints.fillVertical = 0.7;
             design.get(objInvoice.groupTo).grid.constraints.fillVertical = 0.7;
-            design.get(objItem.groupTo).grid.constraints.fillHorizontal = 6;
+            design.get(objItem.groupTo).grid.constraints.fillHorizontal = 1.5;
 
             design.get(getPropertyDraw(objectValue, objSIDArticleComposite)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0);
             design.get(getPropertyDraw(objectValue, objSIDArticleSingle)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0);
@@ -2347,17 +2356,21 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objCreate;
         private ObjectEntity objFreightBox;
 
-        private CreateFreightBoxFormEntity(NavigatorElement parent, String sID, String caption) {
+        private CreateFreightBoxFormEntity(NavigatorElement parent, String sID, String caption, boolean toAdd) {
             super(parent, sID, caption);
 
-            objCreate = addSingleGroupObject(creationFreightBox, "Операция создания", objectValue, nameRouteCreationFreightBox, quantityCreationFreightBox);
-            addObjectActions(this, objCreate);
-            objCreate.groupTo.setSingleClassView(ClassViewType.PANEL);
+            objCreate = addSingleGroupObject(creationFreightBox, "Документ генерации коробов");
+            if (!toAdd)
+                addPropertyDraw(objCreate, objectValue);
+            addPropertyDraw(objCreate, nameRouteCreationFreightBox, quantityCreationFreightBox);
+            if (toAdd) {
+                addPropertyDraw(createFreightBox, objCreate);
+                objCreate.groupTo.setSingleClassView(ClassViewType.PANEL);
+                objCreate.addOnTransaction = true;
+            }
 
             objFreightBox = addSingleGroupObject(freightBox, "Короба для транспортировки", barcode);
             setReadOnly(objFreightBox, true);
-
-            addPropertyDraw(createFreightBox, objCreate);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(creationFreightBoxFreightBox, objFreightBox), Compare.EQUALS, objCreate));
         }
@@ -2368,17 +2381,21 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objCreate;
         private ObjectEntity objPallet;
 
-        private CreatePalletFormEntity(NavigatorElement parent, String sID, String caption) {
+        private CreatePalletFormEntity(NavigatorElement parent, String sID, String caption, boolean toAdd) {
             super(parent, sID, caption);
 
-            objCreate = addSingleGroupObject(creationPallet, "Операция создания", objectValue, nameRouteCreationPallet, quantityCreationPallet);
-            addObjectActions(this, objCreate);
-            objCreate.groupTo.setSingleClassView(ClassViewType.PANEL);
+            objCreate = addSingleGroupObject(creationPallet, "Докунмент генерации паллет");
+            if (!toAdd)
+                addPropertyDraw(objCreate, objectValue);
+            addPropertyDraw(objCreate, nameRouteCreationPallet, quantityCreationPallet);
+            if (toAdd) {
+                addPropertyDraw(createPallet, objCreate);
+                objCreate.groupTo.setSingleClassView(ClassViewType.PANEL);
+                objCreate.addOnTransaction = true;
+            }
 
             objPallet = addSingleGroupObject(pallet, "Паллеты для транспортировки", barcode);
             setReadOnly(objPallet, true);
-
-            addPropertyDraw(createPallet, objCreate);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(creationPalletPallet, objPallet), Compare.EQUALS, objCreate));
         }
