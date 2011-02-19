@@ -2541,6 +2541,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addProperty(group, persistent, new LP<ClassPropertyInterface>(new SessionDataProperty(sID, caption, params, value)));
     }
 
+    protected LP addFAProp(String caption, FormEntity form, ObjectEntity... params) {
+        return addFormActionProp(null, caption, form, params, new PropertyObjectEntity[0], new PropertyObjectEntity[0], false, false);
+    }
+
     protected LP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity... params) {
         return addFormActionProp(group, caption, form, params, new PropertyObjectEntity[0], new PropertyObjectEntity[0], false, false);
     }

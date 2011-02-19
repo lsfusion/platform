@@ -520,9 +520,18 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP currentPalletFreightBox;
     private LP barcodeActionCheckPallet;
     private LP barcodeActionCheckFreightBox;
-    private LP printBox;
-    private LP printRoute;
-
+    private LP packingListFormFreightBox;
+    private LP packingListFormRoute;
+    LP quantitySupplierBoxBoxShipmentRouteSku;
+    LP quantitySimpleShipmentRouteSku;
+    LP routePallet, freightPallet, nameRoutePallet, palletFreightBox;
+    LP currentPalletRoute;
+    LP currentFreightBoxRoute;
+    LP isCurrentFreightBox, isCurrentPalletFreightBox;
+    LP isCurrentPallet;
+    LP barcodeActionSeekPallet, barcodeActionSetPallet, barcodeAction3;
+    private LP invoiceFormImporterFreight;
+    private LP packingListFormImporterFreight;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -1469,15 +1478,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 ), 1, 2, barcodeToObject, 3);
     }
 
-    LP quantitySupplierBoxBoxShipmentRouteSku;
-    LP quantitySimpleShipmentRouteSku;
-    LP routePallet, freightPallet, nameRoutePallet, palletFreightBox;
-    LP currentPalletRoute;
-    LP currentFreightBoxRoute;
-    LP isCurrentFreightBox, isCurrentPalletFreightBox;
-    LP isCurrentPallet;
-    LP barcodeActionSeekPallet, barcodeActionSetPallet, barcodeAction3;
-
     @Override
     protected void initTables() {
     }
@@ -1501,7 +1501,12 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         classifier.add(unitOfMeasure.getClassForm(this));
         classifier.add(freightType.getClassForm(this));
 
-        createItemForm = addFormEntity(new CreateItemFormEntity(classifier, "createItemForm", "Ввод товара"));
+        createItemForm = addFormEntity(new CreateItemFormEntity(null, "createItemForm", "Ввод товара"));
+
+        NavigatorElement printForms = new NavigatorElement(baseElement, "printForms", "Печатные формы");
+        addFormEntity(new InvoiceFromFormEntity(printForms, "invoiceFromForm", "Исходящие инвойсы"));
+        addFormEntity(new PackingListFormEntity(printForms, "packingListForm", "Исходящие упаковочные листы"));
+        addFormEntity(new PackingListBoxFormEntity(printForms, "packingListBoxForm", "Упаковочные листы коробов"));
 
         NavigatorElement purchase = new NavigatorElement(baseElement, "purchase", "Управление закупками");
         addFormEntity(new OrderFormEntity(purchase, "orderForm", "Заказы"));
@@ -1514,9 +1519,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         addFormEntity(new FreightShipmentFormEntity(shipment, "freightShipmentForm", "Комплектация фрахта"));
         addFormEntity(new FreightInvoiceFormEntity(shipment, "freightInvoiceForm", "Расценка фрахта"));
         addFormEntity(new FreightChangeFormEntity(shipment, "freightChangeForm", "Обработка фрахта"));
-        addFormEntity(new InvoiceFromFormEntity(shipment, "invoiceFromForm", "Исходящие инвойсы"));
-        addFormEntity(new PackingListFormEntity(shipment, "packingListForm", "Исходящие упаковочные листы"));
-        addFormEntity(new PackingListBoxFormEntity(shipment, "packingListBoxForm", "Упаковочные листы коробов"));
 
         NavigatorElement distribution = new NavigatorElement(baseElement, "distribution", "Управление складом");
         FormEntity createPalletForm = addFormEntity(new CreatePalletFormEntity(distribution, "createPalletForm", "Сгенерировать паллеты", true));
@@ -1585,7 +1587,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objSku;
 
         private PackingListBoxFormEntity(NavigatorElement parent, String sID, String caption) {
-            super(parent, sID, caption);
+            super(parent, sID, caption, true);
 
             objBox = addSingleGroupObject(1, "box", freightBox, "Короб", barcodeFreightBox, netWeightStock);
             objBox.groupTo.initClassView = ClassViewType.PANEL;
@@ -1598,8 +1600,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityStockSku, objBox, objSku)));
 
-            printBox = addFAProp(intraAttributeGroup, "Упаковочный лист", this, objBox);
-            printRoute = addJProp(true, "printRoute", "Упаковочный лист короба", printBox, currentFreightBoxRoute, 1);
+            packingListFormFreightBox = addFAProp("Упаковочный лист", this, objBox);
+            packingListFormRoute = addJProp(true, "packingListFormRoute", "Упаковочный лист", packingListFormFreightBox, currentFreightBoxRoute, 1);
         }
 
         @Override
@@ -1999,7 +2001,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             objRoute = addSingleGroupObject(route, "Маршрут", name, barcodeCurrentPalletRoute, grossWeightCurrentPalletRoute, barcodeCurrentFreightBoxRoute, nameDestinationCurrentFreightBoxRoute);
             objRoute.groupTo.setSingleClassView(ClassViewType.GRID);
-            addPropertyDraw(printRoute, objRoute);
+            addPropertyDraw(packingListFormRoute, objRoute);
 
             objRoute.groupTo.tableRowsCount = 0;
 
@@ -2194,50 +2196,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 setReadOnly(objSupplierBox, true);
         }
 
-        private class EditShipmentDetailFormEntity extends FormEntity<RomanBusinessLogics> {
-            ObjectEntity objShipment;
-            ObjectEntity objSupplierBox;
-            ObjectEntity objRoute;
-            ObjectEntity objBarcode;
-            ObjectEntity objShipmentDetail;
-            PropertyObjectEntity addNewShipmentDetailsProperty;
-
-            public EditShipmentDetailFormEntity() {
-                super(genSID(), "Редактирование строки поставки");
-
-                objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", objectValue);
-                objBarcode.groupTo.setSingleClassView(ClassViewType.PANEL);
-
-                objShipment = addSingleGroupObject((box ? boxShipment : simpleShipment), "Поставка", date, sidDocument);
-                objShipment.groupTo.setSingleClassView(ClassViewType.PANEL);
-
-                if (box) {
-                    objSupplierBox = addSingleGroupObject(supplierBox, "Короб поставщика", sidSupplierBox, barcode, nameDestinationSupplierBox);
-                    objSupplierBox.groupTo.setSingleClassView(ClassViewType.PANEL);
-                }
-
-                objRoute = addSingleGroupObject(route, "Маршрут", name, barcodeCurrentPalletRoute, grossWeightCurrentPalletRoute, barcodeCurrentFreightBoxRoute, nameDestinationCurrentFreightBoxRoute);
-                objRoute.groupTo.setSingleClassView(ClassViewType.PANEL);
-
-                objShipmentDetail = addSingleGroupObject((box ? boxShipmentDetail : simpleShipmentDetail),
-//                        selection, barcodeSkuShipmentDetail, sidArticleShipmentDetail, sidColorSupplierItemShipmentDetail, nameColorSupplierItemShipmentDetail, sidSizeSupplierItemShipmentDetail,
-//                        nameBrandSupplierArticleSkuShipmentDetail, originalNameArticleSkuShipmentDetail,
-//                        nameOriginCategoryArticleSkuShipmentDetail, nameOriginUnitOfMeasureArticleSkuShipmentDetail,
-//                        netWeightArticleSkuShipmentDetail,
-//                        nameCountryOfOriginArticleSkuShipmentDetail, mainCompositionOriginArticleSkuShipmentDetail,
-//                        netWeightSkuShipmentDetail, nameCountryOfOriginSkuShipmentDetail,
-//                        mainCompositionOriginSkuShipmentDetail, additionalCompositionOriginSkuShipmentDetail,
-//                        sidShipmentShipmentDetail,
-//                        sidSupplierBoxShipmentDetail, barcodeSupplierBoxShipmentDetail,
-//                        barcodeStockShipmentDetail, nameRouteFreightBoxShipmentDetail,
-                        quantityShipmentDetail, nameUserShipmentDetail, timeShipmentDetail);
-
-                objShipmentDetail.groupTo.setSingleClassView(ClassViewType.PANEL);
-
-                addNewShipmentDetailsProperty = addPropertyObject(addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode, objShipment, objSupplierBox, objRoute, objBarcode);
-            }
-        }
-
         @Override
         public DefaultFormView createDefaultRichDesign() {
             DefaultFormView design = super.createDefaultRichDesign();
@@ -2310,7 +2268,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objShipment = addSingleGroupObject(shipment, "Поставка", date, nameSupplierDocument, sidDocument, sumDocument, nameCurrencyDocument, quantityPalletShipment, netWeightShipment, quantityBoxShipment);
             objFreight = addSingleGroupObject(freight, "Фрахт", date, objectClassName, nameRouteFreight, nameFreightTypeFreight, tonnageFreight, palletCountFreight, volumeFreight, palletNumberFreight);
             addObjectActions(this, objFreight);
-            objPallet = addSingleGroupObject(pallet, "Паллета", barcode, freightBoxNumberPallet);
+            objPallet = addSingleGroupObject(pallet, "Паллета", barcode, grossWeightPallet, freightBoxNumberPallet);
             objPallet.groupTo.setSingleClassView(ClassViewType.GRID);
 
             addPropertyDraw(equalsPalletFreight, objPallet, objFreight);
@@ -2584,7 +2542,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private GroupObjectEntity gobjArticleCompositionCountryCategory;
 
         private InvoiceFromFormEntity(NavigatorElement parent, String sID, String caption) {
-            super(parent, sID, caption);
+            super(parent, sID, caption, true);
 
             gobjFreightImporter = new GroupObjectEntity(1, "freightImporter");
 
@@ -2626,6 +2584,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreight, objImporter, objFreight)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightArticleCompositionCountryCategory, objImporter, objFreight, objArticle, objComposition, objCountry, objCategory)));
+
+            invoiceFormImporterFreight = addFAProp("Инвойс", this, objImporter, objFreight);
         }        
     }
     private class PackingListFormEntity extends FormEntity<RomanBusinessLogics> {
@@ -2638,7 +2598,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private GroupObjectEntity gobjFreightImporter;
 
         private PackingListFormEntity(NavigatorElement parent, String sID, String caption) {
-            super(parent, sID, caption);
+            super(parent, sID, caption, true);
 
             gobjFreightImporter = new GroupObjectEntity(1, "freightImporter");
 
@@ -2672,6 +2632,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreight, objImporter, objFreight)));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(freightFreightBox, objBox), Compare.EQUALS, objFreight));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterStockSku, objImporter, objBox, objSku)));                        
+
+            packingListFormImporterFreight = addFAProp("Упаковочный лист", this, objImporter, objFreight);
         }
 
         @Override
