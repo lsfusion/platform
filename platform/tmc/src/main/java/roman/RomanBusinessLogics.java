@@ -532,6 +532,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     LP barcodeActionSeekPallet, barcodeActionSetPallet, barcodeAction3;
     private LP invoiceFormImporterFreight;
     private LP packingListFormImporterFreight;
+    private LP countrySupplierOfOriginArticleSku;
+    private LP nameCountrySupplierOfOriginArticleSku;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -854,6 +856,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         // Country
         countrySupplierOfOriginArticle = addDProp(idGroup, "countrySupplierOfOriginArticle", "Страна происхождения (ИД)", countrySupplier, article);
         nameCountrySupplierOfOriginArticle = addJProp(supplierAttributeGroup, "nameCountrySupplierOfOriginArticle", "Страна происхождения (ориг.)", name, countrySupplierOfOriginArticle, 1);
+
+        countrySupplierOfOriginArticleSku = addJProp(idGroup, "countrySupplierOfOriginArticleSku", "Страна происхождения (ИД)", countrySupplierOfOriginArticle, articleSku, 1);
+        nameCountrySupplierOfOriginArticleSku = addJProp(supplierAttributeGroup, "nameCountrySupplierOfOriginArticleSku", "Страна происхождения", name, countrySupplierOfOriginArticleSku, 1);
+
         countryOfOriginArticle = addJProp(idGroup, "countryOfOriginArticle", "Страна происхождения (ИД)", countryCountrySupplier, countrySupplierOfOriginArticle, 1);
         nameCountryOfOriginArticle = addJProp(supplierAttributeGroup, "nameCountryOfOriginArticle", "Страна происхождения", name, countryOfOriginArticle, 1);
 
@@ -1827,7 +1833,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             if (box)
                 addPropertyDraw(sidSupplierBox, objSupplierBoxSpec);
             addPropertyDraw(new LP[] {barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
-                                      nameBrandSupplierArticleSku, nameCountryOfOriginArticleSku, nameCountryOfOriginSku, netWeightSku,
+                                      nameBrandSupplierArticleSku, nameCountrySupplierOfOriginArticle , nameCountryOfOriginSku, netWeightSku,
                                       mainCompositionOriginSku, additionalCompositionOriginSku}, objSku);
             addPropertyDraw(quantityListSku, (box ? objSupplierBoxSpec : objInvoice), objSku);
             addPropertyDraw(priceDocumentSku, objInvoice, objSku);
