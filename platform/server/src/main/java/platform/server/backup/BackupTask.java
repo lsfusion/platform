@@ -102,14 +102,12 @@ public class BackupTask implements SchedulerTask {
             host = server;
         }
 
-        String execute = "cmd /c start \"\" /B " + path + " --host " + host + " --port " + port + " --username " +
+        String execute = "cmd SET PGPASSWORD=" + adapter.password + " /c start \"\" /B " + path + " --host " + host + " --port " + port + " --username " +
                 adapter.userID + " --format tar --blobs --verbose --file \"" + dumpDir + dateTime + "\" " +
                 adapter.dataBase + " 2>> \"" + dumpDir + "log.txt\"";
         Runtime rt = Runtime.getRuntime();
         Process p = rt.exec(execute);
-
         int exitVal = p.waitFor();
-        //System.out.println("ExitValue: " + exitVal);
         Collections.sort(fileList);
 
         for (String s : fileList) {
