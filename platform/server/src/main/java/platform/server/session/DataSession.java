@@ -205,7 +205,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
 
         if(groupLast) {
             // по тем по кому не было restart'а new -> to
-            updateProperties(new UsedSimpleChanges(new SimpleChanges(getUsedChanges(), addClasses, removeClasses, true)));
+            updateProperties(new SimpleChanges(getUsedChanges(), addClasses, removeClasses, true));
             for(UpdateChanges incrementChange : incrementChanges.values()) {
                 incrementChange.addClasses.addAll(addClasses);
                 incrementChange.removeClasses.addAll(removeClasses);
@@ -217,12 +217,16 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
         changeProperty(property, keys, newValue, sql);
 
         if(groupLast) // по тем по кому не было restart'а new -> to
-            updateProperties(new UsedSimpleChanges(new SimpleChanges(getUsedChanges(), property)));
+            updateProperties(new SimpleChanges(getUsedChanges(), property));
     }
 
     private void updateProperties(ExprChanges changes) {
         for(Map.Entry<FormInstance,UpdateChanges> incrementChange : incrementChanges.entrySet())
             incrementChange.getValue().properties.addAll(((FormInstance<?>) incrementChange.getKey()).getUpdateProperties(changes));
+    }
+
+    public void updateProperties(SimpleChanges changes) {
+        updateProperties(new UpdateExprChanges(changes));
     }
 
     public void updateProperties(Modifier<? extends Changes> modifier) {
@@ -270,7 +274,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
             return value.objectClass;
         else
             return newClass;
-    }                                   
+    }
 
     public DataObject getDataObject(Object value, Type type) throws SQLException {
         return new DataObject(value,type.getDataClass(value, sql, baseClass));
@@ -377,7 +381,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
                     Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>> executeRow = iterator.next();
                     property.execute(executeRow.getKey(), executeRow.getValue().get("value"), this, actions, null, null, !iterator.hasNext());
                 }
-        }        
+        }
     }
 
     public void write(final BusinessLogics<?> BL, List<ClientAction> actions) throws SQLException {
@@ -541,7 +545,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
 
     public Where getIsClassWhere(Expr expr, ValueClass isClass, WhereBuilder changedWheres) {
         Where isClassWhere = expr.isClass(isClass.getUpSet());
-        
+
         if(isClass instanceof CustomClass) {
             SingleKeyNoPropertyUsage removeTable = remove.get((CustomClass)isClass);
             if(removeTable!=null) {
@@ -587,10 +591,6 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
             return removeTable.getWhere(expr);
         else
             return Where.FALSE;
-    }
-
-    public ExprChanges getSessionChanges(DataProperty property) {
-        return new UsedSimpleChanges(new SimpleChanges(getUsedChanges(), property));
     }
 
     // IMMUTABLE

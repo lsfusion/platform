@@ -12,7 +12,6 @@ import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
-import platform.server.session.UsedSimpleChanges;
 
 import java.util.ArrayList;
 import java.util.HashMap;

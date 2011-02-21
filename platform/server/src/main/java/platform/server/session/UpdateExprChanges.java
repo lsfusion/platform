@@ -4,17 +4,27 @@ import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.expr.Expr;
 import platform.server.data.query.Join;
+import platform.server.data.translator.MapValuesTranslate;
+import platform.server.data.Value;
 import platform.server.classes.ValueClass;
 import platform.server.classes.BaseClass;
 import platform.server.logics.property.DataProperty;
 import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.caches.hash.HashValues;
+import platform.server.caches.IdentityLazy;
+import platform.server.caches.AbstractMapValues;
+import platform.base.BaseUtils;
+import platform.base.TwinImmutableInterface;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Collections;
 
-public class UsedSimpleChanges implements ExprChanges {
+public class UpdateExprChanges implements ExprChanges {
     private final SimpleChanges changes;
 
-    UsedSimpleChanges(SimpleChanges changes) {
+    public UpdateExprChanges(SimpleChanges changes) {
         this.changes = changes;
     }
 
@@ -36,7 +46,28 @@ public class UsedSimpleChanges implements ExprChanges {
         return Where.FALSE;
     }
 
+    private static class UpdateMapValues extends AbstractMapValues<UpdateMapValues> {
+
+        public boolean twins(TwinImmutableInterface o) {
+            return true;
+        }
+
+        public int hashValues(HashValues hashValues) {
+            return 23323;
+        }
+
+        public Set<Value> getValues() {
+            return new HashSet<Value>();
+        }
+
+        public UpdateMapValues translate(MapValuesTranslate mapValues) {
+            return this;
+        }
+    }
+    private static final UpdateMapValues update = new UpdateMapValues();
+
+    @IdentityLazy
     public SimpleChanges getUsedChanges() {
-        return changes;
+        return new SimpleChanges(changes, update);
     }
 }

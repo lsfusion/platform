@@ -23,6 +23,10 @@ public class SimpleChanges extends Changes<SimpleChanges> {
         return new SimpleChanges(this, changes);
     }
 
+    protected SimpleChanges(SimpleChanges session) {
+        super(session);
+    }
+
     public SimpleChanges(Modifier<SimpleChanges> modifier) {
         super(modifier);
     }
@@ -77,4 +81,21 @@ public class SimpleChanges extends Changes<SimpleChanges> {
         if(dataChange!=null)
             data.put(property, dataChange);
     }
+
+    public SimpleChanges(SimpleChanges changes, MapValues update) {
+        this();
+
+        for(Map.Entry<CustomClass,MapValues> addEntry : changes.add.entrySet())
+            add.put(addEntry.getKey(), update);
+
+        for(Map.Entry<CustomClass,MapValues> removeEntry : changes.remove.entrySet())
+            remove.put(removeEntry.getKey(), update);
+
+        for(Map.Entry<DataProperty,MapValues> dataEntry : changes.data.entrySet())
+            data.put(dataEntry.getKey(), update);
+
+        if(changes.newClasses!=null)
+            newClasses = update;
+    }
+
 }
