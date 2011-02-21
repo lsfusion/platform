@@ -15,7 +15,7 @@
 		</box>
 	</style>
 	<field name="box" class="java.lang.Integer"/>
-	<field name="barcodeFreightBox" class="java.lang.String"/>
+	<field name="barcode2" class="java.lang.String"/>
 	<field name="netWeightStock" class="java.lang.Double"/>
 	<field name="sku" class="java.lang.Integer"/>
 	<field name="barcode" class="java.lang.String"/>
@@ -35,7 +35,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="93" y="0" width="152" height="18"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{barcodeFreightBox}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{barcode}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="0" y="0" width="93" height="18"/>
@@ -98,7 +98,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="93" height="18"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{barcode}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{barcode2}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="93" y="0" width="80" height="18"/>

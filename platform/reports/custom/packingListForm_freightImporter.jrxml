@@ -49,12 +49,12 @@
 	<field name="grossWeightImporterFreight" class="java.lang.Double"/>
 	<field name="grossWeightImporterStockSku" class="java.lang.Double"/>
 	<field name="netWeightImporterStock" class="java.lang.Double"/>
-	<field name="barcodeFreightBox" class="java.lang.String"/>
+	<field name="barcode2" class="java.lang.String"/>
 	<group name="captionGroup4">
-		<groupExpression><![CDATA[String.valueOf($F{barcodeFreightBox})]]></groupExpression>
+		<groupExpression><![CDATA[String.valueOf($F{barcode2})]]></groupExpression>
 	</group>
 	<group name="textGroup4">
-		<groupExpression><![CDATA[String.valueOf($F{barcodeFreightBox})]]></groupExpression>
+		<groupExpression><![CDATA[String.valueOf($F{barcode2})]]></groupExpression>
 		<groupFooter>
 			<band height="18">
 				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
@@ -65,7 +65,7 @@
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="80" height="18"/>
 					<textElement textAlignment="Left"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{barcodeFreightBox}]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{barcode2}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>

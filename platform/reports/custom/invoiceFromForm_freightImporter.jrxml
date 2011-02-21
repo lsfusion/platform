@@ -30,7 +30,7 @@
 	<field name="sidArticle" class="java.lang.String"/>
 	<field name="nameOriginCategoryArticle" class="java.lang.String"/>
 	<field name="sidCountry" class="java.lang.String"/>
-	<field name="commonName16" class="java.lang.String"/>
+	<field name="commonName2" class="java.lang.String"/>
 	<field name="sidCustomCategory10" class="java.lang.String"/>
 	<field name="quantityImporterFreightArticleCompositionCountryCategory" class="java.lang.Double"/>
 	<field name="netWeightImporterFreightArticleCompositionCountryCategory" class="java.lang.Double"/>
@@ -179,7 +179,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="255" y="0" width="91" height="18"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{commonName16}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{commonName2}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="469" y="0" width="67" height="18"/>

@@ -501,7 +501,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP countryNameSupplier;
     private LP numberDataListSku;
     private LP numberArticleListSku;
-    private LP barcodeFreightBox;
     private LP grossWeightFreightSku;
     private LP netWeightFreightSku;
     private LP customCategory10FreightSku;
@@ -654,8 +653,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     protected void initProperties() {
 
         nameOrigin = addDProp(baseGroup, "nameOrigin", "Наименование", StringClass.get(50), secondNameClass);
-
-        barcodeFreightBox = addJProp(baseGroup, "barcodeFreightBox", "Штрих-код", and1, barcode, 1, is(freightBox), 1);
 
         dictionaryComposition = addDProp(idGroup, "dictionaryComposition", "Словарь для составов (ИД)", dictionary);
         nameDictionaryComposition = addJProp(baseGroup, "nameDictionaryComposition", "Словарь для составов", name, dictionaryComposition);
@@ -1597,7 +1594,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private PackingListBoxFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption, true);
 
-            objBox = addSingleGroupObject(1, "box", freightBox, "Короб", barcodeFreightBox, netWeightStock);
+            objBox = addSingleGroupObject(1, "box", freightBox, "Короб", barcode, netWeightStock);
             objBox.groupTo.initClassView = ClassViewType.PANEL;
 
             objSku = addSingleGroupObject(2, "sku", sku, "SKU", barcode, sidArticleSku, nameBrandSupplierArticleSku, nameOriginCategoryArticleSku, mainCompositionSku, additionalCompositionSku);
@@ -2625,7 +2622,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             gobjFreightImporter.initClassView = ClassViewType.PANEL;
 
-            objBox = addSingleGroupObject(4, "box", freightBox, "Короб", barcodeFreightBox);
+            objBox = addSingleGroupObject(4, "box", freightBox, "Короб", barcode);
             addPropertyDraw(netWeightImporterStock, objImporter, objBox);
 
             objSku = addSingleGroupObject(5, "sku", sku, "SKU", barcode, sidArticleSku, nameBrandSupplierArticleSku, nameOriginCategoryArticleSku);

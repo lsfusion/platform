@@ -345,24 +345,25 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return result;
     }
 
-    <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(GroupObjectEntity groupObject, PropertyObjectEntity<P> propertyImplement) {
+    private Map<String, Integer> propertySIDCount = new HashMap<String, Integer>();
 
+    <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(GroupObjectEntity groupObject, PropertyObjectEntity<P> propertyImplement) {
         PropertyDrawEntity<P> propertyDraw = new PropertyDrawEntity<P>(genID(), propertyImplement, groupObject);
         if (shouldProceedDefaultDraw()) {
             propertyImplement.property.proceedDefaultDraw(propertyDraw, this);
         }
 
         if (propertyImplement.property.sID != null) {
-
-            // придется поискать есть ли еще такие sID, чтобы добиться уникальности sID
-            boolean foundSID = false;
-            for (PropertyDrawEntity property : propertyDraws) {
-                if (BaseUtils.nullEquals(property.getSID(), propertyImplement.property.sID)) {
-                    foundSID = true;
-                    break;
-                }
+            String propertyDrawSID = propertyImplement.property.sID;
+            Integer cnt = propertySIDCount.get(propertyDrawSID);
+            if (cnt == null) {
+                propertySIDCount.put(propertyDrawSID, 1);
+            } else {
+                ++cnt;
+                propertySIDCount.put(propertyDrawSID, cnt);
+                propertyDrawSID = propertyDrawSID + cnt;
             }
-            propertyDraw.setSID(propertyImplement.property.sID + ((foundSID) ? propertyDraw.getID() : ""));
+            propertyDraw.setSID(propertyDrawSID);
         }
 
 
