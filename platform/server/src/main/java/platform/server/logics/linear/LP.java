@@ -41,8 +41,6 @@ public class LP<T extends PropertyInterface> {
     public LP(Property<T> property, List<T> listInterfaces) {
         this.property = property;
         this.listInterfaces = listInterfaces;
-        if(listInterfaces.contains(null))
-            listInterfaces = listInterfaces;
     }
 
     public <D extends PropertyInterface> void setDerivedChange(LP<D> valueProperty, Object... params) {

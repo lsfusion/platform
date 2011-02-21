@@ -281,7 +281,7 @@ public class SessionTable extends Table implements SessionData<SessionTable>, Va
 
         session.addKeyColumns(name, DataObject.getMapValues(addKeys), keys);
         for(Map.Entry<PropertyField, ObjectValue> addProp : addProps.entrySet())
-            session.addColumn(getName(session.syntax), addProp.getKey());
+            session.addTemporaryColumn(getName(session.syntax), addProp.getKey());
 
         if(!addProps.isEmpty()) { // для assertion'а
             Query<KeyField, PropertyField> updateProps = new Query<KeyField, PropertyField>(newTable);

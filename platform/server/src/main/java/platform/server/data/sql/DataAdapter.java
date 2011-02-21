@@ -116,6 +116,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return true;
     }
 
+    public boolean orderUnion() {
+        return false;
+    }
+
     public String getDropSessionTable(String tableName) {
         return "DROP TABLE " + getSessionTableName(tableName);
     }

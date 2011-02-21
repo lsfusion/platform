@@ -193,9 +193,14 @@ public class SQLSession extends MutableObject {
         logger.info(" Done");
     }
 
+    public void addTemporaryColumn(String table, PropertyField field) throws SQLException {
+        addColumn(table, field);
+//        execute("CREATE INDEX " + "idx_" + table + "_" + field.name + " ON " + table + " (" + field.name + ")"); //COLUMN
+    }
+
     public void addColumn(String table, PropertyField field) throws SQLException {
         logger.info("Идет добавление колонки " + table + "." + field.name + "... ");
-        execute("ALTER TABLE " + table + " ADD " + field.getDeclare(syntax)); //COLUMN 
+        execute("ALTER TABLE " + table + " ADD " + field.getDeclare(syntax)); //COLUMN
         logger.info(" Done");
     }
 
@@ -246,6 +251,16 @@ public class SQLSession extends MutableObject {
             sessionTablesMap.put(name, new WeakReference<Object>(owner));
             return name;
         }
+    }
+
+    public void vacuumTemporaryTables() throws SQLException {
+        synchronized (sessionTablesMap) {
+            removeUnusedTemporaryTables();
+
+            for(String sessionTable : sessionTablesMap.keySet())
+                execute("VACUUM ANALYZE " + sessionTable);
+        }
+
     }
 
     private void removeUnusedTemporaryTables() throws SQLException {

@@ -31,6 +31,8 @@ public interface SQLSyntax {
 
     boolean useFJ();
 
+    boolean orderUnion(); // распихивать order'ы внутрь union all'ов
+
     int updateModel();
 
     String getStringType(int length);

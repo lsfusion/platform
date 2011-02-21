@@ -156,7 +156,8 @@ public class CompiledQuery<K,V> {
 
             String fromString = "";
             for(InnerSelectJoin queryJoin : queryJoins) {
-                fromString = (fromString.length()==0?"":fromString+" UNION ALL ") + getInnerSelect(query.mapKeys, queryJoin, queryJoin.fullWhere.followTrue(query.properties), params, new OrderedMap<V, Boolean>(), 0, syntax, keyNames, propertyNames, keyOrder, propertyOrder, castTypes, prefix, false);
+                boolean orderUnion = syntax.orderUnion(); // нужно чтобы фигачило внутрь orders а то многие SQL сервера не видят индексы внутри union all
+                fromString = (fromString.length()==0?"":fromString+" UNION ALL ") + "(" + getInnerSelect(query.mapKeys, queryJoin, queryJoin.fullWhere.followTrue(query.properties), params, orderUnion?orders:new OrderedMap<V, Boolean>(), orderUnion?top:0, syntax, keyNames, propertyNames, keyOrder, propertyOrder, castTypes, prefix, false) + ")";
                 castTypes = null;
             }
 

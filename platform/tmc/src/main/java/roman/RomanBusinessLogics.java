@@ -3117,6 +3117,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             ImportKey<?>[] keysArray = {invoiceKey, boxKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey};
             new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
 
+            session.sql.vacuumTemporaryTables();
+
             actions.add(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         }
 

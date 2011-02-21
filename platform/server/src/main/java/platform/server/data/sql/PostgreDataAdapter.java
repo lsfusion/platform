@@ -109,6 +109,11 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
+    public boolean orderUnion() {
+        return true;
+    }
+
+    @Override
     public boolean nullUnionTrouble() {
         return true;
     }
