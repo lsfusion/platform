@@ -22,8 +22,8 @@
 	<field name="sidArticleSku" class="java.lang.String"/>
 	<field name="nameBrandSupplierArticleSku" class="java.lang.String"/>
 	<field name="nameOriginCategoryArticleSku" class="java.lang.String"/>
-	<field name="mainCompositionSku" class="java.lang.String"/>
-	<field name="additionalCompositionSku" class="java.lang.String"/>
+	<field name="mainCompositionOriginSku" class="java.lang.String"/>
+	<field name="additionalCompositionOriginSku" class="java.lang.String"/>
 	<field name="quantityStockSku" class="java.lang.Double"/>
 	<field name="netWeightSku" class="java.lang.Double"/>
 	<field name="netWeightStockSku" class="java.lang.Double"/>
@@ -69,12 +69,12 @@
 			<textField isStretchWithOverflow="true">
 				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="340" y="0" width="211" height="18"/>
 				<textElement textAlignment="Center"/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Состав (перевод)"]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["Состав"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="551" y="0" width="79" height="18"/>
 				<textElement textAlignment="Center"/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Доп. состав (перевод)"]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["Доп. состав"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="630" y="0" width="56" height="18"/>
@@ -118,12 +118,12 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="340" y="0" width="211" height="18"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{mainCompositionSku}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{mainCompositionOriginSku}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="551" y="0" width="79" height="18"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{additionalCompositionSku}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{additionalCompositionOriginSku}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="630" y="0" width="56" height="18"/>

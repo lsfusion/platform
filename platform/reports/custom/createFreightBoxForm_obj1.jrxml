@@ -24,21 +24,13 @@
 		<band/>
 	</pageHeader>
 	<detail>
-		<band height="40">
-			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="200" height="20"/>
-				<textElement textAlignment="Left">
-					<font fontName="EAN-13" size="24" isStrikeThrough="false" isPdfEmbedded="false"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{barcode}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="0" y="20" width="200" height="20"/>
-				<textElement>
-					<font size="11"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{barcode}]]></textFieldExpression>
-			</textField>
+		<band height="70">
+			<componentElement>
+				<reportElement x="0" y="0" width="200" height="50"/>
+				<jr:EAN13 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" textPosition="bottom">
+					<jr:codeExpression><![CDATA[$F{barcode}]]></jr:codeExpression>
+				</jr:EAN13>
+			</componentElement>
 		</band>
 	</detail>
 </jasperReport>

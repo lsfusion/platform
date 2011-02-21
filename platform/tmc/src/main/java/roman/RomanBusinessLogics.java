@@ -1603,7 +1603,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objBox = addSingleGroupObject(1, "box", freightBox, "Короб", barcode, netWeightStock);
             objBox.groupTo.initClassView = ClassViewType.PANEL;
 
-            objSku = addSingleGroupObject(2, "sku", sku, "SKU", barcode, sidArticleSku, nameBrandSupplierArticleSku, nameOriginCategoryArticleSku, mainCompositionSku, additionalCompositionSku);
+            objSku = addSingleGroupObject(2, "sku", sku, "SKU", barcode, sidArticleSku, nameBrandSupplierArticleSku, nameOriginCategoryArticleSku, mainCompositionOriginSku, additionalCompositionOriginSku);
 
             addPropertyDraw(quantityStockSku, objBox, objSku);
             addPropertyDraw(netWeightSku, objSku);
@@ -2472,6 +2472,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private class FreightChangeFormEntity extends FormEntity<RomanBusinessLogics> {
 
         private ObjectEntity objFreight;
+        private ObjectEntity objImporter;
         private ObjectEntity objArticle;
         private ObjectEntity objSku;
         private ObjectEntity objSkuFreight;
@@ -2479,7 +2480,12 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private FreightChangeFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objFreight = addSingleGroupObject(freight, "Фрахт", date, objectClassName, nameRouteFreight, nameFreightTypeFreight, grossWeightFreight, tonnageFreight, palletCountFreight, volumeFreight, palletNumberFreight);
+            objFreight = addSingleGroupObject(freight, "Фрахт", date, objectClassName, nameRouteFreight, nameExporterFreight, nameFreightTypeFreight, grossWeightFreight, tonnageFreight, palletCountFreight, volumeFreight, palletNumberFreight);
+
+            objImporter = addSingleGroupObject(importer, "Импортёр", name, addressSubject);
+
+            addPropertyDraw(invoiceFormImporterFreight, objImporter, objFreight);
+            addPropertyDraw(packingListFormImporterFreight, objImporter, objFreight);
 
             objArticle = addSingleGroupObject(article, "Артикул", selection, sidArticle, nameBrandSupplierArticle, originalNameArticle, sidCustomCategoryOriginArticle, nameCountryOfOriginArticle,
                     mainCompositionOriginArticle, additionalCompositionOriginArticle,
@@ -2499,7 +2505,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSkuFreight.groupTo);
 
-            addPropertyDraw(quantityFreightSku, objFreight, objSkuFreight);
+            addPropertyDraw(quantityFreightSku, objFreight, objSku);
             addPropertyDraw(sidCustomCategory10FreightSku, objFreight, objSkuFreight);
             addPropertyDraw(nameCountryOfOriginFreightSku, objFreight, objSkuFreight);
             addPropertyDraw(netWeightFreightSku, objFreight, objSkuFreight);
@@ -2507,10 +2513,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addPropertyDraw(mainCompositionOriginFreightSku, objFreight, objSkuFreight);
             addPropertyDraw(mainCompositionFreightSku, objFreight, objSkuFreight);
             addPropertyDraw(additionalCompositionOriginFreightSku, objFreight, objSkuFreight);
-            addPropertyDraw(additionalCompositionFreightSku, objFreight, objSkuFreight);            
+            addPropertyDraw(additionalCompositionFreightSku, objFreight, objSkuFreight);
+            addPropertyDraw(quantityImporterFreightSku, objImporter, objFreight, objSkuFreight);
+            addPropertyDraw(priceInOutImporterFreightSku, objImporter, objFreight, objSkuFreight);
+            addPropertyDraw(sumInOutImporterFreightSku, objImporter, objFreight, objSkuFreight);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightSku, objFreight, objSku)));
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightSku, objFreight, objSkuFreight)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightSku, objImporter, objFreight, objSkuFreight)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightArticle, objFreight, objArticle)));
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
@@ -2525,10 +2534,16 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
 
+            design.get(objFreight.groupTo).grid.constraints.fillHorizontal = 2;
+            design.get(objImporter.groupTo).grid.constraints.fillHorizontal = 1;
             design.get(objFreight.groupTo).grid.constraints.fillVertical = 1;
             design.get(objArticle.groupTo).grid.constraints.fillVertical = 4;
             design.get(objSku.groupTo).grid.constraints.fillVertical = 4;
             design.get(objSkuFreight.groupTo).grid.constraints.fillVertical = 4;
+
+            design.addIntersection(design.getGroupObjectContainer(objFreight.groupTo),
+                                   design.getGroupObjectContainer(objImporter.groupTo),
+                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             ContainerView specContainer = design.createContainer();
             design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objArticle.groupTo));
