@@ -1785,7 +1785,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objArticle.groupTo.setSingleClassView(ClassViewType.GRID);
 
             addPropertyDraw(numberListArticle, (box ? objSupplierBox : objInvoice), objArticle);
-            addPropertyDraw(objArticle, sidArticle, nameBrandSupplierArticle, originalNameArticle, sidCustomCategoryOriginArticle, nameCountrySupplierOfOriginArticle, nameCountryOfOriginArticle, netWeightArticle, mainCompositionOriginArticle, additionalCompositionOriginArticle, barcode);
+            addPropertyDraw(objArticle, sidArticle, nameBrandSupplierArticle, originalNameArticle, sidCustomCategoryOriginArticle,
+                    nameCountrySupplierOfOriginArticle, netWeightArticle, mainCompositionOriginArticle, additionalCompositionOriginArticle, barcode);
             addPropertyDraw(quantityListArticle, (box ? objSupplierBox : objInvoice), objArticle);
             addPropertyDraw(priceDocumentArticle, objInvoice, objArticle);
             addPropertyDraw(sumDocumentArticle, objInvoice, objArticle);
@@ -1826,7 +1827,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             if (box)
                 addPropertyDraw(sidSupplierBox, objSupplierBoxSpec);
             addPropertyDraw(new LP[] {barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
-                                      nameBrandSupplierArticleSku, nameCountryOfOriginSku, netWeightSku,
+                                      nameBrandSupplierArticleSku, nameCountryOfOriginArticleSku, nameCountryOfOriginSku, netWeightSku,
                                       mainCompositionOriginSku, additionalCompositionOriginSku}, objSku);
             addPropertyDraw(quantityListSku, (box ? objSupplierBoxSpec : objInvoice), objSku);
             addPropertyDraw(priceDocumentSku, objInvoice, objSku);
