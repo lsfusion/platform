@@ -34,6 +34,7 @@ import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.DataSession;
+import tmc.integration.exp.DeclarationExportActionProperty;
 import tmc.integration.imp.ClassifierTNVEDImportActionProperty;
 
 import javax.swing.*;
@@ -56,7 +57,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private ConcreteCustomClass item;
     protected AbstractCustomClass sku;
     private ConcreteCustomClass pallet;
-    private LP sidArticle;
+    public LP sidArticle;
     private LP articleCompositeItem;
     private LP articleSku;
     private ConcreteCustomClass order;
@@ -71,7 +72,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private AbstractCustomClass document;
     private AbstractCustomClass priceDocument;
     private AbstractCustomClass subject;
-    private LP addressSubject;
+    public LP addressSubject;
     private LP supplierDocument;
     private LP nameSupplierDocument;
     private LP sidDocument;
@@ -114,7 +115,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP nameUnitOfMeasureCategory;
     private LP unitOfMeasureArticle;
     private LP nameOriginUnitOfMeasureArticle;
-    private LP nameUnitOfMeasureArticle;
+    public LP nameUnitOfMeasureArticle;
     private LP unitOfMeasureArticleSku;
     private LP nameUnitOfMeasureArticleSku;
     private LP supplierTypeSupplier;
@@ -274,8 +275,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP routeFreight;
     private LP nameRouteFreight;
     private LP exporterFreight;
-    private LP nameExporterFreight;
-    private LP addressExporterFreight;
+    public LP nameExporterFreight;
+    public LP addressExporterFreight;
     private ConcreteCustomClass stock;
     private ConcreteCustomClass freightBox;
     private LP sidArticleSku;
@@ -480,11 +481,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP sumFreightImporterFreightSku;
     private LP quantityFreightArticle;
     private LP quantityFreightSku;
-    private LP quantityImporterFreightArticleCompositionCountryCategory;
-    private LP netWeightImporterFreightArticleCompositionCountryCategory;
-    private LP grossWeightImporterFreightArticleCompositionCountryCategory;
-    private LP priceImporterFreightArticleCompositionCountryCategory;
-    private LP sumImporterFreightArticleCompositionCountryCategory;    
+    public LP quantityImporterFreightArticleCompositionCountryCategory;
+    public LP netWeightImporterFreightArticleCompositionCountryCategory;
+    public LP grossWeightImporterFreightArticleCompositionCountryCategory;
+    public LP priceImporterFreightArticleCompositionCountryCategory;
+    public LP sumImporterFreightArticleCompositionCountryCategory;
     private ConcreteCustomClass freightComplete;
     private ConcreteCustomClass freightPriced;
     private ConcreteCustomClass freightChanged;
@@ -1486,6 +1487,12 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     protected void initIndexes() {
     }
 
+    public LP addDEAProp() {
+        return addProperty(null, new LP<ClassPropertyInterface>(new DeclarationExportActionProperty("declarationExport", "Экспорт декларанта", RomanBusinessLogics.this, importer, freight)));
+    }
+
+    public InvoiceFromFormEntity invoiceFromFormEntity;
+
     @Override
     protected void initNavigators() throws JRException, FileNotFoundException {
         NavigatorElement classifier = new NavigatorElement(baseElement, "classifier", "Справочники");
@@ -1504,7 +1511,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         createItemForm = addFormEntity(new CreateItemFormEntity(null, "createItemForm", "Ввод товара"));
 
         NavigatorElement printForms = new NavigatorElement(baseElement, "printForms", "Печатные формы");
-        addFormEntity(new InvoiceFromFormEntity(printForms, "invoiceFromForm", "Исходящие инвойсы"));
+        invoiceFromFormEntity = new InvoiceFromFormEntity(printForms, "invoiceFromForm", "Исходящие инвойсы");
+        addFormEntity(invoiceFromFormEntity);
         addFormEntity(new PackingListFormEntity(printForms, "packingListForm", "Исходящие упаковочные листы"));
         addFormEntity(new PackingListBoxFormEntity(printForms, "packingListBoxForm", "Упаковочные листы коробов"));
 
@@ -2529,14 +2537,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         }
     }
 
-    private class InvoiceFromFormEntity extends FormEntity<RomanBusinessLogics> {
+    public class InvoiceFromFormEntity extends FormEntity<RomanBusinessLogics> {
 
-        private ObjectEntity objFreight;
-        private ObjectEntity objImporter;
-        private ObjectEntity objArticle;
-        private ObjectEntity objCategory;
-        private ObjectEntity objComposition;
-        private ObjectEntity objCountry;
+        public ObjectEntity objFreight;
+        public ObjectEntity objImporter;
+        public ObjectEntity objArticle;
+        public ObjectEntity objCategory;
+        public ObjectEntity objComposition;
+        public ObjectEntity objCountry;
 
         private GroupObjectEntity gobjFreightImporter;
         private GroupObjectEntity gobjArticleCompositionCountryCategory;
@@ -2580,8 +2588,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addPropertyDraw(netWeightImporterFreightArticleCompositionCountryCategory, objImporter, objFreight, objArticle, objComposition, objCountry, objCategory);
             addPropertyDraw(grossWeightImporterFreightArticleCompositionCountryCategory, objImporter, objFreight, objArticle, objComposition, objCountry, objCategory);
             addPropertyDraw(priceImporterFreightArticleCompositionCountryCategory, objImporter, objFreight, objArticle, objComposition, objCountry, objCategory);
-            addPropertyDraw(sumImporterFreightArticleCompositionCountryCategory, objImporter, objFreight, objArticle, objComposition, objCountry, objCategory);                       
-            
+            addPropertyDraw(sumImporterFreightArticleCompositionCountryCategory, objImporter, objFreight, objArticle, objComposition, objCountry, objCategory);
+        
+            addPropertyDraw(addDEAProp(), objImporter, objFreight);
+
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreight, objImporter, objFreight)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightArticleCompositionCountryCategory, objImporter, objFreight, objArticle, objComposition, objCountry, objCategory)));
 

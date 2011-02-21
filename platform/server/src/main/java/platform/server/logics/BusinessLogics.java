@@ -2857,7 +2857,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return mapLI(readLI(params), listInterfaces);
     }
 
-    private <T extends LP<?>> T addProperty(AbstractGroup group, T lp) {
+    protected <T extends LP<?>> T addProperty(AbstractGroup group, T lp) {
         return addProperty(group, false, lp);
     }
 
