@@ -18,18 +18,18 @@
 	<field name="objectValueProperty_object" class="java.lang.Integer"/>
 	<field name="date" class="java.util.Date"/>
 	<field name="objectClassName" class="java.lang.String"/>
-	<field name="property91" class="java.lang.String"/>
-	<field name="property92" class="java.lang.String"/>
-	<field name="property103" class="java.lang.String"/>
+	<field name="property95" class="java.lang.String"/>
+	<field name="property96" class="java.lang.String"/>
+	<field name="property173" class="java.lang.String"/>
 	<field name="invoiceNumber" class="java.lang.String"/>
 	<field name="invoiceSeries" class="java.lang.String"/>
-	<field name="property205" class="java.lang.String"/>
+	<field name="property210" class="java.lang.String"/>
 	<field name="obj11" class="java.lang.Integer"/>
-	<field name="objectValueProperty_object12" class="java.lang.Integer"/>
+	<field name="objectValueProperty_object2" class="java.lang.Integer"/>
 	<field name="commonName" class="java.lang.String"/>
 	<field name="barcode" class="java.lang.String"/>
-	<field name="objectClassName15" class="java.lang.String"/>
-	<field name="property90" class="java.lang.String"/>
+	<field name="objectClassName2" class="java.lang.String"/>
+	<field name="property94" class="java.lang.String"/>
 	<field name="nameUnitOfMeasureArticle" class="java.lang.String"/>
 	<field name="priceDocument" class="java.lang.Double"/>
 	<variable name="SysDate" class="java.util.Date" resetType="None">
