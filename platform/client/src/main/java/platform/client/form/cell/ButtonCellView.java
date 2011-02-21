@@ -62,8 +62,8 @@ public class ButtonCellView extends ClientButton implements CellView {
                 }
             }
         });
-        setMinimumSize(new Dimension(0, 14));
-        setMaximumSize(new Dimension(32767, 16));
+
+        setDefaultSizes();
     }
 
     public JComponent getComponent() {
@@ -114,8 +114,12 @@ public class ButtonCellView extends ClientButton implements CellView {
             setMaximumSize(new Dimension(key.design.image.getIconWidth() + 2, key.design.image.getIconHeight() + 2));
         } else {
             setPreferredSize(null);
-            setMinimumSize(new Dimension(0, 14));
-            setMaximumSize(new Dimension(32767, 16));
+            setDefaultSizes();
         }
+    }
+
+    private void setDefaultSizes() {
+        setMinimumSize(new Dimension(0, 18));
+        setMaximumSize(new Dimension(32767, 18));
     }
 }
