@@ -68,8 +68,8 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
         return table.join(BaseUtils.join(mapKeys, mapExprs)).getWhere();
     }
 
-    public void insertRecord(SQLSession session, Map<K, DataObject> keyObjects, Map<V, ObjectValue> propertyObjects, boolean update) throws SQLException {
-        table = table.insertRecord(session, BaseUtils.join(mapKeys, keyObjects), BaseUtils.join(mapProps, propertyObjects), update, this);
+    public void insertRecord(SQLSession session, Map<K, DataObject> keyObjects, Map<V, ObjectValue> propertyObjects, boolean update, boolean groupLast) throws SQLException {
+        table = table.insertRecord(session, BaseUtils.join(mapKeys, keyObjects), BaseUtils.join(mapProps, propertyObjects), update, groupLast, this);
     }
 
     public void deleteRecords(SQLSession session, Map<K, DataObject> keyObjects) throws SQLException {

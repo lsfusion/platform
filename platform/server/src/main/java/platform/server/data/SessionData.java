@@ -27,7 +27,7 @@ public interface SessionData<T extends SessionData<T>> extends MapValues<T>, Map
 
     void drop(SQLSession session, Object owner) throws SQLException;
 
-    SessionData insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, Object owner) throws SQLException;
+    SessionData insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, boolean groupLast, Object owner) throws SQLException;
 
     SessionData rewrite(SQLSession session, Collection<Map<KeyField, DataObject>> writeRows, Object owner) throws SQLException;
 

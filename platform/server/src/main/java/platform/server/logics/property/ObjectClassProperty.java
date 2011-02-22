@@ -57,7 +57,7 @@ public class ObjectClassProperty extends ExecuteProperty {
         if(mapObjects.size()>0 && BaseUtils.singleValue(mapObjects) instanceof ObjectInstance)
             remoteForm.changeClass((CustomObjectInstance) BaseUtils.singleValue(mapObjects), BaseUtils.singleValue(keys), (Integer)value.getValue());
         else
-            session.changeClass(BaseUtils.singleValue(keys), baseClass.findConcreteClassID((Integer) value.getValue()));
+            session.changeClass(BaseUtils.singleValue(keys), baseClass.findConcreteClassID((Integer) value.getValue()), groupLast);
     }
 
     protected Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {

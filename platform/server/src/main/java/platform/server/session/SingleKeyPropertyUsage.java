@@ -7,7 +7,6 @@ import platform.server.data.query.Join;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 
-import java.util.List;
 import java.util.Collections;
 import java.sql.SQLException;
 
@@ -21,8 +20,8 @@ public class SingleKeyPropertyUsage extends SinglePropertyTableUsage<String> {
         }, propertyType);
     }
         
-    public void insertRecord(SQLSession session, DataObject keyObject, ObjectValue propertyObject, boolean update) throws SQLException {
-        insertRecord(session, Collections.singletonMap("key", keyObject),Collections.singletonMap("value", propertyObject), update);
+    public void insertRecord(SQLSession session, DataObject keyObject, ObjectValue propertyObject, boolean update, boolean groupLast) throws SQLException {
+        insertRecord(session, Collections.singletonMap("key", keyObject),Collections.singletonMap("value", propertyObject), update, groupLast);
     }
 
     public Join<String> join(Expr expr) {

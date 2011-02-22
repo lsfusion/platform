@@ -253,12 +253,19 @@ public class SQLSession extends MutableObject {
         }
     }
 
+    public void vacuumSessionTable(String table) throws SQLException {
+        if(inTransaction)
+            execute("ANALYZE " + table);
+        else
+            execute("VACUUM ANALYZE " + table);
+    }
+
     public void vacuumTemporaryTables() throws SQLException {
         synchronized (sessionTablesMap) {
             removeUnusedTemporaryTables();
 
             for(String sessionTable : sessionTablesMap.keySet())
-                execute("VACUUM ANALYZE " + sessionTable);
+                vacuumSessionTable(sessionTable);
         }
 
     }
@@ -505,10 +512,6 @@ public class SQLSession extends MutableObject {
         execute("DELETE FROM " + table.getName(syntax) + (deleteWhere.length() == 0 ? "" : " WHERE " + deleteWhere));
     }
 
-    public void deleteAllRecords(Table table) throws SQLException {
-        execute("DELETE FROM " + table.getName(syntax));
-    }
-
     public int updateRecords(ModifyQuery modify) throws SQLException {
         return executeDML(modify.getUpdate(syntax));
     }
@@ -610,5 +613,9 @@ public class SQLSession extends MutableObject {
             for (T expr : order)
                 result.put(names.get(expr), exprs.get(expr));
         return result;
+    }
+
+    public void vacuumSessionTable(SessionTable table) throws SQLException {
+        vacuumSessionTable(table.getName(syntax));
     }
 }

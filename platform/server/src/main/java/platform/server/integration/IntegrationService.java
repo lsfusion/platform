@@ -1,11 +1,6 @@
 package platform.server.integration;
 
-import platform.base.BaseUtils;
 import platform.server.classes.IntegerClass;
-import platform.server.data.KeyField;
-import platform.server.data.SessionTable;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.query.Query;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
@@ -42,11 +37,12 @@ public class IntegrationService {
         SingleKeyTableUsage<ImportField> importTable = new SingleKeyTableUsage<ImportField>(IntegerClass.instance, table.fields, ImportField.typeGetter);
 
         int counter = 0;
-        for(ImportTable.Row row : table) {
+        for (Iterator iterator = table.iterator(); iterator.hasNext();) {
+            PlainDataTable.Row row = (PlainDataTable.Row) iterator.next();
             Map<ImportField, ObjectValue> insertRow = new HashMap<ImportField, ObjectValue>();
-            for(ImportField field : table.fields)
+            for (ImportField field : table.fields)
                 insertRow.put(field, ObjectValue.getValue(row.getValue(field), field.getFieldClass()));
-            importTable.insertRecord(session.sql, new DataObject(counter++), insertRow, false);
+            importTable.insertRecord(session.sql, new DataObject(counter++), insertRow, false, !iterator.hasNext());
         }
 
         // приходится через addKeys, так как synchronize сам не может resolv'ить сессию на добавление
@@ -124,8 +120,9 @@ public class IntegrationService {
                         public Type getType(Object o) {return null;}
                     });
 
-            for (DataObject keyValue : keyValueLists.get(key)) {
-                table.insertRecord(session.sql, Collections.singletonMap("key", keyValue), new HashMap<Object, ObjectValue>(), false);
+            for (Iterator<DataObject> iterator = keyValueLists.get(key).iterator(); iterator.hasNext();) {
+                DataObject keyValue = iterator.next();
+                table.insertRecord(session.sql, Collections.singletonMap("key", keyValue), new HashMap<Object, ObjectValue>(), false, !iterator.hasNext());
             }
 
             Query<String, Object> query = new Query<String, Object>(Collections.singletonList("key"));

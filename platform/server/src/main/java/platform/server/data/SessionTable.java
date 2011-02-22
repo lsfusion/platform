@@ -5,9 +5,9 @@ import platform.interop.Compare;
 import platform.server.caches.AbstractMapValues;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
+import platform.server.caches.MapValues;
 import platform.server.caches.hash.HashContext;
 import platform.server.caches.hash.HashValues;
-import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.query.CompileSource;
@@ -27,30 +27,16 @@ import java.util.*;
 import static java.util.Collections.singletonMap;
 import static platform.base.BaseUtils.merge;
 
-public class SessionTable extends Table implements SessionData<SessionTable>, Value {// в явную хранимые ряды
+public class SessionTable extends Table implements MapValues<SessionTable>, Value {// в явную хранимые ряды
 
     public SessionTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Object owner) throws SQLException {
-        this(session, keys, properties, classes, propertyClasses, new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>(), owner);
+        super(session.createTemporaryTable(keys, properties, owner), keys, properties, classes, propertyClasses);
     }
 
     public SessionTable(SQLSession session, Object owner) throws SQLException { // создает пустую таблицу с одной записью
-        this(session, new ArrayList<KeyField>(), new HashSet<PropertyField>(),
-                Collections.<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>singletonMap(new HashMap<KeyField, DataObject>(), new HashMap<PropertyField, ObjectValue>()), owner);
-    }
+        this(session, new ArrayList<KeyField>(), new HashSet<PropertyField>(), ClassWhere.<KeyField>STATIC(true), new HashMap<PropertyField, ClassWhere<Field>>(), owner);
 
-    public SessionTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows, Object owner) throws SQLException {
-        this(session, keys, properties, getFieldsClassWheres(rows), rows, owner);
-    }
-
-    private SessionTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> filedsWheres, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows, Object owner) throws SQLException {
-        this(session, keys, properties, filedsWheres.first, filedsWheres.second, rows, owner);
-    }
-
-    public SessionTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows, Object owner) throws SQLException {
-        super(session.createTemporaryTable(keys, properties, owner), keys, properties, classes, propertyClasses);
-        for (Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> row : rows.entrySet()) {
-            session.insertRecord(this, row.getKey(), row.getValue());
-        }
+        insertSessionRecord(session, new HashMap<KeyField, DataObject>(), new HashMap<PropertyField, ObjectValue>(), false, false); // можно и true groupLast делать но без разницы все равно обращения не будет
     }
 
     public SessionTable(String name, List<KeyField> keys, Set<PropertyField> properties, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses) {
@@ -226,50 +212,39 @@ public class SessionTable extends Table implements SessionData<SessionTable>, Va
         return new Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>>(keysClassWhere, propertiesClassWheres);
     }
 
-    public SessionTable insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, Object owner) throws SQLException {
+    public SessionTable insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, boolean groupLast, Object owner) throws SQLException {
+
+        insertSessionRecord(session, keyFields, propFields, update, groupLast);
 
         Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orClasses = orFieldsClassWheres(classes, propertyClasses, keyFields, propFields);
+        return new SessionTable(name, keys, properties, orClasses.first, orClasses.second);
+    }
 
+    private void insertSessionRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, boolean groupLast) throws SQLException {
         if (update) {
             session.updateInsertRecord(this, keyFields, propFields);
         } else {
             session.insertRecord(this, keyFields, propFields);
         }
 
-        return new SessionTable(name, keys, properties, orClasses.first, orClasses.second);
+        if(groupLast)
+            session.vacuumSessionTable(this);
     }
 
-    // "обновляет" ключи в таблице
-    public SessionData rewrite(SQLSession session, Collection<Map<KeyField, DataObject>> writeRows, Object owner) throws SQLException {
-        return SessionRows.rewrite(this, session, writeRows, owner);
-    }
-
-    public SessionData rewrite(SQLSession session, Query<KeyField, PropertyField> query, BaseClass baseClass, QueryEnvironment env, Object owner) throws SQLException {
-        return SessionRows.rewrite(this, session, query, baseClass, env, owner);
-    }
-
-    public SessionTable deleteRecords(SQLSession session, Map<KeyField, DataObject> keys) throws SQLException {
+    public void deleteRecords(SQLSession session, Map<KeyField, DataObject> keys) throws SQLException {
         session.deleteKeyRecords(this, DataObject.getMapValues(keys));
-        return this;
     }
 
-    public SessionTable deleteAllRecords(SQLSession session) throws SQLException {
-        session.deleteAllRecords(this);
-        return this;
-    }
-
-    public SessionTable deleteKey(SQLSession session, KeyField mapField, DataObject object) throws SQLException {
+    public void deleteKey(SQLSession session, KeyField mapField, DataObject object) throws SQLException {
         session.deleteKeyRecords(this, Collections.singletonMap(mapField, object.object));
-        return this;
     }
 
-    public SessionTable deleteProperty(SQLSession session, PropertyField property, DataObject object) throws SQLException {
+    public void deleteProperty(SQLSession session, PropertyField property, DataObject object) throws SQLException {
         Query<KeyField, PropertyField> dropValues = new Query<KeyField, PropertyField>(this);
         platform.server.data.query.Join<PropertyField> dataJoin = joinAnd(dropValues.mapKeys);
         dropValues.and(dataJoin.getExpr(property).compare(object, Compare.EQUALS));
         dropValues.properties.put(property, Expr.NULL);
         session.updateRecords(new ModifyQuery(this, dropValues));
-        return this;
     }
 
     public SessionTable addFields(SQLSession session, List<KeyField> keys, Map<KeyField, DataObject> addKeys, Map<PropertyField, ObjectValue> addProps) throws SQLException {

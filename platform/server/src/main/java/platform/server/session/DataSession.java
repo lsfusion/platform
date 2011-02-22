@@ -199,7 +199,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
 
         assert Collections.disjoint(addClasses,removeClasses);
 
-        changeClass(addClasses, removeClasses, toClass, change, sql);
+        changeClass(addClasses, removeClasses, toClass, change, sql, groupLast);
 
         newClasses.put(change,toClass);
 
@@ -214,7 +214,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
     }
 
     public void changeProperty(DataProperty property, Map<ClassPropertyInterface, DataObject> keys, ObjectValue newValue, boolean groupLast) throws SQLException {
-        changeProperty(property, keys, newValue, sql);
+        changeProperty(property, keys, newValue, sql, groupLast);
 
         if(groupLast) // по тем по кому не было restart'а new -> to
             updateProperties(new SimpleChanges(getUsedChanges(), property));
@@ -478,14 +478,14 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
         return !add.isEmpty() || !remove.isEmpty() || !data.isEmpty() || news!=null;
     }
 
-    public void changeClass(Set<CustomClass> addClasses, Set<CustomClass> removeClasses, ConcreteObjectClass toClass, DataObject change, SQLSession session) throws SQLException {
+    public void changeClass(Set<CustomClass> addClasses, Set<CustomClass> removeClasses, ConcreteObjectClass toClass, DataObject change, SQLSession session, boolean groupLast) throws SQLException {
         for(CustomClass addClass : addClasses) {
             SingleKeyNoPropertyUsage addTable = add.get(addClass);
             if(addTable==null) { // если нету таблицы создаем
                 addTable = new SingleKeyNoPropertyUsage(ObjectType.instance);
                 add.put(addClass, addTable);
             }
-            addTable.insertRecord(session, change, false);
+            addTable.insertRecord(session, change, false, groupLast);
 
             SingleKeyNoPropertyUsage removeTable = remove.get(addClass);
             if(removeTable!=null)
@@ -497,7 +497,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
                 removeTable = new SingleKeyNoPropertyUsage(ObjectType.instance);
                 remove.put(removeClass, removeTable);
             }
-            removeTable.insertRecord(session, change, false);
+            removeTable.insertRecord(session, change, false, groupLast);
 
             SingleKeyNoPropertyUsage addTable = add.get(removeClass);
             if(addTable!=null)
@@ -515,16 +515,16 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
 
         if(news ==null)
             news = new SingleKeyPropertyUsage(ObjectType.instance, ObjectType.instance);
-        news.insertRecord(session, change, toClass.getClassObject(), true);
+        news.insertRecord(session, change, toClass.getClassObject(), true, groupLast);
     }
 
-    public void changeProperty(final DataProperty property, Map<ClassPropertyInterface, DataObject> keys, ObjectValue newValue, SQLSession session) throws SQLException {
+    public void changeProperty(final DataProperty property, Map<ClassPropertyInterface, DataObject> keys, ObjectValue newValue, SQLSession session, boolean groupLast) throws SQLException {
         SinglePropertyTableUsage<ClassPropertyInterface> dataChange = data.get(property);
         if(dataChange == null) { // создадим таблицу, если не было
             dataChange = property.createChangeTable();
             data.put(property, dataChange);
         }
-        dataChange.insertRecord(session, keys, newValue, true);
+        dataChange.insertRecord(session, keys, newValue, true, groupLast);
     }
 
     public void dropTables(SQLSession session) throws SQLException {
@@ -547,7 +547,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
         Where isClassWhere = expr.isClass(isClass.getUpSet());
 
         if(isClass instanceof CustomClass) {
-            SingleKeyNoPropertyUsage removeTable = remove.get((CustomClass)isClass);
+            SingleKeyNoPropertyUsage removeTable = remove.get((CustomClass) isClass);
             if(removeTable!=null) {
                 Where removeWhere = removeTable.getWhere(expr);
                 isClassWhere = isClassWhere.and(removeWhere.not());

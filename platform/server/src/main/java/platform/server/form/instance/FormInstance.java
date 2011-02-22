@@ -287,7 +287,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     public void expandGroupObject(GroupObjectInstance group, Map<ObjectInstance, DataObject> value) throws SQLException {
         if(group.expandTable==null)
             group.expandTable = group.createKeyTable();
-        group.expandTable.insertRecord(session.sql, value, true);
+        group.expandTable.insertRecord(session.sql, value, true, true);
         group.updated |= UPDATED_EXPANDS;
     }
 

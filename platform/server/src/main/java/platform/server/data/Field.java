@@ -16,6 +16,14 @@ public abstract class Field extends TwinImmutableObject {
     public String name;
     public Type type;
 
+    public static <F extends Field> Type.Getter<F> typeGetter() {
+        return new Type.Getter<F> () {
+            public Type getType(F key) {
+                return key.type;
+            }
+        };
+    }
+
     protected Field(String name,Type type) {
         this.name = name;
         this.type = type;

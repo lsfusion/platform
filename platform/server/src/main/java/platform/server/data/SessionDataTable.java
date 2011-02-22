@@ -10,14 +10,12 @@ import platform.server.caches.hash.HashValues;
 import platform.server.classes.BaseClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.expr.where.CompareWhere;
 import platform.server.data.query.CaseJoin;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
-import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 
@@ -119,13 +117,13 @@ public class SessionDataTable implements SessionData<SessionDataTable> {
         return hashCode;
     }
 
-    public SessionDataTable insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, Object owner) throws SQLException {
+    public SessionDataTable insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, boolean groupLast, Object owner) throws SQLException {
         
         Map<KeyField, DataObject> fixedKeyValues = BaseUtils.mergeEquals(keyFields, keyValues);
         Map<PropertyField, ObjectValue> fixedPropValues = BaseUtils.mergeEquals(propFields, propertyValues);
 
         return new SessionDataTable(table.addFields(session, BaseUtils.filterNotList(keys, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(keyValues, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(propertyValues, fixedPropValues.keySet())).
-              insertRecord(session, BaseUtils.filterNotKeys(keyFields, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(propFields, fixedPropValues.keySet()), update, owner),
+              insertRecord(session, BaseUtils.filterNotKeys(keyFields, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(propFields, fixedPropValues.keySet()), update, groupLast, owner),
                 keys, fixedKeyValues, fixedPropValues);
     }
 
@@ -143,39 +141,29 @@ public class SessionDataTable implements SessionData<SessionDataTable> {
     }
 
     public SessionData deleteRecords(SQLSession session, Map<KeyField, DataObject> deleteKeys) throws SQLException {
-        for (Map.Entry<KeyField, DataObject> entry : keyValues.entrySet()) //если константная часть ключа не равна, то нечего удалять
-            if (!entry.getValue().equals(deleteKeys.get(entry.getKey())))
-                return this;
-
-        return new SessionDataTable(table.deleteRecords(session, filterKeys(deleteKeys, table.keys)), keys, keyValues, propertyValues);
+        if(BaseUtils.filterKeys(deleteKeys, keyValues.keySet()).equals(keyValues)) //если константная часть ключа не равна, то нечего удалять
+            table.deleteRecords(session, filterKeys(deleteKeys, table.keys));
+        return this;
     }
 
     public SessionData deleteKey(SQLSession session, KeyField mapField, DataObject object) throws SQLException {
-        SessionTable newTable;
         DataObject keyValue = keyValues.get(mapField);
         if (keyValue!=null) {
             if (keyValue.equals(object)) //удаляем всё
-                newTable = table.deleteAllRecords(session);
-            else
-                newTable = table;
+                return new SessionRows(keys, getProperties());
         } else
-            newTable = table.deleteKey(session, mapField, object);
-
-        return new SessionDataTable(newTable, keys, keyValues, propertyValues);
+            table.deleteKey(session, mapField, object);
+        return this;
     }
 
     public SessionData deleteProperty(SQLSession session, PropertyField property, DataObject object) throws SQLException {
-        SessionTable newTable;
         ObjectValue propValue = propertyValues.get(property);
         if (propValue!=null) {
             if (propValue.equals(object)) //удаляем всё
-                newTable = table.deleteAllRecords(session);
-            else
-                newTable = table;
+                return new SessionRows(keys, getProperties());
         } else
-            newTable = table.deleteProperty(session, property, object);
-
-        return new SessionDataTable(newTable, keys, keyValues, propertyValues);
+            table.deleteProperty(session, property, object);
+        return this;
     }
 
     private HashComponents<Value> components = null;

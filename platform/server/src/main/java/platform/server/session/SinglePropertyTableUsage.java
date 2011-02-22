@@ -2,7 +2,6 @@ package platform.server.session;
 
 import platform.server.data.type.Type;
 import platform.server.data.SQLSession;
-import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 
@@ -21,7 +20,7 @@ public class SinglePropertyTableUsage<K> extends SessionTableUsage<K, String> {
         });
     }
     
-    public void insertRecord(SQLSession session, Map<K, DataObject> keyFields, ObjectValue propertyValue, boolean update) throws SQLException {
-        insertRecord(session, keyFields, Collections.singletonMap("value", propertyValue), update);
+    public void insertRecord(SQLSession session, Map<K, DataObject> keyFields, ObjectValue propertyValue, boolean update, boolean groupLast) throws SQLException {
+        insertRecord(session, keyFields, Collections.singletonMap("value", propertyValue), update, groupLast);
     }
 }
