@@ -16,6 +16,8 @@ public class ClientDialog extends ClientModalForm {
     public Object dialogValue;
 
     public boolean showQuickFilterOnStartup = true;
+    private boolean activatedFirstTime = true;
+
     private RemoteDialogInterface remoteDialog;
 
     public ClientDialog(Component owner, final RemoteDialogInterface dialog) throws IOException, ClassNotFoundException {
@@ -43,8 +45,12 @@ public class ClientDialog extends ClientModalForm {
 
                 if (initialFilterPropertyDrawID > 0) {
                     currentForm.quickEditFilter(initialFilterPropertyDrawID);
-                } else {
+                } else if (activatedFirstTime) {
                     KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(currentForm.getComponent());
+                }
+
+                if (activatedFirstTime) {
+                    activatedFirstTime = false;
                 }
             }
         });

@@ -55,7 +55,7 @@ public abstract class GridView extends JPanel {
 
         queriesContainer = new JPanel();
         queriesContainer.setBorder(new EmptyBorder(0, 0, 0, 0));
-        queriesContainer.setLayout(new BoxLayout(queriesContainer, BoxLayout.Y_AXIS));
+        queriesContainer.setLayout(new BoxLayout(queriesContainer, BoxLayout.X_AXIS));
         movingPropertiesContainer = new JPanel();
         movingPropertiesContainer.setLayout(new BoxLayout(movingPropertiesContainer, BoxLayout.X_AXIS));
 

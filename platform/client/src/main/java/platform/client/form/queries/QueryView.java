@@ -224,7 +224,7 @@ public abstract class QueryView extends JPanel {
 
         collapseButton.setVisible(condViews.size() > 0);
 
-        getParent().validate();
+        getParent().getParent().validate();
 //        validate();
     }
 

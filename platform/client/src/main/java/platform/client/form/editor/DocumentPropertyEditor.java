@@ -1,10 +1,10 @@
 package platform.client.form.editor;
 
 import platform.base.BaseUtils;
+import platform.interop.KeyStrokes;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.EventObject;
 
@@ -18,7 +18,7 @@ public class DocumentPropertyEditor extends FilePropertyEditor {
 
     @Override
     public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) throws IOException, ClassNotFoundException {
-        if (editEvent instanceof KeyEvent && ((KeyEvent) editEvent).getKeyCode() == KeyEvent.VK_SPACE) {
+        if (KeyStrokes.isSpaceEvent(editEvent)) {
             returnValue = this.showOpenDialog(null);
         } else {
             openDocument();
