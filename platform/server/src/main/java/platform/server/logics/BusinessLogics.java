@@ -544,6 +544,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP concat2;
     protected LP percent;
     protected LP percent2;
+    protected LP yearInDate;
 
     protected LP vtrue, vzero;
 
@@ -1019,6 +1020,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         between = addJProp("Между", and1, groeq2, 1, 2, groeq2, 3, 1);
         vtrue = addCProp("Истина", LogicalClass.instance, true);
         vzero = addCProp("0", DoubleClass.instance, 0);
+
+        yearInDate = addSFProp("(extract(year from prm1))", IntegerClass.instance, 1);
 
         delete = addAProp(new DeleteObjectActionProperty(genSID(), baseClass));
 
