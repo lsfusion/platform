@@ -12,6 +12,8 @@
           <exclude>org.bouncycastle:bcmail-jdk14</exclude>
           <exclude>org.bouncycastle:bcprov-jdk14</exclude>
           <exclude>log4j:apache-log4j-extras</exclude>
+          <exclude>org.apache.xmlgraphics:batik-ext</exclude>
+          <exclude>xalan:xalan</exclude>
       </excludes>
       <unpack>true</unpack>
       <unpackOptions>
@@ -30,10 +32,23 @@
        <unpackOptions>
            <excludes>
                <exclude>org/apache/commons/collections/**</exclude>
-               <exclude>META-INF/*.*</exclude>
+               <exclude>META-INF/**</exclude>
            </excludes>
        </unpackOptions>
     </dependencySet>
+      <dependencySet>
+         <includes>
+             <include>xalan:xalan</include>
+         </includes>
+         <unpack>true</unpack>
+         <unpackOptions>
+             <excludes>
+                 <exclude>org/w3c/dom/**</exclude>
+                 <exclude>META-INF/**</exclude>
+                 <exclude>license/**</exclude>
+             </excludes>
+         </unpackOptions>
+      </dependencySet>
       <dependencySet>
          <includes>
              <include>log4j:apache-log4j-extras</include>
