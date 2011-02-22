@@ -35,7 +35,6 @@ import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.DataSession;
 import tmc.integration.exp.DeclarationExportActionProperty;
-import tmc.integration.imp.ClassifierTNVEDImportActionProperty;
 import tmc.integration.imp.ClassifierTNVEDImportActionProperty2;
 
 import javax.swing.*;
@@ -2950,6 +2949,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 return super.getCellString(row, column);
             } else if (column == LAST_COLUMN + 1) {
                 return String.valueOf(currentRow + 1);
+            } else if (column == LAST_COLUMN + 2) {
+                String customCode = super.getCellString(row, K);
+                return customCode.substring(0, Math.min(6, customCode.length()));
             } else {
                 return "";
             }
@@ -2990,6 +2992,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         protected String getCellString(int row, int column) {
             if (column == LAST_COLUMN + 1) {
                 return String.valueOf(currentRow + 1);
+            } else if (column == LAST_COLUMN + 2) {
+                String customCode = super.getCellString(row, K);
+                return customCode.substring(0, Math.min(6, customCode.length()));
             }
             return super.getCellString(row, column);
         }
@@ -3018,7 +3023,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         private ImportField invoiceSIDField, boxNumberField, barCodeField, colorCodeField, sidField,
         colorNameField, sizeField, compositionField, countryField, customCodeField, unitPriceField,
-        unitQuantityField, unitNetWeightField, originalNameField, numberSkuField;
+        unitQuantityField, unitNetWeightField, originalNameField, numberSkuField, customCode6Field;
 
         private final ClassPropertyInterface supplierInterface;
 
@@ -3033,13 +3038,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             Object[] jennyferParams = new Object[] {invoiceSIDField, boxNumberField, barCodeField, colorCodeField,
                     new ImportField[] {sidField, colorNameField, sizeField}, null, compositionField, null, null,
                     countryField, customCodeField, null, null, unitPriceField, unitQuantityField, null,
-                    numberSkuField, unitNetWeightField, originalNameField};
+                    numberSkuField, customCode6Field, unitNetWeightField, originalNameField};
 
             Object[] tallyWeijlParams = new Object[] {null, null, invoiceSIDField, null, null, null, null, null,
                         compositionField, countryField, boxNumberField, customCodeField, barCodeField, null,
                         sizeField, colorCodeField, sidField, new ImportField[] {originalNameField, colorNameField},
                         null, null, null, null, unitQuantityField, unitNetWeightField, null, null, null, null, null,
-                        unitPriceField, null, null, numberSkuField};
+                        unitPriceField, null, null, numberSkuField, customCode6Field};
 
             String supplierTypeId = supplierType.getSID(type);
             if (supplierTypeId.equals("jennyfer")) {
@@ -3061,6 +3066,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             compositionField = new ImportField(mainCompositionOriginArticle);
             countryField = new ImportField(name);
             customCodeField = new ImportField(sidCustomCategoryOrigin);
+            customCode6Field = new ImportField(sidCustomCategory6);
             unitPriceField = new ImportField(quantityDataListSku);
             unitQuantityField = new ImportField(priceDataDocumentItem);
             unitNetWeightField = new ImportField(netWeightArticle);
@@ -3124,6 +3130,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             properties.add(new ImportProperty(customCodeField, sidCustomCategoryOrigin.getMapping(customCategoryKey)));
             properties.add(new ImportProperty(customCodeField, customCategoryOriginArticle.getMapping(articleKey), object(customCategoryOrigin).getMapping(customCategoryKey)));
 
+            ImportKey<?> customCategory6Key = new ImportKey(customCategory6, sidToCustomCategory6.getMapping(customCode6Field));
+            properties.add(new ImportProperty(customCode6Field, sidCustomCategory6.getMapping(customCategory6Key)));
+
             ImportKey<?> colorKey = new ImportKey(colorSupplier, colorSIDSupplier.getMapping(colorCodeField, supplier));
             properties.add(new ImportProperty(colorCodeField, sidColorSupplier.getMapping(colorKey)));
             properties.add(new ImportProperty(supplier, supplierColorSupplier.getMapping(colorKey)));
@@ -3142,7 +3151,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             properties.add(new ImportProperty(unitPriceField, priceDocumentArticle.getMapping(invoiceKey, articleKey)));
 
 
-            ImportKey<?>[] keysArray = {invoiceKey, boxKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey};
+            ImportKey<?>[] keysArray = {invoiceKey, boxKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key};
             new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
 
             actions.add(new MessageClientAction("Данные были успешно приняты", "Импорт"));
