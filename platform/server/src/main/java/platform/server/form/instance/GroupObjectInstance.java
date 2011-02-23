@@ -527,8 +527,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 orderSeeks = userSeeks;
                 updateKeys = true;
                 currentObject = new HashMap<ObjectInstance, DataObject>();
-            } else if (updateKeys) // изменились фильтры, порядки, вид, ищем текущий объект
+            } else if (updateKeys) {
+                // изменились фильтры, порядки, вид, ищем текущий объект
                 orderSeeks = new SeekObjects(false, currentObject);
+            }
 
             if (!updateKeys && curClassView == GRID && !currentObject.isEmpty() && (updated & UPDATED_OBJECT) != 0) { // скроллирование
                 int keyNum = keys.indexOf(currentObject);

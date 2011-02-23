@@ -109,7 +109,7 @@ public class ButtonCellView extends ClientButton implements CellView {
     public void changeViewType(ClassViewType type) {
         toToolbar = (type == ClassViewType.GRID);
         setCaption(caption);
-        if (toToolbar) {
+        if (toToolbar && key.design.image != null) {
             setPreferredSize(new Dimension(key.design.image.getIconWidth() + 2, key.design.image.getIconHeight() + 2));
             setMaximumSize(new Dimension(key.design.image.getIconWidth() + 2, key.design.image.getIconHeight() + 2));
         } else {

@@ -970,7 +970,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         supplierList = addJProp(idGroup, "supplierList", "Поставщик (ИД)", supplierDocument, documentList, 1);
 
         articleSIDList = addJProp(idGroup, "articleSIDList", "Артикул (ИД)", articleSIDSupplier, 1,
-                supplierList, 2);
+                                  supplierList, 2);
 
         numberListArticle = addDProp(baseGroup, "numberListArticle", "Номер", IntegerClass.instance, list, article);
         numberListSIDArticle = addJProp(numberListArticle, 1, articleSIDList, 2, 1);
@@ -1015,7 +1015,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 //                quantityDocumentSku, 2, 3);
 
         quantityOrderInvoiceSku = addDProp(baseGroup, "quantityOrderInvoiceSku", "Кол-во по заказу/инвойсу (расч.)", DoubleClass.instance,
-                order, invoice, sku);
+                                           order, invoice, sku);
 
         invoicedOrderSku = addSGProp(baseGroup, "invoicedOrderSku", "Выставлено инвойсов", quantityOrderInvoiceSku, 1, 3);
 
@@ -1033,10 +1033,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         quantityDocumentArticleCompositeSize = addSGProp(baseGroup, "quantityDocumentArticleCompositeSize", "Кол-во", quantityDocumentSku, 1, articleCompositeItem, 2, sizeSupplierItem, 2);
 
         quantityDocumentArticleCompositeColorSize = addDGProp(baseGroup, "quantityDocumentArticleCompositeColorSize", "Кол-во",
-                1, false,
-                quantityDocumentSku, 1, articleCompositeItem, 2, colorSupplierItem, 2, sizeSupplierItem, 2,
-                addCProp(DoubleClass.instance, Double.MAX_VALUE, document, sku), 1, 2,
-                2);
+                                                              1, false,
+                                                              quantityDocumentSku, 1, articleCompositeItem, 2, colorSupplierItem, 2, sizeSupplierItem, 2,
+                                                              addCProp(DoubleClass.instance, Double.MAX_VALUE, document, sku), 1, 2,
+                                                              2);
         quantityDocumentArticleCompositeColorSize.property.setFixedCharWidth(2);
 
         orderedOrderInvoiceArticle = addJProp(and1, quantityListArticle, 1, 3, inOrderInvoice, 1, 2);
@@ -1323,8 +1323,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 importerInvoice, 1, 2, 3);
 
         quantityImporterFreightSku = addSUProp(baseGroup, "quantityImporterFreightSku", true, "Кол-во", Union.SUM,
-                addSGProp(quantityImporterStockSku, 1, freightFreightBox, 2, 3),
-                addSGProp(quantityDocumentSku, importerInvoice, 1, freightDirectInvoice, 1, 2));
+                                               addSGProp(quantityImporterStockSku, 1, freightFreightBox, 2, 3),
+                                               addSGProp(quantityDocumentSku, importerInvoice, 1, freightDirectInvoice, 1, 2));
 
         quantityFreightArticle = addSGProp(baseGroup, "quantityFreightArticle", "Кол-во", quantityImporterFreightSku, 2, articleSku, 3);
         quantityFreightSku = addSGProp(baseGroup, "quantityFreightSku", true, "Кол-во", quantityImporterFreightSku, 2, 3);
@@ -1374,8 +1374,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         
         priceImporterFreightSku = addDProp(baseGroup, "priceImporterFreightSku", "Цена входная", DoubleClass.instance, importer, freight, sku);
         priceMaxImporterFreightSku = addSUProp(baseGroup, "priceMaxImporterFreightSku", true, "Цена входная", Union.MAX,
-                addMGProp(priceInInvoiceStockSku, importerInvoice, 1, freightFreightBox, 2, 3),
-                addMGProp(priceDocumentSku, importerInvoice, 1, freightDirectInvoice, 1, 2));
+                                               addMGProp(priceInInvoiceStockSku, importerInvoice, 1, freightFreightBox, 2, 3),
+                                               addMGProp(priceDocumentSku, importerInvoice, 1, freightDirectInvoice, 1, 2));
         priceInImporterFreightSku = addSUProp(baseGroup, "priceInImporterFreightSku", "Цена входная", Union.OVERRIDE, priceMaxImporterFreightSku, priceImporterFreightSku);
 
         sumInImporterFreightSku = addJProp(baseGroup, "sumInImporterFreightSku", "Сумма входная", multiplyDouble2, quantityImporterFreightSku, 1, 2, 3, priceInImporterFreightSku, 1, 2, 3);
@@ -1857,7 +1857,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addPropertyDraw(delete, objArticle);
 
             objItem = addSingleGroupObject(item, "Товар", barcode, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
-            addObjectActions(this, objItem);
+            addObjectActions(this, objItem, objArticle, articleComposite);
 
             objSizeSupplier = addSingleGroupObject(sizeSupplier, "Размер", selection, sidSizeSupplier);
             objColorSupplier = addSingleGroupObject(colorSupplier, "Цвет", selection, sidColorSupplier, name);

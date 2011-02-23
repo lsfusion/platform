@@ -359,9 +359,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         DataObject addObject = createObject(cls);
         if (addObject == null) return addObject;
 
-        for (ObjectInstance object : getObjects())
-            if (object instanceof CustomObjectInstance && cls.isChild(((CustomObjectInstance) object).baseClass))
+        for (ObjectInstance object : getObjects()) {
+            if (object instanceof CustomObjectInstance && cls.isChild(((CustomObjectInstance) object).baseClass)) {
                 resolveAddObject((CustomObjectInstance) object, cls, addObject);
+            }
+        }
 
         return addObject;
     }

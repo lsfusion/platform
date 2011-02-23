@@ -91,7 +91,7 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
         if(compare!=Compare.EQUALS)
             return;
 
-        // проверка на то, что в фильтре есть в качестве ключа свойства нужны ObjectInstance
+        // проверка на то, что в фильтре есть в качестве ключа свойства нужный ObjectInstance
         boolean inInterface = false;
         for (PropertyObjectInterfaceInstance interfaceInstance : property.mapping.values()) {
             if (interfaceInstance == object) {
@@ -107,7 +107,7 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
         Where changeWhere = Where.TRUE;
         Where mapWhere;
         for(Map.Entry<PropertyObjectInterfaceInstance, KeyExpr> mapObject : mapObjects.entrySet()) {
-            if(mapObject.getKey().getApplyObject() !=object.groupTo)
+            if(mapObject.getKey().getApplyObject() != object.groupTo)
                 mapWhere = new EqualsWhere(mapObject.getValue(), mapObject.getKey().getDataObject().getExpr());
             else // assert что тогда sibObject instanceof ObjectInstance потому как ApplyObject = null а object.groupTo !=null
                 if(!mapObject.getKey().equals(object))

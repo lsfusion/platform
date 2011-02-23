@@ -1383,7 +1383,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             addPropertyDraw(objDictEntry, baseGroup);
 
             addObjectActions(this, objDict);
-            addObjectActions(this, objDictEntry);
+            addObjectActions(this, objDictEntry, objDict);
             addFixedFilter(new CompareFilterEntity(addPropertyObject(entryDictionary, objDictEntry), Compare.EQUALS, objDict));
         }
     }
@@ -1425,6 +1425,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     @IdentityLazy
     protected LP getAddObjectAction(ValueClass cls) {
         return addAProp(new AddObjectActionProperty(genSID(), (CustomClass) cls));
+    }
+
+    @IdentityLazy
+    protected LP getAddObjectActionWithClassCheck(ValueClass baseClass, ValueClass checkClass) {
+        LP addObjectAction = getAddObjectAction(baseClass);
+        return addJProp(addObjectAction.property.caption, and1, addObjectAction, is(checkClass), 1);
     }
 
     @IdentityLazy
@@ -4079,11 +4085,35 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         addObjectActions(form, object, false);
     }
 
+    public void addObjectActions(FormEntity form, ObjectEntity object, ObjectEntity checkObject) {
+        addObjectActions(form, object, checkObject, null);
+    }
+
+    public void addObjectActions(FormEntity form, ObjectEntity object, ObjectEntity checkObject, ValueClass checkObjectClass) {
+        addObjectActions(form, object, false, checkObject, checkObjectClass);
+    }
+
     public void addObjectActions(FormEntity form, ObjectEntity object, boolean actionImport) {
+        addObjectActions(form, object, actionImport, null, null);
+    }
+
+    public void addObjectActions(FormEntity form, ObjectEntity object, boolean actionImport, ObjectEntity checkObject, ValueClass checkObjectClass) {
         form.addPropertyDraw(delete, object);
         if (actionImport)
             form.forceDefaultDraw.put(form.addPropertyDraw(getImportObjectAction(object.baseClass)), object.groupTo);
-        form.forceDefaultDraw.put(form.addPropertyDraw(getAddObjectAction(object.baseClass)), object.groupTo);
+
+        PropertyDrawEntity actionAddPropertyDraw;
+        if (checkObject == null) {
+            actionAddPropertyDraw = form.addPropertyDraw(getAddObjectAction(object.baseClass));
+        } else {
+            actionAddPropertyDraw = form.addPropertyDraw(
+                    getAddObjectActionWithClassCheck(object.baseClass, checkObjectClass != null ? checkObjectClass : checkObject.baseClass),
+                    checkObject);
+
+            actionAddPropertyDraw.shouldBeLast = true;
+            actionAddPropertyDraw.forceViewType = ClassViewType.PANEL;
+        }
+        form.forceDefaultDraw.put(actionAddPropertyDraw, object.groupTo);
     }
 
     protected Scheduler scheduler;

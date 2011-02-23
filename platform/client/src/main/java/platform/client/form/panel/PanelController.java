@@ -12,9 +12,7 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.interop.ClassViewType;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.*;
-import java.util.List;
 
 public abstract class PanelController {
     private ClientFormController form;
@@ -23,8 +21,6 @@ public abstract class PanelController {
     private Set<PropertyController> movingProps = new HashSet<PropertyController>();
 
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, PropertyController>> properties = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, PropertyController>>();
-
-    private ClassViewType viewType;
 
     public PanelController(GroupObjectLogicsSupplier ilogicsSupplier, ClientFormController iform, ClientFormLayout iformLayout) {
         logicsSupplier = ilogicsSupplier;
@@ -52,7 +48,16 @@ public abstract class PanelController {
     public void removeProperty(ClientPropertyDraw property) {
         if (properties.containsKey(property)) {
             // так как вызывается в addDrawProperty, без проверки было свойство в панели или нет
+
             for (PropertyController controller : properties.remove(property).values()) {
+                if (property.keyBindingGroup != null && property.drawToToolbar) {
+                    GroupObjectController groupController = form.controllers.get(property.keyBindingGroup);
+                    groupController.getPanel().movingProps.remove(controller);
+
+                    if (groupController.getPanel() != this) {
+                        groupController.getPanel().updateMovingProperties();
+                    }
+                }
                 controller.removeView(formLayout);
             }
         }
@@ -101,7 +106,7 @@ public abstract class PanelController {
                 Object value = entry.getValue().get(columnKey);
 
                 if (!(property.autoHide && value == null) // если не прятать при значении null
-                        && !(propertyCaptions != null && propertyCaptions.get(columnKey) == null)) // и если значения propertyCaption != null
+                    && !(propertyCaptions != null && propertyCaptions.get(columnKey) == null)) // и если значения propertyCaption != null
                 {
                     PropertyController propController = propControllers.get(columnKey);
                     if (propController == null) {
@@ -110,6 +115,9 @@ public abstract class PanelController {
                         if (property.keyBindingGroup != null && property.drawToToolbar) {
                             GroupObjectController groupController = form.controllers.get(property.keyBindingGroup);
                             groupController.getPanel().movingProps.add(propController);
+                            if (groupController.getPanel() != this) {
+                                groupController.getPanel().updateMovingProperties();
+                            }
                         } else {
                             propController.addView(formLayout);
                         }
@@ -145,31 +153,7 @@ public abstract class PanelController {
             }
         }
 
-        //обновление ClassViewType
-        if (logicsSupplier.getGroupObject() != null && !logicsSupplier.getClassView().equals(viewType)) {
-            GroupObjectController groupController = form.controllers.get(logicsSupplier.getGroupObject());
-
-            if (logicsSupplier.getClassView().equals(ClassViewType.GRID)) {
-                groupController.grid.getView().movingPropertiesContainer.add(Box.createHorizontalGlue());
-                for (PropertyController control : movingProps) {
-                    control.removeView(formLayout);
-                    groupController.grid.getView().movingPropertiesContainer.add(control.getView());
-                    control.getCellView().changeViewType(logicsSupplier.getClassView());
-                    groupController.grid.getView().movingPropertiesContainer.add(Box.createHorizontalStrut(15));
-                }
-                groupController.showType.removeView(formLayout);
-                groupController.grid.getView().movingPropertiesContainer.add(groupController.showType.view);
-            } else {
-                groupController.grid.getView().movingPropertiesContainer.removeAll();
-                for (PropertyController control : movingProps) {
-                    control.addView(formLayout);
-                    control.getCellView().changeViewType(logicsSupplier.getClassView());
-                }
-                groupController.showType.addView(formLayout);
-            }
-            viewType = logicsSupplier.getClassView();
-        }
-
+        updateMovingProperties();
 
         setRowHighlight(rowHighlight);
 
@@ -181,6 +165,33 @@ public abstract class PanelController {
                 if (propController != null && rowHighlight == null) {
                     propController.setHighlight(updateKeys.getValue(), updateCellHighlights.getKey().highlightColor);
                 }
+            }
+        }
+    }
+
+    /**
+     * обновление ClassViewType
+     */
+    private void updateMovingProperties() {
+        if (logicsSupplier.getGroupObject() != null) {
+            GroupObjectController groupController = form.controllers.get(logicsSupplier.getGroupObject());
+            groupController.grid.getView().movingPropertiesContainer.removeAll();
+            if (logicsSupplier.getClassView().equals(ClassViewType.GRID)) {
+                groupController.grid.getView().movingPropertiesContainer.add(Box.createHorizontalGlue());
+                for (PropertyController control : movingProps) {
+                    control.removeView(formLayout);
+                    groupController.grid.getView().movingPropertiesContainer.add(control.getView());
+                    control.getCellView().changeViewType(logicsSupplier.getClassView());
+                    groupController.grid.getView().movingPropertiesContainer.add(Box.createHorizontalStrut(15));
+                }
+                groupController.showType.removeView(formLayout);
+                groupController.grid.getView().movingPropertiesContainer.add(groupController.showType.view);
+            } else {
+                for (PropertyController control : movingProps) {
+                    control.addView(formLayout);
+                    control.getCellView().changeViewType(logicsSupplier.getClassView());
+                }
+                groupController.showType.addView(formLayout);
             }
         }
     }

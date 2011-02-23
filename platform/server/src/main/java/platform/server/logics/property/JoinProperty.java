@@ -11,6 +11,7 @@ import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
+import platform.server.form.view.DefaultFormView;
 import platform.server.session.Changes;
 import platform.server.session.MapDataChanges;
 import platform.server.session.Modifier;
@@ -161,6 +162,22 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
             PropertyObjectInterfaceEntity mapObject = BaseUtils.singleValue(entity.propertyObject.mapping);
             if (mapObject instanceof ObjectEntity && !((CustomClass) ((ObjectEntity) mapObject).baseClass).hasChildren())
                 entity.forceViewType = ClassViewType.HIDE;
+        }
+    }
+
+    @Override
+    public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<Interface> entity) {
+        super.proceedDefaultDesign(view, entity);
+
+        if (implement.property instanceof AndFormulaProperty) {
+            AndFormulaProperty andProp = (AndFormulaProperty) implement.property;
+            PropertyImplement<PropertyInterfaceImplement<Interface>, AndFormulaProperty.Interface> andImplement
+                    = (PropertyImplement<PropertyInterfaceImplement<Interface>, AndFormulaProperty.Interface>) implement;
+
+            PropertyInterfaceImplement<Interface> objectIface = andImplement.mapping.get(andProp.objectInterface);
+            if (objectIface instanceof PropertyMapImplement) {
+                ((PropertyMapImplement) objectIface).property.proceedDefaultDesign(view, entity);
+            }
         }
     }
 }
