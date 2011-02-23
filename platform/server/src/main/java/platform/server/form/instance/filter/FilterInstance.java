@@ -5,6 +5,7 @@ import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
 import platform.server.form.instance.*;
 import platform.server.logics.DataObject;
+import platform.server.logics.NullValue;
 import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
@@ -31,7 +32,11 @@ public abstract class FilterInstance implements Updated {
             case FilterType.OR:
                 return new OrFilterInstance(inStream, form);
             case FilterType.COMPARE:
-                return new CompareFilterInstance(inStream, form);
+                CompareFilterInstance filter = new CompareFilterInstance(inStream, form);
+                if (filter.value instanceof NullValue)
+                    return new NotFilterInstance(new NotNullFilterInstance(filter.property));
+                else
+                    return filter;
             case FilterType.NOTNULL:
                 return new NotNullFilterInstance(inStream, form);
             case FilterType.ISCLASS:

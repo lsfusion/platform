@@ -3021,10 +3021,19 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 objRouteResult = objRouteRF;
             } else {
 
+                Double invoicedRB = (Double)BaseUtils.nvl(invoicedShipmentRouteSku.read(session, objShipment, objRouteRB, objSku), 0.0);
+                Double quantityRB = (Double)BaseUtils.nvl(quantityShipmentRouteSku.read(session, objShipment, objRouteRB, objSku), 0.0);
+
                 Double invoicedRF = (Double)BaseUtils.nvl(invoicedShipmentRouteSku.read(session, objShipment, objRouteRF, objSku), 0.0);
                 Double quantityRF = (Double)BaseUtils.nvl(quantityShipmentRouteSku.read(session, objShipment, objRouteRF, objSku), 0.0);
 
-                objRouteResult = (quantityRF + 1E-9 < invoicedRF) ? objRouteRF : objRouteRB;
+                if (quantityRB + 1E-9 < invoicedRB) {
+                    objRouteResult = objRouteRB;
+                } else
+                    if (quantityRF + 1E-9 < invoicedRF) {
+                        objRouteResult = objRouteRF;
+                    } else
+                        objRouteResult = objRouteRB;
             }
 
             form.seekObject((ObjectInstance)mapObjects.get(routeInterface), objRouteResult);
