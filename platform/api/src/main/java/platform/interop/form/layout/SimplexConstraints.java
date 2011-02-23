@@ -27,7 +27,7 @@ public class SimplexConstraints<T> extends ContextObject implements Serializable
     public Insets insetsSibling = new Insets(0, 0, 0, 0);
 
     //приходится ставить хотя бы один вниз, иначе криво отрисовывает объекты снизу
-    public Insets insetsInside = new Insets(0, 0, 1, 0); //new Insets(1, 0, 1, 0);
+    public Insets insetsInside = new Insets(1, 0, 1, 1); //new Insets(1, 0, 1, 0);
 
     public SimplexComponentDirections directions = new SimplexComponentDirections(0.01, 0.01, 0, 0);
 
