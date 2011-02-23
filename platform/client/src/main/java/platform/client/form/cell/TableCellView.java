@@ -171,7 +171,6 @@ public class TableCellView extends JPanel implements CellView {
     public void setToolTip(String caption) {
         String toolTip = !BaseUtils.isRedundantString(key.toolTip) ? key.toolTip : caption;
         toolTip += " (sID: " + key.getSID() + ")";
-        table.setToolTipText(toolTip);
         label.setToolTipText(toolTip);
     }
 

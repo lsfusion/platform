@@ -9,6 +9,7 @@ import platform.interop.KeyStrokes;
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.text.ParseException;
 
 public abstract class CellTable extends SingleCellTable
@@ -41,6 +42,15 @@ public abstract class CellTable extends SingleCellTable
     public void setValue(Object value) {
         this.value = value;
         repaint();
+    }
+
+    @Override
+    public String getToolTipText(MouseEvent e) {
+        if (!BaseUtils.isRedundantString(value)) {
+            return value.toString().trim();
+        } else {
+            return null;
+        }
     }
 
     @Override

@@ -162,6 +162,15 @@ public abstract class GridTable extends ClientFormTable
         initializeActionMap();
     }
 
+    @Override
+    public String getToolTipText(MouseEvent e) {
+        java.awt.Point p = e.getPoint();
+        int rowIndex = rowAtPoint(p);
+        int colIndex = columnAtPoint(p);
+        Object value = (rowIndex != -1) ? getValueAt(rowIndex, colIndex) : null;
+        return (value != null) ? String.valueOf(value).trim() : null;
+    }
+
     private void initializeActionMap() {
         final Action oldNextAction = getActionMap().get("selectNextColumnCell");
         final Action oldPrevAction = getActionMap().get("selectPreviousColumnCell");
