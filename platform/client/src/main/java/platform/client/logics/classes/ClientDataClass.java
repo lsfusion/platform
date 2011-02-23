@@ -55,7 +55,10 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
     }
 
     public int getMaximumWidth(int maxCharWidth, FontMetrics fontMetrics) {
-        return Integer.MAX_VALUE;
+        if (maxCharWidth != 0)
+            return fontMetrics.stringWidth(BaseUtils.replicate('0', maxCharWidth)) + 8;
+        else
+            return Integer.MAX_VALUE;
     }
 
     public int getPreferredHeight(FontMetrics fontMetrics) {
