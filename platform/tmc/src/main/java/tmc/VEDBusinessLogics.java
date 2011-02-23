@@ -40,6 +40,7 @@ import tmc.integration.PanelExternalScreen;
 import tmc.integration.PanelExternalScreenParameters;
 import tmc.integration.exp.AbstractSaleExportTask;
 import tmc.integration.exp.CashRegController;
+import tmc.integration.exp.SaleExportTask;
 import tmc.integration.imp.CustomerCheckRetailImportActionProperty;
 
 import javax.swing.*;
@@ -3119,8 +3120,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
             Integer shopID = (Integer) keys.get(shopInterface).object;
             try {
-//                ((SaleExportTask) scheduler.getTask("saleExport")).getPath(shopID)
-                new AbstractSaleExportTask(VEDBusinessLogics.this, "exp2", shopID) {
+                new AbstractSaleExportTask(VEDBusinessLogics.this, ((SaleExportTask) scheduler.getTask("saleExport")).getPath(shopID), shopID) {
                     protected String getDbfName() {
                         return "datadat.dbf";
                     }
