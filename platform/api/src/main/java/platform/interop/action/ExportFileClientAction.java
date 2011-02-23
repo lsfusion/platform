@@ -1,20 +1,27 @@
 package platform.interop.action;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.Map;
 
 public class ExportFileClientAction extends AbstractClientAction {
 
-    public String fileName;
-    public boolean append = false;
-    public String fileText;
-    public String charsetName;
+    public Map<String, byte[]> files;
 
-    public ExportFileClientAction(String fileName, boolean append, String fileText, String charsetName) {
+    public ExportFileClientAction(String fileName, String fileText, String charsetName) {
+        try {
+            if (charsetName != null) {
+                files.put(fileName, fileText.getBytes(charsetName));
+            } else {
+                files.put(fileName, fileText.getBytes());
+            }
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+    }
 
-        this.fileName = fileName;
-        this.append = append;
-        this.fileText = fileText;
-        this.charsetName = charsetName;
+    public ExportFileClientAction(Map<String, byte[]> files) {
+        this.files = files;
     }
 
     @Override

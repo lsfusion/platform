@@ -430,7 +430,7 @@ public class CashRegController {
 
         public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
 
-            actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, command, CASHREGISTER_CHARSETNAME));
+            actions.add(new ExportFileClientAction("c:\\bill\\key.txt", command, CASHREGISTER_CHARSETNAME));
             actions.add(new SleepClientAction(CASHREGISTER_DELAY));
             actions.add(new MessageFileClientAction("c:\\bill\\error.txt", CASHREGISTER_CHARSETNAME, false, true, caption));
 

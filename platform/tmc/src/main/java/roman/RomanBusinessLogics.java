@@ -35,7 +35,7 @@ import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.DataSession;
 import tmc.integration.exp.DeclarationExportActionProperty;
-import tmc.integration.imp.ClassifierTNVEDImportActionProperty2;
+import tmc.integration.imp.ClassifierTNVEDImportActionProperty;
 
 import javax.swing.*;
 import java.awt.*;
@@ -708,8 +708,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         sidToCustomCategory10 = addCGProp(null, "sidToCustomCategory10", "Код(10)", object(customCategory10), sidCustomCategory10, sidCustomCategory10, 1);
         sidToCustomCategoryOrigin = addCGProp(null, "sidToCustomCategoryOrigin", "Код ЕС (10)", object(customCategoryOrigin), sidCustomCategoryOrigin, sidCustomCategoryOrigin, 1);
 
-        importBelTnved = addAProp(new ClassifierTNVEDImportActionProperty2(genSID(), "Импортировать (РБ)", this, "belarusian"));
-        importEuTnved = addAProp(new ClassifierTNVEDImportActionProperty2(genSID(), "Импортировать (ЕС)", this, "origin"));
+        importBelTnved = addAProp(new ClassifierTNVEDImportActionProperty(genSID(), "Импортировать (РБ)", this, "belarusian"));
+        importEuTnved = addAProp(new ClassifierTNVEDImportActionProperty(genSID(), "Импортировать (ЕС)", this, "origin"));
         importInvoice = addAProp(new ImportInvoiceActionProperty());
 
         customCategory4CustomCategory6 = addDProp(idGroup, "customCategory4CustomCategory6", "Код(4)", customCategory4, customCategory6);
@@ -2627,9 +2627,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             RegularFilterGroupEntity filterGroupWeight = new RegularFilterGroupEntity(genID());
             filterGroupWeight.addFilter(new RegularFilterEntity(genID(),
-                                  new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(netWeightSku, objSku))),
-                                  "Только без веса",
-                                  KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
+                    new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(netWeightSku, objSku))),
+                    "Только без веса",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
             addRegularFilterGroup(filterGroupWeight);
 
             RegularFilterGroupEntity filterGroupComposition = new RegularFilterGroupEntity(genID());

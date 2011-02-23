@@ -2,25 +2,27 @@ package tmc.integration.imp;
 
 import org.xBaseJ.DBF;
 import org.xBaseJ.xBaseJException;
+import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.interop.action.ClientAction;
-import platform.server.classes.*;
+import platform.server.classes.DataClass;
+import platform.server.classes.FileActionClass;
+import platform.server.classes.ValueClass;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
+import platform.server.integration.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.session.DataSession;
 import roman.RomanBusinessLogics;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ClassifierTNVEDImportActionProperty extends ActionProperty {
     private RomanBusinessLogics BL;
@@ -35,46 +37,14 @@ public class ClassifierTNVEDImportActionProperty extends ActionProperty {
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions,
                         RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) {
         try {
-            TnvedFiller filler = new TnvedFiller(executeForm);
-
-            File tempFile = File.createTempFile("tempTnved", ".dbf");
-            tempFile.deleteOnExit();
-            byte buf[] = (byte[]) value.getValue();
-            IOUtils.putFileBytes(tempFile, buf);
-
-            DBF dbfFile = new DBF(tempFile.getPath());
-            int recordCount = dbfFile.getRecordCount();
-
-            for (int i = 0; i < recordCount; i++) {
-                dbfFile.read();
-
-                String firstField = new String(dbfFile.getField("KOD").getBytes(), "Cp866");
-
-                String secondField = "";
-                for (int j = 2; j <= dbfFile.getFieldCount(); j++) {
-                    String namePart = new String(dbfFile.getField(j).getBytes(), "Cp866");
-                    if (!namePart.startsWith("   ")) {
-                        secondField += namePart;
-                    } else {
-                        break;
-                    }
-                }
-
-                if (importType.equals("belarusian") && firstField.substring(4).equals("      ")) {
-                    filler.add4Item(firstField.substring(0, 4), secondField);
-                } else if (importType.equals("belarusian") && firstField.substring(6).equals("    ") && !firstField.substring(5).equals("     ")) {
-                    filler.add6Item(firstField.substring(0, 6), secondField);
-                } else if (importType.equals("belarusian") && firstField.substring(9).equals(" ") && !firstField.substring(8).equals("  ")) {
-                    filler.add9Item(firstField.substring(0, 9), secondField);
-                } else if (importType.equals("belarusian") && !firstField.substring(9).equals(" ") && !firstField.equals("··········")) {
-                    filler.add10Item(firstField, secondField);
-                } else if (importType.equals("origin") && !firstField.substring(9).equals(" ") && !firstField.equals("··········")) {
-                    filler.addOriginItem(firstField, secondField);
-                }
-            }
-        } catch (IOException e) {
-        } catch (xBaseJException e) {
+            TnvedImporter importer = new TnvedImporter(executeForm, value);
+            importer.doImport();
+        } catch (xBaseJException e1) {
+            e1.printStackTrace();
+        } catch (IOException e1) {
+            e1.printStackTrace();
         } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -83,139 +53,137 @@ public class ClassifierTNVEDImportActionProperty extends ActionProperty {
         return FileActionClass.getInstance("Файл базы данных \"DBF\"", "dbf");
     }
 
-    private class TnvedFiller {
-        DataSession session;
-        Map<String, Object> map = new HashMap<String, Object>();
+    private class TnvedImporter {
+        private DataSession session;
+        private ObjectValue value;
+        private File tempFile;
 
-        public TnvedFiller(RemoteForm executeForm) {
-            FormInstance<?> form = (FormInstance<?>)executeForm.form;
+        private ImportTable table;
+        private ImportField cat4IdField, cat4NameField, cat6IdField, cat6NameField, cat9IdField, cat9NameField, cat10IdField, cat10NameField, cat10OriginRelationField;
+        private Map<String, String> items = new HashMap<String, String>();
+        private Map children = new HashMap() {{
+            put(4, 6);
+            put(6, 9);
+            put(9, 10);
+        }};
+
+        public TnvedImporter(RemoteForm executeForm, ObjectValue value) {
+            FormInstance<?> form = (FormInstance<?>) executeForm.form;
             session = form.session;
+            this.value = value;
         }
 
-        private Object read(LP property, String field) throws SQLException {
-            Object object = map.get(field);
-            if(object == null) {
-                Object newItem = property.read(session, new DataObject(field, StringClass.get(field.length())));
-                map.put(field, newItem);
-                return newItem;
-            } else {
-                return object;
-            }
-        }
+        private void readData() throws xBaseJException, IOException {
+            tempFile = File.createTempFile("tempTnved", ".dbf");
+            byte buf[] = (byte[]) value.getValue();
+            IOUtils.putFileBytes(tempFile, buf);
 
-        private int add4Item(String sID, String name) throws SQLException {
-            Integer item = (Integer) read(BL.sidToCustomCategory4, sID);
-            if (item == null) {
-                DataObject category4Object = session.addObject(BL.customCategory4, session.modifier);
-                BL.sidCustomCategory4.execute(sID, session, category4Object);
-                BL.nameCustomCategory.execute(name, session, category4Object);
-                int catID = (Integer)category4Object.getValue();
-                map.put(sID, catID);
-                return catID;
-            } else {
-                return item;
-            }
-        }
+            DBF file = new DBF(tempFile.getPath());
 
-        private int add6Item(String sID, String name) throws SQLException {
-            Integer item = (Integer) read(BL.sidToCustomCategory6, sID);
-            if (item == null) {
-                DataObject category6Object = session.addObject(BL.customCategory6, session.modifier);
-                BL.sidCustomCategory6.execute(sID, session, category6Object);
-                BL.nameCustomCategory.execute(name, session, category6Object);
-                int category4Id = add4Item(sID.substring(0, 4), name);
-                BL.customCategory4CustomCategory6.execute(category4Id, session, category6Object);
-                int catID = (Integer)category6Object.getValue();
-                map.put(sID, catID);
-                return catID;
-            } else {
-                int category4Id = add4Item(sID.substring(0, 4), name);
-                DataObject category6Object = session.getDataObject(item, BL.customCategory6.getType());
-                Integer category4IdIn6 = (Integer)BL.customCategory4CustomCategory6.read(session, category6Object);
-                if(category4IdIn6 == null || category4IdIn6 != category4Id) {
-                    BL.customCategory4CustomCategory6.execute(category4Id, session, category6Object);
-                }
-                return item;
-            }
-        }
+            List<List<Object>> data = new ArrayList<List<Object>>();
 
-        private int add9Item(String field1, String field2) throws SQLException {
-            Integer item = (Integer) read(BL.sidToCustomCategory9, field1);
-            if (item == null) {
-                DataObject category9Object = session.addObject(BL.customCategory9, session.modifier);
-                BL.sidCustomCategory9.execute(field1, session, category9Object);
-                BL.nameCustomCategory.execute(field2, session, category9Object);
-                int category6Id = add6Item(field1.substring(0, 6), field2);
-                BL.customCategory6CustomCategory9.execute(category6Id, session, category9Object);
-                int catID = (Integer)category9Object.getValue();
-                map.put(sID, catID);
-                return catID;
-            } else {
-                int category6Id = add6Item(field1.substring(0, 6), field2);
-                DataObject category9Object = session.getDataObject(item, BL.customCategory9.getType());
-                Integer category6IdIn9 = (Integer)BL.customCategory6CustomCategory9.read(session, category9Object);
-                if(category6IdIn9 == null || category6IdIn9 != category6Id) {
-                    BL.customCategory6CustomCategory9.execute(category6Id, session, category9Object);
-                }
-                return item;
-            }
-        }
+            int recordCount = file.getRecordCount();
+            for (int i = 0; i < recordCount; i++) {
+                file.read();
 
-        private int add10Item(String field1, String field2) throws SQLException {
-            Integer item = (Integer) read(BL.sidToCustomCategory10, field1);
-            if (item == null) {
-                DataObject category10Object = session.addObject(BL.customCategory10, session.modifier);
-                BL.sidCustomCategory10.execute(field1, session, category10Object);
-                BL.nameCustomCategory.execute(field2, session, category10Object);
-                int category9Id = add9Item(field1.substring(0, 9), field2);
-                BL.customCategory9CustomCategory10.execute(category9Id, session, category10Object);
-                int catID = (Integer)category10Object.getValue();
-                map.put(sID, catID);
-                return (Integer)category10Object.getValue();
-            } else {
-                int category9Id = add9Item(field1.substring(0, 9), field2);
-                DataObject category10Object = session.getDataObject(item, BL.customCategory10.getType());
-                Integer category9IdIn10 = (Integer)BL.customCategory9CustomCategory10.read(session, category10Object);
-                if(category9IdIn10 == null || category9IdIn10 != category9Id) {
-                    BL.customCategory9CustomCategory10.execute(category9Id, session, category10Object);
-                }
-                return item;
-            }
-        }
+                String idField = new String(file.getField("KOD").getBytes(), "Cp866");
 
-        private int addOriginItem(String field1, String field2) throws SQLException {
-            Integer item = (Integer) read(BL.sidToCustomCategoryOrigin, field1);
-            if (item == null) {
-                DataObject categoryOriginObject = session.addObject(BL.customCategoryOrigin, session.modifier);
-                BL.sidCustomCategoryOrigin.execute(field1, session, categoryOriginObject);
-                BL.nameCustomCategory.execute(field2, session, categoryOriginObject);
-
-                int category6Id = add6Item(field1.substring(0, 6), field2);
-                BL.customCategory6CustomCategoryOrigin.execute(category6Id, session, categoryOriginObject);
-
-                int category10Id = add10Item(field1, field2);
-                BL.customCategory10CustomCategoryOrigin.execute(category10Id, session, categoryOriginObject);
-
-                BL.relationCustomCategory10CustomCategoryOrigin.execute(true, session, new DataObject(category10Id, BL.customCategory10), categoryOriginObject);
-                return (Integer) read(BL.sidToCustomCategoryOrigin, field1);
-            } else {
-                DataObject categoryOriginObject = session.getDataObject(item, BL.customCategoryOrigin.getType());
-
-                int category6Id = add6Item(field1.substring(0, 6), field2);
-                Integer category6IdInOrigin = (Integer)BL.customCategory6CustomCategoryOrigin.read(session, categoryOriginObject);
-                if(category6IdInOrigin == null || category6IdInOrigin != category6Id) {
-                    BL.customCategory6CustomCategoryOrigin.execute(category6Id, session, categoryOriginObject);
+                String nameField = "";
+                for (int j = 2; j <= file.getFieldCount(); j++) {
+                    String namePart = new String(file.getField(j).getBytes(), "Cp866");
+                    if (!namePart.startsWith("   ")) {
+                        nameField += namePart;
+                    } else {
+                        break;
+                    }
                 }
 
-                int category10Id = add10Item(field1, field2);
-                Integer category10IdInOrigin = (Integer)BL.customCategory10CustomCategoryOrigin.read(session, categoryOriginObject);
-                if(category10IdInOrigin == null || category10IdInOrigin != category10Id) {
-                    BL.customCategory10CustomCategoryOrigin.execute(category10Id, session, categoryOriginObject);
-                    BL.relationCustomCategory10CustomCategoryOrigin.execute(true, session, session.getDataObject(item, BL.customCategory9.getType()), categoryOriginObject);
+                items.put(idField.trim(), nameField);
+                if (!idField.substring(9).equals(" ") && !idField.equals("··········")) {
+                    List<Object> row = new ArrayList<Object>();
+                    row.add(idField);
+                    row.add(nameField);
+                    row.add(idField.substring(0, 9));
+                    row.add(getItem(idField, 9));
+                    row.add(idField.substring(0, 6));
+                    row.add(getItem(idField, 6));
+                    row.add(idField.substring(0, 4));
+                    row.add(getItem(idField, 4));
+                    row.add(true);
+                    data.add(row);
                 }
-
-                return item;
             }
+
+            List<ImportField> fields = BaseUtils.toList(cat10IdField, cat10NameField, cat9IdField, cat9NameField, cat6IdField,
+                    cat6NameField, cat4IdField, cat4NameField, cat10OriginRelationField);
+            table = new ImportTable(fields, data);
+        }
+
+        private String getItem(String id, int size) {
+            String item = items.get(id.substring(0, size));
+            if (item == null) {
+                item = items.get(id.substring(0, (Integer) children.get(size)));
+                items.put(id.substring(0, size), item);
+            }
+            return item;
+        }
+
+        private void initFields() {
+            cat4IdField = new ImportField(BL.sidCustomCategory4);
+            cat4NameField = new ImportField(BL.nameCustomCategory);
+            cat6IdField = new ImportField(BL.sidCustomCategory6);
+            cat6NameField = new ImportField(BL.nameCustomCategory);
+            cat9IdField = new ImportField(BL.sidCustomCategory9);
+            cat9NameField = new ImportField(BL.nameCustomCategory);
+            cat10IdField = new ImportField(BL.sidCustomCategory10);
+            cat10NameField = new ImportField(BL.nameCustomCategory);
+            cat10OriginRelationField = new ImportField(BL.relationCustomCategory10CustomCategoryOrigin);
+        }
+
+        public void doImport() throws IOException, xBaseJException, SQLException {
+            initFields();
+            readData();
+
+            List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
+
+            if (importType.equals("origin")) {
+                ImportKey<?> categoryOriginKey = new ImportKey(BL.customCategoryOrigin, BL.sidToCustomCategoryOrigin.getMapping(cat10IdField));
+                ImportKey<?> category6Key = new ImportKey(BL.customCategory6, BL.sidToCustomCategory6.getMapping(cat6IdField));
+                ImportKey<?> category10Key = new ImportKey(BL.customCategory10, BL.sidToCustomCategory10.getMapping(cat10IdField));
+                properties.add(new ImportProperty(cat10IdField, BL.sidCustomCategoryOrigin.getMapping(categoryOriginKey)));
+                properties.add(new ImportProperty(cat10NameField, BL.nameCustomCategory.getMapping(categoryOriginKey)));
+                properties.add(new ImportProperty(cat6IdField, BL.customCategory6CustomCategoryOrigin.getMapping(categoryOriginKey), BL.object(BL.customCategory6).getMapping(category6Key)));
+                properties.add(new ImportProperty(cat10IdField, BL.customCategory10CustomCategoryOrigin.getMapping(categoryOriginKey), BL.object(BL.customCategory10).getMapping(category10Key)));
+                properties.add(new ImportProperty(cat10OriginRelationField, BL.relationCustomCategory10CustomCategoryOrigin.getMapping(category10Key, categoryOriginKey)));
+
+                ImportKey<?>[] keysArray = {category6Key, category10Key, categoryOriginKey};
+                new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
+                tempFile.delete();
+                return;
+            }
+
+            ImportKey<?> category4Key = new ImportKey(BL.customCategory4, BL.sidToCustomCategory4.getMapping(cat4IdField));
+            properties.add(new ImportProperty(cat4IdField, BL.sidCustomCategory4.getMapping(category4Key)));
+            properties.add(new ImportProperty(cat4NameField, BL.nameCustomCategory.getMapping(category4Key)));
+
+            ImportKey<?> category6Key = new ImportKey(BL.customCategory6, BL.sidToCustomCategory6.getMapping(cat6IdField));
+            properties.add(new ImportProperty(cat6IdField, BL.sidCustomCategory6.getMapping(category6Key)));
+            properties.add(new ImportProperty(cat6NameField, BL.nameCustomCategory.getMapping(category6Key)));
+            properties.add(new ImportProperty(cat4IdField, BL.customCategory4CustomCategory6.getMapping(category6Key), BL.object(BL.customCategory4).getMapping(category4Key)));
+
+            ImportKey<?> category9Key = new ImportKey(BL.customCategory9, BL.sidToCustomCategory9.getMapping(cat9IdField));
+            properties.add(new ImportProperty(cat9IdField, BL.sidCustomCategory9.getMapping(category9Key)));
+            properties.add(new ImportProperty(cat9NameField, BL.nameCustomCategory.getMapping(category9Key)));
+            properties.add(new ImportProperty(cat6IdField, BL.customCategory6CustomCategory9.getMapping(category9Key), BL.object(BL.customCategory6).getMapping(category6Key)));
+
+            ImportKey<?> category10Key = new ImportKey(BL.customCategory10, BL.sidToCustomCategory10.getMapping(cat10IdField));
+            properties.add(new ImportProperty(cat10IdField, BL.sidCustomCategory10.getMapping(category10Key)));
+            properties.add(new ImportProperty(cat10NameField, BL.nameCustomCategory.getMapping(category10Key)));
+            properties.add(new ImportProperty(cat9IdField, BL.customCategory9CustomCategory10.getMapping(category10Key), BL.object(BL.customCategory9).getMapping(category9Key)));
+
+            ImportKey<?>[] keysArray = {category4Key, category6Key, category9Key, category10Key};
+            new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
+            tempFile.delete();
         }
     }
 }

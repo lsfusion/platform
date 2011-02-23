@@ -1,6 +1,7 @@
 package platform.client.form;
 
 import platform.base.BaseUtils;
+import platform.base.IOUtils;
 import platform.client.Log;
 import platform.client.Main;
 import platform.interop.action.*;
@@ -11,6 +12,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.*;
 import java.text.DecimalFormat;
+import java.util.prefs.Preferences;
 
 public class ClientFormActionDispatcher implements ClientActionDispatcher {
 
@@ -72,16 +74,22 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
     }
 
     public void execute(ExportFileClientAction action) {
-
         try {
-
-            FileOutputStream output = new FileOutputStream(action.fileName);
-            if (action.charsetName == null)
-                output.write(action.fileText.getBytes());
-            else
-                output.write(action.fileText.getBytes(action.charsetName));
-            output.close();
-
+            JFileChooser fileChooser = new JFileChooser();
+            Preferences preferences = Preferences.userNodeForPackage(this.getClass());
+            fileChooser.setCurrentDirectory(new File(preferences.get("LATEST_DIRECTORY", "")));
+            String path = "";
+            if(action.files.size() > 1) {
+                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            }
+            int result = fileChooser.showSaveDialog(null);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                path = fileChooser.getSelectedFile().getAbsolutePath();
+                preferences.put("LATEST_DIRECTORY", path);
+            }
+            for (String file : action.files.keySet()) {
+                IOUtils.putFileBytes(new File(path + "\\" + file), action.files.get(file));
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
