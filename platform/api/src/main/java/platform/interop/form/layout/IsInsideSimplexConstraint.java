@@ -4,6 +4,7 @@ import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 
 public class IsInsideSimplexConstraint extends SingleSimplexConstraint {
@@ -19,6 +20,16 @@ public class IsInsideSimplexConstraint extends SingleSimplexConstraint {
             InsetTabbedPane insetPane = (InsetTabbedPane)cont;
             contInsets.right += insetPane.getTabInsets().width;
             contInsets.bottom += insetPane.getTabInsets().height;
+        }
+
+        if (cont instanceof JComponent) {
+            JComponent jcomp = (JComponent) cont;
+            if (jcomp.getBorder() instanceof TitledBorder) {
+                contInsets.top -= 6;
+                contInsets.bottom -= 2;
+                contInsets.left -= 2;
+                contInsets.right -= 2;
+            }
         }
 
         // левый край

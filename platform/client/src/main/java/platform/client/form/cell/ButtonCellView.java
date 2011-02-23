@@ -119,7 +119,7 @@ public class ButtonCellView extends ClientButton implements CellView {
     }
 
     private void setDefaultSizes() {
-        setMinimumSize(new Dimension(0, 18));
-        setMaximumSize(new Dimension(32767, 18));
+        setMinimumSize(new Dimension(0, 15));
+        setMaximumSize(new Dimension(32767, 15));
     }
 }
