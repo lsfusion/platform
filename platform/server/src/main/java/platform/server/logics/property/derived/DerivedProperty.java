@@ -432,6 +432,7 @@ public class DerivedProperty {
         do {
             PropertyImplement<PropertyInterfaceImplement<T>, ?> maxImplement = createMaxProp(sIDs[i], captions[i], propertyImplement, group);
             result.add(maxImplement);
+            persist.add(maxImplement.property);
             if(i<extra.size()) { // если не последняя
                 PropertyMapImplement<?,T> prevMax = createJoin(maxImplement); // какой максимум в partition'е
 

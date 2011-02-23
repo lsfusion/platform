@@ -14,12 +14,12 @@ import java.util.*;
 
 public class TableFactory {
 
-    public static final int MAX_INTERFACE = 5;
-    Set<ImplementTable>[] implementTables = new Set[MAX_INTERFACE];
-    ImplementTable[] baseTables = new ImplementTable[MAX_INTERFACE];
+    public static final int MAX_INTERFACE = 6;
+    Set<ImplementTable>[] implementTables = new Set[MAX_INTERFACE+1];
+    ImplementTable[] baseTables = new ImplementTable[MAX_INTERFACE+1];
 
     public TableFactory() {
-        for(int i=0;i<MAX_INTERFACE;i++)
+        for(int i=0;i<=MAX_INTERFACE;i++)
             implementTables[i] = new HashSet<ImplementTable>();
     }
 
@@ -30,7 +30,7 @@ public class TableFactory {
     // получает постоянные таблицы
     public Map<String,ImplementTable> getImplementTables() {
         Map<String,ImplementTable> result = new HashMap<String, ImplementTable>();
-        for(int i=0;i<MAX_INTERFACE;i++) {
+        for(int i=0;i<=MAX_INTERFACE;i++) {
             Set<ImplementTable> intTables = new HashSet<ImplementTable>();
             for(ImplementTable implementTable : implementTables[i])
                 implementTable.fillSet(intTables);            
