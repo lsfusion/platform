@@ -46,6 +46,8 @@ public abstract class ClientFormTable extends JTable {
                     if (value == null) {
                         return null;
                     }
+                    if (value instanceof String)
+                        value = ((String)value).trim();
                     return new StringSelection(value.toString());
                 }
 

@@ -27,14 +27,17 @@ public abstract class ShowTypeView extends JPanel implements ActionListener {
 
         gridButton = new JButton("");
         gridButton.setIcon(new ImageIcon(ShowTypeView.class.getResource("/platform/images/table.png")));
+        gridButton.setToolTipText("Таблица");
         gridButton.setActionCommand("grid");
 
         panelButton = new JButton("");
         panelButton.setIcon(new ImageIcon(ShowTypeView.class.getResource("/platform/images/list.png")));
+        panelButton.setToolTipText("Панель");
         panelButton.setActionCommand("panel");
 
         hideButton = new JButton("");
         hideButton.setIcon(new ImageIcon(ShowTypeView.class.getResource("/platform/images/close.png")));
+        hideButton.setToolTipText("Скрыть");
         hideButton.setActionCommand("hide");
 
         add(gridButton);
