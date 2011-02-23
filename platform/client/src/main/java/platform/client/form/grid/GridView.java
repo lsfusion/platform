@@ -50,8 +50,7 @@ public abstract class GridView extends JPanel {
 
         gridTable.setFillsViewportHeight(true);
 
-
-        bottomContainer.setLayout(new BoxLayout(bottomContainer, BoxLayout.X_AXIS));
+        bottomContainer.setLayout(new BorderLayout());
 
         queriesContainer = new JPanel();
         queriesContainer.setBorder(new EmptyBorder(0, 0, 0, 0));
@@ -69,8 +68,8 @@ public abstract class GridView extends JPanel {
             filterController.getView().addActions(gridTable);
         }
 
-        bottomContainer.add(queriesContainer);
-        bottomContainer.add(movingPropertiesContainer);
+        bottomContainer.add(queriesContainer, BorderLayout.WEST);
+        bottomContainer.add(movingPropertiesContainer, BorderLayout.CENTER);
 
         add(pane, BorderLayout.CENTER);
         add(bottomContainer, BorderLayout.SOUTH);
