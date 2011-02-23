@@ -1218,7 +1218,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         quantityInvoiceStockSku = addSGProp(baseGroup, "quantityInvoiceStockSku", true, "Кол-во оприход.", quantityInvoiceShipmentStockSku, 1, 3, 4);
 
-        priceInInvoiceStockSku = addJProp(baseGroup, "priceInInvoiceStockSku", true, "Цена входная", and1,
+        priceInInvoiceStockSku = addJProp(baseGroup, "priceInInvoiceStockSku", "Цена входная", and1,
                 priceDocumentSku, 1, 3, quantityInvoiceStockSku, 1, 2, 3);
 
         quantityShipDimensionStock = addSGProp(baseGroup, "quantityShipDimensionStock", "Всего оприход.", quantityShipDimensionShipmentStockSku, 1, 3);
@@ -1337,7 +1337,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 quantityInvoiceStockSku,
                 addJProp(and1, quantityListSku, 2, 3, addJProp(equals2, 1, boxInvoiceSupplierBox, 2), 1, 2));
 
-        priceInInvoiceFreightUnitSku = addCUProp(baseGroup, "priceInInvoiceFreightUnitSku", "Цена входная",
+        priceInInvoiceFreightUnitSku = addCUProp(baseGroup, "priceInInvoiceFreightUnitSku", true, "Цена входная",
                 priceInInvoiceStockSku,
                 addJProp(and1, priceDocumentSku, 1, 3, addJProp(equals2, 1, boxInvoiceSupplierBox, 2), 1, 2));
 
