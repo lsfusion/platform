@@ -372,8 +372,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP multiplyDouble2 = addMFProp(DoubleClass.instance, 2);
 
-        LP positive = addJProp(greater2, 1, vzero);
-        LP negative = addJProp(less2, 1, vzero);
         LP onlyPositive = addJProp(and1, 1, positive, 1);
         LP min = addSFProp("(prm1+prm2-ABS(prm1-prm2))/2", DoubleClass.instance, 2);
         LP abs = addSFProp("ABS(prm1)", DoubleClass.instance, 1);

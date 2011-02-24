@@ -547,6 +547,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP yearInDate;
 
     protected LP vtrue, vzero;
+    protected LP positive, negative;
 
     public LP<?> name;
     public LP<?> date;
@@ -1020,6 +1021,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         between = addJProp("Между", and1, groeq2, 1, 2, groeq2, 3, 1);
         vtrue = addCProp("Истина", LogicalClass.instance, true);
         vzero = addCProp("0", DoubleClass.instance, 0);
+
+        positive = addJProp(greater2, 1, vzero);
+        negative = addJProp(less2, 1, vzero);
 
         yearInDate = addSFProp("(extract(year from prm1))", IntegerClass.instance, 1);
 
