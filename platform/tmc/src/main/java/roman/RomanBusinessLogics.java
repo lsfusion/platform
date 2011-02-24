@@ -3233,14 +3233,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
                 Sheet sheet = Workbook.getWorkbook(inFile).getSheet(0);
 
-                ExcelSheetImporter importer = createExporter(sheet);
-
-                if (importer == null) {
-                    actions.add(new MessageClientAction("Неподдерживаемый формат импорта", "Импорт"));
-                    return;
-                }
-
-                table = importer.getTable();
+                table = createExporter(sheet).getTable();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
