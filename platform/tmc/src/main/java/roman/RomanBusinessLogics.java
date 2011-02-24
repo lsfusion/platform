@@ -3168,6 +3168,45 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         }
     }
 
+    public class JennyferImportArticleWeightActionProperty extends SupplierActionProperty {
+
+        public JennyferImportArticleWeightActionProperty() {
+            super("Импортировать вес", jennyferSupplier);
+        }
+
+        @Override
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            DataObject supplier = keys.get(supplierInterface);
+            FormInstance remoteForm = executeForm.form;
+            DataSession session = remoteForm.session;
+
+            ImportField sidField = new ImportField(sidArticle);
+            ImportField netWeightField = new ImportField(netWeightArticle);
+
+            ImportTable table;
+            try {
+                ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
+                Sheet sheet = Workbook.getWorkbook(inFile).getSheet(0);
+
+                table = new ExcelSheetImporter(sheet, new Object[] {sidField, netWeightField}) {
+                    @Override
+                    protected boolean isCorrectRow(int rowNum) {
+                        return sheet.getCell(A, rowNum).getContents().trim().matches("^(\\d{6})$");
+                    }
+                    @Override
+                    protected String getCellString(int row, int column) {
+                        if (column == B)
+                            return ((Double)(Double.parseDouble(super.getCellString(row, K).replace(',', '.')) /
+                                   Double.parseDouble(super.getCellString(row, H).replace(',', '.')))).toString();
+                        return super.getCellString(row, column);
+                    }
+                }.getTable();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
     public class TallyWeijlImportInvoiceActionProperty extends ImportInvoiceActionProperty {
 
         public TallyWeijlImportInvoiceActionProperty() {
@@ -3184,19 +3223,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         }
     }
 
-    public abstract class ImportInvoiceActionProperty extends ActionProperty {
+    public abstract class ImportInvoiceActionProperty extends SupplierActionProperty {
 
         protected ImportField invoiceSIDField, boxNumberField, barCodeField, colorCodeField, sidField,
         colorNameField, sizeField, compositionField, countryField, customCodeField, unitPriceField,
         unitQuantityField, unitNetWeightField, originalNameField, numberSkuField, customCode6Field;
 
-        private final ClassPropertyInterface supplierInterface;
-
         public ImportInvoiceActionProperty(String caption, ValueClass supplierClass) {
-            super(genSID(), caption, new ValueClass[]{supplierClass});
-
-            Iterator<ClassPropertyInterface> i = interfaces.iterator();
-            supplierInterface = i.next();
+            super(caption, supplierClass);
         }
 
         protected abstract ExcelSheetImporter createExporter(Sheet sheet);
@@ -3305,6 +3339,18 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             super.proceedDefaultDraw(entity, form);
             entity.shouldBeLast = true;
             entity.forceViewType = ClassViewType.PANEL;
+        }
+    }
+
+    public abstract class SupplierActionProperty extends ActionProperty {
+
+        protected final ClassPropertyInterface supplierInterface;
+
+        public SupplierActionProperty(String caption, ValueClass supplierClass) {
+            super(genSID(), caption, new ValueClass[]{supplierClass});
+
+            Iterator<ClassPropertyInterface> i = interfaces.iterator();
+            supplierInterface = i.next();
         }
     }
 }
