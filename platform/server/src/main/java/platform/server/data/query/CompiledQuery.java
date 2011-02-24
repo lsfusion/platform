@@ -158,7 +158,8 @@ public class CompiledQuery<K,V> {
             for(InnerSelectJoin queryJoin : queryJoins) {
                 boolean orderUnion = syntax.orderUnion(); // нужно чтобы фигачило внутрь orders а то многие SQL сервера не видят индексы внутри union all
                 fromString = (fromString.length()==0?"":fromString+" UNION ALL ") + "(" + getInnerSelect(query.mapKeys, queryJoin, queryJoin.fullWhere.followTrue(query.properties), params, orderUnion?orders:new OrderedMap<V, Boolean>(), orderUnion?top:0, syntax, keyNames, propertyNames, keyOrder, propertyOrder, castTypes, prefix, false) + ")";
-                castTypes = null;
+                if(!orderUnion)
+                    castTypes = null;
             }
 
             String alias = "UALIAS";

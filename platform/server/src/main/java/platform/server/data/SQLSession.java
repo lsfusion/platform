@@ -363,6 +363,9 @@ public class SQLSession extends MutableObject {
             } finally {
                 result.close();
             }
+        } catch (SQLException e) {
+            logger.info(statement.toString());
+            throw e;
         } finally {
             statement.close();
 
