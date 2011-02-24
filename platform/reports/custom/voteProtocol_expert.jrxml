@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="expert" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.6105100000000045"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="305"/>
+	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#FFFFFF" fill="Solid" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -26,7 +26,7 @@
 	<field name="nameNativeClusterVote" class="java.lang.String"/>
 	<field name="connectedExpertVote" class="java.lang.Boolean"/>
 	<detail>
-		<band height="522" splitType="Stretch">
+		<band height="524" splitType="Stretch">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" mode="Transparent" x="40" y="499" width="499" height="18" backcolor="#FFFFFF"/>
 				<box topPadding="4" leftPadding="4" bottomPadding="4" rightPadding="4">
@@ -281,6 +281,9 @@
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{innovativeCommentExpertVote}]]></textFieldExpression>
 			</textField>
+			<break>
+				<reportElement x="0" y="0" width="100" height="1"/>
+			</break>
 		</band>
 	</detail>
 </jasperReport>

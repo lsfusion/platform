@@ -68,7 +68,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private ConcreteCustomClass freight;
     private StaticCustomClass route;
     private ConcreteCustomClass supplier;
-    private StaticCustomClass supplierType;
     private AbstractCustomClass document;
     private AbstractCustomClass priceDocument;
     private AbstractCustomClass subject;
@@ -118,8 +117,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     public LP nameUnitOfMeasureArticle;
     private LP unitOfMeasureArticleSku;
     private LP nameUnitOfMeasureArticleSku;
-    private LP supplierTypeSupplier;
-    private LP nameSupplierTypeSupplier;
     private LP supplierCountrySupplier;
     private LP nameSupplierCountrySupplier;
     private LP countryCountrySupplier;
@@ -184,8 +181,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     public LP sidToCustomCategoryOrigin;
     private LP importBelTnved;
     private LP importEuTnved;
-    private LP importInvoice;
-    
+
     public LP customCategory4CustomCategory6;
     public LP customCategory6CustomCategory9;
     public LP customCategory9CustomCategory10;
@@ -553,6 +549,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP freightSupplierBox;
     private LP freightFreightUnit;
     private LP priceInInvoiceFreightUnitSku;
+    private ConcreteCustomClass jennyferSupplier;
+    private ConcreteCustomClass tallyWeijlSupplier;
+    private LP jennyferImportInvoice;
+    private LP tallyWeijlImportInvoice;
+    private AbstractGroup importInvoiceActionGroup;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -574,6 +575,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         intraAttributeGroup = new AbstractGroup("Внутренние атрибуты");
         publicGroup.add(intraAttributeGroup);
+
+        importInvoiceActionGroup = new AbstractGroup("Импорт инвойсов");
+        importInvoiceActionGroup.createContainer = false;
+        actionGroup.add(importInvoiceActionGroup);
     }
 
     @Override
@@ -627,8 +632,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         supplier = addConcreteClass("supplier", "Поставщик", baseClass.named);
 
-        supplierType = addStaticClass("supplierType", "Тип поставщика",
-                new String[] {"jennyfer", "tally_weijl"}, new String[] {"Jennyfer", "Tally Weijl"});
+        jennyferSupplier = addConcreteClass("jennyferSupplier", "Jennyfer", supplier);
+        tallyWeijlSupplier = addConcreteClass("tallyWeijlSupplier", "Tally Weijl", supplier);
 
         subject = addAbstractClass("subject", "Субъект", baseClass.named);
         importer = addConcreteClass("importer", "Импортер", subject);
@@ -717,7 +722,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         importBelTnved = addAProp(new ClassifierTNVEDImportActionProperty(genSID(), "Импортировать (РБ)", this, "belarusian"));
         importEuTnved = addAProp(new ClassifierTNVEDImportActionProperty(genSID(), "Импортировать (ЕС)", this, "origin"));
-        importInvoice = addAProp(new ImportInvoiceActionProperty());
+        jennyferImportInvoice = addAProp(importInvoiceActionGroup, new JennyferImportInvoiceActionProperty());
+        tallyWeijlImportInvoice = addAProp(importInvoiceActionGroup, new TallyWeijlImportInvoiceActionProperty());
 
         customCategory4CustomCategory6 = addDProp(idGroup, "customCategory4CustomCategory6", "Код(4)", customCategory4, customCategory6);
         customCategory6CustomCategory9 = addDProp(idGroup, "customCategory6CustomCategory9", "Код(6)", customCategory6, customCategory9);
@@ -755,9 +761,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 //                addJProp(is(customCategory10), customCategory10CustomCategoryOrigin, 1), 1), true);
 
         // Supplier
-        supplierTypeSupplier = addDProp(baseGroup, "supplierTypeSupplier", "Тип поставщика", supplierType, supplier);
-        nameSupplierTypeSupplier = addJProp(baseGroup, "nameSupplierTypeSupplier", "Формат импорта", name, supplierTypeSupplier, 1);
-
         currencySupplier = addDProp(idGroup, "currencySupplier", "Валюта (ИД)", currency, supplier);
         nameCurrencySupplier = addJProp(baseGroup, "nameCurrencySupplier", "Валюта", name, currencySupplier, 1);
 
@@ -891,7 +894,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         nameCountrySupplierOfOriginArticle = addJProp(supplierAttributeGroup, "nameCountrySupplierOfOriginArticle", "Страна происхождения (ориг.)", name, countrySupplierOfOriginArticle, 1);
 
         countrySupplierOfOriginArticleSku = addJProp(idGroup, "countrySupplierOfOriginArticleSku", "Страна происхождения (ИД)", countrySupplierOfOriginArticle, articleSku, 1);
-        nameCountrySupplierOfOriginArticleSku = addJProp(supplierAttributeGroup, "nameCountrySupplierOfOriginArticleSku", "Страна происхождения", name, countrySupplierOfOriginArticleSku, 1);
+        nameCountrySupplierOfOriginArticleSku = addJProp(supplierAttributeGroup, "nameCountrySupplierOfOriginArticleSku", "Страна происхождения (ориг.)", name, countrySupplierOfOriginArticleSku, 1);
 
         countryOfOriginArticle = addJProp(idGroup, "countryOfOriginArticle", "Страна происхождения (ИД)", countryCountrySupplier, countrySupplierOfOriginArticle, 1);
         nameCountryOfOriginArticle = addJProp(supplierAttributeGroup, "nameCountryOfOriginArticle", "Страна происхождения", nameOriginCountry, countryOfOriginArticle, 1);
@@ -1830,7 +1833,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             this.box = box;
 
-            objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameCurrencySupplier, importInvoice);
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameCurrencySupplier, importInvoiceActionGroup, true);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс", date, objectClassName, sidDocument, nameCurrencyDocument, sumDocument, nameImporterInvoice, nameDestinationDestinationDocument, grossWeightDirectInvoice);
@@ -1907,7 +1910,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             if (box)
                 addPropertyDraw(sidSupplierBox, objSupplierBoxSpec);
             addPropertyDraw(new LP[] {barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
-                                      nameBrandSupplierArticleSku, nameCountrySupplierOfOriginArticle , nameCountryOfOriginSku, netWeightSku,
+                                      nameBrandSupplierArticleSku, nameCountrySupplierOfOriginArticleSku , nameCountryOfOriginSku, netWeightSku,
                                       mainCompositionOriginSku, additionalCompositionOriginSku}, objSku);
             addPropertyDraw(quantityListSku, (box ? objSupplierBoxSpec : objInvoice), objSku);
             addPropertyDraw(priceDocumentSku, objInvoice, objSku);
@@ -1952,7 +1955,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addRegularFilterGroup(filterGroupColor);
 
             setReadOnly(objSupplier, true);
-            setReadOnly(importInvoice, false);
+            setReadOnly(importInvoiceActionGroup, false, objSupplier.groupTo);
         }
 
         @Override
@@ -2813,7 +2816,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         private ColorSizeSupplierFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
-            objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameSupplierTypeSupplier, nameBrandSupplierSupplier, nameCurrencySupplier, nameDictionaryComposition);
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameBrandSupplierSupplier, nameCurrencySupplier, nameDictionaryComposition);
             addObjectActions(this, objSupplier);
 
             objColor = addSingleGroupObject(colorSupplier, "Цвет", sidColorSupplier, name);
@@ -3089,14 +3092,18 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             value = value.trim();
 
             switch (column) {
-                case C: return value.substring(1); // barcode
+                case C:
+                    switch (part) {
+                        case 0 : return value.substring(1); // barcode
+                        case 1 : return value.substring(1, 7); // article
+                    }
                 case K: return value.substring(0, Math.min(10, value.length())); // customs code
                 case N: case O: return value.replace(',', '.');
                 case E:
                     switch (part) {
-                        case 0: return value.substring(0, value.indexOf(' ')); // sid
-                        case 1: return value.substring(value.indexOf(' ') + 1, value.lastIndexOf(' ')).trim(); // color
-                        case 2: return value.substring(value.lastIndexOf(' ') + 1); // size
+//                        case 0: return value.substring(0, value.indexOf(' ')); // sid
+                        case 0: return value.substring(value.indexOf(' ') + 1, value.lastIndexOf(' ')).trim(); // color
+                        case 1: return value.substring(value.lastIndexOf(' ') + 1); // size
                     }
                 default: return value;
             }
@@ -3146,41 +3153,53 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         }
     }
 
-    public class ImportInvoiceActionProperty extends ActionProperty {
+    public class JennyferImportInvoiceActionProperty extends ImportInvoiceActionProperty {
 
-        private ImportField invoiceSIDField, boxNumberField, barCodeField, colorCodeField, sidField,
+        public JennyferImportInvoiceActionProperty() {
+            super("Импортировать инвойс", jennyferSupplier);
+        }
+
+        @Override
+        protected ExcelSheetImporter createExporter(Sheet sheet) {
+            return new JennyferInvoiceImporter(sheet, new Object[] {invoiceSIDField, boxNumberField, new ImportField[] {barCodeField, sidField}, colorCodeField,
+                    new ImportField[] {colorNameField, sizeField}, null, compositionField, null, null,
+                    countryField, customCodeField, null, null, unitPriceField, unitQuantityField, null,
+                    numberSkuField, customCode6Field, unitNetWeightField, originalNameField});
+        }
+    }
+
+    public class TallyWeijlImportInvoiceActionProperty extends ImportInvoiceActionProperty {
+
+        public TallyWeijlImportInvoiceActionProperty() {
+            super("Импортировать инвойс", tallyWeijlSupplier);
+        }
+
+        @Override
+        protected ExcelSheetImporter createExporter(Sheet sheet) {
+            return new TallyWeijlInvoiceImporter(sheet, new Object[] {null, null, invoiceSIDField, null, null, null, null, null,
+                    compositionField, countryField, boxNumberField, customCodeField, barCodeField, null,
+                    sizeField, colorCodeField, sidField, new ImportField[] {originalNameField, colorNameField},
+                    null, null, null, null, unitQuantityField, unitNetWeightField, null, null, null, null, null,
+                    unitPriceField, null, null, numberSkuField, customCode6Field});
+        }
+    }
+
+    public abstract class ImportInvoiceActionProperty extends ActionProperty {
+
+        protected ImportField invoiceSIDField, boxNumberField, barCodeField, colorCodeField, sidField,
         colorNameField, sizeField, compositionField, countryField, customCodeField, unitPriceField,
         unitQuantityField, unitNetWeightField, originalNameField, numberSkuField, customCode6Field;
 
         private final ClassPropertyInterface supplierInterface;
 
-        public ImportInvoiceActionProperty() {
-            super(genSID(), "Импортировать инвойс", new ValueClass[]{supplier});
+        public ImportInvoiceActionProperty(String caption, ValueClass supplierClass) {
+            super(genSID(), caption, new ValueClass[]{supplierClass});
 
             Iterator<ClassPropertyInterface> i = interfaces.iterator();
             supplierInterface = i.next();
         }
 
-        private ExcelSheetImporter createExporter(Sheet sheet, int type) {
-            Object[] jennyferParams = new Object[] {invoiceSIDField, boxNumberField, barCodeField, colorCodeField,
-                    new ImportField[] {sidField, colorNameField, sizeField}, null, compositionField, null, null,
-                    countryField, customCodeField, null, null, unitPriceField, unitQuantityField, null,
-                    numberSkuField, customCode6Field, unitNetWeightField, originalNameField};
-
-            Object[] tallyWeijlParams = new Object[] {null, null, invoiceSIDField, null, null, null, null, null,
-                        compositionField, countryField, boxNumberField, customCodeField, barCodeField, null,
-                        sizeField, colorCodeField, sidField, new ImportField[] {originalNameField, colorNameField},
-                        null, null, null, null, unitQuantityField, unitNetWeightField, null, null, null, null, null,
-                        unitPriceField, null, null, numberSkuField, customCode6Field};
-
-            String supplierTypeId = supplierType.getSID(type);
-            if (supplierTypeId.equals("jennyfer")) {
-                return new JennyferInvoiceImporter(sheet, jennyferParams);
-            } else if (supplierTypeId.equals("tally_weijl")) {
-                return new TallyWeijlInvoiceImporter(sheet, tallyWeijlParams);
-            }
-            return null;
-        }
+        protected abstract ExcelSheetImporter createExporter(Sheet sheet);
 
         private void initFields() {
             invoiceSIDField = new ImportField(sidDocument);
@@ -3211,11 +3230,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             ImportTable table;
             try {
-                Integer type = (Integer) supplierTypeSupplier.read(session, supplier);
                 ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
                 Sheet sheet = Workbook.getWorkbook(inFile).getSheet(0);
 
-                ExcelSheetImporter importer = createExporter(sheet, type);
+                ExcelSheetImporter importer = createExporter(sheet);
 
                 if (importer == null) {
                     actions.add(new MessageClientAction("Неподдерживаемый формат импорта", "Импорт"));
