@@ -563,7 +563,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     // todo : временная затычка
     public void seekObject(ObjectInstance object, ObjectValue value) throws SQLException {
 
-        if(entity.autoActions.size() > 0) { // дебилизм конечно но пока так
+        if(entity.eventActions.size() > 0) { // дебилизм конечно но пока так
             forceChangeObject(object, value);
         } else {
             object.groupTo.addSeek(object, value, false);
@@ -573,7 +573,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     public List<ClientAction> changeObject(ObjectInstance object, ObjectValue value, RemoteForm form) throws SQLException {
         seekObject(object, value);
         // запускаем все Action'ы, которые следят за этим объектом
-        return executeAutoActions(object, form);
+        return fireObjectChanged(object, form);
     }
 
     public void fullRefresh() {
@@ -1177,12 +1177,19 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         return new ArrayList<ClientAction>();
     }
 
-    private List<ClientAction> executeAutoActions(ObjectInstance object, RemoteForm form) throws SQLException {
-        for (Entry<ObjectEntity, List<PropertyObjectEntity>> autoActions : entity.autoActions.entrySet()) {
-            if (object.equals(instanceFactory.getInstance(autoActions.getKey()))) {
-                autoActionsRunner = new AutoActionsRunner(form, autoActions.getValue());
-                return autoActionsRunner.run();
-            }
+    private List<ClientAction> fireObjectChanged(ObjectInstance object, RemoteForm form) throws SQLException {
+        return fireEvent(form, object.entity);
+    }
+
+    public List<ClientAction> fireOnApply(RemoteForm form) throws SQLException {
+        return fireEvent(form, FormEntity.ON_APPLY_EVENT);
+    }
+
+    public List<ClientAction> fireEvent(RemoteForm form, Object eventObject) throws SQLException {
+        List<PropertyObjectEntity> actionsOnEvent = entity.getActionsOnEvent(eventObject);
+        if (actionsOnEvent != null) {
+            autoActionsRunner = new AutoActionsRunner(form, actionsOnEvent);
+            return autoActionsRunner.run();
         }
         return new ArrayList<ClientAction>();
     }

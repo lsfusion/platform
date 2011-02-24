@@ -1,5 +1,6 @@
 package platform.server.form.instance;
 
+import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.server.logics.DataObject;
@@ -68,7 +69,6 @@ public class FormChanges {
         for (Map.Entry<GroupObjectInstance, ClassViewType> classView : classViews.entrySet()) {
             System.out.println(classView.getKey() + " - " + classView.getValue());
         }
-
     }
 
     private void serializeGroupObjectValue(DataOutputStream outStream, GroupObjectInstance groupObject, Map<ObjectInstance,? extends ObjectValue> values) throws IOException {
@@ -153,6 +153,47 @@ public class FormChanges {
                 } else
                     serializeGroupObjectValue(outStream, gridObject.getKey(), groupObjectValue);
             }
+        }
+    }
+
+    public void logChanges(FormInstance<?> bv, Logger logger) {
+        logger.debug("getFormChanges:");
+        logger.debug("  GROUPOBJECTS ---------------");
+        for (GroupObjectInstance group : bv.groups) {
+            List<Map<ObjectInstance, DataObject>> groupGridObjects = gridObjects.get(group);
+            if (groupGridObjects != null) {
+                logger.debug("   " + group.getID() + " - Current grid objects chaned to:");
+                for (Map<ObjectInstance, DataObject> value : groupGridObjects)
+                    logger.debug("     " + value);
+            }
+
+            Map<ObjectInstance, ? extends ObjectValue> value = objects.get(group);
+            if (value != null) {
+                logger.debug("   " + group.getID() + " - Current object changed to:  " + value);
+            }
+        }
+
+        logger.debug("  PROPERTIES ---------------");
+        logger.debug("   Values ---------------");
+        for (PropertyReaderInstance property : properties.keySet()) {
+            Map<Map<ObjectInstance, DataObject>, Object> propertyValues = properties.get(property);
+            logger.debug("    " + property + " ---- property");
+            for (Map.Entry<Map<ObjectInstance, DataObject>, Object> propValue : propertyValues.entrySet())
+                logger.debug("      " + propValue.getKey() + " -> " + propValue.getValue());
+        }
+
+        logger.debug("   Goes to panel ---------------");
+        for (PropertyReaderInstance property : panelProperties) {
+            logger.debug("     " + property);
+        }
+
+        logger.debug("   Droped ---------------");
+        for (PropertyDrawInstance property : dropProperties)
+            logger.debug("     " + property);
+
+        logger.debug("  CLASSVIEWS ---------------");
+        for (Map.Entry<GroupObjectInstance, ClassViewType> classView : classViews.entrySet()) {
+            logger.debug("     " + classView.getKey() + " - " + classView.getValue());
         }
     }
 }

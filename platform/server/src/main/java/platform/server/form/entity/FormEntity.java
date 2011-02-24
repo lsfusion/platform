@@ -6,6 +6,7 @@ import platform.base.OrderedMap;
 import platform.base.Subsets;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
+import platform.base.serialization.CustomSerializable;
 import platform.interop.ClassViewType;
 import platform.interop.action.ClientResultAction;
 import platform.server.classes.ValueClass;
@@ -38,13 +39,9 @@ import java.util.*;
 public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> implements ServerIdentitySerializable {
     private final static Logger logger = Logger.getLogger(FormEntity.class);
 
-    public boolean isReadOnly() {
-        return false;
-    }
+    public static final String ON_APPLY_EVENT = "onApplyEvent";
 
-    public boolean shouldProceedDefaultDraw() {
-        return true;
-    }
+    public Map<Object, List<PropertyObjectEntity>> eventActions = new HashMap<Object, List<PropertyObjectEntity>>();
 
     public List<GroupObjectEntity> groups = new ArrayList<GroupObjectEntity>();
     public List<TreeGroupEntity> treeGroups = new ArrayList<TreeGroupEntity>();
@@ -76,6 +73,14 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         logger.info("Initializing form " + caption + "...");
 
         isPrintForm = iisPrintForm;
+    }
+
+    public boolean isReadOnly() {
+        return false;
+    }
+
+    public boolean shouldProceedDefaultDraw() {
+        return true;
     }
 
     public void addFixedFilter(FilterEntity filter) {
@@ -550,9 +555,19 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         pool.serializeCollection(outStream, regularFilterGroups);
         pool.serializeMap(outStream, forceDefaultDraw);
 
-        outStream.writeInt(autoActions.size());
-        for (Map.Entry<ObjectEntity, List<PropertyObjectEntity>> entry : autoActions.entrySet()) {
-            pool.serializeObject(outStream, entry.getKey());
+        outStream.writeInt(eventActions.size());
+        for (Map.Entry<Object, List<PropertyObjectEntity>> entry : eventActions.entrySet()) {
+            Object event = entry.getKey();
+
+            //пока предполагаем, что евент либо String, либо CustomSerializable!
+            boolean isStringEvent = event instanceof String;
+            outStream.writeBoolean(isStringEvent);
+            if (isStringEvent) {
+                pool.writeString(outStream, (String) event);
+            } else {
+                pool.serializeObject(outStream, (CustomSerializable) event);
+            }
+
             pool.serializeCollection(outStream, entry.getValue());
         }
     }
@@ -568,12 +583,15 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         regularFilterGroups = pool.deserializeList(inStream);
         forceDefaultDraw = pool.deserializeMap(inStream);
 
-        autoActions = new HashMap<ObjectEntity, List<PropertyObjectEntity>>();
+        eventActions = new HashMap<Object, List<PropertyObjectEntity>>();
         int length = inStream.readInt();
         for (int i = 0; i < length; ++i) {
-            ObjectEntity object = pool.deserializeObject(inStream);
+            Object event = inStream.readBoolean()
+                           ? pool.readString(inStream)
+                           : pool.deserializeObject(inStream);
+
             List<PropertyObjectEntity> actions = pool.deserializeList(inStream);
-            autoActions.put(object, actions);
+            eventActions.put(event, actions);
         }
     }
 
@@ -582,20 +600,30 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         outStream.writeBoolean(isPrintForm);
     }
 
-    public Map<ObjectEntity, List<PropertyObjectEntity>> autoActions = new HashMap<ObjectEntity, List<PropertyObjectEntity>>();
-
-    public void addAutoAction(ObjectEntity object, PropertyObjectEntity... actions) {
-        addAutoAction(object, false, actions);
+    public void addActionsOnObjectChange(ObjectEntity object, PropertyObjectEntity... actions) {
+        addActionsOnObjectChange(object, false, actions);
     }
 
-    public void addAutoAction(ObjectEntity object, boolean drop, PropertyObjectEntity... actions) {
-        List<PropertyObjectEntity> propertyActions = autoActions.get(object);
-        if (propertyActions == null || drop) {
-            propertyActions = new ArrayList<PropertyObjectEntity>();
-            autoActions.put(object, propertyActions);
+    public void addActionsOnObjectChange(ObjectEntity object, boolean drop, PropertyObjectEntity... actions) {
+        addActionsOnOEvent(object, drop, actions);
+    }
+
+    public void addActionsOnApply(PropertyObjectEntity... actions) {
+        addActionsOnOEvent(ON_APPLY_EVENT, false, actions);
+    }
+
+    public void addActionsOnOEvent(Object eventObject, boolean drop, PropertyObjectEntity... actions) {
+        List<PropertyObjectEntity> thisEventActions = eventActions.get(eventObject);
+        if (thisEventActions == null || drop) {
+            thisEventActions = new ArrayList<PropertyObjectEntity>();
+            eventActions.put(eventObject, thisEventActions);
         }
 
-        propertyActions.addAll(Arrays.asList(actions));
+        thisEventActions.addAll(Arrays.asList(actions));
+    }
+
+    public List<PropertyObjectEntity> getActionsOnEvent(Object eventObject) {
+        return eventActions.get(eventObject);
     }
 
     public boolean hasClientApply() {

@@ -423,28 +423,21 @@ public class ClientFormController {
 
     private void applyRemoteChanges() throws IOException {
         RemoteChanges remoteChanges = remoteForm.getRemoteChanges();
+        List<ClientAction> remoteActions = remoteChanges.actions;
 
-        applyActions(remoteChanges.actions, true);
+        applyActions(remoteActions, true);
 
         Log.incrementBytesReceived(remoteChanges.form.length);
         applyFormChanges(new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(remoteChanges.form)), form, controllers));
 
-        applyActions(remoteChanges.actions, false);
+        applyActions(remoteActions, false);
 
         if (clientNavigator != null) {
             clientNavigator.changeCurrentClass(remoteChanges.classID);
         }
 
-        List<ClientAction> actions = remoteChanges.actions;
-        ClientAction lastAction = BaseUtils.last(actions);
-        while (lastAction instanceof ContinueAutoActionsClientAction) {
-            actions = remoteForm.continueAutoActions();
-
-            for (ClientAction action : actions) {
-                action.dispatch(actionDispatcher);
-            }
-
-            lastAction = BaseUtils.last(actions);
+        if (BaseUtils.last(remoteActions) instanceof ContinueAutoActionsClientAction) {
+            remoteForm.continueAutoActions();
             refreshData();
         }
     }

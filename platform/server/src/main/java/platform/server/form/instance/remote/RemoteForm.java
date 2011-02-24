@@ -5,6 +5,7 @@ import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
+import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.Order;
@@ -38,8 +39,11 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
 
+import static platform.base.BaseUtils.deserializeObject;
+
 // фасад для работы с клиентом
 public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> extends platform.interop.remote.RemoteObject implements RemoteFormInterface {
+    private final static Logger logger = Logger.getLogger(RemoteForm.class);
 
     public final F form;
     public final FormView richDesign;
@@ -245,7 +249,12 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
         try {
-            form.endApply().serialize(new DataOutputStream(outStream));
+            FormChanges formChanges = form.endApply();
+            formChanges.serialize(new DataOutputStream(outStream));
+
+            if (logger.isDebugEnabled()) {
+                formChanges.logChanges(form, logger);
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -278,7 +287,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         Map<ObjectInstance, Object> mapValues = new HashMap<ObjectInstance, Object>();
         for (GroupObjectInstance treeGroup : group.getUpTreeGroups()) {
             for (ObjectInstance objectInstance : treeGroup.objects) {
-                mapValues.put(objectInstance, BaseUtils.deserializeObject(inStream));
+                mapValues.put(objectInstance, deserializeObject(inStream));
             }
         }
 
@@ -292,6 +301,14 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             groupObject.change(form.session, deserializeKeys(groupObject, value));
 
             updateCurrentClass = groupObject.objects.iterator().next();
+
+            if (logger.isInfoEnabled()) {
+                logger.info(String.format("changeGroupObject: [ID: %1$d]", groupObject.getID()));
+                logger.info("   keys: ");
+                for (Map.Entry<ObjectInstance, DataObject> entry : deserializeKeys(groupObject, value).entrySet()) {
+                    logger.info(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
+                }
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -337,7 +354,24 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         try {
             PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
             Map<ObjectInstance, DataObject> keys = deserializeKeys(propertyDraw, columnKeys);
-            actions.addAll(form.changeProperty(propertyDraw, BaseUtils.deserializeObject(object), this, all, keys));
+            actions.addAll(form.changeProperty(propertyDraw, deserializeObject(object), this, all, keys));
+
+            if (logger.isInfoEnabled()) {
+                logger.info(String.format("changePropertyDraw: [ID: %1$d, SID: %2$s, all?: %3$s] = %4$s", propertyDraw.getID(), propertyDraw.getsID(), all, deserializeObject(object)));
+                if (keys.size() > 0) {
+                    logger.info("   columnKeys: ");
+                    for (Map.Entry<ObjectInstance, DataObject> entry : keys.entrySet()) {
+                        logger.info(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
+                    }
+                }
+
+                if (logger.isDebugEnabled()) {
+                    logger.debug("   current object's values: ");
+                    for (ObjectInstance obj : form.getObjects()) {
+                        logger.debug(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
+                    }
+                }
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -366,7 +400,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             Map<ObjectInstance, Object> mapValues = new HashMap<ObjectInstance, Object>();
             boolean found = false;
             for (ObjectInstance objectInstance : groupInstance.objects) {
-                Object val = BaseUtils.deserializeObject(inStream);
+                Object val = deserializeObject(inStream);
                 if (val != null) {
                     mapValues.put(objectInstance, val);
                     found = true;
@@ -456,15 +490,16 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     public void applyChanges() throws RemoteException {
         try {
+            actions.addAll(form.fireOnApply(this));
             form.applyActionChanges(actions);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public List<ClientAction> continueAutoActions() throws RemoteException {
+    public void continueAutoActions() throws RemoteException {
         try {
-            return form.continueAutoActions();
+            actions.addAll(form.continueAutoActions());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

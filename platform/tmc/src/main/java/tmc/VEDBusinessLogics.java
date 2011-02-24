@@ -1423,7 +1423,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             addPropertyDraw(reverseBarcode);
 
-//            addAutoAction(objBarcode, addPropertyObject(barcodeAction, objBarcode));
+//            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeAction, objBarcode));
         }
 
         @Override
@@ -1498,9 +1498,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                     addObjectActions(this, objDoc);
             }
 
-            addAutoAction(objBarcode, addPropertyObject(barcodeAction2, objDoc, objBarcode));
-            addAutoAction(objBarcode, addPropertyObject(seekBarcodeAction, objBarcode));
-            addAutoAction(objBarcode, addPropertyObject(barcodeNotFoundMessage, objBarcode));
+            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeAction2, objDoc, objBarcode));
+            addActionsOnObjectChange(objBarcode, addPropertyObject(seekBarcodeAction, objBarcode));
+            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeNotFoundMessage, objBarcode));
 
             if (hasExternalScreen()) {
                 addPropertyDraw(documentBarcodePriceOv, objDoc, objBarcode).setToDraw(objBarcode.groupTo);
@@ -1949,11 +1949,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addFixedOrder(addPropertyObject(changeQuantityTime, objDoc, objArt), false);
 
             addPropertyDraw(barcodeAddClient);
-            addAutoAction(objBarcode, true,
-                    addPropertyObject(barcodeAddClientAction, objBarcode),
-                    addPropertyObject(barcodeAction2, objDoc, objBarcode),
-                    addPropertyObject(seekBarcodeAction, objBarcode),
-                    addPropertyObject(barcodeNotFoundMessage, objBarcode));
+            addActionsOnObjectChange(objBarcode, true,
+                                     addPropertyObject(barcodeAddClientAction, objBarcode),
+                                     addPropertyObject(barcodeAction2, objDoc, objBarcode),
+                                     addPropertyObject(seekBarcodeAction, objBarcode),
+                                     addPropertyObject(barcodeNotFoundMessage, objBarcode));
         }
 
         @Override
@@ -2239,10 +2239,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addPropertyDraw(objDoc, objArt, quantityCheckCommitInnerArticle);
 
             if (!toAdd)
-                addAutoAction(objBarcode, true,
-                        addPropertyObject(barcodeActionCheck, objDoc, objBarcode),
-                        addPropertyObject(seekBarcodeAction, objBarcode),
-                        addPropertyObject(barcodeNotFoundMessage, objBarcode));
+                addActionsOnObjectChange(objBarcode, true,
+                                         addPropertyObject(barcodeActionCheck, objDoc, objBarcode),
+                                         addPropertyObject(seekBarcodeAction, objBarcode),
+                                         addPropertyObject(barcodeNotFoundMessage, objBarcode));
         }
 
         @Override
@@ -2375,10 +2375,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addRegularFilterGroup(filterOutGroup);
             }
 
-            addAutoAction(objBarcode, true,
-                    addPropertyObject(barcodeAction3, objDoc, objInner, objBarcode),
-                    addPropertyObject(seekBarcodeAction, objBarcode),
-                    addPropertyObject(barcodeNotFoundMessage, objBarcode));
+            addActionsOnObjectChange(objBarcode, true,
+                                     addPropertyObject(barcodeAction3, objDoc, objInner, objBarcode),
+                                     addPropertyObject(seekBarcodeAction, objBarcode),
+                                     addPropertyObject(barcodeNotFoundMessage, objBarcode));
         }
 
         @Override
@@ -2614,7 +2614,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addPropertyDraw(objArt, baseGroup, true, currentRRP);
             addPropertyDraw(objFormat, objArt, publicGroup, true);
 
-            addAutoAction(objBarcode, addPropertyObject(barcodeAction2, objFormat, objBarcode));
+            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeAction2, objFormat, objBarcode));
 
             RegularFilterGroupEntity filterBalanceGroup = new RegularFilterGroupEntity(genID());
             filterBalanceGroup.addFilter(new RegularFilterEntity(genID(),
@@ -2746,7 +2746,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                     KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0)));
             addRegularFilterGroup(inActionGroup);
 
-            addAutoAction(objBarcode, addPropertyObject(barcodeAction2, objAction, objBarcode));
+            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeAction2, objAction, objBarcode));
         }
     }
 
@@ -2836,12 +2836,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             addPropertyDraw(barcodeAddClient);
             addPropertyDraw(barcodeAddCert);
-            addAutoAction(objBarcode, true,
-                    addPropertyObject(barcodeAddCertAction, objBarcode),
-                    addPropertyObject(barcodeAddClientAction, objBarcode),
-                    addPropertyObject(barcodeAction2, objDoc, objBarcode),
-                    addPropertyObject(seekBarcodeAction, objBarcode),
-                    addPropertyObject(barcodeNotFoundMessage, objBarcode));
+            addActionsOnObjectChange(objBarcode, true,
+                                     addPropertyObject(barcodeAddCertAction, objBarcode),
+                                     addPropertyObject(barcodeAddClientAction, objBarcode),
+                                     addPropertyObject(barcodeAction2, objDoc, objBarcode),
+                                     addPropertyObject(seekBarcodeAction, objBarcode),
+                                     addPropertyObject(barcodeNotFoundMessage, objBarcode));
         }
 
         @Override

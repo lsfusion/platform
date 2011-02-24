@@ -1,12 +1,10 @@
 package platform.interop.form;
 
 import platform.interop.ClassViewType;
-import platform.interop.action.ClientAction;
 import platform.interop.action.ClientApply;
 import platform.interop.remote.PendingRemote;
 
 import java.rmi.RemoteException;
-import java.util.List;
 
 public interface RemoteFormInterface extends PendingRemote {
 
@@ -72,5 +70,5 @@ public interface RemoteFormInterface extends PendingRemote {
 
     void applyChanges() throws RemoteException;
 
-    List<ClientAction> continueAutoActions() throws RemoteException;
+    void continueAutoActions() throws RemoteException;
 }

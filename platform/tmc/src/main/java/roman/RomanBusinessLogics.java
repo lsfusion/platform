@@ -1724,16 +1724,16 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objSIDArticleComposite = addSingleGroupObject(StringClass.get(50), "Ввод составного артикула", objectValue);
             objSIDArticleComposite.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            addAutoAction(objSIDArticleComposite, addPropertyObject(addNEArticleCompositeSIDSupplier, objSIDArticleComposite, objSupplier));
-            addAutoAction(objSIDArticleComposite, addPropertyObject(incrementNumberListSID, objOrder, objSIDArticleComposite));
-            addAutoAction(objSIDArticleComposite, addPropertyObject(seekArticleSIDSupplier, objSIDArticleComposite, objSupplier));
+            addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(addNEArticleCompositeSIDSupplier, objSIDArticleComposite, objSupplier));
+            addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(incrementNumberListSID, objOrder, objSIDArticleComposite));
+            addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(seekArticleSIDSupplier, objSIDArticleComposite, objSupplier));
 
             objSIDArticleSingle = addSingleGroupObject(StringClass.get(50), "Ввод простого артикула", objectValue);
             objSIDArticleSingle.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            addAutoAction(objSIDArticleSingle, addPropertyObject(addNEArticleSingleSIDSupplier, objSIDArticleSingle, objSupplier));
-            addAutoAction(objSIDArticleSingle, addPropertyObject(incrementNumberListSID, objOrder, objSIDArticleSingle));
-            addAutoAction(objSIDArticleSingle, addPropertyObject(seekArticleSIDSupplier, objSIDArticleSingle, objSupplier));
+            addActionsOnObjectChange(objSIDArticleSingle, addPropertyObject(addNEArticleSingleSIDSupplier, objSIDArticleSingle, objSupplier));
+            addActionsOnObjectChange(objSIDArticleSingle, addPropertyObject(incrementNumberListSID, objOrder, objSIDArticleSingle));
+            addActionsOnObjectChange(objSIDArticleSingle, addPropertyObject(seekArticleSIDSupplier, objSIDArticleSingle, objSupplier));
 
             objArticle = addSingleGroupObject(article, "Артикул");
             objArticle.groupTo.setSingleClassView(ClassViewType.GRID);
@@ -1853,16 +1853,16 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objSIDArticleComposite = addSingleGroupObject(StringClass.get(50), "Ввод составного артикула", objectValue);
             objSIDArticleComposite.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            addAutoAction(objSIDArticleComposite, addPropertyObject(addNEArticleCompositeSIDSupplier, objSIDArticleComposite, objSupplier));
-            addAutoAction(objSIDArticleComposite, addPropertyObject(incrementNumberListSID, (box ? objSupplierBox : objInvoice), objSIDArticleComposite));
-            addAutoAction(objSIDArticleComposite, addPropertyObject(seekArticleSIDSupplier, objSIDArticleComposite, objSupplier));
+            addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(addNEArticleCompositeSIDSupplier, objSIDArticleComposite, objSupplier));
+            addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(incrementNumberListSID, (box ? objSupplierBox : objInvoice), objSIDArticleComposite));
+            addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(seekArticleSIDSupplier, objSIDArticleComposite, objSupplier));
 
             objSIDArticleSingle = addSingleGroupObject(StringClass.get(50), "Ввод простого артикула", objectValue);
             objSIDArticleSingle.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            addAutoAction(objSIDArticleSingle, addPropertyObject(addNEArticleSingleSIDSupplier, objSIDArticleSingle, objSupplier));
-            addAutoAction(objSIDArticleSingle, addPropertyObject(incrementNumberListSID, (box ? objSupplierBox : objInvoice), objSIDArticleSingle));
-            addAutoAction(objSIDArticleSingle, addPropertyObject(seekArticleSIDSupplier, objSIDArticleSingle, objSupplier));
+            addActionsOnObjectChange(objSIDArticleSingle, addPropertyObject(addNEArticleSingleSIDSupplier, objSIDArticleSingle, objSupplier));
+            addActionsOnObjectChange(objSIDArticleSingle, addPropertyObject(incrementNumberListSID, (box ? objSupplierBox : objInvoice), objSIDArticleSingle));
+            addActionsOnObjectChange(objSIDArticleSingle, addPropertyObject(seekArticleSIDSupplier, objSIDArticleSingle, objSupplier));
 
             objArticle = addSingleGroupObject(article, "Артикул");
             objArticle.groupTo.setSingleClassView(ClassViewType.GRID);
@@ -2234,50 +2234,50 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                     KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
             addRegularFilterGroup(filterGroup5);
 
-            addAutoAction(objBarcode, addPropertyObject(barcodeActionSeekPallet, objBarcode));
-            addAutoAction(objBarcode, addPropertyObject(barcodeActionCheckPallet, objBarcode));
-            addAutoAction(objBarcode, addPropertyObject(barcodeActionSeekFreightBox, objBarcode));
-            addAutoAction(objBarcode, addPropertyObject(barcodeActionSetPallet, objBarcode));
+            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionSeekPallet, objBarcode));
+            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionCheckPallet, objBarcode));
+            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionSeekFreightBox, objBarcode));
+            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionSetPallet, objBarcode));
             if (box)
-                addAutoAction(objBarcode, addPropertyObject(barcodeActionSetStore, objBarcode, objSupplierBox));
+                addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionSetStore, objBarcode, objSupplierBox));
 
-//            addAutoAction(objBarcode, addPropertyObject(seekRouteToFillShipmentBarcode, objShipment, objBarcode));
+//            addActionsOnObjectChange(objBarcode, addPropertyObject(seekRouteToFillShipmentBarcode, objShipment, objBarcode));
 //            if (box)
-//                addAutoAction(objBarcode, addPropertyObject(barcodeAction4, objSupplierBox, objShipment, objRoute, objBarcode));
+//                addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeAction4, objSupplierBox, objShipment, objRoute, objBarcode));
 //            else
-//                addAutoAction(objBarcode, addPropertyObject(barcodeAction3, objShipment, objRoute, objBarcode));
-            addAutoAction(objBarcode, addPropertyObject(seekBarcodeAction, objBarcode));
+//                addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeAction3, objShipment, objRoute, objBarcode));
+            addActionsOnObjectChange(objBarcode, addPropertyObject(seekBarcodeAction, objBarcode));
 
-            addAutoAction(objBarcode, addPropertyObject(barcodeActionCheckFreightBox, objRoute, objBarcode));
+            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionCheckFreightBox, objRoute, objBarcode));
 
-            addAutoAction(objBarcode,
-                          addPropertyObject(
-                                  addJProp(true, andNot1,
-                                          addModalFormActionProp(
-                                                  null,
-                                                  "Ввод нового товара",
-                                                  createItemForm,
-                                                  new ObjectEntity[]{createItemForm.objSupplier, createItemForm.objBarcode},
-                                                  createItemForm.addPropertyObject(addItemBarcode, createItemForm.objBarcode)
-                                          ), 1, 2,
-                                          barcodeToObject, 2
-                                  ),
-                                  objSupplier, objBarcode));
+            addActionsOnObjectChange(objBarcode,
+                                     addPropertyObject(
+                                             addJProp(true, andNot1,
+                                                      addModalFormActionProp(
+                                                              null,
+                                                              "Ввод нового товара",
+                                                              createItemForm,
+                                                              new ObjectEntity[]{createItemForm.objSupplier, createItemForm.objBarcode},
+                                                              createItemForm.addPropertyObject(addItemBarcode, createItemForm.objBarcode)
+                                                      ), 1, 2,
+                                                      barcodeToObject, 2
+                                             ),
+                                             objSupplier, objBarcode));
 
-            addAutoAction(objBarcode, addPropertyObject(
-                          addJProp(true, addAProp(new SeekRouteActionProperty()),
-                                   1, barcodeToObject, 2, 3),
-                          objShipment, objBarcode, objRoute));
+            addActionsOnObjectChange(objBarcode, addPropertyObject(
+                    addJProp(true, addAProp(new SeekRouteActionProperty()),
+                             1, barcodeToObject, 2, 3),
+                    objShipment, objBarcode, objRoute));
 
             if (box) {
-                addAutoAction(objBarcode, addPropertyObject(addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode, objShipment, objSupplierBox, objRoute, objBarcode));
+                addActionsOnObjectChange(objBarcode, addPropertyObject(addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode, objShipment, objSupplierBox, objRoute, objBarcode));
             } else {
-                addAutoAction(objBarcode, addPropertyObject(addSimpleShipmentDetailSimpleShipmentRouteBarcode, objShipment, objRoute, objBarcode));
+                addActionsOnObjectChange(objBarcode, addPropertyObject(addSimpleShipmentDetailSimpleShipmentRouteBarcode, objShipment, objRoute, objBarcode));
             }
 
-//            addAutoAction(objBarcode, addPropertyObject(barcodeNotFoundMessage, objBarcode));
+//            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeNotFoundMessage, objBarcode));
             if (box)
-                addAutoAction(objSIDSupplierBox, addPropertyObject(seekSupplierBoxSIDSupplier, objSIDSupplierBox, objSupplier));
+                addActionsOnObjectChange(objSIDSupplierBox, addPropertyObject(seekSupplierBoxSIDSupplier, objSIDSupplierBox, objSupplier));
 
             setReadOnly(objSupplier, true);
             setReadOnly(objShipment, true);
@@ -2974,7 +2974,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         ObjectEntity objSupplier;
         ObjectEntity objBarcode;
         ObjectEntity objSIDArticleComposite;
-        ObjectEntity objArticleComposite;
         ObjectEntity objItem;
 
         public CreateItemFormEntity(NavigatorElement parent, String sID, String caption) {
@@ -2995,8 +2994,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 //            objItem.addOnTransaction = true;
 //            addObjectActions(this, objItem);
 
-            addAutoAction(objSIDArticleComposite, addPropertyObject(addNEArticleCompositeSIDSupplier, objSIDArticleComposite, objSupplier));
-            addAutoAction(objSIDArticleComposite, addPropertyObject(executeArticleCompositeItemSIDSupplier, objItem, objSIDArticleComposite, objSupplier));
+            addActionsOnApply(addPropertyObject(addNEArticleCompositeSIDSupplier, objSIDArticleComposite, objSupplier));
+            addActionsOnApply(addPropertyObject(executeArticleCompositeItemSIDSupplier, objItem, objSIDArticleComposite, objSupplier));
         }
 
         @Override

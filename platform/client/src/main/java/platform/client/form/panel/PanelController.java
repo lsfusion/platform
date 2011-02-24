@@ -169,9 +169,6 @@ public abstract class PanelController {
         }
     }
 
-    /**
-     * обновление ClassViewType
-     */
     private void updateMovingProperties() {
         if (logicsSupplier.getGroupObject() != null) {
             GroupObjectController groupController = form.controllers.get(logicsSupplier.getGroupObject());
@@ -187,9 +184,11 @@ public abstract class PanelController {
                 groupController.showType.removeView(formLayout);
                 groupController.grid.getView().movingPropertiesContainer.add(groupController.showType.view);
             } else {
-                for (PropertyController control : movingProps) {
-                    control.addView(formLayout);
-                    control.getCellView().changeViewType(logicsSupplier.getClassView());
+                if (logicsSupplier.getClassView().equals(ClassViewType.PANEL)) {
+                    for (PropertyController control : movingProps) {
+                        control.addView(formLayout);
+                        control.getCellView().changeViewType(logicsSupplier.getClassView());
+                    }
                 }
                 groupController.showType.addView(formLayout);
             }

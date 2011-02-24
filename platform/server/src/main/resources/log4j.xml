@@ -83,12 +83,15 @@
         <appender-ref ref="serverlog"/>
     </category>
 
-    <!--
-        <category name="platform.server.remote.RemoteObjectLoggerAspect" additivity="false">
-            <priority value="INFO"/>
-            <appender-ref ref="remotelog"/>
-        </category>
-    -->
+    <category name="platform.server.remote.RemoteObjectLoggerAspect" additivity="false">
+        <priority value="INFO"/>
+        <appender-ref ref="remotelog"/>
+    </category>
+
+    <category name="platform.server.form.instance.remote.RemoteForm" additivity="false">
+        <priority value="DEBUG"/>
+        <appender-ref ref="remotelog"/>
+    </category>
 
     <root>
         <priority value="ERROR"/>

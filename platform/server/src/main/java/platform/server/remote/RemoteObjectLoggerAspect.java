@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import platform.base.BaseUtils;
 
 @Aspect
 public class RemoteObjectLoggerAspect {
@@ -21,7 +22,16 @@ public class RemoteObjectLoggerAspect {
         Object result = thisJoinPoint.proceed();
         long runTime = System.currentTimeMillis() - startTime;
 
-        logger.info(String.format("Executing remote method (time: %1$d ms.): %2$s", runTime, thisJoinPoint.getSignature().getName()));
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    String.format(
+                            "Executing remote method (time: %1$d ms.): %2$s(%3$s)",
+                            runTime,
+                            thisJoinPoint.getSignature().getName(),
+                            BaseUtils.toString(thisJoinPoint.getArgs(), ", ")
+                    )
+            );
+        }
 
         return result;
     }

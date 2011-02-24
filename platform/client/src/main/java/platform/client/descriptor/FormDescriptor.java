@@ -4,6 +4,7 @@ import platform.base.BaseUtils;
 import platform.base.context.ApplicationContext;
 import platform.base.context.ContextIdentityObject;
 import platform.base.context.IncrementView;
+import platform.base.serialization.CustomSerializable;
 import platform.base.serialization.RemoteDescriptorInterface;
 import platform.client.Main;
 import platform.client.descriptor.filter.FilterDescriptor;
@@ -36,7 +37,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
     public Set<FilterDescriptor> fixedFilters = new HashSet<FilterDescriptor>();
     public List<RegularFilterGroupDescriptor> regularFilterGroups = new ArrayList<RegularFilterGroupDescriptor>();
     public Map<PropertyDrawDescriptor, GroupObjectDescriptor> forceDefaultDraw = new HashMap<PropertyDrawDescriptor, GroupObjectDescriptor>();
-    public Map<ObjectDescriptor, List<PropertyObjectDescriptor>> autoActions = new HashMap<ObjectDescriptor, List<PropertyObjectDescriptor>>();
+    public Map<Object, List<PropertyObjectDescriptor>> eventActions = new HashMap<Object, List<PropertyObjectDescriptor>>();
 
     // по сути IncrementLazy
     IncrementView allPropertiesLazy;
@@ -219,9 +220,21 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         pool.serializeCollection(outStream, regularFilterGroups);
         pool.serializeMap(outStream, forceDefaultDraw);
 
-        outStream.writeInt(autoActions.size());
-        for (Map.Entry<ObjectDescriptor, List<PropertyObjectDescriptor>> entry : autoActions.entrySet()) {
-            pool.serializeObject(outStream, entry.getKey());
+
+
+        outStream.writeInt(eventActions.size());
+        for (Map.Entry<Object, List<PropertyObjectDescriptor>> entry : eventActions.entrySet()) {
+            Object event = entry.getKey();
+
+            //пока предполагаем, что евент либо String, либо CustomSerializable!
+            boolean isStringEvent = event instanceof String;
+            outStream.writeBoolean(isStringEvent);
+            if (isStringEvent) {
+                pool.writeString(outStream, (String) event);
+            } else {
+                pool.serializeObject(outStream, (CustomSerializable) event);
+            }
+
             pool.serializeCollection(outStream, entry.getValue());
         }
     }
@@ -237,12 +250,16 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         regularFilterGroups = pool.deserializeList(inStream);
         forceDefaultDraw = pool.deserializeMap(inStream);
 
-        autoActions = new HashMap<ObjectDescriptor, List<PropertyObjectDescriptor>>();
+
+        eventActions = new HashMap<Object, List<PropertyObjectDescriptor>>();
         int length = inStream.readInt();
         for (int i = 0; i < length; ++i) {
-            ObjectDescriptor object = pool.deserializeObject(inStream);
+            Object event = inStream.readBoolean()
+                           ? pool.readString(inStream)
+                           : pool.deserializeObject(inStream);
+
             List<PropertyObjectDescriptor> actions = pool.deserializeList(inStream);
-            autoActions.put(object, actions);
+            eventActions.put(event, actions);
         }
 
         client = pool.context;
