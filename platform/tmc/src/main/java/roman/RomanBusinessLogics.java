@@ -1344,10 +1344,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         quantityImporterFreightUnitSku = addSGProp(baseGroup, "quantityImporterFreightUnitSku", "Кол-во", quantityInvoiceFreightUnitSku,
                 importerInvoice, 1, 2, 3);
 
-        quantityImporterFreightSku = addSGProp(baseGroup, "quantityImporterFreightSku", true, "Кол-во", quantityImporterFreightUnitSku, 1, freightFreightUnit, 2, 3);
+        quantityImporterFreightSku = addSGProp(baseGroup, "quantityImporterFreightSku", true, true, "Кол-во", quantityImporterFreightUnitSku, 1, freightFreightUnit, 2, 3);
 
         quantityFreightArticle = addSGProp(baseGroup, "quantityFreightArticle", "Кол-во", quantityImporterFreightSku, 2, articleSku, 3);
-        quantityFreightSku = addSGProp(baseGroup, "quantityFreightSku", true, "Кол-во", quantityImporterFreightSku, 2, 3);
+        quantityFreightSku = addSGProp(baseGroup, "quantityFreightSku", true, true, "Кол-во", quantityImporterFreightSku, 2, 3);
 
         customCategory10FreightSku = addDProp(idGroup, "customCategory10FreightSku", "ТН ВЭД (ИД)", customCategory10, freight, sku);
         customCategory10FreightSku.setDerivedForcedChange(addJProp(and1, customCategory10Sku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);

@@ -3163,7 +3163,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addSGProp(AbstractGroup group, String sID, boolean persistent, String caption, LP groupProp, Object... params) {
-        if (persistent && !Settings.instance.isDisableSumGroupNotZero()) {
+        return addSGProp(group, sID, persistent, false, caption, groupProp, params);
+    }
+
+    protected LP addSGProp(AbstractGroup group, String sID, boolean persistent, boolean notZero, String caption, LP groupProp, Object... params) {
+        if (persistent && (notZero || !Settings.instance.isDisableSumGroupNotZero())) {
             LP property = addGProp(null, genSID(), false, caption, groupProp, true, params);
             return addJProp(group, sID, persistent, caption, onlyNotZero, directLI(property));
         } else {
