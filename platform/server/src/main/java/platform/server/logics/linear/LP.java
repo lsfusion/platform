@@ -84,6 +84,18 @@ public class LP<T extends PropertyInterface> {
                 dataProperty.derivedChange = derivedChange;
     }
 
+    // небольшой конечно дебилизм так делать, но не хочется огород из классов городить
+    public SumGroupProperty sumGroup;
+    public LP groupProperty;
+    public void setDG(boolean ascending, Object... params) {
+        setDG(ascending, BusinessLogics.readImplements(groupProperty.listInterfaces, params));
+    }
+    public <T extends PropertyInterface> void setDG(boolean ascending, List<PropertyInterfaceImplement<T>> listImplements) {
+        ((SumGroupProperty<T>)sumGroup).setDataChanges(new OrderedMap<PropertyInterfaceImplement<T>, Boolean>(listImplements.subList(1, listImplements.size()), ascending),
+                (PropertyMapImplement<?, T>) listImplements.get(0));
+
+    }
+
     private Map<T, DataObject> getMapValues(DataObject... objects) {
         Map<T, DataObject> mapValues = new HashMap<T, DataObject>();
         for(int i=0;i<listInterfaces.size();i++)

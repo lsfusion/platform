@@ -2980,19 +2980,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addProperty(group, persistent, listProperty);
     }
 
-    private <T extends PropertyInterface> LP addGProp(AbstractGroup group, String sID, String caption, LP<T> groupProp, boolean sum, Object... params) {
-        return addGProp(group, sID, false, caption, groupProp, sum, params);
-    }
+    private <T extends PropertyInterface> LP addGProp(AbstractGroup group, String sID, boolean persistent, String caption, LP<T> groupProp, List<PropertyInterfaceImplement<T>> listImplements) {
 
-    private <T extends PropertyInterface> LP addGProp(AbstractGroup group, String sID, boolean persistent, String caption, LP<T> groupProp, boolean sum, Object... params) {
-
-        GroupProperty<T> property;
-        List<PropertyInterfaceImplement<T>> listImplements = readImplements(groupProp.listInterfaces, params);
-        if (sum)
-            property = new SumGroupProperty<T>(sID, caption, listImplements, groupProp.property);
-        else
-            property = new MaxGroupProperty<T>(sID, caption, listImplements, groupProp.property);
-
+        GroupProperty<T> property = new SumGroupProperty<T>(sID, caption, listImplements, groupProp.property);
         return mapLGProp(group, persistent, property, listImplements);
     }
 
@@ -3166,13 +3156,24 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addSGProp(group, sID, persistent, false, caption, groupProp, params);
     }
 
-    protected LP addSGProp(AbstractGroup group, String sID, boolean persistent, boolean notZero, String caption, LP groupProp, Object... params) {
-        if (persistent && (notZero || !Settings.instance.isDisableSumGroupNotZero())) {
-            LP property = addGProp(null, genSID(), false, caption, groupProp, true, params);
-            return addJProp(group, sID, persistent, caption, onlyNotZero, directLI(property));
-        } else {
-            return addGProp(group, sID, persistent, caption, groupProp, true, params);
-        }
+    protected <T extends PropertyInterface> LP addSGProp(AbstractGroup group, String sID, boolean persistent, boolean notZero, String caption, LP<T> groupProp, Object... params) {
+        return addSGProp(group, sID, persistent, notZero, caption, groupProp, readImplements(groupProp.listInterfaces, params));
+    }
+
+    private <T extends PropertyInterface> LP addSGProp(AbstractGroup group, String sID, boolean persistent, boolean notZero, String caption, LP<T> groupProp, List<PropertyInterfaceImplement<T>> listImplements) {
+        boolean wrapNotZero = persistent && (notZero || !Settings.instance.isDisableSumGroupNotZero());
+        SumGroupProperty<T> property = new SumGroupProperty<T>(wrapNotZero?genSID():sID, caption, listImplements, groupProp.property);
+
+        LP result;
+        if (wrapNotZero)
+            result = addJProp(group, sID, persistent, caption, onlyNotZero, directLI(mapLGProp(null, false, property, listImplements)));
+        else
+            result = mapLGProp(group, persistent, property, listImplements);
+
+        result.sumGroup = property; // так как может wrap'ся, использование - setDG
+        result.groupProperty = groupProp; // для порядка параметров, использование - setDG
+
+        return result;
     }
 
     protected LP addMGProp(LP groupProp, Object... params) {
@@ -3259,22 +3260,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addDGProp(group, sID, false, caption, orders, ascending, groupProp, params);
     }
 
-    protected <T extends PropertyInterface, P extends PropertyInterface> LP addDGProp(AbstractGroup group, String sID, boolean persistent, String caption, int orders, boolean ascending, LP<T> groupProp, Object... params) {
-        List<PropertyInterfaceImplement<T>> listImplements = readImplements(groupProp.listInterfaces, params);
-        int intNum = listImplements.size();
-
-        // читаем groupProp, implements его для группировки, restriction с map'ом и orders с map'ом на restriction
-        List<PropertyInterfaceImplement<T>> groupImplements = listImplements.subList(0, intNum - orders - 1);
-        DistrGroupProperty<T, P> property = new DistrGroupProperty<T, P>(persistent?genSID():sID, caption, groupImplements, groupProp.property,
-                new OrderedMap<PropertyInterfaceImplement<T>, Boolean>(listImplements.subList(intNum - orders, intNum), ascending),
-                (PropertyMapImplement<P, T>) listImplements.get(intNum - orders - 1));
-
-        // нужно добавить ограничение на уникальность
-        if (persistent) {
-            LP groupProperty = mapLGProp(null, false, property, groupImplements);
-            return addJProp(group, sID, persistent, caption, onlyNotZero, directLI(groupProperty));
-        }
-            return mapLGProp(group, false, property, groupImplements);
+    protected <T extends PropertyInterface> LP addDGProp(AbstractGroup group, String sID, boolean persistent, String caption, int orders, boolean ascending, LP<T> groupProp, Object... params) {
+        List<PropertyInterfaceImplement<T>> listImplements = readImplements(groupProp.listInterfaces, params);  int intNum = listImplements.size();
+        LP result = addSGProp(group, sID, persistent, false, caption, groupProp, listImplements.subList(0, intNum - orders - 1));
+        result.setDG(ascending, listImplements.subList(intNum - orders - 1, intNum));
+        return result;
     }
 
     protected LP addUProp(AbstractGroup group, String sID, String caption, Union unionType, Object... params) {
