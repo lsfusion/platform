@@ -27,9 +27,6 @@ public class JennyferInvoiceImporter extends SingleSheetImporter {
             return super.getCellString(row, column);
         } else if (column == LAST_COLUMN + 1) {
             return String.valueOf(currentRow + 1);
-        } else if (column == LAST_COLUMN + 2) {
-            String customCode = super.getCellString(row, K);
-            return customCode.substring(0, Math.min(6, customCode.length()));
         } else {
             return "";
         }
@@ -45,7 +42,11 @@ public class JennyferInvoiceImporter extends SingleSheetImporter {
                     case 0 : return value.substring(1); // barcode
                     case 1 : return value.substring(1, 7); // article
                 }
-            case K: return value.substring(0, Math.min(10, value.length())); // customs code
+            case K:
+                switch (part) {
+                    case 0: return value.substring(0, Math.min(10, value.length())); // customs code
+                    case 1: return value.substring(0, Math.min(6, value.length())); // customs code 6
+                }
             case N: case O: return value.replace(',', '.');
             case E:
                 switch (part) {

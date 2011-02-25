@@ -25,9 +25,6 @@ public class TallyWeijlInvoiceImporter extends SingleSheetImporter {
     protected String getCellString(int row, int column) {
         if (column == LAST_COLUMN + 1) {
             return String.valueOf(currentRow + 1);
-        } else if (column == LAST_COLUMN + 2) {
-            String customCode = super.getCellString(row, K);
-            return customCode.substring(0, Math.min(6, customCode.length()));
         }
         return super.getCellString(row, column);
     }
@@ -37,7 +34,11 @@ public class TallyWeijlInvoiceImporter extends SingleSheetImporter {
         value = value.trim();
 
         switch (column) {
-            case L: return value.substring(0, Math.min(10, value.length())); // customs code
+            case L:
+                switch (part) {
+                    case 0: return value.substring(0, Math.min(10, value.length())); // customs code
+                    case 1: return value.substring(0, Math.min(6, value.length())); // customs code 6
+                }
             case X: case AD: return value.replace(',', '.');
             case Q:
                 int lastBackslashPos = value.lastIndexOf('\\');
