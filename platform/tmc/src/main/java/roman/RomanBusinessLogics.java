@@ -110,6 +110,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private ConcreteCustomClass currency;
     private ConcreteCustomClass store;
     private ConcreteCustomClass unitOfMeasure;
+    private LP sidDestination;
+    private LP destinationSID;
     private LP unitOfMeasureCategory;
     private LP nameUnitOfMeasureCategory;
     private LP unitOfMeasureArticle;
@@ -127,6 +129,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP nameCurrencyDocument;
     private LP destinationDestinationDocument;
     private LP nameDestinationDestinationDocument;
+    private LP sidDestinationDestinationDocument;
     private LP quantityPalletShipment;
     private LP grossWeightPallet;
     private LP grossWeightCurrentPalletRoute;
@@ -134,6 +137,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP sumGrossWeightFreightSku;
     private LP grossWeightFreightSkuAggr;
     private LP netWeightShipment;
+    private LP grossWeightShipment;
     private LP sidColorSupplier;
     private LP sidColorSupplierItem;
     private LP quantityDocumentSku;
@@ -545,9 +549,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP grossWeightDirectInvoice;
     private LP nameOriginCountry;
     private LP nameCountrySku;
-    private LP sumIn;
-    private LP sumInOut;
-    private LP balance;
+    private LP sumInCurrentYear;
+    private LP sumInOutCurrentYear;
+    private LP balanceSumCurrentYear;
     private AbstractCustomClass freightUnit;
     private LP quantityInvoiceFreightUnitSku;
     private LP freightSupplierBox;
@@ -694,6 +698,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         dictionaryComposition = addDProp(idGroup, "dictionaryComposition", "Словарь для составов (ИД)", dictionary);
         nameDictionaryComposition = addJProp(baseGroup, "nameDictionaryComposition", "Словарь для составов", name, dictionaryComposition);
 
+        sidDestination = addDProp(baseGroup, "sidDestination", "Код", StringClass.get(50), destination);
+
+        destinationSID = addCGProp(idGroup, "destinationSID", "Магазин (ИД)", object(destination), sidDestination, sidDestination, 1);
+
         // Subject
         addressSubject = addDProp(baseGroup, "addressSubject", "Адрес", StringClass.get(200), subject);
         contractImporter = addDProp(baseGroup, "contractImporter", "Номер договора", StringClass.get(50), importer);
@@ -807,7 +815,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         // Order
         destinationDestinationDocument = addDProp(idGroup, "destinationDestinationDocument", "Пункт назначения (ИД)", destination, destinationDocument);
-        nameDestinationDestinationDocument = addJProp(baseGroup, "nameDestinationDestinationDocument", "Пункт назначения", name, destinationDestinationDocument, 1);
+        nameDestinationDestinationDocument = addJProp(baseGroup, "nameDestinationDestinationDocument", "Пункт назначения (наим.)", name, destinationDestinationDocument, 1);
+        sidDestinationDestinationDocument = addJProp(baseGroup, "sidDestinationDestinationDocument", "Пункт назначения", sidDestination, destinationDestinationDocument, 1);
 
         // Invoice
         importerInvoice = addDProp(idGroup, "importerDocument", "Импортер (ИД)", importer, invoice);
@@ -816,6 +825,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         // Shipment
         quantityPalletShipment = addDProp(baseGroup, "quantityPalletShipment", "Кол-во паллет", IntegerClass.instance, shipment);
         netWeightShipment = addDProp(baseGroup, "netWeightShipment", "Вес нетто", DoubleClass.instance, shipment);
+        grossWeightShipment = addDProp(baseGroup, "grossWeightShipment", "Вес брутто", DoubleClass.instance, shipment);
+
         grossWeightPallet = addDProp(baseGroup, "grossWeightPallet", "Вес брутто", DoubleClass.instance, pallet);
         quantityBoxShipment = addDProp(baseGroup, "quantityBoxShipment", "Кол-во коробов", DoubleClass.instance, shipment);
 
@@ -1469,10 +1480,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         sumOutFreight = addSGProp(baseGroup, "sumOutFreight", "Сумма выходная", sumOutImporterFreight, 2);
 
         // итоги с начала года
-        sumIn = addSGProp(baseGroup, "sumIn", "Итого вход", addJProp(and1, sumInFreight, 1, addJProp(equals2, addJProp(yearInDate, currentDate), addJProp(yearInDate, date, 1), 1), 1));
-        sumInOut = addSGProp(baseGroup, "sumInOut", "Итого выход", addJProp(and1, sumInOutFreight, 1, addJProp(equals2, addJProp(yearInDate, currentDate), addJProp(yearInDate, date, 1), 1), 1));
-        balance = addDUProp(baseGroup, "balance", "Сальдо", sumInOut, sumIn);
-
+        sumInCurrentYear = addSGProp(baseGroup, "sumInCurrentYear", "Итого вход", addJProp(and1, sumInFreight, 1, addJProp(equals2, addJProp(yearInDate, currentDate), addJProp(yearInDate, date, 1), 1), 1));
+        sumInOutCurrentYear = addSGProp(baseGroup, "sumInOutCurrentYear", "Итого выход", addJProp(and1, sumInOutFreight, 1, addJProp(equals2, addJProp(yearInDate, currentDate), addJProp(yearInDate, date, 1), 1), 1));
+        balanceSumCurrentYear = addDUProp(baseGroup, "balanceSumCurrentYear", "Сальдо", sumInOutCurrentYear, sumInCurrentYear);
 
         quantityImporterFreightBrandSupplier = addSGProp(baseGroup, "quantityImporterFreightBrandSupplier", "Кол-во позиций", quantityImporterFreightSku, 1, 2, brandSupplierArticleSku, 3);
 
@@ -1613,10 +1623,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         addFormEntity(new OrderFormEntity(purchase, "orderForm", "Заказы"));
         addFormEntity(new InvoiceFormEntity(purchase, "boxInvoiceForm", "Инвойсы по коробам", true));
         addFormEntity(new InvoiceFormEntity(purchase, "simpleInvoiceForm", "Инвойсы без коробов", false));
+        addFormEntity(new ShipmentListFormEntity(purchase, "boxShipmentListForm", "Поставки по коробам", true));
+        addFormEntity(new ShipmentListFormEntity(purchase, "simpleShipmentListForm", "Поставки без коробов", false));
 
-        NavigatorElement shipment = new NavigatorElement(baseElement, "shipment", "Управление поставками");
-        addFormEntity(new ShipmentListFormEntity(shipment, "boxShipmentListForm", "Поставки по коробам", true));
-        addFormEntity(new ShipmentListFormEntity(shipment, "simpleShipmentListForm", "Поставки без коробов", false));
+        NavigatorElement shipment = new NavigatorElement(baseElement, "shipment", "Управление фрахтами");        
         addFormEntity(new FreightShipmentFormEntity(shipment, "freightShipmentForm", "Комплектация фрахта"));
         addFormEntity(new FreightInvoiceFormEntity(shipment, "freightInvoiceForm", "Расценка фрахта"));
         addFormEntity(new FreightChangeFormEntity(shipment, "freightChangeForm", "Обработка фрахта"));
@@ -1730,7 +1740,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameCurrencySupplier);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objOrder = addSingleGroupObject(order, "Заказ", date, sidDocument, nameCurrencyDocument, sumDocument, nameDestinationDestinationDocument);
+            objOrder = addSingleGroupObject(order, "Заказ", date, sidDocument, nameCurrencyDocument, sumDocument, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
             addObjectActions(this, objOrder);
 
             objSIDArticleComposite = addSingleGroupObject(StringClass.get(50), "Ввод составного артикула", objectValue);
@@ -1848,13 +1858,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameCurrencySupplier, importInvoiceActionGroup, true);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс", date, objectClassName, sidDocument, nameCurrencyDocument, sumDocument, nameImporterInvoice, nameDestinationDestinationDocument, grossWeightDirectInvoice);
+            objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс", date, objectClassName, sidDocument, nameCurrencyDocument, sumDocument, nameImporterInvoice, sidDestinationDestinationDocument, nameDestinationDestinationDocument, grossWeightDirectInvoice);
             addObjectActions(this, objInvoice);
 
             objOrder = addSingleGroupObject(order, "Заказ");
             objOrder.groupTo.setSingleClassView(ClassViewType.GRID);
             addPropertyDraw(inOrderInvoice, objOrder, objInvoice);
-            addPropertyDraw(objOrder, date, sidDocument, nameCurrencyDocument, sumDocument, nameDestinationDestinationDocument);
+            addPropertyDraw(objOrder, date, sidDocument, nameCurrencyDocument, sumDocument, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
 
             if (box) {
                 objSupplierBox = addSingleGroupObject(supplierBox, "Короб", sidSupplierBox, barcode);
@@ -2035,13 +2045,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objSupplier = addSingleGroupObject(supplier, "Поставщик", name);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objShipment = addSingleGroupObject((box ? boxShipment : simpleShipment), "Поставка", date, sidDocument, quantityPalletShipment, netWeightShipment, quantityBoxShipment);
+            objShipment = addSingleGroupObject((box ? boxShipment : simpleShipment), "Поставка", date, sidDocument, netWeightShipment, grossWeightShipment, quantityPalletShipment, quantityBoxShipment);
             addObjectActions(this, objShipment);
 
             objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс");
             objInvoice.groupTo.setSingleClassView(ClassViewType.GRID);
             addPropertyDraw(inInvoiceShipment, objInvoice, objShipment);
-            addPropertyDraw(objInvoice, date, sidDocument, nameDestinationDestinationDocument);
+            addPropertyDraw(objInvoice, date, sidDocument, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
 
             objRoute = addSingleGroupObject(route, "Маршрут", name);
             addPropertyDraw(percentShipmentRoute, objShipment, objRoute);
@@ -2370,14 +2380,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addPropertyDraw(quantityPalletShipmentBetweenDate, objDateFrom, objDateTo);
             addPropertyDraw(quantityPalletFreightBetweenDate, objDateFrom, objDateTo);
 
-            objShipment = addSingleGroupObject(shipment, "Поставка", date, nameSupplierDocument, sidDocument, sumDocument, nameCurrencyDocument, quantityPalletShipment, netWeightShipment, quantityBoxShipment);
+            objShipment = addSingleGroupObject(shipment, "Поставка", date, nameSupplierDocument, sidDocument, sumDocument, nameCurrencyDocument, netWeightShipment, grossWeightShipment, quantityPalletShipment, quantityBoxShipment);
 
             objPallet = addSingleGroupObject(pallet, "Паллета", barcode, grossWeightPallet, freightBoxNumberPallet);
             objPallet.groupTo.setSingleClassView(ClassViewType.GRID);
 
             addPropertyDraw(equalsPalletFreight, objPallet, objFreight);
 
-            objDirectInvoice = addSingleGroupObject(directInvoice, "Инвойс", date, sidDocument, nameCurrencyDocument, sumDocument, nameImporterInvoice, nameDestinationDestinationDocument);
+            objDirectInvoice = addSingleGroupObject(directInvoice, "Инвойс", date, sidDocument, nameCurrencyDocument, sumDocument, nameImporterInvoice, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
             addPropertyDraw(equalsDirectInvoiceFreight, objDirectInvoice, objFreight);
 
             addPropertyDraw(quantityShipmentFreight, objShipment, objFreight);
@@ -2927,16 +2937,16 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objImporter;
         private ObjectEntity objBrandSupplier;
         private ObjectEntity objSku;
-
+        
         private FreightInvoiceFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
             objFreight = addSingleGroupObject(freight, "Фрахт", date, objectClassName, nameRouteFreight, nameFreightTypeFreight, tonnageFreight, palletCountFreight, volumeFreight, nameCurrencyFreight, sumInFreight, sumMarkupInFreight, sumInOutFreight, palletNumberFreight);
 
-            addPropertyDraw(sumIn).forceViewType = ClassViewType.PANEL;
-            addPropertyDraw(sumInOut).forceViewType = ClassViewType.PANEL;
-            addPropertyDraw(balance).forceViewType = ClassViewType.PANEL;
-                        
+            addPropertyDraw(sumInCurrentYear);
+            addPropertyDraw(sumInOutCurrentYear);
+            addPropertyDraw(balanceSumCurrentYear);
+
             objImporter = addSingleGroupObject(importer, "Импортер", name);
 
             addPropertyDraw(quantityImporterFreight, objImporter, objFreight);
@@ -2977,6 +2987,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
+            ContainerView specContainer = design.createContainer("Итоги");
+            specContainer.add(design.get(getPropertyDraw(sumInCurrentYear)));
+            specContainer.add(design.get(getPropertyDraw(sumInOutCurrentYear)));
+            specContainer.add(design.get(getPropertyDraw(balanceSumCurrentYear)));
+            design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objFreight.groupTo));
+
+            design.addIntersection(design.getGroupObjectContainer(objFreight.groupTo), specContainer, DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             design.addIntersection(design.getGroupObjectContainer(objImporter.groupTo), design.getGroupObjectContainer(objBrandSupplier.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             design.get(objSku.groupTo).grid.constraints.fillVertical = 3;
