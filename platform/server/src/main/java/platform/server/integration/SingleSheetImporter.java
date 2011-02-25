@@ -13,25 +13,31 @@ import java.util.Map;
  * Time: 18:03
  */
 
-public abstract class ExcelSheetImporter {
-    protected final static int A = 0, B = 1, C = 2, D = 3, E = 4, F = 5, G = 6, H = 7, I = 8, J = 9, K = 10, L = 11, M = 12,
+public abstract class SingleSheetImporter {
+    public final static int A = 0, B = 1, C = 2, D = 3, E = 4, F = 5, G = 6, H = 7, I = 8, J = 9, K = 10, L = 11, M = 12,
             N = 13, O = 14, P = 15, Q = 16, R = 17, S = 18, T = 19, U = 20, V = 21, W = 22, X = 23, Y = 24, Z = 25,
             AA = 26, AB = 27, AC = 28, AD = 29, AE = 30, AF = 31, AG = 32, AH = 33, AI = 34, AJ = 35;
 
-    protected jxl.Sheet sheet;
+    protected ImportInputTable inputTable;
     protected OrderedMap<ImportField, Pair<Integer, Integer>> fieldPosition = new OrderedMap<ImportField, Pair<Integer, Integer>>();
     protected int currentRow;
 
-    public ExcelSheetImporter(jxl.Sheet sheet, Object... fields) {
-        this.sheet = sheet;
-        for (int i = 0; i < fields.length; i++) {
-            if (fields[i] instanceof ImportField[]) {
-                ImportField[] subFields = (ImportField[]) fields[i];
-                for (int j = 0; j < subFields.length; j++) {
-                    fieldPosition.put(subFields[j], new Pair<Integer, Integer>(i, j));
+    public SingleSheetImporter(ImportInputTable inputTable, Object... fields) {
+        this.inputTable = inputTable;
+        int column = 0;
+        for (Object field : fields) {
+            if (field instanceof Integer) {
+                column = (Integer) field;
+            } else {
+                if (field instanceof ImportField[]) {
+                    ImportField[] subFields = (ImportField[]) field;
+                    for (int j = 0; j < subFields.length; j++) {
+                        fieldPosition.put(subFields[j], new Pair<Integer, Integer>(column, j));
+                    }
+                } else if (field instanceof ImportField) {
+                    fieldPosition.put((ImportField) field, new Pair<Integer, Integer>(column, 0));
                 }
-            } else if (fields[i] instanceof ImportField) {
-                fieldPosition.put((ImportField) fields[i], new Pair<Integer, Integer>(i, 0));
+                ++column;
             }
         }
     }
@@ -51,14 +57,14 @@ public abstract class ExcelSheetImporter {
     }
 
     protected String getCellString(int row, int column) {
-        return sheet.getCell(column, row).getContents();
+        return inputTable.getCellString(row, column);
     }
 
     public ImportTable getTable() throws platform.server.data.type.ParseException {
         List<List<Object>> data = new ArrayList<List<Object>>();
         currentRow = -1;
 
-        for (int i = 0; i < sheet.getRows(); ++i) {
+        for (int i = 0; i < inputTable.rowsCnt(); ++i) {
             if (isCorrectRow(i)) {
                 ++currentRow;
                 List<Object> row = new ArrayList<Object>();

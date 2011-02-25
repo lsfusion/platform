@@ -1,13 +1,10 @@
 package roman;
 
-import jxl.Sheet;
-import jxl.Workbook;
 import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.action.ClientAction;
-import platform.interop.action.MessageClientAction;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.Settings;
 import platform.server.auth.User;
@@ -25,7 +22,6 @@ import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.form.view.PropertyDrawView;
-import platform.server.integration.*;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -34,31 +30,29 @@ import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.DataSession;
-import tmc.integration.exp.DeclarationExportActionProperty;
-import tmc.integration.imp.ClassifierTNVEDImportActionProperty;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
     private static StringClass COMPOSITION_CLASS = StringClass.get(200);
 
     private AbstractCustomClass article;
-    private ConcreteCustomClass articleComposite;
+    ConcreteCustomClass articleComposite;
     private ConcreteCustomClass articleSingle;
-    private ConcreteCustomClass item;
+    ConcreteCustomClass item;
     protected AbstractCustomClass sku;
     private ConcreteCustomClass pallet;
-    public LP sidArticle;
-    private LP articleCompositeItem;
+    LP sidArticle;
+    LP articleCompositeItem;
     private LP articleSku;
     private ConcreteCustomClass order;
     private AbstractCustomClass invoice;
@@ -71,27 +65,27 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private AbstractCustomClass document;
     private AbstractCustomClass priceDocument;
     private AbstractCustomClass subject;
-    public LP addressSubject;
-    private LP supplierDocument;
+    LP addressSubject;
+    LP supplierDocument;
     private LP nameSupplierDocument;
-    private LP sidDocument;
-    private LP documentSIDSupplier;
+    LP sidDocument;
+    LP documentSIDSupplier;
     private LP sumDocument;
-    private ConcreteCustomClass colorSupplier;
-    private ConcreteCustomClass sizeSupplier;
+    ConcreteCustomClass colorSupplier;
+    ConcreteCustomClass sizeSupplier;
     private ConcreteCustomClass brandSupplier;
-    private ConcreteCustomClass countrySupplier;
-    private LP supplierArticle;
+    ConcreteCustomClass countrySupplier;
+    LP supplierArticle;
     private LP nameSupplierArticle;
-    private LP priceDocumentArticle;
+    LP priceDocumentArticle;
     private LP sumDocumentArticle;
-    private LP colorSupplierItem;
+    LP colorSupplierItem;
     private LP nameColorSupplierItem;
-    private LP sizeSupplierItem;
-    private LP sidSizeSupplierItem;
-    private LP supplierColorSupplier;
+    LP sizeSupplierItem;
+    LP sidSizeSupplierItem;
+    LP supplierColorSupplier;
     private LP nameSupplierColorSupplier;
-    private LP supplierSizeSupplier;
+    LP supplierSizeSupplier;
     private LP nameSupplierSizeSupplier;
     private LP supplierBrandSupplier;
     private LP nameSupplierBrandSupplier;
@@ -116,10 +110,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP nameUnitOfMeasureCategory;
     private LP unitOfMeasureArticle;
     private LP nameOriginUnitOfMeasureArticle;
-    public LP nameUnitOfMeasureArticle;
+    LP nameUnitOfMeasureArticle;
     private LP unitOfMeasureArticleSku;
     private LP nameUnitOfMeasureArticleSku;
-    private LP supplierCountrySupplier;
+    LP supplierCountrySupplier;
     private LP nameSupplierCountrySupplier;
     private LP countryCountrySupplier;
     private LP nameCountryCountrySupplier;
@@ -138,19 +132,19 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP grossWeightFreightSkuAggr;
     private LP netWeightShipment;
     private LP grossWeightShipment;
-    private LP sidColorSupplier;
+    LP sidColorSupplier;
     private LP sidColorSupplierItem;
     private LP quantityDocumentSku;
     private LP quantityDocumentArticleCompositeColor;
     private LP quantityDocumentArticleCompositeSize;
     private LP quantityDocumentArticleCompositeColorSize;
-    private LP originalNameArticle;
+    LP originalNameArticle;
     private LP nameArticle;
     private LP netWeightArticleSku;
     private LP netWeightDataSku;
     private LP netWeightSku;
     private LP sumNetWeightFreightSku;
-    private LP netWeightArticle;
+    LP netWeightArticle;
     private LP netWeightSkuShipmentDetail;
     private LP mainCompositionOriginDataSku;
     private LP additionalCompositionOriginDataSku;
@@ -159,11 +153,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     AbstractCustomClass secondNameClass;
     private LP nameOrigin;
     private ConcreteCustomClass category;
-    public ConcreteCustomClass customCategory4;
-    public ConcreteCustomClass customCategory6;
-    public ConcreteCustomClass customCategory9;
-    public ConcreteCustomClass customCategory10;
-    public ConcreteCustomClass customCategoryOrigin;
+    ConcreteCustomClass customCategory4;
+    ConcreteCustomClass customCategory6;
+    ConcreteCustomClass customCategory9;
+    ConcreteCustomClass customCategory10;
+    ConcreteCustomClass customCategoryOrigin;
     private LP categoryArticle;
     private LP unitOfMeasureDataArticle;
     private LP unitOfMeasureCategoryArticle;
@@ -173,29 +167,29 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP categoryArticleSku;
     private LP nameCategoryArticleSku;
     private LP nameOriginCategoryArticleSku;
-    public LP sidCustomCategory4;
-    public LP sidCustomCategory6;
-    public LP sidCustomCategory9;
-    public LP sidCustomCategory10;
-    public LP sidCustomCategoryOrigin;
+    LP sidCustomCategory4;
+    LP sidCustomCategory6;
+    LP sidCustomCategory9;
+    LP sidCustomCategory10;
+    LP sidCustomCategoryOrigin;
 
-    public LP sidToCustomCategory4;
-    public LP sidToCustomCategory6;
-    public LP sidToCustomCategory9;
-    public LP sidToCustomCategory10;
-    public LP sidToCustomCategoryOrigin;
+    LP sidToCustomCategory4;
+    LP sidToCustomCategory6;
+    LP sidToCustomCategory9;
+    LP sidToCustomCategory10;
+    LP sidToCustomCategoryOrigin;
     private LP importBelTnved;
     private LP importEuTnved;
 
-    public LP customCategory4CustomCategory6;
-    public LP customCategory6CustomCategory9;
-    public LP customCategory9CustomCategory10;
-    public LP customCategory6CustomCategory10;
-    public LP customCategory4CustomCategory10;
-    public LP customCategory6CustomCategoryOrigin;
-    public LP customCategory4CustomCategoryOrigin;
-    public LP customCategory10CustomCategoryOrigin;
-    public LP sidCustomCategory10CustomCategoryOrigin;
+    LP customCategory4CustomCategory6;
+    LP customCategory6CustomCategory9;
+    LP customCategory9CustomCategory10;
+    LP customCategory6CustomCategory10;
+    LP customCategory4CustomCategory10;
+    LP customCategory6CustomCategoryOrigin;
+    LP customCategory4CustomCategoryOrigin;
+    LP customCategory10CustomCategoryOrigin;
+    LP sidCustomCategory10CustomCategoryOrigin;
     private LP sidCustomCategory4CustomCategory6;
     private LP sidCustomCategory6CustomCategory9;
     private LP sidCustomCategory9CustomCategory10;
@@ -207,7 +201,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP nameCustomCategory4CustomCategory10;
     private LP nameCustomCategory6CustomCategoryOrigin;
     private LP nameCustomCategory4CustomCategoryOrigin;
-    public LP relationCustomCategory10CustomCategoryOrigin;
+    LP relationCustomCategory10CustomCategoryOrigin;
     private LP customCategory10DataSku;
     private LP customCategory10Sku;
     private LP sidCustomCategory10Sku;
@@ -215,13 +209,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP customCategory10CustomCategoryOriginArticleSku;
     private LP mainCompositionArticle;
     private LP additionalCompositionArticle;
-    private LP mainCompositionOriginArticle;
+    LP mainCompositionOriginArticle;
     private LP additionalCompositionOriginArticle;
     private LP mainCompositionOriginArticleSku;
     private LP additionalCompositionOriginArticleSku;
     private LP mainCompositionSku;
     private LP additionalCompositionSku;
-    private LP countrySupplierOfOriginArticle;
+    LP countrySupplierOfOriginArticle;
     private LP countryOfOriginArticle;
     private LP nameCountryOfOriginArticle;
     private LP countryOfOriginArticleSku;
@@ -230,9 +224,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP nameCountryOfOriginSku;
     private LP nameCountrySupplierOfOriginArticle;
     private LP nameCountryOfOriginArticleSku;
-    private LP articleSIDSupplier;
+    LP articleSIDSupplier;
     private LP seekArticleSIDSupplier;
-    private LP numberListArticle;
+    LP numberListArticle;
     private LP articleSIDList;
     private LP incrementNumberListSID;
     private LP addArticleSingleSIDSupplier;
@@ -252,20 +246,20 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP orderedInvoiceArticle;
     private LP priceOrderInvoiceArticle;
     private LP priceOrderedInvoiceArticle;
-    private ConcreteCustomClass supplierBox;
-    private ConcreteCustomClass boxInvoice;
+    ConcreteCustomClass supplierBox;
+    ConcreteCustomClass boxInvoice;
     private ConcreteCustomClass simpleInvoice;
-    private LP sidSupplierBox;
+    LP sidSupplierBox;
     private AbstractCustomClass list;
-    private LP quantityDataListSku;
-    private LP boxInvoiceSupplierBox;
+    LP quantityDataListSku;
+    LP boxInvoiceSupplierBox;
     private LP sidBoxInvoiceSupplierBox;
     private LP supplierSupplierBox;
     private LP supplierList;
     private LP orderedSupplierBoxSku;
     private LP quantityListArticle;
     private LP orderedSimpleInvoiceSku;
-    private LP priceDataDocumentItem;
+    LP priceDataDocumentItem;
     private LP priceArticleDocumentSku;
     private LP priceImporterFreightSku;
     private LP priceMaxImporterFreightSku;
@@ -281,8 +275,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP routeFreight;
     private LP nameRouteFreight;
     private LP exporterFreight;
-    public LP nameExporterFreight;
-    public LP addressExporterFreight;
+    LP nameExporterFreight;
+    LP addressExporterFreight;
     private ConcreteCustomClass stock;
     private ConcreteCustomClass freightBox;
     private LP sidArticleSku;
@@ -291,7 +285,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP quantitySupplierBoxBoxShipmentStockSku;
     private LP quantitySimpleShipmentStockSku;
     private LP barcodeAction4;
-    private LP supplierBoxSIDSupplier;
+    LP supplierBoxSIDSupplier;
     private LP seekSupplierBoxSIDSupplier;
     private LP quantityPalletShipmentBetweenDate;
     private LP quantityPalletFreightBetweenDate;
@@ -347,7 +341,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP quantityShipmentFreight;
     private LP balanceStockSku;
     private LP quantityStockSku;
-     private LP quantityStockArticle;
+    private LP quantityStockArticle;
     private LP quantityPalletSku;
     private LP quantityRouteSku;
     private AbstractCustomClass destinationDocument;
@@ -425,8 +419,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP incomeStockSku;
     private LP outcomeStockSku;
     private AbstractCustomClass customCategory;
-    public LP nameCustomCategory;
-    private LP customCategoryOriginArticle;
+    LP nameCustomCategory;
+    LP customCategoryOriginArticle;
     private LP customCategoryOriginArticleSku;
     private LP sidCustomCategoryOriginArticle;
     private LP sidCustomCategoryOriginArticleSku;
@@ -489,11 +483,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP sumFreightImporterFreightSku;
     private LP quantityFreightArticle;
     private LP quantityFreightSku;
-    public LP quantityImporterFreightArticleCompositionCountryCategory;
-    public LP netWeightImporterFreightArticleCompositionCountryCategory;
-    public LP grossWeightImporterFreightArticleCompositionCountryCategory;
-    public LP priceImporterFreightArticleCompositionCountryCategory;
-    public LP sumImporterFreightArticleCompositionCountryCategory;
+    LP quantityImporterFreightArticleCompositionCountryCategory;
+    LP netWeightImporterFreightArticleCompositionCountryCategory;
+    LP grossWeightImporterFreightArticleCompositionCountryCategory;
+    LP priceImporterFreightArticleCompositionCountryCategory;
+    LP sumImporterFreightArticleCompositionCountryCategory;
     private ConcreteCustomClass freightComplete;
     private ConcreteCustomClass freightPriced;
     private ConcreteCustomClass freightChanged;
@@ -503,11 +497,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP translationMainCompositionSku;
     private LP translationAdditionalCompositionSku;
     private LP sidShipmentShipmentDetail;
-    private LP colorSIDSupplier;
-    private LP sidSizeSupplier;
-    private LP sizeSIDSupplier;
-    private LP countryNameSupplier;
-    private LP numberDataListSku;
+    LP colorSIDSupplier;
+    LP sidSizeSupplier;
+    LP sizeSIDSupplier;
+    LP countryNameSupplier;
+    LP numberDataListSku;
     private LP numberArticleListSku;
     private LP grossWeightFreightSku;
     private LP netWeightFreightSku;
@@ -557,9 +551,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP freightSupplierBox;
     private LP freightFreightUnit;
     private LP priceInInvoiceFreightUnitSku;
-    private ConcreteCustomClass jennyferSupplier;
-    private ConcreteCustomClass tallyWeijlSupplier;
+    ConcreteCustomClass jennyferSupplier;
+    ConcreteCustomClass tallyWeijlSupplier;
     private LP jennyferImportInvoice;
+    private LP jennyferImportArticleWeightInvoice;
     private LP tallyWeijlImportInvoice;
     private AbstractGroup importInvoiceActionGroup;
 
@@ -734,8 +729,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         importBelTnved = addAProp(new ClassifierTNVEDImportActionProperty(genSID(), "Импортировать (РБ)", this, "belarusian"));
         importEuTnved = addAProp(new ClassifierTNVEDImportActionProperty(genSID(), "Импортировать (ЕС)", this, "origin"));
-        jennyferImportInvoice = addAProp(importInvoiceActionGroup, new JennyferImportInvoiceActionProperty());
-        tallyWeijlImportInvoice = addAProp(importInvoiceActionGroup, new TallyWeijlImportInvoiceActionProperty());
+        jennyferImportInvoice = addAProp(importInvoiceActionGroup, new JennyferImportInvoiceActionProperty(this));
+        jennyferImportArticleWeightInvoice = addAProp(importInvoiceActionGroup, new JennyferImportArticleWeightActionProperty(this));
+        tallyWeijlImportInvoice = addAProp(importInvoiceActionGroup, new TallyWeijlImportInvoiceActionProperty(this));
 
         customCategory4CustomCategory6 = addDProp(idGroup, "customCategory4CustomCategory6", "Код(4)", customCategory4, customCategory6);
         customCategory6CustomCategory9 = addDProp(idGroup, "customCategory6CustomCategory9", "Код(6)", customCategory6, customCategory9);
@@ -3090,299 +3086,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             }
 
             form.seekObject((ObjectInstance)mapObjects.get(routeInterface), objRouteResult);
-        }
-    }
-
-    public static class JennyferInvoiceImporter extends ExcelSheetImporter {
-        private static final int LAST_COLUMN = P;
-
-        public JennyferInvoiceImporter(jxl.Sheet sheet, Object... fields) {
-            super(sheet, fields);
-        }
-
-        @Override
-        protected boolean isCorrectRow(int rowNum) {
-            return sheet.getCell(C, rowNum).getContents().trim().matches("^'(\\d{13}|\\d{12}|\\d{8})$");
-        }
-
-        @Override
-        protected String getCellString(int row, int column) {
-            if (column <= LAST_COLUMN) {
-                return super.getCellString(row, column);
-            } else if (column == LAST_COLUMN + 1) {
-                return String.valueOf(currentRow + 1);
-            } else if (column == LAST_COLUMN + 2) {
-                String customCode = super.getCellString(row, K);
-                return customCode.substring(0, Math.min(6, customCode.length()));
-            } else {
-                return "";
-            }
-        }
-
-        @Override
-        protected String transformValue(int row, int column, int part, String value) {
-            value = value.trim();
-
-            switch (column) {
-                case C:
-                    switch (part) {
-                        case 0 : return value.substring(1); // barcode
-                        case 1 : return value.substring(1, 7); // article
-                    }
-                case K: return value.substring(0, Math.min(10, value.length())); // customs code
-                case N: case O: return value.replace(',', '.');
-                case E:
-                    switch (part) {
-//                        case 0: return value.substring(0, value.indexOf(' ')); // sid
-                        case 0: return value.substring(value.indexOf(' ') + 1, value.lastIndexOf(' ')).trim(); // color
-                        case 1: return value.substring(value.lastIndexOf(' ') + 1); // size
-                    }
-                default: return value;
-            }
-        }
-    }
-
-    public static class TallyWeijlInvoiceImporter extends ExcelSheetImporter {
-        private static final int LAST_COLUMN = AF;
-
-        public TallyWeijlInvoiceImporter(jxl.Sheet sheet, Object... fields) {
-            super(sheet, fields);
-        }
-
-        @Override
-        protected boolean isCorrectRow(int rowNum) {
-            return sheet.getCell(M, rowNum).getContents().trim().matches("^(\\d{13}|\\d{12}|\\d{8})$");
-        }
-
-        @Override
-        protected String getCellString(int row, int column) {
-            if (column == LAST_COLUMN + 1) {
-                return String.valueOf(currentRow + 1);
-            } else if (column == LAST_COLUMN + 2) {
-                String customCode = super.getCellString(row, K);
-                return customCode.substring(0, Math.min(6, customCode.length()));
-            }
-            return super.getCellString(row, column);
-        }
-
-        @Override
-        protected String transformValue(int row, int column, int part, String value) {
-            value = value.trim();
-
-            switch (column) {
-                case L: return value.substring(0, Math.min(10, value.length())); // customs code
-                case X: case AD: return value.replace(',', '.');
-                case Q:
-                    int lastBackslashPos = value.lastIndexOf('\\');
-                    return (lastBackslashPos == -1 ? value : value.substring(0, lastBackslashPos));
-                case R:
-                    switch (part) {
-                        case 0: return value.substring(0, value.indexOf(',')).trim(); // original name
-                        case 1: return value.substring(value.indexOf(',') + 1, value.lastIndexOf(',')).trim(); // color
-                    }
-                default: return value;
-            }
-        }
-    }
-
-    public class JennyferImportInvoiceActionProperty extends ImportInvoiceActionProperty {
-
-        public JennyferImportInvoiceActionProperty() {
-            super("Импортировать инвойс", jennyferSupplier);
-        }
-
-        @Override
-        protected ExcelSheetImporter createExporter(Sheet sheet) {
-            return new JennyferInvoiceImporter(sheet, new Object[] {invoiceSIDField, boxNumberField, new ImportField[] {barCodeField, sidField}, colorCodeField,
-                    new ImportField[] {colorNameField, sizeField}, null, compositionField, null, null,
-                    countryField, customCodeField, null, null, unitPriceField, unitQuantityField, null,
-                    numberSkuField, customCode6Field, unitNetWeightField, originalNameField});
-        }
-    }
-
-    public class JennyferImportArticleWeightActionProperty extends SupplierActionProperty {
-
-        public JennyferImportArticleWeightActionProperty() {
-            super("Импортировать вес", jennyferSupplier);
-        }
-
-        @Override
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            DataObject supplier = keys.get(supplierInterface);
-            FormInstance remoteForm = executeForm.form;
-            DataSession session = remoteForm.session;
-
-            ImportField sidField = new ImportField(sidArticle);
-            ImportField netWeightField = new ImportField(netWeightArticle);
-
-            ImportTable table;
-            try {
-                ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
-                Sheet sheet = Workbook.getWorkbook(inFile).getSheet(0);
-
-                table = new ExcelSheetImporter(sheet, new Object[] {sidField, netWeightField}) {
-                    @Override
-                    protected boolean isCorrectRow(int rowNum) {
-                        return sheet.getCell(A, rowNum).getContents().trim().matches("^(\\d{6})$");
-                    }
-                    @Override
-                    protected String getCellString(int row, int column) {
-                        if (column == B)
-                            return ((Double)(Double.parseDouble(super.getCellString(row, K).replace(',', '.')) /
-                                   Double.parseDouble(super.getCellString(row, H).replace(',', '.')))).toString();
-                        return super.getCellString(row, column);
-                    }
-                }.getTable();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    public class TallyWeijlImportInvoiceActionProperty extends ImportInvoiceActionProperty {
-
-        public TallyWeijlImportInvoiceActionProperty() {
-            super("Импортировать инвойс", tallyWeijlSupplier);
-        }
-
-        @Override
-        protected ExcelSheetImporter createExporter(Sheet sheet) {
-            return new TallyWeijlInvoiceImporter(sheet, new Object[] {null, null, invoiceSIDField, null, null, null, null, null,
-                    compositionField, countryField, boxNumberField, customCodeField, barCodeField, null,
-                    sizeField, colorCodeField, sidField, new ImportField[] {originalNameField, colorNameField},
-                    null, null, null, null, unitQuantityField, unitNetWeightField, null, null, null, null, null,
-                    unitPriceField, null, null, numberSkuField, customCode6Field});
-        }
-    }
-
-    public abstract class ImportInvoiceActionProperty extends SupplierActionProperty {
-
-        protected ImportField invoiceSIDField, boxNumberField, barCodeField, colorCodeField, sidField,
-        colorNameField, sizeField, compositionField, countryField, customCodeField, unitPriceField,
-        unitQuantityField, unitNetWeightField, originalNameField, numberSkuField, customCode6Field;
-
-        public ImportInvoiceActionProperty(String caption, ValueClass supplierClass) {
-            super(caption, supplierClass);
-        }
-
-        protected abstract ExcelSheetImporter createExporter(Sheet sheet);
-
-        private void initFields() {
-            invoiceSIDField = new ImportField(sidDocument);
-            boxNumberField = new ImportField(sidSupplierBox);
-            barCodeField = new ImportField(barcode);
-            colorCodeField = new ImportField(sidColorSupplier);
-            sidField = new ImportField(sidArticle);
-            colorNameField = new ImportField(name);
-            sizeField = new ImportField(sidSizeSupplier);
-            compositionField = new ImportField(mainCompositionOriginArticle);
-            countryField = new ImportField(name);
-            customCodeField = new ImportField(sidCustomCategoryOrigin);
-            customCode6Field = new ImportField(sidCustomCategory6);
-            unitPriceField = new ImportField(quantityDataListSku);
-            unitQuantityField = new ImportField(priceDataDocumentItem);
-            unitNetWeightField = new ImportField(netWeightArticle);
-            originalNameField = new ImportField(originalNameArticle);
-            numberSkuField = new ImportField(numberDataListSku);
-        }
-
-
-        public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            DataObject supplier = keys.get(supplierInterface);
-            FormInstance remoteForm = executeForm.form;
-            DataSession session = remoteForm.session;
-
-            initFields();
-
-            ImportTable table;
-            try {
-                ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
-                Sheet sheet = Workbook.getWorkbook(inFile).getSheet(0);
-
-                table = createExporter(sheet).getTable();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-
-            List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
-
-            ImportKey<?> invoiceKey = new ImportKey(boxInvoice, documentSIDSupplier.getMapping(invoiceSIDField, supplier));
-            properties.add(new ImportProperty(invoiceSIDField, sidDocument.getMapping(invoiceKey)));
-            properties.add(new ImportProperty(supplier, supplierDocument.getMapping(invoiceKey)));
-
-            ImportKey<?> boxKey = new ImportKey(supplierBox, supplierBoxSIDSupplier.getMapping(boxNumberField, supplier));
-            properties.add(new ImportProperty(invoiceSIDField, boxInvoiceSupplierBox.getMapping(boxKey), object(boxInvoice).getMapping(invoiceKey)));
-            properties.add(new ImportProperty(boxNumberField, sidSupplierBox.getMapping(boxKey)));
-
-            ImportKey<?> articleKey = new ImportKey(articleComposite, articleSIDSupplier.getMapping(sidField, supplier));
-            properties.add(new ImportProperty(sidField, sidArticle.getMapping(articleKey)));
-            properties.add(new ImportProperty(supplier, supplierArticle.getMapping(articleKey)));
-            properties.add(new ImportProperty(compositionField, mainCompositionOriginArticle.getMapping(articleKey)));
-            properties.add(new ImportProperty(unitNetWeightField, netWeightArticle.getMapping(articleKey)));
-            properties.add(new ImportProperty(originalNameField, originalNameArticle.getMapping(articleKey)));
-
-            ImportKey<?> itemKey = new ImportKey(item, barcodeToObject.getMapping(barCodeField));
-            properties.add(new ImportProperty(barCodeField, barcode.getMapping(itemKey)));
-            properties.add(new ImportProperty(sidField, articleCompositeItem.getMapping(itemKey), object(articleComposite).getMapping(articleKey)));
-
-            ImportKey<?> countryKey = new ImportKey(countrySupplier, countryNameSupplier.getMapping(countryField, supplier));
-            properties.add(new ImportProperty(countryField, name.getMapping(countryKey)));
-            properties.add(new ImportProperty(supplier, supplierCountrySupplier.getMapping(countryKey)));
-            properties.add(new ImportProperty(countryField, countrySupplierOfOriginArticle.getMapping(articleKey), object(countrySupplier).getMapping(countryKey)));
-
-            ImportKey<?> customCategoryKey = new ImportKey(customCategoryOrigin, sidToCustomCategoryOrigin.getMapping(customCodeField));
-            properties.add(new ImportProperty(customCodeField, sidCustomCategoryOrigin.getMapping(customCategoryKey)));
-            properties.add(new ImportProperty(customCodeField, customCategoryOriginArticle.getMapping(articleKey), object(customCategoryOrigin).getMapping(customCategoryKey)));
-
-            ImportKey<?> customCategory6Key = new ImportKey(customCategory6, sidToCustomCategory6.getMapping(customCode6Field));
-            properties.add(new ImportProperty(customCode6Field, sidCustomCategory6.getMapping(customCategory6Key)));
-
-            ImportKey<?> colorKey = new ImportKey(colorSupplier, colorSIDSupplier.getMapping(colorCodeField, supplier));
-            properties.add(new ImportProperty(colorCodeField, sidColorSupplier.getMapping(colorKey)));
-            properties.add(new ImportProperty(supplier, supplierColorSupplier.getMapping(colorKey)));
-            properties.add(new ImportProperty(colorNameField, name.getMapping(colorKey)));
-            properties.add(new ImportProperty(colorCodeField, colorSupplierItem.getMapping(itemKey), object(colorSupplier).getMapping(colorKey)));
-
-            ImportKey<?> sizeKey = new ImportKey(sizeSupplier, sizeSIDSupplier.getMapping(sizeField, supplier));
-            properties.add(new ImportProperty(sizeField, sidSizeSupplier.getMapping(sizeKey)));
-            properties.add(new ImportProperty(supplier, supplierSizeSupplier.getMapping(sizeKey)));
-            properties.add(new ImportProperty(sizeField, sizeSupplierItem.getMapping(itemKey), object(sizeSupplier).getMapping(sizeKey)));
-
-            properties.add(new ImportProperty(numberSkuField, numberListArticle.getMapping(boxKey, articleKey)));
-            properties.add(new ImportProperty(numberSkuField, numberDataListSku.getMapping(boxKey, itemKey)));
-            properties.add(new ImportProperty(unitQuantityField, quantityDataListSku.getMapping(boxKey, itemKey)));
-            properties.add(new ImportProperty(unitPriceField, priceDataDocumentItem.getMapping(invoiceKey, itemKey)));
-            properties.add(new ImportProperty(unitPriceField, priceDocumentArticle.getMapping(invoiceKey, articleKey)));
-
-
-            ImportKey<?>[] keysArray = {invoiceKey, boxKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key};
-            new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
-
-            actions.add(new MessageClientAction("Данные были успешно приняты", "Импорт"));
-        }
-
-        @Override
-        protected DataClass getValueClass() {
-            return FileActionClass.getInstance("Файлы таблиц", "xls");
-        }
-
-        @Override
-        public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity form) {
-            super.proceedDefaultDraw(entity, form);
-            entity.shouldBeLast = true;
-            entity.forceViewType = ClassViewType.PANEL;
-        }
-    }
-
-    public abstract class SupplierActionProperty extends ActionProperty {
-
-        protected final ClassPropertyInterface supplierInterface;
-
-        public SupplierActionProperty(String caption, ValueClass supplierClass) {
-            super(genSID(), caption, new ValueClass[]{supplierClass});
-
-            Iterator<ClassPropertyInterface> i = interfaces.iterator();
-            supplierInterface = i.next();
         }
     }
 }
