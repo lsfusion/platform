@@ -3068,10 +3068,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             DataSession session = remoteForm.session;
 
             DataObject document = BaseUtils.singleValue(keys);
-            orderSalePayCash.execute(null, session, remoteForm, document);
-            orderSalePayCard.execute(orderSalePayNoObligation.read(session.sql, remoteForm, session.env, document), session, remoteForm, document);
+            if(orderSalePayCash.read(session, document)==null && orderSalePayCard.read(session, document)==null) {
+                orderSalePayCash.execute(null, session, remoteForm, document);
+                orderSalePayCard.execute(orderSalePayNoObligation.read(session.sql, remoteForm, session.env, document), session, remoteForm, document);
 
-            actions.add(new ApplyClientAction());
+                actions.add(new ApplyClientAction());
+            } else
+                actions.add(new MessageClientAction("Для оплаты карточкой очистите поля сумм : Карточкой и Наличными", "Оплатить карточкой"));
         }
 
         @Override
