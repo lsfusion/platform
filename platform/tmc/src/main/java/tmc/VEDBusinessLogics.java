@@ -780,7 +780,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         orderArticleSaleDiscountSum = addJProp(documentPriceGroup, "orderArticleSaleDiscountSum", "Сумма скидки", round1, addJProp(percent, orderArticleSaleSum, 1, 2, orderArticleSaleDiscount, 1, 2), 1, 2);
         orderArticleSaleSumWithDiscount = addDUProp(documentPriceGroup, "Сумма к опл.", orderArticleSaleSum, orderArticleSaleDiscountSum);
         orderSaleDiscountSum = addSGProp(documentAggrPriceGroup, "orderSaleDiscountSum", true, "Сумма скидки", orderArticleSaleDiscountSum, 1);
-        LP orderSalePayGift = addSGProp(addJProp(and(false, false), obligationSum, 2, issueObligation, 1, 2, is(giftObligation), 2), 1);
+        LP orderSalePayGift = addSGProp(addJProp(and(false, false, false), obligationSum, 2, issueObligation, 1, 2, is(order), 1, is(giftObligation), 2), 1);
         orderSalePay = addCUProp(documentAggrPriceGroup, "orderSalePay", true, "Сумма чека",
                 orderSalePayGift, addSGProp(orderArticleSaleSumWithDiscount, 1));
 
@@ -852,8 +852,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP orderMaxCoupon = addDCProp("orderMaxCoupon", "Макс. процент по купонам", couponMaxPercent, is(orderSaleArticleRetail), 1);
 
-        LP orderSalePayGiftObligation = addSGProp(addJProp(and1, obligationUseSum, 1, 2, is(giftObligation), 2), 1);
-        LP orderSalePayCoupon = addJProp(min, addSGProp(addJProp(and1, obligationUseSum, 1, 2, is(coupon), 2), 1), 1, addJProp(percent, orderSalePay, 1, orderMaxCoupon, 1), 1);
+        LP orderSalePayGiftObligation = addSGProp("orderSalePayGiftObligation", true, "Сумма под. серт.", addJProp(and1, obligationUseSum, 1, 2, is(giftObligation), 2), 1);
+        LP orderSalePayCoupon = addJProp("orderSalePayCoupon", true, "Сумма куп." , min, addSGProp(addJProp(and1, obligationUseSum, 1, 2, is(coupon), 2), 1), 1, addJProp(percent, orderSalePay, 1, orderMaxCoupon, 1), 1);
         orderSalePayObligation = addSUProp(documentAggrPriceGroup, "orderSalePayObligation", true, "Сумма серт.", Union.SUM, orderSalePayGiftObligation, orderSalePayCoupon);
 
         orderSalePayNoObligation = addJProp(documentAggrPriceGroup, "orderSalePayNoObligation", true, "Сумма к опл.", onlyPositive, addDUProp(orderSalePay, orderSalePayObligation), 1);
