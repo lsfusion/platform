@@ -79,9 +79,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
             Preferences preferences = Preferences.userNodeForPackage(this.getClass());
             fileChooser.setCurrentDirectory(new File(preferences.get("LATEST_DIRECTORY", "")));
             String path = "";
-            if(action.files.size() > 1) {
-                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            }
+            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             int result = fileChooser.showSaveDialog(null);
             if (result == JFileChooser.APPROVE_OPTION) {
                 path = fileChooser.getSelectedFile().getAbsolutePath();

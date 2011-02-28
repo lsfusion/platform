@@ -384,7 +384,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         else
             return expandTable.getWhere(mapKeys);
     }
-    
+
     private OrderedMap<Map<ObjectInstance, DataObject>, Map<ObjectInstance, ObjectValue>> executeTree(SQLSession session, QueryEnvironment env, Modifier<? extends Changes> modifier, BaseClass baseClass) throws SQLException {
         assert isInTree();
 

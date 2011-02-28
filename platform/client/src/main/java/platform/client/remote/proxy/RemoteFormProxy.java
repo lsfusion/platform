@@ -157,6 +157,20 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         logRemoteMethodEndVoidCall("setRegularFilter");
     }
 
+    public int countRecords(int groupObjectID) throws RemoteException {
+        logRemoteMethodStartCall("countRecords");
+        int result = target.countRecords(groupObjectID);
+        logRemoteMethodEndCall("countRecords", result);
+        return result;
+    }
+
+    public Double calculateSum(int groupObjectID, int propertyID) throws RemoteException {
+        logRemoteMethodStartCall("calculateSum");
+        double result = target.calculateSum(groupObjectID, propertyID);
+        logRemoteMethodEndCall("calculateSum", result);
+        return result;
+    }
+
     @ImmutableMethod
     public String getSID() throws RemoteException {
         logRemoteMethodStartCall("getSID");

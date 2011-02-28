@@ -16,6 +16,8 @@ public class ClientGrid extends ClientComponent {
 
     public boolean showFind;
     public boolean showFilter;
+    public boolean showCountQuantity;
+    public boolean showCalculateSum;
 
     public byte minRowCount;
     public boolean tabVertical = false;
@@ -40,6 +42,8 @@ public class ClientGrid extends ClientComponent {
         super.customSerialize(pool, outStream, serializationType);
         outStream.writeBoolean(showFind);
         outStream.writeBoolean(showFilter);
+        outStream.writeBoolean(showCountQuantity);
+        outStream.writeBoolean(showCalculateSum);
 
         outStream.writeByte(minRowCount);
         outStream.writeBoolean(tabVertical);
@@ -54,6 +58,8 @@ public class ClientGrid extends ClientComponent {
 
         showFind = inStream.readBoolean();
         showFilter = inStream.readBoolean();
+        showCountQuantity = inStream.readBoolean();
+        showCalculateSum = inStream.readBoolean();
 
         minRowCount = inStream.readByte();
         tabVertical = inStream.readBoolean();

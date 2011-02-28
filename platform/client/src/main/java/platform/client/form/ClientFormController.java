@@ -594,6 +594,14 @@ public class ClientFormController {
         applyRemoteChanges();
     }
 
+    public int countRecords(int groupObjectID) throws IOException {
+        return remoteForm.countRecords(groupObjectID);
+    }
+
+    public Double calculateSum(int groupObjectID, int propertyID) throws IOException {
+        return remoteForm.calculateSum(groupObjectID, propertyID);
+    }
+
     public void changePageSize(ClientGroupObject groupObject, Integer pageSize) throws IOException {
         remoteForm.changePageSize(groupObject.getID(), pageSize);
     }

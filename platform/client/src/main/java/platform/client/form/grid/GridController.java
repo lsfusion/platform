@@ -3,6 +3,8 @@ package platform.client.form.grid;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormLayout;
 import platform.client.form.GroupObjectLogicsSupplier;
+import platform.client.form.queries.CalculateSumButton;
+import platform.client.form.queries.CountQuantityButton;
 import platform.client.form.queries.FilterController;
 import platform.client.form.queries.FindController;
 import platform.client.logics.ClientGrid;
@@ -11,7 +13,10 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.interop.Order;
 import platform.interop.form.screen.ExternalScreenComponent;
 
+import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -69,7 +74,42 @@ public class GridController {
             }
         };
 
+        CountQuantityButton countQuantity = new CountQuantityButton() {
+            public void addListener() {
+                addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        try {
+                            JOptionPane.showMessageDialog(null, "Количество записей: " + form.countRecords(logicsSupplier.getGroupObject().getID()), null, JOptionPane.INFORMATION_MESSAGE);
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                });
+            }
+        };
+
+        CalculateSumButton calculateSum = new CalculateSumButton() {
+            public void addListener() {
+                addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        try {
+                            ClientPropertyDraw property = getCurrentProperty();
+                            Double sum = form.calculateSum(logicsSupplier.getGroupObject().getID(), property.getID());
+                            if (sum != null) {
+                                JOptionPane.showMessageDialog(null, "Сумма (" + property.getCaption() + "): " + sum, null, JOptionPane.INFORMATION_MESSAGE);
+                            } else {
+                                JOptionPane.showMessageDialog(null, "Невозможно посчитать сумму (" + property.getCaption() + ")", null, JOptionPane.INFORMATION_MESSAGE);
+                            }
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                });
+            }
+        };
+
         view = new GridView(logicsSupplier, form, GridController.this.key.showFind ? findController : null, GridController.this.key.showFilter ? filterController : null,
+                GridController.this.key.showCountQuantity ? countQuantity : null, GridController.this.key.showCalculateSum ? calculateSum : null,
                 GridController.this.key.tabVertical, key.groupObject.needVerticalScroll) {
             protected void needToBeShown() {
                 if (!hidden && !view.isVisible()) {

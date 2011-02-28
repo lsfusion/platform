@@ -431,6 +431,22 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
+    public int countRecords(int groupObjectID) {
+        try {
+            return form.countRecords(groupObjectID);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Double calculateSum(int groupObjectID, int propertyID) {
+        try {
+            return form.calculateSum(groupObjectID, propertyID);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void addFilter(byte[] state) {
         try {
             FilterInstance filter = FilterInstance.deserialize(new DataInputStream(new ByteArrayInputStream(state)), form);

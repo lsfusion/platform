@@ -57,6 +57,10 @@ public interface RemoteFormInterface extends PendingRemote {
 
     void setRegularFilter(int groupID, int filterID) throws RemoteException;
 
+    int countRecords(int groupObjectID) throws RemoteException;
+
+    Double calculateSum(int groupObjectID, int propertyID) throws RemoteException;
+
     void refreshData() throws RemoteException;
 
     void cancelChanges() throws RemoteException;
