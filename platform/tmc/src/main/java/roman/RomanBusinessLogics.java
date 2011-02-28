@@ -1582,6 +1582,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         tableFactory.include("documentArticle", document, article);
         tableFactory.include("listSku", list, sku);
         tableFactory.include("listArticle", list, article);
+        tableFactory.include("importerFreightSku", importer, freight, sku);
     }
 
     @Override
@@ -2315,7 +2316,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 design.setEditKey(design.get(getPropertyDraw(objectValue, objSIDSupplierBox)), KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0));
 
             design.get(objRoute.groupTo).grid.constraints.fillVertical = 0.4;
-            design.get(objRoute.groupTo).grid.showFilter = false;
+            design.get(objRoute.groupTo).grid.hideToolbarItems();
 
             if (box)
                 design.get(getPropertyDraw(quantityListSku, objSku)).caption = "Ожид. (короб)";
