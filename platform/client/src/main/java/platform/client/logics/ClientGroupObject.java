@@ -128,6 +128,8 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
         pool.writeObject(outStream, highlightColor);
         pool.serializeObject(outStream, grid);
         pool.serializeObject(outStream, showType);
+        outStream.writeBoolean(needVerticalScroll);
+        outStream.writeInt(tableRowsCount);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {

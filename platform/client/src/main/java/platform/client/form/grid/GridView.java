@@ -23,6 +23,7 @@ public abstract class GridView extends JPanel {
     private final GridTable gridTable;
     public final FilterController filterController;
     public JPanel bottomContainer = new JPanel();
+
     public GridTable getTable() {
         return gridTable;
     }
@@ -55,7 +56,6 @@ public abstract class GridView extends JPanel {
         bottomContainer.setLayout(new BorderLayout());
 
         queriesContainer = new JPanel();
-        queriesContainer.setBorder(new EmptyBorder(0, 0, 0, 0));
         queriesContainer.setLayout(new BoxLayout(queriesContainer, BoxLayout.X_AXIS));
         movingPropertiesContainer = new JPanel();
         movingPropertiesContainer.setLayout(new BoxLayout(movingPropertiesContainer, BoxLayout.X_AXIS));

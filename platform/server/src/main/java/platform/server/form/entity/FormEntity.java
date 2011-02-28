@@ -169,7 +169,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     protected ObjectEntity addSingleGroupObject(ValueClass baseClass, String caption, Object... groups) {
-        return addSingleGroupObject(genID(), (String)null, baseClass, caption, groups);
+        return addSingleGroupObject(genID(), (String) null, baseClass, caption, groups);
     }
 
     protected ObjectEntity addSingleGroupObject(int ID, String sID, ValueClass baseClass, String caption, Object... groups) {
@@ -189,7 +189,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     protected ObjectEntity addSingleGroupObject(int ID, ValueClass baseClass, Object... groups) {
-        return addSingleGroupObject(ID, (String)null, baseClass, null, groups);
+        return addSingleGroupObject(ID, (String) null, baseClass, null, groups);
     }
 
     protected ObjectEntity addSingleGroupObject(int ID, String sID, ValueClass baseClass, Object... groups) {
@@ -587,8 +587,8 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         int length = inStream.readInt();
         for (int i = 0; i < length; ++i) {
             Object event = inStream.readBoolean()
-                           ? pool.readString(inStream)
-                           : pool.deserializeObject(inStream);
+                    ? pool.readString(inStream)
+                    : pool.deserializeObject(inStream);
 
             List<PropertyObjectEntity> actions = pool.deserializeList(inStream);
             eventActions.put(event, actions);
@@ -773,8 +773,12 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public void setNeedVerticalScroll(boolean scroll) {
+        DefaultFormView view = null;
+        if (richDesign instanceof DefaultFormView) {
+            view = (DefaultFormView) richDesign;
+        }
         for (GroupObjectEntity entity : groups) {
-            entity.needVerticalScroll = scroll;
+            view.get(entity).needVerticalScroll = scroll;
         }
     }
 }

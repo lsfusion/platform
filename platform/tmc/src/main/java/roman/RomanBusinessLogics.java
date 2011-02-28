@@ -2115,7 +2115,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objRoute.groupTo.setSingleClassView(ClassViewType.GRID);
             addPropertyDraw(packingListFormRoute, objRoute);
 
-            objRoute.groupTo.tableRowsCount = 0;
 
             nameRoute = addPropertyDraw(name, objRoute);
             nameRoute.forceViewType = ClassViewType.PANEL;
@@ -2315,8 +2314,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             if (box)
                 design.setEditKey(design.get(getPropertyDraw(objectValue, objSIDSupplierBox)), KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0));
 
-            design.get(objRoute.groupTo).grid.constraints.fillVertical = 0.4;
             design.get(objRoute.groupTo).grid.hideToolbarItems();
+            design.get(objRoute.groupTo).setTableRowsCount(0);
 
             if (box)
                 design.get(getPropertyDraw(quantityListSku, objSku)).caption = "Ожид. (короб)";

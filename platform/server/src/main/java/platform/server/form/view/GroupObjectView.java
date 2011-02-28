@@ -19,6 +19,9 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
     public Color highlightColor;
 
+    public Boolean needVerticalScroll;
+    public Integer tableRowsCount;
+
     public GroupObjectView() {
 
     }
@@ -93,14 +96,14 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
         outStream.writeBoolean(entity.isParent != null);
 
-        boolean needHorizontalScroll;
-        if (entity.needVerticalScroll == null) {
-            needHorizontalScroll = (entity.pageSize != null && entity.pageSize == 0) ? true : false;
+        boolean needVScroll;
+        if (needVerticalScroll == null) {
+            needVScroll = (entity.pageSize != null && entity.pageSize == 0) ? true : false;
         } else {
-            needHorizontalScroll = entity.needVerticalScroll;
+            needVScroll = needVerticalScroll;
         }
-        outStream.writeBoolean(needHorizontalScroll);
-        outStream.writeInt(entity.tableRowsCount == null ? -1 : entity.tableRowsCount);
+        outStream.writeBoolean(needVScroll);
+        outStream.writeInt(tableRowsCount == null ? -1 : tableRowsCount);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -112,5 +115,12 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
         grid = pool.deserializeObject(inStream);
         showType = pool.deserializeObject(inStream);
+        needVerticalScroll = pool.readObject(inStream);
+        tableRowsCount = pool.readInt(inStream);
+    }
+
+    public void setTableRowsCount(int tableRowsCount) {
+        this.tableRowsCount = tableRowsCount;
+        grid.constraints.fillVertical = 0.0;
     }
 }

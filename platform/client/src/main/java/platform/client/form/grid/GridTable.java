@@ -241,6 +241,7 @@ public abstract class GridTable extends ClientFormTable
             int count = logicsSupplier.getGroupObject().tableRowsCount == 0 ? getRowCount() : logicsSupplier.getGroupObject().tableRowsCount;
             int height = count * (getRowHeight() + 1) + getTableHeader().getPreferredSize().height;
             gridView.pane.setMinimumSize(new Dimension(getMinimumSize().width, height));
+            gridView.pane.setPreferredSize(new Dimension(getPreferredSize().width, height + 2));
             gridView.pane.setMaximumSize(new Dimension(getMaximumSize().width, height + 5));
         }
     }
@@ -868,7 +869,7 @@ public abstract class GridTable extends ClientFormTable
             ClientPropertyDraw cellView = model.getColumnProperty(modelIndex);
             String toolTip = !BaseUtils.isRedundantString(cellView.toolTip) ? cellView.toolTip : (String) columnModel.getColumn(index).getHeaderValue();
             toolTip += " (sID: " + cellView.getSID() + ")";
-            return toolTip; 
+            return toolTip;
         }
 
         @Override
