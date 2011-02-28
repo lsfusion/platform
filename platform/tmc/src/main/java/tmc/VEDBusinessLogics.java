@@ -366,8 +366,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP calcPercent = addSFProp("prm1*100/prm2", DoubleClass.instance, 2);
         LP diff = addSFProp("prm1-prm2", DoubleClass.instance, 2);
 
-        LP round1 = addSFProp("(ROUND(CAST((prm1) as NUMERIC(15,3)),-1))", IntegerClass.instance, 1);
-        LP round0 = addSFProp("(ROUND(CAST((prm1) as NUMERIC(15,3)),0))", IntegerClass.instance, 1);
+        LP round1 = addSFProp("(ROUND(CAST((prm1) as NUMERIC(15,3)),-1))", LongClass.instance, 1);
+        LP round0 = addSFProp("(ROUND(CAST((prm1) as NUMERIC(15,3)),0))", LongClass.instance, 1);
         padl = addSFProp("lpad(prm1,12,'0')", StringClass.get(12), 1);
 
         LP multiplyDouble2 = addMFProp(DoubleClass.instance, 2);
@@ -777,11 +777,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addJProp(actionNoExtraDiscount, articleSaleAction, 1), 2, orderNoDiscount, 1),
                 true, 1, 2, articleQuantity, 1, 2);
 
-        orderArticleSaleDiscountSum = addJProp(documentPriceGroup, "Сумма скидки", round1, addJProp(percent, orderArticleSaleSum, 1, 2, orderArticleSaleDiscount, 1, 2), 1, 2);
+        orderArticleSaleDiscountSum = addJProp(documentPriceGroup, "orderArticleSaleDiscountSum", "Сумма скидки", round1, addJProp(percent, orderArticleSaleSum, 1, 2, orderArticleSaleDiscount, 1, 2), 1, 2);
         orderArticleSaleSumWithDiscount = addDUProp(documentPriceGroup, "Сумма к опл.", orderArticleSaleSum, orderArticleSaleDiscountSum);
-        orderSaleDiscountSum = addSGProp(documentAggrPriceGroup, "Сумма скидки", orderArticleSaleDiscountSum, 1);
+        orderSaleDiscountSum = addSGProp(documentAggrPriceGroup, "orderSaleDiscountSum", true, "Сумма скидки", orderArticleSaleDiscountSum, 1);
         LP orderSalePayGift = addSGProp(addJProp(and(false, false), obligationSum, 2, issueObligation, 1, 2, is(giftObligation), 2), 1);
-        orderSalePay = addCUProp(documentAggrPriceGroup, "Сумма чека",
+        orderSalePay = addCUProp(documentAggrPriceGroup, "orderSalePay", true, "Сумма чека",
                 orderSalePayGift, addSGProp(orderArticleSaleSumWithDiscount, 1));
 
         LP returnArticleSaleSum = addJProp(documentPriceGroup, "Сумма возвр.", multiplyDouble2, returnInnerQuantity, 1, 2, 3, orderSaleDocPrice, 3, 2);
@@ -854,9 +854,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP orderSalePayGiftObligation = addSGProp(addJProp(and1, obligationUseSum, 1, 2, is(giftObligation), 2), 1);
         LP orderSalePayCoupon = addJProp(min, addSGProp(addJProp(and1, obligationUseSum, 1, 2, is(coupon), 2), 1), 1, addJProp(percent, orderSalePay, 1, orderMaxCoupon, 1), 1);
-        orderSalePayObligation = addSUProp(documentAggrPriceGroup, "Сумма серт.", Union.SUM, orderSalePayGiftObligation, orderSalePayCoupon);
+        orderSalePayObligation = addSUProp(documentAggrPriceGroup, "orderSalePayObligation", true, "Сумма серт.", Union.SUM, orderSalePayGiftObligation, orderSalePayCoupon);
 
-        orderSalePayNoObligation = addJProp(documentAggrPriceGroup, "Сумма к опл.", onlyPositive, addDUProp(orderSalePay, orderSalePayObligation), 1);
+        orderSalePayNoObligation = addJProp(documentAggrPriceGroup, "orderSalePayNoObligation", true, "Сумма к опл.", onlyPositive, addDUProp(orderSalePay, orderSalePayObligation), 1);
         orderArticleSaleSumCoeff = addPGProp(documentPriceGroup, "orderArticleSaleSumCoeff", false, -1, true, "Сумма со скидкой", orderArticleSaleSumWithDiscount, orderSalePayNoObligation, 1);
 
         LP clientSaleSum = addSGProp(orderSalePayNoObligation, orderContragent, 1);
@@ -1172,6 +1172,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         tableFactory.include("rates", DateClass.instance);
         tableFactory.include("intervals", DoubleClass.instance);
         tableFactory.include("shoprates", DateClass.instance, shop);
+
+        tableFactory.include("obligation", obligation);
+        tableFactory.include("obligationorder", obligation, order);
     }
 
     protected void initIndexes() {

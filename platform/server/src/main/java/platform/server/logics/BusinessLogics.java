@@ -1548,8 +1548,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         synchronizeDB();
 
-        fillIDs();
-
         initExternalScreens();
 
         logger.debug("Initializing navigators...");
@@ -2152,20 +2150,25 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public void synchronizeDB() throws SQLException, IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
 
-        sql.startTransaction();
-
         // инициализируем таблицы
         tableFactory.fillDB(sql, baseClass);
 
         // "старое" состояние базы
         DataInputStream inputDB = null;
         byte[] struct = (byte[]) sql.readRecord(StructTable.instance, new HashMap<KeyField, DataObject>(), StructTable.instance.struct);
-        if (struct != null) inputDB = new DataInputStream(new ByteArrayInputStream(struct));
+        if (struct != null) {
+            inputDB = new DataInputStream(new ByteArrayInputStream(struct));
 
-        if (struct != null && struct.length == 0) { //чисто для бага JTDS
-            sql.rollbackTransaction();
-            return;
+            if(struct.length==0) { //чисто для бага JTDS
+                sql.rollbackTransaction();
+                return;
+            }
+
+            fillIDs();
         }
+
+        sql.startTransaction();
+
 /*        try {
             FileInputStream inputDBFile = new FileInputStream("prevstruct.str");
             byte[] readInput = new byte[inputDBFile.read()*255+inputDBFile.read()];
@@ -2334,22 +2337,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         sql.commitTransaction();
 
-/*        byte[] outBytes = outDBStruct.toByteArray();
-        FileOutputStream outFileStruct = new FileOutputStream("prevstruct.str");
-        outFileStruct.write(outBytes.length/255);
-        outFileStruct.write(outBytes.length%255);
-        outFileStruct.write(outBytes);*/
-
-        // backward compatibility
-        for (ImplementTable table : implementTables.values()) {
-            if (prevTables.containsKey(table.name)) {
-                try {
-                    sql.addExtraIndices(table.name, table.keys);
-                } catch (SQLException e) {
-                    System.out.println(e.getMessage());
-                }
-            }
-        }
+        if(struct==null)
+            fillIDs();
     }
 
     boolean checkPersistent(SQLSession session) throws SQLException {
