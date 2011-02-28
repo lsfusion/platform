@@ -2544,31 +2544,35 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addFAProp(String caption, FormEntity form, ObjectEntity... params) {
-        return addFormActionProp(null, caption, form, params, new PropertyObjectEntity[0], new PropertyObjectEntity[0], false, false);
+        return addFAProp(null, caption, form, params, new PropertyObjectEntity[0], new PropertyObjectEntity[0], false, false);
     }
 
     protected LP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity... params) {
-        return addFormActionProp(group, caption, form, params, new PropertyObjectEntity[0], new PropertyObjectEntity[0], false, false);
+        return addFAProp(group, caption, form, params, new PropertyObjectEntity[0], new PropertyObjectEntity[0], false, false);
     }
 
-    protected LP addModalFormActionProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity... setProperties) {
-        return addModalFormActionProp(group, caption, form, objectsToSet, true, setProperties);
+    protected LP addMFAProp(String caption, FormEntity form, ObjectEntity... params) {
+        return addMFAProp(null, caption, form, params, new PropertyObjectEntity[0], new PropertyObjectEntity[0]);
     }
 
-    protected LP addModalFormActionProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession, PropertyObjectEntity... setProperties) {
+    protected LP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity... setProperties) {
+        return addMFAProp(group, caption, form, objectsToSet, true, setProperties);
+    }
+
+    protected LP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession, PropertyObjectEntity... setProperties) {
         // во все setProperties просто будут записаны null'ы
-        return addModalFormActionProp(group, caption, form, objectsToSet, setProperties, new PropertyObjectEntity[setProperties.length], newSession);
+        return addMFAProp(group, caption, form, objectsToSet, setProperties, new PropertyObjectEntity[setProperties.length], newSession);
     }
 
-    protected LP addModalFormActionProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, PropertyObjectEntity[] getProperties) {
-        return addModalFormActionProp(group, caption, form, objectsToSet, setProperties, getProperties, true);
+    protected LP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, PropertyObjectEntity[] getProperties) {
+        return addMFAProp(group, caption, form, objectsToSet, setProperties, getProperties, true);
     }
 
-    protected LP addModalFormActionProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, PropertyObjectEntity[] getProperties, boolean newSession) {
-        return addFormActionProp(group, caption, form, objectsToSet, setProperties, getProperties, newSession, true);
+    protected LP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, PropertyObjectEntity[] getProperties, boolean newSession) {
+        return addFAProp(group, caption, form, objectsToSet, setProperties, getProperties, newSession, true);
     }
 
-    protected LP addFormActionProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, PropertyObjectEntity[] getProperties, boolean newSession, boolean isModal) {
+    protected LP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, PropertyObjectEntity[] getProperties, boolean newSession, boolean isModal) {
         return addProperty(group, new LP<ClassPropertyInterface>(new FormActionProperty(genSID(), caption, form, objectsToSet, setProperties, getProperties, newSession, isModal)));
     }
 
@@ -2582,7 +2586,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public LP addSelectFromListAction(AbstractGroup group, String caption, ObjectEntity remapObject, FilterEntity[] remapFilters, LP selectionProperty, boolean isSelectionClassFirstParam, ValueClass selectionClass, ValueClass... baseClasses) {
         SelectFromListFormEntity selectFromListForm = new SelectFromListFormEntity(remapObject, remapFilters, selectionProperty, isSelectionClassFirstParam, selectionClass, baseClasses);
-        return addModalFormActionProp(group, caption, selectFromListForm, selectFromListForm.mainObjects, false);
+        return addMFAProp(group, caption, selectFromListForm, selectFromListForm.mainObjects, false);
     }
     
     protected LP addStopActionProp(String caption, String header) {

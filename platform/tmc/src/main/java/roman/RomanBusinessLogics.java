@@ -557,6 +557,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP jennyferImportArticleWeightInvoice;
     private LP tallyWeijlImportInvoice;
     private AbstractGroup importInvoiceActionGroup;
+    private LP printCreatePalletForm;
+    private LP printCreateFreightBoxForm;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -1614,6 +1616,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         addFormEntity(invoiceFromFormEntity);
         addFormEntity(new PackingListFormEntity(printForms, "packingListForm", "Исходящие упаковочные листы"));
         addFormEntity(new PackingListBoxFormEntity(printForms, "packingListBoxForm", "Упаковочные листы коробов"));
+        FormEntity createPalletForm = addFormEntity(new CreatePalletFormEntity(printForms, "createPalletForm", "Штрих-коды паллет", FormType.PRINT));
+        FormEntity createFreightBoxForm = addFormEntity(new CreateFreightBoxFormEntity(printForms, "createFreightBoxForm", "Штрих-коды коробов", FormType.PRINT));
 
         NavigatorElement purchase = new NavigatorElement(baseElement, "purchase", "Управление закупками");
         addFormEntity(new OrderFormEntity(purchase, "orderForm", "Заказы"));
@@ -1628,10 +1632,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         addFormEntity(new FreightChangeFormEntity(shipment, "freightChangeForm", "Обработка фрахта"));
 
         NavigatorElement distribution = new NavigatorElement(baseElement, "distribution", "Управление складом");
-        FormEntity createPalletForm = addFormEntity(new CreatePalletFormEntity(distribution, "createPalletForm", "Сгенерировать паллеты", true));
-        addFormEntity(new CreatePalletFormEntity(createPalletForm, "createPalletFormList", "Документы генерации паллет", false));
-        FormEntity createFreightBoxForm = addFormEntity(new CreateFreightBoxFormEntity(distribution, "createFreightBoxForm", "Сгенерировать короба", true));
-        addFormEntity(new CreateFreightBoxFormEntity(createFreightBoxForm, "createFreightBoxFormList", "Документы генерации коробов", false));
+        FormEntity createPalletFormCreate = addFormEntity(new CreatePalletFormEntity(distribution, "createPalletFormAdd", "Сгенерировать паллеты", FormType.ADD));
+        addFormEntity(new CreatePalletFormEntity(createPalletFormCreate, "createPalletFormList", "Документы генерации паллет", FormType.LIST));
+        FormEntity createFreightBoxFormAdd = addFormEntity(new CreateFreightBoxFormEntity(distribution, "createFreightBoxFormAdd", "Сгенерировать короба", FormType.ADD));
+        addFormEntity(new CreateFreightBoxFormEntity(createFreightBoxFormAdd, "createFreightBoxFormList", "Документы генерации коробов", FormType.LIST));
         addFormEntity(new ShipmentSpecFormEntity(distribution, "boxShipmentSpecForm", "Прием товара по коробам", true));
         addFormEntity(new ShipmentSpecFormEntity(distribution, "simpleShipmentSpecForm", "Прием товара без коробов", false));
         // пока не поддерживается из-за того, что пока нет расчета себестоимости для внутреннего перемещения
@@ -2271,7 +2275,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addActionsOnObjectChange(objBarcode,
                                      addPropertyObject(
                                              addJProp(true, andNot1,
-                                                      addModalFormActionProp(
+                                                      addMFAProp(
                                                               null,
                                                               "Ввод нового товара",
                                                               createItemForm,
@@ -2453,23 +2457,35 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objCreate;
         private ObjectEntity objFreightBox;
 
-        private CreateFreightBoxFormEntity(NavigatorElement parent, String sID, String caption, boolean toAdd) {
-            super(parent, sID, caption);
+        private CreateFreightBoxFormEntity(NavigatorElement parent, String sID, String caption, FormType type) {
+            super(parent, sID, caption, type.equals(FormType.PRINT));
 
             objCreate = addSingleGroupObject(creationFreightBox, "Документ генерации коробов");
-            if (!toAdd)
+
+            if (!type.equals(FormType.ADD))
                 addPropertyDraw(objCreate, objectValue);
+
             addPropertyDraw(objCreate, nameRouteCreationFreightBox, quantityCreationFreightBox);
-            if (toAdd) {
+
+            if (type.equals(FormType.ADD))
                 addPropertyDraw(createFreightBox, objCreate);
+
+            if (!type.equals(FormType.PRINT))
+                addPropertyDraw(objCreate, printCreateFreightBoxForm);
+
+            if (!type.equals(FormType.LIST))
                 objCreate.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            if (type.equals(FormType.ADD))
                 objCreate.addOnTransaction = true;
-            }
 
             objFreightBox = addSingleGroupObject(freightBox, "Короба для транспортировки", barcode);
             setReadOnly(objFreightBox, true);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(creationFreightBoxFreightBox, objFreightBox), Compare.EQUALS, objCreate));
+
+            if (type.equals(FormType.PRINT))
+                printCreateFreightBoxForm = addFAProp("Печать штрих-кодов", this, objCreate);
         }
     }
 
@@ -2478,23 +2494,34 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objCreate;
         private ObjectEntity objPallet;
 
-        private CreatePalletFormEntity(NavigatorElement parent, String sID, String caption, boolean toAdd) {
-            super(parent, sID, caption);
+        private CreatePalletFormEntity(NavigatorElement parent, String sID, String caption, FormType type) {
+            super(parent, sID, caption, type.equals(FormType.PRINT));
 
-            objCreate = addSingleGroupObject(creationPallet, "Докунмент генерации паллет");
-            if (!toAdd)
+            objCreate = addSingleGroupObject(creationPallet, "Документ генерации паллет");
+            if (!type.equals(FormType.ADD))
                 addPropertyDraw(objCreate, objectValue);
+
             addPropertyDraw(objCreate, nameRouteCreationPallet, quantityCreationPallet);
-            if (toAdd) {
+
+            if (type.equals(FormType.ADD))
                 addPropertyDraw(createPallet, objCreate);
+
+            if (!type.equals(FormType.PRINT))
+                addPropertyDraw(objCreate, printCreatePalletForm);
+
+            if (!type.equals(FormType.LIST))
                 objCreate.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            if (type.equals(FormType.ADD))
                 objCreate.addOnTransaction = true;
-            }
 
             objPallet = addSingleGroupObject(pallet, "Паллеты для транспортировки", barcode);
             setReadOnly(objPallet, true);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(creationPalletPallet, objPallet), Compare.EQUALS, objCreate));
+
+            if (type.equals(FormType.PRINT))
+                printCreatePalletForm = addFAProp("Печать штрих-кодов", this, objCreate);
         }
     }
 

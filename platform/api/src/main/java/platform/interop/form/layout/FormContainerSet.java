@@ -55,7 +55,7 @@ public class FormContainerSet <C extends AbstractContainer<C, T>, T extends Abst
         set.formButtonContainer.add((T)refreshFunction);
 
         F applyFunction = funcFactory.createFunction();
-        applyFunction.setCaption("Применить");
+        applyFunction.setCaption("Сохранить");
         applyFunction.setType("Apply");
         applyFunction.getConstraints().directions = new SimplexComponentDirections(0,0,0.01,0.01);
         applyFunction.getConstraints().insetsSibling = new Insets(0, 8, 0, 0);

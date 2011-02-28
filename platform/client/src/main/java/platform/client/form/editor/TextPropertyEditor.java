@@ -24,7 +24,7 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditorCom
 
     private JOptionPane optionPane;
 
-    private String btnString1 = "Применить";
+    private String btnString1 = "Сохранить";
     private String btnString2 = "Отменить";
     private boolean state;
 
