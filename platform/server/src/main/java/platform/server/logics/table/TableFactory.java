@@ -15,12 +15,12 @@ import java.util.*;
 public class TableFactory {
 
     public static final int MAX_INTERFACE = 6;
-    Set<ImplementTable>[] implementTables = new Set[MAX_INTERFACE+1];
+    List<ImplementTable>[] implementTables = new List[MAX_INTERFACE+1]; // используем List, чтобы всегда был одинаковый порядок
     ImplementTable[] baseTables = new ImplementTable[MAX_INTERFACE+1];
 
     public TableFactory() {
         for(int i=0;i<=MAX_INTERFACE;i++)
-            implementTables[i] = new HashSet<ImplementTable>();
+            implementTables[i] = new ArrayList<ImplementTable>();
     }
 
     public void include(String name, ValueClass... classes) {

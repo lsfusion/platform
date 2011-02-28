@@ -164,9 +164,9 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
-    public Double calculateSum(int groupObjectID, int propertyID) throws RemoteException {
+    public Object calculateSum(int groupObjectID, int propertyID) throws RemoteException {
         logRemoteMethodStartCall("calculateSum");
-        double result = target.calculateSum(groupObjectID, propertyID);
+        Object result = target.calculateSum(groupObjectID, propertyID);
         logRemoteMethodEndCall("calculateSum", result);
         return result;
     }

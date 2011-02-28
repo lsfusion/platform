@@ -598,7 +598,7 @@ public class ClientFormController {
         return remoteForm.countRecords(groupObjectID);
     }
 
-    public Double calculateSum(int groupObjectID, int propertyID) throws IOException {
+    public Object calculateSum(int groupObjectID, int propertyID) throws IOException {
         return remoteForm.calculateSum(groupObjectID, propertyID);
     }
 

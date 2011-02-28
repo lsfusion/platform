@@ -94,7 +94,7 @@ public class GridController {
                     public void actionPerformed(ActionEvent e) {
                         try {
                             ClientPropertyDraw property = getCurrentProperty();
-                            Double sum = form.calculateSum(logicsSupplier.getGroupObject().getID(), property.getID());
+                            Object sum = form.calculateSum(logicsSupplier.getGroupObject().getID(), property.getID());
                             if (sum != null) {
                                 JOptionPane.showMessageDialog(null, "Сумма (" + property.getCaption() + "): " + sum, null, JOptionPane.INFORMATION_MESSAGE);
                             } else {

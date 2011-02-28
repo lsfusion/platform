@@ -425,37 +425,25 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
     public int countRecords(int groupObjectID) throws SQLException {
         GroupObjectInstance group = getGroupObjectInstance(groupObjectID);
-        try {
-            Expr expr = GroupExpr.create(new HashMap(), new ValueExpr(1, IntegerClass.instance), group.getWhere(group.getMapKeys(), this), false, new HashMap());
-            Query<Object, Object> query = new Query<Object, Object>(new HashMap<Object, KeyExpr>(), expr.getWhere());
-            query.properties.put("quant", expr);
-            OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
-            return (Integer) result.getValue(0).get("quant");
-        } catch (NoSuchElementException e) {
-            return 0;
-        }
+        Expr expr = GroupExpr.create(new HashMap(), new ValueExpr(1, IntegerClass.instance), group.getWhere(group.getMapKeys(), this), false, new HashMap());
+        Query<Object, Object> query = new Query<Object, Object>(new HashMap<Object, KeyExpr>());
+        query.properties.put("quant", expr);
+        OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
+        return (Integer) result.getValue(0).get("quant");
     }
 
-    public Double calculateSum(int groupObjectID, int propertyID) throws SQLException {
+    public Object calculateSum(int groupObjectID, int propertyID) throws SQLException {
         GroupObjectInstance groupObject = getGroupObjectInstance(groupObjectID);
         PropertyDrawInstance propertyDraw = getPropertyDraw(propertyID);
 
         Map<ObjectInstance, KeyExpr> keys = groupObject.getMapKeys();
-        Expr expr;
         try {
-            expr = GroupExpr.create(new HashMap(), propertyDraw.propertyObject.getExpr(keys, this), groupObject.getWhere(keys, this), false, new HashMap());
-            Query<Object, Object> query = new Query<Object, Object>(new HashMap<Object, KeyExpr>(), expr.getWhere());
+            Expr expr = GroupExpr.create(new HashMap(), propertyDraw.propertyObject.getExpr(keys, this), groupObject.getWhere(keys, this), false, new HashMap());
+            Query<Object, Object> query = new Query<Object, Object>(new HashMap<Object, KeyExpr>());
             query.properties.put("sum", expr);
             OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
-            Object object =  result.getValue(0).get("sum");
-            if (object instanceof Double) {
-                return (Double) object;
-            } else if (object instanceof Integer || object instanceof Long) {
-                return Double.parseDouble(object.toString());
-            } else return null;
+            return result.getValue(0).get("sum");
         } catch (ClassCastException e) {
-            return null;
-        } catch (NoSuchElementException e) {
             return null;
         }
     }

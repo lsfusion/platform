@@ -439,7 +439,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    public Double calculateSum(int groupObjectID, int propertyID) {
+    public Object calculateSum(int groupObjectID, int propertyID) {
         try {
             return form.calculateSum(groupObjectID, propertyID);
         } catch (Exception e) {

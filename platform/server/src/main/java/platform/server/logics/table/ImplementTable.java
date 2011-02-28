@@ -17,7 +17,7 @@ public class ImplementTable extends GlobalTable {
             keys.add(field);
             mapFields.put(field,implementClasses[fieldNum]);
         }
-        parents = new HashSet<ImplementTable>();
+        parents = new ArrayList<ImplementTable>();
 
         classes = classes.or(new ClassWhere<KeyField>(mapFields,true));
     }
@@ -27,7 +27,7 @@ public class ImplementTable extends GlobalTable {
         propertyClasses.put(field,classes);
     }
 
-    Set<ImplementTable> parents;
+    List<ImplementTable> parents;
 
     // operation на что сравниваем
     // 0 - не ToParent
@@ -77,7 +77,7 @@ public class ImplementTable extends GlobalTable {
         return COMPARE_DIFF;
     }
 
-    public void include(Set<ImplementTable> tables, boolean toAdd, Set<ImplementTable> checks) {
+    public void include(List<ImplementTable> tables, boolean toAdd, Set<ImplementTable> checks) {
 
         Iterator<ImplementTable> i = tables.iterator();
         while(i.hasNext()) {

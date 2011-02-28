@@ -1146,6 +1146,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         tableFactory.include("countryDate", country, DateClass.instance);
     }
 
+    private void initBaseIndexes() {
+        addIndex(barcode);
+    }
+
     /**
      * Нужно для скрытия свойств при соблюдении какого-то критерия
      * <p/>
@@ -1541,6 +1545,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         for (Property property : getProperties()) {
             assert idSet.add(property.sID) : "Same sid " + property.sID;
         }
+
+        initBaseIndexes();
 
         initIndexes();
 

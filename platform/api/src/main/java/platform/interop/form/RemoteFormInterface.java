@@ -59,7 +59,7 @@ public interface RemoteFormInterface extends PendingRemote {
 
     int countRecords(int groupObjectID) throws RemoteException;
 
-    Double calculateSum(int groupObjectID, int propertyID) throws RemoteException;
+    Object calculateSum(int groupObjectID, int propertyID) throws RemoteException;
 
     void refreshData() throws RemoteException;
 

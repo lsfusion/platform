@@ -559,6 +559,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private AbstractGroup importInvoiceActionGroup;
     private LP printCreatePalletForm;
     private LP printCreateFreightBoxForm;
+    private LP priceSupplierBoxSku;
+    private LP sumSupplierBoxSku;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -1076,13 +1078,16 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         priceDocumentArticle = addDProp(baseGroup, "priceDocumentArticle", "Цена", DoubleClass.instance, priceDocument, article);
         priceDataDocumentItem = addDProp(baseGroup, "priceDataDocumentItem", "Цена по товару", DoubleClass.instance, priceDocument, item);
         priceArticleDocumentSku = addJProp(baseGroup, "priceArticleDocumentItem", "Цена по артикулу", priceDocumentArticle, 1, articleSku, 2);
-        priceDocumentSku = addSUProp(baseGroup, "priceDocumentSku", "Цена", Union.OVERRIDE, priceArticleDocumentSku, priceDataDocumentItem);
+        priceDocumentSku = addSUProp(baseGroup, "priceDocumentSku", true, "Цена", Union.OVERRIDE, priceArticleDocumentSku, priceDataDocumentItem);
+
+        priceSupplierBoxSku = addJProp(baseGroup, "priceSupplierBoxSku", "Цена", priceDocumentSku, boxInvoiceSupplierBox, 1, 2);
 
         priceOrderInvoiceArticle = addJProp(and1, priceDocumentArticle, 1, 3, inOrderInvoice, 1, 2);
         priceOrderedInvoiceArticle = addMGProp(baseGroup, "priceOrderedInvoiceArticle", "Цена в заказе", priceOrderInvoiceArticle, 2, 3);
         // todo : не работает
         priceDocumentArticle.setDerivedForcedChange(priceOrderedInvoiceArticle, 1, 2, numberDocumentArticle, 1, 2);
 
+        sumSupplierBoxSku = addJProp(baseGroup, "sumSupplierBoxSku", "Сумма", multiplyDouble2, quantityListSku, 1, 2, priceSupplierBoxSku, 1, 2);
         sumDocumentSku = addJProp(baseGroup, "sumDocumentSku", "Сумма", multiplyDouble2, quantityDocumentSku, 1, 2, priceDocumentSku, 1, 2);
 
         sumDocumentArticle = addSGProp(baseGroup, "sumDocumentArticle", "Сумма", sumDocumentSku, 1, articleSku, 2);
@@ -1355,7 +1360,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 quantityInvoiceStockSku,
                 addJProp(and1, quantityListSku, 2, 3, addJProp(equals2, 1, boxInvoiceSupplierBox, 2), 1, 2));
 
-        priceInInvoiceFreightUnitSku = addCUProp(baseGroup, "priceInInvoiceFreightUnitSku", true, "Цена входная",
+        priceInInvoiceFreightUnitSku = addCUProp(baseGroup, "priceInInvoiceFreightUnitSku", "Цена входная",
                 priceInInvoiceStockSku,
                 addJProp(and1, priceDocumentSku, 1, 3, addJProp(equals2, 1, boxInvoiceSupplierBox, 2), 1, 2));
 
@@ -1569,20 +1574,27 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
     @Override
     protected void initTables() {
-        tableFactory.include("customCategory", customCategory);
         tableFactory.include("customCategory4", customCategory4);
         tableFactory.include("customCategory6", customCategory6);
         tableFactory.include("customCategory9", customCategory9);
         tableFactory.include("customCategory10", customCategory10);
         tableFactory.include("customCategoryOrigin", customCategoryOrigin);
         tableFactory.include("customCategory10Origin", customCategory10, customCategoryOrigin);
-        tableFactory.include("sku", sku);
+        tableFactory.include("customCategory", customCategory);
+
         tableFactory.include("article", article);
-        tableFactory.include("documentSku", document, sku);
+        tableFactory.include("sku", sku);
         tableFactory.include("documentArticle", document, article);
+        tableFactory.include("documentSku", document, sku);
         tableFactory.include("listSku", list, sku);
         tableFactory.include("listArticle", list, article);
         tableFactory.include("importerFreightSku", importer, freight, sku);
+        tableFactory.include("freightSku", freight, sku);
+        tableFactory.include("shipmentDetail", shipmentDetail);
+        tableFactory.include("pallet", pallet);
+        tableFactory.include("freight", freight);
+        tableFactory.include("freightUnit", freightUnit);
+        tableFactory.include("barcodeObject", barcodeObject);
     }
 
     @Override
@@ -1824,12 +1836,12 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             design.addIntersection(design.getGroupObjectContainer(objItem.groupTo),
-                                   design.getGroupObjectContainer(objSizeSupplier.groupTo),
-                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                    design.getGroupObjectContainer(objSizeSupplier.groupTo),
+                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             design.addIntersection(design.getGroupObjectContainer(objItem.groupTo),
-                                   design.getGroupObjectContainer(objColorSupplier.groupTo),
-                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                    design.getGroupObjectContainer(objColorSupplier.groupTo),
+                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             return design;
         }
@@ -1937,7 +1949,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                                       mainCompositionOriginSku, additionalCompositionOriginSku}, objSku);
             addPropertyDraw(quantityListSku, (box ? objSupplierBoxSpec : objInvoice), objSku);
             addPropertyDraw(priceDocumentSku, objInvoice, objSku);
-            addPropertyDraw(sumDocumentSku, objInvoice, objSku);
+            if (box)
+                addPropertyDraw(sumSupplierBoxSku, objSupplierBoxSpec, objSku);
+            else
+                addPropertyDraw(sumDocumentSku, objInvoice, objSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
 
