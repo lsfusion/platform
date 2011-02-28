@@ -167,7 +167,7 @@ public abstract class GridTable extends ClientFormTable
         java.awt.Point p = e.getPoint();
         int rowIndex = rowAtPoint(p);
         int colIndex = columnAtPoint(p);
-        Object value = (rowIndex != -1) ? getValueAt(rowIndex, colIndex) : null;
+        Object value = (rowIndex != -1 && colIndex != -1) ? getValueAt(rowIndex, colIndex) : null;
         return (value != null) ? String.valueOf(value).trim() : null;
     }
 
