@@ -14,6 +14,7 @@ public abstract class CalculateSumButton extends JButton {
         setMinimumSize(buttonSize);
         setPreferredSize(buttonSize);
         setMaximumSize(buttonSize);
+        setFocusable(false);
         addListener();
     }
 

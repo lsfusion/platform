@@ -85,6 +85,7 @@ public abstract class QueryView extends JPanel {
         collapseButton.setFocusable(false);
         collapseButton.setPreferredSize(iconButtonDimension);
         collapseButton.setMaximumSize(iconButtonDimension);
+        collapseButton.setMinimumSize(iconButtonDimension);
         collapseButton.setVisible(false);
         collapseButton.addActionListener(new ActionListener() {
 

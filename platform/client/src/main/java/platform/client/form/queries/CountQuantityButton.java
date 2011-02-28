@@ -14,6 +14,7 @@ public abstract class CountQuantityButton extends JButton {
         setMinimumSize(buttonSize);
         setPreferredSize(buttonSize);
         setMaximumSize(buttonSize);
+        setFocusable(false);
         addListener();
     }
 
