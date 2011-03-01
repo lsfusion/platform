@@ -24,10 +24,13 @@ public class DatePropertyEditor extends JDateChooser
         super(null, null, format.toPattern(), new DatePropertyEditorComponent(format.toPattern(),"##.##.##",' '));
 
         if (value != null) {
-            Calendar calendar = Calendar.getInstance(Main.timeZone);
-            calendar.setTime(DateConverter.sqlToDate((java.sql.Date) value));
-            setDate(calendar.getTime());
-            System.out.println(calendar.compareTo(Calendar.getInstance(Locale.GERMANY)));
+            if (Main.timeZone != null) {
+                Calendar calendar = Calendar.getInstance(Main.timeZone);
+                calendar.setTime(DateConverter.sqlToDate((java.sql.Date) value));
+                setDate(calendar.getTime());
+            } else {
+                setDate(DateConverter.sqlToDate((java.sql.Date)value));
+            }
             ((JFormattedTextField) dateEditor).selectAll();
         }
 
