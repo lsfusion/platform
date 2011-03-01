@@ -1,6 +1,7 @@
 package platform.server.session;
 
 import platform.base.BaseUtils;
+import platform.server.caches.ManualLazy;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.PropertyInterface;
@@ -31,6 +32,14 @@ public class MapDataChanges<P extends PropertyInterface> {
     private MapDataChanges(MapDataChanges<P> mapChanges) {
         this.changes = mapChanges.changes.pack();
         this.map = mapChanges.map;
+    }
+
+    private Long complexity;
+    @ManualLazy
+    public long getComplexity() {
+        if(complexity==null)
+            complexity = changes.getComplexity();
+        return complexity;
     }
 
     public MapDataChanges<P> pack() {

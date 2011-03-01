@@ -1483,7 +1483,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private Map<ValueClass, LP> is = new HashMap<ValueClass, LP>();
 
     // получает свойство is
-
+    // для множества классов есть CProp
     protected LP is(ValueClass valueClass) {
         LP isProp = is.get(valueClass);
         if (isProp == null) {

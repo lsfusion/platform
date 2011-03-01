@@ -16,14 +16,14 @@ public class Settings {
         this.innerGroupExprs = innerGroupExprs;
     }
 
-    public boolean packOnCache = false;
+    public int packOnCacheComplexity = 300;
 
-    public boolean isPackOnCache() {
-        return packOnCache;
+    public int getPackOnCacheComplexity() {
+        return packOnCacheComplexity;
     }
 
-    public void setPackOnCache(boolean packOnCache) {
-        this.packOnCache = packOnCache;
+    public void setPackOnCacheComplexity(int packOnCacheComplexity) {
+        this.packOnCacheComplexity = packOnCacheComplexity;
     }
 
     private int mapInnerMaxIterations = 4;

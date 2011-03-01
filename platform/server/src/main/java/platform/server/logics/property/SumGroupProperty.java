@@ -1,5 +1,7 @@
 package platform.server.logics.property;
 
+import platform.interop.Compare;
+import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.cases.CaseExpr;
@@ -82,22 +84,45 @@ public class SumGroupProperty<T extends PropertyInterface> extends GroupProperty
             return super.calculateUsedDataChanges(modifier);
     }
 
+    // такая же помошь компилятору как и при getExpr в GroupProperty
+    private Where getGroupKeys(PropertyChange<Interface<T>> propertyChange, Map<T, KeyExpr> mapKeys, Map<T, Expr> mapValueKeys) {
+        Map<BaseExpr, BaseExpr> exprValues = propertyChange.where.getExprValues();
+        Map<PropertyInterfaceImplement<T>, Expr> changeValues = new HashMap<PropertyInterfaceImplement<T>, Expr>();
+        for(Map.Entry<Interface<T>, KeyExpr> mapKey : propertyChange.mapKeys.entrySet()) {
+            BaseExpr exprValue = exprValues.get(mapKey.getValue());
+            if(exprValue!=null)
+                changeValues.put(mapKey.getKey().implement, exprValue);
+        }
+        Where valueWhere = Where.TRUE;
+        for(Map.Entry<T, KeyExpr> mapKey : groupProperty.getMapKeys().entrySet()) {
+            Expr expr = changeValues.get(mapKey.getKey());
+            if(expr!=null) {
+                mapValueKeys.put(mapKey.getKey(), expr);
+                valueWhere = valueWhere.and(mapKey.getValue().compare(expr, Compare.EQUALS));
+            } else
+                mapValueKeys.put(mapKey.getKey(), mapKey.getValue());
+            mapKeys.put(mapKey.getKey(), mapKey.getValue());
+        }
+        return valueWhere;
+    }
+
     @Override
     protected MapDataChanges<Interface<T>> calculateDataChanges(PropertyChange<Interface<T>> propertyChange, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
         if(distribute != null) {
             // создаем распределяющее свойство от этого, moidfier который меняет это свойство на PropertyChange, получаем значение распределяющего и условие на изменение
             // зацепит лишние changed'ы как и в MaxChangeExpr и иже с ними но пока забьем
 
-            Map<T, KeyExpr> mapKeys = groupProperty.getMapKeys();
+            Map<T, KeyExpr> mapKeys = new HashMap<T, KeyExpr>(); Map<T, Expr> mapValueKeys = new HashMap<T, Expr>();
+            Where valueWhere = getGroupKeys(propertyChange, mapKeys, mapValueKeys);
 
             PropertyChanges propertyChanges = new PropertyChanges(nullProperty, propertyChange.map(nullProperty.getMapInterfaces()));
 
-            Where nullWhere = propertyChange.getWhere(getGroupImplements(mapKeys, modifier)).and(groupProperty.getExpr(mapKeys, modifier).getWhere()); // where чтобы за null'ить
+            Where nullWhere = propertyChange.getWhere(getGroupImplements(mapValueKeys, modifier)).and(groupProperty.getExpr(mapValueKeys, modifier).getWhere()); // where чтобы за null'ить
             if(!nullWhere.isFalse())
-                propertyChanges = new PropertyChanges(propertyChanges, groupProperty.getDataChanges(new PropertyChange<T>(mapKeys, CaseExpr.NULL, nullWhere), null, modifier).changes);
+                propertyChanges = new PropertyChanges(propertyChanges, groupProperty.getDataChanges(new PropertyChange<T>(mapKeys, CaseExpr.NULL, nullWhere.and(valueWhere)), null, modifier).changes);
 
-            Expr distributeExpr = distribute.mapExpr(mapKeys, new PropertyChangesModifier(modifier, propertyChanges));
-            DataChanges dataChanges = groupProperty.getDataChanges(new PropertyChange<T>(mapKeys, distributeExpr, distributeExpr.getWhere().or(nullWhere)), null, modifier).changes;
+            Expr distributeExpr = distribute.mapExpr(mapValueKeys, new PropertyChangesModifier(modifier, propertyChanges));
+            DataChanges dataChanges = groupProperty.getDataChanges(new PropertyChange<T>(mapKeys, distributeExpr, distributeExpr.getWhere().or(nullWhere).and(valueWhere)), null, modifier).changes;
             if(changedWhere!=null) {
                 if (Settings.instance.isCalculateGroupDataChanged())
                     getExpr(propertyChange.mapKeys, new DataChangesModifier(modifier, dataChanges), changedWhere);

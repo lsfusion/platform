@@ -111,6 +111,9 @@ public class PropertyChange<T extends PropertyInterface> extends TwinsInnerConte
         return components;
     }
 
+    public long getComplexity() {
+        return where.getComplexity() + expr.getComplexity();
+    }
     public PropertyChange<T> pack() {
         Where packWhere = where.pack();
         return new PropertyChange<T>(mapKeys, expr.followFalse(packWhere.not(), true), packWhere);

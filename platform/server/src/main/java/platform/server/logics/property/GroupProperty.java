@@ -1,8 +1,8 @@
 package platform.server.logics.property;
 
+import platform.base.BaseUtils;
 import platform.server.Settings;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.Changes;
@@ -44,18 +44,27 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
 
     Object groupValue = "grfield";
 
-    protected Map<Interface<T>, Expr> getGroupImplements(Map<T, KeyExpr> mapKeys, Modifier<? extends Changes> modifier) {
+    protected Map<Interface<T>, Expr> getGroupImplements(Map<T, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) {
         Map<Interface<T>, Expr> group = new HashMap<Interface<T>, Expr>();
         for(Interface<T> propertyInterface : interfaces)
             group.put(propertyInterface,propertyInterface.implement.mapExpr(mapKeys, modifier));
         return group;
     }
 
-    protected Map<Interface<T>, Expr> getGroupImplements(Map<T, KeyExpr> mapKeys, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+    protected Map<Interface<T>, Expr> getGroupImplements(Map<T, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
         Map<Interface<T>, Expr> group = new HashMap<Interface<T>, Expr>();
         for(Interface<T> propertyInterface : interfaces)
             group.put(propertyInterface,propertyInterface.implement.mapExpr(mapKeys, modifier, changedWhere));
         return group;
+    }
+
+    // не очень хорошо, так как берет на себя часть функций компилятора (проталкивание значений), но достаточно неплохо должна помогать оптимизации
+    private Map<T, Expr> getGroupKeys(Map<Interface<T>, ? extends Expr> joinImplement) {
+        Map<PropertyInterfaceImplement<T>, Expr> interfaceValues = new HashMap<PropertyInterfaceImplement<T>, Expr>();
+        for(Map.Entry<Interface<T>, ? extends Expr> entry : joinImplement.entrySet())
+            if(entry.getValue().isValue())
+                interfaceValues.put(entry.getKey().implement, entry.getValue());
+        return BaseUtils.replace(groupProperty.getMapKeys(), interfaceValues);
     }
 
     public Expr calculateExpr(Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
@@ -63,7 +72,7 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
         if(!hasChanges(modifier) || (changedWhere==null && (!isStored() || (Settings.instance.isNoIncrementMaxGroupProperty() && this instanceof MaxGroupProperty)))) return calculateNewExpr(joinImplement, modifier);
 
         // если нужна инкрементность
-        Map<T, KeyExpr> mapKeys = groupProperty.getMapKeys(); // изначально чтобы новые и старые группировочные записи в одном контексте были
+        Map<T, Expr> mapKeys = getGroupKeys(joinImplement); // изначально чтобы новые и старые группировочные записи в одном контексте были
         
         // новые группировочные записи
         WhereBuilder changedGroupWhere = new WhereBuilder();
@@ -77,7 +86,7 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
     }
 
     protected Expr calculateNewExpr(Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier) {
-        Map<T, KeyExpr> mapKeys = groupProperty.getMapKeys();
+        Map<T, Expr> mapKeys = getGroupKeys(joinImplement);
         return GroupExpr.create(getGroupImplements(mapKeys, modifier), groupProperty.getExpr(mapKeys, modifier), operator != 1, joinImplement);
     }
 

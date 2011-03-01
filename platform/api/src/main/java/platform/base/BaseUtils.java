@@ -562,6 +562,16 @@ public class BaseUtils {
         return result;
     }
 
+    public static <B, K1 extends B, K2 extends B, V> Map<K1, V> replace(Map<K1, ? extends V> map1, Map<K2, ? extends V> map2) {
+        Map<K1, V> result = new HashMap<K1, V>(map1);
+        for(Map.Entry<K1, V> entry : result.entrySet()) {
+            V value2 = map2.get(entry.getKey());
+            if(value2!=null)
+                entry.setValue(value2);
+        }
+        return result;
+    }
+
     public static <K, V> boolean isSubMap(Map<? extends K, ? extends V> map1, Map<K, ? extends V> map2) {
         for (Map.Entry<? extends K, ? extends V> entry : map1.entrySet()) {
             V value2 = map2.get(entry.getKey());

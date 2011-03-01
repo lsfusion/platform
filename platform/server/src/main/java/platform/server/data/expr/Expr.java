@@ -55,8 +55,13 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
 
     // упрощаем зная where == false
     public abstract Expr followFalse(Where where, boolean pack);
+
+    private Expr packed = null;
+    @ManualLazy
     public Expr pack() {
-        return followFalse(Where.FALSE, true);
+        if(packed==null)
+            packed = followFalse(Where.FALSE, true);
+        return packed;
     }
 
     public abstract Expr classExpr(BaseClass baseClass);

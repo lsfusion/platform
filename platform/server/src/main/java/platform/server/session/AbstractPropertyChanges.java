@@ -88,6 +88,12 @@ public abstract class AbstractPropertyChanges<P extends PropertyInterface, T ext
         return components;
     }
 
+    public long getComplexity() {
+        long result = 0;
+        for(int i=0;i<size;i++)
+            result += getValue(i).getComplexity();
+        return result;
+    }
     public This pack() {
         This result = createThis();
         for(int i=0;i<size;i++)
