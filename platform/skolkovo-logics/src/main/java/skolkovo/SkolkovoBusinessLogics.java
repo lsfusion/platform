@@ -21,6 +21,7 @@ import platform.server.form.entity.filter.*;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;
+import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.logics.BusinessLogics;
@@ -62,6 +63,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     ConcreteCustomClass expert;
     ConcreteCustomClass cluster;
     ConcreteCustomClass claimer;
+    ConcreteCustomClass documentTemplate;
+    ConcreteCustomClass documentAbstract;
+    ConcreteCustomClass documentTemplateDetail;
     ConcreteCustomClass document;
 
     ConcreteCustomClass vote;
@@ -110,7 +114,13 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         claimer = addConcreteClass("claimer", "Заявитель", multiLanguageNamed, participant);
         claimer.dialogReadOnly = false;
 
-        document = addConcreteClass("document", "Документ", baseClass);
+        documentTemplate = addConcreteClass("documentTemplate", "Шаблон документов", baseClass.named);
+
+        documentAbstract = addConcreteClass("documentAbstract", "Документ (абстр.)", baseClass);
+
+        documentTemplateDetail = addConcreteClass("documentTemplateDetail", "Документ (прототип)", documentAbstract);
+
+        document = addConcreteClass("document", "Документ", documentAbstract);
 
         vote = addConcreteClass("vote", "Заседание", baseClass, transaction);
 
@@ -127,8 +137,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                                        new String[]{"Неизвестный статус", "Не соответствуют документы", "Требуется заседание", "Идет заседание", "Достаточно голосов", "Оценен положительно", "Оценен отрицательно"});
 
         documentType = addStaticClass("documentType", "Тип документа",
-                                    new String[]{"application", "resume", "techdesc", "forres"},
-                                    new String[]{"Анкета", "Резюме", "Техническое описание", "Резюме иностранного специалиста "});
+                new String[]{"application", "resume", "techdesc", "forres"},
+                new String[]{"Анкета", "Резюме", "Техническое описание", "Резюме иностранного специалиста "});
     }
 
     LP nameNative, nameForeign;
@@ -142,6 +152,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP emailDocuments;
 
     LP claimerVote, nameNativeClaimerVote, nameForeignClaimerVote;
+
+    LP documentTemplateDocumentTemplateDetail;
 
     LP projectDocument, nameNativeProjectDocument;
     LP fileDocument;
@@ -196,7 +208,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP emailAuthExpertEA, emailAuthExpert;
     LP authExpertSubjectLanguage, letterExpertSubjectLanguage;
 
-
+    LP generateDocumentsProjectDocumentType;
     LP generateVoteProject, hideGenerateVoteProject;
     LP generateLoginPasswordExpert;
 
@@ -279,6 +291,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         emailParticipant = addDProp(baseGroup, "emailParticipant", "E-mail", StringClass.get(50), participant);
 
+        documentTemplateDocumentTemplateDetail = addDProp(idGroup, "documentTemplateDocumentTemplateDetail", "Шаблон (ИД)", documentTemplate, documentTemplateDetail);
+
         projectDocument = addDProp(idGroup, "projectDocument", "Проект (ИД)", project, document);
         nameNativeProjectDocument = addJProp(baseGroup, "nameNativeProjectDocument", "Проект", nameNative, projectDocument, 1);
 
@@ -290,9 +304,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         languageExpert = addDProp(idGroup, "languageExpert", "Язык (ИД)", language, expert);
         nameLanguageExpert = addJProp(baseGroup, "nameLanguageExpert", "Язык", name, languageExpert, 1);
-        languageDocument = addDProp(idGroup, "languageDocument", "Язык (ИД)", language, document);
+        languageDocument = addDProp(idGroup, "languageDocument", "Язык (ИД)", language, documentAbstract);
         nameLanguageDocument = addJProp(baseGroup, "nameLanguageDocument", "Язык", name, languageDocument, 1);
-        typeDocument = addDProp(idGroup, "typeDocument", "Тип (ИД)", documentType, document);
+        typeDocument = addDProp(idGroup, "typeDocument", "Тип (ИД)", documentType, documentAbstract);
         nameTypeDocument = addJProp(baseGroup, "nameTypeDocument", "Тип", name, typeDocument, 1);
 
         localeLanguage = addDProp(baseGroup, "localeLanguage", "Locale", StringClass.get(5), language);
@@ -406,6 +420,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         addConstraint(addJProp("Количество экспертов не соответствует требуемому", andNot1, is(vote), 1, addJProp(equals2, requiredQuantity,
                                                                                                                   addSGProp(addJProp(and1, addCProp(IntegerClass.instance, 1), inExpertVote, 2, 1), 1), 1), 1), false);
 
+        generateDocumentsProjectDocumentType = addAProp(actionGroup, new GenerateDocumentsActionProperty());
+
         generateVoteProject = addAProp(actionGroup, new GenerateVoteActionProperty());
         hideGenerateVoteProject = addHideCaptionProp(privateGroup, "Сгенерировать заседание", generateVoteProject, needExtraVoteProject);
 //        generateVoteProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), needExtraVoteProject, 1, autoGenerateProject, 1);
@@ -510,6 +526,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         addFormEntity(new VoteFormEntity(baseElement, "vote"));
         addFormEntity(new ExpertFormEntity(baseElement, "expert"));
         languageDocumentTypeForm = addFormEntity(new LanguageDocumentTypeFormEntity(baseElement, "languageDocumentType"));
+        addFormEntity(new DocumentTemplateFormEntity(baseElement, "documentTemplate"));
         globalForm = addFormEntity(new GlobalFormEntity(baseElement, "global"));
 
         NavigatorElement print = new NavigatorElement(baseElement, "print", "Печатные формы");
@@ -538,6 +555,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ObjectEntity objVote;
         private ObjectEntity objDocument;
         private ObjectEntity objExpert;
+        private ObjectEntity objDocumentTemplate;
+        private RegularFilterGroupEntity projectFilterGroup;
 
         private ProjectFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр проектов");
@@ -550,6 +569,11 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, delete);
             objVote.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
+
+            objDocumentTemplate = addSingleGroupObject(documentTemplate, "Шаблон документов", name);
+            objDocumentTemplate.groupTo.setSingleClassView(ClassViewType.PANEL);
+            setReadOnly(objDocumentTemplate, true);
+            addPropertyDraw(generateDocumentsProjectDocumentType, objProject, objDocumentTemplate);
 
             objDocument = addSingleGroupObject(document, nameTypeDocument, nameLanguageDocument, postfixDocument, loadFileDocument, openFileDocument);
             addObjectActions(this, objDocument);
@@ -574,7 +598,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                                                                 KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)), true);
             addRegularFilterGroup(expertFilterGroup);
 
-            RegularFilterGroupEntity projectFilterGroup = new RegularFilterGroupEntity(genID());
+            projectFilterGroup = new RegularFilterGroupEntity(genID());
             projectFilterGroup.addFilter(new RegularFilterEntity(genID(),
                                                                  new NotNullFilterEntity(addPropertyObject(voteValuedProject, objProject)),
                                                                  "Оценен",
@@ -588,11 +612,28 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
-            design.addIntersection(design.getGroupObjectContainer(objVote.groupTo),
-                                   design.getGroupObjectContainer(objDocument.groupTo),
-                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            ContainerView specContainer = design.createContainer();
+            specContainer.tabbedPane = true;
 
-            design.get(objVote.groupTo).grid.constraints.fillHorizontal = 1.5;
+            design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objProject.groupTo));
+
+            ContainerView expertContainer = design.createContainer("Экспертиза по существу");
+            expertContainer.add(design.getGroupObjectContainer(objVote.groupTo));
+            expertContainer.add(design.getGroupObjectContainer(objExpert.groupTo));
+
+            ContainerView docContainer = design.createContainer("Документы");
+            docContainer.add(design.getGroupObjectContainer(objDocumentTemplate.groupTo));
+            docContainer.add(design.getGroupObjectContainer(objDocument.groupTo));
+
+            specContainer.add(docContainer);
+            specContainer.add(expertContainer);
+//            design.addIntersection(design.getGroupObjectContainer(objVote.groupTo),
+//                                   design.getGroupObjectContainer(objDocument.groupTo),
+//                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+//            design.get(objVote.groupTo).grid.constraints.fillHorizontal = 1.5;
+
+            design.getPanelContainer(objVote.groupTo).add(design.get(getPropertyDraw(generateVoteProject)));
 
             design.get(objProject.groupTo).grid.constraints.fillVertical = 1.5;
             design.get(objExpert.groupTo).grid.constraints.fillVertical = 1.5;
@@ -601,6 +642,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             design.setConstraintsFillHorizontal(voteResultCommentGroup, 1);
 
             design.setPreferredSize(voteResultCheckGroup, new Dimension(60, 1));
+
+            design.get(objVote.groupTo).grid.hideToolbarItems();
+
+            design.addIntersection(design.get(getPropertyDraw(innovativeCommentExpertVote)), design.get(getPropertyDraw(completeCommentExpertVote)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             return design;
         }
@@ -701,6 +746,21 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             design.setPreferredSize(voteResultCheckGroup, new Dimension(60, 1));
 
             return design;
+        }
+    }
+
+    private class DocumentTemplateFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+
+        private DocumentTemplateFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Шаблоны документов");
+
+            ObjectEntity objDocumentTemplate = addSingleGroupObject(documentTemplate, "Шаблон", name);
+            addObjectActions(this, objDocumentTemplate);
+
+            ObjectEntity objDocumentTemplateDetail = addSingleGroupObject(documentTemplateDetail, nameTypeDocument, nameLanguageDocument);
+            addObjectActions(this, objDocumentTemplateDetail);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(documentTemplateDocumentTemplateDetail, objDocumentTemplateDetail), Compare.EQUALS, objDocumentTemplate));
         }
     }
 
@@ -970,6 +1030,43 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             }
 
             projectObj = new DataObject(projectId, project);
+        }
+    }
+
+    public class GenerateDocumentsActionProperty extends ActionProperty {
+
+        private final ClassPropertyInterface projectInterface;
+        private final ClassPropertyInterface documentTemplateInterface;
+
+        public GenerateDocumentsActionProperty() {
+            super(genSID(), "Сгенерировать документы", new ValueClass[]{project, documentTemplate});
+
+            Iterator<ClassPropertyInterface> i = interfaces.iterator();
+            projectInterface = i.next();
+            documentTemplateInterface = i.next();
+        }
+
+        @Override
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            throw new RuntimeException("no need");
+        }
+
+        @Override
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+            DataObject projectObject = keys.get(projectInterface);
+            DataObject documentTemplateObject = keys.get(documentTemplateInterface);
+
+            Query<String, String> query = new Query<String, String>(Collections.singleton("key"));
+            query.and(documentTemplateDocumentTemplateDetail.getExpr(session.modifier, query.mapKeys.get("key")).compare(documentTemplateObject.getExpr(), Compare.EQUALS));
+            query.properties.put("documentType", typeDocument.getExpr(session.modifier, query.mapKeys.get("key")));
+            query.properties.put("languageDocument", languageDocument.getExpr(session.modifier, query.mapKeys.get("key")));
+
+            for (Map<String, Object> row : query.execute(session.sql, session.env).values()) {
+                DataObject documentObject = session.addObject(document, session.modifier);
+                projectDocument.execute(projectObject.getValue(), session, documentObject);
+                typeDocument.execute(row.get("documentType"), session, documentObject);
+                languageDocument.execute(row.get("languageDocument"), session, documentObject);
+            }
         }
     }
 

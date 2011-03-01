@@ -32,6 +32,7 @@ public class DefaultFormView extends FormView {
 
     private transient Map<GroupObjectView, ContainerView> panelContainers = new HashMap<GroupObjectView, ContainerView>();
     public ContainerView getPanelContainer(GroupObjectView groupObject) { return panelContainers.get(groupObject); }
+    public ContainerView getPanelContainer(GroupObjectEntity groupObject) { return getPanelContainer(get(groupObject)); }
 
     private transient Map<TreeGroupView, ContainerView> treeContainers = new HashMap<TreeGroupView, ContainerView>();
     public ContainerView getTreeContainer(TreeGroupView treeGroup) { return treeContainers.get(treeGroup); }
