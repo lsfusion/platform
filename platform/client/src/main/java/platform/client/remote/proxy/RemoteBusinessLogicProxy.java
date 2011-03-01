@@ -6,6 +6,7 @@ import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import java.rmi.RemoteException;
+import java.util.TimeZone;
 
 public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         extends RemoteObjectProxy<T>
@@ -72,6 +73,10 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
 
     public boolean checkUser(String login, String password) throws RemoteException {
         return target.checkUser(login, password);
+    }
+
+    public TimeZone getTimeZone() throws RemoteException {
+        return target.getTimeZone();
     }
 
     public byte[] getPropertyObjectsByteArray(byte[] classes, boolean isCompulsory, boolean isAny) throws RemoteException {

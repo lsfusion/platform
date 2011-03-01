@@ -311,6 +311,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
+    public TimeZone getTimeZone() {
+        return Calendar.getInstance().getTimeZone();
+    }
+
     // счетчик идентификаторов
     static private IDGenerator idGenerator = new DefaultIDGenerator();
 

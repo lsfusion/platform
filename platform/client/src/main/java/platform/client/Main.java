@@ -1,6 +1,7 @@
 package platform.client;
 
 import org.apache.log4j.Logger;
+import platform.base.BaseUtils;
 import platform.base.OSUtils;
 import platform.client.exceptions.ClientExceptionManager;
 import platform.client.exceptions.ExceptionThreadGroup;
@@ -30,6 +31,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.RMIClassLoader;
 import java.rmi.server.RMIFailureHandler;
 import java.rmi.server.RMISocketFactory;
+import java.util.*;
 import java.util.List;
 
 import static platform.client.PropertyConstants.*;
@@ -46,6 +48,7 @@ public class Main {
 
     public static MainFrame frame;
     public static int computerId;
+    public static TimeZone timeZone;
 
     public static ModuleFactory module;
     public static PingThread pingThread;
@@ -176,6 +179,8 @@ public class Main {
                     ConnectionLostManager.install(frame);
 
                     frame.setVisible(true);
+
+                    timeZone = remoteLogics.getTimeZone();
 
                 } catch (Exception e) {
                     closeSplashScreen();

@@ -15,6 +15,7 @@ public abstract class CalculateSumButton extends JButton {
         setPreferredSize(buttonSize);
         setMaximumSize(buttonSize);
         setFocusable(false);
+        setToolTipText("Посчитать сумму");
         addListener();
     }
 

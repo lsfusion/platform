@@ -3,6 +3,7 @@ package platform.client.form.editor;
 import com.toedter.calendar.JDateChooser;
 import com.toedter.calendar.JTextFieldDateEditor;
 import platform.base.DateConverter;
+import platform.client.Main;
 import platform.client.SwingUtils;
 import platform.client.form.PropertyEditorComponent;
 import platform.interop.ComponentDesign;
@@ -14,7 +15,7 @@ import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.text.SimpleDateFormat;
-import java.util.EventObject;
+import java.util.*;
 
 public class DatePropertyEditor extends JDateChooser
                            implements PropertyEditorComponent {
@@ -22,9 +23,13 @@ public class DatePropertyEditor extends JDateChooser
     public DatePropertyEditor(Object value, SimpleDateFormat format, ComponentDesign design) {
         super(null, null, format.toPattern(), new DatePropertyEditorComponent(format.toPattern(),"##.##.##",' '));
 
-        if (value != null)
-            setDate(DateConverter.sqlToDate((java.sql.Date)value));
-        ((JFormattedTextField)dateEditor).selectAll();
+        if (value != null) {
+            Calendar calendar = Calendar.getInstance(Main.timeZone);
+            calendar.setTime(DateConverter.sqlToDate((java.sql.Date) value));
+            setDate(calendar.getTime());
+            System.out.println(calendar.compareTo(Calendar.getInstance(Locale.GERMANY)));
+            ((JFormattedTextField) dateEditor).selectAll();
+        }
 
         if (design != null)
             design.designCell(this);

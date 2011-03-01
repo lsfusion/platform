@@ -8,6 +8,7 @@ import platform.interop.remote.PendingRemote;
 import platform.interop.remote.PingRemote;
 
 import java.rmi.RemoteException;
+import java.util.TimeZone;
 
 public interface RemoteLogicsInterface extends PendingRemote, PingRemote, RemoteDescriptorInterface {
 
@@ -32,4 +33,6 @@ public interface RemoteLogicsInterface extends PendingRemote, PingRemote, Remote
     boolean checkUser(String login, String password) throws RemoteException;
     
     void ping() throws RemoteException;
+
+    TimeZone getTimeZone() throws RemoteException;
 }
