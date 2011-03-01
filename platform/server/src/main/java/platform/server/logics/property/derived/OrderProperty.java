@@ -73,9 +73,28 @@ public class OrderProperty<T extends PropertyInterface> extends FunctionProperty
         return result;
     }
 
+    // кривовать как и в GroupProperty, перетягивание на себя функций компилятора (то есть с третьего ограничивается второй), но достаточно хороший case оптимизации
+    private Map<T, ? extends Expr> getGroupKeys(Map<Interface<T>, ? extends Expr> joinImplement, Map<KeyExpr, Expr> mapExprs) {
+        Map<T, KeyExpr> mapKeys = property.getMapKeys();
+        //mapExprs.putAll(BaseUtils.crossJoin(BaseUtils.join(getMapInterfaces(),mapKeys),joinImplement));
+
+        Map<T, Expr> result = new HashMap<T, Expr>();
+        // читаем value из joinImplement, затем фильтруем partitions'ами
+        for(Map.Entry<Interface<T>,? extends Expr> mapExpr : joinImplement.entrySet())
+            if(mapExpr.getValue().isValue() && partitions.contains(mapExpr.getKey().propertyInterface)) {
+                result.put(mapExpr.getKey().propertyInterface, mapExpr.getValue());
+            } else {
+                KeyExpr keyExpr = mapKeys.get(mapExpr.getKey().propertyInterface);
+                result.put(mapExpr.getKey().propertyInterface, keyExpr);
+                mapExprs.put(keyExpr, mapExpr.getValue());
+            }
+        return result;
+    }
+
     protected Expr calculateExpr(Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
 
-        Map<T, KeyExpr> mapKeys = property.getMapKeys();
+        Map<KeyExpr, Expr> mapExprs = new HashMap<KeyExpr, Expr>();
+        Map<T, ? extends Expr> mapKeys = getGroupKeys(joinImplement, mapExprs);
 
         WhereBuilder orderWhere = cascadeWhere(changedWhere);
         Map<PropertyInterfaceImplement<T>,Expr> partitionImplements = getPartitionImplements(mapKeys, modifier, orderWhere);
@@ -83,8 +102,6 @@ public class OrderProperty<T extends PropertyInterface> extends FunctionProperty
         for(Map.Entry<PropertyInterfaceImplement<T>,Boolean> order : orders.entrySet())
             orderExprs.put(order.getKey().mapExpr(mapKeys, modifier, orderWhere), order.getValue());
         Expr propertyExpr = property.getExpr(mapKeys, modifier, orderWhere);
-
-        Map<KeyExpr, ? extends Expr> mapExprs = BaseUtils.crossJoin(BaseUtils.join(getMapInterfaces(),mapKeys),joinImplement);        
 
         if(changedWhere!=null) { // изменившиеся ряды (orderWhere) -> ряды с изменившимися partition'ами -> изменившиеся записи
             changedWhere.add(GroupExpr.create(partitionImplements, ValueExpr.TRUE, orderWhere.toWhere(), true, partitionImplements).getWhere().map(mapExprs));
