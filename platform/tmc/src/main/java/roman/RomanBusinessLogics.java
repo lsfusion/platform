@@ -553,9 +553,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP priceInInvoiceFreightUnitSku;
     ConcreteCustomClass jennyferSupplier;
     ConcreteCustomClass tallyWeijlSupplier;
+    ConcreteCustomClass hugoBossSupplier;
     private LP jennyferImportInvoice;
     private LP jennyferImportArticleWeightInvoice;
     private LP tallyWeijlImportInvoice;
+    private LP hugoBossImportInvoice;
     private AbstractGroup importInvoiceActionGroup;
     private LP printCreatePalletForm;
     private LP printCreateFreightBoxForm;
@@ -641,6 +643,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         jennyferSupplier = addConcreteClass("jennyferSupplier", "Jennyfer", supplier);
         tallyWeijlSupplier = addConcreteClass("tallyWeijlSupplier", "Tally Weijl", supplier);
+        hugoBossSupplier = addConcreteClass("hugoBossSupplier", "Hugo Boss", supplier);
 
         subject = addAbstractClass("subject", "Субъект", baseClass.named);
         importer = addConcreteClass("importer", "Импортер", subject);
@@ -736,6 +739,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         jennyferImportInvoice = addAProp(importInvoiceActionGroup, new JennyferImportInvoiceActionProperty(this));
         jennyferImportArticleWeightInvoice = addAProp(importInvoiceActionGroup, new JennyferImportArticleWeightActionProperty(this));
         tallyWeijlImportInvoice = addAProp(importInvoiceActionGroup, new TallyWeijlImportInvoiceActionProperty(this));
+        hugoBossImportInvoice = addAProp(importInvoiceActionGroup, new HugoBossImportInvoiceActionProperty(this));
 
         customCategory4CustomCategory6 = addDProp(idGroup, "customCategory4CustomCategory6", "Код(4)", customCategory4, customCategory6);
         customCategory6CustomCategory9 = addDProp(idGroup, "customCategory6CustomCategory9", "Код(6)", customCategory6, customCategory9);

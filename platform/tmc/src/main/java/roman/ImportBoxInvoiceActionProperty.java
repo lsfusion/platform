@@ -1,5 +1,6 @@
 package roman;
 
+import jxl.read.biff.BiffException;
 import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.server.classes.ValueClass;
@@ -13,6 +14,7 @@ import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.session.DataSession;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,6 +35,14 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
 
     public ImportBoxInvoiceActionProperty(RomanBusinessLogics BL, String caption, ValueClass supplierClass) {
         super(BL, caption, supplierClass);
+    }
+
+    public ImportBoxInvoiceActionProperty(RomanBusinessLogics BL, String caption, ValueClass supplierClass, String extensions) {
+        super(BL, caption, supplierClass, extensions);
+    }
+
+    protected ImportInputTable createTable(ByteArrayInputStream inFile) throws BiffException, IOException {
+        return new ExcelInputTable(inFile);
     }
 
     protected abstract SingleSheetImporter createExporter(ImportInputTable inputTable);
@@ -66,7 +76,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         ImportTable table;
         try {
             ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
-            table = createExporter(new ExcelInputTable(inFile)).getTable();
+            table = createExporter(createTable(inFile)).getTable();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

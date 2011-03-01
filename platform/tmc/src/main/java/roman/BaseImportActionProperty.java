@@ -44,6 +44,14 @@ public abstract class BaseImportActionProperty extends ActionProperty {
 
     @Override
     protected DataClass getValueClass() {
-        return FileActionClass.getInstance("Файлы таблиц", extensions);
+        String[] extArray = extensions.split(" ");
+        String extString = "";
+        for (String ext : extArray) {
+            if (extString.length() > 0) {
+                extString = extString + ", ";
+            }
+            extString = extString + "*." + ext;
+        }
+        return FileActionClass.getInstance("Файлы c данными (" + extString + ")", extensions);
     }
 }
