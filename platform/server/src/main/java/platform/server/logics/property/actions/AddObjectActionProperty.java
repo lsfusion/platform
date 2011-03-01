@@ -89,7 +89,7 @@ public class AddObjectActionProperty extends ActionProperty {
 
                 String prefix = null;
                 if (barcodePrefix != null)
-                    prefix = (String) barcodePrefix.read(session);
+                    prefix = (String) barcodePrefix.read(session, form);
                 if (prefix == null) prefix = "";
                 prefix = prefix.trim();
 
