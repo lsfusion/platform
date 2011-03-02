@@ -9,9 +9,9 @@ public class ReceiptItem implements Serializable {
     public String name;
     public Double sumPos;
     public Double articleDisc;
-    public Integer articleDiscSum;
+    public Number articleDiscSum;
 
-    public ReceiptItem(Double price, Double quantity, String barCode, String name, Double sumPos, Double articleDisc, Integer articleDiscSum) {
+    public ReceiptItem(Double price, Double quantity, String barCode, String name, Double sumPos, Double articleDisc, Number articleDiscSum) {
         this.price = price;
         this.quantity = quantity;
         this.barCode = barCode;

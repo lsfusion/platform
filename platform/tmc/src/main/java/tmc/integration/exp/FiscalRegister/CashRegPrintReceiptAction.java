@@ -48,7 +48,7 @@ public class CashRegPrintReceiptAction extends AbstractClientAction {
                 Dispatch.invoke(cashDispatch, "AddItem", Dispatch.Method, new Object[]{0, item.price, false,
                         0, 1, 0, item.quantity * 1000, 3, 0, "шт.", 0, 0, k++, 0}, new int[1]);
 
-                if (item.articleDiscSum > 0) {
+                if (item.articleDiscSum.doubleValue() > 0) {
                     String msg = "Скидка " + item.articleDisc + "%, всего " + item.articleDiscSum;
                     Dispatch.call(cashDispatch, "AddCustom", msg, FONT, 0, k++);
                 }

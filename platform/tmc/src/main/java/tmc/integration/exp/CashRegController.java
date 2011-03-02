@@ -194,7 +194,7 @@ public class CashRegController {
                 String artName = ((String) row.values.get(nameDraw)).trim();
                 Double sumPos = (Double) row.values.get(sumDraw);
                 Double articleDisc = (Double) row.values.get(orderArticleDiscountDraw);
-                Integer articleDiscSum = (Integer) row.values.get(orderArticleDiscountSumDraw);
+                Number articleDiscSum = (Number) row.values.get(orderArticleDiscountSumDraw);
 
                 result.addReceipt(new ReceiptItem(price, quantity, barcodeName, artName, sumPos,
                         articleDisc == null ? 0.0 : articleDisc, articleDiscSum == null ? 0 : articleDiscSum));
@@ -429,7 +429,9 @@ public class CashRegController {
         }
 
         public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            //пока отключен, чтобы не вылетал exception
 
+            /*
             actions.add(new ExportFileClientAction("c:\\bill\\key.txt", command, CASHREGISTER_CHARSETNAME));
             actions.add(new SleepClientAction(CASHREGISTER_DELAY));
             actions.add(new MessageFileClientAction("c:\\bill\\error.txt", CASHREGISTER_CHARSETNAME, false, true, caption));
@@ -437,6 +439,7 @@ public class CashRegController {
             if (outputFile != null) {
                 actions.add(new MessageFileClientAction("c:\\bill\\" + outputFile, CASHREGISTER_CHARSETNAME, true, true, caption, multiplier, mask));
             }
+            */
         }
     }
 
