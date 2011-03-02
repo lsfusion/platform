@@ -9,6 +9,7 @@ import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.Settings;
 import platform.server.auth.User;
 import platform.server.classes.*;
+import platform.server.data.Time;
 import platform.server.data.Union;
 import platform.server.data.sql.DataAdapter;
 import platform.server.form.entity.*;
@@ -1210,7 +1211,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         userShipmentDetail = addDCProp(idGroup, "userShipmentDetail", "Пользователь (ИД)", currentUser, true, is(shipmentDetail), 1);
         nameUserShipmentDetail = addJProp(baseGroup, "nameUserShipmentDetail", "Пользователь", name, userShipmentDetail, 1);
 
-        timeShipmentDetail = addDCProp(baseGroup, "timeShipmentDetail", "Время ввода", currentDateTime, true, is(shipmentDetail), 1);
+        timeShipmentDetail = addTCProp(Time.DATETIME, "timeShipmentDetail", "Время ввода", quantityShipmentDetail);
 
         addBoxShipmentDetailBoxShipmentSupplierBoxStockBarcode = addJProp(true, "Добавить строку поставки",
                 addAAProp(boxShipmentDetail, boxShipmentBoxShipmentDetail, supplierBoxShipmentDetail, stockShipmentDetail, skuShipmentDetail, quantityShipmentDetail),
