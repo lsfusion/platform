@@ -108,5 +108,10 @@
             <artifactId>barcode4j</artifactId>
             <version>2.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.supercsv</groupId>
+            <artifactId>supercsv</artifactId>
+            <version>1.52</version>
+        </dependency>
     </dependencies>
 </project>
