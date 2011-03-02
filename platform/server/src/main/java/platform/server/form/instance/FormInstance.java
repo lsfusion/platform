@@ -429,7 +429,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         Query<Object, Object> query = new Query<Object, Object>(new HashMap<Object, KeyExpr>());
         query.properties.put("quant", expr);
         OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
-        return (Integer) result.getValue(0).get("quant");
+        Integer quantity = (Integer) result.getValue(0).get("quant");
+        if (quantity != null) {
+            return quantity;
+        } else {
+            return 0;
+        }
     }
 
     public Object calculateSum(int groupObjectID, int propertyID) throws SQLException {

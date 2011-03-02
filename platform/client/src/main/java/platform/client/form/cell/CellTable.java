@@ -1,6 +1,7 @@
 package platform.client.form.cell;
 
 import platform.base.BaseUtils;
+import platform.client.Main;
 import platform.client.form.ClientFormController;
 import platform.client.form.SingleCellTable;
 import platform.client.logics.ClientPropertyDraw;
@@ -10,7 +11,9 @@ import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.text.DateFormat;
 import java.text.ParseException;
+import java.util.Date;
 
 public abstract class CellTable extends SingleCellTable
         implements CellTableInterface {
@@ -46,8 +49,17 @@ public abstract class CellTable extends SingleCellTable
 
     @Override
     public String getToolTipText(MouseEvent e) {
+        String tooltip;
         if (!BaseUtils.isRedundantString(value)) {
-            return value.toString().trim();
+            tooltip = value.toString();
+            if (value instanceof Date) {
+                DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT);
+                if (Main.timeZone != null) {
+                    df.setTimeZone(Main.timeZone);
+                }
+                tooltip = df.format((Date) value);
+            }
+            return tooltip.trim();
         } else {
             return null;
         }

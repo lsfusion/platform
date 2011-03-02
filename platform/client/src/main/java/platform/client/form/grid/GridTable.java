@@ -1,6 +1,7 @@
 package platform.client.form.grid;
 
 import platform.base.BaseUtils;
+import platform.client.Main;
 import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormTable;
@@ -28,6 +29,7 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.*;
 import java.util.List;
@@ -168,6 +170,13 @@ public abstract class GridTable extends ClientFormTable
         int rowIndex = rowAtPoint(p);
         int colIndex = columnAtPoint(p);
         Object value = (rowIndex != -1 && colIndex != -1) ? getValueAt(rowIndex, colIndex) : null;
+        if (value instanceof Date) {
+            DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT);
+            if (Main.timeZone != null) {
+                df.setTimeZone(Main.timeZone);
+            }
+            value = df.format((Date) value);
+        }
         return (value != null) ? String.valueOf(value).trim() : null;
     }
 

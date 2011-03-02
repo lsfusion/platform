@@ -20,4 +20,14 @@ public abstract class CountQuantityButton extends JButton {
     }
 
     public abstract void addListener();
+
+    public void showPopupMenu(int quantity) {
+        JPopupMenu menu = new JPopupMenu();
+        JLabel label = new JLabel("Количество записей: " + quantity);
+        JPanel panel = new JPanel();
+        panel.add(label);
+        menu.add(panel);
+        menu.setLocation(getLocation());
+        menu.show(this, menu.getLocation().x + getWidth(), menu.getLocation().y);
+    }
 }

@@ -13,10 +13,8 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.interop.Order;
 import platform.interop.form.screen.ExternalScreenComponent;
 
-import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -79,7 +77,7 @@ public class GridController {
                 addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         try {
-                            JOptionPane.showMessageDialog(null, "Количество записей: " + form.countRecords(logicsSupplier.getGroupObject().getID()), null, JOptionPane.INFORMATION_MESSAGE);
+                            showPopupMenu(form.countRecords(logicsSupplier.getGroupObject().getID()));
                         } catch (IOException e1) {
                             e1.printStackTrace();
                         }
@@ -95,11 +93,7 @@ public class GridController {
                         try {
                             ClientPropertyDraw property = getCurrentProperty();
                             Object sum = form.calculateSum(logicsSupplier.getGroupObject().getID(), property.getID());
-                            if (sum != null) {
-                                JOptionPane.showMessageDialog(null, "Сумма (" + property.getCaption() + "): " + sum, null, JOptionPane.INFORMATION_MESSAGE);
-                            } else {
-                                JOptionPane.showMessageDialog(null, "Невозможно посчитать сумму (" + property.getCaption() + ")", null, JOptionPane.INFORMATION_MESSAGE);
-                            }
+                            showPopupMenu(property.getCaption(), sum);
                         } catch (IOException e1) {
                             e1.printStackTrace();
                         }

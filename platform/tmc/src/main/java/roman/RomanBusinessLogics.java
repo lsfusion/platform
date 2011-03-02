@@ -2809,7 +2809,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightArticleCompositionCountryCategory, objImporter, objFreight, objArticle, objComposition, objCountry, objCategory)));
 
             invoiceFormImporterFreight = addFAProp("Инвойс", this, objImporter, objFreight);
-        }        
+        }
     }
     private class PackingListFormEntity extends FormEntity<RomanBusinessLogics> {
 

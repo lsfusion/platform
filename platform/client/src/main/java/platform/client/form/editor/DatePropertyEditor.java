@@ -3,7 +3,6 @@ package platform.client.form.editor;
 import com.toedter.calendar.JDateChooser;
 import com.toedter.calendar.JTextFieldDateEditor;
 import platform.base.DateConverter;
-import platform.client.Main;
 import platform.client.SwingUtils;
 import platform.client.form.PropertyEditorComponent;
 import platform.interop.ComponentDesign;
@@ -13,24 +12,21 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class DatePropertyEditor extends JDateChooser
                            implements PropertyEditorComponent {
+    SimpleDateFormat format;
 
     public DatePropertyEditor(Object value, SimpleDateFormat format, ComponentDesign design) {
-        super(null, null, format.toPattern(), new DatePropertyEditorComponent(format.toPattern(),"##.##.##",' '));
+        super(null, null, format.toPattern(), new DatePropertyEditorComponent(format, "##.##.##", ' '));
 
         if (value != null) {
-            if (Main.timeZone != null) {
-                Calendar calendar = Calendar.getInstance(Main.timeZone);
-                calendar.setTime(DateConverter.sqlToDate((java.sql.Date) value));
-                setDate(calendar.getTime());
-            } else {
-                setDate(DateConverter.sqlToDate((java.sql.Date)value));
-            }
+            this.format = format;
+            setDate(DateConverter.sqlToDate((java.sql.Date)value));
             ((JFormattedTextField) dateEditor).selectAll();
         }
 
@@ -106,13 +102,29 @@ public class DatePropertyEditor extends JDateChooser
         return true;
     }
 
+    @Override
+    public void actionPerformed(ActionEvent e) {
+		int x = calendarButton.getWidth()
+				- (int) popup.getPreferredSize().getWidth();
+		int y = calendarButton.getY() + calendarButton.getHeight();
+
+		Calendar calendar = format.getCalendar();
+		Date date = dateEditor.getDate();
+		if (date != null) {
+			calendar.setTime(date);
+		}
+		jcalendar.setCalendar(calendar);
+		popup.show(calendarButton, x, y);
+		dateSelected = false;
+	}
+
 }
 
 class DatePropertyEditorComponent extends JTextFieldDateEditor {
 
-    public DatePropertyEditorComponent(String datePattern, String maskPattern, char placeholder) {
-        super(datePattern, maskPattern, placeholder);
-
+    public DatePropertyEditorComponent(SimpleDateFormat format, String maskPattern, char placeholder) {
+        super(format.toPattern(), maskPattern, placeholder);
+        this.dateFormatter = format;
         setBorder(new EmptyBorder(0, 1, 0, 0));
     }
 

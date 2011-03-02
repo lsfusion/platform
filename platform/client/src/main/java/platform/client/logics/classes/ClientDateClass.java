@@ -1,5 +1,6 @@
 package platform.client.logics.classes;
 
+import platform.client.Main;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.DatePropertyEditor;
@@ -33,7 +34,7 @@ public class ClientDateClass extends ClientDataClass implements ClientTypeClass 
     }
 
     public Format getDefaultFormat() {
-        return DateFormat.getDateInstance(DateFormat.SHORT);
+        return getSimpleDateFormat();
     }
 
     public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) {
@@ -44,9 +45,17 @@ public class ClientDateClass extends ClientDataClass implements ClientTypeClass 
         return new DatePropertyEditor(value, (SimpleDateFormat) format, design);
     }
 
+    private DateFormat getSimpleDateFormat() {
+        DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
+        if (Main.timeZone != null) {
+            dateFormat.setTimeZone(Main.timeZone);
+        }
+        return dateFormat;
+    }
+
     public Object parseString(String s) throws ParseException {
         try {
-            return new SimpleDateFormat().parse(s);
+            return getSimpleDateFormat().parse(s);
         } catch (Exception e) {
             throw new ParseException(s + "не может быть конвертированно в Date.", 0);
         }
