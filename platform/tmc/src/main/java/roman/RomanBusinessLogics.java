@@ -1245,7 +1245,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         quantityInvoiceStockSku = addSGProp(baseGroup, "quantityInvoiceStockSku", true, "Кол-во оприход.", quantityInvoiceShipmentStockSku, 1, 3, 4);
 
-        priceInInvoiceStockSku = addJProp(baseGroup, "priceInInvoiceStockSku", "Цена входная", and1,
+        priceInInvoiceStockSku = addJProp(baseGroup, "priceInInvoiceStockSku", true, "Цена входная", and1,
                 priceDocumentSku, 1, 3, quantityInvoiceStockSku, 1, 2, 3);
 
         quantityShipDimensionStock = addSGProp(baseGroup, "quantityShipDimensionStock", "Всего оприход.", quantityShipDimensionShipmentStockSku, 1, 3);
@@ -1353,7 +1353,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         palletNumberFreight = addSGProp(baseGroup, "palletNumberFreight", "Кол-во паллет", addCProp(IntegerClass.instance, 1, pallet), freightPallet, 1);
 
         // freight для supplierBox
-
         freightSupplierBox = addJProp(baseGroup, "freightSupplierBox", "Фрахт (ИД)", freightDirectInvoice, boxInvoiceSupplierBox, 1);
         freightFreightUnit = addCUProp(idGroup, "freightFreightUnit", "Фрахт (ИД)", freightFreightBox, freightSupplierBox);
 
@@ -2205,7 +2204,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             getPropertyDraw(mainCompositionOriginSkuShipmentDetail).setPropertyHighlight(oneSkuProperty);
             getPropertyDraw(additionalCompositionOriginSkuShipmentDetail).setPropertyHighlight(oneSkuProperty);
 
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(shipmentShipmentDetail, objShipmentDetail), Compare.EQUALS, objShipment));
+            //addFixedFilter(new CompareFilterEntity(addPropertyObject(shipmentShipmentDetail, objShipmentDetail), Compare.EQUALS, objShipment));
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objShipment), Compare.EQUALS, objSupplier));
 
@@ -2767,7 +2766,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             gobjFreightImporter = new GroupObjectEntity(1, "freightImporter");
 
-            objFreight = new ObjectEntity(2, "freight", freight, "Фрахт");
+            objFreight = new ObjectEntity(2, "freight", freightChanged, "Фрахт");
             objImporter = new ObjectEntity(3, "importer", importer, "Импортер");
 
             gobjFreightImporter.add(objFreight);
@@ -2826,7 +2825,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             gobjFreightImporter = new GroupObjectEntity(1, "freightImporter");
 
-            objFreight = new ObjectEntity(2, "freight", freight, "Фрахт");
+            objFreight = new ObjectEntity(2, "freight", freightChanged, "Фрахт");
             objImporter = new ObjectEntity(3, "importer", importer, "Импортер");
 
             gobjFreightImporter.add(objFreight);
