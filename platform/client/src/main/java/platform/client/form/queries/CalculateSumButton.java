@@ -1,6 +1,7 @@
 package platform.client.form.queries;
 
 import javax.swing.*;
+import javax.swing.border.EtchedBorder;
 import java.awt.*;
 import java.text.NumberFormat;
 
@@ -26,6 +27,8 @@ public abstract class CalculateSumButton extends JButton {
         JPopupMenu menu = new JPopupMenu();
         JLabel label;
         JPanel panel = new JPanel();
+        panel.setBackground(new Color(192, 192, 255));
+        menu.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED, Color.GRAY, Color.LIGHT_GRAY));
 
         if (sum != null) {
             label = new JLabel("Сумма [" + caption + "]: ");

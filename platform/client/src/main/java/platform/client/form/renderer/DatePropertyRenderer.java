@@ -1,15 +1,11 @@
 package platform.client.form.renderer;
 
 import platform.base.DateConverter;
-import platform.client.Main;
 import platform.client.form.PropertyRendererComponent;
 import platform.interop.ComponentDesign;
 
 import javax.swing.*;
 import java.text.Format;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.TimeZone;
 
 public class DatePropertyRenderer extends LabelPropertyRenderer
                            implements PropertyRendererComponent {

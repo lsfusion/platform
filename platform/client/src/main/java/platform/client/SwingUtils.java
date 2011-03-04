@@ -1,11 +1,14 @@
 package platform.client;
 
+import sun.swing.SwingUtilities2;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 
 public class SwingUtils {
@@ -148,5 +151,36 @@ public class SwingUtils {
         return new Dimension(Math.max(min.width, Math.min(max.width, toClip.width)),
                 Math.max(min.height, Math.min(max.height, toClip.height))
         );
+    }
+
+    public static String toMultilineHtml(String text, Font font) {
+        String result = "<html>";
+        String line = "";
+        FontMetrics fm = SwingUtilities2.getFontMetrics(null, font);
+        int screenWidth = Toolkit.getDefaultToolkit().getScreenSize().width - 10;
+        String delims = " \n";
+        StringTokenizer st = new StringTokenizer(text, delims, true);
+        String wordDelim = "";
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            if (delims.contains(token)) {
+                if (token.equals("\n")) {
+                    result += line;
+                    line = "<br>" + wordDelim;
+                    wordDelim = "";
+                } else {
+                    wordDelim += token;
+                }
+            } else {
+                if (fm.stringWidth(line + wordDelim + token) >= screenWidth) {
+                    result += line;
+                    result += !line.equals("") ? "<br>" : "";
+                    line = "";
+                }
+                line += wordDelim + token;
+                wordDelim = "";
+            }
+        }
+        return result += line + "</html>";
     }
 }

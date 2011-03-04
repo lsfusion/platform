@@ -2,6 +2,7 @@ package platform.client.form.cell;
 
 import platform.base.BaseUtils;
 import platform.client.Main;
+import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.SingleCellTable;
 import platform.client.logics.ClientPropertyDraw;
@@ -13,7 +14,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.util.Date;
+import java.util.*;
 
 public abstract class CellTable extends SingleCellTable
         implements CellTableInterface {
@@ -59,7 +60,7 @@ public abstract class CellTable extends SingleCellTable
                 }
                 tooltip = df.format((Date) value);
             }
-            return tooltip.trim();
+            return SwingUtils.toMultilineHtml(tooltip.trim(), getFont());
         } else {
             return null;
         }

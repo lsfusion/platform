@@ -148,6 +148,8 @@ public class Main {
                     remoteNavigator = loginAction.getRemoteNavigator();
                     computerId = loginAction.getComputerId();
 
+                    timeZone = remoteLogics.getTimeZone();
+
                     startSplashScreen();
 
                     logger.info("Before init frame");
@@ -179,8 +181,6 @@ public class Main {
                     ConnectionLostManager.install(frame);
 
                     frame.setVisible(true);
-
-                    timeZone = remoteLogics.getTimeZone();
 
                 } catch (Exception e) {
                     closeSplashScreen();

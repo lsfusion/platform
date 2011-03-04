@@ -23,9 +23,9 @@ public class DatePropertyEditor extends JDateChooser
 
     public DatePropertyEditor(Object value, SimpleDateFormat format, ComponentDesign design) {
         super(null, null, format.toPattern(), new DatePropertyEditorComponent(format, "##.##.##", ' '));
+        this.format = format;
 
         if (value != null) {
-            this.format = format;
             setDate(DateConverter.sqlToDate((java.sql.Date)value));
             ((JFormattedTextField) dateEditor).selectAll();
         }
