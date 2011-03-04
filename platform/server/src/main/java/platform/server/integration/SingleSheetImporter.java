@@ -45,7 +45,7 @@ public abstract class SingleSheetImporter {
     protected abstract boolean isCorrectRow(int rowNum);
 
     protected String transformValue(int row, int column, int part, String value) {
-        return value;
+        return value.trim();
     }
 
     protected Object getResultObject(ImportField field, String value) throws platform.server.data.type.ParseException {

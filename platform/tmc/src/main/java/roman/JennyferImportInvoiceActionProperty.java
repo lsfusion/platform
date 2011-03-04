@@ -13,7 +13,7 @@ import platform.server.integration.SingleSheetImporter;
 public class JennyferImportInvoiceActionProperty extends ImportBoxInvoiceActionProperty {
 
     public JennyferImportInvoiceActionProperty(RomanBusinessLogics BL) {
-        super(BL, "Импортировать инвойс", BL.jennyferSupplier);
+        super(BL, BL.jennyferSupplier);
     }
 
     @Override

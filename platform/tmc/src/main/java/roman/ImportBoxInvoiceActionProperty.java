@@ -33,12 +33,12 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
     colorNameField, sizeField, compositionField, countryField, customCodeField, customCode6Field,
     unitPriceField, unitQuantityField, unitNetWeightField, originalNameField, numberSkuField;
 
-    public ImportBoxInvoiceActionProperty(RomanBusinessLogics BL, String caption, ValueClass supplierClass) {
-        super(BL, caption, supplierClass);
+    public ImportBoxInvoiceActionProperty(RomanBusinessLogics BL, ValueClass supplierClass) {
+        super(BL, "Импортировать инвойс", supplierClass);
     }
 
-    public ImportBoxInvoiceActionProperty(RomanBusinessLogics BL, String caption, ValueClass supplierClass, String extensions) {
-        super(BL, caption, supplierClass, extensions);
+    public ImportBoxInvoiceActionProperty(RomanBusinessLogics BL, ValueClass supplierClass, String extensions) {
+        super(BL, "Импортировать инвойс", supplierClass, extensions);
     }
 
     protected ImportInputTable createTable(ByteArrayInputStream inFile) throws BiffException, IOException {
@@ -59,8 +59,8 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         countryField = new ImportField(BL.name);
         customCodeField = new ImportField(BL.sidCustomCategoryOrigin);
         customCode6Field = new ImportField(BL.sidCustomCategory6);
-        unitPriceField = new ImportField(BL.quantityDataListSku);
-        unitQuantityField = new ImportField(BL.priceDataDocumentItem);
+        unitPriceField = new ImportField(BL.priceDataDocumentItem);
+        unitQuantityField = new ImportField(BL.quantityDataListSku);
         unitNetWeightField = new ImportField(BL.netWeightArticle);
         originalNameField = new ImportField(BL.originalNameArticle);
         numberSkuField = new ImportField(BL.numberDataListSku);

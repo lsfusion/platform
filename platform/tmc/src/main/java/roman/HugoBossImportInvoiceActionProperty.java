@@ -19,7 +19,7 @@ import java.io.InputStreamReader;
 public class HugoBossImportInvoiceActionProperty extends ImportBoxInvoiceActionProperty {
 
     public HugoBossImportInvoiceActionProperty(RomanBusinessLogics BL) {
-        super(BL, "Импортировать инвойс", BL.hugoBossSupplier, "csv");
+        super(BL, BL.hugoBossSupplier, "csv");
     }
 
     @Override
