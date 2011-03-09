@@ -4,6 +4,7 @@ import platform.base.OSUtils;
 import platform.client.remote.proxy.RemoteBusinessLogicProxy;
 import platform.interop.RemoteLoaderInterface;
 import platform.interop.RemoteLogicsInterface;
+import platform.interop.exceptions.InternalServerException;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import java.net.MalformedURLException;
@@ -113,7 +114,7 @@ public final class LoginAction {
         } catch (ConnectException e) {
             System.out.println(e.getCause());
             return CONNECT_ERROR;
-        } catch (ServerException e) {
+        } catch (InternalServerException e) {
             e.printStackTrace();
             return SERVER_ERROR;
         } catch (Exception e) {
