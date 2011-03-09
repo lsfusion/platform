@@ -12,7 +12,7 @@
           <exclude>org.bouncycastle:bcmail-jdk14</exclude>
           <exclude>org.bouncycastle:bcprov-jdk14</exclude>
           <exclude>log4j:apache-log4j-extras</exclude>
-          <exclude>org.apache.xmlgraphics:batik-ext</exclude>
+          <exclude>xml-apis:xml-apis</exclude>
           <exclude>xalan:xalan</exclude>
       </excludes>
       <unpack>true</unpack>
@@ -44,6 +44,26 @@
          <unpackOptions>
              <excludes>
                  <exclude>org/w3c/dom/**</exclude>
+                 <exclude>META-INF/**</exclude>
+                 <exclude>license/**</exclude>
+             </excludes>
+         </unpackOptions>
+      </dependencySet>
+      <dependencySet>
+         <includes>
+             <include>xml-apis:xml-apis</include> <!-- есть также и в batik-ext -->
+         </includes>
+         <unpack>true</unpack>
+         <unpackOptions>
+             <excludes>
+                 <exclude>org/w3c/dom/events/DocumentEvent.class</exclude>
+                 <exclude>org/w3c/dom/events/Event.class</exclude>
+                 <exclude>org/w3c/dom/events/EventException.class</exclude>
+                 <exclude>org/w3c/dom/events/EventListener.class</exclude>
+                 <exclude>org/w3c/dom/events/EventTarget.class</exclude>
+                 <exclude>org/w3c/dom/events/MouseEvent.class</exclude>
+                 <exclude>org/w3c/dom/events/MutationEvent.class</exclude>
+                 <exclude>org/w3c/dom/events/UIEvent.class</exclude>
                  <exclude>META-INF/**</exclude>
                  <exclude>license/**</exclude>
              </excludes>

@@ -125,7 +125,10 @@ public class ClientReportData implements JRDataSource {
         }
 
         if (Date.class.getName().equals(jrField.getValueClassName()) && value != null) {
-            value = DateConverter.sqlToDate((java.sql.Date) value);
+            if (value instanceof java.sql.Timestamp)
+                value = DateConverter.stampToDate((java.sql.Timestamp) value);
+            else
+                value = DateConverter.sqlToDate((java.sql.Date) value);
         }
 
         if (value instanceof String) {

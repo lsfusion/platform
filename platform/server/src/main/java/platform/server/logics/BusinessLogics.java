@@ -538,8 +538,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP object1, and1, andNot1;
     protected LP equals2, diff2;
     protected LP sumDouble2;
+    protected LP subtractDouble2;
+    protected LP deltaDouble2;
     protected LP multiplyDouble2;
     protected LP multiplyIntegerBy2;
+    protected LP squareInteger;
+    protected LP squareDouble;
+    protected LP sqrtDouble2;
     protected LP divideDouble;
     protected LP divideDouble2;
     protected LP addDate2;
@@ -552,6 +557,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected LP vtrue, vzero;
     protected LP positive, negative;
+
+    protected LP castText;
 
     public LP<?> name;
     public LP<?> date;
@@ -1015,16 +1022,23 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         less22 = addJProp(less2, concat2, 1, 2, concat2, 3, 4);
         diff2 = addCFProp(Compare.NOT_EQUALS);
         sumDouble2 = addSFProp("((prm1)+(prm2))", DoubleClass.instance, 2);
+        subtractDouble2 = addSFProp("((prm1)-(prm2))", DoubleClass.instance, 2);
+        deltaDouble2 = addSFProp("abs((prm1)-(prm2))", DoubleClass.instance, 2);
         multiplyDouble2 = addMFProp(DoubleClass.instance, 2);
         multiplyIntegerBy2 = addSFProp("((prm1)*2)", IntegerClass.instance, 1);
+        squareInteger = addSFProp("(prm1)*(prm1)", IntegerClass.instance, 1);
+        squareDouble = addSFProp("(prm1)*(prm1)", DoubleClass.instance, 1);
+        sqrtDouble2 = addSFProp("round(sqrt(prm1),2)", DoubleClass.instance, 1);
         divideDouble = addSFProp("((prm1)/(prm2))", DoubleClass.instance, 2);
-        divideDouble2 = addSFProp("round(CAST(((prm1)/(prm2)) as numeric),2)", DoubleClass.instance, 2);
+        divideDouble2 = addSFProp("round(CAST((CAST((prm1) as numeric)/(prm2)) as numeric),2)", DoubleClass.instance, 2);
         addDate2 = addSFProp("((prm1)+(prm2))", DateClass.instance, 2);
         percent = addSFProp("((prm1)*(prm2)/100)", DoubleClass.instance, 2);
         percent2 = addSFProp("round(CAST(((prm1)*(prm2)/100) as numeric), 2)", DoubleClass.instance, 2);
         between = addJProp("Между", and1, groeq2, 1, 2, groeq2, 3, 1);
         vtrue = addCProp("Истина", LogicalClass.instance, true);
         vzero = addCProp("0", DoubleClass.instance, 0);
+
+        castText = addSFProp("CAST((prm1) as text)", TextClass.instance, 1);
 
         positive = addJProp(greater2, 1, vzero);
         negative = addJProp(less2, 1, vzero);
@@ -1048,7 +1062,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         transactionLater = addSUProp("Транзакция позже", Union.OVERRIDE, addJProp("Дата позже", greater2, date, 1, date, 2),
                 addJProp("", and1, addJProp("Дата=дата", equals2, date, 1, date, 2), 1, 2, addJProp("Код транзакции после", greater2, 1, 2), 1, 2));
 
-        hostname = addDProp(baseGroup, "hostname", "Имя хоста", StringClass.get(100), computer);
+        hostname = addDProp(baseGroup, "hostname", "Имя хоста", InsensitiveStringClass.get(100), computer);
 
         currentDate = addDProp(baseGroup, "currentDate", "Тек. дата", DateClass.instance);
         currentHour = addTProp(Time.HOUR);

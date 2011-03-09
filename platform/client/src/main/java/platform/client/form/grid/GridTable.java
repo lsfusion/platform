@@ -876,7 +876,7 @@ public abstract class GridTable extends ClientFormTable
             }
             int modelIndex = columnModel.getColumn(index).getModelIndex();
             ClientPropertyDraw cellView = model.getColumnProperty(modelIndex);
-            String toolTip = !BaseUtils.isRedundantString(cellView.toolTip) ? cellView.toolTip : (String) columnModel.getColumn(index).getHeaderValue();
+            String toolTip = (!BaseUtils.isRedundantString(cellView.toolTip) ? cellView.toolTip : (String) columnModel.getColumn(index).getHeaderValue()).trim();
             toolTip += " (sID: " + cellView.getSID() + ")";
             return toolTip;
         }

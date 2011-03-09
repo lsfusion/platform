@@ -40,7 +40,7 @@ public abstract class MainFrame extends JFrame {
             int wHeight = in.nextInt();
             setSize(wWidth, wHeight);
             in.close();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             Dimension size = Toolkit.getDefaultToolkit().getScreenSize().getSize();
             setSize(size.width, size.height - 30);

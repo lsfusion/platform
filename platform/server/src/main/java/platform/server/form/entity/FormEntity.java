@@ -371,19 +371,22 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
             propertyDraw.setSID(propertyDrawSID);
         }
 
-
-        int count = 0;
-        for (PropertyDrawEntity property : propertyDraws) {
-            if (property.shouldBeLast) {
-                propertyDraws.add(count, propertyDraw);
-                count = -1;
-                break;
-            }
-            count++;
-        }
-
-        if (count >= 0) {
+        if (propertyDraw.shouldBeLast) {
             propertyDraws.add(propertyDraw);
+        } else {
+            int count = 0;
+            for (PropertyDrawEntity property : propertyDraws) {
+                if (property.shouldBeLast) {
+                    propertyDraws.add(count, propertyDraw);
+                    count = -1;
+                    break;
+                }
+                count++;
+            }
+
+            if (count >= 0) {
+                propertyDraws.add(propertyDraw);
+            }
         }
 
 
@@ -656,13 +659,17 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     protected void setForceViewType(AbstractGroup group, ClassViewType type, GroupObjectEntity groupObject) {
         for (PropertyDrawEntity propertyDraw : propertyDraws) {
             if ((groupObject == null || groupObject.equals(propertyDraw.getToDraw(this))) && group.hasChild(propertyDraw.propertyObject.property)) {
-                propertyDraw.forceViewType = type;
+                setForceViewType(propertyDraw, type);
             }
         }
     }
 
     protected void setForceViewType(AbstractGroup group, ClassViewType type) {
         setForceViewType(group, type, null);
+    }
+
+    protected void setForceViewType(PropertyDrawEntity propertyDraw, ClassViewType type) {
+        propertyDraw.forceViewType = type;
     }
 
     public List<PropertyDrawEntity> getProperties(AbstractNode group) {
@@ -736,7 +743,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         setReadOnly(property.property, readOnly, groupObject);
     }
 
-    public void setReadOnly(Property property, boolean readOnly) {
+    public void setReadOnly(AbstractNode property, boolean readOnly) {
 
         for (PropertyDrawEntity propertyView : getProperties(property)) {
             setReadOnly(propertyView, readOnly);
@@ -751,8 +758,13 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public void setReadOnly(boolean readOnly, GroupObjectEntity groupObject) {
-
         for (PropertyDrawEntity propertyView : getProperties(groupObject)) {
+            setReadOnly(propertyView, readOnly);
+        }
+    }
+
+    public void setReadOnly(boolean readOnly) {
+        for (PropertyDrawEntity propertyView : propertyDraws) {
             setReadOnly(propertyView, readOnly);
         }
     }
