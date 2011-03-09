@@ -75,13 +75,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public String toolTip;
 
-    public ClientGroupObject keyBindingGroup = null;
-
     public ClientGroupObject groupObject;
     public List<ClientGroupObject> columnGroupObjects = new ArrayList<ClientGroupObject>();
 
     public boolean autoHide = false;
-    public boolean drawToToolbar;
 
     public ClientPropertyDraw() {
     }
@@ -336,8 +333,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         pool.writeObject(outStream, highlightColor);
 
-        pool.serializeObject(outStream, keyBindingGroup);
-
         outStream.writeInt(ID);
     }
 
@@ -374,8 +369,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         highlightColor = pool.readObject(inStream);
 
-        keyBindingGroup = pool.deserializeObject(inStream);
-
         baseType = ClientTypeSerializer.deserialize(inStream);
 
         sID = pool.readString(inStream);
@@ -388,7 +381,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         checkEquals = inStream.readBoolean();
         askConfirm = inStream.readBoolean();
-        drawToToolbar = inStream.readBoolean();
     }
 
     public List<ClientObject> getKeysObjectsList(Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {

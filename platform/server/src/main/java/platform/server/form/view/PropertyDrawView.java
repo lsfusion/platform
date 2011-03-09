@@ -61,10 +61,6 @@ public class PropertyDrawView extends ComponentView {
 
     public String caption;
 
-    public GroupObjectEntity keyBindingGroup = null;
-
-    public boolean drawToToolbar = true;
-
     @SuppressWarnings({"UnusedDeclaration"})
     public PropertyDrawView() {
 
@@ -172,8 +168,6 @@ public class PropertyDrawView extends ComponentView {
 
         pool.writeObject(outStream, highlightColor);
 
-        pool.serializeObject(outStream, pool.context.view.getGroupObject(keyBindingGroup));
-
         //entity часть
         TypeSerializer.serializeType(outStream, getType());
 
@@ -189,7 +183,6 @@ public class PropertyDrawView extends ComponentView {
 
         outStream.writeBoolean(!(entity.propertyObject.property instanceof ExecuteProperty)); //checkEquals
         outStream.writeBoolean(entity.propertyObject.property.askConfirm);
-        outStream.writeBoolean(drawToToolbar);
     }
 
     @Override
@@ -224,11 +217,6 @@ public class PropertyDrawView extends ComponentView {
         autoHide = inStream.readBoolean();
 
         highlightColor = pool.readObject(inStream);
-
-        GroupObjectView keyBindingGroupView = pool.deserializeObject(inStream);
-        if (keyBindingGroupView != null) {
-            keyBindingGroup = keyBindingGroupView.entity;
-        }
 
         entity = pool.context.entity.getPropertyDraw(inStream.readInt());
     }

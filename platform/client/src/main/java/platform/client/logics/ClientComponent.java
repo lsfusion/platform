@@ -35,6 +35,10 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
 
     public boolean defaultComponent = false;
 
+    public ClientGroupObject keyBindingGroup = null;
+
+    public boolean drawToToolbar;
+
     public ClientComponent() {
     }
 
@@ -66,6 +70,9 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         }
 
         outStream.writeBoolean(defaultComponent);
+
+        pool.serializeObject(outStream, keyBindingGroup);
+        outStream.writeBoolean(drawToToolbar);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -84,6 +91,10 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         }
 
         defaultComponent = inStream.readBoolean();
+
+        keyBindingGroup = pool.deserializeObject(inStream);
+
+        drawToToolbar = inStream.readBoolean();
     }
 
     public ComponentNode getNode() {

@@ -179,6 +179,7 @@ public class ClientFormController {
             if (group.parent == null) {
                 GroupObjectController controller = new GroupObjectController(group, form, this, formLayout);
                 controllers.put(group, controller);
+                controller.getPanel().initMovingContainer();
             }
         }
 
@@ -246,6 +247,11 @@ public class ClientFormController {
             } catch (IOException e) {
                 throw new RuntimeException("Ошибка при инициализации регулярного фильтра", e);
             }
+        }
+
+        if (filterGroup.drawToToolbar && filterGroup.keyBindingGroup != null) {
+            GroupObjectController controller = controllers.get(filterGroup.keyBindingGroup);
+            controller.getPanel().movingContainer.addFilter(filterGroup, checkBox);
         }
 
         checkBox.addItemListener(new ItemListener() {
@@ -484,6 +490,7 @@ public class ClientFormController {
         if (formChanges.message.length() > 0) {
             Log.printFailedMessage(formChanges.message);
         }
+
     }
 
     private Color defaultApplyBackground;

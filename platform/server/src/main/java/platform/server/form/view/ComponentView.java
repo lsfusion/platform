@@ -5,6 +5,7 @@ import platform.interop.ComponentDesign;
 import platform.interop.form.layout.AbstractComponent;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexConstraints;
+import platform.server.form.entity.GroupObjectEntity;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 
@@ -21,6 +22,11 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     protected ContainerView container;
 
     public SimplexConstraints<ComponentView> constraints = getDefaultConstraints();
+
+    public GroupObjectEntity keyBindingGroup = null;
+
+    public boolean drawToToolbar = true;
+
     public SimplexConstraints<ComponentView> getDefaultConstraints() {
         return new SimplexConstraints<ComponentView>();
     }
@@ -57,8 +63,9 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
             pool.serializeObject(outStream, intersect.getKey(), serializationType);
             pool.writeObject(outStream, intersect.getValue());
         }
-
         outStream.writeBoolean(defaultComponent);
+        pool.serializeObject(outStream, pool.context.view.getGroupObject(keyBindingGroup));
+        outStream.writeBoolean(drawToToolbar);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -77,5 +84,12 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         }
 
         defaultComponent = inStream.readBoolean();
+
+        GroupObjectView keyBindingGroupView = pool.deserializeObject(inStream);
+        if (keyBindingGroupView != null) {
+            keyBindingGroup = keyBindingGroupView.entity;
+        }
+
+        drawToToolbar = inStream.readBoolean();
     }
 }
