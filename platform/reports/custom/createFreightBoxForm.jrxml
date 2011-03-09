@@ -8,7 +8,7 @@
 	<parameter name="obj1_source" class="net.sf.jasperreports.engine.JRDataSource"/>
 	<parameter name="obj1_params" class="java.util.Map"/>
 	<detail>
-		<band splitType="Immediate">
+		<band>
 			<subreport>
 				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
 				<parametersMapExpression><![CDATA[$P{obj1_params}]]></parametersMapExpression>

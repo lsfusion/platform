@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="obj1" pageWidth="283" pageHeight="155" columnWidth="269" leftMargin="14" rightMargin="0" topMargin="14" bottomMargin="0">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="obj1" pageWidth="283" pageHeight="155" orientation="Landscape" columnWidth="283" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" whenResourceMissingType="Empty">
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
@@ -17,19 +17,18 @@
 	<field name="obj1" class="java.lang.Integer"/>
 	<field name="objectValueProperty_object" class="java.lang.Integer"/>
 	<field name="nameRouteCreationPallet" class="java.lang.String"/>
-	<field name="quantityCreationPallet" class="java.lang.Integer"/>
 	<field name="obj7" class="java.lang.Integer"/>
 	<field name="barcode" class="java.lang.String"/>
 	<detail>
-		<band height="156" splitType="Immediate">
+		<band height="140">
 			<componentElement>
-				<reportElement x="0" y="0" width="120" height="76"/>
+				<reportElement style="DefaultStyle" x="0" y="0" width="120" height="76"/>
 				<jr:EAN13 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" textPosition="bottom">
 					<jr:codeExpression><![CDATA[$F{barcode}]]></jr:codeExpression>
 				</jr:EAN13>
 			</componentElement>
-			<textField>
-				<reportElement x="150" y="0" width="98" height="76"/>
+			<textField isBlankWhenNull="true">
+				<reportElement style="DefaultStyle" x="150" y="0" width="98" height="76"/>
 				<textElement>
 					<font size="36"/>
 				</textElement>
