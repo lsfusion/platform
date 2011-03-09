@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="vote" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.3310000000000024"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="468"/>
+	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -34,6 +34,7 @@
 		<fieldDescription><![CDATA[@Z]]></fieldDescription>
 	</field>
 	<field name="acceptedForeignVote" class="java.lang.Boolean"/>
+	<field name="dateEndVote" class="java.util.Date"/>
 	<group name="captionGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{vote})]]></groupExpression>
 	</group>
@@ -50,11 +51,6 @@
 коммерциализации новых технологий
 
 ]]></text>
-				</staticText>
-				<staticText>
-					<reportElement x="37" y="82" width="151" height="26"/>
-					<textElement/>
-					<text><![CDATA[«      »______________ 2011 г]]></text>
 				</staticText>
 				<staticText>
 					<reportElement x="292" y="108" width="45" height="18"/>
@@ -93,6 +89,11 @@
 "Положения об Экспертных коллегиях Фонда «Сколково» в заседании приняло участие " + $F{quantityDoneVote} + " " + new ChoiceFormat("0#членов|1#член|1<члена|4<членов").format($F{quantityDoneVote}) +
 " Экспертной коллегии, в связи с чем заседание Экспертной коллегии признается "
 +($F{succeededVote}==null?"не":"")+" состоявшимся "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement stretchType="RelativeToBandHeight" x="29" y="82" width="153" height="25"/>
+					<textElement textAlignment="Justified"/>
+					<textFieldExpression class="java.lang.String"><![CDATA[platform.base.BaseUtils.formatRussian($F{dateEndVote}) + " года"]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="382" splitType="Immediate">

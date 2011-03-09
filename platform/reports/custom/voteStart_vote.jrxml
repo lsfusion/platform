@@ -39,11 +39,6 @@
 "в соответствии с пунктом 12 Положения об Экспертных коллегиях Фонда «Сколково»")]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement x="35" y="87" width="153" height="26"/>
-					<textElement/>
-					<text><![CDATA[«      »______________ 2011 г]]></text>
-				</staticText>
-				<staticText>
 					<reportElement x="188" y="10" width="216" height="64"/>
 					<textElement textAlignment="Justified"/>
 					<text><![CDATA[
@@ -59,7 +54,7 @@
 					<text><![CDATA[Москва]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="256" y="87" width="62" height="18"/>
+					<reportElement x="256" y="88" width="62" height="25"/>
 					<textElement/>
 					<text><![CDATA[РЕШЕНИЕ]]></text>
 				</staticText>
@@ -74,6 +69,11 @@
 					<textFieldExpression class="java.lang.String"><![CDATA["р е ш и л\n" +
 "1. Созвать заседание " + ($F{prevDateVote}==null?"":"новой ") + "Экспертной коллегии для проведения экспертизы указанной заявки по существу.\n" +
 "2. Путем случайной выборки из числа экспертов по Направлению деятельности, указанному Соискателем в заявке, определить следующий состав " + ($F{prevDateVote}==null?"":"новой ") + "Экспертной коллегии:"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement stretchType="RelativeToBandHeight" x="35" y="88" width="153" height="25"/>
+					<textElement textAlignment="Justified"/>
+					<textFieldExpression class="java.lang.String"><![CDATA[platform.base.BaseUtils.formatRussian($F{date}) + " года"]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>

@@ -886,7 +886,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private VoteProtocolFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Протокол заседания", true);
 
-            objVote = addSingleGroupObject(1, "vote", vote, date, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, quantityRepliedVote, quantityDoneVote, succeededVote, quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote, acceptedForeignVote);
+            objVote = addSingleGroupObject(1, "vote", vote, date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, quantityRepliedVote, quantityDoneVote, succeededVote, quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote, acceptedForeignVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(closedVote, objVote)));
