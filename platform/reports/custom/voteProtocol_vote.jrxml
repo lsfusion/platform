@@ -35,6 +35,7 @@
 	</field>
 	<field name="acceptedForeignVote" class="java.lang.Boolean"/>
 	<field name="dateEndVote" class="java.util.Date"/>
+	<field name="dateProjectVote" class="java.util.Date"/>
 	<group name="captionGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{vote})]]></groupExpression>
 	</group>
@@ -73,7 +74,7 @@
 					<textElement textAlignment="Justified"/>
 					<textFieldExpression class="java.lang.String"><![CDATA["1. В соответствии с пунктами 6-16 Положения об Экспертных коллегиях Фонда «Сколково» и на основании:" +
  '\n' + "1) решения Фонда о направлении заявки соискателя на рассмотрение в Экспертную коллегию для " +
-"проведения экспертизы заявки по существу от " + (platform.base.BaseUtils.formatRussian($F{date})) + " года ;"+'\n'+"2) решения Руководителя Аппарата " +
+"проведения экспертизы заявки по существу от " + (platform.base.BaseUtils.formatRussian($F{dateProjectVote})) + " года ;"+'\n'+"2) решения Руководителя Аппарата " +
 "Президента и Советов Фонда о созыве заседания Экспертной коллегии от " + (platform.base.BaseUtils.formatRussian($F{date})) + " года для проведения " +
 "экспертизы заявки " + $F{nameNativeClaimerVote} + " по существу было созвано заседание Экспертной коллегии, " +
 "для чего был определен ее состав в количестве 10 членов и направлены членам Экспертной коллегии" +
@@ -83,7 +84,7 @@
 					<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="29" y="282" width="520" height="101"/>
 					<textElement textAlignment="Justified"/>
 					<textFieldExpression class="java.lang.String"><![CDATA["2. В срок, указанный в пункте 8 Положения об Экспертных коллегиях Фонда «Сколково», в Фонд направлены " +
- $F{quantityRepliedVote} + " " + new ChoiceFormat("0#заполненных Бюллетеней|1#заполненный Бюллетень|1<заполненных Бюллетеня|4<заполненных Бюллетеней").format($F{quantityRepliedVote}) + " оценки. Из них в " + $F{quantityDoneVote} + " " + new ChoiceFormat("0#бюллетенях|1#бюллетене|1<бюллетенях").format($F{quantityDoneVote}) +
+ $F{quantityDoneVote} + " " + new ChoiceFormat("0#заполненных Бюллетеней|1#заполненный Бюллетень|1<заполненных Бюллетеня|4<заполненных Бюллетеней").format($F{quantityDoneVote}) + " оценки. Из них в " + $F{quantityDoneVote} + " " + new ChoiceFormat("0#бюллетенях|1#бюллетене|1<бюллетенях").format($F{quantityDoneVote}) +
 " оценки члены Экспертной коллегии указали на то, что они не являются заинтересованными " +
 "лицами по отношению к соискателю. Таким образом, в соответствии с абзацем 5 пункта 7, пунктами 10, 11 " +
 "Положения об Экспертных коллегиях Фонда «Сколково» в заседании приняло участие " + $F{quantityDoneVote} + " " + new ChoiceFormat("0#членов|1#член|1<члена|4<членов").format($F{quantityDoneVote}) +
