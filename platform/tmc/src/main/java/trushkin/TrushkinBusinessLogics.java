@@ -5,6 +5,7 @@ import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.server.auth.User;
 import platform.server.classes.*;
+import platform.server.data.Union;
 import platform.server.data.sql.DataAdapter;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectEntity;
@@ -142,7 +143,9 @@ public class TrushkinBusinessLogics extends BusinessLogics<TrushkinBusinessLogic
         sumRowExpertSubject = addSGProp(baseGroup, "sumRowExpertSubject", "Сумма ряда", rateExpertSubjectSubject, 1, 2);
         sumColumnExpertSubject = addSGProp(baseGroup, "sumColumnExpertSubject", "Сумма колонки", rateExpertSubjectSubject, 1, 3);
 
-        titleColumnExpertSubject = addJProp("titleColumnExpertSubject", "Заголовок колонки", addSFProp("((prm1) || ' (' || CAST((prm2) as text) || ')')", TextClass.instance, 2), nameSubject, 2, sumColumnExpertSubject, 1, 2);
+        titleColumnExpertSubject = addJProp("titleColumnExpertSubject", "Заголовок колонки", addSFProp("((prm1) || ' (' || CAST((prm2) as text) || ')')", TextClass.instance, 2),
+                nameSubject, 2,
+                addSUProp(Union.OVERRIDE, addCProp(IntegerClass.instance, 0, expert, subject), sumColumnExpertSubject), 1, 2);
 
         // todo : здесь конечно не совсем правильно построено свойство, так как workGroupSubject может не совпадать у разных subject, но пока на уровне форм пользователь не сможет так ввести данные
         quantityRatedExpertWorkGroup = addSGProp(baseGroup, "quantityRatedExpertWorkGroup", "Кол-во оценок", oneRatedExpertSubjectSubject, 1, workGroupSubject, 2);
