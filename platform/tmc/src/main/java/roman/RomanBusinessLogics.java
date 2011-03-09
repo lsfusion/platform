@@ -88,16 +88,19 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP nameSupplierColorSupplier;
     LP supplierSizeSupplier;
     private LP nameSupplierSizeSupplier;
+    private LP sidBrandSupplier;
     private LP supplierBrandSupplier;
     private LP nameSupplierBrandSupplier;
     private LP brandSupplierSupplier;
     private LP nameBrandSupplierSupplier;
     private LP brandSupplierArticle;
+    private LP sidBrandSupplierArticle;
     private LP nameBrandSupplierArticle;
     private LP supplierBrandSupplierArticle;
     private LP brandSupplierDataArticle;
     private LP brandSupplierSupplierArticle;
     private LP brandSupplierArticleSku;
+    private LP sidBrandSupplierArticleSku;
     private LP nameBrandSupplierArticleSku;
     private LP nameBrandSupplierArticleSkuShipmentDetail;
     private LP supplierSku;
@@ -501,6 +504,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     LP colorSIDSupplier;
     LP sidSizeSupplier;
     LP sizeSIDSupplier;
+    LP brandSIDSupplier;
     LP countryNameSupplier;
     LP numberDataListSku;
     private LP numberArticleListSku;
@@ -712,6 +716,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         destinationSID = addCGProp(idGroup, "destinationSID", "Магазин (ИД)", object(destination), sidDestination, sidDestination, 1);
 
+        sidBrandSupplier = addDProp(baseGroup, "sidBrandSupplier", "Код", StringClass.get(50), brandSupplier);
+
         // Subject
         addressSubject = addDProp(baseGroup, "addressSubject", "Адрес", StringClass.get(200), subject);
         contractImporter = addDProp(baseGroup, "contractImporter", "Номер договора", StringClass.get(50), importer);
@@ -816,6 +822,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         supplierBrandSupplier = addDProp(idGroup, "supplierBrandSupplier", "Поставщик (ИД)", supplier, brandSupplier);
         nameSupplierBrandSupplier = addJProp(baseGroup, "nameSupplierBrandSupplier", "Поставщик", name, supplierBrandSupplier, 1);
+
+        brandSIDSupplier = addCGProp(idGroup, "brandSIDSupplier", "Бренд поставщика (ИД)", object(brandSupplier), sidBrandSupplier, sidBrandSupplier, 1, supplierBrandSupplier, 1);
 
         brandSupplierSupplier = addDProp(idGroup, "brandSupplierSupplier", "Бренд (ИД)", brandSupplier, supplier);
         nameBrandSupplierSupplier = addJProp(baseGroup, "nameBrandSupplierSupplier", "Бренд по умолчанию", name, brandSupplierSupplier, 1);
@@ -953,6 +961,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         brandSupplierSupplierArticle = addJProp(idGroup, "brandSupplierSupplierArticle", "Бренд (ИД)", brandSupplierSupplier, supplierArticle, 1);
         brandSupplierArticle = addSUProp(idGroup, "brandSupplierArticle", "Бренд (ИД)", Union.OVERRIDE, brandSupplierSupplierArticle, brandSupplierDataArticle);
         nameBrandSupplierArticle = addJProp(supplierAttributeGroup, "nameBrandSupplierArticle", "Бренд", name, brandSupplierArticle, 1);
+        sidBrandSupplierArticle = addJProp(supplierAttributeGroup, "sidBrandSupplierArticle", "Бренд (ИД)", sidBrandSupplier, brandSupplierArticle, 1);
 
         supplierBrandSupplierArticle = addJProp(idGroup, "supplierBrandSupplierArticle", "Поставщик", supplierBrandSupplier , brandSupplierArticle, 1);
         addConstraint(addJProp("Поставщик артикула должен соответствовать поставщику бренда артикула", diff2,
@@ -960,6 +969,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         brandSupplierArticleSku = addJProp(idGroup, "brandSupplierArticleSku", "Бренд (ИД)", brandSupplierArticle, articleSku, 1);
         nameBrandSupplierArticleSku = addJProp(supplierAttributeGroup, "nameBrandSupplierArticleSku", "Бренд", name, brandSupplierArticleSku, 1);
+        sidBrandSupplierArticleSku = addJProp(supplierAttributeGroup, "sidBrandSupplierArticleSku", "Бренд(ИД)", sidBrandSupplier, brandSupplierArticleSku, 1);
 
         articleSIDSupplier = addCGProp(idGroup, "articleSIDSupplier", "Артикул (ИД)", object(article), sidArticle, sidArticle, 1, supplierArticle, 1);
 
@@ -1790,7 +1800,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objArticle.groupTo.setSingleClassView(ClassViewType.GRID);
 
             addPropertyDraw(numberListArticle, objOrder, objArticle);
-            addPropertyDraw(objArticle, sidArticle, nameBrandSupplierArticle, originalNameArticle, nameCountrySupplierOfOriginArticle, nameCountryOfOriginArticle, barcode);
+            addPropertyDraw(objArticle, sidArticle, sidBrandSupplierArticle, nameBrandSupplierArticle, originalNameArticle, nameCountrySupplierOfOriginArticle, nameCountryOfOriginArticle, barcode);
             addPropertyDraw(quantityListArticle, objOrder, objArticle);
             addPropertyDraw(priceDocumentArticle, objOrder, objArticle);
             addPropertyDraw(sumDocumentArticle, objOrder, objArticle);
@@ -1919,7 +1929,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objArticle.groupTo.setSingleClassView(ClassViewType.GRID);
 
             addPropertyDraw(numberListArticle, (box ? objSupplierBox : objInvoice), objArticle);
-            addPropertyDraw(objArticle, sidArticle, nameBrandSupplierArticle, originalNameArticle, sidCustomCategoryOriginArticle,
+            addPropertyDraw(objArticle, sidArticle, sidBrandSupplierArticle, nameBrandSupplierArticle, originalNameArticle, sidCustomCategoryOriginArticle,
                     nameCountrySupplierOfOriginArticle, netWeightArticle, mainCompositionOriginArticle, additionalCompositionOriginArticle, barcode);
             addPropertyDraw(quantityListArticle, (box ? objSupplierBox : objInvoice), objArticle);
             addPropertyDraw(priceDocumentArticle, objInvoice, objArticle);
@@ -1961,7 +1971,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             if (box)
                 addPropertyDraw(sidSupplierBox, objSupplierBoxSpec);
             addPropertyDraw(new LP[] {barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
-                                      nameBrandSupplierArticleSku, originalNameArticleSku,
+                                      sidBrandSupplierArticleSku, nameBrandSupplierArticleSku, originalNameArticleSku,
                                       nameCountrySupplierOfOriginArticleSku , nameCountryOfOriginSku, netWeightSku,
                                       mainCompositionOriginSku, additionalCompositionOriginSku}, objSku);
             addPropertyDraw(quantityListSku, (box ? objSupplierBoxSpec : objInvoice), objSku);
@@ -2905,7 +2915,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objSize = addSingleGroupObject(sizeSupplier, "Размер", sidSizeSupplier);
             addObjectActions(this, objSize);
 
-            objBrand = addSingleGroupObject(brandSupplier, "Бренд", name);
+            objBrand = addSingleGroupObject(brandSupplier, "Бренд", sidBrandSupplier, name);
             addObjectActions(this, objBrand);
 
             objCountry = addSingleGroupObject(countrySupplier, "Страна", name, nameCountryCountrySupplier);
