@@ -1,10 +1,10 @@
 package platform.server.form.instance.remote;
 
-import ar.com.fdvs.dj.core.DynamicJasperHelper;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
+import net.sf.jasperreports.engine.xml.JRXmlWriter;
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
@@ -193,7 +193,10 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             for (Map.Entry<String, JasperDesign> entry : designs.entrySet()) {
                 String id = entry.getKey();
                 String reportName = getAutoReportName(id);
-                DynamicJasperHelper.generateJRXML(JasperCompileManager.compileReport(entry.getValue()), "UTF-8", reportName);
+
+                new File(reportName).getParentFile().mkdirs();
+
+                JRXmlWriter.writeReport(JasperCompileManager.compileReport(entry.getValue()), reportName, "UTF-8");
             }
             return designs;
         } catch (JRException e) {

@@ -1,10 +1,10 @@
 package platform.server.form.reportstmp;
 
-import net.sf.jasperreports.engine.JRAlignment;
 import net.sf.jasperreports.engine.JRPrintText;
-import net.sf.jasperreports.engine.JRTextElement;
 import net.sf.jasperreports.engine.export.JRExporterGridCell;
 import net.sf.jasperreports.engine.export.JRHtmlExporter;
+import net.sf.jasperreports.engine.type.LineSpacingEnum;
+import net.sf.jasperreports.engine.type.RunDirectionEnum;
 import net.sf.jasperreports.engine.util.JRStyledText;
 
 import java.io.IOException;
@@ -58,23 +58,30 @@ public class ReportHTMLExporter extends JRHtmlExporter {
             textLength = styledText.length();
         }
 
-        writeCellTDStart(gridCell);//FIXME why dealing with cell style if no text to print (textLength == 0)?
+        writeCellStart(gridCell);//FIXME why dealing with cell style if no text to print (textLength == 0)?
+
+        if (text.getRunDirectionValue() == RunDirectionEnum.RTL)
+        {
+            writer.write(" dir=\"rtl\"");
+        }
+
+        StringBuffer styleBuffer = new StringBuffer();
 
         String verticalAlignment = HTML_VERTICAL_ALIGN_TOP;
 
-        switch (text.getVerticalAlignment())
+        switch (text.getVerticalAlignmentValue())
         {
-            case JRAlignment.VERTICAL_ALIGN_BOTTOM :
+            case BOTTOM :
             {
                 verticalAlignment = HTML_VERTICAL_ALIGN_BOTTOM;
                 break;
             }
-            case JRAlignment.VERTICAL_ALIGN_MIDDLE :
+            case MIDDLE :
             {
                 verticalAlignment = HTML_VERTICAL_ALIGN_MIDDLE;
                 break;
             }
-            case JRAlignment.VERTICAL_ALIGN_TOP :
+            case TOP :
             default :
             {
                 verticalAlignment = HTML_VERTICAL_ALIGN_TOP;
@@ -88,37 +95,32 @@ public class ReportHTMLExporter extends JRHtmlExporter {
             writer.write("\"");
         }
 
-        if (text.getRunDirection() == JRPrintText.RUN_DIRECTION_RTL)
-        {
-            writer.write(" dir=\"rtl\"");
-        }
-
-        StringBuffer styleBuffer = new StringBuffer();
         appendBackcolorStyle(gridCell, styleBuffer);
         appendBorderStyle(gridCell.getBox(), styleBuffer);
+        appendPaddingStyle(text.getLineBox(), styleBuffer);
 
         String horizontalAlignment = CSS_TEXT_ALIGN_LEFT;
 
         if (textLength > 0)
         {
-            switch (text.getHorizontalAlignment())
+            switch (text.getHorizontalAlignmentValue())
             {
-                case JRAlignment.HORIZONTAL_ALIGN_RIGHT :
+                case RIGHT :
                 {
                     horizontalAlignment = CSS_TEXT_ALIGN_RIGHT;
                     break;
                 }
-                case JRAlignment.HORIZONTAL_ALIGN_CENTER :
+                case CENTER :
                 {
                     horizontalAlignment = CSS_TEXT_ALIGN_CENTER;
                     break;
                 }
-                case JRAlignment.HORIZONTAL_ALIGN_JUSTIFIED :
+                case JUSTIFIED :
                 {
                     horizontalAlignment = CSS_TEXT_ALIGN_JUSTIFY;
                     break;
                 }
-                case JRAlignment.HORIZONTAL_ALIGN_LEFT :
+                case LEFT :
                 default :
                 {
                     horizontalAlignment = CSS_TEXT_ALIGN_LEFT;
@@ -126,9 +128,9 @@ public class ReportHTMLExporter extends JRHtmlExporter {
             }
 
 //            if (
-//                (text.getRunDirection() == JRPrintText.RUN_DIRECTION_LTR
+//                (text.getRunDirectionValue() == RunDirectionEnum.LTR
 //                 && !horizontalAlignment.equals(CSS_TEXT_ALIGN_LEFT))
-//                || (text.getRunDirection() == JRPrintText.RUN_DIRECTION_RTL
+//                || (text.getRunDirectionValue() == RunDirectionEnum.RTL
 //                    && !horizontalAlignment.equals(CSS_TEXT_ALIGN_RIGHT))
 //                )
 //            {
@@ -144,7 +146,7 @@ public class ReportHTMLExporter extends JRHtmlExporter {
             styleBuffer.append("word-wrap: break-word; ");
         }
 
-        if (text.getLineSpacing() != JRTextElement.LINE_SPACING_SINGLE)
+        if (text.getLineSpacingValue() != LineSpacingEnum.SINGLE)
         {
             styleBuffer.append("line-height: " + text.getLineSpacingFactor() + "; ");
         }
@@ -187,6 +189,6 @@ public class ReportHTMLExporter extends JRHtmlExporter {
 
         endHyperlink();
 
-        writer.write("</td>\n");
+        writeCellEnd(gridCell);
     }
 }
