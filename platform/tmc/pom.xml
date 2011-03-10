@@ -3,8 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>by.luxsoft.platform</groupId>
-        <artifactId>platform</artifactId>
+        <artifactId>base</artifactId>
         <version>1.0</version>
+        <relativePath>../base/pom.xml</relativePath>
     </parent>
     <artifactId>tmc</artifactId>
     <packaging>jar</packaging>
@@ -53,16 +54,6 @@
             <groupId>net.sf.jacob-project</groupId>
             <artifactId>jacob</artifactId>
             <version>1.15-M3</version>
-        </dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.16</version>
-        </dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>apache-log4j-extras</artifactId>
-            <version>1.0</version>
         </dependency>
     </dependencies>
 </project>

@@ -3,8 +3,9 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
       <groupId>by.luxsoft.platform</groupId>
-      <artifactId>platform</artifactId>
+      <artifactId>base</artifactId>
       <version>1.0</version>
+      <relativePath>../base/pom.xml</relativePath>
   </parent>
   <artifactId>skolkovo-api</artifactId>
   <packaging>jar</packaging>

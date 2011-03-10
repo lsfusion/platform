@@ -1,7 +1,5 @@
 package platform.server.data;
 
-import net.jcip.annotations.Immutable;
-import platform.base.ImmutableObject;
 import platform.base.TwinImmutableInterface;
 import platform.base.TwinImmutableObject;
 import platform.server.data.sql.SQLSyntax;

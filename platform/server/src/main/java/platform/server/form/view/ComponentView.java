@@ -25,7 +25,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     public GroupObjectEntity keyBindingGroup = null;
 
-    public boolean drawToToolbar = true;
+    public boolean drawToToolbar;
 
     public SimplexConstraints<ComponentView> getDefaultConstraints() {
         return new SimplexConstraints<ComponentView>();
