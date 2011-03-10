@@ -26,17 +26,17 @@
                      </manifest>
                  </archive>
                   <descriptors>
-                     <descriptor>src/assemble/distribution.xml</descriptor>
+                     <descriptor>../server/src/assemble/distribution.xml</descriptor>
                   </descriptors>
               </configuration>
-              <executions>
-                <execution>
-                  <phase>install</phase>
-                  <goals>
-                    <goal>single</goal>
-                  </goals>
-                </execution>
-              </executions>
+              <!--<executions>-->
+                <!--<execution>-->
+                  <!--<phase>install</phase>-->
+                  <!--<goals>-->
+                    <!--<goal>single</goal>-->
+                  <!--</goals>-->
+                <!--</execution>-->
+              <!--</executions>-->
             </plugin>
          </plugins>
     </build>
