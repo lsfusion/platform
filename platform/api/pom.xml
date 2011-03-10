@@ -18,20 +18,17 @@
           <version>5.5.1</version>
       </dependency>
       <dependency>
-          <groupId>log4j</groupId>
-          <artifactId>log4j</artifactId>
-          <version>1.2.16</version>
-      </dependency>
-      <dependency>
-          <groupId>log4j</groupId>
-          <artifactId>apache-log4j-extras</artifactId>
-          <version>1.0</version>
-      </dependency>
-      <dependency>
           <groupId>commons-codec</groupId>
           <artifactId>commons-codec</artifactId>
           <version>1.4</version>
       </dependency>
+      <dependency>
+          <groupId>log4j</groupId>
+          <artifactId>log4j</artifactId>
+      </dependency>
+      <dependency>
+          <groupId>log4j</groupId>
+          <artifactId>apache-log4j-extras</artifactId>
+      </dependency>
   </dependencies>
-
 </project>
