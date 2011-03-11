@@ -40,11 +40,4 @@
          </plugins>
     </build>
 
-    <dependencies>
-        <dependency>
-            <groupId>by.luxsoft.platform</groupId>
-            <artifactId>server</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
 </project>
