@@ -149,6 +149,7 @@ public class AddObjectActionProperty extends ActionProperty {
         view.get(entity).editKey = KeyStrokes.getAddActionPropertyKeyStroke();
         view.get(entity).design.image = new ImageIcon(AddObjectActionProperty.class.getResource("/images/add.png"));
         view.get(entity).showEditKey = false;
+        view.get(entity).drawToToolbar = true;
     }
 
 }

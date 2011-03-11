@@ -20,13 +20,12 @@ import platform.server.form.view.DefaultFormView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.group.AbstractGroup;
-import sample.SampleBusinessLogics;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
 
-public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
+public class BudgetBusinessLogics extends BusinessLogics<BudgetBusinessLogics> {
 
     public BudgetBusinessLogics(DataAdapter iAdapter, int port) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, JRException, FileNotFoundException {
         super(iAdapter, port);

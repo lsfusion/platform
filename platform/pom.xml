@@ -27,6 +27,10 @@
         <module>skolkovo-api</module>
         <module>skolkovo-logics</module>
         <module>skolkovo-gwt</module>
+        <module>budget-logics</module>
+        <module>roman-logics</module>
+        <module>sample-logics</module>
+        <module>trushkin-logics</module>
     </modules>
 
 </project>

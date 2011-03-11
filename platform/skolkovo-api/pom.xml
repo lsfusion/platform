@@ -5,8 +5,9 @@
       <groupId>by.luxsoft.platform</groupId>
       <artifactId>base</artifactId>
       <version>1.0</version>
-      <relativePath>../base/pom.xml</relativePath>
+      <relativePath>../pom/base.xml</relativePath>
   </parent>
+
   <artifactId>skolkovo-api</artifactId>
   <packaging>jar</packaging>
   <name>Skolkovo API</name>
@@ -15,7 +16,7 @@
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
             <artifactId>api</artifactId>
-            <version>1.0</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

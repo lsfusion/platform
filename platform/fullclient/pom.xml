@@ -6,7 +6,7 @@
         <groupId>by.luxsoft.platform</groupId>
         <artifactId>base</artifactId>
         <version>1.0</version>
-        <relativePath>../base/pom.xml</relativePath>
+        <relativePath>../pom/base.xml</relativePath>
     </parent>
     <artifactId>fullclient</artifactId>
     <packaging>jar</packaging>

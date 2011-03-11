@@ -2,13 +2,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>by.luxsoft.platform</groupId>
-        <artifactId>base</artifactId>
+        <artifactId>logics</artifactId>
         <version>1.0</version>
-        <relativePath>../base/pom.xml</relativePath>
+        <relativePath>../pom/logics.xml</relativePath>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
+
     <artifactId>skolkovo-logics</artifactId>
     <packaging>jar</packaging>
     <name>Skolkovo Logics</name>
@@ -19,24 +20,7 @@
               <artifactId>maven-assembly-plugin</artifactId>
               <configuration>
                  <finalName>skolkovo-logics</finalName>
-                 <appendAssemblyId>true</appendAssemblyId>
-                 <archive>
-                     <manifest>
-                         <mainClass>platform.server.logics.BusinessLogics</mainClass>
-                     </manifest>
-                 </archive>
-                  <descriptors>
-                     <descriptor>../server/src/assemble/distribution.xml</descriptor>
-                  </descriptors>
               </configuration>
-              <!--<executions>-->
-                <!--<execution>-->
-                  <!--<phase>install</phase>-->
-                  <!--<goals>-->
-                    <!--<goal>single</goal>-->
-                  <!--</goals>-->
-                <!--</execution>-->
-              <!--</executions>-->
             </plugin>
          </plugins>
     </build>
@@ -45,12 +29,12 @@
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
             <artifactId>skolkovo-api</artifactId>
-            <version>1.0</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
             <artifactId>server</artifactId>
-            <version>1.0</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

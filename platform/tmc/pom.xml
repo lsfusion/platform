@@ -3,13 +3,13 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>by.luxsoft.platform</groupId>
-        <artifactId>base</artifactId>
+        <artifactId>logics</artifactId>
         <version>1.0</version>
-        <relativePath>../base/pom.xml</relativePath>
+        <relativePath>../pom/logics.xml</relativePath>
     </parent>
     <artifactId>tmc</artifactId>
     <packaging>jar</packaging>
-    <name>Tmc</name>
+    <name>Tmc Logics</name>
 
     <build>
         <plugins>
@@ -17,24 +17,7 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
                     <finalName>tmc</finalName>
-                    <appendAssemblyId>true</appendAssemblyId>
-                    <archive>
-                        <manifest>
-                            <mainClass>platform.server.logics.BusinessLogics</mainClass>
-                        </manifest>
-                    </archive>
-                    <descriptors>
-                        <descriptor>../server/src/assemble/distribution.xml</descriptor>
-                    </descriptors>
                 </configuration>
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<phase>install</phase>-->
-                        <!--<goals>-->
-                            <!--<goal>single</goal>-->
-                        <!--</goals>-->
-                    <!--</execution>-->
-                <!--</executions>-->
             </plugin>
         </plugins>
     </build>

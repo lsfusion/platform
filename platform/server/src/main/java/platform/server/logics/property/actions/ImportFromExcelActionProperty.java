@@ -104,6 +104,7 @@ public class ImportFromExcelActionProperty extends ActionProperty {
         view.get(entity).editKey = KeyStrokes.getImportActionPropertyKeyStroke();
         view.get(entity).design.image = new ImageIcon(AddObjectActionProperty.class.getResource("/images/import.png"));
         view.get(entity).showEditKey = false;
+        view.get(entity).drawToToolbar = true;
     }
 
 }
