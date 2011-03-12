@@ -62,7 +62,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private ConcreteCustomClass simpleShipment;
     private ConcreteCustomClass freight;
     private StaticCustomClass route;
+    private AbstractCustomClass seller;
     private ConcreteCustomClass supplier;
+    private ConcreteCustomClass contract;
     private AbstractCustomClass document;
     private AbstractCustomClass priceDocument;
     private AbstractCustomClass subject;
@@ -435,9 +437,19 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP quantityInvoiceStockSku;
     private ConcreteCustomClass importer;
     private ConcreteCustomClass exporter;
+    private LP sidContract;
+    private LP importerContract;
+    private LP nameImporterContract;
+    private LP sellerContract;
+    private LP nameSellerContract;
+
+    private LP currencyContract;
+    private LP nameCurrencyContract;
     private LP contractImporter;
     private LP importerInvoice;
     private LP nameImporterInvoice;
+    private LP contractInvoice;
+    private LP sidContractInvoice;
     private LP freightFreightBox;
     private LP quantityImporterFreightUnitSku;
     private LP quantityImporterFreightUnitArticle;
@@ -621,6 +633,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         document = addAbstractClass("document", "Документ", transaction);
         list = addAbstractClass("list", "Список", baseClass);
 
+        contract = addConcreteClass("contract", "Договор", transaction);
+
         priceDocument = addAbstractClass("priceDocument", "Документ с ценами", document);
         destinationDocument = addAbstractClass("destinationDocument", "Документ в пункт назначения", document);
 
@@ -650,7 +664,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         boxShipmentDetail = addConcreteClass("boxShipmentDetail", "Строка поставки по коробам", shipmentDetail);
         simpleShipmentDetail = addConcreteClass("simpleShipmentDetail", "Строка поставки без коробов", shipmentDetail);
 
-        supplier = addConcreteClass("supplier", "Поставщик", baseClass.named);
+        seller = addAbstractClass("seller", "Продавец", baseClass);
+
+        supplier = addConcreteClass("supplier", "Поставщик", baseClass.named, seller);
 
         jennyferSupplier = addConcreteClass("jennyferSupplier", "Jennyfer", supplier);
         tallyWeijlSupplier = addConcreteClass("tallyWeijlSupplier", "Tally Weijl", supplier);
@@ -659,7 +675,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         subject = addAbstractClass("subject", "Субъект", baseClass.named);
         importer = addConcreteClass("importer", "Импортер", subject);
-        exporter = addConcreteClass("exporter", "Экспортер", subject);
+        exporter = addConcreteClass("exporter", "Экспортер", subject, seller);
 
         colorSupplier = addConcreteClass("colorSupplier", "Цвет поставщика", baseClass.named);
         sizeSupplier = addConcreteClass("sizeSupplier", "Размер поставщика", baseClass);
@@ -717,6 +733,18 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         destinationSID = addCGProp(idGroup, "destinationSID", "Магазин (ИД)", object(destination), sidDestination, sidDestination, 1);
 
         sidBrandSupplier = addDProp(baseGroup, "sidBrandSupplier", "Код", StringClass.get(50), brandSupplier);
+
+        // Contract
+        sidContract = addDProp(baseGroup, "sidContract", "Номер договора", StringClass.get(50), contract);
+
+        importerContract = addDProp(idGroup, "importerContract", "Импортер (ИД)", importer, contract);
+        nameImporterContract = addJProp(baseGroup, "nameImporterContract", "Импортер", name, importerContract, 1);
+
+        sellerContract = addDProp(idGroup, "sellerContract", "Продавец (ИД)", seller, contract);
+        nameSellerContract = addJProp(baseGroup, "nameSellerContract", "Продавец", name, sellerContract, 1);
+
+        currencyContract = addDProp(idGroup, "currencyContract", "Валюта (ИД)", currency, contract);
+        nameCurrencyContract = addJProp(baseGroup, "nameCurrencyContract", "Валюта", name, currencyContract, 1);
 
         // Subject
         addressSubject = addDProp(baseGroup, "addressSubject", "Адрес", StringClass.get(200), subject);
@@ -846,6 +874,16 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         importerInvoice = addDProp(idGroup, "importerDocument", "Импортер (ИД)", importer, invoice);
         nameImporterInvoice = addJProp(baseGroup, "nameImporterInvoice", "Импортер", name, importerInvoice, 1);
 
+        contractInvoice = addDProp(idGroup, "contractInvoice", "Договор (ИД)", contract, invoice);
+        sidContractInvoice = addJProp(baseGroup, "sidContractInvoice", "Договор", sidContract, contractInvoice, 1);
+
+        addConstraint(addJProp("Импортер договора должен соответствовать импортеру инвойса", diff2,
+                importerInvoice, 1, addJProp(importerContract, contractInvoice, 1), 1), true);
+
+        addConstraint(addJProp("Поставщик договора должен соответствовать поставщику инвойса", diff2,
+                supplierDocument, 1, addJProp(sellerContract, contractInvoice, 1), 1), true);       
+
+
         // Shipment
         quantityPalletShipment = addDProp(baseGroup, "quantityPalletShipment", "Кол-во паллет", IntegerClass.instance, shipment);
         netWeightShipment = addDProp(baseGroup, "netWeightShipment", "Вес нетто", DoubleClass.instance, shipment);
@@ -863,8 +901,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         addItemBarcode = addJProp(true, "Ввод товара по штрих-коду", addAAProp(item, barcode), 1);
 
         // Article
-        sidArticle = addDProp(baseGroup, "sidArticle", "Код", StringClass.get(50), article);
-        sidArticleSku = addJProp(baseGroup, "sidArticleSku", "Код", sidArticle, articleSku, 1);
+        sidArticle = addDProp(baseGroup, "sidArticle", "Код артикула", StringClass.get(50), article);
+        sidArticleSku = addJProp(baseGroup, "sidArticleSku", "Код артикула", sidArticle, articleSku, 1);
 
         originalNameArticle = addDProp(supplierAttributeGroup, "originalNameArticle", "Имя производителя (ориг.)", StringClass.get(50), article);
         originalNameArticleSku = addJProp(supplierAttributeGroup, "originalNameArticleSku", "Имя производителя (ориг.)", originalNameArticle, articleSku, 1);
@@ -1001,7 +1039,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 supplierSku, 1,
                 addJProp(supplierSizeSupplier, sizeSupplierItem, 1), 1), true);
 
-        sidDocument = addDProp(baseGroup, "sidDocument", "Код", StringClass.get(50), document);
+        sidDocument = addDProp(baseGroup, "sidDocument", "Код документа", StringClass.get(50), document);
         documentSIDSupplier = addCGProp(idGroup, "documentSIDSupplier", "Документ поставщика (ИД)", object(document), sidDocument, sidDocument, 1, supplierDocument, 1);
 
         // коробки
@@ -1639,6 +1677,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         addFormEntity(new ColorSizeSupplierFormEntity(classifier, "сolorSizeSupplierForm", "Поставщики"));
         addFormEntity(new CustomCategoryFormEntity(classifier, "customCategoryForm", "ТН ВЭД (изменения)", false));
         addFormEntity(new CustomCategoryFormEntity(classifier, "customCategoryForm2", "ТН ВЭД (дерево)", true));
+        addFormEntity(new ContractFormEntity(classifier, "contractForm", "Договора"));
+        addFormEntity(new NomenclatureFormEntity(classifier, "nomenclatureForm", "Номенклатура"));
         classifier.add(category.getClassForm(this));
         classifier.add(currency.getClassForm(this));
         classifier.add(importer.getClassForm(this));
@@ -1897,7 +1937,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameCurrencySupplier, importInvoiceActionGroup, true);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс", date, objectClassName, sidDocument, nameCurrencyDocument, sumDocument, nameImporterInvoice, sidDestinationDestinationDocument, nameDestinationDestinationDocument, grossWeightDirectInvoice);
+            objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс", date, objectClassName, sidDocument, nameCurrencyDocument, sumDocument, nameImporterInvoice, sidContractInvoice, sidDestinationDestinationDocument, nameDestinationDestinationDocument, grossWeightDirectInvoice);
             addObjectActions(this, objInvoice);
 
             objOrder = addSingleGroupObject(order, "Заказ");
@@ -2429,7 +2469,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             addPropertyDraw(equalsPalletFreight, objPallet, objFreight);
 
-            objDirectInvoice = addSingleGroupObject(directInvoice, "Инвойс", date, sidDocument, nameCurrencyDocument, sumDocument, nameImporterInvoice, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
+            objDirectInvoice = addSingleGroupObject(directInvoice, "Инвойс", date, sidDocument, nameCurrencyDocument, sumDocument, nameImporterInvoice, sidContractInvoice, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
             addPropertyDraw(equalsDirectInvoiceFreight, objDirectInvoice, objFreight);
 
             addPropertyDraw(quantityShipmentFreight, objShipment, objFreight);
@@ -2661,6 +2701,88 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 design.get(objCustomCategoryOrigin.groupTo).grid.constraints.fillHorizontal = 2;
             }
             design.addIntersection(design.get(import1), design.get(import2), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            return design;
+        }
+    }
+
+    private class NomenclatureFormEntity extends FormEntity<RomanBusinessLogics> {
+
+        private ObjectEntity objSupplier;
+        private ObjectEntity objCategory;
+        private ObjectEntity objArticle;
+        private ObjectEntity objSku;
+
+        private NomenclatureFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
+
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", name);
+
+            objCategory = addSingleGroupObject(category, "Категория", name);
+
+            /*objArticle = addSingleGroupObject(article, "Артикул", selection, sidArticle, nameBrandSupplierArticle, originalNameArticle, nameCategoryArticle, nameArticle,
+                    sidCustomCategoryOriginArticle, nameCountryOfOriginArticle, mainCompositionOriginArticle, additionalCompositionOriginArticle, nameUnitOfMeasureArticle);*/
+
+            objSku = addSingleGroupObject(sku, "SKU", selection, barcode, nameSupplierSku, nameBrandSupplierArticleSku,
+                     nameCategoryArticleSku, sidArticleSku, nameArticleSku,
+                     sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
+                     nameCountrySku, netWeightSku,
+                     mainCompositionSku, additionalCompositionSku);
+
+            setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
+
+            RegularFilterGroupEntity filterGroupSupplier = new RegularFilterGroupEntity(genID());
+            filterGroupSupplier.addFilter(new RegularFilterEntity(genID(),
+                                  new CompareFilterEntity(addPropertyObject(supplierSku, objSku), Compare.EQUALS, objSupplier),
+                                  "Только текущего поставщика",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
+            addRegularFilterGroup(filterGroupSupplier);
+
+            RegularFilterGroupEntity filterGroupCategory = new RegularFilterGroupEntity(genID());
+            filterGroupCategory.addFilter(new RegularFilterEntity(genID(),
+                                  new CompareFilterEntity(addPropertyObject(categoryArticleSku, objSku), Compare.EQUALS, objCategory),
+                                  "Только текущей категории",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
+            addRegularFilterGroup(filterGroupCategory);
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
+
+            design.get(objSupplier.groupTo).grid.constraints.fillVertical = 1;
+            design.get(objSku.groupTo).grid.constraints.fillVertical = 4;
+            
+            design.addIntersection(design.getGroupObjectContainer(objSupplier.groupTo),
+                                   design.getGroupObjectContainer(objCategory.groupTo),
+                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            return design;
+        }
+    }
+
+    private class ContractFormEntity extends FormEntity<RomanBusinessLogics> {
+
+        private ObjectEntity objSeller;
+        private ObjectEntity objContract;
+
+        private ContractFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
+
+            objSeller = addSingleGroupObject(seller, "Продавец", name, objectClassName);
+
+            objContract = addSingleGroupObject(contract, "Договор", sidContract, date, nameImporterContract, nameCurrencyContract);
+            addObjectActions(this, objContract);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(sellerContract, objContract), Compare.EQUALS, objSeller));
+
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
+
+            design.get(objSeller.groupTo).grid.constraints.fillVertical = 1;
+            design.get(objContract.groupTo).grid.constraints.fillVertical = 3;
 
             return design;
         }
