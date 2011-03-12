@@ -3,7 +3,6 @@ package platform.client.form.panel;
 import platform.client.form.ClientFormLayout;
 import platform.client.form.GroupObjectController;
 import platform.client.form.cell.PropertyController;
-import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.ClientRegularFilterGroup;
 import platform.interop.ClassViewType;
 
@@ -86,7 +85,7 @@ public class MovingContainer {
                     if (prevProp == null) {
                         panel.add(control.getView());
                     } else {
-                        panel.add(control.getView(), Arrays.asList(panel.getComponents()).indexOf(prevProp) + 1);
+                        panel.add(control.getView(), Arrays.asList(panel.getComponents()).indexOf(prevProp.getView()) + 1);
                     }
                 }
                 control.getCellView().changeViewType(viewType);
@@ -105,5 +104,4 @@ public class MovingContainer {
             groupController.showType.addView(formLayout);
         }
     }
-
 }
