@@ -69,6 +69,6 @@ public class DoubleClass extends IntegralClass<Double> {
 
     @Override
     public Object getInfiniteValue() {
-        return Double.MAX_VALUE / 2;
+        return Double.POSITIVE_INFINITY;
     }
 }
