@@ -14,6 +14,7 @@ import platform.server.data.expr.SingleClassExpr;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
+import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.query.innerjoins.ObjectJoinSets;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
@@ -82,6 +83,9 @@ public class IsClassWhere extends DataWhere {
         return !(set instanceof UnknownClass || set instanceof DataClass);
     }
 
+//    public KeyEquals calculateKeyEquals() {
+//        return expr.getWhere().getKeyEquals().and(new KeyEquals(this));
+//    }
     public ObjectJoinSets groupObjectJoinSets() {
         if(expr instanceof KeyExpr && isObjectValueClass(classes))
             return new ObjectJoinSets((KeyExpr)expr, ((ObjectClassSet)classes).getBaseClass() ,this);

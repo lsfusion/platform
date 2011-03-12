@@ -33,7 +33,7 @@ public abstract class ActionProperty extends ExecuteProperty {
     }
 
     protected <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier) {
-        return ClassProperty.getIsClassUsedChanges(interfaces, modifier);
+        return ValueClassProperty.getIsClassUsedChanges(interfaces, modifier);
     }
     
     protected Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {

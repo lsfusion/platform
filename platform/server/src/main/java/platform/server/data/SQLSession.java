@@ -240,12 +240,12 @@ public class SQLSession extends MutableObject {
             String createString = "";
             for (KeyField key : keys)
                 createString = (createString.length() == 0 ? "" : createString + ',') + key.getDeclare(syntax);
+            if (createString.length() == 0)
+                createString = "dumb integer default 0";
             for (PropertyField prop : properties)
                 createString = (createString.length() == 0 ? "" : createString + ',') + prop.getDeclare(syntax);
             if (keys.size()>0)
                 createString = createString + "," + getConstraintDeclare(name, keys);
-            if (createString.length() == 0)
-                createString = "dumb integer";
             execute(syntax.getCreateSessionTable(name, createString));
 
             sessionTablesMap.put(name, new WeakReference<Object>(owner));

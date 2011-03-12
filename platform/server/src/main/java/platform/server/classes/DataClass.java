@@ -219,4 +219,8 @@ public abstract class DataClass<T> implements StaticClass, Type<T>, AndClassSet,
     public static DataClass findDataClass(String sid) {
         return sidToClass.get(sid);        
     }
+
+    public Object getInfiniteValue() {
+        throw new RuntimeException("not supported");
+    }
 }

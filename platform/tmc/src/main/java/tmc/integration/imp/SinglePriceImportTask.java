@@ -203,7 +203,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
             session.execute(returnPriceChanges.add(returnChanges), null, null);*/
 
             try {
-                Object importStore = BL.incStore.read(session, (DataObject) docValue);
+                Object importStore = BL.subjectIncOrder.read(session, (DataObject) docValue);
                 BL.dateLastImportShop.execute(BL.currentDate.read(session), session, session.getDataObject(importStore, ObjectType.instance));
             } catch (SQLException e) {
             }

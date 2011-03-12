@@ -85,6 +85,13 @@ public class StringClass extends DataClass<String> {
         return string;
     }
 
+    public static StringClass[] getArray(int... lengths) {
+        StringClass[] result = new StringClass[lengths.length];
+        for(int i=0;i<lengths.length;i++)
+            result[i] = StringClass.get(lengths[i]);
+        return result;
+    }
+
     @Override
     public int getBinaryLength(boolean charBinary) {
         return length * (charBinary?1:2);

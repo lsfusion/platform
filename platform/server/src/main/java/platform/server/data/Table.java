@@ -298,7 +298,7 @@ public class Table extends TwinImmutableObject implements MapKeysInterface<KeyFi
 
             public String getFirstKey() {
                 if(isSingle())
-                    return "for where.getSource() в getFrom";
+                    return "dumb";
                 return keys.iterator().next().toString();
             }
 

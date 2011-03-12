@@ -75,4 +75,9 @@ public class IntegerClass extends IntegralClass<Integer> {
     public String getSID() {
         return sid;
     }
+
+    @Override
+    public Object getInfiniteValue() {
+        return Integer.MAX_VALUE / 2;
+    }
 }

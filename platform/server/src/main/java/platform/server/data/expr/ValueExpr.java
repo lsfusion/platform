@@ -42,9 +42,6 @@ public class ValueExpr extends AbstractValueExpr implements Value {
         return compile.params.get(this);
     }
 
-    public void enumDepends(ExprEnumerator enumerator) {
-    }
-
     public Type getType(KeyType keyType) {
         return objectClass.getType();
     }

@@ -71,4 +71,9 @@ public class LongClass extends IntegralClass<Long> {
     public String getSID() {
         return sid;
     }
+
+    @Override
+    public Object getInfiniteValue() {
+        return Long.MAX_VALUE / 2;
+    }
 }

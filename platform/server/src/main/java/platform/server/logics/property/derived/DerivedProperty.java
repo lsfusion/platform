@@ -125,7 +125,7 @@ public class DerivedProperty {
     }
 
     public static <T extends PropertyInterface> PropertyMapImplement<?,T> createStatic(Object value, StaticClass valueClass) {
-        return new PropertyMapImplement<ClassPropertyInterface,T>(new ClassProperty(genID(),"sys",new ValueClass[]{}, valueClass, value),new HashMap<ClassPropertyInterface, T>());
+        return new PropertyMapImplement<ClassPropertyInterface,T>(new ValueClassProperty(genID(),"sys",new ValueClass[]{}, valueClass, value),new HashMap<ClassPropertyInterface, T>());
     }
 
     private static <T extends PropertyInterface> PropertyMapImplement<?,T> createFormula(Collection<T> interfaces, String formula, ConcreteValueClass valueClass, List<? extends PropertyInterfaceImplement<T>> params) {
@@ -308,9 +308,9 @@ public class DerivedProperty {
         // assert'им что все порядки есть, иначе неправильно расписываться будет
         assert BaseUtils.mergeSet(orders.keySet(),BaseUtils.reverse(group.mapping).keySet()).containsAll(restriction.interfaces);
 
-        // нужно MIN(огр., распр. - пред.) И распр. > пред. причем пред. подходит и null, остальные не null
+        // нужно MIN2(огр., распр. - пред.) И распр. > пред. причем пред. подходит и null, остальные не null
         // кроме того у огр. и пред. есть все интерфейсы, а у распр. - не все
-        // старый вариант : пока  MIN(огр., распр. - пред.) И распр. > пред. (1) ИЛИ MIN(огр., распр.) И пред. null (2)
+        // старый вариант : пока  MIN2(огр., распр. - пред.) И распр. > пред. (1) ИЛИ MIN2(огр., распр.) И пред. null (2)
         // новый вариант : пред. = UNION (0 and огр., сум. без) или считаем (суи. с - огр.) = пред. ??? и зтем обычную формулу
 
         PropertyMapImplement<?, T> restImplement = restriction.getImplement();
@@ -338,13 +338,13 @@ public class DerivedProperty {
         // строим связное distribute св-во, узнаем все использованные интерфейсы, строим map
         PropertyMapImplement<?, T> distribute = createJoin(group);
 
-        // MIN(огр., распр. - пред.)
+        // MIN2(огр., распр. - пред.)
         PropertyMapImplement<?, T> min = createFormula(restriction.interfaces, "(prm1+prm2-prm3-ABS(prm1-(prm2-prm3)))/2", formulaClass, BaseUtils.toList(restImplement, distribute, previous));
 
         // распр. > пред.
         PropertyMapImplement<?, T> compare = createCompare(restriction.interfaces, distribute, previous, Compare.GREATER);
 
-        // MIN(огр., распр. - пред.) И распр. > пред.
+        // MIN2(огр., распр. - пред.) И распр. > пред.
         return createAnd(restriction.interfaces, min, compare);
     }
 

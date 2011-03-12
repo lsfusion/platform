@@ -99,4 +99,9 @@ public class NumericClass extends IntegralClass<Double> {
     public String getSID() {
         return "NumericClass[" + length + "," + precision + "]";
     }
+
+    @Override
+    public Object getInfiniteValue() {
+        return Double.MAX_VALUE / 2;
+    }
 }

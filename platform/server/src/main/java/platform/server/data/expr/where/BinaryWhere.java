@@ -8,6 +8,7 @@ import platform.server.data.expr.VariableExprSet;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
+import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.query.innerjoins.ObjectJoinSets;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
@@ -57,6 +58,10 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
         return operator1.packFollowFalse(falseWhere).compare(operator2.packFollowFalse(falseWhere),getCompare());
     }
 
+//    @Override
+//    public KeyEquals calculateKeyEquals() {
+//        return getOperandWhere().getKeyEquals().and(new KeyEquals(this));
+//    }
     public ObjectJoinSets groupObjectJoinSets() {
         return getOperandWhere().groupObjectJoinSets().and(new ObjectJoinSets(this));
     }

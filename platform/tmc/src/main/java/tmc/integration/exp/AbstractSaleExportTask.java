@@ -114,7 +114,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
         setRemoteFormFilter(formInstance);
 
         // записываем фильтр на этот склад
-        PropertyDrawInstance outStore = formInstance.getPropertyDraw(BL.outStore);
+        PropertyDrawInstance outStore = formInstance.getPropertyDraw(BL.subjectOutOrder);
         outStore.toDraw.addTempFilter(new CompareFilterInstance(outStore.propertyObject, Compare.EQUALS, session.getDataObject(store, ObjectType.instance)));        
 
         PropertyDrawInstance quantity = formInstance.getPropertyDraw(BL.articleQuantity);
@@ -125,11 +125,11 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
 
         map.put(barField, formInstance.getPropertyDraw(BL.barcode));
         map.put(nameField, formInstance.getPropertyDraw(BL.name));
-        map.put(cenField, formInstance.getPropertyDraw(BL.orderSalePrice));
+        map.put(cenField, formInstance.getPropertyDraw(BL.priceAllOrderSaleArticle));
         map.put(kolField, formInstance.getPropertyDraw(BL.articleQuantity));
         map.put(dateField, formInstance.getPropertyDraw(BL.date));
-        map.put(summField, formInstance.getPropertyDraw(BL.orderArticleSaleSumCoeff));
-        map.put(percentField, formInstance.getPropertyDraw(BL.orderArticleSaleDiscount));
+        map.put(summField, formInstance.getPropertyDraw(BL.sumWithDiscountObligationOrderArticle));
+        map.put(percentField, formInstance.getPropertyDraw(BL.discountOrderArticle));
 
         FormData data = formInstance.getFormData(map.values(), BaseUtils.toSet(doc.groupTo, art.groupTo));
 
@@ -146,7 +146,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
         setRemoteFormFilter(formInstance);
 
         // записываем фильтр на этот склад
-        PropertyDrawInstance outStore = formInstance.getPropertyDraw(BL.outStore);
+        PropertyDrawInstance outStore = formInstance.getPropertyDraw(BL.subjectOutOrder);
         outStore.toDraw.addTempFilter(new CompareFilterInstance(outStore.propertyObject, Compare.EQUALS, session.getDataObject(store, ObjectType.instance)));        
 
         PropertyDrawInstance issued = formInstance.getPropertyDraw(BL.issueObligation);
@@ -183,16 +183,16 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
         ObjectInstance article = formInstance.instanceFactory.getInstance(BL.returnSaleCheckRetailBrowse.objArt);
 
         // записываем фильтр на этот склад
-        PropertyDrawInstance incStore = formInstance.getPropertyDraw(BL.incStore, doc.groupTo);
+        PropertyDrawInstance incStore = formInstance.getPropertyDraw(BL.subjectIncOrder, doc.groupTo);
         incStore.toDraw.addTempFilter(new CompareFilterInstance(incStore.propertyObject, Compare.EQUALS, session.getDataObject(store, ObjectType.instance)));
 
         map.put(barField, formInstance.getPropertyDraw(BL.barcode));
         map.put(nameField, formInstance.getPropertyDraw(BL.name));
-        map.put(cenField, formInstance.getPropertyDraw(BL.orderSalePrice));
+        map.put(cenField, formInstance.getPropertyDraw(BL.priceAllOrderSaleArticle));
         map.put(kolField, formInstance.getPropertyDraw(BL.returnInnerQuantity));
         map.put(dateField, formInstance.getPropertyDraw(BL.date, doc.groupTo));
-        map.put(summField, formInstance.getPropertyDraw(BL.returnArticleSalePay));
-        map.put(percentField, formInstance.getPropertyDraw(BL.orderArticleSaleDiscount));
+        map.put(summField, formInstance.getPropertyDraw(BL.sumWithDiscountOrderArticle));
+        map.put(percentField, formInstance.getPropertyDraw(BL.discountOrderArticle));
 
         FormData result = formInstance.getFormData(map.values(), BaseUtils.toSet(doc.groupTo, inner.groupTo, article.groupTo));
 

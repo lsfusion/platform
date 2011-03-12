@@ -19,10 +19,13 @@ import platform.server.data.translator.TranslateExprLazy;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 
+import java.util.Iterator;
 import java.util.Map;
 
 @TranslateExprLazy
 public class FormulaExpr extends StaticClassExpr {
+
+    public final static String MIN2 = "(prm1+prm2-ABS(prm1-prm2))/2"; // пока так сделаем min и проверку на infinite
 
     private final String formula;
     private final ConcreteValueClass valueClass;
@@ -35,10 +38,23 @@ public class FormulaExpr extends StaticClassExpr {
         this.valueClass = valueClass;
     }
 
+    public static Expr create(String formula, Map<String, BaseExpr> params, ConcreteValueClass value) {
+        if(formula.equals(MIN2)) {
+            Iterator<BaseExpr> i = params.values().iterator();
+            BaseExpr operator1 = i.next(); BaseExpr operator2 = i.next();
+            if(operator1 instanceof InfiniteExpr)
+                return operator2;
+            if(operator2 instanceof InfiniteExpr)
+                return operator1;
+        }
+
+        return BaseExpr.create(new FormulaExpr(formula, params, value));
+    }
+
     public static Expr create(String formula, ConcreteValueClass value,Map<String,? extends Expr> params) {
         ExprCaseList result = new ExprCaseList();
         for(MapCase<String> mapCase : CaseExpr.pullCases(params))
-            result.add(mapCase.where, BaseExpr.create(new FormulaExpr(formula, mapCase.data, value)));
+            result.add(mapCase.where, create(formula, mapCase.data, value));
         return result.getExpr();
     }
 

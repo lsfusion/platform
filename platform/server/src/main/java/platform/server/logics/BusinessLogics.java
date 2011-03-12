@@ -2445,6 +2445,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addDProp(group, sID, false, caption, value, params);
     }
 
+    protected LP[] addDProp(AbstractGroup group, String paramID, String[] sIDs, String[] captions, ValueClass[] values, ValueClass... params) {
+        LP[] result = new LP[sIDs.length];
+        for(int i=0;i<sIDs.length;i++)
+            result[i] = addDProp(group, sIDs[i]+paramID, captions[i], values[i], params);
+        return result;
+    }
+
     protected LP addDProp(AbstractGroup group, String sID, boolean persistent, String caption, ValueClass value, ValueClass... params) {
         StoredDataProperty dataProperty = new StoredDataProperty(sID, caption, params, value);
         LP lp = addProperty(group, persistent, new LP<ClassPropertyInterface>(dataProperty));
@@ -2571,6 +2578,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addFAProp(null, caption, form, params, new PropertyObjectEntity[0], new PropertyObjectEntity[0], false, false);
     }
 
+    protected LP addFAProp(AbstractGroup group, FormEntity form, ObjectEntity... params) {
+        return addFAProp(group, form.caption, form, params);
+    }
+
     protected LP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity... params) {
         return addFAProp(group, caption, form, params, new PropertyObjectEntity[0], new PropertyObjectEntity[0], false, false);
     }
@@ -2658,6 +2669,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addProperty(group, new LP<ShiftChangeProperty.Interface<P>>(new ShiftChangeProperty<P, PropertyInterface>(genSID(), caption, lp.property, new PropertyMapImplement<PropertyInterface, P>(reverseBarcode.property))));
     }
 
+    // добавляет свойство с бесконечным значением
+    protected LP addICProp(DataClass valueClass, ValueClass... params) {
+        return addProperty(privateGroup, false, new LP<ClassPropertyInterface>(new InfiniteClassProperty(genSID(), "Беск.", params, valueClass)));
+    }
+
     protected LP addCProp(StaticClass valueClass, Object value, ValueClass... params) {
         return addCProp("sys", valueClass, value, params);
     }
@@ -2677,7 +2693,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addCProp(AbstractGroup group, String sID, boolean persistent, String caption, StaticClass valueClass, Object value, ValueClass... params) {
-        return addProperty(group, persistent, new LP<ClassPropertyInterface>(new ClassProperty(sID, caption, params, valueClass, value)));
+        return addProperty(group, persistent, new LP<ClassPropertyInterface>(new ValueClassProperty(sID, caption, params, valueClass, value)));
     }
 
     protected LP addTProp(Time time) {
@@ -2997,6 +3013,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addProperty(group, persistent, listProperty);
     }
 
+    protected LP[] addJProp(AbstractGroup group, boolean implementChange, String paramID, LP[] props, String caption, Object... params) {
+        LP[] result = new LP[props.length];
+        for(int i=0;i<props.length;i++)
+            result[i] = addJProp(group, implementChange, paramID + props[i].property.sID, props[i].property.caption + (caption.length()==0?"":(" " + caption)), props[i], params);
+        return result;
+    }
+
+    protected LP[] addJProp(AbstractGroup group, boolean implementChange, String paramID, LP[] props, Object... params) {
+        return addJProp(group, implementChange, paramID, props, "", params);
+    }
+
     private <T extends PropertyInterface> LP addGProp(AbstractGroup group, String sID, boolean persistent, String caption, LP<T> groupProp, List<PropertyInterfaceImplement<T>> listImplements) {
 
         GroupProperty<T> property = new SumGroupProperty<T>(sID, caption, listImplements, groupProp.property);
@@ -3135,7 +3162,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
           // создадим группировочное св-во с маппом на общий интерфейс, нужно поубирать "дырки"
 
 
-          // возвращаем MIN(unGroup-MU(prevGroup,0(maxGroup)),maxGroup) и не unGroup<=prevGroup
+          // возвращаем MIN2(unGroup-MU(prevGroup,0(maxGroup)),maxGroup) и не unGroup<=prevGroup
           LF zeroQuantity = addJProp(and1, BaseUtils.add(new Object[]{vzero},directLI(maxGroupProp)));
           LF zeroRemainPrev = addSUProp(Union.OVERRIDE , zeroQuantity, remainPrev);
           LF calc = addSFProp("prm3+prm1-prm2-GREATEST(prm3,prm1-prm2)",DoubleClass.instance,3);

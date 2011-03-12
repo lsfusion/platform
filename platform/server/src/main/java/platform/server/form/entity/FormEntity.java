@@ -260,7 +260,8 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
                 addPropertyDraw((AbstractNode) group, upClasses, useObjSubsets, objects);
             } else if (group instanceof LP) {
                 this.addPropertyDraw((LP) group, objects);
-            }
+            } else if (group instanceof LP[])
+                this.addPropertyDraw((LP[])group, objects);
         }
     }
 

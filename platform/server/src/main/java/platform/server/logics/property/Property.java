@@ -386,15 +386,18 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public MapDataChanges<T> getDataChanges(PropertyChange<T> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
-        WhereBuilder calculateChangedWhere = timeChanges.isEmpty() ? changedWhere : new WhereBuilder();
-        MapDataChanges<T> dataChanges = calculateDataChanges(change, calculateChangedWhere, modifier);
-        for (Map.Entry<Time, TimeChangeDataProperty<T>> timeChange : timeChanges.entrySet()) // обновляем свойства времени изменения
-            dataChanges = dataChanges.add(timeChange.getValue().getDataChanges(new PropertyChange<ClassPropertyInterface>(
-                    BaseUtils.join(timeChange.getValue().mapInterfaces, change.mapKeys),
-                    new TimeExpr(timeChange.getKey()), calculateChangedWhere.toWhere()), null, modifier).map(timeChange.getValue().mapInterfaces));
-        if (changedWhere != null && !timeChanges.isEmpty())
-            changedWhere.add(calculateChangedWhere.toWhere());
-        return dataChanges;
+        if(!change.where.isFalse()) { // для оптимизации, если не было изменений
+            WhereBuilder calculateChangedWhere = timeChanges.isEmpty() ? changedWhere : new WhereBuilder();
+            MapDataChanges<T> dataChanges = calculateDataChanges(change, calculateChangedWhere, modifier);
+            for (Map.Entry<Time, TimeChangeDataProperty<T>> timeChange : timeChanges.entrySet()) // обновляем свойства времени изменения
+                dataChanges = dataChanges.add(timeChange.getValue().getDataChanges(new PropertyChange<ClassPropertyInterface>(
+                        BaseUtils.join(timeChange.getValue().mapInterfaces, change.mapKeys),
+                        new TimeExpr(timeChange.getKey()), calculateChangedWhere.toWhere()), null, modifier).map(timeChange.getValue().mapInterfaces));
+            if (changedWhere != null && !timeChanges.isEmpty())
+                changedWhere.add(calculateChangedWhere.toWhere());
+            return dataChanges;
+        } else
+            return new MapDataChanges<T>();
     }
 
     protected <U extends Changes<U>> U calculateUsedDataChanges(Modifier<U> modifier) {

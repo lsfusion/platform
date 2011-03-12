@@ -66,4 +66,9 @@ public class DoubleClass extends IntegralClass<Double> {
     public String getSID() {
         return sid;
     }
+
+    @Override
+    public Object getInfiniteValue() {
+        return Double.MAX_VALUE / 2;
+    }
 }

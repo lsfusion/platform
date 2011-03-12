@@ -31,7 +31,4 @@ public class SystemValueExpr extends AbstractValueExpr {
     public String getSource(CompileSource compile) {
         return objectClass.getType().getString(object, compile.syntax);
     }
-
-    public void enumDepends(ExprEnumerator enumerator) {
-    }
 }

@@ -1,34 +1,27 @@
 package platform.server.logics.property;
 
-import platform.server.classes.ConcreteValueClass;
-import platform.server.classes.ValueClass;
 import platform.server.classes.StaticClass;
+import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
 import platform.server.session.SimpleChanges;
-import platform.server.logics.DataObject;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class ClassProperty extends AggregateProperty<ClassPropertyInterface> {
+public abstract class ClassProperty<S extends StaticClass> extends AggregateProperty<ClassPropertyInterface> {
 
-    final StaticClass staticClass;
-    final Object value;
+    final S staticClass;
 
-    public ClassProperty(String sID, String caption, ValueClass[] classes, StaticClass staticClass, Object value) {
+    public ClassProperty(String sID, String caption, ValueClass[] classes, S staticClass) {
         super(sID, caption, DataProperty.getInterfaces(classes));
-        
-        this.staticClass = staticClass;
-        this.value = value;
 
-        assert value !=null;
+        this.staticClass = staticClass;
     }
 
     public static Set<ValueClass> getValueClasses(Collection<ClassPropertyInterface> interfaces) {
@@ -53,8 +46,10 @@ public class ClassProperty extends AggregateProperty<ClassPropertyInterface> {
         return classWhere;
     }
 
+    protected abstract Expr getStaticExpr();
+
     public Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
         // здесь session может быть null
-        return staticClass.getStaticExpr(value).and(getIsClassWhere(joinImplement, modifier, changedWhere));
+        return getStaticExpr().and(getIsClassWhere(joinImplement, modifier, changedWhere));
     }
 }
