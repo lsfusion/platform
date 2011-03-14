@@ -68,7 +68,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private LP sumManfrOrder;
     private CustomClass storeLegalEntity;
     private CustomClass contract;
-    private LP purposeOrderRetail;
     private LP permissionOrder;
     private LP contractLegalEntityLegalEntity;
     private CustomClass contractSupplier;
@@ -80,6 +79,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private CustomClass contractDelivery;
     private LP nameLegalOutContract;
     private LP nameLegalIncContract;
+    private LP purposeOrder;
+    private AbstractGroup documentPrintGroup;
 
     public VEDBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -1056,14 +1057,15 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP nameContractOrder = addJProp("nameContractOrder", "Договор", name, contractOrder, 1);
 
         LP invoiceOrderRetail = addDProp("invoiceOrderRetail", "Счет-фактура", StringClass.get(50), orderSaleInvoiceArticleRetail);
-        purposeOrderRetail = addDProp(documentInvoiceSaleGroup, "purposeOrderRetail", "Цель приобретения", StringClass.get(50), orderSaleInvoiceArticleRetail);
+        LP purposeOrderRetail = addDProp("purposeOrderRetail", "Цель приобретения", StringClass.get(50), orderSaleInvoiceArticleRetail);
         permissionOrder = addCUProp(documentInvoiceSaleGroup, "permissionOrder", "Основание отпуска", invoiceOrderRetail, nameContractOrder);
+        purposeOrder = addCUProp(documentInvoiceSaleGroup, "purposeOrder", "Цель приобретения", purposeOrderRetail);
 
         LP[] propsInvoiceDocument = addDProp(documentShipmentOutGroup, "InvoiceDocument",
                         new String[]{"personPermission", "personOut", "personWarrant", "warrantBy", "personInc"},
                         new String[]{"Отпуск разрешил", "Отпуск произвел", "Кому выд. ТМЦ (по дов.)", "По доверенности выд.", "Товар получил"},
                         StringClass.getArray(50,60,60,60,70,60), shipmentDocumentOut);
-        propsInvoiceTransportDocument = addDProp(documentShipmentTransportGroup, "InvoiceDocument",
+        LP[] propsInvoiceTransportDocument = addDProp(documentShipmentTransportGroup, "InvoiceDocument",
                         new String[]{"personPRR", "typePRR", "codePRR", "timeOut", "timeInc", "timeDelay",
                                 "transport", "transportList", "personTransport", "personDrive", "personRespTransport", "typeTransport", "route", "readdress", "trailer", "garageNumber"},
                         new String[]{"Исполнитель ПРР", "Способ ПРР", "Код ПРР", "Убытие", "Прибытие", "Простой",
@@ -1071,7 +1073,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         StringClass.getArray(60,20,10,8,8,8, 20,10,60,60,60,20,20,50,30,15), shipmentDocumentOut);
     }
 
-    LP[] propsInvoiceTransportDocument;
     LP padlBarcodeToObject;
     LP nameToCurrency;
     LP nameToArticleGroup;
@@ -1269,18 +1270,20 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         artExtraGroup = new AbstractGroup("Доп. атрибуты товара");
         publicGroup.add(artExtraGroup);
 
-        documentShipmentTransportGroup = new AbstractGroup("ТТН");
-        publicGroup.add(documentShipmentTransportGroup);
+        documentPrintGroup = new AbstractGroup("Печатные формы");
+        publicGroup.add(documentPrintGroup);
 
-        documentShipmentOutGroup = new AbstractGroup("ТН");
-        documentShipmentTransportGroup.add(documentShipmentOutGroup);
+        documentInvoiceSaleGroup = new AbstractGroup("Основание");
+        documentPrintGroup.add(documentInvoiceSaleGroup);
 
-        documentShipmentGroup = new AbstractGroup("Реестр");
-        documentShipmentOutGroup.add(documentShipmentGroup);
+        documentShipmentGroup = new AbstractGroup("Накладная");
+        documentPrintGroup.add(documentShipmentGroup);
 
-        documentInvoiceSaleGroup = new AbstractGroup("Документ продажи");
-        documentInvoiceSaleGroup.createContainer = false;
-        documentShipmentGroup.add(documentInvoiceSaleGroup);
+        documentShipmentOutGroup = new AbstractGroup("Отпуск");
+        documentPrintGroup.add(documentShipmentOutGroup);
+
+        documentShipmentTransportGroup = new AbstractGroup("Транспорт");
+        documentPrintGroup.add(documentShipmentTransportGroup);
     }
 
     protected void initTables() {
@@ -1646,7 +1649,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             }
 
             if(isInvoiceOutForm())
-                addPropertyDraw(objDoc, documentShipmentTransportGroup, true);
+                addPropertyDraw(objDoc, documentPrintGroup, true);
 
             if(isInvoiceIncForm())
                 addPropertyDraw(objDoc, documentShipmentGroup, true);
@@ -1747,18 +1750,21 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 ContainerView pageContainer = design.createContainer();
                 design.getMainContainer().addAfter(pageContainer, design.getGroupObjectContainer(objDoc.groupTo));
 
-                Collection<GroupObjectEntity> documentGroups = getDocumentGroups();
-                if(documentGroups.size()==1)
-                    pageContainer.add(design.getGroupObjectContainer(BaseUtils.single(documentGroups)));
-                else {
-                    ContainerView groupContainer = design.createContainer("Спецификация");
-                    for(GroupObjectEntity group : documentGroups)
-                        groupContainer.add(design.getGroupObjectContainer(group));
-                    pageContainer.add(groupContainer);
-                }
+                ContainerView printCont = design.getGroupPropertyContainer(objDoc.groupTo, documentPrintGroup);
+                if(printCont!=null) {
+                    Collection<GroupObjectEntity> documentGroups = getDocumentGroups();
+                    if(documentGroups.size()==1)
+                        pageContainer.add(design.getGroupObjectContainer(BaseUtils.single(documentGroups)));
+                    else {
+                        ContainerView groupContainer = design.createContainer("Спецификация");
+                        for(GroupObjectEntity group : documentGroups)
+                            groupContainer.add(design.getGroupObjectContainer(group));
+                        pageContainer.add(groupContainer);
+                    }
 
-                pageContainer.add(design.get(getPropertyDraw(propsInvoiceTransportDocument[0])).getContainer());
-                pageContainer.tabbedPane = true;
+                    pageContainer.add(printCont);
+                    pageContainer.tabbedPane = true;
+                }
             }
 
             return design;
@@ -2281,8 +2287,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 design.addIntersection(design.getGroupObjectContainer(objIssue.groupTo), design.getGroupObjectContainer(objCoupon.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
                 design.addIntersection(design.getGroupObjectContainer(objIssue.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
-                design.getGroupPropertyContainer(null, cashRegOperGroup).add(0, design.get(getPropertyDraw(payWithCard)));
-                design.getGroupPropertyContainer(null, cashRegOperGroup).add(1, design.get(getPropertyDraw(printOrderCheck)));
+                design.getGroupPropertyContainer((GroupObjectView) null, cashRegOperGroup).add(0, design.get(getPropertyDraw(payWithCard)));
+                design.getGroupPropertyContainer((GroupObjectView) null, cashRegOperGroup).add(1, design.get(getPropertyDraw(printOrderCheck)));
 
                 design.get(getPropertyDraw(printOrderCheck)).constraints.insetsSibling.right = 100;
 
@@ -3004,7 +3010,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             ObjectEntity objDoc = addSingleGroupObject(getDocClass(), "Документ", date, nameSubjectIncOrder, nameSubjectOutOrder, nameLegalEntityIncOrder, nameLegalEntityOutOrder, addressSubjectIncOrder, addressSubjectOutOrder, sumWithDiscountOrder, sumNDSOrder, sumNoNDSOrder);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
 
-            addPropertyDraw(objDoc, getGroup());
+            addPropertyDraw(objDoc, permissionOrder, true, purposeOrder, true, getDocGroups());
 
             if(inclArticle) {
                 ObjectEntity objArt = addSingleGroupObject(article, name, nameUnitOfMeasureArticle);
@@ -3012,13 +3018,14 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addFixedFilter(new NotNullFilterEntity(getPropertyObject(articleQuantity)));
             }
 
-            addFAProp(getGroup(), this, objDoc);
+            addFAProp(getActionGroup(), this, objDoc);
         }
 
         protected ValueClass getDocClass() {
             return shipmentDocumentOut;
         }
-        protected abstract AbstractGroup getGroup();
+        protected abstract AbstractGroup[] getDocGroups();
+        protected abstract AbstractGroup getActionGroup();
     }
 
     private class TTNFormEntity extends PrintSaleFormEntity {
@@ -3027,7 +3034,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             super(parent, sID, caption, inclArticle);
         }
 
-        protected AbstractGroup getGroup() {
+        @Override
+        protected AbstractGroup[] getDocGroups() {
+            return new AbstractGroup[]{documentInvoiceSaleGroup, documentShipmentGroup, documentShipmentOutGroup, documentShipmentTransportGroup};
+        }
+
+        @Override
+        protected AbstractGroup getActionGroup() {
             return documentShipmentTransportGroup;
         }
     }
@@ -3038,7 +3051,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             super(parent, sID, caption, inclArticle);
         }
 
-        protected AbstractGroup getGroup() {
+        @Override
+        protected AbstractGroup[] getDocGroups() {
+            return new AbstractGroup[]{documentInvoiceSaleGroup, documentShipmentGroup, documentShipmentOutGroup};
+        }
+
+        @Override
+        protected AbstractGroup getActionGroup() {
             return documentShipmentOutGroup;
         }
     }
@@ -3054,7 +3073,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             return orderSaleInvoiceArticleRetail; // здесь может более абстрактный класс должен быть но пока нет смысла
         }
 
-        protected AbstractGroup getGroup() {
+        @Override
+        protected AbstractGroup[] getDocGroups() {
+            return new AbstractGroup[]{documentInvoiceSaleGroup};
+        }
+
+        @Override
+        protected AbstractGroup getActionGroup() {
             return documentInvoiceSaleGroup;
         }
     }
@@ -3293,7 +3318,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             DefaultFormView design = super.createDefaultRichDesign();
 
             if (toAdd) {
-                design.getGroupPropertyContainer(null, cashRegOperGroup).add(design.get(getPropertyDraw(payWithCard)));
+                design.getGroupPropertyContainer((GroupObjectView) null, cashRegOperGroup).add(design.get(getPropertyDraw(payWithCard)));
                 design.get(getPropertyDraw(payWithCard)).constraints.directions = new SimplexComponentDirections(0.1, -0.1, 0, 0.1);
 
                 design.setHeaderFont(FONT_MEDIUM_PLAIN);
