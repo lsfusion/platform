@@ -7,7 +7,7 @@
         <groupId>by.luxsoft.platform</groupId>
         <artifactId>logics</artifactId>
         <version>1.0</version>
-        <relativePath>../pom/logics.xml</relativePath>
+        <relativePath>../logics/pom.xml</relativePath>
     </parent>
 
     <artifactId>trushkin-logics</artifactId>

@@ -19,6 +19,8 @@
     </distributionManagement>
 
     <modules>
+        <module>base</module>
+        <module>logics</module>
         <module>api</module>
         <module>client</module>
         <module>fullclient</module>

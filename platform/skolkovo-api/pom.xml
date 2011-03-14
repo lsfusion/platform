@@ -5,7 +5,7 @@
       <groupId>by.luxsoft.platform</groupId>
       <artifactId>base</artifactId>
       <version>1.0</version>
-      <relativePath>../pom/base.xml</relativePath>
+      <relativePath>../base/pom.xml</relativePath>
   </parent>
 
   <artifactId>skolkovo-api</artifactId>

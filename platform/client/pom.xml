@@ -5,7 +5,7 @@
         <groupId>by.luxsoft.platform</groupId>
         <artifactId>base</artifactId>
         <version>1.0</version>
-        <relativePath>../pom/base.xml</relativePath>
+        <relativePath>../base/pom.xml</relativePath>
     </parent>
     <artifactId>client</artifactId>
     <packaging>jar</packaging>
@@ -105,6 +105,11 @@
             <groupId>com.jhlabs</groupId>
             <artifactId>filters</artifactId>
             <version>2.0.235</version>
+        </dependency>
+        <dependency>
+            <groupId>org.swinglabs</groupId>
+            <artifactId>swingx</artifactId>
+            <version>1.6.1</version>
         </dependency>
     </dependencies>
 </project>
