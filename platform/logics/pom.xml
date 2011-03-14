@@ -11,13 +11,14 @@
     </parent>
     <artifactId>logics</artifactId>
     <packaging>pom</packaging>
+    <name>Logics</name>
 
     <build>
         <plugins>
             <plugin>
               <artifactId>maven-assembly-plugin</artifactId>
               <configuration>
-                 <finalName>logics</finalName>
+                 <finalName>fusion</finalName>
                  <appendAssemblyId>true</appendAssemblyId>
                  <archive>
                      <manifest>
