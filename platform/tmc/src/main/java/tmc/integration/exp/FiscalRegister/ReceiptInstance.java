@@ -13,7 +13,7 @@ public class ReceiptInstance implements Serializable {
     public String cashierName;
     public String clientName;
     public Double clientSum;
-    public Integer clientDiscount; //скидка без учета сертификатов
+    public Number clientDiscount; //скидка без учета сертификатов
     public List<ReceiptItem> receiptList;
     public List<ObligationItem> obligationList;
 

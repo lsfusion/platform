@@ -2459,6 +2459,36 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return lp;
     }
 
+    protected LP addGDProp(AbstractGroup group, String paramID, String sID, String caption, ValueClass[] values, CustomClass[]... params) {
+        CustomClass[][] listParams = new CustomClass[params[0].length][]; //
+        for(int i=0;i<listParams.length;i++) {
+            listParams[i] = new CustomClass[params.length];
+            for(int j=0;j<params.length;j++)
+                listParams[i][j] = params[j][i];
+        }
+        params = listParams;
+
+        LP[] genProps = new LP[params.length];
+        for(int i=0;i<params.length;i++) {
+            String genID = "";
+            String genCaption = "";
+            for(int j=0;j<params[i].length;j++) {
+                genID += params[i][j].getSID();
+                genCaption = (genCaption.length()==0?"":genCaption) + params[i][j].caption;
+            }
+            genProps[i] = addDProp(sID + genID, caption + " (" + genCaption + ")", values[i], params[i]);
+        }
+
+        return addCUProp(group, sID + paramID, caption, genProps);
+    }
+
+    protected LP[] addGDProp(AbstractGroup group, String paramID, String[] sIDs, String[] captions, ValueClass[][] values, CustomClass[]... params) {
+        LP[] result = new LP[values.length];
+        for(int i=0;i<values.length;i++)
+            result[i] = addGDProp(group, paramID, sIDs[i], captions[i], values[i], params);
+        return result;
+    }
+
     protected <D extends PropertyInterface> LP addDCProp(String sID, String caption, LP<D> derivedProp, Object... params) {
         return addDCProp(null, sID, caption, derivedProp, params);
     }
