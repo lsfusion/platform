@@ -1,5 +1,6 @@
 package platform.server.data.sql;
 
+import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.server.data.type.Type;
 
@@ -42,8 +43,10 @@ public class PostgreDataAdapter extends DataAdapter {
         } catch (SQLException e) {
         }*/
         try {
-            connect.createStatement().execute("CREATE DATABASE " + dataBase + " WITH ENCODING='UTF8' ");
+            // обязательно нужно создавать на основе template0, так как иначе у template1 может быть другая кодировка и ошибка
+            connect.createStatement().execute("CREATE DATABASE " + dataBase + " TEMPLATE template0 WITH ENCODING='UTF8' ");
         } catch (SQLException e) {
+            logger.info("Ошибка при создании базы данных : " + e);
         }
         connect.close();
     }

@@ -1,11 +1,13 @@
 package platform.server.data.sql;
 
+import org.apache.log4j.Logger;
 import platform.server.data.AbstractConnectionPool;
 import platform.server.data.type.Type;
 
 import java.sql.SQLException;
 
 public abstract class DataAdapter extends AbstractConnectionPool implements SQLSyntax {
+    protected final static Logger logger = Logger.getLogger(DataAdapter.class);
 
     public String server;
     public String dataBase;

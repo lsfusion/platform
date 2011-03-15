@@ -14,17 +14,6 @@
     <packaging>jar</packaging>
     <name>Skolkovo Logics</name>
 
-    <build>
-        <plugins>
-            <plugin>
-              <artifactId>maven-assembly-plugin</artifactId>
-              <configuration>
-                 <finalName>skolkovo-logics</finalName>
-              </configuration>
-            </plugin>
-         </plugins>
-    </build>
-
     <dependencies>
         <dependency>
             <groupId>by.luxsoft.platform</groupId>

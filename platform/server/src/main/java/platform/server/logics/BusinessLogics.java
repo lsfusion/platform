@@ -98,99 +98,22 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    private static BusinessLogics BL;
-    private static Registry registry;
 
-    private static Boolean stopped = false;
-    private static final Object serviceMonitor = new Object();
+    // для обратной совместимости
+    // нужно использовать класс BusinessLogicsBootstrap
 
     public static void start(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, JRException {
-
-        // делаем, чтобы сборщик мусора срабатывал каждую минуту - для удаления ненужных connection'ов
-
-        if (System.getProperty("sun.rmi.dgc.server.gcInterval") == null) {
-            System.setProperty("sun.rmi.dgc.server.gcInterval", "600000");
-        }
-
-        System.setProperty("mail.mime.encodefilename", "true");
-
-        initRMISocketFactory();
-
-        stopped = false;
-
-        logger.info("Server is starting...");
-
-        XmlBeanFactory factory = new XmlBeanFactory(new FileSystemResource("conf/settings.xml"));
-
-        if (factory.containsBean("settings")) {
-            Settings.instance = (Settings) factory.getBean("settings");
-        } else {
-            Settings.instance = new Settings();
-        }
-
-        BL = (BusinessLogics) factory.getBean("businessLogics");
-        registry = LocateRegistry.createRegistry(BL.getExportPort());
-
-//        registry.rebind("BusinessLogics", BL);
-        registry.rebind("BusinessLogicsLoader", new BusinessLogicsLoader(BL));
-
-        logger.info("Server has successfully started");
-
-        if (factory.containsBean("serverInstanceLocatorSettings")) {
-            ServerInstanceLocatorSettings settings = (ServerInstanceLocatorSettings) factory.getBean("serverInstanceLocatorSettings");
-            new ServerInstanceLocator().start(settings, BL.getExportPort());
-
-            logger.info("Server instance locator successfully started");
-        }
-
-        synchronized (serviceMonitor) {
-            while (!stopped) {
-                try {
-                    serviceMonitor.wait();
-                } catch (InterruptedException e) {
-                }
-            }
-        }
-
-        logger.info("Server has successfully stopped");
-    }
-
-    private static void initRMISocketFactory() throws IOException {
-        RMISocketFactory socketFactory = RMISocketFactory.getSocketFactory();
-        if (socketFactory == null) {
-            socketFactory = RMISocketFactory.getDefaultSocketFactory();
-        }
-
-        socketFactory = new ServerSocketFactory();
-
-        RMISocketFactory.setFailureHandler(new RMIFailureHandler() {
-
-            public boolean failure(Exception ex) {
-                return true;
-            }
-        });
-
-        RMISocketFactory.setSocketFactory(socketFactory);
+        BusinessLogicsBootstrap.start();
     }
 
     public static void stop(String[] args) throws RemoteException, NotBoundException {
-
-        stopped = true;
-
-        logger.info("Server is stopping...");
-
-        registry.unbind("BusinessLogicsLoader");
-
-        registry = null;
-        BL = null;
-
-        synchronized (serviceMonitor) {
-            serviceMonitor.notify();
-        }
+        BusinessLogicsBootstrap.stop();
     }
 
+
+    // интерфейс для обычного старта
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, JRException {
-        start(args);
+        BusinessLogicsBootstrap.start();
     }
 
     public final static SQLSyntax debugSyntax = new PostgreDataAdapter();
