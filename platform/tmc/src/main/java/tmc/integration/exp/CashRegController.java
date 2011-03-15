@@ -243,7 +243,7 @@ public class CashRegController {
         result.cashierName = (String) data.rows.get(0).values.get(cashierNameDraw);
         result.clientName = (String) data.rows.get(0).values.get(clientNameDraw);
         result.clientSum = (Double) data.rows.get(0).values.get(clientSumDraw);
-        result.clientDiscount = (Integer) data.rows.get(0).values.get(clientDiscountDraw);
+        result.clientDiscount = (Number) data.rows.get(0).values.get(clientDiscountDraw);
 
         return result;
     }

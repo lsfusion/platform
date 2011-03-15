@@ -443,7 +443,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP groupParent = addDProp("groupParent", "Родительская группа", articleGroup, articleGroup);
         LP groupParentName = addJProp(baseGroup, "Родительская группа", name, groupParent, 1);
 
-        articleToGroup = addDProp("articleToGroup", "Группа товаров", articleGroup, article); // принадлежность товара группе
+        articleToGroup = addDProp(idGroup, "articleToGroup", "Группа товаров", articleGroup, article); // принадлежность товара группе
         nameArticleGroupArticle = addJProp(baseGroup, "Группа товаров", name, articleToGroup, 1);
 
         payWithCard = addAProp(new PayWithCardActionProperty());
@@ -850,7 +850,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         discountOrderArticle = addCUProp(baseGroup, "discountOrderArticle", "Скидка", orderArticleSaleDiscount, discountOrderReturnArticle); // возвращаем ту же скидку при возврате
 
         discountSumOrderArticle = addJProp(documentPriceGroup, "discountSumOrderArticle", "Сумма скидки", round1, addJProp(percent, sumOrderArticle, 1, 2, discountOrderArticle, 1, 2), 1, 2);
-        sumWithDiscountOrderArticle = addDUProp(documentPriceGroup, "Сумма со скидкой", sumOrderArticle, discountSumOrderArticle);
+        sumWithDiscountOrderArticle = addDUProp(documentPriceGroup, "sumWithDiscountOrderArticle", "Сумма со скидкой", sumOrderArticle, discountSumOrderArticle);
 
         LP orderSalePayGift = addSGProp(addJProp(and(false, false, false), obligationSum, 2, issueObligation, 1, 2, is(order), 1, is(giftObligation), 2), 1);
         discountSumOrder = addSGProp(documentAggrPriceGroup, "discountSumOrder", true, "Сумма скидки", discountSumOrderArticle, 1);
@@ -858,7 +858,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         sumNDSOrderArticle = addJProp(documentPriceGroup, "sumNDSOrderArticle", "Сумма НДС", round1, addJProp(backPercent, sumWithDiscountOrderArticle, 1, 2, ndsOrderArticle, 1, 2), 1, 2);
         sumNoNDSOrderArticle = addDUProp(documentPriceGroup, "sumNoNDSOrderArticle", "Сумма без НДС", sumWithDiscountOrderArticle, sumNDSOrderArticle);
-        // док.
+        // док.      n
         sumNDSOrder = addSGProp(documentPriceGroup, "sumNDSOrder", "Сумма НДС", sumNDSOrderArticle, 1);
         sumNoNDSOrder = addDUProp(documentPriceGroup, "sumNoNDSOrder", "Сумма без НДС", sumWithDiscountOrder, sumNDSOrder);
 
@@ -1648,11 +1648,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 //getPropertyDraw(documentBarcodePriceOv).setToDraw(objBarcode.groupTo);
             }
 
-            if(isInvoiceOutForm())
-                addPropertyDraw(objDoc, documentPrintGroup, true);
-
-            if(isInvoiceIncForm())
-                addPropertyDraw(objDoc, documentShipmentGroup, true);
+            addPropertyDraw(objDoc, documentPrintGroup, true);
         }
 
         protected abstract boolean isSaleForm();
@@ -1746,36 +1742,26 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 }
             }
 
-            if(isInvoiceOutForm()) {
+            ContainerView printCont = design.getGroupPropertyContainer(objDoc.groupTo, documentPrintGroup);
+            if(printCont!=null) {
                 ContainerView pageContainer = design.createContainer();
                 design.getMainContainer().addAfter(pageContainer, design.getGroupObjectContainer(objDoc.groupTo));
 
-                ContainerView printCont = design.getGroupPropertyContainer(objDoc.groupTo, documentPrintGroup);
-                if(printCont!=null) {
-                    Collection<GroupObjectEntity> documentGroups = getDocumentGroups();
-                    if(documentGroups.size()==1)
-                        pageContainer.add(design.getGroupObjectContainer(BaseUtils.single(documentGroups)));
-                    else {
-                        ContainerView groupContainer = design.createContainer("Спецификация");
-                        for(GroupObjectEntity group : documentGroups)
-                            groupContainer.add(design.getGroupObjectContainer(group));
-                        pageContainer.add(groupContainer);
-                    }
-
-                    pageContainer.add(printCont);
-                    pageContainer.tabbedPane = true;
+                Collection<GroupObjectEntity> documentGroups = getDocumentGroups();
+                if(documentGroups.size()==1)
+                    pageContainer.add(design.getGroupObjectContainer(BaseUtils.single(documentGroups)));
+                else {
+                    ContainerView groupContainer = design.createContainer("Спецификация");
+                    for(GroupObjectEntity group : documentGroups)
+                        groupContainer.add(design.getGroupObjectContainer(group));
+                    pageContainer.add(groupContainer);
                 }
+
+                pageContainer.add(printCont);
+                pageContainer.tabbedPane = true;
             }
 
             return design;
-        }
-
-        protected boolean isInvoiceOutForm() {
-            return false;
-        }
-
-        protected boolean isInvoiceIncForm() {
-            return false;
         }
 
         protected Collection<GroupObjectEntity> getDocumentGroups() {
@@ -2028,10 +2014,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             super(parent, sID, concrete==0?orderReturnDeliveryLocal:commitReturnDeliveryLocal, toAdd, commitDeliveryLocal, false, true);
         }
 
-        @Override
-        protected boolean isInvoiceOutForm() {
-            return true;
-        }
     }
 
     private class ArticleInnerFormEntity extends ArticleOuterFormEntity {
@@ -2052,11 +2034,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         protected boolean isSaleForm() {
-            return true;
-        }
-
-        @Override
-        protected boolean isInvoiceOutForm() {
             return true;
         }
 
@@ -2445,10 +2422,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             return false;
         }
 
-        @Override
-        protected boolean isInvoiceOutForm() {
-            return true;
-        }
     }
 
     private class DistributeFormEntity extends DocumentInnerFormEntity {
@@ -2471,10 +2444,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             fillExtraCheckFilters(filterGroup, toAdd);
         }
 
-        @Override
-        protected boolean isInvoiceOutForm() {
-            return true;
-        }
     }
 
     private class DistributeShopFormEntity extends DistributeFormEntity {
@@ -2630,11 +2599,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             return false;
         }
 
-        @Override
-        protected boolean isInvoiceOutForm() {
-            return true;
-        }
-
         public DistributeWarehouseFormEntity(NavigatorElement parent, String sID, boolean toAdd) {
             super(parent, sID, toAdd, orderDistributeWarehouse, commitDistributeShop);
         }
@@ -2657,10 +2621,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             super(parent, sID, toAdd, returnSaleWhole, commitSaleWhole);
         }
 
-        @Override
-        protected boolean isInvoiceIncForm() {
-            return true;
-        }
     }
 
     public class ReturnSaleRetailFormEntity extends ReturnSaleFormEntity {
@@ -2683,11 +2643,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             super(parent, sID, toAdd, returnSaleInvoiceRetail, commitSaleInvoiceArticleRetail, allStores);
 
             setReadOnly(true, objInner.groupTo);
-        }
-
-        @Override
-        protected boolean isInvoiceIncForm() {
-            return true;
         }
 
         @Override

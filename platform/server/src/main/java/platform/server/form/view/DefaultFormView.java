@@ -41,7 +41,13 @@ public class DefaultFormView extends FormView {
     private transient Map<GroupObjectView, ContainerView> controlsContainers = new HashMap<GroupObjectView, ContainerView>();
 
     private transient Map<GroupObjectView, Map<AbstractGroup, ContainerView>> groupPropertyContainers = new HashMap<GroupObjectView, Map<AbstractGroup, ContainerView>>();
-    public ContainerView getGroupPropertyContainer(GroupObjectView groupObject, AbstractGroup group) { return groupPropertyContainers.get(groupObject).get(group); }
+    public ContainerView getGroupPropertyContainer(GroupObjectView groupObject, AbstractGroup group) {
+        Map<AbstractGroup, ContainerView> groupPropertyContainer = groupPropertyContainers.get(groupObject);
+        if(groupPropertyContainer!=null)
+            return groupPropertyContainer.get(group);
+        else
+            return null;
+    }
     public ContainerView getGroupPropertyContainer(GroupObjectEntity groupObject, AbstractGroup group) { return getGroupPropertyContainer(get(groupObject), group); }
 
     private transient Map<GroupObjectView, ContainerView> groupContainers = new HashMap<GroupObjectView, ContainerView>();
