@@ -11,6 +11,7 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.EventObject;
 
 public class TableCellView extends JPanel implements CellView {
 
@@ -34,7 +35,7 @@ public class TableCellView extends JPanel implements CellView {
         return o instanceof TableCellView && ((TableCellView) o).key.equals(key) && ((TableCellView) o).columnKey.equals(columnKey);
     }
 
-    public TableCellView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {
+    public TableCellView(final ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {
 
         setOpaque(false);
 
@@ -79,6 +80,12 @@ public class TableCellView extends JPanel implements CellView {
             public ClientFormController getForm() {
                 return TableCellView.this.form;
             }
+
+            @Override
+            public boolean clearText(int row, int column, EventObject e) {
+                return key.clearText;
+            }
+
         };
 
         table.addMouseListener(new MouseAdapter() {

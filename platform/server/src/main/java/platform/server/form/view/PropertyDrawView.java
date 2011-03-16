@@ -60,6 +60,7 @@ public class PropertyDrawView extends ComponentView {
     public ExternalScreenConstraints externalScreenConstraints = new ExternalScreenConstraints();
 
     public String caption;
+    public boolean clearText;
 
     @SuppressWarnings({"UnusedDeclaration"})
     public PropertyDrawView() {
@@ -183,6 +184,7 @@ public class PropertyDrawView extends ComponentView {
 
         outStream.writeBoolean(!(entity.propertyObject.property instanceof ExecuteProperty)); //checkEquals
         outStream.writeBoolean(entity.propertyObject.property.askConfirm);
+        outStream.writeBoolean(clearText);
     }
 
     @Override

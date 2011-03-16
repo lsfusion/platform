@@ -110,12 +110,19 @@ public abstract class ClientFormTable extends JTable {
             if (editor instanceof JTextComponent) {
                 ((JTextComponent) editor).selectAll();
             }
+            if (clearText(row, column, e)) {
+                ((JTextComponent) editor).setText("");
+            }
         }
 
         return result;
     }
 
     public abstract Object convertValueFromString(String value, int row, int column);
+
+    public boolean clearText(int row, int column, EventObject e) {
+       return false;
+    }
 
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
         boolean consumed = super.processKeyBinding(ks, e, condition, pressed);

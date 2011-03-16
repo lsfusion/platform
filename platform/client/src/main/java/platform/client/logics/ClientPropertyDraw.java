@@ -79,6 +79,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public List<ClientGroupObject> columnGroupObjects = new ArrayList<ClientGroupObject>();
 
     public boolean autoHide = false;
+    public boolean clearText;
 
     public ClientPropertyDraw() {
     }
@@ -381,6 +382,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         checkEquals = inStream.readBoolean();
         askConfirm = inStream.readBoolean();
+        clearText = inStream.readBoolean();
     }
 
     public List<ClientObject> getKeysObjectsList(Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {

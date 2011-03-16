@@ -1599,7 +1599,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             design.setFocusable(reverseBarcode, false);
             design.setFocusable(false, objBarcode.groupTo);
-
+            barcodeView.clearText = true;
             return design;
         }
     }
