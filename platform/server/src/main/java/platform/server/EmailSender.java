@@ -1,6 +1,7 @@
 package platform.server;
 
 
+import platform.base.BaseUtils;
 import platform.base.ByteArray;
 import platform.server.logics.EmailActionProperty;
 
@@ -173,7 +174,13 @@ public class EmailSender {
                 try {
                     Transport.send(message);
                 } catch (MessagingException e) {
-                    throw new RuntimeException("Ошибка при отсылке почты " + subject, e);
+                    String messageInfo = subject;
+                    try {
+                        messageInfo += " получатели : " + BaseUtils.toString(message.getRecipients(MimeMessage.RecipientType.TO), ",");
+                    } catch (MessagingException me) {
+                        messageInfo = " не удалось получить список получателей " + me.toString();
+                    }
+                    throw new RuntimeException("Ошибка при отсылке почты " + messageInfo, e);
                 }
             }
         }.start();

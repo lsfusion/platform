@@ -44,7 +44,7 @@ public class PostgreDataAdapter extends DataAdapter {
         }*/
         try {
             // обязательно нужно создавать на основе template0, так как иначе у template1 может быть другая кодировка и ошибка
-            connect.createStatement().execute("CREATE DATABASE " + dataBase + " TEMPLATE template0 WITH ENCODING='UTF8' ");
+            connect.createStatement().execute("CREATE DATABASE " + dataBase + " WITH TEMPLATE template0 ENCODING='UTF8' ");
         } catch (SQLException e) {
             logger.info("Ошибка при создании базы данных : " + e);
         }
