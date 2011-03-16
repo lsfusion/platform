@@ -362,7 +362,9 @@ public class CashRegController {
         BL.addProp(BL.cashRegAdminGroup, new IntegerCashRegActionProperty(BL.genSID(), "Внесение денег", MoneyOperationAction.CASH_IN));
         BL.addProp(BL.cashRegAdminGroup, new IntegerCashRegActionProperty(BL.genSID(), "Изъятие денег", MoneyOperationAction.CASH_OUT));
         BL.addProp(BL.cashRegAdminGroup, new ReportActionProperty(BL.genSID(), "X-отчет (сменный отчет без гашения)", ReportAction.XREPORT));
-        BL.addProp(BL.cashRegAdminGroup, new ReportActionProperty(BL.genSID(), "Z-отчет (сменный отчет с гашением)", ReportAction.ZREPORT));
+        ReportActionProperty zProp = new ReportActionProperty(BL.genSID(), "Z-отчет (сменный отчет с гашением)", ReportAction.ZREPORT);
+        zProp.askConfirm = true;
+        BL.addProp(BL.cashRegAdminGroup, zProp);
         BL.addProp(BL.cashRegAdminGroup, new MessageActionProperty(BL.genSID(), "Запрос серийного номера регистратора", MessageAction.SERIAL_NUM));
     }
 
