@@ -207,4 +207,8 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
             keyEquals = calculateKeyEquals();
         return keyEquals;
     }
+
+    public Where xor(Where where) {
+        return and(where.not()).or(not().and(where));
+    }
 }

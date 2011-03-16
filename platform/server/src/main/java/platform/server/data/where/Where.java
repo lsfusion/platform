@@ -63,6 +63,8 @@ public interface Where extends SourceJoin, OuterContext<Where>, KeyType, CheckWh
     Where or(Where where);
     Where or(Where where, boolean packExprs);
 
+    Where xor(Where where);
+
     OrObjectWhere[] getOr(); // protected
 
     Map<BaseExpr,BaseExpr> getExprValues();

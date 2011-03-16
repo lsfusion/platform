@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="obj1" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.0"/>
-	<property name="ireport.x" value="164"/>
+	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
@@ -12,7 +12,7 @@
 	<field name="obj1" class="java.lang.Integer"/>
 	<field name="date" class="java.util.Date"/>
 	<field name="property117" class="java.lang.String"/>
-	<field name="property119" class="java.lang.String"/>
+	<field name="nameSubjectOutOrder" class="java.lang.String"/>
 	<field name="nameLegalEntityIncOrder" class="java.lang.String"/>
 	<field name="nameLegalEntityOutOrder" class="java.lang.String"/>
 	<field name="property120" class="java.lang.String"/>
@@ -25,6 +25,10 @@
 	<field name="commonName" class="java.lang.String"/>
 	<field name="barcode" class="java.lang.String"/>
 	<field name="articleQuantity" class="java.lang.Double"/>
+	<field name="unnLegalEntityLegalIncOrder" class="java.lang.String"/>
+	<field name="unnLegalEntityLegalOutOrder" class="java.lang.String"/>
+	<field name="addressLegalEntityLegalIncOrder" class="java.lang.String"/>
+	<field name="addressLegalEntityLegalOutOrder" class="java.lang.String"/>
 	<variable name="npp" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[0]]></variableExpression>
 		<initialValueExpression><![CDATA[new Integer(1)]]></initialValueExpression>
@@ -69,12 +73,12 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="130" y="195" width="660" height="18"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{property117}+", "+$F{property120}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameLegalEntityOutOrder}+", "+$F{addressLegalEntityLegalOutOrder}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToBandHeight" x="130" y="171" width="656" height="20"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{property119}+", "+$F{property121}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameLegalEntityIncOrder}+", "+$F{addressLegalEntityLegalIncOrder}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="130" y="216" width="290" height="18"/>
@@ -228,12 +232,12 @@
 			<textField>
 				<reportElement style="GroupCellStyle0" x="373" y="76" width="97" height="20"/>
 				<textElement textAlignment="Center"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{unnLegalEntityLegalIncOrder}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="GroupCellStyle0" x="470" y="76" width="101" height="20"/>
 				<textElement textAlignment="Center"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{unnLegalEntityLegalOutOrder}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>

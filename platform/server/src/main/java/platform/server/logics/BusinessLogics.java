@@ -2969,7 +2969,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP[] addJProp(AbstractGroup group, boolean implementChange, String paramID, LP[] props, String caption, Object... params) {
         LP[] result = new LP[props.length];
         for(int i=0;i<props.length;i++)
-            result[i] = addJProp(group, implementChange, paramID + props[i].property.sID, props[i].property.caption + (caption.length()==0?"":(" " + caption)), props[i], params);
+            result[i] = addJProp(group, implementChange, props[i].property.sID+paramID, props[i].property.caption + (caption.length()==0?"":(" " + caption)), props[i], params);
         return result;
     }
 
@@ -3285,6 +3285,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             case OVERRIDE:
                 property = new OverrideUnionProperty(sID, caption, intNum);
                 break;
+            case XOR:
+                property = new XorUnionProperty(sID, caption, intNum);
+                break;
             case EXCLUSIVE:
                 property = new ExclusiveUnionProperty(sID, caption, intNum);
                 break;
@@ -3308,6 +3311,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     break;
                 case OVERRIDE:
                     ((OverrideUnionProperty) property).operands.add(operand);
+                    break;
+                case XOR:
+                    ((XorUnionProperty) property).operands.add(operand);
                     break;
                 case EXCLUSIVE:
                     ((ExclusiveUnionProperty) property).operands.add(operand);
@@ -3425,16 +3431,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addXorUProp(group, sID, false, caption, prop1, prop2);
     }
 
-    protected LP addXorUProp(AbstractGroup group, String sID, boolean persistent, String caption, LP prop1, LP prop2) {
-        int intNum = prop1.listInterfaces.size();
-        Object[] params = new Object[2 * (1 + intNum)];
-        params[0] = prop1;
-        for (int i = 0; i < intNum; i++)
-            params[1 + i] = i + 1;
-        params[1 + intNum] = prop2;
-        for (int i = 0; i < intNum; i++)
-            params[2 + intNum + i] = i + 1;
-        return addXSUProp(group, sID, persistent, caption, addJProp(andNot1, getUParams(new LP[]{prop1, prop2}, 0)), addJProp(andNot1, getUParams(new LP[]{prop2, prop1}, 0)));
+    protected LP addXorUProp(AbstractGroup group, String sID, boolean persistent, String caption, LP... props) {
+        return addUProp(group, sID, persistent, caption, Union.XOR, getUParams(props,0));
+//        int intNum = prop1.listInterfaces.size();
+//        Object[] params = new Object[2 * (1 + intNum)];
+//        params[0] = prop1;
+//        for (int i = 0; i < intNum; i++)
+//            params[1 + i] = i + 1;
+//        params[1 + intNum] = prop2;
+//        for (int i = 0; i < intNum; i++)
+//            params[2 + intNum + i] = i + 1;
+//        return addXSUProp(group, sID, persistent, caption, addJProp(andNot1, getUParams(new LP[]{prop1, prop2}, 0)), addJProp(andNot1, getUParams(new LP[]{prop2, prop1}, 0)));
     }
 
     // IF и IF ELSE

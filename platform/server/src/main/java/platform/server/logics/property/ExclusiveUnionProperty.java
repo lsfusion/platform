@@ -9,7 +9,7 @@ import platform.server.session.PropertyChange;
 
 // чисто для оптимизации
 public class ExclusiveUnionProperty extends OverrideUnionProperty {
-    
+
     public ExclusiveUnionProperty(String sID, String caption, int intNum) {
         super(sID, caption, intNum);
     }

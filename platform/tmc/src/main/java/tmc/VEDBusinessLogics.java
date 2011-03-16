@@ -486,11 +486,14 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                             addDProp("incShop", "Магазин (прих.)", shop, orderShopInc),
                             addDProp("incWarehouse", "Распред. центр (прих.)", warehouse, orderWarehouseInc));
         // имена
-        nameSubjectIncOrder = addJProp(baseGroup, "Кому", name, subjectIncOrder, 1); nameImplSubjectIncOrder = addJProp(true, "Кому", name, subjectIncOrder, 1);
-        nameSubjectOutOrder = addJProp(baseGroup, "От кого", name, subjectOutOrder, 1);
+        nameSubjectIncOrder = addJProp(baseGroup, "nameSubjectIncOrder", "Кому", name, subjectIncOrder, 1); nameImplSubjectIncOrder = addJProp(true, "Кому", name, subjectIncOrder, 1);
+        nameSubjectOutOrder = addJProp(baseGroup, "nameSubjectOutOrder", "От кого", name, subjectOutOrder, 1);
 
-        addressSubjectIncOrder = addJProp("Адрес (кому)", addressSubject, subjectIncOrder, 1);
-        addressSubjectOutOrder = addJProp("Адрес (от кого)", addressSubject, subjectOutOrder, 1);
+        addressSubjectIncOrder = addJProp("addressSubjectIncOrder", "Адрес (кому)", addressSubject, subjectIncOrder, 1);
+        addressSubjectOutOrder = addJProp("addressSubjectOutOrder", "Адрес (от кого)", addressSubject, subjectOutOrder, 1);
+
+        propsLegalEntityIncOrder = addJProp(baseGroup, false, "IncOrder", propsLegalEntitySubject, subjectIncOrder, 1);
+        propsLegalEntityOutOrder = addJProp(baseGroup, false, "OutOrder", propsLegalEntitySubject, subjectOutOrder, 1);
 
         propsCustomerCheckRetail = addDProp(baseGroup, "", new String[]{"checkRetailCustomerPhone", "checkRetailCustomerBorn", "checkRetailCustomerAddress", "clientInitialSum"},
                             new String[]{"Телефон", "Дата рождения", "Адрес", "Начальная сумма"}, new ValueClass[] {StringClass.get(20), DateClass.instance, StringClass.get(40), DoubleClass.instance}, customerCheckRetail);
@@ -648,9 +651,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP xorActionAll = addDProp(baseGroup, "xorActionAll", "Вкл./искл.", LogicalClass.instance, action);
         LP xorActionArticleGroup = addDProp(baseGroup, "xorActionArticleGroup", "Вкл./искл.", LogicalClass.instance, action, articleGroup);
-        xorActionArticle = addDProp(baseGroup, "xorArticle", "Вкл./искл.", LogicalClass.instance, action, article);
-        inAction = addXorUProp(baseGroup, "inAction", true, "В акции", xorActionArticle, addXorUProp(
-                addJProp(and1, xorActionAll, 1, is(article), 2), addJProp(xorActionArticleGroup, 1, articleToGroup, 2)));
+        xorActionArticle = addDProp("xorArticle", "Вкл./искл.", LogicalClass.instance, action, article); // не включаем в группу, предполагается что реактирование через inAction идет
+        inAction = addXorUProp(baseGroup, "inAction", true, "В акции", addJProp(and1, xorActionAll, 1, is(article), 2), addJProp(xorActionArticleGroup, 1, articleToGroup, 2), xorActionArticle);
 
         LP isStarted = addJProp(baseGroup, "Началась", and(true, true), is(action), 1,
                 addJProp(less2, currentDate, actionFrom, 1), 1,  // активация акции, если текущая дата в диапазоне акции
@@ -748,8 +750,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         currentShopPrice = addJProp(priceGroup, "currentShopPrice", true, "Цена на маг. (тек.)", shopPrice, currentShopPriceDoc, 1, 2, 2);
 
         // цены в документах
-        LP priceOrderDeliveryArticle = addDCProp("priceOrderDeliveryArticle", "Цена закуп.", true, articleSupplierPrice, 2, articleQuantity, 1, 2, orderDelivery);
-        priceAllOrderDeliveryArticle = addSUProp(documentPriceGroup, "priceAllOrderDeliveryArticle", "Цена закуп.", Union.OVERRIDE, addJProp(and1, articleSupplierPrice, 2, is(orderDelivery), 1), priceOrderDeliveryArticle);
+        LP priceOrderDeliveryArticle = addDCProp("priceOrderDeliveryArticle", "Цена пост. с НДС", true, articleSupplierPrice, 2, articleQuantity, 1, 2, orderDelivery);
+        priceAllOrderDeliveryArticle = addSUProp(documentPriceGroup, "priceAllOrderDeliveryArticle", "Цена пост. с НДС", Union.OVERRIDE, addJProp(and1, articleSupplierPrice, 2, is(orderDelivery), 1), priceOrderDeliveryArticle);
         LP orderSalePrice = addDProp("orderSalePrice", "Цена прод.", DoubleClass.instance, orderDoOut, article);
         LP priceOrderDoArticle = addCUProp(priceOrderDeliveryArticle, orderSalePrice);
         priceOrderArticle = addCUProp(documentPriceGroup, "priceOrderArticle", "Цена", priceOrderDoArticle, addMGProp(privateGroup, "priceOrderReturnArticle", "Цена возвр.", addJProp(and1, priceOrderDoArticle, 3, 2, returnDocumentQuantity, 1, 2, 3), 1, 2));
@@ -829,7 +831,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         sumManfrOrderArticle = addJProp(documentPriceGroup, "sumManfrOrderArticle", "Сумма изг.", multiplyDouble2, articleQuantity, 1, 2, priceManfrOrderArticle, 1, 2);
         sumManfrOrder = addSGProp(documentPriceGroup, "sumManfrOrder", "Сумма изг.", sumManfrOrderArticle, 1);
 
-        sumOrderArticle = addJProp(documentPriceGroup, "Сумма", multiplyDouble2, articleQuantity, 1, 2, priceOrderArticle, 1, 2);
+        sumOrderArticle = addJProp(documentPriceGroup, "sumOrderArticle", "Сумма", multiplyDouble2, articleQuantity, 1, 2, priceOrderArticle, 1, 2);
 
         LP orderActionClientSum = addSUProp(Union.SUM, addJProp(and1, orderClientSum, 1, is(articleAction), 2), addJProp(and1, addSGProp(sumOrderArticle, 1), 1, articleActionWithCheck, 2));
         LP articleActionActive = addJProp(and(false, false, false, false, true, true, true, true, true), articleQuantity, 1, 2, is(orderSaleArticleRetail), 1, is(articleAction), 3, inAction, 3, 2, isStarted, 3,
@@ -1270,7 +1272,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         artExtraGroup = new AbstractGroup("Доп. атрибуты товара");
         publicGroup.add(artExtraGroup);
 
-        documentPrintGroup = new AbstractGroup("Печатные формы");
+        documentPrintGroup = new AbstractGroup("Документы");
         publicGroup.add(documentPrintGroup);
 
         documentInvoiceSaleGroup = new AbstractGroup("Основание");
@@ -2010,6 +2012,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private class ReturnDeliveryLocalFormEntity extends ArticleOuterFormEntity {
+
+        @Override
+        protected Object[] getDocumentArticleProps() {
+            return new Object[]{articleInnerQuantity, priceManfrOrderArticle, priceOrderArticle, ndsOrderArticle, sumWithDiscountOrderArticle, sumNDSOrderArticle, sumNoNDSOrderArticle};
+        }
+
         public ReturnDeliveryLocalFormEntity(NavigatorElement parent, boolean toAdd, String sID, int concrete) {
             super(parent, sID, concrete==0?orderReturnDeliveryLocal:commitReturnDeliveryLocal, toAdd, commitDeliveryLocal, false, true);
         }
@@ -2962,10 +2970,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected PrintSaleFormEntity(NavigatorElement parent, String sID, String caption, boolean inclArticle) {
             super(parent, sID, caption, true);
 
-            ObjectEntity objDoc = addSingleGroupObject(getDocClass(), "Документ", date, nameSubjectIncOrder, nameSubjectOutOrder, nameLegalEntityIncOrder, nameLegalEntityOutOrder, addressSubjectIncOrder, addressSubjectOutOrder, sumWithDiscountOrder, sumNDSOrder, sumNoNDSOrder);
+            ObjectEntity objDoc = addSingleGroupObject(getDocClass(), "Документ", date, nameSubjectIncOrder, nameSubjectOutOrder, nameLegalEntityIncOrder, nameLegalEntityOutOrder, addressSubjectIncOrder, addressSubjectOutOrder, sumWithDiscountOrder, sumNDSOrder, sumNoNDSOrder, propsLegalEntityIncOrder, propsLegalEntityOutOrder);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
 
-            addPropertyDraw(objDoc, permissionOrder, true, purposeOrder, true, getDocGroups());
+            addPropertyDraw(objDoc, getDocGroups());
 
             if(inclArticle) {
                 ObjectEntity objArt = addSingleGroupObject(article, name, nameUnitOfMeasureArticle);
@@ -2979,7 +2987,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected ValueClass getDocClass() {
             return shipmentDocumentOut;
         }
-        protected abstract AbstractGroup[] getDocGroups();
+        protected abstract Object[] getDocGroups();
         protected abstract AbstractGroup getActionGroup();
     }
 
@@ -2990,7 +2998,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
 
         @Override
-        protected AbstractGroup[] getDocGroups() {
+        protected Object[] getDocGroups() {
             return new AbstractGroup[]{documentInvoiceSaleGroup, documentShipmentGroup, documentShipmentOutGroup, documentShipmentTransportGroup};
         }
 
@@ -3007,8 +3015,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
 
         @Override
-        protected AbstractGroup[] getDocGroups() {
-            return new AbstractGroup[]{documentInvoiceSaleGroup, documentShipmentGroup, documentShipmentOutGroup};
+        protected Object[] getDocGroups() {
+            return new Object[]{documentInvoiceSaleGroup, documentShipmentGroup, documentShipmentOutGroup};
         }
 
         @Override
@@ -3029,7 +3037,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
 
         @Override
-        protected AbstractGroup[] getDocGroups() {
+        protected Object[] getDocGroups() {
             return new AbstractGroup[]{documentInvoiceSaleGroup};
         }
 
@@ -3071,10 +3079,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             inActionGroup.addFilter(new RegularFilterEntity(genID(),
                     new NotFilterEntity(new NotNullFilterEntity(inActionImpl)),
                     "Не в акции",
-                    KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0)));
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0)));
             addRegularFilterGroup(inActionGroup);
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeAction2, objAction, objBarcode));
+            addActionsOnObjectChange(objBarcode, addPropertyObject(seekBarcodeAction, objBarcode));
         }
     }
 
@@ -3338,7 +3347,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             inCouponGroup.addFilter(new RegularFilterEntity(genID(),
                     new NotFilterEntity(new NotNullFilterEntity(inCouponImpl)),
                     "Не в акции",
-                    KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0)));
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0)));
             addRegularFilterGroup(inCouponGroup);
 
             setReadOnly(objArt, true);
