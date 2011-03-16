@@ -5,7 +5,7 @@ import javax.swing.border.EtchedBorder;
 import java.awt.*;
 
 public abstract class CountQuantityButton extends JButton {
-    private Icon icon = new ImageIcon(getClass().getResource("/platform/client/form/images/quantity.png"));
+    private Icon icon = new ImageIcon(getClass().getResource("/images/quantity.png"));
     private final Dimension buttonSize = new Dimension(20, 20);
 
     public CountQuantityButton() {

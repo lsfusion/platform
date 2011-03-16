@@ -6,7 +6,7 @@ import java.awt.*;
 import java.text.NumberFormat;
 
 public abstract class CalculateSumButton extends JButton {
-    private Icon icon = new ImageIcon(getClass().getResource("/platform/client/form/images/sum.png"));
+    private Icon icon = new ImageIcon(getClass().getResource("/images/sum.png"));
     private final Dimension buttonSize = new Dimension(20, 20);
 
     public CalculateSumButton() {

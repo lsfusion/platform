@@ -8,8 +8,8 @@ import java.awt.*;
 
 public abstract class GridHeaderRenderer implements TableCellRenderer {
 
-    protected final static ImageIcon arrowUpIcon = new ImageIcon(GridHeaderRenderer.class.getResource("/platform/client/form/images/arrowup.gif"));
-    protected final static ImageIcon arrowDownIcon = new ImageIcon(GridHeaderRenderer.class.getResource("/platform/client/form/images/arrowdown.gif"));
+    protected final static ImageIcon arrowUpIcon = new ImageIcon(GridHeaderRenderer.class.getResource("/images/arrowup.gif"));
+    protected final static ImageIcon arrowDownIcon = new ImageIcon(GridHeaderRenderer.class.getResource("/images/arrowdown.gif"));
 
     private final TableCellRenderer tableCellRenderer;
     private final MultiLineHeaderRenderer simplifiedRenderer;

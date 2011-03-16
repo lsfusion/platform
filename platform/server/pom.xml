@@ -98,5 +98,10 @@
             <artifactId>supercsv</artifactId>
             <version>1.52</version>
         </dependency>
+        <dependency>
+            <groupId>commons-daemon</groupId>
+            <artifactId>commons-daemon</artifactId>
+            <version>1.0.5</version>
+        </dependency>
     </dependencies>
 </project>

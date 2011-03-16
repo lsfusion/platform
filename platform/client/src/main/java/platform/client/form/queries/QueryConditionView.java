@@ -24,7 +24,7 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
 
     // Icons - загружаем один раз, для экономии
     @SuppressWarnings({"FieldCanBeLocal"})
-    private final ImageIcon deleteIcon = new ImageIcon(getClass().getResource("/platform/client/form/images/delete.gif"));
+    private final ImageIcon deleteIcon = new ImageIcon(getClass().getResource("/images/delete.gif"));
 
     private final ClientPropertyFilter filter;
 

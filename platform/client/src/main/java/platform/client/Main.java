@@ -1,7 +1,6 @@
 package platform.client;
 
 import org.apache.log4j.Logger;
-import platform.base.BaseUtils;
 import platform.base.OSUtils;
 import platform.client.exceptions.ClientExceptionManager;
 import platform.client.exceptions.ExceptionThreadGroup;
@@ -40,7 +39,7 @@ public class Main {
     private final static Logger logger = Logger.getLogger(Main.class);
 
     private static final String DEFAULT_TITLE = "LS Fusion";
-    private static final String DEFAULT_SPLASH_PATH = "/platform/images/lsfusion.jpg";
+    private static final String DEFAULT_SPLASH_PATH = "/images/lsfusion.jpg";
 
     public static RemoteLoaderInterface remoteLoader;
     public static RemoteLogicsInterface remoteLogics;

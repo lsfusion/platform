@@ -13,7 +13,7 @@ public class WordPropertyRenderer extends FilePropertyRenderer
 
     public WordPropertyRenderer(Format format, ComponentDesign design) {
         super(format, design);
-        wordIcon = new ImageIcon(WordPropertyRenderer.class.getResource("/platform/images/word.jpeg"));
+        wordIcon = new ImageIcon(WordPropertyRenderer.class.getResource("/images/word.jpeg"));
     }
 
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {

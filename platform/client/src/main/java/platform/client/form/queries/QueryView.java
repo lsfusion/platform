@@ -230,8 +230,8 @@ public abstract class QueryView extends JPanel {
     }
 
     // сворачивание/разворачивание отбора
-    private final ImageIcon collapseIcon = new ImageIcon(getClass().getResource("/platform/client/form/images/collapse.gif"));
-    private final ImageIcon expandIcon = new ImageIcon(getClass().getResource("/platform/client/form/images/expand.gif"));
+    private final ImageIcon collapseIcon = new ImageIcon(getClass().getResource("/images/collapse.gif"));
+    private final ImageIcon expandIcon = new ImageIcon(getClass().getResource("/images/expand.gif"));
 
     private boolean collapsed = false;
 

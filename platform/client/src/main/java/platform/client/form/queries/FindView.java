@@ -7,11 +7,11 @@ import javax.swing.*;
 public class FindView extends QueryView {
     
     protected Icon getApplyIcon() {
-        return new ImageIcon(getClass().getResource("/platform/client/form/images/find.gif"));
+        return new ImageIcon(getClass().getResource("/images/find.gif"));
     }
 
     protected Icon getAddConditionIcon() {
-        return new ImageIcon(getClass().getResource("/platform/client/form/images/findadd.gif"));
+        return new ImageIcon(getClass().getResource("/images/findadd.gif"));
     }
 
     protected KeyStroke getKeyStroke(int modifier) {

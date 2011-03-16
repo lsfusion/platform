@@ -7,7 +7,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Enumeration;
 import java.util.List;
 
 public abstract class ShowTypeView extends JPanel implements ActionListener {
@@ -26,17 +25,17 @@ public abstract class ShowTypeView extends JPanel implements ActionListener {
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
         gridButton = new JButton("");
-        gridButton.setIcon(new ImageIcon(ShowTypeView.class.getResource("/platform/images/table.png")));
+        gridButton.setIcon(new ImageIcon(ShowTypeView.class.getResource("/images/table.png")));
         gridButton.setToolTipText("Таблица");
         gridButton.setActionCommand("grid");
 
         panelButton = new JButton("");
-        panelButton.setIcon(new ImageIcon(ShowTypeView.class.getResource("/platform/images/list.png")));
+        panelButton.setIcon(new ImageIcon(ShowTypeView.class.getResource("/images/list.png")));
         panelButton.setToolTipText("Панель");
         panelButton.setActionCommand("panel");
 
         hideButton = new JButton("");
-        hideButton.setIcon(new ImageIcon(ShowTypeView.class.getResource("/platform/images/close.png")));
+        hideButton.setIcon(new ImageIcon(ShowTypeView.class.getResource("/images/close.png")));
         hideButton.setToolTipText("Скрыть");
         hideButton.setActionCommand("hide");
 

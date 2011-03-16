@@ -13,7 +13,7 @@ public class PDFPropertyRenderer extends FilePropertyRenderer
 
     public PDFPropertyRenderer(Format format, ComponentDesign design) {
         super(format, design);
-        pdfIcon = new ImageIcon(PDFPropertyRenderer.class.getResource("/platform/images/pdf.jpeg"));
+        pdfIcon = new ImageIcon(PDFPropertyRenderer.class.getResource("/images/pdf.jpeg"));
     }
 
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {

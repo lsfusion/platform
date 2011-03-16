@@ -13,7 +13,7 @@ public class ExcelPropertyRenderer extends FilePropertyRenderer
 
     public ExcelPropertyRenderer(Format format, ComponentDesign design) {
         super(format, design);
-        excelIcon = new ImageIcon(WordPropertyRenderer.class.getResource("/platform/images/excel.jpeg"));
+        excelIcon = new ImageIcon(WordPropertyRenderer.class.getResource("/images/excel.jpeg"));
     }
 
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
