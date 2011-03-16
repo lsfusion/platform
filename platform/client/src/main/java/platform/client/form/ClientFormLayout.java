@@ -44,7 +44,10 @@ public abstract class ClientFormLayout extends JPanel {
         createContainerViews(topContainer);
 
         setLayout(new BorderLayout());
-        add(mainContainer, BorderLayout.CENTER);
+        JScrollPane scroll = new JScrollPane(mainContainer);
+        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        add(scroll, BorderLayout.CENTER);
 
         // приходится делать StrongRef, иначе он тут же соберется сборщиком мусора так как ContainerFocusListener держит его как WeakReference
         focusListener = new FocusAdapter() {
@@ -80,7 +83,7 @@ public abstract class ClientFormLayout extends JPanel {
             JComponent parent = contviews.get(container.container);
             parent.add(formContainer, container);
             if (!(parent instanceof JTabbedPane) && formContainer instanceof ClientFormContainer)
-                ((ClientFormContainer)formContainer).addBorder();
+                ((ClientFormContainer) formContainer).addBorder();
         }
 
         // нельзя перегружать LayoutManager у JTabbedPane, который не наследуется от TabbedPaneLayout
@@ -89,12 +92,12 @@ public abstract class ClientFormLayout extends JPanel {
         if (!container.getTabbedPane()) {
             formContainer.setLayout(layoutManager);
         }
-        
+
         contviews.put(container, formContainer);
 
         for (ClientComponent child : container.children) {
             if (child instanceof ClientContainer) {
-                createContainerViews((ClientContainer)child);
+                createContainerViews((ClientContainer) child);
             }
         }
     }
@@ -107,7 +110,7 @@ public abstract class ClientFormLayout extends JPanel {
         bindings.get(ks).put(groupObject, run);
     }
 
-     // реализуем "обратную" обработку нажатий кнопок
+    // реализуем "обратную" обработку нажатий кнопок
     @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
         if (condition == JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT) {
@@ -144,7 +147,7 @@ public abstract class ClientFormLayout extends JPanel {
         if (!contviews.get(key.container).isAncestorOf(view)) {
             contviews.get(key.container).add(view, key);
             contviews.get(key.container).repaint();
-            if (key.defaultComponent){
+            if (key.defaultComponent) {
                 policy.addDefault(view);
             }
             return true;
@@ -158,7 +161,7 @@ public abstract class ClientFormLayout extends JPanel {
         if (contviews.get(key.container).isAncestorOf(view)) {
             contviews.get(key.container).remove(view);
             contviews.get(key.container).repaint();
-            if (key.defaultComponent){
+            if (key.defaultComponent) {
                 policy.removeDefault(view);
             }
             return true;
