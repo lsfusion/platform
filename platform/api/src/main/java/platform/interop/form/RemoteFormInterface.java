@@ -5,6 +5,8 @@ import platform.interop.action.ClientApply;
 import platform.interop.remote.PendingRemote;
 
 import java.rmi.RemoteException;
+import java.util.List;
+import java.util.Map;
 
 public interface RemoteFormInterface extends PendingRemote {
 
@@ -59,7 +61,9 @@ public interface RemoteFormInterface extends PendingRemote {
 
     int countRecords(int groupObjectID) throws RemoteException;
 
-    Object calculateSum(int groupObjectID, int propertyID) throws RemoteException;
+    Object calculateSum(int propertyID, byte[] columnKeys) throws RemoteException;
+
+    Map<List<Object>, List<Object>> groupData(Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap) throws RemoteException;
 
     void refreshData() throws RemoteException;
 

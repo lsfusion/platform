@@ -5,13 +5,13 @@ import javax.swing.border.EtchedBorder;
 import java.awt.*;
 
 public abstract class CountQuantityButton extends JButton {
-    private Icon icon = new ImageIcon(getClass().getResource("/images/quantity.png"));
-    private final Dimension buttonSize = new Dimension(20, 20);
 
     public CountQuantityButton() {
         super();
+        Icon icon = new ImageIcon(getClass().getResource("/images/quantity.png"));
         setIcon(icon);
         setAlignmentY(Component.TOP_ALIGNMENT);
+        Dimension buttonSize = new Dimension(20, 20);
         setMinimumSize(buttonSize);
         setMaximumSize(buttonSize);
         setPreferredSize(buttonSize);

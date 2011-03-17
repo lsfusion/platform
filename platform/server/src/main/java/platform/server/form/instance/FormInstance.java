@@ -12,9 +12,7 @@ import platform.interop.action.StopAutoActionsClientAction;
 import platform.interop.exceptions.ComplexQueryException;
 import platform.server.auth.SecurityPolicy;
 import platform.server.caches.ManualLazy;
-import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.CustomClass;
-import platform.server.classes.IntegerClass;
+import platform.server.classes.*;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
@@ -44,6 +42,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.rmi.RemoteException;
+import java.security.PublicKey;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.Map.Entry;
@@ -437,20 +436,87 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         }
     }
 
-    public Object calculateSum(int groupObjectID, int propertyID) throws SQLException {
-        GroupObjectInstance groupObject = getGroupObjectInstance(groupObjectID);
-        PropertyDrawInstance propertyDraw = getPropertyDraw(propertyID);
+    public Object calculateSum(PropertyDrawInstance propertyDraw, Map<ObjectInstance, DataObject> columnKeys) throws SQLException {
+        GroupObjectInstance groupObject = propertyDraw.toDraw;
 
-        Map<ObjectInstance, KeyExpr> keys = groupObject.getMapKeys();
-        try {
-            Expr expr = GroupExpr.create(new HashMap(), propertyDraw.propertyObject.getExpr(keys, this), groupObject.getWhere(keys, this), false, new HashMap());
-            Query<Object, Object> query = new Query<Object, Object>(new HashMap<Object, KeyExpr>());
-            query.properties.put("sum", expr);
-            OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
-            return result.getValue(0).get("sum");
-        } catch (ClassCastException e) {
-            return null;
+        Map<ObjectInstance, KeyExpr> mapKeys = groupObject.getMapKeys();
+        Map<ObjectInstance, Expr> keys = new HashMap<ObjectInstance, Expr>(mapKeys);
+
+        for (ObjectInstance object : columnKeys.keySet()) {
+            keys.put(object, columnKeys.get(object).getExpr());
         }
+        Expr expr = GroupExpr.create(new HashMap(), propertyDraw.propertyObject.getExpr(keys, this), groupObject.getWhere(mapKeys, this), false, new HashMap());
+
+        Query<Object, Object> query = new Query<Object, Object>(new HashMap<Object, KeyExpr>());
+        query.properties.put("sum", expr);
+        OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
+        return result.getValue(0).get("sum");
+    }
+
+    public Map<List<Object>, List<Object>> groupData(Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>> toGroup,
+                                                     Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>> toSum) throws SQLException {
+        GroupObjectInstance groupObject = ((PropertyDrawInstance) toGroup.keySet().toArray()[0]).toDraw;
+        Map<ObjectInstance, KeyExpr> mapKeys = groupObject.getMapKeys();
+
+        Map<Object, KeyExpr> keyExprMap = new HashMap<Object, KeyExpr>();
+        Map<Object, Expr> exprMap = new HashMap<Object, Expr>();
+        for (PropertyDrawInstance property : toGroup.keySet()) {
+            int i = 0;
+            for (Map<ObjectInstance, DataObject> columnKeys : toGroup.get(property)) {
+                i++;
+                Map<ObjectInstance, Expr> keys = new HashMap<ObjectInstance, Expr>(mapKeys);
+                for (ObjectInstance object : columnKeys.keySet()) {
+                    keys.put(object, columnKeys.get(object).getExpr());
+                }
+                keyExprMap.put(property.getsID() + i, new KeyExpr("expr"));
+                exprMap.put(property.getsID() + i, property.propertyObject.getExpr(keys, this));
+            }
+        }
+
+        Query<Object, Object> query = new Query<Object, Object>(keyExprMap);
+        for (PropertyDrawInstance property : toSum.keySet()) {
+            if (property == null) {
+                Expr exprQuant = GroupExpr.create(exprMap, new ValueExpr(1, IntegerClass.instance), groupObject.getWhere(mapKeys, this), false, keyExprMap);
+                query.properties.put("quant", exprQuant);
+                query.and(exprQuant.getWhere());
+                continue;
+            }
+            int i = 0;
+            for (Map<ObjectInstance, DataObject> columnKeys : toSum.get(property)) {
+                i++;
+                Map<ObjectInstance, Expr> keys = new HashMap<ObjectInstance, Expr>(mapKeys);
+                for (ObjectInstance object : columnKeys.keySet()) {
+                    keys.put(object, columnKeys.get(object).getExpr());
+                }
+                Expr expr = GroupExpr.create(exprMap, property.propertyObject.getExpr(keys, this), groupObject.getWhere(mapKeys, this), false, keyExprMap);
+                query.properties.put(property.getsID() + i, expr);
+                query.and(expr.getWhere());
+            }
+        }
+
+        Map<List<Object>, List<Object>> resultMap = new OrderedMap<List<Object>, List<Object>>();
+        OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
+        for (Map<Object, Object> one : result.keyList()) {
+            List<Object> groupList = new ArrayList<Object>();
+            List<Object> sumList = new ArrayList<Object>();
+
+            for (PropertyDrawInstance propertyDraw : toGroup.keySet()) {
+                for (int i = 1; i <= toGroup.get(propertyDraw).size(); i++) {
+                    groupList.add(one.get(propertyDraw.getsID() + i));
+                }
+            }
+            for (PropertyDrawInstance propertyDraw : toSum.keySet()) {
+                if (propertyDraw == null) {
+                    sumList.add(result.get(one).get("quant"));
+                    continue;
+                }
+                for (int i = 1; i <= toSum.get(propertyDraw).size(); i++) {
+                    sumList.add(result.get(one).get(propertyDraw.getsID() + i));
+                }
+            }
+            resultMap.put(groupList, sumList);
+        }
+        return resultMap;
     }
 
     // Обновление данных

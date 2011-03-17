@@ -18,6 +18,7 @@ public class ClientGrid extends ClientComponent {
     public boolean showFilter;
     public boolean showCountQuantity;
     public boolean showCalculateSum;
+    public boolean showGroupButton;
 
     public byte minRowCount;
     public boolean tabVertical = false;
@@ -44,6 +45,7 @@ public class ClientGrid extends ClientComponent {
         outStream.writeBoolean(showFilter);
         outStream.writeBoolean(showCountQuantity);
         outStream.writeBoolean(showCalculateSum);
+        outStream.writeBoolean(showGroupButton);
 
         outStream.writeByte(minRowCount);
         outStream.writeBoolean(tabVertical);
@@ -60,6 +62,7 @@ public class ClientGrid extends ClientComponent {
         showFilter = inStream.readBoolean();
         showCountQuantity = inStream.readBoolean();
         showCalculateSum = inStream.readBoolean();
+        showGroupButton = inStream.readBoolean();
 
         minRowCount = inStream.readByte();
         tabVertical = inStream.readBoolean();

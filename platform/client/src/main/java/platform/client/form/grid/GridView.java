@@ -2,10 +2,7 @@ package platform.client.form.grid;
 
 import platform.client.form.ClientFormController;
 import platform.client.form.GroupObjectController;
-import platform.client.form.queries.CalculateSumButton;
-import platform.client.form.queries.CountQuantityButton;
-import platform.client.form.queries.FilterController;
-import platform.client.form.queries.FindController;
+import platform.client.form.queries.*;
 import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
@@ -27,6 +24,7 @@ public abstract class GridView extends JPanel {
                     FilterController filterController,
                     CountQuantityButton countQuantityButton,
                     CalculateSumButton calculateSumButton,
+                    GroupButton groupButton,
                     boolean tabVertical,
                     boolean verticalScroll) {
         this.filterController = filterController;
@@ -69,6 +67,10 @@ public abstract class GridView extends JPanel {
 
         if (calculateSumButton != null) {
             groupObjectController.addToToolbar(calculateSumButton);
+        }
+
+        if (groupButton != null) {
+            groupObjectController.addToToolbar(groupButton);
         }
 
         add(pane, BorderLayout.CENTER);

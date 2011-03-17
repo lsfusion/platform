@@ -1,21 +1,23 @@
 package platform.client.form.grid;
 
+import platform.base.OrderedMap;
+import platform.client.Main;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormLayout;
 import platform.client.form.GroupObjectController;
-import platform.client.form.queries.CalculateSumButton;
-import platform.client.form.queries.CountQuantityButton;
-import platform.client.form.queries.FilterController;
-import platform.client.form.queries.FindController;
+import platform.client.form.queries.*;
 import platform.client.logics.ClientGrid;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
+import platform.client.logics.classes.ClientIntegralClass;
 import platform.interop.Order;
 import platform.interop.form.screen.ExternalScreenComponent;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -93,11 +95,48 @@ public class GridController {
                     public void actionPerformed(ActionEvent e) {
                         try {
                             ClientPropertyDraw property = getCurrentProperty();
-                            Object sum = form.calculateSum(groupObjectController.getGroupObject().getID(), property.getID());
-                            showPopupMenu(property.getCaption(), sum);
+                            String caption = property.getCaption() != null ? property.getCaption() : table.getColumnName(table.getSelectedColumn()).trim();
+                            if (property.baseType instanceof ClientIntegralClass) {
+                                ClientGroupObjectValue columnKey = table.getTableModel().getColumnKey(table.getSelectedColumn());
+                                Object sum = form.calculateSum(property.getID(), columnKey.serialize(property));
+                                showPopupMenu(caption, sum);
+                            } else {
+                                showPopupMenu(caption, null);
+                            }
                         } catch (IOException e1) {
                             e1.printStackTrace();
                         }
+                    }
+                });
+            }
+        };
+        
+        GroupButton groupButton = new GroupButton() {
+            public void addListener() {
+                addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        try {
+                            dialog = new GroupButton.GroupDialog(Main.frame, table.getSelectedColumn(), table.getTableModel());
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                        dialog.addPropertyChangeListener(new PropertyChangeListener() {
+                            public void propertyChange(PropertyChangeEvent evt) {
+                                Map<Integer, List<byte[]>> groupMap = dialog.getSelectedGroupMap();
+                                Map<Integer, List<byte[]>> sumMap = dialog.getSelectedSumMap();
+
+                                Map<List<Object>, List<Object>> resultMap = new OrderedMap<List<Object>, List<Object>>();
+                                if (!groupMap.isEmpty() && !sumMap.isEmpty()) {
+                                    try {
+                                        resultMap = form.groupData(groupMap, sumMap);
+                                    } catch (IOException e1) {
+                                        e1.printStackTrace();
+                                    }
+                                }
+                                dialog.update(resultMap);
+                            }
+                        });
+                        dialog.setVisible(true);
                     }
                 });
             }
@@ -109,6 +148,7 @@ public class GridController {
                             key.showFilter ? filterController : null,
                             key.showCountQuantity ? countQuantity : null,
                             key.showCalculateSum ? calculateSum : null,
+                            GridController.this.key.showGroupButton ? groupButton : null,            
                             key.tabVertical,
                             key.groupObject.needVerticalScroll) {
             protected void needToBeShown() {

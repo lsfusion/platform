@@ -6,13 +6,13 @@ import java.awt.*;
 import java.text.NumberFormat;
 
 public abstract class CalculateSumButton extends JButton {
-    private Icon icon = new ImageIcon(getClass().getResource("/images/sum.png"));
-    private final Dimension buttonSize = new Dimension(20, 20);
 
     public CalculateSumButton() {
         super();
+        Icon icon = new ImageIcon(getClass().getResource("/images/sum.png"));
         setIcon(icon);
         setAlignmentY(Component.TOP_ALIGNMENT);
+        Dimension buttonSize = new Dimension(20, 20);
         setMinimumSize(buttonSize);
         setPreferredSize(buttonSize);
         setMaximumSize(buttonSize);

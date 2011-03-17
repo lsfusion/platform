@@ -13,6 +13,7 @@ public class GridView extends ComponentView {
     public boolean showFilter = true;
     public boolean showCountQuantity = true;
     public boolean showCalculateSum = true;
+    public boolean showGroupButton = true;
 
     public byte minRowCount = 0;
     public boolean tabVertical = false;
@@ -41,6 +42,7 @@ public class GridView extends ComponentView {
         outStream.writeBoolean(showFilter);
         outStream.writeBoolean(showCountQuantity);
         outStream.writeBoolean(showCalculateSum);
+        outStream.writeBoolean(showGroupButton);
 
         outStream.writeByte(minRowCount);
         outStream.writeBoolean(tabVertical);
@@ -57,6 +59,7 @@ public class GridView extends ComponentView {
         showFilter = inStream.readBoolean();
         showCountQuantity = inStream.readBoolean();
         showCalculateSum = inStream.readBoolean();
+        showGroupButton = inStream.readBoolean();
 
         minRowCount = inStream.readByte();
         tabVertical = inStream.readBoolean();
@@ -70,5 +73,6 @@ public class GridView extends ComponentView {
         showFilter = false;
         showCountQuantity = false;
         showCalculateSum = false;
+        showGroupButton = false;
     }
 }

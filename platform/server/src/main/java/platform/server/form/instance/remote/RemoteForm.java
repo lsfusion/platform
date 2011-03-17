@@ -7,6 +7,7 @@ import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import net.sf.jasperreports.engine.xml.JRXmlWriter;
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Order;
 import platform.interop.Scroll;
@@ -442,9 +443,41 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    public Object calculateSum(int groupObjectID, int propertyID) {
+    public Object calculateSum(int propertyID, byte[] columnKeys) {
         try {
-            return form.calculateSum(groupObjectID, propertyID);
+            PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
+            Map<ObjectInstance, DataObject> keys = deserializeKeys(propertyDraw, columnKeys);
+            return form.calculateSum(propertyDraw, keys);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Map<List<Object>, List<Object>> groupData(Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap) {
+        try {
+            Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>> toGroup = new OrderedMap<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>>();
+            for (Integer id : groupMap.keySet()) {
+                PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(id);
+                List<Map<ObjectInstance, DataObject>> list = new ArrayList<Map<ObjectInstance, DataObject>>();
+                for (byte[] columnKeys : groupMap.get(id)) {
+                    list.add(deserializeKeys(propertyDraw, columnKeys));
+                }
+                toGroup.put(propertyDraw, list);
+            }
+
+            Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>> toSum = new OrderedMap<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>>();
+            for (Integer id : sumMap.keySet()) {
+                PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(id);
+                List<Map<ObjectInstance, DataObject>> list = new ArrayList<Map<ObjectInstance, DataObject>>();
+                if (propertyDraw != null) {
+                    for (byte[] columnKeys : sumMap.get(id)) {
+                        list.add(deserializeKeys(propertyDraw, columnKeys));
+                    }
+                }
+                toSum.put(propertyDraw, list);
+            }
+
+            return form.groupData(toGroup, toSum);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

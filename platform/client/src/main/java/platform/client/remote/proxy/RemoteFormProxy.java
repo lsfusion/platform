@@ -164,10 +164,17 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
-    public Object calculateSum(int groupObjectID, int propertyID) throws RemoteException {
+    public Object calculateSum(int propertyID, byte[] columnKeys) throws RemoteException {
         logRemoteMethodStartCall("calculateSum");
-        Object result = target.calculateSum(groupObjectID, propertyID);
+        Object result = target.calculateSum(propertyID, columnKeys);
         logRemoteMethodEndCall("calculateSum", result);
+        return result;
+    }
+
+    public Map<List<Object>, List<Object>> groupData(Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap) throws RemoteException {
+        logRemoteMethodStartCall("groupData");
+        Map<List<Object>, List<Object>> result = target.groupData(groupMap, sumMap);
+        logRemoteMethodEndCall("groupData", result);
         return result;
     }
 

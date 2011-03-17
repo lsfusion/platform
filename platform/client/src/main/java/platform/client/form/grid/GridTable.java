@@ -722,6 +722,10 @@ public abstract class GridTable extends ClientFormTable
         return model.getMinPropertyIndex(property);
     }
 
+    public GridTableModel getTableModel() {
+        return model;
+    }
+
     private Boolean getSortDirection(int column) {
         int ordNum = orders.indexOf(column);
         return (ordNum != -1) ? orderDirections.get(ordNum) : null;
