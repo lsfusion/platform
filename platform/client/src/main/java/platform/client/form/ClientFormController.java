@@ -8,7 +8,6 @@ import platform.client.ClientButton;
 import platform.client.Log;
 import platform.client.Main;
 import platform.client.SwingUtils;
-import platform.client.form.grid.GridView;
 import platform.client.form.tree.TreeGroupController;
 import platform.client.logics.*;
 import platform.client.logics.classes.ClientObjectClass;
@@ -25,7 +24,9 @@ import platform.interop.form.RemoteFormInterface;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -275,11 +276,7 @@ public class ClientFormController {
     public void quickEditFilter(int initialFilterPropertyDrawID) {
         ClientPropertyDraw propertyDraw = form.getProperty(initialFilterPropertyDrawID);
         if (propertyDraw != null && controllers.containsKey(propertyDraw.groupObject)) {
-            GroupObjectController groupController = controllers.get(propertyDraw.groupObject);
-            GridView gridView = groupController.getGridView();
-            if (gridView != null) {
-                gridView.quickEditFilter(propertyDraw);
-            }
+            controllers.get(propertyDraw.groupObject).quickEditFilter(propertyDraw);
         }
     }
 

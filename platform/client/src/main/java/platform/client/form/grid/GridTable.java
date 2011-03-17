@@ -5,7 +5,7 @@ import platform.client.Main;
 import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormTable;
-import platform.client.form.GroupObjectLogicsSupplier;
+import platform.client.form.GroupObjectController;
 import platform.client.form.cell.CellTableInterface;
 import platform.client.form.cell.ClientAbstractCellEditor;
 import platform.client.form.cell.ClientAbstractCellRenderer;
@@ -59,18 +59,16 @@ public abstract class GridTable extends ClientFormTable
 
     private boolean isInternalNavigating = false;
 
-    private final GroupObjectLogicsSupplier logicsSupplier;
+    private final GroupObjectController groupObjectController;
 
     // пока пусть GridTable напрямую общается с формой, а не через Controller, так как ей много о чем надо с ней говорить, а Controller будет просто бюрократию создавать
     private final ClientFormController form;
     private boolean tabVertical = false;
 
     private int viewMoveInterval = 0;
-    private final GridView gridView;
 
-    public GridTable(GridView gridView, GroupObjectLogicsSupplier ilogicsSupplier, ClientFormController iform) {
+    public GridTable(GroupObjectController groupObjectController, ClientFormController iform) {
         super(new GridTableModel());
-        this.gridView = gridView;
 
         setAutoCreateColumnsFromModel(false);
 
@@ -78,7 +76,7 @@ public abstract class GridTable extends ClientFormTable
 
         model = (GridTableModel) getModel();
 
-        logicsSupplier = ilogicsSupplier;
+        this.groupObjectController = groupObjectController;
         form = iform;
 
         getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -144,7 +142,7 @@ public abstract class GridTable extends ClientFormTable
                 int newPageSize = getParent().getHeight() / getRowHeight() + 1;
                 if (newPageSize != pageSize) {
                     try {
-                        form.changePageSize(logicsSupplier.getGroupObject(), newPageSize);
+                        form.changePageSize(GridTable.this.groupObjectController.getGroupObject(), newPageSize);
                         pageSize = newPageSize;
                     } catch (IOException e) {
                         throw new RuntimeException("Ошибка при изменении размера страницы", e);
@@ -221,7 +219,7 @@ public abstract class GridTable extends ClientFormTable
     }
 
     int getID() {
-        return logicsSupplier.getGroupObject().getID();
+        return groupObjectController.getGroupObject().getID();
     }
 
     @Override
@@ -235,7 +233,7 @@ public abstract class GridTable extends ClientFormTable
     }
 
     public void updateTable() {
-        model.update(logicsSupplier.getGroupObject(), properties, rowKeys, columnKeys, captions, values, rowHighlights, cellHighlights);
+        model.update(groupObjectController.getGroupObject(), properties, rowKeys, columnKeys, captions, values, rowHighlights, cellHighlights);
 
         refreshColumnModel();
         adjustSelection();
@@ -244,26 +242,26 @@ public abstract class GridTable extends ClientFormTable
         // так делается, потому что почему-то сам JTable ну ни в какую не хочет изменять свою высоту (getHeight())
         // приходится это делать за него, а то JViewPort смотрит именно на getHeight()
 //        setSize(getWidth(), getRowHeight() * getRowCount());
-        if (logicsSupplier.getGroupObject().tableRowsCount >= 0) {
-            int count = logicsSupplier.getGroupObject().tableRowsCount == 0 ? getRowCount() : logicsSupplier.getGroupObject().tableRowsCount;
+        if (groupObjectController.getGroupObject().tableRowsCount >= 0) {
+            int count = groupObjectController.getGroupObject().tableRowsCount == 0 ? getRowCount() : groupObjectController.getGroupObject().tableRowsCount;
             int height = count * (getRowHeight() + 1) + getTableHeader().getPreferredSize().height;
-            gridView.pane.setMinimumSize(new Dimension(getMinimumSize().width, height));
-            gridView.pane.setPreferredSize(new Dimension(getPreferredSize().width, height + 2));
-            gridView.pane.setMaximumSize(new Dimension(getMaximumSize().width, height + 5));
+            groupObjectController.getGridView().pane.setMinimumSize(new Dimension(getMinimumSize().width, height));
+            groupObjectController.getGridView().pane.setPreferredSize(new Dimension(getPreferredSize().width, height + 2));
+            groupObjectController.getGridView().pane.setMaximumSize(new Dimension(getMaximumSize().width, height + 5));
         }
     }
 
     public void changeCurrentObject() {
         final ClientGroupObjectValue changeObject = getSelectedObject();
         if (changeObject != null) {
-            SwingUtils.invokeLaterSingleAction(logicsSupplier.getGroupObject().getActionID()
+            SwingUtils.invokeLaterSingleAction(groupObjectController.getGroupObject().getActionID()
                     , new ActionListener() {
                         public void actionPerformed(ActionEvent ae) {
                             try {
                                 ClientGroupObjectValue newCurrentObject = getSelectedObject();
                                 if (changeObject.equals(newCurrentObject)) {
                                     selectObject(newCurrentObject);
-                                    form.changeGroupObject(logicsSupplier.getGroupObject(), getSelectedObject());
+                                    form.changeGroupObject(groupObjectController.getGroupObject(), getSelectedObject());
                                 }
                             } catch (IOException e) {
                                 throw new RuntimeException("Ошибка при изменении текущего объекта", e);
@@ -453,12 +451,12 @@ public abstract class GridTable extends ClientFormTable
         try {
             // Отдельно обработаем CTRL + HOME и CTRL + END
             if (ks.equals(KeyStrokes.getCtrlHome())) {
-                form.changeGroupObject(logicsSupplier.getGroupObject(), Scroll.HOME);
+                form.changeGroupObject(groupObjectController.getGroupObject(), Scroll.HOME);
                 return true;
             }
 
             if (ks.equals(KeyStrokes.getCtrlEnd())) {
-                form.changeGroupObject(logicsSupplier.getGroupObject(), Scroll.END);
+                form.changeGroupObject(groupObjectController.getGroupObject(), Scroll.END);
                 return true;
             }
         } catch (IOException ioe) {
@@ -471,7 +469,7 @@ public abstract class GridTable extends ClientFormTable
             return false;
         }
 
-        if (condition == WHEN_FOCUSED && gridView.hasActiveFilter() && ks.equals(KeyStrokes.getRemoveFiltersKeyStroke())) {
+        if (condition == WHEN_FOCUSED && groupObjectController.hasActiveFilter() && ks.equals(KeyStrokes.getRemoveFiltersKeyStroke())) {
             Action removeAllAction = getActionMap().get(QueryView.REMOVE_ALL_ACTION);
             if (removeAllAction != null) {
                 return SwingUtilities.notifyAction(removeAllAction, ks, e, this, e.getModifiers());
@@ -543,11 +541,11 @@ public abstract class GridTable extends ClientFormTable
             isInternalNavigating = true;
             changeSelection(row, column, false, false);
             isInternalNavigating = false;
-            SwingUtils.stopSingleAction(logicsSupplier.getGroupObject().getActionID(), false);
+            SwingUtils.stopSingleAction(groupObjectController.getGroupObject().getActionID(), false);
             return true;
         } else if (editEvent instanceof KeyEvent && cellEditor != null) {
             if (!cellEditor.editPerformed && cellEditor.isCellEditable(editEvent)) {
-                gridView.quickEditFilter();
+                groupObjectController.quickEditFilter();
             }
         }
 

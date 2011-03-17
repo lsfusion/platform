@@ -389,6 +389,18 @@ public class GroupObjectController implements GroupObjectLogicsSupplier, PanelLo
         return grid.getView();
     }
 
+    public void quickEditFilter() {
+        quickEditFilter(null);
+    }
+
+    public void quickEditFilter(ClientPropertyDraw propertyDraw) {
+        grid.quickEditFilter(propertyDraw);
+    }
+
+    public boolean hasActiveFilter() {
+        return grid.hasActiveFilter();
+    }
+
     public ClassViewType getClassView() {
         return classView;
     }

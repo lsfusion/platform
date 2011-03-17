@@ -2,8 +2,6 @@ package platform.client.form.grid;
 
 import platform.client.form.ClientFormController;
 import platform.client.form.GroupObjectController;
-import platform.client.form.queries.*;
-import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,26 +10,15 @@ public abstract class GridView extends JPanel {
     final JScrollPane pane;
 
     private final GridTable gridTable;
-    public final FilterController filterController;
 
     public GridTable getTable() {
         return gridTable;
     }
 
-    public GridView(GroupObjectController groupObjectController,
-                    ClientFormController form,
-                    FindController findController,
-                    FilterController filterController,
-                    CountQuantityButton countQuantityButton,
-                    CalculateSumButton calculateSumButton,
-                    GroupButton groupButton,
-                    boolean tabVertical,
-                    boolean verticalScroll) {
-        this.filterController = filterController;
-
+    public GridView(GroupObjectController groupObjectController, ClientFormController form, boolean tabVertical, boolean verticalScroll) {
         setLayout(new BorderLayout());
 
-        gridTable = new GridTable(this, groupObjectController, form) {
+        gridTable = new GridTable(groupObjectController, form) {
             protected void needToBeShown() {
                 GridView.this.needToBeShown();
             }
@@ -50,29 +37,6 @@ public abstract class GridView extends JPanel {
 
         gridTable.setFillsViewportHeight(true);
 
-
-        if (findController != null) {
-            groupObjectController.addToToolbar(findController.getView());
-            findController.getView().addActions(gridTable);
-        }
-
-        if (filterController != null) {
-            groupObjectController.addToToolbar(filterController.getView());
-            filterController.getView().addActions(gridTable);
-        }
-
-        if (countQuantityButton != null) {
-            groupObjectController.addToToolbar(countQuantityButton);
-        }
-
-        if (calculateSumButton != null) {
-            groupObjectController.addToToolbar(calculateSumButton);
-        }
-
-        if (groupButton != null) {
-            groupObjectController.addToToolbar(groupButton);
-        }
-
         add(pane, BorderLayout.CENTER);
         add(groupObjectController.getToolbarView(), BorderLayout.SOUTH);
     }
@@ -80,19 +44,4 @@ public abstract class GridView extends JPanel {
     protected abstract void needToBeShown();
 
     protected abstract void needToBeHidden();
-
-    public void quickEditFilter() {
-        quickEditFilter(null);
-    }
-
-    public void quickEditFilter(ClientPropertyDraw propertyDraw) {
-        if (filterController != null) {
-            filterController.quickEditFilter(propertyDraw);
-            gridTable.selectProperty(propertyDraw);
-        }
-    }
-
-    public boolean hasActiveFilter() {
-        return filterController != null && filterController.hasActiveFilter();
-    }
 }

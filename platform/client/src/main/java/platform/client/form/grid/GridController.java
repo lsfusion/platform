@@ -26,6 +26,7 @@ import java.util.Map;
 public class GridController {
 
     private final ClientGrid key;
+    private FilterController filterController;
 
     public ClientGrid getKey() {
         return key;
@@ -49,108 +50,7 @@ public class GridController {
         groupObjectController = igroupObjectController;
         form = iform;
 
-        FindController findController = new FindController(groupObjectController) {
-
-            protected boolean queryChanged() {
-
-                form.changeFind(getConditions());
-
-                table.requestFocusInWindow();
-                return true;
-            }
-        };
-
-        FilterController filterController = new FilterController(groupObjectController) {
-
-            protected boolean queryChanged() {
-
-                try {
-                    form.changeFilter(groupObjectController.getGroupObject(), getConditions());
-                } catch (IOException e) {
-                    throw new RuntimeException("Ошибка при применении фильтра", e);
-                }
-
-                table.requestFocusInWindow();
-                return true;
-            }
-        };
-
-        CountQuantityButton countQuantity = new CountQuantityButton() {
-            public void addListener() {
-                addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        try {
-                            showPopupMenu(form.countRecords(groupObjectController.getGroupObject().getID()));
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
-                        }
-                    }
-                });
-            }
-        };
-
-        CalculateSumButton calculateSum = new CalculateSumButton() {
-            public void addListener() {
-                addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        try {
-                            ClientPropertyDraw property = getCurrentProperty();
-                            String caption = property.getCaption() != null ? property.getCaption() : table.getColumnName(table.getSelectedColumn()).trim();
-                            if (property.baseType instanceof ClientIntegralClass) {
-                                ClientGroupObjectValue columnKey = table.getTableModel().getColumnKey(table.getSelectedColumn());
-                                Object sum = form.calculateSum(property.getID(), columnKey.serialize(property));
-                                showPopupMenu(caption, sum);
-                            } else {
-                                showPopupMenu(caption, null);
-                            }
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
-                        }
-                    }
-                });
-            }
-        };
-        
-        GroupButton groupButton = new GroupButton() {
-            public void addListener() {
-                addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        try {
-                            dialog = new GroupButton.GroupDialog(Main.frame, table.getSelectedColumn(), table.getTableModel());
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
-                        }
-                        dialog.addPropertyChangeListener(new PropertyChangeListener() {
-                            public void propertyChange(PropertyChangeEvent evt) {
-                                Map<Integer, List<byte[]>> groupMap = dialog.getSelectedGroupMap();
-                                Map<Integer, List<byte[]>> sumMap = dialog.getSelectedSumMap();
-
-                                Map<List<Object>, List<Object>> resultMap = new OrderedMap<List<Object>, List<Object>>();
-                                if (!groupMap.isEmpty() && !sumMap.isEmpty()) {
-                                    try {
-                                        resultMap = form.groupData(groupMap, sumMap);
-                                    } catch (IOException e1) {
-                                        e1.printStackTrace();
-                                    }
-                                }
-                                dialog.update(resultMap);
-                            }
-                        });
-                        dialog.setVisible(true);
-                    }
-                });
-            }
-        };
-
-        view = new GridView(groupObjectController,
-                            form,
-                            key.showFind ? findController : null,
-                            key.showFilter ? filterController : null,
-                            key.showCountQuantity ? countQuantity : null,
-                            key.showCalculateSum ? calculateSum : null,
-                            GridController.this.key.showGroupButton ? groupButton : null,            
-                            key.tabVertical,
-                            key.groupObject.needVerticalScroll) {
+        view = new GridView(groupObjectController, form, key.tabVertical, key.groupObject.needVerticalScroll) {
             protected void needToBeShown() {
                 if (!hidden && !view.isVisible()) {
                     view.setVisible(true);
@@ -162,6 +62,109 @@ public class GridController {
             }
         };
         table = view.getTable();
+
+        if (key.showFind) {
+            FindController findController = new FindController(groupObjectController) {
+                protected boolean queryChanged() {
+                    form.changeFind(getConditions());
+                    table.requestFocusInWindow();
+                    return true;
+                }
+            };
+            groupObjectController.addToToolbar(findController.getView());
+            findController.getView().addActions(table);
+        }
+
+        if (key.showFilter) {
+            filterController = new FilterController(groupObjectController) {
+                protected boolean queryChanged() {
+
+                    try {
+                        form.changeFilter(groupObjectController.getGroupObject(), getConditions());
+                    } catch (IOException e) {
+                        throw new RuntimeException("Ошибка при применении фильтра", e);
+                    }
+
+                    table.requestFocusInWindow();
+                    return true;
+                }
+            };
+            groupObjectController.addToToolbar(filterController.getView());
+            filterController.getView().addActions(table);
+        }
+
+        if (key.showCountQuantity) {
+            groupObjectController.addToToolbar(new CountQuantityButton() {
+                public void addListener() {
+                    addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            try {
+                                showPopupMenu(form.countRecords(groupObjectController.getGroupObject().getID()));
+                            } catch (IOException e1) {
+                                e1.printStackTrace();
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
+        if (key.showCalculateSum) {
+            groupObjectController.addToToolbar(new CalculateSumButton() {
+                public void addListener() {
+                    addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            try {
+                                ClientPropertyDraw property = getCurrentProperty();
+                                String caption = property.getCaption() != null ? property.getCaption() : table.getColumnName(table.getSelectedColumn()).trim();
+                                if (property.baseType instanceof ClientIntegralClass) {
+                                    ClientGroupObjectValue columnKey = table.getTableModel().getColumnKey(table.getSelectedColumn());
+                                    Object sum = form.calculateSum(property.getID(), columnKey.serialize(property));
+                                    showPopupMenu(caption, sum);
+                                } else {
+                                    showPopupMenu(caption, null);
+                                }
+                            } catch (IOException e1) {
+                                e1.printStackTrace();
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
+        if (key.showGroupButton) {
+            groupObjectController.addToToolbar(new GroupButton() {
+                public void addListener() {
+                    addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            try {
+                                dialog = new GroupButton.GroupDialog(Main.frame, table.getSelectedColumn(), table.getTableModel());
+                            } catch (IOException e1) {
+                                e1.printStackTrace();
+                            }
+                            dialog.addPropertyChangeListener(new PropertyChangeListener() {
+                                public void propertyChange(PropertyChangeEvent evt) {
+                                    Map<Integer, List<byte[]>> groupMap = dialog.getSelectedGroupMap();
+                                    Map<Integer, List<byte[]>> sumMap = dialog.getSelectedSumMap();
+
+                                    Map<List<Object>, List<Object>> resultMap = new OrderedMap<List<Object>, List<Object>>();
+                                    if (!groupMap.isEmpty() && !sumMap.isEmpty()) {
+                                        try {
+                                            resultMap = form.groupData(groupMap, sumMap);
+                                        } catch (IOException e1) {
+                                            e1.printStackTrace();
+                                        }
+                                    }
+                                    dialog.update(resultMap);
+                                }
+                            });
+                            dialog.setVisible(true);
+                        }
+                    });
+                }
+            });
+        }
 
         if (this.key.minRowCount > 0) { // вообще говоря, так делать неправильно, посколько и HeaderHeight и RowHeight могут изменяться во времени
             Dimension minSize = table.getMinimumSize();
@@ -245,6 +248,17 @@ public class GridController {
 
     public boolean requestFocusInWindow() {
         return table.requestFocusInWindow();
+    }
+
+    public void quickEditFilter(ClientPropertyDraw propertyDraw) {
+        if (filterController != null) {
+            filterController.quickEditFilter(propertyDraw);
+            table.selectProperty(propertyDraw);
+        }
+    }
+
+    public boolean hasActiveFilter() {
+        return filterController != null && filterController.hasActiveFilter();
     }
 
     boolean hidden = false;
