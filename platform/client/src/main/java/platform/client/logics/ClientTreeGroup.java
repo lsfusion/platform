@@ -13,6 +13,7 @@ import java.util.List;
 
 public class ClientTreeGroup extends ClientComponent implements ClientIdentitySerializable, AbstractTreeGroup<ClientContainer, ClientComponent> {
     public List<ClientGroupObject> groups = new ArrayList<ClientGroupObject>();
+    public boolean plainTreeMode;
 
     public ClientTreeGroup() {
 
@@ -30,6 +31,7 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
         groups = pool.deserializeList(inStream);
+        plainTreeMode = inStream.readBoolean();
 
         List<ClientGroupObject> upGroups = new ArrayList<ClientGroupObject>();
         for (ClientGroupObject group : groups) {

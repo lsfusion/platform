@@ -39,6 +39,8 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
         super.customSerialize(pool, outStream, serializationType);
 
         pool.serializeCollection(outStream, groups, serializationType);
+
+        outStream.writeBoolean(entity.plainTreeMode);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {

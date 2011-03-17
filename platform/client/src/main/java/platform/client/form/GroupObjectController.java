@@ -2,9 +2,11 @@ package platform.client.form;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.client.form.cell.PropertyController;
 import platform.client.form.grid.GridController;
 import platform.client.form.grid.GridView;
 import platform.client.form.panel.PanelController;
+import platform.client.form.panel.PanelToolbar;
 import platform.client.form.showtype.ShowTypeController;
 import platform.client.logics.*;
 import platform.interop.ClassViewType;
@@ -16,15 +18,18 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.*;
 
-public class GroupObjectController implements GroupObjectLogicsSupplier {
-
+public class GroupObjectController implements GroupObjectLogicsSupplier, PanelLogicsSupplier {
     private final ClientGroupObject groupObject;
     private final LogicsSupplier logicsSupplier;
     private final ClientFormController form;
+    private final ClientFormLayout formLayout;
 
-    private final PanelController panel;
     public GridController grid;
+    private final PanelController panel;
     public ShowTypeController showType;
+
+    private PanelToolbar panelToolbar;
+
     private final Map<ClientObject, ObjectController> objects = new HashMap<ClientObject, ObjectController>();
 
     private ClientGroupObjectValue currentObject;
@@ -36,9 +41,11 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         groupObject = igroupObject;
         logicsSupplier = ilogicsSupplier;
         form = iform;
+        this.formLayout = formLayout;
+
+        panelToolbar = new PanelToolbar(form, formLayout);
 
         panel = new PanelController(this, form, formLayout) {
-
             protected void addGroupObjectActions(JComponent comp) {
                 GroupObjectController.this.addGroupObjectActions(comp);
             }
@@ -71,14 +78,11 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
             showType.setBanClassView(groupObject.banClassView);
 
-            showType.addView(formLayout);
-
             setClassView(ClassViewType.GRID);
             grid.update();
         }
     }
 
-    private Set<ClientPropertyDraw> gridProperties = new HashSet<ClientPropertyDraw>();
     private Set<ClientPropertyDraw> panelProperties = new HashSet<ClientPropertyDraw>();
 
     public void processFormChanges(ClientFormChanges fc,
@@ -213,7 +217,6 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
     public void addPanelProperty(ClientPropertyDraw property) {
         if (grid != null) {
-            gridProperties.remove(property);
             grid.removeProperty(property);
         }
 
@@ -222,7 +225,6 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
     }
 
     public void addGridProperty(ClientPropertyDraw property) {
-        gridProperties.add(property);
         grid.addProperty(property);
 
         panel.removeProperty(property);
@@ -240,7 +242,6 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
     public void dropProperty(ClientPropertyDraw property) {
         if (grid != null) {
             grid.removeProperty(property);
-            gridProperties.remove(property);
         }
 
         panel.removeProperty(property);
@@ -392,7 +393,44 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         return classView;
     }
 
-    public PanelController getPanel() {
-        return panel;
+    public void addToToolbar(JComponent component) {
+        panelToolbar.addComponent(component);
+    }
+
+    public JPanel getToolbarView() {
+        return panelToolbar.getView();
+    }
+
+    public void addPropertyToToolbar(PropertyController property) {
+        panelToolbar.addProperty(property);
+    }
+
+    public void removePropertyFromToolbar(PropertyController property) {
+        panelToolbar.removeProperty(property);
+    }
+
+    public void updateToolbar() {
+        if (groupObject != null) {
+            if (classView == ClassViewType.GRID) {
+                panelToolbar.removeComponent(showType.view);
+                panelToolbar.update(classView);
+                panelToolbar.addComponent(showType.view, true);
+            } else {
+                for (Map.Entry<ClientRegularFilterGroup, JComponent> entry : panelToolbar.getFilters()) {
+                    formLayout.add(entry.getKey(), entry.getValue());
+                }
+
+                for (PropertyController control : panelToolbar.getProperties()) {
+                    control.addView(formLayout);
+                    control.getCellView().changeViewType(classView);
+                }
+
+                formLayout.add(showType.showTypeKey, showType.view);
+            }
+        }
+    }
+
+    public void addFilterToToolbar(ClientRegularFilterGroup filterGroup, JComponent component) {
+        panelToolbar.addFilter(filterGroup, component);
     }
 }

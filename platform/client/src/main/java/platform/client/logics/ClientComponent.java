@@ -1,11 +1,9 @@
 package platform.client.logics;
 
+import platform.base.context.ApplicationContext;
 import platform.base.context.ContextIdentityObject;
 import platform.client.descriptor.FormDescriptor;
-import platform.client.descriptor.GroupObjectDescriptor;
-import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.editor.ComponentEditor;
-import platform.base.context.ApplicationContext;
 import platform.client.descriptor.nodes.ComponentNode;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;

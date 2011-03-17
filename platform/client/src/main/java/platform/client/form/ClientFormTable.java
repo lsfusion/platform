@@ -47,7 +47,7 @@ public abstract class ClientFormTable extends JTable {
                         return null;
                     }
                     if (value instanceof String)
-                        value = ((String)value).trim();
+                        value = ((String) value).trim();
                     return new StringSelection(value.toString());
                 }
 
@@ -108,10 +108,11 @@ public abstract class ClientFormTable extends JTable {
         if (result) {
             final Component editor = getEditorComponent();
             if (editor instanceof JTextComponent) {
-                ((JTextComponent) editor).selectAll();
-            }
-            if (clearText(row, column, e)) {
-                ((JTextComponent) editor).setText("");
+                JTextComponent textEditor = (JTextComponent) editor;
+                textEditor.selectAll();
+                if (clearText(row, column, e)) {
+                    textEditor.setText("");
+                }
             }
         }
 

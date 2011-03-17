@@ -1222,7 +1222,18 @@ public class BaseUtils {
             return null;
     }
 
-    public static <K> List<K> copyTreeChildren(Vector children) {
+    public static <K> int relativePosition(K element, List<K> comparatorList, List<K> insertList) {
+        int ins = 0;
+        int ind = comparatorList.indexOf(element);
+
+        Iterator<K> icp = insertList.iterator();
+        while (icp.hasNext() && comparatorList.indexOf(icp.next()) < ind) {
+            ins++;
+        }
+        return ins;
+    }
+
+    public static <K> List<K> copyTreeChildren(List children) {
         List<K> result = new ArrayList<K>();
         if (children != null)
             for (Object child : children)

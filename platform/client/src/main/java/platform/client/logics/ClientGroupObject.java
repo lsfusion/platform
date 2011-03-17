@@ -196,4 +196,8 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
     public void setHighlightColor(Color highlightColor) {
         this.highlightColor = highlightColor;
     }
+
+    public boolean isLastGroupInTree() {
+        return parent != null && BaseUtils.last(parent.groups) == this;
+    }
 }

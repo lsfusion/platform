@@ -6,22 +6,26 @@ import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 
-public abstract class GridHeaderRenderer implements TableCellRenderer {
+public class MultiLineHeaderRenderer implements TableCellRenderer {
 
-    protected final static ImageIcon arrowUpIcon = new ImageIcon(GridHeaderRenderer.class.getResource("/images/arrowup.gif"));
-    protected final static ImageIcon arrowDownIcon = new ImageIcon(GridHeaderRenderer.class.getResource("/images/arrowdown.gif"));
+    protected final static ImageIcon arrowUpIcon = new ImageIcon(MultiLineHeaderRenderer.class.getResource("/images/arrowup.gif"));
+    protected final static ImageIcon arrowDownIcon = new ImageIcon(MultiLineHeaderRenderer.class.getResource("/images/arrowdown.gif"));
 
     private final TableCellRenderer tableCellRenderer;
-    private final MultiLineHeaderRenderer simplifiedRenderer;
+    private final SimplifiedRenderer simplifiedRenderer;
 
-    public GridHeaderRenderer(TableCellRenderer tableCellRenderer) {
-        this.tableCellRenderer = tableCellRenderer;
-        this.simplifiedRenderer = new MultiLineHeaderRenderer(tableCellRenderer) {
-            @Override
-            protected Boolean getSortDirection(int column) {
-                return GridHeaderRenderer.this.getSortDirection(column);
-            }
-        };
+    public MultiLineHeaderRenderer(TableCellRenderer originalTableCellRenderer) {
+        tableCellRenderer = originalTableCellRenderer;
+        if (!Main.module.isFull()) {
+            simplifiedRenderer = new SimplifiedRenderer(originalTableCellRenderer) {
+                @Override
+                protected Boolean getSortDirection(int column) {
+                    return MultiLineHeaderRenderer.this.getSortDirection(column);
+                }
+            };
+        } else {
+            simplifiedRenderer = null;
+        }
     }
 
     public Component getTableCellRendererComponent(JTable itable,
@@ -56,16 +60,18 @@ public abstract class GridHeaderRenderer implements TableCellRenderer {
         return comp;
     }
 
-    protected abstract Boolean getSortDirection(int column);
+    protected Boolean getSortDirection(int column) {
+        return null;
+    }
 
-    public static abstract class MultiLineHeaderRenderer extends JPanel implements TableCellRenderer {
+    public static abstract class SimplifiedRenderer extends JPanel implements TableCellRenderer {
         private JTextArea textArea;
         private JLabel iconLabel;
-        
+
         private final TableCellRenderer tableCellRenderer;
 
-        public MultiLineHeaderRenderer(TableCellRenderer tableCellRenderer) {
-            this.tableCellRenderer = tableCellRenderer;
+        public SimplifiedRenderer(TableCellRenderer originalTableCellRenderer) {
+            tableCellRenderer = originalTableCellRenderer;
 
             setLayout(new BorderLayout());
 
@@ -86,8 +92,9 @@ public abstract class GridHeaderRenderer implements TableCellRenderer {
         @Override
         public void setFont(Font font) {
             super.setFont(font);
-            if (textArea != null)
+            if (textArea != null) {
                 textArea.setFont(font);
+            }
         }
 
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -101,7 +108,7 @@ public abstract class GridHeaderRenderer implements TableCellRenderer {
             if (renderer instanceof JComponent) {
                 this.setBorder(((JComponent) renderer).getBorder());
             }
-            
+
             iconLabel.setHorizontalAlignment(JLabel.CENTER);
             iconLabel.setVerticalAlignment(JLabel.TOP);
 

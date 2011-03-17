@@ -13,8 +13,8 @@ public abstract class CountQuantityButton extends JButton {
         setIcon(icon);
         setAlignmentY(Component.TOP_ALIGNMENT);
         setMinimumSize(buttonSize);
-        setPreferredSize(buttonSize);
         setMaximumSize(buttonSize);
+        setPreferredSize(buttonSize);
         setFocusable(false);
         setToolTipText("Количество записей");
         addListener();

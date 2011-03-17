@@ -1,7 +1,8 @@
-package platform.client.form;
+package platform.client.form.tree;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.client.form.ClientFormController;
 import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
@@ -22,6 +23,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
+//todo: delete later
+@Deprecated()
 public class GroupTree extends ClientTree {
     private final TreeGroupNode rootNode;
     private final ClientFormController form;
@@ -141,7 +144,7 @@ public class GroupTree extends ClientTree {
         values.put(property, ivalues);
     }
 
-    public boolean addDrawProperty(ClientPropertyDraw property) {
+    public boolean addDrawProperty(ClientGroupObject group, ClientPropertyDraw property) {
         if (properties.indexOf(property) == -1) {
             List<ClientPropertyDraw> cells = form.getPropertyDraws();
 

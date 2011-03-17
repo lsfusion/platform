@@ -78,8 +78,7 @@ public class PropertyDrawEditor extends GroupElementEditor {
 
         TitledPanel editKeyPanel = new TitledPanel("Клавиши редактирования", new IncrementKeyStrokeEditor(descriptor.client, "editKey"));
 
-        JPanel defaultComponent = new JPanel();
-        defaultComponent.setLayout(new FlowLayout(FlowLayout.LEFT));
+        JPanel defaultComponent = new JPanel(new FlowLayout(FlowLayout.LEFT));
         defaultComponent.add(new IncrementCheckBox("Компонент по умолчанию", descriptor.client, "defaultComponent"));
 
         addTab("Общее", new NorthBoxPanel(captionPanel,

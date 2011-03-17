@@ -1,15 +1,16 @@
 package platform.client.descriptor.editor;
 
-import platform.base.BaseUtils;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.TreeGroupDescriptor;
 import platform.client.descriptor.editor.base.NodeEditor;
 import platform.client.descriptor.editor.base.TitledPanel;
+import platform.client.descriptor.increment.editor.IncrementCheckBox;
 import platform.client.descriptor.increment.editor.IncrementMultipleListEditor;
 import platform.client.descriptor.increment.editor.IncrementMultipleListSelectionModel;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,6 +39,10 @@ public class TreeGroupEditor extends JPanel implements NodeEditor {
         groupsEditor.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 
         add(new TitledPanel("Группы", groupsEditor));
+
+        JPanel plainTreeModePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        plainTreeModePanel.add(new IncrementCheckBox("Показывать в виде обычного дерева", treeGroup, "plainTreeMode"));
+        add(plainTreeModePanel);
     }
 
     public JComponent getComponent() {

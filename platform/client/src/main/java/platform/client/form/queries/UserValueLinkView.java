@@ -45,7 +45,7 @@ class UserValueLinkView extends ValueLinkView {
                 return false;
             }
 
-            public ClientPropertyDraw getProperty(int col) {
+            public ClientPropertyDraw getProperty(int row, int col) {
                 return property;
             }
 

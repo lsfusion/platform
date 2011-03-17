@@ -28,6 +28,7 @@ public class RegularFilterGroupView extends ComponentView {
     
     public RegularFilterGroupView(RegularFilterGroupEntity entity) {
         super(entity.ID);
+        drawToToolbar = true;
         this.entity = entity;
 
         for (RegularFilterEntity filterEntity : entity.filters) {

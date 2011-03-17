@@ -1,29 +1,39 @@
 package platform.client.form.tree;
 
 import platform.client.form.ClientFormController;
-import platform.client.form.GroupTree;
 import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
+import platform.client.logics.ClientTreeGroup;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.List;
 import java.util.Map;
 
 public class TreeView extends JPanel {
-    private final GroupTree groupTree;
+    private final TreeGroupTable groupTree;
 
-    public TreeView(ClientFormController form) {
+    public TreeView(ClientFormController form, ClientTreeGroup treeGroup) {
         setLayout(new BorderLayout());
 
-        groupTree = new GroupTree(form);
+        groupTree = new TreeGroupTable(form, treeGroup);
 
-        JScrollPane pane = new JScrollPane(groupTree); 
+        JScrollPane pane = new JScrollPane(groupTree);
+        pane.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                //потому что после отработки SimplexLayout текущий ряд может стать невидимым
+                groupTree.scrollCurrentPathToVisible();
+            }
+        });
+
         add(pane);
     }
 
-    public GroupTree getTree() {
+    public TreeGroupTable getTree() {
         return groupTree;
     }
 
@@ -35,12 +45,12 @@ public class TreeView extends JPanel {
         groupTree.updateDrawPropertyValues(property, values);
     }
 
-    public void addDrawProperty(ClientPropertyDraw property) {
-        groupTree.addDrawProperty(property);
+    public void addDrawProperty(ClientGroupObject group, ClientPropertyDraw property, boolean toPanel) {
+        groupTree.addDrawProperty(group, property);
     }
 
-    public void removeProperty(ClientPropertyDraw property) {
-        groupTree.removeProperty(property);
+    public void removeProperty(ClientGroupObject group, ClientPropertyDraw property) {
+        groupTree.removeProperty(group, property);
     }
 
     public void setCurrentObjects(ClientGroupObjectValue objects) {

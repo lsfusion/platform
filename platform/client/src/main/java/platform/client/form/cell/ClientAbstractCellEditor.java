@@ -77,7 +77,10 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
 
         if (cellTable.getForm().isReadOnlyMode() && cellTable.isDataChanging()) return null;
 
-        ClientPropertyDraw property = cellTable.getProperty(column);
+        ClientPropertyDraw property = cellTable.getProperty(row, column);
+        if (property == null) {
+            return null;
+        }
 
         try {
             if (cellTable.isDataChanging()) {

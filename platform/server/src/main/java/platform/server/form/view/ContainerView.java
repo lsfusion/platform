@@ -59,25 +59,22 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
     }
 
     public void addBack(int index, ComponentView comp) {
-        changeContainer(comp);
-        children.add(children.size() - index, comp);
+        add(children.size() - index, comp);
     }
 
     public void addBefore(ComponentView comp, ComponentView compBefore) {
-        if (!children.contains(compBefore))
+        if (!children.contains(compBefore)) {
             add(comp);
-        else {
-            changeContainer(comp);
-            children.add(children.indexOf(compBefore) + 1, comp);
+        } else {
+            add(children.indexOf(compBefore), comp);
         }
     }
 
     public void addAfter(ComponentView comp, ComponentView compAfter) {
-        if (!children.contains(compAfter))
+        if (!children.contains(compAfter)) {
             add(comp);
-        else {
-            changeContainer(comp);
-            children.add(children.indexOf(compAfter) + 1, comp);
+        } else {
+            add(children.indexOf(compAfter) + 1, comp);
         }
     }
 

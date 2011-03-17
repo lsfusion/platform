@@ -70,7 +70,7 @@ public abstract class CellTable extends SingleCellTable
     public Object convertValueFromString(String value, int row, int column) {
         Object parsedValue;
         try {
-            parsedValue = getProperty(column).parseString(getForm(), value);
+            parsedValue = getProperty(row, column).parseString(getForm(), value);
         } catch (ParseException pe) {
             return null;
         }

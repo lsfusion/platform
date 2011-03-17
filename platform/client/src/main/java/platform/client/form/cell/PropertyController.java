@@ -2,7 +2,6 @@ package platform.client.form.cell;
 
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormLayout;
-import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.interop.form.screen.ExternalScreenComponent;
@@ -37,7 +36,7 @@ public class PropertyController implements CellViewListener {
     protected final ClientFormController form;
 
     // форма нужна, поскольку ObjectEditor'у она нужна, чтобы создать диалог
-    public PropertyController(ClientPropertyDraw key, final ClientFormController form, ClientGroupObject groupObject, ClientGroupObjectValue columnKey) {
+    public PropertyController(ClientPropertyDraw key, final ClientFormController form, ClientGroupObjectValue columnKey) {
 
         this.key = key;
         this.form = form;

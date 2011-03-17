@@ -624,7 +624,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     if(getUpTreeGroup()==null) // если верхняя группа
                         return activeRow>=0?keys.getKey(activeRow):new HashMap<ObjectInstance,DataObject>();
                     else // иначе assertion что activeRow < 0, выбираем верхнюю
-                        return keys.size()>0 && !currentObject.isEmpty()?keys.keySet().iterator().next():new HashMap<ObjectInstance,DataObject>();
+                        return keys.size()>0 && !currentObject.isEmpty()?keys.keySet().iterator().next():null;
                 } else // так как сейчас клиент требует прислать ему groupObject даже если он не изменился, если приходят ключи
                     return currentObject;
             }

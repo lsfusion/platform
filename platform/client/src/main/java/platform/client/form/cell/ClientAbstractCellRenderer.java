@@ -1,7 +1,9 @@
 package platform.client.form.cell;
 
 import platform.client.form.PropertyRendererComponent;
+import platform.client.form.renderer.StringPropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
+import platform.interop.ComponentDesign;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
@@ -12,6 +14,7 @@ import java.util.ArrayList;
 public class ClientAbstractCellRenderer extends JComponent
                                  implements TableCellRenderer {
 
+    private static final StringPropertyRenderer nullPropertyRenderer = new StringPropertyRenderer(null, new ComponentDesign());
 
     public Component getTableCellRendererComponent(JTable table,
                                                    Object value,
@@ -20,9 +23,17 @@ public class ClientAbstractCellRenderer extends JComponent
                                                    int row,
                                                    int column) {
         CellTableInterface cellTable = (CellTableInterface) table;
-        ClientPropertyDraw property = cellTable.getProperty(column);
-        PropertyRendererComponent currentComp = property.getRendererComponent();
-        currentComp.setValue(value, isSelected, hasFocus);
+
+        ClientPropertyDraw property = cellTable.getProperty(row, column);
+
+        PropertyRendererComponent currentComp;
+        if (property != null) {
+            currentComp = property.getRendererComponent();
+            currentComp.setValue(value, isSelected, hasFocus);
+        } else {
+            currentComp = nullPropertyRenderer;
+            currentComp.setValue("", isSelected, hasFocus);
+        }
 
         JComponent comp = currentComp.getComponent();
 

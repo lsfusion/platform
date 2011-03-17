@@ -11,7 +11,7 @@ import platform.client.form.cell.ClientAbstractCellEditor;
 import platform.client.form.cell.ClientAbstractCellRenderer;
 import platform.client.form.queries.QueryView;
 import platform.client.form.sort.GridHeaderMouseListener;
-import platform.client.form.sort.GridHeaderRenderer;
+import platform.client.form.sort.MultiLineHeaderRenderer;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.interop.KeyStrokes;
@@ -83,13 +83,15 @@ public abstract class GridTable extends ClientFormTable
 
         getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
-                changeCurrentObject();
+                if (!e.getValueIsAdjusting()) {
+                    changeCurrentObject();
+                }
             }
         });
 
         final JTableHeader header = getTableHeader();
-        header.setDefaultRenderer(new GridHeaderRenderer(header.getDefaultRenderer()) {
-//        header.setDefaultRenderer(new GridHeaderRenderer.MultiLineHeaderRenderer(header.getDefaultRenderer()) {
+        header.setDefaultRenderer(new MultiLineHeaderRenderer(header.getDefaultRenderer()) {
+//        header.setDefaultRenderer(new GridHeaderRenderer.SimplifiedRenderer(header.getDefaultRenderer()) {
 
             protected Boolean getSortDirection(int column) {
                 return GridTable.this.getSortDirection(column);
@@ -192,10 +194,6 @@ public abstract class GridTable extends ClientFormTable
         final Action lastAction = new GoToLastCellAction(oldLastAction, oldPrevAction);
 
         ActionMap actionMap = getActionMap();
-
-        actionMap.put("selectNextColumnCell", nextAction);
-        actionMap.put("selectPreviousColumnCell", prevAction);
-
         // set left and right actions
         actionMap.put("selectNextColumn", nextAction);
         actionMap.put("selectPreviousColumn", prevAction);
@@ -573,16 +571,8 @@ public abstract class GridTable extends ClientFormTable
 
     public boolean addProperty(final ClientPropertyDraw property) {
         if (properties.indexOf(property) == -1) {
-            List<ClientPropertyDraw> cells = logicsSupplier.getPropertyDraws();
-
             // конечно кривовато определять порядок по номеру в листе, но потом надо будет сделать по другому
-            int ind = cells.indexOf(property), ins = 0;
-
-            Iterator<ClientPropertyDraw> icp = properties.iterator();
-            while (icp.hasNext() && cells.indexOf(icp.next()) < ind) {
-                ins++;
-            }
-
+            int ins = BaseUtils.relativePosition(property, form.getPropertyDraws(), properties);
             properties.add(ins, property);
             return true;
         } else
@@ -643,10 +633,11 @@ public abstract class GridTable extends ClientFormTable
     }
 
     public ClientGroupObjectValue getSelectedObject() {
-        int rowIndex = convertRowIndexToModel(getSelectedRow());
+        int rowIndex = getSelectedRow();
         if (rowIndex < 0 || rowIndex >= getRowCount()) {
             return null;
         }
+        rowIndex = convertRowIndexToModel(rowIndex);
 
         try {
             return rowKeys.get(rowIndex);
@@ -674,7 +665,7 @@ public abstract class GridTable extends ClientFormTable
         return true;
     }
 
-    public ClientPropertyDraw getProperty(int col) {
+    public ClientPropertyDraw getProperty(int row, int col) {
         return model.getColumnProperty(col);
     }
 

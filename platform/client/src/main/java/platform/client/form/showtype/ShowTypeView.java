@@ -1,6 +1,5 @@
 package platform.client.form.showtype;
 
-import platform.client.form.GroupObjectLogicsSupplier;
 import platform.interop.ClassViewType;
 
 import javax.swing.*;
@@ -15,12 +14,9 @@ public abstract class ShowTypeView extends JPanel implements ActionListener {
     JButton panelButton;
     JButton hideButton;
 
-    GroupObjectLogicsSupplier logicsSupplier;
     final private Dimension buttonSize = new Dimension(18, 18);
 
-    public ShowTypeView(GroupObjectLogicsSupplier ilogicsSupplier) {
-
-        logicsSupplier = ilogicsSupplier;
+    public ShowTypeView() {
 
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
@@ -59,9 +55,9 @@ public abstract class ShowTypeView extends JPanel implements ActionListener {
 
     public void changeClassView(ClassViewType classView, List<ClassViewType> banClassView) {
 
-        panelButton.setBorderPainted(classView == ClassViewType.PANEL ? false : true);
-        gridButton.setBorderPainted(classView == ClassViewType.GRID ? false : true);
-        hideButton.setBorderPainted(classView == ClassViewType.HIDE ? false : true);
+        panelButton.setBorderPainted(classView != ClassViewType.PANEL);
+        gridButton.setBorderPainted(classView != ClassViewType.GRID);
+        hideButton.setBorderPainted(classView != ClassViewType.HIDE);
 
         int visibleCount = 0;
 

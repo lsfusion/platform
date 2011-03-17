@@ -65,7 +65,7 @@ public class TableCellView extends JPanel implements CellView {
                 return true;
             }
 
-            public ClientPropertyDraw getProperty(int col) {
+            public ClientPropertyDraw getProperty(int row, int col) {
                 return TableCellView.this.key;
             }
 

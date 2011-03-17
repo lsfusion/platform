@@ -2657,13 +2657,15 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             import2 = addPropertyDraw(importEuTnved);
 
             objCustomCategoryOrigin = addSingleGroupObject(customCategoryOrigin, "ЕС уровень", sidCustomCategoryOrigin, nameCustomCategory, sidCustomCategory10CustomCategoryOrigin);
-            addObjectActions(this, objCustomCategoryOrigin);
+            addObjectActions(this, objCustomCategoryOrigin, objCustomCategory6Origin, customCategory6);
 
             addPropertyDraw(relationCustomCategory10CustomCategoryOrigin, objCustomCategory10, objCustomCategoryOrigin);
 
-            if (tree)
-            {   treeCustomCategory = addTreeGroupObject(objCustomCategory4.groupTo, objCustomCategory6.groupTo, objCustomCategory9.groupTo);
-                treeCustomCategoryOrigin = addTreeGroupObject(objCustomCategory4Origin.groupTo, objCustomCategory6Origin.groupTo);
+            if (tree) {
+                treeCustomCategory = addTreeGroupObject(objCustomCategory4.groupTo, objCustomCategory6.groupTo, objCustomCategory9.groupTo);
+                treeCustomCategoryOrigin = addTreeGroupObject(objCustomCategory4Origin.groupTo, objCustomCategory6Origin.groupTo, objCustomCategoryOrigin.groupTo);
+
+                treeCustomCategory.plainTreeMode = true;
             }
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(customCategory4CustomCategory6, objCustomCategory6), Compare.EQUALS, objCustomCategory4));

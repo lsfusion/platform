@@ -9,6 +9,7 @@ import platform.client.Log;
 import platform.client.Main;
 import platform.client.SwingUtils;
 import platform.client.form.grid.GridView;
+import platform.client.form.tree.TreeGroupController;
 import platform.client.logics.*;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.filter.ClientPropertyFilter;
@@ -24,9 +25,7 @@ import platform.interop.form.RemoteFormInterface;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.event.*;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -179,7 +178,6 @@ public class ClientFormController {
             if (group.parent == null) {
                 GroupObjectController controller = new GroupObjectController(group, form, this, formLayout);
                 controllers.put(group, controller);
-                controller.getPanel().initMovingContainer();
             }
         }
 
@@ -251,7 +249,7 @@ public class ClientFormController {
 
         if (filterGroup.drawToToolbar && filterGroup.keyBindingGroup != null) {
             GroupObjectController controller = controllers.get(filterGroup.keyBindingGroup);
-            controller.getPanel().movingContainer.addFilter(filterGroup, checkBox);
+            controller.addFilterToToolbar(filterGroup, checkBox);
         }
 
         checkBox.addItemListener(new ItemListener() {
@@ -283,6 +281,17 @@ public class ClientFormController {
                 gridView.quickEditFilter(propertyDraw);
             }
         }
+    }
+
+    public PanelLogicsSupplier getPanelLogicsSupplier(ClientGroupObject group) {
+        GroupObjectController groupObjectController = controllers.get(group);
+        if (groupObjectController != null) {
+            return groupObjectController;
+        }
+
+        return group.parent != null
+               ? treeControllers.get(group.parent)
+               : null;
     }
 
     public class ClientRegularFilterWrapped {

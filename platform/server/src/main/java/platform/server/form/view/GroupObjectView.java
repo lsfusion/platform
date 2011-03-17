@@ -23,7 +23,6 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
     public Integer tableRowsCount;
 
     public GroupObjectView() {
-
     }
 
     public ObjectView getObjectView(ObjectEntity object) {
@@ -115,8 +114,8 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
         grid = pool.deserializeObject(inStream);
         showType = pool.deserializeObject(inStream);
-        needVerticalScroll = pool.readObject(inStream);
-        tableRowsCount = pool.readInt(inStream);
+        needVerticalScroll = inStream.readBoolean();
+        tableRowsCount = inStream.readInt();
     }
 
     public void setTableRowsCount(int tableRowsCount) {

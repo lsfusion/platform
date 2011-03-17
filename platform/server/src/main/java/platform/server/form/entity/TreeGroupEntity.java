@@ -12,6 +12,7 @@ import java.util.List;
 
 public class TreeGroupEntity extends IdentityObject implements ServerIdentitySerializable {
     public List<GroupObjectEntity> groups = new ArrayList<GroupObjectEntity>();
+    public boolean plainTreeMode = false;
 
     public TreeGroupEntity() {
         
@@ -32,5 +33,6 @@ public class TreeGroupEntity extends IdentityObject implements ServerIdentitySer
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         groups = pool.deserializeList(inStream);
+        plainTreeMode = inStream.readBoolean();
     }
 }

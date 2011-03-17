@@ -3,36 +3,31 @@ package platform.client.form.panel;
 import platform.base.BaseUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormLayout;
-import platform.client.form.GroupObjectController;
-import platform.client.form.GroupObjectLogicsSupplier;
+import platform.client.form.PanelLogicsSupplier;
 import platform.client.form.cell.PropertyController;
-import platform.client.logics.*;
+import platform.client.logics.ClientGroupObject;
+import platform.client.logics.ClientGroupObjectValue;
+import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
 import java.util.*;
 
-public abstract class PanelController {
+public class PanelController {
     private ClientFormController form;
-    private GroupObjectLogicsSupplier logicsSupplier;
+    private PanelLogicsSupplier panelLogicsSupplier;
     private ClientFormLayout formLayout;
-    public MovingContainer movingContainer;
 
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, PropertyController>> properties = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, PropertyController>>();
 
-    public PanelController(GroupObjectLogicsSupplier ilogicsSupplier, ClientFormController iform, ClientFormLayout iformLayout) {
-        logicsSupplier = ilogicsSupplier;
+    public PanelController(PanelLogicsSupplier panelLogicsSupplier, ClientFormController iform, ClientFormLayout iformLayout) {
+        this.panelLogicsSupplier = panelLogicsSupplier;
         form = iform;
         formLayout = iformLayout;
     }
 
-    public void initMovingContainer() {
-        GroupObjectController groupController = form.controllers.get(logicsSupplier.getGroupObject());
-        movingContainer = new MovingContainer(groupController, formLayout);
-    }
-
     public void requestFocusInWindow() {
         // так делать конечно немного неправильно, так как теоретически objectID может вообще не быть в панели
-        for (ClientPropertyDraw property : logicsSupplier.getPropertyDraws()) {
+        for (ClientPropertyDraw property : form.getPropertyDraws()) {
             Map<ClientGroupObjectValue, PropertyController> propControllers = properties.get(property);
             if (propControllers != null && !propControllers.isEmpty()) {
                 propControllers.values().iterator().next().getView().requestFocusInWindow();
@@ -53,12 +48,9 @@ public abstract class PanelController {
 
             for (PropertyController controller : properties.remove(property).values()) {
                 if (property.keyBindingGroup != null && property.drawToToolbar) {
-                    GroupObjectController groupController = form.controllers.get(property.keyBindingGroup);
-                    groupController.getPanel().movingContainer.removeProperty(controller);
-
-                    if (groupController.getPanel() != this) {
-                        groupController.getPanel().updateMovingProperties();
-                    }
+                    PanelLogicsSupplier panelSupplier = form.getPanelLogicsSupplier(property.keyBindingGroup);
+                    panelSupplier.removePropertyFromToolbar(controller);
+                    panelSupplier.updateToolbar();
                 }
                 controller.removeView(formLayout);
             }
@@ -70,7 +62,9 @@ public abstract class PanelController {
         values.remove(property);
     }
 
-    protected abstract void addGroupObjectActions(JComponent comp);
+    protected void addGroupObjectActions(JComponent comp) {
+        //do nothing by default
+    }
 
     public void hideViews() {
         for (Map<ClientGroupObjectValue, PropertyController> propControllers : properties.values()) {
@@ -91,7 +85,7 @@ public abstract class PanelController {
     public void setRowHighlight(Object value) {
         for (Map<ClientGroupObjectValue, PropertyController> propControllers : properties.values()) {
             for (PropertyController controller : propControllers.values()) {
-                ClientGroupObject groupObject = logicsSupplier.getGroupObject();
+                ClientGroupObject groupObject = panelLogicsSupplier.getGroupObject();
                 controller.setHighlight(value, groupObject == null ? null : groupObject.highlightColor);
             }
         }
@@ -112,13 +106,13 @@ public abstract class PanelController {
                 {
                     PropertyController propController = propControllers.get(columnKey);
                     if (propController == null) {
-                        propController = new PropertyController(property, form, logicsSupplier.getGroupObject(), columnKey);
+                        propController = new PropertyController(property, form, columnKey);
                         addGroupObjectActions(propController.getView());
                         if (property.keyBindingGroup != null && property.drawToToolbar) {
-                            GroupObjectController groupController = form.controllers.get(property.keyBindingGroup);
-                            groupController.getPanel().movingContainer.addProperty(propController);
-                            if (groupController.getPanel() != this) {
-                                groupController.getPanel().updateMovingProperties();
+                            PanelLogicsSupplier panelSupplier = form.getPanelLogicsSupplier(property.keyBindingGroup);
+                            if (panelSupplier != null) {
+                                panelSupplier.addPropertyToToolbar(propController);
+                                panelSupplier.updateToolbar();
                             }
                         } else {
                             propController.addView(formLayout);
@@ -143,7 +137,8 @@ public abstract class PanelController {
             }
         }
 
-        // там с updateCaptions гипотетически может быть проблема если при чтении captions изменятся ключи и нарушится целостность, но это локальный баг его можно позже устранить
+        // там с updateCaptions гипотетически может быть проблема, если при чтении captions изменятся ключи и нарушится целостность,
+        // но это локальный баг, его можно позже устранить
         for (Map.Entry<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> updateCaption : captions.entrySet()) {
             Map<ClientGroupObjectValue, PropertyController> propControllers = properties.get(updateCaption.getKey());
             for (Map.Entry<ClientGroupObjectValue, Object> updateKeys : updateCaption.getValue().entrySet()) {
@@ -155,7 +150,7 @@ public abstract class PanelController {
             }
         }
 
-        updateMovingProperties();
+        panelLogicsSupplier.updateToolbar();
 
         setRowHighlight(rowHighlight);
 
@@ -168,12 +163,6 @@ public abstract class PanelController {
                     propController.setHighlight(updateKeys.getValue(), updateCellHighlights.getKey().highlightColor);
                 }
             }
-        }
-    }
-
-    private void updateMovingProperties() {
-        if (logicsSupplier.getGroupObject() != null) {
-            movingContainer.update(logicsSupplier.getClassView());
         }
     }
 

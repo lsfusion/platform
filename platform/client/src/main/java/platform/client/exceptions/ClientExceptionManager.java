@@ -79,7 +79,7 @@ public class ClientExceptionManager {
     }
 
     private static RemoteException getRemoteExceptionCause(Throwable e) {
-        for (Throwable ex = e; ex != null && ex != ex.getCause(); ex = ex.getCause()) {
+        for (Throwable ex = e; ex != null && ex.getCause() != null && ex != ex.getCause(); ex = ex.getCause()) {
             if (ex instanceof RemoteException) {
                 return ex instanceof ServerException
                        ? (RemoteException) ex.getCause()

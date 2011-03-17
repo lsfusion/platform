@@ -2,7 +2,7 @@ package platform.client.form.grid;
 
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormLayout;
-import platform.client.form.GroupObjectLogicsSupplier;
+import platform.client.form.GroupObjectController;
 import platform.client.form.queries.CalculateSumButton;
 import platform.client.form.queries.CountQuantityButton;
 import platform.client.form.queries.FilterController;
@@ -14,7 +14,8 @@ import platform.interop.Order;
 import platform.interop.form.screen.ExternalScreenComponent;
 
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -38,15 +39,15 @@ public class GridController {
 
     private final ClientFormController form;
 
-    private final GroupObjectLogicsSupplier logicsSupplier;
+    private final GroupObjectController groupObjectController;
 
-    public GridController(ClientGrid key, GroupObjectLogicsSupplier ilogicsSupplier, ClientFormController iform) {
+    public GridController(ClientGrid key, GroupObjectController igroupObjectController, ClientFormController iform) {
 
         this.key = key;
-        logicsSupplier = ilogicsSupplier;
+        groupObjectController = igroupObjectController;
         form = iform;
 
-        FindController findController = new FindController(logicsSupplier) {
+        FindController findController = new FindController(groupObjectController) {
 
             protected boolean queryChanged() {
 
@@ -57,12 +58,12 @@ public class GridController {
             }
         };
 
-        FilterController filterController = new FilterController(logicsSupplier) {
+        FilterController filterController = new FilterController(groupObjectController) {
 
             protected boolean queryChanged() {
 
                 try {
-                    form.changeFilter(logicsSupplier.getGroupObject(), getConditions());
+                    form.changeFilter(groupObjectController.getGroupObject(), getConditions());
                 } catch (IOException e) {
                     throw new RuntimeException("Ошибка при применении фильтра", e);
                 }
@@ -77,7 +78,7 @@ public class GridController {
                 addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         try {
-                            showPopupMenu(form.countRecords(logicsSupplier.getGroupObject().getID()));
+                            showPopupMenu(form.countRecords(groupObjectController.getGroupObject().getID()));
                         } catch (IOException e1) {
                             e1.printStackTrace();
                         }
@@ -92,7 +93,7 @@ public class GridController {
                     public void actionPerformed(ActionEvent e) {
                         try {
                             ClientPropertyDraw property = getCurrentProperty();
-                            Object sum = form.calculateSum(logicsSupplier.getGroupObject().getID(), property.getID());
+                            Object sum = form.calculateSum(groupObjectController.getGroupObject().getID(), property.getID());
                             showPopupMenu(property.getCaption(), sum);
                         } catch (IOException e1) {
                             e1.printStackTrace();
@@ -102,9 +103,14 @@ public class GridController {
             }
         };
 
-        view = new GridView(logicsSupplier, form, GridController.this.key.showFind ? findController : null, GridController.this.key.showFilter ? filterController : null,
-                GridController.this.key.showCountQuantity ? countQuantity : null, GridController.this.key.showCalculateSum ? calculateSum : null,
-                GridController.this.key.tabVertical, key.groupObject.needVerticalScroll) {
+        view = new GridView(groupObjectController,
+                            form,
+                            key.showFind ? findController : null,
+                            key.showFilter ? filterController : null,
+                            key.showCountQuantity ? countQuantity : null,
+                            key.showCalculateSum ? calculateSum : null,
+                            key.tabVertical,
+                            key.groupObject.needVerticalScroll) {
             protected void needToBeShown() {
                 if (!hidden && !view.isVisible()) {
                     view.setVisible(true);

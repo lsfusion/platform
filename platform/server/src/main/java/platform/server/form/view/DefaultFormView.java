@@ -141,14 +141,16 @@ public class DefaultFormView extends FormView {
             Set<ObjectEntity> groupObjects = new HashSet<ObjectEntity>();
 
             // ищем самый нижний GroupObjectInstance, к которому применяется фильтр
-            for (RegularFilterEntity regFilter : filterGroup.filters)
+            for (RegularFilterEntity regFilter : filterGroup.filters) {
                 groupObjects.addAll(formEntity.getApplyObject(regFilter.filter.getObjects()).objects);
+            }
+
+            GroupObjectEntity filterGroupObject = formEntity.getApplyObject(groupObjects);
 
             RegularFilterGroupView filterGroupView = new RegularFilterGroupView(filterGroup);
-            filterContainers.get(mgroupObjects.get(formEntity.getApplyObject(groupObjects))).add(filterGroupView);
-            filterContainers.get(mgroupObjects.get(formEntity.getApplyObject(groupObjects))).add(filterGroupView);
+            filterContainers.get(mgroupObjects.get(filterGroupObject)).add(filterGroupView);
 
-            filterGroupView.keyBindingGroup = formEntity.getApplyObject(groupObjects);
+            filterGroupView.keyBindingGroup = filterGroupObject;
 
             regularFilters.add(filterGroupView);
             mfilters.put(filterGroup, filterGroupView);

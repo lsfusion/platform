@@ -30,8 +30,8 @@ import java.rmi.RemoteException;
 import java.rmi.server.RMIClassLoader;
 import java.rmi.server.RMIFailureHandler;
 import java.rmi.server.RMISocketFactory;
-import java.util.*;
 import java.util.List;
+import java.util.TimeZone;
 
 import static platform.client.PropertyConstants.*;
 
@@ -56,12 +56,13 @@ public class Main {
     private static ClientObjectClass baseClass = null;
 
     public static ClientObjectClass getBaseClass() {
-        if(baseClass==null)
+        if (baseClass == null) {
             try {
                 baseClass = (ClientObjectClass) ClientTypeSerializer.deserializeClientClass(new DataInputStream(new ByteArrayInputStream(remoteLogics.getBaseClassByteArray())));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        }
         return baseClass;
     }
 
@@ -110,83 +111,87 @@ public class Main {
         new Thread(new ExceptionThreadGroup(), "Init thread") {
 
             public void run() {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
 
-                try {
+                        try {
 
-                    // приходится извращаться, так как RMIClassLoader использует для загрузки Spi Class.forname,
-                    // а это работает некорректно, поскольку JWS использует свой user-class loader,
-                    // а сами jar-файлы не добавляются в java.class.path
-                    // необходимо, чтобы ClientRMIClassLoaderSpi запускался с родным ClassLoader JWS
+                            // приходится извращаться, так как RMIClassLoader использует для загрузки Spi Class.forname,
+                            // а это работает некорректно, поскольку JWS использует свой user-class loader,
+                            // а сами jar-файлы не добавляются в java.class.path
+                            // необходимо, чтобы ClientRMIClassLoaderSpi запускался с родным ClassLoader JWS
 
-                    Field field = RMIClassLoader.class.getDeclaredField("provider");
-                    field.setAccessible(true);
+                            Field field = RMIClassLoader.class.getDeclaredField("provider");
+                            field.setAccessible(true);
 
-                    Field modifiersField = Field.class.getDeclaredField("modifiers");
-                    modifiersField.setAccessible(true);
-                    modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+                            Field modifiersField = Field.class.getDeclaredField("modifiers");
+                            modifiersField.setAccessible(true);
+                            modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
 
-                    field.set(null, new ClientRMIClassLoaderSpi());
+                            field.set(null, new ClientRMIClassLoaderSpi());
 
-                    // сбрасываем SecurityManager, который устанавливает JavaWS,
-                    // поскольку он не дает ничего делать классу ClientRMIClassLoaderSpi,
-                    // так как он load'ится из временного директория
-                    System.setSecurityManager(null);
+                            // сбрасываем SecurityManager, который устанавливает JavaWS,
+                            // поскольку он не дает ничего делать классу ClientRMIClassLoaderSpi,
+                            // так как он load'ится из временного директория
+                            System.setSecurityManager(null);
 
-                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
-                    String timeout = System.getProperty(PLATFORM_CLIENT_CONNECTION_LOST_TIMEOUT, "7200000");
+                            String timeout = System.getProperty(PLATFORM_CLIENT_CONNECTION_LOST_TIMEOUT, "7200000");
 
-                    initRMISocketFactory(timeout);
+                            initRMISocketFactory(timeout);
 
-                    LoginAction loginAction = LoginAction.getDefault();
-                    if (!loginAction.login()) {
-                        return;
-                    }
-
-                    remoteLogics = loginAction.getRemoteLogics();
-                    remoteNavigator = loginAction.getRemoteNavigator();
-                    computerId = loginAction.getComputerId();
-
-                    timeZone = remoteLogics.getTimeZone();
-
-                    startSplashScreen();
-
-                    logger.info("Before init frame");
-                    frame = module.initFrame(loginAction.getRemoteNavigator());
-                    logger.info("After init frame");
-
-                    pingThread = new PingThread(remoteNavigator.getClientCallBack(), Integer.parseInt(System.getProperty(PLATFORM_CLIENT_PINGTIME, "1000")));
-                    pingThread.start();
-
-                    frame.addWindowListener(
-                            new WindowAdapter() {
-                                public void windowOpened(WindowEvent e) {
-                                    closeSplashScreen();
-                                }
-
-                                public void windowClosing(WindowEvent e) {
-                                    try {
-                                        remoteLogics.endSession(OSUtils.getLocalHostName() + " " + computerId);
-                                    } catch (Exception ex) {
-                                        throw new RuntimeException(ex);
-                                    }
-                                }
+                            LoginAction loginAction = LoginAction.getDefault();
+                            if (!loginAction.login()) {
+                                return;
                             }
-                    );
 
-                    frame.setExtendedState(Frame.MAXIMIZED_BOTH);
-                    logger.info("After setExtendedState");
+                            remoteLogics = loginAction.getRemoteLogics();
+                            remoteNavigator = loginAction.getRemoteNavigator();
+                            computerId = loginAction.getComputerId();
 
-                    ConnectionLostManager.install(frame);
+                            timeZone = remoteLogics.getTimeZone();
 
-                    frame.setVisible(true);
+                            startSplashScreen();
 
-                } catch (Exception e) {
-                    closeSplashScreen();
-                    logger.error("Ошибка при инициализации приложения", e);
-                    throw new RuntimeException("Ошибка при инициализации приложения", e);
-                }
+                            logger.info("Before init frame");
+                            frame = module.initFrame(loginAction.getRemoteNavigator());
+                            logger.info("After init frame");
 
+                            pingThread = new PingThread(remoteNavigator.getClientCallBack(), Integer.parseInt(System.getProperty(PLATFORM_CLIENT_PINGTIME, "1000")));
+                            pingThread.start();
+
+                            frame.addWindowListener(
+                                    new WindowAdapter() {
+                                        public void windowOpened(WindowEvent e) {
+                                            closeSplashScreen();
+                                        }
+
+                                        public void windowClosing(WindowEvent e) {
+                                            try {
+                                                remoteLogics.endSession(OSUtils.getLocalHostName() + " " + computerId);
+                                            } catch (Exception ex) {
+                                                throw new RuntimeException(ex);
+                                            }
+                                        }
+                                    }
+                            );
+
+                            frame.setExtendedState(Frame.MAXIMIZED_BOTH);
+                            logger.info("After setExtendedState");
+
+                            ConnectionLostManager.install(frame);
+
+                            frame.setVisible(true);
+
+                        } catch (Exception e) {
+                            closeSplashScreen();
+                            logger.error("Ошибка при инициализации приложения", e);
+                            throw new RuntimeException("Ошибка при инициализации приложения", e);
+                        }
+                    }
+                });
             }
         }.start();
     }
@@ -234,11 +239,13 @@ public class Main {
                 String forms = System.getProperty("platform.client.forms");
                 if (forms == null) {
                     String formSet = System.getProperty("platform.client.formset");
-                    if (formSet == null)
+                    if (formSet == null) {
                         throw new RuntimeException("Не задано свойство : -Dplatform.client.forms=formID1,formID2,... или -Dplatform.client.formset=formsetID");
+                    }
                     forms = remoteNavigator.getForms(formSet);
-                    if (forms == null)
+                    if (forms == null) {
                         throw new RuntimeException("На сервере не обнаружено множество форм с идентификатором " + formSet);
+                    }
                 }
 
                 return new SimpleMainFrame(remoteNavigator, forms);

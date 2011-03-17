@@ -1,40 +1,39 @@
 package platform.client.form.grid;
 
 import platform.client.form.ClientFormController;
-import platform.client.form.GroupObjectLogicsSupplier;
-import platform.client.form.queries.CountQuantityButton;
+import platform.client.form.GroupObjectController;
 import platform.client.form.queries.CalculateSumButton;
+import platform.client.form.queries.CountQuantityButton;
 import platform.client.form.queries.FilterController;
 import platform.client.form.queries.FindController;
 import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public abstract class GridView extends JPanel {
-
-    final JPanel queriesContainer;
-
-    public final JPanel movingPropertiesContainer;
-
     final JScrollPane pane;
 
     private final GridTable gridTable;
     public final FilterController filterController;
-    public JPanel bottomContainer = new JPanel();
 
     public GridTable getTable() {
         return gridTable;
     }
 
-    public GridView(GroupObjectLogicsSupplier logicsSupplier, ClientFormController form, FindController findController,
-                    FilterController filterController, CountQuantityButton countQuantityButton, CalculateSumButton calculateSumButton, boolean tabVertical, boolean verticalScroll) {
+    public GridView(GroupObjectController groupObjectController,
+                    ClientFormController form,
+                    FindController findController,
+                    FilterController filterController,
+                    CountQuantityButton countQuantityButton,
+                    CalculateSumButton calculateSumButton,
+                    boolean tabVertical,
+                    boolean verticalScroll) {
         this.filterController = filterController;
 
         setLayout(new BorderLayout());
 
-        gridTable = new GridTable(this, logicsSupplier, form) {
+        gridTable = new GridTable(this, groupObjectController, form) {
             protected void needToBeShown() {
                 GridView.this.needToBeShown();
             }
@@ -53,36 +52,27 @@ public abstract class GridView extends JPanel {
 
         gridTable.setFillsViewportHeight(true);
 
-        bottomContainer.setLayout(new BorderLayout());
-
-        queriesContainer = new JPanel();
-        queriesContainer.setLayout(new BoxLayout(queriesContainer, BoxLayout.X_AXIS));
-        movingPropertiesContainer = new JPanel();
-        movingPropertiesContainer.setLayout(new BoxLayout(movingPropertiesContainer, BoxLayout.X_AXIS));
 
         if (findController != null) {
-            queriesContainer.add(findController.getView());
+            groupObjectController.addToToolbar(findController.getView());
             findController.getView().addActions(gridTable);
         }
 
         if (filterController != null) {
-            queriesContainer.add(filterController.getView());
+            groupObjectController.addToToolbar(filterController.getView());
             filterController.getView().addActions(gridTable);
         }
 
         if (countQuantityButton != null) {
-            queriesContainer.add(countQuantityButton);
+            groupObjectController.addToToolbar(countQuantityButton);
         }
 
         if (calculateSumButton != null) {
-            queriesContainer.add(calculateSumButton);
+            groupObjectController.addToToolbar(calculateSumButton);
         }
 
-        bottomContainer.add(queriesContainer, BorderLayout.WEST);
-        bottomContainer.add(movingPropertiesContainer, BorderLayout.CENTER);
-
         add(pane, BorderLayout.CENTER);
-        add(bottomContainer, BorderLayout.SOUTH);
+        add(groupObjectController.getToolbarView(), BorderLayout.SOUTH);
     }
 
     protected abstract void needToBeShown();

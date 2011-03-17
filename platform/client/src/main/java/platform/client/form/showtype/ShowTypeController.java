@@ -1,7 +1,6 @@
 package platform.client.form.showtype;
 
 import platform.client.form.ClientFormController;
-import platform.client.form.ClientFormLayout;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.logics.ClientShowType;
 import platform.interop.ClassViewType;
@@ -11,38 +10,30 @@ import java.util.List;
 
 public abstract class ShowTypeController {
 
-    ClientShowType key;
-
     public ShowTypeView view;
 
-    public ShowTypeController(ClientShowType iview, GroupObjectLogicsSupplier logicsSupplier, final ClientFormController form) {
+    private ClassViewType classView = ClassViewType.HIDE;
 
-        key = iview;
+    private List<ClassViewType> banClassView;
+    public final ClientShowType showTypeKey;
 
-        view = new ShowTypeView(logicsSupplier) {
+    public ShowTypeController(ClientShowType showTypeKey, final GroupObjectLogicsSupplier logicsSupplier, final ClientFormController form) {
+        this.showTypeKey = showTypeKey;
+        view = new ShowTypeView() {
 
             protected void buttonPressed(String action) {
 
                 try {
                     ClassViewType newClassView = ClassViewType.valueOf(action.toUpperCase());
-                    if (!classView.equals(newClassView))
+                    if (!classView.equals(newClassView)) {
                         form.changeClassView(logicsSupplier.getGroupObject(), newClassView);
+                    }
                 } catch (IOException el) {
                     throw new RuntimeException("Ошибка при переключении вида", el);
                 }
             }
         };
     }
-
-    public void addView(ClientFormLayout formLayout) {
-        formLayout.add(key, view);
-    }
-
-    public void removeView(ClientFormLayout formLayout) {
-        formLayout.remove(key, view);
-    }
-
-    ClassViewType classView = ClassViewType.HIDE;
 
     public void changeClassView(ClassViewType classView) {
         if (!classView.equals(this.classView)) {
@@ -67,8 +58,6 @@ public abstract class ShowTypeController {
 
     public void showViews() {
     }
-
-    List<ClassViewType> banClassView;
 
     public void setBanClassView(List<ClassViewType> banClassView) {
         this.banClassView = banClassView;

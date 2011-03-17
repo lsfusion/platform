@@ -28,6 +28,9 @@ import java.sql.SQLException;
 public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
     private LP documentsCount;
     private LP itemsCount;
+    private LP articleDescription;
+    private LP articleGroupDescription;
+    private LP storeDescription;
 
     public SampleBusinessLogics(DataAdapter iAdapter,int port) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, JRException, FileNotFoundException {
         super(iAdapter,port);
@@ -40,24 +43,31 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
     AbstractCustomClass document;
 
-    ConcreteCustomClass article, store, incomeDocument, outcomeDocument;
-    ConcreteCustomClass articleGroup;
+    ConcreteCustomClass article, descriptedArticle, store, descriptedStore, incomeDocument, outcomeDocument;
+    ConcreteCustomClass articleGroup, descriptedArticleGroup;
 
     protected void initClasses() {
-
         article = addConcreteClass("article", "Товар", baseClass.named);
+        descriptedArticle = addConcreteClass("descriptedArticle", "Товар с описанием", article);
+
         store = addConcreteClass("store", "Склад", baseClass.named);
+        descriptedStore = addConcreteClass("descriptedStore", "Склад с описанием", store);
+
         document = addAbstractClass("document", "Документ", baseClass.named, transaction);
         incomeDocument = addConcreteClass("incomeDocument", "Приход", document);
         outcomeDocument = addConcreteClass("outcomeDocument", "Расход", document);
 
         articleGroup = addConcreteClass("articleGroup", "Группа товаров", baseClass.named);        
+        descriptedArticleGroup = addConcreteClass("descriptedArticleGroup", "Группа товаров с описанием", articleGroup);
     }
 
     LP quantity, documentStore;
     LP balanceQuantity, incQuantity;
 
     protected void initProperties() {
+        articleDescription = addDProp(baseGroup, "articleDescription", "Описание", StringClass.get(50), descriptedArticle);
+        articleGroupDescription = addDProp(baseGroup, "articleGroupDescription", "Описание", StringClass.get(50), descriptedArticleGroup);
+        storeDescription = addDProp(baseGroup, "storeDescription", "Описание", StringClass.get(50), descriptedStore);
 
         documentStore = addDProp(baseGroup, "store", "Склад док-та", store, document);
         quantity = addDProp(baseGroup, "quantity", "Кол-во", DoubleClass.instance, document, article);
@@ -158,9 +168,9 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         public TreeStoreArticleFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            ObjectEntity objStore = addSingleGroupObject(store, name);
-            ObjectEntity objArtGroup = addSingleGroupObject(articleGroup, name);
-            ObjectEntity objArt = addSingleGroupObject(article, name);
+            ObjectEntity objStore = addSingleGroupObject(store, name, storeDescription);
+            ObjectEntity objArtGroup = addSingleGroupObject(articleGroup, name, articleGroupDescription);
+            ObjectEntity objArt = addSingleGroupObject(article, name, articleDescription);
             ObjectEntity objDoc = addSingleGroupObject(document, baseGroup);
 
             objArtGroup.groupTo.setIsParents(addPropertyObject(parentGroup, objArtGroup));

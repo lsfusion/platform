@@ -36,6 +36,7 @@ public abstract class ClientFormLayout extends JPanel {
 
     public abstract void gainedFocus();
 
+    @SuppressWarnings({"FieldCanBeLocal"})
     private FocusListener focusListener;
 
     public ClientFormLayout(ClientContainer topContainer) {
@@ -83,7 +84,7 @@ public abstract class ClientFormLayout extends JPanel {
             JComponent parent = contviews.get(container.container);
             parent.add(formContainer, container);
             if (!(parent instanceof JTabbedPane) && formContainer instanceof ClientFormContainer)
-                ((ClientFormContainer) formContainer).addBorder();
+                ((ClientFormContainer)formContainer).addBorder();
         }
 
         // нельзя перегружать LayoutManager у JTabbedPane, который не наследуется от TabbedPaneLayout
@@ -92,62 +93,27 @@ public abstract class ClientFormLayout extends JPanel {
         if (!container.getTabbedPane()) {
             formContainer.setLayout(layoutManager);
         }
-
+        
         contviews.put(container, formContainer);
 
         for (ClientComponent child : container.children) {
             if (child instanceof ClientContainer) {
-                createContainerViews((ClientContainer) child);
+                createContainerViews((ClientContainer)child);
             }
         }
-    }
-
-    private Map<KeyStroke, Map<ClientGroupObject, KeyListener>> bindings = new HashMap<KeyStroke, Map<ClientGroupObject, KeyListener>>();
-
-    public void addKeyBinding(KeyStroke ks, ClientGroupObject groupObject, KeyListener run) {
-        if (!bindings.containsKey(ks))
-            bindings.put(ks, new HashMap<ClientGroupObject, KeyListener>());
-        bindings.get(ks).put(groupObject, run);
-    }
-
-    // реализуем "обратную" обработку нажатий кнопок
-    @Override
-    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-        if (condition == JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT) {
-            // делаем так, чтобы первым нажатия клавиш обрабатывал GroupObject, у которого стоит фокус
-            // хотя конечно идиотизм это делать таким образом
-            Component comp = e.getComponent(); //KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-            while (comp != null && !(comp instanceof Window) && comp != this) {
-                if (comp instanceof JComponent) {
-                    ClientGroupObject groupObject = (ClientGroupObject) ((JComponent) comp).getClientProperty("groupObject");
-                    if (groupObject != null) {
-                        Map<ClientGroupObject, KeyListener> keyBinding = bindings.get(ks);
-                        if (keyBinding != null && keyBinding.containsKey(groupObject)) {
-                            keyBinding.get(groupObject).keyPressed(e);
-                            return true;
-                        }
-                        break;
-                    }
-                }
-                comp = comp.getParent();
-            }
-
-            Map<ClientGroupObject, KeyListener> keyBinding = bindings.get(ks);
-            if (keyBinding != null && !keyBinding.isEmpty()) {
-                keyBinding.values().iterator().next().keyPressed(e);
-            }
-        }
-
-        return super.processKeyBinding(ks, e, condition, pressed);
     }
 
     // добавляем визуальный компонент
     public boolean add(ClientComponent key, Component view) {
-        if (key == null || contviews.get(key.container) == null) return false;
-        if (!contviews.get(key.container).isAncestorOf(view)) {
-            contviews.get(key.container).add(view, key);
-            contviews.get(key.container).repaint();
-            if (key.defaultComponent) {
+        if (key == null) return false;
+
+        JComponent keyContView = contviews.get(key.container);
+        if (keyContView == null) return false;
+
+        if (!keyContView.isAncestorOf(view)) {
+            keyContView.add(view, key);
+            keyContView.repaint();
+            if (key.defaultComponent){
                 policy.addDefault(view);
             }
             return true;
@@ -157,11 +123,15 @@ public abstract class ClientFormLayout extends JPanel {
 
     // удаляем визуальный компонент
     public boolean remove(ClientComponent key, Component view) {
-        if (key == null || contviews.get(key.container) == null) return false;
-        if (contviews.get(key.container).isAncestorOf(view)) {
-            contviews.get(key.container).remove(view);
-            contviews.get(key.container).repaint();
-            if (key.defaultComponent) {
+        if (key == null) return false;
+
+        JComponent keyContView = contviews.get(key.container);
+        if (keyContView == null) return false;
+
+        if (keyContView.isAncestorOf(view)) {
+            keyContView.remove(view);
+            keyContView.repaint();
+            if (key.defaultComponent){
                 policy.removeDefault(view);
             }
             return true;
@@ -177,5 +147,14 @@ public abstract class ClientFormLayout extends JPanel {
     public void addBinding(KeyStroke key, String id, AbstractAction action) {
         getInputMap(JPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(key, id);
         getActionMap().put(id, new ClientActionProxy(action));
+    }
+
+    private Map<KeyStroke, Map<ClientGroupObject, KeyListener>> bindings = new HashMap<KeyStroke, Map<ClientGroupObject, KeyListener>>();
+
+    public void addKeyBinding(KeyStroke ks, ClientGroupObject groupObject, KeyListener run) {
+        if (!bindings.containsKey(ks)) {
+            bindings.put(ks, new HashMap<ClientGroupObject, KeyListener>());
+        }
+        bindings.get(ks).put(groupObject, run);
     }
 }

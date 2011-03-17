@@ -24,6 +24,7 @@ public class TreeGroupDescriptor extends ContextIdentityObject implements Client
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeCollection(outStream, groups, serializationType);
+        outStream.writeBoolean(client.plainTreeMode);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -45,6 +46,15 @@ public class TreeGroupDescriptor extends ContextIdentityObject implements Client
         client.groups = clientGroups;
 
         getContext().updateDependency(this, "groups");
+    }
+
+    public void setPlainTreeMode(boolean plainTreeMode) {
+        client.plainTreeMode = plainTreeMode;
+        getContext().updateDependency(this, "plainTreeMode");
+    }
+
+    public boolean getPlainTreeMode() {
+        return client.plainTreeMode;
     }
 
     public List<GroupObjectDescriptor> getGroups() {
