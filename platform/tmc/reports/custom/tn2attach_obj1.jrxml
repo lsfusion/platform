@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="obj1" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.0"/>
-	<property name="ireport.x" value="162"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.x" value="131"/>
+	<property name="ireport.y" value="25"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -11,12 +11,8 @@
 	</style>
 	<field name="obj1" class="java.lang.Integer"/>
 	<field name="date" class="java.util.Date"/>
-	<field name="property117" class="java.lang.String"/>
-	<field name="property119" class="java.lang.String"/>
 	<field name="nameLegalEntityIncOrder" class="java.lang.String"/>
 	<field name="nameLegalEntityOutOrder" class="java.lang.String"/>
-	<field name="property120" class="java.lang.String"/>
-	<field name="property121" class="java.lang.String"/>
 	<field name="sumWithDiscountOrder" class="java.lang.Double"/>
 	<field name="sumNDSOrder" class="java.lang.Double"/>
 	<field name="sumNoNDSOrder" class="java.lang.Double"/>
@@ -25,6 +21,25 @@
 	<field name="commonName" class="java.lang.String"/>
 	<field name="barcode" class="java.lang.String"/>
 	<field name="articleQuantity" class="java.lang.Double"/>
+	<field name="unnLegalEntityLegalIncOrder" class="java.lang.String"/>
+	<field name="unnLegalEntityLegalOutOrder" class="java.lang.String"/>
+	<field name="addressLegalEntityLegalIncOrder" class="java.lang.String"/>
+	<field name="addressLegalEntityLegalOutOrder" class="java.lang.String"/>
+	<field name="personPermissionInvoiceDocument" class="java.lang.String"/>
+	<field name="personOutInvoiceDocument" class="java.lang.String"/>
+	<field name="personWarrantInvoiceDocument" class="java.lang.String"/>
+	<field name="warrantByInvoiceDocument" class="java.lang.String"/>
+	<field name="personIncInvoiceDocument" class="java.lang.String"/>
+	<field name="seriesInvoiceDocument" class="java.lang.String"/>
+	<field name="numberInvoiceDocument" class="java.lang.String"/>
+	<field name="nameUnitOfMeasureArticle" class="java.lang.String"/>
+	<field name="priceOrderArticle" class="java.lang.Double"/>
+	<field name="ndsOrderArticle" class="java.lang.Double"/>
+	<field name="sumNoNDSOrderArticle" class="java.lang.Double"/>
+	<field name="sumWithDiscountOrderArticle" class="java.lang.Double"/>
+	<field name="sumNDSOrderArticle" class="java.lang.Double"/>
+	<field name="priceManfrOrderArticle" class="java.lang.Double"/>
+	<field name="addManfrOrderArticle" class="java.lang.Double"/>
 	<variable name="npp" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[0]]></variableExpression>
 		<initialValueExpression><![CDATA[new Integer(1)]]></initialValueExpression>
@@ -37,39 +52,6 @@
 					<font size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[ПРИЛОЖЕНИЕ К ТОВАРНОЙ НАКЛАДНОЙ]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="25" y="109" width="100" height="20"/>
-				<textElement/>
-				<text><![CDATA[Грузоотправитель:]]></text>
-			</staticText>
-			<staticText>
-				<reportElement positionType="Float" x="25" y="132" width="100" height="20"/>
-				<textElement/>
-				<text><![CDATA[Грузополучатель:]]></text>
-			</staticText>
-			<line>
-				<reportElement positionType="FixRelativeToBottom" x="17" y="130" width="794" height="1"/>
-			</line>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="130" y="132" width="660" height="18"/>
-				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{property117}+", "+$F{property120}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="130" y="108" width="656" height="20"/>
-				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{property119}+", "+$F{property121}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="130" y="153" width="290" height="18"/>
-				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{permissionOrder}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement positionType="Float" x="25" y="152" width="100" height="20"/>
-				<textElement/>
-				<text><![CDATA[Основание отпуска:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement style="GroupCellStyle0" positionType="Float" x="25" y="186" width="785" height="15"/>
@@ -120,13 +102,6 @@
 				<reportElement style="GroupCellStyle0" positionType="Float" x="710" y="201" width="100" height="40"/>
 				<textElement textAlignment="Center"/>
 				<text><![CDATA[Примечание]]></text>
-			</staticText>
-			<staticText>
-				<reportElement positionType="Float" x="704" y="158" width="34" height="13"/>
-				<textElement textAlignment="Right" rotation="None">
-					<font size="8"/>
-				</textElement>
-				<text><![CDATA[Лист:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement style="GroupCellStyle0" positionType="Float" x="25" y="201" width="24" height="40"/>
@@ -208,14 +183,54 @@
 				<textElement textAlignment="Center">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["№"+" ОТ "+$F{date}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["№"+$F{seriesInvoiceDocument}+" "+$F{numberInvoiceDocument}+" ОТ "+$F{date}]]></textFieldExpression>
 			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="704" y="162" width="34" height="15"/>
+				<textElement textAlignment="Right" rotation="None">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Лист:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="25" y="156" width="100" height="20"/>
+				<textElement/>
+				<text><![CDATA[Основание отпуска:]]></text>
+			</staticText>
 			<textField>
-				<reportElement x="742" y="158" width="68" height="14"/>
+				<reportElement positionType="Float" x="740" y="162" width="67" height="16"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="130" y="157" width="290" height="18"/>
+				<textElement textAlignment="Left"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{permissionOrder}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="25" y="136" width="100" height="20"/>
+				<textElement/>
+				<text><![CDATA[Грузополучатель:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="25" y="113" width="100" height="20"/>
+				<textElement/>
+				<text><![CDATA[Грузоотправитель:]]></text>
+			</staticText>
+			<line>
+				<reportElement positionType="FixRelativeToBottom" x="17" y="134" width="794" height="1"/>
+			</line>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToBandHeight" x="130" y="135" width="656" height="20"/>
+				<textElement textAlignment="Left"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameLegalEntityIncOrder}+", "+$F{addressLegalEntityLegalIncOrder}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="130" y="113" width="660" height="18"/>
+				<textElement textAlignment="Left"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameLegalEntityOutOrder}+", "+$F{addressLegalEntityLegalOutOrder}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
@@ -233,7 +248,7 @@
 				<textElement textAlignment="Center">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameLegalEntityOutOrder}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameUnitOfMeasureArticle}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="341" y="0" width="49" height="18"/>
@@ -247,21 +262,21 @@
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumNDSOrder}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{priceOrderArticle}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="446" y="0" width="71" height="18"/>
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumNoNDSOrder}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumNoNDSOrderArticle}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="517" y="0" width="42" height="18"/>
 				<textElement textAlignment="Center">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{purposeOrder}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{ndsOrderArticle}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="25" y="0" width="24" height="18"/>
@@ -275,21 +290,21 @@
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{purposeOrder}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumNDSOrderArticle}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="628" y="0" width="82" height="18"/>
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{purposeOrder}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumWithDiscountOrderArticle}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="710" y="0" width="100" height="18"/>
 				<textElement textAlignment="Left">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{purposeOrder}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["Цена изг. :" + $F{priceManfrOrderArticle} + ", нац. :" + $F{addManfrOrderArticle}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -366,102 +381,109 @@
 				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="25" y="28" width="100" height="20"/>
+				<reportElement x="125" y="32" width="475" height="20"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Всего сумма НДС"]]></textFieldExpression>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumNDSOrder}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="125" y="28" width="475" height="20"/>
-				<textElement>
-					<font size="9"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="25" y="48" width="115" height="20"/>
+				<reportElement x="25" y="52" width="115" height="20"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Всего стоимость с НДС"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="140" y="48" width="475" height="20"/>
+				<reportElement x="140" y="52" width="475" height="20"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumWithDiscountOrder}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="25" y="86" width="100" height="14"/>
+				<reportElement x="25" y="32" width="100" height="20"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Отпуск разрешил"]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["Всего сумма НДС"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="125" y="86" width="100" height="14"/>
+				<reportElement x="155" y="139" width="173" height="14"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{personIncInvoiceDocument}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="25" y="100" width="115" height="14"/>
+				<reportElement x="25" y="153" width="159" height="14"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Сдал грузоотправитель"]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["С товаром переданы документы:"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="140" y="100" width="115" height="14"/>
-				<textElement>
-					<font size="9"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="25" y="114" width="115" height="14"/>
-				<textElement>
-					<font size="9"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Товар к доставке принял"]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="140" y="114" width="115" height="14"/>
-				<textElement>
-					<font size="9"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="25" y="128" width="115" height="14"/>
+				<reportElement x="25" y="125" width="115" height="14"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["по доверенности"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="240" y="128" width="115" height="14"/>
+				<reportElement x="125" y="83" width="100" height="14"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["выданной"]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{personPermissionInvoiceDocument}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="25" y="142" width="130" height="14"/>
+				<reportElement x="25" y="139" width="130" height="14"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Принял грузополучатель"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="25" y="156" width="159" height="14"/>
+				<reportElement x="25" y="111" width="115" height="14"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["С товаром переданы документы:"]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["Товар к доставке принял"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="140" y="97" width="115" height="14"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{personOutInvoiceDocument}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="25" y="83" width="100" height="14"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Отпуск разрешил"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="140" y="111" width="115" height="14"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{personWarrantInvoiceDocument}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="25" y="97" width="115" height="14"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Сдал грузоотправитель"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="140" y="125" width="115" height="14"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{warrantByInvoiceDocument}]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>

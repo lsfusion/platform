@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="obj1" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.0"/>
-	<property name="ireport.x" value="110"/>
-	<property name="ireport.y" value="36"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="93"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -25,6 +25,11 @@
 	<field name="unnLegalEntityLegalOutOrder" class="java.lang.String"/>
 	<field name="addressLegalEntityLegalIncOrder" class="java.lang.String"/>
 	<field name="addressLegalEntityLegalOutOrder" class="java.lang.String"/>
+	<field name="personPermissionInvoiceDocument" class="java.lang.String"/>
+	<field name="personOutInvoiceDocument" class="java.lang.String"/>
+	<field name="personWarrantInvoiceDocument" class="java.lang.String"/>
+	<field name="warrantByInvoiceDocument" class="java.lang.String"/>
+	<field name="personIncInvoiceDocument" class="java.lang.String"/>
 	<variable name="npp" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[0]]></variableExpression>
 		<initialValueExpression><![CDATA[new Integer(1)]]></initialValueExpression>
@@ -349,7 +354,7 @@
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{personPermissionInvoiceDocument}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="25" y="120" width="115" height="14"/>
@@ -363,7 +368,7 @@
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{personOutInvoiceDocument}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="25" y="134" width="115" height="14"/>
@@ -377,7 +382,7 @@
 				<textElement>
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{personWarrantInvoiceDocument}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="25" y="148" width="115" height="14"/>
@@ -385,13 +390,6 @@
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["по доверенности"]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="240" y="148" width="115" height="14"/>
-				<textElement>
-					<font size="9"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["выданной"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="25" y="162" width="130" height="14"/>
@@ -413,6 +411,20 @@
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Ассортимент товара в соответствии с приложением на "+"листах"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="140" y="148" width="115" height="14"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{warrantByInvoiceDocument}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="155" y="162" width="173" height="14"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{personIncInvoiceDocument}]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>

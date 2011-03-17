@@ -492,8 +492,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addressSubjectIncOrder = addJProp("addressSubjectIncOrder", "Адрес (кому)", addressSubject, subjectIncOrder, 1);
         addressSubjectOutOrder = addJProp("addressSubjectOutOrder", "Адрес (от кого)", addressSubject, subjectOutOrder, 1);
 
-        propsLegalEntityIncOrder = addJProp(baseGroup, false, "IncOrder", propsLegalEntitySubject, subjectIncOrder, 1);
-        propsLegalEntityOutOrder = addJProp(baseGroup, false, "OutOrder", propsLegalEntitySubject, subjectOutOrder, 1);
+        propsLegalEntityIncOrder = addJProp(privateGroup, false, "IncOrder", propsLegalEntitySubject, subjectIncOrder, 1);
+        propsLegalEntityOutOrder = addJProp(privateGroup, false, "OutOrder", propsLegalEntitySubject, subjectOutOrder, 1);
 
         propsCustomerCheckRetail = addDProp(baseGroup, "", new String[]{"checkRetailCustomerPhone", "checkRetailCustomerBorn", "checkRetailCustomerAddress", "clientInitialSum"},
                             new String[]{"Телефон", "Дата рождения", "Адрес", "Начальная сумма"}, new ValueClass[] {StringClass.get(20), DateClass.instance, StringClass.get(40), DoubleClass.instance}, customerCheckRetail);
