@@ -83,8 +83,9 @@ public abstract class ClientFormLayout extends JPanel {
         } else {
             JComponent parent = contviews.get(container.container);
             parent.add(formContainer, container);
-            if (!(parent instanceof JTabbedPane) && formContainer instanceof ClientFormContainer)
-                ((ClientFormContainer)formContainer).addBorder();
+            if (!(parent instanceof JTabbedPane) && formContainer instanceof ClientFormContainer) {
+                ((ClientFormContainer) formContainer).addBorder();
+            }
         }
 
         // нельзя перегружать LayoutManager у JTabbedPane, который не наследуется от TabbedPaneLayout
@@ -93,50 +94,60 @@ public abstract class ClientFormLayout extends JPanel {
         if (!container.getTabbedPane()) {
             formContainer.setLayout(layoutManager);
         }
-        
+
         contviews.put(container, formContainer);
 
         for (ClientComponent child : container.children) {
             if (child instanceof ClientContainer) {
-                createContainerViews((ClientContainer)child);
+                createContainerViews((ClientContainer) child);
             }
         }
     }
 
     // добавляем визуальный компонент
     public boolean add(ClientComponent key, Component view) {
-        if (key == null) return false;
+        if (key == null) {
+            return false;
+        }
 
         JComponent keyContView = contviews.get(key.container);
-        if (keyContView == null) return false;
+        if (keyContView == null) {
+            return false;
+        }
 
         if (!keyContView.isAncestorOf(view)) {
             keyContView.add(view, key);
             keyContView.repaint();
-            if (key.defaultComponent){
+            if (key.defaultComponent) {
                 policy.addDefault(view);
             }
             return true;
-        } else
+        } else {
             return false;
+        }
     }
 
     // удаляем визуальный компонент
     public boolean remove(ClientComponent key, Component view) {
-        if (key == null) return false;
+        if (key == null) {
+            return false;
+        }
 
         JComponent keyContView = contviews.get(key.container);
-        if (keyContView == null) return false;
+        if (keyContView == null) {
+            return false;
+        }
 
         if (keyContView.isAncestorOf(view)) {
             keyContView.remove(view);
             keyContView.repaint();
-            if (key.defaultComponent){
+            if (key.defaultComponent) {
                 policy.removeDefault(view);
             }
             return true;
-        } else
+        } else {
             return false;
+        }
     }
 
     public void dropCaches() {
@@ -156,5 +167,35 @@ public abstract class ClientFormLayout extends JPanel {
             bindings.put(ks, new HashMap<ClientGroupObject, KeyListener>());
         }
         bindings.get(ks).put(groupObject, run);
+    }
+
+    // реализуем "обратную" обработку нажатий кнопок
+    @Override
+    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+        Map<ClientGroupObject, KeyListener> keyBinding = bindings.get(ks);
+        if (condition == JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT && keyBinding != null) {
+            // делаем так, чтобы первым нажатия клавиш обрабатывал GroupObject, у которого стоит фокус
+            // хотя конечно идиотизм это делать таким образом
+
+            Component comp = e.getComponent();
+            while (comp != null && !(comp instanceof Window) && comp != this) {
+                if (comp instanceof JComponent) {
+                    ClientGroupObject groupObject = (ClientGroupObject) ((JComponent) comp).getClientProperty("groupObject");
+                    if (groupObject != null) {
+                        if (keyBinding != null && keyBinding.containsKey(groupObject)) {
+                            keyBinding.get(groupObject).keyPressed(e);
+                            return true;
+                        }
+                        break;
+                    }
+                }
+                comp = comp.getParent();
+            }
+            if (keyBinding != null && !keyBinding.isEmpty()) {
+                keyBinding.values().iterator().next().keyPressed(e);
+            }
+        }
+
+        return super.processKeyBinding(ks, e, condition, pressed);
     }
 }
