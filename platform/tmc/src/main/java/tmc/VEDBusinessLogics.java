@@ -88,6 +88,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private LP transOrderArticle;
     private LP weightOrder;
     private LP transOrder;
+    private LP isNegativeAddvOrderArticle;
 
     public VEDBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -755,7 +756,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP revalueShopPrice = addDProp("revalueShopPrice", "Цена (прих.)", DoubleClass.instance, documentRevalue, article);
         LP incomeShopPrice = addDProp("shopPrice", "Цена (прих.)", DoubleClass.instance, commitWholeShopInc, article);
         shopPrice = addCUProp(documentPriceGroup, "priceDocument", "Цена (маг.)", incomeShopPrice, revalueShopPrice);
-        ndsShopOrderPriceArticle = addDCProp(baseGroup, "ndsShopOrderPriceArticle", "НДС (маг.)", currentNDS, 2, articleQuantity, 1, 2, documentShopPrice);
 
         currentShopPrice = addJProp(priceGroup, "currentShopPrice", true, "Цена на маг. (тек.)", shopPrice, currentShopPriceDoc, 1, 2, 2);
 
@@ -793,6 +793,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         revalBalance = addDCProp(documentPriceGroup, "revalBalance", "Остаток переоц.", true, articleBalanceSklCommitedQuantity, priceStore, 1, 2, inDocumentPrice, 1, 2);
         isRevalued = addJProp(diff2, shopPrice, 1, 2, prevPrice, 1, 2); // для акта переоценки
         isNewPrice = addJProp(andNot1, inDocumentPrice, 1, 2, addJProp(equals2, shopPrice, 1, 2, prevPrice, 1, 2), 1, 2); // для ценников
+        ndsShopOrderPriceArticle = addDCProp(baseGroup, "ndsShopOrderPriceArticle", "НДС (маг.)", currentNDS, 2, inDocumentPrice, 1, 2);
 
         LP supplierCycle = addDProp(logisticsGroup, "supplierCycle", "Цикл поставок", DoubleClass.instance, supplier);
         LP shopCycle = addDProp(logisticsGroup, "shopCycle", "Цикл распределения", DoubleClass.instance, shop);
@@ -886,6 +887,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         sumWithoutNDSRetailOrderArticle = addJProp(documentPriceGroup, "sumWithoutNDSRetailOrderArticle", "Сумма розн. без НДС", diff, sumRetailOrderArticle, 1, 2, sumNDSRetailOrderArticle, 1, 2);
         sumAddvOrderArticle = addJProp(documentPriceGroup, "sumAddvOrderArticle", "Сумма нацен.", diff, sumWithoutNDSRetailOrderArticle, 1, 2, sumNoNDSOrderArticle, 1, 2);
         addvOrderArticle = addJProp(documentPriceGroup, "addvOrderArticle", "Наценка", round0, addJProp(calcPercent, sumAddvOrderArticle, 1, 2, sumNoNDSOrderArticle, 1, 2), 1, 2);
+        isNegativeAddvOrderArticle = addJProp(less2, addvOrderArticle, 1, 2, vzero);
 
         // изг.
         sumAddManfrOrderArticle = addJProp(documentPriceGroup, "sumAddManfrOrderArticle", "Сумма опт. нац.", diff, sumNoNDSOrderArticle, 1, 2, sumManfrOrderArticle, 1, 2);
@@ -1786,6 +1788,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 pageContainer.tabbedPane = true;
             }
 
+            PropertyDrawView objectValueView = design.get(getPropertyDraw(objectValue, objDoc));
+            if(objectValueView!=null)
+                objectValueView.caption = "Код";
+            PropertyDrawView objectClassNameView = design.get(getPropertyDraw(objectClassName, objDoc));
+            if(objectClassNameView!=null)
+                objectClassNameView.caption = "Статус";
+
             return design;
         }
 
@@ -1835,6 +1844,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addRegularFilterGroup(articleFilterGroup);
 
 //            addHintsNoUpdate(properties, moveGroup);
+
+            PropertyDrawEntity<?> addvOrderArticleDraw = getPropertyDraw(addvOrderArticle);
+            if(addvOrderArticleDraw!=null)
+                addvOrderArticleDraw.setPropertyHighlight(addPropertyObject(isNegativeAddvOrderArticle, objDoc, objArt));
         }
 
         @Override
@@ -1844,6 +1857,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.get(objArt.groupTo).grid.constraints.fillVertical = 3;
 
             design.setKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.SHIFT_DOWN_MASK | InputEvent.SHIFT_MASK));
+
+            PropertyDrawView addvOrderArticleView = design.get(getPropertyDraw(addvOrderArticle));
+            if(addvOrderArticleView!=null)
+                addvOrderArticleView.highlightColor = new Color(255,0,0);
 
             return design;
         }
