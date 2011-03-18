@@ -501,16 +501,18 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         emailStartVoteEA = addEAProp(vote);
         addEARecepient(emailStartVoteEA, emailDocuments);
 
-        emailStartVote = addJProp(baseGroup, true, "emailStartVote", "Созыв заседания (e-mail)", emailStartVoteEA, 1, addCProp(StringClass.get(100), "Созыв заседания"));
+        emailStartVote = addJProp(baseGroup, true, "emailStartVote", "Созыв заседания (e-mail)", emailStartVoteEA, 1,
+                addJProp(addSFProp("(CAST(prm1 as text))||(CAST(prm2 as text))", StringClass.get(2000), 2), addCProp(StringClass.get(2000), "Созыв заседания - "), nameNativeProjectVote, 1), 1);
         emailStartVote.property.askConfirm = true;
         emailStartVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), openedVote, 1);
 
         emailProtocolVoteEA = addEAProp(vote);
         addEARecepient(emailProtocolVoteEA, emailDocuments);
 
-        emailProtocolVote = addJProp(baseGroup, true, "emailProtocolVote", "Протокол заседания (e-mail)", emailProtocolVoteEA, 1, addCProp(StringClass.get(100), "Протокол заседания"));
+        emailProtocolVote = addJProp(baseGroup, true, "emailProtocolVote", "Протокол заседания (e-mail)", emailProtocolVoteEA, 1,
+                addJProp(addSFProp("(CAST(prm1 as text))||(CAST(prm2 as text))", StringClass.get(2000), 2), addCProp(StringClass.get(2000), "Протокол заседания - "), nameNativeProjectVote, 1), 1);
         emailProtocolVote.property.askConfirm = true;
-//        emailProtocolVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), closedVote, 1);
+        emailProtocolVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), closedVote, 1);
 
         isForeignExpert = addJProp("isForeignExpert", "Иностр.", equals2, languageExpert, 1, addCProp(language, "english"));
         localeExpert = addJProp("localeExpert", "Locale", localeLanguage, languageExpert, 1);

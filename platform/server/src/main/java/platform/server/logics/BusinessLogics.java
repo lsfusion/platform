@@ -482,6 +482,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP positive, negative;
 
     protected LP castText;
+    protected LP addText2;
 
     public LP<?> name;
     public LP<?> date;
@@ -962,6 +963,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         vzero = addCProp("0", DoubleClass.instance, 0);
 
         castText = addSFProp("CAST((prm1) as text)", TextClass.instance, 1);
+        addText2 = addSFProp("((prm1)+(prm2))", TextClass.instance, 2);
 
         positive = addJProp(greater2, 1, vzero);
         negative = addJProp(less2, 1, vzero);

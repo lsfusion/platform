@@ -339,6 +339,13 @@ public class ExpertFrame implements EntryPoint {
                 return;
             }
 
+            if ("voted".equals(voteResult) &&
+                (taInnovativeComment.getText().isEmpty() ||
+                 taCompleteComment.getText().isEmpty())) {
+                Window.alert(getMessages().incompleteComment());
+                return;
+            }
+
             if (confirm && !Window.confirm(getMessages().confirmPrompt())) {
                 return;
             }
