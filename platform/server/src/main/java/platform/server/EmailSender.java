@@ -174,11 +174,11 @@ public class EmailSender {
                 try {
                     Transport.send(message);
                 } catch (MessagingException e) {
-                    String messageInfo = subject;
+                    String messageInfo = subject.trim();
                     try {
                         messageInfo += " получатели : " + BaseUtils.toString(message.getRecipients(MimeMessage.RecipientType.TO), ",");
                     } catch (MessagingException me) {
-                        messageInfo = " не удалось получить список получателей " + me.toString();
+                        messageInfo += " не удалось получить список получателей " + me.toString();
                     }
                     throw new RuntimeException("Ошибка при отсылке почты " + messageInfo, e);
                 }
