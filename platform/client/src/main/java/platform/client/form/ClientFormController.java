@@ -221,6 +221,11 @@ public class ClientFormController {
             }
         });
 
+        if (filterGroup.drawToToolbar && filterGroup.keyBindingGroup != null) {
+            GroupObjectController controller = controllers.get(filterGroup.keyBindingGroup);
+            controller.addFilterToToolbar(filterGroup, comboBox);
+        }
+
         if (filterGroup.defaultFilter >= 0) {
             ClientRegularFilter defaultFilter = filterGroup.filters.get(filterGroup.defaultFilter);
             comboBox.setSelectedItem(new ClientRegularFilterWrapped(defaultFilter));
@@ -287,8 +292,8 @@ public class ClientFormController {
         }
 
         return group.parent != null
-               ? treeControllers.get(group.parent)
-               : null;
+                ? treeControllers.get(group.parent)
+                : null;
     }
 
     public class ClientRegularFilterWrapped {
@@ -312,12 +317,12 @@ public class ClientFormController {
         @Override
         public boolean equals(Object wrapped) {
             return wrapped instanceof ClientRegularFilterWrapped
-                   && (filter != null ? filter.equals(((ClientRegularFilterWrapped) wrapped).filter) : this == wrapped);
+                    && (filter != null ? filter.equals(((ClientRegularFilterWrapped) wrapped).filter) : this == wrapped);
         }
 
         @Override
         public String toString() {
-            return caption==null ? filter.getFullCaption() : caption;
+            return caption == null ? filter.getFullCaption() : caption;
         }
     }
 
@@ -402,6 +407,7 @@ public class ClientFormController {
     }
 
     private boolean ordersInitialized = false;
+
     private void initializeOrders() {
         if (!ordersInitialized) {
             try {
@@ -500,6 +506,7 @@ public class ClientFormController {
     }
 
     private Color defaultApplyBackground;
+
     private Color getDefaultApplyBackground() {
         if (defaultApplyBackground == null) {
             defaultApplyBackground = buttonApply.getBackground();
@@ -530,7 +537,7 @@ public class ClientFormController {
 
     public void changeGroupObject(ClientGroupObject groupObject, Scroll changeType) throws IOException {
         SwingUtils.stopSingleAction(groupObject.getActionID(), false);
-        
+
         remoteForm.changeGroupObject(groupObject.getID(), changeType.serialize());
         applyRemoteChanges();
     }
@@ -652,7 +659,7 @@ public class ClientFormController {
 
             if (dataChanged) {
 
-                if(!sureApply) {
+                if (!sureApply) {
                     String okMessage = "";
                     for (ClientGroupObject group : form.groupObjects) {
                         if (controllers.containsKey(group)) {
@@ -737,6 +744,7 @@ public class ClientFormController {
             remoteForm = null;
         }
     }
+
     public Dimension calculatePreferredSize() {
         return formLayout.calculatePreferredSize();
     }
