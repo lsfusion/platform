@@ -3,6 +3,7 @@ package platform.client.form;
 import platform.client.ClientActionProxy;
 import platform.client.ContainerFocusListener;
 import platform.client.FormFocusTraversalPolicy;
+import platform.client.MultiAction;
 import platform.client.logics.ClientComponent;
 import platform.client.logics.ClientContainer;
 import platform.client.logics.ClientGroupObject;
@@ -156,8 +157,12 @@ public abstract class ClientFormLayout extends JPanel {
     }
 
     public void addBinding(KeyStroke key, String id, AbstractAction action) {
-        getInputMap(JPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(key, id);
-        getActionMap().put(id, new ClientActionProxy(action));
+        Object oldId = getInputMap(JPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).get(key);
+        String newId = oldId + " and " + id;
+        getInputMap(JPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(key, newId);
+        MultiAction oldAction = new MultiAction(getActionMap().get(oldId));
+        oldAction.addAction(action);
+        getActionMap().put(newId, oldAction);
     }
 
     private Map<KeyStroke, Map<ClientGroupObject, KeyListener>> bindings = new HashMap<KeyStroke, Map<ClientGroupObject, KeyListener>>();
