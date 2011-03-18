@@ -81,6 +81,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private LP nameLegalIncContract;
     private LP purposeOrder;
     private AbstractGroup documentPrintGroup;
+    private LP quantityOrder;
+    private LP coeffTransArticle;
+    private LP weightArticle;
+    private LP weightOrderArticle;
+    private LP transOrderArticle;
+    private LP weightOrder;
+    private LP transOrder;
 
     public VEDBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -445,6 +452,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         articleToGroup = addDProp(idGroup, "articleToGroup", "Группа товаров", articleGroup, article); // принадлежность товара группе
         nameArticleGroupArticle = addJProp(baseGroup, "Группа товаров", name, articleToGroup, 1);
+
+        coeffTransArticle = addDProp("coeffTransArticle", "Коэфф. гр. мест", DoubleClass.instance, article); // принадлежность товара группе
+        weightArticle = addDProp("weightArticle", "Вес товара", DoubleClass.instance, article); // принадлежность товара группе
 
         payWithCard = addAProp(new PayWithCardActionProperty());
         printOrderCheck = addAProp(new PrintOrderCheckActionProperty());
@@ -832,6 +842,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         sumManfrOrder = addSGProp(documentPriceGroup, "sumManfrOrder", "Сумма изг.", sumManfrOrderArticle, 1);
 
         sumOrderArticle = addJProp(documentPriceGroup, "sumOrderArticle", "Сумма", multiplyDouble2, articleQuantity, 1, 2, priceOrderArticle, 1, 2);
+        weightOrderArticle = addJProp("weightOrderArticle", "Вес поз.", multiplyDouble2, articleQuantity, 1, 2, weightArticle, 2);
+        transOrderArticle = addJProp("transOrderArticle", "Кол-во гр. мест", multiplyDouble2, articleQuantity, 1, 2, coeffTransArticle, 2);
 
         LP orderActionClientSum = addSUProp(Union.SUM, addJProp(and1, orderClientSum, 1, is(articleAction), 2), addJProp(and1, addSGProp(sumOrderArticle, 1), 1, articleActionWithCheck, 2));
         LP articleActionActive = addJProp(and(false, false, false, false, true, true, true, true, true), articleQuantity, 1, 2, is(orderSaleArticleRetail), 1, is(articleAction), 3, inAction, 3, 2, isStarted, 3,
@@ -863,6 +875,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         // док.      n
         sumNDSOrder = addSGProp(documentPriceGroup, "sumNDSOrder", "Сумма НДС", sumNDSOrderArticle, 1);
         sumNoNDSOrder = addDUProp(documentPriceGroup, "sumNoNDSOrder", "Сумма без НДС", sumWithDiscountOrder, sumNDSOrder);
+
+        quantityOrder = addSGProp("quantityOrder", "Кол-во", articleQuantity, 1);
+        weightOrder = addSGProp("weightOrder", "Общий вес", weightOrderArticle, 1);
+        transOrder = addSGProp("transOrder", "Общее кол-во гр. мест", transOrderArticle, 1);
 
         // для бухгалтерии магазинов
         sumRetailOrderArticle = addJProp(documentPriceGroup, "sumRetailOrderArticle", "Сумма розн.", multiplyDouble2, shopPrice, 1, 2, articleQuantity, 1, 2);
@@ -1069,7 +1085,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         StringClass.getArray(50,60,60,60,70,60), shipmentDocumentOut);
         LP[] propsInvoiceTransportDocument = addDProp(documentShipmentTransportGroup, "InvoiceDocument",
                         new String[]{"personPRR", "typePRR", "codePRR", "timeOut", "timeInc", "timeDelay",
-                                "transport", "transportList", "personTransport", "personDrive", "personRespTransport", "typeTransport", "route", "readdress", "trailer", "garageNumber"},
+                                "transport", "transportList", "personTransport", "personDriver", "personRespTransport", "typeTransport", "route", "readdress", "trailer", "garageNumber"},
                         new String[]{"Исполнитель ПРР", "Способ ПРР", "Код ПРР", "Убытие", "Прибытие", "Простой",
                                 "Автомобиль", "Путевой лист", "Владелец автотранспорта", "Водитель", "Экспедитор", "Вид перевозки", "Маршрут", "Переадресовка", "Прицеп", "Гаражный номер", ""},
                         StringClass.getArray(60,20,10,8,8,8, 20,10,60,60,60,20,20,50,30,15), shipmentDocumentOut);
@@ -1371,13 +1387,20 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         FormEntity pricers = addFormEntity(new PricersFormEntity(print, "pricers"));
         FormEntity stickers = addFormEntity(new StickersFormEntity(print, "stickers"));
         FormEntity invoice = addFormEntity(new InvoiceFormEntity(print, "invoice", "Счет-фактура", true));
-        FormEntity ttn1Blank = addFormEntity(new TTNFormEntity(print, "ttn1blank", "ТТН-1 бланк", false));
-        FormEntity ttn1Attach = addFormEntity(new TTNFormEntity(print, "ttn1attach", "ТТН-1 приложение", true));
-        FormEntity ttn1SideA = addFormEntity(new TTNFormEntity(print, "ttn1a", "ТТН-1 сторона A", false));
-        FormEntity ttn1SideB = addFormEntity(new TTNFormEntity(print, "ttn1b", "ТТН-1 сторона B", true));
-        FormEntity tn2Blank = addFormEntity(new TNFormEntity(print, "tn2blank", "ТН-2 бланк", false));
-        FormEntity tn2Attach = addFormEntity(new TNFormEntity(print, "tn2attach", "ТН-2 приложение", true));
-        FormEntity tn2 = addFormEntity(new TNFormEntity(print, "tn2", "ТН-2 (одн. стр.)", true));
+        FormEntity ttn1Blank = addFormEntity(new TTNFormEntity(print, "ttn1blank", "ТТН-1 бланк (гориз.)", false));
+        FormEntity ttn1BlankV = addFormEntity(new TTNFormEntity(print, "ttn1blank_v", "ТТН-1 бланк", false));
+        FormEntity ttn1Attach = addFormEntity(new TTNFormEntity(print, "ttn1attach", "ТТН-1 приложение (гориз.)", true));
+        FormEntity ttn1AttachV = addFormEntity(new TTNFormEntity(print, "ttn1attach_v", "ТТН-1 приложение", true));
+        FormEntity ttn1SideA = addFormEntity(new TTNFormEntity(print, "ttn1a", "ТТН-1 сторона A (гориз.)", true));
+        FormEntity ttn1SideAV = addFormEntity(new TTNFormEntity(print, "ttn1a_v", "ТТН-1 сторона A", true));
+        FormEntity ttn1SideB = addFormEntity(new TTNFormEntity(print, "ttn1b", "ТТН-1 сторона B (гориз.)", false));
+        FormEntity ttn1SideBV = addFormEntity(new TTNFormEntity(print, "ttn1b_v", "ТТН-1 сторона B", false));
+        FormEntity tn2Blank = addFormEntity(new TNFormEntity(print, "tn2blank", "ТН-2 бланк (гориз.)", false));
+        FormEntity tn2BlankV = addFormEntity(new TNFormEntity(print, "tn2blank_v", "ТН-2 бланк", false));
+        FormEntity tn2Attach = addFormEntity(new TNFormEntity(print, "tn2attach", "ТН-2 приложение (гориз.)", true));
+        FormEntity tn2AttachV = addFormEntity(new TNFormEntity(print, "tn2attach_v", "ТН-2 приложение", true));
+        FormEntity tn2 = addFormEntity(new TNFormEntity(print, "tn2", "ТН-2 (одн. стр.) (гориз.)", true));
+        FormEntity tn2V = addFormEntity(new TNFormEntity(print, "tn2_v", "ТН-2 (одн. стр.)", true));
 
         NavigatorElement classifier = new NavigatorElement(baseElement, "classifier", "Справочники");
             addFormEntity(new ArticleInfoFormEntity(classifier, "articleInfoForm"));
@@ -2967,16 +2990,19 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     // накладные
     private abstract class PrintSaleFormEntity extends FormEntity {
 
+        ObjectEntity objDoc;
+        ObjectEntity objArt;
+
         protected PrintSaleFormEntity(NavigatorElement parent, String sID, String caption, boolean inclArticle) {
             super(parent, sID, caption, true);
 
-            ObjectEntity objDoc = addSingleGroupObject(getDocClass(), "Документ", date, nameSubjectIncOrder, nameSubjectOutOrder, nameLegalEntityIncOrder, nameLegalEntityOutOrder, addressSubjectIncOrder, addressSubjectOutOrder, sumWithDiscountOrder, sumNDSOrder, sumNoNDSOrder, propsLegalEntityIncOrder, propsLegalEntityOutOrder);
+            objDoc = addSingleGroupObject(getDocClass(), "Документ", date, nameSubjectIncOrder, nameSubjectOutOrder, nameLegalEntityIncOrder, nameLegalEntityOutOrder, addressSubjectIncOrder, addressSubjectOutOrder, sumWithDiscountOrder, sumNDSOrder, sumNoNDSOrder, propsLegalEntityIncOrder, propsLegalEntityOutOrder, quantityOrder);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
 
             addPropertyDraw(objDoc, getDocGroups());
 
             if(inclArticle) {
-                ObjectEntity objArt = addSingleGroupObject(article, name, nameUnitOfMeasureArticle);
+                objArt = addSingleGroupObject(article, name, nameUnitOfMeasureArticle);
                 addPropertyDraw(objDoc, objArt, articleQuantity, priceOrderArticle, sumWithDiscountOrderArticle, ndsOrderArticle, sumNDSOrderArticle, sumNoNDSOrderArticle, priceManfrOrderArticle, addManfrOrderArticle);
                 addFixedFilter(new NotNullFilterEntity(getPropertyObject(articleQuantity)));
             }
@@ -2995,6 +3021,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         private TTNFormEntity(NavigatorElement parent, String sID, String caption, boolean inclArticle) {
             super(parent, sID, caption, inclArticle);
+
+            addPropertyDraw(objDoc, weightOrder, transOrder);
+            if(objArt!=null)
+                addPropertyDraw(objDoc, objArt, weightOrderArticle, transOrderArticle);
         }
 
         @Override
@@ -3361,7 +3391,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected ArticleInfoFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Справочник товаров");
 
-            objArt = addSingleGroupObject(article, objectValue, name, barcode, currentRRP, nameCurrencyArticle, nameArticleGroupArticle, fullNameArticle, nameUnitOfMeasureArticle, nameBrendArticle, nameCountryArticle, gigienaArticle, spirtArticle, statusArticle);
+            objArt = addSingleGroupObject(article, objectValue, name, barcode, currentRRP, nameCurrencyArticle, nameArticleGroupArticle, fullNameArticle, nameUnitOfMeasureArticle, nameBrendArticle, nameCountryArticle, gigienaArticle, spirtArticle, statusArticle, weightArticle, coeffTransArticle);
             addPropertyDraw(importArticlesRRP);
             addPropertyDraw(importArticlesInfo);
         }
