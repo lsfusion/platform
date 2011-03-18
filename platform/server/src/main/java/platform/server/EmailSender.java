@@ -1,6 +1,7 @@
 package platform.server;
 
 
+import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.base.ByteArray;
 import platform.server.logics.EmailActionProperty;
@@ -21,6 +22,8 @@ import java.util.Map;
 import java.util.Properties;
 
 public class EmailSender {
+    private final static Logger logger = Logger.getLogger(EmailSender.class);
+
     MimeMessage message;
     Multipart mp = new MimeMultipart();
     Properties mailProps = new Properties();
@@ -171,16 +174,39 @@ public class EmailSender {
     private void sendMail(final MimeMessage message, final String subject) {
         new Thread() {
             public void run() {
+
+                String messageInfo = subject.trim();
                 try {
-                    Transport.send(message);
-                } catch (MessagingException e) {
-                    String messageInfo = subject.trim();
+                    messageInfo += " получатели : " + BaseUtils.toString(message.getRecipients(MimeMessage.RecipientType.TO), ",");
+                } catch (MessagingException me) {
+                    messageInfo += " не удалось получить список получателей " + me.toString();
+                }
+
+                boolean send = false;
+                boolean error = false;
+                int count = 0;
+                while (!send) {
+                    send = true;
+                    count++;
                     try {
-                        messageInfo += " получатели : " + BaseUtils.toString(message.getRecipients(MimeMessage.RecipientType.TO), ",");
-                    } catch (MessagingException me) {
-                        messageInfo += " не удалось получить список получателей " + me.toString();
+                        Transport.send(message);
+                    } catch (MessagingException e) {
+                        if (count < 40) {
+                            logger.info("Неудачная попытка отсылки почты " + messageInfo);
+                            send = false;
+                            try {
+                                Thread.sleep(30000);
+                            } catch (InterruptedException e1) {
+                            }
+                        } else {
+                            error = true;
+                            logger.error("Не удалось отправить почту " + messageInfo);
+                            throw new RuntimeException("Ошибка при отсылке почты " + messageInfo, e);
+                        }
                     }
-                    throw new RuntimeException("Ошибка при отсылке почты " + messageInfo, e);
+                }
+                if (!error) {
+                    logger.info("Успешная отсылка почты" + messageInfo);
                 }
             }
         }.start();
