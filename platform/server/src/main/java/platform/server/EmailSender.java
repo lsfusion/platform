@@ -183,7 +183,6 @@ public class EmailSender {
                 }
 
                 boolean send = false;
-                boolean error = false;
                 int count = 0;
                 while (!send) {
                     send = true;
@@ -199,15 +198,12 @@ public class EmailSender {
                             } catch (InterruptedException e1) {
                             }
                         } else {
-                            error = true;
                             logger.error("Не удалось отправить почту " + messageInfo);
                             throw new RuntimeException("Ошибка при отсылке почты " + messageInfo, e);
                         }
                     }
                 }
-                if (!error) {
-                    logger.info("Успешная отсылка почты" + messageInfo);
-                }
+                logger.info("Успешная отсылка почты" + messageInfo);
             }
         }.start();
     }
