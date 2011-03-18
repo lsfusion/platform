@@ -41,7 +41,7 @@
 	<field name="mainCompositionFreightSku" class="java.lang.String"/>
 	<field name="additionalCompositionFreightSku" class="java.lang.String"/>
 	<field name="sidCustomCategory10FreightSku" class="java.lang.String"/>
-	<field name="quantityImporterFreightUnitArticle" class="java.lang.Double"/>
+	<field name="quantityImporterStockArticle" class="java.lang.Double"/>
 	<field name="nameCountryOfOriginFreightSku" class="java.lang.String"/>
 	<field name="netWeightSku" class="java.lang.Double"/>
 	<field name="sumImporterStockSku" class="java.lang.Double"/>
@@ -51,6 +51,8 @@
 	<field name="netWeightImporterFreightUnit" class="java.lang.Double"/>
 	<field name="barcode2" class="java.lang.String"/>
 	<field name="nameArticle" class="java.lang.String"/>
+	<field name="quantityImporterFreight" class="java.lang.Double"/>
+	<field name="quantityImporterStock" class="java.lang.Double"/>
 	<group name="textGroup4">
 		<groupExpression><![CDATA[String.valueOf($F{barcode})]]></groupExpression>
 		<groupFooter>
@@ -64,6 +66,11 @@
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="106" y="0" width="80" height="18"/>
 					<textElement textAlignment="Right"/>
 					<textFieldExpression class="java.lang.Double"><![CDATA[$F{netWeightImporterFreightUnit}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.###" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle1" x="283" y="0" width="98" height="18"/>
+					<textElement textAlignment="Right"/>
+					<textFieldExpression class="java.lang.Double"><![CDATA[$F{quantityImporterStock}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -176,12 +183,12 @@
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="FixRelativeToBottom" stretchType="RelativeToBandHeight" x="283" y="0" width="98" height="18"/>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression class="java.lang.Double"><![CDATA[$F{quantityImporterFreightUnitArticle}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{quantityImporterStockArticle}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
 	<lastPageFooter>
-		<band height="39">
+		<band height="69">
 			<textField isStretchWithOverflow="true">
 				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="0" y="13" width="106" height="18"/>
 				<textElement textAlignment="Right"/>
@@ -203,14 +210,24 @@
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumInOutImporterFreight}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.###">
-				<reportElement style="GroupCellStyle0" mode="Opaque" x="283" y="13" width="98" height="18" backcolor="#D4D4D4"/>
-				<textElement/>
+				<reportElement style="GroupCellStyle0" mode="Opaque" x="106" y="31" width="80" height="18" backcolor="#D4D4D4"/>
+				<textElement textAlignment="Right"/>
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{grossWeightImporterFreight}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0" mode="Opaque" x="186" y="13" width="97" height="18" backcolor="#D4D4D4"/>
+				<reportElement style="GroupCellStyle0" mode="Opaque" x="0" y="31" width="106" height="18" backcolor="#D4D4D4"/>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Gewicht kg brutto:"]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0" x="283" y="13" width="98" height="18"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{quantityImporterFreight}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle0" x="186" y="13" width="97" height="18"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["MENGE"]]></textFieldExpression>
 			</textField>
 		</band>
 	</lastPageFooter>

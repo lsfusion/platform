@@ -32,7 +32,7 @@
 				</jr:EAN13>
 			</componentElement>
 			<textField isBlankWhenNull="true">
-				<reportElement x="150" y="0" width="98" height="76"/>
+				<reportElement style="DefaultStyle" x="150" y="0" width="98" height="76"/>
 				<textElement>
 					<font size="36"/>
 				</textElement>
