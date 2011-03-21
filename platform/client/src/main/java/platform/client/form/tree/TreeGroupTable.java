@@ -36,6 +36,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
     private final TreeGroupNode rootNode;
     public final ClientFormController form;
+    private final ClientTreeGroup treeGroup;
 
     public GroupTreeTableModel model;
 
@@ -49,13 +50,13 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
     boolean plainTreeMode = false;
 
-    public TreeGroupTable(ClientFormController iform, ClientTreeGroup treeGroup) {
-        super();
-
+    public TreeGroupTable(ClientFormController iform, ClientTreeGroup itreeGroup) {
         form = iform;
-        plainTreeMode = treeGroup.plainTreeMode;
+        treeGroup = itreeGroup;
+        plainTreeMode = itreeGroup.plainTreeMode;
 
         setTreeTableModel(model = new GroupTreeTableModel(form, plainTreeMode));
+        setupHierarhicalColumn();
 
         //после создания колонки для дерева, занимаемся созданием и удалением сами
         setAutoCreateColumnsFromModel(false);
@@ -154,7 +155,6 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         currentTreePath = new TreePath(rootNode);
     }
 
-
     private void initializeActionMap() {
         final Action nextColumnAction = new GotNextCellAction(0, 1);
         final Action prevColumnAction = new GotNextCellAction(0, -1);
@@ -225,6 +225,15 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         }
     }
 
+    private void setupHierarhicalColumn() {
+        TableColumnExt tableColumn = getColumnExt(0);
+        int min = 50;
+        int max = 100000;
+        int pref = treeGroup.groups.size() * 35;
+
+        setColumnSizes(tableColumn, min, max, pref);
+    }
+
     private void createNewColumn(ClientPropertyDraw property, int pos) {
         TableColumnExt tableColumn = getColumnFactory().createAndConfigureTableColumn(getModel(), pos);
         if (tableColumn != null) {
@@ -232,17 +241,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             int max = property.getMaximumWidth(this);
             int pref = property.getPreferredWidth(this);
 
-            // делаем так потому, что новые значения размеров
-            // корректируется в зависимости от старых
-            // и мы можем увидеть не то, что хотели
-            if (min < tableColumn.getMinWidth()) {
-                tableColumn.setMinWidth(min);
-                tableColumn.setMaxWidth(max);
-            } else {
-                tableColumn.setMaxWidth(max);
-                tableColumn.setMinWidth(min);
-            }
-            tableColumn.setPreferredWidth(pref);
+            setColumnSizes(tableColumn, min, max, pref);
 
             addColumn(tableColumn);
             moveColumn(getColumnCount() - 1, pos);
@@ -254,6 +253,20 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             String toolTip = !BaseUtils.isRedundantString(property.toolTip) ? property.toolTip : model.getColumnName(pos);
             tableColumn.setToolTipText(toolTip.trim() + " (sID: " + property.getSID() + ")");
         }
+    }
+
+    private void setColumnSizes(TableColumnExt tableColumn, int min, int max, int pref) {
+        // делаем так потому, что новые значения размеров
+        // корректируется в зависимости от старых
+        // и мы можем увидеть не то, что хотели
+        if (min < tableColumn.getMinWidth()) {
+            tableColumn.setMinWidth(min);
+            tableColumn.setMaxWidth(max);
+        } else {
+            tableColumn.setMaxWidth(max);
+            tableColumn.setMinWidth(min);
+        }
+        tableColumn.setPreferredWidth(pref);
     }
 
     public void setCurrentObjects(final ClientGroupObjectValue objects) {

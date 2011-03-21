@@ -51,7 +51,7 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
     @Override
     public Object getValueAt(Object node, int column) {
         if (column == 0) {
-            return node.toString();
+            return plainTreeMode ? node.toString() : "";
         }
 
         if (node instanceof TreeGroupNode) {
