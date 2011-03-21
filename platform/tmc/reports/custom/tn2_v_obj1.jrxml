@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="obj1" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
-	<property name="ireport.zoom" value="1.2100000000000002"/>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="obj1" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="0.8264462809917354"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
@@ -51,206 +51,206 @@
 	<pageHeader>
 		<band height="317">
 			<staticText>
-				<reportElement x="171" y="80" width="23" height="14"/>
+				<reportElement x="161" y="80" width="23" height="14"/>
 				<textElement/>
 				<text><![CDATA[УНП]]></text>
 			</staticText>
 			<staticText>
-				<reportElement style="GroupCellStyle0" x="201" y="56" width="97" height="20"/>
+				<reportElement style="GroupCellStyle0" x="191" y="56" width="97" height="20"/>
 				<textElement textAlignment="Center"/>
 				<text><![CDATA[Грузоотправитель]]></text>
 			</staticText>
 			<staticText>
-				<reportElement style="GroupCellStyle0" x="298" y="56" width="101" height="20"/>
+				<reportElement style="GroupCellStyle0" x="288" y="56" width="101" height="20"/>
 				<textElement textAlignment="Center"/>
 				<text><![CDATA[Грузополучатель]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true" pattern="dd.MM.yy" isBlankWhenNull="true">
-				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="25" y="139" width="141" height="18"/>
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="15" y="139" width="141" height="18"/>
 				<textElement textAlignment="Center">
 					<font isBold="true"/>
 				</textElement>
 				<textFieldExpression class="java.util.Date"><![CDATA[$F{date}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="25" y="172" width="100" height="20"/>
+				<reportElement x="15" y="172" width="100" height="20"/>
 				<textElement/>
 				<text><![CDATA[Грузоотправитель:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement positionType="Float" x="25" y="195" width="100" height="20"/>
+				<reportElement positionType="Float" x="15" y="195" width="100" height="20"/>
 				<textElement/>
 				<text><![CDATA[Грузополучатель:]]></text>
 			</staticText>
 			<line>
-				<reportElement positionType="FixRelativeToBottom" x="17" y="193" width="500" height="1"/>
+				<reportElement positionType="FixRelativeToBottom" x="7" y="193" width="500" height="1"/>
 			</line>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="130" y="195" width="387" height="18"/>
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="120" y="195" width="387" height="18"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameLegalEntityOutOrder}+", "+$F{addressLegalEntityLegalOutOrder}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="130" y="171" width="387" height="20"/>
+				<reportElement stretchType="RelativeToBandHeight" x="120" y="171" width="387" height="20"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameLegalEntityIncOrder}+", "+$F{addressLegalEntityLegalIncOrder}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="130" y="216" width="290" height="18"/>
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="120" y="216" width="290" height="18"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{permissionOrder}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement positionType="Float" x="25" y="215" width="100" height="20"/>
+				<reportElement positionType="Float" x="15" y="215" width="100" height="20"/>
 				<textElement/>
 				<text><![CDATA[Основание отпуска:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement style="GroupCellStyle0" positionType="Float" x="25" y="249" width="550" height="15"/>
+				<reportElement style="GroupCellStyle0" positionType="Float" x="15" y="249" width="550" height="15"/>
 				<textElement textAlignment="Center"/>
 				<text><![CDATA[I ТОВАРНЫЙ РАЗДЕЛ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement style="GroupCellStyle0" positionType="Float" x="49" y="264" width="136" height="40"/>
+				<reportElement style="GroupCellStyle0" positionType="Float" x="39" y="264" width="136" height="40"/>
 				<textElement textAlignment="Center"/>
 				<text><![CDATA[Наименование товара]]></text>
 			</staticText>
 			<staticText>
-				<reportElement style="GroupCellStyle0" positionType="Float" x="185" y="264" width="32" height="40"/>
+				<reportElement style="GroupCellStyle0" positionType="Float" x="175" y="264" width="32" height="40"/>
 				<textElement textAlignment="Center"/>
 				<text><![CDATA[Еди-ница изм.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement style="GroupCellStyle0" positionType="Float" x="217" y="264" width="49" height="40"/>
+				<reportElement style="GroupCellStyle0" positionType="Float" x="207" y="264" width="49" height="40"/>
 				<textElement textAlignment="Center"/>
 				<text><![CDATA[Коли-чество]]></text>
 			</staticText>
 			<staticText>
-				<reportElement style="GroupCellStyle0" positionType="Float" x="266" y="264" width="44" height="40"/>
+				<reportElement style="GroupCellStyle0" positionType="Float" x="256" y="264" width="44" height="40"/>
 				<textElement textAlignment="Center"/>
 				<text><![CDATA[Цена, руб.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement style="GroupCellStyle0" positionType="Float" x="310" y="264" width="57" height="40"/>
+				<reportElement style="GroupCellStyle0" positionType="Float" x="300" y="264" width="57" height="40"/>
 				<textElement textAlignment="Center"/>
 				<text><![CDATA[Стоимость, руб.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement style="GroupCellStyle0" positionType="Float" x="367" y="264" width="42" height="40"/>
+				<reportElement style="GroupCellStyle0" positionType="Float" x="357" y="264" width="42" height="40"/>
 				<textElement textAlignment="Center"/>
 				<text><![CDATA[Ставка НДС, %]]></text>
 			</staticText>
 			<staticText>
-				<reportElement style="GroupCellStyle0" positionType="Float" x="409" y="264" width="45" height="40"/>
+				<reportElement style="GroupCellStyle0" positionType="Float" x="399" y="264" width="45" height="40"/>
 				<textElement textAlignment="Center"/>
 				<text><![CDATA[Сумма НДС, руб.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement style="GroupCellStyle0" positionType="Float" x="454" y="264" width="57" height="40"/>
+				<reportElement style="GroupCellStyle0" positionType="Float" x="444" y="264" width="57" height="40"/>
 				<textElement textAlignment="Center"/>
 				<text><![CDATA[Стоимость  с НДС, руб.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement style="GroupCellStyle0" positionType="Float" x="511" y="264" width="64" height="40"/>
+				<reportElement style="GroupCellStyle0" positionType="Float" x="501" y="264" width="64" height="40"/>
 				<textElement textAlignment="Center"/>
 				<text><![CDATA[Примечание]]></text>
 			</staticText>
 			<textField>
-				<reportElement positionType="Float" x="486" y="221" width="67" height="16"/>
+				<reportElement positionType="Float" x="476" y="221" width="67" height="16"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement positionType="Float" x="450" y="221" width="34" height="15"/>
+				<reportElement positionType="Float" x="440" y="221" width="34" height="15"/>
 				<textElement textAlignment="Right" rotation="None">
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[Лист:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement style="GroupCellStyle0" positionType="Float" x="25" y="264" width="24" height="40"/>
+				<reportElement style="GroupCellStyle0" positionType="Float" x="15" y="264" width="24" height="40"/>
 				<textElement textAlignment="Center"/>
 				<text><![CDATA[№ п/п]]></text>
 			</staticText>
 			<staticText>
-				<reportElement style="GroupCellStyle0" x="49" y="304" width="136" height="13"/>
+				<reportElement style="GroupCellStyle0" x="39" y="304" width="136" height="13"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[1]]></text>
 			</staticText>
 			<staticText>
-				<reportElement style="GroupCellStyle0" x="185" y="304" width="32" height="13"/>
+				<reportElement style="GroupCellStyle0" x="175" y="304" width="32" height="13"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[2]]></text>
 			</staticText>
 			<staticText>
-				<reportElement style="GroupCellStyle0" x="217" y="304" width="49" height="13"/>
+				<reportElement style="GroupCellStyle0" x="207" y="304" width="49" height="13"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[3]]></text>
 			</staticText>
 			<staticText>
-				<reportElement style="GroupCellStyle0" x="266" y="304" width="44" height="13"/>
+				<reportElement style="GroupCellStyle0" x="256" y="304" width="44" height="13"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[4]]></text>
 			</staticText>
 			<staticText>
-				<reportElement style="GroupCellStyle0" x="310" y="304" width="57" height="13"/>
+				<reportElement style="GroupCellStyle0" x="300" y="304" width="57" height="13"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[5]]></text>
 			</staticText>
 			<staticText>
-				<reportElement style="GroupCellStyle0" x="367" y="304" width="42" height="13"/>
+				<reportElement style="GroupCellStyle0" x="357" y="304" width="42" height="13"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[6]]></text>
 			</staticText>
 			<staticText>
-				<reportElement style="GroupCellStyle0" x="409" y="304" width="45" height="13"/>
+				<reportElement style="GroupCellStyle0" x="399" y="304" width="45" height="13"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[7]]></text>
 			</staticText>
 			<staticText>
-				<reportElement style="GroupCellStyle0" x="454" y="304" width="57" height="13"/>
+				<reportElement style="GroupCellStyle0" x="444" y="304" width="57" height="13"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[8]]></text>
 			</staticText>
 			<staticText>
-				<reportElement style="GroupCellStyle0" x="511" y="304" width="64" height="13"/>
+				<reportElement style="GroupCellStyle0" x="501" y="304" width="64" height="13"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[9]]></text>
 			</staticText>
 			<staticText>
-				<reportElement style="GroupCellStyle0" x="25" y="304" width="24" height="13"/>
+				<reportElement style="GroupCellStyle0" x="15" y="304" width="24" height="13"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[]]></text>
 			</staticText>
 			<textField>
-				<reportElement style="GroupCellStyle0" x="201" y="76" width="97" height="20"/>
+				<reportElement style="GroupCellStyle0" x="191" y="76" width="97" height="20"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{unnLegalEntityLegalIncOrder}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0" x="298" y="76" width="101" height="20"/>
+				<reportElement style="GroupCellStyle0" x="288" y="76" width="101" height="20"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{unnLegalEntityLegalOutOrder}]]></textFieldExpression>
 			</textField>
@@ -259,70 +259,70 @@
 	<detail>
 		<band height="18">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="511" y="0" width="64" height="18"/>
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="501" y="0" width="64" height="18"/>
 				<textElement textAlignment="Left">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Цена изг. :" + $F{priceManfrOrderArticle} + ", нац. :" + $F{addManfrOrderArticle}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="266" y="0" width="44" height="18"/>
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="256" y="0" width="44" height="18"/>
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{priceOrderArticle}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="217" y="0" width="49" height="18"/>
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="207" y="0" width="49" height="18"/>
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{articleQuantity}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="454" y="0" width="57" height="18"/>
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="444" y="0" width="57" height="18"/>
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumWithDiscountOrderArticle}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="409" y="0" width="45" height="18"/>
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="399" y="0" width="45" height="18"/>
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumNDSOrderArticle}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="25" y="0" width="24" height="18"/>
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="15" y="0" width="24" height="18"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{npp}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="49" y="0" width="136" height="18"/>
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="39" y="0" width="136" height="18"/>
 				<textElement textAlignment="Left">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{commonName}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="310" y="0" width="57" height="18"/>
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="300" y="0" width="57" height="18"/>
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumNoNDSOrderArticle}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="185" y="0" width="32" height="18"/>
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="175" y="0" width="32" height="18"/>
 				<textElement textAlignment="Center">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameUnitOfMeasureArticle}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="367" y="0" width="42" height="18"/>
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="357" y="0" width="42" height="18"/>
 				<textElement textAlignment="Center">
 					<font size="9"/>
 				</textElement>
@@ -333,175 +333,175 @@
 	<summary>
 		<band height="178">
 			<textField>
-				<reportElement style="GroupCellStyle0" x="454" y="0" width="57" height="20"/>
+				<reportElement style="GroupCellStyle0" x="444" y="0" width="57" height="20"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumWithDiscountOrder}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0" x="49" y="0" width="136" height="20"/>
+				<reportElement style="GroupCellStyle0" x="39" y="0" width="136" height="20"/>
 				<textElement textAlignment="Center">
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["ИТОГО "]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0" x="409" y="0" width="45" height="20"/>
+				<reportElement style="GroupCellStyle0" x="399" y="0" width="45" height="20"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumNDSOrder}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0" x="25" y="0" width="24" height="20"/>
+				<reportElement style="GroupCellStyle0" x="15" y="0" width="24" height="20"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0" x="367" y="0" width="42" height="20"/>
+				<reportElement style="GroupCellStyle0" x="357" y="0" width="42" height="20"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0" x="511" y="0" width="64" height="20"/>
+				<reportElement style="GroupCellStyle0" x="501" y="0" width="64" height="20"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0" x="185" y="0" width="32" height="20"/>
+				<reportElement style="GroupCellStyle0" x="175" y="0" width="32" height="20"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0" x="217" y="0" width="49" height="20"/>
+				<reportElement style="GroupCellStyle0" x="207" y="0" width="49" height="20"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0" x="310" y="0" width="57" height="20"/>
+				<reportElement style="GroupCellStyle0" x="300" y="0" width="57" height="20"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumNoNDSOrder}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle0" x="266" y="0" width="44" height="20"/>
+				<reportElement style="GroupCellStyle0" x="256" y="0" width="44" height="20"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[" "]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="141" y="109" width="115" height="14"/>
+				<reportElement x="131" y="109" width="115" height="14"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{personWarrantInvoiceDocument}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="156" y="137" width="173" height="14"/>
+				<reportElement x="146" y="137" width="173" height="14"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{personIncInvoiceDocument}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="26" y="137" width="130" height="14"/>
+				<reportElement x="16" y="137" width="130" height="14"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Принял грузополучатель"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="26" y="109" width="115" height="14"/>
+				<reportElement x="16" y="109" width="115" height="14"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Товар к доставке принял"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="126" y="81" width="100" height="14"/>
+				<reportElement x="116" y="81" width="100" height="14"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{personPermissionInvoiceDocument}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="26" y="151" width="159" height="14"/>
+				<reportElement x="16" y="151" width="159" height="14"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["С товаром переданы документы:"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="141" y="123" width="115" height="14"/>
+				<reportElement x="131" y="123" width="115" height="14"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{warrantByInvoiceDocument}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="26" y="123" width="115" height="14"/>
+				<reportElement x="16" y="123" width="115" height="14"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["по доверенности"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="26" y="81" width="100" height="14"/>
+				<reportElement x="16" y="81" width="100" height="14"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Отпуск разрешил"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="26" y="95" width="115" height="14"/>
+				<reportElement x="16" y="95" width="115" height="14"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Сдал грузоотправитель"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="141" y="95" width="115" height="14"/>
+				<reportElement x="131" y="95" width="115" height="14"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{personOutInvoiceDocument}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="126" y="32" width="427" height="20"/>
+				<reportElement x="116" y="32" width="427" height="20"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[platform.base.Words.toString($F{sumNDSOrder}) + " рублей"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="26" y="52" width="115" height="20"/>
+				<reportElement x="16" y="52" width="115" height="20"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Всего стоимость с НДС"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="141" y="52" width="412" height="20"/>
+				<reportElement x="131" y="52" width="412" height="20"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[platform.base.Words.toString($F{sumWithDiscountOrder}) + " рублей"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="26" y="32" width="100" height="20"/>
+				<reportElement x="16" y="32" width="100" height="20"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
