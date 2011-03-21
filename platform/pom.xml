@@ -22,6 +22,7 @@
         <module>base</module>
         <module>logics</module>
         <module>api</module>
+        <module>jasperapi</module>
         <module>client</module>
         <module>fullclient</module>
         <module>server</module>
