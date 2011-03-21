@@ -1093,6 +1093,12 @@ public class BaseUtils {
             return string.trim();
     }
 
+    public static String rtrim(String string) {
+        int len = string.length();
+        while (len > 0 && string.charAt(len-1) == ' ') len--;
+        return string.substring(0, len);
+    }
+
     public static String nullToString(Object name) {
         if (name == null)
             return "";

@@ -2531,7 +2531,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
 
-//            design.get(objPallet.groupTo).grid.constraints.fillHorizontal = 0.4;
+            design.get(objDirectInvoice.groupTo).grid.constraints.fillHorizontal = 2;
 //
             design.addIntersection(design.getGroupObjectContainer(objPallet.groupTo),
                     design.getGroupObjectContainer(objDirectInvoice.groupTo),

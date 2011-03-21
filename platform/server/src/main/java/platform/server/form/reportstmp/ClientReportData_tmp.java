@@ -135,7 +135,7 @@ public class ClientReportData_tmp implements JRDataSource {
         }
 
         if (value instanceof String) {
-            value = ((String) value).trim();
+            value = BaseUtils.rtrim((String) value);
         }
 
         if(jrField.getDescription()!=null && Number.class.isAssignableFrom(jrField.getValueClass()) && jrField.getDescription().contains("@Z") && value == null) {

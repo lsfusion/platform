@@ -1,5 +1,6 @@
 package platform.client.form.renderer;
 
+import platform.base.BaseUtils;
 import platform.client.form.PropertyRendererComponent;
 import platform.interop.ComponentDesign;
 
@@ -29,7 +30,7 @@ public class StringPropertyRenderer extends LabelPropertyRenderer
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
         if (value != null) {
             setForeground(normalForeground);
-            setText(value.toString().trim());
+            setText(BaseUtils.rtrim(value.toString()));
         } else {
             setForeground(inactiveForeground);
             setText(EMPTY_STRING);

@@ -177,7 +177,7 @@ public abstract class GridTable extends ClientFormTable
             }
             value = df.format((Date) value);
         }
-        return (value != null) ? SwingUtils.toMultilineHtml(String.valueOf(value).trim(), getFont()) : null;
+        return (value != null) ? SwingUtils.toMultilineHtml(BaseUtils.rtrim(String.valueOf(value)), getFont()) : null;
     }
 
     private void initializeActionMap() {

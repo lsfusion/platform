@@ -62,7 +62,7 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
             }
 
             Object o = values.get(property).get(((TreeGroupNode) node).key);
-            return o instanceof String ? ((String) o).trim() : o;
+            return o instanceof String ? BaseUtils.rtrim((String) o) : o;
         }
         return node.toString();
     }

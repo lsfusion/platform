@@ -1,5 +1,7 @@
 package platform.client.form.tree;
 
+import platform.base.BaseUtils;
+
 import javax.swing.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -25,7 +27,7 @@ public class TreeTableTransferHandler extends TransferHandler {
                 return null;
             }
             if (value instanceof String) {
-                value = ((String)value).trim();
+                value = BaseUtils.rtrim((String) value);
             }
             return new StringSelection(value.toString());
         }

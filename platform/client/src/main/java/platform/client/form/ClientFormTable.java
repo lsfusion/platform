@@ -1,5 +1,6 @@
 package platform.client.form;
 
+import platform.base.BaseUtils;
 import platform.interop.KeyStrokes;
 
 import javax.swing.*;
@@ -47,7 +48,7 @@ public abstract class ClientFormTable extends JTable {
                         return null;
                     }
                     if (value instanceof String)
-                        value = ((String) value).trim();
+                        value = BaseUtils.rtrim((String) value);
                     return new StringSelection(value.toString());
                 }
 

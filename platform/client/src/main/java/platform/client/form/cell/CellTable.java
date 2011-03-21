@@ -60,7 +60,7 @@ public abstract class CellTable extends SingleCellTable
                 }
                 tooltip = df.format((Date) value);
             }
-            return SwingUtils.toMultilineHtml(tooltip.trim(), getFont());
+            return SwingUtils.toMultilineHtml(BaseUtils.rtrim(tooltip), getFont());
         } else {
             return null;
         }

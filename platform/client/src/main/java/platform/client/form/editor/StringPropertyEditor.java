@@ -1,5 +1,6 @@
 package platform.client.form.editor;
 
+import platform.base.BaseUtils;
 import platform.interop.ComponentDesign;
 
 import javax.swing.text.AttributeSet;
@@ -23,7 +24,7 @@ public class StringPropertyEditor extends TextFieldPropertyEditor {
         });
 
         if (value != null) {
-            setText(value.toString().trim());
+            setText(BaseUtils.rtrim(value.toString()));
         }
     }
 
