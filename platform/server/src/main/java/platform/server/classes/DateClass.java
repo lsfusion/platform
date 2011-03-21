@@ -11,7 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.Format;
-import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 public class DateClass extends DataClass<Date> {
 
@@ -85,12 +85,15 @@ public class DateClass extends DataClass<Date> {
     }
     
     public String getString(Object value, SQLSyntax syntax) {
+//        return "'" + value + "'";
         throw new RuntimeException("not supported");
     }
 
     public Object parseString(String s) throws ParseException {
         try {
-            return new SimpleDateFormat().parse(s);
+            DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
+            dateFormat.setTimeZone(Calendar.getInstance().getTimeZone());
+            return dateFormat.parse(s);
         } catch (Exception e) {
             throw new ParseException("error parsing date", e);
         }
