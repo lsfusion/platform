@@ -21,9 +21,7 @@ public class MultiAction implements Action {
     }
 
     public MultiAction(Action a) {
-        if (a != null) {
-            actionList.add(a);
-        }
+        actionList.add(a);
     }
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {

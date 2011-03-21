@@ -157,12 +157,23 @@ public abstract class ClientFormLayout extends JPanel {
     }
 
     public void addBinding(KeyStroke key, String id, AbstractAction action) {
+
         Object oldId = getInputMap(JPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).get(key);
-        String newId = oldId + " and " + id;
-        getInputMap(JPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(key, newId);
-        MultiAction oldAction = new MultiAction(getActionMap().get(oldId));
-        oldAction.addAction(action);
-        getActionMap().put(newId, oldAction);
+
+        String resultId = id;
+        Action resultAction = new ClientActionProxy(action);
+        if (oldId != null) {
+            Action oldAction = getActionMap().get(oldId);
+            if (oldAction != null) {
+                MultiAction multiAction = new MultiAction(oldAction);
+                multiAction.addAction(resultAction);
+                resultId += " and " + oldId;
+                resultAction = multiAction;
+            }
+        }
+
+        getInputMap(JPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(key, resultId);
+        getActionMap().put(resultId, resultAction);
     }
 
     private Map<KeyStroke, Map<ClientGroupObject, KeyListener>> bindings = new HashMap<KeyStroke, Map<ClientGroupObject, KeyListener>>();
