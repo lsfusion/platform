@@ -541,11 +541,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected LP webHost;
 
-    protected LP smtpHost;
-    protected LP smtpPort;
-    protected LP emailAccount;
-    protected LP emailPassword;
-    protected LP fromAddress;
+    public LP smtpHost;
+    public LP smtpPort;
+    public LP emailAccount;
+    public LP emailPassword;
+    public LP fromAddress;
     protected LP defaultCountry;
 
     protected LP sidCountry;
@@ -559,7 +559,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP termDictionary;
     protected LP translationDictionary;
     protected LP entryDictionary;
-    protected LP translationDictionaryTerm;
+    public LP translationDictionaryTerm;
 
     private LP selectRoleForms;
     private LP selectUserRoles;
