@@ -10,7 +10,7 @@
         <version>1.0</version>
         <relativePath>../base/pom.xml</relativePath>
     </parent>
-    <artifactId>api</artifactId>
+    <artifactId>jasperapi</artifactId>
     <packaging>jar</packaging>
     <name>Jasper API</name>
 
