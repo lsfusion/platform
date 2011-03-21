@@ -453,7 +453,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    public Map<List<Object>, List<Object>> groupData(Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap) {
+    public Map<List<Object>, List<Object>> groupData(Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap, boolean onlyNotNull) {
         try {
             Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>> toGroup = new OrderedMap<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>>();
             for (Integer id : groupMap.keySet()) {
@@ -477,7 +477,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 toSum.put(propertyDraw, list);
             }
 
-            return form.groupData(toGroup, toSum);
+            return form.groupData(toGroup, toSum, onlyNotNull);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

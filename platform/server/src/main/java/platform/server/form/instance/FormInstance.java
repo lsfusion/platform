@@ -454,7 +454,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     public Map<List<Object>, List<Object>> groupData(Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>> toGroup,
-                                                     Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>> toSum) throws SQLException {
+                                                     Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>> toSum, boolean onlyNotNull) throws SQLException {
         GroupObjectInstance groupObject = ((PropertyDrawInstance) toGroup.keySet().toArray()[0]).toDraw;
         Map<ObjectInstance, KeyExpr> mapKeys = groupObject.getMapKeys();
 
@@ -475,10 +475,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
         Query<Object, Object> query = new Query<Object, Object>(keyExprMap);
         for (PropertyDrawInstance property : toSum.keySet()) {
+            Expr exprQuant = GroupExpr.create(exprMap, new ValueExpr(1, IntegerClass.instance), groupObject.getWhere(mapKeys, this), false, keyExprMap);
+            query.and(exprQuant.getWhere());
             if (property == null) {
-                Expr exprQuant = GroupExpr.create(exprMap, new ValueExpr(1, IntegerClass.instance), groupObject.getWhere(mapKeys, this), false, keyExprMap);
                 query.properties.put("quant", exprQuant);
-                query.and(exprQuant.getWhere());
                 continue;
             }
             int i = 0;
@@ -490,7 +490,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 }
                 Expr expr = GroupExpr.create(exprMap, property.propertyObject.getExpr(keys, this), groupObject.getWhere(mapKeys, this), false, keyExprMap);
                 query.properties.put(property.getsID() + i, expr);
-                query.and(expr.getWhere());
+                if (onlyNotNull) {
+                    query.and(expr.getWhere());
+                }
             }
         }
 

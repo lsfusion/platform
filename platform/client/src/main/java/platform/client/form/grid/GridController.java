@@ -136,33 +136,34 @@ public class GridController {
         if (key.showGroupButton) {
             groupObjectController.addToToolbar(new GroupButton() {
                 public void addListener() {
-                    addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            try {
-                                dialog = new GroupButton.GroupDialog(Main.frame, table.getSelectedColumn(), table.getTableModel());
-                            } catch (IOException e1) {
-                                e1.printStackTrace();
-                            }
-                            dialog.addPropertyChangeListener(new PropertyChangeListener() {
-                                public void propertyChange(PropertyChangeEvent evt) {
-                                    Map<Integer, List<byte[]>> groupMap = dialog.getSelectedGroupMap();
-                                    Map<Integer, List<byte[]>> sumMap = dialog.getSelectedSumMap();
-
-                                    Map<List<Object>, List<Object>> resultMap = new OrderedMap<List<Object>, List<Object>>();
-                                    if (!groupMap.isEmpty() && !sumMap.isEmpty()) {
-                                        try {
-                                            resultMap = form.groupData(groupMap, sumMap);
-                                        } catch (IOException e1) {
-                                            e1.printStackTrace();
-                                        }
-                                    }
-                                    dialog.update(resultMap);
-                                }
-                            });
-                            dialog.setVisible(true);
+                addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        try {
+                            dialog = new GroupButton.GroupDialog(Main.frame, table);
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
                         }
-                    });
-                }
+                        dialog.addPropertyChangeListener(new PropertyChangeListener() {
+                            public void propertyChange(PropertyChangeEvent evt) {
+                                Map<Integer, List<byte[]>> groupMap = dialog.getSelectedGroupMap();
+                                Map<Integer, List<byte[]>> sumMap = dialog.getSelectedSumMap();
+                                boolean onlyNotNull = dialog.onlyNotNull();
+
+                                Map<List<Object>, List<Object>> resultMap = new OrderedMap<List<Object>, List<Object>>();
+                                if (!groupMap.isEmpty() && !sumMap.isEmpty()) {
+                                    try {
+                                        resultMap = form.groupData(groupMap, sumMap, onlyNotNull);
+                                    } catch (IOException e1) {
+                                        e1.printStackTrace();
+                                    }
+                                }
+                                dialog.update(resultMap);
+                            }
+                        });
+                        dialog.setVisible(true);
+                    }
+                });
+            }
             });
         }
 

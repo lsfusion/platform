@@ -622,8 +622,8 @@ public class ClientFormController {
         return remoteForm.calculateSum(propertyID, columnKeys);
     }
 
-    public Map<List<Object>, List<Object>> groupData(Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap) throws IOException {
-        return remoteForm.groupData(groupMap, sumMap);
+    public Map<List<Object>, List<Object>> groupData(Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap, boolean onlyNotNull) throws IOException {
+        return remoteForm.groupData(groupMap, sumMap, onlyNotNull);
     }
 
     public void changePageSize(ClientGroupObject groupObject, Integer pageSize) throws IOException {
