@@ -1,4 +1,4 @@
-package platform.server.logics;
+package platform.server.logics.property.actions;
 
 import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
@@ -12,6 +12,8 @@ import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.PropertyObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 

@@ -1,4 +1,4 @@
-package platform.server.remote;
+package platform.server.form.instance.remote;
 
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;

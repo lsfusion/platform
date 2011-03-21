@@ -26,7 +26,7 @@ import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
-import platform.server.logics.EmailActionProperty;
+import platform.server.logics.property.actions.EmailActionProperty;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;

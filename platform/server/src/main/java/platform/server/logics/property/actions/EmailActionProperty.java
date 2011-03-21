@@ -1,4 +1,4 @@
-package platform.server.logics;
+package platform.server.logics.property.actions;
 
 import net.sf.jasperreports.engine.JRAbstractExporter;
 import net.sf.jasperreports.engine.JRExporterParameter;
@@ -13,7 +13,10 @@ import platform.base.ByteArray;
 import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.interop.form.RemoteFormInterface;
-import platform.server.EmailSender;
+import platform.server.logics.BusinessLogics;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
+import platform.server.mail.EmailSender;
 import platform.server.classes.StringClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;

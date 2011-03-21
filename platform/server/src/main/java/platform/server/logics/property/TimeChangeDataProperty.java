@@ -1,9 +1,7 @@
 package platform.server.logics.property;
 
-import platform.server.classes.DoubleClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.Time;
-import platform.server.logics.SessionDataProperty;
 
 import java.util.HashMap;
 import java.util.List;

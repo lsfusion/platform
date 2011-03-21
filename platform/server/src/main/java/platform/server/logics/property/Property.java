@@ -28,7 +28,6 @@ import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.SessionDataProperty;
 import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.logics.table.MapKeysTable;

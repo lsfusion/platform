@@ -10,7 +10,6 @@ import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
-import platform.server.logics.SessionDataProperty;
 
 public class SelectionProperty extends SessionDataProperty {
 

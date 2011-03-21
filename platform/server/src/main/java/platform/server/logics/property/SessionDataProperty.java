@@ -1,4 +1,4 @@
-package platform.server.logics;
+package platform.server.logics.property;
 
 import platform.base.BaseUtils;
 import platform.server.caches.hash.HashValues;
@@ -7,7 +7,6 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.WhereBuilder;
-import platform.server.logics.property.*;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
 import platform.server.session.ExprChanges;

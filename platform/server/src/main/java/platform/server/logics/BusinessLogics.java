@@ -2,8 +2,6 @@ package platform.server.logics;
 
 import net.sf.jasperreports.engine.JRException;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.xml.XmlBeanFactory;
-import org.springframework.core.io.FileSystemResource;
 import platform.base.*;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
@@ -17,7 +15,6 @@ import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.RemoteObject;
-import platform.interop.remote.ServerSocketFactory;
 import platform.server.Settings;
 import platform.server.auth.PolicyManager;
 import platform.server.auth.SecurityPolicy;
@@ -54,8 +51,6 @@ import platform.server.logics.property.group.PropertySet;
 import platform.server.logics.scheduler.Scheduler;
 import platform.server.logics.table.ImplementTable;
 import platform.server.logics.table.TableFactory;
-import platform.server.net.ServerInstanceLocator;
-import platform.server.net.ServerInstanceLocatorSettings;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.DataSession;
 
@@ -64,10 +59,6 @@ import java.awt.event.KeyEvent;
 import java.io.*;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.RMIFailureHandler;
-import java.rmi.server.RMISocketFactory;
 import java.sql.SQLException;
 import java.util.*;
 

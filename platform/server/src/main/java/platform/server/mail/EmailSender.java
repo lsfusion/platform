@@ -1,10 +1,10 @@
-package platform.server;
+package platform.server.mail;
 
 
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.base.ByteArray;
-import platform.server.logics.EmailActionProperty;
+import platform.server.logics.property.actions.EmailActionProperty;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
