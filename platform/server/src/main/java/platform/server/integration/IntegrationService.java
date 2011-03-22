@@ -2,7 +2,6 @@ package platform.server.integration;
 
 import platform.server.classes.IntegerClass;
 import platform.server.data.query.Query;
-import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -32,7 +31,7 @@ public class IntegrationService {
         this.keys = keys;
     }
 
-    public void synchronizeQuery(boolean addNew, boolean updateExisting, boolean deleteOld) throws SQLException {
+    public void synchronize(boolean addNew, boolean updateExisting, boolean deleteOld) throws SQLException {
 
         SingleKeyTableUsage<ImportField> importTable = new SingleKeyTableUsage<ImportField>(IntegerClass.instance, table.fields, ImportField.typeGetter);
 
@@ -54,58 +53,6 @@ public class IntegrationService {
         for (ImportProperty<?> property : properties)
             propertyChanges = propertyChanges.add((MapDataChanges<PropertyInterface>) property.synchronize(session, importTable, addedKeys));
         session.execute(propertyChanges, null, null);
-    }
-
-    public void synchronize(boolean addNew, boolean updateExisting, boolean deleteOld) throws SQLException {
-
-        synchronizeQuery(addNew, updateExisting, deleteOld);
-        if(1==1) return;
-
-        Map<ImportKey, List<DataObject>> keyValueLists = new HashMap<ImportKey, List<DataObject>>();
-        for (ImportKey<?> key : keys) {
-            keyValueLists.put(key, new ArrayList<DataObject>());
-        }
-        for (ImportTable.Row row : table) {
-            Map<ImportKeyInterface, DataObject> keyValues = new HashMap<ImportKeyInterface, DataObject>();
-            boolean processRow = true;
-            for (ImportKey<?> key : keys) {
-                Object value = key.readValue(session, row);
-                if (value != null) {
-                    if (!updateExisting) {
-                        processRow = false;
-                        break;
-                    }
-                    keyValues.put(key, session.getDataObject(value, ObjectType.instance));
-                } else {
-                    if (!addNew) {
-                        processRow = false;
-                        break;
-                    } else {
-                        DataObject newObject = session.addObject(key.getCustomClass(), session.modifier);
-                        key.writeValue(session, row, newObject);
-                        keyValues.put(key, newObject);
-                    }
-                }
-                keyValueLists.get(key).add(keyValues.get(key));
-            }
-
-            if (processRow) {
-                for (ImportProperty<?> property : properties) {
-                    DataObject dataObject = property.getImportField().getDataObject(row);
-                    Object value = (dataObject == null ? null : dataObject.object);
-
-                    if (property.getConverter() != null) {
-                        value = property.convertValue(session, keyValues);
-                    }
-
-                    property.writeValue(session, keyValues, value);
-                }
-            }
-        }
-
-        if (deleteOld) {
-            deleteOldObjects(keyValueLists);
-        }
     }
 
     private void deleteOldObjects(Map<ImportKey, List<DataObject>> keyValueLists) throws SQLException {

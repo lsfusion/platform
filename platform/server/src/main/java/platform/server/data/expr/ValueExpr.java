@@ -6,6 +6,7 @@ import platform.base.TwinImmutableInterface;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.DoubleClass;
+import platform.server.classes.IntegerClass;
 import platform.server.classes.LogicalClass;
 import platform.server.data.Value;
 import platform.server.data.expr.where.MapWhere;
@@ -33,6 +34,8 @@ public class ValueExpr extends AbstractValueExpr implements Value {
     public static Expr get(Where where) {
         return TRUE.and(where);
     }
+
+    public static SystemValueExpr COUNT = new SystemValueExpr(1, IntegerClass.instance);
 
     public ConcreteClass getStaticClass() {
         return objectClass;

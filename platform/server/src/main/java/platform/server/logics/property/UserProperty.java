@@ -47,6 +47,9 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
     @Override
     protected MapDataChanges<ClassPropertyInterface> calculateDataChanges(PropertyChange<ClassPropertyInterface> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
         change = change.and(ValueClassProperty.getIsClassWhere(change.mapKeys, modifier, null).and(modifier.getSession().getIsClassWhere(change.expr, getValueClass(), null).or(change.expr.getWhere().not())));
+        if(change.where.isFalse()) // чтобы не плодить пустые change'и
+            return new MapDataChanges<ClassPropertyInterface>();
+
         if(changedWhere !=null) changedWhere.add(change.where); // помечаем что можем обработать тока подходящие по интерфейсу классы
         // изменяет себя, если классы совпадают
         return new MapDataChanges<ClassPropertyInterface>(new DataChanges(this, change), Collections.singletonMap(this, getIdentityInterfaces()));

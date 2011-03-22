@@ -65,12 +65,6 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
             PropertyField priceField = new PropertyField("price", priceClass);
             PropertyField noDiscField = new PropertyField("nodisc", LogicalClass.instance);
 
-            Map<PropertyField, ClassWhere<Field>> classProperties = new HashMap<PropertyField, ClassWhere<Field>>();
-
-            classProperties.put(nameField, new ClassWhere<Field>(barcodeField, barcodeClass).and(new ClassWhere<Field>(nameField, nameClass)));
-            classProperties.put(priceField, new ClassWhere<Field>(barcodeField, barcodeClass).and(new ClassWhere<Field>(priceField, priceClass)));
-            classProperties.put(noDiscField, new ClassWhere<Field>(barcodeField, barcodeClass).and(new ClassWhere<Field>(noDiscField, LogicalClass.instance)));
-
             DataSession session = BL.createSession();
 
             SingleKeyTableUsage<PropertyField> table = new SingleKeyTableUsage<PropertyField>(barcodeClass, BaseUtils.toList(nameField, priceField, noDiscField), Field.<PropertyField>typeGetter());

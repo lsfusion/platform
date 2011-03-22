@@ -9,13 +9,12 @@ import platform.server.data.SQLSession;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
-import platform.server.session.Changes;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
+import platform.server.session.*;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -191,4 +190,12 @@ public class LP<T extends PropertyInterface> {
             propertyMapping.put(listInterfaces.get(i), mapping[i]);
         return new PropertyImplement<U, T>(property, propertyMapping);
     }
+
+    public MapDataChanges<T> getDataChanges(Expr expr, Where where, Modifier<? extends Changes> modifier, KeyExpr... keys) {
+        Map<T, KeyExpr> mapKeys = new HashMap<T, KeyExpr>();
+        for(int i=0;i<listInterfaces.size();i++)
+            mapKeys.put(listInterfaces.get(i), keys[i]);
+        return property.getDataChanges(new PropertyChange<T>(mapKeys, expr, where), null, modifier);
+    }
+
 }

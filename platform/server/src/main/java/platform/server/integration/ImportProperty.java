@@ -44,10 +44,6 @@ public class ImportProperty <P extends PropertyInterface> {
         return converter;
     }
 
-    public ImportFieldInterface getImportField() {
-        return importField;
-    }
-
     Object convertValue(DataSession session, Map<ImportKeyInterface, DataObject> keyValues) throws SQLException {
         Map<P, DataObject> mapping =
                 BaseUtils.join(getConverter().mapping, createMapping(getConverter().mapping.values(), keyValues));
