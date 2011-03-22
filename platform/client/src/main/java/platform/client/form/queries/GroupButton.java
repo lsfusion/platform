@@ -49,6 +49,7 @@ public abstract class GroupButton extends JButton {
         List<JCheckBox> groupChecks = new ArrayList<JCheckBox>();
         List<JCheckBox> sumChecks = new ArrayList<JCheckBox>();
         JCheckBox notNullCheck = new JCheckBox("Только заполненные");
+        JLabel recordCountLabel;
         JScrollPane scroll;
         final int RECORD_QUANTITY_ID = -1;
 
@@ -57,7 +58,7 @@ public abstract class GroupButton extends JButton {
             this.table = table;
             this.tableModel = table.getTableModel();
 
-            setMinimumSize(new Dimension(550, 300));
+            setMinimumSize(new Dimension(670, 300));
             Rectangle bounds = owner.getBounds();
             bounds.x += 20;
             bounds.y += 20;
@@ -124,7 +125,11 @@ public abstract class GroupButton extends JButton {
                     }
                 }
             });
+            recordCountLabel = new JLabel();
+            JPanel labelPanel = new JPanel();
+            labelPanel.add(recordCountLabel);
             checkNButtonPanel.add(notNullCheck, BorderLayout.WEST);
+            checkNButtonPanel.add(labelPanel, BorderLayout.CENTER);
             checkNButtonPanel.add(execute, BorderLayout.EAST);
 
             JPanel westPanel = new JPanel();
@@ -267,6 +272,7 @@ public abstract class GroupButton extends JButton {
                 column.setMaxWidth(maxSizes.get(i));
             }
             scroll.setViewportView(table);
+            recordCountLabel.setText("Всего записей: " + table.getRowCount());
         }
 
         public class CustomModel extends AbstractTableModel {

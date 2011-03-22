@@ -133,7 +133,7 @@ public class GridController {
             });
         }
 
-        if (key.showGroupButton) {
+        if (key.showGroup) {
             groupObjectController.addToToolbar(new GroupButton() {
                 public void addListener() {
                 addActionListener(new ActionListener() {

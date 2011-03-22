@@ -1,7 +1,6 @@
 package platform.client.logics;
 
 import platform.client.descriptor.FormDescriptor;
-import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.editor.GridEditor;
 import platform.base.context.ApplicationContext;
 import platform.client.serialization.ClientSerializationPool;
@@ -18,7 +17,7 @@ public class ClientGrid extends ClientComponent {
     public boolean showFilter;
     public boolean showCountQuantity;
     public boolean showCalculateSum;
-    public boolean showGroupButton;
+    public boolean showGroup;
 
     public byte minRowCount;
     public boolean tabVertical = false;
@@ -45,7 +44,7 @@ public class ClientGrid extends ClientComponent {
         outStream.writeBoolean(showFilter);
         outStream.writeBoolean(showCountQuantity);
         outStream.writeBoolean(showCalculateSum);
-        outStream.writeBoolean(showGroupButton);
+        outStream.writeBoolean(showGroup);
 
         outStream.writeByte(minRowCount);
         outStream.writeBoolean(tabVertical);
@@ -62,7 +61,7 @@ public class ClientGrid extends ClientComponent {
         showFilter = inStream.readBoolean();
         showCountQuantity = inStream.readBoolean();
         showCalculateSum = inStream.readBoolean();
-        showGroupButton = inStream.readBoolean();
+        showGroup = inStream.readBoolean();
 
         minRowCount = inStream.readByte();
         tabVertical = inStream.readBoolean();
@@ -101,6 +100,33 @@ public class ClientGrid extends ClientComponent {
 
     public boolean getShowFilter() {
         return showFilter;
+    }
+
+    public void setShowCountQuantity(boolean showCountQuantity) {
+        this.showCountQuantity = showCountQuantity;
+        updateDependency(this, "showCountQuantity");
+    }
+
+    public boolean getShowCountQuantity() {
+        return showCountQuantity;
+    }
+
+    public void setShowCalculateSum(boolean showCalculateSum) {
+        this.showCalculateSum = showCalculateSum;
+        updateDependency(this, "showCalculateSum");
+    }
+
+    public boolean getShowCalculateSum() {
+        return showCalculateSum;
+    }
+
+    public void setShowGroup(boolean showGroupButton) {
+        this.showGroup = showGroupButton;
+        updateDependency(this, "showGroup");
+    }
+
+    public boolean getShowGroup() {
+        return showGroup;
     }
 
     public void setTabVertical(boolean tabVertical) {
