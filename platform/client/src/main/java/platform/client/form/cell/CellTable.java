@@ -50,15 +50,12 @@ public abstract class CellTable extends SingleCellTable
 
     @Override
     public String getToolTipText(MouseEvent e) {
+        ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
         String tooltip;
         if (!BaseUtils.isRedundantString(value)) {
             tooltip = value.toString();
             if (value instanceof Date) {
-                DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT);
-                if (Main.timeZone != null) {
-                    df.setTimeZone(Main.timeZone);
-                }
-                tooltip = df.format((Date) value);
+                tooltip = Main.formatDate(value);
             }
             return SwingUtils.toMultilineHtml(BaseUtils.rtrim(tooltip), getFont());
         } else {

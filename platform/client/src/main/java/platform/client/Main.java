@@ -30,6 +30,8 @@ import java.rmi.RemoteException;
 import java.rmi.server.RMIClassLoader;
 import java.rmi.server.RMIFailureHandler;
 import java.rmi.server.RMISocketFactory;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -339,5 +341,13 @@ public class Main {
         boolean isFull();
 
         SwingWorker<List<ServerInfo>, ServerInfo> getServerHostEnumerator(MutableComboBoxModel serverHostModel, String waitMessage);
+    }
+
+    public static String formatDate(Object date) {
+        DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT);
+        if (timeZone != null) {
+            df.setTimeZone(Main.timeZone);
+        }
+        return df.format((Date) date);
     }
 }

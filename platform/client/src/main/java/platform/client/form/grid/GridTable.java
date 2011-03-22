@@ -166,16 +166,13 @@ public abstract class GridTable extends ClientFormTable
 
     @Override
     public String getToolTipText(MouseEvent e) {
+        ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
         java.awt.Point p = e.getPoint();
         int rowIndex = rowAtPoint(p);
         int colIndex = columnAtPoint(p);
         Object value = (rowIndex != -1 && colIndex != -1) ? getValueAt(rowIndex, colIndex) : null;
         if (value instanceof Date) {
-            DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT);
-            if (Main.timeZone != null) {
-                df.setTimeZone(Main.timeZone);
-            }
-            value = df.format((Date) value);
+            value = Main.formatDate(value);
         }
         return (value != null) ? SwingUtils.toMultilineHtml(BaseUtils.rtrim(String.valueOf(value)), getFont()) : null;
     }

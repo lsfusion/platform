@@ -176,6 +176,7 @@ public class TableCellView extends JPanel implements CellView {
     }
 
     public void setToolTip(String caption) {
+        ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
         String toolTip = !BaseUtils.isRedundantString(key.toolTip) ? key.toolTip : caption;
         toolTip += " (sID: " + key.getSID() + ")";
         label.setToolTipText(toolTip);
