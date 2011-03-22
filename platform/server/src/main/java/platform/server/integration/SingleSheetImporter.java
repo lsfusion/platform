@@ -3,6 +3,7 @@ package platform.server.integration;
 import platform.base.OrderedMap;
 import platform.base.Pair;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -56,11 +57,11 @@ public abstract class SingleSheetImporter {
         }
     }
 
-    protected String getCellString(int row, int column) {
-        return inputTable.getCellString(row, column);
+    protected String getCellString(ImportField field, int row, int column) throws ParseException {
+        return inputTable.getCellString(field, row, column);
     }
 
-    public ImportTable getTable() throws platform.server.data.type.ParseException {
+    public ImportTable getTable() throws ParseException, platform.server.data.type.ParseException {
         List<List<Object>> data = new ArrayList<List<Object>>();
         currentRow = -1;
 
@@ -70,7 +71,7 @@ public abstract class SingleSheetImporter {
                 List<Object> row = new ArrayList<Object>();
                 for (Map.Entry<ImportField, Pair<Integer, Integer>> entry : fieldPosition.entrySet()) {
                     ImportField field = entry.getKey();
-                    String cellValue = getCellString(i, entry.getValue().first);
+                    String cellValue = getCellString(field, i, entry.getValue().first);
                     String transformedValue = transformValue(i, entry.getValue().first, entry.getValue().second, cellValue);
                     row.add(getResultObject(field, transformedValue));
                 }

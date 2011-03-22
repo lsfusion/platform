@@ -1,7 +1,10 @@
 package roman;
 
+import platform.server.integration.ImportField;
 import platform.server.integration.ImportInputTable;
 import platform.server.integration.SingleSheetImporter;
+
+import java.text.ParseException;
 
 /**
  * User: DAle
@@ -24,13 +27,13 @@ public class MexxInvoiceImporter extends SingleSheetImporter {
     }
 
     @Override
-    protected String getCellString(int row, int column) {
+    protected String getCellString(ImportField field, int row, int column) throws ParseException {
         if (column == WEIGHT) {
-            double weight = Double.parseDouble(super.getCellString(row, WEIGHT));
-            double cnt = Double.parseDouble(super.getCellString(row, SHIP_PCS));
+            double weight = Double.parseDouble(super.getCellString(field, row, WEIGHT));
+            double cnt = Double.parseDouble(super.getCellString(field, row, SHIP_PCS));
             return String.valueOf(weight / cnt);
         } else if (column <= LAST_COLUMN) {
-            return super.getCellString(row, column);
+            return super.getCellString(field, row, column);
         } else if (column == LAST_COLUMN + 1) {
             return String.valueOf(currentRow + 1);
         } else {

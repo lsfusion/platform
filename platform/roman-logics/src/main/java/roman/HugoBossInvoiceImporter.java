@@ -1,8 +1,11 @@
 package roman;
 
 import platform.base.BaseUtils;
+import platform.server.integration.ImportField;
 import platform.server.integration.ImportInputTable;
 import platform.server.integration.SingleSheetImporter;
+
+import java.text.ParseException;
 
 /**
  * User: DAle
@@ -25,11 +28,11 @@ public class HugoBossInvoiceImporter extends SingleSheetImporter {
     }
 
     @Override
-    protected String getCellString(int row, int column) {
+    protected String getCellString(ImportField field, int row, int column) throws ParseException {
         if (column == LAST_COLUMN + 1) {
             return "";
         }
-        return super.getCellString(row, column);
+        return super.getCellString(field, row, column);
     }
 
     @Override

@@ -33,6 +33,10 @@ public class CSVInputTable implements ImportInputTable {
         return data.get(row).get(column);
     }
 
+    public String getCellString(ImportField field, int row, int column) {
+        return getCellString(row, column);
+    }
+
     public int rowsCnt() {
         return data.size();
     }

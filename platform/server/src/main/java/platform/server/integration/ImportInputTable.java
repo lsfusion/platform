@@ -1,5 +1,7 @@
 package platform.server.integration;
 
+import java.text.ParseException;
+
 /**
  * User: DAle
  * Date: 24.02.11
@@ -8,6 +10,8 @@ package platform.server.integration;
 
 public interface ImportInputTable {
     public String getCellString(int row, int column);
+    public String getCellString(ImportField field, int row, int column) throws ParseException;
+
     public int rowsCnt();
     public int columnsCnt();
 }

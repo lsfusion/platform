@@ -1,7 +1,10 @@
 package roman;
 
+import platform.server.integration.ImportField;
 import platform.server.integration.ImportInputTable;
 import platform.server.integration.SingleSheetImporter;
+
+import java.text.ParseException;
 
 /**
  * User: DAle
@@ -22,11 +25,11 @@ public class TallyWeijlInvoiceImporter extends SingleSheetImporter {
     }
 
     @Override
-    protected String getCellString(int row, int column) {
+    protected String getCellString(ImportField field, int row, int column) throws ParseException {
         if (column == LAST_COLUMN + 1) {
             return String.valueOf(currentRow + 1);
         }
-        return super.getCellString(row, column);
+        return super.getCellString(field, row, column);
     }
 
     @Override
@@ -39,7 +42,6 @@ public class TallyWeijlInvoiceImporter extends SingleSheetImporter {
                     case 0: return value.substring(0, Math.min(10, value.length())); // customs code
                     case 1: return value.substring(0, Math.min(6, value.length())); // customs code 6
                 }
-            case X: case AD: return value.replace(',', '.');
             case Q:
                 int lastBackslashPos = value.lastIndexOf('\\');
                 return (lastBackslashPos == -1 ? value : value.substring(0, lastBackslashPos));

@@ -25,7 +25,6 @@ public class JennyferWeightInvoiceImporter extends SingleSheetImporter {
 
         switch (column) {
             case C: return value.replaceAll("\\D", "").substring(0, Math.min(6, value.length()));
-            case N: return value.replace(',', '.');
             default: return value;
         }
     }

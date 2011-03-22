@@ -1,7 +1,10 @@
 package roman;
 
+import platform.server.integration.ImportField;
 import platform.server.integration.ImportInputTable;
 import platform.server.integration.SingleSheetImporter;
+
+import java.text.ParseException;
 
 /**
  * User: DAle
@@ -22,9 +25,9 @@ public class JennyferInvoiceImporter extends SingleSheetImporter {
     }
 
     @Override
-    protected String getCellString(int row, int column) {
+    protected String getCellString(ImportField field, int row, int column) throws ParseException {
         if (column <= LAST_COLUMN) {
-            return super.getCellString(row, column);
+            return super.getCellString(field, row, column);
         } else if (column == LAST_COLUMN + 1) {
             return String.valueOf(currentRow + 1);
         } else {
@@ -47,7 +50,6 @@ public class JennyferInvoiceImporter extends SingleSheetImporter {
                     case 0: return value.substring(0, Math.min(10, value.length())); // customs code
                     case 1: return value.substring(0, Math.min(6, value.length())); // customs code 6
                 }
-            case N: case O: return value.replace(',', '.');
             case E:
                 switch (part) {
                     case 0: return value.substring(value.indexOf(' ') + 1, value.lastIndexOf(' ')).trim(); // color

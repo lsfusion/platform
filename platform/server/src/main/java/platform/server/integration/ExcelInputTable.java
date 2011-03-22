@@ -1,11 +1,17 @@
 package platform.server.integration;
 
-import jxl.Workbook;
+import jxl.*;
 import jxl.read.biff.BiffException;
+import platform.server.classes.DateClass;
+import platform.server.classes.DoubleClass;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * User: DAle
@@ -35,6 +41,20 @@ public class ExcelInputTable implements ImportInputTable {
 
     public String getCellString(int row, int column) {
         return sheet.getCell(column, row).getContents();
+    }
+
+    public String getCellString(ImportField field, int row, int column) throws ParseException {
+        Cell cell = sheet.getCell(column, row);
+        if (field.getType() == DoubleClass.instance && cell.getType() == CellType.NUMBER) {
+            return String.valueOf(((NumberCell) cell).getValue());
+        } else if (field.getType() == DateClass.instance && cell.getType() == CellType.DATE) {
+            Date date = ((DateCell) cell).getDate();
+            DateFormat format = DateFormat.getDateInstance(DateFormat.SHORT);
+            format.setTimeZone(TimeZone.getTimeZone("GMT"));
+            return format.format(date);
+        } else {
+            return getCellString(row, column);
+        }
     }
 
     public int rowsCnt() {
