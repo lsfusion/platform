@@ -164,15 +164,6 @@ public abstract class GridTable extends ClientFormTable
             });
         }
 
-        if (groupObject.pageSize != 0) {
-            addMouseWheelListener(new MouseWheelListener() {
-                @Override
-                public void mouseWheelMoved(MouseWheelEvent e) {
-                    selectRow(max(0, min(getRowCount() - 1, getSelectedRow() + e.getWheelRotation())));
-                }
-            });
-        }
-
         initializeActionMap();
     }
 
@@ -754,9 +745,16 @@ public abstract class GridTable extends ClientFormTable
         }
     }
 
-    public void configureViewport(final JViewport viewport) {
+    public void configureWheelScrolling(final JViewport viewport) {
         assert viewport == getParent();
         if (groupObject.pageSize != 0) {
+            addMouseWheelListener(new MouseWheelListener() {
+                @Override
+                public void mouseWheelMoved(MouseWheelEvent e) {
+                    selectRow(max(0, min(getRowCount() - 1, getSelectedRow() + e.getWheelRotation())));
+                }
+            });
+
             viewport.addChangeListener(new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent e) {
