@@ -12,6 +12,7 @@ import platform.client.form.cell.ClientAbstractCellRenderer;
 import platform.client.form.queries.QueryView;
 import platform.client.form.sort.GridHeaderMouseListener;
 import platform.client.form.sort.MultiLineHeaderRenderer;
+import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.interop.KeyStrokes;
@@ -19,9 +20,7 @@ import platform.interop.Order;
 import platform.interop.Scroll;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
+import javax.swing.event.*;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
@@ -32,6 +31,9 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.*;
 import java.util.List;
+
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 public abstract class GridTable extends ClientFormTable
         implements CellTableInterface {
@@ -65,8 +67,9 @@ public abstract class GridTable extends ClientFormTable
     private boolean tabVertical = false;
 
     private int viewMoveInterval = 0;
+    private ClientGroupObject groupObject;
 
-    public GridTable(GroupObjectController groupObjectController, ClientFormController iform) {
+    public GridTable(GroupObjectController igroupObjectController, ClientFormController iform) {
         super(new GridTableModel());
 
         setAutoCreateColumnsFromModel(false);
@@ -75,8 +78,9 @@ public abstract class GridTable extends ClientFormTable
 
         model = (GridTableModel) getModel();
 
-        this.groupObjectController = groupObjectController;
+        groupObjectController = igroupObjectController;
         form = iform;
+        groupObject = groupObjectController.getGroupObject();
 
         getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
@@ -141,7 +145,7 @@ public abstract class GridTable extends ClientFormTable
                 int newPageSize = getParent().getHeight() / getRowHeight() + 1;
                 if (newPageSize != pageSize) {
                     try {
-                        form.changePageSize(GridTable.this.groupObjectController.getGroupObject(), newPageSize);
+                        form.changePageSize(groupObject, newPageSize);
                         pageSize = newPageSize;
                     } catch (IOException e) {
                         throw new RuntimeException("Ошибка при изменении размера страницы", e);
@@ -156,6 +160,15 @@ public abstract class GridTable extends ClientFormTable
                     if (e.getClickCount() > 1) {
                         form.okPressed();
                     }
+                }
+            });
+        }
+
+        if (groupObject.pageSize != 0) {
+            addMouseWheelListener(new MouseWheelListener() {
+                @Override
+                public void mouseWheelMoved(MouseWheelEvent e) {
+                    selectRow(max(0, min(getRowCount() - 1, getSelectedRow() + e.getWheelRotation())));
                 }
             });
         }
@@ -215,7 +228,7 @@ public abstract class GridTable extends ClientFormTable
     }
 
     int getID() {
-        return groupObjectController.getGroupObject().getID();
+        return groupObject.getID();
     }
 
     @Override
@@ -229,7 +242,7 @@ public abstract class GridTable extends ClientFormTable
     }
 
     public void updateTable() {
-        model.update(groupObjectController.getGroupObject(), properties, rowKeys, columnKeys, captions, values, rowHighlights, cellHighlights);
+        model.update(groupObject, properties, rowKeys, columnKeys, captions, values, rowHighlights, cellHighlights);
 
         refreshColumnModel();
         adjustSelection();
@@ -238,8 +251,8 @@ public abstract class GridTable extends ClientFormTable
         // так делается, потому что почему-то сам JTable ну ни в какую не хочет изменять свою высоту (getHeight())
         // приходится это делать за него, а то JViewPort смотрит именно на getHeight()
 //        setSize(getWidth(), getRowHeight() * getRowCount());
-        if (groupObjectController.getGroupObject().tableRowsCount >= 0) {
-            int count = groupObjectController.getGroupObject().tableRowsCount == 0 ? getRowCount() : groupObjectController.getGroupObject().tableRowsCount;
+        if (groupObject.tableRowsCount >= 0) {
+            int count = groupObject.tableRowsCount == 0 ? getRowCount() : groupObject.tableRowsCount;
             int height = count * (getRowHeight() + 1) + getTableHeader().getPreferredSize().height;
             groupObjectController.getGridView().pane.setMinimumSize(new Dimension(getMinimumSize().width, height));
             groupObjectController.getGridView().pane.setPreferredSize(new Dimension(getPreferredSize().width, height + 2));
@@ -250,14 +263,14 @@ public abstract class GridTable extends ClientFormTable
     public void changeCurrentObject() {
         final ClientGroupObjectValue changeObject = getSelectedObject();
         if (changeObject != null) {
-            SwingUtils.invokeLaterSingleAction(groupObjectController.getGroupObject().getActionID()
+            SwingUtils.invokeLaterSingleAction(groupObject.getActionID()
                     , new ActionListener() {
                         public void actionPerformed(ActionEvent ae) {
                             try {
                                 ClientGroupObjectValue newCurrentObject = getSelectedObject();
                                 if (changeObject.equals(newCurrentObject)) {
                                     selectObject(newCurrentObject);
-                                    form.changeGroupObject(groupObjectController.getGroupObject(), getSelectedObject());
+                                    form.changeGroupObject(groupObject, getSelectedObject());
                                 }
                             } catch (IOException e) {
                                 throw new RuntimeException("Ошибка при изменении текущего объекта", e);
@@ -447,12 +460,12 @@ public abstract class GridTable extends ClientFormTable
         try {
             // Отдельно обработаем CTRL + HOME и CTRL + END
             if (ks.equals(KeyStrokes.getCtrlHome())) {
-                form.changeGroupObject(groupObjectController.getGroupObject(), Scroll.HOME);
+                form.changeGroupObject(groupObject, Scroll.HOME);
                 return true;
             }
 
             if (ks.equals(KeyStrokes.getCtrlEnd())) {
-                form.changeGroupObject(groupObjectController.getGroupObject(), Scroll.END);
+                form.changeGroupObject(groupObject, Scroll.END);
                 return true;
             }
         } catch (IOException ioe) {
@@ -537,7 +550,7 @@ public abstract class GridTable extends ClientFormTable
             isInternalNavigating = true;
             changeSelection(row, column, false, false);
             isInternalNavigating = false;
-            SwingUtils.stopSingleAction(groupObjectController.getGroupObject().getActionID(), false);
+            SwingUtils.stopSingleAction(groupObject.getActionID(), false);
             return true;
         } else if (editEvent instanceof KeyEvent && cellEditor != null) {
             if (!cellEditor.editPerformed && cellEditor.isCellEditable(editEvent)) {
@@ -741,6 +754,29 @@ public abstract class GridTable extends ClientFormTable
         }
     }
 
+    public void configureViewport(final JViewport viewport) {
+        assert viewport == getParent();
+        if (groupObject.pageSize != 0) {
+            viewport.addChangeListener(new ChangeListener() {
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    Rectangle viewRect = viewport.getViewRect();
+                    int currRow = getSelectedRow();
+                    if (currRow != -1) {
+                        int firstRow = rowAtPoint(new Point(0, viewRect.y + getRowHeight() - 1));
+                        int lastRow = rowAtPoint(new Point(0, viewRect.y + viewRect.height - getRowHeight() + 1));
+
+                        if (currRow > lastRow) {
+                            selectRow(lastRow);
+                        } else if (currRow < firstRow) {
+                            selectRow(firstRow);
+                        }
+                    }
+                }
+            });
+        }
+    }
+
     private class GoToCellAction extends AbstractAction {
         private boolean isNext;
 
@@ -776,7 +812,6 @@ public abstract class GridTable extends ClientFormTable
                 num = 0;
             }
             return num;
-            //changeSelection(num / getColumnCount(), num % getColumnCount(), false, false);
         }
 
         public void actionPerformed(ActionEvent e) {

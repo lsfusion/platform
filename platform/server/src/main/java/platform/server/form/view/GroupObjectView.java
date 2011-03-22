@@ -97,10 +97,11 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
         boolean needVScroll;
         if (needVerticalScroll == null) {
-            needVScroll = (entity.pageSize != null && entity.pageSize == 0) ? true : false;
+            needVScroll = (entity.pageSize != null && entity.pageSize == 0);
         } else {
             needVScroll = needVerticalScroll;
         }
+        pool.writeInt(outStream, entity.pageSize);
         outStream.writeBoolean(needVScroll);
         outStream.writeInt(tableRowsCount == null ? -1 : tableRowsCount);
     }

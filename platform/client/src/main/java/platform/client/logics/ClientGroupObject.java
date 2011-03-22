@@ -29,6 +29,7 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
 
     public ClientTreeGroup parent;
     public boolean isRecursive;
+    public int pageSize = -1;
     public boolean needVerticalScroll;
     public int tableRowsCount;
 
@@ -147,6 +148,10 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
         filterProperty = pool.deserializeObject(inStream);
 
         isRecursive = inStream.readBoolean();
+        Integer ps = pool.readInt(inStream);
+        if (ps != null) {
+            pageSize = ps;
+        }
         needVerticalScroll = inStream.readBoolean();
         tableRowsCount = inStream.readInt();
     }

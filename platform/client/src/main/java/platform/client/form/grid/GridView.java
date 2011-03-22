@@ -37,6 +37,8 @@ public abstract class GridView extends JPanel {
 
         gridTable.setFillsViewportHeight(true);
 
+        gridTable.configureViewport(pane.getViewport());
+
         add(pane, BorderLayout.CENTER);
         add(groupObjectController.getToolbarView(), BorderLayout.SOUTH);
     }
