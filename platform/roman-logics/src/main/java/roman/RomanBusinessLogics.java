@@ -3171,14 +3171,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
 
-            addPropertyDraw(quantityProxyImporterFreightSku, objImporter, objFreight, objSku);
+            addPropertyDraw(quantityImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(priceInImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(markupInImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(priceInOutImporterFreightSku, objImporter, objFreight, objSku);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreight, objImporter, objFreight)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightBrandSupplier, objImporter, objFreight, objBrandSupplier)));
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityProxyImporterFreightSku, objImporter, objFreight, objSku)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightSku, objImporter, objFreight, objSku)));
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(new RegularFilterEntity(genID(),
