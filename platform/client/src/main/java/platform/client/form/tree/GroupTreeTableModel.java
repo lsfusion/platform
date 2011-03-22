@@ -1,6 +1,7 @@
 package platform.client.form.tree;
 
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
+import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.client.form.ClientFormController;
@@ -85,6 +86,16 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
         return column != 0 && property != null && !property.readOnly;
     }
 
+    public Object getPropertyValue(Object node, ClientPropertyDraw property) {
+        if (node instanceof TreeGroupNode) {
+            Map<ClientGroupObjectValue, Object> properties = values.get(property);
+            if (properties != null) {
+                return properties.get(((TreeGroupNode) node).key);
+            }
+        }
+        return null;
+    }
+
     public boolean isCellFocusable(Object node, int column) {
         if (column == 0) {
             return true;
@@ -164,7 +175,7 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
                 int index = syncChilds.indexOf(child.key);
                 if (index == -1) {
                     parent.removeChild(child);
-                    getGroupNodes(syncGroup).remove(child);
+                    removeFromGroupNodes(syncGroup, child);
                 } else { // помечаем что был, и рекурсивно синхронизируем child
                     thisGroupChildren[index] = child;
                     synchronize(child, syncGroup, tree);
@@ -203,6 +214,16 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
         if (parent.getChildCount() == 0) {
             if (parent.group != null && parent.group.mayHaveChildren()) {
                 parent.addChild(new ExpandingTreeTableNode());
+            }
+        }
+    }
+
+    private void removeFromGroupNodes(ClientGroupObject syncGroup, TreeGroupNode node) {
+        getGroupNodes(syncGroup).remove(node);
+
+        for (MutableTreeTableNode child : Collections.list(node.children())) {
+            if (child instanceof TreeGroupNode) {
+                removeFromGroupNodes(syncGroup.getDownGroup(), (TreeGroupNode) child);
             }
         }
     }

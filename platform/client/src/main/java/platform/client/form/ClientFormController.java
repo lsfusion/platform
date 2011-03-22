@@ -30,6 +30,7 @@ import java.awt.event.ItemListener;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -169,7 +170,7 @@ public class ClientFormController {
     private void initializeControllers() throws IOException {
         treeControllers = new HashMap<ClientTreeGroup, TreeGroupController>();
         for (ClientTreeGroup treeGroup : form.treeGroups) {
-            TreeGroupController controller = new TreeGroupController(treeGroup, this, formLayout);
+            TreeGroupController controller = new TreeGroupController(treeGroup, form, this, formLayout);
             treeControllers.put(treeGroup, controller);
         }
 
@@ -285,7 +286,7 @@ public class ClientFormController {
         }
     }
 
-    public PanelLogicsSupplier getPanelLogicsSupplier(ClientGroupObject group) {
+    public GroupObjectLogicsSupplier getPanelLogicsSupplier(ClientGroupObject group) {
         GroupObjectController groupObjectController = controllers.get(group);
         if (groupObjectController != null) {
             return groupObjectController;
@@ -589,15 +590,37 @@ public class ClientFormController {
     private final Map<ClientGroupObject, List<ClientPropertyFilter>> currentFilters = new HashMap<ClientGroupObject, List<ClientPropertyFilter>>();
 
     public void changeFilter(ClientGroupObject groupObject, List<ClientPropertyFilter> conditions) throws IOException {
-
         currentFilters.put(groupObject, conditions);
+        applyCurrentFilters();
+    }
 
+    public void changeFilter(ClientTreeGroup treeGroup, List<ClientPropertyFilter> conditions) throws IOException {
+        Map<ClientGroupObject, List<ClientPropertyFilter>> filters = BaseUtils.groupList(new BaseUtils.Group<ClientGroupObject, ClientPropertyFilter>() {
+            public ClientGroupObject group(ClientPropertyFilter key) {
+                return key.groupObject;
+            }
+        }, conditions);
+
+        for (ClientGroupObject group : treeGroup.groups) {
+            List<ClientPropertyFilter> groupFilters = filters.get(group);
+            if (groupFilters == null) {
+                groupFilters = new ArrayList<ClientPropertyFilter>();
+            }
+
+            currentFilters.put(group, groupFilters);
+        }
+
+        applyCurrentFilters();
+    }
+
+    private void applyCurrentFilters() throws IOException {
         remoteForm.clearUserFilters();
 
-        for (List<ClientPropertyFilter> listFilter : currentFilters.values())
+        for (List<ClientPropertyFilter> listFilter : currentFilters.values()) {
             for (ClientPropertyFilter filter : listFilter) {
                 remoteForm.addFilter(Serializer.serializeClientFilter(filter));
             }
+        }
 
         applyRemoteChanges();
     }

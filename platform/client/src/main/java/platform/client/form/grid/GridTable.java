@@ -29,7 +29,6 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.*;
 import java.util.List;
@@ -491,10 +490,10 @@ public abstract class GridTable extends ClientFormTable
     public ClientPropertyDraw getCurrentProperty() {
         ClientPropertyDraw selectedProperty = getSelectedProperty();
         return selectedProperty != null
-                ? selectedProperty
-                : model.getColumnCount() > 0
-                ? model.getColumnProperty(0)
-                : null;
+               ? selectedProperty
+               : model.getColumnCount() > 0
+                 ? model.getColumnProperty(0)
+                 : null;
     }
 
     @Override

@@ -18,7 +18,7 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.*;
 
-public class GroupObjectController implements GroupObjectLogicsSupplier, PanelLogicsSupplier {
+public class GroupObjectController implements GroupObjectLogicsSupplier {
     private final ClientGroupObject groupObject;
     private final LogicsSupplier logicsSupplier;
     private final ClientFormController form;
@@ -346,8 +346,11 @@ public class GroupObjectController implements GroupObjectLogicsSupplier, PanelLo
         return groupObject;
     }
 
-    public List<ClientPropertyDraw> getGroupObjectProperties() {
+    public ClientGroupObject getSelectedGroupObject() {
+        return getGroupObject();
+    }
 
+    public List<ClientPropertyDraw> getGroupObjectProperties() {
         ArrayList<ClientPropertyDraw> properties = new ArrayList<ClientPropertyDraw>();
         for (ClientPropertyDraw property : getPropertyDraws()) {
             if (groupObject.equals(property.groupObject)) {
@@ -358,7 +361,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier, PanelLo
         return properties;
     }
 
-    public ClientPropertyDraw getDefaultProperty() {
+    public ClientPropertyDraw getSelectedProperty() {
         ClientPropertyDraw defaultProperty = groupObject.filterProperty;
         return defaultProperty != null
                 ? defaultProperty
@@ -399,10 +402,6 @@ public class GroupObjectController implements GroupObjectLogicsSupplier, PanelLo
 
     public boolean hasActiveFilter() {
         return grid.hasActiveFilter();
-    }
-
-    public ClassViewType getClassView() {
-        return classView;
     }
 
     public void addToToolbar(JComponent component) {

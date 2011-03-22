@@ -44,7 +44,7 @@ abstract class QueryController implements QueryListener {
     }
 
     public void addConditionPressed(boolean replace, ClientPropertyDraw propertyDraw) {
-        ClientPropertyDraw filterProperty = propertyDraw != null ? propertyDraw : logicsSupplier.getDefaultProperty();
+        ClientPropertyDraw filterProperty = propertyDraw != null ? propertyDraw : logicsSupplier.getSelectedProperty();
         if (filterProperty == null) {
             //не добавляем, если нет ни одного свойства
             return;
@@ -57,6 +57,7 @@ abstract class QueryController implements QueryListener {
 
         ClientPropertyFilter filter = new ClientPropertyFilter();
         filter.property = filterProperty;
+        filter.groupObject = logicsSupplier.getSelectedGroupObject();
 
         conditions.add(filter);
 

@@ -1,11 +1,11 @@
 package platform.client.form.tree;
 
-import platform.client.form.ClientFormController;
-import platform.client.form.ClientFormLayout;
-import platform.client.form.PanelLogicsSupplier;
+import platform.base.BaseUtils;
+import platform.client.form.*;
 import platform.client.form.cell.PropertyController;
-import platform.client.form.panel.PanelToolbar;
 import platform.client.form.panel.PanelController;
+import platform.client.form.panel.PanelToolbar;
+import platform.client.form.queries.FilterController;
 import platform.client.logics.*;
 import platform.interop.ClassViewType;
 
@@ -15,20 +15,27 @@ import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
-public class TreeGroupController implements PanelLogicsSupplier {
+public class TreeGroupController implements GroupObjectLogicsSupplier {
     private PanelController panel;
 
     public final ClientTreeGroup treeGroup;
+    private final LogicsSupplier logicsSupplier;
     private final ClientFormController form;
     private final TreeView view;
 
     private PanelToolbar panelToolbar;
 
-    public TreeGroupController(ClientTreeGroup treeGroup, ClientFormController form, ClientFormLayout formLayout) throws IOException {
-        this.treeGroup = treeGroup;
-        this.form = form;
+    private TreeGroupTable tree;
 
-        view = new TreeView(form, treeGroup);
+    private final ClientGroupObject lastGroupObject;
+
+    public TreeGroupController(ClientTreeGroup itreeGroup, LogicsSupplier ilogicsSupplier, ClientFormController iform, ClientFormLayout formLayout) throws IOException {
+        treeGroup = itreeGroup;
+        logicsSupplier = ilogicsSupplier;
+        form = iform;
+
+        view = new TreeView(this.form, treeGroup);
+        tree = view.getTree();
 
         panelToolbar = new PanelToolbar(form, formLayout);
 
@@ -38,13 +45,34 @@ public class TreeGroupController implements PanelLogicsSupplier {
         pane.add(view, BorderLayout.CENTER);
         pane.add(panelToolbar.getView(), BorderLayout.SOUTH);
 
+        lastGroupObject = BaseUtils.last(treeGroup.groups);
+
+        if (!treeGroup.plainTreeMode) {
+            FilterController filterController = new FilterController(this) {
+
+                protected boolean queryChanged() {
+
+                    try {
+                        form.changeFilter(treeGroup, getConditions());
+                    } catch (IOException e) {
+                        throw new RuntimeException("Ошибка при применении фильтра", e);
+                    }
+
+                    tree.requestFocusInWindow();
+                    return true;
+                }
+            };
+            addToToolbar(filterController.getView());
+            filterController.getView().addActions(tree);
+        }
+
         formLayout.add(treeGroup, pane);
     }
 
     public void processFormChanges(ClientFormChanges fc,
                                    Map<ClientGroupObject, List<ClientGroupObjectValue>> cachedGridObjects) {
 
-        view.getTree().saveVisualState();
+        tree.saveVisualState();
         for (ClientGroupObject group : treeGroup.groups) {
             if (fc.gridObjects.containsKey(group)) {
                 view.updateKeys(group, fc.gridObjects.get(group), fc.parentObjects.get(group));
@@ -93,7 +121,7 @@ public class TreeGroupController implements PanelLogicsSupplier {
         }
 
         panel.update();
-        view.getTree().restoreVisualState();
+        tree.restoreVisualState();
     }
 
     private Set<ClientPropertyDraw> panelProperties = new HashSet<ClientPropertyDraw>();
@@ -117,16 +145,63 @@ public class TreeGroupController implements PanelLogicsSupplier {
     }
 
     @Override
-    public void updateToolbar() {
-        panelToolbar.update(ClassViewType.GRID);
+    public ClientGroupObject getGroupObject() {
+        return lastGroupObject;
     }
 
     @Override
-    public ClientGroupObject getGroupObject() {
-        Object node = view.getTree().currentTreePath.getLastPathComponent();
+    public List<ClientPropertyDraw> getGroupObjectProperties() {
+        ClientGroupObject currentGroupObject = getSelectedGroupObject();
+
+        ArrayList<ClientPropertyDraw> properties = new ArrayList<ClientPropertyDraw>();
+        for (ClientPropertyDraw property : getPropertyDraws()) {
+            if (currentGroupObject.equals(property.groupObject)) {
+                properties.add(property);
+            }
+        }
+
+        return properties;
+    }
+
+    @Override
+    public ClientPropertyDraw getSelectedProperty() {
+        ClientPropertyDraw defaultProperty = lastGroupObject.filterProperty;
+        return defaultProperty != null
+                ? defaultProperty
+                : tree.getCurrentProperty();
+    }
+
+    @Override
+    public Object getSelectedValue(ClientPropertyDraw property) {
+        return tree.getSelectedValue(property);
+    }
+
+    @Override
+    public ClientFormController getForm() {
+        return form;
+    }
+
+    @Override
+    public List<ClientObject> getObjects() {
+        return logicsSupplier.getObjects();
+    }
+
+    @Override
+    public List<ClientPropertyDraw> getPropertyDraws() {
+        return form.getPropertyDraws();
+    }
+
+    @Override
+    public ClientGroupObject getSelectedGroupObject() {
+        Object node = tree.currentTreePath.getLastPathComponent();
         return node instanceof TreeGroupNode
-                ? ((TreeGroupNode) node).group
-                : null;
+               ? ((TreeGroupNode) node).group
+               : treeGroup.groups.get(0);
+    }
+
+    @Override
+    public void updateToolbar() {
+        panelToolbar.update(ClassViewType.GRID);
     }
 
     @Override
@@ -137,5 +212,9 @@ public class TreeGroupController implements PanelLogicsSupplier {
     @Override
     public void removePropertyFromToolbar(PropertyController property) {
         panelToolbar.removeProperty(property);
+    }
+
+    public void addToToolbar(JComponent component) {
+        panelToolbar.addComponent(component);
     }
 }

@@ -77,6 +77,7 @@ public class TreeGroupQuickSearchHandler extends KeyAdapter {
 
             if (path != null) {
                 treeTable.setSelectionPath(path);
+                treeTable.scrollPathToVisible(path);
             }
         }
     }

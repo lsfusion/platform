@@ -8,8 +8,6 @@ import platform.client.logics.ClientTreeGroup;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.util.List;
 import java.util.Map;
 
@@ -21,16 +19,7 @@ public class TreeView extends JPanel {
 
         groupTree = new TreeGroupTable(form, treeGroup);
 
-        JScrollPane pane = new JScrollPane(groupTree);
-        pane.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                //потому что после отработки SimplexLayout текущий ряд может стать невидимым
-                groupTree.scrollCurrentPathToVisible();
-            }
-        });
-
-        add(pane);
+        add(new JScrollPane(groupTree));
     }
 
     public TreeGroupTable getTree() {

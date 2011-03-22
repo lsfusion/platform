@@ -200,4 +200,11 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
     public boolean isLastGroupInTree() {
         return parent != null && BaseUtils.last(parent.groups) == this;
     }
+
+    public ClientGroupObject getDownGroup() {
+        int ind = parent.groups.indexOf(this);
+        return ind == parent.groups.size() - 1
+               ? null
+               : parent.groups.get(ind + 1);
+    }
 }

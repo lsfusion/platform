@@ -286,7 +286,6 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     }
 
     public void setSelectionPath(TreePath treePath) {
-        scrollPathToVisible(treePath);
         getSelectionModel().setSelectionInterval(0, getRowForPath(treePath));
     }
 
@@ -314,10 +313,6 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         setSelectionPath(currentTreePath);
 
         synchronize = false;
-    }
-
-    public void scrollCurrentPathToVisible() {
-        scrollPathToVisible(currentTreePath);
     }
 
     private boolean isCellFocusable(int row, int col) {
@@ -373,18 +368,50 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             return null;
         }
 
-        TreePath pathForRow = getPathForRow(row);
-        if (pathForRow != null) {
-            ClientPropertyDraw property = model.getProperty(pathForRow.getLastPathComponent(), column);
-            if (property != null) {
-                try {
-                    return property.parseString(form, value);
-                } catch (ParseException ignored) {
-                }
+        ClientPropertyDraw property = getProperty(row, column);
+        if (property != null) {
+            try {
+                return property.parseString(form, value);
+            } catch (ParseException ignored) {
             }
         }
 
         return null;
+    }
+
+    public ClientPropertyDraw getCurrentProperty() {
+        int column = getSelectedColumn();
+        int row = getSelectedRow();
+
+        ClientPropertyDraw selectedProperty = null;
+
+        if (column == 0) {
+            ++column;
+        }
+
+        if (column >= 0 && column < getColumnCount() && row >= 0 && row <= getRowCount()) {
+            selectedProperty = getProperty(row, column);
+        }
+
+        return selectedProperty != null
+               ? selectedProperty
+               : model.getColumnCount() > 1
+                 ? model.getColumnProperty(1)
+                 : null;
+    }
+
+    public Object getSelectedValue(ClientPropertyDraw property) {
+        int row = getSelectedRow();
+
+        if (row < 0 || row > getRowCount()) {
+            return null;
+        }
+
+        TreePath pathForRow = getPathForRow(row);
+        if (pathForRow == null) {
+            return null;
+        }
+        return model.getPropertyValue(pathForRow.getLastPathComponent(), property);
     }
 
     private class ChangeObjectEvent extends AWTEvent implements ActiveEvent {
