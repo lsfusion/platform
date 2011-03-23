@@ -12,9 +12,15 @@ import java.util.List;
 public abstract class TableSortableHeaderManager extends MouseAdapter {
 
     private final JTable table;
+    private final boolean ignoreFirstColumn;
 
     public TableSortableHeaderManager(JTable table) {
+        this(table, false);
+    }
+
+    public TableSortableHeaderManager(JTable table, boolean ignoreFirstColumn) {
         this.table = table;
+        this.ignoreFirstColumn = ignoreFirstColumn;
     }
 
     public void mouseClicked(MouseEvent me) {
@@ -26,8 +32,7 @@ public abstract class TableSortableHeaderManager extends MouseAdapter {
         int viewColumn = columnModel.getColumnIndexAtX(me.getX());
         int column = columnModel.getColumn(viewColumn).getModelIndex();
 
-        if (column != -1) {
-
+        if (column != -1 && !(ignoreFirstColumn && column==0)) {
             Boolean sortDir = getSortDirection(column);
             if (sortDir == null || !sortDir) {
                 if (me.getButton() == MouseEvent.BUTTON1)

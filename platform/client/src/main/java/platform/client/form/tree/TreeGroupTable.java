@@ -67,7 +67,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
         rootNode = model.getRoot();
 
-        sortableHeaderManager = new TableSortableHeaderManager(this) {
+        sortableHeaderManager = new TableSortableHeaderManager(this, true) {
             protected void orderChanged(int column, Order modiType) {
                 TreeGroupTable.this.orderChanged(column, modiType);
             }

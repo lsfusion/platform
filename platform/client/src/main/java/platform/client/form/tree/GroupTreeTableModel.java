@@ -110,7 +110,9 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
     }
 
     public ClientPropertyDraw getColumnProperty(int col) {
-        return columnProperties.get(col - 1);
+        return col != 0
+               ? columnProperties.get(col - 1)
+               : null;
     }
 
     public ClientPropertyDraw getProperty(Object node, int column) {
