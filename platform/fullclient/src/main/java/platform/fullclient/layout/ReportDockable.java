@@ -1,6 +1,7 @@
 package platform.fullclient.layout;
 
 import bibliothek.gui.dock.common.MultipleCDockableFactory;
+import jasperapi.ReportGenerator;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -39,8 +40,8 @@ public class ReportDockable extends FormDockable {
     Component getActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
 
         try {
-            ReportGenerator report = new ReportGenerator(remoteForm, false, false);
-            JasperPrint print = report.createReport();
+            ReportGenerator report = new ReportGenerator(remoteForm);
+            JasperPrint print = report.createReport(false, false, null);
             reportCaption = print.getName();
             print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
             return prepareViewer(new JRViewer(print));
@@ -71,8 +72,8 @@ public class ReportDockable extends FormDockable {
 
             JExcelApiExporter xlsExporter = new JExcelApiExporter();
 
-            ReportGenerator report = new ReportGenerator(remoteForm, true, true);
-            JasperPrint print = report.createReport();
+            ReportGenerator report = new ReportGenerator(remoteForm);
+            JasperPrint print = report.createReport(true, true, null);
             print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
 
             xlsExporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
@@ -84,7 +85,7 @@ public class ReportDockable extends FormDockable {
             }
 
             tempFile.deleteOnExit();
-            
+
         } catch (Exception e) {
             throw new RuntimeException("Ошибка при экспорте в Excel", e);
         }

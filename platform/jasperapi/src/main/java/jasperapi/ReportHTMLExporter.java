@@ -1,4 +1,4 @@
-package platform.server.form.reportstmp;
+package jasperapi;
 
 import net.sf.jasperreports.engine.JRPrintText;
 import net.sf.jasperreports.engine.export.JRExporterGridCell;

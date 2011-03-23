@@ -1,4 +1,4 @@
-package platform.server.form.reportstmp;
+package jasperapi;
 
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.design.*;
@@ -12,26 +12,25 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * User: DAle
- * Date: 03.01.11
- * Time: 16:50
+ * Date: 16.09.2010
+ * Time: 15:06:37
  */
 
-public class ReportGenerator_tmp {
+public class ReportGenerator {
+    private final RemoteFormInterface form;
     private final String rootID;
     private final Map<String, List<String>> hierarchy;
-    private final Map<String, JasperDesign> designs;
-    private final Map<String, ClientReportData_tmp> data;
-    private final Map<String, List<List<Object>>> compositeColumnValues;
+    private Map<String, JasperDesign> designs;
+    private Map<String, ClientReportData> data;
+    private Map<String, List<List<Object>>> compositeColumnValues;
+
 
     private static class SourcesGenerationOutput {
-        public Map<String, ClientReportData_tmp> data;
+        public Map<String, ClientReportData> data;
         // данные для свойств с группами в колонках
         // объекты, от которых зависит свойство
         public Map<String, List<Integer>> compositeFieldsObjects;
@@ -41,24 +40,34 @@ public class ReportGenerator_tmp {
         public Map<String, List<List<Object>>> compositeColumnValues;
     }
 
-    public ReportGenerator_tmp(RemoteFormInterface remoteForm, boolean toExcel, boolean ignorePagination) throws IOException, ClassNotFoundException, JRException {
-        this(remoteForm, toExcel, ignorePagination, new HashMap<ByteArray, String>());
-    }
+    public ReportGenerator(RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException {
+        form = remoteForm;
 
-    public ReportGenerator_tmp(RemoteFormInterface remoteForm, boolean toExcel, boolean ignorePagination, Map<ByteArray, String> files) throws IOException, ClassNotFoundException, JRException {
-        Pair<String, Map<String, List<String>>> hpair = retrieveReportHierarchy(remoteForm);
+        Pair<String, Map<String, List<String>>> hpair = retrieveReportHierarchy(form);
         rootID = hpair.first;
         hierarchy = hpair.second;
-        designs = retrieveReportDesigns(remoteForm, toExcel);
 
-        SourcesGenerationOutput output = retrieveReportSources(remoteForm, files);
+    }
+
+    public JasperPrint createReport(boolean toExcel, boolean ignorePagination, Map<ByteArray, String> files) throws JRException, ClassNotFoundException, IOException {
+        return createJasperPrint(hierarchy, toExcel, ignorePagination, null, files);
+    }
+
+    public JasperPrint createSingleGroupReport(Integer groupId, boolean toExcel, boolean ignorePagination, Map<ByteArray, String> files) throws IOException, ClassNotFoundException, JRException {
+        // transform hierarchy
+        Map<String, List<String>> localHierarchy = new HashMap<String, List<String>>();
+        return createJasperPrint(localHierarchy, toExcel, ignorePagination, groupId, files);
+    }
+
+    private JasperPrint createJasperPrint(Map<String, List<String>> hierarchy, boolean toExcel, boolean ignorePagination,
+                                          Integer singleGroupId, Map<ByteArray, String> files) throws ClassNotFoundException, IOException, JRException {
+        designs = retrieveReportDesigns(form, toExcel);
+
+        SourcesGenerationOutput output = retrieveReportSources(form, files);
         data = output.data;
         compositeColumnValues = output.compositeColumnValues;
 
         transformDesigns(ignorePagination);
-    }
-
-    public JasperPrint createReport() throws JRException {
 
         Pair<Map<String, Object>, JRDataSource> compileParams = prepareReportSources();
 
@@ -72,17 +81,17 @@ public class ReportGenerator_tmp {
             iterateChildSubreports(childID, params);
         }
 
-        ReportRootDataSource_tmp rootSource = new ReportRootDataSource_tmp();
+        ReportRootDataSource rootSource = new ReportRootDataSource();
         return new Pair<Map<String, Object>, JRDataSource>(params, rootSource);
     }
 
-    private ReportDependentDataSource_tmp iterateChildSubreports(String parentID, Map<String, Object> params) throws JRException {
+    private ReportDependentDataSource iterateChildSubreports(String parentID, Map<String, Object> params) throws JRException {
         Map<String, Object> localParams = new HashMap<String, Object>();
-        List<ReportDependentDataSource_tmp> childSources = new ArrayList<ReportDependentDataSource_tmp>();
-        ReportDependentDataSource_tmp source = new ReportDependentDataSource_tmp(data.get(parentID), childSources);
+        List<ReportDependentDataSource> childSources = new ArrayList<ReportDependentDataSource>();
+        ReportDependentDataSource source = new ReportDependentDataSource(data.get(parentID), childSources);
 
         for (String childID : hierarchy.get(parentID)) {
-            ReportDependentDataSource_tmp childSource = iterateChildSubreports(childID, localParams);
+            ReportDependentDataSource childSource = iterateChildSubreports(childID, localParams);
             childSources.add(childSource);
         }
 
@@ -106,15 +115,15 @@ public class ReportGenerator_tmp {
         return (Map<String, JasperDesign>) objStream.readObject();
     }
 
-    private static SourcesGenerationOutput retrieveReportSources(RemoteFormInterface remoteForm, Map<ByteArray, String> files) throws IOException, ClassNotFoundException {
+    private static SourcesGenerationOutput retrieveReportSources(RemoteFormInterface remoteForm, Map<ByteArray,String> files) throws IOException, ClassNotFoundException {
         SourcesGenerationOutput output = new SourcesGenerationOutput();
         byte[] sourcesArray = remoteForm.getReportSourcesByteArray();
         DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(sourcesArray));
         int size = dataStream.readInt();
-        output.data = new HashMap<String, ClientReportData_tmp>();
+        output.data = new HashMap<String, ClientReportData>();
         for (int i = 0; i < size; i++) {
             String sid = dataStream.readUTF();
-            ClientReportData_tmp reportData = new ClientReportData_tmp(dataStream, files);
+            ClientReportData reportData = new ClientReportData(dataStream, files);
             output.data.put(sid, reportData);
         }
 
@@ -161,7 +170,7 @@ public class ReportGenerator_tmp {
             output.compositeColumnValues.put(fieldId, data);
         }
 
-        for (ClientReportData_tmp data : output.data.values()) {
+        for (ClientReportData data : output.data.values()) {
             data.setCompositeData(output.compositeFieldsObjects, output.compositeObjectValues,
                     output.compositeColumnObjects, output.compositeColumnValues);
         }
@@ -261,7 +270,7 @@ public class ReportGenerator_tmp {
                     if (exprText.startsWith("\"")) {  // caption без property
                         subExpr.setText(exprText);
                     } else {
-                        String fieldName = id + ClientReportData_tmp.beginMarker + i + ClientReportData_tmp.endMarker;
+                        String fieldName = id + ClientReportData.beginMarker + i + ClientReportData.endMarker;
                         subExpr.setText("$F{" + fieldName + "}");
                         JRDesignField designField = new JRDesignField();
                         designField.setName(fieldName);

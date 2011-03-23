@@ -1,4 +1,4 @@
-package platform.server.form.reportstmp;
+package jasperapi;
 
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
@@ -9,16 +9,16 @@ import java.util.List;
 
 /**
  * User: DAle
- * Date: 03.01.11
- * Time: 16:52
+ * Date: 16.09.2010
+ * Time: 15:12:53
  */
 
-public class ReportDependentDataSource_tmp implements JRDataSource {
+public class ReportDependentDataSource implements JRDataSource {
     private List<Object> values;
-    private final List<ReportDependentDataSource_tmp> childSources;
-    private final ClientReportData_tmp data;
+    private final List<ReportDependentDataSource> childSources;
+    private final ClientReportData data;
 
-    public ReportDependentDataSource_tmp(ClientReportData_tmp data, List<ReportDependentDataSource_tmp> childSources) {
+    public ReportDependentDataSource(ClientReportData data, List<ReportDependentDataSource> childSources) {
         this.data = data;
         this.childSources = childSources;
     }
@@ -46,7 +46,7 @@ public class ReportDependentDataSource_tmp implements JRDataSource {
                     keyValues.add(data.getKeyValueByIndex(i));
                 }
 
-                for (ReportDependentDataSource_tmp childSource : childSources) {
+                for (ReportDependentDataSource childSource : childSources) {
                     childSource.setValues(keyValues);
                 }
             }

@@ -1,5 +1,7 @@
 package platform.server.logics.property.actions;
 
+import jasperapi.ReportGenerator;
+import jasperapi.ReportHTMLExporter;
 import net.sf.jasperreports.engine.JRAbstractExporter;
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -13,28 +15,29 @@ import platform.base.ByteArray;
 import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.interop.form.RemoteFormInterface;
-import platform.server.logics.BusinessLogics;
-import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
-import platform.server.mail.EmailSender;
 import platform.server.classes.StringClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
-import platform.server.form.reportstmp.ReportGenerator_tmp;
-import platform.server.form.reportstmp.ReportHTMLExporter;
+import platform.server.logics.BusinessLogics;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.PropertyMapImplement;
+import platform.server.mail.EmailSender;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 
 import java.io.File;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * User: DAle
@@ -106,7 +109,7 @@ public class EmailActionProperty extends ActionProperty {
     }
 
     private static JRAbstractExporter createExporter(Format format) {
-        JRAbstractExporter exporter = null;
+        JRAbstractExporter exporter;
         switch (format) {
             case PDF:
                 exporter = new JRPdfExporter();
@@ -157,8 +160,8 @@ public class EmailActionProperty extends ActionProperty {
                 else
                     remoteForm = BL.createForm(session, forms.get(i), formObjects);
 
-                ReportGenerator_tmp report = new ReportGenerator_tmp(remoteForm, false, types.get(i) == FormStorageType.INLINE, attachmentFiles);
-                JasperPrint print = report.createReport();
+                ReportGenerator report = new ReportGenerator(remoteForm);
+                JasperPrint print = report.createReport(false, types.get(i) == FormStorageType.INLINE, attachmentFiles);
                 String filePath = createReportFile(print, formats.get(i));
                 if (types.get(i) == FormStorageType.INLINE) {
                     inlineForms.add(filePath);

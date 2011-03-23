@@ -1,4 +1,4 @@
-package platform.server.form.reportstmp;
+package jasperapi;
 
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
@@ -6,11 +6,11 @@ import net.sf.jasperreports.engine.JRField;
 
 /**
  * User: DAle
- * Date: 03.01.11
- * Time: 16:52
+ * Date: 16.09.2010
+ * Time: 15:15:04
  */
 
-public class ReportRootDataSource_tmp implements JRDataSource {
+public class ReportRootDataSource implements JRDataSource {
     private int index = 0;
     public boolean next() throws JRException {
         ++index;

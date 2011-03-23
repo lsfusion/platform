@@ -1,12 +1,12 @@
-package platform.server.form.reportstmp;
+package jasperapi;
 
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
 import platform.base.BaseUtils;
+import platform.base.ByteArray;
 import platform.base.DateConverter;
 import platform.base.Pair;
-import platform.base.ByteArray;
 import platform.interop.form.PropertyReadType;
 import platform.interop.form.ReportConstants;
 
@@ -14,13 +14,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.*;
 
-/**
- * User: DAle
- * Date: 03.01.11
- * Time: 16:53
- */
-
-public class ClientReportData_tmp implements JRDataSource {
+public class ClientReportData implements JRDataSource {
     final List<String> objectNames = new ArrayList<String>();
     private final List<String> propertyNames = new ArrayList<String>();  // todo [dale]: не обеспечивается уникальность имен
     private final Map<String, Integer> objects = new HashMap<String,Integer>();
@@ -42,7 +36,7 @@ public class ClientReportData_tmp implements JRDataSource {
 
     private final Map<ByteArray, String> files;
 
-    public ClientReportData_tmp(DataInputStream inStream, Map<ByteArray, String> files) throws IOException {
+    public ClientReportData(DataInputStream inStream, Map<ByteArray, String> files) throws IOException {
 
         if (!inStream.readBoolean()) {
             int objectCnt = inStream.readInt();
@@ -102,7 +96,7 @@ public class ClientReportData_tmp implements JRDataSource {
         compositeFieldsObjects = fieldObjects;
         compositeObjectValues = objectValues;
         compositeColumnObjects = columnObjects;
-        compositeColumnValues = columnValues;
+        compositeColumnValues = columnValues; 
     }
 
     public Object getFieldValue(JRField jrField) throws JRException {
@@ -116,7 +110,7 @@ public class ClientReportData_tmp implements JRDataSource {
             Pair<Integer, Integer>  propertyID = properties.get(fieldName);
             if (propertyID != null) {
                 value = rows.get(currentKeyRow).get(propertyID);
-            } else if (fieldName.endsWith(endMarker)) {
+            } else if (fieldName.endsWith(endMarker)) { 
                 Pair<Integer, String> extractData = extractFieldData(fieldName);
                 int index = extractData.first;
                 String realFieldName = extractData.second;
@@ -131,7 +125,10 @@ public class ClientReportData_tmp implements JRDataSource {
         }
 
         if (Date.class.getName().equals(jrField.getValueClassName()) && value != null) {
-            value = DateConverter.sqlToDate((java.sql.Date) value);
+            if (value instanceof java.sql.Timestamp)
+                value = DateConverter.stampToDate((java.sql.Timestamp) value);
+            else
+                value = DateConverter.sqlToDate((java.sql.Date) value);
         }
 
         if (value instanceof String) {
@@ -141,7 +138,7 @@ public class ClientReportData_tmp implements JRDataSource {
         if(jrField.getDescription()!=null && Number.class.isAssignableFrom(jrField.getValueClass()) && jrField.getDescription().contains("@Z") && value == null) {
             value = jrField.getValueClass().cast(0);
         }
-        
+
         if (value instanceof byte[]) {
             ByteArray file = new ByteArray(((byte[])value));
             String fileName = files.get(file);
@@ -151,7 +148,7 @@ public class ClientReportData_tmp implements JRDataSource {
             }
             value = fileName;
         }
-        
+
         return value;
     }
 
