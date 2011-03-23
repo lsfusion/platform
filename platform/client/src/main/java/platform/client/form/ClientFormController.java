@@ -286,7 +286,7 @@ public class ClientFormController {
         }
     }
 
-    public GroupObjectLogicsSupplier getPanelLogicsSupplier(ClientGroupObject group) {
+    public GroupObjectLogicsSupplier getGroupObjectLogicsSupplier(ClientGroupObject group) {
         GroupObjectController groupObjectController = controllers.get(group);
         if (groupObjectController != null) {
             return groupObjectController;
@@ -424,11 +424,14 @@ public class ClientFormController {
     private void applyOrders(OrderedMap<ClientPropertyDraw, Boolean> orders) throws IOException {
         boolean firstOrder = true;
         for (Map.Entry<ClientPropertyDraw, Boolean> entry : orders.entrySet()) {
-            controllers.get(entry.getKey().getGroupObject()).changeGridOrder(entry.getKey(), firstOrder ? REPLACE : ADD);
-            if (!entry.getValue()) {
-                controllers.get(entry.getKey().getGroupObject()).changeGridOrder(entry.getKey(), DIR);
+            ClientPropertyDraw property = entry.getKey();
+            GroupObjectLogicsSupplier groupObjectLogicsSupplier = getGroupObjectLogicsSupplier(property.getGroupObject());
+            if (groupObjectLogicsSupplier != null) {
+                groupObjectLogicsSupplier.changeOrder(property, firstOrder ? REPLACE : ADD);
+                if (!entry.getValue()) {
+                    groupObjectLogicsSupplier.changeOrder(property, DIR);
+                }
             }
-            firstOrder = false;
         }
     }
 

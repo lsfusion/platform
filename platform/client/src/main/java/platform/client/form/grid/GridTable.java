@@ -10,7 +10,7 @@ import platform.client.form.cell.CellTableInterface;
 import platform.client.form.cell.ClientAbstractCellEditor;
 import platform.client.form.cell.ClientAbstractCellRenderer;
 import platform.client.form.queries.QueryView;
-import platform.client.form.sort.GridHeaderMouseListener;
+import platform.client.form.sort.TableSortableHeaderManager;
 import platform.client.form.sort.MultiLineHeaderRenderer;
 import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientGroupObjectValue;
@@ -68,6 +68,7 @@ public abstract class GridTable extends ClientFormTable
 
     private int viewMoveInterval = 0;
     private ClientGroupObject groupObject;
+    private TableSortableHeaderManager sortableHeaderManager;
 
     public GridTable(GroupObjectController igroupObjectController, ClientFormController iform) {
         super(new GridTableModel());
@@ -90,14 +91,13 @@ public abstract class GridTable extends ClientFormTable
             }
         });
 
-        final JTableHeader header = getTableHeader();
-        header.setDefaultRenderer(new MultiLineHeaderRenderer(header.getDefaultRenderer()) {
-//        header.setDefaultRenderer(new GridHeaderRenderer.SimplifiedRenderer(header.getDefaultRenderer()) {
-
-            protected Boolean getSortDirection(int column) {
-                return GridTable.this.getSortDirection(column);
+        sortableHeaderManager = new TableSortableHeaderManager(this) {
+            protected void orderChanged(int column, Order modiType) {
+                GridTable.this.orderChanged(column, modiType);
             }
+        };
 
+        tableHeader.setDefaultRenderer(new MultiLineHeaderRenderer(tableHeader.getDefaultRenderer(), sortableHeaderManager) {
             @Override
             public Component getTableCellRendererComponent(JTable itable, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 Component comp = super.getTableCellRendererComponent(itable, value, isSelected, hasFocus, row, column);
@@ -105,27 +105,7 @@ public abstract class GridTable extends ClientFormTable
                 return comp;
             }
         });
-
-        header.addMouseListener(new GridHeaderMouseListener() {
-            protected Boolean getSortDirection(int column) {
-                return GridTable.this.getSortDirection(column);
-            }
-
-            protected TableColumnModel getColumnModel() {
-                return GridTable.this.getColumnModel();
-            }
-
-            protected void changeOrder(int column, Order modiType) {
-
-                try {
-                    changeGridOrder(model.getColumnProperty(column), column, modiType);
-                } catch (IOException e) {
-                    throw new RuntimeException("Ошибка изменении сортировки", e);
-                }
-
-                header.repaint();
-            }
-        });
+        tableHeader.addMouseListener(sortableHeaderManager);
 
         setDefaultRenderer(Object.class, new ClientAbstractCellRenderer());
         setDefaultEditor(Object.class, new ClientAbstractCellEditor());
@@ -165,6 +145,23 @@ public abstract class GridTable extends ClientFormTable
         }
 
         initializeActionMap();
+    }
+
+    private void orderChanged(int column, Order modiType) {
+        try {
+            ClientPropertyDraw property = model.getColumnProperty(column);
+
+            ClientGroupObjectValue columnKey = column >= 0 && column < model.getColumnCount()
+                        ? model.getColumnKey(column)
+                        : new ClientGroupObjectValue();
+
+            form.changeOrder(property, modiType, columnKey);
+            tableHeader.resizeAndRepaint();
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка изменении сортировки", e);
+        }
+
+        tableHeader.repaint();
     }
 
     @Override
@@ -675,45 +672,8 @@ public abstract class GridTable extends ClientFormTable
         return model.getHighlightColor(row, column);
     }
 
-    private final List<Integer> orders = new ArrayList<Integer>();
-    private final List<Boolean> orderDirections = new ArrayList<Boolean>();
-
-    public void changeGridOrder(ClientPropertyDraw property, int col, Order modiType) throws IOException {
-        ClientGroupObjectValue columnKey = new ClientGroupObjectValue();
-
-        if (col >= 0 && col < model.getColumnCount()) {
-            columnKey = model.getColumnKey(col);
-            int ordNum;
-            switch (modiType) {
-                case REPLACE:
-                    orders.clear();
-                    orderDirections.clear();
-
-                    orders.add(col);
-                    orderDirections.add(true);
-                    break;
-                case ADD:
-                    orders.add(col);
-                    orderDirections.add(true);
-                    break;
-                case DIR:
-                    ordNum = orders.indexOf(col);
-                    orderDirections.set(ordNum, !orderDirections.get(ordNum));
-                    break;
-                case REMOVE:
-                    ordNum = orders.indexOf(col);
-                    orders.remove(ordNum);
-                    orderDirections.remove(ordNum);
-                    break;
-            }
-            tableHeader.resizeAndRepaint();
-        }
-
-        form.changeOrder(property, modiType, columnKey);
-    }
-
     public void changeGridOrder(ClientPropertyDraw property, Order modiType) throws IOException {
-        changeGridOrder(property, getMinPropertyIndex(property), modiType);
+        sortableHeaderManager.changeOrder(getMinPropertyIndex(property), modiType);
     }
 
     public int getMinPropertyIndex(ClientPropertyDraw property) {
@@ -722,11 +682,6 @@ public abstract class GridTable extends ClientFormTable
 
     public GridTableModel getTableModel() {
         return model;
-    }
-
-    private Boolean getSortDirection(int column) {
-        int ordNum = orders.indexOf(column);
-        return (ordNum != -1) ? orderDirections.get(ordNum) : null;
     }
 
     @Override

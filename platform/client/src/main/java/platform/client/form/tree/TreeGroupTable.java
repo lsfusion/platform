@@ -10,21 +10,23 @@ import platform.client.form.cell.CellTableInterface;
 import platform.client.form.cell.ClientAbstractCellEditor;
 import platform.client.form.cell.ClientAbstractCellRenderer;
 import platform.client.form.sort.MultiLineHeaderRenderer;
+import platform.client.form.sort.TableSortableHeaderManager;
 import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.ClientTreeGroup;
+import platform.interop.Order;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeWillExpandListener;
+import javax.swing.event.*;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellEditor;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.*;
@@ -50,6 +52,8 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
     boolean plainTreeMode = false;
 
+    private TableSortableHeaderManager sortableHeaderManager;
+
     public TreeGroupTable(ClientFormController iform, ClientTreeGroup itreeGroup) {
         form = iform;
         treeGroup = itreeGroup;
@@ -63,7 +67,13 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
         rootNode = model.getRoot();
 
-        tableHeader.setDefaultRenderer(new MultiLineHeaderRenderer(tableHeader.getDefaultRenderer()) {
+        sortableHeaderManager = new TableSortableHeaderManager(this) {
+            protected void orderChanged(int column, Order modiType) {
+                TreeGroupTable.this.orderChanged(column, modiType);
+            }
+        };
+
+        tableHeader.setDefaultRenderer(new MultiLineHeaderRenderer(tableHeader.getDefaultRenderer(), sortableHeaderManager) {
             @Override
             public Component getTableCellRendererComponent(JTable itable, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 Component comp = super.getTableCellRendererComponent(itable, value, isSelected, hasFocus, row, column);
@@ -73,6 +83,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                 return comp;
             }
         });
+        tableHeader.addMouseListener(sortableHeaderManager);
 
         if (plainTreeMode) {
             setTableHeader(null);
@@ -153,6 +164,17 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
         initializeActionMap();
         currentTreePath = new TreePath(rootNode);
+    }
+
+    private void orderChanged(int column, Order modiType) {
+        try {
+            form.changeOrder(model.getColumnProperty(column), modiType, new ClientGroupObjectValue());
+            tableHeader.resizeAndRepaint();
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка изменении сортировки", e);
+        }
+
+        tableHeader.resizeAndRepaint();
     }
 
     private void initializeActionMap() {
@@ -412,6 +434,29 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             return null;
         }
         return model.getPropertyValue(pathForRow.getLastPathComponent(), property);
+    }
+
+    public void editingStopped(ChangeEvent e) {
+        TableCellEditor editor = getCellEditor();
+        if (editor != null) {
+            Object value = editor.getCellEditorValue();
+            int row = editingRow;
+            int column = editingColumn;
+            //переопределяем, чтобы сначала удалить editor, и только потом выставлять значение
+            //иначе во время выставления таблица всё ещё находится в режиме редактирования
+            removeEditor();
+            setValueAt(value, row, column);
+        }
+    }
+
+    public void changeOrder(ClientPropertyDraw property, Order modiType) throws IOException {
+        int propertyIndex = model.getPropertyColumnIndex(property);
+        if (propertyIndex > 0) {
+            sortableHeaderManager.changeOrder(propertyIndex, modiType);
+        } else {
+            //меняем напрямую для верхних groupObjects
+            form.changeOrder(property, modiType, new ClientGroupObjectValue());
+        }
     }
 
     private class ChangeObjectEvent extends AWTEvent implements ActiveEvent {

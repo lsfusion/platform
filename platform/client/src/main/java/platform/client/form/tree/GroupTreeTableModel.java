@@ -268,4 +268,8 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
     public void firePathChanged(TreePath nodePath) {
         modelSupport.firePathChanged(nodePath);
     }
+
+    public int getPropertyColumnIndex(ClientPropertyDraw property) {
+        return columnProperties.indexOf(property) + 1;
+    }
 }

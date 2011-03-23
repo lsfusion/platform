@@ -3,7 +3,9 @@ package platform.client.form;
 import platform.client.form.cell.PropertyController;
 import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientPropertyDraw;
+import platform.interop.Order;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface GroupObjectLogicsSupplier extends LogicsSupplier {
@@ -17,6 +19,8 @@ public interface GroupObjectLogicsSupplier extends LogicsSupplier {
     Object getSelectedValue(ClientPropertyDraw property);
     
     ClientFormController getForm();
+
+    void changeOrder(ClientPropertyDraw property, Order modiType) throws IOException;
 
     ClientGroupObject getSelectedGroupObject();
 

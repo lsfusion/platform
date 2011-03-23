@@ -12,20 +12,15 @@ public class MultiLineHeaderRenderer implements TableCellRenderer {
     protected final static ImageIcon arrowDownIcon = new ImageIcon(MultiLineHeaderRenderer.class.getResource("/images/arrowdown.gif"));
 
     private final TableCellRenderer tableCellRenderer;
+    private final TableSortableHeaderManager sortableHeaderManager;
     private final SimplifiedRenderer simplifiedRenderer;
 
-    public MultiLineHeaderRenderer(TableCellRenderer originalTableCellRenderer) {
+    public MultiLineHeaderRenderer(TableCellRenderer originalTableCellRenderer, TableSortableHeaderManager isortableHeaderManager) {
         tableCellRenderer = originalTableCellRenderer;
-        if (!Main.module.isFull()) {
-            simplifiedRenderer = new SimplifiedRenderer(originalTableCellRenderer) {
-                @Override
-                protected Boolean getSortDirection(int column) {
-                    return MultiLineHeaderRenderer.this.getSortDirection(column);
-                }
-            };
-        } else {
-            simplifiedRenderer = null;
-        }
+        sortableHeaderManager = isortableHeaderManager;
+        simplifiedRenderer = Main.module.isFull()
+                             ? null
+                             : new SimplifiedRenderer(originalTableCellRenderer, sortableHeaderManager);
     }
 
     public Component getTableCellRendererComponent(JTable itable,
@@ -49,7 +44,7 @@ public class MultiLineHeaderRenderer implements TableCellRenderer {
             label.setHorizontalAlignment(JLabel.CENTER);
             label.setVerticalAlignment(JLabel.TOP);
 
-            Boolean sortDir = getSortDirection(column);
+            Boolean sortDir = sortableHeaderManager.getSortDirection(column);
             if (sortDir != null) {
                 label.setIcon(sortDir ? arrowUpIcon : arrowDownIcon);
             } else {
@@ -60,18 +55,16 @@ public class MultiLineHeaderRenderer implements TableCellRenderer {
         return comp;
     }
 
-    protected Boolean getSortDirection(int column) {
-        return null;
-    }
-
-    public static abstract class SimplifiedRenderer extends JPanel implements TableCellRenderer {
+    public static class SimplifiedRenderer extends JPanel implements TableCellRenderer {
         private JTextArea textArea;
         private JLabel iconLabel;
 
         private final TableCellRenderer tableCellRenderer;
+        private final TableSortableHeaderManager sortableHeaderManager;
 
-        public SimplifiedRenderer(TableCellRenderer originalTableCellRenderer) {
+        public SimplifiedRenderer(TableCellRenderer originalTableCellRenderer, TableSortableHeaderManager sortableHeaderManager) {
             tableCellRenderer = originalTableCellRenderer;
+            this.sortableHeaderManager = sortableHeaderManager;
 
             setLayout(new BorderLayout());
 
@@ -112,7 +105,7 @@ public class MultiLineHeaderRenderer implements TableCellRenderer {
             iconLabel.setHorizontalAlignment(JLabel.CENTER);
             iconLabel.setVerticalAlignment(JLabel.TOP);
 
-            Boolean sortDir = getSortDirection(column);
+            Boolean sortDir = sortableHeaderManager.getSortDirection(column);
             if (sortDir != null) {
                 iconLabel.setIcon(sortDir ? arrowUpIcon : arrowDownIcon);
             } else {
@@ -121,7 +114,5 @@ public class MultiLineHeaderRenderer implements TableCellRenderer {
 
             return this;
         }
-
-        protected abstract Boolean getSortDirection(int column);
     }
 }

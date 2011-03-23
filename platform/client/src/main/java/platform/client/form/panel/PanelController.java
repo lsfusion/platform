@@ -14,13 +14,13 @@ import java.util.*;
 
 public class PanelController {
     private ClientFormController form;
-    private GroupObjectLogicsSupplier panelLogicsSupplier;
+    private GroupObjectLogicsSupplier logicsSupplier;
     private ClientFormLayout formLayout;
 
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, PropertyController>> properties = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, PropertyController>>();
 
-    public PanelController(GroupObjectLogicsSupplier panelLogicsSupplier, ClientFormController iform, ClientFormLayout iformLayout) {
-        this.panelLogicsSupplier = panelLogicsSupplier;
+    public PanelController(GroupObjectLogicsSupplier ilogicsSupplier, ClientFormController iform, ClientFormLayout iformLayout) {
+        logicsSupplier = ilogicsSupplier;
         form = iform;
         formLayout = iformLayout;
     }
@@ -48,9 +48,9 @@ public class PanelController {
 
             for (PropertyController controller : properties.remove(property).values()) {
                 if (property.keyBindingGroup != null && property.drawToToolbar) {
-                    GroupObjectLogicsSupplier panelSupplier = form.getPanelLogicsSupplier(property.keyBindingGroup);
-                    panelSupplier.removePropertyFromToolbar(controller);
-                    panelSupplier.updateToolbar();
+                    GroupObjectLogicsSupplier logicsSupplier = form.getGroupObjectLogicsSupplier(property.keyBindingGroup);
+                    logicsSupplier.removePropertyFromToolbar(controller);
+                    logicsSupplier.updateToolbar();
                 }
                 controller.removeView(formLayout);
             }
@@ -85,7 +85,7 @@ public class PanelController {
     public void setRowHighlight(Object value) {
         for (Map<ClientGroupObjectValue, PropertyController> propControllers : properties.values()) {
             for (PropertyController controller : propControllers.values()) {
-                ClientGroupObject groupObject = panelLogicsSupplier.getSelectedGroupObject();
+                ClientGroupObject groupObject = logicsSupplier.getSelectedGroupObject();
                 controller.setHighlight(value, groupObject == null ? null : groupObject.highlightColor);
             }
         }
@@ -109,10 +109,10 @@ public class PanelController {
                         propController = new PropertyController(property, form, columnKey);
                         addGroupObjectActions(propController.getView());
                         if (property.keyBindingGroup != null && property.drawToToolbar) {
-                            GroupObjectLogicsSupplier panelSupplier = form.getPanelLogicsSupplier(property.keyBindingGroup);
-                            if (panelSupplier != null) {
-                                panelSupplier.addPropertyToToolbar(propController);
-                                panelSupplier.updateToolbar();
+                            GroupObjectLogicsSupplier logicsSupplier = form.getGroupObjectLogicsSupplier(property.keyBindingGroup);
+                            if (logicsSupplier != null) {
+                                logicsSupplier.addPropertyToToolbar(propController);
+                                logicsSupplier.updateToolbar();
                             }
                         } else {
                             propController.addView(formLayout);
@@ -150,7 +150,7 @@ public class PanelController {
             }
         }
 
-        panelLogicsSupplier.updateToolbar();
+        logicsSupplier.updateToolbar();
 
         setRowHighlight(rowHighlight);
 

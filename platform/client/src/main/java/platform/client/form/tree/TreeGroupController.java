@@ -8,6 +8,7 @@ import platform.client.form.panel.PanelToolbar;
 import platform.client.form.queries.FilterController;
 import platform.client.logics.*;
 import platform.interop.ClassViewType;
+import platform.interop.Order;
 
 import javax.swing.*;
 import java.awt.*;
@@ -179,6 +180,10 @@ public class TreeGroupController implements GroupObjectLogicsSupplier {
     @Override
     public ClientFormController getForm() {
         return form;
+    }
+
+    public void changeOrder(ClientPropertyDraw property, Order modiType) throws IOException {
+        tree.changeOrder(property, modiType);
     }
 
     @Override

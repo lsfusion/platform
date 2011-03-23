@@ -308,7 +308,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         }
     }
 
-    public void changeGridOrder(ClientPropertyDraw property, Order modiType) throws IOException {
+    public void changeOrder(ClientPropertyDraw property, Order modiType) throws IOException {
         if (grid != null) {
             grid.changeGridOrder(property, modiType);
         }
