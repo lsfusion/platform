@@ -1,6 +1,7 @@
 package platform.client.form.grid;
 
 import platform.base.BaseUtils;
+import platform.base.Pair;
 import platform.client.Main;
 import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
@@ -10,8 +11,8 @@ import platform.client.form.cell.CellTableInterface;
 import platform.client.form.cell.ClientAbstractCellEditor;
 import platform.client.form.cell.ClientAbstractCellRenderer;
 import platform.client.form.queries.QueryView;
-import platform.client.form.sort.TableSortableHeaderManager;
 import platform.client.form.sort.MultiLineHeaderRenderer;
+import platform.client.form.sort.TableSortableHeaderManager;
 import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
@@ -68,7 +69,7 @@ public abstract class GridTable extends ClientFormTable
 
     private int viewMoveInterval = 0;
     private ClientGroupObject groupObject;
-    private TableSortableHeaderManager sortableHeaderManager;
+    private TableSortableHeaderManager<Pair<ClientPropertyDraw, ClientGroupObjectValue>> sortableHeaderManager;
 
     public GridTable(GroupObjectController igroupObjectController, ClientFormController iform) {
         super(new GridTableModel());
@@ -91,9 +92,14 @@ public abstract class GridTable extends ClientFormTable
             }
         });
 
-        sortableHeaderManager = new TableSortableHeaderManager(this) {
-            protected void orderChanged(int column, Order modiType) {
-                GridTable.this.orderChanged(column, modiType);
+        sortableHeaderManager = new TableSortableHeaderManager<Pair<ClientPropertyDraw, ClientGroupObjectValue>>(this) {
+            protected void orderChanged(Pair<ClientPropertyDraw, ClientGroupObjectValue> columnKey, Order modiType) {
+                GridTable.this.orderChanged(columnKey, modiType);
+            }
+
+            @Override
+            protected Pair<ClientPropertyDraw, ClientGroupObjectValue> getColumnKey(int column) {
+                return new Pair<ClientPropertyDraw, ClientGroupObjectValue>(model.getColumnProperty(column), model.getColumnKey(column));
             }
         };
 
@@ -147,15 +153,9 @@ public abstract class GridTable extends ClientFormTable
         initializeActionMap();
     }
 
-    private void orderChanged(int column, Order modiType) {
+    private void orderChanged(Pair<ClientPropertyDraw, ClientGroupObjectValue> columnKey, Order modiType) {
         try {
-            ClientPropertyDraw property = model.getColumnProperty(column);
-
-            ClientGroupObjectValue columnKey = column >= 0 && column < model.getColumnCount()
-                        ? model.getColumnKey(column)
-                        : new ClientGroupObjectValue();
-
-            form.changeOrder(property, modiType, columnKey);
+            form.changeOrder(columnKey.first, modiType, columnKey.second);
             tableHeader.resizeAndRepaint();
         } catch (IOException e) {
             throw new RuntimeException("Ошибка изменении сортировки", e);
@@ -673,7 +673,11 @@ public abstract class GridTable extends ClientFormTable
     }
 
     public void changeGridOrder(ClientPropertyDraw property, Order modiType) throws IOException {
-        sortableHeaderManager.changeOrder(getMinPropertyIndex(property), modiType);
+        int ind = getMinPropertyIndex(property);
+        if (ind == -1) {
+            return;
+        }
+        sortableHeaderManager.changeOrder(new Pair<ClientPropertyDraw, ClientGroupObjectValue>(property, model.getColumnKey(ind)), modiType);
     }
 
     public int getMinPropertyIndex(ClientPropertyDraw property) {

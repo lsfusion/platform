@@ -6,10 +6,10 @@ import javax.swing.*;
 import javax.swing.table.TableColumnModel;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
-public abstract class TableSortableHeaderManager extends MouseAdapter {
+public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
 
     private final JTable table;
     private final boolean ignoreFirstColumn;
@@ -23,7 +23,7 @@ public abstract class TableSortableHeaderManager extends MouseAdapter {
         this.ignoreFirstColumn = ignoreFirstColumn;
     }
 
-    public void mouseClicked(MouseEvent me) {
+    public final void mouseClicked(MouseEvent me) {
 
         if (me.getClickCount() != 2) return;
         if (!(me.getButton() == MouseEvent.BUTTON1 || me.getButton() == MouseEvent.BUTTON3)) return;
@@ -33,58 +33,58 @@ public abstract class TableSortableHeaderManager extends MouseAdapter {
         int column = columnModel.getColumn(viewColumn).getModelIndex();
 
         if (column != -1 && !(ignoreFirstColumn && column==0)) {
-            Boolean sortDir = getSortDirection(column);
+            T columnKey = getColumnKey(column);
+            Boolean sortDir = orderDirections.get(columnKey);
             if (sortDir == null || !sortDir) {
                 if (me.getButton() == MouseEvent.BUTTON1)
-                    changeOrder(column, Order.REPLACE);
+                    changeOrder(columnKey, Order.REPLACE);
                  else
-                    changeOrder(column, Order.ADD);
+                    changeOrder(columnKey, Order.ADD);
             } else {
                 if (me.getButton() == MouseEvent.BUTTON1) {
-                    changeOrder(column, Order.DIR);
+                    changeOrder(columnKey, Order.DIR);
                 } else {
-                    changeOrder(column, Order.REMOVE);
+                    changeOrder(columnKey, Order.REMOVE);
                 }
             }
         }
-
     }
 
-    private final List<Integer> orders = new ArrayList<Integer>();
-    private final List<Boolean> orderDirections = new ArrayList<Boolean>();
+    private final Map<T, Boolean> orderDirections = new HashMap<T, Boolean>();
 
-    public Boolean getSortDirection(int column) {
-        int ordNum = orders.indexOf(column);
-        return (ordNum != -1) ? orderDirections.get(ordNum) : null;
+    public final Boolean getSortDirection(int column) {
+        if (column < 0 || column >= table.getColumnCount()) {
+            return null;
+        }
+
+        return orderDirections.get(getColumnKey(column));
     }
 
-    public void changeOrder(int column, Order modiType) {
-        int ordNum;
+    public final void changeOrder(T columnKey, Order modiType) {
+        if (columnKey == null) {
+            return;
+        }
+
         switch (modiType) {
             case REPLACE:
-                orders.clear();
                 orderDirections.clear();
-
-                orders.add(column);
-                orderDirections.add(true);
+                orderDirections.put(columnKey, true);
                 break;
             case ADD:
-                orders.add(column);
-                orderDirections.add(true);
+                orderDirections.put(columnKey, true);
                 break;
             case DIR:
-                ordNum = orders.indexOf(column);
-                orderDirections.set(ordNum, !orderDirections.get(ordNum));
+                orderDirections.put(columnKey, !orderDirections.get(columnKey));
                 break;
             case REMOVE:
-                ordNum = orders.indexOf(column);
-                orders.remove(ordNum);
-                orderDirections.remove(ordNum);
+                orderDirections.remove(columnKey);
                 break;
         }
 
-        orderChanged(column, modiType);
+        orderChanged(columnKey, modiType);
     }
 
-    protected abstract void orderChanged(int column, Order modiType);
+    protected abstract void orderChanged(T columnKey, Order modiType);
+
+    protected abstract T getColumnKey(int column);
 }

@@ -52,7 +52,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
     boolean plainTreeMode = false;
 
-    private TableSortableHeaderManager sortableHeaderManager;
+    private TableSortableHeaderManager<ClientPropertyDraw> sortableHeaderManager;
 
     public TreeGroupTable(ClientFormController iform, ClientTreeGroup itreeGroup) {
         form = iform;
@@ -67,9 +67,14 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
         rootNode = model.getRoot();
 
-        sortableHeaderManager = new TableSortableHeaderManager(this, true) {
-            protected void orderChanged(int column, Order modiType) {
-                TreeGroupTable.this.orderChanged(column, modiType);
+        sortableHeaderManager = new TableSortableHeaderManager<ClientPropertyDraw>(this, true) {
+            protected void orderChanged(ClientPropertyDraw columnKey, Order modiType) {
+                TreeGroupTable.this.orderChanged(columnKey, modiType);
+            }
+
+            @Override
+            protected ClientPropertyDraw getColumnKey(int column) {
+                return model.getColumnProperty(column);
             }
         };
 
@@ -166,9 +171,9 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         currentTreePath = new TreePath(rootNode);
     }
 
-    private void orderChanged(int column, Order modiType) {
+    private void orderChanged(ClientPropertyDraw columnKey, Order modiType) {
         try {
-            form.changeOrder(model.getColumnProperty(column), modiType, new ClientGroupObjectValue());
+            form.changeOrder(columnKey, modiType, new ClientGroupObjectValue());
             tableHeader.resizeAndRepaint();
         } catch (IOException e) {
             throw new RuntimeException("Ошибка изменении сортировки", e);
@@ -452,7 +457,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     public void changeOrder(ClientPropertyDraw property, Order modiType) throws IOException {
         int propertyIndex = model.getPropertyColumnIndex(property);
         if (propertyIndex > 0) {
-            sortableHeaderManager.changeOrder(propertyIndex, modiType);
+            sortableHeaderManager.changeOrder(property, modiType);
         } else {
             //меняем напрямую для верхних groupObjects
             form.changeOrder(property, modiType, new ClientGroupObjectValue());
