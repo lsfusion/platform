@@ -18,10 +18,10 @@ public class DesignStyles {
     private static void setDefaultStyle(JRDesignStyle style) {
         style.setName("DefaultStyle");
 
-        style.setFontName("Tahoma");
+        style.setFontName("Serif");
         style.setFontSize(10);
         style.setVerticalAlignment(VerticalAlignEnum.MIDDLE);
-        style.setPdfFontName("c:/windows/fonts/tahoma.ttf"); // todo [dale]: таскать с собой шрифт?
+        style.setPdfFontName("TimesFont");
         style.setPdfEncoding("Cp1251");
         style.setPdfEmbedded(false);
     }

@@ -3,7 +3,7 @@
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="Times-Roman" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<parameter name="vote_report" class="net.sf.jasperreports.engine.JasperReport"/>
 	<parameter name="vote_source" class="net.sf.jasperreports.engine.JRDataSource"/>
 	<parameter name="vote_params" class="java.util.Map"/>

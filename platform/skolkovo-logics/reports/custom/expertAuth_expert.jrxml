@@ -3,8 +3,8 @@
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="Serif" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
-	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="Serif" pdfEncoding="Cp1251" isPdfEmbedded="false">
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
+	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
 			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 		</box>
@@ -66,7 +66,7 @@
 			<textField>
 				<reportElement x="19" y="237" width="545" height="134"/>
 				<textElement verticalAlignment="Top">
-					<font fontName="Serif" size="14"/>
+					<font size="14" isBold="false" isItalic="false"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Бюллетени в формате Excel остались в прошлом. С этого момента Вы сможете оценивать проект, используя веб-интерфейс нашей информационной системы. Ссылку на бюллетень оценки Вы будете получать в письме вместе с материалами проекта.":"You will be able to evaluate the project using the web interface of our Expert Information System. On a regular basis, you will be receiving links to the projects assessment ballots by email along with the project materials. Please, note that project materials are confidential and intended only for review purposes. ")]]></textFieldExpression>
 			</textField>
