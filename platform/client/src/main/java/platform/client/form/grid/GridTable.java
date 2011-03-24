@@ -344,6 +344,12 @@ public abstract class GridTable extends ClientFormTable
         }
 
         final int colSel = getColumnModel().getSelectionModel().getLeadSelectionIndex();
+
+        // scrollRectToVisible обязательно должен идти до setLeadSelectionIndex
+        // иначе, если объект за пределами текущего "окна", сработает JViewport.changeListener
+        // и он изменит текущий объект на другой (firstRow или lastRow)
+        scrollRectToVisible(getCellRect(rowNumber, (colSel == -1) ? 0 : colSel, true));
+
         if (colSel == -1) {
             isInternalNavigating = true;
             changeSelection(rowNumber, 0, false, false);
@@ -352,8 +358,6 @@ public abstract class GridTable extends ClientFormTable
         } else {
             getSelectionModel().setLeadSelectionIndex(rowNumber);
         }
-
-        scrollRectToVisible(getCellRect(rowNumber, (colSel == -1) ? 0 : colSel, true));
     }
 
     public void setRowKeys(List<ClientGroupObjectValue> irowKeys) {
