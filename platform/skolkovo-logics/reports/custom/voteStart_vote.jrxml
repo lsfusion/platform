@@ -3,8 +3,8 @@
 	<property name="ireport.zoom" value="1.1000000000000025"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
-	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="/usr/include/X11/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
+	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="/usr/include/X11/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
 			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 		</box>
@@ -64,7 +64,7 @@
 					<textFieldExpression class="java.lang.String"><![CDATA["О созыве заседания " + ($F{prevDateVote}==null?"":"новой ") + "Экспертной коллегии"]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="34" y="241" width="523" height="56"/>
+					<reportElement positionType="Float" x="34" y="241" width="523" height="56"/>
 					<textElement/>
 					<textFieldExpression class="java.lang.String"><![CDATA["р е ш и л\n" +
 "1. Созвать заседание " + ($F{prevDateVote}==null?"":"новой ") + "Экспертной коллегии для проведения экспертизы указанной заявки по существу.\n" +
@@ -80,7 +80,7 @@
 		<groupFooter>
 			<band height="96">
 				<textField>
-					<reportElement x="34" y="12" width="523" height="69"/>
+					<reportElement positionType="Float" x="34" y="12" width="523" height="69"/>
 					<textElement/>
 					<textFieldExpression class="java.lang.String"><![CDATA["3. Направить членам " + ($F{prevDateVote}==null?"":"новой ") + "Экспертной коллегии материалы заявки соискателя (в электронном виде) и Бюллетень оценки.\n" +
 "\n" +
