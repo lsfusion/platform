@@ -708,8 +708,8 @@ public abstract class GridTable extends ClientFormTable
         }
     }
 
-    public void configureWheelScrolling(final JViewport viewport) {
-        assert viewport == getParent();
+    public void configureWheelScrolling(final JScrollPane pane) {
+        assert pane.getViewport() == getParent();
         if (groupObject.pageSize != 0) {
             addMouseWheelListener(new MouseWheelListener() {
                 @Override
@@ -718,14 +718,16 @@ public abstract class GridTable extends ClientFormTable
                 }
             });
 
-            viewport.addChangeListener(new ChangeListener() {
+            pane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
                 @Override
-                public void stateChanged(ChangeEvent e) {
-                    Rectangle viewRect = viewport.getViewRect();
+                public void adjustmentValueChanged(AdjustmentEvent e) {
                     int currRow = getSelectedRow();
                     if (currRow != -1) {
+                        Rectangle viewRect = pane.getViewport().getViewRect();
                         int firstRow = rowAtPoint(new Point(0, viewRect.y + getRowHeight() - 1));
                         int lastRow = rowAtPoint(new Point(0, viewRect.y + viewRect.height - getRowHeight() + 1));
+
+                        if (lastRow < firstRow) return;
 
                         if (currRow > lastRow) {
                             selectRow(lastRow);
