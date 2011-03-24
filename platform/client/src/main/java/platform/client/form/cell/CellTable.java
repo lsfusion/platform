@@ -57,7 +57,7 @@ public abstract class CellTable extends SingleCellTable
             if (value instanceof Date) {
                 tooltip = Main.formatDate(value);
             }
-            return SwingUtils.toMultilineHtml(BaseUtils.rtrim(tooltip), getFont());
+            return SwingUtils.toMultilineHtml(BaseUtils.rtrim(tooltip), createToolTip().getFont());
         } else {
             return null;
         }

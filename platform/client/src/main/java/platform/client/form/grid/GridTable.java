@@ -174,7 +174,7 @@ public abstract class GridTable extends ClientFormTable
         if (value instanceof Date) {
             value = Main.formatDate(value);
         }
-        return (value != null) ? SwingUtils.toMultilineHtml(BaseUtils.rtrim(String.valueOf(value)), getFont()) : null;
+        return (value != null) ? SwingUtils.toMultilineHtml(BaseUtils.rtrim(String.valueOf(value)), createToolTip().getFont()) : null;
     }
 
     private void initializeActionMap() {
