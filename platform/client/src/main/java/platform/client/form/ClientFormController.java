@@ -660,7 +660,7 @@ public class ClientFormController {
     void print() {
 
         try {
-            Main.frame.runReport(remoteForm);
+            Main.frame.runReport(remoteForm, false);
         } catch (Exception e) {
             throw new RuntimeException("Ошибка при печати формы", e);
         }

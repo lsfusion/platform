@@ -3,9 +3,7 @@ package platform.fullclient.layout;
 import bibliothek.gui.dock.common.MultipleCDockableFactory;
 import jasperapi.ReportGenerator;
 import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.export.JExcelApiExporter;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.view.JRViewer;
@@ -14,7 +12,6 @@ import platform.interop.form.RemoteFormInterface;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
 import java.io.IOException;
 
 public class ReportDockable extends FormDockable {
@@ -38,7 +35,6 @@ public class ReportDockable extends FormDockable {
 
     @Override
     Component getActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
-
         try {
             ReportGenerator report = new ReportGenerator(remoteForm);
             JasperPrint print = report.createReport(false, false, null);
@@ -62,32 +58,5 @@ public class ReportDockable extends FormDockable {
             }
         });
         return viewer;
-    }
-
-    public static void exportToExcel(RemoteFormInterface remoteForm) {
-
-        try {
-
-            File tempFile = File.createTempFile("lsf", ".xls");
-
-            JExcelApiExporter xlsExporter = new JExcelApiExporter();
-
-            ReportGenerator report = new ReportGenerator(remoteForm);
-            JasperPrint print = report.createReport(true, true, null);
-            print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
-
-            xlsExporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
-            xlsExporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
-            xlsExporter.exportReport();
-
-            if (Desktop.isDesktopSupported()) {
-                Desktop.getDesktop().open(tempFile);
-            }
-
-            tempFile.deleteOnExit();
-
-        } catch (Exception e) {
-            throw new RuntimeException("Ошибка при экспорте в Excel", e);
-        }
     }
 }

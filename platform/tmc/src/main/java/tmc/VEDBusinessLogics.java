@@ -4,7 +4,6 @@ import jxl.Sheet;
 import jxl.Workbook;
 import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.action.*;
@@ -38,11 +37,8 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.DataSession;
-import platform.server.session.MapDataChanges;
-import platform.server.session.PropertyChange;
 import tmc.integration.PanelExternalScreen;
 import tmc.integration.PanelExternalScreenParameters;
 import tmc.integration.exp.AbstractSaleExportTask;
@@ -3058,7 +3054,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addFixedFilter(new NotNullFilterEntity(getPropertyObject(articleQuantity)));
             }
 
-            addFAProp(getActionGroup(), this, objDoc);
+            addMFAProp(getActionGroup(), caption, this, new ObjectEntity[] {objDoc});
         }
 
         protected ValueClass getDocClass() {

@@ -23,18 +23,19 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
 
     public void execute(FormClientAction action) {
         try {
-            if (!action.isModal) {
-                if (action.isPrintForm)
-                    Main.frame.runReport(action.remoteForm);
-                else
-                    Main.frame.runForm(action.remoteForm);
+            if (action.isPrintForm) {
+                Main.frame.runReport(action.remoteForm, action.isModal);
             } else {
-                ClientModalForm modalForm = new ClientModalForm(Main.frame, action.remoteForm, action.newSession);
-                modalForm.setDefaultSize();
-                modalForm.setLocationRelativeTo(null);
-                modalForm.setVisible(true);
-                modalForm.dispose();
-                modalForm.closed();
+                if (!action.isModal) {
+                    Main.frame.runForm(action.remoteForm);
+                } else {
+                    ClientModalForm modalForm = new ClientModalForm(Main.frame, action.remoteForm, action.newSession);
+                    modalForm.setDefaultSize();
+                    modalForm.setLocationRelativeTo(null);
+                    modalForm.setVisible(true);
+                    modalForm.dispose();
+                    modalForm.closed();
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -2384,6 +2384,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                                                               "Ввод нового товара",
                                                               createItemForm,
                                                               new ObjectEntity[]{createItemForm.objSupplier, createItemForm.objBarcode},
+                                                              true,
                                                               createItemForm.addPropertyObject(addItemBarcode, createItemForm.objBarcode)
                                                       ), 1, 2,
                                                       barcodeToObject, 2

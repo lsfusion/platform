@@ -2537,7 +2537,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity... setProperties) {
-        return addMFAProp(group, caption, form, objectsToSet, true, setProperties);
+        return addMFAProp(group, caption, form, objectsToSet, false, setProperties);
     }
 
     protected LP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession, PropertyObjectEntity... setProperties) {

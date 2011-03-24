@@ -51,7 +51,7 @@ public class SimpleMainFrame extends MainFrame {
     }
 
     @Override
-    public void runReport(RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException {
+    public void runReport(RemoteFormInterface remoteForm, boolean isModal) throws ClassNotFoundException, IOException {
         // надо здесь подумать, что вызывать
     }
 

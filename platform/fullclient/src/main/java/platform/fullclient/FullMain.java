@@ -1,9 +1,9 @@
 package platform.fullclient;
 
+import jasperapi.ReportGenerator;
 import platform.client.Main;
 import platform.client.MainFrame;
 import platform.fullclient.layout.DockableMainFrame;
-import platform.fullclient.layout.ReportDockable;
 import platform.interop.ServerInfo;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
@@ -21,7 +21,7 @@ public class FullMain extends Main {
             }
 
             public void runExcel(RemoteFormInterface remoteForm) {
-                ReportDockable.exportToExcel(remoteForm);
+                ReportGenerator.exportToExcel(remoteForm);
             }
 
             public boolean isFull() {

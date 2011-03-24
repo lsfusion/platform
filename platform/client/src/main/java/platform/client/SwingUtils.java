@@ -34,14 +34,18 @@ public class SwingUtils {
 
     public static Window getWindow(Component comp) {
 
-        while (comp != null && !(comp instanceof Window)) comp = comp.getParent();
+        while (comp != null && !(comp instanceof Window)) {
+            comp = comp.getParent();
+        }
 
         return (Window) comp;
     }
 
     public static JTable getJTable(Component comp) {
 
-        while (comp != null && !(comp instanceof JTable)) comp = comp.getParent();
+        while (comp != null && !(comp instanceof JTable)) {
+            comp = comp.getParent();
+        }
 
         return (JTable) comp;
     }
@@ -98,8 +102,9 @@ public class SwingUtils {
         if (timer != null && timer.isRunning()) {
             if (execute) {
                 ActionListener[] actions = timer.getActionListeners();
-                for (ActionListener action : actions)
+                for (ActionListener action : actions) {
                     action.actionPerformed(null);
+                }
             }
             timer.stop();
             timers.remove(actionID);
@@ -112,12 +117,12 @@ public class SwingUtils {
     public static int showConfirmDialog(JComponent parentComponent, Object message, String title, int messageType, int initialValue) {
 
         Object[] options = {UIManager.getString("OptionPane.yesButtonText"),
-                UIManager.getString("OptionPane.noButtonText")};
+                            UIManager.getString("OptionPane.noButtonText")};
 
         JOptionPane dialogPane = new JOptionPane(message,
-                messageType,
-                JOptionPane.YES_NO_OPTION,
-                null, options, options[initialValue]);
+                                                 messageType,
+                                                 JOptionPane.YES_NO_OPTION,
+                                                 null, options, options[initialValue]);
 
         addFocusTraversalKey(dialogPane, KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, KeyStroke.getKeyStroke("RIGHT"));
         addFocusTraversalKey(dialogPane, KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, KeyStroke.getKeyStroke("UP"));
@@ -127,10 +132,11 @@ public class SwingUtils {
         JDialog dialog = dialogPane.createDialog(parentComponent, title);
         dialog.setVisible(true);
 
-        if (dialogPane.getValue() == options[0])
+        if (dialogPane.getValue() == options[0]) {
             return JOptionPane.YES_OPTION;
-        else
+        } else {
             return JOptionPane.NO_OPTION;
+        }
     }
 
     // приходится писать свой toString у KeyStroke, поскольку, по умолчанию, используется абсолютно кривой
@@ -147,10 +153,30 @@ public class SwingUtils {
     }
 
     public static Dimension clipDimension(Dimension toClip, Dimension min, Dimension max) {
-
         return new Dimension(Math.max(min.width, Math.min(max.width, toClip.width)),
-                Math.max(min.height, Math.min(max.height, toClip.height))
+                             Math.max(min.height, Math.min(max.height, toClip.height))
         );
+    }
+
+    public static Dimension clipToScreen(Dimension toClip) {
+        return clipDimension(toClip, new Dimension(0, 0), getUsableDeviceBounds());
+    }
+
+    /**
+     * c/p from org.jdesktop.swingx.util.WindowUtils
+     */
+    private static Dimension getUsableDeviceBounds() {
+        GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment()
+                    .getDefaultScreenDevice().getDefaultConfiguration();
+
+        Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
+        Rectangle bounds = gc.getBounds();
+        bounds.x += insets.left;
+        bounds.y += insets.top;
+        bounds.width -= (insets.left + insets.right);
+        bounds.height -= (insets.top + insets.bottom);
+
+        return new Dimension(bounds.width, bounds.height);
     }
 
     public static String toMultilineHtml(String text, Font font) {

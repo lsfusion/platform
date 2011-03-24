@@ -76,7 +76,7 @@ public abstract class MainFrame extends JFrame {
         setTitle(Main.getMainTitle() + " - " + inputStream.readObject());
     }
 
-    public abstract void runReport(RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException;
+    public abstract void runReport(RemoteFormInterface remoteForm, boolean isModal) throws ClassNotFoundException, IOException;
 
     public abstract void runForm(RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException;
 }

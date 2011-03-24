@@ -2,17 +2,18 @@ package jasperapi;
 
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.design.*;
+import net.sf.jasperreports.engine.export.JExcelApiExporter;
+import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import platform.base.BaseUtils;
 import platform.base.Pair;
 import platform.base.ByteArray;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.ReportConstants;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.awt.*;
+import java.io.*;
 import java.util.*;
+import java.util.List;
 
 /**
  * User: DAle
@@ -309,5 +310,31 @@ public class ReportGenerator {
             res.add(subField);
         }
         return res;
+    }
+
+    public static void exportToExcel(RemoteFormInterface remoteForm) {
+        try {
+
+            File tempFile = File.createTempFile("lsf", ".xls");
+
+            JExcelApiExporter xlsExporter = new JExcelApiExporter();
+
+            ReportGenerator report = new ReportGenerator(remoteForm);
+            JasperPrint print = report.createReport(true, true, null);
+            print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
+
+            xlsExporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
+            xlsExporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
+            xlsExporter.exportReport();
+
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().open(tempFile);
+            }
+
+            tempFile.deleteOnExit();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка при экспорте в Excel", e);
+        }
     }
 }
