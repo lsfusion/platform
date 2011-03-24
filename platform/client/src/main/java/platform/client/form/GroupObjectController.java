@@ -262,10 +262,8 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
     }
 
     public void setCurrentGroupObject(ClientGroupObjectValue value) {
-        if (!value.equals(currentObject)) {
-            currentObject = value;
-            grid.selectObject(currentObject);
-        }
+        currentObject = value;
+        grid.selectObject(currentObject);
     }
 
     public void updateDrawColumnKeys(ClientPropertyDraw property, List<ClientGroupObjectValue> groupColumnKeys) {
