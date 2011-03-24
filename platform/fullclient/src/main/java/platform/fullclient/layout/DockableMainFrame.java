@@ -4,8 +4,8 @@ import bibliothek.gui.dock.common.CControl;
 import bibliothek.gui.dock.common.CGrid;
 import bibliothek.gui.dock.common.DefaultSingleCDockable;
 import bibliothek.gui.dock.common.SingleCDockable;
-import bibliothek.gui.dock.common.theme.ThemeMap;
 import bibliothek.gui.dock.common.menu.*;
+import bibliothek.gui.dock.common.theme.ThemeMap;
 import bibliothek.gui.dock.facile.menu.RootMenuPiece;
 import bibliothek.gui.dock.facile.menu.SubmenuPiece;
 import bibliothek.gui.dock.support.menu.SeparatingMenuPiece;
@@ -75,8 +75,17 @@ public class DockableMainFrame extends MainFrame {
     }
 
     @Override
-    public void runReport(RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException {
-        view.openReport(mainNavigator, remoteForm);
+    public void runReport(RemoteFormInterface remoteForm, boolean isModal) throws ClassNotFoundException, IOException {
+        if (isModal) {
+            try {
+                ReportDialog dlg = new ReportDialog(Main.frame,  remoteForm);
+                dlg.setVisible(true);
+            } catch (JRException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            view.openReport(mainNavigator, remoteForm);
+        }
     }
 
     @Override
