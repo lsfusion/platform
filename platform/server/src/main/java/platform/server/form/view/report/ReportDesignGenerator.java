@@ -219,7 +219,7 @@ public class ReportDesignGenerator {
         dataField.setPositionType(PositionTypeEnum.FLOAT);
         dataField.setBlankWhenNull(true);
 
-        if (!toExcel) {
+        if (!toExcel) { // todo [dale]: Подумать, можно ли вообще избавиться от toExcel
             dataField.setPattern(reportField.pattern);
         }
 

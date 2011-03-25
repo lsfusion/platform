@@ -103,6 +103,7 @@ public class GroupObjectHierarchy {
         return degrees;
     }
 
+    /// Проверка на отсутствие циклов с помощью breadth-first search
     private boolean isValidForest(Map<GroupObjectEntity, List<GroupObjectEntity>> dependencies) {
         Set<GroupObjectEntity> was = new HashSet<GroupObjectEntity>();
         Queue<GroupObjectEntity> queue = new ArrayDeque<GroupObjectEntity>();
@@ -116,17 +117,18 @@ public class GroupObjectHierarchy {
             GroupObjectEntity cur = queue.poll();
             for (GroupObjectEntity dependentObj : dependencies.get(cur)) {
                 if (was.contains(dependentObj)) {
-                    return true;
+                    return false;
                 } else {
                     was.add(dependentObj);
                     queue.add(dependentObj);
                 }
             }
         }
-        return false;
+        return true;
     }
 
     private void checkValidity() {
+        // Проверка на петли + assertы на принадлежность списку групп
         for (Map.Entry<GroupObjectEntity, List<GroupObjectEntity>> entry : dependencies.entrySet()) {
             GroupObjectEntity obj = entry.getKey();
             assert groups.contains(obj);
@@ -135,7 +137,7 @@ public class GroupObjectHierarchy {
                 assert !obj.equals(dependentObj);
             }
         }
-        assert !isValidForest(dependencies);
+        assert isValidForest(dependencies);
     }
 
     public static final class ReportNode {
@@ -266,16 +268,16 @@ public class GroupObjectHierarchy {
             }
         }
 
-        private void squeeze(ReportNode ReportNode) {
-            Collection<ReportNode> children = dependencies.get(ReportNode);
+        private void squeeze(ReportNode reportNode) {
+            Collection<ReportNode> children = dependencies.get(reportNode);
             for (ReportNode child : children) {
                 squeeze(child);
             }
-            if (children.size() == 1 && !ReportNode.isNonJoinable()) {
-                ReportNode child = children.iterator().next();
-                dependencies.put(ReportNode, dependencies.get(child));
+            if (children.size() == 1 && !reportNode.isNonJoinable()) {
+                ReportNode child = BaseUtils.single(children);
+                dependencies.put(reportNode, dependencies.get(child));
                 dependencies.remove(child);
-                ReportNode.merge(child);
+                reportNode.merge(child);
                 reportNodes.remove(child);
             }
         }
