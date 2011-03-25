@@ -21,7 +21,7 @@ public class DesignStyles {
         style.setFontName("Serif");
         style.setFontSize(10);
         style.setVerticalAlignment(VerticalAlignEnum.MIDDLE);
-        style.setPdfFontName("TimesFont");
+        style.setPdfFontName("lsf.Times");
         style.setPdfEncoding("Cp1251");
         style.setPdfEmbedded(false);
     }
