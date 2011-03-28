@@ -19,7 +19,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
     public Color highlightColor;
 
-    public Boolean needVerticalScroll;
+    public Boolean needVerticalScroll = true;
     public Integer tableRowsCount;
 
     public GroupObjectView() {
