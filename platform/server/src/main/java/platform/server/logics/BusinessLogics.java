@@ -177,7 +177,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             DataObject newConnection = session.addObject(connection, session.modifier);
             connectionUser.execute(navigator.getUser().object, session, newConnection);
             connectionComputer.execute(navigator.getComputer().object, session, newConnection);
-            connectionCurrentStatus.execute(connectionStatus.getID("connected"), session, newConnection);
+            connectionCurrentStatus.execute(connectionStatus.getID("connectedConnection"), session, newConnection);
             connectionConnectTime.execute(currentDateTime.read(session), session, newConnection);
 
             session.apply(this);
@@ -195,7 +195,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 for (Iterator<Map.Entry<Pair<String, Integer>, RemoteNavigator>> iterator = navigators.entrySet().iterator(); iterator.hasNext();) {
                     RemoteNavigator navigator = iterator.next().getValue();
                     if (NavigatorFilter.EXPIRED.accept(navigator) || filter.accept(navigator)) {
-                        connectionCurrentStatus.execute(connectionStatus.getID("disconnected"), session, navigator.getConnection());
+                        connectionCurrentStatus.execute(connectionStatus.getID("disconnectedConnection"), session, navigator.getConnection());
                         iterator.remove();
                     }
                 }
@@ -933,7 +933,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         connection = addConcreteClass("connection", "Подключение", baseClass);
         connectionStatus = addStaticClass("connectionStatus", "Статус подключения",
-                                          new String[]{"connected", "disconnected"},
+                                          new String[]{"connectedConnection", "disconnectedConnection"},
                                           new String[]{"Подключён", "Отключён"});
 
         country = addConcreteClass("country", "Страна", baseClass.named);
@@ -1050,7 +1050,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         connectionConnectTime = addDProp(baseGroup, "connectionConnectTime", "Время подключения", DateTimeClass.instance, connection);
         connectionDisconnectTime = addDProp(baseGroup, "connectionDisconnectTime", "Время отключения", DateTimeClass.instance, connection);
         connectionDisconnectTime.setDerivedForcedChange(currentDateTime,
-                                                        addJProp(equals2, connectionCurrentStatus, 1, addCProp(connectionStatus, "disconnected")), 1);
+                                                        addJProp(equals2, connectionCurrentStatus, 1, addCProp(connectionStatus, "disconnectedConnection")), 1);
 
         connectionFormCount = addDProp(baseGroup, "connectionFormCount", "Количество открытых форм", IntegerClass.instance, connection, navigatorElement);
 
@@ -1215,7 +1215,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(new RegularFilterEntity(genID(),
-                                                          new CompareFilterEntity(addPropertyObject(connectionCurrentStatus, objConnection), Compare.EQUALS, connectionStatus.getDataObject("connected")),
+                                                          new CompareFilterEntity(addPropertyObject(connectionCurrentStatus, objConnection), Compare.EQUALS, connectionStatus.getDataObject("connectedConnection")),
                                                           "Активные подключения",
                                                           KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
             addRegularFilterGroup(filterGroup);
@@ -1710,9 +1710,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             PropertyChange statusChanges = new PropertyChange(
                     connectionCurrentStatus.getMapKeys(),
-                    connectionStatus.getDataObject("disconnected").getExpr(),
+                    connectionStatus.getDataObject("disconnectedConnection").getExpr(),
                     connectionCurrentStatus.property.getExpr(connectionCurrentStatus.getMapKeys())
-                            .compare(connectionStatus.getDataObject("connected").getExpr(), Compare.EQUALS));
+                            .compare(connectionStatus.getDataObject("connectedConnection").getExpr(), Compare.EQUALS));
 
             session.execute(connectionCurrentStatus.property, statusChanges, session.modifier, null, null);
 
