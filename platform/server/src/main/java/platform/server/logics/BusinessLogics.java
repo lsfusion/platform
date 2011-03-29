@@ -490,6 +490,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP vtrue, vzero;
     protected LP positive, negative;
 
+    protected LP dumb1;
+    protected LP dumb2;
+
     protected LP castText;
     protected LP addText2;
 
@@ -982,6 +985,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         between = addJProp("Между", and1, groeq2, 1, 2, groeq2, 3, 1);
         vtrue = addCProp("Истина", LogicalClass.instance, true);
         vzero = addCProp("0", DoubleClass.instance, 0);
+
+        dumb1 = dumb(1);
+        dumb2 = dumb(2);
 
         castText = addSFProp("CAST((prm1) as text)", TextClass.instance, 1);
         addText2 = addSFProp("((prm1)+(prm2))", TextClass.instance, 2);
@@ -1503,6 +1509,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected LP and(boolean... nots) {
         return addAFProp(nots);
+    }
+
+    @IdentityLazy
+    protected LP dumb(int interfaces) {
+        ValueClass params[] = new ValueClass[interfaces];
+        for (int i = 0; i < interfaces; ++i) {
+            params[i] = baseClass;
+        }
+        return addCProp("dumbProperty" + interfaces, StringClass.get(0), "", params);
     }
 
     private Map<ValueClass, LP> split = new HashMap<ValueClass, LP>();
