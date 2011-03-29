@@ -54,6 +54,7 @@ import platform.server.logics.property.group.PropertySet;
 import platform.server.logics.scheduler.Scheduler;
 import platform.server.logics.table.ImplementTable;
 import platform.server.logics.table.TableFactory;
+import platform.server.mail.EmailActionProperty;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.DataSession;
 import platform.server.session.PropertyChange;

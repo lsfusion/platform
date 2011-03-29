@@ -1,4 +1,4 @@
-package platform.server.logics.property.actions;
+package platform.server.mail;
 
 import jasperapi.ReportGenerator;
 import jasperapi.ReportHTMLExporter;
@@ -188,18 +188,19 @@ public class EmailActionProperty extends ActionProperty {
             String fromAddress = (String) BL.fromAddress.read(session);
             String userName = (String) BL.emailAccount.read(session);
             String password = (String) BL.emailPassword.read(session);
-            if(smtpHost==null || fromAddress==null)
-                actions.add(new MessageClientAction("Не задан SMTP хост или адрес отправителя. Письма отосланы не будут.","Отсылка писем"));
-            else {
-                try {
-                    EmailSender sender = new EmailSender(smtpHost.trim(), BaseUtils.nullTrim(smtpPort), fromAddress.trim(), BaseUtils.nullTrim(userName), BaseUtils.nullTrim(password), recepientEmails);
-                    sender.sendMail(subject, inlineForms, attachmentForms, attachmentFiles);
-                } catch (Exception e) {
-                    actions.add(new MessageClientAction("Не удалось отправить почту","Отсылка писем"));
-                }
+            if(smtpHost==null || fromAddress==null) {
+                String errorMessage = "Не задан SMTP хост или адрес отправителя. Письма отосланы не будут.";
+                EmailSender.logger.error(errorMessage);
+                actions.add(new MessageClientAction(errorMessage, "Отсылка писем"));
+            } else {
+                EmailSender sender = new EmailSender(smtpHost.trim(), BaseUtils.nullTrim(smtpPort), fromAddress.trim(), BaseUtils.nullTrim(userName), BaseUtils.nullTrim(password), recepientEmails);
+                sender.sendMail(subject, inlineForms, attachmentForms, attachmentFiles);
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            String errorMessage = "Не удалось отправить почту : " + e.toString();
+            EmailSender.logger.error(errorMessage);
+            actions.add(new MessageClientAction(errorMessage, "Отсылка писем"));
+            e.printStackTrace();
         }
     }
 
