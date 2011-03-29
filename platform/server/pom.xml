@@ -120,5 +120,10 @@
             <artifactId>commons-daemon</artifactId>
             <version>1.0.5</version>
         </dependency>
+        <dependency>
+            <groupId>com.berryworks.edireader</groupId>
+            <artifactId>edireader</artifactId>
+            <version>4.7.3</version>
+        </dependency>
     </dependencies>
 </project>

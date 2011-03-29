@@ -607,6 +607,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     ConcreteCustomClass tallyWeijlSupplier;
     ConcreteCustomClass hugoBossSupplier;
     ConcreteCustomClass mexxSupplier;
+    ConcreteCustomClass bestsellerSupplier;
     private LP jennyferImportInvoice;
     private LP jennyferImportArticleWeightInvoice;
     private LP tallyWeijlImportInvoice;
@@ -615,6 +616,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP mexxImportPricesInvoice;
     private LP mexxImportArticleInfoInvoice;
     private LP mexxImportColorInvoice;
+    private LP bestsellerImportInvoice;
+    private LP bestsellerImportCompositionInvoice;
     private AbstractGroup importInvoiceActionGroup;
     private LP printCreatePalletForm;
     private LP printCreateFreightBoxForm;
@@ -708,6 +711,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         tallyWeijlSupplier = addConcreteClass("tallyWeijlSupplier", "Tally Weijl", supplier);
         hugoBossSupplier = addConcreteClass("hugoBossSupplier", "Hugo Boss", supplier);
         mexxSupplier = addConcreteClass("mexxSupplier", "Mexx", supplier);
+        bestsellerSupplier = addConcreteClass("bestsellerSupplier", "Bestseller", supplier);
 
         subject = addAbstractClass("subject", "Субъект", baseClass.named);
         importer = addConcreteClass("importer", "Импортер", subject);
@@ -828,6 +832,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         mexxImportPricesInvoice = addAProp(importInvoiceActionGroup, new MexxImportPricesInvoiceActionProperty(this));
         mexxImportArticleInfoInvoice = addAProp(importInvoiceActionGroup, new MexxImportArticleInfoInvoiceActionProperty(this));
         mexxImportColorInvoice = addAProp(importInvoiceActionGroup, new MexxImportColorInvoiceActionProperty(this));
+        bestsellerImportInvoice = addAProp(importInvoiceActionGroup, new BestsellerImportInvoiceActionProperty(this));
+        bestsellerImportCompositionInvoice = addAProp(importInvoiceActionGroup, new BestsellerImportCompositionActionProperty(this));
 
         customCategory4CustomCategory6 = addDProp(idGroup, "customCategory4CustomCategory6", "Код(4)", customCategory4, customCategory6);
         customCategory6CustomCategory9 = addDProp(idGroup, "customCategory6CustomCategory9", "Код(6)", customCategory6, customCategory9);
