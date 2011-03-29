@@ -25,7 +25,7 @@ public class DialogFormEntity<T extends BusinessLogics<T>> extends AbstractClass
     }
 
     public DialogFormEntity(T BL, CustomClass cls) {
-        this(BL, cls, "dialogForm" + cls.getSID(), cls.caption);
+        this(BL, cls, "classForm" + cls.getSID() + "_dialog", cls.caption);
     }
 
     public ObjectEntity getObject() {

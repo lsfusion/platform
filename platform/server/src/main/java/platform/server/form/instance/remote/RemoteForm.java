@@ -25,7 +25,7 @@ import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.*;
 import platform.server.form.instance.filter.FilterInstance;
 import platform.server.form.instance.filter.RegularFilterGroupInstance;
-import platform.server.form.instance.listener.CurrentClassListener;
+import platform.server.form.instance.listener.RemoteFormListener;
 import platform.server.form.view.FormView;
 import platform.server.form.view.report.ReportDesignGenerator;
 import platform.server.logics.BusinessLogics;
@@ -49,18 +49,21 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     public final F form;
     public final FormView richDesign;
 
-    private final WeakReference<CurrentClassListener> weakCurrentClassListener;
+    private final WeakReference<RemoteFormListener> weakRemoteFormListener;
 
-    private CurrentClassListener getCurrentClassListener() {
-        return weakCurrentClassListener.get();
+    private RemoteFormListener getRemoteFormListener() {
+        return weakRemoteFormListener.get();
     }
 
-    public RemoteForm(F form, FormView richDesign, int port, CurrentClassListener currentClassListener) throws RemoteException {
+    public RemoteForm(F form, FormView richDesign, int port, RemoteFormListener remoteFormListener) throws RemoteException {
         super(port);
 
         this.form = form;
         this.richDesign = richDesign;
-        this.weakCurrentClassListener = new WeakReference<CurrentClassListener>(currentClassListener);
+        this.weakRemoteFormListener = new WeakReference<RemoteFormListener>(remoteFormListener);
+        if (remoteFormListener != null) {
+            remoteFormListener.formCreated(this);
+        }
     }
 
     public byte[] getReportHierarchyByteArray() {
@@ -275,8 +278,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         int objectClassID = 0;
         if (updateCurrentClass != null) {
             ConcreteCustomClass currentClass = form.getObjectClass(updateCurrentClass);
-            CurrentClassListener currentClassListener = getCurrentClassListener();
-            if (currentClass != null && currentClassListener != null && currentClassListener.changeCurrentClass(currentClass)) {
+            RemoteFormListener remoteFormListener = getRemoteFormListener();
+            if (currentClass != null && remoteFormListener != null && remoteFormListener.currentClassChanged(currentClass)) {
                 objectClassID = currentClass.ID;
             }
 
@@ -609,7 +612,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     public RemoteDialogInterface createClassPropertyDialog(int viewID, int value) throws RemoteException {
         try {
             DialogInstance<T> dialogForm = form.createClassPropertyDialog(viewID, value);
-            return new RemoteDialog<T>(dialogForm, dialogForm.entity.getRichDesign(), exportPort, getCurrentClassListener());
+            return new RemoteDialog<T>(dialogForm, dialogForm.entity.getRichDesign(), exportPort, getRemoteFormListener());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -620,7 +623,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             DialogInstance<T> dialogForm = form.createObjectEditorDialog(viewID);
             return dialogForm == null
                     ? null
-                    : new RemoteDialog<T>(dialogForm, dialogForm.entity.getRichDesign(), exportPort, getCurrentClassListener());
+                    : new RemoteDialog<T>(dialogForm, dialogForm.entity.getRichDesign(), exportPort, getRemoteFormListener());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -629,7 +632,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     public RemoteDialogInterface createEditorPropertyDialog(int viewID) throws RemoteException {
         try {
             DialogInstance<T> dialogForm = form.createEditorPropertyDialog(viewID);
-            return new RemoteDialog<T>(dialogForm, dialogForm.entity.getRichDesign(), exportPort, getCurrentClassListener());
+            return new RemoteDialog<T>(dialogForm, dialogForm.entity.getRichDesign(), exportPort, getRemoteFormListener());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -638,7 +641,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     public RemoteFormInterface createForm(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects) {
         try {
             FormInstance<T> formInstance = form.createForm(formEntity, mapObjects);
-            return new RemoteForm<T, FormInstance<T>>(formInstance, formEntity.getRichDesign(), exportPort, getCurrentClassListener());
+            return new RemoteForm<T, FormInstance<T>>(formInstance, formEntity.getRichDesign(), exportPort, getRemoteFormListener());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -646,7 +649,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     public RemoteForm createForm(FormInstance formInstance) {
         try {
-            return new RemoteForm<T, FormInstance<T>>(formInstance, formInstance.entity.getRichDesign(), exportPort, getCurrentClassListener());
+            return new RemoteForm<T, FormInstance<T>>(formInstance, formInstance.entity.getRichDesign(), exportPort, getRemoteFormListener());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

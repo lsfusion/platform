@@ -28,14 +28,14 @@ import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.FormInstance;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.listener.CurrentClassListener;
+import platform.server.form.instance.listener.RemoteFormListener;
 import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.listener.FocusListener;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.view.FormView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
+import platform.server.logics.NavigatorFilter;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
@@ -51,15 +51,23 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static platform.base.BaseUtils.nvl;
+
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
-public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject implements RemoteNavigatorInterface, FocusListener<T>, CustomClassListener, CurrentClassListener {
+public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject implements RemoteNavigatorInterface, FocusListener<T>, CustomClassListener, RemoteFormListener {
     protected final static Logger logger = Logger.getLogger(RemoteNavigator.class);
 
     T BL;
     SQLSession sql;
 
     private ClientCallBackController client;
+
+    private DataObject user;
+
+    private DataObject computer;
+
+    private DataObject connection;
 
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
 
@@ -76,8 +84,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         this.computer = new DataObject(computer, this.BL.computer);
         this.sql = this.BL.createSQL();
     }
-
-    private DataObject user;
 
     WeakIdentityHashSet<DataSession> sessions = new WeakIdentityHashSet<DataSession>();
     public void changeCurrentUser(DataObject user) {
@@ -111,7 +117,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         System.err.println(info + " в " +sdf.format(cal.getTime()));
     }
 
-    PropertyObjectInterfaceInstance computer;
     // просто закэшируем, чтобы быстрее было
     SecurityPolicy securityPolicy;
 
@@ -257,11 +262,46 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     //используется для RelevantClassNavigator
     CustomClass currentClass;
 
-    public boolean changeCurrentClass(ConcreteCustomClass customClass) {
+    public boolean currentClassChanged(ConcreteCustomClass customClass) {
         if (currentClass != null && currentClass.equals(customClass)) return false;
 
         currentClass = customClass;
         return true;
+    }
+
+    @Override
+    public void formCreated(RemoteForm form) {
+        updateOpenFormCount(form.getSID());
+    }
+
+    private void updateOpenFormCount(String sid) {
+        try {
+            DataSession session = createSession();
+
+            Integer formId = (Integer) BL.SIDToNavigatorElement.read(session, new DataObject(sid, BL.formSIDValueClass));
+            if (formId == null) {
+                //будем считать, что к SID модифицированных форм будет добавляться что-нибудь через подчёркивание
+                int ind = sid.indexOf('_');
+                if (ind != -1) {
+                    sid = sid.substring(0, ind);
+                    formId = (Integer) BL.SIDToNavigatorElement.read(session, new DataObject(sid, BL.formSIDValueClass));
+                }
+
+                if (formId == null) {
+                    return;
+                }
+            }
+
+            DataObject formObject = new DataObject(formId, BL.navigatorElement);
+
+            int count = 1 + nvl((Integer) BL.connectionFormCount.read(session, getConnection(), formObject), 0);
+            BL.connectionFormCount.execute(count, session, getConnection(), formObject);
+
+            session.apply(BL);
+            session.close();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void objectChanged(ConcreteCustomClass cls, int objectID) {
@@ -331,6 +371,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
             }
         }
         openForms.put(formEntity, remoteForm);
+
         return remoteForm;
     }
 
@@ -416,9 +457,25 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         classCache.put(cls, value);
     }
 
+    public DataObject getUser() {
+        return user;
+    }
+
+    public DataObject getComputer() {
+        return computer;
+    }
+
+    public DataObject getConnection() {
+        return connection;
+    }
+
+    public void setConnection(DataObject connection) {
+        this.connection = connection;
+    }
+
     public void close() throws RemoteException {
         try {
-            BL.removeNavigator(this);
+            BL.removeNavigators(NavigatorFilter.single(this));
             sql.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);

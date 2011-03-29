@@ -45,7 +45,10 @@ import platform.server.integration.*;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.*;
-import platform.server.logics.property.derived.*;
+import platform.server.logics.property.derived.ConcatenateProperty;
+import platform.server.logics.property.derived.CycleGroupProperty;
+import platform.server.logics.property.derived.DerivedProperty;
+import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.PropertySet;
 import platform.server.logics.scheduler.Scheduler;
@@ -53,6 +56,7 @@ import platform.server.logics.table.ImplementTable;
 import platform.server.logics.table.TableFactory;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.DataSession;
+import platform.server.session.PropertyChange;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
@@ -68,7 +72,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected final static Logger logger = Logger.getLogger(BusinessLogics.class);
 
     //время жизни неиспользуемого навигатора - 3 часа по умолчанию
-    private static final long MAX_FREE_NAVIGATOR_LIFE_TIME = Long.parseLong(System.getProperty("platform.server.navigatorMaxLifeTime", Long.toString(3L * 3600L * 1000L)));
+    public static final long MAX_FREE_NAVIGATOR_LIFE_TIME = Long.parseLong(System.getProperty("platform.server.navigatorMaxLifeTime", Long.toString(3L * 3600L * 1000L)));
 
     public byte[] findClass(String name) {
 
@@ -135,7 +139,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         try {
-
             User user = readUser(login, session);
             if (user == null) {
                 throw new LoginException();
@@ -152,9 +155,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 navigator.invalidate();
             } else {
                 navigator = new RemoteNavigator(this, user, computer, exportPort);
-                synchronized (navigators) {
-                    navigators.put(key, navigator);
-                }
+                addNavigator(key, navigator);
             }
 
             return navigator;
@@ -169,31 +170,46 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    public void removeNavigator(RemoteNavigator remoteNavigator) {
-        removeExpiredNavigators();
+    private void addNavigator(Pair<String, Integer> key, RemoteNavigator navigator) throws SQLException {
         synchronized (navigators) {
-            for (Iterator<Map.Entry<Pair<String, Integer>, RemoteNavigator>> iterator = navigators.entrySet().iterator(); iterator.hasNext();) {
-                Map.Entry<Pair<String, Integer>, RemoteNavigator> entry = iterator.next();
-                if (entry.getValue() == remoteNavigator) {
-                    iterator.remove();
-                    break;
+            DataSession session = createSession();
+
+            DataObject newConnection = session.addObject(connection, session.modifier);
+            connectionUser.execute(navigator.getUser().object, session, newConnection);
+            connectionComputer.execute(navigator.getComputer().object, session, newConnection);
+            connectionCurrentStatus.execute(connectionStatus.getID("connected"), session, newConnection);
+            connectionConnectTime.execute(currentDateTime.read(session), session, newConnection);
+
+            session.apply(this);
+            session.close();
+
+            navigator.setConnection(new DataObject(newConnection.object, connection));
+            navigators.put(key, navigator);
+        }
+    }
+
+    public void removeNavigators(NavigatorFilter filter) {
+        try {
+            DataSession session = createSession();
+            synchronized (navigators) {
+                for (Iterator<Map.Entry<Pair<String, Integer>, RemoteNavigator>> iterator = navigators.entrySet().iterator(); iterator.hasNext();) {
+                    RemoteNavigator navigator = iterator.next().getValue();
+                    if (NavigatorFilter.EXPIRED.accept(navigator) || filter.accept(navigator)) {
+                        connectionCurrentStatus.execute(connectionStatus.getID("disconnected"), session, navigator.getConnection());
+                        iterator.remove();
+                    }
                 }
+                getRestartController().forcedRestartIfAllowed();
             }
-            getRestartController().forcedRestartIfAllowed();
+            session.apply(this);
+            session.close();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
     private void removeExpiredNavigators() {
-        synchronized (navigators) {
-            for (Iterator<Map.Entry<Pair<String, Integer>, RemoteNavigator>> iterator = navigators.entrySet().iterator(); iterator.hasNext();) {
-                Map.Entry<Pair<String, Integer>, RemoteNavigator> entry = iterator.next();
-                long suspendTime = System.currentTimeMillis() - entry.getValue().getLastUsedTime();
-                if (suspendTime > MAX_FREE_NAVIGATOR_LIFE_TIME) {
-                    iterator.remove();
-                }
-            }
-            getRestartController().forcedRestartIfAllowed();
-        }
+        removeNavigators(NavigatorFilter.FALSE);
     }
 
     public boolean checkUser(String login, String password) {
@@ -249,6 +265,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public ConcreteCustomClass country;
     public ConcreteCustomClass navigatorElement;
     public ConcreteCustomClass form;
+    public ConcreteCustomClass connection;
+    public StaticCustomClass connectionStatus;
     public ConcreteCustomClass dictionary;
     public ConcreteCustomClass dictionaryEntry;
 
@@ -511,6 +529,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP currentUserName;
     public LP<?> loginToUser;
 
+    private LP connectionUser;
+    private LP connectionComputer;
+    private LP connectionCurrentStatus;
+    public LP connectionFormCount;
+    private LP connectionConnectTime;
+    private LP connectionDisconnectTime;
+
     public LP policyDescription;
     protected LP<?> nameToPolicy;
     public LP userRolePolicyOrder;
@@ -565,7 +590,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private LP selectUserRoles;
 
     private final ConcreteValueClass classSIDValueClass = StringClass.get(250);
-    private final StringClass formSIDValueClass = StringClass.get(50);
+    public final StringClass formSIDValueClass = StringClass.get(50);
     private final StringClass formCaptionValueClass = StringClass.get(250);
 
     public static int genSystemClassID(int id) {
@@ -903,6 +928,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         policy = addConcreteClass("policy", "Политика безопасности", baseClass.named);
         session = addConcreteClass("session", "Транзакция", baseClass);
 
+        connection = addConcreteClass("connection", "Подключение", baseClass);
+        connectionStatus = addStaticClass("connectionStatus", "Статус подключения",
+                                          new String[]{"connected", "disconnected"},
+                                          new String[]{"Подключён", "Отключён"});
+
         country = addConcreteClass("country", "Страна", baseClass.named);
 
         navigatorElement = addConcreteClass("navigatorElement", "Элемент навигатора", baseClass);
@@ -1003,6 +1033,20 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         name = addCUProp(baseGroup, "commonName", "Имя", addDProp("name", "Имя", InsensitiveStringClass.get(110), baseClass.named),
                 addJProp(insensitiveString2, userFirstName, 1, userLastName, 1));
+
+        connectionComputer = addDProp("connectionComputer", "Компьютер", computer, connection);
+        addJProp(baseGroup, "Компьютер", hostname, connectionComputer, 1);
+        connectionUser = addDProp("connectionUser", "Пользователь", customUser, connection);
+        addJProp(baseGroup, "Пользователь", userLogin, connectionUser, 1);
+        connectionCurrentStatus = addDProp("connectionCurrentStatus", "Статус подключения", connectionStatus, connection);
+        addJProp(baseGroup, "Статус подключения", name, connectionCurrentStatus, 1);
+
+        connectionConnectTime = addDProp(baseGroup, "connectionConnectTime", "Время подключения", DateTimeClass.instance, connection);
+        connectionDisconnectTime = addDProp(baseGroup, "connectionDisconnectTime", "Время отключения", DateTimeClass.instance, connection);
+        connectionDisconnectTime.setDerivedForcedChange(currentDateTime,
+                                                        addJProp(equals2, connectionCurrentStatus, 1, addCProp(connectionStatus, "disconnected")), 1);
+
+        connectionFormCount = addDProp(baseGroup, "connectionFormCount", "Количество открытых форм", IntegerClass.instance, connection, navigatorElement);
 
         userMainRole = addDProp(idGroup, "userMainRole", "Главная роль (ИД)", userRole, user);
         nameUserMainRole = addJProp(baseGroup, "nameUserMainRole", "Главная роль", name, userMainRole, 1);
@@ -1123,6 +1167,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         NavigatorElement policyElement = new NavigatorElement(adminElement, "policyElement", "Политика безопасности");
             addFormEntity(new UserPolicyFormEntity(policyElement, "userPolicyForm"));
             addFormEntity(new RolePolicyFormEntity(policyElement, "rolePolicyForm"));
+        addFormEntity(new ConnectionsFormEntity(adminElement, "connectionsForm"));
         addFormEntity(new AdminFormEntity(adminElement, "adminForm"));
         addFormEntity(new DaysOffFormEntity(adminElement, "daysOffForm"));
         addFormEntity(new DictionariesFormEntity(adminElement, "dictionariesForm"));
@@ -1147,6 +1192,28 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected void initBaseClassForms() {
         baseClass.named.setClassForm(new NamedObjectClassForm(this, baseClass.named));
+    }
+
+    private class ConnectionsFormEntity extends FormEntity {
+        protected ConnectionsFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Подключения к серверу");
+
+            ObjectEntity objConnection = addSingleGroupObject(connection, baseGroup, true);
+            ObjectEntity objForm = addSingleGroupObject(navigatorElement, "Открытые формы", baseGroup, true);
+
+//            setReadOnly(baseGroup, true);
+
+            addPropertyDraw(objConnection, objForm, baseGroup, true);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(connectionFormCount, objConnection, objForm), Compare.GREATER, 0));
+
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
+                                                          new CompareFilterEntity(addPropertyObject(connectionCurrentStatus, objConnection), Compare.EQUALS, connectionStatus.getDataObject("connected")),
+                                                          "Активные подключения",
+                                                          KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
+            addRegularFilterGroup(filterGroup);
+        }
     }
 
     private class UserPolicyFormEntity extends FormEntity {
@@ -1504,6 +1571,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         initAuthentication();
 
         synchronizeForms();
+        resetConnectionStatus();
 
         // считаем системного пользователя
         try {
@@ -1614,6 +1682,25 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             DataSession session = createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(key), props);
             service.synchronize(true, true, true);
+            session.apply(this);
+            session.close();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected void resetConnectionStatus() {
+        try {
+            DataSession session = createSession();
+
+            PropertyChange statusChanges = new PropertyChange(
+                    connectionCurrentStatus.getMapKeys(),
+                    connectionStatus.getDataObject("disconnected").getExpr(),
+                    connectionCurrentStatus.property.getExpr(connectionCurrentStatus.getMapKeys())
+                            .compare(connectionStatus.getDataObject("connected").getExpr(), Compare.EQUALS));
+
+            session.execute(connectionCurrentStatus.property, statusChanges, session.modifier, null, null);
+
             session.apply(this);
             session.close();
         } catch (Exception e) {
