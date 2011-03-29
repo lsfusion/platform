@@ -31,7 +31,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
 
     protected ImportField invoiceSIDField, boxNumberField, barCodeField, colorCodeField, sidField,
     colorNameField, sizeField, compositionField, countryField, customCodeField, customCode6Field,
-    unitPriceField, unitQuantityField, unitNetWeightField, originalNameField, numberSkuField;
+    unitPriceField, unitQuantityField, unitNetWeightField, originalNameField, numberSkuField, RRPField;
 
     public ImportBoxInvoiceActionProperty(RomanBusinessLogics BL, ValueClass supplierClass) {
         super(BL, "Импортировать инвойс", supplierClass);
@@ -64,6 +64,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         unitNetWeightField = new ImportField(BL.netWeightArticle);
         originalNameField = new ImportField(BL.originalNameArticle);
         numberSkuField = new ImportField(BL.numberDataListSku);
+        RRPField = new ImportField(BL.RRPDocumentArticle);
     }
 
     public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
@@ -130,6 +131,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         properties.add(new ImportProperty(numberSkuField, BL.numberDataListSku.getMapping(boxKey, itemKey)));
         properties.add(new ImportProperty(unitQuantityField, BL.quantityDataListSku.getMapping(boxKey, itemKey)));
         properties.add(new ImportProperty(unitPriceField, BL.priceDataDocumentItem.getMapping(invoiceKey, itemKey)));
+        properties.add(new ImportProperty(RRPField, BL.RRPDocumentArticle.getMapping(invoiceKey, articleKey)));
         properties.add(new ImportProperty(unitPriceField, BL.priceDocumentArticle.getMapping(invoiceKey, articleKey)));
 
         ImportKey<?>[] keysArray = {invoiceKey, boxKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key};

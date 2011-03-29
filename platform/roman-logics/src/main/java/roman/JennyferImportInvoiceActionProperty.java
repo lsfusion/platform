@@ -20,8 +20,8 @@ public class JennyferImportInvoiceActionProperty extends ImportBoxInvoiceActionP
     protected SingleSheetImporter createExporter(ImportInputTable inputTable) {
         return new JennyferInvoiceImporter(inputTable, new Object[] {invoiceSIDField, boxNumberField, new ImportField[] {barCodeField, sidField},
                 colorCodeField, new ImportField[] {colorNameField, sizeField}, null, compositionField, null, null, countryField,
-                new ImportField[] {customCodeField, customCode6Field}, null, null, unitPriceField, unitQuantityField, null,
-                numberSkuField, unitNetWeightField, originalNameField});
+                new ImportField[] {customCodeField, customCode6Field}, null, RRPField, unitPriceField, unitQuantityField, null,
+                null, unitNetWeightField, null, numberSkuField, originalNameField});
     }
 }
 

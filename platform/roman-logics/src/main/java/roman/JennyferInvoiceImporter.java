@@ -13,7 +13,7 @@ import java.text.ParseException;
  */
 
 public class JennyferInvoiceImporter extends SingleSheetImporter {
-    private static final int LAST_COLUMN = P;
+    private static final int LAST_COLUMN = S;
 
     public JennyferInvoiceImporter(ImportInputTable inputTable, Object... fields) {
         super(inputTable, fields);
@@ -45,6 +45,7 @@ public class JennyferInvoiceImporter extends SingleSheetImporter {
                     case 0 : return value.substring(1); // barcode
                     case 1 : return value.substring(1, 7); // article
                 }
+            case D: if (value.length() == 1) return '0' + value;
             case K:
                 switch (part) {
                     case 0: return value.substring(0, Math.min(10, value.length())); // customs code

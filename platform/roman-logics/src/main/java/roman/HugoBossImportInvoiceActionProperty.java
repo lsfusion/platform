@@ -32,6 +32,6 @@ public class HugoBossImportInvoiceActionProperty extends ImportBoxInvoiceActionP
         return new HugoBossInvoiceImporter(inputTable, new Object[] {null, new ImportField[] {invoiceSIDField, boxNumberField},
                 11, numberSkuField, null, null, null, unitNetWeightField, null, originalNameField, sidField,
                 colorCodeField, compositionField, new ImportField[] {customCodeField, customCode6Field}, countryField, null,
-                null, barCodeField, sizeField, unitQuantityField, unitPriceField, 36, colorNameField});
+                null, barCodeField, sizeField, unitQuantityField, unitPriceField, 36, new ImportField[] {colorNameField, RRPField}});
     }
 }
