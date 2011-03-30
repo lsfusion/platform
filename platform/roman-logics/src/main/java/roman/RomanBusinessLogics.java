@@ -1995,6 +1995,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
 
+            design.get(getPropertyDraw(sidDocument, objOrder)).caption = "Номер заказа";
+            design.get(getPropertyDraw(date, objOrder)).caption = "Дата заказа";
+
             design.defaultOrders.put(design.get(getPropertyDraw(numberListArticle)), true);
 
             design.get(getPropertyDraw(objectValue, objSIDArticleComposite)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0);
@@ -2181,6 +2184,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             design.get(getPropertyDraw(objectClassName, objInvoice)).caption = "Тип инвойса";
             design.get(getPropertyDraw(sidDocument, objInvoice)).caption = "Номер инвойса";
+            design.get(getPropertyDraw(date, objInvoice)).caption = "Дата инвойса";
+
+            design.get(getPropertyDraw(sidDocument, objOrder)).caption = "Номер заказа";
+            design.get(getPropertyDraw(date, objOrder)).caption = "Дата заказа";
 
             design.defaultOrders.put(design.get(getPropertyDraw(numberListArticle)), true);
             design.defaultOrders.put(design.get(getPropertyDraw(numberListSku)), true);
@@ -2264,7 +2271,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
 
+            design.get(getPropertyDraw(sidDocument, objShipment)).caption = "Номер поставки";
+            design.get(getPropertyDraw(date, objShipment)).caption = "Дата поставки";
             design.get(getPropertyDraw(sidDocument, objInvoice)).caption = "Номер инвойса";
+            design.get(getPropertyDraw(date, objInvoice)).caption = "Дата инвойса";
 
             design.get(objRoute.groupTo).grid.constraints.fillHorizontal = 0.3;
 
@@ -2429,17 +2439,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             filterGroup2.addFilter(new RegularFilterEntity(genID(),
                     new CompareFilterEntity(addPropertyObject(shipmentShipmentDetail, objShipmentDetail), Compare.EQUALS, objShipment),
                     "В текущей поставке",
-                    KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
+            filterGroup2.defaultFilter = 0;
             addRegularFilterGroup(filterGroup2);
-
-            if (box) {
-                RegularFilterGroupEntity filterGroup3 = new RegularFilterGroupEntity(genID());
-                filterGroup3.addFilter(new RegularFilterEntity(genID(),
-                        new CompareFilterEntity(addPropertyObject(supplierBoxShipmentDetail, objShipmentDetail), Compare.EQUALS, objSupplierBox),
-                        "В текущем коробе поставщика",
-                        KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
-                addRegularFilterGroup(filterGroup3);
-            }
 
             RegularFilterGroupEntity filterGroup4 = new RegularFilterGroupEntity(genID());
             filterGroup4.addFilter(new RegularFilterEntity(genID(),
@@ -2454,6 +2456,15 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                     "В текущем коробе для транспортировки",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
             addRegularFilterGroup(filterGroup5);
+
+            if (box) {
+                RegularFilterGroupEntity filterGroup3 = new RegularFilterGroupEntity(genID());
+                filterGroup3.addFilter(new RegularFilterEntity(genID(),
+                        new CompareFilterEntity(addPropertyObject(supplierBoxShipmentDetail, objShipmentDetail), Compare.EQUALS, objSupplierBox),
+                        "В текущем коробе поставщика",
+                        KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
+                addRegularFilterGroup(filterGroup3);
+            }
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionSeekPallet, objBarcode));
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionCheckPallet, objBarcode));
@@ -2510,6 +2521,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         @Override
         public DefaultFormView createDefaultRichDesign() {
             DefaultFormView design = super.createDefaultRichDesign();
+
+            design.get(getPropertyDraw(sidDocument, objShipment)).caption = "Номер поставки";
+            design.get(getPropertyDraw(date, objShipment)).caption = "Дата поставки";
 
             if (box)
                 design.setEditKey(design.get(getPropertyDraw(objectValue, objSIDSupplierBox)), KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0));
@@ -2629,6 +2643,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
 
             design.get(getPropertyDraw(sidDocument, objDirectInvoice)).caption = "Номер инвойса";
+            design.get(getPropertyDraw(date, objDirectInvoice)).caption = "Дата инвойса";
+            design.get(getPropertyDraw(sidDocument, objShipment)).caption = "Номер поставки";
+            design.get(getPropertyDraw(date, objShipment)).caption = "Дата поставки";
             design.get(getPropertyDraw(objectClassName, objFreight)).caption = "Статус фрахта";
 
             design.get(objDirectInvoice.groupTo).grid.constraints.fillHorizontal = 2;
@@ -2955,7 +2972,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             objArticle2 = addSingleGroupObject(article, "Артикул", sidArticle);
             addPropertyDraw(quantityDocumentArticle, objInvoice, objArticle2);
-            addPropertyDraw(objArticle2, nameArticleSku, nameThemeSupplierArticle, nameCategoryArticleSku);
+            addPropertyDraw(objArticle2, dumb1, nameArticleSku, nameThemeSupplierArticle, nameCategoryArticleSku);
 
             objSku = addSingleGroupObject(sku, "SKU", barcode);
             addPropertyDraw(quantityStockSku, objBox, objSku);
@@ -2966,7 +2983,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             objSku2 = addSingleGroupObject(sku, "SKU", barcode);
             addPropertyDraw(quantityDocumentSku, objInvoice, objSku2);
-            addPropertyDraw(objSku2, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
+            addPropertyDraw(objSku2, dumb1, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                      nameCountrySku, netWeightSku, mainCompositionSku, additionalCompositionSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku2.groupTo);
@@ -2998,7 +3015,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             design.getTreeContainer(treeSupplierBrand).setTitle("Поставщики и их бренды");
             design.getTreeContainer(treePalletBoxArticleSku).setTitle("В паллетах и коробах");
-            design.getTreeContainer(treeInvoiceArticleSku).setTitle("В инвойсах напрямую");                       
+            design.getTreeContainer(treeInvoiceArticleSku).setTitle("В инвойсах напрямую");
+
+            design.get(treeSupplierBrand).constraints.fillVertical = 2;
+            design.get(treePalletBoxArticleSku).constraints.fillVertical = 5;
+            design.get(treeInvoiceArticleSku).constraints.fillVertical = 5;
 
             ContainerView specContainer = design.createContainer();
             design.getMainContainer().addAfter(specContainer, design.get(treePalletBoxArticleSku));
@@ -3015,6 +3036,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objSupplier;
         private ObjectEntity objInvoice;
         private ObjectEntity objBox;
+        private ObjectEntity objArticle;
         private ObjectEntity objSku;
 
         private InvoiceShipmentFormEntity(NavigatorElement parent, String sID, String caption) {
@@ -3026,7 +3048,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             objBox = addSingleGroupObject(supplierBox, "Короб из инвойса", sidSupplierBox);
 
-            objSku = addSingleGroupObject(sku, "Товар", barcode, nameBrandSupplierArticleSku, nameCategoryArticleSku,
+            /*objArticle = addSingleGroupObject(article, "Артикул", sidArticle, nameBrandSupplierArticle, nameCategoryArticle);
+            addPropertyDraw(quantityDocumentArticle, objInvoice, objArticle);
+            addPropertyDraw(quantityListArticle, objInvoice, objArticle); */
+
+            objSku = addSingleGroupObject(sku, "Товар", barcode, sidArticleSku, nameBrandSupplierArticleSku, nameCategoryArticleSku,
                      sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                      nameCountrySku, netWeightSku, mainCompositionSku);
 
@@ -3039,9 +3065,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                       
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objInvoice), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(boxInvoiceSupplierBox, objBox), Compare.EQUALS, objInvoice));
+
+            /*addFixedFilter(new CompareFilterEntity(addPropertyObject(articleSku, objSku), Compare.EQUALS, objArticle));
+            addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(quantityDocumentArticle, objInvoice, objArticle)),
+                                              new NotNullFilterEntity(addPropertyObject(quantityInvoiceArticle, objInvoice, objArticle)))); */
+
             addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(quantityDocumentSku, objInvoice, objSku)),
                                               new NotNullFilterEntity(addPropertyObject(quantityInvoiceSku, objInvoice, objSku))));
-            //addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityListSku, objBox, objSku)));
 
         }
 
@@ -3462,7 +3492,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             design.get(getPropertyDraw(objectClassName, objFreight)).caption = "Статус фрахта";
 
-            ContainerView specContainer = design.createContainer("Итоги");
+            ContainerView specContainer = design.createContainer("Итоги по текущему году");
             specContainer.add(design.get(getPropertyDraw(sumInCurrentYear)));
             specContainer.add(design.get(getPropertyDraw(sumInOutCurrentYear)));
             specContainer.add(design.get(getPropertyDraw(balanceSumCurrentYear)));
