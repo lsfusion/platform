@@ -412,8 +412,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         succeededVote = addJProp(voteResultGroup, "succeededVote", "Состоялось", groeq2, quantityDoneVote, 1, limitExperts); // достаточно экспертов
 
         doneExpertVoteDateFromDateTo = addJProp(and(false, false, false, false), doneExpertVote, 1, 2,
-                                                                          addJProp(groeq2, date, 1, 2), 2, 3,
-                                                                          addJProp(lsoeq2, date, 1, 2), 2, 4,
+                                                                          addJProp(groeq2, dateExpertVote, 1, 2, 3), 1, 2, 3,
+                                                                          addJProp(lsoeq2, dateExpertVote, 1, 2, 3), 1, 2, 4,
                                                                           is(DateClass.instance), 3,
                                                                           is(DateClass.instance), 4);
         quantityDoneExpertDateFromDateTo = addSGProp("quantityDoneExpertDateFromDateTo", "Кол-во заседаний",
@@ -969,7 +969,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             addPropertyDraw(objDateTo, objectValue);
             getPropertyDraw(objectValue, objDateTo).setSID("dateTo");
 
-            objExpert = addSingleGroupObject(4, "expert", expert, userFirstName, userLastName);
+            objExpert = addSingleGroupObject(4, "expert", expert, userFirstName, userLastName, nameNativeClusterExpert);
             objExpert.groupTo.initClassView = ClassViewType.PANEL;
 
             addPropertyDraw(quantityDoneExpertDateFromDateTo, objExpert, objDateFrom, objDateTo);
@@ -979,6 +979,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             objVote = addSingleGroupObject(6, "vote", vote, dateProjectVote, date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote);
 
             addPropertyDraw(nameNativeClaimerVote, objVoteHeader).setSID("nameNativeClaimerVoteHeader");
+            addPropertyDraw(nameNativeProjectVote, objVoteHeader);
 
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
 
