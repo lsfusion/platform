@@ -21,7 +21,6 @@ public class ClientModalForm extends JDialog {
         this.remoteForm = remoteForm;
         this.newSession = newSession;
 
-        setResizable(false);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
@@ -71,10 +70,9 @@ public class ClientModalForm extends JDialog {
 
             @Override
             public void okPressed() {
-                if (newSession) {
-                    super.okPressed();
+                if (okPressed(newSession)) {
+                    hideDialog();
                 }
-                hideDialog();
             }
 
             @Override
@@ -121,8 +119,6 @@ public class ClientModalForm extends JDialog {
     }
 
     public void setDefaultSize() {
-        setSize(SwingUtils.clipDimension(calculatePreferredSize(isUndecorated()),
-                                         new Dimension(200, 100),
-                                         new Dimension(1000, 700)));
+        setSize(SwingUtils.clipToScreen(calculatePreferredSize(isUndecorated())));
     }
 }

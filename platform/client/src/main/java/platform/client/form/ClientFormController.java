@@ -728,11 +728,8 @@ public class ClientFormController {
     }
 
     boolean cancelChanges() {
-
         try {
-
             if (dataChanged) {
-
                 if (SwingUtils.showConfirmDialog(getComponent(), "Вы действительно хотите отменить сделанные изменения ?", null, JOptionPane.WARNING_MESSAGE, SwingUtils.NO_BUTTON) == JOptionPane.YES_OPTION) {
                     remoteForm.cancelChanges();
 
@@ -749,6 +746,20 @@ public class ClientFormController {
 
     public void okPressed() {
         applyChanges(false);
+    }
+
+    public boolean okPressed(boolean apply) {
+        try {
+            remoteForm.dialogClosed();
+
+            if (apply) {
+                applyChanges(false);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка при закрытии диалога", e);
+        }
+
+        return true;
     }
 
     boolean closePressed() {

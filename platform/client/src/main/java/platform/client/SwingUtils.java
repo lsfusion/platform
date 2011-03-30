@@ -11,6 +11,9 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
 public class SwingUtils {
 
     public static void addFocusTraversalKey(Component comp, int id, KeyStroke key) {
@@ -145,21 +148,26 @@ public class SwingUtils {
     }
 
     // запрашивает положение объекта, чтобы он не вылезал за экран
-    public static void requestLocation(Component comp, Point point) {
-        Container parent = comp.getParent();
-        point.x = Math.max(Math.min(point.x, parent.getX() + parent.getWidth() - comp.getWidth() - 20), 0);
-        point.y = Math.max(Math.min(point.y, parent.getY() + parent.getHeight() - comp.getHeight() - 20), 0);
-        comp.setLocation(point);
+    public static void requestLocation(Window window, Point onScreen) {
+        Dimension screen = getUsableDeviceBounds();
+
+        onScreen.x = max(10, min(onScreen.x, screen.width - window.getWidth() - 10));
+        onScreen.y = max(10, min(onScreen.y, screen.height - window.getHeight() - 10));
+        window.setLocation(onScreen);
     }
 
     public static Dimension clipDimension(Dimension toClip, Dimension min, Dimension max) {
-        return new Dimension(Math.max(min.width, Math.min(max.width, toClip.width)),
-                             Math.max(min.height, Math.min(max.height, toClip.height))
+        return new Dimension(max(min.width, min(max.width, toClip.width)),
+                             max(min.height, min(max.height, toClip.height))
         );
     }
 
+    /**
+     * обрезает до размеров экрана минус 20 пикселей
+     */
     public static Dimension clipToScreen(Dimension toClip) {
-        return clipDimension(toClip, new Dimension(0, 0), getUsableDeviceBounds());
+        Dimension screen = getUsableDeviceBounds();
+        return clipDimension(toClip, new Dimension(0, 0), new Dimension(screen.width - 20, screen.height - 20));
     }
 
     /**

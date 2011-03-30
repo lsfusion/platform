@@ -1,5 +1,6 @@
 package platform.client.form;
 
+import platform.client.SwingUtils;
 import platform.interop.form.RemoteDialogInterface;
 
 import java.awt.*;
@@ -22,6 +23,8 @@ public class ClientDialog extends ClientModalForm {
 
     public ClientDialog(Component owner, final RemoteDialogInterface dialog) throws IOException, ClassNotFoundException {
         super(owner, dialog, false); // обозначаем parent'а и модальность
+
+        setResizable(false);
 
         // делаем, чтобы не выглядел как диалог
         setUndecorated(true);
@@ -106,5 +109,11 @@ public class ClientDialog extends ClientModalForm {
                 return true;
             }
         };
+    }
+
+    public void setDefaultSize() {
+        setSize(SwingUtils.clipDimension(calculatePreferredSize(isUndecorated()),
+                                         new Dimension(200, 100),
+                                         new Dimension(1000, 700)));
     }
 }

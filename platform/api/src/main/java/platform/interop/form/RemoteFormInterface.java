@@ -76,6 +76,8 @@ public interface RemoteFormInterface extends PendingRemote {
     ClientApply checkClientChanges() throws RemoteException;
     void applyClientChanges(Object clientResult) throws RemoteException;
 
+    void dialogClosed() throws RemoteException;
+
     void applyChanges() throws RemoteException;
 
     void continueAutoActions() throws RemoteException;

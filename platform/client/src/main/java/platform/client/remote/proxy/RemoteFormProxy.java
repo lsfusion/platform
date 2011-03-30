@@ -218,6 +218,13 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     }
 
     @PendingRemoteMethod
+    public void dialogClosed() throws RemoteException {
+        logRemoteMethodStartVoidCall("dialogClosed");
+        target.dialogClosed();
+        logRemoteMethodEndVoidCall("dialogClosed");
+    }
+
+    @PendingRemoteMethod
     public void continueAutoActions() throws RemoteException {
         logRemoteMethodStartVoidCall("continueAutoActions");
         target.continueAutoActions();

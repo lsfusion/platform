@@ -40,6 +40,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     private final static Logger logger = Logger.getLogger(FormEntity.class);
 
     public static final String ON_APPLY_EVENT = "onApplyEvent";
+    public static final String ON_CLOSE_EVENT = "onCloseEvent";
 
     public Map<Object, List<PropertyObjectEntity>> eventActions = new HashMap<Object, List<PropertyObjectEntity>>();
 
@@ -310,7 +311,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
     }
 
-    public PropertyDrawEntity addPropertyDraw(LP property, ObjectEntity... objects) {
+    public PropertyDrawEntity addPropertyDraw(LP property, PropertyObjectInterfaceEntity... objects) {
         return addPropertyDraw(property, null, objects);
     }
 
@@ -333,7 +334,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
     }
 
-    protected <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LP<P> property, GroupObjectEntity groupObject, ObjectEntity... objects) {
+    protected <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LP<P> property, GroupObjectEntity groupObject, PropertyObjectInterfaceEntity... objects) {
 
         return addPropertyDraw(groupObject, new PropertyObjectEntity<P>(property, objects));
     }
@@ -609,14 +610,18 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public void addActionsOnObjectChange(ObjectEntity object, boolean drop, PropertyObjectEntity... actions) {
-        addActionsOnOEvent(object, drop, actions);
+        addActionsOnEvent(object, drop, actions);
     }
 
     public void addActionsOnApply(PropertyObjectEntity... actions) {
-        addActionsOnOEvent(ON_APPLY_EVENT, false, actions);
+        addActionsOnEvent(ON_APPLY_EVENT, false, actions);
     }
 
-    public void addActionsOnOEvent(Object eventObject, boolean drop, PropertyObjectEntity... actions) {
+    public void addActionsOnClose(PropertyObjectEntity... actions) {
+        addActionsOnEvent(ON_CLOSE_EVENT, false, actions);
+    }
+
+    public void addActionsOnEvent(Object eventObject, boolean drop, PropertyObjectEntity... actions) {
         List<PropertyObjectEntity> thisEventActions = eventActions.get(eventObject);
         if (thisEventActions == null || drop) {
             thisEventActions = new ArrayList<PropertyObjectEntity>();

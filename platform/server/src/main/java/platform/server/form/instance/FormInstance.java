@@ -12,7 +12,9 @@ import platform.interop.action.StopAutoActionsClientAction;
 import platform.interop.exceptions.ComplexQueryException;
 import platform.server.auth.SecurityPolicy;
 import platform.server.caches.ManualLazy;
-import platform.server.classes.*;
+import platform.server.classes.ConcreteCustomClass;
+import platform.server.classes.CustomClass;
+import platform.server.classes.IntegerClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
@@ -42,7 +44,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.rmi.RemoteException;
-import java.security.PublicKey;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.Map.Entry;
@@ -1286,6 +1287,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
     public List<ClientAction> fireOnApply(RemoteForm form) throws SQLException {
         return fireEvent(form, FormEntity.ON_APPLY_EVENT);
+    }
+
+    public List<ClientAction> fireOnClose(RemoteForm form) throws SQLException {
+        return fireEvent(form, FormEntity.ON_CLOSE_EVENT);
     }
 
     public List<ClientAction> fireEvent(RemoteForm form, Object eventObject) throws SQLException {

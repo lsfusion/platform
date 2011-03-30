@@ -14,7 +14,6 @@ import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.instance.CustomObjectInstance;
-import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
@@ -53,9 +52,8 @@ public class ObjectClassProperty extends ExecuteProperty {
     }
 
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
-        FormInstance remoteForm = executeForm.form;
-        if(mapObjects.size()>0 && BaseUtils.singleValue(mapObjects) instanceof ObjectInstance)
-            remoteForm.changeClass((CustomObjectInstance) BaseUtils.singleValue(mapObjects), BaseUtils.singleValue(keys), (Integer)value.getValue());
+        if(mapObjects != null && mapObjects.size()>0 && BaseUtils.singleValue(mapObjects) instanceof ObjectInstance)
+            executeForm.form.changeClass((CustomObjectInstance) BaseUtils.singleValue(mapObjects), BaseUtils.singleValue(keys), (Integer)value.getValue());
         else
             session.changeClass(BaseUtils.singleValue(keys), baseClass.findConcreteClassID((Integer) value.getValue()), groupLast);
     }

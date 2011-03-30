@@ -570,6 +570,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP nameCountryOfOriginFreightSku;
     private LP equalsItemArticleComposite;
     private LP executeArticleCompositeItemSIDSupplier;
+    private LP executeChangeFreightClass;
     private CreateItemFormEntity createItemForm;
     private LP addItemBarcode;
     private LP barcodeActionSeekFreightBox;
@@ -1092,6 +1093,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         addNEArticleCompositeSIDSupplier = addJProp(true, "Ввод составного артикула (НС)", andNot1, addArticleCompositeSIDSupplier, 1, 2, articleSIDSupplier, 1, 2);
 
         executeArticleCompositeItemSIDSupplier = addJProp(true, "Замена артикула", addEPAProp(articleCompositeItem), articleSIDSupplier, 2, 3, 1);
+
+        executeChangeFreightClass = addJProp(true, "Изменить класс фрахта", and1, addEPAProp(objectClass), 2, 1, is(freight), 1);
 
         supplierSku = addJProp(idGroup, "supplierSku", "Поставщик (ИД)", supplierArticle, articleSku, 1);
         nameSupplierSku = addJProp(baseGroup, "nameSupplierSku", "Поставщик", name, supplierSku, 1);
@@ -3105,9 +3108,42 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objSkuFreight;
 
         private FreightChangeFormEntity(NavigatorElement parent, String sID, String caption) {
+            this(parent, sID, caption, false);
+        }
+
+        private FreightChangeFormEntity(NavigatorElement parent, String sID, String caption, boolean edit) {
             super(parent, sID, caption);
 
             objFreight = addSingleGroupObject(freight, "Фрахт", date, objectClassName, nameRouteFreight, nameExporterFreight, nameFreightTypeFreight, grossWeightFreight, tonnageFreight, palletCountFreight, volumeFreight, palletNumberFreight);
+
+            if (edit) {
+                objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
+                addActionsOnClose(addPropertyObject(executeChangeFreightClass, objFreight, (DataObject)freightChanged.getClassObject()));
+            } else {
+                FreightChangeFormEntity editFreightForm = new FreightChangeFormEntity(null, "freightChangeForm_edit", "Обработка фрахта", true);
+                addPropertyDraw(
+                        addJProp("Обработать фрахт", and(false, true),
+                                 addMFAProp(null,
+                                            "Обработать фрахт",
+                                            editFreightForm,
+                                            new ObjectEntity[]{editFreightForm.objFreight},
+                                            new PropertyObjectEntity[0],
+                                            new PropertyObjectEntity[0],
+                                            false), 1,
+                                 is(freightPriced), 1,
+                                 is(freightChanged), 1),
+                        objFreight
+                ).forceViewType = ClassViewType.GRID;
+
+                addPropertyDraw(
+                        addJProp("Отгрузить фрахт", and(false, true),
+                                 executeChangeFreightClass, 1, 2,
+                                 is(freightChanged), 1,
+                                 is(freightShipped), 1),
+                        objFreight,
+                        (DataObject)freightShipped.getClassObject()
+                ).forceViewType = ClassViewType.GRID;
+            }
 
             objImporter = addSingleGroupObject(importer, "Импортёр", name, addressSubject);
 
@@ -3442,6 +3478,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objSku;
         
         private FreightInvoiceFormEntity(NavigatorElement parent, String sID, String caption) {
+            this(parent, sID, caption, false);
+        }
+
+        private FreightInvoiceFormEntity(NavigatorElement parent, String sID, String caption, boolean edit) {
             super(parent, sID, caption);
 
             objFreight = addSingleGroupObject(freight, "Фрахт", date, objectClassName, nameRouteFreight, nameFreightTypeFreight, tonnageFreight, palletCountFreight, volumeFreight, nameCurrencyFreight, sumInFreight, sumMarkupInFreight, sumInOutFreight, palletNumberFreight);
@@ -3449,6 +3489,26 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addPropertyDraw(sumInCurrentYear);
             addPropertyDraw(sumInOutCurrentYear);
             addPropertyDraw(balanceSumCurrentYear);
+
+            if (edit) {
+                objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
+                addActionsOnClose(addPropertyObject(executeChangeFreightClass, objFreight, (DataObject)freightPriced.getClassObject()));
+            } else {
+                FreightInvoiceFormEntity editFreightForm = new FreightInvoiceFormEntity(null, "freightInvoiceForm_edit", "Расценка фрахта", true);
+                addPropertyDraw(
+                        addJProp("Расценить фрахт", and(false, true),
+                                 addMFAProp(null,
+                                            "Расценить фрахт",
+                                            editFreightForm,
+                                            new ObjectEntity[]{editFreightForm.objFreight},
+                                            new PropertyObjectEntity[0],
+                                            new PropertyObjectEntity[0],
+                                            false), 1,
+                                 is(freightComplete), 1,
+                                 is(freightPriced), 1),
+                        objFreight
+                ).forceViewType = ClassViewType.GRID;
+            }
 
             objImporter = addSingleGroupObject(importer, "Импортер", name);
 
@@ -3574,7 +3634,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             Double invoiced = (Double) invoicedShipmentSku.read(session, objShipment, objSku);
 
-            DataObject objRouteResult = null;
+            DataObject objRouteResult;
             if (invoiced == null) {
                 objRouteResult = objRouteRF;
             } else {
