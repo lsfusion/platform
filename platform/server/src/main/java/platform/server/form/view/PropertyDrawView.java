@@ -145,9 +145,9 @@ public class PropertyDrawView extends ComponentView {
         pool.writeObject(outStream, maximumSize);
         pool.writeObject(outStream, preferredSize);
 
-        outStream.writeInt(minimumCharWidth);
-        outStream.writeInt(maximumCharWidth);
-        outStream.writeInt(preferredCharWidth);
+        outStream.writeInt(minimumCharWidth != 0 ? minimumCharWidth : entity.propertyObject.property.minimumCharWidth);
+        outStream.writeInt(maximumCharWidth != 0 ? maximumCharWidth : entity.propertyObject.property.maximumCharWidth);
+        outStream.writeInt(preferredCharWidth != 0 ? preferredCharWidth : entity.propertyObject.property.preferredCharWidth);
 
         pool.writeObject(outStream, editKey);
 

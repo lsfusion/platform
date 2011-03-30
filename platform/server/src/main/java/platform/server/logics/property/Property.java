@@ -468,10 +468,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<T> entity) {
-        PropertyDrawView propertyView = view.get(entity);
-        propertyView.minimumCharWidth = minimumCharWidth;
-        propertyView.maximumCharWidth = maximumCharWidth;
-        propertyView.preferredCharWidth = preferredCharWidth;
     }
 
     public boolean hasChild(Property prop) {
