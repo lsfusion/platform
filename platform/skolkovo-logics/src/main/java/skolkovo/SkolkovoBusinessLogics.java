@@ -197,6 +197,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     LP acceptedVote;
     LP succeededVote;
+    LP doneExpertVoteDateFromDateTo;
+    LP quantityDoneExpertDateFromDateTo;
     LP voteSucceededProject;
     LP noCurrentVoteProject;
     LP voteValuedProject;
@@ -409,6 +411,14 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         succeededVote = addJProp(voteResultGroup, "succeededVote", "Состоялось", groeq2, quantityDoneVote, 1, limitExperts); // достаточно экспертов
 
+        doneExpertVoteDateFromDateTo = addJProp(and(false, false, false, false), doneExpertVote, 1, 2,
+                                                                          addJProp(groeq2, date, 1, 2), 2, 3,
+                                                                          addJProp(lsoeq2, date, 1, 2), 2, 4,
+                                                                          is(DateClass.instance), 3,
+                                                                          is(DateClass.instance), 4);
+        quantityDoneExpertDateFromDateTo = addSGProp("quantityDoneExpertDateFromDateTo", "Кол-во заседаний",
+                                     addJProp(and1, addCProp(IntegerClass.instance, 1), doneExpertVoteDateFromDateTo, 1, 2, 3, 4), 1, 3, 4); // в скольки заседаниях поучавствовал
+
         voteSucceededProject = addCGProp(idGroup, false, "voteSucceededProject", "Успешное заседание (ИД)",
                 addJProp(and1, 1, succeededVote, 1), succeededVote,
                 projectVote, 1);
@@ -547,6 +557,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         addFormEntity(new VoteStartFormEntity(print, "voteStart"));
         addFormEntity(new ExpertLetterFormEntity(print, "expertLetter"));
         addFormEntity(new VoteProtocolFormEntity(print, "voteProtocol"));
+        addFormEntity(new ExpertProtocolFormEntity(print, "expertProtocol"));
         addFormEntity(new ExpertAuthFormEntity(print, "expertAuth"));
     }
 
@@ -641,11 +652,11 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             specContainer.add(docContainer);
             specContainer.add(expertContainer);
-//            design.addIntersection(design.getGroupObjectContainer(objVote.groupTo),
+//            design.addIntersection(design.getGroupObjectContainer(objVoteHeader.groupTo),
 //                                   design.getGroupObjectContainer(objDocument.groupTo),
 //                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
-//            design.get(objVote.groupTo).grid.constraints.fillHorizontal = 1.5;
+//            design.get(objVoteHeader.groupTo).grid.constraints.fillHorizontal = 1.5;
 
             design.getPanelContainer(objVote.groupTo).add(design.get(getPropertyDraw(generateVoteProject)));
 
@@ -925,6 +936,66 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         @Override
         public boolean isReadOnly() {
             return true;
+        }
+    }
+
+    private class ExpertProtocolFormEntity extends FormEntity<SkolkovoBusinessLogics> { // письмо эксперту
+
+        private ObjectEntity objDateFrom;
+        private ObjectEntity objDateTo;
+
+        private ObjectEntity objExpert;
+
+        private ObjectEntity objVoteHeader;
+        private ObjectEntity objVote;
+
+        private ExpertProtocolFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Протокол голосования экспертов", true);
+
+            GroupObjectEntity gobjDates = new GroupObjectEntity(1, "date");
+            objDateFrom = new ObjectEntity(2, DateClass.instance, "Дата (с)");
+            objDateTo = new ObjectEntity(3, DateClass.instance, "Дата (по)");
+            gobjDates.add(objDateFrom);
+            gobjDates.add(objDateTo);
+
+            addGroup(gobjDates);
+            gobjDates.setSingleClassView(ClassViewType.PANEL);
+
+            addPropertyDraw(objDateFrom, objectValue);
+            getPropertyDraw(objectValue, objDateFrom).setSID("dateFrom");
+
+            // так делать неправильно в общем случае, поскольку getPropertyDraw ищет по groupObject, а не object
+
+            addPropertyDraw(objDateTo, objectValue);
+            getPropertyDraw(objectValue, objDateTo).setSID("dateTo");
+
+            objExpert = addSingleGroupObject(4, "expert", expert, userFirstName, userLastName);
+            objExpert.groupTo.initClassView = ClassViewType.PANEL;
+
+            addPropertyDraw(quantityDoneExpertDateFromDateTo, objExpert, objDateFrom, objDateTo);
+
+            objVoteHeader = addSingleGroupObject(5, "voteHeader", vote);
+
+            objVote = addSingleGroupObject(6, "vote", vote, dateProjectVote, date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote);
+
+            addPropertyDraw(nameNativeClaimerVote, objVoteHeader).setSID("nameNativeClaimerVoteHeader");
+
+            addPropertyDraw(voteResultGroup, true, objExpert, objVote);
+
+            addPropertyDraw(connectedExpertVote, objExpert, objVote);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(dateExpertVote, objExpert, objVoteHeader), Compare.GREATER_EQUALS, objDateFrom));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(dateExpertVote, objExpert, objVoteHeader), Compare.LESS_EQUALS, objDateTo));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(doneExpertVote, objExpert, objVoteHeader)));
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(dateExpertVote, objExpert, objVote), Compare.GREATER_EQUALS, objDateFrom));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(dateExpertVote, objExpert, objVote), Compare.LESS_EQUALS, objDateTo));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(doneExpertVote, objExpert, objVote)));
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityDoneExpertDateFromDateTo, objExpert, objDateFrom, objDateTo)));
+
+            setReadOnly(true);
+            setReadOnly(false, objDateFrom.groupTo);
         }
     }
 

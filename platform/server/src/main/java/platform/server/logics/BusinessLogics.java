@@ -464,7 +464,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return (Integer) nameToPolicy.read(session, new DataObject(name, StringClass.get(50)));
     }
 
-    protected LP groeq2;
+    protected LP groeq2, lsoeq2;
     protected LP greater2, less2;
     protected LP greater22, less22;
     protected LP between;
@@ -966,6 +966,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         concat2 = addCCProp(2);
         groeq2 = addCFProp(Compare.GREATER_EQUALS);
         greater2 = addCFProp(Compare.GREATER);
+        lsoeq2 = addCFProp(Compare.LESS_EQUALS);
         less2 = addCFProp(Compare.LESS);
         greater22 = addJProp(greater2, concat2, 1, 2, concat2, 3, 4);
         less22 = addJProp(less2, concat2, 1, 2, concat2, 3, 4);
