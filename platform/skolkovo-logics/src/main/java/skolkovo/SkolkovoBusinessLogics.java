@@ -1055,7 +1055,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             try {
                 VoteObjects vo = new VoteObjects(session, voteId);
 
-                dateExpertVote.execute(DateConverter.dateToSql(voteInfo.date), session, vo.expertObj, vo.voteObj);
+                dateExpertVote.execute(DateConverter.dateToSql(new Date()), session, vo.expertObj, vo.voteObj);
                 voteResultExpertVote.execute(voteResult.getID(voteInfo.voteResult), session, vo.expertObj, vo.voteObj);
                 if (voteInfo.voteResult.equals("voted")) {
                     inClusterExpertVote.execute(voteInfo.inCluster, session, vo.expertObj, vo.voteObj);

@@ -140,13 +140,16 @@ public class ClientReportData implements JRDataSource {
         }
 
         if (value instanceof byte[]) {
-            ByteArray file = new ByteArray(((byte[])value));
-            String fileName = files.get(file);
-            if(fileName==null) {
-                fileName = "File " + (files.size()+1) + ".pdf";
-                files.put(file, fileName);
-            }
-            value = fileName;
+            if (files != null) {
+                ByteArray file = new ByteArray(((byte[])value));
+                String fileName = files.get(file);
+                if(fileName==null) {
+                    fileName = "File " + (files.size()+1) + ".pdf";
+                    files.put(file, fileName);
+                }
+                value = fileName;
+            } else
+                value = "File";
         }
 
         return value;
