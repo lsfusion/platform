@@ -2856,6 +2856,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         private ObjectEntity objSupplier;
         private ObjectEntity objCategory;
+        private ObjectEntity objArticle;
         private ObjectEntity objSku;
 
         private NomenclatureFormEntity(NavigatorElement parent, String sID, String caption) {
@@ -2865,27 +2866,45 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             objCategory = addSingleGroupObject(category, "Категория", name);
 
+            objArticle = addSingleGroupObject(article, "Артикул", sidArticle, nameSupplierArticle, nameBrandSupplierArticle, nameThemeSupplierArticle, nameCategoryArticle, nameArticle);
+            addObjectActions(this, objArticle);
+
             objSku = addSingleGroupObject(sku, "SKU", selection, barcode, nameSupplierSku, nameBrandSupplierArticleSku, nameThemeSupplierArticleSku,
                      nameCategoryArticleSku, sidArticleSku, nameArticleSku,
                      sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                      nameCountrySku, netWeightSku,
                      mainCompositionSku, additionalCompositionSku);
+            addObjectActions(this, objSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
 
-            RegularFilterGroupEntity filterGroupSupplier = new RegularFilterGroupEntity(genID());
-            filterGroupSupplier.addFilter(new RegularFilterEntity(genID(),
+            RegularFilterGroupEntity filterGroupSupplierSku = new RegularFilterGroupEntity(genID());
+            filterGroupSupplierSku.addFilter(new RegularFilterEntity(genID(),
                                   new CompareFilterEntity(addPropertyObject(supplierSku, objSku), Compare.EQUALS, objSupplier),
                                   "Только текущего поставщика",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
-            addRegularFilterGroup(filterGroupSupplier);
+            addRegularFilterGroup(filterGroupSupplierSku);
 
-            RegularFilterGroupEntity filterGroupCategory = new RegularFilterGroupEntity(genID());
-            filterGroupCategory.addFilter(new RegularFilterEntity(genID(),
+            RegularFilterGroupEntity filterGroupCategorySku = new RegularFilterGroupEntity(genID());
+            filterGroupCategorySku.addFilter(new RegularFilterEntity(genID(),
                                   new CompareFilterEntity(addPropertyObject(categoryArticleSku, objSku), Compare.EQUALS, objCategory),
                                   "Только текущей категории",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
-            addRegularFilterGroup(filterGroupCategory);
+            addRegularFilterGroup(filterGroupCategorySku);
+
+            RegularFilterGroupEntity filterGroupSupplierArticle = new RegularFilterGroupEntity(genID());
+            filterGroupSupplierArticle.addFilter(new RegularFilterEntity(genID(),
+                                  new CompareFilterEntity(addPropertyObject(supplierArticle, objArticle), Compare.EQUALS, objSupplier),
+                                  "Только текущего поставщика",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
+            addRegularFilterGroup(filterGroupSupplierArticle);
+
+            RegularFilterGroupEntity filterGroupCategoryArticle = new RegularFilterGroupEntity(genID());
+            filterGroupCategoryArticle.addFilter(new RegularFilterEntity(genID(),
+                                  new CompareFilterEntity(addPropertyObject(categoryArticle, objArticle), Compare.EQUALS, objCategory),
+                                  "Только текущей категории",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
+            addRegularFilterGroup(filterGroupCategoryArticle);
         }
 
         @Override
@@ -2893,11 +2912,20 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
 
             design.get(objSupplier.groupTo).grid.constraints.fillVertical = 1;
+            design.get(objArticle.groupTo).grid.constraints.fillVertical = 4;
             design.get(objSku.groupTo).grid.constraints.fillVertical = 4;
+
+            ContainerView specContainer = design.createContainer();
+            design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objArticle.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objArticle.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objSku.groupTo));
+            specContainer.tabbedPane = true;
             
             design.addIntersection(design.getGroupObjectContainer(objSupplier.groupTo),
                                    design.getGroupObjectContainer(objCategory.groupTo),
                                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+
             return design;
         }
     }
