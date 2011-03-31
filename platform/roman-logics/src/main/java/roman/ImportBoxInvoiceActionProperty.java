@@ -101,6 +101,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
 
         ImportKey<?> itemKey = new ImportKey(BL.item, BL.barcodeToObject.getMapping(barCodeField));
         properties.add(new ImportProperty(barCodeField, BL.barcode.getMapping(itemKey)));
+        properties.add(new ImportProperty(unitNetWeightField, BL.netWeightDataSku.getMapping(itemKey)));
         properties.add(new ImportProperty(sidField, BL.articleCompositeItem.getMapping(itemKey), BL.object(BL.articleComposite).getMapping(articleKey)));
 
         ImportKey<?> countryKey = new ImportKey(BL.countrySupplier, BL.countryNameSupplier.getMapping(countryField, supplier));

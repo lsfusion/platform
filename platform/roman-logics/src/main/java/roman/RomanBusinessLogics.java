@@ -165,7 +165,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     LP originalNameArticle;
     private LP nameArticle;
     private LP netWeightArticleSku;
-    private LP netWeightDataSku;
+    LP netWeightDataSku;
     private LP netWeightSku;
     private LP sumNetWeightFreightSku;
     LP netWeightArticle;
@@ -630,6 +630,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP nameArticleSku;
     private LP freightShippedFreightBox;
     private LP freightShippedDirectInvoice;
+    private LP netWeightDocumentSku;
 
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
@@ -1237,7 +1238,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         sumDocumentSku = addJProp(baseGroup, "sumDocumentSku", "Сумма", multiplyDouble2, quantityDocumentSku, 1, 2, priceDocumentSku, 1, 2);
 
         netWeightDocumentArticle = addJProp(baseGroup, "netWeightDocumentArticle", "Общий вес по артикулу", multiplyDouble2, quantityDocumentArticle, 1, 2, netWeightArticle, 2);
-        netWeightDocument = addSGProp(baseGroup, "netWeightDocument", "Общий вес", netWeightDocumentArticle, 1);
+        netWeightDocumentSku = addJProp(baseGroup, "netWeightDocumentSku", "Общий вес по sku", multiplyDouble2, quantityDocumentSku, 1, 2, netWeightSku, 2);
+        netWeightDocument = addSGProp(baseGroup, "netWeightDocument", "Общий вес", netWeightDocumentSku, 1);
 
         sumDocumentArticle = addSGProp(baseGroup, "sumDocumentArticle", "Сумма", sumDocumentSku, 1, articleSku, 2);
         sumDocument = addSGProp(baseGroup, "sumDocument", "Сумма документа", sumDocumentSku, 1);
