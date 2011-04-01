@@ -99,6 +99,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private LP documentIncSklFreeQuantity;
     private LP downToZero;
     private LP freeIncOrderArticle;
+    private CustomClass commitReturnShopOut;
+    private LP sumWithDiscountCouponOrder;
 
     public VEDBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -183,7 +185,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     CustomClass orderSaleRetail;
 
     CustomClass documentRevalue;
-    CustomClass commitWholeShopInc;
+    CustomClass commitDoShopInc;
     CustomClass documentNDS;
     CustomClass subject;
 
@@ -292,7 +294,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         orderExtOut = addAbstractClass("orderExtOut", "Заявка от внешн. контрагента", orderDoOut);
         orderExtOutReturn = addAbstractClass("orderExtOutReturn", "Заявка на возврат от внешн. контрагента", orderInc, returnOrderInner);
 
-        commitWholeShopInc = addAbstractClass("commitWholeShopInc", "Принятый оптовый приход на магазин", documentShopPrice, orderShopInc, commitInc);
+        commitDoShopInc = addAbstractClass("commitDoShopInc", "Принятый приход на магазин", documentShopPrice, orderShopInc, commitInc);
+        commitReturnShopOut = addAbstractClass("commitReturnShopOut", "Отгруженный возврат с магазина", orderShopOut, commitOut);
 
         // внутр. и внешние операции
         orderDelivery = addAbstractClass("orderDelivery", "Закупка", orderExtInc); // всегда прих., создает партию - элементарную единицу учета
@@ -326,7 +329,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         orderDistribute = addAbstractClass("orderDistribute", "Внутреннее перемещение", orderOut, orderInc, orderInner);
 
         orderDistributeShop = addConcreteClass("orderDistributeShop", "Заказ на внутреннее перемещение на магазин", orderWarehouseOut, orderShopInc, orderDistribute, orderDoOut);
-        commitDistributeShop = addConcreteClass("commitDistributeShop", "Принятое внутреннее перемещение на магазин", commitWholeShopInc,
+        commitDistributeShop = addConcreteClass("commitDistributeShop", "Принятое внутреннее перемещение на магазин", commitDoShopInc,
                 addConcreteClass("loadedDistributeShop", "Отгруженное внутреннее перемещение на магазин", commitInner,
                         addConcreteClass("writtenOutDistributeShop", "Выписанное внутреннее перемещение на магазин", orderDistributeShop, shipmentDocumentOut)));
 
@@ -336,7 +339,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         commitDeliveryLocal = addAbstractClass("commitDeliveryLocal", "Приход от местного поставщика", orderDeliveryLocal, commitDelivery);
 
         orderDeliveryShopLocal = addConcreteClass("orderDeliveryShopLocal", "Закупка у местного поставщика на магазин", orderDeliveryLocal, orderShopInc);
-        commitDeliveryShopLocal = addConcreteClass("commitDeliveryShopLocal", "Приход от местного поставщика на магазин", orderDeliveryShopLocal, commitDeliveryLocal, commitWholeShopInc);
+        commitDeliveryShopLocal = addConcreteClass("commitDeliveryShopLocal", "Приход от местного поставщика на магазин", orderDeliveryShopLocal, commitDeliveryLocal, commitDoShopInc);
 
         orderDeliveryWarehouseLocal = addConcreteClass("orderDeliveryWarehouseLocal", "Закупка у местного поставщика на распред. центр", orderDeliveryLocal, orderWarehouseInc);
         commitDeliveryWarehouseLocal = addConcreteClass("commitDeliveryWarehouseLocal", "Приход от местного поставщика на распред. центр", orderDeliveryWarehouseLocal, commitDeliveryLocal);
@@ -355,7 +358,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         orderDistributeWarehouse = addConcreteClass("orderDistributeWarehouse", "Заказ на возврат внутр. перемещ. на распред. центр", orderShopOut, orderWarehouseInc, returnOrderInner, orderDistribute);
         addConcreteClass("commitDistributeWarehouse", "Принятый возврат внутр. перемещ. на распред. центр", commitInc,
-                addConcreteClass("loadedDistributeWarehouse", "Отгруженный возвр. внутр. перемещ. на распред. центр", commitOut,
+                addConcreteClass("loadedDistributeWarehouse", "Отгруженный возвр. внутр. перемещ. на распред. центр", commitReturnShopOut,
                         addConcreteClass("writtenOutDistributeWarehouse", "Выписанный возврат внутр. перемещ. на распред. центр", orderDistributeWarehouse, shipmentDocumentOut)));
 
         obligation = addAbstractClass("obligation", "Сертификат", baseClass.named, barcodeObject);
@@ -750,7 +753,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         // ЦЕНЫ
 
-        LP commitArticleQuantity = addJProp(and1, is(commitWholeShopInc), 1, articleQuantity, 1, 2);
+        LP commitArticleQuantity = addJProp(and1, is(commitDoShopInc), 1, articleQuantity, 1, 2);
 
         LP[] maxCommitIncProps = addMGProp((AbstractGroup) null, true, new String[]{"currentCommitIncDate", "currentCommitIncDoc"}, new String[]{"Дата посл. прих. в маг.", "Посл. док. прих. в маг."}, 1,
                 addJProp(and1, date, 1, commitArticleQuantity, 1, 2), 1, subjectIncOrder, 1, 2);
@@ -771,8 +774,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         currentRRPPriceStoreArticle = addJProp(and1, currentRRPPriceArticle, 2, is(store), 1);
 
         LP revalueShopPrice = addDProp("revalueShopPrice", "Цена (прих.)", DoubleClass.instance, documentRevalue, article);
-        LP incomeShopPrice = addDProp("shopPrice", "Цена (прих.)", DoubleClass.instance, commitWholeShopInc, article);
-        shopPrice = addCUProp(documentPriceGroup, "priceDocument", "Цена (маг.)", incomeShopPrice, revalueShopPrice);
+        LP returnShopOutPrice = addDProp("returnShopOutPrice", "Цена (возвр.)", DoubleClass.instance, commitReturnShopOut, article);
+        LP incomeShopPrice = addDProp("shopPrice", "Цена (прих.)", DoubleClass.instance, commitDoShopInc, article);
+        shopPrice = addCUProp(documentPriceGroup, "priceDocument", "Цена (маг.)", incomeShopPrice, returnShopOutPrice, revalueShopPrice);
 
         currentShopPrice = addJProp(priceGroup, "currentShopPrice", true, "Цена на маг. (тек.)", shopPrice, currentShopPriceDoc, 1, 2, 2);
 
@@ -795,6 +799,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP requiredStorePrice = initRequiredStorePrice(priceGroup, "requiredStorePrice", true, "Необх. цена",
                 addJProp(priceGroup, "Посл. цена прихода", priceExtOrderIncArticle, currentCommitIncDoc, 1, 2, 2), object(store));
         revalueShopPrice.setDerivedForcedChange(requiredStorePrice, revalueShop, 1, 2, documentRevalued, 1, 2);
+        returnShopOutPrice.setDerivedForcedChange(currentShopPrice, subjectOutOrder, 1, 2, articleQuantity, 1, 2);
         incomeShopPrice.setDerivedForcedChange(true, initRequiredStorePrice(privateGroup, genSID(), false, "Необх. цена (прих.)", priceExtOrderIncArticle, subjectIncOrder), 1, 2, commitArticleQuantity, 1, 2);
 
         LP saleStorePrice = addCUProp(priceGroup, "Цена прод.", addJProp(and1, requiredStorePrice, 1, 2, is(warehouse), 1), currentShopPrice);
@@ -959,13 +964,15 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP orderMaxCoupon = addDCProp("orderMaxCoupon", "Макс. процент по купонам", couponMaxPercent, is(orderSaleArticleRetail), 1);
 
-        LP orderSalePayGiftObligation = addSGProp("orderSalePayGiftObligation", true, "Сумма под. серт.", addJProp(and1, obligationUseSum, 1, 2, is(giftObligation), 2), 1);
-        LP orderSalePayCoupon = addJProp("orderSalePayCoupon", true, "Сумма куп." , min, addSGProp(addJProp(and1, obligationUseSum, 1, 2, is(coupon), 2), 1), 1, addJProp(percent, sumWithDiscountOrder, 1, orderMaxCoupon, 1), 1);
-        orderSalePayObligation = addSUProp(documentAggrPriceGroup, "orderSalePayObligation", true, "Сумма серт.", Union.SUM, orderSalePayGiftObligation, orderSalePayCoupon);
-
         // сумма без сертификатов
+        LP orderSalePayCoupon = addJProp("orderSalePayCoupon", true, "Сумма куп." , min, addSGProp(addJProp(and1, obligationUseSum, 1, 2, is(coupon), 2), 1), 1, addJProp(percent, sumWithDiscountOrder, 1, orderMaxCoupon, 1), 1);
+        LP orderSalePayGiftObligation = addSGProp("orderSalePayGiftObligation", true, "Сумма под. серт.", addJProp(and1, obligationUseSum, 1, 2, is(giftObligation), 2), 1);
+        orderSalePayObligation = addSUProp(documentAggrPriceGroup, "orderSalePayObligation", true, "Сумма серт.", Union.SUM, orderSalePayGiftObligation, orderSalePayCoupon);
         sumWithDiscountObligationOrder = addJProp(documentAggrPriceGroup, "sumWithDiscountObligationOrder", true, "Сумма к опл.", onlyPositive, addDUProp(sumWithDiscountOrder, orderSalePayObligation), 1);
         sumWithDiscountObligationOrderArticle = addPGProp(documentPriceGroup, "sumWithDiscountObligationOrderArticle", false, -1, true, "Сумма со скидкой", sumWithDiscountOrderArticle, sumWithDiscountObligationOrder, 1);
+
+        // пока для товарного отчета
+//        sumWithDiscountCouponOrder = addJProp(documentAggrPriceGroup, "sumWithDiscountCouponOrder", true, "Сумма без куп.", onlyPositive, addDUProp(sumWithDiscountOrder, orderSalePayCoupon), 1);
 
         LP clientSaleSum = addSGProp(sumWithDiscountObligationOrder, subjectIncOrder, 1);
         orderClientSaleSum.setDerivedChange(clientSaleSum, subjectIncOrder, 1);
@@ -1526,7 +1533,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
 //        FormEntity logClient = addFormEntity(new LogClientFormEntity(actions, "logClientForm"));
 
-        commitWholeShopInc.addRelevant(incomePrice);
+        commitDoShopInc.addRelevant(incomePrice);
         documentShopPrice.addRelevant(revalueAct);
         documentShopPrice.addRelevant(pricers);
     }
@@ -3005,7 +3012,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected IncomePriceFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр цен", true);
 
-            ObjectEntity objDoc = addSingleGroupObject(commitWholeShopInc, "Документ", date, nameSubjectIncOrder, nameSubjectOutOrder, nameLegalEntityIncOrder, nameLegalEntityOutOrder, numberInvoiceDocument, seriesInvoiceDocument, sumNDSOrder, sumWithDiscountOrder, sumNoNDSOrder, sumNDSRetailOrder, sumAddvOrder, sumRetailOrder, sumAddManfrOrder, sumManfrOrder);
+            ObjectEntity objDoc = addSingleGroupObject(commitDoShopInc, "Документ", date, nameSubjectIncOrder, nameSubjectOutOrder, nameLegalEntityIncOrder, nameLegalEntityOutOrder, numberInvoiceDocument, seriesInvoiceDocument, sumNDSOrder, sumWithDiscountOrder, sumNoNDSOrder, sumNDSRetailOrder, sumAddvOrder, sumRetailOrder, sumAddManfrOrder, sumManfrOrder);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
             ObjectEntity objArt = addSingleGroupObject(article, name, objectValue, barcode, nameUnitOfMeasureArticle);
 
@@ -3567,87 +3574,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
     }
 
-    public class ImportOrderActionProperty extends ActionProperty {
-
-        private final ClassPropertyInterface documentInterface;
-
-        public ImportOrderActionProperty() {
-            super(genSID(), "Импортировать заявку", new ValueClass[]{orderDelivery});
-
-            Iterator<ClassPropertyInterface> i = interfaces.iterator();
-            documentInterface = i.next();
-        }
-
-        public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            DataObject document = keys.get(documentInterface);
-            FormInstance remoteForm = executeForm.form;
-            DataSession session = remoteForm.session;
-
-            Sheet sh;
-            try {
-                ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
-                sh = Workbook.getWorkbook(inFile).getSheet(0);
-            } catch (Exception e) {
-                logger.fatal("Не могу прочитать .xsl файл.");
-                return;
-            }
-
-            List<ImportField> fields = new ArrayList<ImportField>();
-            List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
-
-            ImportField barcodeField = new ImportField(StringClass.get(13)); fields.add(barcodeField);
-            ImportKey<?> articleKey = new ImportKey(article, padlBarcodeToObject.getMapping(barcodeField));
-            properties.add(new ImportProperty(barcodeField, barcode.getMapping(articleKey), padl.getMapping(barcodeField)));
-
-            ImportField nameField = new ImportField(StringClass.get(100)); fields.add(nameField);
-            properties.add(new ImportProperty(nameField, name.getMapping(articleKey)));
-            ImportField priceField = new ImportField(DoubleClass.instance); fields.add(priceField);
-            properties.add(new ImportProperty(priceField, priceAllOrderDeliveryArticle.getMapping(document, articleKey)));
-            ImportField quantityField = new ImportField(DoubleClass.instance); fields.add(quantityField);
-            properties.add(new ImportProperty(quantityField, articleOrderQuantity.getMapping(document, articleKey)));
-            ImportField ndsField = new ImportField(DoubleClass.instance); fields.add(ndsField);
-            properties.add(new ImportProperty(ndsField, ndsOrderArticle.getMapping(document, articleKey)));
-
-            ImportField countryField = new ImportField(InsensitiveStringClass.get(60)); fields.add(countryField);
-            ImportKey<?> countryKey = new ImportKey(country, nameToCountry.getMapping(countryField));
-            properties.add(new ImportProperty(countryField, countryArticle.getMapping(articleKey), object(country).getMapping(countryKey)));
-
-            List<List<Object>> rows = new ArrayList<List<Object>>();
-
-            for (int i = 0; i < sh.getRows(); ++i) {
-                List<Object> row = new ArrayList<Object>();
-
-                for (int j = 0; j < fields.size(); j++) {
-                    try {
-                        row.add(fields.get(j).getFieldClass().parseString(sh.getCell(j, i).getContents()));
-                    } catch (platform.server.data.type.ParseException e) {
-                        logger.warn("Не конвертировано значение совйства", e);
-                    }
-                }
-
-                rows.add(row);
-            }
-
-
-            new IntegrationService(session, new ImportTable(fields, rows), Arrays.asList(articleKey, countryKey), properties).synchronize(true, true, false);
-
-
-            actions.add(new MessageClientAction("Данные были успешно приняты", "Импорт"));
-        }
-
-        @Override
-        protected DataClass getValueClass() {
-            return FileActionClass.getInstance("Файлы таблиц", "xls");
-        }
-
-        @Override
-        public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity form) {
-            super.proceedDefaultDraw(entity, form);
-            entity.shouldBeLast = true;
-            entity.forceViewType = ClassViewType.PANEL;
-        }
-    }
-
     public abstract class ImportActionProperty extends ActionProperty {
 
         protected ImportActionProperty(String sID, String caption) {
@@ -3674,7 +3600,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addImportField(fields, properties, importProp, importKey);
         }
 
-        protected void addImportField(List<ImportField> fields, List<ImportProperty<?>> properties, LP importProp, ImportKey... importKeys) {
+        protected void addImportField(List<ImportField> fields, List<ImportProperty<?>> properties, LP importProp, ImportKeyInterface... importKeys) {
             ImportField importField = new ImportField(importProp); fields.add(importField);
             properties.add(new ImportProperty(importField, importProp.getMapping(importKeys)));
         }
@@ -3684,6 +3610,80 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             properties.add(new ImportProperty(nameField, articleProp.getMapping(articleKey), converter.getMapping(nameField)));
         }
 
+    }
+
+    public class ImportOrderActionProperty extends ImportActionProperty {
+
+        private final ClassPropertyInterface documentInterface;
+
+        public ImportOrderActionProperty() {
+            super(genSID(), "Импортировать заявку", new ValueClass[]{orderDelivery});
+
+            Iterator<ClassPropertyInterface> i = interfaces.iterator();
+            documentInterface = i.next();
+        }
+
+        public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            DataObject document = keys.get(documentInterface);
+            FormInstance remoteForm = executeForm.form;
+            DataSession session = remoteForm.session;
+
+            Sheet sh;
+            try {
+                ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
+                sh = Workbook.getWorkbook(inFile).getSheet(0);
+            } catch (Exception e) {
+                logger.fatal("Не могу прочитать .xsl файл.");
+                return;
+            }
+
+            List<ImportField> fields = new ArrayList<ImportField>();
+            List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
+            List<ImportKey<?>> importKeys = new ArrayList<ImportKey<?>>();
+
+            ImportField barcodeField = new ImportField(StringClass.get(13)); fields.add(barcodeField);
+            ImportKey<?> articleKey = new ImportKey(article, padlBarcodeToObject.getMapping(barcodeField)); importKeys.add(articleKey);
+            properties.add(new ImportProperty(barcodeField, barcode.getMapping(articleKey), padl.getMapping(barcodeField)));
+
+            addImportField(fields, properties, articleKey, name);
+            addImportField(fields, properties, priceOrderArticle, document, articleKey);
+            addImportField(fields, properties, articleOrderQuantity, document, articleKey);
+            addImportField(fields, properties, ndsOrderArticle, document, articleKey);
+            addImportObjectNameField(fields, properties, importKeys, articleKey, nameToCountry, countryArticle, country);
+            addImportObjectNameField(fields, properties, importKeys, articleKey, nameToUnitOfMeasure, unitOfMeasureArticle, unitOfMeasure);
+
+            List<List<Object>> rows = new ArrayList<List<Object>>();
+
+            for (int i = 0; i < sh.getRows(); ++i) {
+                List<Object> row = new ArrayList<Object>();
+
+                for (int j = 0; j < fields.size(); j++) {
+                    try {
+                        row.add(fields.get(j).getFieldClass().parseString(sh.getCell(j, i).getContents()));
+                    } catch (platform.server.data.type.ParseException e) {
+                        logger.warn("Не конвертировано значение совйства", e);
+                    }
+                }
+
+                rows.add(row);
+            }
+
+            new IntegrationService(session, new ImportTable(fields, rows), importKeys, properties).synchronize(true, true, false);
+
+            actions.add(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+        }
+
+        @Override
+        protected DataClass getValueClass() {
+            return FileActionClass.getInstance("Файлы таблиц", "xls");
+        }
+
+        @Override
+        public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity form) {
+            super.proceedDefaultDraw(entity, form);
+            entity.shouldBeLast = true;
+            entity.forceViewType = ClassViewType.PANEL;
+        }
     }
 
     public class ImportArticlesRRPActionProperty extends ImportActionProperty {
