@@ -1,14 +1,14 @@
 package skolkovo.gwt.server;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import org.apache.log4j.Logger;
 import skolkovo.api.remote.SkolkovoRemoteInterface;
 import skolkovo.gwt.client.ExpertService;
 import skolkovo.gwt.shared.GwtVoteInfo;
 import skolkovo.gwt.shared.MessageException;
 
-import java.security.Principal;
-
 public class ExpertServiceImpl extends RemoteServiceServlet implements ExpertService {
+    protected final static Logger logger = Logger.getLogger(RemoteServiceServlet.class);
 
     public GwtVoteInfo getVoteInfo(String voteId) throws MessageException {
         try {
@@ -19,6 +19,7 @@ public class ExpertServiceImpl extends RemoteServiceServlet implements ExpertSer
 
             return VoteFactory.toGwtVoteInfo(getLogics().getVoteInfo(voteId));
         } catch (Throwable e) {
+            logger.error("Ошибка в getVoteInfo: ", e);
             e.printStackTrace();
             throw new MessageException(DebugUtil.getInitialCause(e).getMessage());
         }
@@ -31,6 +32,7 @@ public class ExpertServiceImpl extends RemoteServiceServlet implements ExpertSer
             getLogics().setVoteInfo(voteId, VoteFactory.toVoteInfo(voteInfo));
 //            }
         } catch (Throwable e) {
+            logger.error("Ошибка в setVoteInfo: ", e);
             e.printStackTrace();
             throw new MessageException(DebugUtil.getInitialCause(e).getMessage());
         }
