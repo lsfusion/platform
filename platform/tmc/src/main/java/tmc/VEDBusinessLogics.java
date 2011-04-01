@@ -972,7 +972,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         sumWithDiscountObligationOrderArticle = addPGProp(documentPriceGroup, "sumWithDiscountObligationOrderArticle", false, -1, true, "Сумма со скидкой", sumWithDiscountOrderArticle, sumWithDiscountObligationOrder, 1);
 
         // пока для товарного отчета
-//        sumWithDiscountCouponOrder = addJProp(documentAggrPriceGroup, "sumWithDiscountCouponOrder", true, "Сумма без куп.", onlyPositive, addDUProp(sumWithDiscountOrder, orderSalePayCoupon), 1);
+        sumWithDiscountCouponOrder = addJProp(documentAggrPriceGroup, "sumWithDiscountCouponOrder", true, "Сумма без куп.", onlyPositive, addDUProp(sumWithDiscountOrder, orderSalePayCoupon), 1);
 
         LP clientSaleSum = addSGProp(sumWithDiscountObligationOrder, subjectIncOrder, 1);
         orderClientSaleSum.setDerivedChange(clientSaleSum, subjectIncOrder, 1);
@@ -1428,6 +1428,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         FormEntity tn2AttachV = addFormEntity(new TNFormEntity(print, "tn2attach_v", "ТН-2 приложение", true));
         FormEntity tn2 = addFormEntity(new TNFormEntity(print, "tn2", "ТН-2 (одн. стр.) (гориз.)", true));
         FormEntity tn2V = addFormEntity(new TNFormEntity(print, "tn2_v", "ТН-2 (одн. стр.)", true));
+
+        addFormEntity(new ArticleReportFormEntity(print, "articleReport"));
 
         NavigatorElement classifier = new NavigatorElement(baseElement, "classifier", "Справочники");
             addFormEntity(new ArticleInfoFormEntity(classifier, "articleInfoForm"));
@@ -3458,6 +3460,25 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             super(parent, sID, "Справочник складов");
 
             objStore = addSingleGroupObject(store, publicGroup, true, importDocs);
+        }
+    }
+
+    private class ArticleReportFormEntity extends FormEntity {
+        public ObjectEntity objShop;
+        public ObjectEntity objOrder;
+
+        protected ArticleReportFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Товарный отчёт");
+
+            //objShop = addSingleGroupObject(shop, name);
+
+            objOrder = addSingleGroupObject(order, date, sumRetailOrder, sumWithDiscountCouponOrder, sumNewPrevRetailOrder, sumPrevRetailOrder, sumPriceChangeOrder);
+            objOrder.groupTo.initClassView = ClassViewType.GRID;
+            
+            addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(sumWithDiscountCouponOrder, objOrder)),
+                                              new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(sumNewPrevRetailOrder, objOrder)),
+                                                                 new NotNullFilterEntity(addPropertyObject(sumPrevRetailOrder, objOrder)))));           
+
         }
     }
 

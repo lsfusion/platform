@@ -110,8 +110,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP sidBrandSupplierArticleSku;
     private LP nameBrandSupplierArticleSku;
     private LP nameBrandSupplierArticleSkuShipmentDetail;
-    private LP supplierSku;
-    private LP nameSupplierSku;
+    private LP supplierArticleSku;
+    private LP nameSupplierArticleSku;
     private LP supplierThemeSupplier;
     private LP themeSupplierArticle;
     private LP nameThemeSupplierArticle;
@@ -630,8 +630,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP nameArticleSku;
     private LP freightShippedFreightBox;
     private LP freightShippedDirectInvoice;
+    private LP quantityDirectInvoicedSku;
+    private LP quantityStockedSku;
+    private LP quantitySku;
+    private LP sumInInvoiceStockSku;
+    private LP sumStockedSku;
+    private LP sumDirectInvoicedSku;
+    private LP sumSku;
     private LP netWeightDocumentSku;
-
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -1097,8 +1103,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         executeChangeFreightClass = addJProp(true, "Изменить класс фрахта", and1, addEPAProp(objectClass), 2, 1, is(freight), 1);
 
-        supplierSku = addJProp(idGroup, "supplierSku", "Поставщик (ИД)", supplierArticle, articleSku, 1);
-        nameSupplierSku = addJProp(baseGroup, "nameSupplierSku", "Поставщик", name, supplierSku, 1);
+        supplierArticleSku = addJProp(idGroup, "supplierArticleSku", "Поставщик (ИД)", supplierArticle, articleSku, 1);
+        nameSupplierArticleSku = addJProp(baseGroup, "nameSupplierArticleSku", "Поставщик", name, supplierArticleSku, 1);
 
         colorSupplierItem = addDProp(idGroup, "colorSupplierItem", "Цвет поставщика (ИД)", colorSupplier, item);
         sidColorSupplierItem = addJProp(itemAttributeGroup, "sidColorSupplierItem", "Код цвета", sidColorSupplier, colorSupplierItem, 1);
@@ -1108,11 +1114,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         sidSizeSupplierItem = addJProp(itemAttributeGroup, "sidSizeSupplierItem", "Размер поставщика", sidSizeSupplier, sizeSupplierItem, 1);
 
         addConstraint(addJProp("Поставщик товара должен соответствовать цвету поставщика", diff2,
-                supplierSku, 1,
+                supplierArticleSku, 1,
                 addJProp(supplierColorSupplier, colorSupplierItem, 1), 1), true);
 
         addConstraint(addJProp("Поставщик товара должен соответствовать размеру поставщика", diff2,
-                supplierSku, 1,
+                supplierArticleSku, 1,
                 addJProp(supplierSizeSupplier, sizeSupplierItem, 1), 1), true);
 
         sidDocument = addDProp(baseGroup, "sidDocument", "Код документа", StringClass.get(50), document);
@@ -1158,8 +1164,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         // кол-во заказа
         quantityDataListSku = addDProp("quantityDataListSku", "Кол-во (первичное)", DoubleClass.instance, list, sku);
         quantityListSku = quantityDataListSku; //addJProp(baseGroup, "quantityListSku", true, "Кол-во", and1, quantityDataListSku, 1, 2, numberListSku, 1, 2);
-
-
 
         quantityDocumentSku = addSGProp(baseGroup, "quantityDocumentSku", "Кол-во в документе", quantityListSku, documentList, 1, 2);
         quantityDocumentArticle = addSGProp(baseGroup, "quantityDocumentArticle", "Кол-во артикула в документе", quantityDocumentSku, 1, articleSku, 2);
@@ -1274,6 +1278,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         palletNumberDirectInvoice = addDProp(baseGroup, "palletNumberDirectInvoice", "Кол-во паллет", IntegerClass.instance, directInvoice);
 
         freightShippedDirectInvoice = addJProp(baseGroup, "freightShippedDirectInvoice", is(freightShipped), freightDirectInvoice, 1);
+        
+        sumDirectInvoicedSku = addSGProp(baseGroup, "sumDirectInvoicedSku", "Сумма по инвойсам напрямую", addJProp(and(false, true), sumDocumentSku, 1, 2, is(directInvoice), 1, freightShippedDirectInvoice, 1), 2);
+        quantityDirectInvoicedSku = addSGProp(baseGroup, "quantityDirectInvoicedSku", "Кол-во по инвойсам напрямую", addJProp(and(false, true), quantityDocumentSku, 1, 2, is(directInvoice), 1, freightShippedDirectInvoice, 1), 2);
         quantityDocumentBrandSupplier = addSGProp(baseGroup, "quantityDocumentBrandSupplier", "Кол-во по бренду в документе", addJProp(andNot1, quantityDocumentSku, 1, 2, freightShippedDirectInvoice, 1), 1, brandSupplierArticleSku, 2);
 
         // freight box
@@ -1297,8 +1304,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         invoicedShipmentSku = addSGProp(baseGroup, "invoicedShipmentSku", true, "Ожид. (пост.)",
                 addJProp(and1, quantityDocumentSku, 1, 2, inInvoiceShipment, 1, 3), 3, 2);
-
-        
 
         //sku shipment detail
         skuShipmentDetail = addDProp(idGroup, "skuShipmentDetail", "SKU (ИД)", sku, shipmentDetail);
@@ -1419,6 +1424,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         quantityStockArticle = addSGProp(baseGroup, "quantityStockArticle", "Кол-во по артикулу", quantityStockSku, 1, articleSku, 2);
 
         freightShippedFreightBox = addJProp(baseGroup, "freightShippedFreightBox", is(freightShipped), freightFreightBox, 1);
+
+        sumInInvoiceStockSku = addJProp(baseGroup, "sumInInvoiceStockSku", "Сумма в коробе", multiplyDouble2, addJProp(andNot1, quantityInvoiceStockSku, 1, 2, 3, freightShippedFreightBox, 2), 1, 2, 3, priceInInvoiceStockSku, 1, 2, 3);
+
+        sumStockedSku = addSGProp(baseGroup, "sumStockedSku", "Сумма на приемке", sumInInvoiceStockSku, 3);
+        quantityStockedSku = addSGProp(baseGroup, "quantityStockedSku", "Кол-во на приемке", addJProp(andNot1, quantityStockSku, 1, 2, freightShippedFreightBox, 1), 2);                                                                 
+
+        quantitySku = addSUProp(baseGroup, "quantitySku", "Кол-во", Union.SUM, quantityStockedSku, quantityDirectInvoicedSku);
+        sumSku = addSUProp(baseGroup, "sumSku", "Сумма", Union.SUM, sumStockedSku, sumDirectInvoicedSku);
 
         quantityStockBrandSupplier = addSGProp(baseGroup, "quantityStockBrandSupplier", "Кол-во по бренду",
                                        addJProp(andNot1, quantityStockArticle, 1, 2, freightShippedFreightBox, 1), 1, brandSupplierArticle, 2); 
@@ -1829,6 +1842,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         addFormEntity(new CreateFreightBoxFormEntity(createFreightBoxFormAdd, "createFreightBoxFormList", "Документы генерации коробов", FormType.LIST));
         addFormEntity(new ShipmentSpecFormEntity(distribution, "boxShipmentSpecForm", "Прием товара по коробам", true));
         addFormEntity(new ShipmentSpecFormEntity(distribution, "simpleShipmentSpecForm", "Прием товара без коробов", false));
+        addFormEntity(new BalanceBrandWarehouseFormEntity(distribution, "balanceBrandWarehouseForm", "Остатки на складе (по брендам)"));
         addFormEntity(new BalanceWarehouseFormEntity(distribution, "balanceWarehouseForm", "Остатки на складе"));
         addFormEntity(new InvoiceShipmentFormEntity(distribution, "invoiceShipmentForm", "Сравнение по инвойсам"));
 
@@ -2854,6 +2868,43 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         }
     }
 
+    private class BalanceWarehouseFormEntity extends FormEntity<RomanBusinessLogics> {
+
+        private ObjectEntity objSku;
+
+        private BalanceWarehouseFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
+
+            objSku = addSingleGroupObject(sku, "SKU", selection, barcode, nameSupplierArticleSku, nameBrandSupplierArticleSku, nameThemeSupplierArticleSku,
+                     nameCategoryArticleSku, sidArticleSku, nameArticleSku, sidCustomCategory10Sku,
+                     sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
+                     nameCountrySku, netWeightSku,
+                     mainCompositionSku, additionalCompositionSku, quantityDirectInvoicedSku, quantityStockedSku, quantitySku, sumSku);
+            addObjectActions(this, objSku);
+
+            setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
+
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
+                                  new NotNullFilterEntity(addPropertyObject(quantitySku, objSku)),
+                                  "Только ненулевые остатки",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
+                                  new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(quantitySku, objSku))),
+                                  "Только нулевые остатки",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
+            filterGroup.defaultFilter = 0;
+            addRegularFilterGroup(filterGroup);
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
+
+            return design;
+        }
+    }
+
     private class NomenclatureFormEntity extends FormEntity<RomanBusinessLogics> {
 
         private ObjectEntity objSupplier;
@@ -2871,7 +2922,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objArticle = addSingleGroupObject(article, "Артикул", sidArticle, nameSupplierArticle, nameBrandSupplierArticle, nameThemeSupplierArticle, nameCategoryArticle, nameArticle);
             addObjectActions(this, objArticle);
 
-            objSku = addSingleGroupObject(sku, "SKU", selection, barcode, nameSupplierSku, nameBrandSupplierArticleSku, nameThemeSupplierArticleSku,
+            objSku = addSingleGroupObject(sku, "SKU", selection, barcode, nameSupplierArticleSku, nameBrandSupplierArticleSku, nameThemeSupplierArticleSku,
                      nameCategoryArticleSku, sidArticleSku, nameArticleSku,
                      sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                      nameCountrySku, netWeightSku,
@@ -2882,7 +2933,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             RegularFilterGroupEntity filterGroupSupplierSku = new RegularFilterGroupEntity(genID());
             filterGroupSupplierSku.addFilter(new RegularFilterEntity(genID(),
-                                  new CompareFilterEntity(addPropertyObject(supplierSku, objSku), Compare.EQUALS, objSupplier),
+                                  new CompareFilterEntity(addPropertyObject(supplierArticleSku, objSku), Compare.EQUALS, objSupplier),
                                   "Только текущего поставщика",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
             addRegularFilterGroup(filterGroupSupplierSku);
@@ -2962,7 +3013,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     }
 
 
-    private class BalanceWarehouseFormEntity extends FormEntity<RomanBusinessLogics> {
+    private class BalanceBrandWarehouseFormEntity extends FormEntity<RomanBusinessLogics> {
 
         private ObjectEntity objSupplier;
         private ObjectEntity objBrand;
@@ -2979,7 +3030,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private TreeGroupEntity treeInvoiceArticleSku;
 
 
-        private BalanceWarehouseFormEntity(NavigatorElement parent, String sID, String caption) {
+        private BalanceBrandWarehouseFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
             objSupplier = addSingleGroupObject(supplier, "Поставщик", name);
