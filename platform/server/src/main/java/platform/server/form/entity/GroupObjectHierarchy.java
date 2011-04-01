@@ -17,6 +17,7 @@ public class GroupObjectHierarchy {
     private Map<GroupObjectEntity, List<GroupObjectEntity>> dependencies;
     private Set<GroupObjectEntity> markedGroups;
 
+    /// dependencies должны содержать зависимости, образующие лес (набор деревьев)
     public GroupObjectHierarchy(List<GroupObjectEntity> groupObjects, Map<GroupObjectEntity, List<GroupObjectEntity>> depends) {
         groups = new ArrayList<GroupObjectEntity>(groupObjects);
         dependencies = new HashMap<GroupObjectEntity, List<GroupObjectEntity>>(depends);
@@ -187,6 +188,31 @@ public class GroupObjectHierarchy {
 
     public ReportHierarchy createReportHierarchy() {
         return new ReportHierarchy(groups, dependencies, markedGroups);
+    }
+
+    /// Для отчета по одной группе оставляем от всей иерархии только путь от нужной нам группы до корневой вершины
+    public ReportHierarchy createSingleGroupReportHierarchy(int groupId) {
+        Map<GroupObjectEntity, GroupObjectEntity> parents = new HashMap<GroupObjectEntity, GroupObjectEntity>();
+        GroupObjectEntity targetGroup = null;
+        for (GroupObjectEntity parentGroup : groups) {
+            for (GroupObjectEntity childGroup : dependencies.get(parentGroup)) {
+                parents.put(childGroup, parentGroup);
+            }
+            if (parentGroup.getID() == groupId) {
+                targetGroup = parentGroup;
+            }
+        }
+
+        List<GroupObjectEntity> remainGroups = new ArrayList<GroupObjectEntity>();
+        while (targetGroup != null) {
+            remainGroups.add(targetGroup);
+            targetGroup = parents.get(targetGroup);
+        }
+        Map<GroupObjectEntity, List<GroupObjectEntity>> remainDependencies = new HashMap<GroupObjectEntity, List<GroupObjectEntity>>();
+        for (GroupObjectEntity group : remainGroups) {
+            remainDependencies.put(group, BaseUtils.filterList(dependencies.get(group), remainGroups));
+        }
+        return new ReportHierarchy(remainGroups, remainDependencies, new HashSet<GroupObjectEntity>());
     }
 
     public static class ReportHierarchy {

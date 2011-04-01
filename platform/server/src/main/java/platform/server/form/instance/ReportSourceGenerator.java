@@ -26,8 +26,10 @@ import static platform.server.form.entity.GroupObjectHierarchy.ReportNode;
 
 public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
     private GroupObjectHierarchy.ReportHierarchy hierarchy;
+    private GroupObjectHierarchy.ReportHierarchy fullFormHierarchy;
     private FormInstance<T> form;
     private Map<String, ReportData> sources = new HashMap<String, ReportData>();
+    private final Set<Integer> gridGroupsId;
     private Map<Integer, GroupObjectInstance> idToInstance = new HashMap<Integer, GroupObjectInstance>();
 
     public static class ColumnGroupCaptionsData {
@@ -41,9 +43,16 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         public final Map<String, LinkedHashSet<List<Object>>> columnData = new HashMap<String, LinkedHashSet<List<Object>>>();
     }
     
-    public ReportSourceGenerator(FormInstance<T> form, GroupObjectHierarchy.ReportHierarchy hierarchy) {
+    public ReportSourceGenerator(FormInstance<T> form, GroupObjectHierarchy.ReportHierarchy hierarchy, Set<Integer> gridGroupsId) {
+        this(form, hierarchy, hierarchy, gridGroupsId);
+    }
+    public ReportSourceGenerator(FormInstance<T> form, GroupObjectHierarchy.ReportHierarchy hierarchy,
+                                 GroupObjectHierarchy.ReportHierarchy fullFormHierarchy, Set<Integer> gridGroupsId) {
         this.hierarchy = hierarchy;
+        this.fullFormHierarchy = fullFormHierarchy;
         this.form = form;
+        this.gridGroupsId = gridGroupsId;
+
         for (GroupObjectInstance group : form.groups) {
             idToInstance.put(group.getID(), group);
         }
@@ -84,7 +93,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                 types.put(highlightObject, group.propertyHighlight.getType());
             }
 
-            if (group.curClassView != ClassViewType.GRID)
+            if (!gridGroupsId.contains(group.getID()))
                 for (ObjectInstance object : group.objects) {
                     newQuery.and(object.getExpr(newQuery.mapKeys, form).compare(object.getObjectValue().getExpr(), Compare.EQUALS));
                 }
@@ -276,19 +285,19 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         Set<GroupObjectInstance> groups = new HashSet<GroupObjectInstance>();
         
         for (GroupObjectInstance group : initialGroups) {
-            ReportNode curNode = hierarchy.getReportNode(group.entity);
+            ReportNode curNode = fullFormHierarchy.getReportNode(group.entity);
             List<GroupObjectEntity> nodeGroups = curNode.getGroupList();
             int groupIndex = nodeGroups.indexOf(group.entity);
             for (int i = 0; i <= groupIndex; i++) {
                 groups.add(idToInstance.get(nodeGroups.get(i).getID()));
             }
 
-            curNode = hierarchy.getParentNode(curNode);
+            curNode = fullFormHierarchy.getParentNode(curNode);
             while (curNode != null) {
                 for (GroupObjectEntity nodeGroup : curNode.getGroupList()) {
                     groups.add(idToInstance.get(nodeGroup.getID()));
                 }
-                curNode = hierarchy.getParentNode(curNode);
+                curNode = fullFormHierarchy.getParentNode(curNode);
             }
         }
 

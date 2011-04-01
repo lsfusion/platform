@@ -21,22 +21,12 @@ import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
-public abstract class GroupButton extends JButton {
+public abstract class GroupButton extends BaseGridButton {
 
     public GroupDialog dialog;
 
     public GroupButton() {
-        super();
-        Icon icon = new ImageIcon(getClass().getResource("/images/group.png"));
-        setIcon(icon);
-        setAlignmentY(Component.TOP_ALIGNMENT);
-        Dimension buttonSize = new Dimension(20, 20);
-        setMinimumSize(buttonSize);
-        setPreferredSize(buttonSize);
-        setMaximumSize(buttonSize);
-        setFocusable(false);
-        setToolTipText("Группировка");
-        addListener();
+        super("/images/group.png", "Группировка");
     }
 
     public abstract void addListener();

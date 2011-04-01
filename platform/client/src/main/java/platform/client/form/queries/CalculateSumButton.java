@@ -5,20 +5,10 @@ import javax.swing.border.EtchedBorder;
 import java.awt.*;
 import java.text.NumberFormat;
 
-public abstract class CalculateSumButton extends JButton {
+public abstract class CalculateSumButton extends BaseGridButton {
 
     public CalculateSumButton() {
-        super();
-        Icon icon = new ImageIcon(getClass().getResource("/images/sum.png"));
-        setIcon(icon);
-        setAlignmentY(Component.TOP_ALIGNMENT);
-        Dimension buttonSize = new Dimension(20, 20);
-        setMinimumSize(buttonSize);
-        setPreferredSize(buttonSize);
-        setMaximumSize(buttonSize);
-        setFocusable(false);
-        setToolTipText("Посчитать сумму");
-        addListener();
+        super("/images/sum.png", "Посчитать сумму");
     }
 
     public abstract void addListener();

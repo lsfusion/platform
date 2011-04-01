@@ -109,6 +109,40 @@ public class GridController {
             });
         }
 
+        if (key.showPrintGroupButton && Main.module.isFull()) {
+            groupObjectController.addToToolbar(new BaseGridButton("/images/reportbw.gif", "Распечатать таблицу") {
+                @Override
+                public void addListener() {
+                    addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            try {
+                                Main.frame.runSingleGroupReport(form.remoteForm, groupObjectController.getGroupObject().getID());
+                            } catch (Exception ex) {
+                                throw new RuntimeException(ex);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
+        if (key.showPrintGroupXlsButton && Main.module.isFull()) {
+            groupObjectController.addToToolbar(new BaseGridButton("/images/excelbw.jpg", "Экспорт в xls") {
+                @Override
+                public void addListener() {
+                    addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            try {
+                                Main.frame.runSingleGroupXlsExport(form.remoteForm, groupObjectController.getGroupObject().getID());
+                            } catch (Exception ex) {
+                                throw new RuntimeException(ex);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
         if (key.showCalculateSum) {
             groupObjectController.addToToolbar(new CalculateSumButton() {
                 public void addListener() {

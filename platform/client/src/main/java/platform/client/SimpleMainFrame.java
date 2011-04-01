@@ -56,6 +56,14 @@ public class SimpleMainFrame extends MainFrame {
     }
 
     @Override
+    public void runSingleGroupReport(RemoteFormInterface remoteForm, int groupId) {
+    }
+
+    @Override
+    public void runSingleGroupXlsExport(RemoteFormInterface remoteForm, int groupId) throws IOException, ClassNotFoundException {
+    }
+
+    @Override
     public void runForm(RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
         // надо здесь подумать, что вызывать
     }

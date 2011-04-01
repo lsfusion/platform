@@ -17,6 +17,7 @@ import java.io.IOException;
 public class ReportDockable extends FormDockable {
 
     private String reportCaption;
+    private Integer groupId = null;
 
     public ReportDockable(String formSID, ClientNavigator navigator, boolean currentSession, MultipleCDockableFactory<FormDockable,?> factory) throws IOException, ClassNotFoundException {
         super(formSID, navigator, currentSession, factory);
@@ -24,6 +25,12 @@ public class ReportDockable extends FormDockable {
 
     public ReportDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, MultipleCDockableFactory<FormDockable,?> factory) throws ClassNotFoundException, IOException {
         super(navigator, remoteForm, factory);
+    }
+
+    public ReportDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, int groupId, MultipleCDockableFactory<FormDockable,?> factory) throws ClassNotFoundException, IOException {
+        super("SingleGroupReport_" + remoteForm.getSID(), factory);
+        this.groupId = groupId;
+        setActiveComponent(getActiveComponent(navigator, remoteForm), getCaption());
     }
 
     // из файла
@@ -37,7 +44,12 @@ public class ReportDockable extends FormDockable {
     Component getActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
         try {
             ReportGenerator report = new ReportGenerator(remoteForm);
-            JasperPrint print = report.createReport(false, false, null);
+            JasperPrint print;
+            if (groupId != null) {
+                print = report.createSingleGroupReport(groupId, false, false, null);
+            } else {
+                print = report.createReport(false, false, null);
+            }
             reportCaption = print.getName();
             print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
             return prepareViewer(new JRViewer(print));

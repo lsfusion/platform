@@ -63,6 +63,10 @@ public class ViewManager {
         openForm(new ReportDockable(navigator, remoteForm, pageFactory));
     }
 
+    public void openSingleGroupReport(ClientNavigator navigator, RemoteFormInterface remoteForm, int groupId) throws IOException, ClassNotFoundException {
+        openForm(new ReportDockable(navigator, remoteForm, groupId, pageFactory));
+    }
+
     public void openReport(String fileName, String directory) throws JRException {
         openForm(new ReportDockable(fileName, directory, pageFactory));
     }

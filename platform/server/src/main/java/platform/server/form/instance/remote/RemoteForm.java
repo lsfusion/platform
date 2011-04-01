@@ -67,23 +67,41 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public byte[] getReportHierarchyByteArray() {
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        Map<String, List<String>> dependencies = form.entity.getReportHierarchy().getReportHierarchyMap();
+        return getReportHierarchyByteArray(dependencies);
+    }
+
+    public byte[] getSingleGroupReportHierarchyByteArray(int groupId) {
+        Map<String, List<String>> dependencies = form.entity.getSingleGroupReportHierarchy(groupId).getReportHierarchyMap();
+        return getReportHierarchyByteArray(dependencies);
+    }
+
+    private byte[] getReportHierarchyByteArray(Map<String, List<String>> dependencies) {
         try {
+            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
             ObjectOutputStream objOut = new ObjectOutputStream(outStream);
-            Map<String, List<String>> dependencies = form.entity.getReportHierarchy().getReportHierarchyMap();
             objOut.writeUTF(GroupObjectHierarchy.rootNodeName);
             objOut.writeObject(dependencies);
+            return outStream.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return outStream.toByteArray();
     }
 
     public byte[] getReportDesignsByteArray(boolean toExcel) {
+        return getReportDesignsByteArray(toExcel, null);
+    }
+
+    /// Отчет по одной группе
+    public byte[] getSingleGroupReportDesignByteArray(boolean toExcel, int groupId) {
+        return getReportDesignsByteArray(toExcel, groupId);
+    }
+
+    private byte[] getReportDesignsByteArray(boolean toExcel, Integer groupId) {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
             ObjectOutputStream objOut = new ObjectOutputStream(outStream);
-            Map<String, JasperDesign> res = getReportDesigns(toExcel);
+            Map<String, JasperDesign> res = getReportDesigns(toExcel, groupId);
             objOut.writeObject(res);
             return outStream.toByteArray();
         } catch (IOException e) {
@@ -91,8 +109,29 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
+    private Set<Integer> getGridGroups(Integer groupId) {
+        Set<Integer> gridGroupsId = new HashSet<Integer>();
+        for (GroupObjectInstance group : form.groups) {
+            if (group.curClassView == ClassViewType.GRID && (groupId == null || groupId == group.getID())) {
+                gridGroupsId.add(group.getID());
+            }
+        }
+        return gridGroupsId;
+    }
+
     public byte[] getReportSourcesByteArray() {
-        ReportSourceGenerator<T> sourceGenerator = new ReportSourceGenerator<T>(form, form.entity.getReportHierarchy());
+        GroupObjectHierarchy.ReportHierarchy hierarchy = form.entity.getReportHierarchy();
+        ReportSourceGenerator<T> sourceGenerator = new ReportSourceGenerator<T>(form, hierarchy, getGridGroups(null));
+        return getReportSourcesByteArray(sourceGenerator);
+    }
+
+    public byte[] getSingleGroupReportSourcesByteArray(int groupId) throws RemoteException {
+        ReportSourceGenerator<T> sourceGenerator = new ReportSourceGenerator<T>(form, form.entity.getSingleGroupReportHierarchy(groupId),
+                form.entity.getReportHierarchy(), getGridGroups(groupId));
+        return getReportSourcesByteArray(sourceGenerator);
+    }
+
+    private byte[] getReportSourcesByteArray(ReportSourceGenerator<T> sourceGenerator) {
         try {
             Map<String, ReportData> sources = sourceGenerator.generate();
             ReportSourceGenerator.ColumnGroupCaptionsData columnGroupCaptions = sourceGenerator.getColumnGroupCaptions();
@@ -154,9 +193,17 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    private Map<String, JasperDesign> getCustomReportDesigns() {
+    private GroupObjectHierarchy.ReportHierarchy getReportHierarchy(Integer groupId) {
+        if (groupId == null) {
+            return form.entity.getReportHierarchy();
+        } else {
+            return form.entity.getSingleGroupReportHierarchy(groupId);
+        }
+    }
+
+    private Map<String, JasperDesign> getCustomReportDesigns(Integer groupId) {
         try {
-            GroupObjectHierarchy.ReportHierarchy hierarchy = form.entity.getReportHierarchy();
+            GroupObjectHierarchy.ReportHierarchy hierarchy = getReportHierarchy(groupId);
             Map<String, JasperDesign> designs = new HashMap<String, JasperDesign>();
             List<String> ids = new ArrayList<String>();
             ids.add(GroupObjectHierarchy.rootNodeName);
@@ -164,7 +211,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 ids.add(node.getID());
             }
             for (String id : ids) {
-                File subReportFile = new File(getCustomReportName(id));
+                File subReportFile = new File(getCustomReportName(id, getReportSID(groupId)));
                 if (subReportFile.exists()) {
                     JasperDesign subreport = JRXmlLoader.load(subReportFile);
                     designs.put(id, subreport);
@@ -176,9 +223,14 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    private Map<String, JasperDesign> getReportDesigns(boolean toExcel) {
-        if (hasCustomReportDesign()) {
-            Map<String, JasperDesign> designs = getCustomReportDesigns();
+    private String getReportSID(Integer groupId) {
+        return getSID() + (groupId == null ? "" : "_Table" + groupId);
+    }
+
+    private Map<String, JasperDesign> getReportDesigns(boolean toExcel, Integer groupId) {
+        String sid = getReportSID(groupId);
+        if (hasCustomReportDesign(sid)) {
+            Map<String, JasperDesign> designs = getCustomReportDesigns(groupId);
             if (designs != null) {
                 return designs;
             }
@@ -186,17 +238,16 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
         Set<Integer> hidedGroupsId = new HashSet<Integer>();
         for (GroupObjectInstance group : form.groups) {
-            if (group.curClassView == ClassViewType.HIDE) {
+            if (group.curClassView == ClassViewType.HIDE || groupId != null && groupId != group.getID()) {
                 hidedGroupsId.add(group.getID());
             }
         }
         try {
-            ReportDesignGenerator generator =
-                    new ReportDesignGenerator(richDesign, form.entity.getReportHierarchy(), hidedGroupsId, toExcel);
+            ReportDesignGenerator generator = new ReportDesignGenerator(richDesign, getReportHierarchy(groupId), hidedGroupsId, toExcel);
             Map<String, JasperDesign> designs = generator.generate();
             for (Map.Entry<String, JasperDesign> entry : designs.entrySet()) {
                 String id = entry.getKey();
-                String reportName = getAutoReportName(id);
+                String reportName = getAutoReportName(id, sid);
 
                 new File(reportName).getParentFile().mkdirs();
 
@@ -208,24 +259,24 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    private String getCustomReportName(String name) {
+    private String getCustomReportName(String name, String sid) {
         if (name.equals(GroupObjectHierarchy.rootNodeName)) {
-            return "reports/custom/" + getSID() + ".jrxml";
+            return "reports/custom/" + sid + ".jrxml";
         } else {
-            return "reports/custom/" + getSID() + "_" + name + ".jrxml";
+            return "reports/custom/" + sid + "_" + name + ".jrxml";
         }
     }
 
-    private String getAutoReportName(String name) {
+    private String getAutoReportName(String name, String sid) {
         if (name.equals(GroupObjectHierarchy.rootNodeName)) {
-            return "reports/auto/" + getSID() + ".jrxml";
+            return "reports/auto/" + sid + ".jrxml";
         } else {
-            return "reports/auto/" + getSID() + "_" + name + ".jrxml";
+            return "reports/auto/" + sid + "_" + name + ".jrxml";
         }
     }
 
-    public boolean hasCustomReportDesign() {
-        return new File(getCustomReportName(GroupObjectHierarchy.rootNodeName)).exists();
+    public boolean hasCustomReportDesign(String sid) {
+        return new File(getCustomReportName(GroupObjectHierarchy.rootNodeName, sid)).exists();
     }
 
     public byte[] getRichDesignByteArray() {

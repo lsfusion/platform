@@ -9,6 +9,7 @@ import bibliothek.gui.dock.common.theme.ThemeMap;
 import bibliothek.gui.dock.facile.menu.RootMenuPiece;
 import bibliothek.gui.dock.facile.menu.SubmenuPiece;
 import bibliothek.gui.dock.support.menu.SeparatingMenuPiece;
+import jasperapi.ReportGenerator;
 import net.sf.jasperreports.engine.JRException;
 import platform.client.Log;
 import platform.client.Main;
@@ -86,6 +87,16 @@ public class DockableMainFrame extends MainFrame {
         } else {
             view.openReport(mainNavigator, remoteForm);
         }
+    }
+
+    @Override
+    public void runSingleGroupReport(RemoteFormInterface remoteForm, int groupId) throws IOException, ClassNotFoundException {
+        view.openSingleGroupReport(mainNavigator, remoteForm, groupId);
+    }
+
+    @Override
+    public void runSingleGroupXlsExport(RemoteFormInterface remoteForm, int groupId) throws IOException, ClassNotFoundException {
+        ReportGenerator.exportToExcel(remoteForm, groupId);
     }
 
     @Override

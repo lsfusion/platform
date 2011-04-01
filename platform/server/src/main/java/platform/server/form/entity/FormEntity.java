@@ -525,21 +525,25 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
     }
 
-    protected GroupObjectHierarchy groupHierarchy;
+    private GroupObjectHierarchy groupHierarchy;
 
     public GroupObjectHierarchy.ReportHierarchy getReportHierarchy() {
-        if (groupHierarchy == null) {
-            FormGroupHierarchyCreator creator = new FormGroupHierarchyCreator(this);
-            groupHierarchy = creator.createHierarchy();
-            modifyHierarchy(groupHierarchy);
-        }
-        return groupHierarchy.createReportHierarchy();
+        return getGroupHierarchy().createReportHierarchy();
+    }
+
+    public GroupObjectHierarchy.ReportHierarchy getSingleGroupReportHierarchy(int groupId) {
+        return getGroupHierarchy().createSingleGroupReportHierarchy(groupId);
     }
 
     public void modifyHierarchy(GroupObjectHierarchy groupHierarchy) {
     }
 
     public GroupObjectHierarchy getGroupHierarchy() {
+        if (groupHierarchy == null) {
+            FormGroupHierarchyCreator creator = new FormGroupHierarchyCreator(this);
+            groupHierarchy = creator.createHierarchy();
+            modifyHierarchy(groupHierarchy);
+        }
         return groupHierarchy;
     }
 

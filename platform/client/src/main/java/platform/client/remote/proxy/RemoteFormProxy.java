@@ -22,10 +22,10 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         super(target);
     }
 
-    @ImmutableMethod
-    public boolean hasCustomReportDesign() throws RemoteException {
+//    @ImmutableMethod
+    public boolean hasCustomReportDesign(String sid) throws RemoteException {
         logRemoteMethodStartCall("hasCustomReportDesign");
-        boolean result = target.hasCustomReportDesign();
+        boolean result = target.hasCustomReportDesign(sid);
         logRemoteMethodEndCall("hasCustomReportDesign", result);
         return result;
     }
@@ -37,6 +37,13 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
+    public byte[] getSingleGroupReportDesignByteArray(boolean toExcel, int groupId) throws RemoteException {
+        logRemoteMethodStartCall("getSingleGroupReportDesignByteArray");
+        byte[] result = target.getSingleGroupReportDesignByteArray(toExcel, groupId);
+        logRemoteMethodEndCall("getSingleGroupReportDesignByteArray", result);
+        return result;
+    }
+
     public byte[] getReportSourcesByteArray() throws RemoteException {
         logRemoteMethodStartCall("getReportSourcesByteArray");
         byte[] result = target.getReportSourcesByteArray();
@@ -44,10 +51,24 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
+    public byte[] getSingleGroupReportSourcesByteArray(int groupId) throws RemoteException {
+        logRemoteMethodStartCall("getSingleGroupReportSourcesByteArray");
+        byte[] result = target.getSingleGroupReportSourcesByteArray(groupId);
+        logRemoteMethodEndCall("getSingleGroupReportSourcesByteArray", result);
+        return result;
+    }
+
     public byte[] getReportHierarchyByteArray() throws RemoteException {
         logRemoteMethodStartCall("getReportHierarchyByteArray");
         byte[] result = target.getReportHierarchyByteArray();
         logRemoteMethodEndCall("getReportHierarchyByteArray", result);
+        return result;
+    }
+
+    public byte[] getSingleGroupReportHierarchyByteArray(int groupId) throws RemoteException {
+        logRemoteMethodStartCall("getSingleGroupReportHierarchyByteArray");
+        byte[] result = target.getSingleGroupReportHierarchyByteArray(groupId);
+        logRemoteMethodEndCall("getSingleGroupReportHierarchyByteArray", result);
         return result;
     }
 

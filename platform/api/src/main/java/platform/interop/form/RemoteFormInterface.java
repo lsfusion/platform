@@ -11,12 +11,16 @@ import java.util.Map;
 public interface RemoteFormInterface extends PendingRemote {
 
     // операции с ответом
-    boolean hasCustomReportDesign() throws RemoteException;
+    boolean hasCustomReportDesign(String sid) throws RemoteException;
     byte[] getRichDesignByteArray() throws RemoteException;
 
     byte[] getReportHierarchyByteArray() throws RemoteException;
+    byte[] getSingleGroupReportHierarchyByteArray(int groupId) throws RemoteException;
+
     byte[] getReportDesignsByteArray(boolean toExcel) throws RemoteException;
+    byte[] getSingleGroupReportDesignByteArray(boolean toExcel, int groupId) throws RemoteException;
     byte[] getReportSourcesByteArray() throws RemoteException;
+    byte[] getSingleGroupReportSourcesByteArray(int groupId) throws RemoteException;
 
     public RemoteChanges getRemoteChanges() throws RemoteException;
 

@@ -1,8 +1,8 @@
 package platform.client.logics;
 
+import platform.base.context.ApplicationContext;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.editor.GridEditor;
-import platform.base.context.ApplicationContext;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.form.layout.SimplexConstraints;
 
@@ -18,6 +18,8 @@ public class ClientGrid extends ClientComponent {
     public boolean showCountQuantity;
     public boolean showCalculateSum;
     public boolean showGroup;
+    public boolean showPrintGroupButton;
+    public boolean showPrintGroupXlsButton;
 
     public byte minRowCount;
     public boolean tabVertical = false;
@@ -45,6 +47,8 @@ public class ClientGrid extends ClientComponent {
         outStream.writeBoolean(showCountQuantity);
         outStream.writeBoolean(showCalculateSum);
         outStream.writeBoolean(showGroup);
+        outStream.writeBoolean(showPrintGroupButton);
+        outStream.writeBoolean(showPrintGroupXlsButton);
 
         outStream.writeByte(minRowCount);
         outStream.writeBoolean(tabVertical);
@@ -62,6 +66,8 @@ public class ClientGrid extends ClientComponent {
         showCountQuantity = inStream.readBoolean();
         showCalculateSum = inStream.readBoolean();
         showGroup = inStream.readBoolean();
+        showPrintGroupButton = inStream.readBoolean();
+        showPrintGroupXlsButton = inStream.readBoolean();
 
         minRowCount = inStream.readByte();
         tabVertical = inStream.readBoolean();
