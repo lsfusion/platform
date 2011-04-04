@@ -14,9 +14,11 @@ import platform.interop.KeyStrokes;
 import platform.interop.Order;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
 public class GroupObjectController implements GroupObjectLogicsSupplier {
     private final ClientGroupObject groupObject;
@@ -402,7 +404,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         return grid.hasActiveFilter();
     }
 
-    public void addToToolbar(JComponent component) {
+    public void addToToolbar(Component component) {
         panelToolbar.addComponent(component);
     }
 

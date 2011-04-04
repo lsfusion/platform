@@ -13,6 +13,7 @@ import platform.client.logics.classes.ClientIntegralClass;
 import platform.interop.Order;
 import platform.interop.form.screen.ExternalScreenComponent;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -91,6 +92,8 @@ public class GridController {
             };
             groupObjectController.addToToolbar(filterController.getView());
             filterController.getView().addActions(table);
+
+            groupObjectController.addToToolbar(Box.createHorizontalStrut(5));
         }
 
         if (key.showCountQuantity) {
@@ -102,40 +105,6 @@ public class GridController {
                                 showPopupMenu(form.countRecords(groupObjectController.getGroupObject().getID()));
                             } catch (IOException e1) {
                                 e1.printStackTrace();
-                            }
-                        }
-                    });
-                }
-            });
-        }
-
-        if (key.showPrintGroupButton && Main.module.isFull()) { // todo [dale]: Можно ли избавиться от if'ов?
-            groupObjectController.addToToolbar(new BaseGridButton("/images/reportbw.gif", "Распечатать таблицу") {
-                @Override
-                public void addListener() {
-                    addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            try {
-                                Main.frame.runSingleGroupReport(form.remoteForm, groupObjectController.getGroupObject().getID());
-                            } catch (Exception ex) {
-                                throw new RuntimeException(ex);
-                            }
-                        }
-                    });
-                }
-            });
-        }
-
-        if (key.showPrintGroupXlsButton && Main.module.isFull()) {
-            groupObjectController.addToToolbar(new BaseGridButton("/images/excelbw.jpg", "Экспорт в xls") {
-                @Override
-                public void addListener() {
-                    addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            try {
-                                Main.frame.runSingleGroupXlsExport(form.remoteForm, groupObjectController.getGroupObject().getID());
-                            } catch (Exception ex) {
-                                throw new RuntimeException(ex);
                             }
                         }
                     });
@@ -198,6 +167,42 @@ public class GridController {
                     }
                 });
             }
+            });
+        }
+
+        groupObjectController.addToToolbar(Box.createHorizontalStrut(5));
+
+        if (key.showPrintGroupButton && Main.module.isFull()) { // todo [dale]: Можно ли избавиться от if'ов?
+            groupObjectController.addToToolbar(new BaseGridButton("/images/reportbw.gif", "Распечатать таблицу") {
+                @Override
+                public void addListener() {
+                    addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            try {
+                                Main.frame.runSingleGroupReport(form.remoteForm, groupObjectController.getGroupObject().getID());
+                            } catch (Exception ex) {
+                                throw new RuntimeException(ex);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
+        if (key.showPrintGroupXlsButton && Main.module.isFull()) {
+            groupObjectController.addToToolbar(new BaseGridButton("/images/excelbw.jpg", "Экспорт в xls") {
+                @Override
+                public void addListener() {
+                    addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            try {
+                                Main.frame.runSingleGroupXlsExport(form.remoteForm, groupObjectController.getGroupObject().getID());
+                            } catch (Exception ex) {
+                                throw new RuntimeException(ex);
+                            }
+                        }
+                    });
+                }
             });
         }
 

@@ -53,11 +53,11 @@ public class PanelToolbar {
         return mainContainer;
     }
 
-    public void addComponent(JComponent component) {
+    public void addComponent(Component component) {
         addComponent(component, false);
     }
 
-    public void addComponent(JComponent component, boolean toTheRight) {
+    public void addComponent(Component component, boolean toTheRight) {
         if (toTheRight) {
             rightContainer.add(component);
         } else {
@@ -65,7 +65,7 @@ public class PanelToolbar {
         }
     }
 
-    public void removeComponent(JComponent component) {
+    public void removeComponent(Component component) {
         leftContainer.remove(component);
         rightContainer.remove(component);
     }
