@@ -17,8 +17,8 @@ public interface RemoteFormInterface extends PendingRemote {
     byte[] getReportHierarchyByteArray() throws RemoteException;
     byte[] getSingleGroupReportHierarchyByteArray(int groupId) throws RemoteException;
 
-    byte[] getReportDesignsByteArray(boolean toExcel) throws RemoteException;
-    byte[] getSingleGroupReportDesignByteArray(boolean toExcel, int groupId) throws RemoteException;
+    byte[] getReportDesignsByteArray() throws RemoteException;
+    byte[] getSingleGroupReportDesignByteArray(int groupId) throws RemoteException;
     byte[] getReportSourcesByteArray() throws RemoteException;
     byte[] getSingleGroupReportSourcesByteArray(int groupId) throws RemoteException;
 
