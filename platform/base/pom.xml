@@ -7,6 +7,17 @@
   <version>1.0</version>
   <name>Base</name>
 
+    <distributionManagement>
+      <repository>
+        <id>lsfusion.ru</id>
+        <url>http://lsfusion.ru/archiva/repository/internal</url>
+      </repository>
+      <snapshotRepository>
+        <id>lsfusion.ru</id>
+        <url>http://lsfusion.ru/archiva/repository/snapshot</url>
+      </snapshotRepository>
+    </distributionManagement>
+
     <build>
         <plugins>
             <plugin>

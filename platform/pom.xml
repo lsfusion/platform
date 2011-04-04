@@ -7,17 +7,6 @@
   <version>1.0</version>
     <name>LS Fusion</name>
 
-    <distributionManagement>
-      <repository>
-        <id>internal</id>
-        <url>http://81.25.47.234:8080/archiva/repository/internal</url>
-      </repository>
-      <snapshotRepository>
-        <id>snapshot</id>
-        <url>http://81.25.47.234:8080/archiva/repository/snapshot</url>
-      </snapshotRepository>
-    </distributionManagement>
-
     <modules>
         <module>base</module>
         <module>logics</module>
