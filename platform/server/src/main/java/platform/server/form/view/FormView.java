@@ -421,6 +421,18 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         setBackground(prop.property, background);
     }
 
+    public void setBackground(Color background, GroupObjectEntity groupObject, LP... props) {
+        for(LP prop : props)
+            setBackground(prop.property, groupObject, background);
+    }
+
+    public void setBackground(Property prop, GroupObjectEntity groupObject, Color background) {
+
+        for (PropertyDrawView property : getProperties(prop, groupObject)) {
+            setBackground(property, background);
+        }
+    }
+
     public void setBackground(Property prop, Color background) {
 
         for (PropertyDrawView property : getProperties(prop)) {

@@ -29,11 +29,13 @@ import java.util.Map;
 public class ObjectValueProperty extends ExecuteProperty {
 
     private final ValueClass typeClass;
+    public final ClassPropertyInterface objectInterface;
 
     public ObjectValueProperty(String SID, ValueClass valueClass) {
         super(SID, "Объект", new ValueClass[]{valueClass});
 
         this.typeClass = valueClass;
+        objectInterface = BaseUtils.single(interfaces);
     }
 
     @Override

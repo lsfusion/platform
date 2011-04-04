@@ -1,17 +1,23 @@
 package platform.server.logics.property;
 
 import platform.server.classes.ConcreteValueClass;
+import platform.server.classes.UnknownClass;
 import platform.server.classes.ValueClass;
 import platform.server.classes.StaticClass;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
+import platform.server.data.query.Query;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
+import platform.server.logics.BusinessLogics;
 import platform.server.session.Changes;
+import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 import platform.server.session.SimpleChanges;
 import platform.server.logics.DataObject;
 
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -31,5 +37,12 @@ public class ValueClassProperty extends ClassProperty<StaticClass> {
 
     protected Expr getStaticExpr() {
         return staticClass.getStaticExpr(value);
+    }
+
+    @Override
+    public void setNull(Map<ClassPropertyInterface, KeyExpr> mapKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
+        for(Map<ClassPropertyInterface, DataObject> row : new Query<ClassPropertyInterface, Object>(mapKeys, where).executeClasses(session.sql, session.env, session.baseClass).keySet())
+            for(Map.Entry<ClassPropertyInterface, DataObject> entry : row.entrySet())
+                session.changeClass(entry.getValue(), session.baseClass.unknown);
     }
 }

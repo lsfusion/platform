@@ -577,11 +577,17 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     protected Expr getDefaultExpr(Map<T, ? extends Expr> mapExprs) {
-        return ((DataClass)getType()).getDefaultExpr();
+        Type type = getType();
+        if(type instanceof DataClass)
+            return ((DataClass) type).getDefaultExpr();
+        else
+            return null;
     }
 
     public void setNotNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
-        session.execute(getDataChanges(new PropertyChange<T>(mapKeys, getDefaultExpr(mapKeys), where), null, session.modifier), null, null);
+        Expr defaultExpr = getDefaultExpr(mapKeys);
+        if(defaultExpr!=null)
+            session.execute(getDataChanges(new PropertyChange<T>(mapKeys, defaultExpr, where), null, session.modifier), null, null);
     }
 
     public void setNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {

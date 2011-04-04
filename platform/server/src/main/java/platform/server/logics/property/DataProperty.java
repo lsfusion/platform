@@ -1,5 +1,6 @@
 package platform.server.logics.property;
 
+import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
@@ -15,6 +16,7 @@ import platform.server.session.*;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +39,7 @@ public abstract class DataProperty extends UserProperty {
     public <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier) {
         SimpleChanges modifierChanges = modifier.getChanges();
         return (derivedChange != null ? derivedChange.getUsedChanges(modifier) : modifier.newChanges()).
-                addChanges(new SimpleChanges(modifierChanges, ClassProperty.getValueClasses(interfaces), true)).
+                addChanges(new SimpleChanges(modifierChanges, BaseUtils.merge(ClassProperty.getValueClasses(interfaces), Collections.singleton(value)), true)).
                 addChanges(new SimpleChanges(modifierChanges, this));
     }
 

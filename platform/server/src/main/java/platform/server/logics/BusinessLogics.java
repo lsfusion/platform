@@ -3350,17 +3350,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return mapLGProp(group, persistent, property, listImplements);
     }
 
-/*    protected <T extends PropertyInterface, P extends PropertyInterface> LP addAGProp(AbstractGroup group, boolean checkChange, String sID, boolean persistent, String caption, ConcreteCustomClass customClass, LP... props) {
+    protected <T extends PropertyInterface, P extends PropertyInterface> LP addAGProp(AbstractGroup group, boolean checkChange, String sID, boolean persistent, String caption, ConcreteCustomClass customClass, LP... props) {
         ObjectValueProperty objectValueProperty = objectValue.getProperty(new ValueClass[]{customClass});
-        Collection<PropertyInterfaceImplement<ClassPropertyInterface>> listImplements = readImplements(Collections.singletonList(BaseUtils.single(objectValueProperty.interfaces)), getUParams(props, 0));
+        List<PropertyInterfaceImplement<ClassPropertyInterface>> listImplements = readImplements(Collections.singletonList(objectValueProperty.objectInterface), getUParams(props, 0));
 
-        AggregateGroupProperty property = new AggregateGroupProperty(sID, caption, listImplements);
+        AggregateGroupProperty property = new AggregateGroupProperty(sID, caption, objectValueProperty, customClass, listImplements);
 
         // нужно добавить ограничение на уникальность
         addProperty(null, new LP(property.getConstrainedProperty(checkChange)));
 
         return mapLGProp(group, persistent, property, listImplements);
-    }*/
+    }
 
     protected <T extends PropertyInterface, P extends PropertyInterface> LP addDGProp(int orders, boolean ascending, LP<T> groupProp, Object... params) {
         return addDGProp(privateGroup, "sys", orders, ascending, groupProp, params);
