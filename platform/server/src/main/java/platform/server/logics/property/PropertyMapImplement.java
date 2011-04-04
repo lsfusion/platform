@@ -8,8 +8,8 @@ import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.form.instance.PropertyObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.session.*;
 
 import java.sql.SQLException;
@@ -53,6 +53,10 @@ public class PropertyMapImplement<T extends PropertyInterface,P extends Property
 
     public MapDataChanges<P> mapJoinDataChanges(Map<P, KeyExpr> joinImplement, Expr expr, Where where, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
         return property.getJoinDataChanges(BaseUtils.join(mapping, joinImplement), expr, where, modifier, changedWhere).map(mapping);
+    }
+
+    public void mapNotNull(Map<P, KeyExpr> mapKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
+        property.setJoinNotNull(BaseUtils.join(mapping, mapKeys), where, session, BL);
     }
 
     public PropertyMapImplement<?,P> mapChangeImplement() {

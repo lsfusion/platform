@@ -101,6 +101,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private LP freeIncOrderArticle;
     private CustomClass commitReturnShopOut;
     private LP sumWithDiscountCouponOrder;
+    private LP genderArticle;
+    private LP nameToGender;
 
     public VEDBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -171,7 +173,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     public ConcreteCustomClass article;
     public ConcreteCustomClass currency;
     public ConcreteCustomClass unitOfMeasure;
-    CustomClass store, importSupplier, orderLocal, format, line, gender;
+    public ConcreteCustomClass gender;
+    CustomClass store, importSupplier, orderLocal, format, line;
     ConcreteCustomClass localSupplier;
     ConcreteCustomClass articleGroup, brend;
     CustomClass customer;
@@ -654,8 +657,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP articleLine = addDProp("articleLine", "Линия товара", line, article);
         addJProp(artExtraGroup, "Линия товара", name, articleLine, 1);
 
-        LP articleGender = addDProp("articleGender", "Пол", gender, article);
-        addJProp(artExtraGroup, "Пол", name, articleGender, 1);
+        genderArticle = addDProp("genderArticle", "Пол", gender, article);
+        addJProp(artExtraGroup, "Пол", name, genderArticle, 1);
         //**************************************************************************************************************
         currentRRP = addDProp(priceGroup, "currentRRP", "RRP", DoubleClass.instance, article);
         currencyArticle = addDProp("currencyArticle", "Валюта (ИД)", currency, article);
@@ -1079,6 +1082,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         nameToArticleGroup = addCGProp(null, "nameToArticleGroup", "Гр. тов.", object(articleGroup), name, name, 1);
         nameToUnitOfMeasure = addCGProp(null, "nameToUnitOfMeasure", "Ед. изм.", object(unitOfMeasure), name, name, 1);
         nameToBrend = addCGProp(null, "nameToBrend", "Бренд", object(brend), name, name, 1);
+        nameToGender = addCGProp(null, "nameToGender", "Пол", object(gender), name, name, 1);
 
         dateLastImportShop = addDProp(cashRegGroup, "dateLastImportSh", "Дата прайса", DateClass.instance, shop);
         dateLastImport = addJProp(cashRegGroup, "dateLastImport", "Дата прайса", dateLastImportShop, currentShop);
@@ -3800,6 +3804,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addImportObjectNameField(fields, properties, importKeys, articleKey, nameToCountry, countryArticle, country);
             addImportField(fields, properties, articleKey, gigienaArticle);
             addImportField(fields, properties, articleKey, spirtArticle);
+            addImportObjectNameField(fields, properties, importKeys, articleKey, nameToGender, genderArticle, gender);
 
             List<List<Object>> rows = new ArrayList<List<Object>>();
 
@@ -3857,7 +3862,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             ImportField numberField = new ImportField(numberInvoiceDocument); fields.add(numberField);
             ImportKey<?> documentKey = new ImportKey(commitDeliveryShopLocal, invoiceDocumentNumber.getMapping(numberField)); importKeys.add(documentKey);
             properties.add(new ImportProperty(numberField, numberInvoiceDocument.getMapping(documentKey)));
-//            addImportField(fields, properties, date, documentKey);
+            addImportField(fields, properties, date, documentKey);
 
             properties.add(new ImportProperty(null, subjectIncOrder.getMapping(documentKey), object(store).getMapping(storeObject)));
 

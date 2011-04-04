@@ -1,6 +1,7 @@
 package platform.server.classes;
 
 import net.sf.jasperreports.engine.JRAlignment;
+import platform.base.DateConverter;
 import platform.interop.Data;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
@@ -89,11 +90,11 @@ public class DateClass extends DataClass<Date> {
         throw new RuntimeException("not supported");
     }
 
-    public Object parseString(String s) throws ParseException {
+    public Date parseString(String s) throws ParseException {
         try {
             DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
             dateFormat.setTimeZone(Calendar.getInstance().getTimeZone());
-            return dateFormat.parse(s);
+            return DateConverter.dateToSql(dateFormat.parse(s));
         } catch (Exception e) {
             throw new ParseException("error parsing date", e);
         }

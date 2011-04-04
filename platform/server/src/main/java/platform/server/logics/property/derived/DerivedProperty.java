@@ -75,11 +75,11 @@ public class DerivedProperty {
         return new PropertyMapImplement<JoinProperty.Interface,T>(joinProperty,BaseUtils.reverse(joinMap));
     }
 
-    private static <T extends PropertyInterface> PropertyMapImplement<?,T> createAnd(Collection<T> interfaces, PropertyInterfaceImplement<T> object, Collection<PropertyInterfaceImplement<T>> ands) {
+    private static <T extends PropertyInterface> PropertyMapImplement<?,T> createAnd(Collection<T> interfaces, PropertyInterfaceImplement<T> object, List<PropertyInterfaceImplement<T>> ands, List<Boolean> nots) {
         JoinProperty<AndFormulaProperty.Interface> joinProperty = new JoinProperty<AndFormulaProperty.Interface>(genID(),"sys",interfaces.size(),false);
         Map<T, JoinProperty.Interface> joinMap = BaseUtils.buildMap(interfaces, joinProperty.interfaces);
 
-        AndFormulaProperty implement = new AndFormulaProperty(genID(),new boolean[ands.size()]);
+        AndFormulaProperty implement = new AndFormulaProperty(genID(),BaseUtils.convertArray(nots.toArray(new Boolean[nots.size()])));
         Map<AndFormulaProperty.Interface,PropertyInterfaceImplement<JoinProperty.Interface>> joinImplement = new HashMap<AndFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>();
         joinImplement.put(implement.objectInterface,object.map(joinMap));
         Iterator<AndFormulaProperty.AndInterface> andIterator = implement.andInterfaces.iterator();
@@ -88,6 +88,20 @@ public class DerivedProperty {
 
         joinProperty.implement = new PropertyImplement<PropertyInterfaceImplement<JoinProperty.Interface>,AndFormulaProperty.Interface>(implement,joinImplement);
         return new PropertyMapImplement<JoinProperty.Interface,T>(joinProperty,BaseUtils.reverse(joinMap));
+    }
+
+    private static <T extends PropertyInterface> PropertyMapImplement<?,T> createAnd(Collection<T> interfaces, PropertyInterfaceImplement<T> object, Collection<PropertyInterfaceImplement<T>> ands) {
+        List<PropertyInterfaceImplement<T>> andList = new ArrayList<PropertyInterfaceImplement<T>>();
+        List<Boolean> andNots = new ArrayList<Boolean>();
+        for(PropertyInterfaceImplement<T> and : ands) {
+            andList.add(and);
+            andNots.add(false);
+        }
+        return createAnd(interfaces, object, andList, andNots);
+    }
+
+    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createAndNot(Property<T> property, PropertyInterfaceImplement<T> not) {
+        return createAnd(property.interfaces, property.getImplement(), Collections.singleton(not));
     }
 
     private static <T extends PropertyInterface> PropertyMapImplement<?,T> createAnd(Collection<T> interfaces, PropertyInterfaceImplement<T> object, PropertyInterfaceImplement<T> and) {

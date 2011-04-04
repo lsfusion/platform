@@ -45,10 +45,7 @@ import platform.server.integration.*;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.*;
-import platform.server.logics.property.derived.ConcatenateProperty;
-import platform.server.logics.property.derived.CycleGroupProperty;
-import platform.server.logics.property.derived.DerivedProperty;
-import platform.server.logics.property.derived.MaxChangeProperty;
+import platform.server.logics.property.derived.*;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.PropertySet;
 import platform.server.logics.scheduler.Scheduler;
@@ -2096,6 +2093,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private void fillPropertyList(Property<?> property, LinkedHashSet<Property> set) {
         for (Property depend : property.getDepends())
             fillPropertyList(depend, set);
+        for (Property follow : property.getFollows())
+            fillPropertyList(follow, set);
         set.add(property);
     }
 
@@ -2125,6 +2124,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         List<Property> result = new ArrayList<Property>();
         for (Property property : getPropertyList())
             if (property.isStored())
+                result.add(property);
+        return result;
+    }
+
+    @IdentityLazy
+    public List<Property> getFollowProperties() {
+        List<Property> result = new ArrayList<Property>();
+        for (Property property : getPropertyList())
+            if (property.isFollow())
                 result.add(property);
         return result;
     }
@@ -2175,7 +2183,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return result;
     }
 
-    public List<Property> getAppliedProperties() {
+    public List<Property> getConstrainedProperties() {
         List<Property> result = new ArrayList<Property>();
         for (Property property : getPropertyList())
             if (property.isStored() || property.isFalse)
@@ -3341,6 +3349,18 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         return mapLGProp(group, persistent, property, listImplements);
     }
+
+/*    protected <T extends PropertyInterface, P extends PropertyInterface> LP addAGProp(AbstractGroup group, boolean checkChange, String sID, boolean persistent, String caption, ConcreteCustomClass customClass, LP... props) {
+        ObjectValueProperty objectValueProperty = objectValue.getProperty(new ValueClass[]{customClass});
+        Collection<PropertyInterfaceImplement<ClassPropertyInterface>> listImplements = readImplements(Collections.singletonList(BaseUtils.single(objectValueProperty.interfaces)), getUParams(props, 0));
+
+        AggregateGroupProperty property = new AggregateGroupProperty(sID, caption, listImplements);
+
+        // нужно добавить ограничение на уникальность
+        addProperty(null, new LP(property.getConstrainedProperty(checkChange)));
+
+        return mapLGProp(group, persistent, property, listImplements);
+    }*/
 
     protected <T extends PropertyInterface, P extends PropertyInterface> LP addDGProp(int orders, boolean ascending, LP<T> groupProp, Object... params) {
         return addDGProp(privateGroup, "sys", orders, ascending, groupProp, params);

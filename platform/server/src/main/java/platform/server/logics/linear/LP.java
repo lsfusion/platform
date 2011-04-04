@@ -198,4 +198,18 @@ public class LP<T extends PropertyInterface> {
         return property.getDataChanges(new PropertyChange<T>(mapKeys, expr, where), null, modifier);
     }
 
+    public <L extends PropertyInterface> void follows(LP<L> lp, int... mapping) {
+        Map<L, T> mapInterfaces = new HashMap<L, T>();
+        for(int i=0;i<lp.listInterfaces.size();i++)
+            mapInterfaces.put(lp.listInterfaces.get(i), listInterfaces.get(mapping[i]-1));
+        property.addFollows(new PropertyMapImplement<L, T>(lp.property, mapInterfaces));
+    }
+
+    public void followed(LP... lps) {
+        int[] mapping = new int[listInterfaces.size()];
+        for(int i=0;i<mapping.length;i++)
+            mapping[i] = i+1;
+        for(LP lp : lps)
+            lp.follows(this, mapping);
+    }
 }

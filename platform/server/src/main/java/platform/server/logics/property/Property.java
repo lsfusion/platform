@@ -4,10 +4,7 @@ import platform.base.BaseUtils;
 import platform.base.ListPermutations;
 import platform.interop.action.ClientAction;
 import platform.server.caches.IdentityLazy;
-import platform.server.classes.ConcreteClass;
-import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.CustomClass;
-import platform.server.classes.ValueClass;
+import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.*;
 import platform.server.data.expr.*;
@@ -25,9 +22,10 @@ import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.view.DefaultFormView;
-import platform.server.form.view.PropertyDrawView;
+import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.logics.table.MapKeysTable;
@@ -444,6 +442,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return result;
     }
 
+    public void setJoinNotNull(Map<T, KeyExpr> implementKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
+        Map<T, KeyExpr> mapKeys = getMapKeys();
+        setNotNull(mapKeys, GroupExpr.create(implementKeys, ValueExpr.TRUE, where, true, mapKeys).getWhere(), session, BL);
+    }
+
     public PropertyMapImplement<T, T> getImplement() {
         return new PropertyMapImplement<T, T>(this, getIdentityInterfaces());
     }
@@ -548,4 +551,40 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     // дебилизм конечно, но это самый простой обход DistrGroupProperty
     public boolean isOnlyNotZero = false;
+
+    public Set<PropertyFollows<?, T>> followed = new HashSet<PropertyFollows<?, T>>();
+    public Set<PropertyFollows<T, ?>> follows = new HashSet<PropertyFollows<T, ?>>();
+    public <L extends PropertyInterface> Property addFollows(PropertyMapImplement<L, T> implement) {
+        PropertyFollows<T, L> propertyFollows = new PropertyFollows<T, L>(this, implement);
+        follows.add(propertyFollows);
+        implement.property.followed.add(propertyFollows);
+
+        Property constraint = DerivedProperty.createAndNot(this, implement).property;
+        constraint.caption = "Нарушено следствие - из (" + this + ") => (" + implement.property + ")";
+        constraint.setConstraint(false);
+        return constraint;
+    }
+
+    public Collection<Property> getFollows() {
+        Collection<Property> result = new ArrayList<Property>();
+        for(PropertyFollows<T, ?> follow : follows)
+            result.add(follow.getFollow());
+        return result;
+    }
+
+    public boolean isFollow() {
+        return !(followed.isEmpty() && follows.isEmpty());
+    }
+
+    protected Expr getDefaultExpr(Map<T, ? extends Expr> mapExprs) {
+        return ((DataClass)getType()).getDefaultExpr();
+    }
+
+    public void setNotNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
+        session.execute(getDataChanges(new PropertyChange<T>(mapKeys, getDefaultExpr(mapKeys), where), null, session.modifier), null, null);
+    }
+
+    public void setNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
+        session.execute(getDataChanges(new PropertyChange<T>(mapKeys, CaseExpr.NULL, where), null, session.modifier), null, null);
+    }
 }

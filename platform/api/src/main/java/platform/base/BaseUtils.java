@@ -39,6 +39,13 @@ public class BaseUtils {
         return obj;
     }
 
+    public static boolean[] convertArray(Boolean[] array) {
+        boolean[] result = new boolean[array.length];
+        for(int i=0;i<array.length;i++)
+            result[i] = array[i];
+        return result;
+    }
+
     public static <KA, VA, KB, VB> boolean mapEquals(Map<KA, VA> mapA, Map<KB, VB> mapB, Map<KA, KB> mapAB) {
         for (Map.Entry<KA, VA> A : mapA.entrySet())
             if (!mapB.get(mapAB.get(A.getKey())).equals(A.getValue()))

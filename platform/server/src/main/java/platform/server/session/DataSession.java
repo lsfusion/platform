@@ -324,8 +324,10 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
 
     public String check(final BusinessLogics<?> BL) throws SQLException {
 
+        resolveFollows(BL, null);
+
         // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
-        for(Property<?> property : BL.getAppliedProperties())
+        for(Property<?> property : BL.getConstrainedProperties())
             if(property.isFalse && property.hasChanges(modifier)) {
                 String constraintResult = check(property);
                 if(constraintResult!=null) {
@@ -372,6 +374,17 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
         return null;
     }
 
+    public void resolveFollows(final BusinessLogics<?> BL, List<ClientAction> actions) throws SQLException {
+
+        for(Property<?> property : BL.getFollowProperties()) {
+            // нужно проверить что оно change'ся в true
+            for(PropertyFollows<?, ?> follow : property.follows)
+                follow.resolveFalse(this, BL);
+            for(PropertyFollows<?, ?> follow : property.followed)
+                follow.resolveTrue(this, BL);
+        }
+    }
+
     public void executeDerived(final BusinessLogics<?> BL, List<ClientAction> actions) throws SQLException {
 
         for(ExecuteProperty property : BL.getExecuteDerivedProperties()) {
@@ -399,11 +412,9 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
         IncrementApply increment = new IncrementApply(DataSession.this);
 
         // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
-        for (Property<?> property : BL.getAppliedProperties()) {
-            if (property.isStored() && property.hasChanges(increment)) {
+        for (Property<?> property : BL.getStoredProperties())
+            if (property.hasChanges(increment))
                 temporary.add(increment.read(property.mapTable.table, Collections.<Property>singleton(property), baseClass));
-            }
-        }
 
         // записываем в базу
         for (Map.Entry<ImplementTable, Collection<Property>> groupTable : BaseUtils.group(
