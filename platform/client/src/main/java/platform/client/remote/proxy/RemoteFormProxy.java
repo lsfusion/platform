@@ -30,16 +30,16 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
-    public byte[] getReportDesignsByteArray(boolean toExcel) throws RemoteException {
+    public byte[] getReportDesignsByteArray() throws RemoteException {
         logRemoteMethodStartCall("getReportDesignsByteArray");
-        byte[] result = target.getReportDesignsByteArray(toExcel);
+        byte[] result = target.getReportDesignsByteArray();
         logRemoteMethodEndCall("getReportDesignsByteArray", result);
         return result;
     }
 
-    public byte[] getSingleGroupReportDesignByteArray(boolean toExcel, int groupId) throws RemoteException {
+    public byte[] getSingleGroupReportDesignByteArray(int groupId) throws RemoteException {
         logRemoteMethodStartCall("getSingleGroupReportDesignByteArray");
-        byte[] result = target.getSingleGroupReportDesignByteArray(toExcel, groupId);
+        byte[] result = target.getSingleGroupReportDesignByteArray(groupId);
         logRemoteMethodEndCall("getSingleGroupReportDesignByteArray", result);
         return result;
     }

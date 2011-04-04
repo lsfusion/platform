@@ -88,20 +88,20 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    public byte[] getReportDesignsByteArray(boolean toExcel) {
-        return getReportDesignsByteArray(toExcel, null);
+    public byte[] getReportDesignsByteArray() {
+        return getReportDesignsByteArray(null);
     }
 
     /// Отчет по одной группе
-    public byte[] getSingleGroupReportDesignByteArray(boolean toExcel, int groupId) {
-        return getReportDesignsByteArray(toExcel, groupId);
+    public byte[] getSingleGroupReportDesignByteArray(int groupId) {
+        return getReportDesignsByteArray(groupId);
     }
 
-    private byte[] getReportDesignsByteArray(boolean toExcel, Integer groupId) {
+    private byte[] getReportDesignsByteArray(Integer groupId) {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
             ObjectOutputStream objOut = new ObjectOutputStream(outStream);
-            Map<String, JasperDesign> res = getReportDesigns(toExcel, groupId);
+            Map<String, JasperDesign> res = getReportDesigns(groupId);
             objOut.writeObject(res);
             return outStream.toByteArray();
         } catch (IOException e) {
@@ -227,7 +227,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return getSID() + (groupId == null ? "" : "_Table" + groupId);
     }
 
-    private Map<String, JasperDesign> getReportDesigns(boolean toExcel, Integer groupId) {
+    private Map<String, JasperDesign> getReportDesigns(Integer groupId) {
         String sid = getReportSID(groupId);
         if (hasCustomReportDesign(sid)) {
             Map<String, JasperDesign> designs = getCustomReportDesigns(groupId);
@@ -243,7 +243,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             }
         }
         try {
-            ReportDesignGenerator generator = new ReportDesignGenerator(richDesign, getReportHierarchy(groupId), hidedGroupsId, toExcel);
+            ReportDesignGenerator generator = new ReportDesignGenerator(richDesign, getReportHierarchy(groupId), hidedGroupsId);
             Map<String, JasperDesign> designs = generator.generate();
             for (Map.Entry<String, JasperDesign> entry : designs.entrySet()) {
                 String id = entry.getKey();

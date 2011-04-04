@@ -33,9 +33,8 @@ public class ReportDesignGenerator {
     private GroupObjectHierarchy.ReportHierarchy hierarchy;
     private FormView formView;
     private Set<Integer> hiddenGroupsId;
-    private boolean toExcel;
 
-    private int defaultPageWidth = 842;   
+    private int defaultPageWidth = 842;
     private final static int defaultPageHeight = 595; // эти константы есть в JasperReports Ultimate Guide
 
     private int pageWidth;
@@ -43,11 +42,10 @@ public class ReportDesignGenerator {
 
     private Map<String, JasperDesign> designs = new HashMap<String, JasperDesign>();
 
-    public ReportDesignGenerator(FormView formView, GroupObjectHierarchy.ReportHierarchy hierarchy, Set<Integer> hiddenGroupsId, boolean toExcel) {
+    public ReportDesignGenerator(FormView formView, GroupObjectHierarchy.ReportHierarchy hierarchy, Set<Integer> hiddenGroupsId) {
         this.formView = formView;
         this.hierarchy = hierarchy;
         this.hiddenGroupsId = hiddenGroupsId;
-        this.toExcel = toExcel;
 
         if (formView.overridePageWidth != null) {
             defaultPageWidth = formView.overridePageWidth;
@@ -219,9 +217,7 @@ public class ReportDesignGenerator {
         dataField.setPositionType(PositionTypeEnum.FLOAT);
         dataField.setBlankWhenNull(true);
 
-        if (!toExcel) { // todo [dale]: Подумать, можно ли вообще избавиться от toExcel
-            dataField.setPattern(reportField.pattern);
-        }
+        dataField.setPattern(reportField.pattern);
 
         layout.add(reportField, captionField, dataField);
     }

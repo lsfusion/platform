@@ -28,7 +28,7 @@ public class ReportGenerator {
     private Map<String, JasperDesign> designs;
     private Map<String, ClientReportData> data;
     private Map<String, List<List<Object>>> compositeColumnValues;
-
+    private boolean toExcel;
 
     private static class SourcesGenerationOutput {
         public Map<String, ClientReportData> data;
@@ -58,11 +58,12 @@ public class ReportGenerator {
     private JasperPrint createReport(Integer groupId, Pair<String, Map<String, List<String>>> hpair, boolean toExcel, boolean ignorePagination, Map<ByteArray, String> files) throws IOException, ClassNotFoundException, JRException {
         rootID = hpair.first;
         hierarchy = hpair.second;
+        this.toExcel = toExcel;
 
-        return createJasperPrint(groupId, toExcel, ignorePagination, files);
+        return createJasperPrint(groupId, ignorePagination, files);
     }
 
-    private JasperPrint createJasperPrint(Integer groupId, boolean toExcel, boolean ignorePagination, Map<ByteArray, String> files) throws ClassNotFoundException, IOException, JRException {
+    private JasperPrint createJasperPrint(Integer groupId, boolean ignorePagination, Map<ByteArray, String> files) throws ClassNotFoundException, IOException, JRException {
         designs = retrieveReportDesigns(form, toExcel, groupId);
 
         SourcesGenerationOutput output = retrieveReportSources(form, groupId, files);
@@ -123,9 +124,9 @@ public class ReportGenerator {
     private static Map<String, JasperDesign> retrieveReportDesigns(RemoteFormInterface remoteForm, boolean toExcel, Integer groupId) throws IOException, ClassNotFoundException {
         byte[] designsArray;
         if (groupId == null) {
-            designsArray = remoteForm.getReportDesignsByteArray(toExcel);
+            designsArray = remoteForm.getReportDesignsByteArray();
         } else {
-            designsArray = remoteForm.getSingleGroupReportDesignByteArray(toExcel, groupId);
+            designsArray = remoteForm.getSingleGroupReportDesignByteArray(groupId);
         }
         ObjectInputStream objStream = new ObjectInputStream(new ByteArrayInputStream(designsArray));
         return (Map<String, JasperDesign>) objStream.readObject();
@@ -266,6 +267,9 @@ public class ReportGenerator {
 
     private void transformTextField(JasperDesign design, JRDesignTextField textField,
                                     List<JRDesignElement> toAdd, List<JRDesignElement> toDelete) {
+        if (toExcel) {
+            textField.setPattern(null);
+        }
         String exprText = textField.getExpression().getText();
         String id = null;
         if (exprText.startsWith("$F{") && exprText.endsWith("}")) {

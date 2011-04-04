@@ -109,7 +109,7 @@ public class GridController {
             });
         }
 
-        if (key.showPrintGroupButton && Main.module.isFull()) {
+        if (key.showPrintGroupButton && Main.module.isFull()) { // todo [dale]: Можно ли избавиться от if'ов?
             groupObjectController.addToToolbar(new BaseGridButton("/images/reportbw.gif", "Распечатать таблицу") {
                 @Override
                 public void addListener() {
