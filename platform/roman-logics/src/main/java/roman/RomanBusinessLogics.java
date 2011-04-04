@@ -838,7 +838,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         importBelTnved = addAProp(new ClassifierTNVEDImportActionProperty(genSID(), "Импортировать (РБ)", this, "belarusian"));
         importEuTnved = addAProp(new ClassifierTNVEDImportActionProperty(genSID(), "Импортировать (ЕС)", this, "origin"));
         jennyferImportInvoice = addAProp(importInvoiceActionGroup, new JennyferImportInvoiceActionProperty(this));
-//        jennyferImprtArticleWeightInvoice = addAProp(importInvoiceActionGroup, new JennyferImportArticleWeightActionProperty(this)); // todo [dale]: Удалить это свойство, если будет не нужно
         tallyWeijlImportInvoice = addAProp(importInvoiceActionGroup, new TallyWeijlImportInvoiceActionProperty(this));
         hugoBossImportInvoice = addAProp(importInvoiceActionGroup, new HugoBossImportInvoiceActionProperty(this));
         mexxImportInvoice = addAProp(importInvoiceActionGroup, new MexxImportInvoiceActionProperty(this));
