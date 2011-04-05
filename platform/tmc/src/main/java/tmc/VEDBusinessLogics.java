@@ -101,6 +101,14 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private LP freeIncOrderArticle;
     private CustomClass commitReturnShopOut;
     private LP sumWithDiscountCouponOrder;
+    private LP sumDiscountPayCouponOrder;
+    private LP sumRetailIncBetweenDate;
+    private LP sumRetailOutBetweenDate;
+    private LP sumDiscountPayCouponIncBetweenDate;
+    private LP sumDiscountPayCouponOutBetweenDate;
+    private LP sumWithDiscountCouponIncBetweenDate;
+    private LP sumWithDiscountCouponOutBetweenDate;
+    private LP sumPriceChangeBetweenDate;
     private LP genderArticle;
     private LP nameToGender;
     private CustomClass document;
@@ -1078,6 +1086,29 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         // пока для товарного отчета
         sumWithDiscountCouponOrder = addJProp(documentObligationGroup, "sumWithDiscountCouponOrder", true, "Сумма без куп.", onlyPositive, addDUProp(sumWithDiscountOrder, orderSalePayCoupon), 1);
+        sumDiscountPayCouponOrder = addSUProp(documentObligationGroup, "sumDiscountPayCouponOrder", true, "Сумма серт.", Union.SUM, discountSumOrder, orderSalePayCoupon);
+
+        sumRetailIncBetweenDate = addSGProp(baseGroup, "sumRetailIncBetweenDate", "Приходная сумма за интервал",
+                addJProp(and(false, false), sumRetailOrder, 1, is(orderInc), 1, addJProp(between, date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), subjectIncOrder, 1, 2, 3);
+        sumRetailOutBetweenDate = addSGProp(baseGroup, "sumRetailOutBetweenDate", "Расходная сумма за интервал",
+                addJProp(and(false, false), sumRetailOrder, 1, is(orderOut), 1, addJProp(between, date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), subjectOutOrder, 1, 2, 3);
+
+        sumWithDiscountCouponIncBetweenDate = addSGProp(baseGroup, "sumWithDiscountCouponIncBetweenDate", "Приходная сумма без скидки за интервал",
+                addJProp(and(false, false), sumWithDiscountCouponOrder, 1, is(orderInc), 1, addJProp(between, date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), subjectIncOrder, 1, 2, 3);
+        sumWithDiscountCouponOutBetweenDate = addSGProp(baseGroup, "sumWithDiscountCouponOutBetweenDate", "Расходная сумма без скидки за интервал",
+                addJProp(and(false, false), sumWithDiscountCouponOrder, 1, is(orderOut), 1, addJProp(between, date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), subjectOutOrder, 1, 2, 3);
+
+        sumDiscountPayCouponIncBetweenDate = addSGProp(baseGroup, "sumDiscountPayCouponIncBetweenDate", "Приходная сумма скидки за интервал",
+                addJProp(and(false, false), sumDiscountPayCouponOrder, 1, is(orderInc), 1, addJProp(between, date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), subjectIncOrder, 1, 2, 3);
+        sumDiscountPayCouponOutBetweenDate = addSGProp(baseGroup, "sumDiscountPayCouponOutBetweenDate", "Расходная сумма скидки за интервал",
+                addJProp(and(false, false), sumDiscountPayCouponOrder, 1, is(orderOut), 1, addJProp(between, date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), subjectOutOrder, 1, 2, 3);
+
+        sumPriceChangeBetweenDate = addSGProp(baseGroup, "sumPriceChangeBetweenDate", "Сумма переоценки за интервал",
+                addJProp(and(false, false), sumPriceChangeOrder, 1, is(orderInc), 1, addJProp(between, date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), subjectIncOrder, 1, 2, 3);
+
+
+
+
 
         LP clientSaleSum = addSGProp(sumWithDiscountObligationOrder, subjectIncOrder, 1);
         orderClientSaleSum.setDerivedChange(clientSaleSum, subjectIncOrder, 1);
@@ -3499,19 +3530,57 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     private class ArticleReportFormEntity extends FormEntity {
         public ObjectEntity objShop;
-        public ObjectEntity objOrder;
+        public ObjectEntity objOrderInc;
+        public ObjectEntity objOrderOut;
 
         protected ArticleReportFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Товарный отчёт");
 
-            //objShop = addSingleGroupObject(shop, name);
-
-            objOrder = addSingleGroupObject(order, date, sumRetailOrder, sumWithDiscountCouponOrder, sumNewPrevRetailOrder, sumPrevRetailOrder, sumPriceChangeOrder);
-            objOrder.groupTo.initClassView = ClassViewType.GRID;
+            GroupObjectEntity gobjDates = new GroupObjectEntity(genID());
+            ObjectEntity objDateFrom = new ObjectEntity(genID(), DateClass.instance, "от");
+            ObjectEntity objDateTo = new ObjectEntity(genID(), DateClass.instance, "до");
+            gobjDates.add(objDateFrom);
+            gobjDates.add(objDateTo);
+            addGroup(gobjDates);
+            addPropertyDraw(objDateFrom, objectValue);
+            addPropertyDraw(objDateTo, objectValue);
             
-            addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(sumWithDiscountCouponOrder, objOrder)),
-                                              new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(sumNewPrevRetailOrder, objOrder)),
-                                                                 new NotNullFilterEntity(addPropertyObject(sumPrevRetailOrder, objOrder)))));           
+            gobjDates.initClassView = ClassViewType.PANEL;
+
+            objShop = addSingleGroupObject(shop, name);
+            objShop.groupTo.initClassView = ClassViewType.PANEL;
+            
+            objOrderInc = addSingleGroupObject(orderInc, nameSubjectOutOrder, date, numberInvoiceDocument, seriesInvoiceDocument, sumRetailOrder, sumWithDiscountCouponOrder, sumDiscountPayCouponOrder, sumPriceChangeOrder);
+
+            objOrderOut = addSingleGroupObject(orderOut, nameSubjectIncOrder, date, numberInvoiceDocument, seriesInvoiceDocument, sumRetailOrder, sumWithDiscountCouponOrder, sumDiscountPayCouponOrder, sumPriceChangeOrder);
+                        
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(date, objOrderInc), Compare.GREATER_EQUALS, objDateFrom));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(date, objOrderInc), Compare.LESS_EQUALS, objDateTo));
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(date, objOrderOut), Compare.GREATER_EQUALS, objDateFrom));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(date, objOrderOut), Compare.LESS_EQUALS, objDateTo));
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(subjectOutOrder, objOrderOut), Compare.EQUALS, objShop));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(subjectIncOrder, objOrderInc), Compare.EQUALS, objShop));
+
+            addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(sumWithDiscountCouponOrder, objOrderInc)),
+                                              new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(sumPriceChangeOrder, objOrderInc)),
+                                                                 new NotNullFilterEntity(addPropertyObject(sumRetailOrder, objOrderInc)))));
+
+            addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(sumWithDiscountCouponOrder, objOrderOut)),
+                                              new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(sumPriceChangeOrder, objOrderOut)),
+                                                                 new NotNullFilterEntity(addPropertyObject(sumRetailOrder, objOrderOut)))));
+
+            addPropertyDraw(sumRetailIncBetweenDate, objShop, objDateFrom, objDateTo);
+            addPropertyDraw(sumRetailOutBetweenDate, objShop, objDateFrom, objDateTo);
+
+            addPropertyDraw(sumWithDiscountCouponIncBetweenDate, objShop, objDateFrom, objDateTo);
+            addPropertyDraw(sumWithDiscountCouponOutBetweenDate, objShop, objDateFrom, objDateTo);
+
+            addPropertyDraw(sumDiscountPayCouponIncBetweenDate, objShop, objDateFrom, objDateTo);
+            addPropertyDraw(sumDiscountPayCouponOutBetweenDate, objShop, objDateFrom, objDateTo);
+
+            addPropertyDraw(sumPriceChangeBetweenDate, objShop, objDateFrom, objDateTo);
 
         }
     }
