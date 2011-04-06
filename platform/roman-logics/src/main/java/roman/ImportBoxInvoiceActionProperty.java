@@ -91,6 +91,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         ImportKey<?> boxKey = new ImportKey(BL.supplierBox, BL.supplierBoxSIDSupplier.getMapping(boxNumberField, supplier));
         properties.add(new ImportProperty(invoiceSIDField, BL.boxInvoiceSupplierBox.getMapping(boxKey), BL.object(BL.boxInvoice).getMapping(invoiceKey)));
         properties.add(new ImportProperty(boxNumberField, BL.sidSupplierBox.getMapping(boxKey)));
+        properties.add(new ImportProperty(boxNumberField, BL.barcode.getMapping(boxKey)));
 
         ImportKey<?> articleKey = new ImportKey(BL.articleComposite, BL.articleSIDSupplier.getMapping(sidField, supplier));
         properties.add(new ImportProperty(sidField, BL.sidArticle.getMapping(articleKey)));
