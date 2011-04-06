@@ -502,6 +502,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP quantityImporterFreight;
     private LP quantityImporterFreightBrandSupplier;
     private LP markupPercentImporterFreightBrandSupplier;
+    private LP markupPercentImporterFreightDataSku;
+    private LP markupPercentImporterFreightBrandSupplierSku;
     private LP markupInImporterFreightSku;
     private LP priceExpenseImporterFreightSku;
     private LP markupPercentImporterFreightSku;
@@ -1622,7 +1624,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         priceExpenseImporterFreightSku = addJProp(baseGroup, "priceExpenseImporterFreightSku", "Цена затр.", sumDouble2, priceInImporterFreightSku, 1, 2, 3, priceFreightImporterFreightSku, 1, 2, 3);
 
         markupPercentImporterFreightBrandSupplier = addDProp(baseGroup, "markupPercentImporterFreightBrandSupplier", "Надбавка (%)", DoubleClass.instance, importer, freight, brandSupplier);
-        markupPercentImporterFreightSku = addJProp(baseGroup, "markupPercentImporterFreightSku", true, "Надбавка (%)", markupPercentImporterFreightBrandSupplier, 1, 2, brandSupplierArticleSku, 3);
+        markupPercentImporterFreightDataSku = addDProp(baseGroup, "markupPercentImporterFreightDataSku", "Надбавка (%)", DoubleClass.instance, importer, freight, sku);
+        markupPercentImporterFreightBrandSupplierSku = addJProp(baseGroup, "markupPercentImporterFreightBrandSupplierSku", true, "Надбавка (%)", markupPercentImporterFreightBrandSupplier, 1, 2, brandSupplierArticleSku, 3);
+        markupPercentImporterFreightSku = addSUProp(baseGroup, "markupPercentImporterFreightSku", true, "Надбавка (%)", Union.OVERRIDE, markupPercentImporterFreightBrandSupplierSku, markupPercentImporterFreightDataSku);
 
         // надбавка на цену без учёта стоимости фрахта
         markupInImporterFreightSku = addJProp(baseGroup, "markupInImporterFreightSku", "Надбавка", percent2, priceInImporterFreightSku, 1, 2, 3, markupPercentImporterFreightSku, 1, 2, 3);
@@ -2664,6 +2668,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             design.get(getPropertyDraw(date, objDirectInvoice)).caption = "Дата инвойса";
             design.get(getPropertyDraw(sidDocument, objShipment)).caption = "Номер поставки";
             design.get(getPropertyDraw(date, objShipment)).caption = "Дата поставки";
+            design.get(getPropertyDraw(date, objFreight)).caption = "Дата отгрузки";
             design.get(getPropertyDraw(objectClassName, objFreight)).caption = "Статус фрахта";
 
             design.get(objDirectInvoice.groupTo).grid.constraints.fillHorizontal = 2;
@@ -3302,6 +3307,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
 
+            design.get(getPropertyDraw(date, objFreight)).caption = "Дата отгрузки";
             design.get(getPropertyDraw(objectClassName, objFreight)).caption = "Статус фрахта";
 
             design.get(objFreight.groupTo).grid.constraints.fillHorizontal = 2;
@@ -3602,14 +3608,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addPropertyDraw(quantityImporterFreightBrandSupplier, objImporter, objFreight, objBrandSupplier);
             addPropertyDraw(markupPercentImporterFreightBrandSupplier, objImporter, objFreight, objBrandSupplier);
 
-            objSku = addSingleGroupObject(sku, "SKU", barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
+            objSku = addSingleGroupObject(sku, "SKU", barcode, sidArticleSku, sidSizeSupplierItem,
                     nameBrandSupplierArticleSku, nameCategoryArticleSku, sidCustomCategoryOriginArticleSku,
-                    nameCountrySku, netWeightSku, mainCompositionOriginSku,
-                    additionalCompositionOriginSku);
+                    nameCountrySku, netWeightSku, mainCompositionOriginSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
 
             addPropertyDraw(quantityImporterFreightSku, objImporter, objFreight, objSku);
+            addPropertyDraw(markupPercentImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(priceInImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(markupInImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(priceInOutImporterFreightSku, objImporter, objFreight, objSku);
@@ -3630,6 +3636,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
+            design.get(getPropertyDraw(date, objFreight)).caption = "Дата отгрузки";
             design.get(getPropertyDraw(objectClassName, objFreight)).caption = "Статус фрахта";
 
             ContainerView specContainer = design.createContainer("Итоги по текущему году");
