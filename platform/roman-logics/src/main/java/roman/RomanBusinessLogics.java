@@ -2530,7 +2530,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             addActionsOnObjectChange(objBarcode,
                                      addPropertyObject(
-                                             addJProp(true, andNot1,
+                                             addJProp(true, and(true, true),
                                                       addMFAProp(
                                                               null,
                                                               "Ввод нового товара",
@@ -2539,7 +2539,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                                                               true,
                                                               createItemForm.addPropertyObject(addItemBarcode, createItemForm.objBarcode)
                                                       ), 1, 2,
-                                                      barcodeToObject, 2
+                                                      barcodeToObject, 2, skuJennyferBarcode, 1, 2
                                              ),
                                              objSupplier, objBarcode));
 
