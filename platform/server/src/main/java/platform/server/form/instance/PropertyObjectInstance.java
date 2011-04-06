@@ -27,7 +27,7 @@ import platform.server.session.PropertyChange;
 import java.sql.SQLException;
 import java.util.*;
 
-public class PropertyObjectInstance<P extends PropertyInterface> extends PropertyImplement<PropertyObjectInterfaceInstance,P> implements OrderInstance {
+public class PropertyObjectInstance<P extends PropertyInterface> extends PropertyImplement<P, PropertyObjectInterfaceInstance> implements OrderInstance {
 
     public PropertyObjectInstance(Property<P> property,Map<P,? extends PropertyObjectInterfaceInstance> mapping) {
         super(property, (Map<P, PropertyObjectInterfaceInstance>) mapping);

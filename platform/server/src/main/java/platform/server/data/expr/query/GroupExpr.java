@@ -289,10 +289,10 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
     }
 
     // вытаскивает из outer Case'ы
-    public static <K> Expr create(Map<K, ? extends Expr> inner, Expr expr,boolean max, Map<K, ? extends Expr> outer) {
+    public static <K> Expr create(Map<K, ? extends Expr> group, Expr expr,boolean max, Map<K, ? extends Expr> implement) {
         ExprCaseList result = new ExprCaseList();
-        for(MapCase<K> caseOuter : CaseExpr.pullCases(outer))
-            result.add(caseOuter.where, createOuterBase(inner, expr, max, caseOuter.data));
+        for(MapCase<K> caseOuter : CaseExpr.pullCases(implement))
+            result.add(caseOuter.where, createOuterBase(group, expr, max, caseOuter.data));
         return result.getExpr();
     }
 

@@ -184,11 +184,11 @@ public class LP<T extends PropertyInterface> {
         property.setFixedCharWidth(charWidth);
     }
     
-    public <U> PropertyImplement<U, T> getMapping(U... mapping) {
+    public <U> PropertyImplement<T, U> getMapping(U... mapping) {
         Map<T,U> propertyMapping = new HashMap<T, U>();
         for(int i=0;i<listInterfaces.size();i++)
             propertyMapping.put(listInterfaces.get(i), mapping[i]);
-        return new PropertyImplement<U, T>(property, propertyMapping);
+        return new PropertyImplement<T, U>(property, propertyMapping);
     }
 
     public MapDataChanges<T> getDataChanges(Expr expr, Where where, Modifier<? extends Changes> modifier, KeyExpr... keys) {

@@ -27,9 +27,9 @@ import java.util.Map;
 
 public class ImportKey <P extends PropertyInterface> implements ImportKeyInterface {
     private ConcreteCustomClass keyClass;
-    private final PropertyImplement<ImportFieldInterface, P> implement;
+    private final PropertyImplement<P, ImportFieldInterface> implement;
 
-    public ImportKey(ConcreteCustomClass keyClass, PropertyImplement<ImportFieldInterface, P> implement) {
+    public ImportKey(ConcreteCustomClass keyClass, PropertyImplement<P, ImportFieldInterface> implement) {
         this.keyClass = keyClass;
         this.implement = implement;
     }

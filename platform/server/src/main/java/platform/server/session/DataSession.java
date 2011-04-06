@@ -262,7 +262,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
                 Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>> row = iterator.next();
                 UserProperty property = propRow.getKey();
                 Map<ClassPropertyInterface, P> mapInterfaces = mapChanges.map.get(property);
-                property.execute(row.getKey(), row.getValue().get("value"), DataSession.this, actions, executeForm, mapInterfaces == null ? null : BaseUtils.nullJoin(mapInterfaces, mapObjects), !iterator.hasNext());
+                property.execute(row.getKey(), row.getValue().get("value"), this, actions, executeForm, mapInterfaces == null ? null : BaseUtils.nullJoin(mapInterfaces, mapObjects), !iterator.hasNext());
             }
         }
         return actions;

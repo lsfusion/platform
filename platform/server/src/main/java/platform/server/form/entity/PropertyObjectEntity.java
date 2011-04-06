@@ -14,7 +14,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
 
-public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyImplement<PropertyObjectInterfaceEntity,P> implements OrderEntity<PropertyObjectInstance>, ServerCustomSerializable {
+public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyImplement<P, PropertyObjectInterfaceEntity> implements OrderEntity<PropertyObjectInstance>, ServerCustomSerializable {
 
     public PropertyObjectEntity() {
     }

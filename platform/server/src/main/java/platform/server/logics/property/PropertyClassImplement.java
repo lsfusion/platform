@@ -3,7 +3,6 @@ package platform.server.logics.property;
 import platform.base.BaseUtils;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -12,7 +11,7 @@ import java.util.List;
  * Time: 14:36:18
  */
 
-public class PropertyClassImplement<P extends PropertyInterface> extends PropertyImplement<ValueClassWrapper, P> {
+public class PropertyClassImplement<P extends PropertyInterface> extends PropertyImplement<P, ValueClassWrapper> {
 
     public PropertyClassImplement(Property<P> property, List<ValueClassWrapper> classes, List<P> interfaces) {
         super(property, BaseUtils.toMap(interfaces, classes));

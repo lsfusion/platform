@@ -21,26 +21,26 @@ import java.util.Map;
  */
 
 public class ImportProperty <P extends PropertyInterface> {
-    private PropertyImplement<ImportKeyInterface, P> implement;
+    private PropertyImplement<P, ImportKeyInterface> implement;
     private ImportFieldInterface importField;
 
-    private PropertyImplement<ImportKeyInterface, P> converter;
+    private PropertyImplement<P, ImportKeyInterface> converter;
 
-    public ImportProperty(ImportFieldInterface importField, PropertyImplement<ImportKeyInterface, P> implement) {
+    public ImportProperty(ImportFieldInterface importField, PropertyImplement<P, ImportKeyInterface> implement) {
         this.importField = importField;
         this.implement = implement;
     }
 
-    public ImportProperty(ImportFieldInterface importField, PropertyImplement<ImportKeyInterface, P> implement, PropertyImplement<ImportKeyInterface, P> converter) {
+    public ImportProperty(ImportFieldInterface importField, PropertyImplement<P, ImportKeyInterface> implement, PropertyImplement<P, ImportKeyInterface> converter) {
         this(importField, implement);
         this.converter = converter;
     }
 
-    public PropertyImplement<ImportKeyInterface, P> getProperty() {
+    public PropertyImplement<P, ImportKeyInterface> getProperty() {
         return implement;
     }
 
-    public PropertyImplement<ImportKeyInterface, P> getConverter() {
+    public PropertyImplement<P, ImportKeyInterface> getConverter() {
         return converter;
     }
 

@@ -20,7 +20,7 @@ import platform.server.session.PropertyChange;
 import java.util.*;
 
 public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<JoinProperty.Interface> {
-    public PropertyImplement<PropertyInterfaceImplement<Interface>,T> implement;
+    public PropertyImplement<T, PropertyInterfaceImplement<Interface>> implement;
 
     public static class Interface extends PropertyInterface<Interface> {
         Interface(int ID) {
@@ -171,8 +171,8 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
 
         if (implement.property instanceof AndFormulaProperty) {
             AndFormulaProperty andProp = (AndFormulaProperty) implement.property;
-            PropertyImplement<PropertyInterfaceImplement<Interface>, AndFormulaProperty.Interface> andImplement
-                    = (PropertyImplement<PropertyInterfaceImplement<Interface>, AndFormulaProperty.Interface>) implement;
+            PropertyImplement<AndFormulaProperty.Interface, PropertyInterfaceImplement<Interface>> andImplement
+                    = (PropertyImplement<AndFormulaProperty.Interface, PropertyInterfaceImplement<Interface>>) implement;
 
             PropertyInterfaceImplement<Interface> objectIface = andImplement.mapping.get(andProp.objectInterface);
             if (objectIface instanceof PropertyMapImplement) {

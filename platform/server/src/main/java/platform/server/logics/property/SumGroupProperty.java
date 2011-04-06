@@ -71,7 +71,7 @@ public class SumGroupProperty<T extends PropertyInterface> extends GroupProperty
 
         nullProperty = new NullProperty<Interface<T>>(this);
 
-        distribute = DerivedProperty.createUGProp(new PropertyImplement<PropertyInterfaceImplement<L>, NullProperty.Interface<Interface<T>>>(nullProperty,
+        distribute = DerivedProperty.createUGProp(new PropertyImplement<NullProperty.Interface<Interface<T>>, PropertyInterfaceImplement<L>>(nullProperty,
                 BaseUtils.join(nullProperty.getMapInterfaces(), DerivedProperty.mapImplements(getMapInterfaces(), BaseUtils.reverse(restriction.mapping)))),
                 orders, restriction.property).map(restriction.mapping);
     }

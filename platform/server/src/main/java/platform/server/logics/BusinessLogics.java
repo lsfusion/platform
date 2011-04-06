@@ -2568,7 +2568,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         for (PropertyInterfaceImplement<JoinProperty.Interface> partProperty : mapLI(list.subList(propsize, list.size()), listProperty.listInterfaces))
             mapImplement.put(itAnd.next(), partProperty);
 
-        joinProperty.implement = new PropertyImplement<PropertyInterfaceImplement<JoinProperty.Interface>, AndFormulaProperty.Interface>(andProperty, mapImplement);
+        joinProperty.implement = new PropertyImplement<AndFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>(andProperty, mapImplement);
 
         // получаем классы
         Result<ValueClass> value = new Result<ValueClass>();
@@ -2681,7 +2681,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         SelectFromListFormEntity selectFromListForm = new SelectFromListFormEntity(remapObject, remapFilters, selectionProperty, isSelectionClassFirstParam, selectionClass, baseClasses);
         return addMFAProp(group, caption, selectFromListForm, selectFromListForm.mainObjects, false);
     }
-    
+
     protected LP addStopActionProp(String caption, String header) {
         return addAProp(new StopActionProperty(genSID(), caption, header));
     }
@@ -3034,14 +3034,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return intNum;
     }
 
-    public static <T extends PropertyInterface, P extends PropertyInterface> PropertyImplement<PropertyInterfaceImplement<P>, T> mapImplement(LP<T> property, List<PropertyInterfaceImplement<P>> propImpl) {
+    public static <T extends PropertyInterface, P extends PropertyInterface> PropertyImplement<T, PropertyInterfaceImplement<P>> mapImplement(LP<T> property, List<PropertyInterfaceImplement<P>> propImpl) {
         int mainInt = 0;
         Map<T, PropertyInterfaceImplement<P>> mapping = new HashMap<T, PropertyInterfaceImplement<P>>();
         for (PropertyInterfaceImplement<P> implement : propImpl) {
             mapping.put(property.listInterfaces.get(mainInt), implement);
             mainInt++;
         }
-        return new PropertyImplement<PropertyInterfaceImplement<P>, T>(property.property, mapping);
+        return new PropertyImplement<T, PropertyInterfaceImplement<P>>(property.property, mapping);
     }
 
     protected LP addJProp(AbstractGroup group, String sID, String caption, LP mainProp, Object... params) {
@@ -3082,6 +3082,53 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addJProp(group, implementChange, paramID, props, "", params);
     }
 
+    private <G extends PropertyInterface, M extends PropertyInterface> LP addGCAProp(AbstractGroup group, String sID, String caption, GroupObjectEntity groupObject, LP<G> mainProperty, LP<M> getterProperty) {
+        assert getterProperty.listInterfaces.size() <= mainProperty.listInterfaces.size();
+        int mn = mainProperty.listInterfaces.size();
+        int gn = getterProperty.listInterfaces.size();
+
+        int mainGroupNums[] = new int[mn];
+        int sameKeys[][] = new int[gn][2];
+        for (int i = 0; i < mn; ++i) {
+            if (i < gn) {
+                sameKeys[i][0] = sameKeys[i][1] = i + 1;
+            }
+            mainGroupNums[i] = i + 1;
+        }
+
+        return addGCAProp(group, sID, caption, groupObject, mainProperty, mainGroupNums, getterProperty, sameKeys);
+    }
+
+    /**
+     * mainGroupNums и getToMainNums - 1-based
+     */
+    private <G extends PropertyInterface, M extends PropertyInterface> LP addGCAProp(AbstractGroup group, String sID, String caption, GroupObjectEntity groupObject,
+                                                                                      LP<M> mainProperty, int[] mainGroupNums,
+                                                                                      LP<G> getterProperty, int[][] getToMainNums) {
+
+        M[] mainGrouping = (M[]) new PropertyInterface[mainGroupNums.length];
+        for (int i = 0; i < mainGrouping.length; ++i) {
+            mainGrouping[i] = mainProperty.listInterfaces.get(mainGroupNums[i] - 1);
+        }
+
+        Map<G, M> mapGetToMain = new HashMap<G, M>();
+        List<G> getterExtraIFaces = new ArrayList<G>(getterProperty.listInterfaces);
+        for (int[] getToMainNum : getToMainNums) {
+            assert getToMainNum != null && getToMainNum.length == 2;
+
+            G getterIFace = getterProperty.listInterfaces.get(getToMainNum[0] - 1);
+            M mainIFace = mainProperty.listInterfaces.get(getToMainNum[1] - 1);
+
+            mapGetToMain.put(getterIFace, mainIFace);
+            getterExtraIFaces.remove(getterIFace);
+        }
+
+        return addProperty(group, new LP<ClassPropertyInterface>(
+                new GroupChangeActionProperty(sID, caption, groupObject,
+                                              mainProperty.property, mainGrouping,
+                                              getterProperty.property, mapGetToMain, getterExtraIFaces.toArray(new PropertyInterface[getterExtraIFaces.size()]))));
+    }
+
     private <T extends PropertyInterface> LP addGProp(AbstractGroup group, String sID, boolean persistent, String caption, LP<T> groupProp, List<PropertyInterfaceImplement<T>> listImplements) {
 
         GroupProperty<T> property = new SumGroupProperty<T>(sID, caption, listImplements, groupProp.property);
@@ -3092,16 +3139,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addProperty(group, persistent, new LP<L>(implement.property, BaseUtils.mapList(property.listInterfaces, BaseUtils.reverse(implement.mapping))));
     }
 
-    private <P extends PropertyInterface, L extends PropertyInterface> LP mapLGProp(AbstractGroup group, PropertyImplement<PropertyInterfaceImplement<P>, L> implement, List<PropertyInterfaceImplement<P>> listImplements) {
+    private <P extends PropertyInterface, L extends PropertyInterface> LP mapLGProp(AbstractGroup group, PropertyImplement<L, PropertyInterfaceImplement<P>> implement, List<PropertyInterfaceImplement<P>> listImplements) {
         return mapLGProp(group, false, implement, listImplements);
     }
 
-    private <P extends PropertyInterface, L extends PropertyInterface> LP mapLGProp(AbstractGroup group, boolean persistent, PropertyImplement<PropertyInterfaceImplement<P>, L> implement, List<PropertyInterfaceImplement<P>> listImplements) {
+    private <P extends PropertyInterface, L extends PropertyInterface> LP mapLGProp(AbstractGroup group, boolean persistent, PropertyImplement<L, PropertyInterfaceImplement<P>> implement, List<PropertyInterfaceImplement<P>> listImplements) {
         return addProperty(group, persistent, new LP<L>(implement.property, BaseUtils.mapList(listImplements, BaseUtils.reverse(implement.mapping))));
     }
 
     private <P extends PropertyInterface> LP mapLGProp(AbstractGroup group, boolean persistent, GroupProperty<P> property, List<PropertyInterfaceImplement<P>> listImplements) {
-        return mapLGProp(group, persistent, new PropertyImplement<PropertyInterfaceImplement<P>, GroupProperty.Interface<P>>(property, property.getMapInterfaces()), listImplements);
+        return mapLGProp(group, persistent, new PropertyImplement<GroupProperty.Interface<P>, PropertyInterfaceImplement<P>>(property, property.getMapInterfaces()), listImplements);
     }
 
     protected <P extends PropertyInterface> LP addOProp(String caption, OrderType orderType, LP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
@@ -3159,7 +3206,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         for (int i = 0; i < ungroup.listInterfaces.size(); i++)
             groupImplement.put(ungroup.listInterfaces.get(i), li.get(i).map(restriction.listInterfaces));
         OrderedMap<PropertyInterfaceImplement<R>, Boolean> orders = new OrderedMap<PropertyInterfaceImplement<R>, Boolean>(mapLI(li.subList(ungroup.listInterfaces.size(), li.size()), restriction.listInterfaces), ascending);
-        return mapLProp(group, persistent, DerivedProperty.createUGProp(sID, caption, new PropertyImplement<PropertyInterfaceImplement<R>, L>(ungroup.property, groupImplement), orders, restriction.property), restriction);
+        return mapLProp(group, persistent, DerivedProperty.createUGProp(sID, caption, new PropertyImplement<L, PropertyInterfaceImplement<R>>(ungroup.property, groupImplement), orders, restriction.property), restriction);
     }
 
     protected <R extends PropertyInterface, L extends PropertyInterface> LP addPGProp(AbstractGroup group, String sID, boolean persistent, int roundlen, boolean roundfirst, String caption, LP<R> proportion, LP<L> ungroup, Object... params) {
@@ -3168,7 +3215,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         Map<L, PropertyInterfaceImplement<R>> groupImplement = new HashMap<L, PropertyInterfaceImplement<R>>();
         for (int i = 0; i < ungroup.listInterfaces.size(); i++)
             groupImplement.put(ungroup.listInterfaces.get(i), li.get(i).map(proportion.listInterfaces));
-        return mapLProp(group, persistent, DerivedProperty.createPGProp(sID, caption, roundlen, roundfirst, baseClass, new PropertyImplement<PropertyInterfaceImplement<R>, L>(ungroup.property, groupImplement), proportion.property), proportion);
+        return mapLProp(group, persistent, DerivedProperty.createPGProp(sID, caption, roundlen, roundfirst, baseClass, new PropertyImplement<L, PropertyInterfaceImplement<R>>(ungroup.property, groupImplement), proportion.property), proportion);
     }
 
     /*
@@ -3301,7 +3348,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         List<PropertyInterfaceImplement<T>> listImplements = readImplements(groupProp.listInterfaces, params);
         List<PropertyInterfaceImplement<T>> groupImplements = listImplements.subList(extra, listImplements.size());
-        List<PropertyImplement<PropertyInterfaceImplement<T>, ?>> mgProps = DerivedProperty.createMGProp(ids, captions, groupProp.property, baseClass,
+        List<PropertyImplement<?, PropertyInterfaceImplement<T>>> mgProps = DerivedProperty.createMGProp(ids, captions, groupProp.property, baseClass,
                 listImplements.subList(0, extra), new HashSet<PropertyInterfaceImplement<T>>(groupImplements), suggestPersist);
 
         if (persist)

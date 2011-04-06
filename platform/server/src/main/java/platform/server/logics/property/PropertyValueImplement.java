@@ -11,7 +11,7 @@ import platform.server.session.PropertyChange;
 import java.sql.SQLException;
 import java.util.Map;
 
-public class PropertyValueImplement<P extends PropertyInterface> extends PropertyImplement<DataObject,P> {
+public class PropertyValueImplement<P extends PropertyInterface> extends PropertyImplement<P, DataObject> {
 
     public PropertyValueImplement(Property<P> property, Map<P, DataObject> mapping) {
         super(property, mapping);

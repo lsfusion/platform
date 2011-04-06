@@ -19,7 +19,7 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
     }
 
     private final Property<C> property; // что меняем
-    private final PropertyImplement<PropertyInterfaceImplement<C>,D> value;
+    private final PropertyImplement<D, PropertyInterfaceImplement<C>> value;
     private final Collection<PropertyMapImplement<?,C>> onChange;
     private final boolean valueChanged;
     private final boolean forceChanged;
@@ -29,7 +29,7 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
         FunctionProperty.fillDepends(depends,BaseUtils.merge(value.mapping.values(),onChange));
     }
     
-    public DerivedChange(Property<C> property, PropertyImplement<PropertyInterfaceImplement<C>,D> value, Collection<PropertyMapImplement<?,C>> onChange, boolean valueChanged, boolean forceChanged) {
+    public DerivedChange(Property<C> property, PropertyImplement<D, PropertyInterfaceImplement<C>> value, Collection<PropertyMapImplement<?,C>> onChange, boolean valueChanged, boolean forceChanged) {
         this.property = property;
         this.value = value;
         this.onChange = onChange;

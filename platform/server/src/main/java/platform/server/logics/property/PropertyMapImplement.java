@@ -18,24 +18,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class PropertyMapImplement<T extends PropertyInterface,P extends PropertyInterface> extends PropertyImplement<P,T> implements PropertyInterfaceImplement<P> {
+public class PropertyMapImplement<P extends PropertyInterface, T extends PropertyInterface> extends PropertyImplement<P, T> implements PropertyInterfaceImplement<T> {
 
-    public PropertyMapImplement(Property<T> property) {
+    public PropertyMapImplement(Property<P> property) {
         super(property);
     }
-    public PropertyMapImplement(Property<T> property, Map<T, P> mapping) {
+
+    public PropertyMapImplement(Property<P> property, Map<P, T> mapping) {
         super(property, mapping);
     }
 
-    public Expr mapExpr(Map<P, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+    public Expr mapExpr(Map<T, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
         return property.getExpr(BaseUtils.join(mapping, joinImplement), modifier, changedWhere);
     }
 
-    public Expr mapExpr(Map<P, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier) {
+    public Expr mapExpr(Map<T, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier) {
         return property.getExpr(BaseUtils.join(mapping, joinImplement), modifier);
     }
 
-    public Expr mapExpr(Map<P, ? extends Expr> joinImplement) {
+    public Expr mapExpr(Map<T, ? extends Expr> joinImplement) {
         return property.getExpr(BaseUtils.join(mapping, joinImplement));
     }
 
@@ -43,41 +44,43 @@ public class PropertyMapImplement<T extends PropertyInterface,P extends Property
         depends.add(property);
     }
 
-    public Object read(DataSession session, Map<P, DataObject> interfaceValues, Modifier<? extends Changes> modifier) throws SQLException {
-        return property.read(session.sql,BaseUtils.join(mapping,interfaceValues),modifier,session.env);
+    public Object read(DataSession session, Map<T, DataObject> interfaceValues, Modifier<? extends Changes> modifier) throws SQLException {
+        return property.read(session.sql, BaseUtils.join(mapping, interfaceValues), modifier, session.env);
     }
 
-    public MapDataChanges<P> mapDataChanges(PropertyChange<P> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
+    public MapDataChanges<T> mapDataChanges(PropertyChange<T> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
         return property.getDataChanges(change.map(mapping), changedWhere, modifier).map(mapping);
     }
 
-    public MapDataChanges<P> mapJoinDataChanges(Map<P, KeyExpr> joinImplement, Expr expr, Where where, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
+    public MapDataChanges<T> mapJoinDataChanges(Map<T, KeyExpr> joinImplement, Expr expr, Where where, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
         return property.getJoinDataChanges(BaseUtils.join(mapping, joinImplement), expr, where, modifier, changedWhere).map(mapping);
     }
 
-    public void mapNotNull(Map<P, KeyExpr> mapKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
+    public void mapNotNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
         property.setJoinNotNull(BaseUtils.join(mapping, mapKeys), where, session, BL);
     }
 
-    public PropertyMapImplement<?,P> mapChangeImplement() {
+    public PropertyMapImplement<?, T> mapChangeImplement() {
         return property.getChangeImplement().map(mapping);
     }
-    public PropertyObjectInstance<T> mapObjects(Map<P, ? extends PropertyObjectInterfaceInstance> mapObjects) {
-        return new PropertyObjectInstance<T>(property, BaseUtils.join(mapping, mapObjects));        
-    }
-    public PropertyValueImplement<T> mapValues(Map<P, DataObject> mapValues) {
-        return new PropertyValueImplement<T>(property, BaseUtils.join(mapping, mapValues));        
+
+    public PropertyObjectInstance<P> mapObjects(Map<T, ? extends PropertyObjectInterfaceInstance> mapObjects) {
+        return new PropertyObjectInstance<P>(property, BaseUtils.join(mapping, mapObjects));
     }
 
-    public List<ClientAction> execute(Map<P, DataObject> keys, DataSession session, Object value, Modifier<? extends Changes> modifier) throws SQLException {
+    public PropertyValueImplement<P> mapValues(Map<T, DataObject> mapValues) {
+        return new PropertyValueImplement<P>(property, BaseUtils.join(mapping, mapValues));
+    }
+
+    public List<ClientAction> execute(Map<T, DataObject> keys, DataSession session, Object value, Modifier<? extends Changes> modifier) throws SQLException {
         return session.execute(property, mapValues(keys).getPropertyChange(session.getObjectValue(value, property.getType()).getExpr()), modifier, null, null);
     }
 
-    public void fill(Set<P> interfaces, Set<PropertyMapImplement<?, P>> properties) {
+    public void fill(Set<T> interfaces, Set<PropertyMapImplement<?, T>> properties) {
         properties.add(this);
     }
 
-    public <K extends PropertyInterface> PropertyMapImplement<T,K> map(Map<P,K> remap) {
-        return new PropertyMapImplement<T,K>(property,BaseUtils.join(mapping,remap));
+    public <K extends PropertyInterface> PropertyMapImplement<P, K> map(Map<T, K> remap) {
+        return new PropertyMapImplement<P, K>(property, BaseUtils.join(mapping, remap));
     }
 }
