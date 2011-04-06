@@ -640,6 +640,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP sumDirectInvoicedSku;
     private LP sumSku;
     private LP netWeightDocumentSku;
+    private LP barcode10;
+    private LP skuJennyferBarcode10;
+    private LP jennyferSupplierArticle;
+    private LP jennyferSupplierArticleSku;
+    private LP substring10;
+    private LP skuJennyferBarcode;
+    private LP substring10s13;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -1061,6 +1068,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         supplierArticle = addDProp(idGroup, "supplierArticle", "Поставщик (ИД)", supplier, article);
         nameSupplierArticle = addJProp(baseGroup, "nameSupplierArticle", "Поставщик", name, supplierArticle, 1);
 
+        jennyferSupplierArticle = addJProp("jennyferSupplierArticle", "Поставщик Jennyfer (ИД)", and1, supplierArticle, 1, addJProp(is(jennyferSupplier), supplierArticle, 1), 1);
+
         addConstraint(addJProp("Поставщик артикула должен соответствовать поставщику страны артикула", diff2,
                 supplierArticle, 1, addJProp(supplierCountrySupplier, countrySupplierOfOriginArticle, 1), 1), true);
 
@@ -1107,6 +1116,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         supplierArticleSku = addJProp(idGroup, "supplierArticleSku", "Поставщик (ИД)", supplierArticle, articleSku, 1);
         nameSupplierArticleSku = addJProp(baseGroup, "nameSupplierArticleSku", "Поставщик", name, supplierArticleSku, 1);
 
+        jennyferSupplierArticleSku = addJProp("jennyferSupplierArticleSku", "Поставщик Jennyfer (ИД)", jennyferSupplierArticle, articleSku, 1);
+
         colorSupplierItem = addDProp(idGroup, "colorSupplierItem", "Цвет поставщика (ИД)", colorSupplier, item);
         sidColorSupplierItem = addJProp(itemAttributeGroup, "sidColorSupplierItem", "Код цвета", sidColorSupplier, colorSupplierItem, 1);
         nameColorSupplierItem = addJProp(itemAttributeGroup, "nameColorSupplierItem", "Цвет поставщика", name, colorSupplierItem, 1);
@@ -1121,6 +1132,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         addConstraint(addJProp("Поставщик товара должен соответствовать размеру поставщика", diff2,
                 supplierArticleSku, 1,
                 addJProp(supplierSizeSupplier, sizeSupplierItem, 1), 1), true);
+
+        substring10 = addSFProp("substring(prm1,1,10)", StringClass.get(10), 1);
+        substring10s13 = addJProp(and1, substring10, 1, is(StringClass.get(13)), 1);
+
+        barcode10 = addJProp("barcode10", "Штрих-код(10)", substring10, barcode, 1);
+        skuJennyferBarcode10 = addCGProp(baseGroup, "skuJennyferBarcode10", "Товар (ИД)", object(sku), jennyferSupplierArticleSku,
+                                                                                 jennyferSupplierArticleSku, 1, barcode10, 1);
+        skuJennyferBarcode = addJProp(baseGroup, "skuJennyferBarcode", "Товар (ИД)", skuJennyferBarcode10, 1, substring10s13, 2);
 
         sidDocument = addDProp(baseGroup, "sidDocument", "Код документа", StringClass.get(50), document);
         documentSIDSupplier = addCGProp(idGroup, "documentSIDSupplier", "Документ поставщика (ИД)", object(document), sidDocument, sidDocument, 1, supplierDocument, 1);
@@ -2500,6 +2519,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 //                addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeAction4, objSupplierBox, objShipment, objRoute, objBarcode));
 //            else
 //                addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeAction3, objShipment, objRoute, objBarcode));
+
+            addActionsOnObjectChange(objBarcode, addPropertyObject(
+                                                    addJProp(true, addSAProp(null), skuJennyferBarcode, 1, 2),
+                                                            objSupplier, objBarcode));
+
             addActionsOnObjectChange(objBarcode, addPropertyObject(seekBarcodeAction, objBarcode));
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionCheckFreightBox, objRoute, objBarcode));

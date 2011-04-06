@@ -357,7 +357,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
                 changed.properties.put("int"+propertyInterface.ID, nameExpr);
             }
 
-            OrderedMap<Map<T, Object>, Map<String, Object>> result = changed.execute(sql, env);
+            OrderedMap<Map<T, Object>, Map<String, Object>> result = changed.execute(sql, new OrderedMap<String, Boolean>(), 30, env);
             if(result.size()>0) {
                 String resultString = property.toString() + '\n';
                 for(Map.Entry<Map<T,Object>,Map<String,Object>> row : result.entrySet()) {
