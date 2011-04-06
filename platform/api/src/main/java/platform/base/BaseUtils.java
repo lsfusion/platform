@@ -1206,11 +1206,16 @@ public class BaseUtils {
         return o == null || o.toString().trim().length() == 0;
     }
 
-    public static String spaces(int spaces) {
-        String result = "";
-        for (int i = 0; i < spaces; i++)
-            result += ' ';
-        return result;
+    public static String newString(char ch, int count) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < count; i++) {
+            builder.append(ch);
+        }
+        return builder.toString();
+    }
+
+    public static String spaces(int count) {
+        return newString(' ', count);
     }
 
     // в отличии от padright дает нуж
